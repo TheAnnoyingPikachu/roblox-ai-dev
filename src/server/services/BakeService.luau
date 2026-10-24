@@ -14,6 +14,7 @@ local BakeRules = require(Shared:WaitForChild("BakeRules"))
 
 type Stats = {
 	state: BakeRules.State,
+	ready: boolean,
 	coins: IntValue,
 	tier: IntValue,
 	pastries: IntValue,
@@ -64,6 +65,7 @@ local function createStats(player: Player): Stats
 
 	local stats: Stats = {
 		state = BakeRules.newState(),
+		ready = false,
 		coins = value("Coins"),
 		tier = value("Tier"),
 		pastries = value("Pastries"),
@@ -81,12 +83,33 @@ end
 
 local function apply(player: Player, action: (BakeRules.State) -> BakeRules.Outcome)
 	local stats = players[player]
-	if stats == nil then
+	if stats == nil or not stats.ready then
 		return
 	end
 	local result = action(stats.state)
 	stats.state = result.state
 	publish(stats)
+end
+
+-- Called by SaveService once a player's saved data is loaded (or load failed and defaults apply).
+-- Actions are ignored until this runs, so a player can't bake over saved progress.
+function BakeService.restore(player: Player, state: BakeRules.State)
+	local stats = players[player]
+	if stats == nil then
+		return
+	end
+	stats.state = state
+	stats.ready = true
+	publish(stats)
+end
+
+-- Returns the current state for saving, or nil if the player is not ready yet.
+function BakeService.getState(player: Player): BakeRules.State?
+	local stats = players[player]
+	if stats == nil or not stats.ready then
+		return nil
+	end
+	return stats.state
 end
 
 function BakeService.start()

@@ -1,0 +1,55 @@
+--!strict
+local T = require("./framework")
+local SaveRules = require("../src/shared/SaveRules")
+
+local describe, it, expect = T.describe, T.it, T.expect
+
+describe("SaveRules.sanitize", function()
+	it("returns defaults for missing or non-table data", function()
+		local s = SaveRules.sanitize(nil, 1000, 5)
+		expect(s.coins).toBe(0)
+		expect(s.tier).toBe(1)
+		expect(s.pastries).toBe(0)
+	end)
+
+	it("keeps valid values", function()
+		local s = SaveRules.sanitize({ coins = 120, tier = 3, pastries = 4 }, 1000, 5)
+		expect(s.coins).toBe(120)
+		expect(s.tier).toBe(3)
+		expect(s.pastries).toBe(4)
+	end)
+
+	it("clamps coins to the cap and tier to the tier count", function()
+		local s = SaveRules.sanitize({ coins = 9999, tier = 42 }, 1000, 5)
+		expect(s.coins).toBe(1000)
+		expect(s.tier).toBe(5)
+	end)
+
+	it("rejects negative and non-numeric values", function()
+		local s = SaveRules.sanitize({ coins = -5, tier = "3", pastries = 0 / 0 }, 1000, 5)
+		expect(s.coins).toBe(0)
+		expect(s.tier).toBe(1)
+		expect(s.pastries).toBe(0)
+	end)
+
+	it("floors fractional values", function()
+		local s = SaveRules.sanitize({ coins = 7.9, tier = 2.2, pastries = 1.5 }, 1000, 5)
+		expect(s.coins).toBe(7)
+		expect(s.tier).toBe(2)
+		expect(s.pastries).toBe(1)
+	end)
+
+	it("always writes the current schema version", function()
+		expect(SaveRules.sanitize({ schemaVersion = 99 }, 1000, 5).schemaVersion).toBe(SaveRules.SCHEMA_VERSION)
+	end)
+end)
+
+describe("SaveRules.fromState", function()
+	it("copies only the saved fields", function()
+		local saved = SaveRules.fromState({ coins = 5, tier = 2, pastries = 1, lastBakeAt = 9 } :: any)
+		expect(saved.coins).toBe(5)
+		expect(saved.tier).toBe(2)
+		expect(saved.pastries).toBe(1)
+		expect(saved.schemaVersion).toBe(SaveRules.SCHEMA_VERSION)
+	end)
+end)

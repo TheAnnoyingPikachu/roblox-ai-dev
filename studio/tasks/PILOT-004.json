@@ -1,0 +1,22 @@
+{
+  "task_id": "PILOT-004",
+  "project_id": "PILOT-001",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Bake Rush saves: load and save progress with DataStoreService, validate loaded data, never overwrite saved data after a failed load, and save on leave, shutdown and every 60 seconds.",
+  "inputs": ["docs/game-design/bake-rush-gdd.md section F", "docs/decisions/0005-bake-rush-save-data.md"],
+  "dependencies": ["PILOT-002", "PILOT-003"],
+  "acceptance_criteria": [
+    "Loaded data is sanitised: clamped, floored and defaulted (SaveRules unit tests)",
+    "A failed load plays with defaults and never saves over existing data",
+    "Actions are ignored until the load has finished",
+    "Progress survives leave and rejoin in the staging experience"
+  ],
+  "verification": "Lune tests for SaveRules, plus a two-session staging playtest that checks progress after rejoin",
+  "output_artifacts": ["src/shared/SaveRules.luau", "src/server/services/SaveService.luau", "tests/SaveRules.spec.luau"],
+  "risk_level": "high",
+  "status": "in_review",
+  "evidence": ["Local run: 34/34 Lune tests pass, rojo build OK. The DataStore code has not run in Studio yet."],
+  "notes": "High risk because it touches player data. The staging playtest is required before acceptance."
+}
