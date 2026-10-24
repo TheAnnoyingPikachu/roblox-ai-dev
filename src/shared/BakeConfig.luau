@@ -11,6 +11,7 @@ local config = {
 		{ upgradeCost = 3000, bakeTime = 0.4, sellPrice = 8 },
 	},
 	maxCoins = 1_000_000_000,
+	maxPastries = 10_000,
 }
 
 return table.freeze(config)

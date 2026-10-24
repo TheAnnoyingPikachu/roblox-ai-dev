@@ -1,0 +1,41 @@
+{
+  "task_id": "PILOT-004",
+  "project_id": "PILOT-001",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Bake Rush saves: load and save progress with DataStoreService, validate loaded data, never overwrite saved data after a failed load, and save on leave, shutdown and every 60 seconds.",
+  "inputs": [
+    "docs/game-design/bake-rush-gdd.md section F",
+    "docs/decisions/0005-bake-rush-save-data.md"
+  ],
+  "dependencies": [
+    "PILOT-002",
+    "PILOT-003"
+  ],
+  "acceptance_criteria": [
+    "Loaded data is sanitised: clamped, floored and defaulted (SaveRules unit tests)",
+    "A failed load kicks the player and never saves over existing data",
+    "Actions are ignored until the load has finished",
+    "Session lock and save count prevent a stale or second server from overwriting a record (SaveRules unit tests)",
+    "Progress survives leave and rejoin in the staging experience"
+  ],
+  "verification": "Lune tests for SaveRules, plus a two-session staging playtest that checks progress after rejoin",
+  "output_artifacts": [
+    "src/shared/SaveRules.luau",
+    "src/server/services/SaveService.luau",
+    "tests/SaveRules.spec.luau",
+    "docs/decisions/0005-bake-rush-save-data.md"
+  ],
+  "risk_level": "high",
+  "status": "in_review",
+  "evidence": [
+    "Local run on 2026-10-24: lune run tests/run 48/48 passed; rojo build OK; validate-tasks OK; secret scan clean.",
+    "CI on e0bf584 green: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/40119269390",
+    "QA re-review of e0bf584 (review 5639348775): blockers were overlapping saves and UpdateAsync flag resets. Fixed in the next commit with a per-session saving flag and per-call flag resets.",
+    "Per-player save serialization runs on Roblox services and is not covered by Lune. Verified by reading only; needs the staging playtest.",
+    "The DataStore code has not run in Studio yet.",
+    "CI on 2a99b7c green (final head at QA re-check): https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/40119534690"
+  ],
+  "notes": "High risk because it touches player data. Schema v2 adds saveCount and lock. Staging playtest required before acceptance. Steps: (1) fast rejoin to another server, (2) leave during an autosave, (3) shut down with players present, then reconnect, (4) kill a server process and confirm the lock goes stale after 300 s. Open items: a player who leaves mid-load keeps the lock until stale (300 s). publish.yml production check that PRODUCTION_UNIVERSE_ID matches the production universe is not yet added (non-blocking review item). PRODUCTION_UNIVERSE_ID stays nil until SHANNON approves a production release. QA re-check of 2a99b7c: OK to merge, nothing blocking. Stays in_review until the staging playtest is done. Merge needs SHANNON's approval."
+}
