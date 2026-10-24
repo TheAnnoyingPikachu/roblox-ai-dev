@@ -1,8 +1,7 @@
 --!strict
--- Server authority for Bake Rush. Players interact through ProximityPrompts on three
--- stations, which work on PC, mobile and console. The server applies BakeRules to every
--- request and owns leaderstats directly, so no other service can write to them.
--- Saves are added in PILOT-004 behind their own service.
+-- Server authority for Bake Rush. Players use ProximityPrompts on three stations, which work
+-- on PC, mobile and console. The server applies BakeRules to every request.
+-- SaveService owns when a player's state is stored and released (see decision 0005).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -91,11 +90,12 @@ local function apply(player: Player, action: (BakeRules.State) -> BakeRules.Outc
 	publish(stats)
 end
 
--- Called by SaveService once a player's saved data is loaded (or load failed and defaults apply).
--- Actions are ignored until this runs, so a player can't bake over saved progress.
+-- Called by SaveService once a player's load has finished. Actions are ignored until then,
+-- so a player can't bake over saved progress.
 function BakeService.restore(player: Player, state: BakeRules.State)
 	local stats = players[player]
 	if stats == nil then
+		warn(`[BakeService] restore called for a player with no stats: {player.UserId}`)
 		return
 	end
 	stats.state = state
@@ -103,13 +103,19 @@ function BakeService.restore(player: Player, state: BakeRules.State)
 	publish(stats)
 end
 
--- Returns the current state for saving, or nil if the player is not ready yet.
+-- Returns the current state for saving, or nil if the player isn't ready.
 function BakeService.getState(player: Player): BakeRules.State?
 	local stats = players[player]
 	if stats == nil or not stats.ready then
 		return nil
 	end
 	return stats.state
+end
+
+-- Drops a player's state. Called by SaveService after the final save, so BakeService never
+-- clears state before it has been saved.
+function BakeService.release(player: Player)
+	players[player] = nil
 end
 
 function BakeService.start()
@@ -139,9 +145,6 @@ function BakeService.start()
 	for _, player in Players:GetPlayers() do
 		onPlayerAdded(player)
 	end
-	Players.PlayerRemoving:Connect(function(player)
-		players[player] = nil
-	end)
 end
 
 return BakeService

@@ -1,38 +1,62 @@
 --!strict
 -- Loads and saves each player's Bake Rush progress with DataStoreService.
--- Safety rules:
---   * Players are only restored after a successful load, or after a failed load that
---     disables saving for that session. A failed load never writes defaults over real data.
+-- Rules (see docs/decisions/0005-bake-rush-save-data.md):
+--   * Every write is an UpdateAsync that takes or checks a session lock and a save count.
+--     A server never overwrites a record another server has taken over or a newer save.
+--   * A load that finds a fresh lock held by another server kicks the player. A failed load
+--     kicks the player too. Saving is off for that session, so defaults never overwrite data.
 --   * Saves run on leave, on server close and every 60 seconds, never per action.
---   * Saves retry with backoff and log on failure. A failed save never clears saved data.
+--   * Leave and shutdown share one finalize path, so no player is saved twice at the end.
 
 local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local BakeConfig = require(Shared:WaitForChild("BakeConfig"))
 local BakeRules = require(Shared:WaitForChild("BakeRules"))
 local SaveRules = require(Shared:WaitForChild("SaveRules"))
 
 local SaveService = {}
 
-local STORE_NAME = "BakeRushSave"
+-- Set to the production universe ID before the first production release (decision 0005).
+-- Until it is set, live servers use the staging store, which is the safe default.
+local PRODUCTION_UNIVERSE_ID: number? = nil
+
 local SAVE_INTERVAL = 60
 local MAX_ATTEMPTS = 3
+local SHUTDOWN_DEADLINE = 25
+
+local function storeName(): string
+	if RunService:IsStudio() then
+		return "BakeRushSave_studio"
+	end
+	if PRODUCTION_UNIVERSE_ID ~= nil and game.GameId == PRODUCTION_UNIVERSE_ID then
+		return "BakeRushSave"
+	end
+	return "BakeRushSave_staging"
+end
+
+local store = DataStoreService:GetDataStore(storeName())
 
 type Session = {
 	saveEnabled: boolean,
+	saveCount: number,
+	finalizing: boolean,
 }
 
-local store = DataStoreService:GetDataStore(STORE_NAME)
 local sessions: { [Player]: Session } = {}
+local inFlight = 0
+-- Set by start(). Reads the player's live gameplay state for a save.
+local readState: (Player) -> BakeRules.State? = function(_player: Player)
+	return nil
+end
 
 local function keyFor(player: Player): string
 	return `player_{player.UserId}`
 end
 
--- Retries with exponential backoff. Returns true and the value on success.
+-- Retries with exponential backoff. Returns true and the result on success.
 local function withRetries(label: string, operation: () -> any): (boolean, any)
 	local lastError: any = nil
 	for attempt = 1, MAX_ATTEMPTS do
@@ -49,44 +73,124 @@ local function withRetries(label: string, operation: () -> any): (boolean, any)
 	return false, lastError
 end
 
-local function savePlayer(player: Player, getState: (Player) -> BakeRules.State?, saveSession: Session)
-	if not saveSession.saveEnabled then
-		return
-	end
-	local state = getState(player)
-	if state == nil then
-		return
-	end
-	local record = SaveRules.fromState(state)
+-- Writes the player's state. Returns "written", "rejected" (another server owns the record),
+-- or "failed" (retries exhausted; stored data is unchanged).
+local function writeState(
+	player: Player,
+	state: BakeRules.State,
+	session: Session,
+	releaseLock: boolean
+): string
+	local jobId = game.JobId
+	local now = os.time()
+	local outcome = "rejected"
+
 	local ok = withRetries(`save {player.UserId}`, function()
-		store:SetAsync(keyFor(player), record)
+		outcome = "rejected"
+		store:UpdateAsync(keyFor(player), function(existing: any)
+			local current = if existing ~= nil then SaveRules.sanitize(existing) else nil
+			if SaveRules.decideWrite(current, jobId, session.saveCount) == "reject" then
+				return nil
+			end
+			outcome = "written"
+			local lock = if releaseLock then nil else { jobId = jobId, at = now }
+			return SaveRules.fromState(state, session.saveCount + 1, lock)
+		end)
+		return outcome
 	end)
+
 	if not ok then
-		warn(`[SaveService] giving up on save for {player.UserId}; saved data is unchanged`)
+		return "failed"
+	end
+	return outcome
+end
+
+local function saveNow(player: Player, releaseLock: boolean)
+	local session = sessions[player]
+	if session == nil or not session.saveEnabled then
+		return
+	end
+	local state = readState(player)
+	if state == nil then
+		warn(`[SaveService] skipped save for {player.UserId}: no state to save`)
+		return
+	end
+
+	local result = writeState(player, state, session, releaseLock)
+	if result == "written" then
+		session.saveCount += 1
+	elseif result == "rejected" then
+		session.saveEnabled = false
+		warn(`[SaveService] save rejected for {player.UserId}: another server owns this record`)
+		if player.Parent ~= nil then
+			player:Kick("Your progress was updated on another server. Please rejoin.")
+		end
+	else
+		warn(`[SaveService] giving up on save for {player.UserId}; stored data is unchanged`)
 	end
 end
 
-function SaveService.start(restore: (Player, BakeRules.State) -> (), getState: (Player) -> BakeRules.State?)
-	local function onPlayerAdded(player: Player)
-		local session: Session = { saveEnabled = false }
-		sessions[player] = session
+-- The one teardown path for leave and shutdown. Safe to call twice.
+local function finalize(player: Player, release: (Player) -> ())
+	local session = sessions[player]
+	if session == nil or session.finalizing then
+		return
+	end
+	session.finalizing = true
+	inFlight += 1
+	saveNow(player, true)
+	release(player)
+	sessions[player] = nil
+	inFlight -= 1
+end
 
-		task.spawn(function()
-			local ok, data = withRetries(`load {player.UserId}`, function()
-				return store:GetAsync(keyFor(player))
-			end)
-			if player.Parent == nil then
-				sessions[player] = nil
-				return
+local function loadPlayer(player: Player, session: Session, restore: (Player, BakeRules.State) -> ())
+	local jobId = game.JobId
+	local now = os.time()
+	local locked = false
+
+	local ok, record = withRetries(`load {player.UserId}`, function()
+		locked = false
+		return store:UpdateAsync(keyFor(player), function(existing: any)
+			local current = if existing ~= nil then SaveRules.sanitize(existing) else nil
+			if SaveRules.decideClaim(current, jobId, now) == "locked" then
+				locked = true
+				return nil
 			end
-			if ok then
-				session.saveEnabled = true
-				restore(player, SaveRules.sanitize(data, BakeConfig.maxCoins, #BakeConfig.tiers) :: any)
-			else
-				warn(`[SaveService] load failed for {player.UserId}; progress will not be saved this session`)
-				restore(player, BakeRules.newState())
-			end
+			local base = current or SaveRules.defaults()
+			return SaveRules.fromState(base, base.saveCount, { jobId = jobId, at = now })
 		end)
+	end)
+
+	if player.Parent == nil then
+		return
+	end
+	if not ok then
+		warn(`[SaveService] load failed for {player.UserId}; kicking so progress is not lost silently`)
+		player:Kick("We couldn't load your progress. Please rejoin.")
+		return
+	end
+	if locked or record == nil then
+		player:Kick("Your progress is open on another server. Please rejoin in a few minutes.")
+		return
+	end
+
+	session.saveCount = record.saveCount
+	session.saveEnabled = true
+	restore(player, SaveRules.toState(SaveRules.sanitize(record)))
+end
+
+function SaveService.start(
+	restore: (Player, BakeRules.State) -> (),
+	getState: (Player) -> BakeRules.State?,
+	release: (Player) -> ()
+)
+	readState = getState
+
+	local function onPlayerAdded(player: Player)
+		local session: Session = { saveEnabled = false, saveCount = 0, finalizing = false }
+		sessions[player] = session
+		task.spawn(loadPlayer, player, session, restore)
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
@@ -95,16 +199,23 @@ function SaveService.start(restore: (Player, BakeRules.State) -> (), getState: (
 	end
 
 	Players.PlayerRemoving:Connect(function(player)
-		local session = sessions[player]
-		if session then
-			savePlayer(player, getState, session)
-		end
-		sessions[player] = nil
+		task.spawn(finalize, player, release)
 	end)
 
 	game:BindToClose(function()
-		for player, session in sessions do
-			savePlayer(player, getState, session)
+		local deadline = os.clock() + SHUTDOWN_DEADLINE
+		local players = {}
+		for player in sessions do
+			table.insert(players, player)
+		end
+		for _, player in players do
+			task.spawn(finalize, player, release)
+		end
+		while inFlight > 0 and os.clock() < deadline do
+			task.wait(0.5)
+		end
+		if inFlight > 0 then
+			warn(`[SaveService] shutdown deadline reached with {inFlight} save(s) still running`)
 		end
 	end)
 
@@ -112,7 +223,9 @@ function SaveService.start(restore: (Player, BakeRules.State) -> (), getState: (
 		while true do
 			task.wait(SAVE_INTERVAL)
 			for player, session in sessions do
-				savePlayer(player, getState, session)
+				if session.saveEnabled and not session.finalizing then
+					task.spawn(saveNow, player, false)
+				end
 			end
 		end
 	end)

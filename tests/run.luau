@@ -17,6 +17,12 @@ local SPECS = {
 	["SaveRules.spec.luau"] = function()
 		require("./SaveRules.spec")
 	end,
+	["BakeRules.spec.luau"] = function()
+		require("./BakeRules.spec")
+	end,
+	["SaveRules.spec.luau"] = function()
+		require("./SaveRules.spec")
+	end,
 }
 
 local T = require("./framework")

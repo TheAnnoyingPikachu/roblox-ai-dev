@@ -7,4 +7,4 @@ local BakeService = require(services:WaitForChild("BakeService"))
 local SaveService = require(services:WaitForChild("SaveService"))
 
 BakeService.start()
-SaveService.start(BakeService.restore, BakeService.getState)
+SaveService.start(BakeService.restore, BakeService.getState, BakeService.release)

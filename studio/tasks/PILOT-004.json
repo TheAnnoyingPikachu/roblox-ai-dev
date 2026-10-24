@@ -5,18 +5,34 @@
   "verifier": "A15",
   "task_type": "implementation",
   "objective": "Bake Rush saves: load and save progress with DataStoreService, validate loaded data, never overwrite saved data after a failed load, and save on leave, shutdown and every 60 seconds.",
-  "inputs": ["docs/game-design/bake-rush-gdd.md section F", "docs/decisions/0005-bake-rush-save-data.md"],
-  "dependencies": ["PILOT-002", "PILOT-003"],
+  "inputs": [
+    "docs/game-design/bake-rush-gdd.md section F",
+    "docs/decisions/0005-bake-rush-save-data.md"
+  ],
+  "dependencies": [
+    "PILOT-002",
+    "PILOT-003"
+  ],
   "acceptance_criteria": [
     "Loaded data is sanitised: clamped, floored and defaulted (SaveRules unit tests)",
-    "A failed load plays with defaults and never saves over existing data",
+    "A failed load kicks the player and never saves over existing data",
     "Actions are ignored until the load has finished",
+    "Session lock and save count prevent a stale or second server from overwriting a record (SaveRules unit tests)",
     "Progress survives leave and rejoin in the staging experience"
   ],
   "verification": "Lune tests for SaveRules, plus a two-session staging playtest that checks progress after rejoin",
-  "output_artifacts": ["src/shared/SaveRules.luau", "src/server/services/SaveService.luau", "tests/SaveRules.spec.luau"],
+  "output_artifacts": [
+    "src/shared/SaveRules.luau",
+    "src/server/services/SaveService.luau",
+    "tests/SaveRules.spec.luau",
+    "docs/decisions/0005-bake-rush-save-data.md"
+  ],
   "risk_level": "high",
   "status": "in_review",
-  "evidence": ["Local run: 34/34 Lune tests pass, rojo build OK. The DataStore code has not run in Studio yet."],
-  "notes": "High risk because it touches player data. The staging playtest is required before acceptance."
+  "evidence": [
+    "Local run on 2026-10-24: lune run tests/run 48/48 passed (BakeRules and SaveRules specs now registered in tests/run.luau); stylua --check clean; rojo build OK; validate-tasks OK; secret scan clean.",
+    "Selene not run locally (roblox std needs network); relies on CI.",
+    "The DataStore code has not run in Studio yet."
+  ],
+  "notes": "High risk because it touches player data. Schema v2 adds saveCount and lock. Open items: the staging two-session playtest (including fast rejoin) is required before acceptance; a player who leaves mid-load keeps the lock until stale (300 s); PRODUCTION_UNIVERSE_ID stays nil until SHANNON approves a production release."
 }

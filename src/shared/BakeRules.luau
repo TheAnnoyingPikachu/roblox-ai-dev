@@ -13,6 +13,7 @@ export type Tier = {
 export type Config = {
 	tiers: { Tier },
 	maxCoins: number,
+	maxPastries: number,
 }
 
 export type State = {
@@ -44,6 +45,9 @@ function BakeRules.bake(state: State, now: number, config: Config): Outcome
 	end
 	if state.lastBakeAt ~= nil and now - state.lastBakeAt < tier.bakeTime then
 		return { ok = false, reason = "cooldown", state = state }
+	end
+	if state.pastries >= config.maxPastries then
+		return { ok = false, reason = "pastry_cap", state = state }
 	end
 	return {
 		ok = true,
