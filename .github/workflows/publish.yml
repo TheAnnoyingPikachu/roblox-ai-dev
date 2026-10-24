@@ -1,0 +1,107 @@
+# Release gate. Manual only. Rebuilds and retests the exact commit, then publishes that
+# artifact to the chosen environment through Roblox Open Cloud.
+#
+# Repo setup (done by a human, never by an agent):
+#   Environments "staging" and "production", each with:
+#     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
+#     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
+#   "production" must have required reviewers (SHANNON) and be limited to tags v*.
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        type: choice
+        options: [staging, production]
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Production only publishes release tags
+        if: inputs.environment == 'production' && !startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "Production publishes require a v* tag (got ${GITHUB_REF})."
+          exit 1
+
+      - name: Check target configuration
+        env:
+          UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+          HAS_KEY: ${{ secrets.ROBLOX_API_KEY != '' }}
+        run: |
+          [[ "$UNIVERSE_ID" =~ ^[0-9]+$ ]] || { echo "ROBLOX_UNIVERSE_ID missing or invalid"; exit 1; }
+          [[ "$PLACE_ID" =~ ^[0-9]+$ ]] || { echo "ROBLOX_PLACE_ID missing or invalid"; exit 1; }
+          [[ "$HAS_KEY" == "true" ]] || { echo "ROBLOX_API_KEY secret missing"; exit 1; }
+
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sSf https://raw.githubusercontent.com/rojo-rbx/rokit/main/scripts/install.sh | bash
+          echo "$HOME/.rokit/bin" >> "$GITHUB_PATH"
+          "$HOME/.rokit/bin/rokit" install --no-trust-check
+
+      - name: Re-run gates on this exact commit
+        run: |
+          bash tools/scan-secrets.sh
+          node tools/validate-tasks.mjs
+          stylua --check src tests
+          selene src tests
+          lune run tests/run
+
+      - name: Build release candidate
+        run: |
+          mkdir -p build
+          rojo build default.project.json --output build/place.rbxl
+
+      - name: Publish via Open Cloud
+        id: publish
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+        run: |
+          status=$(curl -sS -o build/publish-response.json -w "%{http_code}" \
+            -X POST "https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published" \
+            -H "x-api-key: ${ROBLOX_API_KEY}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @build/place.rbxl)
+          echo "HTTP ${status}"
+          cat build/publish-response.json
+          [[ "$status" == "200" ]] || exit 1
+          version=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("build/publish-response.json","utf8")).versionNumber ?? "")')
+          [[ -n "$version" ]] || { echo "No versionNumber in response"; exit 1; }
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Write release manifest
+        env:
+          TARGET: ${{ inputs.environment }}
+          UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+          VERSION: ${{ steps.publish.outputs.version }}
+        run: node tools/write-manifest.mjs > build/release-manifest.json && cat build/release-manifest.json
+
+      - name: Upload release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ inputs.environment }}-${{ github.sha }}
+          path: |
+            build/
+            test-results.json
+          if-no-files-found: warn

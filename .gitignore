@@ -1,0 +1,7 @@
+build/
+*.rbxl
+*.rbxlx
+test-results.json
+sourcemap.json
+.env
+*.key

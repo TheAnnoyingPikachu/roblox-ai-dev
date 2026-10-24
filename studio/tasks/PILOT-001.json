@@ -1,0 +1,19 @@
+{
+  "task_id": "PILOT-001",
+  "project_id": "PILOT-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Propose 3 to 5 small pilot concepts (obby, round-based or focused simulator) scored with the blueprint scorecard.",
+  "inputs": ["studio constraints from SHANNON", "blueprint sections 8 and 33"],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Each concept fills the blueprint concept template including kill criteria",
+    "Each concept is scored 1-5 on every scorecard criterion with a written reason",
+    "Facts, assumptions and hypotheses are labelled separately"
+  ],
+  "verification": "SHANNON picks one concept or rejects all with a reason",
+  "output_artifacts": ["docs/game-design/concepts.md"],
+  "risk_level": "low",
+  "status": "planned"
+}

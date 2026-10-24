@@ -1,0 +1,5 @@
+std = "roblox+lune"
+
+[lints]
+global_usage = "deny"
+unused_variable = "warn"

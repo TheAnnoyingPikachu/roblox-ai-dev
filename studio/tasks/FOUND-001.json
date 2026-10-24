@@ -1,0 +1,20 @@
+{
+  "task_id": "FOUND-001",
+  "project_id": "STUDIO-001",
+  "owner": "A09",
+  "verifier": "CI",
+  "task_type": "infrastructure",
+  "objective": "Scaffold the repository: Rojo project, shared Luau rules module, headless tests, lint/format config and CI workflow.",
+  "inputs": ["blueprint section 7.1", "execution plan"],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "rojo build produces build/place.rbxl from a clean checkout",
+    "lune run tests/run passes and writes test-results.json",
+    "A deliberately broken test makes the test step exit non-zero",
+    "StyLua and Selene report no errors"
+  ],
+  "verification": "CI run on the first pull request",
+  "output_artifacts": ["source tree", "test-results.json", "build/place.rbxl"],
+  "risk_level": "low",
+  "status": "in_review"
+}

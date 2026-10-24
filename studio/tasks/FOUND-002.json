@@ -1,0 +1,19 @@
+{
+  "task_id": "FOUND-002",
+  "project_id": "STUDIO-001",
+  "owner": "A01",
+  "verifier": "A04",
+  "task_type": "infrastructure",
+  "objective": "Create the GitHub repo, enable branch protection on main, and add staging and production environments with required reviewers.",
+  "inputs": ["FOUND-001 scaffold"],
+  "dependencies": ["FOUND-001"],
+  "acceptance_criteria": [
+    "main requires the CI checks and one review before merge",
+    "production environment requires SHANNON's approval",
+    "ROBLOX_API_KEY exists only as an environment secret"
+  ],
+  "verification": "Auditor checks repo settings and a PR with a failing test cannot merge",
+  "risk_level": "medium",
+  "status": "blocked",
+  "notes": "Blocked on SHANNON creating the repo and the Roblox experiences."
+}

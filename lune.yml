@@ -1,0 +1,2 @@
+# Selene standard library additions for Lune test scripts.
+base: luau
