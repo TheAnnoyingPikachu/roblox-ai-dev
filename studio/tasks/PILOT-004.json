@@ -30,9 +30,11 @@
   "risk_level": "high",
   "status": "in_review",
   "evidence": [
-    "Local run on 2026-10-24: lune run tests/run 48/48 passed (BakeRules and SaveRules specs now registered in tests/run.luau); stylua --check clean; rojo build OK; validate-tasks OK; secret scan clean.",
-    "Selene not run locally (roblox std needs network); relies on CI.",
+    "Local run on 2026-10-24: lune run tests/run 48/48 passed; rojo build OK; validate-tasks OK; secret scan clean.",
+    "CI on e0bf584 green (verify): https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/40119269390 (run id per QA review; check head before acceptance).",
+    "QA re-review of e0bf584 (review 5639348775): blockers were overlapping saves and UpdateAsync flag resets. Fixed in the next commit with a per-session saving flag and per-call flag resets.",
+    "Per-player save serialization runs on Roblox services and is not covered by Lune. Verified by reading only; needs the staging playtest.",
     "The DataStore code has not run in Studio yet."
   ],
-  "notes": "High risk because it touches player data. Schema v2 adds saveCount and lock. Open items: the staging two-session playtest (including fast rejoin) is required before acceptance; a player who leaves mid-load keeps the lock until stale (300 s); PRODUCTION_UNIVERSE_ID stays nil until SHANNON approves a production release."
+  "notes": "High risk because it touches player data. Schema v2 adds saveCount and lock. Staging playtest required before acceptance. Steps: (1) fast rejoin to another server, (2) leave during an autosave, (3) shut down with players present, then reconnect, (4) kill a server process and confirm the lock goes stale after 300 s. Open items: a player who leaves mid-load keeps the lock until stale (300 s). publish.yml production check that PRODUCTION_UNIVERSE_ID matches the production universe is not yet added (non-blocking review item). PRODUCTION_UNIVERSE_ID stays nil until SHANNON approves a production release."
 }

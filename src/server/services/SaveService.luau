@@ -43,6 +43,7 @@ type Session = {
 	saveEnabled: boolean,
 	saveCount: number,
 	finalizing: boolean,
+	saving: boolean,
 }
 
 local sessions: { [Player]: Session } = {}
@@ -81,8 +82,9 @@ local function writeState(player: Player, state: BakeRules.State, session: Sessi
 	local outcome = "rejected"
 
 	local ok = withRetries(`save {player.UserId}`, function()
-		outcome = "rejected"
 		store:UpdateAsync(keyFor(player), function(existing: any)
+			-- The transform can run more than once per call, so reset the outcome each time.
+			outcome = "rejected"
 			local current = if existing ~= nil then SaveRules.sanitize(existing) else nil
 			if SaveRules.decideWrite(current, jobId, session.saveCount) == "reject" then
 				return nil
@@ -100,18 +102,34 @@ local function writeState(player: Player, state: BakeRules.State, session: Sessi
 	return outcome
 end
 
+-- Saves for one player never overlap. Autosave skips a busy session; the final save waits its turn.
 local function saveNow(player: Player, releaseLock: boolean)
 	local session = sessions[player]
 	if session == nil or not session.saveEnabled then
 		return
 	end
+	if not releaseLock and session.saving then
+		return
+	end
+	while session.saving do
+		task.wait(0.1)
+	end
+	session.saving = true
+
+	-- Re-check after waiting: a rejection or a finished teardown may have happened meanwhile.
+	if not session.saveEnabled or (session.finalizing and not releaseLock) then
+		session.saving = false
+		return
+	end
 	local state = readState(player)
 	if state == nil then
+		session.saving = false
 		warn(`[SaveService] skipped save for {player.UserId}: no state to save`)
 		return
 	end
 
 	local result = writeState(player, state, session, releaseLock)
+	session.saving = false
 	if result == "written" then
 		session.saveCount += 1
 	elseif result == "rejected" then
@@ -145,8 +163,9 @@ local function loadPlayer(player: Player, session: Session, restore: (Player, Ba
 	local locked = false
 
 	local ok, record = withRetries(`load {player.UserId}`, function()
-		locked = false
 		return store:UpdateAsync(keyFor(player), function(existing: any)
+			-- The transform can run more than once per call, so reset the flag each time.
+			locked = false
 			local current = if existing ~= nil then SaveRules.sanitize(existing) else nil
 			if SaveRules.decideClaim(current, jobId, now) == "locked" then
 				locked = true
@@ -183,7 +202,7 @@ function SaveService.start(
 	readState = getState
 
 	local function onPlayerAdded(player: Player)
-		local session: Session = { saveEnabled = false, saveCount = 0, finalizing = false }
+		local session: Session = { saveEnabled = false, saveCount = 0, finalizing = false, saving = false }
 		sessions[player] = session
 		task.spawn(loadPlayer, player, session, restore)
 	end
