@@ -1,15 +1,6 @@
 --!strict
 -- Server entry point: creates the remotes folder, then starts each service.
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local BakeService = require(script.Parent:WaitForChild("services"):WaitForChild("BakeService"))
 
-local remotes = Instance.new("Folder")
-remotes.Name = "Remotes"
-remotes.Parent = ReplicatedStorage
-
-local services = script.Parent:WaitForChild("services")
-local RewardService = require(services:WaitForChild("RewardService"))
-local BakeService = require(services:WaitForChild("BakeService"))
-
-RewardService.start(remotes)
-BakeService.start(remotes)
+BakeService.start()

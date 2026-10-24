@@ -6,6 +6,20 @@ local BakeConfig = require("../src/shared/BakeConfig")
 local describe, it, expect = T.describe, T.it, T.expect
 local config: BakeRules.Config = BakeConfig
 
+describe("BakeConfig", function()
+	it("matches the GDD tier table (section C)", function()
+		local costs = { 0, 50, 200, 800, 3000 }
+		local times = { 1.0, 0.8, 0.6, 0.5, 0.4 }
+		local prices = { 1, 2, 3, 5, 8 }
+		for i, tier in config.tiers do
+			expect(tier.upgradeCost).toBe(costs[i])
+			expect(tier.bakeTime).toBe(times[i])
+			expect(tier.sellPrice).toBe(prices[i])
+		end
+		expect(#config.tiers).toBe(5)
+	end)
+end)
+
 describe("BakeRules.bake", function()
 	it("adds one pastry", function()
 		local result = BakeRules.bake(BakeRules.newState(), 0, config)
@@ -19,6 +33,12 @@ describe("BakeRules.bake", function()
 		expect(second.ok).toBe(false)
 		expect(second.reason).toBe("cooldown")
 		expect(second.state.pastries).toBe(1)
+	end)
+
+	it("accepts a tap exactly at the bake time and rejects one just before", function()
+		local first = BakeRules.bake(BakeRules.newState(), 0, config)
+		expect(BakeRules.bake(first.state, 0.999, config).ok).toBe(false)
+		expect(BakeRules.bake(first.state, 1.0, config).ok).toBe(true)
 	end)
 
 	it("uses the faster bake time after an upgrade", function()
@@ -49,6 +69,19 @@ describe("BakeRules.sell", function()
 		expect(result.reason).toBe("nothing_to_sell")
 	end)
 
+	it("sells correctly at every tier", function()
+		for tierIndex, tier in config.tiers do
+			local state = { coins = 0, tier = tierIndex, pastries = 3, lastBakeAt = nil }
+			local result = BakeRules.sell(state, config)
+			expect(result.state.coins).toBe(3 * tier.sellPrice)
+		end
+	end)
+
+	it("rejects selling at an invalid tier", function()
+		local state = { coins = 0, tier = 99, pastries = 1, lastBakeAt = nil }
+		expect(BakeRules.sell(state, config).reason).toBe("invalid_tier")
+	end)
+
 	it("caps coins at maxCoins", function()
 		local state = { coins = 999_999_999, tier = 5, pastries = 10, lastBakeAt = nil }
 		local result = BakeRules.sell(state, config)
@@ -72,6 +105,11 @@ describe("BakeRules.upgrade", function()
 		expect(result.reason).toBe("insufficient_coins")
 		expect(result.state.tier).toBe(1)
 		expect(result.state.coins).toBe(49)
+	end)
+
+	it("keeps carried pastries when upgrading", function()
+		local state = { coins = 50, tier = 1, pastries = 4, lastBakeAt = nil }
+		expect(BakeRules.upgrade(state, config).state.pastries).toBe(4)
 	end)
 
 	it("refuses to go past the last tier", function()

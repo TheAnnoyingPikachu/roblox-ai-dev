@@ -5,17 +5,28 @@
   "verifier": "A15",
   "task_type": "implementation",
   "objective": "Bake Rush core rules: bake, sell and upgrade as pure, server-authoritative functions, with unit tests.",
-  "inputs": ["docs/game-design/bake-rush-gdd.md (approved 2026-10-24)"],
-  "dependencies": ["FOUND-001"],
+  "inputs": [
+    "docs/game-design/bake-rush-gdd.md (approved 2026-10-24)"
+  ],
+  "dependencies": [
+    "FOUND-001"
+  ],
   "acceptance_criteria": [
     "Bake rejects taps faster than the tier's bake time (GDD D)",
     "Sell totals are correct for every tier and capped at maxCoins (GDD D)",
     "Upgrade is rejected when coins are short or the tier is not the next one (GDD D)"
   ],
   "verification": "Lune unit tests in CI; QA thread reviews the PR",
-  "output_artifacts": ["src/shared/BakeRules.luau", "tests/BakeRules.spec.luau", "test-results.json"],
+  "output_artifacts": [
+    "src/shared/BakeRules.luau",
+    "src/shared/BakeConfig.luau",
+    "tests/BakeRules.spec.luau"
+  ],
   "risk_level": "medium",
   "status": "in_review",
-  "evidence": ["Local run 2026-10-24: 22/22 Lune tests pass (12 reward + 10 bake)."],
+  "evidence": [
+    "Local run 2026-10-24: 22/22 Lune tests pass.",
+    "CI run https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/40113481952 (head 0c21c0a)"
+  ],
   "notes": "Server service, client UI and DataStore persistence are separate tasks (PILOT-003, PILOT-004)."
 }

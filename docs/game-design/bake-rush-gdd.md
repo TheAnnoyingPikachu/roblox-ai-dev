@@ -5,19 +5,19 @@ Status: draft for SHANNON's approval. Scope is frozen once approved.
 ## A. Product
 
 - **Pitch:** tap to bake, sell pastries, upgrade your oven.
-- **Audience:** younger players, all ages; no chat required to play.
+- **Audience:** players under 18. Roblox's built-in filtered text chat stays on. The game builds no custom chat and collects no personal data beyond what saves need.
 - **Platforms:** PC, mobile, console. Touch and mouse first.
 - **Pillars:** instant feedback; a readable economy; nothing needs Robux.
 - **Non-goals (v0.1):** trading, pets, paid items, rebirths, leaderboards beyond the built-in one.
 
 ## B. Core loop
 
-1. Tap the oven to bake a pastry (1 pastry per tap, 0.5 s cooldown).
+1. Use the oven to bake a pastry (1 pastry per use; the tier's bake time is the cooldown before the next).
 2. Walk to the counter to sell pastries for coins.
 3. Spend coins to upgrade the oven.
 4. Each oven tier bakes faster and sells for more.
 
-**Controls:** tap or click the oven; E or the "Sell" button at the counter.
+**Controls:** walk up to a station and use its prompt (E on PC, tap on mobile). Stations: Oven (bake), Counter (sell), Upgrade station (upgrade).
 
 ## C. Progression
 
@@ -29,12 +29,12 @@ Status: draft for SHANNON's approval. Scope is frozen once approved.
 | 4 | 800 | 0.5 s | 5 |
 | 5 | 3,000 | 0.4 s | 8 |
 
-Tiers beyond 5 are out of scope for v0.1. Costs and prices belong in `src/shared/Config.luau`.
+Tiers beyond 5 are out of scope for v0.1. Costs and prices live in `src/shared/BakeConfig.luau`.
 
 ## D. Economy and anti-exploit rules
 
 - The server owns coins, pastry counts and tier. Clients send "bake", "sell" and "upgrade" requests only.
-- The server enforces the bake cooldown; requests faster than the cooldown are dropped.
+- The server enforces the tier's bake time as the cooldown; requests faster than that are dropped.
 - Sell requests carry no amount. The server sells all carried pastries at the current tier price.
 - Upgrades are rejected unless coins ≥ cost and the tier is the next one.
 - Coins are capped at 1,000,000,000 (matches `maxCoins`).
