@@ -75,12 +75,7 @@ end
 
 -- Writes the player's state. Returns "written", "rejected" (another server owns the record),
 -- or "failed" (retries exhausted; stored data is unchanged).
-local function writeState(
-	player: Player,
-	state: BakeRules.State,
-	session: Session,
-	releaseLock: boolean
-): string
+local function writeState(player: Player, state: BakeRules.State, session: Session, releaseLock: boolean): string
 	local jobId = game.JobId
 	local now = os.time()
 	local outcome = "rejected"
