@@ -1,5 +1,5 @@
 --!strict
--- Server entry point: creates the remotes folder, then starts each service.
+-- Server entry point: starts each service. Bake Rush owns its remotes and leaderstats.
 
 local BakeService = require(script.Parent:WaitForChild("services"):WaitForChild("BakeService"))
 
