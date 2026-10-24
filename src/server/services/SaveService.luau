@@ -66,10 +66,7 @@ local function savePlayer(player: Player, getState: (Player) -> BakeRules.State?
 	end
 end
 
-function SaveService.start(
-	restore: (Player, BakeRules.State) -> (),
-	getState: (Player) -> BakeRules.State?
-)
+function SaveService.start(restore: (Player, BakeRules.State) -> (), getState: (Player) -> BakeRules.State?)
 	local function onPlayerAdded(player: Player)
 		local session: Session = { saveEnabled = false }
 		sessions[player] = session
