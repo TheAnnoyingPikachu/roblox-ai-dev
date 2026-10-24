@@ -1,0 +1,19 @@
+{
+  "task_id": "FOUND-003",
+  "project_id": "STUDIO-001",
+  "owner": "A14",
+  "verifier": "A04",
+  "task_type": "infrastructure",
+  "objective": "Make CI installs reliable and pinned: install rokit with a token, cache ~/.rokit, and pin the rokit version instead of piping from main.",
+  "inputs": ["CI attempt 1 failure on run 40113799389", "docs/decisions/0001-foundation-toolchain.md"],
+  "dependencies": ["FOUND-001"],
+  "acceptance_criteria": [
+    "rokit is installed from a pinned version, not from the main branch",
+    "The install step authenticates with GITHUB_TOKEN",
+    "Three consecutive CI runs install without a rate-limit failure"
+  ],
+  "verification": "Three consecutive green CI runs on main",
+  "risk_level": "low",
+  "status": "planned",
+  "notes": "Found in the QA review of PR #1. Non-blocking for PR #1."
+}

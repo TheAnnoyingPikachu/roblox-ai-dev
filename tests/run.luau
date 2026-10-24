@@ -11,6 +11,9 @@ local SPECS = {
 	["RewardRules.spec.luau"] = function()
 		require("./RewardRules.spec")
 	end,
+	["BakeRules.spec.luau"] = function()
+		require("./BakeRules.spec")
+	end,
 }
 
 local T = require("./framework")

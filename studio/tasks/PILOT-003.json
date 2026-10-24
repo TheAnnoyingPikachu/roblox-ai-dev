@@ -1,0 +1,31 @@
+{
+  "task_id": "PILOT-003",
+  "project_id": "PILOT-001",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Bake Rush server service: three ProximityPrompt stations, server-owned leaderstats (Coins, Tier, Pastries), and removal of the M0 RewardService so there is one owner.",
+  "inputs": [
+    "PILOT-002 BakeRules",
+    "docs/decisions/0004-bake-rush-remotes-and-economy.md"
+  ],
+  "dependencies": [
+    "PILOT-002"
+  ],
+  "acceptance_criteria": [
+    "Each player gets one leaderstats folder with Coins, Tier and Pastries that update after each action",
+    "Oven, counter and upgrade prompts trigger bake, sell and upgrade on PC and mobile input",
+    "Bake attempts faster than the tier's bake time do not change Pastries"
+  ],
+  "verification": "Studio playtest in staging (two clients, touch and keyboard) plus QA review of the PR. Automated checks cover the rules only.",
+  "output_artifacts": [
+    "src/server/services/BakeService.luau",
+    "src/server/Main.server.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "evidence": [
+    "CI run https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/40113799389 (attempt 2, head c3a43e3, green). Attempt 1 failed in the rokit install step, before any code ran."
+  ],
+  "notes": "In-engine behaviour is not yet verified; it needs the staging playtest."
+}
