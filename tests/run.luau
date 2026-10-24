@@ -4,7 +4,7 @@
 -- Every *.spec.luau in tests/ must be listed in SPECS, so a spec can't be skipped silently.
 
 local fs = require("@lune/fs")
-local net = require("@lune/net")
+local serde = require("@lune/serde")
 local process = require("@lune/process")
 
 local SPECS = {
@@ -53,7 +53,7 @@ print(`\n{total - failed}/{total} passed, {failed} failed, {#loadErrors} load er
 
 fs.writeFile(
 	"test-results.json",
-	net.jsonEncode({
+	serde.encode("json", {
 		total = total,
 		passed = total - failed,
 		failed = failed,

@@ -1,4 +1,4 @@
-std = "roblox+lune"
+std = "roblox"
 
 [lints]
 global_usage = "deny"

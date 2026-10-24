@@ -16,5 +16,6 @@
   "verification": "CI run on the first pull request",
   "output_artifacts": ["source tree", "test-results.json", "build/place.rbxl"],
   "risk_level": "low",
-  "status": "in_review"
+  "status": "in_review",
+  "evidence": ["Local run 2026-10-24: 12/12 Lune tests pass; broken test exits 1; unregistered spec exits 1; rojo build OK; stylua clean. Selene roblox std and CI unverified (no network to GitHub here)."]
 }
