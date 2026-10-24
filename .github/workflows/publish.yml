@@ -38,13 +38,26 @@ jobs:
 
       - name: Check target configuration
         env:
+          TARGET: ${{ inputs.environment }}
           UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
           PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
           HAS_KEY: ${{ secrets.ROBLOX_API_KEY != '' }}
         run: |
-          [[ "$UNIVERSE_ID" =~ ^[0-9]+$ ]] || { echo "ROBLOX_UNIVERSE_ID missing or invalid"; exit 1; }
-          [[ "$PLACE_ID" =~ ^[0-9]+$ ]] || { echo "ROBLOX_PLACE_ID missing or invalid"; exit 1; }
-          [[ "$HAS_KEY" == "true" ]] || { echo "ROBLOX_API_KEY secret missing"; exit 1; }
+          missing=()
+          [[ "$UNIVERSE_ID" =~ ^[0-9]+$ ]] || missing+=("ROBLOX_UNIVERSE_ID variable is empty or not digits")
+          [[ "$PLACE_ID" =~ ^[0-9]+$ ]] || missing+=("ROBLOX_PLACE_ID variable is empty or not digits")
+          [[ "$HAS_KEY" == "true" ]] || missing+=("ROBLOX_API_KEY secret is empty or missing")
+          if [ ${#missing[@]} -gt 0 ]; then
+            for m in "${missing[@]}"; do
+              echo "::error title=Publish configuration::${m} (environment: ${TARGET})"
+            done
+            {
+              echo "### Publish configuration check failed (environment: ${TARGET})"
+              printf -- '- %s\n' "${missing[@]}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Configuration OK for environment ${TARGET} (values not printed)."
 
       - uses: actions/checkout@v4
 
