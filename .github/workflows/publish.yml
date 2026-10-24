@@ -43,6 +43,11 @@ jobs:
           PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
           HAS_KEY: ${{ secrets.ROBLOX_API_KEY != '' }}
         run: |
+          # Pasted values can carry a trailing CR or newline. Trim them and pass the clean values on.
+          UNIVERSE_ID="$(printf '%s' "$UNIVERSE_ID" | tr -d '\r\n\t ')"
+          PLACE_ID="$(printf '%s' "$PLACE_ID" | tr -d '\r\n\t ')"
+          echo "UNIVERSE_ID=${UNIVERSE_ID}" >> "$GITHUB_ENV"
+          echo "PLACE_ID=${PLACE_ID}" >> "$GITHUB_ENV"
           missing=()
           [[ "$UNIVERSE_ID" =~ ^[0-9]+$ ]] || missing+=("ROBLOX_UNIVERSE_ID variable is empty or not digits")
           [[ "$PLACE_ID" =~ ^[0-9]+$ ]] || missing+=("ROBLOX_PLACE_ID variable is empty or not digits")
@@ -86,8 +91,6 @@ jobs:
         id: publish
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
-          UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
-          PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
         run: |
           status=$(curl -sS -o build/publish-response.json -w "%{http_code}" \
             -X POST "https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=Published" \
@@ -104,8 +107,6 @@ jobs:
       - name: Write release manifest
         env:
           TARGET: ${{ inputs.environment }}
-          UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
-          PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
           VERSION: ${{ steps.publish.outputs.version }}
         run: node tools/write-manifest.mjs > build/release-manifest.json && cat build/release-manifest.json
 
