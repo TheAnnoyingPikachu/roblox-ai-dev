@@ -9,5 +9,7 @@ remotes.Parent = ReplicatedStorage
 
 local services = script.Parent:WaitForChild("services")
 local RewardService = require(services:WaitForChild("RewardService"))
+local BakeService = require(services:WaitForChild("BakeService"))
 
 RewardService.start(remotes)
+BakeService.start(remotes)
