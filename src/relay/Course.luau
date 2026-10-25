@@ -404,8 +404,13 @@ function Course.buildLobby()
 	pillar(folder, Vector3.new(0, -0.3, 0), 0.6, 32, Color3.fromRGB(150, 100, 80), Enum.Material.Brick)
 
 	Props.torii(folder, Vector3.new(0, 0, -24), 20, 15, Color3.fromRGB(196, 40, 28), nil)
-	local title =
-		part(folder, Vector3.new(24, 4, 1), Vector3.new(0, 11.5, -24), Color3.fromRGB(30, 26, 34), Enum.Material.Slate)
+	local title = part(
+		folder,
+		Vector3.new(17, 2.4, 0.6),
+		Vector3.new(0, 13.9, -23.4),
+		Color3.fromRGB(30, 26, 34),
+		Enum.Material.Slate
+	)
 	label(title, "RELAY ROUNDS", Color3.fromRGB(255, 200, 80))
 	for i = 0, 7 do
 		local angle = math.rad(i * 45 + 22.5)
