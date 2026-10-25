@@ -35,6 +35,15 @@ local shakeUntil = 0
 local lastPosition: Vector3? = nil
 local hadBaton = false
 local style = StyleRules.new()
+-- Humanoids brake horizontal speed back to WalkSpeed within a few frames, so dashes and pads
+-- hold their velocity for a short window (easing to half) instead of setting it once.
+local carryVel: Vector3? = nil
+local carryStart = 0
+local carryTime = 0
+
+local function carry(velocity: Vector3, duration: number)
+	carryVel, carryStart, carryTime = velocity, os.clock(), duration
+end
 
 -- UI ------------------------------------------------------------------------------------------
 
@@ -232,6 +241,7 @@ local function dash(_: string, state: Enum.UserInputState): Enum.ContextActionRe
 	end
 	dir = Vector3.new(dir.X, 0, dir.Z).Unit
 	r.AssemblyLinearVelocity = dir * DASH_SPEED + Vector3.new(0, 12, 0)
+	carry(dir * DASH_SPEED, 0.25)
 	fovKick = 14
 	for i = 0, 3 do
 		task.delay(i * 0.05, afterimage)
@@ -251,6 +261,18 @@ RunService.RenderStepped:Connect(function(dt)
 		return
 	end
 
+	local carried = carryVel
+	if carried then
+		local t = (os.clock() - carryStart) / carryTime
+		if t < 1 then
+			local v = r.AssemblyLinearVelocity
+			local f = 1 - t * 0.5
+			r.AssemblyLinearVelocity = Vector3.new(carried.X * f, v.Y, carried.Z * f)
+		else
+			carryVel = nil
+		end
+	end
+
 	-- Launch and boost pads under your feet (marked by the server with attributes).
 	local hit = Workspace:Raycast(r.Position, Vector3.new(0, -4.5, 0), rayParams)
 	if hit and os.clock() - lastPad > 0.5 then
@@ -260,6 +282,7 @@ RunService.RenderStepped:Connect(function(dt)
 			lastPad = os.clock()
 			local forward = -hit.Instance.CFrame.LookVector
 			r.AssemblyLinearVelocity = forward * 22 + Vector3.new(0, launch, 0)
+			carry(forward * 22, 0.9)
 			shakeUntil = os.clock() + 0.3
 			fovKick = 18
 			score("launch")
@@ -267,6 +290,7 @@ RunService.RenderStepped:Connect(function(dt)
 			lastPad = os.clock()
 			local forward = -hit.Instance.CFrame.LookVector
 			r.AssemblyLinearVelocity = forward * boost + Vector3.new(0, BOOST_HOP, 0)
+			carry(forward * boost, 0.7)
 			fovKick = 16
 			afterimage()
 			score("boost")
