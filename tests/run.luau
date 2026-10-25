@@ -23,6 +23,9 @@ local SPECS = {
 	["StyleRules.spec.luau"] = function()
 		require("./StyleRules.spec")
 	end,
+	["ProgressRules.spec.luau"] = function()
+		require("./ProgressRules.spec")
+	end,
 }
 
 local T = require("./framework")

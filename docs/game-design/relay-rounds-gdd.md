@@ -1,14 +1,14 @@
 # Relay Rounds: game design spec (v0.1)
 
-Status: v0.3 (movement, style and track types). Concept C in `concepts.md`.
+Status: v0.4 (meta game: start menu, profiles, rewards, music, models). Concept C in `concepts.md`.
 
 ## A. Product
 
 - **Pitch:** teams of 1–4 race a relay course, passing a baton. The slowest team each round is out. Last team standing wins.
-- **Audience:** players under 18. Roblox's built-in filtered text chat stays on. No custom chat, no personal data, no saves.
+- **Audience:** players under 18. Roblox's built-in filtered text chat stays on. No custom chat, no personal data beyond the saved game profile (decision 0006).
 - **Platforms:** PC, mobile, console. Movement only: no buttons beyond walk and jump.
 - **Pillars:** short rounds; always know what to do next; a disconnect never ruins the match.
-- **Non-goals:** saved progress (wins are per session), unlockable themes, parties or friends-only teams, paid items, custom chat.
+- **Non-goals:** parties or friends-only teams, Robux or paid items, trading, custom chat.
 - **Presentation:** an on-screen status bar (lobby countdown, round timer, finishes, eliminations, winner), team-coloured batons with sparkles, and Roblox's built-in sounds for countdown, legs, eliminations and the win.
 
 ## B. Match flow
@@ -57,6 +57,16 @@ All teams race one shared, ground-level circuit (about 1,150 studs a lap: a main
 | Glass Bridge | glass tiles over lava that fade in and out |
 
 Touching lava, a live laser or a sweeper sends the runner back to the start of their sector (server-checked). Between matches the lobby sits in the infield and anyone can run the circuit as practice.
+
+## C4. Meta game (v0.4, decision 0006)
+
+- **Start menu:** title screen over a slow camera orbit of the circuit with PLAY, LOCKER, REWARDS, STATS and SETTINGS. A match starting pulls you out of the menu. The HUD shows level, XP bar, coins and quick buttons.
+- **Progression:** XP and coins from matches (finishing, legs run, rounds survived, wins), levels 1 to 50, all saved.
+- **Rewards:** a 7-day login streak calendar, a weekly bonus for playing on 5 days, and 3 daily quests. A gold dot marks anything ready to claim.
+- **Locker:** trails unlocked by level, by wins, or bought with coins; your equipped trail follows you everywhere.
+- **Lobby:** winners' podium with a generated trophy and confetti, a global top-10 wins board, oni guardian statues, and a pagoda in the infield. Komainu guard the start line.
+- **Feel:** licensed music (lobby track, three race tracks), licensed sound effects, Roblox's ninja run animations, an intro camera sweep each round, and a spectator camera that follows baton carriers.
+- **Settings:** music and sound effects on or off; a How to Play card.
 
 ## D. Ranking
 

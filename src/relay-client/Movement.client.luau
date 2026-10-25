@@ -186,6 +186,44 @@ local function afterimage()
 	end
 end
 
+-- Roblox's own Ninja animation pack (R15), for an anime run. Asset IDs are in docs/assets/register.md.
+local NINJA = {
+	run = { RunAnim = "rbxassetid://656118852" },
+	walk = { WalkAnim = "rbxassetid://656121766" },
+	jump = { JumpAnim = "rbxassetid://656117878" },
+	fall = { FallAnim = "rbxassetid://656115606" },
+	climb = { ClimbAnim = "rbxassetid://656114359" },
+	idle = { Animation1 = "rbxassetid://656117400", Animation2 = "rbxassetid://656117400" },
+}
+
+local function ninja(newCharacter: Model)
+	local h = newCharacter:FindFirstChildOfClass("Humanoid")
+	local animate = newCharacter:WaitForChild("Animate", 5)
+	if h == nil or animate == nil or h.RigType ~= Enum.HumanoidRigType.R15 then
+		return
+	end
+	for setName, anims in NINJA do
+		local set = animate:FindFirstChild(setName)
+		for animName, id in anims do
+			local anim = set and set:FindFirstChild(animName)
+			if anim and anim:IsA("Animation") then
+				anim.AnimationId = id
+			end
+		end
+	end
+end
+
+-- Licensed Pro Sound Effects, heard only by you.
+local function localSound(id: string, volume: number): Sound
+	local s = Instance.new("Sound")
+	s.SoundId = id
+	s.Volume = volume
+	s.Parent = game:GetService("SoundService")
+	return s
+end
+local whoosh = localSound("rbxassetid://9114373663", 0.6)
+local rush = localSound("rbxassetid://9125920594", 0.7)
+
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
@@ -198,7 +236,8 @@ local function onCharacter(newCharacter: Model)
 	rayParams.FilterDescendantsInstances = { newCharacter }
 	doubleUsed, dashUsed, lastPosition = false, false, nil
 	style = StyleRules.reset()
-	refreshMeter();
+	refreshMeter()
+	task.spawn(ninja, newCharacter);
 	(humanoid :: Humanoid).StateChanged:Connect(function(_, new)
 		if new == Enum.HumanoidStateType.Freefall or new == Enum.HumanoidStateType.Jumping then
 			if airborneSince == 0 then
@@ -220,6 +259,7 @@ UserInputService.JumpRequest:Connect(function()
 		local v = r.AssemblyLinearVelocity
 		r.AssemblyLinearVelocity = Vector3.new(v.X, DOUBLE_JUMP_SPEED, v.Z)
 		afterimage()
+		whoosh:Play()
 		score("doubleJump")
 	end
 end)
@@ -246,6 +286,7 @@ local function dash(_: string, state: Enum.UserInputState): Enum.ContextActionRe
 	for i = 0, 3 do
 		task.delay(i * 0.05, afterimage)
 	end
+	rush:Play()
 	score("dash")
 	return Enum.ContextActionResult.Sink
 end
@@ -293,6 +334,7 @@ RunService.RenderStepped:Connect(function(dt)
 			carry(forward * boost, 0.7)
 			fovKick = 16
 			afterimage()
+			whoosh:Play()
 			score("boost")
 		end
 	end

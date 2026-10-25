@@ -7,6 +7,7 @@
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local Models = require(script.Parent:WaitForChild("Models"))
 local Props = require(script.Parent:WaitForChild("Props"))
 local part, pillar, label = Props.part, Props.pillar, Props.label
 
@@ -205,6 +206,12 @@ function Course.buildTrack()
 		end
 	end
 
+	-- Komainu guardians either side of the start/finish line.
+	for _, side in { -1, 1 } do
+		local at = frameAt(0, side * (Course.TRACK_WIDTH / 2 + 5), 0).Position
+		Models.spawn("komainu", folder, at, 1.1, if side < 0 then 0 else 180)
+	end
+
 	-- Grandstand facing the main straight.
 	local s = Course.STANDS
 	for row = 0, 5 do
@@ -243,7 +250,15 @@ function Course.buildTrack()
 	folder.Parent = Workspace
 end
 
--- Infield lobby: plaza, title torii, lanterns and benches.
+local PODIUM = {
+	{ offset = Vector3.new(0, 0, 14), height = 4, colour = Color3.fromRGB(255, 200, 60) },
+	{ offset = Vector3.new(-6.5, 0, 14), height = 2.8, colour = Color3.fromRGB(200, 205, 215) },
+	{ offset = Vector3.new(6.5, 0, 14), height = 1.8, colour = Color3.fromRGB(205, 130, 70) },
+}
+local confetti: Part? = nil
+local boardText: TextLabel? = nil
+
+-- Infield lobby: plaza, title torii, lanterns, benches, podium, leaderboard and statues.
 function Course.buildLobby()
 	local folder = Instance.new("Folder")
 	folder.Name = "RelayLobby"
@@ -288,12 +303,115 @@ function Course.buildLobby()
 	local sign = part(
 		folder,
 		Vector3.new(30, 3, 0.6),
-		c + Vector3.new(0, 4, 26),
+		c + Vector3.new(0, 4, 29),
 		Color3.fromRGB(30, 26, 34),
 		Enum.Material.Slate
 	)
 	label(sign, "Run the circuit to practise between matches!")
+
+	-- Winners' podium: 1st in the middle and highest, the generated trophy behind it.
+	for i, step in PODIUM do
+		local block = part(
+			folder,
+			Vector3.new(6, step.height, 6),
+			c + step.offset + Vector3.new(0, step.height / 2, 0),
+			step.colour,
+			Enum.Material.Marble
+		)
+		block.Name = `Podium{i}`
+		local number =
+			part(folder, Vector3.new(3, 2, 0.2), c + step.offset + Vector3.new(0, step.height / 2, -3.05), WHITE)
+		number.CanCollide = false
+		label(number, tostring(i), step.colour)
+	end
+	local trophy = Models.spawn("trophy", folder, c + Vector3.new(0, 7, 18.5), 0.9)
+	if trophy then
+		trophy.CanCollide = false
+	end
+	confetti = part(folder, Vector3.new(16, 1, 6), c + Vector3.new(0, 16, 14), WHITE)
+	confetti.Transparency = 1
+	confetti.CanCollide = false
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "Confetti"
+	emitter.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+		ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 220, 60)),
+		ColorSequenceKeypoint.new(0.66, Color3.fromRGB(80, 200, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 255, 140)),
+	})
+	emitter.Size = NumberSequence.new(0.35)
+	emitter.Lifetime = NumberRange.new(2.5, 4)
+	emitter.Speed = NumberRange.new(4, 10)
+	emitter.SpreadAngle = Vector2.new(60, 60)
+	emitter.Acceleration = Vector3.new(0, -8, 0)
+	emitter.Rotation = NumberRange.new(0, 360)
+	emitter.RotSpeed = NumberRange.new(-200, 200)
+	emitter.Rate = 0
+	emitter.Parent = confetti
+
+	-- Global wins leaderboard on the east side of the plaza, facing the centre.
+	local boardPart =
+		part(folder, Vector3.new(1, 16, 20), c + Vector3.new(31, 9, 0), Color3.fromRGB(30, 26, 34), Enum.Material.Slate)
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = Enum.NormalId.Left
+	gui.LightInfluence = 0
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 30
+	gui.Parent = boardPart
+	local list = Instance.new("TextLabel")
+	list.Size = UDim2.fromScale(1, 1)
+	list.BackgroundTransparency = 1
+	list.TextColor3 = WHITE
+	list.Font = Enum.Font.FredokaOne
+	list.TextScaled = true
+	list.TextYAlignment = Enum.TextYAlignment.Top
+	list.Text = "TOP RACERS\n\nloading…"
+	list.Parent = gui
+	boardText = list
+	for _, z in { -11, 11 } do
+		Props.lantern(folder, c + Vector3.new(31, 0, z))
+	end
+
+	-- Generated statues: oni guardians either side of the torii, a pagoda in the infield.
+	Models.spawn("oni", folder, c + Vector3.new(-30, 0, -34), 0.7, 180)
+	Models.spawn("oni", folder, c + Vector3.new(30, 0, -34), 0.7, 180)
+	Models.spawn("pagoda", folder, Vector3.new(185, 0, 30), 1, 200)
 	folder.Parent = Workspace
+end
+
+-- Where podium place `i` stands (4th and later line up in front).
+function Course.podiumSpot(i: number): Vector3
+	local c = Course.LOBBY
+	local step = PODIUM[i]
+	if step then
+		return c + step.offset + Vector3.new(0, step.height, 0)
+	end
+	return c + Vector3.new((i - 5) * 3, 0, 8)
+end
+
+-- Five seconds of confetti over the podium.
+function Course.celebrate()
+	local emitter = confetti and confetti:FindFirstChild("Confetti") :: ParticleEmitter?
+	if emitter then
+		emitter.Rate = 120
+		task.delay(5, function()
+			emitter.Rate = 0
+		end)
+	end
+end
+
+function Course.updateBoard(rows: { { name: string, wins: number } })
+	if boardText == nil then
+		return
+	end
+	local lines = { "TOP RACERS", "" }
+	for i, row in rows do
+		table.insert(lines, `{i}. {row.name}  {row.wins}`)
+	end
+	if #rows == 0 then
+		table.insert(lines, "Win a match to get on the board!")
+	end
+	boardText.Text = table.concat(lines, "\n")
 end
 
 -- Per-round obstacles -----------------------------------------------------------------------------
