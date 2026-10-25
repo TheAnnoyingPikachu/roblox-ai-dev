@@ -2,7 +2,7 @@
 # artifact to the chosen environment through Roblox Open Cloud.
 #
 # Repo setup (done by a human, never by an agent):
-#   Environments "staging" and "production", each with:
+#   Environments "staging", "production" and "relay-staging", each with:
 #     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
 #     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
 #   "production" must have required reviewers (SHANNON) and be limited to tags v*.
@@ -14,7 +14,7 @@ on:
       environment:
         description: "Target environment"
         type: choice
-        options: [staging, production]
+        options: [staging, production, relay-staging]
         required: true
 
 permissions:
@@ -85,7 +85,10 @@ jobs:
       - name: Build release candidate
         run: |
           mkdir -p build
-          rojo build default.project.json --output build/place.rbxl
+          # relay-* environments publish Relay Rounds; the others publish Bake Rush.
+          project=default.project.json
+          [[ "${{ inputs.environment }}" == relay-* ]] && project=relay.project.json
+          rojo build "$project" --output build/place.rbxl
 
       - name: Publish via Open Cloud
         id: publish

@@ -26,5 +26,5 @@
   "risk_level": "medium",
   "status": "in_review",
   "evidence": ["Local run on 2026-10-24: lune run tests/run 64/64 passed; rojo build of both projects OK; validate-tasks OK."],
-  "notes": "No saves, remotes or economy, so no decision record needed. Shortcut: the relay place also ships the Bake Rush shared modules (unused) because both projects map src/shared; split per game if a third game arrives. Needs its own staging experience and a publish.yml project input before it can be published."
+  "notes": "No saves, remotes or economy, so no decision record needed. Shortcut: the relay place also ships the Bake Rush shared modules (unused) because both projects map src/shared; split per game if a third game arrives. Staging experience: universe 10772930470, place 73610161298952, published via the relay-staging environment."
 }
