@@ -38,6 +38,16 @@
     "docs/assets/register.md"
   ],
   "risk_level": "high",
-  "status": "planned",
-  "notes": "High risk: saved player data with offline income and a remote contract. Can start against stubs of the section 3 signatures before GARDEN-003 lands. Delete src/garden/.gitkeep with the first script. PRODUCTION_UNIVERSE_ID stays nil. Log the encoded size of a full test profile to confirm decision 0008's 12 KB estimate."
+  "status": "in_review",
+  "notes": "High risk: saved player data with offline income and a remote contract. Can start against stubs of the section 3 signatures before GARDEN-003 lands. Delete src/garden/.gitkeep with the first script. PRODUCTION_UNIVERSE_ID stays nil. Log the encoded size of a full test profile to confirm decision 0008's 12 KB estimate.",
+  "evidence": [
+    "Local 2026-10-25: stylua src/garden clean; selene src/garden 0 errors, 0 warnings, 0 parse errors; rojo build garden.project.json -o build/garden.rbxl OK; relay.project.json and night.project.json still build. Lune not run here (GARDEN-003 owns the tests).",
+    "Files: src/garden/{GardenServer.server,State,Remotes,Profiles,Plots,World}.luau; src/garden/.gitkeep deleted; src/relay/Models.luau +10 entries only (eggTree, bunny, frog, pup, cat, owl, fox, turtle, lion, dragon; existing entries unchanged); docs/assets/register.md +10 mesh rows. Server uses no audio, so no music or SFX rows were added here.",
+    "Request router: session and plot, string action, arg nil or string <= 32, shared 0.35 s limit (refusals inside it do not reset it), action table with the arg/no-arg rule, ^%d+$ ids; buyEgg checks 25 studs from the cart on the server root; like checks target loaded, not self, gate (IsFriendsWith cached per pair); release fires Fx before the model goes. Prompts: same session and rate limit, 12 studs on the server root, Hatch owner only (roll once with a fresh seed, apply the fixed outcome, full-garden notice), Water owner or gate-allowed helper.",
+    "Profiles: GardenProfile<suffix> and GardenIncome<suffix>; GetAsync x3 then offline (no writes); every change runs in memory and is queued; flush = one UpdateAsync of sanitize(old, now) + queued ops + snapshot(unbanked, now), at most one per 7 s, 60 s autosave, final flush on leave and in BindToClose (all in parallel); failed flush re-queues at the front; success adopts the stored result plus newer ops. Board SetAsync every 120 s only when floor(income) changed. PRODUCTION_UNIVERSE_ID stays nil.",
+    "Loop per garden.md 4.3: 5 Hz accrue, bank on pad (Fx collect per pad with >= 1 coin, one quiet bank op), 1 s gate guard; 1 Hz setPending, plot refresh (eggs ripen with time), GardenStatus JSON when changed, forecast board, Profiles.step, Top Gardens every 60 s.",
+    "Full test profile (80 creatures, 12 beds, 36 Index, max counters) encodes to about 9.1 KB (Python estimate with the same fields), under decision 0008's 12 KB; Profiles also prints each loaded profile's encoded size.",
+    "Instance names match GARDEN-005: Plot<n> Owner/Gate, Beds.Bed<i> (Locked, Egg, Planted, Ready, Soil with Hatch/Water prompts, Egg part), Pads.Pad<i> (Locked, Pending), Creatures.<id> (Id, S, M, Z, Pad, Hatched), Sign, Fence; cart prompt Shop; night lights under parts named Lamp and HangingEgg; windmill Model Sails pivoting on its Z axis.",
+    "Not yet done: Studio playtests (rejoin after 10 minutes with DataStores on, two-client water/like/closed gate, new-player timings), MicroProfiler with 6 full gardens, part-count reading (World prints it and sets Workspace.Garden Parts; plots are designed for about 250 parts each), CI run. Creature mesh facing (CREATURE_YAW in Plots.luau) and the egg tree and sakura placement need a Studio look."
+  ]
 }

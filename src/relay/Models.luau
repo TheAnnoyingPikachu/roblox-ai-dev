@@ -66,6 +66,57 @@ local MESHES: { [string]: Entry } = {
 		texture = "rbxassetid://133983439600823",
 		size = Vector3.new(4.6, 7.1, 7),
 	},
+	-- Egg Garden (docs/architecture/garden.md 1); Relay and Night do not use these.
+	eggTree = {
+		mesh = "rbxassetid://135442269122755",
+		texture = "rbxassetid://107774900419208",
+		size = Vector3.new(39, 45, 37.3),
+	},
+	bunny = {
+		mesh = "rbxassetid://95215418214472",
+		texture = "rbxassetid://112687191305545",
+		size = Vector3.new(2.1, 4, 1.4),
+	},
+	frog = {
+		mesh = "rbxassetid://123095394945280",
+		texture = "rbxassetid://74757422823740",
+		size = Vector3.new(3, 4, 3),
+	},
+	pup = {
+		mesh = "rbxassetid://92948625792386",
+		texture = "rbxassetid://75106509594730",
+		size = Vector3.new(2.8, 3.8, 4),
+	},
+	cat = {
+		mesh = "rbxassetid://72698186696830",
+		texture = "rbxassetid://116486531151460",
+		size = Vector3.new(3.1, 4.5, 3),
+	},
+	owl = {
+		mesh = "rbxassetid://86394437492757",
+		texture = "rbxassetid://124206661550738",
+		size = Vector3.new(4.4, 5, 3.9),
+	},
+	fox = {
+		mesh = "rbxassetid://79302479483905",
+		texture = "rbxassetid://83458667821485",
+		size = Vector3.new(3.5, 4.7, 4.5),
+	},
+	turtle = {
+		mesh = "rbxassetid://132942729483941",
+		texture = "rbxassetid://107615796627019",
+		size = Vector3.new(3.6, 4, 3.5),
+	},
+	lion = {
+		mesh = "rbxassetid://139689555575525",
+		texture = "rbxassetid://122712604663142",
+		size = Vector3.new(4.5, 5.4, 5),
+	},
+	dragon = {
+		mesh = "rbxassetid://86426791306366",
+		texture = "rbxassetid://120970690138379",
+		size = Vector3.new(6, 5.4, 4.7),
+	},
 }
 
 local cache: { [string]: MeshPart } = {}
