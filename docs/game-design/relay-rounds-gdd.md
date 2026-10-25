@@ -40,20 +40,23 @@ Inspired by anime runners and stylish-action games: movement should feel fast an
 - Speed lines, FOV kick and camera shake sell the speed.
 - These run on the client because Roblox characters are client-simulated. No remotes: the client sends nothing, and the server still decides legs, hazards, eliminations and wins.
 
-## C3. Track types (v0.3)
+## C3. The circuit (v0.3)
 
-Each leg is 120 studs and uses one of six layouts, the same for every lane, changing each round (round 1 opens with Zigzag):
+All teams race one shared, ground-level circuit (about 1,150 studs a lap: a main straight past the grandstand, hairpins, a chicane), with barriers, red-and-white kerbs and a chequered start/finish under the demon gate. Racers pass through each other (collision group), as in most Roblox racers, so nobody can block a lane.
 
-| Layout | What you do |
+- The lap is split into one **sector per leg** (4 legs = 4 sectors; fewer legs later means longer sectors). Each team has a coloured handoff box in its own lane at every sector line; the final leg ends at the start/finish.
+- Each sector gets one obstacle set on its longest straight, the same for everyone, re-rolled each round (round 1 opens with Boost Alley):
+
+| Obstacle | What you do |
 |---|---|
-| Zigzag | hop between platforms that swing left and right |
-| Launch Tower | launch pad up to a high deck, boost off it, drop back down |
-| Boost Gap | two 20-stud gaps crossed with boost pads (or dash + double jump) |
-| Laser Hall | time three blinking laser gates |
-| Vanishing Steps | glass steps that fade in and out on a 3 s cycle |
-| Sweeper Beam | a 3-stud beam with two spinning laser bars to jump |
+| Boost Alley | staggered boost pads to chain |
+| Lava Leap | boost pads, then an 18-stud lava strip to clear |
+| Laser Gates | time three blinking laser gates |
+| Sweepers | jump two spinning laser bars |
+| Hurdles | four hurdles with alternating gaps: jump or weave |
+| Glass Bridge | glass tiles over lava that fade in and out |
 
-Touching a live laser or sweeper sends the runner back to the start of their leg (server-checked).
+Touching lava, a live laser or a sweeper sends the runner back to the start of their sector (server-checked). Between matches the lobby sits in the infield and anyone can run the circuit as practice.
 
 ## D. Ranking
 
@@ -78,7 +81,7 @@ A stylish-action rank meter on the right of the screen: D (Dull), C (Cool), B (B
 
 ## F. Course
 
-- Built from parts and Roblox materials only (rule 9), including custom models in `src/relay/Props.luau`: torii gates per leg (labelled with the next layout), a demon finish gate (gothic towers, horns, burning eyes), stone lanterns, cherry-blossom trees and gothic spires. Lanes are 30 studs apart so teams never block each other. Sunset lighting, terrain hills, a lake and a forest surround the arena.
+- Built from parts and Roblox materials only (rule 9), including custom models in `src/relay/Props.luau`: torii gates per leg (labelled with the next layout), a demon finish gate (gothic towers, horns, burning eyes), stone lanterns, cherry-blossom trees and gothic spires. A grandstand with team-coloured seats faces the main straight. Sunset lighting, terrain hills, a lake and a forest surround the circuit.
 - Course parts are created by the server at match start, not stored in the place.
 
 ## G. Acceptance criteria (v0.1)

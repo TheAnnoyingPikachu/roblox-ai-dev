@@ -4,7 +4,7 @@
   "owner": "A10",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "Relay Rounds v0.3: anime/stylish-action movement (double jump, air dash, boost and launch pads, afterimages, speed lines), a cosmetic style meter, six 120-stud track types with server-checked hazards, and custom part-built models (torii gates, demon finish gate, lanterns, sakura, spires) with sunset lighting.",
+  "objective": "Relay Rounds v0.3: a shared ground-level race circuit split into one sector per leg with per-sector obstacles, anime/stylish-action movement (double jump, air dash, boost and launch pads), a cosmetic style meter, and custom part-built models (torii gates, demon finish gate, lanterns, sakura, spires, grandstand) with sunset lighting.",
   "inputs": [
     "SHANNON request 2026-10-25: polish, custom models, less straight running, anime runners and Devil May Cry as inspiration",
     "docs/game-design/relay-rounds-gdd.md"
@@ -13,11 +13,12 @@
     "RELAY-003"
   ],
   "acceptance_criteria": [
-    "Six track layouts, same for every lane, new per round; every layout starts and ends on a centred deck",
-    "Touching a live laser or sweeper sends the runner back to their leg start (server-checked)",
-    "Boost and launch pads carry the player across their gaps",
-    "Double jump and air dash work once per airtime; client sends nothing to the server",
-    "Style meter ranks D to SSS with diminishing repeats (StyleRules unit tests)",
+    "One closed ground-level circuit shared by all teams; racers pass through each other",
+    "Lap split into one sector per leg with a handoff box per team at each sector line",
+    "Six obstacle sets, one per sector on its longest straight, re-rolled each round",
+    "Touching lava, a live laser or a sweeper sends the runner back to their sector start (server-checked)",
+    "Double jump and air dash once per airtime; the client sends nothing to the server",
+    "Style meter D to SSS with diminishing repeats (StyleRules unit tests)",
     "CI green with both places built"
   ],
   "verification": "Lune tests (StyleRules) and CI; Studio checks with screenshots; multiplayer playtest skipped at SHANNON's request",
@@ -37,7 +38,8 @@
   "status": "in_review",
   "evidence": [
     "Local: lune run tests/run 73/73; rojo build relay.project.json OK.",
-    "Studio run 2026-10-25 (1 player, test timings): two boost pads carried the runner 81 studs across both Boost Gap gaps in 1.4 s; sweeper contact sent the runner back to leg start in 0.42 s; callouts (GO!) and lobby/course/finish models checked by screenshot. Before the velocity-carry fix the Humanoid braked boosts within 0.15 s."
+    "Studio run 2026-10-25 (1 player, test timings): two boost pads carried the runner 81 studs across both Boost Gap gaps in 1.4 s; sweeper contact sent the runner back to leg start in 0.42 s; callouts (GO!) and lobby/course/finish models checked by screenshot. Before the velocity-carry fix the Humanoid braked boosts within 0.15 s.",
+    "Studio run on the circuit 2026-10-25: lap length 1151 studs; runner teleported through all 4 team-1 handoff boxes in turn, each leg counted, finish under the demon gate gave 'Team 1 wins!' and Wins 0 -> 1. Aerial and start-line screenshots checked track, barriers, kerbs, grandstand, gate and boost pads. selene 0 warnings, lune 73/73."
   ],
-  "notes": "Not tested: the air dash and double jump by real input (needs a person at the keyboard), the Launch Tower and Laser Hall layouts in a live round, and multiplayer. No new remotes, economy or data changes."
+  "notes": "Not tested: dash and double jump by real input, Launch pads (no longer used on the circuit), and multiplayer. No new remotes, economy or data changes."
 }
