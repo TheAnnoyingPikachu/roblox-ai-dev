@@ -80,7 +80,7 @@ end
 function Scenery.world()
 	local terrain = Workspace.Terrain
 	terrain:Clear()
-	terrain:FillBlock(CFrame.new(0, -6, 120), Vector3.new(900, 12, 1000), Enum.Material.Grass)
+	terrain:FillBlock(CFrame.new(0, -8, 120), Vector3.new(900, 12, 1000), Enum.Material.Grass)
 
 	local rng = Random.new(20261025)
 	local placed = 0
@@ -94,7 +94,7 @@ function Scenery.world()
 	terrain:FillBlock(CFrame.new(-200, -4, 140), Vector3.new(140, 8, 220), Enum.Material.Air)
 	terrain:FillBlock(CFrame.new(-200, -5, 140), Vector3.new(140, 6, 220), Enum.Material.Water)
 	terrain:FillBlock(CFrame.new(-145, -3, 140), Vector3.new(14, 6, 230), Enum.Material.Sand)
-	terrain:FillBlock(CFrame.new(-35, -0.4, 20), Vector3.new(12, 1, 200), Enum.Material.Ground)
+	terrain:FillBlock(CFrame.new(-35, -2.4, 20), Vector3.new(12, 1, 200), Enum.Material.Ground)
 
 	local trees = Instance.new("Folder")
 	trees.Name = "Trees"
