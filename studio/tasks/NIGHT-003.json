@@ -45,6 +45,9 @@
     "tests/run.luau"
   ],
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
+  "evidence": [
+    "Local run 2026-10-25: lune run tests/run 207/207 pass, 0 failed, 0 load errors (113 new tests in 8 new specs; ProgressRules.spec unchanged and passing); stylua and selene clean on src/shared and tests; rojo build night.project.json and relay.project.json OK; node tools/validate-tasks.mjs OK; no diff under src/relay or src/relay-client. CI not yet run."
+  ],
   "notes": "High risk: MetaRules sits under Relay's live save code. A signature change must update docs/architecture/night.md in the same PR, since NIGHT-004 and NIGHT-005 code against it in parallel."
 }

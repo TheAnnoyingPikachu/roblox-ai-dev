@@ -26,6 +26,30 @@ local SPECS = {
 	["ProgressRules.spec.luau"] = function()
 		require("./ProgressRules.spec")
 	end,
+	["Rng.spec.luau"] = function()
+		require("./Rng.spec")
+	end,
+	["CombatRules.spec.luau"] = function()
+		require("./CombatRules.spec")
+	end,
+	["WaveRules.spec.luau"] = function()
+		require("./WaveRules.spec")
+	end,
+	["BossRules.spec.luau"] = function()
+		require("./BossRules.spec")
+	end,
+	["BlessingRules.spec.luau"] = function()
+		require("./BlessingRules.spec")
+	end,
+	["RunRules.spec.luau"] = function()
+		require("./RunRules.spec")
+	end,
+	["MetaRules.spec.luau"] = function()
+		require("./MetaRules.spec")
+	end,
+	["NightProgress.spec.luau"] = function()
+		require("./NightProgress.spec")
+	end,
 }
 
 local T = require("./framework")

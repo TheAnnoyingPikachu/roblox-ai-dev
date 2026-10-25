@@ -16,6 +16,14 @@ StyleRules.POINTS = {
 	boost = 8,
 	legClear = 20,
 	airtime = 6, -- per second airborne
+	-- Hundred Demon Night combat (server-side; Relay's `launch` above is the launch pad).
+	hit = 3,
+	finisher = 8,
+	launchEnemy = 10,
+	airHit = 6,
+	dodge = 15,
+	kill = 5,
+	trigger = 20,
 }
 
 StyleRules.RANKS = {
