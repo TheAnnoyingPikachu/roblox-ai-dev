@@ -1,5 +1,6 @@
 --!strict
--- Relay Rounds geometry: lobby plaza, practice lane, stands and the per-round race course.
+-- Relay Rounds circuit: one shared ground-level race track that every team runs. The lap is split
+-- into one sector per leg; each team has a coloured handoff box at every sector line.
 -- Built from parts and Roblox materials (GDD F, CLAUDE.md rule 9). No game rules live here:
 -- the server reads hazards (attribute Hazard) and the client reads pads (attributes Boost, Launch).
 
@@ -11,16 +12,18 @@ local part, pillar, label = Props.part, Props.pillar, Props.label
 
 local Course = {}
 
-Course.LEG_LENGTH = 120
-Course.COURSE_Y = 30
-Course.FALL_Y = Course.COURSE_Y - 10
-Course.ZONE_RADIUS = 6
-Course.STANDS = Vector3.new(14, 34, 290)
+Course.TRACK_WIDTH = 32
+Course.ROAD_Y = 0.4 -- top of the road surface
+Course.FALL_Y = -20
+Course.ZONE_RADIUS = 4.5
+Course.STANDS = Vector3.new(90, 14, -184)
+Course.LOBBY = Vector3.new(70, 0, -10)
 
-local LANE_GAP = 30
-local LANE_WIDTH = 10
 local WHITE = Color3.new(1, 1, 1)
 local LASER = Color3.fromRGB(255, 40, 60)
+local LAVA = Color3.fromRGB(255, 90, 20)
+local ASPHALT = Color3.fromRGB(58, 56, 62)
+local UP = Vector3.yAxis
 
 Course.TEAM_COLOURS = {
 	BrickColor.new("Bright red"),
@@ -29,166 +32,301 @@ Course.TEAM_COLOURS = {
 	BrickColor.new("New Yeller"),
 }
 
-function Course.laneX(teamId: number): number
-	return 40 + (teamId - 1) * LANE_GAP
-end
-
--- Leg k runs from z = legStart(k) to legStart(k + 1); handoff pad k sits at the end of leg k.
-function Course.legStart(k: number): number
-	return 50 + (k - 1) * Course.LEG_LENGTH
-end
-
-function Course.zoneCentre(teamId: number, k: number): Vector3
-	return Vector3.new(Course.laneX(teamId), Course.COURSE_Y, Course.legStart(k + 1) - 4)
-end
-
-function Course.legSpawn(teamId: number, k: number): Vector3
-	return Vector3.new(Course.laneX(teamId), Course.COURSE_Y, Course.legStart(k) + 3)
-end
-
--- Track pieces along a 120-stud leg, in leg-local studs: z from/to, sideways offset dx, height rise.
--- Every layout starts with a deck at z 0 and ends with a centred deck reaching z 120, so the
--- spawn point and the handoff pad always have ground.
-type Piece = {
-	kind: string, -- deck | boost | launch | vanish | laser | sweeper
-	from: number,
-	to: number,
-	width: number?,
-	dx: number?,
-	rise: number?,
-	power: number?, -- boost speed or launch velocity
-	phase: number?, -- 0..1 offset for timed hazards and vanishing pads
-	spin: number?, -- sweeper degrees per second
+-- The circuit centre line, driven in order and closed back to the first point.
+local WAYPOINTS = {
+	Vector3.new(-40, 0, -140),
+	Vector3.new(200, 0, -140), -- main straight past the grandstand
+	Vector3.new(260, 0, -90),
+	Vector3.new(260, 0, 40),
+	Vector3.new(200, 0, 100),
+	Vector3.new(110, 0, 100),
+	Vector3.new(60, 0, 140), -- chicane
+	Vector3.new(-60, 0, 140),
+	Vector3.new(-120, 0, 80),
+	Vector3.new(-120, 0, -80),
 }
+local START_OFFSET = 40 -- the start line sits this far along the main straight
 
-local LAYOUTS: { { name: string, pieces: { Piece } } } = {
-	{
-		name = "Zigzag",
-		pieces = {
-			{ kind = "deck", from = 0, to = 20 },
-			{ kind = "deck", from = 26, to = 42, width = 8, dx = -7 },
-			{ kind = "deck", from = 48, to = 64, width = 8, dx = 7 },
-			{ kind = "deck", from = 70, to = 86, width = 8, dx = -7 },
-			{ kind = "deck", from = 92, to = 104, width = 8, dx = 7 },
-			{ kind = "deck", from = 108, to = 120 },
-		},
-	},
-	{
-		name = "Launch Tower",
-		pieces = {
-			{ kind = "deck", from = 0, to = 30 },
-			{ kind = "launch", from = 25, to = 30, power = 110 },
-			{ kind = "deck", from = 40, to = 70, rise = 22 },
-			{ kind = "boost", from = 62, to = 70, rise = 22, power = 80 },
-			{ kind = "deck", from = 84, to = 120 },
-		},
-	},
-	{
-		name = "Boost Gap",
-		pieces = {
-			{ kind = "deck", from = 0, to = 40 },
-			{ kind = "boost", from = 30, to = 40, power = 85 },
-			{ kind = "deck", from = 60, to = 80 },
-			{ kind = "boost", from = 70, to = 80, power = 85 },
-			{ kind = "deck", from = 100, to = 120 },
-		},
-	},
-	{
-		name = "Laser Hall",
-		pieces = {
-			{ kind = "deck", from = 0, to = 120 },
-			{ kind = "laser", from = 35, to = 35, phase = 0 },
-			{ kind = "laser", from = 65, to = 65, phase = 0.33 },
-			{ kind = "laser", from = 95, to = 95, phase = 0.66 },
-		},
-	},
-	{
-		name = "Vanishing Steps",
-		pieces = {
-			{ kind = "deck", from = 0, to = 12 },
-			{ kind = "vanish", from = 18, to = 24, width = 6, dx = -4, phase = 0 },
-			{ kind = "vanish", from = 30, to = 36, width = 6, dx = 4, phase = 0.5 },
-			{ kind = "vanish", from = 42, to = 48, width = 6, dx = -4, phase = 0 },
-			{ kind = "vanish", from = 54, to = 60, width = 6, dx = 4, phase = 0.5 },
-			{ kind = "vanish", from = 66, to = 72, width = 6, dx = -4, phase = 0 },
-			{ kind = "vanish", from = 78, to = 84, width = 6, dx = 4, phase = 0.5 },
-			{ kind = "vanish", from = 90, to = 96, width = 6, dx = -4, phase = 0 },
-			{ kind = "deck", from = 102, to = 120 },
-		},
-	},
-	{
-		name = "Sweeper Beam",
-		pieces = {
-			{ kind = "deck", from = 0, to = 15 },
-			{ kind = "deck", from = 15, to = 105, width = 3 },
-			{ kind = "sweeper", from = 40, to = 40, width = 14, spin = 120 },
-			{ kind = "sweeper", from = 75, to = 75, width = 14, spin = -150 },
-			{ kind = "deck", from = 105, to = 120 },
-		},
-	},
-}
-Course.LAYOUT_NAMES = {}
-for i, layout in LAYOUTS do
-	Course.LAYOUT_NAMES[i] = layout.name
+type Segment = { a: Vector3, b: Vector3, dir: Vector3, length: number, from: number }
+local segments: { Segment } = {}
+local rawLength = 0
+for i, a in WAYPOINTS do
+	local b = WAYPOINTS[i % #WAYPOINTS + 1]
+	local length = (b - a).Magnitude
+	table.insert(segments, { a = a, b = b, dir = (b - a).Unit, length = length, from = rawLength })
+	rawLength += length
 end
+Course.LAP_LENGTH = rawLength
 
--- The same layouts for every team, so lanes are fair. Changes each round; round 1 opens easy.
-function Course.layoutsFor(round: number, legs: number): { number }
-	local rng = Random.new(round * 7919)
-	local picks = {}
-	for k = 1, legs do
-		picks[k] = if round == 1 and k == 1 then 1 else rng:NextInteger(1, #LAYOUTS)
-	end
-	return picks
-end
-
-local VANISH_CYCLE = 3 -- seconds; solid for the first two thirds
-local LASER_CYCLE = 2.4 -- seconds; live for the first 1.4
-
--- A wooden deck with team trim, under-slab and cobblestone supports down to the ground.
-local function deck(parent: Instance, cf: CFrame, length: number, width: number, colour: Color3, groundY: number?): Part
-	local top = part(
-		parent,
-		Vector3.new(width, 1, length),
-		cf * CFrame.new(0, -0.5, 0),
-		colour:Lerp(Color3.fromRGB(160, 120, 80), 0.55),
-		Enum.Material.WoodPlanks
-	)
-	for _, side in { -1, 1 } do
-		local trim =
-			part(parent, Vector3.new(0.5, 0.5, length), cf * CFrame.new(side * (width / 2 - 0.25), 0.25, 0), colour)
-		trim.CanCollide = false
-	end
-	part(
-		parent,
-		Vector3.new(width - 1, 0.6, length - 0.6),
-		cf * CFrame.new(0, -1.3, 0),
-		Color3.fromRGB(70, 66, 76),
-		Enum.Material.Slate
-	)
-	if groundY then
-		local spacing = math.max(length / 2, 8)
-		local z = -length / 2 + 1.5
-		while z <= length / 2 - 1.4 do
-			local at = (cf * CFrame.new(0, 0, z)).Position
-			if at.Y - 1.6 - groundY < 1 then
-				break
-			end
-			pillar(
-				parent,
-				Vector3.new(at.X, groundY, at.Z),
-				at.Y - 1.6 - groundY,
-				math.min(width / 4, 1.1),
-				Color3.fromRGB(120, 116, 124),
-				Enum.Material.Cobblestone
-			)
-			z += spacing
+-- Position and heading at `s` studs along the lap, measured from the start line.
+local function along(s: number): (Vector3, Vector3)
+	local raw = (s + START_OFFSET) % rawLength
+	for _, seg in segments do
+		if raw <= seg.from + seg.length then
+			return seg.a + seg.dir * (raw - seg.from), seg.dir
 		end
 	end
-	return top
+	return segments[1].a, segments[1].dir
 end
 
-local function chevrons(pad: BasePart)
+-- The point between s0 and s1 that sits deepest inside one straight, for placing obstacles.
+local function bestStraight(s0: number, s1: number): number
+	local best, bestRoom = (s0 + s1) / 2, -1
+	for s = s0 + 10, s1 - 10, 4 do
+		local raw = (s + START_OFFSET) % rawLength
+		for _, seg in segments do
+			if raw >= seg.from and raw <= seg.from + seg.length then
+				local room = math.min(raw - seg.from, seg.from + seg.length - raw)
+				if room > bestRoom then
+					best, bestRoom = s, room
+				end
+				break
+			end
+		end
+	end
+	return best
+end
+
+-- A frame at `s` whose local +Z points along the track (so forward is -LookVector), Y up.
+local function frameAt(s: number, lateral: number, height: number): CFrame
+	local pos, dir = along(s)
+	local side = UP:Cross(dir)
+	return CFrame.fromMatrix(pos + side * lateral + Vector3.new(0, height, 0), side, UP, dir)
+end
+
+-- How far along the lap (from the start line) the point nearest to `position` lies.
+function Course.progress(position: Vector3): number
+	local flat = Vector3.new(position.X, 0, position.Z)
+	local best, bestDist = 0, math.huge
+	for _, seg in segments do
+		local t = math.clamp((flat - seg.a):Dot(seg.dir), 0, seg.length)
+		local dist = (seg.a + seg.dir * t - flat).Magnitude
+		if dist < bestDist then
+			best, bestDist = seg.from + t, dist
+		end
+	end
+	return (best - START_OFFSET) % rawLength
+end
+
+function Course.sectorLength(legs: number): number
+	return rawLength / legs
+end
+
+local function laneOffset(teamId: number): number
+	return (teamId - 2.5) * 7
+end
+
+-- Leg k runs from sector line k-1 to sector line k (line 0 is the start/finish).
+function Course.zoneCentre(teamId: number, k: number, legs: number): Vector3
+	return frameAt(k * Course.sectorLength(legs) - 5, laneOffset(teamId), Course.ROAD_Y).Position
+end
+
+function Course.legSpawn(teamId: number, k: number, legs: number): Vector3
+	return frameAt((k - 1) * Course.sectorLength(legs) + 3, laneOffset(teamId), Course.ROAD_Y).Position
+end
+
+-- Where a runner starts leg k, facing along the track.
+function Course.spawnFrame(teamId: number, k: number, legs: number): CFrame
+	local f = frameAt((k - 1) * Course.sectorLength(legs) + 3, laneOffset(teamId), Course.ROAD_Y)
+	return CFrame.lookAt(f.Position, f.Position + f.ZVector)
+end
+
+-- Studs of track left before the runner's handoff line.
+function Course.distanceLeft(position: Vector3, k: number, legs: number): number
+	return (k * Course.sectorLength(legs) - Course.progress(position)) % rawLength
+end
+
+-- Static track ----------------------------------------------------------------------------------
+
+local function flatAlong(at: Vector3, dir: Vector3): CFrame
+	return CFrame.lookAt(at, at + dir)
+end
+
+local function wallAlong(parent: Instance, seg: Segment, side: number)
+	local offset = UP:Cross(seg.dir) * side * (Course.TRACK_WIDTH / 2 + 1)
+	local mid = (seg.a + seg.b) / 2 + offset + Vector3.new(0, 1.5, 0)
+	local wall = part(parent, Vector3.new(1, 3, seg.length), flatAlong(mid, seg.dir), WHITE, Enum.Material.Concrete)
+	wall.Name = "Barrier"
+	-- Red and white kerb blocks along the road edge.
+	for i = 0, math.floor(seg.length / 6) - 1 do
+		local at = seg.a
+			+ seg.dir * (i * 6 + 3)
+			+ UP:Cross(seg.dir) * side * (Course.TRACK_WIDTH / 2 - 1.2)
+			+ Vector3.new(0, Course.ROAD_Y + 0.05, 0)
+		local kerb = part(
+			parent,
+			Vector3.new(2.4, 0.3, 6),
+			flatAlong(at, seg.dir),
+			if i % 2 == 0 then Color3.fromRGB(220, 30, 30) else WHITE
+		)
+		kerb.CanCollide = false
+	end
+end
+
+-- Road, corner discs, barriers, kerbs, start line and grandstand. Built once at server start.
+function Course.buildTrack()
+	local folder = Instance.new("Folder")
+	folder.Name = "RelayTrack"
+	for _, seg in segments do
+		local mid = (seg.a + seg.b) / 2
+		part(
+			folder,
+			Vector3.new(Course.TRACK_WIDTH, 0.8, seg.length),
+			flatAlong(mid, seg.dir),
+			ASPHALT,
+			Enum.Material.Asphalt
+		)
+		for d = 4, seg.length - 4, 12 do
+			local dash = part(
+				folder,
+				Vector3.new(0.5, 0.05, 6),
+				flatAlong(seg.a + seg.dir * d + Vector3.new(0, Course.ROAD_Y + 0.02, 0), seg.dir),
+				Color3.fromRGB(235, 235, 235)
+			)
+			dash.CanCollide = false
+		end
+		wallAlong(folder, seg, 1)
+		wallAlong(folder, seg, -1)
+	end
+	for _, w in WAYPOINTS do
+		pillar(folder, w - Vector3.new(0, 0.4, 0), 0.8, Course.TRACK_WIDTH / 2, ASPHALT, Enum.Material.Asphalt)
+	end
+
+	-- Chequered start/finish line.
+	for row = 0, 1 do
+		for col = 0, 7 do
+			local square = part(
+				folder,
+				Vector3.new(Course.TRACK_WIDTH / 8, 0.06, 2),
+				frameAt(-1 + row * 2, (col - 3.5) * Course.TRACK_WIDTH / 8, Course.ROAD_Y + 0.03),
+				if (row + col) % 2 == 0 then WHITE else Color3.fromRGB(20, 20, 24)
+			)
+			square.CanCollide = false
+		end
+	end
+
+	-- Grandstand facing the main straight.
+	local s = Course.STANDS
+	for row = 0, 5 do
+		local top = 1 + row * 2
+		part(
+			folder,
+			Vector3.new(140, top + 1, 5),
+			Vector3.new(s.X, top / 2, s.Z - row * 5),
+			Color3.fromRGB(70, 64, 74),
+			Enum.Material.Slate
+		)
+		for seat = -13, 13 do
+			local colour = Course.TEAM_COLOURS[(seat + row) % 4 + 1].Color
+			part(folder, Vector3.new(3.6, 1, 2), Vector3.new(s.X + seat * 5, top + 0.5, s.Z - row * 5 - 1), colour)
+		end
+	end
+	for _, x in { s.X - 72, s.X + 72 } do
+		Props.spire(folder, Vector3.new(x, 0, s.Z - 12), 22)
+	end
+	local roof = part(
+		folder,
+		Vector3.new(146, 0.6, 34),
+		Vector3.new(s.X, 20, s.Z - 13),
+		Color3.fromRGB(150, 30, 30),
+		Enum.Material.Fabric
+	)
+	roof.Transparency = 0.1
+	local board = part(
+		folder,
+		Vector3.new(60, 6, 1),
+		Vector3.new(s.X, 24, s.Z - 2),
+		Color3.fromRGB(30, 26, 34),
+		Enum.Material.Slate
+	)
+	label(board, "RELAY ROUNDS GRAND PRIX", Color3.fromRGB(255, 200, 80))
+	folder.Parent = Workspace
+end
+
+-- Infield lobby: plaza, title torii, lanterns and benches.
+function Course.buildLobby()
+	local folder = Instance.new("Folder")
+	folder.Name = "RelayLobby"
+	local c = Course.LOBBY
+	local plaza =
+		pillar(folder, c + Vector3.new(0, -0.2, 0), 0.6, 30, Color3.fromRGB(214, 200, 170), Enum.Material.Pavement)
+	plaza.Name = "Plaza"
+	pillar(folder, c + Vector3.new(0, -0.3, 0), 0.6, 32, Color3.fromRGB(150, 100, 80), Enum.Material.Brick)
+	Props.torii(folder, c + Vector3.new(0, 0, -24), 20, 15, Color3.fromRGB(196, 40, 28), nil)
+	local title = part(
+		folder,
+		Vector3.new(17, 2.4, 0.6),
+		c + Vector3.new(0, 13.9, -23.4),
+		Color3.fromRGB(30, 26, 34),
+		Enum.Material.Slate
+	)
+	label(title, "RELAY ROUNDS", Color3.fromRGB(255, 200, 80))
+	for i = 0, 7 do
+		local angle = math.rad(i * 45 + 22.5)
+		Props.lantern(folder, c + Vector3.new(math.cos(angle) * 26, 0, math.sin(angle) * 26))
+	end
+	for _, spot in
+		{ Vector3.new(-14, 0, 12), Vector3.new(14, 0, 12), Vector3.new(-14, 0, -12), Vector3.new(14, 0, -12) }
+	do
+		part(
+			folder,
+			Vector3.new(6, 0.5, 2),
+			c + spot + Vector3.new(0, 1.6, 0),
+			Color3.fromRGB(140, 95, 60),
+			Enum.Material.WoodPlanks
+		)
+		for _, side in { -1, 1 } do
+			part(
+				folder,
+				Vector3.new(0.4, 1.4, 1.6),
+				c + spot + Vector3.new(side * 2.6, 0.7, 0),
+				Color3.fromRGB(45, 45, 52),
+				Enum.Material.Metal
+			)
+		end
+	end
+	local sign = part(
+		folder,
+		Vector3.new(30, 3, 0.6),
+		c + Vector3.new(0, 4, 26),
+		Color3.fromRGB(30, 26, 34),
+		Enum.Material.Slate
+	)
+	label(sign, "Run the circuit to practise between matches!")
+	folder.Parent = Workspace
+end
+
+-- Per-round obstacles -----------------------------------------------------------------------------
+
+local W = Course.TRACK_WIDTH
+type Animated = { part: BasePart, kind: string, phase: number, spin: number, base: CFrame }
+
+local function lava(parent: Instance, cf: CFrame, length: number): Part
+	local pit = part(parent, Vector3.new(W, 0.2, length), cf * CFrame.new(0, 0.1, 0), LAVA, Enum.Material.Neon)
+	pit.CanCollide = false
+	pit:SetAttribute("Hazard", true)
+	local fire = Instance.new("ParticleEmitter")
+	fire.Color = ColorSequence.new(Color3.fromRGB(255, 200, 60), Color3.fromRGB(255, 40, 0))
+	fire.LightEmission = 1
+	fire.Size = NumberSequence.new(0.8, 0)
+	fire.Lifetime = NumberRange.new(0.6, 1.2)
+	fire.Speed = NumberRange.new(2, 5)
+	fire.EmissionDirection = Enum.NormalId.Top
+	fire.Rate = 25
+	fire.Parent = pit
+	return pit
+end
+
+local function boostPad(parent: Instance, cf: CFrame, power: number)
+	local pad = part(
+		parent,
+		Vector3.new(6, 0.2, 8),
+		cf * CFrame.new(0, 0.12, 0),
+		Color3.fromRGB(0, 230, 255),
+		Enum.Material.Neon
+	)
+	pad.CanCollide = false
+	pad:SetAttribute("Boost", power)
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Top
 	gui.LightInfluence = 0
@@ -206,100 +344,134 @@ local function chevrons(pad: BasePart)
 	l.Parent = gui
 end
 
-type Animated = { part: BasePart, kind: string, phase: number, spin: number, base: CFrame }
-
--- Builds one leg along `origin`'s local +Z. Returns pieces that need animating each frame.
-local function buildLeg(
-	parent: Instance,
-	origin: CFrame,
-	layout: number,
-	colour: Color3,
-	groundY: number?
-): { Animated }
-	local animated: { Animated } = {}
-	for _, piece in LAYOUTS[layout].pieces do
-		local width = piece.width or LANE_WIDTH
-		local length = math.max(piece.to - piece.from, 0.5)
-		local cf = origin * CFrame.new(piece.dx or 0, piece.rise or 0, (piece.from + piece.to) / 2)
-		if piece.kind == "deck" then
-			deck(parent, cf, length, width, colour, groundY)
-		elseif piece.kind == "boost" then
-			local pad = part(
-				parent,
-				Vector3.new(width - 1, 0.2, length),
-				cf * CFrame.new(0, 0.1, 0),
-				Color3.fromRGB(0, 230, 255),
-				Enum.Material.Neon
-			)
-			pad.CanCollide = false
-			pad:SetAttribute("Boost", piece.power)
-			chevrons(pad)
-		elseif piece.kind == "launch" then
-			local pad = part(
-				parent,
-				Vector3.new(width - 1, 0.3, length),
-				cf * CFrame.new(0, 0.15, 0),
-				Color3.fromRGB(255, 140, 0),
-				Enum.Material.Neon
-			)
-			pad.CanCollide = false
-			pad:SetAttribute("Launch", piece.power)
-			local ring = part(
-				parent,
-				Vector3.new(0.4, width - 2, width - 2),
-				cf * CFrame.new(0, 0.5, 0) * CFrame.Angles(0, 0, math.rad(90)),
-				Color3.fromRGB(255, 220, 120),
-				Enum.Material.Neon
-			)
-			ring.Shape = Enum.PartType.Cylinder
-			ring.Transparency = 0.5
-			ring.CanCollide = false
-		elseif piece.kind == "vanish" then
-			local top = deck(parent, cf, length, width, colour, nil)
-			top.Color = Color3.fromRGB(200, 170, 255)
-			top.Material = Enum.Material.Glass
-			table.insert(
-				animated,
-				{ part = top, kind = "vanish", phase = piece.phase or 0, spin = 0, base = top.CFrame }
-			)
-		elseif piece.kind == "laser" then
-			for _, side in { -1, 1 } do
-				part(
+-- Obstacle sets, built across the full track width in a frame whose local +Z runs along the track.
+local OBSTACLES: { { name: string, build: (Instance, CFrame, { Animated }) -> () } } = {
+	{
+		name = "Boost Alley",
+		build = function(parent, cf, _)
+			for i = -1, 1 do
+				for j = 0, 1 do
+					boostPad(parent, cf * CFrame.new(i * 10, 0, -20 + j * 40 + i * 6), 70)
+				end
+			end
+		end,
+	},
+	{
+		name = "Lava Leap",
+		build = function(parent, cf, _)
+			for _, lane in { -12, 0, 12 } do
+				boostPad(parent, cf * CFrame.new(lane, 0, -16), 60)
+			end
+			lava(parent, cf * CFrame.new(0, 0, 4), 18)
+		end,
+	},
+	{
+		name = "Laser Gates",
+		build = function(parent, cf, animated)
+			for i, z in { -18, 2, 22 } do
+				for _, side in { -1, 1 } do
+					part(
+						parent,
+						Vector3.new(1.4, 8, 1.4),
+						cf * CFrame.new(side * (W / 2 + 1), 4, z),
+						Color3.fromRGB(40, 36, 44),
+						Enum.Material.Metal
+					)
+				end
+				local beam = part(parent, Vector3.new(W, 6, 0.4), cf * CFrame.new(0, 3.4, z), LASER, Enum.Material.Neon)
+				beam.CanCollide = false
+				beam:SetAttribute("Hazard", true)
+				table.insert(
+					animated,
+					{ part = beam, kind = "laser", phase = (i - 1) / 3, spin = 0, base = beam.CFrame }
+				)
+			end
+		end,
+	},
+	{
+		name = "Sweepers",
+		build = function(parent, cf, animated)
+			for i, z in { -14, 14 } do
+				local hub = part(
 					parent,
-					Vector3.new(1, 7, 1),
-					cf * CFrame.new(side * (width / 2 + 0.5), 3.5, 0),
+					Vector3.new(2, 3.4, 2),
+					cf * CFrame.new(0, 1.7, z),
 					Color3.fromRGB(40, 36, 44),
 					Enum.Material.Metal
 				)
+				hub.CanCollide = false
+				local bar =
+					part(parent, Vector3.new(W - 4, 1, 1), cf * CFrame.new(0, 2.8, z), LASER, Enum.Material.Neon)
+				bar.CanCollide = false
+				bar:SetAttribute("Hazard", true)
+				table.insert(
+					animated,
+					{ part = bar, kind = "sweeper", phase = 0, spin = if i == 1 then 110 else -140, base = bar.CFrame }
+				)
 			end
-			local beam = part(parent, Vector3.new(width, 6, 0.4), cf * CFrame.new(0, 3, 0), LASER, Enum.Material.Neon)
-			beam.CanCollide = false
-			beam:SetAttribute("Hazard", true)
-			table.insert(
-				animated,
-				{ part = beam, kind = "laser", phase = piece.phase or 0, spin = 0, base = beam.CFrame }
-			)
-		elseif piece.kind == "sweeper" then
-			local hub = part(
-				parent,
-				Vector3.new(1.6, 3, 1.6),
-				cf * CFrame.new(0, 1.5, 0),
-				Color3.fromRGB(40, 36, 44),
-				Enum.Material.Metal
-			)
-			hub.CanCollide = false
-			local bar =
-				part(parent, Vector3.new(width, 0.8, 0.8), cf * CFrame.new(0, 2.6, 0), LASER, Enum.Material.Neon)
-			bar.CanCollide = false
-			bar:SetAttribute("Hazard", true)
-			table.insert(
-				animated,
-				{ part = bar, kind = "sweeper", phase = 0, spin = piece.spin or 120, base = bar.CFrame }
-			)
-		end
-	end
-	return animated
+		end,
+	},
+	{
+		name = "Hurdles",
+		build = function(parent, cf, _)
+			-- Each row is a full-width hurdle with one 7-stud gap, alternating sides.
+			for i, z in { -20, -6, 8, 22 } do
+				local gap = if i % 2 == 0 then 8 else -8
+				local left, right = -W / 2, W / 2
+				for _, span in { { left, gap - 3.5 }, { gap + 3.5, right } } do
+					local width = span[2] - span[1]
+					local x = (span[1] + span[2]) / 2
+					part(parent, Vector3.new(width, 2.6, 1), cf * CFrame.new(x, 1.3, z), WHITE).Name = "Hurdle"
+					local stripe = part(
+						parent,
+						Vector3.new(width, 0.6, 1.05),
+						cf * CFrame.new(x, 2.3, z),
+						Color3.fromRGB(220, 30, 30)
+					)
+					stripe.CanCollide = false
+				end
+			end
+		end,
+	},
+	{
+		name = "Glass Bridge",
+		build = function(parent, cf, animated)
+			lava(parent, cf, 44)
+			for row = 0, 4 do
+				for col = -1, 1 do
+					local tile = part(
+						parent,
+						Vector3.new(7, 0.6, 6),
+						cf * CFrame.new(col * 10 + (row % 2) * 4 - 2, 0.6, -18 + row * 9),
+						Color3.fromRGB(200, 170, 255),
+						Enum.Material.Glass
+					)
+					table.insert(
+						animated,
+						{ part = tile, kind = "vanish", phase = ((row + col) % 2) * 0.5, spin = 0, base = tile.CFrame }
+					)
+				end
+			end
+		end,
+	},
+}
+Course.OBSTACLE_NAMES = {}
+for i, o in OBSTACLES do
+	Course.OBSTACLE_NAMES[i] = o.name
 end
+
+-- The obstacle for each sector this round; round 1 opens with Boost Alley.
+function Course.obstaclesFor(round: number, legs: number): { number }
+	local rng = Random.new(round * 7919)
+	local picks = {}
+	for k = 1, legs do
+		picks[k] = if round == 1 and k == 1 then 1 else rng:NextInteger(1, #OBSTACLES)
+	end
+	return picks
+end
+
+local VANISH_CYCLE = 3 -- seconds; solid for the first two thirds
+local LASER_CYCLE = 2.4 -- seconds; live for the first 1.4
 
 -- One Heartbeat loop per built folder; it stops when the folder is destroyed.
 local function animate(folder: Instance, animated: { Animated })
@@ -330,159 +502,79 @@ local function animate(folder: Instance, animated: { Animated })
 	end)
 end
 
-local function lanternPost(parent: Instance, at: Vector3, groundY: number)
-	pillar(
-		parent,
-		Vector3.new(at.X, groundY, at.Z),
-		at.Y - groundY,
-		0.9,
-		Color3.fromRGB(120, 116, 124),
-		Enum.Material.Cobblestone
-	)
-	Props.lantern(parent, at)
+-- Gate models are built spanning world X; turn the ones just built to stand across the track.
+local function placeAcross(folder: Instance, base: Vector3, dir: Vector3)
+	local pivot = CFrame.new(base)
+	local turn = pivot * CFrame.Angles(0, math.atan2(dir.X, dir.Z), 0)
+	for _, child in folder:GetChildren() do
+		if child:IsA("BasePart") and not child:GetAttribute("Placed") then
+			child.CFrame = turn * pivot:ToObjectSpace(child.CFrame)
+			child:SetAttribute("Placed", true)
+		end
+	end
 end
 
+local function markPlaced(folder: Instance)
+	for _, child in folder:GetChildren() do
+		child:SetAttribute("Placed", true)
+	end
+end
+
+-- This round's sector gates, handoff boxes and obstacles.
 function Course.build(teamIds: { number }, legs: number, round: number): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = "RelayCourse"
-	local picks = Course.layoutsFor(round, legs)
+	local sector = Course.sectorLength(legs)
+	local picks = Course.obstaclesFor(round, legs)
 	local animated: { Animated } = {}
-	local y = Course.COURSE_Y
-	for _, teamId in teamIds do
-		local x = Course.laneX(teamId)
-		local colour = Course.TEAM_COLOURS[teamId].Color
-		for k = 1, legs do
-			for _, a in buildLeg(folder, CFrame.new(x, y, Course.legStart(k)), picks[k], colour, -2) do
-				table.insert(animated, a)
-			end
-			local pad = part(
+	for k = 1, legs do
+		local lineS = k * sector
+		local base, dir = along(lineS)
+		if k == legs then
+			Props.demonGate(folder, base, W, Color3.fromRGB(255, 200, 80))
+		else
+			Props.torii(
 				folder,
-				Vector3.new(LANE_WIDTH - 1, 0.2, 7),
-				Course.zoneCentre(teamId, k) + Vector3.new(0, 0.1, 0),
-				colour,
+				base,
+				W + 2,
+				13,
+				Color3.fromRGB(255, 200, 80),
+				`SECTOR {k + 1}: {Course.OBSTACLE_NAMES[picks[k + 1]]}`
+			)
+		end
+		placeAcross(folder, base, dir)
+		for _, teamId in teamIds do
+			local box = part(
+				folder,
+				Vector3.new(6.5, 0.2, 8),
+				frameAt(lineS - 5, laneOffset(teamId), Course.ROAD_Y + 0.08),
+				Course.TEAM_COLOURS[teamId].Color,
 				Enum.Material.Neon
 			)
-			pad.CanCollide = false
+			box.CanCollide = false
+			box.Transparency = 0.15
 			local emitter = Instance.new("ParticleEmitter")
-			emitter.Color = ColorSequence.new(colour, WHITE)
+			emitter.Color = ColorSequence.new(box.Color, WHITE)
 			emitter.LightEmission = 0.8
 			emitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) })
 			emitter.Transparency = NumberSequence.new(0.2, 1)
-			emitter.Lifetime = NumberRange.new(1, 1.8)
+			emitter.Lifetime = NumberRange.new(1, 1.6)
 			emitter.Speed = NumberRange.new(3, 6)
 			emitter.EmissionDirection = Enum.NormalId.Top
-			emitter.Rate = if k == legs then 30 else 10
-			emitter.Parent = pad
-			if k == legs then
-				Props.demonGate(folder, Course.zoneCentre(teamId, k) + Vector3.new(0, 0, 4), LANE_WIDTH + 2, colour)
-			else
-				Props.torii(
-					folder,
-					Vector3.new(x, y, Course.legStart(k + 1)),
-					LANE_WIDTH + 2,
-					11,
-					colour,
-					Course.LAYOUT_NAMES[picks[k + 1]]
-				)
-			end
-			lanternPost(folder, Vector3.new(x - LANE_GAP / 2, y - 6, Course.legStart(k) + 60), -2)
+			emitter.Rate = if k == legs then 30 else 12
+			emitter.Parent = box
 		end
-		Props.torii(folder, Vector3.new(x, y, Course.legStart(1)), LANE_WIDTH + 2, 12, colour, `TEAM {teamId}`)
+		-- The obstacle sits on the longest straight in this sector.
+		OBSTACLES[picks[k]].build(
+			folder,
+			frameAt(bestStraight((k - 1) * sector, k * sector), 0, Course.ROAD_Y),
+			animated
+		)
+		markPlaced(folder)
 	end
 	folder.Parent = Workspace
 	animate(folder, animated)
 	return folder
-end
-
--- Built once at server start: plaza, title gate, lanterns, benches, practice lane and stands.
-function Course.buildLobby()
-	local folder = Instance.new("Folder")
-	folder.Name = "RelayLobby"
-	local plaza =
-		pillar(folder, Vector3.new(0, -0.2, 0), 0.6, 30, Color3.fromRGB(214, 200, 170), Enum.Material.Pavement)
-	plaza.Name = "Plaza"
-	pillar(folder, Vector3.new(0, -0.3, 0), 0.6, 32, Color3.fromRGB(150, 100, 80), Enum.Material.Brick)
-
-	Props.torii(folder, Vector3.new(0, 0, -24), 20, 15, Color3.fromRGB(196, 40, 28), nil)
-	local title = part(
-		folder,
-		Vector3.new(17, 2.4, 0.6),
-		Vector3.new(0, 13.9, -23.4),
-		Color3.fromRGB(30, 26, 34),
-		Enum.Material.Slate
-	)
-	label(title, "RELAY ROUNDS", Color3.fromRGB(255, 200, 80))
-	for i = 0, 7 do
-		local angle = math.rad(i * 45 + 22.5)
-		Props.lantern(folder, Vector3.new(math.cos(angle) * 26, 0, math.sin(angle) * 26))
-	end
-	for _, spot in
-		{ Vector3.new(-14, 0, 12), Vector3.new(14, 0, 12), Vector3.new(-14, 0, -12), Vector3.new(14, 0, -12) }
-	do
-		part(
-			folder,
-			Vector3.new(6, 0.5, 2),
-			spot + Vector3.new(0, 1.6, 0),
-			Color3.fromRGB(140, 95, 60),
-			Enum.Material.WoodPlanks
-		)
-		for _, side in { -1, 1 } do
-			part(
-				folder,
-				Vector3.new(0.4, 1.4, 1.6),
-				spot + Vector3.new(side * 2.6, 0.7, 0),
-				Color3.fromRGB(45, 45, 52),
-				Enum.Material.Metal
-			)
-		end
-	end
-
-	-- Practice lane: three layouts at ground level heading west, so falls just land on grass.
-	local practice = CFrame.new(-40, 1, -8) * CFrame.Angles(0, math.rad(-90), 0)
-	local blue = Color3.fromRGB(110, 170, 230)
-	Props.torii(folder, Vector3.new(-40, 1, -8), LANE_WIDTH + 4, 11, blue, "PRACTICE")
-	local animated: { Animated } = {}
-	for i, layout in { 2, 3, 5 } do
-		for _, a in buildLeg(folder, practice * CFrame.new(0, 0, (i - 1) * Course.LEG_LENGTH), layout, blue, 0) do
-			table.insert(animated, a)
-		end
-	end
-
-	-- Stands: tiered seating beside the course, under a crimson roof between gothic spires.
-	local s = Course.STANDS
-	local rows = 4
-	for row = 0, rows - 1 do
-		local top = s.Y - 6 + row * 2.5
-		part(
-			folder,
-			Vector3.new(5, top + 2, 70),
-			Vector3.new(s.X - row * 5, top / 2 - 1, s.Z),
-			Color3.fromRGB(70, 64, 74),
-			Enum.Material.Slate
-		)
-		for seat = -6, 6 do
-			local colour = Course.TEAM_COLOURS[(seat + row) % 4 + 1].Color
-			part(folder, Vector3.new(2, 1, 3.6), Vector3.new(s.X - row * 5 - 1, top + 0.5, s.Z + seat * 5), colour)
-		end
-	end
-	for _, z in { s.Z - 34, s.Z + 34 } do
-		Props.spire(folder, Vector3.new(s.X + 2, 0, z), s.Y + 8)
-		Props.spire(folder, Vector3.new(s.X - rows * 5, 0, z), s.Y + 8)
-	end
-	local roof = part(
-		folder,
-		Vector3.new(rows * 5 + 6, 0.6, 72),
-		Vector3.new(s.X - rows * 2.5 + 1, s.Y + 10.3, s.Z),
-		Color3.fromRGB(150, 30, 30),
-		Enum.Material.Fabric
-	)
-	roof.Transparency = 0.1
-	local board =
-		part(folder, Vector3.new(28, 4, 1), Vector3.new(s.X - rows * 5 - 2, s.Y + 7, s.Z), Color3.fromRGB(30, 26, 34))
-	board.CFrame = board.CFrame * CFrame.Angles(0, math.rad(90), 0)
-	label(board, "THE STANDS")
-	folder.Parent = Workspace
-	animate(folder, animated)
 end
 
 return Course

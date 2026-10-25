@@ -2,6 +2,7 @@
 -- Relay Rounds server (docs/game-design/relay-rounds-gdd.md). RelayRules decides every outcome;
 -- this script only reads positions, builds the course and moves characters. Clients send nothing.
 
+local PhysicsService = game:GetService("PhysicsService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
@@ -47,13 +48,17 @@ local function rootOf(userId: number): BasePart?
 	return character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 end
 
-local function teleport(userId: number, position: Vector3)
+local function teleport(userId: number, target: Vector3 | CFrame)
 	local root = rootOf(userId)
 	if root then
+		local cf = if typeof(target) == "CFrame" then target else CFrame.new(target)
 		root.AssemblyLinearVelocity = Vector3.zero
-		root.CFrame = CFrame.new(position + Vector3.new(0, 4, 0))
+		root.CFrame = cf + Vector3.new(0, 4, 0)
 	end
 end
+
+-- The leg count of the round in progress; the course geometry depends on it.
+local currentLegs = START_LEGS
 
 -- Paints a character in the team colour (GDD B.2). Respawning restores the player's own look.
 local function paint(userId: number, colour: BrickColor)
@@ -117,9 +122,7 @@ local function inZone(userId: number, centre: Vector3): boolean
 		return false
 	end
 	local offset = root.Position - centre
-	return math.abs(offset.X) <= Course.ZONE_RADIUS
-		and math.abs(offset.Z) <= Course.ZONE_RADIUS
-		and root.Position.Y > Course.FALL_Y
+	return Vector3.new(offset.X, 0, offset.Z).Magnitude <= Course.ZONE_RADIUS and math.abs(offset.Y) < 8
 end
 
 local batons: { [number]: BasePart } = {}
@@ -163,7 +166,7 @@ end
 local function placeWaiting(team: RelayRules.Team)
 	for _, member in team.members do
 		if not team.ran[member] then
-			teleport(member, Course.zoneCentre(team.id, team.legsDone + 1))
+			teleport(member, Course.zoneCentre(team.id, team.legsDone + 1, currentLegs))
 		end
 	end
 end
@@ -189,6 +192,22 @@ local function addWin(userIds: { number })
 	end
 end
 
+-- Racers pass through each other, as in most Roblox racing games, so nobody can body-block a lane.
+PhysicsService:RegisterCollisionGroup("Racers")
+PhysicsService:CollisionGroupSetCollidable("Racers", "Racers", false)
+local function ghost(character: Model)
+	for _, item in character:GetDescendants() do
+		if item:IsA("BasePart") then
+			item.CollisionGroup = "Racers"
+		end
+	end
+	character.DescendantAdded:Connect(function(item)
+		if item:IsA("BasePart") then
+			item.CollisionGroup = "Racers"
+		end
+	end)
+end
+
 -- shortcut: wins last for the session only; saving them needs a data schema decision record.
 Players.PlayerAdded:Connect(function(player)
 	local leaderstats = Instance.new("Folder")
@@ -197,6 +216,10 @@ Players.PlayerAdded:Connect(function(player)
 	wins.Name = "Wins"
 	wins.Parent = leaderstats
 	leaderstats.Parent = player
+	player.CharacterAdded:Connect(ghost)
+	if player.Character then
+		ghost(player.Character)
+	end
 end)
 
 local match: RelayRules.Match? = nil
@@ -210,7 +233,7 @@ Players.PlayerRemoving:Connect(function(player)
 	if newRunner ~= nil then
 		for _, team in current.teams do
 			if team.runner == newRunner then
-				teleport(newRunner, Course.legSpawn(team.id, team.legsDone + 1))
+				teleport(newRunner, Course.spawnFrame(team.id, team.legsDone + 1, currentLegs))
 				giveBaton(team)
 			end
 		end
@@ -227,7 +250,8 @@ end
 
 local function playRound(current: RelayRules.Match)
 	local legs = RelayRules.legsForRound(current.round + 1, START_LEGS)
-	RelayRules.startRound(current, Course.LEG_LENGTH)
+	currentLegs = legs
+	RelayRules.startRound(current, Course.sectorLength(legs))
 	local course = Course.build(teamIds(current), legs, current.round)
 	local hazards = {}
 	for _, d in course:GetDescendants() do
@@ -238,7 +262,7 @@ local function playRound(current: RelayRules.Match)
 	hazardParams.FilterDescendantsInstances = hazards
 	for _, team in current.teams do
 		if team.runner then
-			teleport(team.runner, Course.legSpawn(team.id, 1))
+			teleport(team.runner, Course.spawnFrame(team.id, 1, legs))
 			paint(team.runner, Course.TEAM_COLOURS[team.id])
 			giveBaton(team)
 		end
@@ -269,7 +293,7 @@ local function playRound(current: RelayRules.Match)
 			if team.finishedAt == nil and runner ~= nil then
 				local root = rootOf(runner)
 				local leg = team.legsDone + 1
-				local goal = Course.zoneCentre(team.id, leg)
+				local goal = Course.zoneCentre(team.id, leg, legs)
 				-- Teammates still to run who fell or respawned go back to their handoff pad.
 				for _, member in team.members do
 					local memberRoot = rootOf(member)
@@ -287,7 +311,7 @@ local function playRound(current: RelayRules.Match)
 					if root.Position.Y >= Course.FALL_Y then
 						sounds.out:Play()
 					end
-					teleport(runner, Course.legSpawn(team.id, leg))
+					teleport(runner, Course.spawnFrame(team.id, leg, legs))
 					paint(runner, Course.TEAM_COLOURS[team.id])
 					giveBaton(team)
 				elseif root and root.Parent and root.Parent:FindFirstChild("Baton") == nil then
@@ -297,7 +321,7 @@ local function playRound(current: RelayRules.Match)
 					for _, member in team.members do
 						waiting[member] = member ~= runner and inZone(member, goal)
 					end
-					if RelayRules.completeLeg(team, waiting, legs, Course.LEG_LENGTH, os.clock() - started) then
+					if RelayRules.completeLeg(team, waiting, legs, Course.sectorLength(legs), os.clock() - started) then
 						sounds.go:Play()
 						if team.finishedAt ~= nil then
 							say(`Team {team.id} finished!`)
@@ -306,7 +330,7 @@ local function playRound(current: RelayRules.Match)
 						placeWaiting(team)
 					end
 				elseif root then
-					team.distanceLeft = math.max(0, goal.Z - root.Position.Z)
+					team.distanceLeft = Course.distanceLeft(root.Position, leg, legs)
 				end
 			end
 		end
@@ -372,6 +396,7 @@ end
 
 Scenery.lighting()
 Scenery.world()
+Course.buildTrack()
 Course.buildLobby()
 
 while true do

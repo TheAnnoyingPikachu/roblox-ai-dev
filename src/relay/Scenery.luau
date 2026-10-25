@@ -9,11 +9,9 @@ local Props = require(script.Parent:WaitForChild("Props"))
 
 local Scenery = {}
 
--- Nothing is planted inside these boxes (minX, minZ, maxX, maxZ): the course with its stands,
--- and the lobby with the practice lane running west.
+-- Nothing is planted inside these boxes (minX, minZ, maxX, maxZ).
 local ARENAS = {
-	{ -25, -70, 175, 560 },
-	{ -420, -45, 45, 30 },
+	{ -165, -215, 305, 185 }, -- circuit, infield and grandstand
 }
 
 local function inArena(x: number, z: number, margin: number): boolean
@@ -103,9 +101,9 @@ function Scenery.world()
 			placed += 1
 		end
 	end
-	terrain:FillBlock(CFrame.new(-200, -4, 140), Vector3.new(140, 8, 220), Enum.Material.Air)
-	terrain:FillBlock(CFrame.new(-200, -5, 140), Vector3.new(140, 6, 220), Enum.Material.Water)
-	terrain:FillBlock(CFrame.new(-145, -3, 140), Vector3.new(14, 6, 230), Enum.Material.Sand)
+	terrain:FillBlock(CFrame.new(-280, -4, 0), Vector3.new(140, 8, 220), Enum.Material.Air)
+	terrain:FillBlock(CFrame.new(-280, -5, 0), Vector3.new(140, 6, 220), Enum.Material.Water)
+	terrain:FillBlock(CFrame.new(-205, -3, 0), Vector3.new(14, 6, 230), Enum.Material.Sand)
 
 	local trees = Instance.new("Folder")
 	trees.Name = "Trees"
@@ -118,7 +116,7 @@ function Scenery.world()
 			task.wait()
 		end
 		local x, z = rng:NextNumber(-520, 420), rng:NextNumber(-300, 780)
-		local inLake = x > -275 and x < -125 and z > 25 and z < 255
+		local inLake = x > -355 and x < -195 and z > -115 and z < 115
 		if not inArena(x, z, 8) and not inLake then
 			local ground = Workspace:Raycast(Vector3.new(x, 200, z), Vector3.new(0, -400, 0))
 			local y = if ground then ground.Position.Y - 0.5 else 0
@@ -128,11 +126,11 @@ function Scenery.world()
 	end
 	-- Cherry blossoms line the edge of the arena.
 	local blossoms = 0
-	for attempt = 1, 400 do
+	for _ = 1, 400 do
 		if blossoms >= 36 then
 			break
 		end
-		local x, z = rng:NextNumber(-440, 220), rng:NextNumber(-110, 620)
+		local x, z = rng:NextNumber(-230, 370), rng:NextNumber(-280, 250)
 		if not inArena(x, z, 6) and inArena(x, z, 40) then
 			Props.sakura(trees, Vector3.new(x, 0, z), rng)
 			blossoms += 1
