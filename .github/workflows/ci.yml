@@ -44,7 +44,8 @@ jobs:
           mkdir -p build
           rojo build default.project.json --output build/place.rbxl
           rojo build relay.project.json --output build/relay.rbxl
-          sha256sum build/place.rbxl build/relay.rbxl | tee build/place.rbxl.sha256
+          rojo build night.project.json --output build/night.rbxl
+          sha256sum build/place.rbxl build/relay.rbxl build/night.rbxl | tee build/place.rbxl.sha256
 
       - name: Upload evidence
         if: always()

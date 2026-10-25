@@ -1,0 +1,44 @@
+{
+  "task_id": "NIGHT-004",
+  "project_id": "NIGHT-001",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Hundred Demon Night server: shrine arena and lighting, enemy models and AI, Oni General and Gashadokuro, the 10 Hz run loop over RunRules, Combat and Request handling, gear, Fx and NightStatus publishing, and saved profiles with the NightWins leaderboard.",
+  "inputs": [
+    "docs/game-design/game3-gdd.md sections B to K",
+    "docs/architecture/night.md sections 1, 4, 5 and 7",
+    "docs/decisions/0007-hundred-demon-night.md",
+    "src/relay/Profiles.luau (copied)"
+  ],
+  "dependencies": [
+    "NIGHT-002"
+  ],
+  "acceptance_criteria": [
+    "Only the files listed for NIGHT-004 in docs/architecture/night.md section 1 change",
+    "Request and Combat enforce every check in decision 0007; refused requests change nothing",
+    "Every saved write uses the UpdateAsync re-apply pattern; a failed load never writes defaults; stores are NightProfile<suffix> and NightWins<suffix>",
+    "Tick order follows docs/architecture/night.md section 4.3; Fx payloads follow section 5",
+    "Arena stays under 5,000 parts, each enemy under 15 parts, at most 32 enemies alive",
+    "Every new mesh and sound has a docs/assets/register.md row before use",
+    "Solo Studio run: PLAY to first wisp killed under 15 s; wave 1 cleared under 60 s; a full tier-1 night can be won",
+    "Server frame time under 8 ms with 32 enemies alive (MicroProfiler capture)",
+    "CI green with build/night.rbxl built"
+  ],
+  "verification": "CI; Studio playtests with notes and timings; QA review (NIGHT-006) of remotes and saves",
+  "output_artifacts": [
+    "src/night/NightServer.server.luau",
+    "src/night/State.luau",
+    "src/night/Remotes.luau",
+    "src/night/Profiles.luau",
+    "src/night/Combat.luau",
+    "src/night/Enemies.luau",
+    "src/night/Gear.luau",
+    "src/night/Arena.luau",
+    "src/relay/Models.luau",
+    "docs/assets/register.md"
+  ],
+  "risk_level": "high",
+  "status": "planned",
+  "notes": "High risk: saved player data and three remotes. Can start against stubs of the section 3 signatures before NIGHT-003 lands. Delete src/night/.gitkeep with the first script. PRODUCTION_UNIVERSE_ID stays nil."
+}

@@ -1,0 +1,50 @@
+{
+  "task_id": "NIGHT-003",
+  "project_id": "NIGHT-001",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Hundred Demon Night pure rules: Rng, CombatRules, WaveRules, BossRules, BlessingRules, RunRules, MetaRules and NightProgress in src/shared with Lune specs, the StyleRules combat events, and ProgressRules rewritten over MetaRules without changing Relay behaviour.",
+  "inputs": [
+    "docs/game-design/game3-gdd.md sections B to H, K and L",
+    "docs/architecture/night.md sections 2, 3 and 7",
+    "docs/decisions/0007-hundred-demon-night.md"
+  ],
+  "dependencies": [
+    "NIGHT-002"
+  ],
+  "acceptance_criteria": [
+    "Every signature and constant in docs/architecture/night.md section 3 exists exactly as written",
+    "Each new module has tests/<Module>.spec.luau registered in tests/run.luau covering the GDD section L test column",
+    "Solo tier-1 rank-D victory pays 465 XP and 290 souls (NightProgress unit test)",
+    "Wave budgets sum to B for waves 2-9, n 1-6, 50 seeds (WaveRules unit test)",
+    "MetaRules.questsFor gives 3 distinct quests for pool sizes 3-12 over 400 days",
+    "tests/ProgressRules.spec.luau passes unchanged and no file under src/relay or src/relay-client changes",
+    "No Roblox API use in src/shared; selene and stylua clean; CI green"
+  ],
+  "verification": "Lune tests in CI, then QA review (NIGHT-006) of the rules against the GDD",
+  "output_artifacts": [
+    "src/shared/Rng.luau",
+    "src/shared/CombatRules.luau",
+    "src/shared/WaveRules.luau",
+    "src/shared/BossRules.luau",
+    "src/shared/BlessingRules.luau",
+    "src/shared/RunRules.luau",
+    "src/shared/MetaRules.luau",
+    "src/shared/NightProgress.luau",
+    "src/shared/ProgressRules.luau",
+    "src/shared/StyleRules.luau",
+    "tests/Rng.spec.luau",
+    "tests/CombatRules.spec.luau",
+    "tests/WaveRules.spec.luau",
+    "tests/BossRules.spec.luau",
+    "tests/BlessingRules.spec.luau",
+    "tests/RunRules.spec.luau",
+    "tests/MetaRules.spec.luau",
+    "tests/NightProgress.spec.luau",
+    "tests/run.luau"
+  ],
+  "risk_level": "high",
+  "status": "planned",
+  "notes": "High risk: MetaRules sits under Relay's live save code. A signature change must update docs/architecture/night.md in the same PR, since NIGHT-004 and NIGHT-005 code against it in parallel."
+}

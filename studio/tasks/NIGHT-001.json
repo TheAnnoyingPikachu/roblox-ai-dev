@@ -1,0 +1,31 @@
+{
+  "task_id": "NIGHT-001",
+  "project_id": "NIGHT-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Write the Hundred Demon Night (game 3, concept B) design spec: run flow, combat, enemies and waves, bosses, blessings, rewards, meta game, arena and art plan, remotes, edge cases, module plan and testable acceptance criteria.",
+  "inputs": [
+    "docs/game-design/game3-concepts.md concept B",
+    "docs/game-design/relay-rounds-gdd.md (format and reused systems)",
+    "docs/decisions/0006-relay-rounds-profiles-economy.md"
+  ],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Every rule the server enforces is stated precisely enough to unit test",
+    "Every join, leave and disconnect case leaves a defined run state",
+    "Facts, assumptions and hypotheses are labelled separately",
+    "Kill criteria and a cut order are stated"
+  ],
+  "verification": "SHANNON approves the spec or returns it with changes",
+  "output_artifacts": [
+    "docs/game-design/game3-concepts.md",
+    "docs/game-design/game3-gdd.md"
+  ],
+  "risk_level": "low",
+  "status": "accepted",
+  "evidence": [
+    "Commit 1dfdb382a58bfe1fb0b1be3162b48577de15704b on branch game3/concept (2026-10-25): Game 3 concepts and design spec: Hundred Demon Night"
+  ],
+  "notes": "Points the GDD leaves open are settled in docs/architecture/night.md section 7."
+}

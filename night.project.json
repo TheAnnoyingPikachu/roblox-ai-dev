@@ -1,0 +1,54 @@
+{
+  "name": "hundred-demon-night",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "Night": {
+        "$path": "src/night",
+        "Models": {
+          "$path": "src/relay/Models.luau"
+        },
+        "Props": {
+          "$path": "src/relay/Props.luau"
+        }
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "NightClient": {
+          "$path": "src/night-client"
+        }
+      },
+      "$properties": {
+        "CharacterWalkSpeed": 24,
+        "CharacterJumpPower": 55,
+        "CharacterUseJumpPower": true
+      }
+    },
+    "Workspace": {
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Neutral": true,
+          "Size": [
+            12,
+            1,
+            12
+          ],
+          "Position": [
+            0,
+            0.6,
+            80
+          ],
+          "Transparency": 1
+        }
+      }
+    }
+  }
+}

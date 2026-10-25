@@ -1,0 +1,38 @@
+{
+  "task_id": "NIGHT-005",
+  "project_id": "NIGHT-001",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Hundred Demon Night client: forked start menu (PLAY panel, Locker tabs, Rewards, Stats, Settings), movement with the dash request, camera effects, combat input with soft lock and predicted VFX, Fx rendering, and the combat HUD with blessing cards and first-run prompts.",
+  "inputs": [
+    "docs/game-design/game3-gdd.md sections C9, H2 and H6",
+    "docs/architecture/night.md sections 1, 5, 6 and 7",
+    "docs/decisions/0007-hundred-demon-night.md",
+    "src/relay-client/Menu.client.luau, Movement.client.luau, CameraFx.client.luau (copied)"
+  ],
+  "dependencies": [
+    "NIGHT-002"
+  ],
+  "acceptance_criteria": [
+    "Only files under src/night-client change",
+    "The client sends only Request(action, arg) and Combat(action) as defined in decision 0007; it never sends amounts, positions or targets",
+    "Every Fx kind in docs/architecture/night.md section 5 is rendered; own swing and dash events are not drawn twice",
+    "PC, gamepad and touch inputs work for Attack, Skill, Dash and Trigger",
+    "Settings for music, sound effects, camera shake and damage numbers take effect at once",
+    "Start-menu orbit frame shows lit lanterns, the stage, a torii or demon gate, the moon and festival stalls (screenshot for SHANNON)",
+    "selene and stylua clean; CI green"
+  ],
+  "verification": "CI; Studio run of menus and a wave on PC and the touch emulator with screenshots; QA review (NIGHT-006)",
+  "output_artifacts": [
+    "src/night-client/ClientState.luau",
+    "src/night-client/Menu.client.luau",
+    "src/night-client/Movement.client.luau",
+    "src/night-client/CameraFx.client.luau",
+    "src/night-client/CombatFx.client.luau",
+    "src/night-client/Hud.client.luau"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Can start against a stub NightStatus and attributes before NIGHT-004 lands. Delete src/night-client/.gitkeep with the first script."
+}

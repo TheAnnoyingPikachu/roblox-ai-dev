@@ -1,0 +1,33 @@
+{
+  "task_id": "NIGHT-006",
+  "project_id": "NIGHT-001",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "QA review of Hundred Demon Night v0.1: rules against the GDD, remotes and saves against decision 0007, and the GDD section M acceptance playtests including the two-client test.",
+  "inputs": [
+    "docs/game-design/game3-gdd.md section M",
+    "docs/decisions/0007-hundred-demon-night.md",
+    "docs/architecture/night.md",
+    "NIGHT-003, NIGHT-004 and NIGHT-005 pull requests"
+  ],
+  "dependencies": [
+    "NIGHT-003",
+    "NIGHT-004",
+    "NIGHT-005"
+  ],
+  "acceptance_criteria": [
+    "Every GDD section M item is checked, with evidence or a filed defect",
+    "Every Request and Combat check in decision 0007 is exercised from a client, including refusals, wrong states and rate limits",
+    "Save writes reviewed: re-apply pattern, sanitising fallbacks, offline mode, no defaults written over a failed load",
+    "Two-client local server: the second joins mid-wave, gets catch-up blessings and revives the first",
+    "Relay Rounds still passes its ProgressRules spec and builds unchanged"
+  ],
+  "verification": "QA report with test notes, screenshots and CI links attached as evidence; SHANNON signs off",
+  "output_artifacts": [
+    "QA notes in this task's evidence"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Reviewer must not be the thread that wrote NIGHT-003, NIGHT-004 or NIGHT-005 (CLAUDE.md rule 2)."
+}
