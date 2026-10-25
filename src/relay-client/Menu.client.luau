@@ -182,7 +182,7 @@ local xpText = text({
 local coinText = text({
 	Position = UDim2.fromOffset(10, 58),
 	Size = UDim2.fromOffset(220, 24),
-	Text = "🪙 0",
+	Text = "0 coins",
 	TextColor3 = GOLD,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	Font = Enum.Font.GothamBlack,
@@ -202,34 +202,27 @@ local quick = new(
 )
 local rewardsDot: Frame
 for _, item in { { "Menu", "MENU" }, { "Locker", "LOCKER" }, { "Rewards", "REWARDS" } } do
-	local b = button(
-		{
-			Size = UDim2.fromOffset(69, 32),
-			Text = item[2],
-			BackgroundColor3 = if item[1] == "Menu" then INK else RED,
-			Parent = quick,
-		},
-		function()
-			if item[1] == "Menu" then
-				showMenu()
-			else
-				openPanel(item[1])
-			end
+	local b = button({
+		Size = UDim2.fromOffset(69, 32),
+		Text = item[2],
+		BackgroundColor3 = if item[1] == "Menu" then INK else RED,
+		Parent = quick,
+	}, function()
+		if item[1] == "Menu" then
+			showMenu()
+		else
+			openPanel(item[1])
 		end
-	)
+	end)
 	if item[1] == "Rewards" then
-		rewardsDot = new(
-			"Frame",
-			{
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(1, -4, 0, 4),
-				Size = UDim2.fromOffset(12, 12),
-				BackgroundColor3 = GOLD,
-				Visible = false,
-				Parent = b,
-			},
-			{ corner(6) }
-		)
+		rewardsDot = new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(1, -4, 0, 4),
+			Size = UDim2.fromOffset(12, 12),
+			BackgroundColor3 = GOLD,
+			Visible = false,
+			Parent = b,
+		}, { corner(6) })
 	end
 end
 
@@ -259,7 +252,7 @@ local function refreshHud()
 	xpText.Text = if level >= ProgressRules.MAX_LEVEL
 		then "MAX LEVEL"
 		else `{commas(profile.xp - from)} / {commas(to - from)} XP`
-	coinText.Text = `🪙 {commas(profile.coins)}`
+	coinText.Text = `{commas(profile.coins)} coins`
 	rewardsDot.Visible = rewardsReady()
 	if lastLevel and level > lastLevel then
 		toast(`LEVEL UP!  Level {level}`, GOLD)
@@ -281,23 +274,19 @@ end)
 
 -- Panels ----------------------------------------------------------------------------------------
 
-local panelHolder = new(
-	"Frame",
-	{
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.52),
-		Size = UDim2.fromScale(0.62, 0.7),
-		BackgroundColor3 = PANEL,
-		BackgroundTransparency = 0.05,
-		Visible = false,
-		Parent = gui,
-	},
-	{
-		corner(16),
-		stroke(RED, 3),
-		new("UISizeConstraint", { MaxSize = Vector2.new(860, 620), MinSize = Vector2.new(320, 360) }),
-	}
-)
+local panelHolder = new("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.52),
+	Size = UDim2.fromScale(0.62, 0.7),
+	BackgroundColor3 = PANEL,
+	BackgroundTransparency = 0.05,
+	Visible = false,
+	Parent = gui,
+}, {
+	corner(16),
+	stroke(RED, 3),
+	new("UISizeConstraint", { MaxSize = Vector2.new(860, 620), MinSize = Vector2.new(320, 360) }),
+})
 local panelTitle = text({
 	Position = UDim2.fromOffset(20, 12),
 	Size = UDim2.new(1, -90, 0, 40),
@@ -306,19 +295,16 @@ local panelTitle = text({
 	Text = "",
 	Parent = panelHolder,
 })
-button(
-	{
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -12, 0, 12),
-		Size = UDim2.fromOffset(44, 40),
-		Text = "X",
-		BackgroundColor3 = INK,
-		Parent = panelHolder,
-	},
-	function()
-		panelHolder.Visible = false
-	end
-)
+button({
+	AnchorPoint = Vector2.new(1, 0),
+	Position = UDim2.new(1, -12, 0, 12),
+	Size = UDim2.fromOffset(44, 40),
+	Text = "X",
+	BackgroundColor3 = INK,
+	Parent = panelHolder,
+}, function()
+	panelHolder.Visible = false
+end)
 
 local function panel(name: string): Frame
 	local f = new("ScrollingFrame", {
@@ -338,17 +324,13 @@ local function panel(name: string): Frame
 end
 
 local function row(parent: Instance, height: number, order: number): Frame
-	return new(
-		"Frame",
-		{
-			Size = UDim2.new(1, -8, 0, height),
-			BackgroundColor3 = INK,
-			BackgroundTransparency = 0.2,
-			LayoutOrder = order,
-			Parent = parent,
-		},
-		{ corner(10) }
-	)
+	return new("Frame", {
+		Size = UDim2.new(1, -8, 0, height),
+		BackgroundColor3 = INK,
+		BackgroundTransparency = 0.2,
+		LayoutOrder = order,
+		Parent = parent,
+	}, { corner(10) })
 end
 
 local renderers: { [string]: () -> () } = {}
@@ -363,16 +345,12 @@ renderers.Locker = function()
 	end
 	for i, t in ProgressRules.TRAILS do
 		local r = row(locker, 56, i)
-		local swatch = new(
-			"Frame",
-			{
-				Position = UDim2.fromOffset(10, 10),
-				Size = UDim2.fromOffset(120, 36),
-				BackgroundColor3 = WHITE,
-				Parent = r,
-			},
-			{ corner(8) }
-		)
+		local swatch = new("Frame", {
+			Position = UDim2.fromOffset(10, 10),
+			Size = UDim2.fromOffset(120, 36),
+			BackgroundColor3 = WHITE,
+			Parent = r,
+		}, { corner(8) })
 		local stops = {}
 		if #t.colours == 0 then
 			table.insert(
@@ -426,30 +404,27 @@ renderers.Locker = function()
 		elseif t.price then
 			label, colour, action = `BUY {commas(t.price)}`, if profile.coins >= t.price then GOLD else INK, "buyTrail"
 		end
-		local b = button(
-			{
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -10, 0.5, 0),
-				Size = UDim2.fromOffset(140, 38),
-				Text = label,
-				BackgroundColor3 = colour,
-				TextColor3 = if colour == GOLD then INK else WHITE,
-				Parent = r,
-			},
-			function()
-				if action == nil then
-					return
-				end
-				if ask(action, t.id) then
-					toast(if action == "buyTrail" then `Bought {t.name}!` else `Equipped {t.name}`, GREEN)
-					if action == "buyTrail" then
-						ask("equipTrail", t.id)
-					end
-				elseif action == "buyTrail" then
-					toast("Not enough coins yet", RED)
-				end
+		local b = button({
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -10, 0.5, 0),
+			Size = UDim2.fromOffset(140, 38),
+			Text = label,
+			BackgroundColor3 = colour,
+			TextColor3 = if colour == GOLD then INK else WHITE,
+			Parent = r,
+		}, function()
+			if action == nil then
+				return
 			end
-		)
+			if ask(action, t.id) then
+				toast(if action == "buyTrail" then `Bought {t.name}!` else `Equipped {t.name}`, GREEN)
+				if action == "buyTrail" then
+					ask("equipTrail", t.id)
+				end
+			elseif action == "buyTrail" then
+				toast("Not enough coins yet", RED)
+			end
+		end)
 		b.AutoButtonColor = action ~= nil
 	end
 end
@@ -484,15 +459,11 @@ renderers.Rewards = function()
 		local shownStreak = math.min(currentStreak, 7)
 		local claimed = d <= shownStreak
 		local isNext = nextStreak ~= nil and d == math.min(nextStreak, 7)
-		local cell = new(
-			"Frame",
-			{
-				Size = UDim2.new(1 / 7, -6, 1, 0),
-				BackgroundColor3 = if claimed then GREEN elseif isNext then GOLD else INK,
-				Parent = strip,
-			},
-			{ corner(10) }
-		)
+		local cell = new("Frame", {
+			Size = UDim2.new(1 / 7, -6, 1, 0),
+			BackgroundColor3 = if claimed then GREEN elseif isNext then GOLD else INK,
+			Parent = strip,
+		}, { corner(10) })
 		text({
 			Size = UDim2.fromScale(1, 0.4),
 			Text = `DAY {d}`,
@@ -502,7 +473,7 @@ renderers.Rewards = function()
 		text({
 			Position = UDim2.fromScale(0, 0.45),
 			Size = UDim2.fromScale(1, 0.45),
-			Text = `🪙{ProgressRules.DAILY[d]}`,
+			Text = `{ProgressRules.DAILY[d]}`,
 			TextColor3 = if isNext then INK else GOLD,
 			Font = Enum.Font.GothamBlack,
 			Parent = cell,
@@ -518,22 +489,19 @@ renderers.Rewards = function()
 			else "Come back tomorrow to keep your streak!",
 		Parent = dailyRow,
 	})
-	button(
-		{
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -8, 0.5, 0),
-			Size = UDim2.fromOffset(160, 36),
-			Text = if nextStreak then "CLAIM" else "CLAIMED",
-			BackgroundColor3 = if nextStreak then GOLD else INK,
-			TextColor3 = if nextStreak then INK else MUTED,
-			Parent = dailyRow,
-		},
-		function()
-			if nextStreak and ask("claimDaily") then
-				toast(`+{ProgressRules.dailyReward(nextStreak)} coins: day {nextStreak} streak!`, GOLD)
-			end
+	button({
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -8, 0.5, 0),
+		Size = UDim2.fromOffset(160, 36),
+		Text = if nextStreak then "CLAIM" else "CLAIMED",
+		BackgroundColor3 = if nextStreak then GOLD else INK,
+		TextColor3 = if nextStreak then INK else MUTED,
+		Parent = dailyRow,
+	}, function()
+		if nextStreak and ask("claimDaily") then
+			toast(`+{ProgressRules.dailyReward(nextStreak)} coins: day {nextStreak} streak!`, GOLD)
 		end
-	)
+	end)
 
 	text({
 		Size = UDim2.new(1, -8, 0, 26),
@@ -555,24 +523,19 @@ renderers.Rewards = function()
 			else `Play on {ProgressRules.WEEKLY.days} days this week: {math.min(days, ProgressRules.WEEKLY.days)}/{ProgressRules.WEEKLY.days} for {ProgressRules.WEEKLY.reward} coins`,
 		Parent = weekRow,
 	})
-	button(
-		{
-			AnchorPoint = Vector2.new(1, 0.5),
-			Position = UDim2.new(1, -8, 0.5, 0),
-			Size = UDim2.fromOffset(160, 36),
-			Text = if canWeekly
-				then "CLAIM"
-				else `{math.min(days, ProgressRules.WEEKLY.days)}/{ProgressRules.WEEKLY.days}`,
-			BackgroundColor3 = if canWeekly then GOLD else INK,
-			TextColor3 = if canWeekly then INK else MUTED,
-			Parent = weekRow,
-		},
-		function()
-			if canWeekly and ask("claimWeekly") then
-				toast(`+{ProgressRules.WEEKLY.reward} coins: weekly bonus!`, GOLD)
-			end
+	button({
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -8, 0.5, 0),
+		Size = UDim2.fromOffset(160, 36),
+		Text = if canWeekly then "CLAIM" else `{math.min(days, ProgressRules.WEEKLY.days)}/{ProgressRules.WEEKLY.days}`,
+		BackgroundColor3 = if canWeekly then GOLD else INK,
+		TextColor3 = if canWeekly then INK else MUTED,
+		Parent = weekRow,
+	}, function()
+		if canWeekly and ask("claimWeekly") then
+			toast(`+{ProgressRules.WEEKLY.reward} coins: weekly bonus!`, GOLD)
 		end
-	)
+	end)
 
 	text({
 		Size = UDim2.new(1, -8, 0, 26),
@@ -594,44 +557,33 @@ renderers.Rewards = function()
 			TextXAlignment = Enum.TextXAlignment.Left,
 			Parent = r,
 		})
-		local back = new(
-			"Frame",
-			{
-				Position = UDim2.fromOffset(12, 34),
-				Size = UDim2.new(1, -200, 0, 12),
-				BackgroundColor3 = PANEL,
-				Parent = r,
-			},
-			{ corner(6) }
-		)
-		new(
-			"Frame",
-			{
-				Size = UDim2.fromScale(math.clamp(progress / q.goal, 0, 1), 1),
-				BackgroundColor3 = if done then GREEN else GOLD,
-				Parent = back,
-			},
-			{ corner(6) }
-		)
-		button(
-			{
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -8, 0.5, 0),
-				Size = UDim2.fromOffset(160, 36),
-				Text = if claimed
-					then "DONE"
-					elseif done then `CLAIM 🪙{q.reward}`
-					else `{math.min(progress, q.goal)}/{q.goal}`,
-				BackgroundColor3 = if claimed then INK elseif done then GOLD else INK,
-				TextColor3 = if done and not claimed then INK else MUTED,
-				Parent = r,
-			},
-			function()
-				if done and not claimed and ask("claimQuest", q.id) then
-					toast(`Quest complete: +{q.reward} coins`, GOLD)
-				end
+		local back = new("Frame", {
+			Position = UDim2.fromOffset(12, 34),
+			Size = UDim2.new(1, -200, 0, 12),
+			BackgroundColor3 = PANEL,
+			Parent = r,
+		}, { corner(6) })
+		new("Frame", {
+			Size = UDim2.fromScale(math.clamp(progress / q.goal, 0, 1), 1),
+			BackgroundColor3 = if done then GREEN else GOLD,
+			Parent = back,
+		}, { corner(6) })
+		button({
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -8, 0.5, 0),
+			Size = UDim2.fromOffset(160, 36),
+			Text = if claimed
+				then "DONE"
+				elseif done then `CLAIM {q.reward}`
+				else `{math.min(progress, q.goal)}/{q.goal}`,
+			BackgroundColor3 = if claimed then INK elseif done then GOLD else INK,
+			TextColor3 = if done and not claimed then INK else MUTED,
+			Parent = r,
+		}, function()
+			if done and not claimed and ask("claimQuest", q.id) then
+				toast(`Quest complete: +{q.reward} coins`, GOLD)
 			end
-		)
+		end)
 	end
 end
 
@@ -719,21 +671,18 @@ renderers.Settings = function()
 			Parent = r,
 		})
 		local on = (settings :: any)[item[1]]
-		button(
-			{
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -8, 0.5, 0),
-				Size = UDim2.fromOffset(120, 36),
-				Text = if on then "ON" else "OFF",
-				BackgroundColor3 = if on then GREEN else INK,
-				Parent = r,
-			},
-			function()
-				(settings :: any)[item[1]] = not on
-				applyMusic()
-				renderers.Settings()
-			end
-		)
+		button({
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -8, 0.5, 0),
+			Size = UDim2.fromOffset(120, 36),
+			Text = if on then "ON" else "OFF",
+			BackgroundColor3 = if on then GREEN else INK,
+			Parent = r,
+		}, function()
+			(settings :: any)[item[1]] = not on
+			applyMusic()
+			renderers.Settings()
+		end)
 	end
 	local r = row(setting, 120, 3)
 	text({
@@ -776,19 +725,15 @@ new("Frame", {
 	BorderSizePixel = 0,
 	Parent = menu,
 }, { new("UIGradient", { Transparency = NumberSequence.new(0.05, 1) }) })
-local column = new(
-	"Frame",
-	{
-		Position = UDim2.fromScale(0.06, 0.12),
-		Size = UDim2.fromScale(0.34, 0.8),
-		BackgroundTransparency = 1,
-		Parent = menu,
-	},
-	{
-		new("UIListLayout", { Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder }),
-		new("UISizeConstraint", { MaxSize = Vector2.new(460, 700) }),
-	}
-)
+local column = new("Frame", {
+	Position = UDim2.fromScale(0.06, 0.12),
+	Size = UDim2.fromScale(0.34, 0.8),
+	BackgroundTransparency = 1,
+	Parent = menu,
+}, {
+	new("UIListLayout", { Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder }),
+	new("UISizeConstraint", { MaxSize = Vector2.new(460, 700) }),
+})
 local title = text({
 	Size = UDim2.new(1, 0, 0, 96),
 	Text = "RELAY ROUNDS",
@@ -821,36 +766,29 @@ for i, item in
 		{ "SETTINGS", "Settings" },
 	}
 do
-	local b = button(
-		{
-			Size = UDim2.new(1, 0, 0, if i == 1 then 70 else 52),
-			Text = item[1],
-			BackgroundColor3 = if i == 1 then RED else PANEL,
-			LayoutOrder = 3 + i,
-			Parent = column,
-		},
-		function()
-			if item[2] == "Play" then
-				hideMenu()
-			else
-				openPanel(item[2])
-			end
+	local b = button({
+		Size = UDim2.new(1, 0, 0, if i == 1 then 70 else 52),
+		Text = item[1],
+		BackgroundColor3 = if i == 1 then RED else PANEL,
+		LayoutOrder = 3 + i,
+		Parent = column,
+	}, function()
+		if item[2] == "Play" then
+			hideMenu()
+		else
+			openPanel(item[2])
 		end
-	)
+	end)
 	stroke(if i == 1 then GOLD else RED, 2).Parent = b
 	if item[2] == "Rewards" then
-		menuDot = new(
-			"Frame",
-			{
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.new(1, -16, 0.5, 0),
-				Size = UDim2.fromOffset(16, 16),
-				BackgroundColor3 = GOLD,
-				Visible = false,
-				Parent = b,
-			},
-			{ corner(8) }
-		)
+		menuDot = new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(1, -16, 0.5, 0),
+			Size = UDim2.fromOffset(16, 16),
+			BackgroundColor3 = GOLD,
+			Visible = false,
+			Parent = b,
+		}, { corner(8) })
 	end
 end
 local menuInfo = text({
@@ -864,7 +802,7 @@ local menuInfo = text({
 onProfile.Event:Connect(function()
 	menuDot.Visible = rewardsReady()
 	menuInfo.Text =
-		`Level {ProgressRules.levelFor(profile.xp)}  ·  🪙 {commas(profile.coins)}  ·  {commas(profile.wins)} wins`
+		`Level {ProgressRules.levelFor(profile.xp)}  ·  {commas(profile.coins)} coins  ·  {commas(profile.wins)} wins`
 end)
 
 -- Slow orbit over the circuit behind the menu.

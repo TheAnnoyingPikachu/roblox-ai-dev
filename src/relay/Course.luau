@@ -252,8 +252,8 @@ end
 
 local PODIUM = {
 	{ offset = Vector3.new(0, 0, 14), height = 4, colour = Color3.fromRGB(255, 200, 60) },
-	{ offset = Vector3.new(-6.5, 0, 14), height = 2.8, colour = Color3.fromRGB(200, 205, 215) },
-	{ offset = Vector3.new(6.5, 0, 14), height = 1.8, colour = Color3.fromRGB(205, 130, 70) },
+	{ offset = Vector3.new(6.5, 0, 14), height = 2.8, colour = Color3.fromRGB(200, 205, 215) },
+	{ offset = Vector3.new(-6.5, 0, 14), height = 1.8, colour = Color3.fromRGB(205, 130, 70) },
 }
 local confetti: Part? = nil
 local boardText: TextLabel? = nil
@@ -324,7 +324,8 @@ function Course.buildLobby()
 		number.CanCollide = false
 		label(number, tostring(i), step.colour)
 	end
-	local trophy = Models.spawn("trophy", folder, c + Vector3.new(0, 7, 18.5), 0.9)
+	pillar(folder, c + Vector3.new(0, 0, 20), 9, 2, Color3.fromRGB(235, 235, 240), Enum.Material.Marble)
+	local trophy = Models.spawn("trophy", folder, c + Vector3.new(0, 9, 20), 1.2, 180)
 	if trophy then
 		trophy.CanCollide = false
 	end

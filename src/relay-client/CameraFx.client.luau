@@ -73,7 +73,7 @@ local function makeButton(label: string, width: number): TextButton
 	return b
 end
 local spectateButton = makeButton("SPECTATE", 180)
-local nextButton = makeButton("NEXT ▶", 120)
+local nextButton = makeButton("NEXT >", 120)
 nextButton.Visible = false
 
 local watching: Player? = nil
