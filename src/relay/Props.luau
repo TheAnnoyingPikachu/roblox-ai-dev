@@ -140,11 +140,11 @@ function Props.torii(parent: Instance, base: Vector3, width: number, height: num
 			parent,
 			Vector3.new(math.max(4, #text * 0.9), 1.6, 0.4),
 			base + Vector3.new(0, height - 1.2, 0),
-			colour,
-			Enum.Material.SmoothPlastic
+			INK,
+			Enum.Material.Slate
 		)
 		plaque.CanCollide = false
-		Props.label(plaque, text)
+		Props.label(plaque, text, colour)
 	end
 end
 
