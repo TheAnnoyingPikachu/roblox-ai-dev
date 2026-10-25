@@ -4,19 +4,37 @@
   "owner": "A11",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "Relay Rounds finishing pass: an on-screen status bar, a round timer, a baton that survives respawns, and recovery for teammates who fall while waiting.",
-  "inputs": ["docs/game-design/relay-rounds-gdd.md", "RELAY-002 Studio smoke test"],
-  "dependencies": ["RELAY-002"],
+  "objective": "Relay Rounds launch polish: status bar and round timer, get-ready countdown, lobby with title and practice lane, raised stands for eliminated teams, four obstacle layouts that change each round, team-coloured characters and lanes, session Wins leaderboard, built-in sounds, 2-player start, and respawn-safe baton and fall recovery.",
+  "inputs": [
+    "docs/game-design/relay-rounds-gdd.md",
+    "RELAY-002 Studio smoke test"
+  ],
+  "dependencies": [
+    "RELAY-002"
+  ],
   "acceptance_criteria": [
-    "Players see the server status (lobby countdown, round timer, eliminations, winner) on screen",
-    "The client only reads status and sends nothing",
-    "A runner who dies or falls gets a new baton at the start of their leg",
-    "A teammate still to run who falls returns to their handoff pad",
+    "Players see the server status (lobby countdown, get-ready, round timer, finishes, eliminations, winner) on screen; the client sends nothing",
+    "A match starts with 2 players and the lobby countdown cancels if players drop below 2",
+    "Eliminated players move to the stands; everyone respawns in the lobby with their own look after the match",
+    "A runner who dies or falls gets a new baton at the start of their leg; a waiting teammate who falls returns to their pad",
+    "Team sizes differ by at most 1 for 2 to 16 players (RelayRules unit test)",
     "CI green with both places built"
   ],
   "verification": "CI; playtest skipped at SHANNON's request (2026-10-25)",
-  "output_artifacts": ["src/relay/RelayServer.server.luau", "src/relay-client/StatusBar.client.luau", "relay.project.json"],
+  "output_artifacts": [
+    "src/relay/RelayServer.server.luau",
+    "src/relay/Course.luau",
+    "src/relay-client/StatusBar.client.luau",
+    "src/shared/RelayRules.luau",
+    "tests/RelayRules.spec.luau",
+    "relay.project.json",
+    "docs/game-design/relay-rounds-gdd.md"
+  ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "Studio retest not run: Studio was closed to clear the publish lock. SHANNON asked to skip test criteria and check in only before publishing."
+  "notes": "Not tested: real multiplayer (baton passes between people, disconnects). Wins are per session (shortcut until a save schema decision record). Multiplayer playtest skipped at SHANNON's request.",
+  "evidence": [
+    "Studio run on 2026-10-25 (1 player, MIN_PLAYERS patched to 1 for the test only): lobby built (title, practice lane, stands); get-ready countdown; player painted team red with sparkling baton; fall returned runner to leg start with baton; death respawned runner at leg start with a new baton; 4 legs completed; empty team eliminated; 'Team 1 wins!'; Wins 0 -> 1; everyone back in lobby and next countdown started. Screenshots checked lane tint, status bar and signs.",
+    "Local: lune run tests/run 64/64; rojo build of relay.project.json OK."
+  ]
 }
