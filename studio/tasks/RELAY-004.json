@@ -1,0 +1,43 @@
+{
+  "task_id": "RELAY-004",
+  "project_id": "RELAY-001",
+  "owner": "A10",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Relay Rounds v0.3: anime/stylish-action movement (double jump, air dash, boost and launch pads, afterimages, speed lines), a cosmetic style meter, six 120-stud track types with server-checked hazards, and custom part-built models (torii gates, demon finish gate, lanterns, sakura, spires) with sunset lighting.",
+  "inputs": [
+    "SHANNON request 2026-10-25: polish, custom models, less straight running, anime runners and Devil May Cry as inspiration",
+    "docs/game-design/relay-rounds-gdd.md"
+  ],
+  "dependencies": [
+    "RELAY-003"
+  ],
+  "acceptance_criteria": [
+    "Six track layouts, same for every lane, new per round; every layout starts and ends on a centred deck",
+    "Touching a live laser or sweeper sends the runner back to their leg start (server-checked)",
+    "Boost and launch pads carry the player across their gaps",
+    "Double jump and air dash work once per airtime; client sends nothing to the server",
+    "Style meter ranks D to SSS with diminishing repeats (StyleRules unit tests)",
+    "CI green with both places built"
+  ],
+  "verification": "Lune tests (StyleRules) and CI; Studio checks with screenshots; multiplayer playtest skipped at SHANNON's request",
+  "output_artifacts": [
+    "src/relay/Props.luau",
+    "src/relay/Course.luau",
+    "src/relay/Scenery.luau",
+    "src/relay/RelayServer.server.luau",
+    "src/relay-client/Movement.client.luau",
+    "src/relay-client/StatusBar.client.luau",
+    "src/shared/StyleRules.luau",
+    "tests/StyleRules.spec.luau",
+    "relay.project.json",
+    "docs/game-design/relay-rounds-gdd.md"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "evidence": [
+    "Local: lune run tests/run 73/73; rojo build relay.project.json OK.",
+    "Studio run 2026-10-25 (1 player, test timings): two boost pads carried the runner 81 studs across both Boost Gap gaps in 1.4 s; sweeper contact sent the runner back to leg start in 0.42 s; callouts (GO!) and lobby/course/finish models checked by screenshot. Before the velocity-carry fix the Humanoid braked boosts within 0.15 s."
+  ],
+  "notes": "Not tested: the air dash and double jump by real input (needs a person at the keyboard), the Launch Tower and Laser Hall layouts in a live round, and multiplayer. No new remotes, economy or data changes."
+}

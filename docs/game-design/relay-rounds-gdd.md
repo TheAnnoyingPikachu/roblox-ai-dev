@@ -1,6 +1,6 @@
 # Relay Rounds: game design spec (v0.1)
 
-Status: v0.2 (launch polish). Concept C in `concepts.md`.
+Status: v0.3 (movement, style and track types). Concept C in `concepts.md`.
 
 ## A. Product
 
@@ -29,6 +29,32 @@ Target: a full match in about 8 minutes (hypothesis, to check in playtest).
 - Falling off the course respawns the runner at the start of their current leg, still holding the baton.
 - Clients send nothing. Position checks, passes and finishes are all decided on the server.
 
+## C2. Movement kit (v0.3)
+
+Inspired by anime runners and stylish-action games: movement should feel fast and expressive.
+
+- Base run speed 24 (Roblox default is 16), jump power 55.
+- **Double jump:** jump again in the air once per airtime.
+- **Air dash:** Q, Left Shift or gamepad X (an on-screen DASH button on touch). A burst in the move direction, 1 s cooldown, once per airtime. Leaves glowing afterimages.
+- **Launch pads** (orange) fire you straight up to a higher deck; **boost pads** (cyan, chevrons) throw you forward with a hop.
+- Speed lines, FOV kick and camera shake sell the speed.
+- These run on the client because Roblox characters are client-simulated. No remotes: the client sends nothing, and the server still decides legs, hazards, eliminations and wins.
+
+## C3. Track types (v0.3)
+
+Each leg is 120 studs and uses one of six layouts, the same for every lane, changing each round (round 1 opens with Zigzag):
+
+| Layout | What you do |
+|---|---|
+| Zigzag | hop between platforms that swing left and right |
+| Launch Tower | launch pad up to a high deck, boost off it, drop back down |
+| Boost Gap | two 20-stud gaps crossed with boost pads (or dash + double jump) |
+| Laser Hall | time three blinking laser gates |
+| Vanishing Steps | glass steps that fade in and out on a 3 s cycle |
+| Sweeper Beam | a 3-stud beam with two spinning laser bars to jump |
+
+Touching a live laser or sweeper sends the runner back to the start of their leg (server-checked).
+
 ## D. Ranking
 
 Teams are ranked by, in order:
@@ -37,6 +63,10 @@ Teams are ranked by, in order:
 2. Among finished teams: earlier finish time.
 3. Among unfinished teams: more legs completed, then less distance left on the current leg.
 4. Still tied: the team that has been in the match longest is safe (join order), so the result is deterministic.
+
+## D2. Style meter (v0.3, cosmetic)
+
+A stylish-action rank meter on the right of the screen: D (Dull), C (Cool), B (Bravo), A (Awesome), S (Stylish), SS (Spectacular), SSS (Sensational). Double jumps, dashes, pads, airtime and clean handoffs raise it; repeating the same move in a row earns less (full, 1/2, 1/3...). It decays over time and empties when you fall or get hit. It never affects results. Rules live in `src/shared/StyleRules.luau` with unit tests.
 
 ## E. Disconnects
 
@@ -48,7 +78,7 @@ Teams are ranked by, in order:
 
 ## F. Course
 
-- Built from primitive parts only (rule 9). Each leg is a 60-stud run using one of four layouts: gaps, balance beam, rising steps, narrow gaps. Round 1 always opens with the easiest (gaps). Lanes are separate per team, so teams never block each other.
+- Built from parts and Roblox materials only (rule 9), including custom models in `src/relay/Props.luau`: torii gates per leg (labelled with the next layout), a demon finish gate (gothic towers, horns, burning eyes), stone lanterns, cherry-blossom trees and gothic spires. Lanes are 30 studs apart so teams never block each other. Sunset lighting, terrain hills, a lake and a forest surround the arena.
 - Course parts are created by the server at match start, not stored in the place.
 
 ## G. Acceptance criteria (v0.1)
