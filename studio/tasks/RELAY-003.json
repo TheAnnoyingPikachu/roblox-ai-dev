@@ -1,0 +1,22 @@
+{
+  "task_id": "RELAY-003",
+  "project_id": "RELAY-001",
+  "owner": "A11",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Relay Rounds finishing pass: an on-screen status bar, a round timer, a baton that survives respawns, and recovery for teammates who fall while waiting.",
+  "inputs": ["docs/game-design/relay-rounds-gdd.md", "RELAY-002 Studio smoke test"],
+  "dependencies": ["RELAY-002"],
+  "acceptance_criteria": [
+    "Players see the server status (lobby countdown, round timer, eliminations, winner) on screen",
+    "The client only reads status and sends nothing",
+    "A runner who dies or falls gets a new baton at the start of their leg",
+    "A teammate still to run who falls returns to their handoff pad",
+    "CI green with both places built"
+  ],
+  "verification": "CI; playtest skipped at SHANNON's request (2026-10-25)",
+  "output_artifacts": ["src/relay/RelayServer.server.luau", "src/relay-client/StatusBar.client.luau", "relay.project.json"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Studio retest not run: Studio was closed to clear the publish lock. SHANNON asked to skip test criteria and check in only before publishing."
+}

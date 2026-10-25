@@ -109,23 +109,23 @@ end
 
 local batons: { [number]: BasePart } = {}
 
+-- A fresh baton each time: the old one is destroyed with the character when the runner respawns.
 local function giveBaton(team: RelayRules.Team)
-	local baton = batons[team.id]
-	if baton == nil then
-		baton = Instance.new("Part")
-		baton.Name = "Baton"
-		baton.Size = Vector3.new(0.6, 3, 0.6)
-		baton.BrickColor = TEAM_COLOURS[team.id]
-		baton.Material = Enum.Material.Neon
-		baton.CanCollide = false
-		baton.Massless = true
-		batons[team.id] = baton
-	end
 	local root = team.runner and rootOf(team.runner)
 	if root == nil then
 		return
 	end
-	baton:ClearAllChildren()
+	if batons[team.id] then
+		batons[team.id]:Destroy()
+	end
+	local baton = Instance.new("Part")
+	baton.Name = "Baton"
+	baton.Size = Vector3.new(0.6, 3, 0.6)
+	baton.BrickColor = TEAM_COLOURS[team.id]
+	baton.Material = Enum.Material.Neon
+	baton.CanCollide = false
+	baton.Massless = true
+	batons[team.id] = baton
 	baton.CFrame = root.CFrame * CFrame.new(1.5, 0, 0)
 	local weld = Instance.new("WeldConstraint")
 	weld.Part0 = baton
@@ -185,16 +185,32 @@ local function playRound(current: RelayRules.Match)
 	say(`Round {current.round}: {legs} legs. Go!`)
 
 	local started = os.clock()
+	local shownLeft = -1
 	while not current.over and not RelayRules.roundOver(current, os.clock() - started, ROUND_LIMIT) do
 		task.wait(TICK)
+		local left = math.ceil(ROUND_LIMIT - (os.clock() - started))
+		if left ~= shownLeft then
+			shownLeft = left
+			say(`Round {current.round}: {legs} legs, {left}s left`)
+		end
 		for _, team in current.teams do
 			local runner = team.runner
 			if team.finishedAt == nil and runner ~= nil then
 				local root = rootOf(runner)
 				local leg = team.legsDone + 1
 				local goal = zoneCentre(team.id, leg)
+				-- Teammates still to run who fell or respawned go back to their handoff pad.
+				for _, member in team.members do
+					local memberRoot = rootOf(member)
+					if member ~= runner and not team.ran[member] and memberRoot and memberRoot.Position.Y < FALL_Y then
+						teleport(member, goal)
+					end
+				end
 				if root and root.Position.Y < FALL_Y then
 					teleport(runner, Vector3.new(laneX(team.id), COURSE_Y, legStart(leg) + 3))
+					giveBaton(team)
+				elseif root and root.Parent and root.Parent:FindFirstChild("Baton") == nil then
+					giveBaton(team)
 				elseif inZone(runner, goal) then
 					local waiting: { [number]: boolean } = {}
 					for _, member in team.members do

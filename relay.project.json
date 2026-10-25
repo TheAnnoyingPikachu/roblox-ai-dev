@@ -12,6 +12,13 @@
         "$path": "src/relay"
       }
     },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "RelayClient": {
+          "$path": "src/relay-client"
+        }
+      }
+    },
     "Workspace": {
       "Baseplate": {
         "$className": "Part",
