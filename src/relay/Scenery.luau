@@ -134,9 +134,9 @@ function Scenery.world()
 		local x, z = rng:NextNumber(-230, 370), rng:NextNumber(-280, 250)
 		if not inArena(x, z, 6) and inArena(x, z, 40) then
 			-- The generated sakura model, with drifting petals; the part-built tree if it fails to load.
-			local tree =
+			local blossom =
 				Models.spawn("sakura", trees, Vector3.new(x, -0.5, z), rng:NextNumber(0.8, 1.2), rng:NextNumber(0, 360))
-			if tree then
+			if blossom then
 				local petals = Instance.new("ParticleEmitter")
 				petals.Color = ColorSequence.new(Color3.fromRGB(255, 190, 215))
 				petals.Size = NumberSequence.new(0.35)
@@ -147,7 +147,7 @@ function Scenery.world()
 				petals.RotSpeed = NumberRange.new(-90, 90)
 				petals.SpreadAngle = Vector2.new(180, 180)
 				petals.Rate = 2
-				petals.Parent = tree
+				petals.Parent = blossom
 			else
 				Props.sakura(trees, Vector3.new(x, 0, z), rng)
 			end
