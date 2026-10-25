@@ -1,0 +1,21 @@
+{
+  "task_id": "RELAY-001",
+  "project_id": "RELAY-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Write the Relay Rounds (concept C) design spec: match flow, baton and ranking rules, disconnect handling and testable acceptance criteria.",
+  "inputs": ["docs/game-design/concepts.md section C", "docs/game-design/bake-rush-gdd.md (format)"],
+  "dependencies": ["PILOT-001"],
+  "acceptance_criteria": [
+    "Every rule the server enforces is stated precisely enough to unit test",
+    "Every disconnect case leaves a defined match state",
+    "Facts, assumptions and hypotheses are labelled separately",
+    "Kill criteria carried over from the concept"
+  ],
+  "verification": "SHANNON approves the spec or returns it with changes",
+  "output_artifacts": ["docs/game-design/relay-rounds-gdd.md"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Started on 2026-10-24 while PILOT-004 waits on its staging playtest. Next: architecture task for a second place in this repo, then RoundRules and RelayRules as pure modules with Lune tests."
+}
