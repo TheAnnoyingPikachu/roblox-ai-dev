@@ -1,0 +1,43 @@
+{
+  "task_id": "GARDEN-003",
+  "project_id": "GARDEN-001",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden pure rules: GardenConfig, WorldRules, GardenRules, HatchRules and GardenProgress in src/shared with Lune specs, plus the optional MetaRules extensions (index unlock, scale hook, coin cap, optional wins) without changing Relay or Night behaviour.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md sections C to H, K and N",
+    "docs/architecture/garden.md sections 2, 3 and 8",
+    "docs/decisions/0008-egg-garden.md"
+  ],
+  "dependencies": [
+    "GARDEN-002"
+  ],
+  "acceptance_criteria": [
+    "Every signature and constant in docs/architecture/garden.md section 3 exists exactly as written",
+    "Each new module has tests/<Module>.spec.luau registered in tests/run.luau covering the GDD section N test column and garden.md section 3.7",
+    "Check values pass: income 60.5, offline 108,900 and 871,200, release 1,620, Moon Egg 8 waters 2,160 s, daily day 3 14,520 / 120 / 100",
+    "Over 100,000 seeded rolls each species within 0.5 points of its odds; over 20,000 windows each weather within 1 point",
+    "tests/ProgressRules.spec.luau and Night's specs pass unchanged; no file under src/relay, src/relay-client, src/night or src/night-client changes",
+    "No Roblox API use in src/shared; selene and stylua clean; CI green"
+  ],
+  "verification": "Lune tests in CI, then QA review (GARDEN-006) of the rules against the GDD and decision 0008",
+  "output_artifacts": [
+    "src/shared/GardenConfig.luau",
+    "src/shared/WorldRules.luau",
+    "src/shared/GardenRules.luau",
+    "src/shared/HatchRules.luau",
+    "src/shared/GardenProgress.luau",
+    "src/shared/MetaRules.luau",
+    "tests/GardenConfig.spec.luau",
+    "tests/WorldRules.spec.luau",
+    "tests/GardenRules.spec.luau",
+    "tests/HatchRules.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "tests/MetaRules.spec.luau",
+    "tests/run.luau"
+  ],
+  "risk_level": "high",
+  "status": "planned",
+  "notes": "High risk: MetaRules sits under Relay's and Night's live save code. A signature change must update docs/architecture/garden.md in the same PR, since GARDEN-004 and GARDEN-005 code against it in parallel."
+}

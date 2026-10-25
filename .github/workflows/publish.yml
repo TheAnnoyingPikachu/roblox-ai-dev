@@ -2,7 +2,7 @@
 # artifact to the chosen environment through Roblox Open Cloud.
 #
 # Repo setup (done by a human, never by an agent):
-#   Environments "staging", "production", "relay-staging" and "night-staging", each with:
+#   Environments "staging", "production", "relay-staging", "night-staging" and "garden-staging", each with:
 #     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
 #     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
 #   "production" must have required reviewers (SHANNON) and be limited to tags v*.
@@ -14,7 +14,7 @@ on:
       environment:
         description: "Target environment"
         type: choice
-        options: [staging, production, relay-staging, night-staging]
+        options: [staging, production, relay-staging, night-staging, garden-staging]
         required: true
 
 permissions:
@@ -85,10 +85,11 @@ jobs:
       - name: Build release candidate
         run: |
           mkdir -p build
-          # <game>-* environments publish <game>.project.json (relay-*, night-*); the others publish Bake Rush.
+          # <game>-* environments publish <game>.project.json (relay-*, night-*, garden-*); the others publish Bake Rush.
           case "${{ inputs.environment }}" in
             relay-*) project=relay.project.json ;;
             night-*) project=night.project.json ;;
+            garden-*) project=garden.project.json ;;
             *) project=default.project.json ;;
           esac
           rojo build "$project" --output build/place.rbxl

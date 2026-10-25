@@ -1,0 +1,43 @@
+{
+  "task_id": "GARDEN-004",
+  "project_id": "GARDEN-001",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden server: Hatchling Valley world and lighting, six plots with beds, pads, creatures and prompts, the pad and status loop, Request and prompt handling, hatch announcements, GardenStatus and Fx publishing, and saved profiles with coalesced writes and the GardenIncome leaderboard.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md sections C to L",
+    "docs/architecture/garden.md sections 1, 4, 5 and 8",
+    "docs/decisions/0008-egg-garden.md",
+    "src/night/Profiles.luau and src/night/Remotes.luau (copied)"
+  ],
+  "dependencies": [
+    "GARDEN-002"
+  ],
+  "acceptance_criteria": [
+    "Only the files listed for GARDEN-004 in docs/architecture/garden.md section 1 change",
+    "Request and both bed prompts enforce every check in decision 0008; refused requests change nothing",
+    "Every saved write uses the UpdateAsync re-apply pattern with at most one write per player per 7 s, the 60 s autosave, a final write on leave and in BindToClose; a failed load never writes defaults; stores are GardenProfile<suffix> and GardenIncome<suffix>",
+    "Hatch outcomes are rolled once and applied as fixed outcomes on the stored record",
+    "Loop order follows docs/architecture/garden.md section 4.3; Fx payloads follow section 5",
+    "World under 6,000 parts, each plot under 300 parts plus creatures",
+    "Every new mesh, track and sound has a docs/assets/register.md row before use",
+    "Leave and rejoin after 10 minutes pays the predicted offline amount and keeps every egg, creature and pad coin (Studio, DataStores on)",
+    "Server frame time under 8 ms with 6 full gardens (MicroProfiler capture)",
+    "CI green with build/garden.rbxl built"
+  ],
+  "verification": "CI; Studio playtests with notes and timings; QA review (GARDEN-006) of remotes and saves",
+  "output_artifacts": [
+    "src/garden/GardenServer.server.luau",
+    "src/garden/State.luau",
+    "src/garden/Remotes.luau",
+    "src/garden/Profiles.luau",
+    "src/garden/Plots.luau",
+    "src/garden/World.luau",
+    "src/relay/Models.luau",
+    "docs/assets/register.md"
+  ],
+  "risk_level": "high",
+  "status": "planned",
+  "notes": "High risk: saved player data with offline income and a remote contract. Can start against stubs of the section 3 signatures before GARDEN-003 lands. Delete src/garden/.gitkeep with the first script. PRODUCTION_UNIVERSE_ID stays nil. Log the encoded size of a full test profile to confirm decision 0008's 12 KB estimate."
+}

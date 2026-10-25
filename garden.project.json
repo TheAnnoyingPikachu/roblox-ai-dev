@@ -1,0 +1,49 @@
+{
+  "name": "egg-garden",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "Garden": {
+        "$path": "src/garden",
+        "Models": {
+          "$path": "src/relay/Models.luau"
+        },
+        "Props": {
+          "$path": "src/relay/Props.luau"
+        }
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "GardenClient": {
+          "$path": "src/garden-client"
+        }
+      }
+    },
+    "Workspace": {
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Neutral": true,
+          "Size": [
+            12,
+            1,
+            12
+          ],
+          "Position": [
+            0,
+            0.6,
+            42
+          ],
+          "Transparency": 1
+        }
+      }
+    }
+  }
+}

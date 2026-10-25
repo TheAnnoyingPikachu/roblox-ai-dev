@@ -1,0 +1,34 @@
+{
+  "task_id": "GARDEN-006",
+  "project_id": "GARDEN-001",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "QA review of Egg Garden v0.1: rules against the GDD, remotes, saves and child-safety rules against decision 0008, and the GDD section O acceptance playtests including the two-client and offline tests.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md section O",
+    "docs/decisions/0008-egg-garden.md",
+    "docs/architecture/garden.md",
+    "GARDEN-003, GARDEN-004 and GARDEN-005 pull requests"
+  ],
+  "dependencies": [
+    "GARDEN-003",
+    "GARDEN-004",
+    "GARDEN-005"
+  ],
+  "acceptance_criteria": [
+    "Every GDD section O item is checked, with evidence or a filed defect",
+    "Every Request action and both bed prompts are exercised from a client, including refusals, wrong owners, distance, gate and rate limits",
+    "Save writes reviewed: re-apply with fixed hatch outcomes, coalescing, snapshot of unbanked, sanitising fallbacks, offline mode, no defaults written over a failed load",
+    "Two clients: one waters the other's egg and likes their garden; the closed gate blocks both and moves the visitor out",
+    "No stealing, trading, gifting, Robux prompts or paid items anywhere; every ODDS card matches GardenConfig",
+    "Relay Rounds and Hundred Demon Night still pass their specs and build unchanged"
+  ],
+  "verification": "QA report with test notes, screenshots and CI links attached as evidence; SHANNON signs off",
+  "output_artifacts": [
+    "QA notes in this task's evidence"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Reviewer must not be the thread that wrote GARDEN-003, GARDEN-004 or GARDEN-005 (CLAUDE.md rule 2)."
+}
