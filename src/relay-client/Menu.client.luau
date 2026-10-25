@@ -136,10 +136,12 @@ local function toast(message: string, colour: Color3?)
 		Parent = toasts,
 	})
 	corner(8).Parent = t
-	stroke(colour or GOLD, 2).Parent = t
+	local outline = stroke(colour or GOLD, 2)
+	outline.Parent = t
 	new("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = t })
 	task.delay(4, function()
 		TweenService:Create(t, TweenInfo.new(0.4), { BackgroundTransparency = 1, TextTransparency = 1 }):Play()
+		TweenService:Create(outline, TweenInfo.new(0.4), { Transparency = 1 }):Play()
 		task.delay(0.45, t.Destroy, t)
 	end)
 end

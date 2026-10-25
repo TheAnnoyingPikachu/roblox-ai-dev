@@ -36,9 +36,13 @@
     "docs/game-design/relay-rounds-gdd.md"
   ],
   "risk_level": "high",
-  "status": "in_progress",
+  "status": "in_review",
   "evidence": [
-    "Local: lune run tests/run 94/94; selene clean; rojo build OK."
+    "Local: lune run tests/run 94/94; selene 0 warnings; rojo build OK.",
+    "Studio run 2026-10-25 (1 player, offline profile because Studio API access is off): start menu over the circuit orbit; Rewards panel showed the 7-day streak, weekly 1/5 and three quests; clicking CLAIM paid 50 coins and marked day 1; Locker listed all 11 trails with unlock conditions; Stats panel showed the offline-saving notice.",
+    "Request remote from the client: claimDaily true then false; buyTrail without coins false; equip of a locked trail false; unknown action false; a request inside the 0.35 s cooldown false.",
+    "Full match: +125 XP +55 coins, LEVEL UP to 2, Wins 1, winner teleported to the podium with confetti, leaderboard board shows its empty-state message.",
+    "Generated models load at runtime: oni x2, pagoda, trophy, komainu x2, horned skull, 36 sakura trees. All music and SFX IDs load in the Relay staging experience; three APM tracks that did not load were dropped."
   ],
-  "notes": "High risk: introduces saved player data and a remote (decision 0006). Saving is untested on live servers; Studio uses an in-memory profile unless API access is enabled. PRODUCTION_UNIVERSE_ID stays nil until a production release is approved."
+  "notes": "High risk: saved player data and a remote (decision 0006). DataStore saving and the global leaderboard are untested on live servers (Studio API access is off). Ninja animations need an R15 avatar setting. PRODUCTION_UNIVERSE_ID stays nil until a production release is approved. Not tested: multiplayer, mobile layout."
 }
