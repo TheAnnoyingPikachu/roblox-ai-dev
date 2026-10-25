@@ -32,8 +32,8 @@ local function team(id: number, finishedAt: number?, legsDone: number, distanceL
 end
 
 describe("RelayRules.assignTeams", function()
-	it("keeps team sizes within 1 for 4 to 16 players", function()
-		for n = 4, 16 do
+	it("keeps team sizes within 1 for 2 to 16 players", function()
+		for n = 2, 16 do
 			local teams = RelayRules.assignTeams(players(n))
 			local smallest, largest, total = math.huge, 0, 0
 			for _, t in teams do
