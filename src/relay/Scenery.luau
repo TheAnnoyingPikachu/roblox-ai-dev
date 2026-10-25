@@ -99,12 +99,19 @@ function Scenery.world()
 	local trees = Instance.new("Folder")
 	trees.Name = "Trees"
 	local count = 0
-	while count < 140 do
+	for attempt = 1, 600 do
+		if count >= 140 then
+			break
+		end
+		if attempt % 40 == 0 then
+			task.wait()
+		end
 		local x, z = rng:NextNumber(-300, 360), rng:NextNumber(-260, 520)
 		local inLake = x > -275 and x < -125 and z > 25 and z < 255
-		local ground = Workspace:Raycast(Vector3.new(x, 200, z), Vector3.new(0, -400, 0))
-		if not inArena(x, z, 8) and not inLake and ground and ground.Material ~= Enum.Material.Water then
-			tree(trees, ground.Position - Vector3.new(0, 0.5, 0), rng)
+		if not inArena(x, z, 8) and not inLake then
+			local ground = Workspace:Raycast(Vector3.new(x, 200, z), Vector3.new(0, -400, 0))
+			local y = if ground then ground.Position.Y - 0.5 else 0
+			tree(trees, Vector3.new(x, y, z), rng)
 			count += 1
 		end
 	end
