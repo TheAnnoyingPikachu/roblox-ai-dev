@@ -9,6 +9,7 @@ local Teams = game:GetService("Teams")
 
 local RelayRules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("RelayRules"))
 local Course = require(script.Parent:WaitForChild("Course"))
+local Scenery = require(script.Parent:WaitForChild("Scenery"))
 
 local START_LEGS = 4
 local ROUND_LIMIT = 90
@@ -317,6 +318,8 @@ local function playMatch(userIds: { number })
 	Teams:ClearAllChildren()
 end
 
+Scenery.lighting()
+Scenery.world()
 Course.buildLobby()
 
 while true do
