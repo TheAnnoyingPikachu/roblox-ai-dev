@@ -206,6 +206,9 @@ function Course.buildTrack()
 		end
 	end
 
+	-- The generated horned skull crowns the start/finish, above where the demon gate stands.
+	Models.spawn("skull", folder, frameAt(0, 0, 17).Position, 1.3, 90)
+
 	-- Komainu guardians either side of the start/finish line.
 	for _, side in { -1, 1 } do
 		local at = frameAt(0, side * (Course.TRACK_WIDTH / 2 + 5), 0).Position

@@ -5,6 +5,7 @@
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 
+local Models = require(script.Parent:WaitForChild("Models"))
 local Props = require(script.Parent:WaitForChild("Props"))
 
 local Scenery = {}
@@ -132,7 +133,24 @@ function Scenery.world()
 		end
 		local x, z = rng:NextNumber(-230, 370), rng:NextNumber(-280, 250)
 		if not inArena(x, z, 6) and inArena(x, z, 40) then
-			Props.sakura(trees, Vector3.new(x, 0, z), rng)
+			-- The generated sakura model, with drifting petals; the part-built tree if it fails to load.
+			local tree =
+				Models.spawn("sakura", trees, Vector3.new(x, -0.5, z), rng:NextNumber(0.8, 1.2), rng:NextNumber(0, 360))
+			if tree then
+				local petals = Instance.new("ParticleEmitter")
+				petals.Color = ColorSequence.new(Color3.fromRGB(255, 190, 215))
+				petals.Size = NumberSequence.new(0.35)
+				petals.Lifetime = NumberRange.new(4, 6)
+				petals.Speed = NumberRange.new(1, 2)
+				petals.Acceleration = Vector3.new(1.5, -1.2, 0.5)
+				petals.Rotation = NumberRange.new(0, 360)
+				petals.RotSpeed = NumberRange.new(-90, 90)
+				petals.SpreadAngle = Vector2.new(180, 180)
+				petals.Rate = 2
+				petals.Parent = tree
+			else
+				Props.sakura(trees, Vector3.new(x, 0, z), rng)
+			end
 			blossoms += 1
 		end
 	end

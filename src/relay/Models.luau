@@ -25,6 +25,16 @@ local MESHES: { [string]: Entry } = {
 		texture = "rbxassetid://86149062997023",
 		size = Vector3.new(6, 6.4, 2.7),
 	},
+	sakura = {
+		mesh = "rbxassetid://139101786875815",
+		texture = "rbxassetid://82598844088960",
+		size = Vector3.new(15.4, 16.3, 16),
+	},
+	skull = {
+		mesh = "rbxassetid://82884423323818",
+		texture = "rbxassetid://121884110465590",
+		size = Vector3.new(11.1, 14.4, 8),
+	},
 	komainu = {
 		mesh = "rbxassetid://130213651134294",
 		texture = "rbxassetid://73994868840361",
