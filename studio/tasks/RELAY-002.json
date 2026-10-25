@@ -5,8 +5,12 @@
   "verifier": "A15",
   "task_type": "implementation",
   "objective": "Relay Rounds v0.1: pure match rules (teams, baton, ranking, disconnects) with Lune tests, a server that runs lobby, course and rounds, and a second Rojo project that builds the place.",
-  "inputs": ["docs/game-design/relay-rounds-gdd.md"],
-  "dependencies": ["RELAY-001"],
+  "inputs": [
+    "docs/game-design/relay-rounds-gdd.md"
+  ],
+  "dependencies": [
+    "RELAY-001"
+  ],
   "acceptance_criteria": [
     "Team sizes differ by at most 1 for 4 to 16 players (RelayRules unit test)",
     "Ranking follows GDD section D including ties (RelayRules unit test)",
@@ -25,6 +29,10 @@
   ],
   "risk_level": "medium",
   "status": "in_review",
-  "evidence": ["Local run on 2026-10-24: lune run tests/run 64/64 passed; rojo build of both projects OK; validate-tasks OK."],
+  "evidence": [
+    "Local run on 2026-10-24: lune run tests/run 64/64 passed; rojo build of both projects OK; validate-tasks OK.",
+    "CI on PR #6 green with both places built: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/40193425223",
+    "Studio smoke test on 2026-10-25 in the relay staging place (1 player, test timings): course built (32 parts for 2 teams x 4 legs), team assigned, baton welded, all 4 legs completed, empty team 2 eliminated, 'Team 1 wins!', course removed. Not covered: multiple players, baton passes between teammates, falls, disconnects."
+  ],
   "notes": "No saves, remotes or economy, so no decision record needed. Shortcut: the relay place also ships the Bake Rush shared modules (unused) because both projects map src/shared; split per game if a third game arrives. Staging experience: universe 10772930470, place 73610161298952, published via the relay-staging environment."
 }
