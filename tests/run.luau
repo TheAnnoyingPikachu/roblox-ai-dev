@@ -20,6 +20,9 @@ local SPECS = {
 	["RelayRules.spec.luau"] = function()
 		require("./RelayRules.spec")
 	end,
+	["StyleRules.spec.luau"] = function()
+		require("./StyleRules.spec")
+	end,
 }
 
 local T = require("./framework")

@@ -17,6 +17,11 @@
         "RelayClient": {
           "$path": "src/relay-client"
         }
+      },
+      "$properties": {
+        "CharacterWalkSpeed": 24,
+        "CharacterJumpPower": 55,
+        "CharacterUseJumpPower": true
       }
     },
     "Workspace": {

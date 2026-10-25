@@ -6,6 +6,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local Teams = game:GetService("Teams")
+local Workspace = game:GetService("Workspace")
 
 local RelayRules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("RelayRules"))
 local Course = require(script.Parent:WaitForChild("Course"))
@@ -68,6 +69,46 @@ local function paint(userId: number, colour: BrickColor)
 			item:Destroy()
 		end
 	end
+end
+
+-- A team-coloured streak behind each racer.
+local function trail(userId: number, colour: BrickColor)
+	local root = rootOf(userId)
+	if root == nil or root:FindFirstChild("RelayTrail") then
+		return
+	end
+	local a0 = Instance.new("Attachment")
+	a0.Position = Vector3.new(0, 1, 0)
+	a0.Parent = root
+	local a1 = Instance.new("Attachment")
+	a1.Position = Vector3.new(0, -1, 0)
+	a1.Parent = root
+	local t = Instance.new("Trail")
+	t.Name = "RelayTrail"
+	t.Attachment0 = a0
+	t.Attachment1 = a1
+	t.Color = ColorSequence.new(colour.Color)
+	t.LightEmission = 0.7
+	t.Lifetime = 0.35
+	t.Transparency = NumberSequence.new(0.2, 1)
+	t.Parent = root
+end
+
+local hazardParams = OverlapParams.new()
+hazardParams.FilterType = Enum.RaycastFilterType.Include
+
+-- True if the player's body overlaps a live hazard (laser gate or sweeper) on the course.
+local function hitHazard(userId: number): boolean
+	local root = rootOf(userId)
+	if root == nil then
+		return false
+	end
+	for _, hit in Workspace:GetPartBoundsInBox(root.CFrame, Vector3.new(3, 5, 2), hazardParams) do
+		if hit:GetAttribute("Active") ~= false then
+			return true
+		end
+	end
+	return false
 end
 
 local function inZone(userId: number, centre: Vector3): boolean
@@ -188,6 +229,13 @@ local function playRound(current: RelayRules.Match)
 	local legs = RelayRules.legsForRound(current.round + 1, START_LEGS)
 	RelayRules.startRound(current, Course.LEG_LENGTH)
 	local course = Course.build(teamIds(current), legs, current.round)
+	local hazards = {}
+	for _, d in course:GetDescendants() do
+		if d:GetAttribute("Hazard") then
+			table.insert(hazards, d)
+		end
+	end
+	hazardParams.FilterDescendantsInstances = hazards
 	for _, team in current.teams do
 		if team.runner then
 			teleport(team.runner, Course.legSpawn(team.id, 1))
@@ -196,6 +244,7 @@ local function playRound(current: RelayRules.Match)
 		end
 		for _, member in team.members do
 			paint(member, Course.TEAM_COLOURS[team.id])
+			trail(member, Course.TEAM_COLOURS[team.id])
 		end
 		placeWaiting(team)
 	end
@@ -234,7 +283,10 @@ local function playRound(current: RelayRules.Match)
 						paint(member, Course.TEAM_COLOURS[team.id])
 					end
 				end
-				if root and root.Position.Y < Course.FALL_Y then
+				if root and (root.Position.Y < Course.FALL_Y or hitHazard(runner)) then
+					if root.Position.Y >= Course.FALL_Y then
+						sounds.out:Play()
+					end
 					teleport(runner, Course.legSpawn(team.id, leg))
 					paint(runner, Course.TEAM_COLOURS[team.id])
 					giveBaton(team)
