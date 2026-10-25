@@ -72,6 +72,8 @@ local function label(board: BasePart, text: string, colour: Color3)
 		local gui = Instance.new("SurfaceGui")
 		gui.Face = face
 		gui.LightInfluence = 0
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 40
 		gui.Parent = board
 		local l = Instance.new("TextLabel")
 		l.Size = UDim2.fromScale(1, 1)
@@ -340,9 +342,9 @@ function Course.buildLobby()
 	local folder = Instance.new("Folder")
 	folder.Name = "RelayLobby"
 	local plaza =
-		pillar(folder, Vector3.new(0, -0.6, 0), 0.7, 30, Color3.fromRGB(214, 200, 170), Enum.Material.Pavement)
+		pillar(folder, Vector3.new(0, -0.2, 0), 0.6, 30, Color3.fromRGB(214, 200, 170), Enum.Material.Pavement)
 	plaza.Name = "Plaza"
-	pillar(folder, Vector3.new(0, -0.7, 0), 0.6, 32, Color3.fromRGB(150, 100, 80), Enum.Material.Brick)
+	pillar(folder, Vector3.new(0, -0.3, 0), 0.6, 32, Color3.fromRGB(150, 100, 80), Enum.Material.Brick)
 
 	local title = arch(folder, Vector3.new(0, 0, -24), 26, 14, Color3.fromRGB(255, 170, 40), nil)
 	title.Size = Vector3.new(30, 6, 1.5)
