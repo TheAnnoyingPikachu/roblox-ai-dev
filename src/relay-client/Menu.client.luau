@@ -281,6 +281,7 @@ local panelHolder = new("Frame", {
 	BackgroundColor3 = PANEL,
 	BackgroundTransparency = 0.05,
 	Visible = false,
+	ZIndex = 10,
 	Parent = gui,
 }, {
 	corner(16),
@@ -743,7 +744,7 @@ local title = text({
 	LayoutOrder = 1,
 	Parent = column,
 })
-stroke(RED, 4).Parent = title
+new("UIStroke", { Color = RED, Thickness = 4, Parent = title })
 text({
 	Size = UDim2.new(1, 0, 0, 28),
 	Text = "ANIME RELAY GRAND PRIX",
