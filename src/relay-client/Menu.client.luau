@@ -109,7 +109,13 @@ end
 
 -- Root GUI --------------------------------------------------------------------------------------
 
-local gui = new("ScreenGui", { Name = "RelayMenu", ResetOnSpawn = false, IgnoreGuiInset = true, DisplayOrder = 5 })
+local gui = new("ScreenGui", {
+	Name = "RelayMenu",
+	ResetOnSpawn = false,
+	IgnoreGuiInset = true,
+	DisplayOrder = 5,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+})
 
 -- Toasts stack at the top right.
 local toasts = new("Frame", {
@@ -190,6 +196,7 @@ local coinText = text({
 })
 
 local panels: { [string]: Frame } = {}
+local menuOpen = true
 local openPanel: (string) -> ()
 local showMenu: () -> ()
 
@@ -702,6 +709,8 @@ openPanel = function(name: string)
 		f.Visible = key == name
 	end
 	panelTitle.Text = string.upper(name)
+	-- Beside the start menu's buttons when it is open, centred otherwise.
+	panelHolder.Position = if menuOpen then UDim2.fromScale(0.64, 0.52) else UDim2.fromScale(0.5, 0.52)
 	panelHolder.Visible = true
 	renderers[name]()
 end
@@ -755,7 +764,6 @@ text({
 })
 new("Frame", { Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, LayoutOrder = 3, Parent = column })
 
-local menuOpen = true
 local hideMenu: () -> ()
 local menuDot: Frame
 for i, item in
