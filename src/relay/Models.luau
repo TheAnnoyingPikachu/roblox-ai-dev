@@ -40,6 +40,32 @@ local MESHES: { [string]: Entry } = {
 		texture = "rbxassetid://73994868840361",
 		size = Vector3.new(5.1, 9, 7.1),
 	},
+	-- Hundred Demon Night (docs/architecture/night.md 1); Relay does not use these.
+	bossSkull = {
+		mesh = "rbxassetid://100150370614316",
+		texture = "rbxassetid://94738396573282",
+		size = Vector3.new(16.6, 24, 23),
+	},
+	boneHand = {
+		mesh = "rbxassetid://98218010037246",
+		texture = "rbxassetid://88884770453913",
+		size = Vector3.new(10.1, 16, 3.8),
+	},
+	sacredTree = {
+		mesh = "rbxassetid://76470322787820",
+		texture = "rbxassetid://74453082916320",
+		size = Vector3.new(44, 49.4, 43.6),
+	},
+	shrineHall = {
+		mesh = "rbxassetid://133381791213243",
+		texture = "rbxassetid://107366899967365",
+		size = Vector3.new(31.1, 30, 32.5),
+	},
+	lanternYokai = {
+		mesh = "rbxassetid://99796749851740",
+		texture = "rbxassetid://133983439600823",
+		size = Vector3.new(4.6, 7.1, 7),
+	},
 }
 
 local cache: { [string]: MeshPart } = {}

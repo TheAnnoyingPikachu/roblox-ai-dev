@@ -39,6 +39,13 @@
     "docs/assets/register.md"
   ],
   "risk_level": "high",
-  "status": "planned",
-  "notes": "High risk: saved player data and three remotes. Can start against stubs of the section 3 signatures before NIGHT-003 lands. Delete src/night/.gitkeep with the first script. PRODUCTION_UNIVERSE_ID stays nil."
+  "status": "in_review",
+  "notes": "High risk: saved player data and three remotes. Can start against stubs of the section 3 signatures before NIGHT-003 lands. Delete src/night/.gitkeep with the first script. PRODUCTION_UNIVERSE_ID stays nil.",
+  "evidence": [
+    "Local 2026-10-25: stylua --check src tests clean; selene src tests 0 errors, 0 warnings; rojo build night.project.json -o build/night.rbxl OK; relay.project.json still builds. Lune not run here (NIGHT-003 owns tests; it reported 207/207).",
+    "Files: src/night/{NightServer.server,State,Remotes,Profiles,Combat,Enemies,Gear,Arena}.luau; src/night/.gitkeep deleted; src/relay/Models.luau +5 entries only (bossSkull, boneHand, sacredTree, shrineHall, lanternYokai; Relay entries unchanged); docs/assets/register.md rows for the 5 meshes, 5 APM tracks, 4 Pro Sound Effects SFX and built-in sounds/fog texture.",
+    "Request router: session loaded, string action, arg nil or string <= 32, 0.35 s cooldown not reset by refusals, action table with arg/no-arg rule, then RunRules.play/leave/pick or Profiles.request; equipWeapon refused for participants. Combat: rate limit recorded first (refused count), exactly one string arg, participant alive, state Countdown/Wave/Break, teleport guard blocks attack/skill, CombatRules decides combo/skill/dash/trigger.",
+    "Profiles: stores NightProfile<suffix> and NightWins<suffix>, GetAsync x3 then offline (no writes), every write UpdateAsync re-applying the pure NightProgress change on the sanitised stored record, NightWins written on Victory. PRODUCTION_UNIVERSE_ID stays nil.",
+    "Not yet done: Studio playtests (PLAY to first kill, wave 1 time, full tier-1 win), MicroProfiler capture with 32 enemies, part-count reading (Arena warns and sets NightArena.Parts attribute), CI run. Mesh facing (boss skull, komainu, oni yaw) and the weapon Tool grip need a Studio look."
+  ]
 }
