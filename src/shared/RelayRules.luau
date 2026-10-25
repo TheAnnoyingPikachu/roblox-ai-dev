@@ -21,7 +21,7 @@ export type Match = {
 	winner: number?,
 }
 
-RelayRules.MIN_PLAYERS = 4
+RelayRules.MIN_PLAYERS = 2
 RelayRules.MAX_TEAMS = 4
 RelayRules.MAX_TEAM_SIZE = 4
 RelayRules.MIN_LEGS = 2
