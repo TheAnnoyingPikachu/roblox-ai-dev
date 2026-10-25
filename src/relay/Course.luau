@@ -43,17 +43,20 @@ end
 
 local function sign(parent: Instance, text: string, position: Vector3, size: Vector3)
 	local board = part(parent, size, position, BrickColor.new("Really black"))
-	local gui = Instance.new("SurfaceGui")
-	gui.Face = Enum.NormalId.Back
-	gui.Parent = board
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
-	label.BackgroundTransparency = 1
-	label.TextColor3 = Color3.new(1, 1, 1)
-	label.TextScaled = true
-	label.Font = Enum.Font.GothamBlack
-	label.Text = text
-	label.Parent = gui
+	-- Text on both faces, so the sign reads from either side.
+	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = face
+		gui.Parent = board
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.TextColor3 = Color3.new(1, 1, 1)
+		label.TextScaled = true
+		label.Font = Enum.Font.GothamBlack
+		label.Text = text
+		label.Parent = gui
+	end
 end
 
 function Course.laneX(teamId: number): number
@@ -110,12 +113,13 @@ function Course.build(teamIds: { number }, legs: number, round: number): Folder
 			local z = Course.legStart(k)
 			for _, seg in LAYOUTS[picks[k]] do
 				local from, to, width, rise = seg[1], seg[2], seg[3], seg[4]
-				part(
+				local platform = part(
 					folder,
 					Vector3.new(width, 1, to - from),
 					Vector3.new(x, Course.COURSE_Y - 0.5 + rise, z + (from + to) / 2),
-					BrickColor.new("Medium stone grey")
+					colour
 				)
+				platform.Color = colour.Color:Lerp(Color3.new(1, 1, 1), 0.55)
 			end
 			local pad = part(
 				folder,
