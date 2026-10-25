@@ -50,6 +50,21 @@ local SPECS = {
 	["NightProgress.spec.luau"] = function()
 		require("./NightProgress.spec")
 	end,
+	["GardenConfig.spec.luau"] = function()
+		require("./GardenConfig.spec")
+	end,
+	["WorldRules.spec.luau"] = function()
+		require("./WorldRules.spec")
+	end,
+	["GardenRules.spec.luau"] = function()
+		require("./GardenRules.spec")
+	end,
+	["HatchRules.spec.luau"] = function()
+		require("./HatchRules.spec")
+	end,
+	["GardenProgress.spec.luau"] = function()
+		require("./GardenProgress.spec")
+	end,
 }
 
 local T = require("./framework")

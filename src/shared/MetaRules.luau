@@ -1,8 +1,9 @@
 --!strict
 -- Pure meta-game rules shared by every game (decisions 0006 and 0007): levels, days and weeks,
 -- daily streak, weekly bonus, daily quests, cosmetics by slot and sanitising. Each game passes a
--- Config; `ProgressRules` (Relay) and `NightProgress` (Night) are thin layers over this. No
--- Roblox APIs, so Lune can unit-test it. `today` is always the server's UTC day number.
+-- Config; `ProgressRules` (Relay), `NightProgress` (Night) and `GardenProgress` (Egg Garden, which
+-- adds the optional fields of decision 0008) are thin layers over this. No Roblox APIs, so Lune
+-- can unit-test it. `today` is always the server's UTC day number.
 
 local MetaRules = {}
 
@@ -15,15 +16,17 @@ export type Cosmetic = {
 	wins: number?,
 	tier: number?,
 	price: number?,
+	index: number?, -- unlocked when #profile.index >= index (decision 0008)
 }
 
-export type Quest = { id: string, label: string, stat: string, goal: number, reward: number }
+export type Quest = { id: string, label: string, stat: string, goal: number, reward: number, minutes: number? }
 
 export type Meta = {
 	xp: number,
 	coins: number,
-	wins: number,
+	wins: number?,
 	bestTier: number?,
+	index: { string }?,
 	owned: { [string]: boolean },
 	daily: { streak: number, last: number },
 	week: { key: number, days: number, lastDay: number, claimed: boolean },
@@ -35,8 +38,11 @@ export type Config<P> = {
 	slots: { [string]: string },
 	quests: { Quest },
 	daily: { number },
-	weekly: { days: number, reward: number },
+	weekly: { days: number, reward: number, minutes: number? },
 	sanitize: (record: any) -> P,
+	maxCoins: number?, -- default MetaRules.MAX_COINS
+	dailyMinutes: { number }?, -- same length as daily
+	scale: ((profile: P, base: number, minutes: number) -> number)?,
 }
 
 MetaRules.MAX_LEVEL = 50
@@ -46,6 +52,16 @@ MetaRules.MAX_COUNT = 1_000_000
 
 local function meta(profile: any): Meta
 	return profile :: Meta
+end
+
+local function maxCoins<P>(config: Config<P>): number
+	return config.maxCoins or MetaRules.MAX_COINS
+end
+
+-- The amount a claim pays: the game's scale hook, else the base (Relay and Night have no hook).
+function MetaRules.reward<P>(config: Config<P>, profile: P, base: number, minutes: number?): number
+	local scale = config.scale
+	return if scale then scale(profile, base, minutes or 0) else base
 end
 
 -- Days and weeks -----------------------------------------------------------------------------
@@ -105,7 +121,10 @@ function MetaRules.isUnlocked<P>(config: Config<P>, profile: P, id: string): boo
 	if c.level and MetaRules.levelFor(m.xp) < c.level then
 		return false
 	end
-	if c.wins and m.wins < c.wins then
+	if c.wins and (m.wins or 0) < c.wins then
+		return false
+	end
+	if c.index and #(m.index or {}) < c.index then
 		return false
 	end
 	if c.tier and (m.bestTier or 0) < c.tier then
@@ -120,8 +139,10 @@ function MetaRules.sanitizeMeta<P>(config: Config<P>, record: any, into: P): P
 		return into
 	end
 	p.xp = MetaRules.count(record.xp, MetaRules.MAX_XP)
-	p.coins = MetaRules.count(record.coins, MetaRules.MAX_COINS)
-	p.wins = MetaRules.count(record.wins, MetaRules.MAX_COUNT)
+	p.coins = MetaRules.count(record.coins, maxCoins(config))
+	if p.wins ~= nil then
+		p.wins = MetaRules.count(record.wins, MetaRules.MAX_COUNT)
+	end
 	if type(record.owned) == "table" then
 		for id, value in record.owned do
 			local c = type(id) == "string" and MetaRules.cosmetic(config, id)
@@ -245,11 +266,17 @@ function MetaRules.claimDaily<P>(config: Config<P>, profile: P, today: number): 
 	if streak == nil then
 		return profile, false, 0
 	end
+	local minutes = config.dailyMinutes
+	local reward = MetaRules.reward(
+		config,
+		profile,
+		MetaRules.dailyReward(config, streak),
+		if minutes then minutes[math.clamp(streak, 1, #minutes)] else nil
+	)
 	local out = config.sanitize(profile)
 	local p = meta(out)
-	local reward = MetaRules.dailyReward(config, streak)
 	p.daily = { streak = streak, last = today }
-	p.coins = math.min(MetaRules.MAX_COINS, p.coins + reward)
+	p.coins = math.min(maxCoins(config), p.coins + reward)
 	return out, true, reward
 end
 
@@ -262,11 +289,12 @@ function MetaRules.claimWeekly<P>(config: Config<P>, profile: P, today: number):
 	if not MetaRules.canClaimWeekly(config, profile, today) then
 		return profile, false, 0
 	end
+	local reward = MetaRules.reward(config, profile, config.weekly.reward, config.weekly.minutes)
 	local out = config.sanitize(profile)
 	local p = meta(out)
 	p.week.claimed = true
-	p.coins = math.min(MetaRules.MAX_COINS, p.coins + config.weekly.reward)
-	return out, true, config.weekly.reward
+	p.coins = math.min(maxCoins(config), p.coins + reward)
+	return out, true, reward
 end
 
 function MetaRules.claimQuest<P>(config: Config<P>, profile: P, today: number, questId: string): (P, boolean, number)
@@ -283,11 +311,12 @@ function MetaRules.claimQuest<P>(config: Config<P>, profile: P, today: number, q
 	if (m.quests.progress[quest.stat] or 0) < quest.goal then
 		return profile, false, 0
 	end
+	local reward = MetaRules.reward(config, profile, quest.reward, quest.minutes)
 	local out = config.sanitize(profile)
 	local p = meta(out)
 	p.quests.claimed[questId] = true
-	p.coins = math.min(MetaRules.MAX_COINS, p.coins + quest.reward)
-	return out, true, quest.reward
+	p.coins = math.min(maxCoins(config), p.coins + reward)
+	return out, true, reward
 end
 
 -- Cosmetics ----------------------------------------------------------------------------------

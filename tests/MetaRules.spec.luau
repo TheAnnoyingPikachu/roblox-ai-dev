@@ -192,3 +192,110 @@ describe("MetaRules rewards with a game config", function()
 		expect(MetaRules.weekOf(3)).toBe(0)
 	end)
 end)
+
+-- Decision 0008 optional fields, on a game without `wins` (like Egg Garden).
+type Lite = {
+	xp: number,
+	coins: number,
+	index: { string },
+	hat: string,
+	owned: { [string]: boolean },
+	daily: { streak: number, last: number },
+	week: { key: number, days: number, lastDay: number, claimed: boolean },
+	quests: { day: number, progress: { [string]: number }, claimed: { [string]: boolean } },
+}
+
+local function lite(): Lite
+	return {
+		xp = 0,
+		coins = 0,
+		index = {},
+		hat = "cap",
+		owned = {},
+		daily = { streak = 0, last = -1 },
+		week = { key = -1, days = 0, lastDay = -1, claimed = false },
+		quests = { day = -1, progress = {}, claimed = {} },
+	}
+end
+
+local LITE: MetaRules.Config<Lite>
+LITE = {
+	cosmetics = {
+		{ id = "cap", name = "Cap", slot = "hat", colours = {} },
+		{ id = "halo", name = "Halo", slot = "hat", colours = {}, index = 2 },
+		{ id = "champ", name = "Champ", slot = "hat", colours = {}, wins = 1 },
+	},
+	slots = { hat = "cap" },
+	quests = {
+		{ id = "a", label = "A", stat = "x", goal = 1, reward = 10, minutes = 4 },
+		{ id = "b", label = "B", stat = "x", goal = 1, reward = 10, minutes = 4 },
+		{ id = "c", label = "C", stat = "x", goal = 1, reward = 10, minutes = 4 },
+	},
+	daily = { 5, 10 },
+	dailyMinutes = { 1, 2 },
+	weekly = { days = 1, reward = 99, minutes = 30 },
+	maxCoins = 1e15,
+	sanitize = function(record: any): Lite
+		local p = lite()
+		if type(record) == "table" and type(record.index) == "table" then
+			p.index = table.clone(record.index)
+		end
+		return MetaRules.sanitizeMeta(LITE, record, p)
+	end,
+}
+
+describe("MetaRules optional fields (decision 0008)", function()
+	it("unlocks by Index count, and a profile without index or wins counts 0", function()
+		local p = lite()
+		expect(MetaRules.isUnlocked(LITE, p, "halo")).toBe(false)
+		p.index = { "a", "b" }
+		expect(MetaRules.isUnlocked(LITE, p, "halo")).toBe(true)
+		expect(MetaRules.isUnlocked(LITE, p, "champ")).toBe(false)
+		expect(MetaRules.isUnlocked(CONFIG, defaults(), "cap")).toBe(true) -- no index field
+		expect(LITE.sanitize({ hat = "halo", index = { "a", "b" } }).hat).toBe("halo")
+		expect(LITE.sanitize({ hat = "halo", index = { "a" } }).hat).toBe("cap")
+	end)
+
+	it("returns the base reward without a scale hook, and the hook's amount with one", function()
+		expect(MetaRules.reward(CONFIG, defaults(), 77, 5)).toBe(77)
+		expect(MetaRules.reward(LITE, lite(), 77)).toBe(77)
+		local scaled = table.clone(LITE)
+		local seen: { number } = {}
+		scaled.scale = function(_p: Lite, base: number, minutes: number): number
+			table.insert(seen, minutes)
+			return base * 100 + minutes
+		end
+		expect(MetaRules.reward(scaled, lite(), 7, nil)).toBe(700)
+		local d1, _, r1 = MetaRules.claimDaily(scaled, lite(), DAY)
+		expect(r1).toBe(501)
+		local _, _, r2 = MetaRules.claimDaily(scaled, d1, DAY + 1)
+		expect(r2).toBe(1002)
+		local w = MetaRules.login(scaled, lite(), DAY)
+		local _, _, wr = MetaRules.claimWeekly(scaled, w, DAY)
+		expect(wr).toBe(9930)
+		local quest = MetaRules.questsFor(scaled.quests, DAY)[1]
+		local q = MetaRules.addProgress(scaled, lite(), DAY, { x = 1 })
+		local qp, _, qr = MetaRules.claimQuest(scaled, q, DAY, quest.id)
+		expect(qr).toBe(1004)
+		expect(qp.coins).toBe(1004)
+		expect(table.concat(seen, " ")).toBe("0 1 2 30 4")
+		expect(MetaRules.dailyReward(scaled, 2)).toBe(10) -- still the base
+	end)
+
+	it("respects the config's maxCoins in sanitise and claims", function()
+		expect(LITE.sanitize({ coins = 5e14 }).coins).toBe(5e14)
+		expect(LITE.sanitize({ coins = 5e16 }).coins).toBe(1e15)
+		expect(CONFIG.sanitize({ coins = 5e14 }).coins).toBe(MetaRules.MAX_COINS) -- default cap unchanged
+		local rich = lite()
+		rich.coins = 1e15 - 2
+		local out = MetaRules.claimDaily(LITE, rich, DAY)
+		expect(out.coins).toBe(1e15)
+	end)
+
+	it("sanitises a profile without wins without gaining one", function()
+		local p = LITE.sanitize({ wins = 9, xp = 40 })
+		expect((p :: any).wins).toBeNil()
+		expect(p.xp).toBe(40)
+		expect(CONFIG.sanitize({ wins = 9 }).wins).toBe(9) -- games with wins keep it
+	end)
+end)

@@ -33,6 +33,11 @@
     "src/garden-client/CreatureFx.client.luau"
   ],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "Can start against a stub GardenStatus and attributes before GARDEN-004 lands. Delete src/garden-client/.gitkeep with the first script."
+  "status": "in_review",
+  "notes": "Can start against a stub GardenStatus and attributes before GARDEN-004 lands. Delete src/garden-client/.gitkeep with the first script. Audio reuses registered IDs only (lobby track 87416512611152 for all weather, slowed and filtered for Moonfall; gong/beep/whoosh SFX pitched); GDD H6's two ukulele tracks, dreamy Moonfall track and dedicated garden SFX still need picking and register rows. Client assumes World.luau names: cart prompt 'Shop', lamp lights under parts named *Lamp*/*HangingEgg*, windmill 'Sails'.",
+  "evidence": [
+    "Local 2026-10-25: stylua src/garden-client and selene src/garden-client clean (0 errors, 0 warnings); rojo build garden.project.json -o build/garden.rbxl OK",
+    "Client sends only Request(action, arg) with actions from decision 0008 (buyEgg, buyBed, buyPenSlot, place, store, release, favourite, like, setGate, home, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic); no amounts, prices, outcomes or positions; no MarketplaceService",
+    "Not yet run in Studio: GardenConfig/GardenRules/HatchRules/GardenProgress (GARDEN-003) and src/garden (GARDEN-004) had not landed; coded against docs/architecture/garden.md section 3 signatures. Studio run with screenshots (PC and touch emulator, hatch, weather change, I4 orbit frame) still owed to GARDEN-006"
+  ]
 }
