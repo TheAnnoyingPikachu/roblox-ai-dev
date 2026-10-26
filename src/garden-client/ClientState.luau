@@ -141,7 +141,13 @@ Players.PlayerRemoving:Connect(function(p)
 end)
 
 function ClientState.profile(): any
-	return ClientState.profileOf(Players.LocalPlayer) or GardenProgress.defaults(0)
+	local profile = ClientState.profileOf(Players.LocalPlayer) or GardenProgress.defaults(0)
+	-- Banking updates only `Coins`; the full profile follows later (QA N1).
+	local coins = tonumber(Players.LocalPlayer:GetAttribute("Coins"))
+	if coins then
+		profile.coins = coins
+	end
+	return profile
 end
 
 function ClientState.now(): number

@@ -177,3 +177,72 @@ Fix engineer (did not write the review), 2026-10-26, on `game3/concept` after `b
 | m12 | Partly fixed. The register's "used in" column now lists Garden for the 6 reused audio rows (`docs/assets/register.md`). `LastReward` carries a `#n` suffix, so equal rewards in a row toast again; the client strips it (`Profiles.luau:401`, `Menu.client.luau:104`). **Not fixed (design):** SHANNON's music picks (GDD R), and the held watering can, which is first on the GDD M cut list. |
 
 **Still needs Studio:** a two-server hop with a delayed final write. It should run offline with the busy notice, and the coins after both writes should equal the coins before plus the pad coins. Also: a lock left by a stopped Studio session (it is free after 120 s). Test > 7 players: the seventh gets the waiting notice, then gets a plot when someone leaves. Locker buy-then-equip. Two players hatching creature 1 at once: only the hatcher's creature hides. Fallback-to-mesh swap after the warm-up. The forecast board text size at 11 studs. Gamepad selection during banking and weather changes. Network stats with 6 full gardens. The repeated reward toast. Plus every GDD section O item listed above.
+
+---
+
+## Fix verification (9cc8a63)
+
+Reviewer: A15 (the original reviewer; did not write the fixes). Date: 2026-10-26. Read the Fixes section, `git show 9cc8a63`, and the connected code in `src/garden`, `src/garden-client` and `src/shared/Garden*.luau` (not only the diff). Line numbers refer to `9cc8a63`. **Nothing was run in Studio by this reviewer.**
+
+### Tool runs (local, at `9cc8a63`, clean tree)
+
+- `lune run tests/run`: **304/304 passed**, 0 failed, 0 load errors (298 before + 5 session-lock cases + 1 release-value case). `test-results.json` deleted afterwards.
+- `selene src tests`: 0 errors, 0 warnings, 0 parse errors. `stylua --check src tests`: clean.
+- `rojo build` of `default`, `garden`, `night` and `relay` `.project.json`: all succeed (outputs in a scratch folder).
+- `node tools/validate-tasks.mjs`: 24 task files valid. `tools/scan-secrets.sh`: no secrets found.
+- No file under `src/relay`, `src/relay-client`, `src/night`, `src/night-client` or `src/shared/MetaRules.luau` changed in `9cc8a63`.
+
+### Per-finding status
+
+| Finding | Status | Evidence |
+|---|---|---|
+| M1 session lock | **Closed** (Studio hop test still to do) | Record lock `{ session, at }`: `GardenProgress.luau:254-288` (`LOCK_STALE` 120 s; `canClaim` treats a lock 120 s or more away from `now`, either way, as stale; `holds`; `locked`). Load is one `UpdateAsync` that claims or cancels, retried 2 s and 4 s, else offline with `BUSY_TEXT` (`Profiles.luau:259-296`). Every flush checks `holds` inside the transform (atomic per key) and writes nothing when the lock is lost; the session goes offline with a notice (`Profiles.luau:148-173`). The final write stores no lock (`Profiles.luau:158-162`, `469`). Offline sessions never queue or write: `apply` and `bank` queue only when online (`Profiles.luau:202-204`, `219-221`), `step` skips them before the flush and the board write (`419-421`), `finish` skips the flush (`461`). A failed load still writes nothing (`ok` false leaves `online` false, `275-278`; a failed read never reaches the transform). Load cannot race the autosave: the session is registered only after the claim (`281`). A player who leaves during the load is finished, so the lock is released (`289-292`). `BindToClose` banks, then `finishAll` (`GardenServer.server.luau:503-512`, `Profiles.luau:478-491`); a second `finish` waits for the first (`451-457`). Clock: `at` is always `os.time()` (`Profiles.luau:248`; `GardenServer.server.luau:359/385`, `483`, `504`), never `os.clock()`; `os.clock()` is used only for local deadlines. Traced by hand: an old server's late final write after B's claim is refused; after a stale claim B pays the stored `unbanked` once and A's later writes are refused; a hatch can be re-rolled only if A's hatch was never saved. Specs: `GardenProgress.spec.luau:158-214`. |
+| M2 no-plot players | **Closed** (7-player Studio test still to do) | Plot freed after banking, before `Profiles.finish` (`GardenServer.server.luau:474-484`). Waiting loop: notice at 0, 10, 20 s and so on, retry every 1 s, exits when the player leaves (`429-443`). `Plots.COUNT` exported (`Plots.luau:25`); start-up warning when `MaxPlayers` is above 6 (`GardenServer.server.luau:493-496`). Max Players = 6 is in the publish checklist (`docs/architecture/garden.md:414`, `.github/workflows/publish.yml:9-10`). |
+| m1 | **Closed** | `task.wait(0.4)` between buy and equip (`Menu.client.luau:857`). |
+| m2 | **Closed** | `hidden` keyed `"<owner>:<id>"` (`ClientState.luau:48-58`); HatchFx passes `data.owner` (`HatchFx.client.luau:327,332,389`); CreatureFx builds the key from `Plot<n>.Owner` (`CreatureFx.client.luau:136-139,198`). Display gardens are owner 0, so they never match a hatch. |
+| m3 | **Closed**, but see N1 | Pad banks publish only `Coins` (`Profiles.luau:212-234`); `Profile` follows with the next other change or successful write. Network not measured. |
+| m4 | **Closed** | `like` re-reads the liker's profile after the friend lookup (`GardenServer.server.luau:144-151`); counterpart ops documented as best effort (0008 amendment, "Other contract changes"). |
+| m5 | **Closed** | `warmed` set filled by the warm-up (`Plots.luau:210`, `920-926`); `makeCreature` meshes only warmed species (`688`); the key carries the warmed flag (`713`). |
+| m6 | **Closed** | `RELEASE_SECONDS` 6 (`GardenConfig.luau:215`). Release reads only species, mutation and size (`GardenRules.luau:48-54`, `95-97`), and weather affects only the mutation roll (`HatchRules.luau:65-78`). The test covers all 5 sold eggs x 4 weathers with a Lucky Meter upper bound (`GardenRules.spec.luau:98-130`). Recomputed independently without the meter term: worst case Meadow in Rainbow Shower 48.0%, Clear 25.2%; with the bound 54.5%, under 60%. Recorded in `docs/decisions/0008-egg-garden.md:195-214` (amendment header at 195, release value at 199-214). |
+| m7 | **Closed** | `live.visits` counts a pad once per visit and resets when the root leaves it (`GardenServer.server.luau:292-316`, `State.luau:15`). |
+| m8 | **Closed** | 10 s in-flight cap and a 25 s deadline from one start time (`Profiles.luau:45`, `459-469`); `withRetries` skips a wait past the deadline (`96`). See N2 for the cost of the cap. |
+| m9 | **Closed** | Same-day banks merge into the last queued op; the op reads the merged totals when it runs, and a flush in flight never receives later merges because the queue is swapped first (`Profiles.luau:212-234`, `145-146`). |
+| m10 | **Closed** (gamepad Studio check still to do) | Odds rebuilt only on a weather change (`Menu.client.luau:1355-1366`; the panel reads nothing else from the status); rebuilds restore the selection by child path (`1303-1326`). |
+| m11 | **Closed** (text size at 11 studs still to check) | Four mutation rows from `GardenConfig.WEATHERS` with `HatchRules.percent` (`World.luau:352-380`). |
+| m12 | **Closed for the agreed scope** | Register "used in" lists Garden on the 6 reused audio rows (`docs/assets/register.md:13,17-20,36`). `LastReward` `#n` suffix (`Profiles.luau:399-401`), stripped on the client (`Menu.client.luau:104`). Music picks and the held watering can are deferred by ruling (not counted). |
+
+### New findings
+
+#### N1 (major). The menu's affordability checks read a stale `Profile`; in offline sessions banked coins never reach it
+- **Where:** `src/garden/Profiles.luau:212-221` (`Profiles.bank` sets only `Coins`, and returns before queuing when offline), `src/garden-client/Menu.client.luau:36` and `1327-1335` (Menu takes `profile` only from the `Profile` attribute), `374`, `435`, `740`, `854` (buy buttons enabled by `profile.coins >= price`), `225-249` (an inactive button ignores clicks). The HUD reads `Coins` (`Hud.client.luau:262`), so it shows the right total.
+- **What happens:** since the m3 fix, banked coins reach `Profile` only with the next accepted action or the next successful write. Online that is a lag of up to about 8 s, during which the EGGS, bed, pen and Locker buy buttons are grey although the HUD shows enough coins. In an offline session (failed load, DataStore outage, the new busy-lock path, or Studio without API access) there are no writes, so the menu stays stale until the player does some other accepted action. A player saving up on the pads sees the shop as unaffordable indefinitely.
+- **Reproduce:** Studio with API access off (offline session). Hatch the starter, buy one Meadow Egg, stand on the pads until the HUD shows more than 500 coins, then open the bed shop: BUY stays grey until you water, favourite or claim something.
+- **Fix:** in `Profiles.bank`, mark the session `dirty` (1 Hz republish) when it is offline, and either do the same throttled online (for example at most every 2 s) or have the Menu use `player:GetAttribute("Coins")` for `profile.coins` when it renders.
+
+#### N2 (minor). The final write can overtake a still-retrying flush, and that flush's ops are then dropped
+- **Where:** `src/garden/Profiles.luau:466-469` (after 10 s the final flush starts while the earlier one may still be in `withRetries`), `148-173` (the earlier flush then finds the lock released and writes nothing).
+- **What happens:** if a periodic flush is still retrying 10 s after the player leaves, the final write can land first and release the lock; the earlier flush's ops (one coalesced batch: banks, purchases, a hatch) are then discarded. The lock makes this safe (no double pay, no inconsistent record; before the fix the late write would have re-applied an old `unbanked`), so it is bounded data loss under degraded DataStores, not corruption.
+- **Fix:** optional for v0.1. Either let `finish` wait for the in-flight flush up to the 25 s deadline before the final write, or list it under accepted risks.
+
+### Checked and not defects
+
+- `canClaim` treats a lock dated 120 s or more in the future as stale. That is deliberate (a garbage or skewed date cannot lock a player out), and Roblox servers' `os.time()` is UTC and synced far inside 120 s.
+- A busy load gives up after about 6 s and the whole visit runs offline (no later re-claim). This matches the ruling ("offline with a notice when locked"), and the notice tells the player to rejoin.
+- A lock can stay for up to 120 s if a final write fails every retry, if a server shuts down while a load is in progress (that session is not yet in `sessions`, so `finishAll` does not see it), or if a claim committed but its call returned an error. Each heals after 120 s, with the busy notice meanwhile.
+- If the last load attempt fails for a non-lock reason after an earlier attempt saw a lock, the player gets the busy text instead of the offline text. Cosmetic.
+- The load now writes (the claim stores `sanitize(old)`). Before the fix the first flush, about 1 s later, wrote the same, so the stored record is not exposed to anything new.
+- Notices fired before the client's listener connects are queued by the RemoteEvent; the waiting notice also repeats every 10 s.
+
+### Verdict
+
+M1, M2 and m1-m12 (agreed scope) are closed in code. **One new major (N1)** should be fixed before acceptance; N2 is minor. Still to do in Studio: everything in the Fixes section's "Still needs Studio" list, the GDD section O items, and an N1 re-check.
+
+## Director follow-up (2026-10-26)
+
+| Finding | Status |
+|---|---|
+| N1 | Fixed. `ClientState.profile()` takes `coins` from the `Coins` attribute; the menu re-renders at most once a second on `Coins` changes (`ClientState.luau`, `Menu.client.luau` after `onProfile`). Checked in Studio offline: with 0 coins BUY 50 is grey; after banking 187 coins (Profile attribute unchanged) it turns pink within a second. |
+| N2 | Accepted. The final write already waits `INFLIGHT_WAIT` (10 s) for a running write; only a write still retrying past that loses its own changes, with no double pay. Waiting longer would break the 30 s `BindToClose` budget. |
+| S1 (new, found in Studio, minor) | Fixed. On the Egg Cart the 90-wide ODDS button overlapped the 130-wide BUY button by 32 px ("UY 50"), because `action` slots assume equal widths. ODDS is now placed at -148 (`Menu.client.luau`, egg rows). Checked in Studio. |
+
+Studio smoke test (offline, local build): hatch starter and Meadow eggs, reveal card, pad banking, buy at the cart (refused far away), release (30 coins for a Bumble Pup), invalid requests refused, no script errors. Session lock, multi-server, 7-player wait and network cost still need a published place.

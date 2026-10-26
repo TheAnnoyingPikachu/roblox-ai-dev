@@ -444,10 +444,12 @@ renderers.Eggs = function()
 				toast(if far then "Walk to the Egg Cart to buy eggs" else "Could not buy that egg right now", UI.CORAL)
 			end
 		end, 1, 130)
-		action(r, "ODDS", UI.LILAC, true, function()
+		-- Slots assume equal widths; ODDS sits left of the 130-wide BUY button.
+		local odds = action(r, "ODDS", UI.LILAC, true, function()
 			ClientState.oddsEgg = egg.id
 			openPanel("Odds")
 		end, 2, 90)
+		odds.Position = UDim2.new(1, -148, 0.5, 0)
 	end
 end
 
@@ -1333,6 +1335,17 @@ local function onProfile()
 	end
 end
 player:GetAttributeChangedSignal("Profile"):Connect(onProfile)
+-- Banking changes Coins at 5 Hz; buy buttons follow at most once a second (QA N1).
+local coinsPending = false
+player:GetAttributeChangedSignal("Coins"):Connect(function()
+	if not coinsPending then
+		coinsPending = true
+		task.delay(1, function()
+			coinsPending = false
+			onProfile()
+		end)
+	end
+end)
 
 -- Restock countdown and window changes for the open cart panel (1 Hz).
 local lastWindow = -1
