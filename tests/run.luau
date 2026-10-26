@@ -65,6 +65,27 @@ local SPECS = {
 	["GardenProgress.spec.luau"] = function()
 		require("./GardenProgress.spec")
 	end,
+	["SpireConfig.spec.luau"] = function()
+		require("./SpireConfig.spec")
+	end,
+	["MarketRules.spec.luau"] = function()
+		require("./MarketRules.spec")
+	end,
+	["TowerRules.spec.luau"] = function()
+		require("./TowerRules.spec")
+	end,
+	["PlazaRules.spec.luau"] = function()
+		require("./PlazaRules.spec")
+	end,
+	["SpireEconomy.spec.luau"] = function()
+		require("./SpireEconomy.spec")
+	end,
+	["SpireProgress.spec.luau"] = function()
+		require("./SpireProgress.spec")
+	end,
+	["SpireBalance.spec.luau"] = function()
+		require("./SpireBalance.spec")
+	end,
 }
 
 local T = require("./framework")

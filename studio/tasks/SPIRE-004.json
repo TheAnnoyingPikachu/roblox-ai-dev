@@ -40,5 +40,13 @@
     "tests/run.luau"
   ],
   "risk_level": "medium",
-  "status": "planned"
+  "status": "in_review",
+  "evidence": [
+    "2026-10-26, A10, branch game5/spire (uncommitted working tree): lune run tests/run -> 421/421 passed, 0 failed, 0 load errors (117 new tests in 7 specs; Relay, Night and Garden specs unchanged and passing).",
+    "SpireBalance.spec (Luau greedy sim on the real rules): floor 5 at 3.3 min (target 3.5), floor 10 at 17.5 (18), floor 15 at 37.0 (35), floor 20 at 83.2 (86); all within the 30% tolerance.",
+    "SpireEconomy.spec property: worth never rises over 10,000 seeded 12-op buy/upgrade/sell/place/move/sell sequences with random events including Flash Sale.",
+    "SpireProgress.spec property: sanitize never errors on 1,000 seeded junk records, always returns a valid profile, and is idempotent; apply gives equal results on copies.",
+    "stylua --check and selene clean on every SPIRE-004 file; node tools/validate-tasks.mjs passes."
+  ],
+  "notes": "Deviations from docs/architecture/spire.md section 3 (spire.md not edited): (1) TowerRules.Result cannot be a Luau type alias (type packs cannot be aliased), so every change spells out (Profile, boolean, string?). (2) PlazaRules requires TowerRules for copy and the Vec3 type (no cycle; 3.0 lists only SpireConfig and MetaRules). (3) SpireProgress does not require MarketRules (the event is an argument). (4) SpireProgress.check also refuses args over 40 characters with [arg] so parse rejects a 41-digit arg. GDD conflict: C5 says a new profile has draw 1, but defaults (decision 0009 and spire.md) give an empty Data Farm, so draw is 0 until the first rack; tests follow the decision."
 }
