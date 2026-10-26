@@ -34,6 +34,11 @@
     "src/spire/City.luau"
   ],
   "risk_level": "high",
-  "status": "planned",
-  "notes": "High risk: saved player data and a remote contract. PRODUCTION_UNIVERSE_ID stays nil. Can start against stubs of the SPIRE-003 signatures."
+  "status": "in_review",
+  "notes": "High risk: saved player data and a remote contract. PRODUCTION_UNIVERSE_ID stays nil. Can start against stubs of the SPIRE-003 signatures.",
+  "evidence": [
+    "Local 2026-10-26 (uncommitted, game5/spire): stylua --check src/spire clean; selene src/spire 0 errors 0 warnings; rojo build spire.project.json -o build/spire.rbxl OK. Lune not run (SPIRE-004 shared modules were being written concurrently); every call checked by hand against the section 3 signatures in the landed src/shared Spire files.",
+    "Maxed profile size estimate: 7,684 bytes as JSON (node JSON.stringify of 30 floors at level 5 with 10-digit spent, 60 items, every cosmetic owned, 30 endorsed ids, 8 quest stats, lock). The in-game value comes from the [Profiles] <id> loaded (<n> bytes encoded) log line, still to be recorded in Studio.",
+    "Still open (need Studio/staging): 10-minute leave/rejoin offline payout, MicroProfiler frame time with 6 full towers, Max Players 6 warning, DataStore writes and session lock on staging, CI run."
+  ]
 }
