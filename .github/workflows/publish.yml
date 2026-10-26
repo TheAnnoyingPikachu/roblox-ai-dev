@@ -6,6 +6,8 @@
 #     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
 #     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
 #   "production" must have required reviewers (SHANNON) and be limited to tags v*.
+#   Garden places: set Max Players to 6 in the place settings (a place file cannot carry it;
+#   docs/architecture/garden.md section 7).
 name: Publish
 
 on:

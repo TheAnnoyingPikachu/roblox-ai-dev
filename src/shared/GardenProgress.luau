@@ -247,6 +247,46 @@ function GardenProgress.leave(p: Profile, now: number): Profile
 	return GardenProgress.snapshot(p, 0, now)
 end
 
+-- Session lock (0008 amendment 2026-10-26) ----------------------------------------------------
+-- The stored record carries `lock = { session, at }` next to the profile fields. `sanitize` drops
+-- it, so profiles in memory (and published to clients) never hold it.
+
+GardenProgress.LOCK_STALE = 120 -- seconds: 2 x the 60 s autosave; every write refreshes `at`
+
+local function lockOf(record: any): { session: string, at: number }?
+	local lock = if type(record) == "table" then record.lock else nil
+	if
+		type(lock) == "table"
+		and type(lock.session) == "string"
+		and type(lock.at) == "number"
+		and lock.at == lock.at
+	then
+		return lock
+	end
+	return nil
+end
+
+-- Load: a session may take the record unless another session's lock is fresh. A lock dated more
+-- than LOCK_STALE away from `now` (either way) is stale.
+function GardenProgress.canClaim(record: any, session: string, now: number): boolean
+	local lock = lockOf(record)
+	return lock == nil or lock.session == session or math.abs(now - lock.at) >= GardenProgress.LOCK_STALE
+end
+
+-- Every write after the load: only while this session still holds the lock (not taken over by
+-- another server, not released by this session's final write).
+function GardenProgress.holds(record: any, session: string): boolean
+	local lock = lockOf(record)
+	return lock ~= nil and lock.session == session
+end
+
+-- The record to store: `p` with this session's lock at `now`, or with no lock (the final write).
+function GardenProgress.locked(p: Profile, session: string?, now: number): any
+	local out: any = table.clone(p)
+	out.lock = if session then { session = session, at = now } else nil
+	return out
+end
+
 function GardenProgress.bank(p: Profile, coins: number, pads: number, today: number): Profile
 	local out = GardenRules.copy(p)
 	out.coins = math.min(MAX_COINS, out.coins + math.max(0, floor(coins)))

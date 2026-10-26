@@ -10,6 +10,11 @@
 -- (docs/architecture/garden.md 4.2). Without DataStore access the session keeps an in-memory profile,
 -- writes nothing and says so. GardenServer's router runs the common request checks before
 -- Profiles.request.
+--
+-- Session lock (0008 amendment 2026-10-26): the load claims `lock = { session, at }` on the record
+-- and every write refreshes it; the final write clears it. A load that finds another session's
+-- fresh lock (GardenProgress.LOCK_STALE) retries, then runs offline. A write that finds the lock
+-- gone or taken writes nothing and the session goes offline. Both tell the player.
 
 local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
@@ -22,6 +27,7 @@ local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local GardenProgress = require(Shared:WaitForChild("GardenProgress"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local MetaRules = require(Shared:WaitForChild("MetaRules"))
+local Remotes = require(script.Parent:WaitForChild("Remotes"))
 local State = require(script.Parent:WaitForChild("State"))
 
 type Profile = GardenConfig.Profile
@@ -36,6 +42,9 @@ local COALESCE = 7 -- seconds between writes while changes are queued (decision 
 local AUTOSAVE = 60
 local BOARD_EVERY = 120
 local CLOSE_BUDGET = 25 -- BindToClose has 30 s
+local INFLIGHT_WAIT = 10 -- leave: longest wait for a running write before the final one
+local OFFLINE_TEXT = "Saving is offline on this server: progress here lasts this session only."
+local BUSY_TEXT = "Your garden is still saving on another server, so this visit is not saved. Rejoin in a minute."
 
 local function storeSuffix(): string
 	if RunService:IsStudio() then
@@ -54,10 +63,13 @@ local okBoard, board = pcall(function()
 	return DataStoreService:GetOrderedDataStore("GardenIncome" .. storeSuffix())
 end)
 
+type Bank = { coins: number, pads: number, today: number, op: Change }
 type Session = {
+	id: string, -- lock owner: one GUID per load
 	profile: Profile,
 	online: boolean,
 	queue: { Change },
+	bank: Bank?, -- the merged bank op while it is the last queued change
 	writing: boolean,
 	lastWrite: number,
 	dirty: boolean,
@@ -71,7 +83,8 @@ local function keyFor(player: Player): string
 	return `player_{player.UserId}`
 end
 
-local function withRetries(label: string, operation: () -> any): (boolean, any)
+-- deadline (os.clock): no retry wait that would end after it (BindToClose budget).
+local function withRetries(label: string, operation: () -> any, deadline: number?): (boolean, any)
 	local lastError: any = nil
 	for attempt = 1, MAX_ATTEMPTS do
 		local ok, result = pcall(operation)
@@ -80,9 +93,10 @@ local function withRetries(label: string, operation: () -> any): (boolean, any)
 		end
 		lastError = result
 		warn(`[Profiles] {label} attempt {attempt} failed: {tostring(result)}`)
-		if attempt < MAX_ATTEMPTS then
-			task.wait(2 ^ attempt)
+		if attempt == MAX_ATTEMPTS or (deadline and os.clock() + 2 ^ attempt > deadline) then
+			break
 		end
+		task.wait(2 ^ attempt)
 	end
 	return false, lastError
 end
@@ -117,21 +131,47 @@ end
 -- the snapshot. On success the stored result becomes the in-memory profile, with every change
 -- queued since the flush started re-run on it. On failure the changes go back to the front.
 -- `ops` and `unbanked` are captured together, before any yield, so they describe the same moment.
-local function flush(player: Player, session: Session, now: number, unbanked: number)
+-- Writes only while this session holds the lock; `final` releases it.
+local function flush(
+	player: Player,
+	session: Session,
+	now: number,
+	unbanked: number,
+	final: boolean?,
+	deadline: number?
+)
 	session.writing = true
 	session.lastWrite = now
 	local ops = session.queue
 	session.queue = {}
+	local lost = false
 	local ok, stored = withRetries(`flush {player.UserId}`, function()
 		return (store :: DataStore):UpdateAsync(keyFor(player), function(old: any)
+			lost = not GardenProgress.holds(old, session.id)
+			if lost then
+				return nil -- another server took the record, or this session already released it
+			end
 			local p = GardenProgress.sanitize(old, now)
 			for _, op in ops do
 				p = op(p)
 			end
-			return GardenProgress.snapshot(p, unbanked, now)
+			return GardenProgress.locked(
+				GardenProgress.snapshot(p, unbanked, now),
+				if final then nil else session.id,
+				now
+			)
 		end)
-	end)
-	if ok and stored ~= nil then
+	end, deadline)
+	if lost then
+		-- Never write this profile from here again; the player keeps playing unsaved.
+		warn(`[Profiles] {player.UserId} lost the session lock; saving is off for this session`)
+		session.online = false
+		session.queue = {}
+		if not session.closing then
+			player:SetAttribute("ProfileOnline", false)
+			Remotes.notice(player, OFFLINE_TEXT)
+		end
+	elseif ok and stored ~= nil then
 		local p = GardenProgress.sanitize(stored, now)
 		for _, op in session.queue do
 			p = op(p)
@@ -148,8 +188,7 @@ end
 
 -- Applies `change` to the in-memory profile now and queues it for the store. `change` must be pure
 -- and capture its own now/today: the same function runs on the stored copy inside UpdateAsync.
--- quiet: publish on the next 1 Hz step instead of now (pad banking).
-function Profiles.apply(player: Player, label: string, change: Change, quiet: boolean?)
+function Profiles.apply(player: Player, label: string, change: Change)
 	local session = sessions[player]
 	if session == nil then
 		return
@@ -163,13 +202,36 @@ function Profiles.apply(player: Player, label: string, change: Change, quiet: bo
 	if session.online then
 		table.insert(session.queue, change)
 	end
-	if quiet then
-		session.dirty = true
-	else
-		publish(player, session.profile)
-	end
+	publish(player, session.profile)
 end
 local apply = Profiles.apply
+
+-- Pad banking (5 Hz). Banks in a row on the same day merge into one queued op, so a long DataStore
+-- outage queues one op, not five a second. Only `Coins` is published now; the full profile goes
+-- out with the next other change or write.
+function Profiles.bank(player: Player, coins: number, pads: number, today: number)
+	local session = sessions[player]
+	if session == nil then
+		return
+	end
+	session.profile = GardenProgress.bank(session.profile, coins, pads, today)
+	player:SetAttribute("Coins", session.profile.coins)
+	if not session.online then
+		return
+	end
+	local merged = session.bank
+	if merged and merged.today == today and session.queue[#session.queue] == merged.op then
+		merged.coins += coins
+		merged.pads += pads
+		return
+	end
+	local b: Bank = { coins = coins, pads = pads, today = today, op = nil :: any }
+	b.op = function(p)
+		return GardenProgress.bank(p, b.coins, b.pads, b.today)
+	end
+	session.bank = b
+	table.insert(session.queue, b.op)
+end
 
 function Profiles.get(player: Player): Profile?
 	local session = sessions[player]
@@ -185,6 +247,7 @@ end
 function Profiles.load(player: Player)
 	local now = os.time()
 	local session: Session = {
+		id = HttpService:GenerateGUID(false),
 		profile = GardenProgress.defaults(now),
 		online = false,
 		queue = {},
@@ -193,17 +256,26 @@ function Profiles.load(player: Player)
 		dirty = false,
 		closing = false,
 	}
+	local busy = false
 	if okStore then
+		-- Claims the lock (3 tries, 2 s and 4 s apart, so an old server's final write can land first).
 		local ok, record = withRetries(`load {player.UserId}`, function()
-			return (store :: DataStore):GetAsync(keyFor(player))
+			local stored = (store :: DataStore):UpdateAsync(keyFor(player), function(old: any)
+				busy = not GardenProgress.canClaim(old, session.id, now)
+				if busy then
+					return nil
+				end
+				return GardenProgress.locked(GardenProgress.sanitize(old, now), session.id, now)
+			end)
+			if busy then
+				error("profile is locked by another server")
+			end
+			return stored
 		end)
 		if ok then
 			session.online = true
 			session.profile = GardenProgress.sanitize(record, now)
 		end
-	end
-	if player.Parent == nil then
-		return
 	end
 	-- The session exists only once loading has finished, so no request runs on a half-loaded profile.
 	sessions[player] = session
@@ -214,6 +286,14 @@ function Profiles.load(player: Player)
 	apply(player, "login", function(p)
 		return (GardenProgress.login(p, now, today))
 	end)
+	if player.Parent == nil then
+		-- Left while loading (GardenServer's leave found no session): write the login, release the lock.
+		Profiles.finish(player, os.time())
+		return
+	end
+	if not session.online then
+		Remotes.notice(player, if busy then BUSY_TEXT else OFFLINE_TEXT)
+	end
 	-- Decision 0008 estimates at most about 12 KB for a full record; this logs the real size.
 	print(`[Profiles] {player.UserId} loaded ({#HttpService:JSONEncode(session.profile)} bytes encoded)`)
 end
@@ -299,6 +379,8 @@ local ACTIONS: { [string]: Handler } = {
 	end,
 }
 
+local rewardCount = 0
+
 -- Runs a profile action after GardenServer's common and world checks. The pure rule decides on the
 -- in-memory profile first; only an accepted change is applied and queued.
 function Profiles.request(player: Player, action: string, arg: string?): boolean
@@ -314,7 +396,9 @@ function Profiles.request(player: Player, action: string, arg: string?): boolean
 		return false
 	end
 	if paid and paid > 0 then
-		player:SetAttribute("LastReward", `+{GardenRules.short(paid)} coins`)
+		-- The #n suffix makes two equal rewards in a row still change the attribute (the client strips it).
+		rewardCount += 1
+		player:SetAttribute("LastReward", `+{GardenRules.short(paid)} coins#{rewardCount}`)
 	end
 	apply(player, action, function(p)
 		return (handler(p, now, today, arg))
@@ -372,16 +456,17 @@ function Profiles.finish(player: Player, now: number)
 		end
 		return
 	end
+	-- One budget from the start: at most INFLIGHT_WAIT for a running write, no retry wait past it.
+	local started = os.clock()
 	if session.online then
 		apply(player, "leave", function(p)
 			return GardenProgress.leave(p, now)
 		end)
 		session.closing = true
-		local started = os.clock()
-		while session.writing and os.clock() - started < CLOSE_BUDGET do
+		while session.writing and os.clock() - started < INFLIGHT_WAIT do
 			task.wait(0.1)
 		end
-		flush(player, session, now, 0)
+		flush(player, session, now, 0, true, started + CLOSE_BUDGET)
 	end
 	session.closing = true
 	if sessions[player] == session then

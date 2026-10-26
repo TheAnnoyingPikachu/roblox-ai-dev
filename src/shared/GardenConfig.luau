@@ -211,7 +211,8 @@ GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
 GardenConfig.INDEX_SIZE = 36
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
-GardenConfig.RELEASE_SECONDS = 30
+-- 0008 amendment 2026-10-26: release never returns its egg price (buy, hatch, release <= 60% of it).
+GardenConfig.RELEASE_SECONDS = 6
 GardenConfig.PAD = { radius = 4.5, height = 6 }
 GardenConfig.RANGE = { cart = 25, bed = 12 }
 GardenConfig.RESTOCK = 300

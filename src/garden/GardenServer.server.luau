@@ -32,6 +32,8 @@ local MAX_ARG = 32
 local GATE_GRACE = 1.0
 local BOARD_REFRESH = 60
 local FULL_TEXT = "Your garden is full: release or store a creature"
+local WAIT_TEXT = "Every garden here is taken. You will get the next one that frees up."
+local WAIT_REPEAT = 10 -- seconds between reminders while waiting for a plot
 
 -- Request actions (decision 0008): true takes a string argument, false takes none.
 local REQUEST_ARGS: { [string]: boolean } = {
@@ -130,7 +132,7 @@ end
 
 -- Request remote (decision 0008) ------------------------------------------------------------
 
-local function like(player: Player, profile: GardenConfig.Profile, arg: string): boolean
+local function like(player: Player, arg: string): boolean
 	local target = Players:GetPlayerByUserId(tonumber(arg) or 0)
 	local targetProfile = target and Profiles.get(target)
 	if target == nil or targetProfile == nil or State.live[target] == nil or target == player then
@@ -139,11 +141,12 @@ local function like(player: Player, profile: GardenConfig.Profile, arg: string):
 	if not gateAllows(player, target, targetProfile, true) then
 		return false
 	end
+	-- The friend lookup may have yielded: decide on the liker's current profile (as water does).
+	local profile = Profiles.get(player)
 	local now = os.time()
 	local today = MetaRules.dayOf(now)
 	local targetId = target.UserId
-	local _, ok = GardenProgress.like(profile, targetId, player.UserId, today)
-	if not ok then
+	if profile == nil or not select(2, GardenProgress.like(profile, targetId, player.UserId, today)) then
 		return false
 	end
 	Profiles.apply(player, "like", function(p)
@@ -178,7 +181,7 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 			return false
 		end
 	elseif action == "like" then
-		return like(player, profile, arg)
+		return like(player, arg)
 	elseif action == "home" then
 		if rootOf(player) == nil then
 			return false
@@ -285,6 +288,7 @@ end)
 -- Loop (garden.md 4.3) --------------------------------------------------------------------------
 
 -- Banks every pad of `player` the root stands on (or every pad when `root` is nil, on leave).
+-- A pad counts once per visit for collect50: the first bank of >= 1 coin since the root stepped on.
 local function bankPads(player: Player, live: State.Live, root: Vec3?, today: number)
 	local sum, count = 0, 0
 	local centres = Plots.pads(live.plot)
@@ -294,17 +298,20 @@ local function bankPads(player: Player, live: State.Live, root: Vec3?, today: nu
 			live.pads, coins = GardenRules.bankPad(live.pads, i)
 			if coins >= 1 then
 				sum += coins
-				count += 1
+				if not live.visits[i] then
+					live.visits[i] = true
+					count += 1
+				end
 				if root then
 					Remotes.fx("collect", { owner = player.UserId, pad = i, amount = coins })
 				end
 			end
+		else
+			live.visits[i] = nil
 		end
 	end
 	if sum > 0 then
-		Profiles.apply(player, "bank", function(p)
-			return GardenProgress.bank(p, sum, count, today)
-		end, true)
+		Profiles.bank(player, sum, count, today)
 	end
 end
 
@@ -419,8 +426,19 @@ local function onPlayer(player: Player)
 	index.Parent = leaderstats
 	leaderstats.Parent = player
 	local plot = Plots.assign(player)
+	local waited = 0
+	-- Every plot taken (Max Players above Plots.COUNT, or a leaver's plot not free yet): tell the
+	-- player and retry each second until one frees up.
+	while plot == nil and player.Parent ~= nil do
+		if waited % WAIT_REPEAT == 0 then
+			warn(`[GardenServer] no free plot for {player.UserId}, waiting`)
+			Remotes.notice(player, WAIT_TEXT)
+		end
+		task.wait(1)
+		waited += 1
+		plot = Plots.assign(player)
+	end
 	if plot == nil then
-		warn(`[GardenServer] no free plot for {player.UserId}`)
 		return
 	end
 	-- Live exists before the load so login's publish can refresh the plot; the loop and the router
@@ -430,6 +448,7 @@ local function onPlayer(player: Player)
 		pads = {},
 		lastRequest = 0,
 		inside = {},
+		visits = {},
 		friends = {},
 		boardIncome = -1,
 		boardAt = 0,
@@ -450,17 +469,18 @@ local function onPlayer(player: Player)
 	end
 end
 
--- Leave (GDD L): bank every pad, final write, then free the plot.
+-- Leave (GDD L): bank every pad, free the plot (a waiting player can take it during the final
+-- write, which needs no plot), then the final write.
 local function onLeave(player: Player)
 	local live = State.live[player]
 	State.live[player] = nil -- the loop, router and prompts stop serving this plot at once
-	if live and Profiles.get(player) then
-		bankPads(player, live, nil, MetaRules.dayOf(os.time()))
-	end
-	Profiles.finish(player, os.time())
 	if live then
+		if Profiles.get(player) then
+			bankPads(player, live, nil, MetaRules.dayOf(os.time()))
+		end
 		Plots.free(live.plot)
 	end
+	Profiles.finish(player, os.time())
 end
 
 Profiles.Changed:Connect(function(player: Player, profile: GardenConfig.Profile)
@@ -470,6 +490,10 @@ Profiles.Changed:Connect(function(player: Player, profile: GardenConfig.Profile)
 	end
 end)
 
+if Players.MaxPlayers > Plots.COUNT then
+	-- Set Max Players to 6 in the place settings (docs/architecture/garden.md 7); extra players wait.
+	warn(`[GardenServer] Max Players {Players.MaxPlayers} is above the {Plots.COUNT} plots`)
+end
 Players.PlayerAdded:Connect(onPlayer)
 for _, player in Players:GetPlayers() do
 	task.spawn(onPlayer, player)

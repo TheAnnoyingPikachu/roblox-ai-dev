@@ -22,6 +22,7 @@ type Vec3 = GardenRules.Vec3
 local Plots = {}
 
 local COUNT = 6
+Plots.COUNT = COUNT -- GDD A: 6 players, 6 plots; Max Players must match
 local HALF = 31 -- fence line; pads reach z = 30.5
 local BED_ROWS = { -22, -14, -6 } -- local z, front row first
 local BED_COLS = { -18, -6, 6, 18 }
@@ -204,6 +205,9 @@ type PlotView = {
 
 local views: { PlotView } = {}
 local holding = Instance.new("Folder") -- creatures are set up here before they replicate
+-- Species whose mesh the warm-up in Plots.build loaded. Others get the part fallback at once, so a
+-- failed or slow mesh never yields the 1 Hz refresh or retries (as Night's Enemies.warmed).
+local warmed: { [string]: boolean } = {}
 local promptEvent = Instance.new("BindableEvent")
 Plots.prompts = promptEvent.Event -- (player, plot, bed, kind: "Hatch" | "Water")
 
@@ -681,7 +685,7 @@ local function makeCreature(view: PlotView, c: GardenConfig.Creature): Instance
 	local base = Vector3.new(centre.x, centre.y, centre.z)
 	local facing = view.frame.Rotation * CFrame.Angles(0, CREATURE_YAW, 0)
 	local model: Instance
-	local mesh = Models.spawn(c.s, holding, base, scale)
+	local mesh = if warmed[c.s] then Models.spawn(c.s, holding, base, scale) else nil
 	if mesh then
 		mesh.CFrame = CFrame.new(base + Vector3.new(0, mesh.Size.Y / 2, 0)) * facing
 		mesh.CanCollide = false -- the owner walks onto the pad to bank it
@@ -703,6 +707,12 @@ local function makeCreature(view: PlotView, c: GardenConfig.Creature): Instance
 	return model
 end
 
+-- The key includes whether the mesh is warmed, so a fallback built before the warm-up finished is
+-- rebuilt as the mesh on the next refresh.
+local function creatureKey(c: GardenConfig.Creature): string
+	return `{c.s}{c.m}{c.z}{c.placed}{if warmed[c.s] then "w" else ""}`
+end
+
 local function refreshCreatures(view: PlotView, profile: Profile)
 	local want: { [number]: GardenConfig.Creature } = {}
 	for _, c in profile.creatures do
@@ -712,7 +722,7 @@ local function refreshCreatures(view: PlotView, profile: Profile)
 	end
 	for id, cv in view.creatures do
 		local c = want[id]
-		if c == nil or `{c.s}{c.m}{c.z}{c.placed}` ~= cv.key then
+		if c == nil or creatureKey(c) ~= cv.key then
 			if cv.model then
 				cv.model:Destroy()
 			end
@@ -721,9 +731,9 @@ local function refreshCreatures(view: PlotView, profile: Profile)
 	end
 	for id, c in want do
 		if view.creatures[id] == nil then
-			local record: CreatureView = { key = `{c.s}{c.m}{c.z}{c.placed}`, model = nil }
+			local record: CreatureView = { key = creatureKey(c), model = nil }
 			view.creatures[id] = record
-			local model = makeCreature(view, c) -- may yield the first time a mesh loads
+			local model = makeCreature(view, c)
 			if view.creatures[id] == record then
 				record.model = model
 				model.Parent = view.creatureFolder
@@ -907,11 +917,13 @@ function Plots.build(root: Instance)
 		buildPlot(folder, n)
 	end
 	folder.Parent = root
-	-- Load every creature mesh once up front so later refreshes rarely yield.
+	-- Load every creature mesh once up front; refreshes use only the ones that loaded (warmed).
 	task.spawn(function()
 		local warm = Instance.new("Folder")
 		for _, s in GardenConfig.SPECIES do
-			Models.spawn(s.id, warm, Vector3.zero, 1)
+			if Models.spawn(s.id, warm, Vector3.zero, 1) then
+				warmed[s.id] = true
+			end
 		end
 		warm:Destroy()
 		for n = 1, COUNT do

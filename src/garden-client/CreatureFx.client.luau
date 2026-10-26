@@ -19,7 +19,7 @@ local highlights = 0
 
 type View = {
 	inst: Instance,
-	id: number,
+	key: string, -- "<owner>:<id>", as ClientState.hidden
 	parts: { BasePart },
 	base: CFrame,
 	written: CFrame,
@@ -133,9 +133,10 @@ local function track(inst: Instance)
 		return
 	end
 	local base = pivot(inst)
+	local plot = inst.Parent and inst.Parent.Parent
 	local view: View = {
 		inst = inst,
-		id = id,
+		key = `{plot and plot:GetAttribute("Owner") or 0}:{id}`,
 		parts = partsOf(inst),
 		base = base,
 		written = base,
@@ -194,7 +195,7 @@ RunService.RenderStepped:Connect(function()
 		then
 			view.base = current
 		end
-		local hidden = ClientState.hidden[view.id] == true
+		local hidden = ClientState.hidden[view.key] == true
 		if hidden ~= view.hidden then
 			view.hidden = hidden
 			for _, p in view.parts do

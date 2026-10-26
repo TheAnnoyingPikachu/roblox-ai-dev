@@ -72,13 +72,13 @@ describe("GardenRules income (C3)", function()
 		expect(near(GardenRules.indexMult(p), 1.72)).toBe(true)
 	end)
 
-	it("pays floor(rate x 30) on release (1,620 for a Big Golden Berry Cat) and refuses favourites", function()
+	it("pays floor(rate x 6) on release (324 for a Big Golden Berry Cat) and refuses favourites", function()
 		local p = checkGarden()
-		expect(GardenRules.releaseValue(p.creatures[1])).toBe(1620)
+		expect(GardenRules.releaseValue(p.creatures[1])).toBe(324)
 		local out, ok, coins = GardenRules.release(p, 1)
 		expect(ok).toBe(true)
-		expect(coins).toBe(1620)
-		expect(out.coins).toBe(100 + 1620)
+		expect(coins).toBe(324)
+		expect(out.coins).toBe(100 + 324)
 		expect(GardenRules.find(out, 1)).toBeNil()
 		expect(#out.index).toBe(5) -- the Index entry stays
 		expect(#p.creatures).toBe(2) -- input unchanged
@@ -90,6 +90,42 @@ describe("GardenRules income (C3)", function()
 		expect((GardenRules.find(GardenRules.favourite(fav, 1), 1) :: any).fav).toBe(false)
 		expect(select(2, GardenRules.favourite(p, 99))).toBe(false)
 		expect(select(2, GardenRules.release(p, 99))).toBe(false)
+	end)
+
+	-- Director ruling (0008 amendment 2026-10-26): the expected coins from buying, hatching and
+	-- releasing an egg are at most 60% of its price, for every sold egg in every weather. The Lucky
+	-- Meter is bounded from above by adding top rate / meter to the species average.
+	it("never returns more than 60% of an egg's price on buy, hatch and release, in any weather", function()
+		local size = 0
+		for _, z in GardenConfig.SIZES do
+			size += z.mult * z.bp / 10000
+		end
+		local checked = 0
+		for _, egg in GardenConfig.EGGS do
+			local price = egg.price
+			if price == nil then
+				continue
+			end
+			local species = 0
+			for _, o in egg.odds do
+				species += (GardenConfig.species(o.id) :: GardenConfig.Species).rate * o.bp / 10000
+			end
+			if egg.top and egg.meter then
+				species += (GardenConfig.species(egg.top) :: GardenConfig.Species).rate / egg.meter
+			end
+			for _, w in GardenConfig.WEATHERS do
+				local mutation = 0
+				for _, o in w.mutation do
+					mutation += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp / 10000
+				end
+				local expected = species * mutation * size * GardenConfig.RELEASE_SECONDS
+				if expected > 0.6 * price then
+					error(`{egg.id} in {w.id}: expected release {expected} > 60% of {price}`)
+				end
+				checked += 1
+			end
+		end
+		expect(checked).toBe(20) -- 5 sold eggs x 4 weathers
 	end)
 
 	it("formats short numbers, truncating to one decimal", function()

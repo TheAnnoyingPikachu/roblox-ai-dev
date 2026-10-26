@@ -155,6 +155,63 @@ describe("GardenProgress login and offline (decision 0008)", function()
 	end)
 end)
 
+describe("GardenProgress session lock (0008 amendment 2026-10-26)", function()
+	local STALE = GardenProgress.LOCK_STALE
+
+	it("lets a load claim a record with no lock, its own lock or a stale lock", function()
+		expect(GardenProgress.canClaim(nil, "b", NOW)).toBe(true) -- new player
+		expect(GardenProgress.canClaim(GardenProgress.defaults(NOW), "b", NOW)).toBe(true) -- saved before locks
+		expect(GardenProgress.canClaim({ lock = { session = "b", at = NOW } }, "b", NOW)).toBe(true)
+		expect(GardenProgress.canClaim({ lock = { session = "a", at = NOW - STALE } }, "b", NOW)).toBe(true)
+		expect(GardenProgress.canClaim({ lock = { session = "a", at = NOW + STALE } }, "b", NOW)).toBe(true) -- garbage date
+		expect(GardenProgress.canClaim({ lock = { session = "a", at = 0 / 0 } }, "b", NOW)).toBe(true)
+		expect(GardenProgress.canClaim({ lock = "a" }, "b", NOW)).toBe(true)
+	end)
+
+	it("refuses a load while another session's lock is fresh", function()
+		expect(GardenProgress.canClaim({ lock = { session = "a", at = NOW } }, "b", NOW)).toBe(false)
+		expect(GardenProgress.canClaim({ lock = { session = "a", at = NOW - STALE + 1 } }, "b", NOW)).toBe(false)
+		expect(GardenProgress.canClaim({ lock = { session = "a", at = NOW + 5 } }, "b", NOW)).toBe(false) -- clock skew
+	end)
+
+	it("writes only while this session holds the lock, stale or not", function()
+		expect(GardenProgress.holds({ lock = { session = "a", at = NOW - 10 * STALE } }, "a")).toBe(true)
+		expect(GardenProgress.holds({ lock = { session = "b", at = NOW } }, "a")).toBe(false) -- taken over
+		expect(GardenProgress.holds(GardenProgress.defaults(NOW), "a")).toBe(false) -- released by the final write
+		expect(GardenProgress.holds(nil, "a")).toBe(false)
+	end)
+
+	it("stamps or clears the lock without changing the profile, and sanitize drops it", function()
+		local p = checkGarden()
+		local record = GardenProgress.locked(p, "a", NOW)
+		expect(record.lock.session).toBe("a")
+		expect(record.lock.at).toBe(NOW)
+		expect((p :: any).lock).toBeNil() -- input unchanged
+		expect(GardenProgress.holds(record, "a")).toBe(true)
+		expect(GardenProgress.canClaim(record, "b", NOW + 60)).toBe(false)
+		expect(same(GardenProgress.sanitize(record, NOW), GardenProgress.sanitize(p, NOW))).toBe(true)
+		local released = GardenProgress.locked(GardenProgress.sanitize(record, NOW), nil, NOW)
+		expect(released.lock).toBeNil()
+		expect(GardenProgress.canClaim(released, "b", NOW)).toBe(true)
+	end)
+
+	it("pays unbanked once across a server hop: the old final write releases, then the new load claims", function()
+		-- Server A's last periodic flush stored 40 unbanked under A's lock.
+		local stored = GardenProgress.locked(GardenProgress.snapshot(checkGarden(), 40, NOW), "a", NOW)
+		expect(GardenProgress.canClaim(stored, "b", NOW + 5)).toBe(false) -- B cannot log in on it yet
+		-- A's leave banks the 40 and releases the lock.
+		local a = GardenProgress.bank(GardenProgress.sanitize(stored, NOW + 6), 40, 1, DAY)
+		stored = GardenProgress.locked(GardenProgress.leave(a, NOW + 6), nil, NOW + 6)
+		expect(GardenProgress.canClaim(stored, "b", NOW + 8)).toBe(true)
+		local out, offline, unbanked = GardenProgress.login(GardenProgress.sanitize(stored, NOW + 8), NOW + 8, DAY)
+		expect(unbanked).toBe(0)
+		expect(out.coins).toBe(100 + 40 + offline)
+		-- A late write from A is refused: A no longer holds the lock.
+		expect(GardenProgress.holds(GardenProgress.locked(out, "b", NOW + 8), "a")).toBe(false)
+		expect(GardenProgress.holds(stored, "a")).toBe(false)
+	end)
+end)
+
 describe("GardenProgress banking and quest stats", function()
 	it("banks coins (capped at 1e15) and counts pads with at least 1 coin as collects", function()
 		local p = GardenProgress.bank(GardenProgress.defaults(NOW), 12.7, 3, DAY)
@@ -234,7 +291,7 @@ describe("GardenProgress banking and quest stats", function()
 		local p = checkGarden()
 		local out, ok, coins = GardenProgress.release(p, 1, DAY)
 		expect(ok).toBe(true)
-		expect(coins).toBe(1620)
+		expect(coins).toBe(324)
 		expect(out.quests.progress.releases).toBe(1)
 		local _, refused, none = GardenProgress.release(p, 99, DAY)
 		expect(refused).toBe(false)

@@ -142,7 +142,7 @@ GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
 GardenConfig.INDEX_SIZE = 36
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
-GardenConfig.RELEASE_SECONDS = 30
+GardenConfig.RELEASE_SECONDS = 6 -- 0008 amendment 2026-10-26 (was 30)
 GardenConfig.PAD = { radius = 4.5, height = 6 }
 GardenConfig.RANGE = { cart = 25, bed = 12 }
 GardenConfig.RESTOCK = 300
@@ -199,7 +199,7 @@ GardenRules.indexMult(p: Profile): number -- 1 + 0.02 * #index
 GardenRules.income(p: Profile): number -- sum of placed rates * indexMult
 GardenRules.offline(p: Profile, now: number): number -- floor(income * 0.5 * min(away, 28800) + 1e-9); 0 if lastSeen >= now
 GardenRules.short(n: number): string -- "999", "1.2K", "3.4M", "5.6B", "1.5T"; one decimal truncated, ".0" dropped
-GardenRules.releaseValue(c: Creature): number -- floor(rate * 30 + 1e-9)
+GardenRules.releaseValue(c: Creature): number -- floor(rate * RELEASE_SECONDS + 1e-9)
 
 GardenRules.bedState(p: Profile, bed: number, now: number): string -- "locked" (bed > bedCount) | "empty" | "growing" | "ripe"
 GardenRules.growFraction(p: Profile, bed: number, now: number): number -- 0..1 from planted to ready; 0 if now < planted
@@ -261,7 +261,11 @@ GardenProgress.scaled(p: Profile, base: number, minutes: number): number -- max(
 GardenProgress.login(p: Profile, now: number, today: number): (Profile, number, number) -- pays unbanked then offline; returns offline, unbanked
 GardenProgress.snapshot(p: Profile, unbanked: number, now: number): Profile -- last op of every flush
 GardenProgress.leave(p: Profile, now: number): Profile -- unbanked = 0, lastSeen = now
-GardenProgress.bank(p: Profile, coins: number, pads: number, today: number): Profile -- coins (capped 1e15); collects += pads with >= 1 coin
+GardenProgress.bank(p: Profile, coins: number, pads: number, today: number): Profile -- coins (capped 1e15); collects += pads (the server counts a pad once per visit)
+GardenProgress.LOCK_STALE = 120 -- session lock (0008 amendment 2026-10-26)
+GardenProgress.canClaim(record: any, session: string, now: number): boolean -- load: no lock, own lock, or |now - at| >= LOCK_STALE
+GardenProgress.holds(record: any, session: string): boolean -- write: the stored lock is this session's
+GardenProgress.locked(p: Profile, session: string?, now: number): any -- record to store: p with lock { session, at = now }, or no lock (final write); sanitize drops it
 GardenProgress.hatch(p: Profile, bed: number, o: HatchRules.Outcome, now: number, today: number): (Profile, boolean, HatchRules.Result?) -- apply + quest stats hatches, rareHatches, mutants
 GardenProgress.ownWater(p: Profile, bed: number, now: number, today: number): (Profile, boolean) -- water(helper false) + 3 XP + waters stat and total
 GardenProgress.helperWater(p: Profile, today: number): (Profile, number) -- the helper's side: 15 XP under the daily cap of 20, waters stat and total; returns XP paid
@@ -295,7 +299,7 @@ Quest stat keys: `hatches`, `waters`, `collects`, `rareHatches`, `mutants`, `rel
 | File | Kind | Owns |
 |---|---|---|
 | `GardenServer.server.luau` | Script | Entry point. Requires everything; plot assignment on join (lowest free 1 to 6) and release on leave; character spawn at the gate; `Request` router (common checks from decision 0008, world checks, then `Profiles.request`); `like` and `home`; bed prompt handlers (`Hatch`, `Water`); the Heartbeat loop (4.3); `GardenStatus`; hatch announcements; `BindToClose`. |
-| `State.luau` | Module | The single mutable live state: `State.live: { [Player]: Live }` with `Live = { plot: number, pads: GardenRules.Pads, lastRequest: number, inside: { [number]: number }, friends: { [number]: boolean }, boardIncome: number, boardAt: number }` (`inside`: plot -> seconds a disallowed player has been inside; `friends`: IsFriendsWith cache by owner UserId). |
+| `State.luau` | Module | The single mutable live state: `State.live: { [Player]: Live }` with `Live = { plot: number, pads: GardenRules.Pads, lastRequest: number, inside: { [number]: number }, visits: { [number]: boolean }, friends: { [number]: boolean }, boardIncome: number, boardAt: number }` (`inside`: plot -> seconds a disallowed player has been inside; `visits`: own pads already counted as a collect during the current visit; `friends`: IsFriendsWith cache by owner UserId). |
 | `Remotes.luau` | Module | Copied from Night: creates `ReplicatedStorage.GardenRemotes` (`Request`, `Fx`) and `ReplicatedStorage.GardenStatus`; returns them plus `fx(kind, data)` = `Fx:FireAllClients` and `notice(player, text)` = `Fx:FireClient(player, "notice", { text = text })`. |
 | `Profiles.luau` | Module | Copied from Night (4.2). |
 | `Plots.luau` | Module | Builds the 6 plot shells once (fence, gate, sign, 12 bed sites, 20 pad sites, decor, under 300 parts each); `refresh(plot, profile)` rebuilds the changing parts (bed eggs and locks, pad locks, creature models, sign text, fence style, prompt `Enabled`); `clear(plot)`; geometry. |
@@ -306,17 +310,19 @@ Server module APIs (signatures for cross-file calls):
 ```luau
 -- Profiles.luau
 Profiles.Changed: RBXScriptSignal -- (player, profile)
-Profiles.load(player: Player) -- blocks; runs login; sets OfflineCoins
+Profiles.load(player: Player) -- blocks; claims the session lock (UpdateAsync, 3 tries), else offline with a notice; runs login; sets OfflineCoins
 Profiles.get(player: Player): GardenConfig.Profile?
 Profiles.isOnline(player: Player): boolean
-Profiles.apply(player: Player, label: string, change: (GardenConfig.Profile) -> GardenConfig.Profile, quiet: boolean?) -- in memory now, queued for the store; quiet: publish on the next 1 Hz step instead of now
+Profiles.apply(player: Player, label: string, change: (GardenConfig.Profile) -> GardenConfig.Profile) -- in memory now, queued for the store, published
+Profiles.bank(player: Player, coins: number, pads: number, today: number) -- pad banking: in memory now; merged into the last queued op if it is this day's bank; publishes only Coins
 Profiles.request(player: Player, action: string, arg: string?): boolean -- buyEgg, buyBed, buyPenSlot, place, store, release, favourite, setGate, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic; decides on the in-memory profile, applies only if accepted
 Profiles.step(now: number) -- 1 Hz: publish dirty sessions, flush due queues (7 s / 60 s), income board writes (120 s)
-Profiles.finish(player: Player, now: number) -- bank already done by the caller; leave op, final flush (waits), then drops the session
+Profiles.finish(player: Player, now: number) -- bank already done by the caller; leave op, waits at most 10 s for a running write, final flush (releases the lock; no retry wait past 25 s), then drops the session
 Profiles.finishAll(now: number) -- BindToClose: finish every session in parallel
 Profiles.topIncome(): { { name: string, income: number } }
 
 -- Plots.luau
+Plots.COUNT = 6 -- plots; Max Players must match
 Plots.assign(player: Player): number? -- lowest free plot, sets Owner
 Plots.free(plot: number) -- Owner = 0, clear
 Plots.refresh(plot: number, profile: GardenConfig.Profile)
@@ -335,9 +341,10 @@ World.build(): { cart: GardenRules.Vec3, board: (rows: { { name: string, income:
 
 Same load (3 tries, offline mode), `publish`, `topWins` pattern as `src/night/Profiles.luau`, with:
 
-- Stores `GardenProfile<suffix>` and ordered `GardenIncome<suffix>`; `GardenProgress` in place of `NightProgress`; the transform is `GardenProgress.sanitize(old, now)` with `now` captured when the flush starts, then each queued change in order, then `snapshot`.
-- Session `{ profile, online, queue: { (Profile) -> Profile }, writing: boolean, lastWrite: number, dirty: boolean }`. `apply` runs `change` on `profile` and appends it to `queue` (if online). A flush moves `queue` out, runs one `UpdateAsync` (3 tries) and, on success, sets `profile` = the stored result with every change queued since the flush started re-run on it. One flush at a time per player (`writing`). A failed flush puts its changes back at the front of the queue.
-- Load: after `GetAsync`, `apply(login)`; the login's returned `offline` sets `OfflineCoins`.
+- Stores `GardenProfile<suffix>` and ordered `GardenIncome<suffix>`; `GardenProgress` in place of `NightProgress`; the transform is `GardenProgress.sanitize(old, now)` with `now` captured when the flush starts, then each queued change in order, then `snapshot`, stored as `GardenProgress.locked(..., session.id, now)` (no lock on the final write).
+- Session lock (0008 amendment 2026-10-26): `session.id` is a GUID per load. The transform cancels (returns nil) unless `GardenProgress.holds(old, session.id)`; then the session goes offline (`ProfileOnline` false, `notice`) and never writes again.
+- Session `{ id, profile, online, queue: { (Profile) -> Profile }, bank, writing: boolean, lastWrite: number, dirty: boolean, closing }`. `apply` runs `change` on `profile` and appends it to `queue` (if online). A flush moves `queue` out, runs one `UpdateAsync` (3 tries) and, on success, sets `profile` = the stored result with every change queued since the flush started re-run on it. One flush at a time per player (`writing`). A failed flush puts its changes back at the front of the queue.
+- Load: one `UpdateAsync` that claims the lock when `GardenProgress.canClaim(old, session.id, now)` and stores the sanitised record with it (cancels and retries, 2 s and 4 s, otherwise); then `apply(login)`; the login's returned `offline` sets `OfflineCoins`. Without the lock or the store the session runs offline and gets a `notice`. A player who left during the load is finished at once (login written, lock released).
 - `publish` sets `Profile` (JSON), `Coins`, `Income` (number), `Level`, `XP`, `Plot`, leaderstats `Income` (`GardenRules.short(floor(income))`) and `Index` (`#index`), and fires `Changed` (which `GardenServer` uses for `Plots.refresh`).
 - Income board: in `step`, per session, if `floor(income) ~= boardIncome` and 120 s since `boardAt`, `SetAsync` in a spawned thread.
 
@@ -349,7 +356,7 @@ Every 0.2 s (5 Hz), for each `State.live` entry with a loaded profile:
 
 1. Read the owner's `HumanoidRootPart` position (server-replicated).
 2. `pads = GardenRules.accrue(profile, pads, 0.2)`.
-3. For each pad `i` with `GardenRules.onPad(root, Plots.pads(plot)[i])`: `pads, coins = GardenRules.bankPad(pads, i)`; sum coins and count pads with coins ≥ 1; `Fx("collect", { owner, pad = i, amount = coins })` per pad. If the sum > 0: `Profiles.apply(player, "bank", fn(p) GardenProgress.bank(p, sum, count, today), true)`.
+3. For each pad `i` with `GardenRules.onPad(root, Plots.pads(plot)[i])`: `pads, coins = GardenRules.bankPad(pads, i)`; sum coins and count pads with coins ≥ 1; `Fx("collect", { owner, pad = i, amount = coins })` per pad. A pad counts towards `count` only once per visit (`live.visits`, reset when the root is off the pad). If the sum > 0: `Profiles.bank(player, sum, count, today)`.
 4. Gate guard: for every player standing in `Plots.contains(plot, root)` of another owner whose gate disallows them, add 0.2 to `inside[plot]`; past 1.0 s move them to `Plots.gate(plot)`; reset when outside.
 
 Every 1 s:
@@ -363,9 +370,9 @@ Every 1 s:
 
 - **Hatch prompt:** checks (decision 0008) → `weather = WorldRules.weatherAt(now)` → `o = HatchRules.roll(profile, bed, now, weather, Rng.seed(Random.new():NextInteger(1, 2^31 - 1)))`; nil → `notice` if `GardenRules.isFull`; else `Profiles.apply(player, "hatch", fn(p) (GardenProgress.hatch(p, bed, o, now, today)))`, `Fx("hatch", { owner, bed, id, s, m, z })` with the in-memory creature id, and `Fx("announce", { name = DisplayName, s, m, z })` when `HatchRules.announce(o)`.
 - **Water prompt:** checks → owner: `apply(owner, "water", GardenProgress.ownWater ...)`; helper: `apply(owner, "help", GardenRules.water(p, bed, now, true))` and `apply(helper, "helper", GardenProgress.helperWater(p, today))`; `Fx("water", { owner, bed, by })`.
-- **like:** `apply(liker, "like", GardenProgress.like(p, target, liker.UserId, today))` and `apply(target, "liked", GardenProgress.receiveLike)`; `Fx("like", { owner = target, by = liker })`.
+- **like:** after the gate check (which may yield on `IsFriendsWith`), `GardenProgress.like` is re-checked on the liker's current profile; then `apply(liker, "like", GardenProgress.like(p, target, liker.UserId, today))` and `apply(target, "liked", GardenProgress.receiveLike)`; `Fx("like", { owner = target, by = liker })`. The two sides (and the two sides of a helper water) are re-applied to their own stored records independently, so the counterpart op is best effort.
 - **release** (via `Profiles.request`) also fires `Fx("release", { owner, id })` for the meadow run-off.
-- **PlayerAdded:** `Plots.assign`, `Profiles.load`, then set up `State.live`, spawn the character at `Plots.gate`. **PlayerRemoving:** bank every pad (`GardenProgress.bank`), `Profiles.finish`, then remove the plot's prompts and models (`Plots.free`), drop `State.live`. **BindToClose:** the same for every player, in parallel, via `Profiles.finishAll`.
+- **PlayerAdded:** `Plots.assign` (if no plot is free: `notice` every 10 s and retry every second until one frees up), set up `State.live`, `Profiles.load`, spawn the character at `Plots.gate`. **PlayerRemoving:** drop `State.live`, bank every pad, free the plot (`Plots.free`, so a waiting player can take it), then `Profiles.finish`. **BindToClose:** the same for every player, in parallel, via `Profiles.finishAll`.
 
 ### 4.4 How plots, eggs, pads and creatures are represented
 
@@ -392,8 +399,8 @@ Every 1 s:
 
 | File | Kind | Owns |
 |---|---|---|
-| `ClientState.luau` | ModuleScript | Client-only settings `{ music, sfx, fastHatch, announcements: boolean }` with `SettingsChanged`; `Revealing(id)` signal from HatchFx so CreatureFx hides a creature until its reveal ends. |
-| `Menu.client.luau` | LocalScript | Forked Relay menu: title "EGG GARDEN", camera orbit, PLAY (camera flies to own gate), INDEX (36 entries, silhouettes, which eggs and weathers can produce them, every weather's mutation table), CREATURES (pen and storage lists with Place, Store, Release with confirmation "Release Berry Cat to the wild meadow? +1,620 coins", Favourite), EGGS (cart panel: price, grow time, stock left, unlock, Lucky Meter, ODDS card, BUY), LOCKER (fence, can), REWARDS, STATS, SETTINGS (writes `ClientState`), How to Play and Odds cards, toasts (`LastReward`, `notice`), music by weather. Sends `Request` only. |
+| `ClientState.luau` | ModuleScript | Client-only settings `{ music, sfx, fastHatch, announcements: boolean }` with `SettingsChanged`; `reveal(owner, id, hidden)` with `hidden` keyed `"<owner>:<id>"` (creature ids are per profile), so CreatureFx hides only that garden's creature until its reveal ends. |
+| `Menu.client.luau` | LocalScript | Forked Relay menu: title "EGG GARDEN", camera orbit, PLAY (camera flies to own gate), INDEX (36 entries, silhouettes, which eggs and weathers can produce them, every weather's mutation table), CREATURES (pen and storage lists with Place, Store, Release with confirmation "Release Berry Cat to the wild meadow? +324 coins", Favourite), EGGS (cart panel: price, grow time, stock left, unlock, Lucky Meter, ODDS card, BUY), LOCKER (fence, can), REWARDS, STATS, SETTINGS (writes `ClientState`), How to Play and Odds cards, toasts (`LastReward` without its `#n` suffix, `notice`), music by weather. Sends `Request` only. |
 | `Hud.client.luau` | LocalScript | Coins and income (short format), level and XP bar, weather chip and the next two, restock timer, HOME button (`home`), Index count, gold dot, "While you were away" card (`OfflineCoins` > 0), hatch announcement banners (setting), first-session prompts and arrows (GDD H2, `hatches = 0` at join), per-viewer prompt visibility: each bed's `Hatch`/`Water` prompt `Enabled` locally only when the action can succeed for this player (owner, ripe/growing, cooldown, caps, gate, garden not full), using `GardenRules` on the owner's `Profile` attribute and `workspace:GetServerTimeNow()`. |
 | `HatchFx.client.luau` | LocalScript | Reveal (wobble 1.5 s or 0.4 s Fast Hatch, crack, pop, rarity burst, name, rarity, mutation, size; never shows another creature), coin pops, water splash in the can's colour, like hearts, egg growth scale (40% to 100% by `GardenRules.growFraction`) and ripe glow/wobble, BillboardGui time left; weather looks from `GardenStatus` (I4 lighting tweens, rain, rainbow beam, fireflies, lamp lights), stingers; SFX. |
 | `CreatureFx.client.luau` | LocalScript | Creature bob, hop and turn tweens; mutation looks (Golden texture swap, Moonlit and Rainbow `Highlight`, falling back to particles and a tinted `SelectionBox` past about 31 highlights); ambient life (windmill sails, butterflies, petals). |
@@ -404,6 +411,7 @@ Clients never write server state. The ODDS card, Index and forecast tables read 
 
 - `garden.project.json` (section 1), `src/garden/.gitkeep`, `src/garden-client/.gitkeep`.
 - CI builds `build/garden.rbxl`; `publish.yml` offers `garden-staging` and maps `garden-*` to `garden.project.json`. The `garden-staging` environment (variables `ROBLOX_UNIVERSE_ID`, `ROBLOX_PLACE_ID`, secret `ROBLOX_API_KEY`) is created by a human.
+- **Publish checklist (Garden places):** set **Max Players = 6** (Creator Hub > the place > Settings, or Studio Game Settings > Places) to match `Plots.COUNT`. A place file cannot carry this setting, so `publish.yml` cannot set it; `GardenServer` warns in the server log when `Players.MaxPlayers` is higher, and extra players wait for a plot with a notice.
 
 ## 8. Resolutions of points the GDD leaves open
 

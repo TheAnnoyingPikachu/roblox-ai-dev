@@ -324,12 +324,12 @@ local function reveal(data: any)
 		return
 	end
 	local mine = data.owner == player.UserId
-	ClientState.reveal(id, true)
+	ClientState.reveal(data.owner, id, true)
 	local bed = find(data.owner, { "Beds", `Bed{tonumber(data.bed) or 0}` })
 	local soil = bed and bed:FindFirstChild("Soil")
 	local at = positionOf(soil)
 	if at == nil then
-		ClientState.reveal(id, false)
+		ClientState.reveal(data.owner, id, false)
 		if mine then
 			showCard(s, m, z)
 		end
@@ -386,7 +386,7 @@ local function reveal(data: any)
 		ClientState.sound(if rarity >= 5 then SFX.fanfare else SFX.chime, 0.35, nil, 1 + 0.12 * rarity)
 		showCard(s, m, z)
 	end
-	ClientState.reveal(id, false)
+	ClientState.reveal(data.owner, id, false)
 end
 
 -- Coins, water, likes, release --------------------------------------------------------------------

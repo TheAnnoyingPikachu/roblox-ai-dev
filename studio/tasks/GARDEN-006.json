@@ -26,9 +26,20 @@
   ],
   "verification": "QA report with test notes, screenshots and CI links attached as evidence; SHANNON signs off",
   "output_artifacts": [
-    "QA notes in this task's evidence"
+    "docs/qa/garden-review.md"
   ],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "Reviewer must not be the thread that wrote GARDEN-003, GARDEN-004 or GARDEN-005 (CLAUDE.md rule 2)."
+  "status": "in_review",
+  "notes": "Reviewer must not be the thread that wrote GARDEN-003, GARDEN-004 or GARDEN-005 (CLAUDE.md rule 2).",
+  "evidence": [
+    "Code review 2026-10-26 by A15 of 66fd84e, f9a89f8 and 9a6a0f1: docs/qa/garden-review.md, 0 blocker, 2 major, 12 minor. Code review only: nothing was run or playtested in Studio by the reviewer",
+    "Local 2026-10-26 at 071a764: lune run tests/run 298/298 passed, 0 failed, 0 load errors (test-results.json deleted); selene src 0 errors, 0 warnings, 0 parse errors; stylua --check src clean; rojo build default, garden, night, relay all succeed; validate-tasks 24 valid; scan-secrets clean",
+    "Decision 0008 checks verified in code: Request common checks in order, shared 0.35 s limit, arg/no-arg and ^%d+$ rules, cart 25 and bed 12 stud checks on the server root, owner-only hatch, hatch rolled once and applied as a fixed outcome, no defaults written over a failed load, coalesced UpdateAsync re-apply with snapshot, leave and BindToClose flushes",
+    "ODDS card, Index and EGGS panel read the same GardenConfig tables the server rolls from; Lucky Meter text matches rollSpecies; every client world-name lookup exists in World/Plots; no MarketplaceService, TextBox, trading or gifting",
+    "Relay and Night: MetaRules changes keep wins/maxCoins/scale optional; ProgressRules and Night specs pass; relay and night projects build; no relay/night file changed except 10 new Models.luau entries",
+    "Majors: M1 no session lock, so a server hop can pay unbanked twice and re-roll a hatch when the old server final write lands late (Profiles.luau:185-219, GardenProgress.luau:228-248); M2 a player with no free plot gets a dead session with no message, and the leaver plot is freed only after the final write (GardenServer.server.luau:421-425, 454-464)",
+    "Not yet done: GDD section O Studio playtests (timings, 10-minute rejoin with DataStores on, two-client water/like/closed gate, client-side refusal exercises of every Request action and both prompts, MicroProfiler with 6 full gardens, start-menu screenshot); CI link",
+    "Fixes 2026-10-26 by the fix engineer (not the reviewer), Fixes section in docs/qa/garden-review.md: M1 session lock { session, at } on the stored record (LOCK_STALE 120 s, load claims via UpdateAsync with 2 retries else offline + notice, writes only while held, final write releases; GardenProgress.canClaim/holds/locked with 5 spec cases); M2 plot freed before the final write, waiting players get a notice and a 1 s retry, Max Players 6 in the publish checklist and a server warning; m1-m11 fixed; m12 register and LastReward fixed, music picks and held can left to SHANNON/cut list; m6 Director ruling RELEASE_SECONDS 30 -> 6 with a test asserting buy-hatch-release <= 60% of price for every egg and weather; decision 0008 amendment 2026-10-26, GDD and garden.md updated",
+    "Local 2026-10-26 after the fixes: lune run tests/run 304/304 passed, 0 failed, 0 load errors (test-results.json deleted); stylua --check src tests clean; selene src tests 0 errors, 0 warnings; rojo build default, garden, night, relay succeed; validate-tasks 24 valid; scan-secrets clean. Not run in Studio: fixes still need the Studio checks listed at the end of the Fixes section and a QA re-review"
+  ]
 }

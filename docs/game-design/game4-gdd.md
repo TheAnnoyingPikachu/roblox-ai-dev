@@ -55,7 +55,7 @@ Each player in the server is given the lowest-numbered free plot (1 to 6) on joi
 
 ### C4. Release
 
-- `release(id)`: removes the creature and pays `floor(rate × 30 + 1e-9)` coins (rate without the Index bonus). Refused for favourites. The client asks for confirmation ("Release Berry Cat to the wild meadow? +1,620 coins"). The Index entry stays.
+- `release(id)`: removes the creature and pays `floor(rate × 6 + 1e-9)` coins (rate without the Index bonus; was × 30, changed by the decision 0008 amendment of 2026-10-26 so buying, hatching and releasing returns at most 60% of an egg's price). Refused for favourites. The client asks for confirmation ("Release Berry Cat to the wild meadow? +324 coins"). The Index entry stays.
 - Released creatures run off through the Wild Meadow gate in the plaza (cosmetic).
 
 ## D. Eggs, growing and watering
@@ -95,15 +95,15 @@ All rolls use `Rng` (`src/shared/Rng.luau`) with state passed in, so tests are d
 
 | Id | Name | Rarity | Base rate (coins/s) | Release value (Normal) |
 |---|---|---|---|---|
-| `bunny` | Sprout Bunny | Common | 1 | 30 |
-| `frog` | Toadstool Frog | Common | 2 | 60 |
-| `pup` | Bumble Pup | Uncommon | 5 | 150 |
-| `cat` | Berry Cat | Uncommon | 12 | 360 |
-| `owl` | Pumpkin Owl | Rare | 30 | 900 |
-| `fox` | Cactus Fox | Rare | 70 | 2,100 |
-| `turtle` | Lotus Turtle | Epic | 180 | 5,400 |
-| `lion` | Sunflower Lion | Legendary | 500 | 15,000 |
-| `dragon` | Moonblossom Dragon | Mythic | 1,500 | 45,000 |
+| `bunny` | Sprout Bunny | Common | 1 | 6 |
+| `frog` | Toadstool Frog | Common | 2 | 12 |
+| `pup` | Bumble Pup | Uncommon | 5 | 30 |
+| `cat` | Berry Cat | Uncommon | 12 | 72 |
+| `owl` | Pumpkin Owl | Rare | 30 | 180 |
+| `fox` | Cactus Fox | Rare | 70 | 420 |
+| `turtle` | Lotus Turtle | Epic | 180 | 1,080 |
+| `lion` | Sunflower Lion | Legendary | 500 | 3,000 |
+| `dragon` | Moonblossom Dragon | Mythic | 1,500 | 9,000 |
 
 Rarity colours: Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold, Mythic pink.
 
@@ -266,7 +266,7 @@ Reward amounts scale with the garden so they stay worth claiming: `scaled(base, 
 | `mutant1` | Hatch a mutated creature | mutants | 1 | 200 | 8 |
 | `release3` | Release 3 creatures | releases | 3 | 100 | 3 |
 
-`waters` counts own and helper waters. `collects` counts pads banked with at least 1 coin.
+`waters` counts own and helper waters. `collects` counts pad visits that bank at least 1 coin (a pad counts once each time the owner steps onto it; decision 0008 amendment, 2026-10-26).
 
 ### H6. Leaderboard, stats, settings, music
 
@@ -393,17 +393,17 @@ Each new mesh needs a row in `docs/assets/register.md` before use (CLAUDE.md rul
 ## K. Edge cases
 
 - **Clock:** all times are server `os.time()` (UTC). If `now < planted` (clock skew between servers), the egg is treated as just planted; `ready` is never moved later than `planted + growTime`.
-- **Two servers at once** (rejoin race): the re-apply pattern applies each operation to the stored record; a purchase that fails there (coins already spent elsewhere) is reverted in memory when the stored result replaces it.
+- **Two servers at once** (rejoin race): the stored record carries a session lock (decision 0008 amendment, 2026-10-26), so only one server applies and writes a profile at a time; a server that cannot take the lock runs that session offline and tells the player. Within the lock holder, the re-apply pattern applies each operation to the stored record.
 - **Full garden:** hatch refused with a message; ripe eggs wait.
 - **Leaving with ripe eggs:** they stay ripe; nothing auto-hatches offline.
 - **Weather boundary:** the weather is read at the instant the server accepts the hatch; the client's chip may be up to 1 s behind.
 - **Restock boundary:** buys are counted per window `s`; a buy accepted in window `s` never counts against `s + 1`.
-- **Server full:** 6 players and 6 plots, so every player gets a plot.
+- **Server full:** 6 players and 6 plots (Max Players must be 6). If no plot is free (a leaver's plot is freed before their final write, so this is rare), the player is told and gets the next plot that frees up.
 - **Owner leaves while a helper waters:** the water is applied to the owner's in-memory profile and saved with their leave write; after the owner's profile is unloaded, prompts on that plot are removed.
 
 ## L. Disconnects
 
-- On leave: bank all pads, final write (`lastSeen = now`, `unbanked = 0`), free the plot, remove its models.
+- On leave: bank all pads, free the plot and remove its models, then the final write (`lastSeen = now`, `unbanked = 0`, session lock released).
 - On crash: the last autosave holds `unbanked` and `lastSeen`; at most 60 s of online income is paid at the offline rate instead.
 
 ## M. Scope for one build cycle
@@ -420,7 +420,7 @@ New pure modules in `src/shared/` (no Roblox APIs), each with `tests/<Module>.sp
 |---|---|---|
 | `GardenConfig` | Eggs, species, mutations, sizes, weather tables, bed and pen costs, cosmetics, quests (data only) | every odds row sums to 10,000; every species in an egg table exists; costs match C1 and C2 |
 | `HatchRules` | `rollSpecies(egg, pity, rng)`, `rollMutation(weather, rng)`, `rollSize(rng)`, `hatch(profile, bed, now, weather, rng)`, starter rule, pity update, Index update | cumulative mapping at boundaries (r = 6000 is Bunny, 6001 Frog on Meadow); pity forces the top species at meter − 1 and resets; non-top increments; starter always Normal Normal Bumble Pup; new Index entry adds once and gives 50 XP; full garden refused; storage used when pen full; over 100,000 seeded rolls each species frequency within 0.5 percentage points of its odds |
-| `GardenRules` | `rate`, `income`, `indexMult`, pad accrual and banking, offline, `buyEgg`, `water`, `buyBed`, `buyPenSlot`, `place`, `store`, `release`, `favourite`, `short` number format | C3 check values (60.5, 108,900, 871,200); banking floors and keeps the fraction; offline zero when `lastSeen` is in the future; buyEgg each refusal (level, stock, coins, no bed); planted in lowest empty bed; water reduction per egg, 60 s cooldown, 5 + 3 caps, `ready ≥ now`; Moon 8 waters gives 2,160 s; bed and slot cost tables and caps; release value 1,620 for a Big Golden Berry Cat and refusal for favourites; `short(1234) = "1.2K"`, `short(999) = "999"`, `short(1.5e12) = "1.5T"` |
+| `GardenRules` | `rate`, `income`, `indexMult`, pad accrual and banking, offline, `buyEgg`, `water`, `buyBed`, `buyPenSlot`, `place`, `store`, `release`, `favourite`, `short` number format | C3 check values (60.5, 108,900, 871,200); banking floors and keeps the fraction; offline zero when `lastSeen` is in the future; buyEgg each refusal (level, stock, coins, no bed); planted in lowest empty bed; water reduction per egg, 60 s cooldown, 5 + 3 caps, `ready ≥ now`; Moon 8 waters gives 2,160 s; bed and slot cost tables and caps; release value 324 for a Big Golden Berry Cat; buy, hatch and release returns at most 60% of every egg's price in every weather and refusal for favourites; `short(1234) = "1.2K"`, `short(999) = "999"`, `short(1.5e12) = "1.5T"` |
 | `WorldRules` | `weatherAt(unix)`, `forecast(unix, n)`, `isWeekend(unix)`, `stockFor(window)` | same unix gives the same weather; active only in the first 300 s of a window; weekday and weekend tables used on the right days (check Friday 23:59 and Saturday 00:00 UTC); over 20,000 windows each weather within 1 point of its odds; Meadow always unlimited; stock quantities within ranges |
 | `GardenProgress` | Garden config for `MetaRules`, XP table, level unlocks, scaled rewards (H5), quests and stats, `like`, `setGate`, defaults (starter egg), `sanitize` (H7) | H5 check values (14,520, 120, 100); quest progress per stat; like once per owner per day and 30 cap; helper XP cap 20 per day; defaults have 100 coins, 3 beds, 6 pads and a starter egg ready 8 s after creation; every sanitise rule in H7 |
 | `MetaRules` | (decision 0007) plus `index` unlock kind and optional `scale` hook | Relay's `ProgressRules` spec still passes unchanged; Night's specs unchanged; `index` unlock; `scale` absent gives base amounts |

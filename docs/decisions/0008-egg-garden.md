@@ -191,3 +191,46 @@ All under `ReplicatedStorage.GardenRemotes`, created by the server.
 - Any `MetaRules` change is a Relay and Night change too; their specs must stay green.
 - Root positions are client-owned physics; distance checks use the server's replicated root, so a teleporting exploiter can reach the cart or their own pads faster but cannot touch another player's profile.
 - `PRODUCTION_UNIVERSE_ID` must be set, with SHANNON's approval, before a production release; the `garden-staging` publish environment needs its variables and secret set by a human.
+
+## Amendment 2026-10-26: GARDEN-006 QA fixes
+
+Status: Studio Director rulings on the GARDEN-006 review (`docs/qa/garden-review.md`), recorded here under CLAUDE.md rule 8; SHANNON to confirm with the rest of 0008. Where this section and the text above disagree, this section wins.
+
+### Release value (review m6)
+
+- **Ruling:** releasing a creature must never return its egg's price. Buying, hatching and releasing an egg may return at most 60% of its price in expectation, for every sold egg, in every weather.
+- **Change:** `GardenConfig.RELEASE_SECONDS` 30 → **6**. Release pays `floor(rate × 6 + 1e-9)` (rate without the Index bonus); a Big Golden Berry Cat pays 324 (was 1,620). The GDD C4 and E1 release values scale the same way (Normal Sprout Bunny 6, Mythic dragon 9,000).
+- **Check** (fact, computed from `GardenConfig`; species average plus `top rate / meter` as an upper bound for the Lucky Meter, size average ×1.13): expected return as a share of the price, Clear / Rainbow Shower (the most generous weather):
+
+  | Egg | Before (Clear) | After, Clear | After, Rainbow Shower |
+  |---|---|---|---|
+  | `meadow` (50) | 143% | 28.6% | 54.5% |
+  | `forest` (400) | 66% | 13.2% | 25.3% |
+  | `sunset` (3,000) | 45% | 8.9% | 17.0% |
+  | `moon` (25,000) | 25% | 5.0% | 9.6% |
+  | `star` (200,000) | 8% | 1.5% | 2.9% |
+
+  `tests/GardenRules.spec.luau` ("never returns more than 60% ...") asserts this bound for every sold egg in all four weathers, so a later price, odds or release change that reopens the loop fails CI. The `release3` quest reward and hatch XP are unchanged.
+
+### Session lock (review M1)
+
+- **Record:** the stored record gains `lock = { session, at }` next to the profile fields: `session` is a GUID made per load, `at` the server `os.time()` of the last write. It is an envelope field, not part of the profile: `GardenProgress.sanitize` drops it, so profiles in memory and the `Profile` attribute never hold it. Records saved before this change have no lock and are claimable, so there is no migration step and `schemaVersion` stays 1.
+- **Stale:** a lock is stale when `|now − at| ≥ GardenProgress.LOCK_STALE` = 120 s (2 × the 60 s autosave; every write refreshes `at`).
+- **Load:** `GetAsync` is replaced by one `UpdateAsync` that claims the lock when `GardenProgress.canClaim(old, session, now)` (no lock, own lock or stale lock) and stores the sanitised record with the new lock; otherwise it cancels and is retried (3 tries, 2 s and 4 s apart) so the old server's final write can land. If the lock cannot be taken, the session runs offline exactly as a failed load (in-memory profile, writes nothing) and the player gets a notice ("Your garden is still saving on another server, so this visit is not saved. Rejoin in a minute."). A failed or offline load also gets a notice now ("Saving is offline on this server ...").
+- **Writes:** every flush runs only if `GardenProgress.holds(old, session)` (the stored lock is this session's, stale or not) and stores `GardenProgress.locked(snapshot, session, now)`. The final write (leave, `BindToClose`) stores no lock, which releases it. A flush that finds the lock gone or another session's writes nothing; the session goes offline (`ProfileOnline` false, notice) and keeps playing unsaved.
+- **Result:** at most one server applies and writes a profile at a time, so the GDD K "two servers at once" race can no longer pay `unbanked` twice or keep a re-rolled hatch, and a late write from a server whose session has ended is refused. A server that crashes leaves its lock for at most 120 s; a join in that time runs offline with the notice. Pure rules: `GardenProgress.canClaim`, `holds`, `locked` (tests in `tests/GardenProgress.spec.luau`).
+
+### Plots and Max Players (review M2)
+
+- On leave the plot is freed right after the pads are banked, before the final write (the write needs no plot).
+- A player who finds every plot taken gets a notice ("Every garden here is taken. You will get the next one that frees up.", repeated every 10 s) and the server retries the assignment every second until a plot frees up; the profile loads only once a plot is assigned.
+- Max Players must be 6 (= `Plots.COUNT`). It is a place setting that a place file cannot carry, so it is a publish checklist item (`docs/architecture/garden.md` section 7); `GardenServer` warns at start when `Players.MaxPlayers` is higher.
+
+### Other contract changes
+
+- **`collect50` (review m7):** a pad counts once per visit: the first bank of at least 1 coin after the owner's root steps onto it. Standing on a pad still banks every 0.2 s.
+- **Banking in the write queue (review m9):** consecutive pad banks on the same UTC day merge into one queued op (summed coins and pads) while it is the last queued change; the 0.35 s request limit does not apply to banking. A bank publishes only the `Coins` attribute; the full `Profile` attribute follows with the next other change or write (review m3).
+- **Leave deadlines (review m8):** `Profiles.finish` waits at most 10 s for a running write, then writes with no retry wait ending more than 25 s after it started.
+- **Cross-player pairs (review m4):** `like` re-checks the liker's current profile after the friend lookup. The counterpart ops (`receiveLike` on the owner, the helper's XP for a water) are best effort: each side is re-applied to its own stored record independently, so if one side is refused there the other can still stand. Neither side moves coins.
+- **`LastReward`:** the value is `"<text>#<n>"` with a per-server counter, so two equal rewards in a row still change the attribute; the client shows only `<text>`.
+- **Forecast board (review m11):** now shows every weather's mutation table (from `GardenConfig`, two decimals), as the child-safety section requires.

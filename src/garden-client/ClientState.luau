@@ -32,7 +32,7 @@ ClientState.settings = { music = true, sfx = true, fastHatch = false, announceme
 local settingsChanged = Instance.new("BindableEvent")
 ClientState.SettingsChanged = settingsChanged.Event
 local revealing = Instance.new("BindableEvent")
-ClientState.Revealing = revealing.Event -- (id: number, hidden: boolean) from HatchFx to CreatureFx
+ClientState.Revealing = revealing.Event -- (key: string, hidden: boolean) from HatchFx to CreatureFx
 local toasted = Instance.new("BindableEvent")
 ClientState.Toasted = toasted.Event -- (text: string, colour: Color3?) rendered by Menu
 local menuChanged = Instance.new("BindableEvent")
@@ -43,17 +43,19 @@ ClientState.OpenRequested = openRequested.Event -- (panel: string) HUD buttons a
 ClientState.menuOpen = true
 -- The egg the ODDS card shows (nil: every egg and weather).
 ClientState.oddsEgg = nil :: string?
--- Creature ids whose model stays hidden until their reveal ends (read by CreatureFx on spawn).
-ClientState.hidden = {} :: { [number]: boolean }
+-- Creatures whose model stays hidden until their reveal ends (read by CreatureFx on spawn), keyed
+-- "<owner UserId>:<creature id>": ids are per profile, so every garden has a creature 1.
+ClientState.hidden = {} :: { [string]: boolean }
 
 function ClientState.set(key: string, value: boolean)
 	(ClientState.settings :: any)[key] = value
 	settingsChanged:Fire(key)
 end
 
-function ClientState.reveal(id: number, hidden: boolean)
-	ClientState.hidden[id] = if hidden then true else nil
-	revealing:Fire(id, hidden)
+function ClientState.reveal(owner: any, id: number, hidden: boolean)
+	local key = `{owner}:{id}`
+	ClientState.hidden[key] = if hidden then true else nil
+	revealing:Fire(key, hidden)
 end
 
 function ClientState.toast(message: string, colour: Color3?)

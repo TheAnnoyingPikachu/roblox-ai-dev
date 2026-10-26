@@ -101,7 +101,7 @@ ClientState.Toasted:Connect(toast)
 player:GetAttributeChangedSignal("LastReward"):Connect(function()
 	local reward = player:GetAttribute("LastReward")
 	if type(reward) == "string" and reward ~= "" then
-		toast(reward, UI.GOLD)
+		toast(string.match(reward, "^(.*)#%d+$") or reward, UI.GOLD) -- "#n" only makes repeats change
 	end
 end)
 
@@ -854,6 +854,7 @@ renderers.Locker = function()
 			action(r, `BUY {short(price)}`, UI.GOLD, profile.coins >= price, function()
 				if ask("buyCosmetic", c.id) then
 					toast(`Bought {c.name}!`, UI.LEAF)
+					task.wait(0.4) -- the server's 0.35 s request limit (Night m6)
 					ask("equipCosmetic", c.id)
 				end
 			end, 1, 140)
@@ -1298,12 +1299,37 @@ end)
 
 -- Live refresh --------------------------------------------------------------------------------------
 
+-- Rebuilds an open panel and puts a gamepad selection back on the button at the same place.
+local function rerender(name: string)
+	local frame = panels[name]
+	local selected = GuiService.SelectedObject
+	local path = {}
+	if selected and selected:IsDescendantOf(frame) then
+		local node: Instance = selected
+		while node ~= frame do
+			local parent = node.Parent :: Instance
+			table.insert(path, 1, table.find(parent:GetChildren(), node))
+			node = parent
+		end
+	end
+	renderers[name]()
+	if #path > 0 then
+		local node: Instance? = frame
+		for _, i in path do
+			node = node and node:GetChildren()[i]
+		end
+		if node and node:IsA("GuiObject") and node.Selectable then
+			GuiService.SelectedObject = node
+		end
+	end
+end
+
 local function onProfile()
 	profile = ClientState.profile()
 	refreshMenu()
 	local name = visiblePanel()
 	if name and name ~= "Settings" and name ~= "Help" then
-		renderers[name]()
+		rerender(name)
 	end
 end
 player:GetAttributeChangedSignal("Profile"):Connect(onProfile)
@@ -1326,9 +1352,15 @@ task.spawn(function()
 		task.wait(1)
 	end
 end)
+-- The Odds panel shows the current weather's table, so it changes only with the weather.
+local oddsWeather = ClientState.status().weather
 ClientState.statusValue:GetPropertyChangedSignal("Value"):Connect(function()
-	if visiblePanel() == "Odds" then
-		renderers.Odds()
+	local weather = ClientState.status().weather
+	if weather ~= oddsWeather then
+		oddsWeather = weather
+		if visiblePanel() == "Odds" then
+			rerender("Odds")
+		end
 	end
 end)
 

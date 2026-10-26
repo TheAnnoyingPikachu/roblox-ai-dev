@@ -12,6 +12,7 @@ export type Live = {
 	pads: GardenRules.Pads, -- pad index -> pending coins (float)
 	lastRequest: number, -- os.clock() of the last accepted request or prompt (0.35 s limit)
 	inside: { [number]: number }, -- plot -> seconds this player has been inside it while disallowed
+	visits: { [number]: boolean }, -- own pads already counted as a collect during the current visit
 	friends: { [number]: boolean }, -- IsFriendsWith cache by owner UserId
 	boardIncome: number, -- last floor(income) written to GardenIncome
 	boardAt: number, -- os.time() of that write

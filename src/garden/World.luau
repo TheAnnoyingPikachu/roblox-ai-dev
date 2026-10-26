@@ -12,6 +12,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
+local HatchRules = require(Shared:WaitForChild("HatchRules"))
 local Models = require(script.Parent:WaitForChild("Models"))
 local Plots = require(script.Parent:WaitForChild("Plots"))
 local Props = require(script.Parent:WaitForChild("Props"))
@@ -349,18 +350,33 @@ local function boardOnPosts(at: Vector3, toward: Vector3, width: number, height:
 end
 
 local function boards()
-	-- Forecast board (GDD F): the current window and the next two.
-	local forecast = boardOnPosts(Vector3.new(30, 0, 15), Vector3.new(0, 0, 40), 12, 8)
+	-- Forecast board (GDD F): the current window and the next two, then every weather's mutation
+	-- table (decision 0008 child safety), from the same GardenConfig data the server rolls from.
+	local forecast = boardOnPosts(Vector3.new(30, 0, 15), Vector3.new(0, 0, 40), 12, 11)
 	forecast.Name = "ForecastBoard"
 	local gui = surface(forecast)
 	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = gui
 	local title = textLabel(gui, "WEATHER", Color3.fromRGB(255, 235, 140))
-	title.Size = UDim2.fromScale(1, 0.25)
+	title.Size = UDim2.fromScale(1, 0.14)
 	for k = 1, 3 do
 		local row = textLabel(gui, "", WHITE)
-		row.Size = UDim2.fromScale(1, 0.25)
+		row.Size = UDim2.fromScale(1, 0.14)
+		row.LayoutOrder = k
 		forecastRows[k] = row
+	end
+	for k, w in GardenConfig.WEATHERS do
+		local cells = {}
+		for _, o in w.mutation do
+			table.insert(
+				cells,
+				`{(GardenConfig.mutation(o.id) :: GardenConfig.Mutation).name} {HatchRules.percent(o.bp)}%`
+			)
+		end
+		local row = textLabel(gui, `{w.name}: {table.concat(cells, "  ")}`, Color3.fromRGB(255, 235, 140))
+		row.Size = UDim2.fromScale(1, 0.1)
+		row.LayoutOrder = 3 + k
 	end
 	-- Top Gardens board with a leaf garland.
 	local top = boardOnPosts(Vector3.new(0, 0, -34), Vector3.new(0, 0, 0), 14, 10)
