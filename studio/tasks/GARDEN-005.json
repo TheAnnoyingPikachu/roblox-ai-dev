@@ -38,6 +38,7 @@
   "evidence": [
     "Local 2026-10-25: stylua src/garden-client and selene src/garden-client clean (0 errors, 0 warnings); rojo build garden.project.json -o build/garden.rbxl OK",
     "Client sends only Request(action, arg) with actions from decision 0008 (buyEgg, buyBed, buyPenSlot, place, store, release, favourite, like, setGate, home, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic); no amounts, prices, outcomes or positions; no MarketplaceService",
-    "Not yet run in Studio: GardenConfig/GardenRules/HatchRules/GardenProgress (GARDEN-003) and src/garden (GARDEN-004) had not landed; coded against docs/architecture/garden.md section 3 signatures. Studio run with screenshots (PC and touch emulator, hatch, weather change, I4 orbit frame) still owed to GARDEN-006"
+    "Not yet run in Studio: GardenConfig/GardenRules/HatchRules/GardenProgress (GARDEN-003) and src/garden (GARDEN-004) had not landed; coded against docs/architecture/garden.md section 3 signatures. Studio run with screenshots (PC and touch emulator, hatch, weather change, I4 orbit frame) still owed to GARDEN-006",
+    "Audio 2026-10-26 (SHANNON: \"choose licensed roblox audio\", GDD R / QA m12): Relay lobby track with Moonfall EQ and gong stingers replaced by APM tracks found with Studio search_asset, all uploaded by APMOfficial: Sail Boat (c) 1840007459 and Happy Daze (b) 1839993539 for normal play, Tiny Ripples in the River 9039607235 for Moonfall, Seven Leaf Clover - Hit2 9048769919 for weather starts, The Little Things - Tag1 1848287237 for Legendary/Mythic reveals and level up; register rows added. Not yet heard in Studio"
   ]
 }
