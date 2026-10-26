@@ -1,7 +1,7 @@
 # 0010: Neon Spire asset approach
 
 Date: 2026-10-26
-Status: Proposed for SHANNON's approval (per-game asset approval; CLAUDE.md rule 9). Options in `docs/game-design/game5-art-bible.md` section 9.
+Status: Accepted (2026-10-26: SHANNON said "begin making the cyberpunk tycoon"; the recommended answers in the production plan, section 9, are adopted) for SHANNON's approval (per-game asset approval; CLAUDE.md rule 9). Options in `docs/game-design/game5-art-bible.md` section 9.
 
 ## Options
 

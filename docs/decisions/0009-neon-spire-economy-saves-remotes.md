@@ -1,7 +1,7 @@
 # 0009: Neon Spire economy, saved profile and remote contract
 
 Date: 2026-10-26
-Status: Proposed by A06 and A09 for SHANNON (CLAUDE.md rule 8). Implements `docs/game-design/game5-gdd.md` (the GDD; section letters refer to it). SPIRE-003 finalises it with exact signatures before SPIRE-004 starts; any change to a value below after acceptance needs an amendment here.
+Status: Accepted (2026-10-26: SHANNON said "begin making the cyberpunk tycoon"; the recommended answers in the production plan, section 9, are adopted) by A06 and A09 for SHANNON (CLAUDE.md rule 8). Implements `docs/game-design/game5-gdd.md` (the GDD; section letters refer to it). SPIRE-003 finalises it with exact signatures before SPIRE-004 starts; any change to a value below after acceptance needs an amendment here.
 
 ## Decision
 

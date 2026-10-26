@@ -119,3 +119,7 @@ Not built in v0.1 (decision 0002). After M5 has live data, SPIRE-011 may propose
 5. **IPO timing:** build IPO after the core passes (M4, as planned) or in v0.1? *Recommended: after.*
 6. **Playtest time:** can you commit to the six sessions in section 4 (about 3 hours over the build), on a phone and a PC? Do you have a controller?
 7. **Staging experience:** will you create a new `spire-staging` experience (separate DataStores) and its GitHub environment when M1 is close?
+
+## 10. Answers (2026-10-26)
+
+SHANNON asked to "begin making the cyberpunk tycoon", which approves this plan and decisions 0009 and 0010. The Studio Director adopted the recommendations for questions 1, 2, 4 and 5: assets A + B, the title Neon Spire, the under-18 rules, and IPO after the core (M4). Questions 3, 6 and 7 (the Bake Rush check, playtest time and the `spire-staging` experience) are asked again before the first Spire publish. SHANNON also said earlier to skip test gates during the build and to check in only before publishing, so G0 to G4 are run by the studio where possible and the human sessions are batched before the publish.
