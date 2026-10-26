@@ -1,14 +1,14 @@
 # Relay Rounds: game design spec (v0.1)
 
-Status: v0.2 (launch polish). Concept C in `concepts.md`.
+Status: v0.4 (meta game: start menu, profiles, rewards, music, models). Concept C in `concepts.md`.
 
 ## A. Product
 
 - **Pitch:** teams of 1–4 race a relay course, passing a baton. The slowest team each round is out. Last team standing wins.
-- **Audience:** players under 18. Roblox's built-in filtered text chat stays on. No custom chat, no personal data, no saves.
+- **Audience:** players under 18. Roblox's built-in filtered text chat stays on. No custom chat, no personal data beyond the saved game profile (decision 0006).
 - **Platforms:** PC, mobile, console. Movement only: no buttons beyond walk and jump.
 - **Pillars:** short rounds; always know what to do next; a disconnect never ruins the match.
-- **Non-goals:** saved progress (wins are per session), unlockable themes, parties or friends-only teams, paid items, custom chat.
+- **Non-goals:** parties or friends-only teams, Robux or paid items, trading, custom chat.
 - **Presentation:** an on-screen status bar (lobby countdown, round timer, finishes, eliminations, winner), team-coloured batons with sparkles, and Roblox's built-in sounds for countdown, legs, eliminations and the win.
 
 ## B. Match flow
@@ -29,6 +29,45 @@ Target: a full match in about 8 minutes (hypothesis, to check in playtest).
 - Falling off the course respawns the runner at the start of their current leg, still holding the baton.
 - Clients send nothing. Position checks, passes and finishes are all decided on the server.
 
+## C2. Movement kit (v0.3)
+
+Inspired by anime runners and stylish-action games: movement should feel fast and expressive.
+
+- Base run speed 24 (Roblox default is 16), jump power 55.
+- **Double jump:** jump again in the air once per airtime.
+- **Air dash:** Q, Left Shift or gamepad X (an on-screen DASH button on touch). A burst in the move direction, 1 s cooldown, once per airtime. Leaves glowing afterimages.
+- **Launch pads** (orange) fire you straight up to a higher deck; **boost pads** (cyan, chevrons) throw you forward with a hop.
+- Speed lines, FOV kick and camera shake sell the speed.
+- These run on the client because Roblox characters are client-simulated. No remotes: the client sends nothing, and the server still decides legs, hazards, eliminations and wins.
+
+## C3. The circuit (v0.3)
+
+All teams race one shared, ground-level circuit (about 1,150 studs a lap: a main straight past the grandstand, hairpins, a chicane), with barriers, red-and-white kerbs and a chequered start/finish under the demon gate. Racers pass through each other (collision group), as in most Roblox racers, so nobody can block a lane.
+
+- The lap is split into one **sector per leg** (4 legs = 4 sectors; fewer legs later means longer sectors). Each team has a coloured handoff box in its own lane at every sector line; the final leg ends at the start/finish.
+- Each sector gets one obstacle set on its longest straight, the same for everyone, re-rolled each round (round 1 opens with Boost Alley):
+
+| Obstacle | What you do |
+|---|---|
+| Boost Alley | staggered boost pads to chain |
+| Lava Leap | boost pads, then an 18-stud lava strip to clear |
+| Laser Gates | time three blinking laser gates |
+| Sweepers | jump two spinning laser bars |
+| Hurdles | four hurdles with alternating gaps: jump or weave |
+| Glass Bridge | glass tiles over lava that fade in and out |
+
+Touching lava, a live laser or a sweeper sends the runner back to the start of their sector (server-checked). Between matches the lobby sits in the infield and anyone can run the circuit as practice.
+
+## C4. Meta game (v0.4, decision 0006)
+
+- **Start menu:** title screen over a slow camera orbit of the circuit with PLAY, LOCKER, REWARDS, STATS and SETTINGS. A match starting pulls you out of the menu. The HUD shows level, XP bar, coins and quick buttons.
+- **Progression:** XP and coins from matches (finishing, legs run, rounds survived, wins), levels 1 to 50, all saved.
+- **Rewards:** a 7-day login streak calendar, a weekly bonus for playing on 5 days, and 3 daily quests. A gold dot marks anything ready to claim.
+- **Locker:** trails unlocked by level, by wins, or bought with coins; your equipped trail follows you everywhere.
+- **Lobby:** winners' podium with a generated trophy and confetti, a global top-10 wins board, oni guardian statues, and a pagoda in the infield. Komainu guard the start line.
+- **Feel:** licensed music (lobby track, three race tracks), licensed sound effects, Roblox's ninja run animations, an intro camera sweep each round, and a spectator camera that follows baton carriers.
+- **Settings:** music and sound effects on or off; a How to Play card.
+
 ## D. Ranking
 
 Teams are ranked by, in order:
@@ -37,6 +76,10 @@ Teams are ranked by, in order:
 2. Among finished teams: earlier finish time.
 3. Among unfinished teams: more legs completed, then less distance left on the current leg.
 4. Still tied: the team that has been in the match longest is safe (join order), so the result is deterministic.
+
+## D2. Style meter (v0.3, cosmetic)
+
+A stylish-action rank meter on the right of the screen: D (Dull), C (Cool), B (Bravo), A (Awesome), S (Stylish), SS (Spectacular), SSS (Sensational). Double jumps, dashes, pads, airtime and clean handoffs raise it; repeating the same move in a row earns less (full, 1/2, 1/3...). It decays over time and empties when you fall or get hit. It never affects results. Rules live in `src/shared/StyleRules.luau` with unit tests.
 
 ## E. Disconnects
 
@@ -48,7 +91,7 @@ Teams are ranked by, in order:
 
 ## F. Course
 
-- Built from primitive parts only (rule 9). Each leg is a 60-stud run using one of four layouts: gaps, balance beam, rising steps, narrow gaps. Round 1 always opens with the easiest (gaps). Lanes are separate per team, so teams never block each other.
+- Built from parts and Roblox materials only (rule 9), including custom models in `src/relay/Props.luau`: torii gates per leg (labelled with the next layout), a demon finish gate (gothic towers, horns, burning eyes), stone lanterns, cherry-blossom trees and gothic spires. A grandstand with team-coloured seats faces the main straight. Sunset lighting, terrain hills, a lake and a forest surround the circuit.
 - Course parts are created by the server at match start, not stored in the place.
 
 ## G. Acceptance criteria (v0.1)

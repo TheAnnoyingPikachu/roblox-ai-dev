@@ -1,0 +1,50 @@
+{
+  "task_id": "GARDEN-002",
+  "project_id": "GARDEN-001",
+  "owner": "A09",
+  "verifier": "A01",
+  "task_type": "architecture",
+  "objective": "Egg Garden architecture: decision record 0008 (save schema, offline rules, write coalescing checked against the DataStore limits, economy and odds, remote contract, child safety, MetaRules extensions), module map with exact Luau signatures for the pure modules, server and client file layout, loop order and Fx payloads, task files for the build, and the Rojo project, CI build and garden-staging publish target.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md",
+    "docs/decisions/0007-hundred-demon-night.md",
+    "docs/architecture/night.md",
+    "src/shared/MetaRules.luau",
+    "src/shared/NightProgress.luau",
+    "src/night/Profiles.luau",
+    "night.project.json",
+    "Roblox Creator Docs: data store error codes and limits"
+  ],
+  "dependencies": [
+    "GARDEN-001"
+  ],
+  "acceptance_criteria": [
+    "Decision 0008 covers stores, record fields, sanitising, offline and unbanked payout, write coalescing with the DataStore limit check, every price, odds row and reward, every remote with its validation rules, and the child-safety rules",
+    "Every public function of GardenConfig, WorldRules, GardenRules, HatchRules, GardenProgress and the MetaRules additions has an exact Luau signature",
+    "Every server and client file is named with what it owns, so GARDEN-003, GARDEN-004 and GARDEN-005 write disjoint files",
+    "garden.project.json builds; CI builds build/garden.rbxl; publish.yml offers garden-staging and builds garden.project.json for garden-*",
+    "node tools/validate-tasks.mjs passes"
+  ],
+  "verification": "SHANNON reviews decision 0008 (CLAUDE.md rule 8); CI green",
+  "output_artifacts": [
+    "docs/decisions/0008-egg-garden.md",
+    "docs/architecture/garden.md",
+    "garden.project.json",
+    "src/garden/.gitkeep",
+    "src/garden-client/.gitkeep",
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    "studio/tasks/GARDEN-001.json",
+    "studio/tasks/GARDEN-002.json",
+    "studio/tasks/GARDEN-003.json",
+    "studio/tasks/GARDEN-004.json",
+    "studio/tasks/GARDEN-005.json",
+    "studio/tasks/GARDEN-006.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "evidence": [
+    "Local 2026-10-25: rojo build garden.project.json OK; node tools/validate-tasks.mjs OK"
+  ],
+  "notes": "Medium risk: defines a saved-data schema, a remote contract and MetaRules extensions that touch Relay and Night. The garden-staging GitHub environment (variables and API key) must be created by a human before publishing."
+}

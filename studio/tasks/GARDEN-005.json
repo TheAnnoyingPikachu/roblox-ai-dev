@@ -1,0 +1,43 @@
+{
+  "task_id": "GARDEN-005",
+  "project_id": "GARDEN-001",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden client: forked start menu (PLAY, INDEX, CREATURES, EGGS with ODDS, LOCKER, REWARDS, STATS, SETTINGS), HUD with weather and restock timers and first-session prompts, per-viewer prompt visibility, hatch reveal and weather looks, and creature idle animation and mutation looks.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md sections D3, E6, H2, H6, I3 and I4",
+    "docs/architecture/garden.md sections 1, 5, 6 and 8",
+    "docs/decisions/0008-egg-garden.md",
+    "src/relay-client/Menu.client.luau (copied)"
+  ],
+  "dependencies": [
+    "GARDEN-002"
+  ],
+  "acceptance_criteria": [
+    "Only files under src/garden-client change",
+    "The client sends only Request(action, arg) as defined in decision 0008; it never sends amounts, prices, outcomes or positions",
+    "Every egg's ODDS card is read from GardenConfig, shows two decimals and totals 100.00%, with the Lucky Meter, sizes and the current weather's mutation table",
+    "The reveal never shows a creature other than the one hatched; Fast Hatch shortens it to 0.4 s",
+    "Every Fx kind in docs/architecture/garden.md section 5 is rendered",
+    "PC, gamepad and touch work for every prompt and panel",
+    "Start-menu orbit frame passes the GDD I4 first-screenshot test (screenshot for SHANNON)",
+    "selene and stylua clean; CI green"
+  ],
+  "verification": "CI; Studio run of menus, a hatch and a weather change on PC and the touch emulator with screenshots; QA review (GARDEN-006)",
+  "output_artifacts": [
+    "src/garden-client/ClientState.luau",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/Hud.client.luau",
+    "src/garden-client/HatchFx.client.luau",
+    "src/garden-client/CreatureFx.client.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Can start against a stub GardenStatus and attributes before GARDEN-004 lands. Delete src/garden-client/.gitkeep with the first script. Audio reuses registered IDs only (lobby track 87416512611152 for all weather, slowed and filtered for Moonfall; gong/beep/whoosh SFX pitched); GDD H6's two ukulele tracks, dreamy Moonfall track and dedicated garden SFX still need picking and register rows. Client assumes World.luau names: cart prompt 'Shop', lamp lights under parts named *Lamp*/*HangingEgg*, windmill 'Sails'.",
+  "evidence": [
+    "Local 2026-10-25: stylua src/garden-client and selene src/garden-client clean (0 errors, 0 warnings); rojo build garden.project.json -o build/garden.rbxl OK",
+    "Client sends only Request(action, arg) with actions from decision 0008 (buyEgg, buyBed, buyPenSlot, place, store, release, favourite, like, setGate, home, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic); no amounts, prices, outcomes or positions; no MarketplaceService",
+    "Not yet run in Studio: GardenConfig/GardenRules/HatchRules/GardenProgress (GARDEN-003) and src/garden (GARDEN-004) had not landed; coded against docs/architecture/garden.md section 3 signatures. Studio run with screenshots (PC and touch emulator, hatch, weather change, I4 orbit frame) still owed to GARDEN-006"
+  ]
+}

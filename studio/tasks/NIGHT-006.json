@@ -1,0 +1,44 @@
+{
+  "task_id": "NIGHT-006",
+  "project_id": "NIGHT-001",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "QA review of Hundred Demon Night v0.1: rules against the GDD, remotes and saves against decision 0007, and the GDD section M acceptance playtests including the two-client test.",
+  "inputs": [
+    "docs/game-design/game3-gdd.md section M",
+    "docs/decisions/0007-hundred-demon-night.md",
+    "docs/architecture/night.md",
+    "NIGHT-003, NIGHT-004 and NIGHT-005 pull requests"
+  ],
+  "dependencies": [
+    "NIGHT-003",
+    "NIGHT-004",
+    "NIGHT-005"
+  ],
+  "acceptance_criteria": [
+    "Every GDD section M item is checked, with evidence or a filed defect",
+    "Every Request and Combat check in decision 0007 is exercised from a client, including refusals, wrong states and rate limits",
+    "Save writes reviewed: re-apply pattern, sanitising fallbacks, offline mode, no defaults written over a failed load",
+    "Two-client local server: the second joins mid-wave, gets catch-up blessings and revives the first",
+    "Relay Rounds still passes its ProgressRules spec and builds unchanged"
+  ],
+  "verification": "QA report with test notes, screenshots and CI links attached as evidence; SHANNON signs off",
+  "output_artifacts": [
+    "docs/qa/night-review.md"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Reviewer must not be the thread that wrote NIGHT-003, NIGHT-004 or NIGHT-005 (CLAUDE.md rule 2).",
+  "evidence": [
+    "Code review 2026-10-25 by A15 of a2e160a and 731fd33: docs/qa/night-review.md, 0 blocker, 4 major, 12 minor",
+    "Local 2026-10-25: lune run tests/run 207/207 passed, 0 load errors (test-results.json deleted); selene src/night src/night-client src/shared 0 errors, 0 warnings",
+    "Relay: tests/ProgressRules.spec.luau unchanged and passing; only src/relay/Models.luau changed under src/relay",
+    "F2 check value verified: solo tier-1 night at rank D = 465 XP, 290 souls",
+    "Majors: M1 teleport guard bypass (Combat.luau onCombat), M2 no-op equip/setTier writes exhaust DataStore budget, M3 leave+rejoin resets a downed player, M4 Enemies.step tick error when the general summons (Lune repro 97/200)",
+    "Not yet done: GDD section M Studio playtests, the two-client mid-wave join/revive test, client-side refusal exercises",
+    "Fix verification 2026-10-26 of 071a764 by an independent QA thread: docs/qa/night-review.md \"Fix verification (071a764)\". M1-M4 closed, m1-m12 closed (m7 Night only, m12 client-side mitigation); 0 blocker, 0 major open; 2 new minors (n1 0007/night.md not updated for batched writes and the near-sample refusal; n2 rejoin spirit-flame race, hypothesis)",
+    "Local 2026-10-26 at 071a764: lune run tests/run 298/298 passed, 0 load errors (test-results.json deleted); selene src tests 0 errors, 0 warnings; stylua --check src tests clean; rojo build default, garden, night, relay all succeed; validate-tasks 24 valid; scan-secrets clean",
+    "Still not done: GDD section M Studio playtests, two-client mid-wave join/revive/catch-up and rejoin-restore test, client-side refusal exercises; status stays in_review (\"done\" is not in task.schema.json)"
+  ]
+}

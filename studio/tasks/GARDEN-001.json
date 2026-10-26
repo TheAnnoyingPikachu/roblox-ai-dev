@@ -1,0 +1,32 @@
+{
+  "task_id": "GARDEN-001",
+  "project_id": "GARDEN-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Write the Egg Garden (game 4, concept D) design spec: garden plot, beds, pen and storage, income and offline rules, eggs and watering, creatures, odds and Lucky Meter, weather, player interaction and child safety, meta game, world and art plan, remotes, edge cases, module plan and testable acceptance criteria.",
+  "inputs": [
+    "docs/game-design/game4-concepts.md concept D",
+    "docs/game-design/game3-gdd.md (format and reused systems)",
+    "docs/decisions/0007-hundred-demon-night.md"
+  ],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Every rule the server enforces is stated precisely enough to unit test, with check values",
+    "Every odds row sums to 10,000 basis points and every chance is published in game",
+    "No stealing, trading, gifting or paid items; the child-safety rules are listed",
+    "Facts, assumptions and hypotheses are labelled separately",
+    "Kill criteria and a cut order are stated"
+  ],
+  "verification": "SHANNON approves the spec or returns it with changes",
+  "output_artifacts": [
+    "docs/game-design/game4-concepts.md",
+    "docs/game-design/game4-gdd.md"
+  ],
+  "risk_level": "low",
+  "status": "accepted",
+  "evidence": [
+    "Commit 787ed8d on branch game3/concept (2026-10-25): Game 4 concepts and Egg Garden design spec, approved by SHANNON"
+  ],
+  "notes": "Points the GDD leaves open are settled in docs/architecture/garden.md section 8."
+}

@@ -1,0 +1,48 @@
+{
+  "task_id": "RELAY-005",
+  "project_id": "RELAY-001",
+  "owner": "A10",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Relay Rounds v0.4 meta game: start menu, HUD, saved profiles (XP, levels, coins, wins), daily login streak, weekly bonus, daily quests, trail locker and coin shop, global wins leaderboard, winners' podium, licensed music and sound effects, ninja animations, generated 3D models, intro camera and spectator camera.",
+  "inputs": [
+    "SHANNON requests 2026-10-25: register assets, make it the best game possible, daily and weekly logins, a start menu, everything",
+    "docs/decisions/0006-relay-rounds-profiles-economy.md"
+  ],
+  "dependencies": [
+    "RELAY-004"
+  ],
+  "acceptance_criteria": [
+    "Profile rules (levels, match rewards, daily streak, weekly bonus, quests, shop, equip, sanitise) are unit-tested",
+    "Every saved write re-applies a pure change to the stored record; a failed load never writes defaults",
+    "The Request remote validates action, argument and rate, and refuses anything not unlocked or affordable",
+    "Every external asset has a row in docs/assets/register.md and loads in the staging experience",
+    "Start menu, HUD, Locker, Rewards, Stats and Settings work in Studio",
+    "CI green"
+  ],
+  "verification": "Lune tests and CI; Studio run of menus, a match, rewards and the podium",
+  "output_artifacts": [
+    "src/shared/ProgressRules.luau",
+    "tests/ProgressRules.spec.luau",
+    "src/relay/Profiles.luau",
+    "src/relay/Models.luau",
+    "src/relay/Course.luau",
+    "src/relay/RelayServer.server.luau",
+    "src/relay-client/Menu.client.luau",
+    "src/relay-client/CameraFx.client.luau",
+    "src/relay-client/Movement.client.luau",
+    "docs/decisions/0006-relay-rounds-profiles-economy.md",
+    "docs/assets/register.md",
+    "docs/game-design/relay-rounds-gdd.md"
+  ],
+  "risk_level": "high",
+  "status": "in_review",
+  "evidence": [
+    "Local: lune run tests/run 94/94; selene 0 warnings; rojo build OK.",
+    "Studio run 2026-10-25 (1 player, offline profile because Studio API access is off): start menu over the circuit orbit; Rewards panel showed the 7-day streak, weekly 1/5 and three quests; clicking CLAIM paid 50 coins and marked day 1; Locker listed all 11 trails with unlock conditions; Stats panel showed the offline-saving notice.",
+    "Request remote from the client: claimDaily true then false; buyTrail without coins false; equip of a locked trail false; unknown action false; a request inside the 0.35 s cooldown false.",
+    "Full match: +125 XP +55 coins, LEVEL UP to 2, Wins 1, winner teleported to the podium with confetti, leaderboard board shows its empty-state message.",
+    "Generated models load at runtime: oni x2, pagoda, trophy, komainu x2, horned skull, 36 sakura trees. All music and SFX IDs load in the Relay staging experience; three APM tracks that did not load were dropped."
+  ],
+  "notes": "High risk: saved player data and a remote (decision 0006). DataStore saving and the global leaderboard are untested on live servers (Studio API access is off). Ninja animations need an R15 avatar setting. PRODUCTION_UNIVERSE_ID stays nil until a production release is approved. Not tested: multiplayer, mobile layout."
+}
