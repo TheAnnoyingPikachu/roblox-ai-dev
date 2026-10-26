@@ -188,6 +188,45 @@ describe("CombatRules dash, skill, guard and rate limit", function()
 		expect(CombatRules.guarded(g, 4)).toBe(false)
 	end)
 
+	it("allows 120 studs/s between late samples (QA m4)", function()
+		local f = CombatRules.newFighter("katana")
+		local a = { x = 0, y = 0, z = 0 }
+		local dash = { x = 19, y = 0, z = 0 } -- 95 studs/s over a 0.2 s gap
+		expect(CombatRules.guarded(CombatRules.guard(f, a, dash, 3, 0.2), 3)).toBe(false)
+		expect(CombatRules.guarded(CombatRules.guard(f, a, { x = 24.1, y = 0, z = 0 }, 3, 0.2), 3)).toBe(true)
+		expect(CombatRules.guarded(CombatRules.guard(f, a, { x = 12.1, y = 0, z = 0 }, 3, 0.05), 3)).toBe(true)
+	end)
+
+	it("trusts an attack origin only within 12 studs of the last sample (QA M1)", function()
+		local sample = { x = 0, y = 0, z = 0 }
+		expect(CombatRules.nearSample(sample, { x = 12, y = 30, z = 0 })).toBe(true)
+		expect(CombatRules.nearSample(sample, { x = 0, y = 0, z = 12.1 })).toBe(false)
+		expect(CombatRules.nearSample(nil, sample)).toBe(false)
+	end)
+
+	it("clamps a dash path to its maximum length (QA m2)", function()
+		local a = { x = 0, y = 0, z = 0 }
+		local short = { x = 10, y = 0, z = 0 }
+		expect(CombatRules.clampPath(a, short, 30)).toBe(short)
+		local far = CombatRules.clampPath(a, { x = 0, y = 4, z = -300 }, 30)
+		expect(far.z).toBe(-30)
+		expect(math.abs(far.y - 0.4) < 1e-9).toBe(true)
+	end)
+
+	it("keeps at most 20 request times however much is sent (QA m3)", function()
+		local f = CombatRules.newFighter("katana")
+		local accepted = 0
+		for i = 1, 1000 do
+			local ok
+			ok, f = CombatRules.allowRequest(f, i * 0.0005)
+			accepted += if ok then 1 else 0
+		end
+		expect(accepted).toBe(20)
+		expect(#f.requests).toBe(20)
+		expect((CombatRules.allowRequest(f, 1.4))).toBe(false)
+		expect((CombatRules.allowRequest(f, 1.5))).toBe(true)
+	end)
+
 	it("refuses the 21st request inside one second, counting refused ones", function()
 		local f = CombatRules.newFighter("katana")
 		for i = 1, 20 do

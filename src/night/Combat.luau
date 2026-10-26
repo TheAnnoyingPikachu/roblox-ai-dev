@@ -25,6 +25,8 @@ export type Entry = {
 	style: StyleRules.State,
 	tally: NightProgress.Tally,
 	sample: Vec3?,
+	sampleAt: number, -- server time of `sample`
+	downedAt: Vec3?, -- where the player went down; revives use it, not the client-owned root
 	speed: number, -- last WalkSpeed written
 }
 
@@ -199,8 +201,10 @@ local function onCombat(player: Player, ...: any)
 		return
 	end
 	local f = entry.fighter
+	-- Attacks and Thunder Dash paths start only near the last server sample (QA M1, m2).
+	local trusted = CombatRules.nearSample(entry.sample, vec(root.Position))
 	if action == "attack" then
-		if CombatRules.guarded(f, t) then
+		if not trusted or CombatRules.guarded(f, t) then
 			return
 		end
 		local ok, next, step = CombatRules.attack(f, t)
@@ -209,7 +213,7 @@ local function onCombat(player: Player, ...: any)
 			swing(entry, root, "attack", step, CombatRules.isFinisher(next), t)
 		end
 	elseif action == "skill" then
-		if CombatRules.guarded(f, t) then
+		if not trusted or CombatRules.guarded(f, t) then
 			return
 		end
 		local ok, next = CombatRules.skill(f, t, mods.risingCooldown)
@@ -223,7 +227,7 @@ local function onCombat(player: Player, ...: any)
 			entry.fighter = next
 			State.run = RunRules.dash(State.run, userId, t)
 			Remotes.fx("dash", { u = userId, thunder = mods.thunderDamage > 0 })
-			if mods.thunderDamage > 0 then
+			if mods.thunderDamage > 0 and trusted then
 				table.insert(paths, {
 					owner = userId,
 					from = root.Position,
@@ -254,6 +258,8 @@ function Combat.join(player: Player)
 		style = StyleRules.new(),
 		tally = NightProgress.newTally(),
 		sample = nil,
+		sampleAt = -math.huge,
+		downedAt = nil,
 		speed = -1,
 	}
 end
@@ -292,14 +298,23 @@ function Combat.sample(t: number)
 		local root = player and rootOf(player)
 		if root then
 			local pos = vec(root.Position)
-			positions[p.userId] = pos
 			local entry = entries[p.userId]
 			if entry then
+				-- WalkSpeed 0 does not stop a client-owned root, so a downed player stays where they
+				-- fell for ally revives (QA M1).
+				if p.downed then
+					entry.downedAt = entry.downedAt or entry.sample or pos
+					pos = entry.downedAt :: Vec3
+				else
+					entry.downedAt = nil
+				end
 				if entry.sample then
-					entry.fighter = CombatRules.guard(entry.fighter, entry.sample, pos, t)
+					entry.fighter = CombatRules.guard(entry.fighter, entry.sample, pos, t, t - entry.sampleAt)
 				end
 				entry.sample = pos
+				entry.sampleAt = t
 			end
+			positions[p.userId] = pos
 		end
 	end
 	State.positions = positions
@@ -392,7 +407,8 @@ local function stepPaths(t: number)
 			local mods = modifiers(path.owner)
 			local root = entry and rootOf(entry.player)
 			if entry and mods and root then
-				local hit = alongPath(path.from, root.Position, BlessingRules.THUNDER.width)
+				local to = v3(CombatRules.clampPath(vec(path.from), vec(root.Position), CombatRules.DASH.path))
+				local hit = alongPath(path.from, to, BlessingRules.THUNDER.width)
 				local list = strike(entry, hit, path.damage, mods, false, false, vec(path.from), t, nil)
 				if #list > 0 then
 					Remotes.fx("hit", { u = path.owner, fin = false, list = list })

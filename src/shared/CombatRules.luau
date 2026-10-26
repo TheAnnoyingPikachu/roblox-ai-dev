@@ -78,14 +78,16 @@ CombatRules.WEAPONS = WEAPONS
 CombatRules.SKILL = { cooldown = 5, damage = 20, range = 8, arc = 120, band = 8, airborne = 1.2, shockwaveRange = 10 }
 CombatRules.ATTACK_BAND = 6
 CombatRules.POINT_BLANK = 1
-CombatRules.DASH = { tolerance = 0.95, invulnerable = 0.35 }
+-- path: longest Thunder Dash path, 95 studs/s x 0.25 s of dash plus walking for the rest (QA m2).
+CombatRules.DASH = { tolerance = 0.95, invulnerable = 0.35, path = 30 }
 CombatRules.TRIGGER = { cost = 100, duration = 8, damage = 1.4, speed = 1.2, healPerHit = 2 }
 CombatRules.AIRBORNE_DAMAGE = 1.25
 CombatRules.STAGGER = 0.4
 CombatRules.KNOCKBACK_TIME = 0.25
 CombatRules.ARMOURED_KNOCKBACK = 0.3
 CombatRules.CONTACT = { reach = 2.5, band = 5, interval = 1.0 }
-CombatRules.GUARD = { distance = 12, lockout = 1.0 }
+-- speed: the C10 limit of 12 studs per 0.1 s sample, applied to the real gap between samples.
+CombatRules.GUARD = { distance = 12, lockout = 1.0, speed = 120 }
 CombatRules.RATE = { count = 20, window = 1.0 }
 
 function CombatRules.weapon(id: string): Weapon?
@@ -132,6 +134,10 @@ function CombatRules.allowRequest(f: Fighter, t: number): (boolean, Fighter)
 	end
 	local ok = #recent < CombatRules.RATE.count
 	table.insert(recent, t)
+	-- Only the newest `count` times matter, so spam costs O(count) per event (QA m3).
+	if #recent > CombatRules.RATE.count then
+		table.remove(recent, 1)
+	end
 	c.requests = recent
 	return ok, c
 end
@@ -199,9 +205,11 @@ function CombatRules.flatDistance(a: Vec3, b: Vec3): number
 	return math.sqrt((a.x - b.x) ^ 2 + (a.z - b.z) ^ 2)
 end
 
--- Teleport guard (C10): a root that moved more than 12 studs between 10 Hz samples.
-function CombatRules.guard(f: Fighter, previous: Vec3, current: Vec3, t: number): Fighter
-	if CombatRules.flatDistance(previous, current) <= CombatRules.GUARD.distance then
+-- Teleport guard (C10): a root that moved more than 12 studs between 10 Hz samples. `elapsed` is
+-- the server time between the two samples, so a late sample allows 120 studs/s of it (QA m4).
+function CombatRules.guard(f: Fighter, previous: Vec3, current: Vec3, t: number, elapsed: number?): Fighter
+	local allowed = math.max(CombatRules.GUARD.distance, CombatRules.GUARD.speed * (elapsed or 0))
+	if CombatRules.flatDistance(previous, current) <= allowed then
 		return f
 	end
 	local c = copy(f)
@@ -211,6 +219,22 @@ end
 
 function CombatRules.guarded(f: Fighter, t: number): boolean
 	return t < f.guardUntil
+end
+
+-- An attack origin is trusted only near the server's latest sample: a root moved between
+-- samples is refused, never extrapolated (QA M1). No sample yet also refuses.
+function CombatRules.nearSample(sample: Vec3?, current: Vec3): boolean
+	return sample ~= nil and CombatRules.flatDistance(sample, current) <= CombatRules.GUARD.distance
+end
+
+-- Shortens segment a-b to at most `max` horizontal studs from a (Thunder Dash, QA m2).
+function CombatRules.clampPath(a: Vec3, b: Vec3, max: number): Vec3
+	local len = CombatRules.flatDistance(a, b)
+	if len <= max then
+		return b
+	end
+	local k = max / len
+	return { x = a.x + (b.x - a.x) * k, y = a.y + (b.y - a.y) * k, z = a.z + (b.z - a.z) * k }
 end
 
 -- Hit tests ----------------------------------------------------------------------------------

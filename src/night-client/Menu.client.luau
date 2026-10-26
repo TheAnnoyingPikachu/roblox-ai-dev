@@ -663,6 +663,7 @@ renderers.Locker = function()
 				itemButton(r, `BUY {commas(price)}`, if profile.coins >= price then GOLD else INK, true, function()
 					if ask("buyCosmetic", c.id) then
 						toast(`Bought {c.name}!`, GREEN)
+						task.wait(0.4) -- outlast the server's 0.35 s request cooldown (QA m6)
 						ask("equipCosmetic", c.id)
 					else
 						toast("Not enough souls yet", RED)
@@ -1067,10 +1068,18 @@ showMenu = function()
 	panelHolder.Visible = false
 end
 
+-- Becoming a participant by any route (START button, a host starting, a retry) drops you into the
+-- night; opening the menu later mid-run still works, because only the transition hides it.
+local wasParticipant = false
 ClientState.statusValue:GetPropertyChangedSignal("Value"):Connect(function()
 	if panels.Play.Visible then
 		renderers.Play()
 	end
+	local participant = ClientState.isParticipant() and ClientState.status().state ~= "Idle"
+	if participant and not wasParticipant and menuOpen then
+		hideMenu()
+	end
+	wasParticipant = participant
 end)
 
 -- Music -----------------------------------------------------------------------------------------

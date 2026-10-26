@@ -7,6 +7,11 @@
 -- If DataStores are unavailable (Studio without API access), the session keeps an in-memory
 -- profile, writes nothing and says so. There is no remote here: NightServer's router runs the
 -- common request checks and calls Profiles.request only after they pass.
+--
+-- Writes are queued per player (QA M2, m1, m7, m9): a change that leaves the profile identical is
+-- neither written nor published; changes made while a write is waiting or in flight join the next
+-- one; one player's key is written at most once per WRITE_GAP; a write that fails 3 times keeps
+-- its changes for the next write; BindToClose waits for the queue to drain.
 
 local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
@@ -25,6 +30,8 @@ local Profiles = {}
 -- Set to the production universe ID before the first production release, with SHANNON's approval.
 local PRODUCTION_UNIVERSE_ID: number? = nil
 local MAX_ATTEMPTS = 3
+local WRITE_GAP = 6 -- the same-key write limit; also caps a player at 10 writes a minute
+local CLOSE_WAIT = 25
 
 local function storeSuffix(): string
 	if RunService:IsStudio() then
@@ -43,8 +50,10 @@ local okBoard, board = pcall(function()
 	return DataStoreService:GetOrderedDataStore("NightWins" .. storeSuffix())
 end)
 
-type Session = { profile: Profile, online: boolean }
+type Change = (Profile) -> Profile
+type Session = { profile: Profile, online: boolean, pending: { Change }, writing: boolean, lastWrite: number }
 local sessions: { [Player]: Session } = {}
+local writers = 0 -- sessions with a write queued or in flight
 local changed = Instance.new("BindableEvent")
 Profiles.Changed = changed.Event -- (player, profile)
 
@@ -96,30 +105,92 @@ local function publish(player: Player, profile: Profile)
 	changed:Fire(player, profile)
 end
 
--- Applies `change` to the in-memory profile now and to the stored record in the background.
+-- A key-order-independent encoding, so two equal profiles always compare equal.
+local function canonical(value: any): string
+	if type(value) ~= "table" then
+		return `{typeof(value)}:{tostring(value)}`
+	end
+	local keys = {}
+	for key in value do
+		table.insert(keys, key)
+	end
+	table.sort(keys, function(a, b)
+		return canonical(a) < canonical(b)
+	end)
+	local parts = table.create(#keys)
+	for _, key in keys do
+		table.insert(parts, `{canonical(key)}={canonical(value[key])}`)
+	end
+	return "{" .. table.concat(parts, ",") .. "}"
+end
+
+local function replay(profile: Profile, changes: { Change }): Profile
+	for _, change in changes do
+		profile = change(profile)
+	end
+	return profile
+end
+
+-- Drains the session's queue, one UpdateAsync per batch.
+local function drain(player: Player, session: Session)
+	while #session.pending > 0 do
+		local gap = session.lastWrite + WRITE_GAP - os.clock()
+		if gap > 0 then
+			task.wait(gap) -- changes made meanwhile join this batch
+		end
+		local batch = session.pending
+		session.pending = {}
+		session.lastWrite = os.clock()
+		local ok, stored = withRetries(`save {player.UserId}`, function()
+			return (store :: DataStore):UpdateAsync(keyFor(player), function(old: any)
+				return replay(NightProgress.sanitize(old), batch)
+			end)
+		end)
+		if not ok then
+			-- Keep the batch ahead of newer changes; the next write re-applies it (QA m1).
+			session.pending = table.move(session.pending, 1, #session.pending, #batch + 1, batch)
+			warn(`[Profiles] {#batch} change(s) for {player.UserId} not saved yet; retrying with the next write`)
+			break
+		end
+		if stored and sessions[player] == session then
+			-- The stored copy is the truth; adopt it, with changes still queued on top.
+			local profile = replay(NightProgress.sanitize(stored), session.pending)
+			if canonical(profile) ~= canonical(session.profile) then
+				session.profile = profile
+				publish(player, profile)
+			end
+		end
+	end
+	session.writing = false
+	writers -= 1
+end
+
+local function flush(player: Player, session: Session)
+	if session.online and not session.writing and #session.pending > 0 then
+		session.writing = true
+		writers += 1
+		-- Deferred, so changes made in the same frame (the wave-10 clear and Victory) share a write.
+		task.defer(drain, player, session)
+	end
+end
+
+-- Applies `change` to the in-memory profile now and queues it for the stored record.
 -- `change` must be pure: the same function runs on the stored copy inside UpdateAsync.
-local function apply(player: Player, label: string, change: (Profile) -> Profile)
+local function apply(player: Player, change: Change)
 	local session = sessions[player]
 	if session == nil then
 		return
 	end
-	session.profile = change(session.profile)
-	publish(player, session.profile)
-	if not session.online then
-		return
+	local updated = change(session.profile)
+	if canonical(updated) == canonical(session.profile) then
+		return -- no-op (equipping what is worn, the current tier): nothing to write (QA M2)
 	end
-	task.spawn(function()
-		local ok, stored = withRetries(`{label} {player.UserId}`, function()
-			return (store :: DataStore):UpdateAsync(keyFor(player), function(old: any)
-				return change(NightProgress.sanitize(old))
-			end)
-		end)
-		if ok and stored and sessions[player] == session then
-			-- The stored copy is the truth; adopt it so both agree.
-			session.profile = NightProgress.sanitize(stored)
-			publish(player, session.profile)
-		end
-	end)
+	session.profile = updated
+	publish(player, updated)
+	if session.online then
+		table.insert(session.pending, change)
+		flush(player, session)
+	end
 end
 
 function Profiles.get(player: Player): Profile?
@@ -133,7 +204,8 @@ function Profiles.isOnline(player: Player): boolean
 end
 
 function Profiles.load(player: Player)
-	local session: Session = { profile = NightProgress.defaults(), online = false }
+	local session: Session =
+		{ profile = NightProgress.defaults(), online = false, pending = {}, writing = false, lastWrite = -math.huge }
 	if okStore then
 		local ok, record = withRetries(`load {player.UserId}`, function()
 			return (store :: DataStore):GetAsync(keyFor(player))
@@ -149,15 +221,32 @@ function Profiles.load(player: Player)
 	-- The session exists only once loading has finished, so no request runs on a half-loaded profile.
 	sessions[player] = session
 	player:SetAttribute("ProfileOnline", session.online)
+	publish(player, session.profile)
 	local day = today()
-	apply(player, "login", function(p)
+	apply(player, function(p)
 		return NightProgress.login(p, day)
 	end)
 end
 
+-- Queued changes are still written after release (the drain holds the session).
 function Profiles.release(player: Player)
+	local session = sessions[player]
 	sessions[player] = nil
+	if session then
+		flush(player, session)
+	end
 end
+
+-- Pending writes would be cut off by a shutdown (QA m7).
+game:BindToClose(function()
+	for player, session in sessions do
+		flush(player, session)
+	end
+	local deadline = os.clock() + CLOSE_WAIT
+	while writers > 0 and os.clock() < deadline do
+		task.wait(0.5)
+	end
+end)
 
 -- Called at each wave clear for every participant (downed included).
 function Profiles.recordWave(player: Player, result: NightProgress.WaveResult)
@@ -168,7 +257,7 @@ function Profiles.recordWave(player: Player, result: NightProgress.WaveResult)
 	local day = today()
 	local _, xp, souls = NightProgress.applyWave(session.profile, result, day)
 	player:SetAttribute("LastReward", `+{xp} XP  +{souls} souls`)
-	apply(player, "wave", function(p)
+	apply(player, function(p)
 		return (NightProgress.applyWave(p, result, day))
 	end)
 end
@@ -182,7 +271,7 @@ function Profiles.recordVictory(player: Player, tier: number)
 	local day = today()
 	local _, xp, souls = NightProgress.applyVictory(session.profile, tier, day)
 	player:SetAttribute("LastReward", `Victory! +{xp} XP  +{souls} souls`)
-	apply(player, "victory", function(p)
+	apply(player, function(p)
 		return (NightProgress.applyVictory(p, tier, day))
 	end)
 	if session.online and okBoard then
@@ -253,7 +342,7 @@ function Profiles.request(player: Player, action: string, arg: string?): boolean
 	local day = today()
 	local _, ok = handler(session.profile, day, arg)
 	if ok then
-		apply(player, action, function(p)
+		apply(player, function(p)
 			local next = handler(p, day, arg)
 			return next
 		end)

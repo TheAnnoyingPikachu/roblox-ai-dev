@@ -26,6 +26,9 @@ export type Participant = {
 	clears: number,
 }
 
+-- A participant who left a live run, kept so a rejoin in the same run restores them (QA M3).
+export type Left = { participant: Participant, state: string, wave: number }
+
 export type Run = {
 	state: string,
 	wave: number,
@@ -35,6 +38,7 @@ export type Run = {
 	endsAt: number,
 	n: number,
 	participants: { Participant },
+	left: { [number]: Left }, -- by UserId; cleared when a new run starts
 }
 
 export type TickInput = {
@@ -79,16 +83,30 @@ local function newParticipant(userId: number, joinIndex: number): Participant
 	}
 end
 
+local function cloneParticipant(p: Participant): Participant
+	local q = table.clone(p)
+	q.stacks = table.clone(p.stacks)
+	q.offer = table.clone(p.offer)
+	return q
+end
+
 local function copy(run: Run): Run
 	local c = table.clone(run)
+	c.left = table.clone(run.left) -- records are never mutated, so a shallow copy is enough
 	c.participants = {}
 	for i, p in run.participants do
-		local q = table.clone(p)
-		q.stacks = table.clone(p.stacks)
-		q.offer = table.clone(p.offer)
-		c.participants[i] = q
+		c.participants[i] = cloneParticipant(p)
 	end
 	return c
+end
+
+-- Never reuses a live index, so offers and spawn spots stay distinct after a leave (QA m5).
+local function nextIndex(r: Run): number
+	local top = 0
+	for _, p in r.participants do
+		top = math.max(top, p.joinIndex)
+	end
+	return top + 1
 end
 
 local function fraction(maxHp: number, f: number): number
@@ -96,7 +114,7 @@ local function fraction(maxHp: number, f: number): number
 end
 
 function RunRules.new(): Run
-	return { state = "Idle", wave = 0, tier = 1, seed = 0, host = nil, endsAt = 0, n = 0, participants = {} }
+	return { state = "Idle", wave = 0, tier = 1, seed = 0, host = nil, endsAt = 0, n = 0, participants = {}, left = {} }
 end
 
 function RunRules.find(run: Run, userId: number): Participant?
@@ -134,8 +152,11 @@ function RunRules.catchUpCount(run: Run): number
 	return 0
 end
 
+local LIVE = { Countdown = true, Wave = true, Break = true }
+
 -- B2. From Idle the player becomes host of a new Countdown; the server treats that as the
--- countdown event (play returns no events).
+-- countdown event (play returns no events). Rejoining the same live run restores the player as
+-- they left (HP, down, charms, blessings, clears) instead of a fresh participant (QA M3).
 function RunRules.play(run: Run, userId: number, tier: number, seed: number, t: number): (Run, boolean)
 	if RunRules.find(run, userId) or #run.participants >= RunRules.MAX_PARTY then
 		return run, false
@@ -149,7 +170,21 @@ function RunRules.play(run: Run, userId: number, tier: number, seed: number, t: 
 		r.host = userId
 		r.endsAt = t + RunRules.COUNTDOWN
 	end
-	local p = newParticipant(userId, #r.participants + 1)
+	local saved = r.left[userId]
+	if saved and LIVE[r.state] then
+		r.left[userId] = nil
+		local p = cloneParticipant(saved.participant)
+		p.joinIndex = nextIndex(r)
+		p.helpTime = 0
+		-- This break's offer and pick survive only a rejoin in the same break.
+		if r.state ~= "Break" or saved.state ~= "Break" or saved.wave ~= r.wave then
+			p.offer = if r.state == "Break" then offerFor(r, p, r.wave) else {}
+			p.picked = false
+		end
+		table.insert(r.participants, p)
+		return r, true
+	end
+	local p = newParticipant(userId, nextIndex(r))
 	table.insert(r.participants, p)
 	-- Catch-up blessing k is offer 1 of the joiner's seeded offer for break k.
 	for k = 1, RunRules.catchUpCount(r) do
@@ -178,7 +213,11 @@ function RunRules.leave(run: Run, userId: number): (Run, { Event })
 		return run, {}
 	end
 	local r = copy(run)
-	table.remove(r.participants, table.find(run.participants, p))
+	local i = table.find(run.participants, p) :: number
+	if LIVE[r.state] then
+		r.left[userId] = { participant = r.participants[i], state = r.state, wave = r.wave }
+	end
+	table.remove(r.participants, i)
 	local events: { Event } = {}
 	if #r.participants == 0 then
 		if r.state == "Countdown" or r.state == "Wave" or r.state == "Break" then
@@ -230,6 +269,7 @@ local function timers(r: Run, input: TickInput, events: { Event }): boolean
 		for i, p in r.participants do
 			r.participants[i] = newParticipant(p.userId, i)
 		end
+		r.left = {}
 		r.state = "Countdown"
 		r.wave = 0
 		r.n = 0

@@ -125,6 +125,19 @@ local touchOnly = UserInputService.TouchEnabled and not UserInputService.Keyboar
 pcall(StarterGui.SetCoreGuiEnabled, StarterGui, Enum.CoreGuiType.Health, false)
 pcall(StarterGui.SetCoreGuiEnabled, StarterGui, Enum.CoreGuiType.Backpack, false)
 
+-- No character reset while fighting: the server owns HP and keeps the Humanoid alive (C8, QA m12).
+-- Polled, because SetCore fails until the core scripts have registered it.
+task.spawn(function()
+	local applied: boolean? = nil
+	while true do
+		local allow = not ClientState.fighting()
+		if allow ~= applied and pcall(StarterGui.SetCore, StarterGui, "ResetButtonCallback", allow) then
+			applied = allow
+		end
+		task.wait(0.5)
+	end
+end)
+
 -- Root ------------------------------------------------------------------------------------------
 
 local gui = new("ScreenGui", {

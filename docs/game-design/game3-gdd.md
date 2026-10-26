@@ -37,6 +37,7 @@ Target: a full night in 8 to 10 minutes (hypothesis: waves 30–60 s, 9 breaks o
 - **Catch-up blessings:** a player who joins during `Wave(w)` receives `w − 1` blessings at once; during `Break(w)` they receive `w − 1` at once and then get this break's offer like everyone else. Each catch-up blessing is offer 1 of a seeded offer (section E), so it is deterministic.
 - **Leave:** the `leaveRun` request, opening the start menu, or disconnecting removes the player from the participants. Paid rewards stay. If the host leaves, the earliest-joined remaining participant becomes host (the tier does not change mid-run).
 - **Scaling** uses `n` = number of participants at the start of each wave. Joining mid-wave does not change the current wave.
+- **Rejoining the same night** (QA M3, Studio Director ruling 2026-10-25): a player who leaves and rejoins the night in progress gets back their previous state in it (HP, downed, charms used, blessings, wave clears), and the night counts once for their profile.
 
 ## C. Combat
 

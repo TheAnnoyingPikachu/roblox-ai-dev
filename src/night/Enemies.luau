@@ -119,9 +119,17 @@ local function light(parent: BasePart, colour: Color3, range: number, brightness
 	l.Parent = parent
 end
 
+-- Meshes the warm-up below has loaded. Spawns inside the tick use only these, so a mesh still
+-- loading or failed falls back to parts at once instead of yielding the tick (QA m8).
+local warmed: { [string]: boolean } = {}
+
+local function warmSpawn(name: string, parent: Instance, base: Vector3, scale: number): MeshPart?
+	return if warmed[name] then Models.spawn(name, parent, base, scale) else nil
+end
+
 -- Attaches a generated mesh to the root, or returns nil so the caller builds its part fallback.
 local function meshOn(model: Model, root: BasePart, name: string, scale: number, offset: CFrame): MeshPart?
-	local mesh = Models.spawn(name, model, root.Position, scale)
+	local mesh = warmSpawn(name, model, root.Position, scale)
 	if mesh == nil then
 		return nil
 	end
@@ -483,7 +491,7 @@ local function tween(p: BasePart, cframe: CFrame, seconds: number, style: Enum.E
 end
 
 local function bossPart(model: Model, mesh: string, name: string, part: string, fallback: Vector3): BasePart
-	local p: BasePart? = Models.spawn(mesh, model, Vector3.new(0, -40, 0), 1)
+	local p: BasePart? = warmSpawn(mesh, model, Vector3.new(0, -40, 0), 1)
 	if p == nil then
 		local stand = Instance.new("Part")
 		stand.Anchored = true
@@ -1285,19 +1293,22 @@ function Enemies.step(t: number, dt: number): { Hurt }
 	for id, mob in mobs do
 		spots[id] = mob.body.root.Position
 	end
-	for id, mob in mobs do
-		local here = spots[id]
-		local push = Vector3.zero
-		for other, there in spots do
-			if other ~= id then
-				local gap = flat(here - there)
-				local room = mob.e.radius + 2
-				if gap.Magnitude < room and gap.Magnitude > 0.01 then
-					push += gap.Unit * (room - gap.Magnitude)
+	-- Iterate the snapshot: a general's summon adds to `mobs` mid-loop (QA M4).
+	for id, here in spots do
+		local mob = mobs[id]
+		if mob then
+			local push = Vector3.zero
+			for other, there in spots do
+				if other ~= id then
+					local gap = flat(here - there)
+					local room = mob.e.radius + 2
+					if gap.Magnitude < room and gap.Magnitude > 0.01 then
+						push += gap.Unit * (room - gap.Magnitude)
+					end
 				end
 			end
+			stepMob(mob, t, candidates, byId, push, hurts)
 		end
-		stepMob(mob, t, candidates, byId, push, hurts)
 	end
 	stepProjectiles(t, dt, candidates, hurts)
 	local b = boss
@@ -1314,6 +1325,7 @@ task.spawn(function()
 		local mesh = Models.spawn(name, holder, Vector3.zero, 1)
 		if mesh then
 			mesh:Destroy()
+			warmed[name] = true
 		end
 	end
 	holder:Destroy()

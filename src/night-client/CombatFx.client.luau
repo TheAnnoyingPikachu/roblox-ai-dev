@@ -760,9 +760,16 @@ local function clearTelegraphs(e: number)
 	end
 end
 
+-- Destroyed parts are dropped as new ones arrive, so the lists stay short (QA m10).
 local function remember(e: number, p: Part)
-	telegraphs[e] = telegraphs[e] or {}
-	table.insert(telegraphs[e], p)
+	local list = telegraphs[e] or {}
+	for i = #list, 1, -1 do
+		if list[i].Parent == nil then
+			table.remove(list, i)
+		end
+	end
+	table.insert(list, p)
+	telegraphs[e] = list
 end
 
 -- Keeps telegraph parts on a moving point (a tracked player, a charging enemy) until `seconds`.
@@ -1254,9 +1261,21 @@ end)
 -- Frame loop ------------------------------------------------------------------------------------
 
 local lastState = ""
+local lastStatus: ClientState.Status? = nil
 RunService.RenderStepped:Connect(function()
 	local now = os.clock()
 	local status = ClientState.status()
+
+	-- A downed player who left the run keeps no spirit flame (QA m11). Checked on status updates
+	-- only, so a down Fx that arrives just before the status listing that player is kept.
+	if status ~= lastStatus then
+		lastStatus = status
+		for u in markers do
+			if not table.find(status.ids, u) then
+				clearMarker(u)
+			end
+		end
+	end
 
 	-- A new run (or a fresh join) starts a fresh fighter, as the server's Combat.join does.
 	if status.state ~= lastState then
@@ -1264,6 +1283,10 @@ RunService.RenderStepped:Connect(function()
 			fighter = CombatRules.newFighter(weaponOf(player).id)
 			for u in markers do
 				clearMarker(u)
+			end
+			-- Enemies removed without a kill (Defeat, the last player leaving) leave lists (QA m10).
+			for e in telegraphs do
+				clearTelegraphs(e)
 			end
 		end
 		lastState = status.state

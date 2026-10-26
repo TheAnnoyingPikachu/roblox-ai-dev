@@ -77,12 +77,14 @@ local function setAttr(player: Player, name: string, value: any)
 	end
 end
 
--- Participants line up at the shrine entrance, facing the stage.
+-- Participants line up at the shrine entrance, facing the stage. Join indexes keep growing as
+-- players leave and join, so they wrap onto the 6 spots.
 local function placeAtSpawn(player: Player, index: number)
 	local root = rootOf(player)
 	if root then
+		local slot = (index - 1) % RunRules.MAX_PARTY + 1
 		root.AssemblyLinearVelocity = Vector3.zero
-		root.CFrame = Arena.SPAWN * CFrame.new((index - 3.5) * 4, 4, 0)
+		root.CFrame = Arena.SPAWN * CFrame.new((slot - 3.5) * 4, 4, 0)
 	end
 end
 
@@ -206,6 +208,11 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 		local p = RunRules.find(State.run, userId)
 		if ok and p and LIVE[State.run.state] then
 			enter(player, p.joinIndex)
+			-- A rejoin restores a downed player as downed (QA M3); show their spirit flame again.
+			local root = rootOf(player)
+			if p.downed and root then
+				Remotes.fx("down", { u = userId, p = root.Position })
+			end
 		end
 		return ok
 	elseif action == "leaveRun" then

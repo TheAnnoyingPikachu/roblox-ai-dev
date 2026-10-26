@@ -25,9 +25,17 @@
   ],
   "verification": "QA report with test notes, screenshots and CI links attached as evidence; SHANNON signs off",
   "output_artifacts": [
-    "QA notes in this task's evidence"
+    "docs/qa/night-review.md"
   ],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "Reviewer must not be the thread that wrote NIGHT-003, NIGHT-004 or NIGHT-005 (CLAUDE.md rule 2)."
+  "status": "in_review",
+  "notes": "Reviewer must not be the thread that wrote NIGHT-003, NIGHT-004 or NIGHT-005 (CLAUDE.md rule 2).",
+  "evidence": [
+    "Code review 2026-10-25 by A15 of a2e160a and 731fd33: docs/qa/night-review.md, 0 blocker, 4 major, 12 minor",
+    "Local 2026-10-25: lune run tests/run 207/207 passed, 0 load errors (test-results.json deleted); selene src/night src/night-client src/shared 0 errors, 0 warnings",
+    "Relay: tests/ProgressRules.spec.luau unchanged and passing; only src/relay/Models.luau changed under src/relay",
+    "F2 check value verified: solo tier-1 night at rank D = 465 XP, 290 souls",
+    "Majors: M1 teleport guard bypass (Combat.luau onCombat), M2 no-op equip/setTier writes exhaust DataStore budget, M3 leave+rejoin resets a downed player, M4 Enemies.step tick error when the general summons (Lune repro 97/200)",
+    "Not yet done: GDD section M Studio playtests, the two-client mid-wave join/revive test, client-side refusal exercises"
+  ]
 }
