@@ -157,3 +157,55 @@ Gameplay Engineer, 2026-10-25, on `game3/concept` after `731fd33` (uncommitted).
 | m12 | The HUD turns `ResetButtonCallback` off while you are fighting (polled at 2 Hz, so it retries until SetCore is ready). This is client-side only: the server does not treat a character death as a down. |
 
 Follow-ups outside this change: `docs/architecture/night.md` 3.2 and 3.6 need the new signatures (`guard(..., elapsed?)`, `nearSample`, `clampPath`, `DASH.path`, `GUARD.speed`, `Run.left`). The H7 wording "saved after each … equip" now means "queued at once, written within about 6 s". A no-op equip saves nothing.
+
+---
+
+## Fix verification (071a764)
+
+Verifier: independent QA thread (did not write NIGHT-003/004/005 or the fixes). Date: 2026-10-26. Branch `game3/concept` at `071a764`, clean working tree. Line numbers refer to `071a764`. Code review plus local tooling only; nothing was run in Studio.
+
+Checks run (facts):
+
+- `lune run tests/run`: 298/298 passed, 0 failed, 0 load errors (test-results.json deleted afterwards).
+- `selene src` and `selene src tests`: 0 errors, 0 warnings, 0 parse errors. `stylua --check src` and `stylua --check src tests`: clean.
+- `rojo build` succeeds for all four projects: `default`, `garden`, `night`, `relay` (`.project.json`).
+- `node tools/validate-tasks.mjs`: 24 task files valid. `bash tools/scan-secrets.sh`: no secrets found.
+
+| Finding | Status | Evidence |
+|---|---|---|
+| M1 | Closed | `Combat.luau:205-216` refuses `attack`/`skill` unless the root at event time is within 12 studs (horizontal) of the latest 10 Hz sample (`CombatRules.luau:226`, nil sample refuses). Downed players are pinned to where they fell (`Combat.luau:303-310`), and `allyRevives` reads only `State.positions` (`RunRules.luau` `allyRevives`), so moving a downed root no longer starts a revive. Residual (accepted by the fix design and 0007 line 81): reach can still be stretched by up to 12 studs between samples, and the check is horizontal only. |
+| M2 | Closed | `Profiles.luau:185` drops any change whose canonical encoding equals the current profile (no write, no publish). `drain` (`:135-160`) keeps at most one `UpdateAsync` waiting or in flight per key and waits `WRITE_GAP` = 6 s between writes, so one player is capped at 10 writes/min, below the per-player share of the 60 + 10×n budget. `MetaRules`/`NightProgress` unchanged, so Relay and Garden are unaffected. |
+| M3 | Closed | `RunRules.leave` stores the participant in `r.left` during Countdown/Wave/Break (`RunRules.luau:217-219`); `play` restores it in the same run (`:173-186`) with HP, downed, `reviveAt`, charms, stacks and `clears`, so `first = p.clears == 1` (`NightServer.server.luau` cleared handler) fires once per player per run. `left` is reset by `RunRules.new()` (`:166`, `:224`) and the Victory/Defeat restart (`:272`). Matches the GDD B ruling (`game3-gdd.md:40`). A disconnect goes through the same `leave`, so it is covered too. |
+| M4 | Closed | `Enemies.luau:1297` iterates the `spots` snapshot and looks up `mobs[id]`, so summons added by `stepMob`→`summon`→`spawnMob` are never visited mid-loop and removed mobs are skipped. No other `mobs` loop inserts while iterating (the boss summon at `:1133` runs after the loop). |
+| m1 | Closed | `Profiles.luau:148-153` puts a failed batch back in front of newer changes; the next apply, `release` or `BindToClose` writes it again. |
+| m2 | Closed | Path created only when `trusted` (`Combat.luau:230`), end clamped to 30 studs (`Combat.luau:410`, `CombatRules.luau:231`). |
+| m3 | Closed | `CombatRules.luau:137-140` keeps the newest 20 times (same accept/refuse result, O(20) per event); 1,000-event spec passes. |
+| m4 | Closed | `guard` allows `max(12, 120 × elapsed)` (`CombatRules.luau:210-212`), elapsed passed from `Combat.luau:312`. |
+| m5 | Closed | `nextIndex` = highest live index + 1 (`RunRules.luau:104`), `placeAtSpawn` wraps (`NightServer.server.luau:85`). |
+| m6 | Closed | `Menu.client.luau:666` waits 0.4 s; the server cooldown is measured from the buy's arrival, so the equip always arrives after it. |
+| m7 | Closed (Night) | `Profiles.luau:241-249` `BindToClose` flushes and waits up to 25 s for `writers`; `release` flushes (`:232`). Relay's copy still has the gap (out of scope, as stated). |
+| m8 | Closed | `warmSpawn` (`Enemies.luau:126`) uses only meshes the warm-up loaded (`:1328`); otherwise parts at once, no yield, no retry. |
+| m9 | Closed | `flush` starts the drain with `task.defer` (`Profiles.luau:173`), so the wave-10 clear and Victory queued in the same handler share one `UpdateAsync`. |
+| m10 | Closed | `remember` prunes destroyed parts (`CombatFx.client.luau:767`); all lists cleared on Countdown/Idle (`:1288`). |
+| m11 | Closed | Markers for ids not in `NightStatus.ids` are cleared on each status change (`CombatFx.client.luau:1271-1278`); see n2. |
+| m12 | Closed (client mitigation) | `Hud.client.luau:128-139` turns `ResetButtonCallback` off while fighting. An exploiting client can still kill its own Humanoid; the server does not treat that as a down (stated in the fix, low impact). |
+
+No regression found in the fixed paths. The new `Run.left` field is created by every `Run` constructor (`RunRules.new`, the only one; `State.luau:18` uses it), so `copy` cannot hit a nil `left`.
+
+### New findings
+
+| Severity | Count |
+|---|---|
+| Blocker | 0 |
+| Major | 0 |
+| Minor | 2 |
+
+**n1 (minor). Decision 0007 and night.md still describe the old contract.** `docs/decisions/0007-hundred-demon-night.md:13` says every change is written when it happens and there is no write on leave; writes are now batched up to 6 s and flushed on leave/close. `:61` lists the Combat refusals without the new "root more than 12 studs from the last sample" refusal or the elapsed-scaled guard. `docs/architecture/night.md:115,128` still show the old `GUARD` and `guard` signature. CLAUDE.md rule 8 asks for a decision record when a remote contract changes. Fix: add a dated note to 0007 (writes and Combat refusals) and update night.md 3.2/3.6, as the Fixes section already lists for night.md.
+
+**n2 (minor, cosmetic, hypothesis, not reproduced).** On a rejoin the server sends `Fx("down")` at once (`NightServer.server.luau:211-215`), but the participant list reaches clients with the next status publish. If a status value written before the rejoin and the `down` Fx are processed in the same client frame, the m11 sweep (`CombatFx.client.luau:1271-1278`) runs after the Fx handler, sees the old `ids` without the rejoiner and removes the flame; no second `down` is sent, so other players see no spirit flame for that downed player until a revive. Fix: in the sweep, skip markers created in the last ~0.5 s, or send the `down` Fx from the next tick's publish.
+
+Accepted risk noted (not a new defect): a batch whose `UpdateAsync` committed but reported failure is replayed by the next write. That double-applies wave or victory rewards (claims and buys refuse the second time). `withRetries` had the same property before this change.
+
+### Still open for NIGHT-006 acceptance
+
+- GDD section M Studio playtests, the two-client mid-wave join/revive/catch-up test (now also the rejoin-restore case), and the client-side exercise of every Request and Combat refusal. These are acceptance criteria of NIGHT-006, so the task stays `in_review`. ("done" is not a status in `studio/task.schema.json`; `accepted` needs this evidence and SHANNON's sign-off.)

@@ -112,7 +112,7 @@ CombatRules.STAGGER = 0.4
 CombatRules.KNOCKBACK_TIME = 0.25
 CombatRules.ARMOURED_KNOCKBACK = 0.3
 CombatRules.CONTACT = { reach = 2.5, band = 5, interval = 1.0 }
-CombatRules.GUARD = { distance = 12, lockout = 1.0 }
+CombatRules.GUARD = { distance = 12, lockout = 1.0, speed = 120 }
 CombatRules.RATE = { count = 20, window = 1.0 }
 
 CombatRules.weapon(id: string): Weapon?
@@ -125,7 +125,8 @@ CombatRules.dash(f: Fighter, t: number): (boolean, Fighter) -- t - dashAt >= 0.9
 CombatRules.trigger(f: Fighter, t: number, duration: number): (boolean, Fighter) -- gauge >= 100 and not active; gauge -> 0
 CombatRules.triggerActive(f: Fighter, t: number): boolean
 CombatRules.gain(f: Fighter, damageDealt: number, gaugeRate: number, t: number): Fighter -- + damage / 4 * rate, cap 100, none while active
-CombatRules.guard(f: Fighter, previous: Vec3, current: Vec3, t: number): Fighter -- horizontal move > 12 sets guardUntil = t + 1
+CombatRules.guard(f: Fighter, previous: Vec3, current: Vec3, t: number, elapsed: number?): Fighter -- horizontal move > max(12, 120 * elapsed) sets guardUntil = t + 1
+CombatRules.nearSample(sample: Vec3?, current: Vec3): boolean -- within 12 studs of the latest sample; false with no sample
 CombatRules.guarded(f: Fighter, t: number): boolean
 
 CombatRules.attackSwing(weapon: Weapon): Swing

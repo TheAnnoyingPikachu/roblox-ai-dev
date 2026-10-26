@@ -184,6 +184,8 @@ end
 
 -- Request remote (decision 0007) ------------------------------------------------------------
 
+local publish: (t: number) -> () -- defined with the tick loop below
+
 local function onRequest(player: Player, action: any, arg: any): boolean
 	local profile = Profiles.get(player)
 	if profile == nil or type(action) ~= "string" or (arg ~= nil and (type(arg) ~= "string" or #arg > MAX_ARG)) then
@@ -211,6 +213,8 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 			-- A rejoin restores a downed player as downed (QA M3); show their spirit flame again.
 			local root = rootOf(player)
 			if p.downed and root then
+				-- Status listing them goes out first, or clients drop the flame on a stale status (QA n2).
+				publish(now)
 				Remotes.fx("down", { u = userId, p = root.Position })
 			end
 		end
@@ -237,7 +241,7 @@ Remotes.Request.OnServerInvoke = onRequest
 local lastStatus = ""
 local lastState = ""
 
-local function publish(t: number)
+function publish(t: number)
 	local run = State.run
 	local ids = {}
 	for _, p in run.participants do

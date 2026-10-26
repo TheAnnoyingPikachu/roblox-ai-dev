@@ -36,6 +36,9 @@
     "Relay: tests/ProgressRules.spec.luau unchanged and passing; only src/relay/Models.luau changed under src/relay",
     "F2 check value verified: solo tier-1 night at rank D = 465 XP, 290 souls",
     "Majors: M1 teleport guard bypass (Combat.luau onCombat), M2 no-op equip/setTier writes exhaust DataStore budget, M3 leave+rejoin resets a downed player, M4 Enemies.step tick error when the general summons (Lune repro 97/200)",
-    "Not yet done: GDD section M Studio playtests, the two-client mid-wave join/revive test, client-side refusal exercises"
+    "Not yet done: GDD section M Studio playtests, the two-client mid-wave join/revive test, client-side refusal exercises",
+    "Fix verification 2026-10-26 of 071a764 by an independent QA thread: docs/qa/night-review.md \"Fix verification (071a764)\". M1-M4 closed, m1-m12 closed (m7 Night only, m12 client-side mitigation); 0 blocker, 0 major open; 2 new minors (n1 0007/night.md not updated for batched writes and the near-sample refusal; n2 rejoin spirit-flame race, hypothesis)",
+    "Local 2026-10-26 at 071a764: lune run tests/run 298/298 passed, 0 load errors (test-results.json deleted); selene src tests 0 errors, 0 warnings; stylua --check src tests clean; rojo build default, garden, night, relay all succeed; validate-tasks 24 valid; scan-secrets clean",
+    "Still not done: GDD section M Studio playtests, two-client mid-wave join/revive/catch-up and rejoin-restore test, client-side refusal exercises; status stays in_review (\"done\" is not in task.schema.json)"
   ]
 }
