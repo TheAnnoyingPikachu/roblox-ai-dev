@@ -33,9 +33,18 @@
     "src/spire/.gitkeep",
     "src/spire-client/.gitkeep",
     ".github/workflows/ci.yml",
-    ".github/workflows/publish.yml"
+    ".github/workflows/publish.yml",
+    "studio/tasks/SPIRE-002.json",
+    "studio/tasks/SPIRE-006.json"
   ],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "The spire-staging Roblox experience and GitHub environment are created by a human (CLAUDE.md rule 7). Set Max Players to 6 in the place settings."
+  "status": "in_review",
+  "notes": "The spire-staging Roblox experience and GitHub environment are created by a human (CLAUDE.md rule 7). Set Max Players to 6 in the place settings. SPIRE-006 output_artifacts gain the greybox TowerView and PlazaView (SPIRE-007 rewrites them). SPIRE-002 keeps the baseplate root cause, G0 and the optional Luau Execution check.",
+  "evidence": [
+    "Local 2026-10-26: node tools/validate-tasks.mjs OK (35 files); selene src tests 0 errors 0 warnings; lune run tests/run 304/304 passed; rojo build OK for default, relay, night, garden and spire project files",
+    "stylua --check src tests: clean for every committed file; the only diffs are four src/garden-client files whose Windows working copies have CRLF endings (index is LF, unchanged by this task)",
+    "Build stamp: with BuildInfo.txt set to the HEAD SHA, build/spire.rbxl contains it; rojo sourcemap shows ReplicatedStorage.BuildInfo as a StringValue; committed value dev",
+    "DataStore limits re-read from Roblox Creator Docs (Error codes and limits) on 2026-10-26 and recorded in decision 0009",
+    "Architecture: 6 pure modules with exact signatures (docs/architecture/spire.md section 3), server and client file ownership (section 1), remote contract and replicated state (section 6), resolutions where the GDD changed (section 10)"
+  ]
 }

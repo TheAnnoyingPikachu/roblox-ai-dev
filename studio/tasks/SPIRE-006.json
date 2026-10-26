@@ -28,8 +28,11 @@
     "src/spire-client/Hud.client.luau",
     "src/spire-client/Build.client.luau",
     "src/spire-client/Lift.client.luau",
-    "src/spire-client/ClientState.luau"
+    "src/spire-client/ClientState.luau",
+    "src/spire-client/TowerView.client.luau",
+    "src/spire-client/PlazaView.client.luau"
   ],
   "risk_level": "medium",
-  "status": "planned"
+  "status": "planned",
+  "notes": "Writes greybox TowerView and PlazaView (docs/architecture/spire.md section 1); SPIRE-007 rewrites them at final quality."
 }

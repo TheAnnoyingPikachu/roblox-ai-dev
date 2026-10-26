@@ -1,0 +1,49 @@
+{
+  "name": "neon-spire",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "BuildInfo": {
+        "$path": "build-info/BuildInfo.txt"
+      }
+    },
+    "ServerScriptService": {
+      "Spire": {
+        "$path": "src/spire",
+        "Models": {
+          "$path": "src/relay/Models.luau"
+        }
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "SpireClient": {
+          "$path": "src/spire-client"
+        }
+      }
+    },
+    "Workspace": {
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Neutral": true,
+          "Size": [
+            12,
+            1,
+            12
+          ],
+          "Position": [
+            0,
+            0.6,
+            0
+          ],
+          "Transparency": 1
+        }
+      }
+    }
+  }
+}

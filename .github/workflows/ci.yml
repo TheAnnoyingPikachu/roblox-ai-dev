@@ -42,11 +42,14 @@ jobs:
       - name: Build place
         run: |
           mkdir -p build
+          # Build stamp (docs/architecture/spire.md section 9): projects that map build-info/BuildInfo.txt show this commit.
+          printf '%s' "$GITHUB_SHA" > build-info/BuildInfo.txt
           rojo build default.project.json --output build/place.rbxl
           rojo build relay.project.json --output build/relay.rbxl
           rojo build night.project.json --output build/night.rbxl
           rojo build garden.project.json --output build/garden.rbxl
-          sha256sum build/place.rbxl build/relay.rbxl build/night.rbxl build/garden.rbxl | tee build/place.rbxl.sha256
+          rojo build spire.project.json --output build/spire.rbxl
+          sha256sum build/place.rbxl build/relay.rbxl build/night.rbxl build/garden.rbxl build/spire.rbxl | tee build/place.rbxl.sha256
 
       - name: Upload evidence
         if: always()

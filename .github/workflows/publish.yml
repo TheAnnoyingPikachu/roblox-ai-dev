@@ -2,12 +2,19 @@
 # artifact to the chosen environment through Roblox Open Cloud.
 #
 # Repo setup (done by a human, never by an agent):
-#   Environments "staging", "production", "relay-staging", "night-staging" and "garden-staging", each with:
+#   Environments "staging", "production", "relay-staging", "night-staging", "garden-staging" and
+#   "spire-staging", each with:
 #     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
 #     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
 #   "production" must have required reviewers (SHANNON) and be limited to tags v*.
-#   Garden places: set Max Players to 6 in the place settings (a place file cannot carry it;
-#   docs/architecture/garden.md section 7).
+#
+# Publish checklist (a place file cannot carry these settings, so this workflow cannot do them):
+#   - Garden and Spire places: set Max Players to 6 in the place settings (one lot or plot per
+#     player; docs/architecture/garden.md section 7, docs/architecture/spire.md section 9).
+#   - After every publish, restart servers: Creator Hub > the experience > Servers > restart or
+#     shut down all. Players already in an old server keep the old version.
+#   - Then join and check the build stamp (menu corner and the F9 server line "[Spire] build <sha>")
+#     equals the commit this run published. A playtest note only counts with the stamp it saw.
 name: Publish
 
 on:
@@ -16,7 +23,7 @@ on:
       environment:
         description: "Target environment"
         type: choice
-        options: [staging, production, relay-staging, night-staging, garden-staging]
+        options: [staging, production, relay-staging, night-staging, garden-staging, spire-staging]
         required: true
 
 permissions:
@@ -87,11 +94,14 @@ jobs:
       - name: Build release candidate
         run: |
           mkdir -p build
-          # <game>-* environments publish <game>.project.json (relay-*, night-*, garden-*); the others publish Bake Rush.
+          # Build stamp (docs/architecture/spire.md section 9).
+          printf '%s' "$GITHUB_SHA" > build-info/BuildInfo.txt
+          # <game>-* environments publish <game>.project.json (relay-*, night-*, garden-*, spire-*); the others publish Bake Rush.
           case "${{ inputs.environment }}" in
             relay-*) project=relay.project.json ;;
             night-*) project=night.project.json ;;
             garden-*) project=garden.project.json ;;
+            spire-*) project=spire.project.json ;;
             *) project=default.project.json ;;
           esac
           rojo build "$project" --output build/place.rbxl

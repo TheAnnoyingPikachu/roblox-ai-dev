@@ -28,5 +28,8 @@
   ],
   "risk_level": "medium",
   "status": "planned",
-  "notes": "Medium risk: touches the release workflow. Any new Open Cloud key scope (Luau execution) is created by SHANNON only (CLAUDE.md rule 7). No production publish."
+  "notes": "Medium risk: touches the release workflow. Any new Open Cloud key scope (Luau execution) is created by SHANNON only (CLAUDE.md rule 7). No production publish.",
+  "evidence": [
+    "2026-10-26 (code half, landed with SPIRE-003): build-info/BuildInfo.txt (dev) is overwritten with GITHUB_SHA in ci.yml and publish.yml before rojo build; spire.project.json maps it to ReplicatedStorage.BuildInfo; publish.yml checklist adds restart servers after publish and Max Players 6. Server log line and menu corner are specified in docs/architecture/spire.md section 9 (built in SPIRE-005 and SPIRE-006). Open: baseplate root cause, G0, optional Luau Execution check."
+  ]
 }
