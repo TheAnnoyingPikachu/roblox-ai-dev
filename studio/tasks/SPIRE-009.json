@@ -1,0 +1,33 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-009",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Neon Spire IPO (prestige): the IPO screen with exact Shares, reset and keep rules, the ceremony, Share milestones unlocking facade skins and crowns, and a staging-only test command to seed a floor-20 profile for gate G4.",
+  "inputs": [
+    "docs/game-design/game5-gdd.md section H",
+    "docs/decisions/0009-neon-spire-economy-saves-remotes.md"
+  ],
+  "dependencies": [
+    "SPIRE-008"
+  ],
+  "acceptance_criteria": [
+    "IPO follows GDD H with unit tests for the check values (10 Shares at 1.13e9, 32 at 1.08e10)",
+    "IPO needs a second confirm and shows what resets and what stays",
+    "The seed command exists only in staging builds and is refused in production",
+    "Second-run pacing stays within 30% of GDD B (balance spec)",
+    "Gate G4 passes"
+  ],
+  "verification": "CI; gate G4 note; QA review of the IPO op and the test command",
+  "output_artifacts": [
+    "src/shared/SpireEconomy.luau",
+    "src/shared/SpireProgress.luau",
+    "tests/SpireEconomy.spec.luau",
+    "src/spire/SpireServer.server.luau",
+    "src/spire-client/Menu.client.luau"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Changes saved data meaning (shares, resets): needs an amendment to decision 0009 before build."
+}

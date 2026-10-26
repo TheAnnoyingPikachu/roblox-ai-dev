@@ -1,0 +1,54 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Plan Neon Spire (game 5), a cyberpunk tycoon about building a corporate tower and plaza: design spec, art bible, production plan with milestones, gates and risks, architecture plan, proposed decisions for economy/saves/remotes and asset approach, and a pacing simulation.",
+  "inputs": [
+    "SHANNON's request in the project thread, 2026-10-26",
+    "handoff/bake-rush-handoff.md (staging baseplate)",
+    "docs/game-design/game4-gdd.md (format and reused systems)",
+    "docs/architecture/garden.md",
+    "docs/qa/garden-review.md",
+    "docs/qa/night-review.md",
+    "studio/gates.md"
+  ],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Every rule the server enforces is stated precisely enough to unit test, with check values",
+    "Pacing targets are backed by a reproducible simulation",
+    "No stealing, trading, gifting, random loot or paid items; the child-safety and photosensitivity rules are listed",
+    "Asset approach options and a recommendation are presented for SHANNON's approval",
+    "Milestones are broken into task files with owners, dependencies and testable acceptance criteria",
+    "The Bake Rush staging baseplate is flagged as an open pipeline risk with an investigation plan",
+    "Facts, assumptions and hypotheses are labelled separately; kill criteria and a cut order are stated"
+  ],
+  "verification": "SHANNON approves the plan or returns it with changes; CI green on the docs PR",
+  "output_artifacts": [
+    "docs/game-design/game5-gdd.md",
+    "docs/game-design/game5-art-bible.md",
+    "docs/game-design/game5-production-plan.md",
+    "docs/game-design/game5-pacing-sim.py",
+    "docs/architecture/spire.md",
+    "docs/decisions/0009-neon-spire-economy-saves-remotes.md",
+    "docs/decisions/0010-neon-spire-asset-approach.md",
+    "studio/tasks/SPIRE-001.json",
+    "studio/tasks/SPIRE-002.json",
+    "studio/tasks/SPIRE-003.json",
+    "studio/tasks/SPIRE-004.json",
+    "studio/tasks/SPIRE-005.json",
+    "studio/tasks/SPIRE-006.json",
+    "studio/tasks/SPIRE-007.json",
+    "studio/tasks/SPIRE-008.json",
+    "studio/tasks/SPIRE-009.json",
+    "studio/tasks/SPIRE-010.json",
+    "studio/tasks/SPIRE-011.json"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "evidence": [
+    "Local 2026-10-26: python3 docs/game-design/game5-pacing-sim.py 6000 0 60 2.15 gives floor 10 at 18 min, floor 20 at 86 min, floor 30 at about 19 h; with 10 Shares and the plaza kept, floor 20 at 31 min"
+  ],
+  "notes": "Docs only: no game code, no publish. Decisions 0009 and 0010 are proposed, not accepted."
+}

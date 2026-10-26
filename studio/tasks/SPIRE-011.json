@@ -1,0 +1,28 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-011",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "research",
+  "objective": "Optional cosmetic-only monetisation proposal for Neon Spire after launch: candidate cosmetic products, Roblox policy and PolicyService checks for under-18 players, and a decision record for SHANNON. No paid products are created by this task.",
+  "inputs": [
+    "docs/game-design/game5-production-plan.md section 7",
+    "docs/decisions/0002-monetisation-after-core.md",
+    "live data from SPIRE-010"
+  ],
+  "dependencies": [
+    "SPIRE-010"
+  ],
+  "acceptance_criteria": [
+    "Every proposed product is cosmetic and changes no income, power, floors, Shares or timers",
+    "Roblox's current monetisation policies are cited with dates",
+    "A decision record is drafted for SHANNON's approval"
+  ],
+  "verification": "SHANNON approves or rejects the decision record",
+  "output_artifacts": [
+    "docs/decisions/"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Paid products are always human-approved (CLAUDE.md rule 7)."
+}

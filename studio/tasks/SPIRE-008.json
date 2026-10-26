@@ -1,0 +1,35 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-008",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "QA and security review of Neon Spire v0.1: rules against the GDD, remotes, saves, child safety and photosensitivity against decision 0009, the architecture security checklist, and the GDD section S acceptance playtests including two clients, rejoin and performance.",
+  "inputs": [
+    "docs/game-design/game5-gdd.md section S",
+    "docs/decisions/0009-neon-spire-economy-saves-remotes.md",
+    "docs/architecture/spire.md sections 7 and 10",
+    "SPIRE-004 to SPIRE-007 pull requests"
+  ],
+  "dependencies": [
+    "SPIRE-004",
+    "SPIRE-005",
+    "SPIRE-006",
+    "SPIRE-007"
+  ],
+  "acceptance_criteria": [
+    "Every GDD section S item is checked, with evidence or a filed defect",
+    "Every Request action and prompt is exercised from a client, including malformed args, wrong lots, distance and token-bucket limits",
+    "Save writes reviewed: session lock races, coalescing, snapshot, sanitising, offline mode, no defaults over a failed load",
+    "No MarketplaceService, TextBox, trading, gifting or random loot in Spire code",
+    "Relay, Night and Garden still pass their specs and build unchanged",
+    "Gate G3 passes with notes that record the build stamp"
+  ],
+  "verification": "QA report in docs/qa/spire-review.md with test notes and CI links; SHANNON signs off",
+  "output_artifacts": [
+    "docs/qa/spire-review.md"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Reviewer must not be the thread that wrote SPIRE-004 to SPIRE-007 (CLAUDE.md rule 2)."
+}
