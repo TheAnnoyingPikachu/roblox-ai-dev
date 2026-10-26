@@ -33,6 +33,13 @@
     "src/spire-client/PlazaView.client.luau"
   ],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "Writes greybox TowerView and PlazaView (docs/architecture/spire.md section 1); SPIRE-007 rewrites them at final quality."
+  "status": "in_review",
+  "notes": "Writes greybox TowerView and PlazaView (docs/architecture/spire.md section 1); SPIRE-007 rewrites them at final quality.",
+  "evidence": [
+    "Local 2026-10-26: stylua --check src/spire-client clean; selene src/spire-client 0 errors 0 warnings; rojo build spire.project.json -o build/spire.rbxl OK; src/spire-client/.gitkeep deleted",
+    "Only the seven SPIRE-006 files under src/spire-client changed. Every SpireConfig/SpireProgress/TowerRules/PlazaRules/SpireEconomy/MetaRules member the client calls exists in the SPIRE-004 working copies (grep check); luau-lsp analyze shows only strict-inference noise in the client files, no unknown members",
+    "Contract: the client sends only Request(action, arg) with section 6.1 actions and ids/cells/indices (buyFloor, refitFloor, buyModule, upgradeModule, sellModule, placeItem, moveItem, sellItem, lift, home, endorse, setGate, setCompany, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic); ClientState.request toasts REFUSALS[code] for all 26 codes of section 6.2; previews and disabled reasons call SpireProgress.apply on TowerRules.copy(profile) with now = floor(GetServerTimeNow()) and the SpireStatus event; accepted actions are predicted the same way until the next Profile publish",
+    "Features: start menu (PLAY, LOCKER, REWARDS, STATS, COMPANY, SETTINGS; build stamp bottom right; glitch title <= 2/s, off with Reduce flashing); How to Play plus Power, Hype and Stacking explainers; HUD credits count-up, income, +30s, Market chip, level/XP, power and Hype bars with numbers and icons, BUILD/LIFT/HOME, Hot Data card with GO, ENDORSE, ticker, notices, welcome-back card, Grab/Build prompts hidden on other lots; build mode tower and plaza views (mouse, touch tap/swipe, gamepad L1/R1/right stick/d-pad/A/X/Y/B); lift picker, doors and counter; K5 first-session script; greybox TowerView/PlazaView with section 5.1 LOD",
+    "Not yet run in Studio: src/spire (SPIRE-005) and the SPIRE-004 modules were still being written in the same tree. Studio/staging run owed: K5 timings, phone (touch, text size at 0.6 UI scale), controller, lift ride with Hot Data GO, build stamp in the menu corner"
+  ]
 }
