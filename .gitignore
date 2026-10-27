@@ -5,3 +5,4 @@ test-results.json
 sourcemap.json
 .env
 *.key
+__pycache__/

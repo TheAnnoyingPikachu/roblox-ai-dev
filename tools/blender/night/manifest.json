@@ -1,0 +1,894 @@
+{
+  "shrine_hall": {
+    "fbx": "build/blender/night/shrine_hall.fbx",
+    "png": "build/blender/night/shrine_hall.png",
+    "preview": "build/blender/night/previews/shrine_hall.png",
+    "size_studs": [
+      40.43,
+      34.42,
+      38.23
+    ],
+    "tris": 7436,
+    "parts": {
+      "shrine_hall": 7436
+    },
+    "target_size_studs": [
+      40,
+      39,
+      42
+    ],
+    "tris_budget": 9000,
+    "priority": "P1",
+    "replaces": "shrineHall mesh (src/relay/Models.luau 60-64) in src/night/Arena.luau 347-374",
+    "script": "tools/blender/night/assets/shrine_hall.py",
+    "notes": "Spawn at scale 1 (old mesh used 1.3). Code adds its own hanging lanterns at x +-22."
+  },
+  "kagura_stage": {
+    "fbx": "build/blender/night/kagura_stage.fbx",
+    "png": "build/blender/night/kagura_stage.png",
+    "preview": "build/blender/night/previews/kagura_stage.png",
+    "size_studs": [
+      52.0,
+      23.0,
+      52.0
+    ],
+    "tris": 3664,
+    "parts": {
+      "kagura_stage": 3664
+    },
+    "target_size_studs": [
+      52,
+      23,
+      52
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "Part stage in src/night/Arena.luau 251-315 (deck, ramps, pillars, roof, rope, shide)",
+    "script": "tools/blender/night/assets/kagura_stage.py",
+    "notes": "Walked on: keep the invisible deck and ramp parts for collision, mesh CanCollide false. Code adds the corner lanterns and the taiko drum."
+  },
+  "demon_gate": {
+    "fbx": "build/blender/night/demon_gate.fbx",
+    "png": "build/blender/night/demon_gate.png",
+    "preview": "build/blender/night/previews/demon_gate.png",
+    "size_studs": [
+      18.2,
+      16.15,
+      2.97
+    ],
+    "tris": 932,
+    "parts": {
+      "demon_gate": 896,
+      "demon_gate_glow": 36
+    },
+    "target_size_studs": [
+      19,
+      15.5,
+      2
+    ],
+    "tris_budget": 2000,
+    "priority": "P1",
+    "replaces": "Demon gate parts in src/night/Arena.luau 587-613 (x4)",
+    "script": "tools/blender/night/assets/torii.py",
+    "notes": "demon_gate_glow is the neon strips: set Material Neon, Color purple. Portal disc, floor glow and particles stay parts."
+  },
+  "entrance_torii": {
+    "fbx": "build/blender/night/entrance_torii.fbx",
+    "png": "build/blender/night/entrance_torii.png",
+    "preview": "build/blender/night/previews/entrance_torii.png",
+    "size_studs": [
+      24.2,
+      18.15,
+      2.64
+    ],
+    "tris": 712,
+    "parts": {
+      "entrance_torii": 712
+    },
+    "target_size_studs": [
+      24,
+      17.5,
+      2.4
+    ],
+    "tris_budget": 2000,
+    "priority": "P1",
+    "replaces": "Props.torii (src/relay/Props.luau 105-149) via src/night/Arena.luau 635",
+    "script": "tools/blender/night/assets/torii.py",
+    "notes": "Plaque with the \u767e\u9b3c\u591c\u884c text stays a part with SurfaceGuis at height 14.8."
+  },
+  "stone_lantern": {
+    "fbx": "build/blender/night/stone_lantern.fbx",
+    "png": "build/blender/night/stone_lantern.png",
+    "preview": "build/blender/night/previews/stone_lantern.png",
+    "size_studs": [
+      3.09,
+      5.88,
+      3.56
+    ],
+    "tris": 754,
+    "parts": {
+      "stone_lantern": 754
+    },
+    "target_size_studs": [
+      3,
+      6,
+      3
+    ],
+    "tris_budget": 1000,
+    "priority": "P1",
+    "replaces": "Props.lantern (src/relay/Props.luau 152-168) via src/night/Arena.luau 639 and 670-687 (16 rim lanterns)",
+    "script": "tools/blender/night/assets/stone_lantern.py",
+    "notes": "Glowing firebox baked bright; keep the PointLight (range 18) in code."
+  },
+  "sacred_tree": {
+    "fbx": "build/blender/night/sacred_tree.fbx",
+    "png": "build/blender/night/sacred_tree.png",
+    "preview": "build/blender/night/previews/sacred_tree.png",
+    "size_studs": [
+      44.51,
+      43.67,
+      45.19
+    ],
+    "tris": 4368,
+    "parts": {
+      "sacred_tree": 4368
+    },
+    "target_size_studs": [
+      44,
+      49,
+      44
+    ],
+    "tris_budget": 9000,
+    "priority": "P1",
+    "replaces": "sacredTree mesh (src/relay/Models.luau 55-59) in src/night/Arena.luau 376-426 (with the rope and shide 397-414)",
+    "script": "tools/blender/night/assets/trees.py",
+    "notes": "Rope and shide are in the mesh, so the code's rope parts can go; keep the stone fence and fireflies."
+  },
+  "oni_statue": {
+    "fbx": "build/blender/night/oni_statue.fbx",
+    "png": "build/blender/night/oni_statue.png",
+    "preview": "build/blender/night/previews/oni_statue.png",
+    "size_studs": [
+      12.85,
+      20.26,
+      7.98
+    ],
+    "tris": 6866,
+    "parts": {
+      "oni_statue": 6866
+    },
+    "target_size_studs": [
+      15,
+      19,
+      13
+    ],
+    "tris_budget": 8000,
+    "priority": "P1",
+    "replaces": "oni mesh (src/relay/Models.luau 13-17): pit guardians src/night/Arena.luau 341-344 and Oni General body src/night/Enemies.luau 367-412",
+    "script": "tools/blender/night/assets/oni_statue.py",
+    "notes": "General: code keeps its neon eyes (offset -3.6 z) and chains; recheck the eye offsets against this mesh when wiring."
+  },
+  "komainu": {
+    "fbx": "build/blender/night/komainu.fbx",
+    "png": "build/blender/night/komainu.png",
+    "preview": "build/blender/night/previews/komainu.png",
+    "size_studs": [
+      4.9,
+      8.24,
+      6.98
+    ],
+    "tris": 2910,
+    "parts": {
+      "komainu": 2910
+    },
+    "target_size_studs": [
+      4.6,
+      8,
+      6.4
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "komainu mesh (src/relay/Models.luau 38-42) in src/night/Arena.luau 638",
+    "script": "tools/blender/night/assets/komainu.py",
+    "notes": "Code spawns two, yaw 180, on 4 x 2 x 5 plinths; the second could be mirrored."
+  },
+  "lantern_yokai": {
+    "fbx": "build/blender/night/lantern_yokai.fbx",
+    "png": "build/blender/night/lantern_yokai.png",
+    "preview": "build/blender/night/previews/lantern_yokai.png",
+    "size_studs": [
+      3.5,
+      5.28,
+      4.72
+    ],
+    "tris": 1888,
+    "parts": {
+      "lantern_yokai": 1888
+    },
+    "target_size_studs": [
+      3.5,
+      5.3,
+      4.5
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "lanternYokai mesh (src/relay/Models.luau 65-69) in src/night/Enemies.luau 210-243",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": "Modelled at in-game size: spawn at scale 1, not 0.75."
+  },
+  "kasa_obake": {
+    "fbx": "build/blender/night/kasa_obake.fbx",
+    "png": "build/blender/night/kasa_obake.png",
+    "preview": "build/blender/night/previews/kasa_obake.png",
+    "size_studs": [
+      5.92,
+      5.1,
+      6.48
+    ],
+    "tris": 1324,
+    "parts": {
+      "kasa_obake": 1324
+    },
+    "target_size_studs": [
+      5.6,
+      5.4,
+      5.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Kasa-obake parts in src/night/Enemies.luau 246-302",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": ""
+  },
+  "yoroi": {
+    "fbx": "build/blender/night/yoroi.fbx",
+    "png": "build/blender/night/yoroi.png",
+    "preview": "build/blender/night/previews/yoroi.png",
+    "size_studs": [
+      4.98,
+      7.19,
+      3.24
+    ],
+    "tris": 3880,
+    "parts": {
+      "yoroi": 3880
+    },
+    "target_size_studs": [
+      6.5,
+      7,
+      3.5
+    ],
+    "tris_budget": 4000,
+    "priority": "P1",
+    "replaces": "Possessed Yoroi parts (kind oni) in src/night/Enemies.luau 305-364",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": "Hovers: bottom of the skirt is y = 0; code offsets the root."
+  },
+  "wisp": {
+    "fbx": "build/blender/night/wisp.fbx",
+    "png": "build/blender/night/wisp.png",
+    "preview": "build/blender/night/previews/wisp.png",
+    "size_studs": [
+      2.7,
+      3.56,
+      3.25
+    ],
+    "tris": 1332,
+    "parts": {
+      "wisp": 1332
+    },
+    "target_size_studs": [
+      3,
+      4.5,
+      3
+    ],
+    "tris_budget": 1600,
+    "priority": "P1",
+    "replaces": "Hitodama parts in src/night/Enemies.luau 170-207, idle wisp src/night/Arena.luau 615-631, spirit flame src/night-client/CombatFx.client.luau 1104",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": "Set Material Neon or keep the texture; Fire, Trail and PointLight stay in code."
+  },
+  "boss_skull": {
+    "fbx": "build/blender/night/boss_skull.fbx",
+    "png": "build/blender/night/boss_skull.png",
+    "preview": "build/blender/night/previews/boss_skull.png",
+    "size_studs": [
+      16.29,
+      24.09,
+      22.12
+    ],
+    "tris": 4886,
+    "parts": {
+      "boss_skull": 4886
+    },
+    "target_size_studs": [
+      17,
+      24,
+      23
+    ],
+    "tris_budget": 10000,
+    "priority": "P1",
+    "replaces": "bossSkull mesh (src/relay/Models.luau 45-49) in src/night/Enemies.luau 513-536",
+    "script": "tools/blender/night/assets/boss.py",
+    "notes": "Code eye lights sit at skull centre + (+-3.5, 3, -9); the glowing sockets are at about that spot."
+  },
+  "boss_hand": {
+    "fbx": "build/blender/night/boss_hand.fbx",
+    "png": "build/blender/night/boss_hand.png",
+    "preview": "build/blender/night/previews/boss_hand.png",
+    "size_studs": [
+      12.47,
+      16.0,
+      5.6
+    ],
+    "tris": 2362,
+    "parts": {
+      "boss_hand": 2362
+    },
+    "target_size_studs": [
+      10,
+      16,
+      4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "boneHand mesh (src/relay/Models.luau 50-54) in src/night/Enemies.luau 537-548 (used twice)",
+    "script": "tools/blender/night/assets/boss.py",
+    "notes": "Palm faces Roblox -Z, fingers up (+Y), as the old mesh; code turns it palm-down with FLAT."
+  },
+  "festival_stall_red": {
+    "fbx": "build/blender/night/festival_stall_red.fbx",
+    "png": "build/blender/night/festival_stall_red.png",
+    "preview": "build/blender/night/previews/festival_stall_red.png",
+    "size_studs": [
+      12.0,
+      9.73,
+      9.22
+    ],
+    "tris": 2000,
+    "parts": {
+      "festival_stall_red": 2000
+    },
+    "target_size_studs": [
+      12,
+      10,
+      9.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "Stall parts in src/night/Arena.luau 508-581 (stalls 1 and 4)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": "Sign text and the hanging lanterns stay in code."
+  },
+  "festival_stall_white": {
+    "fbx": "build/blender/night/festival_stall_white.fbx",
+    "png": "build/blender/night/festival_stall_white.png",
+    "preview": "build/blender/night/previews/festival_stall_white.png",
+    "size_studs": [
+      12.0,
+      9.73,
+      9.22
+    ],
+    "tris": 2000,
+    "parts": {
+      "festival_stall_white": 2000
+    },
+    "target_size_studs": [
+      12,
+      10,
+      9.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "Stall parts in src/night/Arena.luau 508-581 (stall 2)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": ""
+  },
+  "festival_stall_indigo": {
+    "fbx": "build/blender/night/festival_stall_indigo.fbx",
+    "png": "build/blender/night/festival_stall_indigo.png",
+    "preview": "build/blender/night/previews/festival_stall_indigo.png",
+    "size_studs": [
+      12.0,
+      9.73,
+      9.22
+    ],
+    "tris": 2000,
+    "parts": {
+      "festival_stall_indigo": 2000
+    },
+    "target_size_studs": [
+      12,
+      10,
+      9.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "Stall parts in src/night/Arena.luau 508-581 (stalls 3 and 5)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": ""
+  },
+  "paper_lantern_red": {
+    "fbx": "build/blender/night/paper_lantern_red.fbx",
+    "png": "build/blender/night/paper_lantern_red.png",
+    "preview": "build/blender/night/previews/paper_lantern_red.png",
+    "size_studs": [
+      1.73,
+      3.28,
+      1.73
+    ],
+    "tris": 516,
+    "parts": {
+      "paper_lantern_red": 516
+    },
+    "target_size_studs": [
+      1.8,
+      3.2,
+      1.8
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "paperLantern parts in src/night/Arena.luau 126-133 (red ones: stage, hall, board, stall left)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": "Origin at the tassel bottom; code hangs it by the top (3.2 above origin). Keep the PointLight."
+  },
+  "paper_lantern_cream": {
+    "fbx": "build/blender/night/paper_lantern_cream.fbx",
+    "png": "build/blender/night/paper_lantern_cream.png",
+    "preview": "build/blender/night/previews/paper_lantern_cream.png",
+    "size_studs": [
+      1.73,
+      3.28,
+      1.73
+    ],
+    "tris": 516,
+    "parts": {
+      "paper_lantern_cream": 516
+    },
+    "target_size_studs": [
+      1.8,
+      3.2,
+      1.8
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "paperLantern parts in src/night/Arena.luau 126-133 (cream ones on the stalls)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": ""
+  },
+  "arched_bridge": {
+    "fbx": "build/blender/night/arched_bridge.fbx",
+    "png": "build/blender/night/arched_bridge.png",
+    "preview": "build/blender/night/previews/arched_bridge.png",
+    "size_studs": [
+      30.18,
+      5.85,
+      7.02
+    ],
+    "tris": 2052,
+    "parts": {
+      "arched_bridge": 2052
+    },
+    "target_size_studs": [
+      31,
+      5.6,
+      6.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P2",
+    "replaces": "bridge parts in src/night/Arena.luau 430-457 (x2)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": "Walked on: keep the deck parts for collision, or set CollisionFidelity PreciseConvexDecomposition."
+  },
+  "sakura_tree": {
+    "fbx": "build/blender/night/sakura_tree.fbx",
+    "png": "build/blender/night/sakura_tree.png",
+    "preview": "build/blender/night/previews/sakura_tree.png",
+    "size_studs": [
+      15.76,
+      16.35,
+      17.57
+    ],
+    "tris": 1488,
+    "parts": {
+      "sakura_tree": 1488
+    },
+    "target_size_studs": [
+      16,
+      16,
+      16
+    ],
+    "tris_budget": 5000,
+    "priority": "P2",
+    "replaces": "sakura mesh (src/relay/Models.luau 33-37, shared with Relay) in src/night/Arena.luau 732-745",
+    "script": "tools/blender/night/assets/trees.py",
+    "notes": "Night-only asset; leave Relay on its own sakura mesh."
+  },
+  "leaderboard_frame": {
+    "fbx": "build/blender/night/leaderboard_frame.fbx",
+    "png": "build/blender/night/leaderboard_frame.png",
+    "preview": "build/blender/night/previews/leaderboard_frame.png",
+    "size_studs": [
+      20.59,
+      15.95,
+      3.74
+    ],
+    "tris": 768,
+    "parts": {
+      "leaderboard_frame": 768
+    },
+    "target_size_studs": [
+      21,
+      16,
+      4
+    ],
+    "tris_budget": 1500,
+    "priority": "P2",
+    "replaces": "Leaderboard posts in src/night/Arena.luau 641-647",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": "The 16 x 12 text board part with the SurfaceGui stays, just in front of the backing."
+  },
+  "taiko_drum": {
+    "fbx": "build/blender/night/taiko_drum.fbx",
+    "png": "build/blender/night/taiko_drum.png",
+    "preview": "build/blender/night/previews/taiko_drum.png",
+    "size_studs": [
+      2.57,
+      4.0,
+      3.54
+    ],
+    "tris": 969,
+    "parts": {
+      "taiko_drum": 969
+    },
+    "target_size_studs": [
+      3.4,
+      4,
+      3.4
+    ],
+    "tris_budget": 1000,
+    "priority": "P2",
+    "replaces": "Taiko drum part in src/night/Arena.luau 306-314",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": ""
+  },
+  "wall_segment": {
+    "fbx": "build/blender/night/wall_segment.fbx",
+    "png": "build/blender/night/wall_segment.png",
+    "preview": "build/blender/night/previews/wall_segment.png",
+    "size_studs": [
+      14.65,
+      9.5,
+      2.4
+    ],
+    "tris": 268,
+    "parts": {
+      "wall_segment": 268
+    },
+    "target_size_studs": [
+      14,
+      8.8,
+      2.4
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "Wall and fence parts in src/night/Arena.luau 224-246 (42 segments)",
+    "script": "tools/blender/night/assets/props.py",
+    "notes": "Origin at the wall foot; code sinks walls 1 stud (wall centre y 2, height 6)."
+  },
+  "katana": {
+    "fbx": "build/blender/night/katana.fbx",
+    "png": "build/blender/night/katana.png",
+    "preview": "build/blender/night/previews/katana.png",
+    "size_studs": [
+      0.63,
+      5.84,
+      0.92
+    ],
+    "tris": 608,
+    "parts": {
+      "katana": 496,
+      "katana_blade": 112
+    },
+    "target_size_studs": [
+      0.9,
+      5.9,
+      0.6
+    ],
+    "tris_budget": 800,
+    "priority": "P2",
+    "replaces": "katana Tool parts in src/night/Gear.luau 19-23 and 76-129",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "<name>_blade: set TextureID empty, Material Neon, Color = Blade Art tint; add TrailTop/TrailBottom attachments in code. Origin is the pommel end."
+  },
+  "kodachi": {
+    "fbx": "build/blender/night/kodachi.fbx",
+    "png": "build/blender/night/kodachi.png",
+    "preview": "build/blender/night/previews/kodachi.png",
+    "size_studs": [
+      0.63,
+      3.84,
+      0.92
+    ],
+    "tris": 576,
+    "parts": {
+      "kodachi": 464,
+      "kodachi_blade": 112
+    },
+    "target_size_studs": [
+      0.9,
+      3.9,
+      0.6
+    ],
+    "tris_budget": 800,
+    "priority": "P2",
+    "replaces": "kodachi Tool parts in src/night/Gear.luau 19-23 and 76-129",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "<name>_blade: set TextureID empty, Material Neon, Color = Blade Art tint; add TrailTop/TrailBottom attachments in code. Origin is the pommel end."
+  },
+  "nodachi": {
+    "fbx": "build/blender/night/nodachi.fbx",
+    "png": "build/blender/night/nodachi.png",
+    "preview": "build/blender/night/previews/nodachi.png",
+    "size_studs": [
+      0.63,
+      8.24,
+      0.93
+    ],
+    "tris": 656,
+    "parts": {
+      "nodachi": 544,
+      "nodachi_blade": 112
+    },
+    "target_size_studs": [
+      0.9,
+      8.3,
+      0.6
+    ],
+    "tris_budget": 800,
+    "priority": "P2",
+    "replaces": "nodachi Tool parts in src/night/Gear.luau 19-23 and 76-129",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "<name>_blade: set TextureID empty, Material Neon, Color = Blade Art tint; add TrailTop/TrailBottom attachments in code. Origin is the pommel end."
+  },
+  "cedar_tree": {
+    "fbx": "build/blender/night/cedar_tree.fbx",
+    "png": "build/blender/night/cedar_tree.png",
+    "preview": "build/blender/night/previews/cedar_tree.png",
+    "size_studs": [
+      10.8,
+      26.5,
+      10.8
+    ],
+    "tris": 140,
+    "parts": {
+      "cedar_tree": 140
+    },
+    "target_size_studs": [
+      11,
+      26,
+      11
+    ],
+    "tris_budget": 400,
+    "priority": "P3",
+    "replaces": "Forest cedar parts in src/night/Arena.luau 747-775 (x140)",
+    "script": "tools/blender/night/assets/trees.py",
+    "notes": ""
+  },
+  "mask_kitsune": {
+    "fbx": "build/blender/night/mask_kitsune.fbx",
+    "png": "build/blender/night/mask_kitsune.png",
+    "preview": "build/blender/night/previews/mask_kitsune.png",
+    "size_studs": [
+      1.17,
+      1.78,
+      0.86
+    ],
+    "tris": 2804,
+    "parts": {
+      "mask_kitsune": 2804
+    },
+    "target_size_studs": [
+      1.3,
+      1.6,
+      1.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "kitsune mask parts in src/night/Gear.luau 134-212",
+    "script": "tools/blender/night/assets/masks.py",
+    "notes": "Colours baked from the cosmetic; neon accents baked bright. Horns, ears and ties add to the size: use size_studs."
+  },
+  "mask_tengu": {
+    "fbx": "build/blender/night/mask_tengu.fbx",
+    "png": "build/blender/night/mask_tengu.png",
+    "preview": "build/blender/night/previews/mask_tengu.png",
+    "size_studs": [
+      1.24,
+      1.57,
+      1.32
+    ],
+    "tris": 2742,
+    "parts": {
+      "mask_tengu": 2742
+    },
+    "target_size_studs": [
+      1.3,
+      1.6,
+      1.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "tengu mask parts in src/night/Gear.luau 134-212",
+    "script": "tools/blender/night/assets/masks.py",
+    "notes": "Colours baked from the cosmetic; neon accents baked bright. Horns, ears and ties add to the size: use size_studs."
+  },
+  "mask_oni": {
+    "fbx": "build/blender/night/mask_oni.fbx",
+    "png": "build/blender/night/mask_oni.png",
+    "preview": "build/blender/night/previews/mask_oni.png",
+    "size_studs": [
+      1.35,
+      1.99,
+      0.76
+    ],
+    "tris": 2910,
+    "parts": {
+      "mask_oni": 2910
+    },
+    "target_size_studs": [
+      1.3,
+      1.6,
+      1.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "oni mask parts in src/night/Gear.luau 134-212",
+    "script": "tools/blender/night/assets/masks.py",
+    "notes": "Colours baked from the cosmetic; neon accents baked bright. Horns, ears and ties add to the size: use size_studs."
+  },
+  "mask_eclipse": {
+    "fbx": "build/blender/night/mask_eclipse.fbx",
+    "png": "build/blender/night/mask_eclipse.png",
+    "preview": "build/blender/night/previews/mask_eclipse.png",
+    "size_studs": [
+      1.53,
+      1.83,
+      0.62
+    ],
+    "tris": 2644,
+    "parts": {
+      "mask_eclipse": 2644
+    },
+    "target_size_studs": [
+      1.3,
+      1.6,
+      1.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "eclipse mask parts in src/night/Gear.luau 134-212",
+    "script": "tools/blender/night/assets/masks.py",
+    "notes": "Colours baked from the cosmetic; neon accents baked bright. Horns, ears and ties add to the size: use size_studs."
+  },
+  "mask_okame": {
+    "fbx": "build/blender/night/mask_okame.fbx",
+    "png": "build/blender/night/mask_okame.png",
+    "preview": "build/blender/night/previews/mask_okame.png",
+    "size_studs": [
+      1.24,
+      1.52,
+      0.68
+    ],
+    "tris": 2820,
+    "parts": {
+      "mask_okame": 2820
+    },
+    "target_size_studs": [
+      1.3,
+      1.6,
+      1.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "okame mask parts in src/night/Gear.luau 134-212",
+    "script": "tools/blender/night/assets/masks.py",
+    "notes": "Colours baked from the cosmetic; neon accents baked bright. Horns, ears and ties add to the size: use size_studs."
+  },
+  "mask_hannya": {
+    "fbx": "build/blender/night/mask_hannya.fbx",
+    "png": "build/blender/night/mask_hannya.png",
+    "preview": "build/blender/night/previews/mask_hannya.png",
+    "size_studs": [
+      1.23,
+      2.05,
+      0.66
+    ],
+    "tris": 2910,
+    "parts": {
+      "mask_hannya": 2910
+    },
+    "target_size_studs": [
+      1.3,
+      1.6,
+      1.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "hannya mask parts in src/night/Gear.luau 134-212",
+    "script": "tools/blender/night/assets/masks.py",
+    "notes": "Colours baked from the cosmetic; neon accents baked bright. Horns, ears and ties add to the size: use size_studs."
+  },
+  "slash_arc": {
+    "fbx": "build/blender/night/slash_arc.fbx",
+    "png": "build/blender/night/slash_arc.png",
+    "preview": "build/blender/night/previews/slash_arc.png",
+    "size_studs": [
+      7.25,
+      0.1,
+      2.31
+    ],
+    "tris": 188,
+    "parts": {
+      "slash_arc": 188
+    },
+    "target_size_studs": [
+      7.2,
+      0.1,
+      4.0
+    ],
+    "tris_budget": 300,
+    "priority": "P3",
+    "replaces": "Slash crescent parts in src/night-client/CombatFx.client.luau 144-178",
+    "script": "tools/blender/night/assets/vfx.py",
+    "notes": "Untextured white: set Color and Transparency in code; scale to the swing radius."
+  },
+  "demon_wing": {
+    "fbx": "build/blender/night/demon_wing.fbx",
+    "png": "build/blender/night/demon_wing.png",
+    "preview": "build/blender/night/previews/demon_wing.png",
+    "size_studs": [
+      0.21,
+      3.4,
+      2.55
+    ],
+    "tris": 872,
+    "parts": {
+      "demon_wing": 872
+    },
+    "target_size_studs": [
+      0.3,
+      3.5,
+      3
+    ],
+    "tris_budget": 900,
+    "priority": "P3",
+    "replaces": "Trigger wing WedgeParts in src/night-client/CombatFx.client.luau 1218-1233",
+    "script": "tools/blender/night/assets/vfx.py",
+    "notes": "Untextured white, Neon, Color TRIGGER_A; mirror for the left wing."
+  },
+  "koi": {
+    "fbx": "build/blender/night/koi.fbx",
+    "png": "build/blender/night/koi.png",
+    "preview": "build/blender/night/previews/koi.png",
+    "size_studs": [
+      0.49,
+      0.48,
+      1.53
+    ],
+    "tris": 456,
+    "parts": {
+      "koi": 456
+    },
+    "target_size_studs": [
+      0.6,
+      0.3,
+      1.6
+    ],
+    "tris_budget": 500,
+    "priority": "P3",
+    "replaces": "Koi parts in src/night/Arena.luau 478-490",
+    "script": "tools/blender/night/assets/vfx.py",
+    "notes": ""
+  }
+}

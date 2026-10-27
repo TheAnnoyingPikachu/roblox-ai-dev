@@ -382,8 +382,12 @@ local function reveal(data: any)
 		burst(centre + Vector3.new(0, 2, 0), UI.GOLD, 60, 16, 1.2)
 	end
 	if mine then
-		-- Soft chimes rising with rarity; a resonant one for Legendary and Mythic.
-		ClientState.sound(if rarity >= 5 then SFX.fanfare else SFX.chime, 0.35, nil, 1 + 0.12 * rarity)
+		-- Soft chimes rising with rarity; a short acoustic stinger (unpitched) for Legendary and Mythic.
+		if rarity >= 5 then
+			ClientState.sound(SFX.fanfare, 0.5)
+		else
+			ClientState.sound(SFX.chime, 0.35, nil, 1 + 0.12 * rarity)
+		end
 		showCard(s, m, z)
 	end
 	ClientState.reveal(data.owner, id, false)
@@ -724,7 +728,7 @@ local function applyWeather()
 			end
 		end
 		-- Stinger and an honest note of what changed (the published table, nothing more).
-		ClientState.sound(SFX.fanfare, 0.3, nil, if w == "moonfall" then 0.8 elseif w == "shower" then 1.4 else 1.15)
+		ClientState.sound(SFX.sting, 0.4, nil, if w == "moonfall" then 0.85 else 1)
 		if weather then
 			local best, bestBp = "", 0
 			for _, o in weather.mutation do
