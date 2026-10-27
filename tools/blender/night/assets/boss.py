@@ -96,9 +96,15 @@ def hand():
         spread = (i - 1.5) * 0.18
         knuckle = (x * 1.08, 0.3, 9.0 - abs(i - 1.5) * 0.5)
         lengths = [2.4, 1.9, 1.9] if i in (1, 2) else [2.1, 1.7, 1.7]
-        finger((x * 0.45, 0, 5.0), knuckle, lengths, [0.6, 0.55, 0.48, 0.44], [12, 22, 26], spread)
+        finger((x * 0.45, 0, 5.0), knuckle, lengths, [0.6, 0.55, 0.48, 0.44], [4, 8, 10], spread)
     # Thumb out to the side, curling in front of the palm.
     finger((1.5, 0.3, 4.6), (3.6, 1.0, 6.2), [1.9, 1.8], [0.62, 0.55, 0.5], [18, 30], 0)
+    # Scale the whole hand so it stands the planned 16 studs (wrist base to claw tips).
+    top = max((o.matrix_world @ v.co).z for o in p for v in o.data.vertices)
+    low = min((o.matrix_world @ v.co).z for o in p for v in o.data.vertices)
+    f = 16.0 / (top - low)
+    for o in p:
+        o.data.transform(k.Matrix.Diagonal((f, f, f, 1)))
     return p
 
 

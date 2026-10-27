@@ -175,10 +175,32 @@ def wisp():
         ((0.3, -1.45, 3.4), 0.16),
         ((0.35, -1.9, 3.35), 0.0),
     ]
-    p = [k.tube([s[0] for s in spine], [s[1] for s in spine], m=flame, n=14)]
+    # Catmull-Rom resample so the silhouette is smooth, not faceted.
+    def smooth(points, radii, steps=3):
+        out_p, out_r = [], []
+        pts = [points[0]] + list(points) + [points[-1]]
+        rs = [radii[0]] + list(radii) + [radii[-1]]
+        for i in range(1, len(points)):
+            for s in range(steps):
+                t = s / steps
+                out_p.append(tuple(
+                    0.5 * (2 * pts[i][c] + (-pts[i - 1][c] + pts[i + 1][c]) * t
+                           + (2 * pts[i - 1][c] - 5 * pts[i][c] + 4 * pts[i + 1][c] - pts[i + 2][c]) * t * t
+                           + (-pts[i - 1][c] + 3 * pts[i][c] - 3 * pts[i + 1][c] + pts[i + 2][c]) * t ** 3)
+                    for c in range(3)))
+                out_r.append(max(0.0, rs[i] + (rs[i + 1] - rs[i]) * t))
+        return out_p + [points[-1]], out_r + [radii[-1]]
+
+    body_pts, body_r = smooth([s[0] for s in spine], [s[1] for s in spine])
+    p = [k.tube(body_pts, body_r, m=flame, n=16)]
     for side in (-1, 1):
-        pts = [(side * 0.9, 0, 1.3), (side * 1.25, -0.2, 1.9), (side * 1.2, -0.45, 2.4), (side * 1.0, -0.6, 2.65)]
-        p.append(k.tube(pts, [0.42, 0.3, 0.15, 0.0], m=flame, n=8))
+        # Side tongues of flame growing out of the body and licking up and back.
+        pts, radii = [], []
+        for i in range(9):
+            t = i / 8
+            pts.append((side * (0.7 + 0.32 * math.sin(math.pi * t * 0.6)), -0.55 * t**1.4, 1.05 + 1.45 * t))
+            radii.append(0.5 * (1 - t) ** 0.8)
+        p.append(k.tube(pts, radii, m=flame, n=12))
     p.append(k.sphere(0.6, (0, 0.85, 1.0), m=core, scale=(1, 0.5, 1.2), seg=12, rings=6))
     return p
 
@@ -192,7 +214,7 @@ ASSETS = [
     dict(name="yoroi", build=yoroi, budget=4000, size=[6.5, 7, 3.5], priority=1, order=11,
          replaces="Possessed Yoroi parts (kind oni) in src/night/Enemies.luau 305-364",
          notes="Hovers: bottom of the skirt is y = 0; code offsets the root."),
-    dict(name="wisp", build=wisp, budget=800, size=[3, 4.5, 3], priority=1, order=12,
+    dict(name="wisp", build=wisp, budget=1600, size=[3, 4.5, 3], priority=1, order=12,
          replaces="Hitodama parts in src/night/Enemies.luau 170-207, idle wisp src/night/Arena.luau 615-631, spirit flame src/night-client/CombatFx.client.luau 1104",
          notes="Set Material Neon or keep the texture; Fire, Trail and PointLight stay in code."),
 ]

@@ -45,7 +45,7 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 | 9 | `lantern_yokai` | Generated `lanternYokai` (`Models.luau` 65-69), `Enemies.luau` 210-243 (part fallback) | 3.5 x 5.3 x 4.5 | 3k | Chochin-obake: ribbed paper lantern split into a grin, one big eye, long tongue, black caps | P1 |
 | 10 | `kasa_obake` | Parts in `Enemies.luau` 246-302 | 5.6 x 5.4 x 5.6 | 2.5k | Red paper umbrella with ribs, one eye, tongue, single leg with geta sandal | P1 |
 | 11 | `yoroi` | Parts in `Enemies.luau` 305-364 (enemy kind `oni`, Possessed Yoroi) | 6.5 x 7 x 3.5 | 4k | Hovering empty samurai armour, layered lacquer plates, kabuto with gold horns, red glow inside | P1 |
-| 12 | `wisp` | Parts in `Enemies.luau` 170-207; idle wisp `Arena.luau` 615-631; spirit flame `src/night-client/CombatFx.client.luau` 1104 | 3 x 4.5 x 3 | 800 | Hitodama teardrop flame with a curled tail, blue-white. Fire, trail and light stay | P1 |
+| 12 | `wisp` | Parts in `Enemies.luau` 170-207; idle wisp `Arena.luau` 615-631; spirit flame `src/night-client/CombatFx.client.luau` 1104 | 3 x 4.5 x 3 | 1.6k | Hitodama teardrop flame with a curled tail, blue-white. Fire, trail and light stay | P1 |
 | 13 | `boss_skull` | Generated `bossSkull` (`Models.luau` 45-49), `Enemies.luau` 513-548 | 17 x 24 x 23 | 10k | Huge cracked Gashadokuro skull, deep sockets glowing red, jagged teeth | P1 |
 | 14 | `boss_hand` | Generated `boneHand` (`Models.luau` 50-54), `Enemies.luau` 537-548 (used twice) | 10 x 16 x 4 | 6k | Skeletal open hand with long claws, bone white, wrist stump | P1 |
 | 15 | `festival_stall` | Parts in `Arena.luau` 508-581 (x5) | 12 x 10 x 9.2 | 3k | Wooden counter, posts, striped awning, crates, goods; three texture variants (red, indigo, white) on one mesh. Sign text stays a SurfaceGui part | P2 |
@@ -57,9 +57,9 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 | 21 | `wall_segment` | Wall and fence parts `Arena.luau` 224-246 (42 segments) | 13.6 x 8.6 x 2.4 | 600 | Stone wall with slate cap and wooden fence on top | P2 |
 | 22 | `katana`, `kodachi`, `nodachi` | Tool parts `src/night/Gear.luau` 19-23, 76-129 | blade 4.2 / 2.6 / 6, grip 1.4 / 1 / 2 | 800 each | Wrapped grip, gold tsuba, curved blade as a separate `blade` mesh that keeps the Blade Art tint and trail attachments | P2 |
 | 23 | `cedar_tree` | Forest parts `Arena.luau` 747-775 (x140) | 11 x 26 x 11 | 400 | Low-poly stacked cedar cones; very low budget because of the count | P3 |
-| 24 | `mask_kitsune`, `mask_tengu`, `mask_oni`, `mask_eclipse`, `mask_okame`, `mask_hannya` | Mask parts `Gear.luau` 134-235 | 1.3 x 1.6 x 1.2 | 600 each | Face masks in each cosmetic's colours (`src/shared/NightProgress.luau` 80-86) | P3 |
-| 25 | `slash_arc`, `demon_wing` | VFX parts `CombatFx.client.luau` 144-178 (slash), 1218-1233 (Trigger wings) | arc 8 x 0.2 x 8; wing 0.3 x 3.5 x 3 | 300 each | White untextured shapes the code tints; crescent with taper, bat wing | P3 |
-| 26 | `koi` | Parts `Arena.luau` 478-490 | 0.6 x 0.3 x 1.6 | 200 | Small koi, orange/white | P3 |
+| 24 | `mask_kitsune`, `mask_tengu`, `mask_oni`, `mask_eclipse`, `mask_okame`, `mask_hannya` | Mask parts `Gear.luau` 134-235 | 1.3 x 1.6 x 1.2 (face; horns and ears extra) | 3k each | Sculpted face shells (brow, cheekbones, nose, carved eye holes), horns/ears/teeth and side ties, in each cosmetic's colours (`src/shared/NightProgress.luau` 80-86) | P3 |
+| 25 | `slash_arc`, `demon_wing` | VFX parts `CombatFx.client.luau` 144-178 (slash), 1218-1233 (Trigger wings) | arc 8 x 0.2 x 8; wing 0.3 x 3.5 x 3 | arc 300, wing 900 | White untextured shapes the code tints; crescent with taper, bat wing with arm and finger bones and a scalloped membrane | P3 |
+| 26 | `koi` | Parts `Arena.luau` 478-490 | 0.6 x 0.3 x 1.6 | 500 | Small koi, orange/white | P3 |
 
 ## Kept as parts or effects (not worth a mesh)
 

@@ -32,7 +32,7 @@ def _branch(start, end, r0, r1, bark, droop=0.0, n=8):
 
 def _cluster(rng, at, r, m, squash=0.68):
     blob = k.ico(r, at, m=m, scale=(1, 1, squash), subdiv=2, rot=(0, 0, rng.uniform(0, 360)))
-    k.displace(blob, r * 0.28, size=r * 0.45, seed=rng.randint(1, 50))
+    k.displace(blob, r * 0.24, size=r * 0.5, seed=rng.randint(1, 50))
     return blob
 
 
@@ -49,26 +49,29 @@ def sacred_tree():
         p.append(k.tube(
             [(math.cos(a) * 2.2, math.sin(a) * 2.2, 2.2), (math.cos(a) * reach * 0.55, math.sin(a) * reach * 0.55, 0.9),
              (math.cos(a) * reach, math.sin(a) * reach, -0.3)], [1.5, 0.9, 0.25], m=bark, n=8))
-    tips = []
-    for i in range(6):
-        a = 2 * math.pi * i / 6 + rng.uniform(-0.25, 0.25)
-        reach = rng.uniform(13, 16)
-        start = (math.cos(a) * 1.5, math.sin(a) * 1.5, rng.uniform(14, 19))
-        end = (math.cos(a) * reach, math.sin(a) * reach, rng.uniform(26, 31))
-        p.append(_branch(start, end, 1.5, 0.5, bark, droop=2.5))
-        tips.append(end)
-        a2 = a + rng.choice((-0.6, 0.6))
-        sub_end = (math.cos(a2) * reach * 0.8, math.sin(a2) * reach * 0.8, end[2] + rng.uniform(2, 5))
-        p.append(_branch(tuple((start[i] + end[i]) / 2 for i in range(3)), sub_end, 0.9, 0.3, bark))
-        tips.append(sub_end)
-    p.append(_branch((0, 0, 19), (0.5, -0.5, 36), 2.0, 0.7, bark))
-    # Canopy: big billowing clusters at the branch tips and a crown on top.
-    for t in tips:
-        p.append(_cluster(rng, (t[0], t[1], t[2] + 2.5), rng.uniform(6.8, 8.2), leaf, squash=0.6))
+    # Broad camphor crown: long limbs reaching out almost level, carrying three tiers of wide,
+    # flat foliage pads (low wide ring, middle ring, top) for a ~44 stud spread.
+    def pad(at, r, squash=0.42):
+        return _cluster(rng, at, r, leaf, squash=squash)
+
+    for i in range(10):
+        a = 2 * math.pi * i / 10 + rng.uniform(-0.12, 0.12)
+        reach = rng.uniform(14.8, 16.0)
+        z = rng.uniform(25, 29)
+        start = (math.cos(a) * 1.6, math.sin(a) * 1.6, rng.uniform(15, 19))
+        end = (math.cos(a) * reach * 0.9, math.sin(a) * reach * 0.9, z - 1.5)
+        p.append(_branch(start, end, 1.35 if i % 2 else 1.1, 0.35, bark, droop=-1.5))
+        p.append(pad((math.cos(a) * reach, math.sin(a) * reach, z), rng.uniform(7.0, 8.0), squash=0.36))
+    for i in range(7):
+        a = 2 * math.pi * i / 7 + 0.35 + rng.uniform(-0.15, 0.15)
+        reach = rng.uniform(8.5, 10.0)
+        z = rng.uniform(31, 34)
+        p.append(_branch((0, 0, 20), (math.cos(a) * reach * 0.8, math.sin(a) * reach * 0.8, z - 1.5), 1.0, 0.3, bark))
+        p.append(pad((math.cos(a) * reach, math.sin(a) * reach, z), rng.uniform(7.0, 7.8), squash=0.38))
     for i in range(4):
-        a = 2 * math.pi * i / 4 + 0.4
-        p.append(_cluster(rng, (math.cos(a) * 5.5, math.sin(a) * 5.5, 38 + rng.uniform(-1, 2)), rng.uniform(7, 8.5), leaf))
-    p.append(_cluster(rng, (0, 0, 42.5), 8.0, leaf, squash=0.6))
+        a = 2 * math.pi * i / 4 + 1.0
+        p.append(pad((math.cos(a) * 4.0, math.sin(a) * 4.0, 37.5 + rng.uniform(-1, 1)), 6.5, squash=0.45))
+    p.append(_branch((0, 0, 19), (0.5, -0.5, 36), 2.0, 0.7, bark))
     # Shimenawa rope around the trunk at 9 studs, with shide.
     p.append(k.ring(4.75, 9, 0.75, rope, n=28, sides=8, wobble=0.15))
     for i in range(5):
