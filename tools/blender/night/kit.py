@@ -134,6 +134,17 @@ def mat(name, rgb, var=0.12, scale=2.0, kind="noise", emit=0.0, rgb2=None, rough
             tex.inputs["Detail"].default_value = 3
             links.new(coord.outputs["Object"], tex.inputs["Vector"])
             links.new(tex.outputs["Fac"], ramp.inputs["Fac"])
+        elif kind in ("stripes", "patches"):
+            # Hard-edged two-colour pattern: tiger stripes (bands) or koi patches (noise blobs).
+            tex = nodes.new("ShaderNodeTexWave" if kind == "stripes" else "ShaderNodeTexNoise")
+            tex.inputs["Scale"].default_value = scale
+            tex.inputs["Distortion"].default_value = 4 if kind == "stripes" else 0
+            links.new(coord.outputs["Object"], tex.inputs["Vector"])
+            links.new(tex.outputs["Fac"], ramp.inputs["Fac"])
+            ramp.color_ramp.interpolation = "CONSTANT"
+            ramp.color_ramp.elements[0].color = lin(rgb)
+            ramp.color_ramp.elements[1].color = lin(rgb2)
+            ramp.color_ramp.elements[1].position = 0.62 if kind == "stripes" else 0.5
         elif kind == "grad":
             sep = nodes.new("ShaderNodeSeparateXYZ")
             links.new(coord.outputs["Generated"], sep.inputs[0])
@@ -326,6 +337,86 @@ def poly(points2d, depth, loc=(0, 0, 0), rot=(0, 0, 0), m=None, bevel=0.0, name=
     return _obj(name, bm, m, _xf(loc, rot))
 
 
+def rope(a, b, sag, r, m, n=8, steps=10, name="rope"):
+    """Hanging rope from a to b with a parabolic sag (shimenawa, lantern strings)."""
+    a, b = Vector(a), Vector(b)
+    pts = [a.lerp(b, s / steps) - Vector((0, 0, 4 * sag * (s / steps) * (1 - s / steps))) for s in range(steps + 1)]
+    return tube(pts, r, m=m, n=n, name=name)
+
+
+def ring(r, z, thick, m, n=24, sides=8, centre=(0, 0), wobble=0.0, name="ring"):
+    """Closed horizontal torus-like loop (rope around a trunk, bands)."""
+    pts = [
+        (centre[0] + r * math.cos(2 * math.pi * i / n), centre[1] + r * math.sin(2 * math.pi * i / n), z + wobble * math.sin(i * 1.7))
+        for i in range(n + 1)
+    ]
+    return tube(pts, thick, m=m, n=sides, cap=False, name=name)
+
+
+def shide(top, yaw, m, s=1.0, name="shide"):
+    """White zigzag paper streamer (shide) hanging from `top`, facing yaw (degrees, 0 = +Y)."""
+    w, h = 0.5 * s, 0.7 * s
+    pts = [(0, 0), (w, 0), (w, -h), (w * 1.6, -h), (w * 1.6, -2 * h), (w * 0.6, -2 * h), (w * 0.6, -3 * h),
+           (w * 1.2, -3 * h), (w * 1.2, -4 * h), (0, -4 * h), (0, -3.4 * h), (-0.2 * w, -3.4 * h), (-0.2 * w, -1.4 * h), (0, -1.4 * h)]
+    pts = [(x - w * 0.6, z) for x, z in pts]
+    return poly(pts, 0.05 * s, loc=top, rot=(0, 0, yaw), m=m, name=name)
+
+
+def hip_roof(ex, ey, rx, ze, zr, m, lift=1.0, thickness=0.6, nu=10, nv=6, centre=(0, 0), curve=1.6):
+    """Japanese hip roof with concave slopes and upturned corners.
+    Eaves rectangle half extents ex, ey at height ze; ridge from -rx to +rx along x at zr.
+    Returns four solidified faces (front, back, left, right) whose hip edges coincide."""
+    cx, cy = centre
+
+    def face(eave_a, eave_b, ridge_a, ridge_b):
+        def fn(u, v):
+            ex_ = eave_a[0] + (eave_b[0] - eave_a[0]) * u
+            ey_ = eave_a[1] + (eave_b[1] - eave_a[1]) * u
+            rx_ = ridge_a[0] + (ridge_b[0] - ridge_a[0]) * u
+            ry_ = ridge_a[1] + (ridge_b[1] - ridge_a[1]) * u
+            x = ex_ + (rx_ - ex_) * v
+            y = ey_ + (ry_ - ey_) * v
+            z = ze + (zr - ze) * v**curve + lift * abs(2 * u - 1) ** 4 * (1 - v) ** 2
+            return (cx + x, cy + y, z)
+
+        return surface(nu, nv, fn, m=m, thickness=thickness, name="roof")
+
+    return [
+        face((ex, ey), (-ex, ey), (rx, 0), (-rx, 0)),
+        face((-ex, -ey), (ex, -ey), (-rx, 0), (rx, 0)),
+        face((ex, -ey), (ex, ey), (rx, 0), (rx, 0)),
+        face((-ex, ey), (-ex, -ey), (-rx, 0), (-rx, 0)),
+    ]
+
+
+def boolean(ob, cutter, op="DIFFERENCE"):
+    """Boolean modifier (applied in finalize); the cutter is hidden from the export and its
+    material is transferred to the cut faces."""
+    mod = ob.modifiers.new("bool", "BOOLEAN")
+    mod.operation = op
+    mod.object = cutter
+    mod.solver = "EXACT"
+    try:
+        mod.material_mode = "TRANSFER"
+    except AttributeError:
+        pass
+    cutter["cutter"] = True
+    return ob
+
+
+def apply_cuts():
+    """Apply every boolean now and delete the cutters (call before returning from build)."""
+    for ob in list(bpy.context.scene.objects):
+        if any(mod.type == "BOOLEAN" for mod in ob.modifiers):
+            _select([ob])
+            for mod in list(ob.modifiers):
+                if mod.type == "BOOLEAN":
+                    bpy.ops.object.modifier_apply(modifier=mod.name)
+    for ob in list(bpy.context.scene.objects):
+        if ob.get("cutter"):
+            bpy.data.objects.remove(ob)
+
+
 # Modifiers (applied in finalize) --------------------------------------------------------------
 
 
@@ -422,6 +513,7 @@ def _join(name, objs):
     bm.from_mesh(ob.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
     bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=0.0001)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.to_mesh(ob.data)
     bm.free()
     return ob

@@ -1,4 +1,101 @@
 {
+  "shrine_hall": {
+    "fbx": "build/blender/night/shrine_hall.fbx",
+    "png": "build/blender/night/shrine_hall.png",
+    "preview": "build/blender/night/previews/shrine_hall.png",
+    "size_studs": [
+      40.43,
+      34.42,
+      38.23
+    ],
+    "tris": 7436,
+    "parts": {
+      "shrine_hall": 7436
+    },
+    "target_size_studs": [
+      40,
+      39,
+      42
+    ],
+    "tris_budget": 9000,
+    "priority": "P1",
+    "replaces": "shrineHall mesh (src/relay/Models.luau 60-64) in src/night/Arena.luau 347-374",
+    "script": "tools/blender/night/assets/shrine_hall.py",
+    "notes": "Spawn at scale 1 (old mesh used 1.3). Code adds its own hanging lanterns at x +-22."
+  },
+  "kagura_stage": {
+    "fbx": "build/blender/night/kagura_stage.fbx",
+    "png": "build/blender/night/kagura_stage.png",
+    "preview": "build/blender/night/previews/kagura_stage.png",
+    "size_studs": [
+      52.0,
+      23.0,
+      52.0
+    ],
+    "tris": 3664,
+    "parts": {
+      "kagura_stage": 3664
+    },
+    "target_size_studs": [
+      40,
+      23,
+      40
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "Part stage in src/night/Arena.luau 251-315 (deck, ramps, pillars, roof, rope, shide)",
+    "script": "tools/blender/night/assets/kagura_stage.py",
+    "notes": "Walked on: keep the invisible deck and ramp parts for collision, mesh CanCollide false. Code adds the corner lanterns and the taiko drum."
+  },
+  "demon_gate": {
+    "fbx": "build/blender/night/demon_gate.fbx",
+    "png": "build/blender/night/demon_gate.png",
+    "preview": "build/blender/night/previews/demon_gate.png",
+    "size_studs": [
+      18.2,
+      16.15,
+      2.97
+    ],
+    "tris": 932,
+    "parts": {
+      "demon_gate": 896,
+      "demon_gate_glow": 36
+    },
+    "target_size_studs": [
+      19,
+      15.5,
+      2
+    ],
+    "tris_budget": 2000,
+    "priority": "P1",
+    "replaces": "Demon gate parts in src/night/Arena.luau 587-613 (x4)",
+    "script": "tools/blender/night/assets/torii.py",
+    "notes": "demon_gate_glow is the neon strips: set Material Neon, Color purple. Portal disc, floor glow and particles stay parts."
+  },
+  "entrance_torii": {
+    "fbx": "build/blender/night/entrance_torii.fbx",
+    "png": "build/blender/night/entrance_torii.png",
+    "preview": "build/blender/night/previews/entrance_torii.png",
+    "size_studs": [
+      24.2,
+      18.15,
+      2.64
+    ],
+    "tris": 712,
+    "parts": {
+      "entrance_torii": 712
+    },
+    "target_size_studs": [
+      24,
+      17.5,
+      2.4
+    ],
+    "tris_budget": 2000,
+    "priority": "P1",
+    "replaces": "Props.torii (src/relay/Props.luau 105-149) via src/night/Arena.luau 635",
+    "script": "tools/blender/night/assets/torii.py",
+    "notes": "Plaque with the \u767e\u9b3c\u591c\u884c text stays a part with SurfaceGuis at height 14.8."
+  },
   "stone_lantern": {
     "fbx": "build/blender/night/stone_lantern.fbx",
     "png": "build/blender/night/stone_lantern.png",
@@ -22,5 +119,53 @@
     "replaces": "Props.lantern (src/relay/Props.luau 152-168) via src/night/Arena.luau 639 and 670-687 (16 rim lanterns)",
     "script": "tools/blender/night/assets/stone_lantern.py",
     "notes": "Glowing firebox baked bright; keep the PointLight (range 18) in code."
+  },
+  "oni_statue": {
+    "fbx": "build/blender/night/oni_statue.fbx",
+    "png": "build/blender/night/oni_statue.png",
+    "preview": "build/blender/night/previews/oni_statue.png",
+    "size_studs": [
+      12.85,
+      20.26,
+      7.98
+    ],
+    "tris": 6866,
+    "parts": {
+      "oni_statue": 6866
+    },
+    "target_size_studs": [
+      15,
+      19,
+      13
+    ],
+    "tris_budget": 8000,
+    "priority": "P1",
+    "replaces": "oni mesh (src/relay/Models.luau 13-17): pit guardians src/night/Arena.luau 341-344 and Oni General body src/night/Enemies.luau 367-412",
+    "script": "tools/blender/night/assets/oni_statue.py",
+    "notes": "General: code keeps its neon eyes (offset -3.6 z) and chains; recheck the eye offsets against this mesh when wiring."
+  },
+  "komainu": {
+    "fbx": "build/blender/night/komainu.fbx",
+    "png": "build/blender/night/komainu.png",
+    "preview": "build/blender/night/previews/komainu.png",
+    "size_studs": [
+      4.9,
+      8.24,
+      6.98
+    ],
+    "tris": 2910,
+    "parts": {
+      "komainu": 2910
+    },
+    "target_size_studs": [
+      4.6,
+      8,
+      6.4
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "komainu mesh (src/relay/Models.luau 38-42) in src/night/Arena.luau 638",
+    "script": "tools/blender/night/assets/komainu.py",
+    "notes": "Code spawns two, yaw 180, on 4 x 2 x 5 plinths; the second could be mirrored."
   }
 }
