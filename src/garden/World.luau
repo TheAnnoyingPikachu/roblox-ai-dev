@@ -171,7 +171,9 @@ end
 local function ground()
 	local terrain = Workspace.Terrain
 	terrain:Clear()
-	terrain:FillBlock(CFrame.new(0, -5, 0), Vector3.new(1000, 10, 1000), Enum.Material.Grass)
+	-- Voxels are 4-stud cells centred on multiples of 4: a top at -2 half-fills the cell at 0, so the
+	-- grass surface sits at y = 0 where pads, beds and creatures stand (a top at 0 rendered it at 2).
+	terrain:FillBlock(CFrame.new(0, -6, 0), Vector3.new(1000, 8, 1000), Enum.Material.Grass)
 	-- River ring at radius 165, 14 wide, with sandy banks.
 	local segments = 96
 	for i = 0, segments - 1 do

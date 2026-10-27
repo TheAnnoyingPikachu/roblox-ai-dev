@@ -1,0 +1,84 @@
+# Uploads the Hundred Demon Night Blender models to Roblox. Manual only.
+#
+# Files come from the repo, not from Blender: assets/night/<name>.fbx and <name>.png are built
+# locally (tools/blender/night/build.py, then export_assets.py) and committed, so CI uploads
+# exactly what was reviewed on the contact sheet and needs no 300 MB Blender install.
+#
+# Repo setup (done by a human, never by an agent):
+#   Environment "assets" with
+#     variable  ROBLOX_CREATOR_USER_ID  (the account that owns the Night experience; the game loads
+#                                        the models with InsertService, which needs the same owner)
+#     secret    ROBLOX_API_KEY          (Open Cloud key of that user: Assets API read + write;
+#                                        add legacy-asset:manage so decal image ids resolve here)
+#
+# Output: tools/blender/night/uploaded.json and src/shared/NightAssets.luau as the run artifact.
+# Commit both (with register.md rows) in a PR to switch the game to the new models.
+name: Upload Night assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      assets:
+        description: "Comma-separated asset names (empty = all in the manifest)"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-assets
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: assets
+    steps:
+      - name: Check configuration
+        env:
+          CREATOR: ${{ vars.ROBLOX_CREATOR_USER_ID }}
+          HAS_KEY: ${{ secrets.ROBLOX_API_KEY != '' }}
+        run: |
+          CREATOR="$(printf '%s' "$CREATOR" | tr -d '\r\n\t ')"
+          echo "ROBLOX_CREATOR_USER_ID=${CREATOR}" >> "$GITHUB_ENV"
+          ok=true
+          [[ "$CREATOR" =~ ^[0-9]+$ ]] || { echo "::error::ROBLOX_CREATOR_USER_ID variable is empty or not digits"; ok=false; }
+          [[ "$HAS_KEY" == "true" ]] || { echo "::error::ROBLOX_API_KEY secret is empty or missing"; ok=false; }
+          $ok
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Upload models and textures
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ASSETS: ${{ inputs.assets }}
+        run: node tools/blender/night/upload-assets.mjs $ASSETS
+
+      - name: Write NightAssets.luau
+        if: always()
+        run: |
+          [ -f tools/blender/night/uploaded.json ] || exit 0
+          node tools/blender/night/write-assets-module.mjs
+          {
+            echo '### Uploaded Night assets'
+            echo '```json'
+            cat tools/blender/night/uploaded.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: night-assets-${{ github.run_id }}
+          path: |
+            tools/blender/night/uploaded.json
+            src/shared/NightAssets.luau
+          if-no-files-found: warn

@@ -470,5 +470,5 @@ Server scripts (`src/garden/`): `GardenServer` (requests, prompts, pad loop, wea
 
 - Decision 0008 for the economy, remotes and save schema (rule 8), and a task file in `studio/tasks/` (rule 1), before build.
 - Who builds `MetaRules` first (game 3 or game 4), so it is built once.
-- Music picks (SHANNON's taste) and SFX registration.
+- ~~Music picks (SHANNON's taste) and SFX registration.~~ **Decided 2026-10-26:** SHANNON asked the studio to choose licensed Roblox audio. Picks are APM tracks registered in `docs/assets/register.md` (GARDEN-005): "Sail Boat (c)" and "Happy Daze (b)" for normal play, "Tiny Ripples in the River" for Moonfall, "Seven Leaf Clover - Hit2" for weather starts, "The Little Things - Tag1" for Legendary/Mythic reveals and level up.
 - Whether a later update adds rebirth ("Garden Stars") for long-term players; not in v0.1.
