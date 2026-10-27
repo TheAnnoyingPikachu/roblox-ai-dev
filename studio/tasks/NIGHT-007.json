@@ -1,0 +1,33 @@
+{
+  "task_id": "NIGHT-007",
+  "project_id": "NIGHT-001",
+  "owner": "A12",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Replace every Hundred Demon Night visual asset with custom Blender models: an asset plan, reproducible Blender Python scripts, FBX + baked 1024 PNG per asset, previews, a contact sheet and an upload manifest. Upload and code wiring are a later task.",
+  "inputs": [
+    "SHANNON request 2026-10-27: every visual asset in game 3 made in Blender, high quality",
+    "docs/game-design/game3-gdd.md section I",
+    "docs/architecture/night.md",
+    "src/relay/Models.luau, src/night/*.luau, src/night-client/*.luau"
+  ],
+  "dependencies": [
+    "NIGHT-004"
+  ],
+  "acceptance_criteria": [
+    "docs/assets/night-blender-plan.md lists every Night visual asset with source file:line, size, tris budget and priority",
+    "One command rebuilds all assets headless from tools/blender/night",
+    "Each asset exports build/blender/night/<asset>.fbx and <asset>.png with origin at base centre, 1 unit = 1 stud, within its tris budget",
+    "tools/blender/night/manifest.json lists fbx, png, size, tris and current code user per asset",
+    "No game code, Models.luau or register.md changes in this task"
+  ],
+  "verification": "Run the build command, check manifest tris against the plan budgets, review previews and the contact sheet",
+  "output_artifacts": [
+    "docs/assets/night-blender-plan.md",
+    "tools/blender/night/",
+    "build/blender/night/ (not committed)"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Owner A12 acts as the Lead 3D Artist thread. Binaries are not committed; upload waits on an upload credential and register rows (CLAUDE.md rule 9)."
+}
