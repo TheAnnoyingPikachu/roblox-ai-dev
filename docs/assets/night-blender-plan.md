@@ -35,7 +35,7 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 | # | Asset | Replaces (current source) | Target size (studs, W x H x D) | Tris budget | Style notes | Priority |
 |---|---|---|---|---|---|---|
 | 1 | `shrine_hall` | Generated `shrineHall` mesh (`src/relay/Models.luau` 60-64), spawned at x1.3 in `src/night/Arena.luau` 347-374 (part fallback 351-370) | 40 x 39 x 42 | 9k | Hip-and-gable roof with upturned eaves, vermilion pillars, dark wood walls, stone steps, gold ridge ornaments, shimenawa over the door | P1 |
-| 2 | `kagura_stage` | Parts in `Arena.luau` 251-315 (deck, ramps, pillars, roof, rope, shide) | 40 x 23 x 40 | 6k | Plank deck on ink skirt, four ramps, red pillars, gabled slate roof, rope and shide front and back. Keep invisible collision parts for the deck and ramps | P1 |
+| 2 | `kagura_stage` | Parts in `Arena.luau` 251-315 (deck, ramps, pillars, roof, rope, shide) | 52 x 23 x 52 (incl. ramps) | 6k | Plank deck on ink skirt, four ramps, red pillars, gabled slate roof, rope and shide front and back. Keep invisible collision parts for the deck and ramps | P1 |
 | 3 | `demon_gate` | Parts in `Arena.luau` 587-613 (x4 at the gates) | 19 x 15.5 x 2 | 2k | Black torii, cracked, purple glow strips; neon strips as separate `glow` mesh; portal disc and particles stay parts | P1 |
 | 4 | `entrance_torii` | `Props.torii` (`src/relay/Props.luau` 105-149) called from `Arena.luau` 635 | 24 x 17.5 x 2.4 | 2k | Vermilion torii, black kasagi with upswept ends, stone footings; plaque text stays a SurfaceGui part | P1 |
 | 5 | `stone_lantern` | `Props.lantern` (`Props.luau` 152-168), used at `Arena.luau` 639 and 670-687 (16 on the rim) | 3 x 6 x 3 | 1k | Kasuga toro: hex base, post, firebox with glowing windows, curled roof, jewel top | P1 |
@@ -48,7 +48,7 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 | 12 | `wisp` | Parts in `Enemies.luau` 170-207; idle wisp `Arena.luau` 615-631; spirit flame `src/night-client/CombatFx.client.luau` 1104 | 3 x 4.5 x 3 | 800 | Hitodama teardrop flame with a curled tail, blue-white. Fire, trail and light stay | P1 |
 | 13 | `boss_skull` | Generated `bossSkull` (`Models.luau` 45-49), `Enemies.luau` 513-548 | 17 x 24 x 23 | 10k | Huge cracked Gashadokuro skull, deep sockets glowing red, jagged teeth | P1 |
 | 14 | `boss_hand` | Generated `boneHand` (`Models.luau` 50-54), `Enemies.luau` 537-548 (used twice) | 10 x 16 x 4 | 6k | Skeletal open hand with long claws, bone white, wrist stump | P1 |
-| 15 | `festival_stall` | Parts in `Arena.luau` 508-581 (x5) | 10 x 12.5 x 9 | 3k | Wooden counter, posts, striped awning, crates, goods; three texture variants (red, indigo, white) on one mesh. Sign text stays a SurfaceGui part | P2 |
+| 15 | `festival_stall` | Parts in `Arena.luau` 508-581 (x5) | 12 x 10 x 9.2 | 3k | Wooden counter, posts, striped awning, crates, goods; three texture variants (red, indigo, white) on one mesh. Sign text stays a SurfaceGui part | P2 |
 | 16 | `paper_lantern` | `paperLantern` parts `Arena.luau` 126-133 (stage, hall, stalls, board) | 1.8 x 3 x 1.8 | 600 | Ribbed chochin with black caps and a hanging cord | P2 |
 | 17 | `arched_bridge` | `bridge` parts `Arena.luau` 430-457 (x2) | 31 x 5 x 6.6 | 2.5k | Red taiko-bashi arch, plank deck, rails with giboshi caps | P2 |
 | 18 | `sakura_tree` | Generated `sakura` (`Models.luau` 33-37, shared with Relay), `Arena.luau` 732-745 (x12) | 16 x 16 x 16 | 5k | Gnarled dark trunk, puffy pink blossom clusters | P2 |

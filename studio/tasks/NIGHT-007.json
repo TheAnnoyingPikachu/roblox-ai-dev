@@ -28,6 +28,9 @@
     "build/blender/night/ (not committed)"
   ],
   "risk_level": "low",
-  "status": "in_progress",
-  "notes": "Owner A12 acts as the Lead 3D Artist thread. Binaries are not committed; upload waits on an upload credential and register rows (CLAUDE.md rule 9)."
+  "status": "in_review",
+  "notes": "Owner A12 acts as the Lead 3D Artist thread. Binaries are not committed; upload waits on an upload credential and register rows (CLAUDE.md rule 9).",
+  "evidence": [
+    "Local 2026-10-27: clean full build of 37 assets in 120 s, exit 0, Blender 5.2.2 headless; every asset within its tris budget (manifest.json); contact sheet build/blender/night/contact_sheet.png reviewed."
+  ]
 }
