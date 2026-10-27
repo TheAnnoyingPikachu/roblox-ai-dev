@@ -62,6 +62,24 @@ local function part(props: { [string]: any }): Part
 	return p
 end
 
+-- A copy of the first mesh of a Night Blender model the server shared in
+-- ReplicatedStorage.NightModels (src/relay/Models.luau), or nil before the ids are uploaded.
+local function nightMesh(name: string): MeshPart?
+	local shared = ReplicatedStorage:FindFirstChild("NightModels")
+	local model = shared and shared:FindFirstChild(name)
+	local mesh = model and model:FindFirstChildWhichIsA("MeshPart")
+	if mesh == nil then
+		return nil
+	end
+	local copy = mesh:Clone()
+	copy.Anchored = true
+	copy.CanCollide = false
+	copy.CanQuery = false
+	copy.CanTouch = false
+	copy.CastShadow = false
+	return copy
+end
+
 -- Fades a part out (optionally tweening other properties too) and destroys it.
 local function fade(p: BasePart, seconds: number, goal: { [string]: any }?, delay: number?)
 	local g: { [string]: any } = goal or {}
@@ -151,8 +169,27 @@ local function slash(
 	size: number,
 	reverse: boolean
 )
-	local n = math.clamp(math.floor(arc / 12), 8, 30)
 	local base = origin * CFrame.Angles(0, 0, math.rad(tilt))
+	-- Night slash_arc mesh (a 130-degree crescent of radius 4, bulging forward), for arcs up to 180.
+	local crescent = if arc <= 180 then nightMesh("slash_arc") else nil
+	if crescent then
+		local k = radius / 4
+		local full = crescent.Size
+		for layer = 1, 2 do
+			local p = if layer == 1 then crescent else crescent:Clone()
+			local s = k * (if layer == 1 then 1 else 0.96)
+			p.Size = Vector3.new(full.X * s, 0.1 * size, full.Z * s)
+			p.Material = Enum.Material.Neon
+			p.Color = if layer == 1 then a:Lerp(b, 0.5) else WHITE
+			p.Transparency = if layer == 1 then 0.15 else 0
+			-- The crescent's bounding box centre sits 2.85 studs (x k) in front of its circle centre.
+			p.CFrame = base * CFrame.new(0, 0, -2.85 * s)
+			p.Parent = fxFolder
+			fade(p, 0.22, { CFrame = base * CFrame.new(0, 0, -2.85 * s - 1.5 * size) }, 0.04)
+		end
+		return
+	end
+	local n = math.clamp(math.floor(arc / 12), 8, 30)
 	local segment = 2 * radius * math.sin(math.rad(arc / n) / 2) * 1.2
 	for i = 1, n do
 		local f = (i - 0.5) / n
@@ -742,7 +779,7 @@ type Follow = { parts: { Part }, offsets: { Vector3 }, track: () -> Vector3?, un
 local projectiles: { [number]: Projectile } = {}
 local follows: { Follow } = {}
 local telegraphs: { [number]: { Part } } = {}
-local markers: { [number]: { part: Part, light: Part } } = {}
+local markers: { [number]: { part: BasePart, light: Part } } = {}
 
 local function own(u: any): boolean
 	return u == player.UserId
@@ -1102,13 +1139,22 @@ handlers.down = function(d)
 	end
 	clearMarker(u)
 	-- Spirit flame (G): a floating blue soul above where the player fell, with a light pillar.
-	local flame = part({
-		Shape = Enum.PartType.Ball,
-		Size = Vector3.one * 1.6,
-		Position = at + Vector3.new(0, 4, 0),
-		Color = SPIRIT,
-		Transparency = 0.1,
-	})
+	local flame: BasePart
+	local soul = nightMesh("wisp")
+	if soul then
+		soul.Size *= 0.6
+		soul.Position = at + Vector3.new(0, 4, 0)
+		soul.Parent = fxFolder
+		flame = soul
+	else
+		flame = part({
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 1.6,
+			Position = at + Vector3.new(0, 4, 0),
+			Color = SPIRIT,
+			Transparency = 0.1,
+		})
+	end
 	local light = Instance.new("PointLight")
 	light.Color = SPIRIT
 	light.Range = 18
@@ -1216,8 +1262,10 @@ local function addAura(p: Player, character: Model)
 	embers.Parent = root
 	table.insert(items, embers)
 	for side = -1, 1, 2 do
-		local wing = Instance.new("WedgePart")
-		wing.Size = Vector3.new(0.15, 3.2, 2.6)
+		-- Night demon_wing mesh (one bat wing in the y/z plane serves both sides), or a wedge.
+		local wing: BasePart = nightMesh("demon_wing") or Instance.new("WedgePart")
+		wing.Size = if wing:IsA("MeshPart") then wing.Size else Vector3.new(0.15, 3.2, 2.6)
+		wing.Anchored = false
 		wing.Material = Enum.Material.Neon
 		wing.Color = TRIGGER_A
 		wing.Transparency = 0.25

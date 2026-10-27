@@ -65,6 +65,9 @@ local SPECS = {
 	["GardenProgress.spec.luau"] = function()
 		require("./GardenProgress.spec")
 	end,
+	["NightAssets.spec.luau"] = function()
+		require("./NightAssets.spec")
+	end,
 }
 
 local T = require("./framework")

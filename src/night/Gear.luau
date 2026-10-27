@@ -6,6 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local NightProgress = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("NightProgress"))
+local Models = require(script.Parent:WaitForChild("Models"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))
 
 local Gear = {}
@@ -95,27 +96,44 @@ local function buildTool(weapon: string, blade: string): Tool
 	handle.Parent = tool
 	tool.Grip = CFrame.new(0, -shape.grip * 0.3, 0) * CFrame.Angles(math.rad(-90), 0, 0)
 	local base = handle.CFrame
-	welded(
-		tool,
-		handle,
-		Vector3.new(0.9, 0.15, 0.6),
-		base * CFrame.new(0, shape.grip / 2 + 0.07, 0),
-		GOLD,
-		Enum.Material.Metal
-	)
-	local edge = welded(
-		tool,
-		handle,
-		Vector3.new(0.12, shape.blade, 0.32),
-		base * CFrame.new(0, shape.grip / 2 + 0.15 + shape.blade / 2, 0),
-		tint[1] or Color3.fromRGB(220, 225, 235),
-		Enum.Material.Neon
-	)
+	local edge: BasePart
+	-- Night weapon model (NightAssets): hilt welded on the handle with the pommel at the handle's
+	-- bottom; its untextured blade mesh becomes the tinted Blade.
+	local mesh = Models.night(if SHAPES[weapon] then weapon else "katana", tool, Vector3.zero)
+	local meshBlade = mesh and mesh:FindFirstChild(`{mesh.Name}_blade`) :: BasePart?
+	if mesh and meshBlade then
+		local _, size = mesh:GetBoundingBox()
+		Models.attach(mesh, handle, CFrame.new(0, -shape.grip / 2 + size.Y / 2, 0))
+		handle.Transparency = 1
+		meshBlade.Color = tint[1] or Color3.fromRGB(220, 225, 235)
+		meshBlade.Material = Enum.Material.Neon
+		edge = meshBlade
+	else
+		if mesh then
+			mesh:Destroy()
+		end
+		welded(
+			tool,
+			handle,
+			Vector3.new(0.9, 0.15, 0.6),
+			base * CFrame.new(0, shape.grip / 2 + 0.07, 0),
+			GOLD,
+			Enum.Material.Metal
+		)
+		edge = welded(
+			tool,
+			handle,
+			Vector3.new(0.12, shape.blade, 0.32),
+			base * CFrame.new(0, shape.grip / 2 + 0.15 + shape.blade / 2, 0),
+			tint[1] or Color3.fromRGB(220, 225, 235),
+			Enum.Material.Neon
+		)
+	end
 	edge.Name = "Blade"
 	local a0, a1 = Instance.new("Attachment"), Instance.new("Attachment")
 	a0.Name, a1.Name = "TrailTop", "TrailBottom"
-	a0.Position = Vector3.new(0, shape.blade / 2, 0)
-	a1.Position = Vector3.new(0, -shape.blade / 2 + 0.3, 0)
+	a0.Position = Vector3.new(0, edge.Size.Y / 2, 0)
+	a1.Position = Vector3.new(0, -edge.Size.Y / 2 + 0.3, 0)
 	a0.Parent, a1.Parent = edge, edge
 	local trail = Instance.new("Trail")
 	trail.Name = "BladeTrail"
@@ -211,6 +229,8 @@ local MASKS: { [string]: { Feature } } = {
 	},
 }
 
+local MASK_SCALE = 0.72
+
 local function buildMask(character: Model, mask: string)
 	local features = MASKS[mask]
 	local head = character:FindFirstChild("Head") :: BasePart?
@@ -218,6 +238,17 @@ local function buildMask(character: Model, mask: string)
 		return
 	end
 	local tint = colours(mask)
+	-- Night mask model (NightAssets), scaled so the 1.5-stud face fits the head, chin at the old
+	-- plate's bottom; its side ties end 0.39 studs (unscaled) behind the rim, so placing the back
+	-- of the bounding box there puts the rim on the face (head front is z = -0.6).
+	local sculpted = Models.night(`mask_{mask}`, character, head.Position, 0, MASK_SCALE)
+	if sculpted then
+		local _, size = sculpted:GetBoundingBox()
+		Models.attach(sculpted, head, CFrame.new(0, -0.45 + size.Y / 2, -0.6 + 0.39 * MASK_SCALE - size.Z / 2))
+		sculpted.Name = MASK
+		sculpted:SetAttribute("Mask", mask)
+		return
+	end
 	local model = Instance.new("Model")
 	model.Name = MASK
 	model:SetAttribute("Mask", mask)
