@@ -1379,20 +1379,42 @@ end)
 
 -- Music ---------------------------------------------------------------------------------------------
 
--- Registered lobby track (docs/assets/register.md); Moonfall plays it slower and softer (dreamy).
-local TRACK = "rbxassetid://87416512611152"
-local music = new("Sound", { Name = "GardenMusic", SoundId = TRACK, Volume = 0, Looped = true, Parent = SoundService })
-local dreamy =
-	new("EqualizerSoundEffect", { LowGain = 2, MidGain = -2, HighGain = -10, Enabled = false, Parent = music })
+-- Licensed APM tracks (docs/assets/register.md, GDD H6): two bright acoustic folk tracks in turn,
+-- a dreamy harp track while Moonfall is on.
+local TRACKS = {
+	day = { "rbxassetid://1840007459", "rbxassetid://1839993539" },
+	moon = { "rbxassetid://9039607235" },
+}
+local VOLUME = { day = 0.32, moon = 0.28 }
+local music = new("Sound", { Name = "GardenMusic", Volume = 0, Looped = false, Parent = SoundService })
+local mode = ""
+local trackIndex = 0
+local function volume(): number
+	return if ClientState.settings.music then (VOLUME :: any)[mode] or 0.32 else 0
+end
+local function playNext()
+	local list = (TRACKS :: any)[mode] or TRACKS.day
+	trackIndex = trackIndex % #list + 1
+	music.SoundId = list[trackIndex]
+	music.TimePosition = 0
+	music:Play()
+	TweenService:Create(music, TweenInfo.new(1.5), { Volume = volume() }):Play()
+end
+music.Ended:Connect(playNext)
 local function applyMusic()
-	local moon = ClientState.status().weather == "moonfall" and not ClientState.menuOpen
-	dreamy.Enabled = moon
-	TweenService:Create(music, TweenInfo.new(1.5), {
-		Volume = if ClientState.settings.music then (if moon then 0.25 else 0.32) else 0,
-		PlaybackSpeed = if moon then 0.85 else 1,
-	}):Play()
-	if not music.IsPlaying then
-		music:Play()
+	local wanted = if ClientState.status().weather == "moonfall" and not ClientState.menuOpen then "moon" else "day"
+	if wanted ~= mode then
+		mode = wanted
+		trackIndex = if mode == "day" then math.random(0, #TRACKS.day - 1) else 0
+		local fade = TweenService:Create(music, TweenInfo.new(0.8), { Volume = 0 })
+		fade:Play()
+		fade.Completed:Once(function()
+			if mode == wanted then
+				playNext()
+			end
+		end)
+	else
+		TweenService:Create(music, TweenInfo.new(0.5), { Volume = volume() }):Play()
 	end
 end
 ClientState.statusValue:GetPropertyChangedSignal("Value"):Connect(applyMusic)
