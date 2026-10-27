@@ -1,0 +1,44 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-004",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Neon Spire pure rules in src/shared: SpireConfig, TowerRules, PlazaRules, MarketRules, SpireEconomy and SpireProgress with unit specs for every GDD check value, a buy/sell property test, and SpireBalance.spec porting the pacing simulation.",
+  "inputs": [
+    "docs/game-design/game5-gdd.md sections C to H, N, O and R",
+    "docs/architecture/spire.md section 3",
+    "docs/decisions/0009-neon-spire-economy-saves-remotes.md",
+    "docs/game-design/game5-pacing-sim.py"
+  ],
+  "dependencies": [
+    "SPIRE-003"
+  ],
+  "acceptance_criteria": [
+    "Only the files listed for SPIRE-004 in docs/architecture/spire.md section 1 change",
+    "Every GDD R test exists and passes in lune run tests/run, with each spec registered once in tests/run.luau",
+    "No sequence of buys and sells increases credits (property test over 10,000 seeded sequences)",
+    "SpireBalance.spec keeps floors 5, 10, 15 and 20 within 30% of the GDD B targets",
+    "Relay, Night and Garden specs still pass unchanged",
+    "CI green"
+  ],
+  "verification": "CI; QA review in SPIRE-008",
+  "output_artifacts": [
+    "src/shared/SpireConfig.luau",
+    "src/shared/TowerRules.luau",
+    "src/shared/PlazaRules.luau",
+    "src/shared/MarketRules.luau",
+    "src/shared/SpireEconomy.luau",
+    "src/shared/SpireProgress.luau",
+    "tests/SpireConfig.spec.luau",
+    "tests/TowerRules.spec.luau",
+    "tests/PlazaRules.spec.luau",
+    "tests/MarketRules.spec.luau",
+    "tests/SpireEconomy.spec.luau",
+    "tests/SpireProgress.spec.luau",
+    "tests/SpireBalance.spec.luau",
+    "tests/run.luau"
+  ],
+  "risk_level": "medium",
+  "status": "planned"
+}

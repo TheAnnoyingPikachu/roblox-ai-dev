@@ -1,0 +1,31 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-010",
+  "owner": "A14",
+  "verifier": "A01",
+  "task_type": "release",
+  "objective": "Neon Spire launch preparation: production universe check in publish.yml, store page text, icon and thumbnails from the gate G2 frames, the content maturity questionnaire, a v* release tag, and the production publish only after SHANNON approves the production environment run.",
+  "inputs": [
+    "docs/game-design/game5-production-plan.md sections 2, 4 and 8",
+    "studio/gates.md",
+    ".github/workflows/publish.yml"
+  ],
+  "dependencies": [
+    "SPIRE-008",
+    "SPIRE-009"
+  ],
+  "acceptance_criteria": [
+    "publish.yml refuses a production publish when PRODUCTION_UNIVERSE_ID does not match the production universe",
+    "The release manifest records commit, artifact hash and test counts",
+    "The production build stamp is confirmed in the live place after publish",
+    "SHANNON's approval of the production run is recorded"
+  ],
+  "verification": "Gate G5: SHANNON's GitHub environment approval; post-publish stamp check",
+  "output_artifacts": [
+    ".github/workflows/publish.yml",
+    "release/manifests/"
+  ],
+  "risk_level": "high",
+  "status": "planned",
+  "notes": "Never publish to production without SHANNON's explicit approval (CLAUDE.md rule 7)."
+}

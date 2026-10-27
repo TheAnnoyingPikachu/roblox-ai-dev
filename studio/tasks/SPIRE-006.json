@@ -1,0 +1,35 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-006",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Neon Spire client for the greybox milestone: forked start menu, HUD with power and Hype bars, build mode (tower view, floor cards, department picker, plaza grid with ghost preview and rotation) for touch, mouse and gamepad, lift, and the timed first-session script, using grey primitives for every visual.",
+  "inputs": [
+    "docs/game-design/game5-gdd.md sections J and K",
+    "docs/architecture/spire.md section 5",
+    "docs/game-design/game5-art-bible.md section 6",
+    "src/garden-client/Menu.client.luau (forked)"
+  ],
+  "dependencies": [
+    "SPIRE-003"
+  ],
+  "acceptance_criteria": [
+    "Only the files listed for SPIRE-006 in docs/architecture/spire.md section 1 change",
+    "Every build preview matches the server result (previews call SpireProgress.apply on a copy of the profile)",
+    "Disabled actions show the reason; refusals show a toast mapped from the code",
+    "Build mode works with touch, mouse and gamepad",
+    "A new player buys the first module within 15 s of PLAY and reaches floor 3 within 3 minutes (timed in staging)",
+    "Gate G1 feel playtest passes (docs/game-design/game5-production-plan.md section 4)"
+  ],
+  "verification": "Gate G1 note from SHANNON with the build stamp and timings; QA review in SPIRE-008",
+  "output_artifacts": [
+    "src/spire-client/Menu.client.luau",
+    "src/spire-client/Hud.client.luau",
+    "src/spire-client/Build.client.luau",
+    "src/spire-client/Lift.client.luau",
+    "src/spire-client/ClientState.luau"
+  ],
+  "risk_level": "medium",
+  "status": "planned"
+}

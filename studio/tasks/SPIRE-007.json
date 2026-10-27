@@ -1,0 +1,45 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-007",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Neon Spire look: lighting and rain, procedural tower kit with level of detail, plaza items, crowd, hover traffic, city backdrop, UI kit styling, hero props by the approved asset approach, audio, and every juice item in GDD K6; first one tower and plaza at final quality (gate G2), then all of it.",
+  "inputs": [
+    "docs/game-design/game5-art-bible.md",
+    "docs/game-design/game5-gdd.md sections K6, L and M",
+    "docs/architecture/spire.md section 5",
+    "docs/decisions/0010-neon-spire-asset-approach.md",
+    "tools/blender/night/ and .github/workflows/upload-assets.yml (NIGHT-007, NIGHT-008)"
+  ],
+  "dependencies": [
+    "SPIRE-006",
+    "SPIRE-002"
+  ],
+  "acceptance_criteria": [
+    "Decision 0010 is approved by SHANNON before any hero prop is made",
+    "Every mesh, texture, track and sound has a docs/assets/register.md row before use",
+    "Gate G2 passes: each art bible section 11 frame rated at least 4 by SHANNON or fixed",
+    "Phone at least 30 fps in the Grid Plaza with 6 full towers and rain Low; client parts in view at most 12,000",
+    "No light flickers faster than 3 Hz; Reduce Flashing works",
+    "Every GDD K6 juice item is present (checklist with a short screen recording)"
+  ],
+  "verification": "Gate G2 note; performance captures; QA review in SPIRE-008",
+  "output_artifacts": [
+    "src/spire-client/TowerView.client.luau",
+    "src/spire-client/PlazaView.client.luau",
+    "src/spire-client/City.client.luau",
+    "src/spire-client/Atmos.client.luau",
+    "src/spire-client/Crowd.client.luau",
+    "src/spire-client/Traffic.client.luau",
+    "src/spire-client/Fx.client.luau",
+    "src/relay/Models.luau",
+    "docs/assets/register.md",
+    "tools/blender/spire/",
+    "assets/spire/",
+    ".github/workflows/upload-assets.yml"
+  ],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "Starts after the greybox feel gate G1 passes, so no art is spent on a loop that is not fun. Blender props and module models are owned by A12 (Lead 3D Artist, as in NIGHT-007) within this task."
+}
