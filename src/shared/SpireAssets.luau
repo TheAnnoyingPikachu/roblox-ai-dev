@@ -22,8 +22,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			server_rack_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 123660392005554,
+		decal = 88211384654696,
 		texture = nil,
 	},
 	fusion_cell = {
@@ -32,8 +32,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			fusion_cell_glow = { 255, 184, 0 },
 		},
-		model = nil,
-		decal = nil,
+		model = 81243941428008,
+		decal = 94356709822005,
 		texture = nil,
 	},
 	holo_projector = {
@@ -42,8 +42,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			holo_projector_glow = { 255, 42, 109 },
 		},
-		model = nil,
-		decal = nil,
+		model = 84683791808475,
+		decal = 104626847430139,
 		texture = nil,
 	},
 	bio_printer = {
@@ -52,8 +52,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			bio_printer_glow = { 182, 255, 59 },
 		},
-		model = nil,
-		decal = nil,
+		model = 110834543503508,
+		decal = 73834442860361,
 		texture = nil,
 	},
 	drone_dock = {
@@ -62,8 +62,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			drone_dock_glow = { 255, 107, 74 },
 		},
-		model = nil,
-		decal = nil,
+		model = 85467266500174,
+		decal = 115302075363598,
 		texture = nil,
 	},
 	q_mind = {
@@ -72,8 +72,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			q_mind_glow = { 123, 47, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 124018009664604,
+		decal = 99994083061993,
 		texture = nil,
 	},
 	uplink_dish = {
@@ -82,8 +82,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			uplink_dish_glow = { 232, 246, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 83070006044300,
+		decal = 91948164979420,
 		texture = nil,
 	},
 	roof_antenna = {
@@ -93,8 +93,8 @@ local SpireAssets: { [string]: Asset } = {
 			roof_antenna_glow = { 0, 240, 255 },
 			roof_antenna_glow2 = { 255, 40, 60 },
 		},
-		model = nil,
-		decal = nil,
+		model = 102746158417650,
+		decal = 90494860797610,
 		texture = nil,
 	},
 	lift_ring = {
@@ -103,8 +103,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			lift_ring_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 73421743597916,
+		decal = 73382352835142,
 		texture = nil,
 	},
 	city_crest = {
@@ -115,8 +115,8 @@ local SpireAssets: { [string]: Asset } = {
 			city_crest_glow2 = { 255, 42, 109 },
 			city_crest_glow3 = { 123, 47, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 91033202769455,
+		decal = 118846129214119,
 		texture = nil,
 	},
 	build_terminal = {
@@ -125,8 +125,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			build_terminal_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 102507860193005,
+		decal = 98326861300948,
 		texture = nil,
 	},
 	neon_bench = {
@@ -135,8 +135,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			neon_bench_glow = { 255, 42, 109 },
 		},
-		model = nil,
-		decal = nil,
+		model = 116623359456183,
+		decal = 71156319193070,
 		texture = nil,
 	},
 	holo_palm = {
@@ -145,8 +145,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			holo_palm_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 93522991578883,
+		decal = 101844204958455,
 		texture = nil,
 	},
 	street_lamp = {
@@ -155,8 +155,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			street_lamp_glow = { 159, 216, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 134436667259296,
+		decal = 99319974609546,
 		texture = nil,
 	},
 	vending_bot = {
@@ -165,8 +165,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			vending_bot_glow = { 255, 42, 109 },
 		},
-		model = nil,
-		decal = nil,
+		model = 73590258206612,
+		decal = 134238803811929,
 		texture = nil,
 	},
 	noodle_stall = {
@@ -176,8 +176,8 @@ local SpireAssets: { [string]: Asset } = {
 			noodle_stall_glow = { 255, 42, 109 },
 			noodle_stall_glow2 = { 255, 184, 0 },
 		},
-		model = nil,
-		decal = nil,
+		model = 97479621132980,
+		decal = 106628588817759,
 		texture = nil,
 	},
 	arcade_kiosk = {
@@ -187,8 +187,8 @@ local SpireAssets: { [string]: Asset } = {
 			arcade_kiosk_glow = { 123, 47, 255 },
 			arcade_kiosk_glow2 = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 115713005705911,
+		decal = 78153292926369,
 		texture = nil,
 	},
 	holo_fountain = {
@@ -198,8 +198,8 @@ local SpireAssets: { [string]: Asset } = {
 			holo_fountain_glow = { 0, 240, 255 },
 			holo_fountain_glow2 = { 123, 47, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 101678991943486,
+		decal = 78973740317513,
 		texture = nil,
 	},
 	maglev_stop = {
@@ -209,8 +209,8 @@ local SpireAssets: { [string]: Asset } = {
 			maglev_stop_glow = { 0, 240, 255 },
 			maglev_stop_glow2 = { 255, 184, 0 },
 		},
-		model = nil,
-		decal = nil,
+		model = 117702538122541,
+		decal = 125916162134709,
 		texture = nil,
 	},
 	mega_billboard = {
@@ -219,8 +219,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			mega_billboard_glow = { 255, 42, 109 },
 		},
-		model = nil,
-		decal = nil,
+		model = 115262911252252,
+		decal = 124304172465815,
 		texture = nil,
 	},
 	hologram_idol = {
@@ -230,8 +230,8 @@ local SpireAssets: { [string]: Asset } = {
 			hologram_idol_glow = { 255, 42, 109 },
 			hologram_idol_glow2 = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 78078046042925,
+		decal = 118184083774162,
 		texture = nil,
 	},
 	searchlight = {
@@ -240,8 +240,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			searchlight_glow = { 159, 216, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 84937204795753,
+		decal = 123945327794107,
 		texture = nil,
 	},
 	viaduct_segment = {
@@ -250,8 +250,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			viaduct_segment_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 73808307493780,
+		decal = 86317212116134,
 		texture = nil,
 	},
 	board_frame = {
@@ -260,8 +260,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			board_frame_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 125784370367520,
+		decal = 126705387776261,
 		texture = nil,
 	},
 	lot_sign = {
@@ -270,8 +270,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			lot_sign_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 97050552593004,
+		decal = 87061011835199,
 		texture = nil,
 	},
 	bollard = {
@@ -280,8 +280,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			bollard_glow = { 255, 184, 0 },
 		},
-		model = nil,
-		decal = nil,
+		model = 107298827107984,
+		decal = 103050300984055,
 		texture = nil,
 	},
 	planter = {
@@ -290,8 +290,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			planter_glow = { 182, 255, 59 },
 		},
-		model = nil,
-		decal = nil,
+		model = 127985077043962,
+		decal = 95089958206137,
 		texture = nil,
 	},
 	neon_arrow = {
@@ -300,8 +300,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			neon_arrow_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 100512942729235,
+		decal = 106515216519016,
 		texture = nil,
 	},
 	trash_bot = {
@@ -310,8 +310,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			trash_bot_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 88898149700840,
+		decal = 107123341729953,
 		texture = nil,
 	},
 	cable_arch = {
@@ -321,8 +321,8 @@ local SpireAssets: { [string]: Asset } = {
 			cable_arch_glow = { 255, 42, 109 },
 			cable_arch_glow2 = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 100242655489459,
+		decal = 92727841137900,
 		texture = nil,
 	},
 	holo_koi = {
@@ -332,8 +332,8 @@ local SpireAssets: { [string]: Asset } = {
 			holo_koi_glow = { 255, 107, 74 },
 			holo_koi_glow2 = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 135263384786698,
+		decal = 88426107615964,
 		texture = nil,
 	},
 	courier_drone = {
@@ -342,8 +342,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			courier_drone_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 127634707298904,
+		decal = 135785994438691,
 		texture = nil,
 	},
 	hover_car = {
@@ -353,8 +353,8 @@ local SpireAssets: { [string]: Asset } = {
 			hover_car_glow = { 0, 240, 255 },
 			hover_car_glow2 = { 255, 42, 109 },
 		},
-		model = nil,
-		decal = nil,
+		model = 126578261993163,
+		decal = 102431333612068,
 		texture = nil,
 	},
 	hover_taxi = {
@@ -364,8 +364,8 @@ local SpireAssets: { [string]: Asset } = {
 			hover_taxi_glow = { 0, 240, 255 },
 			hover_taxi_glow2 = { 255, 184, 0 },
 		},
-		model = nil,
-		decal = nil,
+		model = 108848578116010,
+		decal = 100945692378873,
 		texture = nil,
 	},
 	maglev_car = {
@@ -374,8 +374,8 @@ local SpireAssets: { [string]: Asset } = {
 		glow = {
 			maglev_car_glow = { 0, 240, 255 },
 		},
-		model = nil,
-		decal = nil,
+		model = 103395105367015,
+		decal = 97052139658588,
 		texture = nil,
 	},
 	blimp = {
@@ -385,8 +385,8 @@ local SpireAssets: { [string]: Asset } = {
 			blimp_glow = { 255, 42, 109 },
 			blimp_glow2 = { 255, 40, 60 },
 		},
-		model = nil,
-		decal = nil,
+		model = 73863369765022,
+		decal = 90733860752059,
 		texture = nil,
 	},
 }
