@@ -1,0 +1,39 @@
+{
+  "project_id": "SPIRE-001",
+  "task_id": "SPIRE-005",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Neon Spire server: lot assignment and shells, Request router with the token bucket, prompts (Hot Data, visitor lift), lift and home teleports, the 1 Hz income and Hot Data loop, SpireStatus and Market schedule, ticker, Top Spires board, and profiles copied from Egg Garden with the session lock and coalesced writes.",
+  "inputs": [
+    "docs/game-design/game5-gdd.md sections C to I, N to P",
+    "docs/architecture/spire.md sections 4, 6 and 7",
+    "docs/decisions/0009-neon-spire-economy-saves-remotes.md",
+    "src/garden/Profiles.luau and src/garden/Remotes.luau (copied)"
+  ],
+  "dependencies": [
+    "SPIRE-003"
+  ],
+  "acceptance_criteria": [
+    "Only the files listed for SPIRE-005 in docs/architecture/spire.md section 1 change",
+    "Every Request action and prompt enforces every check in decision 0009; refused requests change nothing",
+    "Saves: session lock, at most one write per player per 7 s, 60 s autosave, final write on leave and in BindToClose; failed loads and offline sessions never write; stores SpireProfile<suffix> and SpireBoard<suffix>",
+    "Income is credited directly every second with no unbanked pool",
+    "Leaving and rejoining after 10 minutes pays the predicted offline amount and keeps every floor, module and plaza item (staging, DataStores on)",
+    "Server frame time under 8 ms with 6 full towers (MicroProfiler capture)",
+    "The encoded size of a maxed test profile is logged and under 12 KB",
+    "CI green"
+  ],
+  "verification": "CI; Studio and staging test notes with the build stamp; QA review in SPIRE-008",
+  "output_artifacts": [
+    "src/spire/SpireServer.server.luau",
+    "src/spire/State.luau",
+    "src/spire/Remotes.luau",
+    "src/spire/Profiles.luau",
+    "src/spire/Lots.luau",
+    "src/spire/City.luau"
+  ],
+  "risk_level": "high",
+  "status": "planned",
+  "notes": "High risk: saved player data and a remote contract. PRODUCTION_UNIVERSE_ID stays nil. Can start against stubs of the SPIRE-003 signatures."
+}
