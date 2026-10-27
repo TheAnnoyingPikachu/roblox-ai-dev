@@ -1,8 +1,9 @@
 # Hundred Demon Night: Blender assets
 
 Procedural Blender Python models for every Night visual asset (plan:
-`docs/assets/night-blender-plan.md`, task `studio/tasks/NIGHT-007.json`). Nothing here is wired
-into the game yet: upload and `Models.luau` / `register.md` changes are a later step.
+`docs/assets/night-blender-plan.md`, tasks `studio/tasks/NIGHT-007.json` and `NIGHT-008.json`).
+The game reads them through `src/shared/NightAssets.luau`; until the ids are uploaded every
+asset there is nil and the game keeps its older visuals.
 
 ## Rebuild everything (one command)
 
@@ -42,11 +43,36 @@ the code it replaces and wiring notes.
   size, priority, order, replaces, notes)]`. `build()` returns a list of objects, or a dict of
   part name to objects for multi-mesh assets (e.g. `demon_gate_glow`, `katana_blade`).
 
+## Export, upload, wire (after a rebuild)
+
+1. `python tools/blender/night/export_assets.py` copies each FBX and a 256-colour PNG into
+   `assets/night/` (committed; about 20 MB). Commit them with the script changes.
+2. After merge, the Director runs the **Upload Night assets** workflow
+   (`.github/workflows/upload-assets.yml`, environment `assets`: secret `ROBLOX_API_KEY`,
+   variable `ROBLOX_CREATOR_USER_ID`). It uploads every FBX as a Model and every PNG as a Decal
+   with `upload-assets.mjs`, polls each operation, resolves the decal's image id, and publishes
+   `uploaded.json` and `NightAssets.luau` as the run artifact. CI uploads the committed files, not
+   a fresh Blender build, so it ships exactly what was reviewed.
+3. Copy both files into the repo (or run `node tools/blender/night/write-assets-module.mjs`
+   with the `uploaded.json`), fill the asset ids in `docs/assets/register.md`, open a PR.
+
+## How the game uses them
+
+- `Models.night(name, parent, base, yaw?, scale?)` (`src/relay/Models.luau`) loads the Model with
+  `InsertService:LoadAsset` (the creator must own the experience), applies the texture to every
+  mesh except `*_blade` / `*_glow`, scales it uniformly to the manifest height and places it with
+  its lowest point on `base.Y`. It returns nil while the id is nil, and callers keep their old
+  meshes or parts. `Models.preloadNight` loads all in the background; `slash_arc`, `demon_wing`
+  and `wisp` are also copied to `ReplicatedStorage.NightModels` for client VFX.
+- Stage and bridges keep their part collision (made invisible); blades stay separate, Neon and
+  tinted by the Blade Art; masks are scaled 0.72 to fit the head.
+
 ## Upload notes
 
-- Import each FBX with the Roblox 3D importer at stud scale; multi-part FBX become a Model.
-- Roblox recentres a MeshPart on its bounding box; `Models.spawn` already places by the bottom
-  face, so set `size` in `Models.luau` from `size_studs` in the manifest.
+- FBX uploads as assetType `Model` (a package of MeshParts); assetType `Mesh` only accepts
+  Roblox mesh data, not FBX.
+- Roblox recentres a MeshPart on its bounding box; `Models.night` places by the bounding box, so
+  nothing sinks into the ground.
 - Every uploaded mesh and texture needs a `docs/assets/register.md` row before use (CLAUDE.md rule 9).
-- VFX meshes (`slash_arc`, `demon_wing`) and weapon blades are meant to be used untextured and
-  tinted by code.
+- VFX meshes (`slash_arc`, `demon_wing`) are uploaded untextured and tinted by code; weapon
+  blades and the gate glow are separate meshes left untextured.
