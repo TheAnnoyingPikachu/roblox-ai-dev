@@ -1,0 +1,26 @@
+{
+  "stone_lantern": {
+    "fbx": "build/blender/night/stone_lantern.fbx",
+    "png": "build/blender/night/stone_lantern.png",
+    "preview": "build/blender/night/previews/stone_lantern.png",
+    "size_studs": [
+      3.09,
+      5.88,
+      3.56
+    ],
+    "tris": 754,
+    "parts": {
+      "stone_lantern": 754
+    },
+    "target_size_studs": [
+      3,
+      6,
+      3
+    ],
+    "tris_budget": 1000,
+    "priority": "P1",
+    "replaces": "Props.lantern (src/relay/Props.luau 152-168) via src/night/Arena.luau 639 and 670-687 (16 rim lanterns)",
+    "script": "tools/blender/night/assets/stone_lantern.py",
+    "notes": "Glowing firebox baked bright; keep the PointLight (range 18) in code."
+  }
+}
