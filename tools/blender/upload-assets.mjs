@@ -1,7 +1,8 @@
-// Uploads the committed Night models (assets/night/<name>.fbx) and textures (<name>.png) with the
-// Roblox Open Cloud Assets API, then writes tools/blender/night/uploaded.json.
+// Uploads one game's committed Blender models (assets/<game>/<name>.fbx) and textures (<name>.png)
+// with the Roblox Open Cloud Assets API, then writes tools/blender/<game>/uploaded.json.
+// <game> is night (Hundred Demon Night) or spire (Neon Spire).
 //
-//   ROBLOX_API_KEY=... ROBLOX_CREATOR_USER_ID=... node tools/blender/night/upload-assets.mjs [name ...]
+//   ROBLOX_API_KEY=... ROBLOX_CREATOR_USER_ID=... node tools/blender/upload-assets.mjs <game> [name ...]
 //
 // Run by .github/workflows/upload-assets.yml (environment `assets`). Never run with a key on a
 // developer machine: credentials live only in the GitHub environment (CLAUDE.md rule 6).
@@ -14,13 +15,23 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const MANIFEST = path.join(ROOT, "tools/blender/night/manifest.json");
-const OUT = path.join(ROOT, "tools/blender/night/uploaded.json");
-const FILES = path.join(ROOT, "assets/night");
+const GAMES = {
+	night: { label: "Hundred Demon Night", prefix: "HDN", untextured: ["slash_arc", "demon_wing"] },
+	spire: { label: "Neon Spire", prefix: "NSP", untextured: [] },
+};
+const game = process.argv[2];
+if (!GAMES[game]) {
+	console.error(`usage: node tools/blender/upload-assets.mjs <${Object.keys(GAMES).join("|")}> [name ...]`);
+	process.exit(1);
+}
+const { label, prefix } = GAMES[game];
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const MANIFEST = path.join(ROOT, `tools/blender/${game}/manifest.json`);
+const OUT = path.join(ROOT, `tools/blender/${game}/uploaded.json`);
+const FILES = path.join(ROOT, `assets/${game}`);
 const API = "https://apis.roblox.com";
 // Tinted by code (Color must show), so they stay untextured.
-const UNTEXTURED = new Set(["slash_arc", "demon_wing"]);
+const UNTEXTURED = new Set(GAMES[game].untextured);
 
 const key = process.env.ROBLOX_API_KEY;
 const userId = process.env.ROBLOX_CREATOR_USER_ID;
@@ -79,22 +90,22 @@ async function imageOf(decalId) {
 }
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
-const wanted = process.argv.slice(2).flatMap((a) => a.split(",")).map((s) => s.trim()).filter(Boolean);
+const wanted = process.argv.slice(3).flatMap((a) => a.split(",")).map((s) => s.trim()).filter(Boolean);
 for (const name of wanted) if (!manifest[name]) throw new Error(`unknown asset ${name}`);
 const uploaded = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : {};
 const failed = [];
 
 for (const name of Object.keys(manifest)) {
 	if (wanted.length && !wanted.includes(name)) continue;
-	const description = `Hundred Demon Night: ${name} (custom Blender model, tools/blender/night)`;
+	const description = `${label}: ${name} (custom Blender model, tools/blender/${game})`;
 	try {
 		console.log(`${name}: uploading model`);
-		const model = await create("Model", path.join(FILES, `${name}.fbx`), "model/fbx", `HDN ${name}`, description);
+		const model = await create("Model", path.join(FILES, `${name}.fbx`), "model/fbx", `${prefix} ${name}`, description);
 		let decal = null;
 		let texture = null;
 		if (!UNTEXTURED.has(name)) {
 			console.log(`${name}: uploading texture`);
-			decal = await create("Decal", path.join(FILES, `${name}.png`), "image/png", `HDN ${name} texture`, description);
+			decal = await create("Decal", path.join(FILES, `${name}.png`), "image/png", `${prefix} ${name} texture`, description);
 			texture = await imageOf(decal);
 		}
 		uploaded[name] = { model, decal, texture };
