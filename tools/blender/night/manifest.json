@@ -120,6 +120,30 @@
     "script": "tools/blender/night/assets/stone_lantern.py",
     "notes": "Glowing firebox baked bright; keep the PointLight (range 18) in code."
   },
+  "sacred_tree": {
+    "fbx": "build/blender/night/sacred_tree.fbx",
+    "png": "build/blender/night/sacred_tree.png",
+    "preview": "build/blender/night/previews/sacred_tree.png",
+    "size_studs": [
+      39.08,
+      50.5,
+      32.74
+    ],
+    "tris": 3828,
+    "parts": {
+      "sacred_tree": 3828
+    },
+    "target_size_studs": [
+      44,
+      49,
+      44
+    ],
+    "tris_budget": 9000,
+    "priority": "P1",
+    "replaces": "sacredTree mesh (src/relay/Models.luau 55-59) in src/night/Arena.luau 376-426 (with the rope and shide 397-414)",
+    "script": "tools/blender/night/assets/trees.py",
+    "notes": "Rope and shide are in the mesh, so the code's rope parts can go; keep the stone fence and fireflies."
+  },
   "oni_statue": {
     "fbx": "build/blender/night/oni_statue.fbx",
     "png": "build/blender/night/oni_statue.png",
@@ -167,5 +191,197 @@
     "replaces": "komainu mesh (src/relay/Models.luau 38-42) in src/night/Arena.luau 638",
     "script": "tools/blender/night/assets/komainu.py",
     "notes": "Code spawns two, yaw 180, on 4 x 2 x 5 plinths; the second could be mirrored."
+  },
+  "lantern_yokai": {
+    "fbx": "build/blender/night/lantern_yokai.fbx",
+    "png": "build/blender/night/lantern_yokai.png",
+    "preview": "build/blender/night/previews/lantern_yokai.png",
+    "size_studs": [
+      3.5,
+      5.28,
+      4.72
+    ],
+    "tris": 1888,
+    "parts": {
+      "lantern_yokai": 1888
+    },
+    "target_size_studs": [
+      3.5,
+      5.3,
+      4.5
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "lanternYokai mesh (src/relay/Models.luau 65-69) in src/night/Enemies.luau 210-243",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": "Modelled at in-game size: spawn at scale 1, not 0.75."
+  },
+  "kasa_obake": {
+    "fbx": "build/blender/night/kasa_obake.fbx",
+    "png": "build/blender/night/kasa_obake.png",
+    "preview": "build/blender/night/previews/kasa_obake.png",
+    "size_studs": [
+      5.92,
+      5.1,
+      6.48
+    ],
+    "tris": 1324,
+    "parts": {
+      "kasa_obake": 1324
+    },
+    "target_size_studs": [
+      5.6,
+      5.4,
+      5.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Kasa-obake parts in src/night/Enemies.luau 246-302",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": ""
+  },
+  "yoroi": {
+    "fbx": "build/blender/night/yoroi.fbx",
+    "png": "build/blender/night/yoroi.png",
+    "preview": "build/blender/night/previews/yoroi.png",
+    "size_studs": [
+      4.98,
+      7.19,
+      3.24
+    ],
+    "tris": 3880,
+    "parts": {
+      "yoroi": 3880
+    },
+    "target_size_studs": [
+      6.5,
+      7,
+      3.5
+    ],
+    "tris_budget": 4000,
+    "priority": "P1",
+    "replaces": "Possessed Yoroi parts (kind oni) in src/night/Enemies.luau 305-364",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": "Hovers: bottom of the skirt is y = 0; code offsets the root."
+  },
+  "wisp": {
+    "fbx": "build/blender/night/wisp.fbx",
+    "png": "build/blender/night/wisp.png",
+    "preview": "build/blender/night/previews/wisp.png",
+    "size_studs": [
+      3.07,
+      3.55,
+      3.25
+    ],
+    "tris": 436,
+    "parts": {
+      "wisp": 436
+    },
+    "target_size_studs": [
+      3,
+      4.5,
+      3
+    ],
+    "tris_budget": 800,
+    "priority": "P1",
+    "replaces": "Hitodama parts in src/night/Enemies.luau 170-207, idle wisp src/night/Arena.luau 615-631, spirit flame src/night-client/CombatFx.client.luau 1104",
+    "script": "tools/blender/night/assets/enemies.py",
+    "notes": "Set Material Neon or keep the texture; Fire, Trail and PointLight stay in code."
+  },
+  "boss_skull": {
+    "fbx": "build/blender/night/boss_skull.fbx",
+    "png": "build/blender/night/boss_skull.png",
+    "preview": "build/blender/night/previews/boss_skull.png",
+    "size_studs": [
+      16.29,
+      24.09,
+      22.12
+    ],
+    "tris": 4886,
+    "parts": {
+      "boss_skull": 4886
+    },
+    "target_size_studs": [
+      17,
+      24,
+      23
+    ],
+    "tris_budget": 10000,
+    "priority": "P1",
+    "replaces": "bossSkull mesh (src/relay/Models.luau 45-49) in src/night/Enemies.luau 513-536",
+    "script": "tools/blender/night/assets/boss.py",
+    "notes": "Code eye lights sit at skull centre + (+-3.5, 3, -9); the glowing sockets are at about that spot."
+  },
+  "boss_hand": {
+    "fbx": "build/blender/night/boss_hand.fbx",
+    "png": "build/blender/night/boss_hand.png",
+    "preview": "build/blender/night/previews/boss_hand.png",
+    "size_studs": [
+      10.93,
+      13.34,
+      5.37
+    ],
+    "tris": 2362,
+    "parts": {
+      "boss_hand": 2362
+    },
+    "target_size_studs": [
+      10,
+      16,
+      4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "boneHand mesh (src/relay/Models.luau 50-54) in src/night/Enemies.luau 537-548 (used twice)",
+    "script": "tools/blender/night/assets/boss.py",
+    "notes": "Palm faces Roblox -Z, fingers up (+Y), as the old mesh; code turns it palm-down with FLAT."
+  },
+  "sakura_tree": {
+    "fbx": "build/blender/night/sakura_tree.fbx",
+    "png": "build/blender/night/sakura_tree.png",
+    "preview": "build/blender/night/previews/sakura_tree.png",
+    "size_studs": [
+      15.76,
+      16.54,
+      17.57
+    ],
+    "tris": 1488,
+    "parts": {
+      "sakura_tree": 1488
+    },
+    "target_size_studs": [
+      16,
+      16,
+      16
+    ],
+    "tris_budget": 5000,
+    "priority": "P2",
+    "replaces": "sakura mesh (src/relay/Models.luau 33-37, shared with Relay) in src/night/Arena.luau 732-745",
+    "script": "tools/blender/night/assets/trees.py",
+    "notes": "Night-only asset; leave Relay on its own sakura mesh."
+  },
+  "cedar_tree": {
+    "fbx": "build/blender/night/cedar_tree.fbx",
+    "png": "build/blender/night/cedar_tree.png",
+    "preview": "build/blender/night/previews/cedar_tree.png",
+    "size_studs": [
+      10.8,
+      26.5,
+      10.8
+    ],
+    "tris": 140,
+    "parts": {
+      "cedar_tree": 140
+    },
+    "target_size_studs": [
+      11,
+      26,
+      11
+    ],
+    "tris_budget": 400,
+    "priority": "P3",
+    "replaces": "Forest cedar parts in src/night/Arena.luau 747-775 (x140)",
+    "script": "tools/blender/night/assets/trees.py",
+    "notes": ""
   }
 }
