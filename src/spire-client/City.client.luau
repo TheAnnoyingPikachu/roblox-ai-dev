@@ -22,7 +22,6 @@ local PLAZA_RADIUS = 104 -- server City.luau: the lots' front edges
 -- Blender models replace the part builds below once uploaded (src/shared/SpireAssets.luau).
 Kit.waitModels()
 local LAMP_BACK = 1.65 -- street_lamp: the pole stands this far behind the model's centre
-local RING = 150 -- lot centre distance
 local rng = Random.new(5150)
 
 local function folder(name: string): Folder
