@@ -277,7 +277,7 @@ local function refresh()
 	rewardsDot.Visible = ClientState.rewardsReady(profile)
 	if lastLevel and level > lastLevel then
 		ClientState.toast(`LEVEL UP! Level {level}`, UI.GOLD)
-		ClientState.sound(ClientState.SFX.chime, 0.4, nil, 1.9)
+		ClientState.sound(ClientState.SFX.fanfare, 0.45)
 		for _, egg in GardenConfig.EGGS do
 			if egg.price and egg.level == level then
 				ClientState.toast(`New egg at the cart: {egg.name}`, UI.LEAF)

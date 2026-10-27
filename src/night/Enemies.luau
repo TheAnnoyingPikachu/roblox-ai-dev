@@ -146,6 +146,19 @@ local function meshOn(model: Model, root: BasePart, name: string, scale: number,
 	return mesh
 end
 
+-- Attaches a Night Blender model (NightAssets) centred on root * offset, or returns nil (not
+-- uploaded or not loaded yet) so the caller keeps its older mesh or parts.
+local function nightOn(model: Model, root: BasePart, name: string, offset: CFrame, scale: number?): Model?
+	if not Models.nightReady(name) then
+		return nil
+	end
+	local mesh = Models.night(name, model, root.Position, 0, scale)
+	if mesh then
+		Models.attach(mesh, root, offset)
+	end
+	return mesh
+end
+
 local INK = Color3.fromRGB(25, 20, 28)
 local PAPER = Color3.fromRGB(245, 232, 200)
 local LACQUER = Color3.fromRGB(120, 22, 26)
@@ -187,6 +200,11 @@ local BUILD: { [string]: (Model, Part) -> () } = {
 			Enum.PartType.Ball
 		)
 		shell.Transparency = 0.3
+		if nightOn(model, root, "wisp", CFrame.identity) then
+			-- The core keeps carrying the fire, light and trail.
+			core.Transparency = 1
+			shell.Transparency = 1
+		end
 		local fire = Instance.new("Fire")
 		fire.Color = Color3.fromRGB(110, 180, 255)
 		fire.SecondaryColor = Color3.fromRGB(220, 245, 255)
@@ -208,7 +226,10 @@ local BUILD: { [string]: (Model, Part) -> () } = {
 
 	-- Chōchin-obake: the generated lantern-yokai mesh, or a paper lantern of parts with one eye and a tongue.
 	lantern = function(model, root)
-		if meshOn(model, root, "lanternYokai", 0.75, CFrame.identity) == nil then
+		if
+			nightOn(model, root, "lantern_yokai", CFrame.identity) == nil
+			and meshOn(model, root, "lanternYokai", 0.75, CFrame.identity) == nil
+		then
 			piece(model, root, Vector3.new(4.6, 3.8, 3.8), UPRIGHT, PAPER, Enum.Material.Fabric, Enum.PartType.Cylinder)
 			for _, y in { -1.2, 0, 1.2 } do
 				piece(
@@ -244,6 +265,9 @@ local BUILD: { [string]: (Model, Part) -> () } = {
 
 	-- Kasa-obake: paper umbrella of stacked discs, one leg, one eye; it hops.
 	kasa = function(model, root)
+		if nightOn(model, root, "kasa_obake", CFrame.new(0, 0.5, 0)) then
+			return
+		end
 		local red = Color3.fromRGB(200, 45, 40)
 		piece(
 			model,
@@ -303,6 +327,10 @@ local BUILD: { [string]: (Model, Part) -> () } = {
 
 	-- Possessed Yoroi: hovering empty samurai armour, horned helmet, red glow inside.
 	oni = function(model, root)
+		if nightOn(model, root, "yoroi", CFrame.new(0, 1.6, 0)) then
+			light(root, EMBER, 10, 2)
+			return
+		end
 		piece(model, root, Vector3.new(3.2, 3, 2.2), CFrame.new(0, 0.6, 0), LACQUER, Enum.Material.Wood)
 		piece(model, root, Vector3.new(3.4, 1.4, 2.4), CFrame.new(0, -1.4, 0), INK, Enum.Material.Wood)
 		for _, side in { -1, 1 } do
@@ -365,7 +393,10 @@ local BUILD: { [string]: (Model, Part) -> () } = {
 
 	-- Oni General: the generated oni statue (reused), glowing eyes and chains of parts.
 	general = function(model, root)
-		if meshOn(model, root, "oni", 0.55, CFrame.new(0, -0.5, 0)) == nil then
+		if
+			nightOn(model, root, "oni_statue", CFrame.new(0, -0.5, 0), 0.64) == nil
+			and meshOn(model, root, "oni", 0.55, CFrame.new(0, -0.5, 0)) == nil
+		then
 			piece(model, root, Vector3.new(6, 8, 4), CFrame.identity, LACQUER, Enum.Material.Slate)
 			piece(
 				model,
@@ -490,8 +521,18 @@ local function tween(p: BasePart, cframe: CFrame, seconds: number, style: Enum.E
 	TweenService:Create(p, TweenInfo.new(seconds, style or Enum.EasingStyle.Quad), { CFrame = cframe }):Play()
 end
 
-local function bossPart(model: Model, mesh: string, name: string, part: string, fallback: Vector3): BasePart
-	local p: BasePart? = warmSpawn(mesh, model, Vector3.new(0, -40, 0), 1)
+local function bossPart(
+	model: Model,
+	night: string,
+	mesh: string,
+	name: string,
+	part: string,
+	fallback: Vector3
+): BasePart
+	local p: BasePart? = if Models.nightReady(night)
+		then Models.nightPart(night, model, Vector3.new(0, -40, 0))
+		else nil
+	p = p or warmSpawn(mesh, model, Vector3.new(0, -40, 0), 1)
 	if p == nil then
 		local stand = Instance.new("Part")
 		stand.Anchored = true
@@ -515,7 +556,7 @@ local function spawnBoss(e: Enemy, t: number)
 	model.Name = tostring(e.id)
 	model:SetAttribute("Id", e.id)
 	model:SetAttribute("Kind", "boss")
-	local skull = bossPart(model, "bossSkull", "Skull", "skull", Vector3.new(18, 18, 18))
+	local skull = bossPart(model, "boss_skull", "bossSkull", "Skull", "skull", Vector3.new(18, 18, 18))
 	skull.CFrame = SKULL_BURIED
 	for _, side in { -1, 1 } do
 		local eyeGlow = Instance.new("Part")
@@ -535,8 +576,8 @@ local function spawnBoss(e: Enemy, t: number)
 		eyeGlow.Parent = model
 	end
 	local hands = {
-		bossPart(model, "boneHand", "HandL", "hand", Vector3.new(6, 14, 3)),
-		bossPart(model, "boneHand", "HandR", "hand", Vector3.new(6, 14, 3)),
+		bossPart(model, "boss_hand", "boneHand", "HandL", "hand", Vector3.new(6, 14, 3)),
+		bossPart(model, "boss_hand", "boneHand", "HandR", "hand", Vector3.new(6, 14, 3)),
 	}
 	for i, hand in hands do
 		hand.CFrame = HAND_HOME[i] - Vector3.new(0, 30, 0)
@@ -1318,7 +1359,8 @@ function Enemies.step(t: number, dt: number): { Hurt }
 	return hurts
 end
 
--- Warm the mesh cache so the first lantern, general or boss does not stall a tick.
+-- Warm the mesh caches so the first lantern, general or boss does not stall a tick.
+Models.preloadNight()
 task.spawn(function()
 	local holder = Instance.new("Folder")
 	for _, name in { "lanternYokai", "oni", "bossSkull", "boneHand" } do

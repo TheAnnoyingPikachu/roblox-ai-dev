@@ -86,6 +86,12 @@ local SPECS = {
 	["SpireBalance.spec.luau"] = function()
 		require("./SpireBalance.spec")
 	end,
+	["NightAssets.spec.luau"] = function()
+		require("./NightAssets.spec")
+	end,
+	["SpireAssets.spec.luau"] = function()
+		require("./SpireAssets.spec")
+	end,
 }
 
 local T = require("./framework")

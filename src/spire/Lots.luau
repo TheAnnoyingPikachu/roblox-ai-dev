@@ -13,6 +13,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local SpireConfig = require(Shared:WaitForChild("SpireConfig"))
 local TowerRules = require(Shared:WaitForChild("TowerRules"))
+local Models = require(script.Parent:WaitForChild("Models"))
 local Remotes = require(script.Parent:WaitForChild("Remotes"))
 local State = require(script.Parent:WaitForChild("State"))
 
@@ -97,6 +98,17 @@ local function label(parent: Instance, size: number, position: number): TextLabe
 	return l
 end
 
+-- A Blender model (src/shared/SpireAssets.luau) at lot point (x, y, z) facing the plaza, without
+-- collision; nil while not uploaded, and the caller keeps its part.
+local function blend(parent: Instance, name: string, frame: CFrame, x: number, y: number, z: number): Model?
+	local _, yaw = frame:ToOrientation()
+	local m = Models.spire(name, parent, frame:PointToWorldSpace(Vector3.new(x, y, z)), math.deg(yaw))
+	if m then
+		Models.ghost(m)
+	end
+	return m
+end
+
 local function frameOf(n: number): CFrame
 	local theta = math.rad((n - 1) * 60)
 	return CFrame.lookAt(Vector3.new(RING * math.sin(theta), 0, -RING * math.cos(theta)), Vector3.zero)
@@ -154,6 +166,9 @@ for n = 1, COUNT do
 		promptEvent:Fire(player, n, "skydeck")
 	end)
 	local terminal = part(model, "Terminal", Vector3.new(3, 5, 1), at(12, 2.5, FRONT_Z + 3), APPROACH)
+	if blend(model, "build_terminal", frame, 12, 0, FRONT_Z + 3) then
+		invisible(terminal) -- keeps the Build prompt
+	end
 	prompt(terminal, "Build", "Build", 8) -- opens build mode on the client; the server ignores it
 	local hot = part(model, "Hot", Vector3.new(2, 2, 2), at(0, 3, TOWER_Z), HOT)
 	hot.Shape = Enum.PartType.Ball
@@ -168,7 +183,10 @@ for n = 1, COUNT do
 		promptEvent:Fire(player, n, "grab")
 	end)
 	-- Sign at the front-left corner, facing the Grid Plaza (local -Z is the Front face).
-	part(model, "SignPost", Vector3.new(0.6, 3, 0.6), at(-28, 1.5, -44), SIGN)
+	local post = part(model, "SignPost", Vector3.new(0.6, 3, 0.6), at(-28, 1.5, -44), SIGN)
+	if blend(model, "lot_sign", frame, -28, 0, -44) then
+		post.Transparency = 1
+	end
 	local sign = part(model, "Sign", Vector3.new(8, 4, 0.5), at(-28, 5, -44), SIGN)
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Front

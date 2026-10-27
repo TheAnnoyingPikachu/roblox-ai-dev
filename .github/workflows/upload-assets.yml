@@ -1,0 +1,96 @@
+# Uploads one game's Blender models to Roblox: Hundred Demon Night (night) or Neon Spire (spire).
+# Manual only.
+#
+# Files come from the repo, not from Blender: assets/<game>/<name>.fbx and <name>.png are built
+# locally (tools/blender/<game>/build.py, then export_assets.py) and committed, so CI uploads
+# exactly what was reviewed on the contact sheet and needs no 300 MB Blender install.
+#
+# Repo setup (done by a human, never by an agent):
+#   Environment "assets" with
+#     variable  ROBLOX_CREATOR_USER_ID  (the account that owns the experiences; the game loads
+#                                        the models with InsertService, which needs the same owner)
+#     secret    ROBLOX_API_KEY          (Open Cloud key of that user: Assets API read + write;
+#                                        add legacy-asset:manage so decal image ids resolve here)
+#
+# Output: tools/blender/<game>/uploaded.json and src/shared/NightAssets.luau or SpireAssets.luau
+# as the run artifact.
+# Commit both (with register.md rows) in a PR to switch the game to the new models.
+name: Upload Blender assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      game:
+        description: "Which game's assets to upload"
+        type: choice
+        options:
+          - night
+          - spire
+        default: night
+      assets:
+        description: "Comma-separated asset names (empty = all in the manifest)"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-assets
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: assets
+    steps:
+      - name: Check configuration
+        env:
+          CREATOR: ${{ vars.ROBLOX_CREATOR_USER_ID }}
+          HAS_KEY: ${{ secrets.ROBLOX_API_KEY != '' }}
+        run: |
+          CREATOR="$(printf '%s' "$CREATOR" | tr -d '\r\n\t ')"
+          echo "ROBLOX_CREATOR_USER_ID=${CREATOR}" >> "$GITHUB_ENV"
+          ok=true
+          [[ "$CREATOR" =~ ^[0-9]+$ ]] || { echo "::error::ROBLOX_CREATOR_USER_ID variable is empty or not digits"; ok=false; }
+          [[ "$HAS_KEY" == "true" ]] || { echo "::error::ROBLOX_API_KEY secret is empty or missing"; ok=false; }
+          $ok
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Upload models and textures
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          GAME: ${{ inputs.game }}
+          ASSETS: ${{ inputs.assets }}
+        run: node tools/blender/upload-assets.mjs "$GAME" $ASSETS
+
+      - name: Write the assets module
+        if: always()
+        env:
+          GAME: ${{ inputs.game }}
+        run: |
+          [ -f "tools/blender/$GAME/uploaded.json" ] || exit 0
+          node tools/blender/write-assets-module.mjs "$GAME"
+          {
+            echo "### Uploaded $GAME assets"
+            echo '```json'
+            cat "tools/blender/$GAME/uploaded.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.game }}-assets-${{ github.run_id }}
+          path: |
+            tools/blender/${{ inputs.game }}/uploaded.json
+            src/shared/${{ inputs.game == 'spire' && 'SpireAssets' || 'NightAssets' }}.luau
+          if-no-files-found: warn

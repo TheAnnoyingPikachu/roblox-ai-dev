@@ -22,6 +22,10 @@ local SpireConfig = require(Shared:WaitForChild("SpireConfig"))
 local SpireEconomy = require(Shared:WaitForChild("SpireEconomy"))
 local SpireProgress = require(Shared:WaitForChild("SpireProgress"))
 local TowerRules = require(Shared:WaitForChild("TowerRules"))
+-- Start loading the uploaded Blender models first (SpireAssets; none while every id is nil), so the
+-- lots and boards below and the client views find them.
+local Models = require(script.Parent:WaitForChild("Models"))
+Models.preloadSpire()
 local City = require(script.Parent:WaitForChild("City"))
 local Lots = require(script.Parent:WaitForChild("Lots"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))

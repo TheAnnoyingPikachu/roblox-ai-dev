@@ -74,6 +74,16 @@ local function decor(p: BasePart): BasePart
 	return p
 end
 
+-- Yaw in degrees that turns a model's front (-Z) the way `frame` looks (Models.night yaw).
+local function yawOf(frame: CFrame): number
+	return math.deg(math.atan2(-frame.LookVector.X, -frame.LookVector.Z))
+end
+
+-- First part of a Night model, to carry lights and emitters.
+local function body(model: Model): BasePart
+	return model:FindFirstChildWhichIsA("BasePart") :: BasePart
+end
+
 local function emitter(parent: BasePart, props: { [string]: any }): ParticleEmitter
 	local e = Instance.new("ParticleEmitter")
 	for key, value in props do
@@ -124,12 +134,31 @@ end
 
 -- Hanging paper lantern: glowing body with black caps.
 local function paperLantern(parent: Instance, at: Vector3, colour: Color3, light: boolean)
-	local body = decor(pillar(parent, at - Vector3.new(0, 1.1, 0), 2.2, 0.85, colour, Enum.Material.Neon))
-	decor(pillar(parent, at + Vector3.new(0, 1.1, 0), 0.3, 0.6, INK, Enum.Material.Wood))
-	decor(pillar(parent, at - Vector3.new(0, 1.4, 0), 0.3, 0.6, INK, Enum.Material.Wood))
-	if light then
-		glow(body, colour:Lerp(WARM, 0.5), 16, 1.6, true)
+	local name = if colour.G > 0.6 then "paper_lantern_cream" else "paper_lantern_red"
+	local model = Models.night(name, parent, at - Vector3.new(0, 1.4, 0))
+	local lamp: BasePart
+	if model then
+		Models.ghost(model)
+		lamp = body(model)
+	else
+		lamp = decor(pillar(parent, at - Vector3.new(0, 1.1, 0), 2.2, 0.85, colour, Enum.Material.Neon))
+		decor(pillar(parent, at + Vector3.new(0, 1.1, 0), 0.3, 0.6, INK, Enum.Material.Wood))
+		decor(pillar(parent, at - Vector3.new(0, 1.4, 0), 0.3, 0.6, INK, Enum.Material.Wood))
 	end
+	if light then
+		glow(lamp, colour:Lerp(WARM, 0.5), 16, 1.6, true)
+	end
+end
+
+-- Stone lantern (toro): the Night model with a warm light in its firebox, or Props.lantern.
+local function stoneLantern(parent: Instance, base: Vector3)
+	if Models.night("stone_lantern", parent, base) == nil then
+		Props.lantern(parent, base)
+		return
+	end
+	local fire = decor(part(parent, Vector3.one, base + Vector3.new(0, 4, 0), WARM))
+	fire.Transparency = 1
+	glow(fire, Color3.fromRGB(255, 170, 90), 14, 1.5)
 end
 
 -- White zigzag shide paper streamer hanging from `top`.
@@ -229,8 +258,8 @@ local function ground()
 		local at = Vector3.new(math.cos(angle) * (RADIUS + 4), 0, math.sin(angle) * (RADIUS + 4))
 		local entrance = at.Z > 0 and math.abs(at.X) < 10
 		local hall = at.Z < 0 and math.abs(at.X) < 26
-		if not entrance and not hall then
-			local face = CFrame.lookAt(at, Vector3.zero)
+		local face = CFrame.lookAt(at, Vector3.zero)
+		if not entrance and not hall and Models.night("wall_segment", folder, at, yawOf(face)) == nil then
 			part(folder, Vector3.new(width, 6, 2), face + Vector3.new(0, 2, 0), STONE, Enum.Material.Slate)
 			part(
 				folder,
@@ -248,7 +277,18 @@ end
 
 -- Kagura stage (centre) ----------------------------------------------------------------------
 
+-- The taiko drum model on the deck, or nil (the caller builds its part drum).
+local function taiko(base: Vector3): Model?
+	return Models.night("taiko_drum", folder, base, 45)
+end
+
 local function stage()
+	-- With the Night model the deck, skirt, ramps and pillars stay as invisible collision.
+	local mesh = Models.night("kagura_stage", folder, Vector3.zero)
+	if mesh then
+		Models.ghost(mesh)
+	end
+	local solid: { BasePart } = {}
 	local deck = part(
 		folder,
 		Vector3.new(32, 4, 32),
@@ -257,23 +297,34 @@ local function stage()
 		Enum.Material.WoodPlanks
 	)
 	deck.Name = "Stage"
-	part(folder, Vector3.new(33, 0.6, 33), Vector3.new(0, 0.3, 0), INK, Enum.Material.Wood)
+	table.insert(solid, deck)
+	table.insert(solid, part(folder, Vector3.new(33, 0.6, 33), Vector3.new(0, 0.3, 0), INK, Enum.Material.Wood))
 	-- Ramps on all four sides; a wedge's tall face is its +Z side, so each faces back to the deck.
 	for _, d in { Vector3.xAxis, -Vector3.xAxis, Vector3.zAxis, -Vector3.zAxis } do
 		local centre = d * 21 + Vector3.new(0, 2, 0)
-		wedge(
-			folder,
-			Vector3.new(8, 4, 10),
-			CFrame.lookAt(centre, centre + d),
-			Color3.fromRGB(140, 98, 66),
-			Enum.Material.WoodPlanks
+		table.insert(
+			solid,
+			wedge(
+				folder,
+				Vector3.new(8, 4, 10),
+				CFrame.lookAt(centre, centre + d),
+				Color3.fromRGB(140, 98, 66),
+				Enum.Material.WoodPlanks
+			)
 		)
 	end
 	for _, x in { -15, 15 } do
 		for _, z in { -15, 15 } do
-			pillar(folder, Vector3.new(x, 4, z), 12, 0.8, VERMILION, Enum.Material.Wood)
+			table.insert(solid, pillar(folder, Vector3.new(x, 4, z), 12, 0.8, VERMILION, Enum.Material.Wood))
 			paperLantern(folder, Vector3.new(x * 1.12, 13, z * 1.12), Color3.fromRGB(255, 90, 60), true)
 		end
+	end
+	if mesh then
+		for _, p in solid do
+			p.Transparency = 1
+		end
+		taiko(Vector3.new(-8, 4, -8))
+		return
 	end
 	-- Eaves and a gabled roof (two wedges meeting at a west-east ridge).
 	part(folder, Vector3.new(36, 0.8, 36), Vector3.new(0, 16.4, 0), INK, Enum.Material.Wood)
@@ -304,6 +355,9 @@ local function stage()
 		end
 	end
 	-- A taiko drum on the deck.
+	if taiko(Vector3.new(-8, 4, -8)) then
+		return
+	end
 	local drum = part(
 		folder,
 		Vector3.new(2.4, 3.4, 3.4),
@@ -340,14 +394,19 @@ local function pit()
 	glow(core, PURPLE, 30, 2)
 	for _, x in { -30, 30 } do
 		part(folder, Vector3.new(8, 1.5, 8), Vector3.new(x, 0.75, -80), STONE, Enum.Material.Slate)
-		Models.spawn("oni", folder, Vector3.new(x, 1.5, -80), 0.8, 180)
+		if Models.night("oni_statue", folder, Vector3.new(x, 1.5, -80), 180) == nil then
+			Models.spawn("oni", folder, Vector3.new(x, 1.5, -80), 0.8, 180)
+		end
 	end
 end
 
 local function shrineHall()
 	local at = Vector3.new(0, 0, -115)
 	part(folder, Vector3.new(50, 1.5, 44), at + Vector3.new(0, 0.75, 0), STONE, Enum.Material.Slate)
-	if Models.spawn("shrineHall", folder, at + Vector3.new(0, 1.5, 0), 1.3, 180) == nil then
+	if
+		Models.night("shrine_hall", folder, at + Vector3.new(0, 1.5, 0), 180) == nil
+		and Models.spawn("shrineHall", folder, at + Vector3.new(0, 1.5, 0), 1.3, 180) == nil
+	then
 		part(
 			folder,
 			Vector3.new(36, 12, 26),
@@ -375,8 +434,12 @@ end
 
 local function sacredTree()
 	local at = Vector3.new(-55, 0, 45)
-	local tree = Models.spawn("sacredTree", folder, at, 1, 30)
-	if tree then
+	-- The Night model carries its own shimenawa rope and shide.
+	local blender = Models.night("sacred_tree", folder, at, 30)
+	local tree = if blender then nil else Models.spawn("sacredTree", folder, at, 1, 30)
+	if blender then
+		Models.ghost(blender)
+	elseif tree then
 		tree.CanCollide = false
 	else
 		pillar(folder, at, 22, 3.5, Color3.fromRGB(70, 50, 38), Enum.Material.Wood)
@@ -395,7 +458,7 @@ local function sacredTree()
 		end
 	end
 	-- Shimenawa ring with paper streamers, and a low stone fence (tamagaki).
-	for i = 0, 9 do
+	for i = 0, if blender then -1 else 9 do
 		local angle = i / 10 * math.pi * 2
 		local p = at + Vector3.new(math.cos(angle) * 5.5, 9, math.sin(angle) * 5.5)
 		local rope = decor(
@@ -429,6 +492,12 @@ end
 
 local function bridge(z: number, halfLength: number)
 	local centre = Vector3.new(-60, 0, z)
+	-- With the Night model the deck and rail parts stay as invisible collision.
+	local mesh = Models.night("arched_bridge", folder, centre)
+	if mesh then
+		Models.ghost(mesh)
+	end
+	local solid: { BasePart } = {}
 	local steps = 8
 	local rise = 3
 	local function height(s: number): number
@@ -439,19 +508,36 @@ local function bridge(z: number, halfLength: number)
 		local a = centre + Vector3.new(-halfLength + s0 * 2 * halfLength, height(s0), 0)
 		local b = centre + Vector3.new(-halfLength + s1 * 2 * halfLength, height(s1), 0)
 		local length = (b - a).Magnitude + 0.3
-		part(
-			folder,
-			Vector3.new(length, 0.6, 6),
-			CFrame.lookAt((a + b) / 2, b) * CFrame.Angles(0, math.rad(90), 0),
-			Color3.fromRGB(150, 40, 30),
-			Enum.Material.Wood
+		table.insert(
+			solid,
+			part(
+				folder,
+				Vector3.new(length, 0.6, 6),
+				CFrame.lookAt((a + b) / 2, b) * CFrame.Angles(0, math.rad(90), 0),
+				Color3.fromRGB(150, 40, 30),
+				Enum.Material.Wood
+			)
 		)
 		for _, side in { -3, 3 } do
 			local rail = CFrame.lookAt((a + b) / 2 + Vector3.new(0, 1.6, side), b + Vector3.new(0, 1.6, side))
-			part(folder, Vector3.new(0.3, 0.3, length), rail, VERMILION, Enum.Material.Wood)
+			table.insert(solid, part(folder, Vector3.new(0.3, 0.3, length), rail, VERMILION, Enum.Material.Wood))
 			if i % 2 == 0 then
-				part(folder, Vector3.new(0.4, 1.8, 0.4), a + Vector3.new(0, 0.9, side), VERMILION, Enum.Material.Wood)
+				table.insert(
+					solid,
+					part(
+						folder,
+						Vector3.new(0.4, 1.8, 0.4),
+						a + Vector3.new(0, 0.9, side),
+						VERMILION,
+						Enum.Material.Wood
+					)
+				)
 			end
+		end
+	end
+	if mesh then
+		for _, p in solid do
+			p.Transparency = 1
 		end
 	end
 end
@@ -479,14 +565,15 @@ local function pond()
 	for i = 1, 8 do
 		local at = centre + Vector3.new(rng:NextNumber(-12, 12), 0.15, rng:NextNumber(-12, 12))
 		if i <= 5 then
-			decor(
-				part(
-					folder,
-					Vector3.new(0.6, 0.3, 1.6),
-					CFrame.new(at) * CFrame.Angles(0, rng:NextNumber(0, 6.28), 0),
-					koi[i % 3 + 1]
+			local yaw = rng:NextNumber(0, 6.28)
+			local fish = Models.night("koi", folder, at - Vector3.new(0, 0.15, 0), math.deg(yaw))
+			if fish then
+				Models.ghost(fish)
+			else
+				decor(
+					part(folder, Vector3.new(0.6, 0.3, 1.6), CFrame.new(at) * CFrame.Angles(0, yaw, 0), koi[i % 3 + 1])
 				)
-			)
+			end
 		else
 			decor(
 				pillar(
@@ -513,34 +600,44 @@ local STALLS = {
 	{ "焼きそば\nYAKISOBA", Color3.fromRGB(40, 50, 120) },
 }
 
+-- Night stall model per awning colour (lower-case Color3:ToHex()).
+local STALL_MODELS =
+	{ c82828 = "festival_stall_red", f0f0eb = "festival_stall_white", ["283278"] = "festival_stall_indigo" }
+
 local function stalls()
 	local accent = { Color3.fromRGB(240, 240, 235), Color3.fromRGB(200, 40, 40), Color3.fromRGB(240, 240, 235) }
 	for i, info in STALLS do
 		local z = (i - 3) * 18
 		-- Local frame: -Z faces the courtyard centre (west).
 		local frame = CFrame.lookAt(Vector3.new(62, 0, z), Vector3.new(0, 0, z))
-		part(folder, Vector3.new(9, 3, 2.5), frame * CFrame.new(0, 1.5, -2.5), WOOD, Enum.Material.WoodPlanks)
-		for _, x in { -4.3, 4.3 } do
-			for _, depth in { -3.6, 3 } do
+		-- The Night stall model replaces the counter, posts, awning, goods and crates; the sign
+		-- (SurfaceGui text) and lanterns stay.
+		local stall = STALL_MODELS[string.lower((info[2] :: Color3):ToHex())]
+		local built = Models.night(stall, folder, Vector3.new(62, 0, z), yawOf(frame)) ~= nil
+		if not built then
+			part(folder, Vector3.new(9, 3, 2.5), frame * CFrame.new(0, 1.5, -2.5), WOOD, Enum.Material.WoodPlanks)
+			for _, x in { -4.3, 4.3 } do
+				for _, depth in { -3.6, 3 } do
+					part(
+						folder,
+						Vector3.new(0.5, 8, 0.5),
+						frame * CFrame.new(x, 4, depth),
+						Color3.fromRGB(70, 46, 32),
+						Enum.Material.Wood
+					)
+				end
+			end
+			-- Striped fabric awning sloping down to the front.
+			for s = 1, 3 do
+				local colour = if s == 2 then info[2] else accent[(i % 2) + 1]
 				part(
 					folder,
-					Vector3.new(0.5, 8, 0.5),
-					frame * CFrame.new(x, 4, depth),
-					Color3.fromRGB(70, 46, 32),
-					Enum.Material.Wood
+					Vector3.new(3.4, 0.25, 9),
+					frame * CFrame.new(-6.8 + s * 3.4, 8.4, -0.6) * CFrame.Angles(math.rad(-14), 0, 0),
+					colour,
+					Enum.Material.Fabric
 				)
 			end
-		end
-		-- Striped fabric awning sloping down to the front.
-		for s = 1, 3 do
-			local colour = if s == 2 then info[2] else accent[(i % 2) + 1]
-			part(
-				folder,
-				Vector3.new(3.4, 0.25, 9),
-				frame * CFrame.new(-6.8 + s * 3.4, 8.4, -0.6) * CFrame.Angles(math.rad(-14), 0, 0),
-				colour,
-				Enum.Material.Fabric
-			)
 		end
 		local sign = part(folder, Vector3.new(8, 2.4, 0.3), frame * CFrame.new(0, 10.6, -4.4), INK, Enum.Material.Wood)
 		label(sign, info[1], Color3.fromRGB(255, 220, 150))
@@ -552,31 +649,33 @@ local function stalls()
 				x < 0
 			)
 		end
-		for g = -1, 1 do
-			local good = decor(
-				part(
-					folder,
-					Vector3.new(1, 0.8, 1),
-					frame * CFrame.new(g * 2.6, 3.4, -2.5),
-					Color3.fromHSV((i * 0.17 + g * 0.08) % 1, 0.7, 0.9)
+		if not built then
+			for g = -1, 1 do
+				local good = decor(
+					part(
+						folder,
+						Vector3.new(1, 0.8, 1),
+						frame * CFrame.new(g * 2.6, 3.4, -2.5),
+						Color3.fromHSV((i * 0.17 + g * 0.08) % 1, 0.7, 0.9)
+					)
 				)
+				good.Shape = Enum.PartType.Ball
+			end
+			part(
+				folder,
+				Vector3.new(2, 2, 2),
+				frame * CFrame.new(5.8, 1, -1),
+				Color3.fromRGB(150, 110, 70),
+				Enum.Material.Wood
 			)
-			good.Shape = Enum.PartType.Ball
+			part(
+				folder,
+				Vector3.new(1.6, 1.6, 1.6),
+				frame * CFrame.new(5.6, 2.8, -0.8) * CFrame.Angles(0, 0.4, 0),
+				Color3.fromRGB(140, 100, 64),
+				Enum.Material.Wood
+			)
 		end
-		part(
-			folder,
-			Vector3.new(2, 2, 2),
-			frame * CFrame.new(5.8, 1, -1),
-			Color3.fromRGB(150, 110, 70),
-			Enum.Material.Wood
-		)
-		part(
-			folder,
-			Vector3.new(1.6, 1.6, 1.6),
-			frame * CFrame.new(5.6, 2.8, -0.8) * CFrame.Angles(0, 0.4, 0),
-			Color3.fromRGB(140, 100, 64),
-			Enum.Material.Wood
-		)
 	end
 end
 
@@ -586,14 +685,22 @@ local GATES = { Vector3.new(60, 0, 60), Vector3.new(-60, 0, -60), Vector3.new(60
 
 local function demonGate(at: Vector3)
 	local frame = CFrame.lookAt(at, Vector3.zero)
-	for _, x in { -6, 6 } do
-		local foot = (frame * CFrame.new(x, 0, 0)).Position
-		pillar(folder, foot, 14, 0.9, INK, Enum.Material.Wood)
-		decor(part(folder, Vector3.new(0.3, 12, 0.3), frame * CFrame.new(x, 7, -0.95), PURPLE, Enum.Material.Neon))
+	local gate = Models.night("demon_gate", folder, at, yawOf(frame))
+	local neon = gate and gate:FindFirstChild("demon_gate_glow") :: BasePart?
+	if neon then
+		neon.Material = Enum.Material.Neon
+		neon.Color = PURPLE
 	end
-	part(folder, Vector3.new(18, 1.2, 1.8), frame * CFrame.new(0, 14.4, 0), INK, Enum.Material.Wood)
-	part(folder, Vector3.new(15, 0.8, 0.8), frame * CFrame.new(0, 11.5, 0), INK, Enum.Material.Wood)
-	decor(part(folder, Vector3.new(18, 0.2, 0.2), frame * CFrame.new(0, 13.7, -0.95), PURPLE, Enum.Material.Neon))
+	if gate == nil then
+		for _, x in { -6, 6 } do
+			local foot = (frame * CFrame.new(x, 0, 0)).Position
+			pillar(folder, foot, 14, 0.9, INK, Enum.Material.Wood)
+			decor(part(folder, Vector3.new(0.3, 12, 0.3), frame * CFrame.new(x, 7, -0.95), PURPLE, Enum.Material.Neon))
+		end
+		part(folder, Vector3.new(18, 1.2, 1.8), frame * CFrame.new(0, 14.4, 0), INK, Enum.Material.Wood)
+		part(folder, Vector3.new(15, 0.8, 0.8), frame * CFrame.new(0, 11.5, 0), INK, Enum.Material.Wood)
+		decor(part(folder, Vector3.new(18, 0.2, 0.2), frame * CFrame.new(0, 13.7, -0.95), PURPLE, Enum.Material.Neon))
+	end
 	local portal =
 		decor(part(folder, Vector3.new(11, 11, 0.2), frame * CFrame.new(0, 5.6, 0), PURPLE, Enum.Material.Neon))
 	portal.Transparency = 0.75
@@ -613,10 +720,16 @@ local function demonGate(at: Vector3)
 	glow(floor, PURPLE, 24, 2.5)
 
 	-- An idle yokai drifting at the gate, shown only while no night is running (GDD I2 menu orbit).
-	local wisp = decor(
-		part(folder, Vector3.one * 2.2, frame * CFrame.new(0, 4, -4), Color3.fromRGB(200, 235, 255), Enum.Material.Neon)
-	)
-	wisp.Shape = Enum.PartType.Ball
+	local spot = frame * CFrame.new(0, 4, -4)
+	local wisp: BasePart? = Models.nightPart("wisp", folder, spot.Position - Vector3.new(0, 1.8, 0), yawOf(frame))
+	if wisp then
+		decor(wisp)
+	else
+		local ball = decor(part(folder, Vector3.one * 2.2, spot, Color3.fromRGB(200, 235, 255), Enum.Material.Neon))
+		ball.Shape = Enum.PartType.Ball
+		wisp = ball
+	end
+	assert(wisp, "wisp")
 	local fire = Instance.new("Fire")
 	fire.Color = Color3.fromRGB(110, 180, 255)
 	fire.SecondaryColor = WHITE
@@ -632,17 +745,31 @@ local function demonGate(at: Vector3)
 end
 
 local function entrance()
-	Props.torii(folder, Vector3.new(0, 0, 98), 18, 16, Color3.fromRGB(255, 210, 120), "百鬼夜行")
+	if Models.night("entrance_torii", folder, Vector3.new(0, 0, 98), 180) then
+		-- Same plaque Props.torii hangs under the kasagi.
+		local text = "百鬼夜行"
+		local plaque = part(folder, Vector3.new(math.max(4, #text * 0.9), 1.6, 0.4), Vector3.new(0, 14.8, 98), INK)
+		plaque.Material = Enum.Material.Slate
+		plaque.CanCollide = false
+		label(plaque, text, Color3.fromRGB(255, 210, 120))
+	else
+		Props.torii(folder, Vector3.new(0, 0, 98), 18, 16, Color3.fromRGB(255, 210, 120), "百鬼夜行")
+	end
 	for _, x in { -9, 9 } do
 		part(folder, Vector3.new(4, 2, 5), Vector3.new(x, 1, 88), STONE, Enum.Material.Slate)
-		Models.spawn("komainu", folder, Vector3.new(x, 2, 88), 0.9, 180)
-		Props.lantern(folder, Vector3.new(x * 1.6, 0, 93))
+		if Models.night("komainu", folder, Vector3.new(x, 2, 88), 180) == nil then
+			Models.spawn("komainu", folder, Vector3.new(x, 2, 88), 0.9, 180)
+		end
+		stoneLantern(folder, Vector3.new(x * 1.6, 0, 93))
 	end
 	-- Nights-won leaderboard: a lantern board beside the entrance path, facing west.
 	local board = part(folder, Vector3.new(1, 12, 16), Vector3.new(24, 7, 82), INK, Enum.Material.Wood)
 	board.Name = "Leaderboard"
+	local frameModel = Models.night("leaderboard_frame", folder, Vector3.new(24, 0, 82), 90)
 	for _, z in { -8.6, 8.6 } do
-		pillar(folder, Vector3.new(24, 0, 82 + z), 14, 0.5, VERMILION, Enum.Material.Wood)
+		if frameModel == nil then
+			pillar(folder, Vector3.new(24, 0, 82 + z), 14, 0.5, VERMILION, Enum.Material.Wood)
+		end
 		paperLantern(folder, Vector3.new(23, 15, 82 + z), Color3.fromRGB(255, 120, 60), true)
 	end
 	local gui = Instance.new("SurfaceGui")
@@ -674,7 +801,7 @@ local function rimLanterns()
 		if (at - PIT).Magnitude >= 30 then
 			local model = Instance.new("Model")
 			model.Name = "StoneLantern"
-			Props.lantern(model, at)
+			stoneLantern(model, at)
 			for _, d in model:GetDescendants() do
 				if d:IsA("PointLight") then
 					d.Range = 18
@@ -735,7 +862,9 @@ local function sakuraRing()
 		local angle = (i + 0.5) / 12 * math.pi * 2
 		local distance = rng:NextNumber(110, 130)
 		local at = Vector3.new(math.cos(angle) * distance, -1, math.sin(angle) * distance)
-		local tree = Models.spawn("sakura", folder, at, rng:NextNumber(1, 1.3), rng:NextNumber(0, 360))
+		local scale, yaw = rng:NextNumber(1, 1.3), rng:NextNumber(0, 360)
+		local blender = Models.night("sakura_tree", folder, at, yaw, scale)
+		local tree = if blender then body(blender) else Models.spawn("sakura", folder, at, scale, yaw)
 		if tree then
 			petals(tree, 2)
 		else
@@ -757,6 +886,17 @@ local function forest()
 		local distance = rng:NextNumber(150, 320)
 		local base = Vector3.new(math.cos(angle) * distance, -1, math.sin(angle) * distance)
 		local height = rng:NextNumber(14, 26)
+		local cedar = Models.night("cedar_tree", trees, base, math.deg(angle), height / 26)
+		if cedar then
+			for _, p in cedar:GetChildren() do
+				(p :: BasePart).CastShadow = false
+			end
+			-- Keep the random sequence of the part forest so the layout does not change.
+			for _ = 0, 2 do
+				rng:NextInteger(1, #greens)
+			end
+			continue
+		end
 		pillar(trees, base, height, 1.2, Color3.fromRGB(60, 42, 32), Enum.Material.Wood)
 		-- Cedar-like stacked cones of leaves.
 		for layer = 0, 2 do

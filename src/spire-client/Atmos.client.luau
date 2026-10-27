@@ -155,8 +155,8 @@ local function fadeMusic(to: number, seconds: number)
 	if fading then
 		fading:Cancel()
 	end
-	fading = TweenService:Create(music, TweenInfo.new(seconds), { Volume = to })
-	;(fading :: Tween):Play()
+	fading = TweenService:Create(music, TweenInfo.new(seconds), { Volume = to });
+	(fading :: Tween):Play()
 end
 
 local function updateMusic()

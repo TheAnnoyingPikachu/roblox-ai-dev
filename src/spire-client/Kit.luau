@@ -2,7 +2,7 @@
 -- Neon Spire look kit (SPIRE-007), shared by the TowerView, PlazaView and City client scripts:
 -- the decorative part builder, the silly billboard products (art bible 1), animated ad screens,
 -- one loop for slow spins and the 0.5 Hz aircraft blink (steady with Reduce Flashing, GDD I4.6),
--- and hero meshes (decision 0010 option B) through Models when it is mapped to ReplicatedStorage.
+-- and the custom Blender models (tools/blender/spire) replicated by the server.
 -- Decorative parts never collide, touch or block raycasts unless a caller turns CanQuery back on.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -185,32 +185,64 @@ RunService.Heartbeat:Connect(function(dt)
 	end
 end)
 
--- Hero meshes ---------------------------------------------------------------------------------------
+-- Blender models ------------------------------------------------------------------------------------
 
--- Models.spawn when src/relay/Models.luau is mapped to ReplicatedStorage.Models (a hook for the
--- Director, spire.project.json); otherwise nil and the caller keeps its primitive build. Yields.
-local models: any = nil
-local modelsTried = false
-function Kit.mesh(name: string, parent: Instance, base: Vector3, scale: number, yaw: number): MeshPart?
-	if not modelsTried then
-		modelsTried = true
-		local m = ReplicatedStorage:FindFirstChild("Models")
-		if m and m:IsA("ModuleScript") then
-			local ok, result = pcall(require, m)
-			models = if ok then result else nil
+-- The server loads every uploaded Spire model (Models.preloadSpire) and copies it to
+-- ReplicatedStorage.SpireModels. Until an asset has a model id (src/shared/SpireAssets.luau) or
+-- while it is still loading, Kit.model returns nil and the caller keeps its part-built visual.
+local SpireAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("SpireAssets"))
+
+-- Waits (at most 15 s in all) for the uploaded models to reach the client, so views built right
+-- after use them. Returns at once while no id is uploaded.
+function Kit.waitModels()
+	local deadline = os.clock() + 15
+	for name, entry in SpireAssets do
+		if entry.model then
+			local folder = ReplicatedStorage:WaitForChild("SpireModels", math.max(0, deadline - os.clock()))
+			if folder == nil or folder:WaitForChild(name, math.max(0, deadline - os.clock())) == nil then
+				return
+			end
 		end
 	end
-	if not models then
+end
+
+-- A decorative copy of a Spire model standing on `base` (bounding box centred in x/z, lowest point
+-- on base.Y), facing `yaw` degrees, or nil when it is not loaded. Never yields.
+function Kit.model(name: string, parent: Instance, base: Vector3, yaw: number?, scale: number?): Model?
+	local folder = ReplicatedStorage:FindFirstChild("SpireModels")
+	local template = folder and folder:FindFirstChild(name)
+	if template == nil or not template:IsA("Model") then
 		return nil
 	end
-	local mesh = models.spawn(name, parent, base, scale, yaw)
-	if mesh then
-		mesh.CanCollide = false
-		mesh.CanTouch = false
-		mesh.CanQuery = false
-		mesh:SetAttribute("Base", 0)
+	local copy = template:Clone()
+	if scale and scale ~= 1 then
+		copy:ScaleTo(copy:GetScale() * scale)
 	end
-	return mesh
+	copy:PivotTo(CFrame.new(base) * CFrame.Angles(0, math.rad(yaw or 0), 0))
+	local box, size = copy:GetBoundingBox()
+	copy:PivotTo(copy:GetPivot() + Vector3.new(base.X - box.X, base.Y - (box.Y - size.Y / 2), base.Z - box.Z))
+	for _, p in copy:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.CanCollide = false
+			p.CanTouch = false
+			p.CanQuery = false
+			p.CastShadow = false
+			p:SetAttribute("Base", p.Transparency)
+		end
+	end
+	copy.Parent = parent
+	return copy
+end
+
+-- The model's neon meshes (`<asset>_glow`, `_glow2`, ...), for recolouring or adding a light.
+function Kit.glow(model: Model, suffix: string?): BasePart?
+	return model:FindFirstChild(`{model.Name}_glow{suffix or ""}`) :: BasePart?
+end
+
+-- Yaw in degrees of a frame's look direction (for Kit.model, whose front is -Z).
+function Kit.yaw(frame: CFrame): number
+	local _, y = frame:ToOrientation()
+	return math.deg(y)
 end
 
 return Kit

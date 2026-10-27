@@ -9,6 +9,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local SpireConfig = require(Shared:WaitForChild("SpireConfig"))
 local SpireEconomy = require(Shared:WaitForChild("SpireEconomy"))
+local Models = require(script.Parent:WaitForChild("Models"))
 
 local City = {}
 
@@ -53,9 +54,18 @@ end
 
 -- A board on a post at `at` (ground), its front facing the plaza centre; returns its SurfaceGui.
 local function board(parent: Instance, name: string, at: Vector3): SurfaceGui
-	part(parent, `{name}Post`, Vector3.new(1, 4, 1), CFrame.new(at + Vector3.new(0, 2, 0)), BOARD)
+	local post = part(parent, `{name}Post`, Vector3.new(1, 4, 1), CFrame.new(at + Vector3.new(0, 2, 0)), BOARD)
 	local centre = at + Vector3.new(0, 9, 0)
 	local b = part(parent, name, Vector3.new(16, 10, 0.6), CFrame.lookAt(centre, Vector3.new(0, centre.Y, 0)), BOARD)
+	-- Blender frame around the board once uploaded (SpireAssets board_frame); the client then skips
+	-- its own neon frame. The board part keeps the SurfaceGui.
+	local _, yaw = b.CFrame:ToOrientation()
+	local frame = Models.spire("board_frame", parent, at, math.deg(yaw))
+	if frame then
+		Models.ghost(frame)
+		post.Transparency = 1
+		b:SetAttribute("Framed", true)
+	end
 	local gui = Instance.new("SurfaceGui")
 	gui.Face = Enum.NormalId.Front
 	gui.LightInfluence = 0

@@ -313,7 +313,8 @@ end
 ClientState.SFX = {
 	tick = "rbxassetid://9117060347", -- beep: coin pickups (pitched up), timers
 	chime = "rbxassetid://9125585534", -- gong: reveal chimes, rising in pitch with rarity
-	fanfare = "rbxassetid://9114630316", -- resonant gong: Legendary and Mythic reveals, stingers
+	fanfare = "rbxassetid://1848287237", -- APM acoustic tag: Legendary and Mythic reveals, level up
+	sting = "rbxassetid://9048769919", -- APM mallet hit: Sunbeam, Moonfall and Rainbow Shower start
 	whoosh = "rbxassetid://9114373663", -- wobble, pop, run-off
 	puff = "rbxassetid://9125442175", -- shell crack, splash
 	thud = "rbxasset://sounds/action_jump_land.mp3",
