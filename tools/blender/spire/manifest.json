@@ -1,0 +1,1232 @@
+{
+  "server_rack": {
+    "fbx": "build/blender/spire/server_rack.fbx",
+    "png": "build/blender/spire/server_rack.png",
+    "preview": "build/blender/spire/previews/server_rack.png",
+    "size_studs": [
+      5.6,
+      6.16,
+      5.6
+    ],
+    "tris": 1348,
+    "parts": {
+      "server_rack": 1300,
+      "server_rack_glow": 48
+    },
+    "target_size_studs": [
+      5.6,
+      6.2,
+      5.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Data Farm module (Server Rack): src/spire-client/TowerView.client.luau 136-155 (module box per slot)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "",
+    "glow": {
+      "server_rack_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "fusion_cell": {
+    "fbx": "build/blender/spire/fusion_cell.fbx",
+    "png": "build/blender/spire/fusion_cell.png",
+    "preview": "build/blender/spire/previews/fusion_cell.png",
+    "size_studs": [
+      5.17,
+      5.8,
+      5.17
+    ],
+    "tris": 1094,
+    "parts": {
+      "fusion_cell": 230,
+      "fusion_cell_glow": 864
+    },
+    "target_size_studs": [
+      5.6,
+      5.8,
+      5.6
+    ],
+    "tris_budget": 2000,
+    "priority": "P1",
+    "replaces": "Fusion Core module (Fusion Cell): src/spire-client/TowerView.client.luau 136-155 (module box per slot)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "",
+    "glow": {
+      "fusion_cell_glow": [
+        255,
+        184,
+        0
+      ]
+    }
+  },
+  "holo_projector": {
+    "fbx": "build/blender/spire/holo_projector.fbx",
+    "png": "build/blender/spire/holo_projector.png",
+    "preview": "build/blender/spire/previews/holo_projector.png",
+    "size_studs": [
+      5.0,
+      5.21,
+      5.0
+    ],
+    "tris": 288,
+    "parts": {
+      "holo_projector": 248,
+      "holo_projector_glow": 40
+    },
+    "target_size_studs": [
+      5.0,
+      5.2,
+      5.0
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "Holo Ad Agency module (Holo Projector): src/spire-client/TowerView.client.luau 136-155 (module box per slot)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "",
+    "glow": {
+      "holo_projector_glow": [
+        255,
+        42,
+        109
+      ]
+    }
+  },
+  "bio_printer": {
+    "fbx": "build/blender/spire/bio_printer.fbx",
+    "png": "build/blender/spire/bio_printer.png",
+    "preview": "build/blender/spire/previews/bio_printer.png",
+    "size_studs": [
+      5.6,
+      5.2,
+      5.6
+    ],
+    "tris": 756,
+    "parts": {
+      "bio_printer": 500,
+      "bio_printer_glow": 256
+    },
+    "target_size_studs": [
+      5.6,
+      5.2,
+      5.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Synth Lab module (Bio-Printer): src/spire-client/TowerView.client.luau 136-155 (module box per slot)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "",
+    "glow": {
+      "bio_printer_glow": [
+        182,
+        255,
+        59
+      ]
+    }
+  },
+  "drone_dock": {
+    "fbx": "build/blender/spire/drone_dock.fbx",
+    "png": "build/blender/spire/drone_dock.png",
+    "preview": "build/blender/spire/previews/drone_dock.png",
+    "size_studs": [
+      5.46,
+      3.97,
+      5.46
+    ],
+    "tris": 1302,
+    "parts": {
+      "drone_dock": 586,
+      "drone_dock_glow": 716
+    },
+    "target_size_studs": [
+      5.6,
+      4.8,
+      5.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Drone Port module (Courier Drone): src/spire-client/TowerView.client.luau 136-155 (module box per slot)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "",
+    "glow": {
+      "drone_dock_glow": [
+        255,
+        107,
+        74
+      ]
+    }
+  },
+  "q_mind": {
+    "fbx": "build/blender/spire/q_mind.fbx",
+    "png": "build/blender/spire/q_mind.png",
+    "preview": "build/blender/spire/previews/q_mind.png",
+    "size_studs": [
+      5.6,
+      6.0,
+      5.2
+    ],
+    "tris": 1214,
+    "parts": {
+      "q_mind": 494,
+      "q_mind_glow": 720
+    },
+    "target_size_studs": [
+      5.6,
+      6.0,
+      5.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Quantum Core module (Q-Mind): src/spire-client/TowerView.client.luau 136-155 (module box per slot)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "Art bible 5.1: violet orb visible through the glass.",
+    "glow": {
+      "q_mind_glow": [
+        123,
+        47,
+        255
+      ]
+    }
+  },
+  "uplink_dish": {
+    "fbx": "build/blender/spire/uplink_dish.fbx",
+    "png": "build/blender/spire/uplink_dish.png",
+    "preview": "build/blender/spire/previews/uplink_dish.png",
+    "size_studs": [
+      5.28,
+      6.9,
+      4.98
+    ],
+    "tris": 750,
+    "parts": {
+      "uplink_dish": 462,
+      "uplink_dish_glow": 288
+    },
+    "target_size_studs": [
+      5.2,
+      6.4,
+      5.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Orbital Uplink module (Uplink Dish): src/spire-client/TowerView.client.luau 136-155 (module box per slot); art bible 10 #13",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "",
+    "glow": {
+      "uplink_dish_glow": [
+        232,
+        246,
+        255
+      ]
+    }
+  },
+  "roof_antenna": {
+    "fbx": "build/blender/spire/roof_antenna.fbx",
+    "png": "build/blender/spire/roof_antenna.png",
+    "preview": "build/blender/spire/previews/roof_antenna.png",
+    "size_studs": [
+      6.0,
+      22.6,
+      6.0
+    ],
+    "tris": 1024,
+    "parts": {
+      "roof_antenna": 664,
+      "roof_antenna_glow": 192,
+      "roof_antenna_glow2": 168
+    },
+    "target_size_studs": [
+      6,
+      22,
+      6
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "Roof antenna and beacon: src/spire-client/TowerView.client.luau 166-170 (art bible 5.4 default crown)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "glow2 is the beacon (code blinks it); company sign BillboardGui stays.",
+    "glow": {
+      "roof_antenna_glow": [
+        0,
+        240,
+        255
+      ],
+      "roof_antenna_glow2": [
+        255,
+        40,
+        60
+      ]
+    }
+  },
+  "lift_ring": {
+    "fbx": "build/blender/spire/lift_ring.fbx",
+    "png": "build/blender/spire/lift_ring.png",
+    "preview": "build/blender/spire/previews/lift_ring.png",
+    "size_studs": [
+      8.0,
+      0.3,
+      8.0
+    ],
+    "tris": 694,
+    "parts": {
+      "lift_ring": 282,
+      "lift_ring_glow": 412
+    },
+    "target_size_studs": [
+      8,
+      0.3,
+      8
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "Lift ring per floor (TowerView.client.luau 114-123) and lobby lift pad (src/spire/Lots.luau 305-316)",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "Floor decal-like disc; the server pad stays invisible with its prompt.",
+    "glow": {
+      "lift_ring_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "city_crest": {
+    "fbx": "build/blender/spire/city_crest.fbx",
+    "png": "build/blender/spire/city_crest.png",
+    "preview": "build/blender/spire/previews/city_crest.png",
+    "size_studs": [
+      11.52,
+      25.35,
+      14.63
+    ],
+    "tris": 6598,
+    "parts": {
+      "city_crest": 3354,
+      "city_crest_glow": 1176,
+      "city_crest_glow2": 1024,
+      "city_crest_glow3": 1044
+    },
+    "target_size_studs": [
+      16,
+      25,
+      16
+    ],
+    "tris_budget": 8000,
+    "priority": "P1",
+    "replaces": "City crest rings (src/spire-client/City.client.luau 108-143, Kit.mesh hook cityCrest); art bible 10 #14",
+    "script": "tools/blender/spire/assets/city.py",
+    "notes": "Hero. Stands on the existing dais at y 1.3; code spins the whole model slowly (Kit.spin).",
+    "glow": {
+      "city_crest_glow": [
+        0,
+        240,
+        255
+      ],
+      "city_crest_glow2": [
+        255,
+        42,
+        109
+      ],
+      "city_crest_glow3": [
+        123,
+        47,
+        255
+      ]
+    }
+  },
+  "build_terminal": {
+    "fbx": "build/blender/spire/build_terminal.fbx",
+    "png": "build/blender/spire/build_terminal.png",
+    "preview": "build/blender/spire/previews/build_terminal.png",
+    "size_studs": [
+      3.0,
+      9.7,
+      1.95
+    ],
+    "tris": 744,
+    "parts": {
+      "build_terminal": 332,
+      "build_terminal_glow": 412
+    },
+    "target_size_studs": [
+      3.0,
+      9.7,
+      1.6
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "BUILD terminal box (src/spire/Lots.luau 320-321); art bible 5.2 kiosk with a holo tower",
+    "script": "tools/blender/spire/assets/city.py",
+    "notes": "Server keeps the terminal part (invisible) for the Build prompt.",
+    "glow": {
+      "build_terminal_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "neon_bench": {
+    "fbx": "build/blender/spire/neon_bench.fbx",
+    "png": "build/blender/spire/neon_bench.png",
+    "preview": "build/blender/spire/previews/neon_bench.png",
+    "size_studs": [
+      3.3,
+      2.21,
+      1.47
+    ],
+    "tris": 1212,
+    "parts": {
+      "neon_bench": 1188,
+      "neon_bench_glow": 24
+    },
+    "target_size_studs": [
+      3.4,
+      2.3,
+      1.6
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "Plaza item bench: greybox in src/spire-client/PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "1x1 cell; faces the walkway.",
+    "glow": {
+      "neon_bench_glow": [
+        255,
+        42,
+        109
+      ]
+    }
+  },
+  "holo_palm": {
+    "fbx": "build/blender/spire/holo_palm.fbx",
+    "png": "build/blender/spire/holo_palm.png",
+    "preview": "build/blender/spire/previews/holo_palm.png",
+    "size_studs": [
+      5.44,
+      7.77,
+      5.4
+    ],
+    "tris": 1614,
+    "parts": {
+      "holo_palm": 942,
+      "holo_palm_glow": 672
+    },
+    "target_size_studs": [
+      3.4,
+      9,
+      3.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plaza item palm: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "Fronds are the Neon glow mesh (hologram leaves).",
+    "glow": {
+      "holo_palm_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "street_lamp": {
+    "fbx": "build/blender/spire/street_lamp.fbx",
+    "png": "build/blender/spire/street_lamp.png",
+    "preview": "build/blender/spire/previews/street_lamp.png",
+    "size_studs": [
+      1.6,
+      12.31,
+      4.91
+    ],
+    "tris": 368,
+    "parts": {
+      "street_lamp": 344,
+      "street_lamp_glow": 24
+    },
+    "target_size_studs": [
+      1.5,
+      12.2,
+      3.8
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "City lamps (src/spire-client/City.client.luau 62-68, 146-152, 258-260) and plaza item lamp (PlazaView 38-56)",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "Pole at the back end (+Z in Roblox), head 3 studs forward; code keeps the PointLight and recolours the glow.",
+    "glow": {
+      "street_lamp_glow": [
+        159,
+        216,
+        255
+      ]
+    }
+  },
+  "vending_bot": {
+    "fbx": "build/blender/spire/vending_bot.fbx",
+    "png": "build/blender/spire/vending_bot.png",
+    "preview": "build/blender/spire/previews/vending_bot.png",
+    "size_studs": [
+      4.62,
+      5.2,
+      2.39
+    ],
+    "tris": 1080,
+    "parts": {
+      "vending_bot": 1044,
+      "vending_bot_glow": 36
+    },
+    "target_size_studs": [
+      4.4,
+      5.2,
+      2.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "City vending kiosks (City.client.luau 274-281) and plaza item vending (PlazaView 38-56); art bible 10 #4",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "vending_bot_glow": [
+        255,
+        42,
+        109
+      ]
+    }
+  },
+  "noodle_stall": {
+    "fbx": "build/blender/spire/noodle_stall.fbx",
+    "png": "build/blender/spire/noodle_stall.png",
+    "preview": "build/blender/spire/previews/noodle_stall.png",
+    "size_studs": [
+      7.7,
+      8.1,
+      4.1
+    ],
+    "tris": 1288,
+    "parts": {
+      "noodle_stall": 1264,
+      "noodle_stall_glow": 12,
+      "noodle_stall_glow2": 12
+    },
+    "target_size_studs": [
+      7.7,
+      8.1,
+      3.4
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "Plaza item noodle: greybox in src/spire-client/PlazaView.client.luau 38-56 (art bible 10 #5)",
+    "script": "tools/blender/spire/assets/stalls.py",
+    "notes": "",
+    "glow": {
+      "noodle_stall_glow": [
+        255,
+        42,
+        109
+      ],
+      "noodle_stall_glow2": [
+        255,
+        184,
+        0
+      ]
+    }
+  },
+  "arcade_kiosk": {
+    "fbx": "build/blender/spire/arcade_kiosk.fbx",
+    "png": "build/blender/spire/arcade_kiosk.png",
+    "preview": "build/blender/spire/previews/arcade_kiosk.png",
+    "size_studs": [
+      7.92,
+      7.75,
+      7.92
+    ],
+    "tris": 1008,
+    "parts": {
+      "arcade_kiosk": 912,
+      "arcade_kiosk_glow": 48,
+      "arcade_kiosk_glow2": 48
+    },
+    "target_size_studs": [
+      7.8,
+      7.8,
+      7.8
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "Plaza item arcade: greybox in PlazaView.client.luau 38-56 (art bible 10 #6)",
+    "script": "tools/blender/spire/assets/stalls.py",
+    "notes": "",
+    "glow": {
+      "arcade_kiosk_glow": [
+        123,
+        47,
+        255
+      ],
+      "arcade_kiosk_glow2": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "holo_fountain": {
+    "fbx": "build/blender/spire/holo_fountain.fbx",
+    "png": "build/blender/spire/holo_fountain.png",
+    "preview": "build/blender/spire/previews/holo_fountain.png",
+    "size_studs": [
+      7.4,
+      5.7,
+      7.4
+    ],
+    "tris": 1342,
+    "parts": {
+      "holo_fountain": 532,
+      "holo_fountain_glow": 718,
+      "holo_fountain_glow2": 92
+    },
+    "target_size_studs": [
+      7.4,
+      5.7,
+      7.4
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "Plaza item fountain: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/stalls.py",
+    "notes": "",
+    "glow": {
+      "holo_fountain_glow": [
+        0,
+        240,
+        255
+      ],
+      "holo_fountain_glow2": [
+        123,
+        47,
+        255
+      ]
+    }
+  },
+  "maglev_stop": {
+    "fbx": "build/blender/spire/maglev_stop.fbx",
+    "png": "build/blender/spire/maglev_stop.png",
+    "preview": "build/blender/spire/previews/maglev_stop.png",
+    "size_studs": [
+      11.4,
+      7.27,
+      7.0
+    ],
+    "tris": 848,
+    "parts": {
+      "maglev_stop": 788,
+      "maglev_stop_glow": 36,
+      "maglev_stop_glow2": 24
+    },
+    "target_size_studs": [
+      11.4,
+      7.4,
+      7.0
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "Plaza item maglev: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/stalls.py",
+    "notes": "",
+    "glow": {
+      "maglev_stop_glow": [
+        0,
+        240,
+        255
+      ],
+      "maglev_stop_glow2": [
+        255,
+        184,
+        0
+      ]
+    }
+  },
+  "mega_billboard": {
+    "fbx": "build/blender/spire/mega_billboard.fbx",
+    "png": "build/blender/spire/mega_billboard.png",
+    "preview": "build/blender/spire/previews/mega_billboard.png",
+    "size_studs": [
+      7.54,
+      13.37,
+      2.18
+    ],
+    "tris": 380,
+    "parts": {
+      "mega_billboard": 332,
+      "mega_billboard_glow": 48
+    },
+    "target_size_studs": [
+      7.5,
+      13.3,
+      1.6
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "Plaza item billboard: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/stalls.py",
+    "notes": "Screens are baked magenta-to-violet; code may add a SurfaceGui ad on a part in front.",
+    "glow": {
+      "mega_billboard_glow": [
+        255,
+        42,
+        109
+      ]
+    }
+  },
+  "hologram_idol": {
+    "fbx": "build/blender/spire/hologram_idol.fbx",
+    "png": "build/blender/spire/hologram_idol.png",
+    "preview": "build/blender/spire/previews/hologram_idol.png",
+    "size_studs": [
+      11.4,
+      11.15,
+      11.4
+    ],
+    "tris": 3970,
+    "parts": {
+      "hologram_idol": 706,
+      "hologram_idol_glow": 2344,
+      "hologram_idol_glow2": 920
+    },
+    "target_size_studs": [
+      11.4,
+      11.2,
+      11.4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "Plaza item idol: greybox in PlazaView.client.luau 38-56 (art bible 10 #7, abstract, not a real person)",
+    "script": "tools/blender/spire/assets/stalls.py",
+    "notes": "Hero item. Figure is all glow mesh; code may spin it with Kit.spin.",
+    "glow": {
+      "hologram_idol_glow": [
+        255,
+        42,
+        109
+      ],
+      "hologram_idol_glow2": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "searchlight": {
+    "fbx": "build/blender/spire/searchlight.fbx",
+    "png": "build/blender/spire/searchlight.png",
+    "preview": "build/blender/spire/previews/searchlight.png",
+    "size_studs": [
+      3.56,
+      3.71,
+      3.56
+    ],
+    "tris": 724,
+    "parts": {
+      "searchlight": 532,
+      "searchlight_glow": 192
+    },
+    "target_size_studs": [
+      3.4,
+      3.4,
+      3.4
+    ],
+    "tris_budget": 1200,
+    "priority": "P2",
+    "replaces": "Searchlight housings (City.client.luau 182-184); the Beam stays",
+    "script": "tools/blender/spire/assets/city.py",
+    "notes": "",
+    "glow": {
+      "searchlight_glow": [
+        159,
+        216,
+        255
+      ]
+    }
+  },
+  "viaduct_segment": {
+    "fbx": "build/blender/spire/viaduct_segment.fbx",
+    "png": "build/blender/spire/viaduct_segment.png",
+    "preview": "build/blender/spire/previews/viaduct_segment.png",
+    "size_studs": [
+      10.4,
+      2.9,
+      29.2
+    ],
+    "tris": 118,
+    "parts": {
+      "viaduct_segment": 106,
+      "viaduct_segment_glow": 12
+    },
+    "target_size_studs": [
+      10.4,
+      2.9,
+      29.2
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "Maglev viaduct deck, glow strip and rail (City.client.luau 285-298), 48 copies",
+    "script": "tools/blender/spire/assets/city.py",
+    "notes": "Length along Roblox Z; code recolours alternate segments violet. Pillars stay parts.",
+    "glow": {
+      "viaduct_segment_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "board_frame": {
+    "fbx": "build/blender/spire/board_frame.fbx",
+    "png": "build/blender/spire/board_frame.png",
+    "preview": "build/blender/spire/previews/board_frame.png",
+    "size_studs": [
+      17.4,
+      15.5,
+      1.8
+    ],
+    "tris": 852,
+    "parts": {
+      "board_frame": 792,
+      "board_frame_glow": 60
+    },
+    "target_size_studs": [
+      17.4,
+      15.9,
+      1.6
+    ],
+    "tris_budget": 1200,
+    "priority": "P2",
+    "replaces": "Board post (src/spire/City.luau 56) and client neon frame (City.client.luau 216-239)",
+    "script": "tools/blender/spire/assets/city.py",
+    "notes": "Opening fits the 16 x 10 board centred 9 studs up; the board part keeps its SurfaceGui.",
+    "glow": {
+      "board_frame_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "lot_sign": {
+    "fbx": "build/blender/spire/lot_sign.fbx",
+    "png": "build/blender/spire/lot_sign.png",
+    "preview": "build/blender/spire/previews/lot_sign.png",
+    "size_studs": [
+      8.8,
+      7.53,
+      1.4
+    ],
+    "tris": 576,
+    "parts": {
+      "lot_sign": 552,
+      "lot_sign_glow": 24
+    },
+    "target_size_studs": [
+      8.8,
+      7.9,
+      1.2
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "Lot sign post and frame (src/spire/Lots.luau 334-345)",
+    "script": "tools/blender/spire/assets/city.py",
+    "notes": "Opening fits the 8 x 4 sign centred 5 studs up; the sign part keeps its SurfaceGui.",
+    "glow": {
+      "lot_sign_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "bollard": {
+    "fbx": "build/blender/spire/bollard.fbx",
+    "png": "build/blender/spire/bollard.png",
+    "preview": "build/blender/spire/previews/bollard.png",
+    "size_studs": [
+      0.86,
+      1.84,
+      0.88
+    ],
+    "tris": 214,
+    "parts": {
+      "bollard": 110,
+      "bollard_glow": 104
+    },
+    "target_size_studs": [
+      0.85,
+      1.85,
+      0.85
+    ],
+    "tris_budget": 400,
+    "priority": "P2",
+    "replaces": "City bollards (City.client.luau 261-265) and plaza item bollard",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "bollard_glow": [
+        255,
+        184,
+        0
+      ]
+    }
+  },
+  "planter": {
+    "fbx": "build/blender/spire/planter.fbx",
+    "png": "build/blender/spire/planter.png",
+    "preview": "build/blender/spire/previews/planter.png",
+    "size_studs": [
+      3.38,
+      2.81,
+      3.38
+    ],
+    "tris": 568,
+    "parts": {
+      "planter": 520,
+      "planter_glow": 48
+    },
+    "target_size_studs": [
+      3.4,
+      3.0,
+      3.4
+    ],
+    "tris_budget": 2000,
+    "priority": "P2",
+    "replaces": "Plaza item planter: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "planter_glow": [
+        182,
+        255,
+        59
+      ]
+    }
+  },
+  "neon_arrow": {
+    "fbx": "build/blender/spire/neon_arrow.fbx",
+    "png": "build/blender/spire/neon_arrow.png",
+    "preview": "build/blender/spire/previews/neon_arrow.png",
+    "size_studs": [
+      3.0,
+      3.45,
+      0.9
+    ],
+    "tris": 280,
+    "parts": {
+      "neon_arrow": 240,
+      "neon_arrow_glow": 40
+    },
+    "target_size_studs": [
+      3.0,
+      3.5,
+      0.9
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "Plaza item arrow: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "neon_arrow_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "trash_bot": {
+    "fbx": "build/blender/spire/trash_bot.fbx",
+    "png": "build/blender/spire/trash_bot.png",
+    "preview": "build/blender/spire/previews/trash_bot.png",
+    "size_studs": [
+      3.63,
+      2.89,
+      2.92
+    ],
+    "tris": 606,
+    "parts": {
+      "trash_bot": 534,
+      "trash_bot_glow": 72
+    },
+    "target_size_studs": [
+      3.3,
+      2.8,
+      3.0
+    ],
+    "tris_budget": 1500,
+    "priority": "P2",
+    "replaces": "Plaza item trashbot: greybox in PlazaView.client.luau 38-56 (art bible 10 #10)",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "trash_bot_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "cable_arch": {
+    "fbx": "build/blender/spire/cable_arch.fbx",
+    "png": "build/blender/spire/cable_arch.png",
+    "preview": "build/blender/spire/previews/cable_arch.png",
+    "size_studs": [
+      7.4,
+      7.75,
+      0.8
+    ],
+    "tris": 1192,
+    "parts": {
+      "cable_arch": 720,
+      "cable_arch_glow": 448,
+      "cable_arch_glow2": 24
+    },
+    "target_size_studs": [
+      7.4,
+      7.8,
+      0.9
+    ],
+    "tris_budget": 1500,
+    "priority": "P2",
+    "replaces": "Plaza item arch: greybox in PlazaView.client.luau 38-56",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "cable_arch_glow": [
+        255,
+        42,
+        109
+      ],
+      "cable_arch_glow2": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "holo_koi": {
+    "fbx": "build/blender/spire/holo_koi.fbx",
+    "png": "build/blender/spire/holo_koi.png",
+    "preview": "build/blender/spire/previews/holo_koi.png",
+    "size_studs": [
+      6.84,
+      2.13,
+      6.84
+    ],
+    "tris": 466,
+    "parts": {
+      "holo_koi": 90,
+      "holo_koi_glow": 348,
+      "holo_koi_glow2": 28
+    },
+    "target_size_studs": [
+      7.4,
+      2.0,
+      7.4
+    ],
+    "tris_budget": 2000,
+    "priority": "P2",
+    "replaces": "Plaza item koi: greybox in PlazaView.client.luau 38-56 (art bible 10 #11)",
+    "script": "tools/blender/spire/assets/plaza.py",
+    "notes": "",
+    "glow": {
+      "holo_koi_glow": [
+        255,
+        107,
+        74
+      ],
+      "holo_koi_glow2": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "courier_drone": {
+    "fbx": "build/blender/spire/courier_drone.fbx",
+    "png": "build/blender/spire/courier_drone.png",
+    "preview": "build/blender/spire/previews/courier_drone.png",
+    "size_studs": [
+      3.56,
+      1.44,
+      3.56
+    ],
+    "tris": 1004,
+    "parts": {
+      "courier_drone": 480,
+      "courier_drone_glow": 524
+    },
+    "target_size_studs": [
+      4.4,
+      1.5,
+      4.4
+    ],
+    "tris_budget": 1500,
+    "priority": "P3",
+    "replaces": "City drones (art bible 7, Traffic.client.luau, SPIRE-007, not built yet); art bible 10 #1",
+    "script": "tools/blender/spire/assets/modules.py",
+    "notes": "Not wired: no drone code exists yet.",
+    "glow": {
+      "courier_drone_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "hover_car": {
+    "fbx": "build/blender/spire/hover_car.fbx",
+    "png": "build/blender/spire/hover_car.png",
+    "preview": "build/blender/spire/previews/hover_car.png",
+    "size_studs": [
+      5.34,
+      2.32,
+      12.0
+    ],
+    "tris": 1552,
+    "parts": {
+      "hover_car": 1364,
+      "hover_car_glow": 176,
+      "hover_car_glow2": 12
+    },
+    "target_size_studs": [
+      5.0,
+      3.0,
+      12.0
+    ],
+    "tris_budget": 4000,
+    "priority": "P3",
+    "replaces": "Hover traffic car A (art bible 7, 10 #2)",
+    "script": "tools/blender/spire/assets/vehicles.py",
+    "notes": "Not wired: no traffic code yet (Traffic.client.luau, SPIRE-007).",
+    "glow": {
+      "hover_car_glow": [
+        0,
+        240,
+        255
+      ],
+      "hover_car_glow2": [
+        255,
+        42,
+        109
+      ]
+    }
+  },
+  "hover_taxi": {
+    "fbx": "build/blender/spire/hover_taxi.fbx",
+    "png": "build/blender/spire/hover_taxi.png",
+    "preview": "build/blender/spire/previews/hover_taxi.png",
+    "size_studs": [
+      5.72,
+      4.83,
+      13.0
+    ],
+    "tris": 1608,
+    "parts": {
+      "hover_taxi": 1280,
+      "hover_taxi_glow": 208,
+      "hover_taxi_glow2": 120
+    },
+    "target_size_studs": [
+      5.8,
+      5.0,
+      13.0
+    ],
+    "tris_budget": 4000,
+    "priority": "P3",
+    "replaces": "Hover traffic taxi B (art bible 7, 10 #3)",
+    "script": "tools/blender/spire/assets/vehicles.py",
+    "notes": "Not wired: no traffic code yet (Traffic.client.luau, SPIRE-007).",
+    "glow": {
+      "hover_taxi_glow": [
+        0,
+        240,
+        255
+      ],
+      "hover_taxi_glow2": [
+        255,
+        184,
+        0
+      ]
+    }
+  },
+  "maglev_car": {
+    "fbx": "build/blender/spire/maglev_car.fbx",
+    "png": "build/blender/spire/maglev_car.png",
+    "preview": "build/blender/spire/previews/maglev_car.png",
+    "size_studs": [
+      4.1,
+      3.87,
+      20.0
+    ],
+    "tris": 852,
+    "parts": {
+      "maglev_car": 840,
+      "maglev_car_glow": 12
+    },
+    "target_size_studs": [
+      4.1,
+      4.0,
+      20.0
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "Maglev train on the viaduct (art bible 8, 10 #8), three cars per train",
+    "script": "tools/blender/spire/assets/vehicles.py",
+    "notes": "Not wired: no traffic code yet (Traffic.client.luau, SPIRE-007).",
+    "glow": {
+      "maglev_car_glow": [
+        0,
+        240,
+        255
+      ]
+    }
+  },
+  "blimp": {
+    "fbx": "build/blender/spire/blimp.fbx",
+    "png": "build/blender/spire/blimp.png",
+    "preview": "build/blender/spire/previews/blimp.png",
+    "size_studs": [
+      24.0,
+      26.5,
+      80.07
+    ],
+    "tris": 1768,
+    "parts": {
+      "blimp": 1564,
+      "blimp_glow": 12,
+      "blimp_glow2": 192
+    },
+    "target_size_studs": [
+      22,
+      26,
+      80
+    ],
+    "tris_budget": 6000,
+    "priority": "P3",
+    "replaces": "Advertising blimp at 380 studs (art bible 7, 10 #9)",
+    "script": "tools/blender/spire/assets/vehicles.py",
+    "notes": "Not wired: no traffic code yet (Traffic.client.luau, SPIRE-007).",
+    "glow": {
+      "blimp_glow": [
+        255,
+        42,
+        109
+      ],
+      "blimp_glow2": [
+        255,
+        40,
+        60
+      ]
+    }
+  }
+}
