@@ -127,14 +127,16 @@ Chrome (silver slab, cyan glass), Carbon (matte black, magenta trim), Jade Glass
 |---|---|---|---|---|
 | A. Primitives and procedural (code-built parts, built-in materials, Neon, ForceField, particles) | Everything in sections 5, 7, 8 | Good: cyberpunk is unusually friendly to primitives (boxes, glass, glowing strips) | Fastest; fully reviewable in Git; no uploads | Can look flat on hero props (vehicles, creatures, statues) |
 | B. Roblox AI mesh generation (as used in Relay, Night, Garden) | 10 to 14 hero props (section 10) | Good for props; style can drift | Fast; assets owned by SHANNON's account; studio has a working flow and register rows | Unreadable results (fallback to option A); needs SHANNON in Studio to run prompts |
-| C. Blender (custom modular kit: facade panels, railings, signage, vehicles) | A matched kit with SurfaceAppearance PBR textures | Highest | Slowest; needs either SHANNON or a human artist in Blender, or headless Blender scripts plus an Open Cloud Assets upload key | New credential scope (rule 7: SHANNON's approval), large binary files, review is harder |
+| C. Blender, using the studio's headless pipeline (`tools/blender/night`, NIGHT-007/008: Python-built models, baked 1024 PNG, FBX committed, `upload-assets.yml` through the `assets` environment) | Hero props, module models (racks, printers, cores, dishes), vehicles | Highest, and one consistent style | Proven on 37 Night models built in 120 s; scripts are reviewable in Git | Binary FBX/PNG in the repo; uploads need the human-set `assets` environment; models load with InsertService, so the experience owner must own them |
 | D. Creator Store free models | Anything | Varies | Fast | Hidden scripts, unclear licences, mismatched style; studio rule 9 defaults against it |
 
-**Recommendation:** A for all architecture, UI and effects, plus B for the hero props listed in section 10, with every mesh registered before use. Defer C: decide after the M2 look gate, only if the screenshot test fails on prop quality. Use D only for Roblox-owned or Roblox-licensed audio and Roblox-built content, as before.
+**Recommendation (revised 2026-10-27, after NIGHT-007/008 landed on main):** A for the tower shell, plaza grid, city backdrop, UI and effects (they are built from replicated state with LOD, so they must stay procedural). C for the hero props in section 10 and the module models in GDD C4, in a new `tools/blender/spire/` reusing the Night kit and upload workflow. B only as a fallback for a prop the Blender scripts cannot make readable, and A as the last fallback. Every mesh registered before use. Use D only for Roblox-owned or Roblox-licensed audio and Roblox-built content, as before.
 
-## 10. Hero props (option B prompts)
+The first version of this plan (2026-10-26) recommended B and deferred C because no Blender pipeline existed; Night now has one, and SHANNON asked for Night's assets to be made in Blender.
 
-Style suffix on every prompt: "stylised low-poly cyberpunk game asset, clean hard-surface shapes, dark gunmetal body with cyan and magenta neon light strips, friendly design, no text, no logos".
+## 10. Hero props (briefs for Blender; prompts if the B fallback is used)
+
+Style for every prop, and the suffix on every B prompt: "stylised low-poly cyberpunk game asset, clean hard-surface shapes, dark gunmetal body with cyan and magenta neon light strips, friendly design, no text, no logos".
 
 | # | Prop | Prompt | Size |
 |---|---|---|---|

@@ -9,7 +9,8 @@
     "docs/game-design/game5-art-bible.md",
     "docs/game-design/game5-gdd.md sections K6, L and M",
     "docs/architecture/spire.md section 5",
-    "docs/decisions/0010-neon-spire-asset-approach.md"
+    "docs/decisions/0010-neon-spire-asset-approach.md",
+    "tools/blender/night/ and .github/workflows/upload-assets.yml (NIGHT-007, NIGHT-008)"
   ],
   "dependencies": [
     "SPIRE-006",
@@ -33,9 +34,12 @@
     "src/spire-client/Traffic.client.luau",
     "src/spire-client/Fx.client.luau",
     "src/relay/Models.luau",
-    "docs/assets/register.md"
+    "docs/assets/register.md",
+    "tools/blender/spire/",
+    "assets/spire/",
+    ".github/workflows/upload-assets.yml"
   ],
   "risk_level": "medium",
   "status": "planned",
-  "notes": "Starts after the greybox feel gate G1 passes, so no art is spent on a loop that is not fun."
+  "notes": "Starts after the greybox feel gate G1 passes, so no art is spent on a loop that is not fun. Blender props and module models are owned by A12 (Lead 3D Artist, as in NIGHT-007) within this task."
 }

@@ -344,7 +344,7 @@ Colour is never the only signal (power bar has a number and an icon; valid/inval
 Full spec in `game5-art-bible.md`.
 
 - **Setting:** "Vantage City", a permanent rainy night. Six lots on a ring around the shared **Grid Plaza** (spawn area, Market board, Top Spires board, Contracts kiosk, maglev station). Beyond the lots: an elevated maglev loop, highway lanes with hover-traffic (client-only), and a megacity backdrop of 200 to 600-stud towers built from textured boxes with lit window patterns, plus a blimp with a rotating ad.
-- **Asset approach:** decision 0010 (proposed): procedural primitives for everything architectural, a small set of hero props from Roblox AI mesh generation, Blender as an optional later step. Needs SHANNON's approval.
+- **Asset approach:** decision 0010 (proposed): procedural primitives for the tower shell, plaza grid, city and effects; Blender (the studio's headless pipeline from Night) for hero props and module models, with AI mesh generation as a fallback. Needs SHANNON's approval.
 - **Budgets:** client parts ≤ 12,000 in view; server-owned parts ≤ 4,000; tower exteriors ≤ 20 parts per floor; interiors built only near the camera (architecture section 5).
 - **First-screenshot test:** the start-menu frame shows at least three towers of different heights with lit brand colours, rain streaks, a wet reflective plaza with crowds, holo billboards, flying traffic and a skyline. Reviewed by SHANNON (acceptance S).
 

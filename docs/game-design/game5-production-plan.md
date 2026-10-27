@@ -34,7 +34,7 @@ Rough effort (hypothesis, thread-days of build work plus SHANNON's sessions): M0
 | SPIRE-004 | implementation | A10 → A15 | SPIRE-003 | medium | pure modules, unit, property and balance specs |
 | SPIRE-005 | implementation | A11 → A15 | SPIRE-003 | high | server, profiles, lots, loop, prompts, boards |
 | SPIRE-006 | implementation | A10 → A15 | SPIRE-003 | medium | menu, HUD, build mode, lift, first-session script (greybox visuals) |
-| SPIRE-007 | asset | A10 → A15 | SPIRE-006, SPIRE-002 | medium | tower kit, plaza items, city, atmosphere, crowd, traffic, hero props, audio, juice |
+| SPIRE-007 | asset | A10 + A12 → A15 | SPIRE-006, SPIRE-002 | medium | tower kit, plaza items, city, atmosphere, crowd, traffic, Blender hero props and module models, audio, juice |
 | SPIRE-008 | test | A15 → A01 | SPIRE-004, SPIRE-005, SPIRE-006, SPIRE-007 | medium | QA and security review, playtest evidence |
 | SPIRE-009 | implementation | A10 → A15 | SPIRE-008 | medium | IPO, Shares, skins, crowns |
 | SPIRE-010 | release | A14 → A01 | SPIRE-008, SPIRE-009 | high | production universe check, store assets, production publish after SHANNON's approval |
@@ -67,7 +67,7 @@ Every note records: date, device, build stamp, profile state, per-step pass or f
 | R4 | Build mode is fiddly on touch | Medium | High | Card-based building, no 3D dragging; G1 tested on a phone | A10 |
 | R5 | Economy runaway or a dead zone mid-game | Medium | Medium | Balance spec in CI; G1 and G3 timings; tune only through `SpireConfig` with a 0009 amendment | A06 |
 | R6 | Idle boredom (tycoon players leave once everything is bought) | Medium | Medium | Hot Data, events, contracts, IPO in M4; kill criteria (GDD T) | A06 |
-| R7 | AI meshes off-style or unreadable | Medium | Low | Primitive fallback per prop; most of the look is procedural | A10 |
+| R7 | Blender props off-style, too heavy for phones, or blocked on the upload environment | Medium | Low | Tris budgets per prop (as the Night plan); contact-sheet review before upload; AI-mesh and primitive fallbacks; the tower and city stay procedural | A12 |
 | R8 | Save bugs across servers | Low (pattern exists) | High | Copy the reviewed Garden Profiles with its lock; no unbanked pool; QA traces races | A11 |
 | R9 | Photosensitivity complaints (neon flicker) | Low | High | ≤ 3 Hz rule, Reduce Flashing setting, QA check | A15 |
 | R10 | Trademark confusion ("Cyberpunk") | Low | Medium | Title and logo avoid the word; descriptions use it as a genre only | A06 |
@@ -112,7 +112,7 @@ Not built in v0.1 (decision 0002). After M5 has live data, SPIRE-011 may propose
 
 ## 9. Questions for SHANNON (with recommendations)
 
-1. **Assets:** approve option A + B (procedural architecture, AI-generated hero props, Blender deferred)? *Recommended: yes.*
+1. **Assets:** approve option A + C (procedural tower, plaza and city; Blender props and module models through the Night pipeline; AI meshes only as a fallback)? *Recommended: yes.*
 2. **Title:** keep "Neon Spire", or another name? *Recommended: Neon Spire (no trademark risk, says what it is).*
 3. **Pipeline first:** can you spend 15 minutes on the Bake Rush staging place (restart servers, rejoin, F9 log) so SPIRE-002 can close the baseplate question before Spire publishes? *Recommended: yes, it unblocks every game.*
 4. **Audience:** keep the under-18 rules used by the other games? *Recommended: yes.*

@@ -10,20 +10,21 @@ Status: Proposed for SHANNON's approval (per-game asset approval; CLAUDE.md rule
 - **C. Blender:** a custom modular kit with PBR textures, made by a human in Blender or by headless Blender scripts and uploaded through an Open Cloud Assets key.
 - **D. Creator Store free models:** third-party models.
 
-## Proposed decision
+## Proposed decision (revised 2026-10-27)
 
-- Use **A** for all architecture (towers, lobby, plaza grid, streets, backdrop), UI and effects.
-- Use **B** for at most 14 hero props (art bible section 10), each with a primitive fallback after three failed tries.
-- Allow at most **two uploaded 2D assets** made for this game (a tileable window texture for the backdrop and a UI icon sheet), uploaded by SHANNON in Studio and registered.
-- **Defer C.** Revisit only if the M2 screenshot gate fails on prop or facade quality. Adopting it later needs an amendment, and an Assets upload key is a credential change (rule 7).
+- Use **A** for the tower shell, lobby, plaza grid, streets, city backdrop, UI and effects. These are built on each client from replicated state with level of detail (`docs/architecture/spire.md` section 5), so they stay procedural.
+- Use **C** for at most 14 hero props (art bible section 10) and the 7 module models with their level variants (GDD C4), in `tools/blender/spire/`, reusing the Night kit, build runner, export conventions (1 unit = 1 stud, origin at base centre, one baked 1024 PNG), tris budgets and `upload-assets.yml` (generalised to take a game folder).
+- Use **B** only as a fallback for a prop the Blender scripts cannot make readable after review, and A as the last fallback.
+- Allow at most two other uploaded 2D assets (a tileable window texture for the backdrop and a UI icon sheet), registered.
 - **No D**, except Roblox-owned engine content and Roblox-licensed audio from the Creator Store, as before.
 
 ## Why
 
-Cyberpunk architecture is mostly boxes, glass and glowing strips, which primitives do well and which agents can build, diff and review in Git. AI mesh generation has a working flow in this studio and covers the organic and vehicle shapes primitives cannot. Blender adds the highest ceiling but also a human-in-the-loop step, binary files that are hard to review, and a new credential; it is not needed to pass the first-screenshot test.
+Cyberpunk architecture is mostly boxes, glass and glowing strips, which primitives do well, and the tower must be rebuilt live from state. Props and machines are where the look needs real shapes. The first draft (2026-10-26) recommended AI mesh generation and deferred Blender because no Blender pipeline existed. NIGHT-007 and NIGHT-008 (merged 2026-10-27) built one: scripted, headless, reviewable, with an upload workflow behind a human-set environment. That removes the cost that made Blender the deferred option, and gives one consistent style across props.
 
 ## Consequences
 
 - SPIRE-007 cannot start hero props until SHANNON approves this record.
+- Uploads run only through the human-set `assets` environment (CLAUDE.md rules 6 and 7); the creator account must own the Spire experience, because models load with InsertService.
 - Every mesh, texture, track and sound has a `docs/assets/register.md` row before use.
 - Part and performance budgets in art bible section 12 apply to everything built under A.
