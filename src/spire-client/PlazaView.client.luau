@@ -1,8 +1,9 @@
 --!strict
--- Neon Spire plaza visuals, GREYBOX (SPIRE-006; SPIRE-007 rewrites this file at final quality).
--- Every lot's plaza items from its State attribute: a steel base over the item's footprint and a
--- neon cap (magenta for Hype items, height by Hype; ice for decor). Diffed by uid, so placing,
--- moving or selling touches one item. Plazas over 400 studs from the camera are hidden (5.1).
+-- Neon Spire plaza visuals (SPIRE-006; SPIRE-007 rewrites this file at final quality).
+-- Every lot's plaza items from its State attribute: the item's Blender model when uploaded, else a
+-- steel base over the item's footprint and a neon cap (magenta for Hype items, height by Hype; ice
+-- for decor). Diffed by uid, so placing, moving or selling touches one item.
+-- Plazas over 400 studs from the camera are hidden (5.1).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -12,11 +13,32 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local PlazaRules = require(Shared:WaitForChild("PlazaRules"))
 local SpireConfig = require(Shared:WaitForChild("SpireConfig"))
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local Kit = require(script.Parent:WaitForChild("Kit"))
 
 local camera = Workspace.CurrentCamera
 local UI = ClientState.UI
 local root = ClientState.folder("Plazas")
 local CELL = SpireConfig.PLAZA.cell
+
+-- Plaza item id to its Blender model (src/shared/SpireAssets.luau); the greybox stays while nil.
+local MODELS: { [string]: string } = {
+	bench = "neon_bench",
+	palm = "holo_palm",
+	vending = "vending_bot",
+	noodle = "noodle_stall",
+	arcade = "arcade_kiosk",
+	fountain = "holo_fountain",
+	maglev = "maglev_stop",
+	billboard = "mega_billboard",
+	idol = "hologram_idol",
+	lamp = "street_lamp",
+	bollard = "bollard",
+	planter = "planter",
+	arrow = "neon_arrow",
+	trashbot = "trash_bot",
+	arch = "cable_arch",
+	koi = "holo_koi",
+}
 
 type Lot = { folder: Folder, items: { [number]: { key: string, model: Model } } }
 local lots: { [number]: Lot } = {}
@@ -43,6 +65,17 @@ local function build(frame: CFrame, item: any): Model
 	local w, d = PlazaRules.footprint(item.id, item.r)
 	local c = PlazaRules.itemCentre(item.id, item.x, item.y, item.r)
 	local hype = if def then def.hype else 0
+	local asset = MODELS[item.id]
+	local placed = asset
+		and Kit.model(
+			asset,
+			m,
+			frame:PointToWorldSpace(Vector3.new(c.x, c.y, c.z)),
+			Kit.yaw(frame) + 90 * (tonumber(item.r) or 0)
+		)
+	if placed then
+		return m
+	end
 	local h = if hype > 0 then math.min(10, 1.5 + hype * 0.25) else 1
 	local size = Vector3.new(w * CELL - 0.6, h, d * CELL - 0.6)
 	part(m, frame * CFrame.new(c.x, c.y + h / 2, c.z), size, UI.STEEL, Enum.Material.SmoothPlastic)
@@ -111,6 +144,7 @@ end
 
 local watched: { [Model]: boolean } = {}
 task.spawn(function()
+	Kit.waitModels()
 	while true do
 		for n = 1, 6 do
 			local m = ClientState.lotModel(n)

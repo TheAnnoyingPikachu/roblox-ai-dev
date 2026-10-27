@@ -15,6 +15,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local SpireConfig = require(Shared:WaitForChild("SpireConfig"))
 local TowerRules = require(Shared:WaitForChild("TowerRules"))
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local Kit = require(script.Parent:WaitForChild("Kit"))
 
 local camera = Workspace.CurrentCamera
 local UI = ClientState.UI
@@ -22,6 +23,16 @@ local root = ClientState.folder("Towers")
 
 local SIDE = TowerRules.TOWER.size
 local CZ = TowerRules.TOWER.z
+-- Department module models (src/shared/SpireAssets.luau); the module box stays while nil.
+local MODULES: { [string]: string } = {
+	data = "server_rack",
+	fusion = "fusion_cell",
+	ad = "holo_projector",
+	synth = "bio_printer",
+	drone = "drone_dock",
+	quantum = "q_mind",
+	orbital = "uplink_dish",
+}
 
 type Lot = {
 	folder: Folder,
@@ -111,16 +122,20 @@ local function buildFloor(lot: number, frame: CFrame, n: number, f: any, trim: C
 			Enum.Material.SmoothPlastic
 		)
 	end
-	local ring = part(
-		m,
-		at(0, y + 0.1, CZ) * CFrame.Angles(0, 0, math.rad(90)),
-		Vector3.new(0.2, TowerRules.LIFT.radius * 2, TowerRules.LIFT.radius * 2),
-		UI.CYAN,
-		Enum.Material.Neon,
-		0.5
-	)
-	ring.Shape = Enum.PartType.Cylinder
-	ring.Name = "Lift"
+	local ring = if Kit.model("lift_ring", m, frame:PointToWorldSpace(Vector3.new(0, y, CZ)), Kit.yaw(frame))
+		then nil
+		else part(
+			m,
+			at(0, y + 0.1, CZ) * CFrame.Angles(0, 0, math.rad(90)),
+			Vector3.new(0.2, TowerRules.LIFT.radius * 2, TowerRules.LIFT.radius * 2),
+			UI.CYAN,
+			Enum.Material.Neon,
+			0.5
+		)
+	if ring then
+		ring.Shape = Enum.PartType.Cylinder
+		ring.Name = "Lift"
+	end
 	if n > 1 then
 		part(m, at(0, y + h - 1, CZ - SIDE / 2 - 0.4), Vector3.new(SIDE - 4, 0.6, 0.3), tint, Enum.Material.Neon).Name =
 			"Signature"
@@ -140,6 +155,23 @@ local function buildInterior(frame: CFrame, n: number, f: any): Model
 	for slot, level in f.m do
 		if level > 0 then
 			local o = TowerRules.slotPos(n, slot)
+			local asset = MODULES[f.d]
+			-- Grows with level (0.82 at L1 to 1.1 at L5); amber glow at L5 like the greybox.
+			local model = asset
+				and Kit.model(
+					asset,
+					m,
+					frame:PointToWorldSpace(Vector3.new(o.x, o.y, o.z)),
+					Kit.yaw(frame),
+					0.75 + 0.07 * level
+				)
+			if model then
+				local glow = Kit.glow(model)
+				if glow and level >= 5 then
+					glow.Color = UI.AMBER
+				end
+				continue
+			end
 			local h = 1.5 + level
 			local p = part(
 				m,
@@ -164,10 +196,17 @@ local function buildRoof(lot: Lot, frame: CFrame, state: any)
 	local y = TowerRules.floorY(#state.floors + 1)
 	local trim = ClientState.brand(if type(state.company) == "table" then state.company.trim else 1)
 	part(m, frame * CFrame.new(0, y - 0.5, CZ), Vector3.new(SIDE, 1, SIDE), UI.STEEL, Enum.Material.SmoothPlastic)
-	part(m, frame * CFrame.new(0, y + 10, CZ + 8), Vector3.new(1, 20, 1), UI.STEEL, Enum.Material.Metal)
-	local beacon =
-		part(m, frame * CFrame.new(0, y + 20.5, CZ + 8), Vector3.new(1.4, 1.4, 1.4), trim, Enum.Material.Neon)
-	beacon.Shape = Enum.PartType.Ball
+	local antenna = Kit.model("roof_antenna", m, frame:PointToWorldSpace(Vector3.new(0, y, CZ + 8)), Kit.yaw(frame))
+	local beacon: BasePart? = antenna and Kit.glow(antenna, "2")
+	if beacon then
+		beacon.Color = trim
+	else
+		part(m, frame * CFrame.new(0, y + 10, CZ + 8), Vector3.new(1, 20, 1), UI.STEEL, Enum.Material.Metal)
+		local ball =
+			part(m, frame * CFrame.new(0, y + 20.5, CZ + 8), Vector3.new(1.4, 1.4, 1.4), trim, Enum.Material.Neon)
+		ball.Shape = Enum.PartType.Ball
+		beacon = ball
+	end
 	local sign = Instance.new("BillboardGui")
 	sign.Size = UDim2.fromOffset(260, 60)
 	sign.StudsOffsetWorldSpace = Vector3.new(0, 6, 0)
@@ -417,6 +456,7 @@ local function playerFloor(n: number, frame: CFrame, count: number): number?
 end
 
 task.spawn(function()
+	Kit.waitModels()
 	while true do
 		for n = 1, 6 do
 			watch(n)

@@ -19,6 +19,9 @@ local part, cylinder, ball, light = Kit.part, Kit.cylinder, Kit.ball, Kit.light
 local M = Enum.Material
 
 local PLAZA_RADIUS = 104 -- server City.luau: the lots' front edges
+-- Blender models replace the part builds below once uploaded (src/shared/SpireAssets.luau).
+Kit.waitModels()
+local LAMP_BACK = 1.65 -- street_lamp: the pole stands this far behind the model's centre
 local RING = 150 -- lot centre distance
 local rng = Random.new(5150)
 
@@ -61,6 +64,13 @@ end
 
 local function lamp(parent: Instance, at: Vector3, facing: Vector3, colour: Color3)
 	local frame = CFrame.lookAt(at, Vector3.new(facing.X, at.Y, facing.Z))
+	local model = Kit.model("street_lamp", parent, at + frame.LookVector * LAMP_BACK, Kit.yaw(frame))
+	local glow = model and Kit.glow(model)
+	if glow then
+		glow.Color = colour
+		light(glow, colour, 14, 1.2)
+		return
+	end
 	cylinder(parent, frame * CFrame.new(0, 6, 0) * CFrame.Angles(0, 0, math.pi / 2), 12, 0.5, UI.STEEL, M.Metal)
 	part(parent, frame * CFrame.new(0, 11.8, -1.5), Vector3.new(0.35, 0.35, 3.4), UI.STEEL, M.Metal)
 	local head = part(parent, frame * CFrame.new(0, 11.5, -3), Vector3.new(1.4, 0.3, 1.8), colour, M.Neon)
@@ -92,14 +102,23 @@ for n = 0, 5 do
 	for _, side in { -1, 1 } do
 		local from, to = polar(a, 23, 0.06), polar(a, PLAZA_RADIUS - 1, 0.06)
 		local mid = (from + to) / 2 + Vector3.new(math.cos(a), 0, math.sin(a)) * 4.5 * side
-		part(plaza, CFrame.lookAt(mid, mid + (to - from)), Vector3.new(0.3, 0.06, (to - from).Magnitude), UI.CYAN, M.Neon, 0.35)
+		part(
+			plaza,
+			CFrame.lookAt(mid, mid + (to - from)),
+			Vector3.new(0.3, 0.06, (to - from).Magnitude),
+			UI.CYAN,
+			M.Neon,
+			0.35
+		)
 	end
 	-- Chevrons pointing out to the lot.
 	for k = 0, 2 do
 		local c = polar(a, 70 + k * 8, 0.07)
 		local out = polar(a, 1, 0) - polar(a, 0, 0)
 		for _, side in { -1, 1 } do
-			local f = CFrame.lookAt(c, c + out) * CFrame.Angles(0, side * math.rad(35), 0) * CFrame.new(side * 1.2, 0, 0)
+			local f = CFrame.lookAt(c, c + out)
+				* CFrame.Angles(0, side * math.rad(35), 0)
+				* CFrame.new(side * 1.2, 0, 0)
 			part(plaza, f, Vector3.new(0.5, 0.06, 3.2), UI.CYAN, M.Neon, 0.3)
 		end
 	end
@@ -114,10 +133,10 @@ do
 	cylinder(crest, CFrame.new(0, 8, 0), 14, 3, UI.CYAN, M.ForceField, 0.2)
 	light(part(crest, CFrame.new(0, 3, 0), Vector3.one, UI.CYAN, M.SmoothPlastic, 1), UI.CYAN, 16, 2)
 	crest.Parent = plaza
-	task.spawn(function()
-		if Kit.mesh("cityCrest", crest, Vector3.new(0, 1.3, 0), 1, 0) then
-			return
-		end
+	local model = Kit.model("city_crest", crest, Vector3.new(0, 1.3, 0))
+	if model then
+		Kit.spin(model, 0.25)
+	else
 		local rings = Instance.new("Model")
 		rings.Name = "Rings"
 		for r = 1, 3 do
@@ -131,7 +150,10 @@ do
 				local at = tilt * CFrame.new(radius * math.cos(a), 0, radius * math.sin(a))
 				part(
 					rings,
-					CFrame.lookAt(at.Position, at.Position + tilt:VectorToWorldSpace(Vector3.new(-math.sin(a), 0, math.cos(a)))),
+					CFrame.lookAt(
+						at.Position,
+						at.Position + tilt:VectorToWorldSpace(Vector3.new(-math.sin(a), 0, math.cos(a)))
+					),
 					Vector3.new(0.6, 0.6, 2 * math.pi * radius / 16 + 0.15),
 					colour,
 					M.Neon
@@ -140,7 +162,7 @@ do
 		end
 		rings.Parent = crest
 		Kit.spin(rings, 0.25)
-	end)
+	end
 end
 
 -- Lamps around the rim, leaving the lot walkways clear.
@@ -163,7 +185,8 @@ end
 for k = 0, 2 do
 	local at = polar(math.rad(30 + k * 120), 40, 0.05)
 	part(plaza, CFrame.new(at), Vector3.new(4, 0.1, 4), UI.STEEL, M.DiamondPlate)
-	local holder = part(plaza, CFrame.new(at + Vector3.new(0, 0.3, 0)), Vector3.new(3, 0.2, 3), UI.STEEL, M.SmoothPlastic, 1)
+	local holder =
+		part(plaza, CFrame.new(at + Vector3.new(0, 0.3, 0)), Vector3.new(3, 0.2, 3), UI.STEEL, M.SmoothPlastic, 1)
 	local steam = Instance.new("ParticleEmitter")
 	steam.Texture = "rbxasset://textures/particles/smoke_main.dds"
 	steam.Rate = 6
@@ -181,7 +204,11 @@ local sweeps: { { top: Attachment, base: Vector3, phase: number } } = {}
 for k = 0, 3 do
 	local base = polar(math.rad(30 + k * 90), PLAZA_RADIUS - 3, 0)
 	local housing = cylinder(plaza, CFrame.new(base + Vector3.new(0, 0.8, 0)), 1.6, 3.2, UI.STEEL, M.Metal)
-	cylinder(plaza, CFrame.new(base + Vector3.new(0, 1.7, 0)), 0.2, 2.6, UI.ICE, M.Neon)
+	if Kit.model("searchlight", plaza, base, -(30 + k * 90)) then
+		housing.Transparency = 1 -- keeps the beam attachment
+	else
+		cylinder(plaza, CFrame.new(base + Vector3.new(0, 1.7, 0)), 0.2, 2.6, UI.ICE, M.Neon)
+	end
 	local a0 = Instance.new("Attachment")
 	a0.Position = Vector3.new(0.8, 0, 0) -- housing local X is world up (cylinder)
 	a0.Parent = housing
@@ -219,7 +246,8 @@ task.spawn(function()
 	local city = Workspace:WaitForChild("Spire"):WaitForChild("City")
 	for _, name in { "TopSpires", "MarketBoard" } do
 		local b = city:WaitForChild(name, 30)
-		if b and b:IsA("BasePart") then
+		-- The server put a board_frame model around it (src/spire/City.luau).
+		if b and b:IsA("BasePart") and not b:GetAttribute("Framed") then
 			local f, s = b.CFrame, b.Size
 			local edge = if name == "TopSpires" then UI.CYAN else UI.MAGENTA
 			for _, e in
@@ -260,8 +288,10 @@ for k = 0, 5 do
 	end
 	for b = 0, 5 do
 		local at = polar(a, 118 + b * 12, 0.2) - side * 5.5
-		cylinder(streets, CFrame.new(at + Vector3.new(0, 0.9, 0)), 1.8, 0.8, UI.STEEL, M.Metal)
-		cylinder(streets, CFrame.new(at + Vector3.new(0, 1.5, 0)), 0.2, 0.85, UI.AMBER, M.Neon)
+		if not Kit.model("bollard", streets, at) then
+			cylinder(streets, CFrame.new(at + Vector3.new(0, 0.9, 0)), 1.8, 0.8, UI.STEEL, M.Metal)
+			cylinder(streets, CFrame.new(at + Vector3.new(0, 1.5, 0)), 0.2, 0.85, UI.AMBER, M.Neon)
+		end
 	end
 	-- A tall vertical sign pylon with a product on both faces.
 	local pylon = part(streets, f * CFrame.new(0, 14, 10), Vector3.new(5, 26, 1.2), UI.ASPHALT, M.SmoothPlastic)
@@ -273,13 +303,12 @@ for k = 0, 5 do
 	end
 	-- Vending kiosk (Vending Bot hero prop when loaded).
 	local kiosk = polar(a, 160, 0.2) + side * 4.5
-	task.spawn(function()
-		if not Kit.mesh("vendingBot", streets, kiosk, 1, math.deg(-a) + 90) then
-			local kf = CFrame.lookAt(kiosk, kiosk - side) * CFrame.new(0, 2.6, 0)
-			part(streets, kf, Vector3.new(3, 5.2, 2.2), UI.STEEL, M.Metal)
-			part(streets, kf * CFrame.new(0, 0.6, -1.12), Vector3.new(2.4, 2.6, 0.05), Kit.ACCENTS[k % 5 + 1], M.Neon, 0.2)
-		end
-	end)
+	local facing = CFrame.lookAt(kiosk, kiosk - side)
+	if not Kit.model("vending_bot", streets, kiosk, Kit.yaw(facing)) then
+		local kf = facing * CFrame.new(0, 2.6, 0)
+		part(streets, kf, Vector3.new(3, 5.2, 2.2), UI.STEEL, M.Metal)
+		part(streets, kf * CFrame.new(0, 0.6, -1.12), Vector3.new(2.4, 2.6, 0.05), Kit.ACCENTS[k % 5 + 1], M.Neon, 0.2)
+	end
 end
 
 -- Elevated maglev viaduct (the train is SPIRE-007 Traffic).
@@ -289,11 +318,29 @@ for i = 0, SEGMENTS - 1 do
 	local at = polar(a, VIADUCT_R, VIADUCT_Y)
 	local f = CFrame.lookAt(at, at + Vector3.new(math.cos(a), 0, math.sin(a)))
 	local len = 2 * math.pi * VIADUCT_R / SEGMENTS + 0.4
-	part(streets, f, Vector3.new(10, 2, len), UI.STEEL, M.Concrete)
-	part(streets, f * CFrame.new(0, -0.6, 0), Vector3.new(10.4, 0.35, len), if i % 2 == 0 then UI.CYAN else UI.VIOLET, M.Neon)
-	part(streets, f * CFrame.new(0, 1.3, 0), Vector3.new(1.2, 0.6, len), UI.STEEL, M.Metal)
+	local deck = Kit.model("viaduct_segment", streets, at - Vector3.new(0, 1, 0), Kit.yaw(f))
+	local strip = deck and Kit.glow(deck)
+	if strip then
+		strip.Color = if i % 2 == 0 then UI.CYAN else UI.VIOLET
+	else
+		part(streets, f, Vector3.new(10, 2, len), UI.STEEL, M.Concrete)
+		part(
+			streets,
+			f * CFrame.new(0, -0.6, 0),
+			Vector3.new(10.4, 0.35, len),
+			if i % 2 == 0 then UI.CYAN else UI.VIOLET,
+			M.Neon
+		)
+		part(streets, f * CFrame.new(0, 1.3, 0), Vector3.new(1.2, 0.6, len), UI.STEEL, M.Metal)
+	end
 	if i % 2 == 0 then
-		part(streets, CFrame.new(at - Vector3.new(0, VIADUCT_Y / 2 + 1, 0)), Vector3.new(3, VIADUCT_Y - 2, 3), UI.STEEL, M.Concrete)
+		part(
+			streets,
+			CFrame.new(at - Vector3.new(0, VIADUCT_Y / 2 + 1, 0)),
+			Vector3.new(3, VIADUCT_Y - 2, 3),
+			UI.STEEL,
+			M.Concrete
+		)
 	end
 end
 streets.Parent = root
@@ -334,7 +381,13 @@ for i = 1, 140 do
 	-- Giant holo ads on every 9th tower, upper half, facing the plaza.
 	if i % 9 == 0 then
 		adIndex += 1
-		local ad = part(tower, f * CFrame.new(0, h * 0.2, -d / 2 - 1.5), Vector3.new(w * 0.8, w * 0.45, 0.5), UI.ASPHALT, M.SmoothPlastic)
+		local ad = part(
+			tower,
+			f * CFrame.new(0, h * 0.2, -d / 2 - 1.5),
+			Vector3.new(w * 0.8, w * 0.45, 0.5),
+			UI.ASPHALT,
+			M.SmoothPlastic
+		)
 		Kit.adScreen(ad, Enum.NormalId.Front, adIndex, 4)
 	end
 	tower.Parent = backdrop
