@@ -7,6 +7,7 @@
 // Renames count as a delete plus an add, so both paths are checked.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
 export function globToRegExp(glob) {
   if (glob.endsWith("/")) glob += "**";
@@ -45,7 +46,7 @@ export function checkScope(changed, loadTask) {
   return { ok: outside.length === 0 || allLegacy, allLegacy, outside, legacy, tasks: tasks.map((t) => t.task.task_id) };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const base = process.argv[2];
   if (!base) {
     console.error("usage: node tools/check-scope.mjs <base-ref>");

@@ -12,6 +12,7 @@
 // Writes build/verify-result.json. Exit codes: 0 verified, 1 mismatch or task failure,
 // 3 key lacks the scope (the publish itself succeeded; the run still fails so nobody trusts it).
 import { readFileSync, writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { expectations } from "./place-check/expectations.mjs";
 
 const API = "https://apis.roblox.com/cloud/v2";
@@ -139,4 +140,4 @@ async function main() {
   console.log(`Verified: version ${env.VERSION} carries build ${env.GITHUB_SHA.slice(0, 7)} and every scripted node.`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+if (import.meta.url === pathToFileURL(process.argv[1]).href) await main();
