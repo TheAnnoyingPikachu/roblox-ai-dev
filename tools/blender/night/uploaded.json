@@ -183,5 +183,80 @@
     "model": 116045312463423,
     "decal": 103154342340939,
     "texture": null
+  },
+  "pagoda": {
+    "model": 124557737222505,
+    "decal": 126557284090257,
+    "texture": null
+  },
+  "senbon_torii": {
+    "model": 82106505612563,
+    "decal": 124573140177734,
+    "texture": null
+  },
+  "sando_stairs": {
+    "model": 105904083817503,
+    "decal": 129732003157294,
+    "texture": null
+  },
+  "castle": {
+    "model": 74919891706799,
+    "decal": 89903733999341,
+    "texture": null
+  },
+  "waterfall": {
+    "model": 137044061269400,
+    "decal": 93186131923634,
+    "texture": null
+  },
+  "mountain_range": {
+    "model": 122060265935271,
+    "decal": 128475870501872,
+    "texture": null
+  },
+  "bamboo_cluster": {
+    "model": 138960868789161,
+    "decal": 102812996481357,
+    "texture": null
+  },
+  "pine_tree": {
+    "model": 106088074406405,
+    "decal": 77807787646955,
+    "texture": null
+  },
+  "hydrangea_bush": {
+    "model": 86334238221230,
+    "decal": 128965162184134,
+    "texture": null
+  },
+  "garden_rocks": {
+    "model": 122671656843166,
+    "decal": 124244099398822,
+    "texture": null
+  },
+  "zen_garden": {
+    "model": 101926127595839,
+    "decal": 117222598261745,
+    "texture": null
+  },
+  "lily_pads": {
+    "model": 116996318912553,
+    "decal": 84281627013672,
+    "texture": null
+  },
+  "nobori_red": {
+    "model": 77666802455383,
+    "decal": 91845739388184,
+    "texture": null
+  },
+  "nobori_indigo": {
+    "model": 85763380225076,
+    "decal": 122994847176845,
+    "texture": null
+  },
+  "sake_barrels": {
+    "model": 118456419784414,
+    "decal": 102560854001964,
+    "texture": null
   }
 }
