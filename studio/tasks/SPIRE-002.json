@@ -54,5 +54,7 @@
   "tests": [
     "Kit.spec.luau"
   ],
-  "evidence": []
+  "evidence": [
+    "CI green on b4f2444: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/41223094653. Every place built with stamp sha=92f28f9 (PR merge commit) and passed check-place --sha; tool test runs the exact Luau-execution script under Lune on build/garden.rbxl and it flags a wrong stamp. Live publish verification not run yet: needs SHANNON's key scope."
+  ]
 }

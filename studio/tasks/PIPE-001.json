@@ -18,11 +18,20 @@
     "node tools/validate-tasks.mjs passes"
   ],
   "verification": "QA review of the PR by a thread that did not write it; CI green",
-  "output_artifacts": ["CLAUDE.md", "studio/gates.md"],
-  "files": ["CLAUDE.md", "studio/gates.md", "README.md"],
+  "output_artifacts": [
+    "CLAUDE.md",
+    "studio/gates.md"
+  ],
+  "files": [
+    "CLAUDE.md",
+    "studio/gates.md",
+    "README.md"
+  ],
   "tests": [],
   "risk_level": "low",
   "status": "in_review",
-  "evidence": [],
+  "evidence": [
+    "CI green on b4f2444 (PR #16): https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/41223094653. Checkpoint rules in CLAUDE.md and studio/gates.md; human gates unchanged."
+  ],
   "notes": "Umbrella task. Points 1 to 6 of the proposal map to SPIRE-002 (build stamp and publish verification), PIPE-002 (scoped tasks), PIPE-003 (kit and headless tests, points 3 and 4), PIPE-004 (short context files) and this task (point 6, checkpoints)."
 }

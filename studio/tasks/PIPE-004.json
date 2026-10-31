@@ -5,8 +5,14 @@
   "verifier": "A01",
   "task_type": "architecture",
   "objective": "Short context files: a one-page studio architecture summary and a CLAUDE.md per game that a thread reads instead of the long design docs.",
-  "inputs": ["docs/architecture/garden.md sections 1, 4, 5", "docs/architecture/night.md sections 1, 4", "src/relay and src/server file headers"],
-  "dependencies": ["PIPE-001"],
+  "inputs": [
+    "docs/architecture/garden.md sections 1, 4, 5",
+    "docs/architecture/night.md sections 1, 4",
+    "src/relay and src/server file headers"
+  ],
+  "dependencies": [
+    "PIPE-001"
+  ],
   "acceptance_criteria": [
     "docs/architecture/README.md fits on one page and covers games, place skeleton, request flow, test layers and release path",
     "src/{server,relay,night,garden}/CLAUDE.md each list files, pure modules, specs, must-stay-true rules and a fast check command, under 50 lines",
@@ -14,10 +20,17 @@
     "Rojo builds ignore the .md files (place check passes)"
   ],
   "verification": "Reviewed against the architecture docs by a thread that did not write it",
-  "output_artifacts": ["docs/architecture/README.md"],
-  "files": ["docs/architecture/README.md", "src/*/CLAUDE.md"],
+  "output_artifacts": [
+    "docs/architecture/README.md"
+  ],
+  "files": [
+    "docs/architecture/README.md",
+    "src/*/CLAUDE.md"
+  ],
   "tests": [],
   "risk_level": "low",
   "status": "in_review",
-  "evidence": []
+  "evidence": [
+    "CI green on b4f2444: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/41223094653. All 4 places pass check-place, so the CLAUDE.md files are ignored by Rojo."
+  ]
 }
