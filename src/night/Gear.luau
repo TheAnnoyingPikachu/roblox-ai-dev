@@ -162,7 +162,7 @@ local function dress(parent: Instance, handle: BasePart, weapon: string, blade: 
 		end
 		meshBlade.Color = tint[1] or Color3.fromRGB(220, 225, 235)
 		-- Neon bloom whites out a whole blade, so with detail lines only the lines glow.
-		meshBlade.Material = if glow then Enum.Material.Metal else Enum.Material.Neon
+		meshBlade.Material = if glow then Enum.Material.SmoothPlastic else Enum.Material.Neon
 		if glow then
 			glow.Color = tint[2] or tint[1] or Color3.fromRGB(140, 150, 165)
 			glow.Material = Enum.Material.Neon
