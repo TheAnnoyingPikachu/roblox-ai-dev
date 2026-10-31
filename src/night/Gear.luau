@@ -32,7 +32,7 @@ local SHAPES: { [string]: { blade: number, grip: number, width: number, name: st
 -- end) into the palm. GUARD leans the blade forward from upright; the edge then faces away from
 -- the player. CombatFx bladeSweep swings about this pose.
 local PALM = 0.16
-local GUARD = math.rad(20)
+local GUARD = math.rad(28)
 local GRIP = (CFrame.new(0, 0, PALM) * CFrame.Angles(-GUARD, 0, 0)):Inverse()
 -- The kashira hangs this far below the Handle (hero and old models alike).
 local POMMEL = 0.1
