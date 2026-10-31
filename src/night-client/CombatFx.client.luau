@@ -401,16 +401,29 @@ local function mirrored(cf: CFrame): CFrame
 	return CFrame.new(-x, y, z, r00, -r01, -r02, -r10, r11, r12, -r20, r21, r22)
 end
 
+-- A joint's two frames: current avatars use AnimationConstraint, older rigs and R6 use Motor6D.
+local function jointFrames(joint: any): (CFrame?, CFrame?)
+	if joint == nil then
+		return nil, nil
+	elseif joint:IsA("Motor6D") then
+		return joint.C0, joint.C1
+	elseif joint:IsA("AnimationConstraint") and joint.Attachment0 and joint.Attachment1 then
+		return joint.Attachment0.CFrame, joint.Attachment1.CFrame
+	end
+	return nil, nil
+end
+
 RunService.PreSimulation:Connect(function()
 	for _, p in Players:GetPlayers() do
 		local character = p.Character
 		if character and character:FindFirstChild("NightOffhand") then
 			for _, pair in ARMS do
-				local right = character:FindFirstChild(pair[1], true)
-				local left = character:FindFirstChild(pair[2], true)
-				if right and left and right:IsA("Motor6D") and left:IsA("Motor6D") then
-					local pose = right.C0 * right.Transform * right.C1:Inverse()
-					left.Transform = left.C0:Inverse() * mirrored(pose) * left.C1
+				local right: any = character:FindFirstChild(pair[1], true)
+				local left: any = character:FindFirstChild(pair[2], true)
+				local right0, right1 = jointFrames(right)
+				local left0, left1 = jointFrames(left)
+				if right0 and right1 and left0 and left1 then
+					left.Transform = left0:Inverse() * mirrored(right0 * right.Transform * right1:Inverse()) * left1
 				end
 			end
 		end
