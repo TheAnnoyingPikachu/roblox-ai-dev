@@ -79,3 +79,56 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
   either ship one texture per variant (masks) or keep the tinted piece untextured (blade, VFX).
 - The stage and bridges are walked on: keep the current invisible collision parts and set the
   meshes `CanCollide = false`, or use `CollisionFidelity = PreciseConvexDecomposition`.
+
+## Map v2 (NIGHT-010)
+
+Owner request (2026-10-28): "improve the map". 15 new props, priority P4, so `build.py` keeps them
+at the end of the manifest. Scripts: `assets/map_landmarks.py`, `map_garden.py`, `map_festival.py`.
+With nil ids `src/night/Arena.luau` skips them (`prop`), so they appear only after upload. Upload
+input for the workflow: `pagoda,senbon_torii,sando_stairs,castle,waterfall,mountain_range,bamboo_cluster,pine_tree,hydrangea_bush,garden_rocks,zen_garden,lily_pads,nobori_red,nobori_indigo,sake_barrels`.
+
+| Asset | Size (x, y, z studs) | Tris |
+|---|---|---|
+| `pagoda` | 27.56 x 52.46 x 27.56 | 7758 |
+| `senbon_torii` | 10.56 x 9.95 x 1.44 | 678 |
+| `sando_stairs` | 9.22 x 6.96 x 12.0 | 436 |
+| `castle` | 42.43 x 61.5 x 42.43 | 3912 |
+| `waterfall` | 77.04 x 98.78 x 53.9 | 3879 |
+| `mountain_range` | 745.74 x 168.54 x 287.2 | 3896 |
+| `bamboo_cluster` | 13.83 x 24.84 x 13.68 | 3528 |
+| `pine_tree` | 18.71 x 18.65 x 12.23 | 1912 |
+| `hydrangea_bush` | 6.24 x 4.1 x 4.77 | 1600 |
+| `garden_rocks` | 7.95 x 3.04 x 4.24 | 960 |
+| `zen_garden` | 18.7 x 2.77 x 11.7 | 2522 |
+| `lily_pads` | 8.14 x 0.73 x 5.38 | 768 |
+| `nobori_red` | 2.28 x 11.5 x 1.1 | 872 |
+| `nobori_indigo` | 2.28 x 11.5 x 1.1 | 872 |
+| `sake_barrels` | 9.55 x 5.65 x 3.45 | 2946 |
+
+`pagoda_glow`, `castle_glow` and `waterfall_glow` are separate meshes the code sets to real Neon:
+a baked bright texture is lit like any other pixel in Roblox and does not glow at night.
+
+Rebuild just these with `build.py -- <names>`. `export_assets.py` needs every manifest FBX in
+`build/`, so copy a subset by hand or build everything first. Contact sheet, written to
+`build/blender/night/map_props_sheet.png`: `kit.contact_sheet(names, cols=5)`, then move the file.
+
+Measured in Studio, correcting the conventions at the top of this plan (facts):
+
+- Uploaded models face **+Z at yaw 0**, not -Z. `yawOf` in `Arena.luau` adds the half turn, and
+  explicit yaws in Arena are written for this. This was already wrong in the live game: stalls,
+  oni statues, komainu and the shrine hall all faced backwards.
+- The surface people walk on is terrain at **y = 1** (`FLOOR` in `Arena.luau`), not y = 0: the
+  lawn's top voxel layer, -4..0 at occupancy 0.75, reads as `-2 + 4 * occupancy`. It covers the
+  Courtyard part. Anything meant to be seen on the ground stands on `FLOOR`.
+- Terrain fills do not stop where their box stops: `FillBlock` reads about 2 studs above its top,
+  `FillCylinder` lifts a surface it touches to y = 2. To change material without changing height,
+  write materials through `ReadVoxels` / `WriteVoxels` and leave occupancy alone.
+- Water ignores partial occupancy, so its surface snaps to y = 0 or y = 4. The pond is water at
+  y = 0 under `PondSurface`, a translucent walkable part at y = 1.
+- Cobblestone terrain reads y = 1.2 where sand and grass read 1.0 (a material offset).
+- Particles at 400 studs need a size around 10 to read, and distant emitters show only part of a
+  short pulse, so fireworks stay sparse.
+
+Open point for the owner: `Enemies.luau` `groundAt` and `PLAYER_ROOT` assume the ground is y = 0,
+while players stand at y = 1. This build keeps y = 1 so combat does not move; lowering the floor
+to match the code would change player height against enemy hover and the Y hit bands.
