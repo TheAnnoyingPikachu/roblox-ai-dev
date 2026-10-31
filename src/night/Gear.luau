@@ -462,10 +462,7 @@ function Gear.give(player: Player)
 		wear(tool, character, profile.weapon, profile.blade)
 	end)
 	tool.Unequipped:Connect(function()
-		-- A swapped weapon's old tool reports this after the new one is already worn.
-		if character:FindFirstChildOfClass("Tool") == nil then
-			unwear(character)
-		end
+		unwear(character)
 	end)
 	tool.Parent = player:FindFirstChildOfClass("Backpack") or character
 	humanoid:EquipTool(tool)
