@@ -1,9 +1,11 @@
 """Hero swords for the run Tool (src/night/Gear.luau), their saya and the legendary Blade Art blades.
 
 Assets:
-- katana, kodachi, nodachi: <name> (textured hilt), <name>_blade (Neon, Blade Art colour 1) and
+- katana, kodachi, nodachi: <name> (textured hilt), <name>_blade (Blade Art colour 1) and
   <name>_glow (hamon, shinogi and yokote lines, Neon, colour 2). Roblox ignores Color on a textured
-  MeshPart, so the temper detail is thin geometry on the blade, not a texture.
+  MeshPart, so the temper detail is thin geometry on the blade, not a texture. An old upload has no
+  _glow part and stays Neon; with _glow the blade body is SmoothPlastic, because bloom would white
+  out a whole Neon blade and hide the lines.
 - <weapon>_saya: textured scabbard, worn on the hip while the sword is held.
 - blade_<art>: one blade per legendary art, built at katana size in the katana's frame. The game
   stretches it about the blade root per weapon (width factor across, blade length along), so six
@@ -763,7 +765,7 @@ for i, (name, w) in enumerate(WEAPONS.items()):
     ASSETS.append(dict(
         name=name, build=hero(w), budget=3000, size=[1, round(w["blade"] + w["grip"] + 0.24, 2), 1], priority=2, order=22 + i * 0.1,
         root=(0, -w["width"] / 2, Z0), tint=STEEL, replaces=f"{name} Tool parts in {GEAR}",
-        notes="<name>_blade Neon, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom.",
+        notes="<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom.",
     ))
     ASSETS.append(dict(
         name=f"{name}_saya", build=saya(w), budget=1500, size=[1, round(w["blade"] + 0.3, 2), 1], priority=2, order=22.5 + i * 0.1,

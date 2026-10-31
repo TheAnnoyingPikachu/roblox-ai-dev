@@ -34,6 +34,10 @@ A full build takes about 3 minutes on CPU. It exits non-zero if any asset fails.
 measured `size_studs` (Roblox x, y, z), `tris` and per-part tris, target size, budget, priority,
 the code it replaces and wiring notes.
 
+The swords also have `swords_sheet.py` (`blender ... --python tools/blender/night/swords_sheet.py`
+after a build): it re-imports the exported FBX and PNG files, fits the art blades with the same
+maths as `src/night/Gear.luau`, and writes `build/blender/night/swords_sheet.png`.
+
 ## Layout
 
 - `kit.py`: palette, materials, primitives (box, cyl, lathe, tube, surface, poly, hip_roof, rope,
@@ -45,8 +49,9 @@ the code it replaces and wiring notes.
 
 ## Export, upload, wire (after a rebuild)
 
-1. `python tools/blender/night/export_assets.py` copies each FBX and a 256-colour PNG into
-   `assets/night/` (committed; about 20 MB). Commit them with the script changes.
+1. `python tools/blender/night/export_assets.py [asset ...]` copies each FBX and a 256-colour PNG
+   into `assets/night/` (committed; about 20 MB). Commit them with the script changes. With names
+   it exports only those, so a partial build does not need the other build outputs.
 2. After merge, the Director runs the **Upload Night assets** workflow
    (`.github/workflows/upload-assets.yml`, environment `assets`: secret `ROBLOX_API_KEY`,
    variable `ROBLOX_CREATOR_USER_ID`). It uploads every FBX as a Model and every PNG as a Decal
@@ -64,8 +69,14 @@ the code it replaces and wiring notes.
   its lowest point on `base.Y`. It returns nil while the id is nil, and callers keep their old
   meshes or parts. `Models.preloadNight` loads all in the background; `slash_arc`, `demon_wing`
   and `wisp` are also copied to `ReplicatedStorage.NightModels` for client VFX.
-- Stage and bridges keep their part collision (made invisible); blades stay separate, Neon and
-  tinted by the Blade Art; masks are scaled 0.72 to fit the head.
+- Stage and bridges keep their part collision (made invisible); masks are scaled 0.72 to fit the
+  head.
+- Swords (`src/night/Gear.luau`): `<weapon>_blade` takes Blade Art colour 1 and `<weapon>_glow`
+  (hamon, shinogi, yokote) takes colour 2 in Neon. `blade_<art>` replaces both for the six legendary
+  arts: one mesh per art at katana size, stretched per weapon about the `root` point the manifest
+  records for each `_blade` part (`SHAPES.width` in Gear must match `WEAPONS` in
+  `assets/weapons.py`). `<weapon>_saya` shows on the hip only while the sword is held. Upload a
+  weapon and the art blades in the same run: `root` describes the new models.
 
 ## Upload notes
 
@@ -74,5 +85,7 @@ the code it replaces and wiring notes.
 - Roblox recentres a MeshPart on its bounding box; `Models.night` places by the bounding box, so
   nothing sinks into the ground.
 - Every uploaded mesh and texture needs a `docs/assets/register.md` row before use (CLAUDE.md rule 9).
-- VFX meshes (`slash_arc`, `demon_wing`) are uploaded untextured and tinted by code; weapon
-  blades and the gate glow are separate meshes left untextured.
+- Roblox ignores `Color` on a textured MeshPart, so code-tinted detail cannot live in a texture:
+  the temper lines are thin strips of geometry.
+- VFX meshes (`slash_arc`, `demon_wing`) and `blade_<art>` are uploaded untextured and tinted by
+  code; weapon blades and the gate glow are separate meshes left untextured.

@@ -605,7 +605,7 @@
     "priority": "P2",
     "replaces": "katana Tool parts in src/night/Gear.luau buildTool",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "<name>_blade Neon, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
+    "notes": "<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
   },
   "kodachi": {
     "fbx": "build/blender/night/kodachi.fbx",
@@ -636,7 +636,7 @@
     "priority": "P2",
     "replaces": "kodachi Tool parts in src/night/Gear.luau buildTool",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "<name>_blade Neon, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
+    "notes": "<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
   },
   "nodachi": {
     "fbx": "build/blender/night/nodachi.fbx",
@@ -667,7 +667,7 @@
     "priority": "P2",
     "replaces": "nodachi Tool parts in src/night/Gear.luau buildTool",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "<name>_blade Neon, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
+    "notes": "<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
   },
   "katana_saya": {
     "fbx": "build/blender/night/katana_saya.fbx",

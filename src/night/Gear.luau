@@ -2,6 +2,8 @@
 -- Weapon Tool and mask for run participants (GDD C1, H4). Display only: the Tool has
 -- ManualActivationOnly and no scripts, so equipping it changes nothing the server decides.
 -- The blade is coloured by the equipped Blade Art; masks are small part models welded to the head.
+-- Held extras (`wear`): the saya on the left hip and, for Twin Kodachi, a second blade in the left
+-- hand. CombatFx keeps that hand's pose mirrored from the right.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 

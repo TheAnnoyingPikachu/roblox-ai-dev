@@ -4,7 +4,7 @@ blender --background --factory-startup --python tools/blender/night/swords_sheet
 
 Works from the exported FBX and PNG files and fits art blades with the same root and stretch maths
 as src/night/Gear.luau, so a misaligned blade or a flipped strip shows here (backface culling is
-on, as in Roblox). Tints are the Blade Art colours and blades glow as they do in game.
+on, as in Roblox). Tints are the Blade Art colours; as in game only the detail lines glow.
 """
 
 import json
@@ -55,7 +55,11 @@ def roblox(v):
 
 
 def neon(rgb):
-    return kit.mat(f"neon{rgb}", rgb, kind="flat", emit=0.55, rough=0.35)
+    return kit.mat(f"neon{rgb}", rgb, kind="flat", emit=2.2, rough=0.35)
+
+
+def plastic(rgb):
+    return kit.mat(f"plastic{rgb}", rgb, kind="flat", rough=0.3)
 
 
 def textured(name):
@@ -96,7 +100,7 @@ def load(name, tint=STEEL):
         o.data.transform(Matrix.Scale(scale, 4))
         o.data.materials.clear()
         if part.endswith("_blade"):
-            m = neon(tint[0])
+            m = plastic(tint[0])
         elif part.endswith("_glow"):
             m = neon(tint[1])
         else:

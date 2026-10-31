@@ -55,7 +55,9 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 | 19 | `leaderboard_frame` | Parts `Arena.luau` 641-667 | 2 x 16 x 19 | 1.5k | Ink notice board (kokuban) with red posts and roof; the text face stays a part with the SurfaceGui | P2 |
 | 20 | `taiko_drum` | Part `Arena.luau` 306-314 | 3.4 x 4 x 3.4 | 1k | Barrel drum with tacks on a wooden stand | P2 |
 | 21 | `wall_segment` | Wall and fence parts `Arena.luau` 224-246 (42 segments) | 13.6 x 8.6 x 2.4 | 600 | Stone wall with slate cap and wooden fence on top | P2 |
-| 22 | `katana`, `kodachi`, `nodachi` | Tool parts `src/night/Gear.luau` 19-23, 76-129 | blade 4.2 / 2.6 / 6, grip 1.4 / 1 / 2 | 800 each | Wrapped grip, gold tsuba, curved blade as a separate `blade` mesh that keeps the Blade Art tint and trail attachments | P2 |
+| 22 | `katana`, `kodachi`, `nodachi` | Tool parts `src/night/Gear.luau` | blade 4.2 / 2.6 / 6, grip 1.4 / 1 / 2 | 3k each | Hero rebuild (NIGHT-009): curved blade with kissaki, shinogi ridge, habaki, seppa, tsuba per weapon (round with sakura cut-outs, aoi with inome cut-outs, large mokko with crescents), same panels, diamond ito, menuki, kashira. `blade` takes the Blade Art colour; `glow` holds the hamon, shinogi and yokote lines | P2 |
+| 22a | `katana_saya`, `kodachi_saya`, `nodachi_saya` | New: left hip while the sword is held | 4.4 / 2.8 / 6.2 long | 1.5k each | Lacquer with koiguchi, kojiri, kurikata and sageo cord | P2 |
+| 22b | `blade_inferno`, `blade_lightning`, `blade_void`, `blade_galaxy`, `blade_gold`, `blade_shadow` | New: replaces only the blade for that Blade Art | katana size | 1.8k each | Flame edge, zigzag bolt, obsidian shards, crystals, kurikara dragon, spined demon blade. One mesh per art, stretched per weapon by Gear about its root (6 assets, not 18). Sakura, ember, moonlight, rainbow and steel keep the hero blade | P2 |
 | 23 | `cedar_tree` | Forest parts `Arena.luau` 747-775 (x140) | 11 x 26 x 11 | 400 | Low-poly stacked cedar cones; very low budget because of the count | P3 |
 | 24 | `mask_kitsune`, `mask_tengu`, `mask_oni`, `mask_eclipse`, `mask_okame`, `mask_hannya` | Mask parts `Gear.luau` 134-235 | 1.3 x 1.6 x 1.2 (face; horns and ears extra) | 3k each | Sculpted face shells (brow, cheekbones, nose, carved eye holes), horns/ears/teeth and side ties, in each cosmetic's colours (`src/shared/NightProgress.luau` 80-86) | P3 |
 | 25 | `slash_arc`, `demon_wing` | VFX parts `CombatFx.client.luau` 144-178 (slash), 1218-1233 (Trigger wings) | arc 8 x 0.2 x 8; wing 0.3 x 3.5 x 3 | arc 300, wing 900 | White untextured shapes the code tints; crescent with taper, bat wing with arm and finger bones and a scalloped membrane | P3 |
@@ -75,7 +77,10 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 
 - Fact: the FBX is exported at 1 unit = 1 stud. Assumption: the Roblox importer is set to
   "studs" scale; either way `Models.luau` sets `Size` explicitly from the manifest.
-- Fact: a textured MeshPart ignores `Color`. Masks and blades that the code tints per cosmetic
-  either ship one texture per variant (masks) or keep the tinted piece untextured (blade, VFX).
+- Fact: a textured MeshPart ignores `Color` (retested in Studio for NIGHT-009). Masks and blades
+  that the code tints per cosmetic either ship one texture per variant (masks) or keep the tinted
+  piece untextured (blade, VFX). So the hamon is thin Neon geometry (`<weapon>_glow`), not a texture.
+- Fact: Gear applies `blade_<art>` with the `root` values of the new hero models, so hero and art
+  blades must be uploaded in the same run.
 - The stage and bridges are walked on: keep the current invisible collision parts and set the
   meshes `CanCollide = false`, or use `CollisionFidelity = PreciseConvexDecomposition`.

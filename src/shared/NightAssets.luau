@@ -209,21 +209,21 @@ local NightAssets: { [string]: Asset } = {
 		root = { 0, -3.01, 0.03 },
 	},
 	katana_saya = {
-		size = { 0.41, 4.39, 0.69 },
+		size = { 0.42, 4.39, 0.69 },
 		parts = { "katana_saya" },
 		model = nil,
 		decal = nil,
 		texture = nil,
 	},
 	kodachi_saya = {
-		size = { 0.4, 2.79, 0.54 },
+		size = { 0.41, 2.79, 0.54 },
 		parts = { "kodachi_saya" },
 		model = nil,
 		decal = nil,
 		texture = nil,
 	},
 	nodachi_saya = {
-		size = { 0.42, 6.19, 0.87 },
+		size = { 0.43, 6.19, 0.87 },
 		parts = { "nodachi_saya" },
 		model = nil,
 		decal = nil,
@@ -262,7 +262,7 @@ local NightAssets: { [string]: Asset } = {
 		root = { -0.015, -2.11, 0.222 },
 	},
 	blade_gold = {
-		size = { 0.45, 4.22, 0.62 },
+		size = { 0.49, 4.22, 0.65 },
 		parts = { "blade_gold_blade", "blade_gold_glow" },
 		model = nil,
 		decal = nil,
