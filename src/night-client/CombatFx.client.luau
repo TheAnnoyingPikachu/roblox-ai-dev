@@ -382,10 +382,40 @@ local function bladeSweep(character: Model, finisher: boolean)
 		end
 		tool.Grip = grip * CFrame.Angles(math.rad(-60 + 120 * f), 0, 0)
 		if offWeld then
-			offWeld.C1 = grip * CFrame.Angles(math.rad(60 - 120 * f), 0, 0)
+			offWeld.C1 = tool.Grip
 		end
 	end)
 end
+
+-- Twin Kodachi: the left arm copies the right every frame, mirrored across the body, so both blades
+-- hold the guard and swing together on either rig, with no extra animation assets.
+local ARMS = {
+	{ "RightShoulder", "LeftShoulder" },
+	{ "RightElbow", "LeftElbow" },
+	{ "RightWrist", "LeftWrist" },
+	{ "Right Shoulder", "Left Shoulder" },
+}
+
+local function mirrored(cf: CFrame): CFrame
+	local x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22 = cf:GetComponents()
+	return CFrame.new(-x, y, z, r00, -r01, -r02, -r10, r11, r12, -r20, r21, r22)
+end
+
+RunService.PreSimulation:Connect(function()
+	for _, p in Players:GetPlayers() do
+		local character = p.Character
+		if character and character:FindFirstChild("NightOffhand") then
+			for _, pair in ARMS do
+				local right = character:FindFirstChild(pair[1], true)
+				local left = character:FindFirstChild(pair[2], true)
+				if right and left and right:IsA("Motor6D") and left:IsA("Motor6D") then
+					local pose = right.C0 * right.Transform * right.C1:Inverse()
+					left.Transform = left.C0:Inverse() * mirrored(pose) * left.C1
+				end
+			end
+		end
+	end
+end)
 
 local function weaponOf(p: Player): CombatRules.Weapon
 	local id = p:GetAttribute("Weapon")
