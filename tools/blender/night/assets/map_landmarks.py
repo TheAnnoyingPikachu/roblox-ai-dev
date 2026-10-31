@@ -127,25 +127,31 @@ def senbon_torii():
 
 
 def sando_stairs():
-    """One stone stair flight of the south sando: 8 steps of 0.75 over 12 studs, climbing toward -Y
-    (Roblox +Z) from its front edge, with sloped side blocks (sode-ishi) the torii pillars sit on."""
+    """The whole south sando as one flight: 42 steps, 24 up over 66 (the hill's slope), low end
+    toward +Y. Low side walls run parallel to the steps, the torii pillars stand on them, and
+    their outer faces sink into the terrain. One mesh, so the flight has no joints to line up."""
     stone = k.mat("stone", k.STONE, var=0.22, scale=1.0)
-    worn = k.mat("worn", k.shade(k.STONE, 0.86), var=0.24, scale=1.3)
-    block = k.mat("block", k.shade(k.STONE, 0.7), var=0.22, scale=1.6)
+    worn = k.mat("worn", k.shade(k.STONE, 0.84), var=0.24, scale=1.3)
+    block = k.mat("block", k.shade(k.STONE, 0.72), var=0.22, scale=1.6)
     moss = k.mat("moss", (62, 92, 52), var=0.25, scale=2)
-    steps, rise, run, width = 8, 0.75, 1.5, 7.0
-    length = steps * run
+    steps, length, height, width = 42, 66.0, 24.0, 6.0
+    run, rise = length / steps, height / steps
     p = []
     for i in range(steps):
-        front = length / 2 - i * run
-        depth = front + length / 2
-        p.append(k.box((width, depth, (i + 1) * rise), (0, front - depth / 2, (i + 1) * rise / 2), m=stone if i % 2 else worn, bevel=0.07))
+        top = (i + 1) * rise
+        depth = min(1.5, top)  # each slab reaches well below the step in front, so no gaps
+        p.append(k.box((width, run + 0.04, depth), (0, length / 2 - (i + 0.5) * run, top - depth / 2), m=stone if i % 3 else worn, bevel=0.05))
+    # Wall profile in local x (along the climb) and z: 0.35 above the step line, flat foot at z 0.
+    x0 = -length / 2
+    slope = height / length
+    outline = [(x0, 0), (x0 + 1.2 / slope, 0), (-x0, height - 1.2), (-x0, height + 0.35), (x0, 0.35)]
+    angle = math.degrees(math.atan2(height, length))
     for side in (-1, 1):
         x = side * (width / 2 + 0.55)
-        pts = [(-length / 2, 0), (-length / 2, steps * rise + 1.0), (length / 2, 1.0), (length / 2, 0)]
-        # poly lays points in local x/z; rotate so local x runs along -Y (the climb).
-        p.append(k.poly(pts, 1.1, loc=(x, 0, 0), rot=(0, 0, -90), m=block, bevel=0.08))
-        p.append(k.box((1.12, 1.6, 0.12), (x, length / 2 - 2.4, 0.95 + 2.4 / length * steps * rise), (math.degrees(math.atan2(steps * rise, length)), 0, 0), m=moss))
+        p.append(k.poly(outline, 1.1, loc=(x, 0, 0), rot=(0, 0, -90), m=block, bevel=0.05))
+        for along in (9, 24, 41, 57):
+            y = length / 2 - along
+            p.append(k.box((1.14, 2.4, 0.08), (x, y, along * slope + 0.36), (-angle, 0, 0), m=moss))
     return p
 
 
@@ -248,13 +254,14 @@ def waterfall():
 
 def mountain_range():
     """A 70-degree arc of misty mountains for the far backdrop (radius 560 about +Y): a near ridge
-    and a taller far one, each with a few pointed peaks, gullies down the face and lower ends so
-    neighbouring copies blend. Placed around the arena several times with varied yaw and scale.
+    and a taller far one, each with a few pointed peaks and gullies down the face, plus tails that
+    taper to the horizon past both ends, so neighbouring copies blend and no cut end shows. Placed around the arena several times with varied yaw and scale.
     Closed shells so both sides render."""
     rng = random.Random(560)
     near = k.mat("mtn_near", (92, 102, 138), kind="grad", rgb2=(30, 36, 58))
     far = k.mat("mtn_far", (110, 122, 158), kind="grad", rgb2=(52, 60, 92))
     span = math.radians(70)
+    tail = 8 / 60  # of the span at each end: about 9 degrees
     p = []
     for layer, (radius, depth, base_h, mat) in enumerate(((560, 110, 50, near), (650, 120, 90, far))):
         peaks = [(rng.uniform(0.1, 0.9), rng.uniform(120, 190) + 40 * layer, rng.uniform(0.14, 0.24)) for _ in range(4)]
@@ -264,14 +271,21 @@ def mountain_range():
             for c, ph, w in peaks:
                 h = max(h, ph * max(0.0, 1 - abs(u - c) / w) ** 1.3)
             h += 9 * noise.fractal(Vector((u * 28, layer * 7.0, 0.5)), 0.7, 2.0, 4)
-            return h * (0.4 + 0.6 * math.sin(math.pi * u))
+            h *= 0.4 + 0.6 * math.sin(math.pi * min(1.0, max(0.0, u)))
+            # Past each end the ridge runs down to nothing, so no cut end ever shows.
+            past = max(-u, u - 1) / tail
+            if past > 0:
+                t = 1 - min(1.0, past)
+                h *= max(0.02, t * t * (3 - 2 * t))
+            return h
 
-        def fn(u, v, radius=radius, depth=depth, height=height, layer=layer):
+        def fn(w, v, radius=radius, depth=depth, height=height, layer=layer):
+            u = w * (1 + 2 * tail) - tail  # u 0..1 is the original arc; the samples stay on its grid
             a = -span / 2 + span * u
             r = radius - depth * (1 - v) ** 1.2 + 10 * noise.fractal(Vector((u * 30, v * 3, layer + 2.0)), 0.6, 2.0, 3) * v
             return (math.sin(a) * r, 560 - math.cos(a) * r, height(u) * v ** 0.85)
 
-        p.append(k.surface(60, 7, fn, m=mat, thickness=3, name=f"ridge{layer}"))
+        p.append(k.surface(76, 7, fn, m=mat, thickness=3, name=f"ridge{layer}"))
     return p
 
 
@@ -282,16 +296,16 @@ ASSETS = [
     dict(name="senbon_torii", build=senbon_torii, budget=700, size=[11.5, 9.5, 1.3], priority=4, order=2,
          replaces="New prop: the senbon-torii tunnel up the south sando stairs (src/night/Arena.luau sando())",
          notes="Pillars 7 studs apart (inner gap 6.2), so they straddle the 7-stud sando_stairs."),
-    dict(name="sando_stairs", build=sando_stairs, budget=1200, size=[9.2, 7, 12], priority=4, order=3,
-         replaces="New prop: stone stair flights of the south sando (src/night/Arena.luau sando())",
-         notes="Placed at yaw 180 so the low end faces -Z and it climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."),
+    dict(name="sando_stairs", build=sando_stairs, budget=2400, size=[8.2, 24.4, 66], priority=4, order=3,
+         replaces="New prop: the stone stair flight of the south sando (src/night/Arena.luau sando())",
+         notes="One flight, 24 up over 66. Placed once at yaw 180 so the low end faces -Z and it climbs toward +Z. Ghosted: an invisible WedgePart is the walkable slope."),
     dict(name="castle", build=castle, budget=4000, size=[44, 68, 33], priority=4, order=4,
          replaces="New backdrop: castle keep on the north-west ridge (src/night/Arena.luau backdrop())",
          notes="Far scenery: no shadows, ghosted. castle_glow is the lit windows: code sets Neon, warm, so they read at 400+ studs."),
     dict(name="waterfall", build=waterfall, budget=4000, size=[70, 96, 55], priority=4, order=5,
          replaces="New backdrop: waterfall cliff in the west (src/night/Arena.luau backdrop())",
          notes="waterfall_glow is the cascade: code sets Neon, pale blue, slightly transparent, and adds spray and mist particles."),
-    dict(name="mountain_range", build=mountain_range, budget=4000, size=[750, 170, 290], priority=4, order=6,
+    dict(name="mountain_range", build=mountain_range, budget=5200, size=[910, 170, 330], priority=4, order=6,
          replaces="Terrain mountain balls in src/night/Arena.luau ground() (kept as the nil-id fallback)",
-         notes="One 70-degree arc; placed 6 times, bounding box at radius 510 (ridges at 560 and 650), leaving a gap at the moon bearing."),
+         notes="One 70-degree arc with 9-degree tapered tails; placed 6 times with ridges at radius 560 and 650, leaving a low saddle at the moon bearing."),
 ]

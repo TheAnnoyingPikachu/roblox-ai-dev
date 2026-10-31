@@ -1001,31 +1001,55 @@ end
 
 -- South sando: yatai street, stone stairs and senbon-torii tunnel up a hill to an inner shrine ----
 
-local SANDO_FOOT = 152 -- z where the stairs start: four flights of 6 over 12, landings of 6
+local SANDO_FOOT, SANDO_END = 152, 218 -- z of the one stair flight: 24 up over 66, about 1 in 3
 local SANDO_TOP = 24
+local SUMMIT = Vector3.new(0, 0, 242)
 
 -- Height of the stair line at z.
 local function sandoY(z: number): number
-	local along = math.clamp(z - SANDO_FOOT, 0, 66)
-	local flights = math.floor(along / 18)
-	return FLOOR + flights * 6 + math.min(along - flights * 18, 12) / 2
+	return FLOOR + SANDO_TOP * math.clamp((z - SANDO_FOOT) / (SANDO_END - SANDO_FOOT), 0, 1)
+end
+
+-- Height of the sando hill at (x, z): a cone whose slope is the stair line, measured straight down
+-- the axis beside the stairs so the ground stays flush with the side walls, with a flat summit.
+local function hillY(x: number, z: number): number
+	local away = math.clamp((math.abs(x) - 6) / 10, 0, 1)
+	local axis = math.abs(z - SUMMIT.Z)
+	local distance = axis + ((Vector3.new(x, 0, z) - SUMMIT).Magnitude - axis) * away
+	local slope = math.clamp((90 - distance) / 66, 0, 1)
+	local bumps = math.noise(x / 18, z / 18, 3) * 2 * away * math.sin(math.pi * slope)
+	return FLOOR + SANDO_TOP * slope + bumps - (1 - away) * 0.4
+end
+
+-- Writes the hill voxel by voxel: fills cannot land on an exact slope (see FLOOR for the layer rule).
+local function raiseHill(terrain: Terrain)
+	local M = Enum.Material
+	local region = Region3.new(Vector3.new(-104, -12, 140), Vector3.new(104, 36, 340))
+	local materials, occupancy = terrain:ReadVoxels(region, 4)
+	local corner = region.CFrame.Position - region.Size / 2
+	for ix = 1, materials.Size.X do
+		for iz = 1, materials.Size.Z do
+			local x, z = corner.X + (ix - 0.5) * 4, corner.Z + (iz - 0.5) * 4
+			local height = hillY(x, z)
+			if height > FLOOR then
+				local onPath = math.abs(x) <= 4.5 and z < SANDO_END
+				local onTop = (Vector3.new(x, 0, z) - SUMMIT).Magnitude < 24
+				local material = if onPath then M.Slate elseif onTop then M.Pavement else M.Grass
+				for iy = 1, materials.Size.Y do
+					local fill = math.clamp((height - (corner.Y + (iy - 1) * 4) - 2) / 4, 0, 1)
+					if fill > 0 then
+						materials[ix][iy][iz] = material
+						occupancy[ix][iy][iz] = fill
+					end
+				end
+			end
+		end
+	end
+	terrain:WriteVoxels(region, 4, materials, occupancy)
 end
 
 local function sando()
-	local terrain = Workspace.Terrain
-	local M = Enum.Material
-	-- A smooth hill whose north face follows the stairs, a paved summit and a cutting for the flights.
-	-- A block fill reads about 2 studs above its top, so landings fill to their height minus 2.
-	terrain:FillBall(Vector3.new(0, -150.5, 242), 174.5, M.Grass)
-	terrain:FillBlock(CFrame.new(0, FLOOR + SANDO_TOP - 22, 242), Vector3.new(52, 40, 52), M.Pavement)
-	for i = 0, 3 do
-		local y = FLOOR + i * 6
-		local z = SANDO_FOOT + i * 18
-		terrain:FillBlock(CFrame.new(0, y + 20, z + 9), Vector3.new(13, 40, 18), M.Air)
-		terrain:FillBlock(CFrame.new(0, y - 8, z + 9), Vector3.new(13, 12, 18), M.Slate)
-		terrain:FillWedge(CFrame.new(0, y + 3, z + 6), Vector3.new(13, 6, 12), M.Slate)
-		terrain:FillBlock(CFrame.new(0, y + 1, z + 15), Vector3.new(13, 6, 6), M.Slate)
-	end
+	raiseHill(Workspace.Terrain)
 
 	for i = 0, 5 do
 		local z = 112 + (i // 2) * 14
@@ -1043,28 +1067,24 @@ local function sando()
 	end
 	for _, x in { -6.5, 6.5 } do
 		stoneLantern(folder, Vector3.new(x, FLOOR, SANDO_FOOT - 2))
-		for landing = 1, 3 do
-			local z = SANDO_FOOT + landing * 18 - 3
-			stoneLantern(folder, Vector3.new(x * 0.86, groundY(x * 0.86, z), z))
+		for _, z in { 167, 185, 203 } do
+			local side = x * 0.985
+			stoneLantern(folder, Vector3.new(side, groundY(side, z), z))
 		end
 		for _, z in { 228, 240 } do
 			stoneLantern(folder, Vector3.new(x * 1.3, groundY(x * 1.3, z), z))
 		end
 	end
 
-	for i = 0, 3 do
-		local y = FLOOR + i * 6
-		local z = SANDO_FOOT + i * 18 + 6
-		if prop("sando_stairs", folder, Vector3.new(0, y, z), 180) then
-			-- Exact walkable slope over the coarser terrain wedge.
-			local ramp = wedge(folder, Vector3.new(9, 6, 12), CFrame.new(0, y + 3.4, z), STONE, Enum.Material.Slate)
-			ramp.Transparency = 1
-		end
+	local middle = (SANDO_FOOT + SANDO_END) / 2
+	if prop("sando_stairs", folder, Vector3.new(0, FLOOR, middle), 180) then
+		-- Exact walkable slope, level with the middle of the steps.
+		local size = Vector3.new(8, SANDO_TOP, SANDO_END - SANDO_FOOT)
+		local ramp = wedge(folder, size, CFrame.new(0, FLOOR + SANDO_TOP / 2 + 0.3, middle), STONE, Enum.Material.Slate)
+		ramp.Transparency = 1
 	end
-	for z = SANDO_FOOT + 1, SANDO_FOOT + 64, 3 do
-		-- On a flight the feet sit on the sloped side blocks; on a landing, on the ground.
-		local onFlight = (z - SANDO_FOOT) % 18 < 12
-		prop("senbon_torii", folder, Vector3.new(0, sandoY(z) + (if onFlight then 0.6 else 0), z))
+	for z = SANDO_FOOT + 1, SANDO_END - 2, 3 do
+		prop("senbon_torii", folder, Vector3.new(0, sandoY(z) + 0.2, z)) -- feet on the side walls
 	end
 
 	-- Inner shrine on the summit, behind a smaller vermilion torii.
@@ -1244,7 +1264,7 @@ local function mountains()
 	local placed = false
 	for _, degrees in { -156, -120, -36, 24, 84, 144 } do
 		local angle = math.rad(degrees)
-		local at = Vector3.new(math.cos(angle) * 510, -10, math.sin(angle) * 510)
+		local at = Vector3.new(math.cos(angle) * 487, -10, math.sin(angle) * 487)
 		placed = prop("mountain_range", folder, at, yawOf(CFrame.lookAt(at, Vector3.new(0, -10, 0)))) ~= nil
 		if not placed then
 			break
@@ -1284,21 +1304,68 @@ local function backdrop()
 		Workspace.Terrain:FillBall(keep - Vector3.new(0, 84, 0), 90, Enum.Material.Rock)
 	end
 	local fall = prop("waterfall", folder, WATERFALL, yawOf(CFrame.lookAt(WATERFALL, Vector3.new(0, FLOOR, 0))))
-	neon(fall, Color3.fromRGB(176, 214, 255), 0.2)
 	if fall then
+		-- The baked rock is near black by moonlight, and point lights fade out long before the
+		-- courtyard, so its colour carries the silhouette and the lights only model it up close.
+		local rock = fall:FindFirstChild("waterfall") :: MeshPart
+		rock.TextureID = ""
+		rock.Material = Enum.Material.Slate
+		rock.Color = Color3.fromRGB(92, 100, 126)
+		-- A dim grey Neon stays under the bloom threshold, and the colour correction blues it.
+		neon(fall, Color3.fromRGB(92, 102, 118), 0.15)
+		local sheet = fall:FindFirstChild("waterfall_glow") :: BasePart
 		local toward = -WATERFALL.Unit
+		local foot = Vector3.new(sheet.Position.X, 6, sheet.Position.Z) + toward * 9
+		-- The tint turned the baked pool to rock, so water sits inside the rock ring.
+		local pool = Vector3.new(foot.X, FLOOR + 1, foot.Z)
+		decor(pillar(folder, pool, 0.3, 11, Color3.fromRGB(52, 66, 90), Enum.Material.Neon))
 		fog(folder, WATERFALL + toward * 8 + Vector3.new(0, 6, 0), Vector3.new(34, 8, 34), 22, 34, 3)
-		cloud(folder, WATERFALL - toward * 8 + Vector3.new(0, 44, 0), Vector3.new(14, 76, 6), {
+		cloud(folder, foot, Vector3.new(16, 2, 26), {
 			Texture = "rbxasset://textures/particles/smoke_main.dds",
-			Color = ColorSequence.new(Color3.fromRGB(226, 240, 255)),
-			LightEmission = 0.6,
-			Transparency = NumberSequence.new(0.7, 1),
-			Size = NumberSequence.new(3, 7),
-			Lifetime = NumberRange.new(1.5, 2.5),
-			Speed = NumberRange.new(14, 20),
-			EmissionDirection = Enum.NormalId.Bottom,
-			Rate = 18,
+			Color = ColorSequence.new(Color3.fromRGB(150, 170, 205)),
+			LightInfluence = 0,
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.3, 0.72),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Size = NumberSequence.new(9, 22),
+			Lifetime = NumberRange.new(2.5, 4),
+			Speed = NumberRange.new(3, 7),
+			SpreadAngle = Vector2.new(50, 50),
+			EmissionDirection = Enum.NormalId.Top,
+			Rate = 8, -- particles stack: much more and the foot blows out to white
 		})
+		-- Foam streaks falling down the sheet.
+		cloud(folder, sheet.Position + toward * 6 + Vector3.new(0, 3, 0), Vector3.new(4, 52, 14), {
+			Texture = "rbxasset://textures/particles/smoke_main.dds",
+			Color = ColorSequence.new(Color3.fromRGB(226, 238, 252)),
+			LightEmission = 0.6,
+			LightInfluence = 0,
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.2, 0.45),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Size = NumberSequence.new(2.5, 5),
+			Squash = NumberSequence.new(1.6),
+			Lifetime = NumberRange.new(1.4, 2.2),
+			Speed = NumberRange.new(0, 1),
+			Acceleration = Vector3.new(0, -26, 0),
+			Rate = 30,
+		})
+		local moonlight = decor(part(folder, Vector3.one, WATERFALL + Vector3.new(26, 0, 0), WHITE))
+		moonlight.Transparency = 1
+		for _, offset in { Vector3.new(4, 21, 4), Vector3.new(-2, 57, -20), Vector3.new(-2, 57, 26) } do
+			local attachment = Instance.new("Attachment")
+			attachment.Position = offset
+			attachment.Parent = moonlight
+			local light = Instance.new("PointLight")
+			light.Color = Color3.fromRGB(130, 158, 215)
+			light.Range = 60
+			light.Brightness = 0.9
+			light.Parent = attachment
+		end
 	end
 end
 

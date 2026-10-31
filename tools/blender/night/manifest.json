@@ -945,24 +945,24 @@
     "png": "build/blender/night/sando_stairs.png",
     "preview": "build/blender/night/previews/sando_stairs.png",
     "size_studs": [
-      9.22,
-      6.96,
-      12.0
+      8.24,
+      24.33,
+      66.04
     ],
-    "tris": 436,
+    "tris": 2056,
     "parts": {
-      "sando_stairs": 436
+      "sando_stairs": 2056
     },
     "target_size_studs": [
-      9.2,
-      7,
-      12
+      8.2,
+      24.4,
+      66
     ],
-    "tris_budget": 1200,
+    "tris_budget": 2400,
     "priority": "P4",
-    "replaces": "New prop: stone stair flights of the south sando (src/night/Arena.luau sando())",
+    "replaces": "New prop: the stone stair flight of the south sando (src/night/Arena.luau sando())",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "Placed at yaw 180 so the low end faces -Z and it climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."
+    "notes": "One flight, 24 up over 66. Placed once at yaw 180 so the low end faces -Z and it climbs toward +Z. Ghosted: an invisible WedgePart is the walkable slope."
   },
   "castle": {
     "fbx": "build/blender/night/castle.fbx",
@@ -1019,24 +1019,24 @@
     "png": "build/blender/night/mountain_range.png",
     "preview": "build/blender/night/previews/mountain_range.png",
     "size_studs": [
-      745.74,
-      168.54,
-      287.2
+      908.59,
+      168.58,
+      333.43
     ],
-    "tris": 3896,
+    "tris": 4920,
     "parts": {
-      "mountain_range": 3896
+      "mountain_range": 4920
     },
     "target_size_studs": [
-      750,
+      910,
       170,
-      290
+      330
     ],
-    "tris_budget": 4000,
+    "tris_budget": 5200,
     "priority": "P4",
     "replaces": "Terrain mountain balls in src/night/Arena.luau ground() (kept as the nil-id fallback)",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "One 70-degree arc; placed 6 times, bounding box at radius 510 (ridges at 560 and 650), leaving a gap at the moon bearing."
+    "notes": "One 70-degree arc with 9-degree tapered tails; placed 6 times with ridges at radius 560 and 650, leaving a low saddle at the moon bearing."
   },
   "bamboo_cluster": {
     "fbx": "build/blender/night/bamboo_cluster.fbx",
