@@ -546,7 +546,8 @@ def _join(name, objs):
     bm.from_mesh(ob.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
     bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=0.0001)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    if not name.endswith("_glow"):  # open flat strips already face out; recalc could flip them
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.to_mesh(ob.data)
     bm.free()
     return ob
