@@ -124,7 +124,7 @@ def flat(rgb, name=None, emit=0.0):
 
 
 def glow(rgb):
-    return flat(rgb, emit=3.0)
+    return flat(rgb, emit=0.4)  # low: stays the hue in the bake; Neon does the glowing in game
 
 
 # The egg: every shell decoration is placed in shell coordinates ------------------------------
@@ -233,14 +233,14 @@ def flower(r, petal, heart, lobes=6, name="flower"):
     return [body, dome]
 
 
-def leaf(length, width, m, droop=0.25, name="leaf"):
+def leaf(length, width, m, droop=0.25, n=6, steps=6, name="leaf"):
     """Curved blade along +X, flattened to a thin lens."""
     pts, radii = [], []
-    for i in range(7):
-        s = i / 6
+    for i in range(steps + 1):
+        s = i / steps
         pts.append((length * s, 0, length * droop * math.sin(s * math.pi * 0.8)))
         radii.append(width * math.sin(s * math.pi) ** 0.7)
-    ob = tube(pts, radii, m=m, n=6, name=name)
+    ob = tube(pts, radii, m=m, n=n, name=name)
     ob.data.transform(Matrix.Diagonal((1, 1, 0.3, 1)))
     return ob
 
@@ -278,17 +278,20 @@ def sharpen(ob):
     return ob
 
 
-def facet(ob, mats):
+def facet(ob, mats, skip=()):
     """Gem look: a fixed pre-lit shade per face (mats run bright to dark), so the cut reads under
-    any Roblox lighting. Call once the object is in its final place."""
+    any Roblox lighting. Call once the object is in its final place. `skip`: face indices left
+    on the last material."""
     light = Vector((-0.45, -0.75, 0.5)).normalized()
     ob.data.materials.clear()
     for m in mats:
         ob.data.materials.append(m)
     last = len(mats) - 1
+    if skip:
+        last -= 1
     for poly in ob.data.polygons:
         lit = (poly.normal.dot(light) + 1) / 2
-        poly.material_index = min(last, int((1 - lit) * (last + 1)))
+        poly.material_index = last + 1 if poly.index in skip else min(last, int((1 - lit) * (last + 1)))
     return sharpen(ob)
 
 
@@ -328,8 +331,10 @@ def _glow_material(baked):
     nt = neon.node_tree
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
     tex = next(n for n in nt.nodes if n.type == "TEX_IMAGE")
+    nt.links.remove(bsdf.inputs["Base Color"].links[0])
+    bsdf.inputs["Base Color"].default_value = (0, 0, 0, 1)
     nt.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
-    bsdf.inputs["Emission Strength"].default_value = 0.9
+    bsdf.inputs["Emission Strength"].default_value = 1.0
     return neon
 
 

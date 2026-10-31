@@ -54,13 +54,13 @@
     "png": "build/blender/garden/egg_forest.png",
     "preview": "build/blender/garden/previews/egg_forest.png",
     "size_studs": [
-      2.59,
-      3.32,
-      2.4
+      2.43,
+      3.31,
+      2.56
     ],
-    "tris": 2380,
+    "tris": 2422,
     "parts": {
-      "egg_forest": 2380
+      "egg_forest": 2422
     },
     "target_size_studs": [
       2.2,
@@ -79,13 +79,13 @@
     "png": "build/blender/garden/egg_sunset.png",
     "preview": "build/blender/garden/previews/egg_sunset.png",
     "size_studs": [
-      2.22,
-      3.2,
-      2.2
+      2.16,
+      2.76,
+      2.25
     ],
-    "tris": 2406,
+    "tris": 2212,
     "parts": {
-      "egg_sunset": 2406
+      "egg_sunset": 2212
     },
     "target_size_studs": [
       2.2,
@@ -140,9 +140,9 @@
       3.37,
       2.09
     ],
-    "tris": 1324,
+    "tris": 1308,
     "parts": {
-      "egg_star": 1244,
+      "egg_star": 1228,
       "egg_star_glow": 80
     },
     "target_size_studs": [
@@ -168,14 +168,14 @@
     "png": "build/blender/garden/egg_celestial.png",
     "preview": "build/blender/garden/previews/egg_celestial.png",
     "size_studs": [
-      4.82,
-      4.1,
-      2.1
+      4.83,
+      4.0,
+      3.45
     ],
-    "tris": 2422,
+    "tris": 2424,
     "parts": {
-      "egg_celestial": 1870,
-      "egg_celestial_glow": 552
+      "egg_celestial": 1734,
+      "egg_celestial_glow": 690
     },
     "target_size_studs": [
       2.2,
@@ -190,8 +190,8 @@
     "glow": {
       "egg_celestial_glow": [
         255,
-        238,
-        180
+        214,
+        110
       ]
     }
   },
@@ -200,13 +200,13 @@
     "png": "build/blender/garden/egg_shell_fragment.png",
     "preview": "build/blender/garden/previews/egg_shell_fragment.png",
     "size_studs": [
-      0.84,
-      0.71,
-      0.23
+      0.68,
+      0.73,
+      0.22
     ],
-    "tris": 80,
+    "tris": 56,
     "parts": {
-      "egg_shell_fragment": 80
+      "egg_shell_fragment": 56
     },
     "target_size_studs": [
       1.1,
@@ -218,6 +218,190 @@
     "replaces": "Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
     "script": "tools/blender/garden/assets/eggs.py",
     "notes": "Upload skips its texture so code can tint it from EGG_COLOURS; set Color, spin and scale per piece.",
+    "glow": {}
+  },
+  "dash_sweeper": {
+    "fbx": "build/blender/garden/dash_sweeper.fbx",
+    "png": "build/blender/garden/dash_sweeper.png",
+    "preview": "build/blender/garden/previews/dash_sweeper.png",
+    "size_studs": [
+      23.94,
+      7.6,
+      8.6
+    ],
+    "tris": 1884,
+    "parts": {
+      "dash_sweeper": 474,
+      "dash_sweeper_arm": 1410
+    },
+    "target_size_studs": [
+      24,
+      8,
+      24
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash mini-game",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "dash_sweeper_arm is 24 long and symmetric, so its bounding box centre is the spin axis. Spin it about Y in code; weld nothing to the post.",
+    "glow": {}
+  },
+  "dash_ball": {
+    "fbx": "build/blender/garden/dash_ball.fbx",
+    "png": "build/blender/garden/dash_ball.png",
+    "preview": "build/blender/garden/previews/dash_ball.png",
+    "size_studs": [
+      12.04,
+      12.28,
+      12.04
+    ],
+    "tris": 2910,
+    "parts": {
+      "dash_ball": 2910
+    },
+    "target_size_studs": [
+      12,
+      12,
+      12
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash mini-game",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "Roll or bounce it as a Ball part with this mesh welded; keep the mesh CanCollide false.",
+    "glow": {}
+  },
+  "dash_pendulum": {
+    "fbx": "build/blender/garden/dash_pendulum.fbx",
+    "png": "build/blender/garden/dash_pendulum.png",
+    "preview": "build/blender/garden/previews/dash_pendulum.png",
+    "size_studs": [
+      27.4,
+      19.5,
+      5.38
+    ],
+    "tris": 2434,
+    "parts": {
+      "dash_pendulum": 968,
+      "dash_pendulum_hammer": 1466
+    },
+    "target_size_studs": [
+      24,
+      19,
+      3
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash mini-game",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "dash_pendulum_hammer hangs from the axle: pivot it about the Z axis through the hub, 1 stud (at height scale 1) below the top of the hammer mesh's bounding box. Swings along X, across the course.",
+    "glow": {}
+  },
+  "dash_platform": {
+    "fbx": "build/blender/garden/dash_platform.fbx",
+    "png": "build/blender/garden/dash_platform.png",
+    "preview": "build/blender/garden/previews/dash_platform.png",
+    "size_studs": [
+      15.77,
+      4.21,
+      15.85
+    ],
+    "tris": 1816,
+    "parts": {
+      "dash_platform": 1816
+    },
+    "target_size_studs": [
+      16,
+      4.2,
+      16
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash mini-game",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "Flat walkable top at the top of the mesh. Use an invisible 16-wide cylinder for collision at that height.",
+    "glow": {}
+  },
+  "dash_arch": {
+    "fbx": "build/blender/garden/dash_arch.fbx",
+    "png": "build/blender/garden/dash_arch.png",
+    "preview": "build/blender/garden/previews/dash_arch.png",
+    "size_studs": [
+      29.2,
+      20.61,
+      6.4
+    ],
+    "tris": 2840,
+    "parts": {
+      "dash_arch": 2352,
+      "dash_arch_glow": 488
+    },
+    "target_size_studs": [
+      28,
+      21,
+      4.5
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash mini-game",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "One arch for start, checkpoint and finish: tint dash_arch_glow per role, and put the word on a SurfaceGui over the blank board, on both faces. Opening about 19 wide. Decorative: keep part collision for play, mesh CanCollide false.",
+    "glow": {
+      "dash_arch_glow": [
+        120,
+        255,
+        190
+      ]
+    }
+  },
+  "dash_ready_pad": {
+    "fbx": "build/blender/garden/dash_ready_pad.fbx",
+    "png": "build/blender/garden/dash_ready_pad.png",
+    "preview": "build/blender/garden/previews/dash_ready_pad.png",
+    "size_studs": [
+      14.0,
+      11.22,
+      14.0
+    ],
+    "tris": 1164,
+    "parts": {
+      "dash_ready_pad": 1164
+    },
+    "target_size_studs": [
+      14,
+      11,
+      14
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash plaza ready pad",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "Blank sign board faces the front for a SurfaceGui. Decorative: keep part collision for play, mesh CanCollide false.",
+    "glow": {}
+  },
+  "dash_island": {
+    "fbx": "build/blender/garden/dash_island.fbx",
+    "png": "build/blender/garden/dash_island.png",
+    "preview": "build/blender/garden/previews/dash_island.png",
+    "size_studs": [
+      73.11,
+      48.14,
+      72.13
+    ],
+    "tris": 4850,
+    "parts": {
+      "dash_island": 4850
+    },
+    "target_size_studs": [
+      80,
+      45,
+      80
+    ],
+    "tris_budget": 5000,
+    "priority": "P2",
+    "replaces": "New: Splash Dash floating island base",
+    "script": "tools/blender/garden/assets/dash.py",
+    "notes": "Grass top is flat at 30 studs above the lowest rock; decoration stays near the rim. The waterfall spills off the front. Decorative: keep part collision for play, mesh CanCollide false.",
     "glow": {}
   }
 }

@@ -147,8 +147,8 @@ def egg_forest():
         return 0.63 + 0.015 * math.sin(math.radians(t) * 6)
 
     parts = [
-        k.shell(bark_m, nu=36, nv=9, v1=0.68, warp=bark, **e),
-        k.shell(cap_m, nu=30, nv=6, v0=cap_edge, warp=lambda t, v: 0.11 + 0.03 * math.sin(math.radians(t) * 10 + v * 30), name="cap", **e),
+        k.shell(bark_m, nu=32, nv=9, v1=0.68, warp=bark, **e),
+        k.shell(cap_m, nu=28, nv=6, v0=cap_edge, warp=lambda t, v: 0.11 + 0.03 * math.sin(math.radians(t) * 10 + v * 30), name="cap", **e),
     ]
     p = k.egg_at(0, 0.63, 0.13, **e)[0]
     parts.append(k.ring(math.hypot(p.x, p.y), p.z, 0.1, lip, n=20, sides=5))
@@ -161,13 +161,13 @@ def egg_forest():
         return 0.26 + 0.08 * math.sin(a * 3) + 0.05 * math.sin(a * 7 + 1)
 
     def drip(t):
-        return 0.6 - 0.09 * max(0.0, math.sin(math.radians(t) * 5)) - 0.03 * max(0.0, math.sin(math.radians(t) * 12))
+        return 0.6 - 0.1 * max(0.0, math.sin(math.radians(t) * 5)) ** 0.55
 
     parts.append(k.shell(moss, nu=30, nv=3, v1=moss_top, warp=lambda t, v: 0.08, name="moss", **e))
-    parts.append(k.shell(moss, nu=36, nv=1, v0=drip, v1=0.64, warp=lambda t, v: 0.085, name="drip", **e))
-    for theta, v, r in ((-105, 0.2, 0.34), (150, 0.2, 0.36), (75, 0.13, 0.3), (-20, 0.1, 0.33), (230, 0.14, 0.3)):
+    parts.append(k.shell(moss, nu=50, nv=1, v0=drip, v1=0.64, warp=lambda t, v: 0.085, name="drip", **e))
+    for theta, v, r in ((-105, 0.2, 0.36), (130, 0.17, 0.36), (-10, 0.11, 0.34), (235, 0.14, 0.32)):
         p = k.egg_at(theta, v, 0.05, **e)[0]
-        parts.append(k.sphere(r, p, m=moss, scale=(1, 1, 0.72), seg=7, rings=4, name="lump"))
+        parts.append(k.puff(r, p, moss, scale=(1, 1, 0.72), name="lump"))
 
     # Mushrooms lean out from the base, the biggest feature after the cap.
     for theta, reach, r, h, cap, lean in ((38, 1.0, 0.62, 1.0, red, 16), (-52, 0.98, 0.44, 0.72, tan, -14), (178, 0.98, 0.54, 0.86, red, 14)):
@@ -264,7 +264,7 @@ def egg_moon():
     steps = 15
     for i in range(steps + 1):
         s = i / steps * 2 - 1
-        a = s * math.radians(128)
+        a = s * math.radians(116)
         r = 0.05 + 0.46 * math.cos(s * math.pi / 2) ** 0.75
         out = 1.17 + r * 0.92
         points.append(centre + Vector((math.sin(a) * out, 0, -math.cos(a) * out * 1.14)))
@@ -276,12 +276,14 @@ def egg_moon():
     parts.append(moon)
 
     # A big star stands on the high horn on a little wire, a smaller one on the low horn.
-    for tip, rise, r, lean in ((tips[1], 0.3, 0.42, 0.14), (tips[0], 0.24, 0.32, -0.14)):
+    for tip, rise, r, lean in ((tips[1], 0.22, 0.34, 0.1), (tips[0], 0.18, 0.27, -0.1)):
         end = tip + Vector((lean, 0, rise))
         parts.append(k.tube([tip - Vector((0, 0, 0.1)), end], 0.03, m=thread, n=5, name="wire"))
         s = k.star(r, star_m)
         s.data.transform(Matrix.Translation(end + Vector((0, 0, r * 0.7))) @ Matrix.Rotation(math.radians(90), 4, "X"))
         glow.append(s)
+    for ob in parts + glow:
+        ob.data.transform(Matrix.Scale(0.9, 4))
     return {"": parts, "glow": glow}
 
 
@@ -297,7 +299,7 @@ def _star_outline(r, inner):
 def egg_star():
     e = dict(H=2.72, R=1.06)
     shades = [k.flat(c) for c in ((255, 230, 120), (255, 200, 66), (242, 160, 40), (208, 120, 30), (160, 84, 24))]
-    edge = k.flat((255, 250, 214), name="st_edge")
+    edge = k.flat((255, 236, 150), name="st_edge")
     deep = k.flat((150, 80, 26), name="st_pocket")
     frame_m = k.flat((255, 232, 130), name="st_frame")
     middle = 1.3
@@ -324,14 +326,12 @@ def egg_star():
         bm.faces.new((rings[-1][i], rings[-1][(i + 1) % n], tip))
     bm.faces.new(list(reversed(rings[0])))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    bmesh.ops.bevel(bm, geom=list(bm.edges), offset=0.022, offset_type="OFFSET", segments=1, profile=0.5, affect="EDGES", clamp_overlap=True)
+    cuts = bmesh.ops.bevel(bm, geom=list(bm.edges), offset=0.016, offset_type="OFFSET", segments=1, profile=0.5, affect="EDGES", clamp_overlap=True)
+    bm.faces.index_update()
+    bright = {f.index for f in cuts["faces"]}
     bm.normal_update()
     gem = k._obj("gem", bm, shades[0])
-    k.facet(gem, shades)
-    gem.data.materials.append(edge)
-    for poly in gem.data.polygons:
-        if poly.area < 0.012:  # the chamfers and corners, not the big facets
-            poly.material_index = len(shades)
+    k.facet(gem, shades + [edge], skip=bright)
 
     # Star pockets, front and back, show the glowing core.
     for y in (-1.1, 1.1):
@@ -367,7 +367,7 @@ def _feather_wing(side, m):
         (1.2, 0.25, 28, 0.03),
         (1.0, 0.24, 2, -0.12),
     ):
-        f = k.leaf(length, width, m, droop=0.1, name="feather")
+        f = k.leaf(length, width, m, droop=0.1, n=4, steps=5, name="feather")
         place = (
             Matrix.Diagonal((side, 1, 1, 1))
             @ Matrix.Translation(shoulder + Vector((0, 0, drop)))
@@ -384,13 +384,13 @@ def egg_celestial():
     lift = 0.46
     pearl = k.paint(
         "ce_pearl",
-        [(0, (255, 226, 214)), (0.4, (255, 248, 236)), (0.75, (255, 250, 242)), (1, (246, 240, 255))],
+        [(0, (255, 226, 214)), (0.37, (255, 246, 232)), (0.372, (78, 88, 205)), (0.545, (104, 96, 226)), (0.547, (255, 252, 244)), (1, (246, 240, 255))],
         lift,
         lift + 2.72,
     )
-    gold = k.paint("ce_gold", [(0, (226, 150, 50)), (0.5, (255, 205, 92)), (1, (255, 232, 140))], 0, 4.0)
-    plume_r = k.paint("ce_plume_r", [(0, (255, 251, 240)), (0.5, (255, 244, 214)), (1, (255, 196, 70))], 0.7, 2.75, axis="X")
-    plume_l = k.paint("ce_plume_l", [(0, (255, 251, 240)), (0.5, (255, 244, 214)), (1, (255, 196, 70))], -0.7, -2.75, axis="X")
+    gold = k.paint("ce_gold", [(0, (252, 190, 76)), (0.35, (255, 212, 104)), (1, (255, 236, 150))], 0, 3.0)
+    plume_r = k.paint("ce_plume_r", [(0, (255, 251, 240)), (0.42, (255, 240, 200)), (1, (255, 190, 64))], 0.7, 2.75, axis="X")
+    plume_l = k.paint("ce_plume_l", [(0, (255, 251, 240)), (0.42, (255, 240, 200)), (1, (255, 190, 64))], -0.7, -2.75, axis="X")
     light = k.glow((255, 214, 110))
 
     parts = [k.shell(pearl, nu=24, nv=12, **e)]
@@ -415,9 +415,13 @@ def egg_celestial():
     ):
         for a, b in lines:
             (t0, v0), (t1, v1) = nodes[a], nodes[b]
-            glow.append(k.ridge([(t0, v0), ((t0 + t1) / 2, (v0 + v1) / 2), (t1, v1)], 0.028, 0.025, light, **e))
+            path = [(t0 + (t1 - t0) * j / 4, v0 + (v1 - v0) * j / 4) for j in range(5)]
+            glow.append(k.ridge(path, 0.03, 0.03, light, **e))
         for t, v in nodes:
             glow.append(k.stick(k.star(0.17, light, points=4, inner=0.3), t, v, 0.015, **e))
+    for t in (0, 180):
+        parts.append(k.stick(k.lathe([(0.3, -0.02), (0.28, 0.05), (0.21, 0.07), (0.19, 0.03)], m=gold, n=12, name="setting"), t, 0.475, 0.0, **e))
+        glow.append(k.stick(k.star(0.24, light, points=4, inner=0.34), t, 0.475, 0.03, **e))
     moved(parts + glow, z=lift)
 
     # Pedestal, crown finial, halo.
@@ -460,18 +464,16 @@ def egg_celestial():
 def egg_shell_fragment():
     """A curved jagged shard; tinted per egg by code, so it is uploaded untextured."""
     e = dict(H=1.9, R=0.72)
-    offsets = [(1.15, 8), (0.66, 40), (0.92, 64), (0.48, 118), (0.84, 152), (0.54, 176), (1.0, 214), (0.5, 250), (0.78, 286), (0.58, 330)]
+    # A smooth shell arc on top, a broken zigzag below: the classic cartoon shard.
+    outline = [(-1, 0.45), (-0.56, 0.84), (0, 1), (0.56, 0.84), (1, 0.45), (0.76, -0.1), (0.46, 0.3), (0.16, -0.32), (-0.16, 0.2), (-0.46, -0.28), (-0.76, 0.12)]
     bm = bmesh.new()
 
     def rim(scale, lift):
-        return [
-            bm.verts.new(k.egg_at(38 * f * scale * math.sin(math.radians(a)), 0.5 + 0.13 * f * scale * math.cos(math.radians(a)), lift, **e)[0])
-            for f, a in offsets
-        ]
+        return [bm.verts.new(k.egg_at(60 * x * scale, 0.5 + 0.2 * (y - 0.3) * scale, lift, **e)[0]) for x, y in outline]
 
     outer, outer_mid, outer_hub = rim(1, 0), rim(0.5, 0), bm.verts.new(k.egg_at(0, 0.5, 0, **e)[0])
     inner, inner_mid, inner_hub = rim(1, -0.07), rim(0.5, -0.07), bm.verts.new(k.egg_at(0, 0.5, -0.07, **e)[0])
-    n = len(offsets)
+    n = len(outline)
     for i in range(n):
         j = (i + 1) % n
         for edge, mid, hub in ((outer, outer_mid, outer_hub), (inner, inner_mid, inner_hub)):
