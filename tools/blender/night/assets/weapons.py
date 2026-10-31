@@ -148,7 +148,7 @@ class Blade:
         bm.normal_update()
         if sum(f.normal.x for f in bm.faces) * side < 0:
             bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
-        return k._obj("glow", bm, None)
+        return k._obj("glow", bm, self.m)
 
     def line(self, vfn, half, a, b, step=0.06, sides=(1, -1), lift=0.008):
         """Line of half-width `half` studs at v = vfn(s) from s = a to b, on both faces. Also
@@ -175,7 +175,7 @@ class Blade:
         bm.normal_update()
         if face.normal.x * side < 0:
             bmesh.ops.reverse_faces(bm, faces=[face])
-        return k._obj("glow", bm, None)
+        return k._obj("glow", bm, self.m)
 
 
 # Hero blades --------------------------------------------------------------------------------
