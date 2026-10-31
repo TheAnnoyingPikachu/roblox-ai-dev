@@ -24,14 +24,14 @@ local TRIM = Color3.fromRGB(255, 225, 110)
 local READY_PAD = Vector3.new(-26, 0, -22)
 local ARCHES = { Vector3.new(-100, DECK_TOP, 300), Vector3.new(-120, DECK_TOP, 400) }
 
--- x1, x2, z1, z2, colour. Lily Hop has no deck: its platforms are client obstacles.
-local DECKS = {
-	{ -140, -100, 280, 320, Color3.fromRGB(255, 190, 215) }, -- start
-	{ -100, -20, 278, 322, Color3.fromRGB(190, 240, 170) }, -- Sweeper Green
-	{ -20, 112, 288, 312, Color3.fromRGB(255, 240, 170) }, -- Ball Alley, to CP2
-	{ 95, 105, 312, 388, Color3.fromRGB(190, 225, 255) }, -- Pendulum Bridge
-	{ 88, 112, 388, 412, Color3.fromRGB(255, 240, 170) }, -- CP3
-	{ -132, -8, 388, 412, Color3.fromRGB(225, 205, 255) }, -- CP4, Last Sprint and the finish
+-- One colour per GardenConfig.DASH.decks entry. Lily Hop has no deck: its platforms are client obstacles.
+local DECK_COLOURS = {
+	Color3.fromRGB(255, 190, 215), -- start
+	Color3.fromRGB(190, 240, 170), -- Sweeper Green
+	Color3.fromRGB(255, 240, 170), -- Ball Alley, to CP2
+	Color3.fromRGB(190, 225, 255), -- Pendulum Bridge
+	Color3.fromRGB(255, 240, 170), -- CP3
+	Color3.fromRGB(225, 205, 255), -- CP4, Last Sprint and the finish
 }
 
 -- Scenery that players and raycasts pass through.
@@ -52,10 +52,10 @@ local function wall(parent: Instance, size: Vector3, at: Vector3): Part
 end
 
 local function decks(parent: Instance)
-	for _, d in DECKS do
-		local x1, x2, z1, z2 = d[1] :: number, d[2] :: number, d[3] :: number, d[4] :: number
+	for i, d in GardenConfig.DASH.decks do
+		local x1, x2, z1, z2 = d.x1, d.x2, d.z1, d.z2
 		local mid = Vector3.new((x1 + x2) / 2, DECK_TOP - DECK_THICK / 2, (z1 + z2) / 2)
-		part(parent, Vector3.new(x2 - x1, DECK_THICK, z2 - z1), mid, d[5] :: Color3)
+		part(parent, Vector3.new(x2 - x1, DECK_THICK, z2 - z1), mid, DECK_COLOURS[i])
 		-- Painted edge strips only: a knock off the side is the point of the course.
 		local alongX = x2 - x1 > z2 - z1
 		for _, side in { -1, 1 } do

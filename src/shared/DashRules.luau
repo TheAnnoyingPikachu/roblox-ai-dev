@@ -15,9 +15,11 @@ export type Racer = {
 	next: number, -- index in DASH.checkpoints of the checkpoint to reach next
 	eligible: boolean, -- may take the egg
 	strikes: number,
-	lastPos: Vec3?, -- last sample that differed; nil just after a server teleport
+	lastPos: Vec3?, -- last sample that differed, or where the server last moved the racer
 	lastAt: number, -- server time of lastPos
+	legAt: number, -- when this leg began: GO, the last checkpoint or the last server teleport
 	settleUntil: number, -- samples before this time are ignored
+	arriving: boolean, -- teleported, and no sample has shown the racer at lastPos yet
 	finished: number?, -- seconds from GO
 	out: boolean, -- left or struck out
 }
@@ -53,6 +55,23 @@ local KNOCK_UP = 20
 local ARM_WIDTH = 2.5
 local ARM_HEIGHT = 6
 local HIT_MARGIN = 2
+local ARRIVE = 30 -- under the 31 studs a sample may move, so a near stale sample cannot cause a strike
+local ARRIVE_HOLD = 2 -- seconds past settle a racer may take to show up at a teleport's target
+
+-- A leg's floor is its share of minFinish by length, so the floors add up to minFinish and a racer
+-- who stands still and then jumps ahead still takes at least that long (GDD T7).
+local LEG_MIN: { number } = {}
+do
+	local from, total = DASH.start, 0
+	for i, spot in DASH.checkpoints do
+		LEG_MIN[i] = math.sqrt((spot.x - from.x) ^ 2 + (spot.z - from.z) ^ 2)
+		total += LEG_MIN[i]
+		from = spot
+	end
+	for i, length in LEG_MIN do
+		LEG_MIN[i] = length / total * DASH.minFinish
+	end
+end
 
 local function copy(r: Round): Round
 	local out = table.clone(r)
@@ -138,8 +157,16 @@ function DashRules.start(r: Round, t: number, entrants: { Entrant }): (Round, { 
 	out.at = t + DASH.starting
 	out.goAt = out.at
 	for _, e in entrants do
-		out.racers[e.id] =
-			{ next = 1, eligible = e.eligible, strikes = 0, lastAt = t, settleUntil = t + DASH.settle, out = false }
+		out.racers[e.id] = {
+			next = 1,
+			eligible = e.eligible,
+			strikes = 0,
+			lastAt = t,
+			legAt = out.goAt,
+			settleUntil = t + DASH.settle,
+			arriving = false,
+			out = false,
+		}
 	end
 	return out, { { kind = "start", ids = ids } }
 end
@@ -210,15 +237,33 @@ local function finish(out: Round, racer: Racer, id: number, t: number, events: {
 	table.insert(events, { kind = "finish", id = id, place = out.places, time = time, egg = egg })
 end
 
--- Architecture section 3.8: settle, speed, fall, zone. The root position is client-owned, so the
--- speed check is written to fail on NaN.
+-- The floor on one leg, in seconds: checkpoint `cp` counts this long after the leg began.
+function DashRules.legMin(cp: number): number
+	return LEG_MIN[cp]
+end
+
+-- Architecture section 3.8: settle, arrival, speed, fall, zone. The root position is client-owned,
+-- so the speed check is written to fail on NaN.
 function DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, { Event })
 	local before = r.racers[id]
-	if r.phase ~= "racing" or before == nil or before.out or before.finished or t < before.settleUntil then
+	if r.phase ~= "racing" or before == nil or before.out or t < before.settleUntil then
 		return r, {}
+	end
+	if before.finished then
+		-- Nothing else matters now, but the deck has edges and the catcher is no place to wait.
+		return r, if pos.y < DASH.fellY then { { kind = "splash", id = id, cp = before.next - 1 } } else {}
+	end
+	local target = before.lastPos
+	if before.arriving and target and t < before.settleUntil + ARRIVE_HOLD then
+		-- Far from the target this is a stale sample on a slow connection: wait for the real one.
+		local dx, dz = pos.x - target.x, pos.z - target.z
+		if dx * dx + dz * dz > ARRIVE * ARRIVE then
+			return r, {}
+		end
 	end
 	local out = copy(r)
 	local racer = out.racers[id]
+	racer.arriving = false
 	local events: { Event } = {}
 	local last = racer.lastPos
 	local moved = last == nil or pos.x ~= last.x or pos.y ~= last.y or pos.z ~= last.z
@@ -235,12 +280,14 @@ function DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, {
 	end
 	if pos.y < DASH.fellY then
 		table.insert(events, { kind = "splash", id = id, cp = racer.next - 1 })
-	elseif DashRules.inZone(pos, DASH.checkpoints[racer.next]) then
+	elseif
+		DashRules.inZone(pos, DASH.checkpoints[racer.next])
+		and t - racer.legAt + 1e-9 >= LEG_MIN[racer.next] -- early: no event and no strike, it counts once due
+	then
+		racer.legAt = t
 		if racer.next < #DASH.checkpoints then
 			racer.next += 1
 			table.insert(events, { kind = "checkpoint", id = id, cp = racer.next - 1 })
-		elseif t - out.goAt < DASH.minFinish then
-			strike(racer, id, events)
 		else
 			finish(out, racer, id, t, events)
 		end
@@ -248,14 +295,19 @@ function DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, {
 	return out, events
 end
 
-function DashRules.teleported(r: Round, id: number, t: number): Round
+-- After any server teleport. `at` is the target: the next samples are measured from it, and a fall
+-- or flag restarts the leg's floor, so being sent back never shortens the next hop.
+function DashRules.teleported(r: Round, id: number, t: number, at: Vec3): Round
 	if r.racers[id] == nil then
 		return r
 	end
 	local out = copy(r)
 	local racer = out.racers[id]
-	racer.lastPos = nil
+	racer.lastPos = { x = at.x, y = at.y, z = at.z }
+	racer.lastAt = t
+	racer.legAt = math.max(t, r.goAt)
 	racer.settleUntil = t + DASH.settle
+	racer.arriving = true
 	return out
 end
 
@@ -292,6 +344,13 @@ end
 function DashRules.startSpot(i: number): Vec3
 	local s = DASH.start
 	return { x = s.x, y = s.y + DECK_UP, z = s.z + (i - (DASH.maxPlayers + 1) / 2) * SPOT_GAP }
+end
+
+-- The way to face at checkpoint `cp` (0 = start): flat, towards the next checkpoint. For `cp` 0 to
+-- one before the finish, which is every place a racer is sent.
+function DashRules.facing(cp: number): Vec3
+	local from, to = DASH.checkpoints[cp] or DASH.start, DASH.checkpoints[cp + 1]
+	return { x = to.x - from.x, y = 0, z = to.z - from.z }
 end
 
 -- Obstacles -----------------------------------------------------------------------------------

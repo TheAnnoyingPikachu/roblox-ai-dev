@@ -226,7 +226,7 @@ describe("GardenConfig Splash Dash (GDD T, decision 0012)", function()
 			"Splash Dash 3 6 15 5 120 20"
 		)
 		expect(`{D.prizeEgg} {D.prizesPerDay} {D.coinsBase} {D.coinsMinutes} {D.coinsPerDay}`).toBe("moon 3 100 1 6")
-		expect(`{D.fellY} {D.zone.radius} {D.zone.height} {D.minFinish}`).toBe("125 16 14 25")
+		expect(`{D.fellY} {D.zone.radius} {D.zone.height} {D.minFinish}`).toBe("125 16 14 28")
 		expect(`{D.maxSpeed} {D.slack} {D.maxStrikes} {D.settle} {D.knockMax} {D.swing}`).toBe("95 12 3 1 70 50")
 		expect(GardenConfig.PRIZE_STORE).toBe(1_000_000)
 		expect(GardenConfig.egg(D.prizeEgg) ~= nil).toBe(true)
@@ -251,7 +251,7 @@ describe("GardenConfig Splash Dash (GDD T, decision 0012)", function()
 			expect(math.sqrt(o.knock ^ 2 + 20 ^ 2) <= D.knockMax).toBe(true)
 			expect(o.knock == 0).toBe(o.kind == "platform")
 		end
-		expect(`{kinds.sweeper} {kinds.ball} {kinds.pendulum} {kinds.platform}`).toBe("3 4 3 4")
+		expect(`{kinds.sweeper} {kinds.ball} {kinds.pendulum} {kinds.platform}`).toBe("3 4 3 5")
 	end)
 end)
 

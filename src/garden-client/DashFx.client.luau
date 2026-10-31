@@ -140,12 +140,16 @@ local function buildObstacles()
 		local model = mesh(o) or fallback(o)
 		local entry: Obstacle = { o = o, model = model, last = nil, moved = Vector3.zero, safeUntil = 0 }
 		if o.kind == "platform" then
-			for _, d in model:GetDescendants() do
-				if d:IsA("BasePart") then
-					d.CanCollide = true
-					d.CanQuery = true
-				end
-			end
+			-- One plain block is the walked surface and the carry's ray target (section 9): the mesh
+			-- and the fallback are only the look, so every platform plays the same.
+			new("Part", {
+				Name = "Collider",
+				Size = Vector3.new(o.size * 2, 2, o.size * 2),
+				CFrame = model:GetPivot(),
+				Transparency = 1,
+				Anchored = true,
+				Parent = model,
+			})
 			platforms[model] = entry
 		end
 		model.Parent = folder
@@ -327,7 +331,7 @@ end
 -- "Splash Dash starts in 12" for ready players, wherever they are; under the timers, above the jump button.
 local pill = text({
 	AnchorPoint = Vector2.new(1, 0),
-	Size = UDim2.fromOffset(400, 48),
+	Size = UDim2.fromOffset(480, 48), -- 456 px of text keeps 24 characters above 18 px at UIScale 0.6
 	BackgroundTransparency = 0.05,
 	BackgroundColor3 = UI.AQUA,
 	TextColor3 = UI.WHITE,
@@ -470,7 +474,7 @@ local function showResults(data: any)
 		resultRow(f.place, `{PLACES[f.place] or f.place}  {f.name or "A racer"}`, `{seconds(f.time)}{prize}`)
 	end
 	if #finishers == 0 then
-		resultRow(1, "Time is up.", "No finishers this round")
+		resultRow(1, if data.reason == "empty" then "Round over." else "Time is up.", "No finishers this round")
 	end
 	resultsLine.Text = personalLine()
 	results.Size = UDim2.fromOffset(720, 182 + 46 * math.max(#finishers, 1))
@@ -628,7 +632,7 @@ local function update()
 		pill.Text = if dash.phase == "countdown"
 			then `{DASH.name} starts in {math.max(0, math.ceil(dash.at - now))}`
 			elseif dash.phase == "idle" then `{DASH.name}: {#dash.ready} / {dash.need} ready`
-			else `Ready for the next {DASH.name}`
+			else "Next race: ready"
 	end
 	if lastPhase == "countdown" and dash.phase == "idle" and ready then
 		ClientState.toast(`{DASH.name} is waiting for {dash.need} ready players`, UI.AQUA)

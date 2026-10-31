@@ -73,6 +73,7 @@ export type Obstacle = {
 	lift: number?, -- ball bounce height
 	knock: number, -- velocity on a hit; 0 for a platform
 }
+export type Deck = { x1: number, x2: number, z1: number, z2: number } -- walked top at start.y
 export type DashConfig = {
 	name: string,
 	minPlayers: number,
@@ -97,6 +98,7 @@ export type DashConfig = {
 	swing: number, -- pendulum amplitude in degrees
 	start: Spot,
 	checkpoints: { Spot }, -- the last is the finish
+	decks: { Deck }, -- in course order; Lily Hop has no deck, its platforms go between the last two
 	obstacles: { Obstacle },
 }
 
@@ -390,7 +392,7 @@ local DASH: DashConfig = {
 	coinsPerDay = 6,
 	fellY = 125,
 	zone = { radius = 16, height = 14 },
-	minFinish = 25,
+	minFinish = 28,
 	maxSpeed = 95,
 	slack = 12,
 	maxStrikes = 3,
@@ -405,20 +407,29 @@ local DASH: DashConfig = {
 		{ x = -20, y = 140, z = 400 },
 		{ x = -120, y = 140, z = 400 },
 	},
+	decks = {
+		{ x1 = -140, x2 = -100, z1 = 280, z2 = 320 }, -- start
+		{ x1 = -100, x2 = -20, z1 = 278, z2 = 322 }, -- Sweeper Green
+		{ x1 = -20, x2 = 112, z1 = 288, z2 = 312 }, -- Ball Alley, to CP2
+		{ x1 = 95, x2 = 105, z1 = 312, z2 = 388 }, -- Pendulum Bridge
+		{ x1 = 88, x2 = 112, z1 = 388, z2 = 412 }, -- CP3
+		{ x1 = -132, x2 = -8, z1 = 388, z2 = 412 }, -- CP4, Last Sprint and the finish
+	},
 	obstacles = {
 		obstacle("sweeper", { -85, 140, 300 }, 6, 0, 20, 0, nil, nil, 45),
 		obstacle("sweeper", { -45, 140, 300 }, 5, 0.5, 20, 0, nil, nil, 45),
-		obstacle("ball", { 10, 140, 300 }, 4, 0, 5, 7, "z", 8, 55),
-		obstacle("ball", { 35, 140, 300 }, 4, 0.25, 5, 7, "z", 8, 55),
-		obstacle("ball", { 60, 140, 300 }, 4, 0.5, 5, 7, "z", 8, 55),
-		obstacle("ball", { 85, 140, 300 }, 4, 0.75, 5, 7, "z", 8, 55),
+		obstacle("ball", { 10, 140, 300 }, 4, 0, 5, 7, "z", 4, 55),
+		obstacle("ball", { 35, 140, 300 }, 4, 0.25, 5, 7, "z", 4, 55),
+		obstacle("ball", { 60, 140, 300 }, 4, 0.5, 5, 7, "z", 4, 55),
+		obstacle("ball", { 85, 140, 300 }, 4, 0.75, 5, 7, "z", 4, 55),
 		obstacle("pendulum", { 100, 170, 325 }, 5, 0, 4, 26, "x", nil, 65),
 		obstacle("pendulum", { 100, 170, 350 }, 5, 0.33, 4, 26, "x", nil, 65),
 		obstacle("pendulum", { 100, 170, 375 }, 5, 0.66, 4, 26, "x", nil, 65),
 		obstacle("platform", { 76, 140, 400 }, 7, 0, 6, 8, "z", nil, 0),
-		obstacle("platform", { 52, 140, 400 }, 7, 0.5, 6, 8, "z", nil, 0),
-		obstacle("platform", { 28, 140, 400 }, 7, 0, 6, 8, "z", nil, 0),
-		obstacle("platform", { 4, 140, 400 }, 7, 0.5, 6, 8, "z", nil, 0),
+		obstacle("platform", { 58, 140, 400 }, 7, 0.5, 6, 8, "z", nil, 0),
+		obstacle("platform", { 40, 140, 400 }, 7, 0, 6, 8, "z", nil, 0),
+		obstacle("platform", { 22, 140, 400 }, 7, 0.5, 6, 8, "z", nil, 0),
+		obstacle("platform", { 4, 140, 400 }, 7, 0, 6, 8, "z", nil, 0),
 		obstacle("sweeper", { -70, 140, 400 }, 5, 0.25, 12, 0, nil, nil, 45),
 	},
 }

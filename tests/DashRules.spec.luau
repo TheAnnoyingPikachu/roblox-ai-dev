@@ -30,11 +30,12 @@ local function race(ids: { number }, capped: { [number]: boolean }?): Round
 	return r
 end
 
--- Samples `id` through checkpoints `from` to `to`, 3 s apart, starting at `t`. Returns the time after.
+-- Samples `id` through checkpoints `from` to `to`, each as soon as its leg's floor allows, not
+-- before `t`. Returns the time of the last sample.
 local function through(r: Round, id: number, from: number, to: number, t: number): (Round, number)
 	for cp = from, to do
+		t = math.max(t, r.racers[id].legAt + DashRules.legMin(cp))
 		r = DashRules.sample(r, id, CP[cp], t)
-		t += 3
 	end
 	return r, t
 end
@@ -131,20 +132,19 @@ describe("DashRules GDD T10 check values", function()
 		expect(r.at).toBe(GO + 120)
 	end)
 
-	it("refuses a finish at GO + 24.9 with a strike and accepts GO + 25.0", function()
+	it("does not count a finish at GO + 27.9, with no strike, and accepts GO + 28.0", function()
 		local r = through(race({ 1, 2, 3 }), 1, 1, 4, GO + 1)
-		local early, flagged = DashRules.sample(r, 1, CP[5], GO + 24.9)
-		expect(kinds(flagged)).toBe("flag")
-		expect(flagged[1].cp).toBe(4)
-		expect(early.racers[1].strikes).toBe(1)
+		local early, held = DashRules.sample(r, 1, CP[5], GO + 27.9)
+		expect(#held).toBe(0)
+		expect(early.racers[1].strikes).toBe(0)
 		expect(early.racers[1].finished).toBeNil()
 		expect(early.winner).toBeNil()
-		local ok, events = DashRules.sample(r, 1, CP[5], GO + 25)
+		local ok, events = DashRules.sample(r, 1, CP[5], GO + 28)
 		expect(kinds(events)).toBe("finish")
-		expect(events[1].time).toBe(25)
+		expect(events[1].time).toBe(28)
 		expect(events[1].place).toBe(1)
 		expect(ok.racers[1].strikes).toBe(0)
-		expect(ok.racers[1].finished).toBe(25)
+		expect(ok.racers[1].finished).toBe(28)
 	end)
 
 	it("allows 31 studs between samples 0.2 s apart and strikes 32", function()
@@ -340,13 +340,13 @@ describe("DashRules running rounds", function()
 			expect(out.racers[1].next).toBe(1)
 			expect(out.racers[1].strikes).toBe(0)
 		end
-		local one, events = DashRules.sample(r, 1, CP[1], GO + 5)
+		local one, events = DashRules.sample(r, 1, CP[1], GO + 6)
 		expect(kinds(events)).toBe("checkpoint")
 		expect(events[1].cp).toBe(1)
 		expect(one.racers[1].next).toBe(2)
 		local _, none = DashRules.sample(one, 1, CP[3], GO + 15)
 		expect(#none).toBe(0)
-		local _, again = DashRules.sample(one, 1, CP[1], GO + 6)
+		local _, again = DashRules.sample(one, 1, CP[1], GO + 7)
 		expect(#again).toBe(0) -- a checkpoint counts once
 	end)
 
@@ -365,29 +365,169 @@ describe("DashRules running rounds", function()
 		expect(atStart[1].cp).toBe(0)
 		r = through(r, 1, 1, 2, GO + 1)
 		expect(DashRules.respawnCp(r, 1)).toBe(2)
-		local fell, events = DashRules.sample(r, 1, { x = 100, y = 120, z = 330 }, 130)
+		local fell, events = DashRules.sample(r, 1, { x = 100, y = 120, z = 330 }, 140)
 		expect(kinds(events)).toBe("splash")
 		expect(events[1].cp).toBe(2)
 		expect(fell.racers[1].strikes).toBe(0)
 		expect(fell.racers[1].next).toBe(3)
-		local _, ledge = DashRules.sample(r, 1, { x = 100, y = 125, z = 330 }, 130)
+		local _, ledge = DashRules.sample(r, 1, { x = 100, y = 125, z = 330 }, 140)
 		expect(#ledge).toBe(0)
 	end)
 
 	it("ignores a stale sample inside the settle time: neither a fall nor a strike", function()
+		local spot = DashRules.respawnPoint(0)
 		local r = DashRules.sample(race({ 1, 2, 3 }), 1, { x = -100, y = 144, z = 300 }, 130)
-		r = DashRules.teleported(r, 1, 131)
-		expect(r.racers[1].lastPos).toBeNil()
+		r = DashRules.teleported(r, 1, 131, spot)
+		expect((r.racers[1].lastPos :: any).x).toBe(spot.x)
 		expect(r.racers[1].settleUntil).toBe(132)
 		local out, events = DashRules.sample(r, 1, { x = 500, y = 100, z = 900 }, 131.8)
 		expect(#events).toBe(0)
-		expect(out.racers[1].strikes).toBe(0)
-		expect(out.racers[1].lastPos).toBeNil()
-		local after, none = DashRules.sample(r, 1, { x = 500, y = 144, z = 900 }, 132)
-		expect(#none).toBe(0) -- the first sample after a teleport has nothing to compare with
-		expect((after.racers[1].lastPos :: any).x).toBe(500)
-		local _, fell = DashRules.sample(r, 1, { x = 500, y = 100, z = 900 }, 132)
+		expect(out).toBe(r)
+		local after, none = DashRules.sample(r, 1, { x = spot.x + 3, y = 144, z = spot.z }, 132)
+		expect(#none).toBe(0)
+		expect((after.racers[1].lastPos :: any).x).toBe(spot.x + 3)
+		expect(after.racers[1].arriving).toBe(false)
+		local _, fell = DashRules.sample(r, 1, { x = spot.x, y = 100, z = spot.z }, 132)
 		expect(kinds(fell)).toBe("splash")
+	end)
+
+	it("waits past settle for a sample near the target, so a slow connection takes no second strike", function()
+		local spot = DashRules.respawnPoint(0)
+		local stale = { x = spot.x + 90, y = 144, z = spot.z }
+		local r = DashRules.sample(race({ 1, 2, 3 }), 1, stale, 130)
+		r = DashRules.sample(r, 1, { x = spot.x + 200, y = 144, z = spot.z }, 130.1) -- too far: a flag
+		expect(r.racers[1].strikes).toBe(1)
+		r = DashRules.teleported(r, 1, 130.1, spot)
+		for t = 131.2, 133, 0.2 do -- ping over 1 s: the old position keeps arriving
+			local out, events = DashRules.sample(r, 1, stale, t)
+			expect(#events).toBe(0)
+			expect(out).toBe(r)
+		end
+		local out, events = DashRules.sample(r, 1, { x = spot.x + 1, y = 144, z = spot.z }, 133)
+		expect(#events).toBe(0)
+		expect(out.racers[1].strikes).toBe(1)
+		expect(out.racers[1].arriving).toBe(false)
+	end)
+
+	it("measures from the target once the wait is over", function()
+		local spot = DashRules.respawnPoint(0)
+		local r = DashRules.teleported(race({ 1, 2, 3 }), 1, 130, spot)
+		local held = DashRules.sample(r, 1, { x = spot.x + 100, y = 144, z = spot.z }, 131.1)
+		expect(held).toBe(r) -- appearing 100 studs away just after a fall gives nothing
+		local out, none = DashRules.sample(r, 1, { x = spot.x + 100, y = 144, z = spot.z }, 133)
+		expect(#none).toBe(0) -- within 95 studs/s of the target, so no strike
+		expect(out.racers[1].arriving).toBe(false)
+		local _, far = DashRules.sample(r, 1, { x = spot.x + 300, y = 144, z = spot.z }, 133)
+		expect(kinds(far)).toBe("flag")
+	end)
+
+	it("counts a checkpoint no sooner than its leg's floor, in silence, and the floors add up to minFinish", function()
+		local total = 0
+		for cp = 1, #CP do
+			total += DashRules.legMin(cp)
+		end
+		expect(near(total, DASH.minFinish)).toBe(true)
+		expect(DashRules.legMin(2) > DashRules.legMin(1)).toBe(true) -- 120 studs against 100
+		local r = race({ 1, 2, 3 })
+		local early, none = DashRules.sample(r, 1, CP[1], GO + DashRules.legMin(1) - 0.1)
+		expect(#none).toBe(0)
+		expect(early.racers[1].strikes).toBe(0)
+		expect(early.racers[1].next).toBe(1)
+		local _, events = DashRules.sample(early, 1, CP[1], GO + DashRules.legMin(1))
+		expect(kinds(events)).toBe("checkpoint")
+	end)
+
+	-- QA m2: stand still, jump to the next zone, repeat. Only the floors can stop it: the speed
+	-- allowance grows while the root stands still.
+	it("makes idle-then-hop take the whole minFinish, and a fall cannot shorten a leg", function()
+		local r = race({ 1, 2, 3 })
+		local t = GO
+		local cp = 1
+		while r.racers[1].finished == nil do
+			assert(t < GO + DASH.minFinish + 1, "never finished")
+			t += 0.2
+			local events
+			r, events = DashRules.sample(r, 1, CP[cp], t) -- sat in the next zone from the start of the leg
+			if #events > 0 and events[1].kind == "checkpoint" then
+				cp += 1
+			end
+		end
+		expect((r.racers[1].finished :: number) >= DASH.minFinish).toBe(true)
+		expect(r.racers[1].strikes).toBe(0)
+
+		local fallen = through(race({ 1, 2, 3 }), 1, 1, 1, GO + 1)
+		local at = fallen.racers[1].legAt + 20 -- the floor is long past, then a fall
+		fallen = DashRules.teleported(fallen, 1, at, DashRules.respawnPoint(1))
+		fallen = DashRules.sample(fallen, 1, DashRules.respawnPoint(1), at + 1)
+		local _, sent = DashRules.sample(fallen, 1, CP[2], at + DashRules.legMin(2) - 0.1)
+		expect(#sent).toBe(0)
+		local _, due = DashRules.sample(fallen, 1, CP[2], at + DashRules.legMin(2))
+		expect(kinds(due)).toBe("checkpoint")
+	end)
+
+	-- 5 Hz samples of a root walking `path` at `speed`, from `t`. Returns the time after.
+	local function walk(
+		r: Round,
+		id: number,
+		path: { DashRules.Vec3 },
+		t: number,
+		speed: number
+	): (Round, number, { Event })
+		local seen: { Event } = {}
+		local at = path[1]
+		for i = 2, #path do
+			local to = path[i]
+			local length = math.sqrt((to.x - at.x) ^ 2 + (to.z - at.z) ^ 2)
+			for step = 1, math.ceil(length / (speed * 0.2)) do
+				local k = math.min(1, step * speed * 0.2 / length)
+				t += 0.2
+				local events
+				r, events =
+					DashRules.sample(r, id, { x = at.x + (to.x - at.x) * k, y = 144, z = at.z + (to.z - at.z) * k }, t)
+				table.move(events, 1, #events, #seen + 1, seen)
+			end
+			at = to
+		end
+		return r, t, seen
+	end
+
+	local function flat(x: number, z: number): DashRules.Vec3
+		return { x = x, y = 144, z = z }
+	end
+
+	it("never holds or flags the fastest honest walk: every corner cut, 16 studs/s, 30.8 s", function()
+		local path = { flat(-120, 300), flat(95, 312), flat(95, 388), flat(-120, 400) }
+		local r, _, events = walk(race({ 1, 2, 3 }), 1, path, GO, 16)
+		local names = {}
+		for _, e in events do
+			table.insert(names, e.kind)
+		end
+		expect(table.concat(names, " ")).toBe("checkpoint checkpoint checkpoint checkpoint finish")
+		expect(r.racers[1].strikes).toBe(0)
+		local time = r.racers[1].finished :: number
+		expect(time >= DASH.minFinish and time < 32).toBe(true)
+	end)
+
+	it("never flags a walker sent back by a fall on any leg, and the walk from the respawn counts", function()
+		for leg = 1, 5 do
+			local r = through(race({ 1, 2, 3 }), 1, 1, leg - 1, GO + 1)
+			local t = r.racers[1].legAt + 3
+			local back = DashRules.respawnPoint(leg - 1)
+			r = DashRules.teleported(r, 1, t, back) -- the server's move after a splash
+			local goal = CP[leg]
+			r = select(1, walk(r, 1, { flat(back.x, back.z), flat(goal.x, goal.z) }, t + 1, 16))
+			expect(r.racers[1].strikes).toBe(0)
+			expect(r.racers[1].next > leg or r.racers[1].finished ~= nil).toBe(true)
+		end
+	end)
+
+	it("lets a racer who finished and stepped off the deck splash back, still finished", function()
+		local r = finishAt(race({ 1, 2, 3 }), 1, GO + 30)
+		local out, events = DashRules.sample(r, 1, { x = -120, y = 120, z = 420 }, GO + 31)
+		expect(kinds(events)).toBe("splash")
+		expect(events[1].cp).toBe(4)
+		expect(out.racers[1].finished).toBe(30)
+		expect(out.places).toBe(1)
 	end)
 
 	it("strikes twice, then puts the racer out on the third; a breach never counts its zone", function()
@@ -420,7 +560,7 @@ describe("DashRules running rounds", function()
 		expect((DashRules.sample(r, 1, CP[1], 5))).toBe(r)
 		local running = race({ 1, 2, 3 })
 		expect((DashRules.sample(running, 99, CP[1], 130))).toBe(running)
-		expect((DashRules.teleported(running, 99, 130))).toBe(running)
+		expect((DashRules.teleported(running, 99, 130, CP[1]))).toBe(running)
 		local done = finishAt(running, 1, GO + 30)
 		local again, none = DashRules.sample(done, 1, CP[5], GO + 31)
 		expect(again).toBe(done)
@@ -650,6 +790,34 @@ describe("DashRules leaving", function()
 	end)
 end)
 
+describe("DashRules HOME", function()
+	-- GardenServer's home action calls Dash.leave only for DashRules.isRacer (QA M1).
+	it("treats a ready player in a countdown as no racer, so HOME keeps them ready", function()
+		local r = DashRules.new()
+		for id = 1, 3 do
+			r = DashRules.setReady(r, id, true, 100)
+		end
+		expect(r.phase).toBe("countdown")
+		expect(DashRules.isRacer(r, 2)).toBe(false)
+		expect(DashRules.isReady(r, 2)).toBe(true)
+	end)
+
+	it("treats a queued player in a running round as no racer, and a racer in the start hold as one", function()
+		local r = DashRules.new()
+		local entrants = {}
+		for id = 1, 3 do
+			r = DashRules.setReady(r, id, true, 100)
+			table.insert(entrants, { id = id, eligible = true })
+		end
+		r = DashRules.start(r, 115, entrants)
+		r = DashRules.setReady(r, 4, true, 116)
+		expect(r.phase).toBe("starting")
+		expect(DashRules.isRacer(r, 1)).toBe(true) -- HOME takes them out, and the round goes on
+		expect(DashRules.isRacer(r, 4)).toBe(false)
+		expect(DashRules.isReady(r, 4)).toBe(true)
+	end)
+end)
+
 describe("DashRules positions", function()
 	it("respawns at the start or the last checkpoint, 4 studs up", function()
 		local s = DashRules.respawnPoint(0)
@@ -657,6 +825,121 @@ describe("DashRules positions", function()
 		local c = DashRules.respawnPoint(3)
 		expect(`{c.x} {c.y} {c.z}`).toBe("100 144 400")
 		expect(DashRules.respawnCp(DashRules.new(), 1)).toBe(0)
+	end)
+
+	it("faces a racer along the course from every place they are sent", function()
+		local function way(cp: number): string
+			local f = DashRules.facing(cp)
+			return `{math.sign(f.x)} {f.y} {math.sign(f.z)}`
+		end
+		expect(way(0)).toBe("1 0 0") -- the start: GO heads east
+		expect(way(1)).toBe("1 0 0")
+		expect(way(2)).toBe("0 0 1") -- the bridge
+		expect(way(3)).toBe("-1 0 0")
+		expect(way(4)).toBe("-1 0 0")
+	end)
+end)
+
+describe("DashRules course can be crossed (GDD T2)", function()
+	-- Roblox defaults. Nothing in the game changes them (read in Studio: gravity 196.2, WalkSpeed 16,
+	-- JumpPower 50 with CharacterUseJumpPower on), so this is what a player has. The lower of the two
+	-- jump settings is taken in case the place setting flips.
+	local GRAVITY, WALK = 196.2, 16
+	local LAUNCH = math.min(50, math.sqrt(2 * GRAVITY * 7.2))
+
+	-- Seconds in the air, and flat studs covered, onto a top `rise` above the take-off. No overhang.
+	local function air(rise: number): number
+		return (LAUNCH + math.sqrt(LAUNCH * LAUNCH - 2 * GRAVITY * rise)) / GRAVITY
+	end
+	local function reach(rise: number): number
+		return WALK * air(rise)
+	end
+
+	type Surface = { x1: number, x2: number, z1: number, z2: number, top: number, o: GardenConfig.Obstacle? }
+
+	-- Every walked surface in course order: the decks, with the platforms before the last one.
+	local function route(): { Surface }
+		local out: { Surface } = {}
+		for _, d in DASH.decks do
+			table.insert(out, { x1 = d.x1, x2 = d.x2, z1 = d.z1, z2 = d.z2, top = DASH.start.y })
+		end
+		local last = table.remove(out) :: Surface
+		for _, o in DASH.obstacles do
+			if o.kind == "platform" then
+				table.insert(out, {
+					x1 = o.at.x - o.size,
+					x2 = o.at.x + o.size,
+					z1 = o.at.z - o.size,
+					z2 = o.at.z + o.size,
+					top = o.at.y + 1, -- the collider is 2 tall, centred on the pose
+					o = o,
+				})
+			end
+		end
+		table.insert(out, last)
+		return out
+	end
+
+	local function zShift(s: Surface, t: number): number
+		return if s.o then DashRules.pose(s.o, t).z - s.o.at.z else 0
+	end
+
+	-- The shortest flat distance from `a` at time `ta` to `b` at time `tb`.
+	local function gap(a: Surface, ta: number, b: Surface, tb: number): number
+		local za, zb = zShift(a, ta), zShift(b, tb)
+		local dx = math.max(0, b.x1 - a.x2, a.x1 - b.x2)
+		local dz = math.max(0, b.z1 + zb - (a.z2 + za), a.z1 + za - (b.z2 + zb))
+		return math.sqrt(dx * dx + dz * dz)
+	end
+
+	local CYCLE = 7 -- platform period
+	local STEPS = 280
+
+	it("has 11 surfaces end to end, and the old 12-stud gaps would fail here", function()
+		expect(#route()).toBe(11)
+		expect(reach(0) > 8 and reach(0) < 12).toBe(true)
+		for _, o in DASH.obstacles do
+			expect(o.kind ~= "platform" or o.period == CYCLE).toBe(true)
+		end
+	end)
+
+	it("keeps every required gap under a default jump, at every moment of the cycle, deck edges too", function()
+		local surfaces = route()
+		for i = 1, #surfaces - 1 do
+			local a, b = surfaces[i], surfaces[i + 1]
+			local rise = b.top - a.top
+			local limit = reach(math.max(rise, 0))
+			for step = 0, STEPS do
+				local t = 1000 + step / STEPS * CYCLE
+				expect(gap(a, t, b, t) < limit).toBe(true) -- what the player sees
+				expect(gap(a, t, b, t + air(rise)) < limit).toBe(true) -- where it will be on landing
+			end
+		end
+	end)
+
+	it("spaces Lily Hop 6 studs along the course", function()
+		local surfaces = route()
+		for i = 5, #surfaces - 1 do
+			expect(surfaces[i].x1 - surfaces[i + 1].x2).toBe(6)
+		end
+	end)
+
+	it("has a safe moment on every hop in every cycle: a straight jump lands well inside the next surface", function()
+		local surfaces = route()
+		for i = 5, #surfaces - 1 do
+			local a, b = surfaces[i], surfaces[i + 1]
+			local flight = air(b.top - a.top)
+			local safe = 0
+			for step = 1, STEPS do
+				local t = 1000 + step / STEPS * CYCLE
+				local z = (a.z1 + a.z2) / 2 + zShift(a, t) -- the middle of where the player stands
+				local landing = zShift(b, t + flight)
+				if z >= b.z1 + landing + 1 and z <= b.z2 + landing - 1 then
+					safe += 1
+				end
+			end
+			expect(safe / STEPS * CYCLE >= 1.2).toBe(true) -- seconds of every cycle
+		end
 	end)
 end)
 
@@ -682,7 +965,7 @@ describe("DashRules obstacles", function()
 		local o = first("ball")
 		local a = DashRules.pose(o, 0)
 		expect(near(a.z, o.at.z)).toBe(true)
-		expect(near(a.y, o.at.y + 5 + 8)).toBe(true)
+		expect(near(a.y, o.at.y + o.size + (o.lift :: number))).toBe(true)
 		local b = DashRules.pose(o, o.period / 4)
 		expect(near(b.z, o.at.z + 7)).toBe(true)
 		expect(near(b.y, o.at.y + 5)).toBe(true)
@@ -753,6 +1036,39 @@ describe("DashRules obstacles", function()
 		end
 	end)
 
+	it("threatens every lane of Ball Alley, the centre line too, and leaves each ball a clear moment", function()
+		local balls = {}
+		for _, o in DASH.obstacles do
+			if o.kind == "ball" then
+				table.insert(balls, o)
+			end
+		end
+		for lane = 290, 310, 2 do
+			local hit = 0
+			for start = 0, 39 do
+				local t = 1000 + start * 0.1
+				local struck = false
+				for x = -5, 95, 0.5 do -- 16 studs/s, a test every 0.03 s
+					for _, o in balls do
+						local pose = DashRules.pose(o, t)
+						struck = struck or DashRules.knock(o, pose, { x = x, y = 143, z = lane }) ~= nil
+					end
+					t += 0.5 / 16
+				end
+				hit += if struck then 1 else 0
+			end
+			expect(hit >= 36).toBe(true) -- at least 90% of walks
+		end
+		for _, o in balls do
+			local clear = 0
+			for step = 0, 99 do
+				local pose = DashRules.pose(o, 1000 + step / 100 * o.period)
+				clear += if DashRules.knock(o, pose, { x = o.at.x, y = 143, z = 300 }) then 0 else 1
+			end
+			expect(clear >= 20).toBe(true) -- so a player who watches it can time the crossing
+		end
+	end)
+
 	it("never knocks from a platform, and never above knockMax over a sweep of times and positions", function()
 		local hits = 0
 		for _, o in DASH.obstacles do
@@ -813,7 +1129,7 @@ describe("DashRules purity", function()
 		local entrants =
 			frozen({ { id = 1, eligible = true }, { id = 2, eligible = true }, { id = 3, eligible = false } })
 		r = frozen((DashRules.start(r, 115, entrants)))
-		r = frozen((DashRules.teleported(r, 1, 115)))
+		r = frozen((DashRules.teleported(r, 1, 115, frozen(DashRules.startSpot(1)))))
 		r = frozen((DashRules.step(r, 120)))
 		ready(9, 121)
 		r = frozen((DashRules.sample(r, 1, frozen({ x = -100, y = 144, z = 300 }), 122)))
@@ -852,7 +1168,9 @@ describe("DashRules purity", function()
 			elseif action == 3 then
 				r, events = DashRules.leave(r, id, t)
 			elseif action == 4 then
-				r = DashRules.teleported(r, id, t)
+				if int(1, 10) == 1 then -- a teleport restarts the leg's floor, so not too many
+					r = DashRules.teleported(r, id, t, CP[int(1, 5)])
+				end
 			elseif action <= 7 then
 				local racer = r.racers[id]
 				local spot = if racer and int(1, 4) > 1 then CP[racer.next] else CP[int(1, 5)]

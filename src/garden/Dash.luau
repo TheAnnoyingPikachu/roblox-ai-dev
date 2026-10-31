@@ -63,12 +63,14 @@ function Dash.track(character: Model)
 end
 
 -- Moves a racer and starts the settle window: the client's old position can still arrive.
-local function teleport(id: number, player: Player?, at: Vec3, t: number)
+local function teleport(id: number, player: Player?, at: Vec3, cp: number, t: number)
 	local character = player and player.Character
 	if character then
-		character:PivotTo(CFrame.new(at.x, at.y, at.z))
+		local face = DashRules.facing(cp)
+		local pos = Vector3.new(at.x, at.y, at.z)
+		character:PivotTo(CFrame.lookAt(pos, pos + Vector3.new(face.x, 0, face.z)))
 	end
-	round = DashRules.teleported(round, id, t)
+	round = DashRules.teleported(round, id, t, at)
 end
 
 local function sendHome(player: Player?)
@@ -114,7 +116,7 @@ local function carry(e: DashRules.Event, t: number)
 	if e.kind == "start" then
 		for i, racerId in e.ids or {} do
 			local racer = Players:GetPlayerByUserId(racerId)
-			teleport(racerId, racer, DashRules.startSpot(i), t)
+			teleport(racerId, racer, DashRules.startSpot(i), 0, t)
 			if racer then
 				names[racerId] = racer.DisplayName
 				if not Profiles.isOnline(racer) then
@@ -130,7 +132,7 @@ local function carry(e: DashRules.Event, t: number)
 		end
 	elseif e.kind == "splash" or e.kind == "flag" then
 		local cp = e.cp :: number
-		teleport(id, player, DashRules.respawnPoint(cp), t)
+		teleport(id, player, DashRules.respawnPoint(cp), cp, t)
 		if e.kind == "flag" then
 			warn(`[Dash] {id} failed a position check`)
 		end
@@ -190,7 +192,7 @@ function Dash.toggle(player: Player): boolean
 	return changed
 end
 
--- PlayerRemoving and the home action. Grants nothing: anything already won stays in the queue.
+-- PlayerRemoving, and the home action for a racer. Grants nothing: anything already won stays in the queue.
 function Dash.leave(player: Player)
 	if closed then
 		return
@@ -205,7 +207,8 @@ function Dash.place(player: Player): boolean
 		return false
 	end
 	local id = player.UserId
-	teleport(id, player, DashRules.respawnPoint(DashRules.respawnCp(round, id)), Workspace:GetServerTimeNow())
+	local cp = DashRules.respawnCp(round, id)
+	teleport(id, player, DashRules.respawnPoint(cp), cp, Workspace:GetServerTimeNow())
 	return true
 end
 

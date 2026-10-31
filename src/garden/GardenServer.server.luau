@@ -199,9 +199,13 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 	elseif action == "dashReady" then
 		return Dash.toggle(player)
 	elseif action == "home" then
-		guarded("dash leave", function()
-			Dash.leave(player)
-		end)
+		-- A racer leaves the round, in the start hold too. Ready stays: GDD T3 lets a player ready up
+		-- and keep gardening; NOT READY is the way out of the queue.
+		if Dash.isRacing(player) then
+			guarded("dash leave", function()
+				Dash.leave(player)
+			end)
+		end
 		if rootOf(player) == nil then
 			return false
 		end
