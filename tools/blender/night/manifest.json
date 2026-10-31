@@ -962,7 +962,7 @@
     "priority": "P4",
     "replaces": "New prop: stone stair flights of the south sando (src/night/Arena.luau sando())",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "Low end faces -Z; climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."
+    "notes": "Placed at yaw 180 so the low end faces -Z and it climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."
   },
   "castle": {
     "fbx": "build/blender/night/castle.fbx",

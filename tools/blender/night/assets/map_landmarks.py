@@ -284,7 +284,7 @@ ASSETS = [
          notes="Pillars 7 studs apart (inner gap 6.2), so they straddle the 7-stud sando_stairs."),
     dict(name="sando_stairs", build=sando_stairs, budget=1200, size=[9.2, 7, 12], priority=4, order=3,
          replaces="New prop: stone stair flights of the south sando (src/night/Arena.luau sando())",
-         notes="Low end faces -Z; climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."),
+         notes="Placed at yaw 180 so the low end faces -Z and it climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."),
     dict(name="castle", build=castle, budget=4000, size=[44, 68, 33], priority=4, order=4,
          replaces="New backdrop: castle keep on the north-west ridge (src/night/Arena.luau backdrop())",
          notes="Far scenery: no shadows, ghosted. castle_glow is the lit windows: code sets Neon, warm, so they read at 400+ studs."),

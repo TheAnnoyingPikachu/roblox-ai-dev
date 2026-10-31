@@ -117,9 +117,10 @@ local function groundY(x: number, z: number): number
 	return if hit then hit.Position.Y else -1
 end
 
--- Yaw in degrees that turns a model's front (-Z) the way `frame` looks (Models.night yaw).
+-- Yaw in degrees that turns a model's front the way `frame` looks (Models.night yaw). Uploaded
+-- models come in facing +Z at yaw 0 (checked in Studio), hence the half turn.
 local function yawOf(frame: CFrame): number
-	return math.deg(math.atan2(-frame.LookVector.X, -frame.LookVector.Z))
+	return math.deg(math.atan2(-frame.LookVector.X, -frame.LookVector.Z)) + 180
 end
 
 -- First part of a Night model, to carry lights and emitters.
@@ -261,15 +262,15 @@ local function lighting()
 	Lighting.EnvironmentSpecularScale = 0.8
 	Lighting.GlobalShadows = true
 	effect("Atmosphere", {
-		Density = 0.33,
-		Offset = 0.15,
-		Color = Color3.fromRGB(74, 76, 146),
-		Decay = Color3.fromRGB(32, 26, 70),
-		Glare = 0.25,
-		Haze = 1.6,
+		Density = 0.27,
+		Offset = 0.1,
+		Color = Color3.fromRGB(78, 80, 150),
+		Decay = Color3.fromRGB(46, 42, 92),
+		Glare = 0.2,
+		Haze = 0.9,
 	})
 	effect("Sky", { MoonAngularSize = 20, StarCount = 3000 })
-	effect("BloomEffect", { Intensity = 0.8, Size = 28, Threshold = 1.05 })
+	effect("BloomEffect", { Intensity = 0.7, Size = 28, Threshold = 1.15 })
 	effect("ColorCorrectionEffect", {
 		TintColor = Color3.fromRGB(232, 226, 255),
 		Contrast = 0.14,
@@ -507,7 +508,7 @@ local function pit()
 	glow(core, PURPLE, 30, 2)
 	for _, x in { -30, 30 } do
 		part(folder, Vector3.new(8, 1.5, 8), Vector3.new(x, 0.75, -80), STONE, Enum.Material.Slate)
-		if Models.night("oni_statue", folder, Vector3.new(x, 1.5, -80), 180) == nil then
+		if Models.night("oni_statue", folder, Vector3.new(x, 1.5, -80)) == nil then
 			Models.spawn("oni", folder, Vector3.new(x, 1.5, -80), 0.8, 180)
 		end
 	end
@@ -517,7 +518,7 @@ local function shrineHall()
 	local at = Vector3.new(0, 0, -115)
 	part(folder, Vector3.new(50, 1.5, 44), at + Vector3.new(0, 0.75, 0), STONE, Enum.Material.Slate)
 	if
-		Models.night("shrine_hall", folder, at + Vector3.new(0, 1.5, 0), 180) == nil
+		Models.night("shrine_hall", folder, at + Vector3.new(0, 1.5, 0)) == nil
 		and Models.spawn("shrineHall", folder, at + Vector3.new(0, 1.5, 0), 1.3, 180) == nil
 	then
 		part(
@@ -542,7 +543,7 @@ local function shrineHall()
 	end
 	for _, x in { -22, 22 } do
 		paperLantern(folder, at + Vector3.new(x, 12, 21), Color3.fromRGB(255, 120, 60), true)
-		prop("sake_barrels", folder, Vector3.new(x * 0.886, 1.5, -98), 180)
+		prop("sake_barrels", folder, Vector3.new(x * 0.886, 1.5, -98))
 	end
 end
 
@@ -885,7 +886,7 @@ local function entrance()
 	end
 	for _, x in { -9, 9 } do
 		part(folder, Vector3.new(4, 2, 5), Vector3.new(x, 1, 88), STONE, Enum.Material.Slate)
-		if Models.night("komainu", folder, Vector3.new(x, 2, 88), 180) == nil then
+		if Models.night("komainu", folder, Vector3.new(x, 2, 88)) == nil then
 			Models.spawn("komainu", folder, Vector3.new(x, 2, 88), 0.9, 180)
 		end
 		stoneLantern(folder, Vector3.new(x * 1.6, 0, 93))
@@ -893,7 +894,7 @@ local function entrance()
 	-- Nights-won leaderboard: a lantern board beside the entrance path, facing west.
 	local board = part(folder, Vector3.new(1, 12, 16), Vector3.new(24, 7, 82), INK, Enum.Material.Wood)
 	board.Name = "Leaderboard"
-	local frameModel = Models.night("leaderboard_frame", folder, Vector3.new(24, 0, 82), 90)
+	local frameModel = Models.night("leaderboard_frame", folder, Vector3.new(24, 0, 82), 270)
 	for _, z in { -8.6, 8.6 } do
 		if frameModel == nil then
 			pillar(folder, Vector3.new(24, 0, 82 + z), 14, 0.5, VERMILION, Enum.Material.Wood)
@@ -1053,7 +1054,7 @@ local function sando()
 	for i = 0, 3 do
 		local y = FLOOR + i * 6
 		local z = SANDO_FOOT + i * 18 + 6
-		if prop("sando_stairs", folder, Vector3.new(0, y, z)) then
+		if prop("sando_stairs", folder, Vector3.new(0, y, z), 180) then
 			-- Exact walkable slope over the coarser terrain wedge.
 			local ramp = wedge(folder, Vector3.new(9, 6, 12), CFrame.new(0, y + 3.4, z), STONE, Enum.Material.Slate)
 			ramp.Transparency = 1
@@ -1067,7 +1068,7 @@ local function sando()
 
 	-- Inner shrine on the summit, behind a smaller vermilion torii.
 	Models.night("entrance_torii", folder, Vector3.new(0, groundY(0, 224), 224), 0, 0.6)
-	Models.night("shrine_hall", folder, Vector3.new(0, groundY(0, 250), 250), 0, 0.5)
+	Models.night("shrine_hall", folder, Vector3.new(0, groundY(0, 250), 250), 180, 0.5)
 	fireflies(folder, Vector3.new(0, SANDO_TOP, 190), Vector3.new(70, 16, 70))
 end
 
@@ -1332,13 +1333,17 @@ local function fireworks()
 				LightEmission = 1,
 				LightInfluence = 0,
 				Brightness = 4,
-				Size = NumberSequence.new(4, 0),
-				Lifetime = NumberRange.new(1.6, 2.4),
-				Speed = NumberRange.new(60, 80),
+				Size = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 13),
+					NumberSequenceKeypoint.new(0.7, 9),
+					NumberSequenceKeypoint.new(1, 0),
+				}),
+				Lifetime = NumberRange.new(1.8, 2.8),
+				Speed = NumberRange.new(120, 170),
 				SpreadAngle = Vector2.new(180, 180),
-				Drag = 1.6,
-				Acceleration = Vector3.new(0, -14, 0),
-				Rate = 500,
+				Drag = 2.2,
+				Acceleration = Vector3.new(0, -16, 0),
+				Rate = 900,
 				Enabled = false,
 			})
 		)
@@ -1356,7 +1361,7 @@ local function fireworks()
 			local shell = shells[rng:NextInteger(1, #shells)]
 			shell.Color = ColorSequence.new(colours[rng:NextInteger(1, #colours)])
 			shell.Enabled = true
-			task.wait(0.14)
+			task.wait(0.3)
 			shell.Enabled = false
 		end
 	end)
