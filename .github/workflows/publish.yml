@@ -6,6 +6,11 @@
 #     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
 #     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
 #   "production" must have required reviewers (SHANNON) and be limited to tags v*.
+#   Post-publish verification (SPIRE-002) needs the key to also carry
+#     universe.place.luau-execution-session:write   for that universe (SHANNON adds it, rule 7).
+#   Optional: variable ROBLOX_RESTART_SERVERS = true and scope universe:write restarts running
+#   servers after a verified publish, so nobody joins an old server. Otherwise restart them by hand:
+#   Creator Hub > the experience > Servers > restart.
 #   Garden places: set Max Players to 6 in the place settings (a place file cannot carry it;
 #   docs/architecture/garden.md section 7).
 name: Publish
@@ -84,6 +89,9 @@ jobs:
           selene src tests
           lune run tests/run
 
+      - name: Stamp build (build-info/BuildInfo.txt)
+        run: node tools/write-build-info.mjs
+
       - name: Build release candidate
         run: |
           mkdir -p build
@@ -95,6 +103,10 @@ jobs:
             *) project=default.project.json ;;
           esac
           rojo build "$project" --output build/place.rbxl
+          echo "PROJECT=${project}" >> "$GITHUB_ENV"
+
+      - name: Check the file about to be uploaded
+        run: node tools/check-place.mjs "$PROJECT" build/place.rbxl --sha "$GITHUB_SHA"
 
       - name: Publish via Open Cloud
         id: publish
@@ -113,10 +125,52 @@ jobs:
           [[ -n "$version" ]] || { echo "No versionNumber in response"; exit 1; }
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify the published version (stamp and scripts, via Open Cloud Luau execution)
+        id: verify
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          VERSION: ${{ steps.publish.outputs.version }}
+        run: node tools/verify-publish.mjs
+
+      - name: Restart running servers
+        if: success() && vars.ROBLOX_RESTART_SERVERS == 'true'
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+        run: |
+          status=$(curl -sS -o build/restart-response.json -w "%{http_code}" \
+            -X POST "https://apis.roblox.com/cloud/v2/universes/${UNIVERSE_ID}:restartServers" \
+            -H "x-api-key: ${ROBLOX_API_KEY}" -H "Content-Type: application/json" --data '{}')
+          echo "HTTP ${status}"
+          if [[ "$status" != "200" ]]; then
+            echo "::warning title=Restart servers::HTTP ${status}. Restart servers by hand: Creator Hub > Servers."
+          fi
+
+      - name: Publish checklist
+        if: always()
+        env:
+          VERSION: ${{ steps.publish.outputs.version }}
+          VERIFIED: ${{ steps.verify.outcome }}
+          AUTO_RESTART: ${{ vars.ROBLOX_RESTART_SERVERS }}
+        run: |
+          short="${GITHUB_SHA:0:7}"
+          {
+            echo "### Publish ${{ inputs.environment }}: version ${VERSION:-none}, build ${short}"
+            echo "- Post-publish verification: **${VERIFIED}**"
+            if [[ "$AUTO_RESTART" == "true" ]]; then
+              echo "- Servers restarted by this run (see the Restart step)."
+            else
+              echo "- [ ] Restart running servers: Creator Hub > the experience > Servers > restart all."
+            fi
+            echo "- [ ] Join and check the corner label reads \`build ${short}\` and the F9 server log has \`[Build] ${short}\`."
+            echo "- A playtest note only counts if it records the build it saw."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Write release manifest
+        if: always() && steps.publish.outputs.version != ''
         env:
           TARGET: ${{ inputs.environment }}
           VERSION: ${{ steps.publish.outputs.version }}
+          VERIFIED: ${{ steps.verify.outcome }}
         run: node tools/write-manifest.mjs > build/release-manifest.json && cat build/release-manifest.json
 
       - name: Upload release evidence

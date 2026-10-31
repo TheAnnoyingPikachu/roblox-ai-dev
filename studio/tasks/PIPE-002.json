@@ -1,0 +1,46 @@
+{
+  "task_id": "PIPE-002",
+  "project_id": "PIPE-001",
+  "owner": "A14",
+  "verifier": "A04",
+  "task_type": "infrastructure",
+  "objective": "Scoped tasks: every new task names the exact files it may change and the specs that must pass; CI fails a PR that changes files outside its tasks; the test runner can run a task's specs alone.",
+  "inputs": [
+    "studio/task.schema.json",
+    "tools/validate-tasks.mjs",
+    "tests/run.luau",
+    ".github/workflows/ci.yml"
+  ],
+  "dependencies": [
+    "PIPE-001"
+  ],
+  "acceptance_criteria": [
+    "task.schema.json has files and tests; validate-tasks requires both for every task not in studio/legacy-unscoped.txt, and checks in-review specs exist and are registered",
+    "tools/check-scope.mjs fails a PR with no task file change or with a file outside the changed tasks' files (tests in place-check.test.mjs)",
+    "ci.yml runs the scope check on pull requests",
+    "lune run tests/run <Name> runs only matching specs and marks the result partial in test-results.json",
+    "studio/TASKS.md explains how to write a scoped task"
+  ],
+  "verification": "CI green including the scope check on this PR; node --test tools/place-check/place-check.test.mjs",
+  "output_artifacts": [
+    "tools/check-scope.mjs",
+    "studio/TASKS.md",
+    "studio/legacy-unscoped.txt"
+  ],
+  "files": [
+    "studio/task.schema.json",
+    "studio/legacy-unscoped.txt",
+    "studio/TASKS.md",
+    "tools/validate-tasks.mjs",
+    "tools/check-scope.mjs",
+    "tools/place-check/place-check.test.mjs",
+    ".github/workflows/ci.yml",
+    "tests/run.luau"
+  ],
+  "tests": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "evidence": [
+    "CI green on b4f2444: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/41223094653. Scope check ran on this PR: 'Tasks in this PR: PIPE-001, PIPE-002, PIPE-003, PIPE-004, SPIRE-002. All 56 changed files are in scope.' Tool tests 7/7 incl. globToRegExp and checkScope."
+  ]
+}

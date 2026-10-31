@@ -15,18 +15,46 @@
   "dependencies": [],
   "acceptance_criteria": [
     "The baseplate root cause is written in PILOT-004 notes and this task's evidence, with how it was confirmed",
-    "A build stamp (commit SHA) is written into the place by CI and publish.yml, logged by the server at start and visible in the start menu",
-    "The publish checklist in publish.yml says to restart or shut down running servers after a publish",
-    "If approved: publish.yml fails when the published version's stamp or expected instances do not match the commit",
+    "A build stamp (commit SHA) is written into the place by CI and publish.yml, logged by the server at start and visible in a corner label in every place",
+    "CI and publish.yml check the built file contains every project node, its scripts and the commit's stamp before upload (tools/check-place.mjs)",
+    "publish.yml fails when the published version's stamp or expected instances do not match the commit (tools/verify-publish.mjs, Open Cloud Luau execution)",
+    "The publish run summary says to restart running servers, or restarts them when ROBLOX_RESTART_SERVERS is enabled",
     "SHANNON joins a staging place and reports the stamp matching the published commit (gate G0)"
   ],
-  "verification": "Gate G0 note from SHANNON with the stamp and F9 log line; CI green; reviewed by A04",
+  "verification": "Tool tests (node --test tools/place-check/place-check.test.mjs) and Kit.spec BuildStamp cases in CI; one verified staging publish run; gate G0 note from SHANNON with the stamp and F9 log line; reviewed by A04",
   "output_artifacts": [
     ".github/workflows/publish.yml",
     ".github/workflows/ci.yml",
-    "studio/tasks/PILOT-004.json"
+    "tools/verify-publish.mjs",
+    "tools/check-place.mjs",
+    "build-info/BuildInfo.txt"
   ],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "Medium risk: touches the release workflow. Any new Open Cloud key scope (Luau execution) is created by SHANNON only (CLAUDE.md rule 7). No production publish."
+  "status": "in_review",
+  "notes": "Medium risk: touches the release workflow. Taken over by the pipeline thread (PIPE-001) on 2026-10-31; the Neon Spire thread hands it over and waits on it. Remaining for acceptance, both SHANNON only (CLAUDE.md rule 7): (1) add the scope universe.place.luau-execution-session:write for the staging universe to the staging environment's ROBLOX_API_KEY (optionally universe:write plus variable ROBLOX_RESTART_SERVERS=true), (2) one staging publish and a G0 note with the stamp seen in the corner label and the F9 [Build] line. The baseplate root cause is still open: the first verified publish rules out suspect 4 (wrong file) and, with the stamp, suspect 1 (old server). No production publish.",
+  "files": [
+    "build-info/BuildInfo.txt",
+    "src/kit/BuildStamp.luau",
+    "src/kit-roblox/BuildStamp.server.luau",
+    "src/kit-roblox/BuildStamp.client.luau",
+    "default.project.json",
+    "relay.project.json",
+    "night.project.json",
+    "garden.project.json",
+    "tools/write-build-info.mjs",
+    "tools/check-place.mjs",
+    "tools/verify-publish.mjs",
+    "tools/write-manifest.mjs",
+    "tools/place-check/",
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    "studio/gates.md",
+    "docs/architecture/spire.md"
+  ],
+  "tests": [
+    "Kit.spec.luau"
+  ],
+  "evidence": [
+    "CI green on b4f2444: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/41223094653. Every place built with stamp sha=92f28f9 (PR merge commit) and passed check-place --sha; tool test runs the exact Luau-execution script under Lune on build/garden.rbxl and it flags a wrong stamp. Live publish verification not run yet: needs SHANNON's key scope."
+  ]
 }
