@@ -900,9 +900,10 @@
       52.46,
       27.56
     ],
-    "tris": 7760,
+    "tris": 7758,
     "parts": {
-      "pagoda": 7760
+      "pagoda": 7718,
+      "pagoda_glow": 40
     },
     "target_size_studs": [
       25,
@@ -913,7 +914,7 @@
     "priority": "P4",
     "replaces": "New landmark (no part version): north-east, outside the wall near the shrine hall (src/night/Arena.luau backdrop())",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "Ghosted (no collision). Code hangs warm lights in the ground-storey doors."
+    "notes": "Ghosted. pagoda_glow is the ground-storey doors: code sets Neon, warm. Stone lanterns stand at the plinth corners."
   },
   "senbon_torii": {
     "fbx": "build/blender/night/senbon_torii.fbx",
@@ -961,7 +962,7 @@
     "priority": "P4",
     "replaces": "New prop: stone stair flights of the south sando (src/night/Arena.luau sando())",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "Low end faces -Z; climbs 6 studs over 12 toward +Z. Ghosted: a terrain wedge under it is the walkable slope."
+    "notes": "Low end faces -Z; climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."
   },
   "castle": {
     "fbx": "build/blender/night/castle.fbx",
@@ -974,7 +975,8 @@
     ],
     "tris": 3912,
     "parts": {
-      "castle": 3912
+      "castle": 3624,
+      "castle_glow": 288
     },
     "target_size_studs": [
       44,
@@ -985,7 +987,7 @@
     "priority": "P4",
     "replaces": "New backdrop: castle keep on the north-west ridge (src/night/Arena.luau backdrop())",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "Far scenery: no shadows, ghosted."
+    "notes": "Far scenery: no shadows, ghosted. castle_glow is the lit windows: code sets Neon, warm, so they read at 400+ studs."
   },
   "waterfall": {
     "fbx": "build/blender/night/waterfall.fbx",
@@ -996,9 +998,10 @@
       98.78,
       53.9
     ],
-    "tris": 3880,
+    "tris": 3879,
     "parts": {
-      "waterfall": 3880
+      "waterfall": 3537,
+      "waterfall_glow": 342
     },
     "target_size_studs": [
       70,
@@ -1009,7 +1012,7 @@
     "priority": "P4",
     "replaces": "New backdrop: waterfall cliff in the west (src/night/Arena.luau backdrop())",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "Code adds mist and spray particles at the pool."
+    "notes": "waterfall_glow is the cascade: code sets Neon, pale blue, slightly transparent, and adds spray and mist particles."
   },
   "mountain_range": {
     "fbx": "build/blender/night/mountain_range.fbx",
@@ -1033,7 +1036,7 @@
     "priority": "P4",
     "replaces": "Terrain mountain balls in src/night/Arena.luau ground() (kept as the nil-id fallback)",
     "script": "tools/blender/night/assets/map_landmarks.py",
-    "notes": "One 70-degree arc; placed 6 times around radius ~600 with varied yaw and scale."
+    "notes": "One 70-degree arc; placed 6 times, bounding box at radius 510 (ridges at 560 and 650), leaving a gap at the moon bearing."
   },
   "bamboo_cluster": {
     "fbx": "build/blender/night/bamboo_cluster.fbx",

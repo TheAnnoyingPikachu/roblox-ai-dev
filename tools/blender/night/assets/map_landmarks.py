@@ -23,6 +23,13 @@ def _ring_of(p, build_side):
         p += [k.copy(ob, k.rot_z(deg)) for ob in side]
 
 
+def _glow(p, material):
+    """Splits off the pieces using `material` as a <name>_glow mesh: textures are not emissive in
+    Roblox, so code sets this mesh to real Neon (Models leaves *_glow untextured)."""
+    glow = [ob for ob in p if ob.data.materials and ob.data.materials[0] == material]
+    return {"": [ob for ob in p if ob not in glow], "glow": glow}
+
+
 def _stone(rng, at, r, scale, m, cuts=6):
     """Chiselled rock: a noisy sphere with a few random planar cuts and a flat base."""
     ob = k.ico(1.0, m=m, subdiv=3)
@@ -103,7 +110,7 @@ def pagoda():
     for a in range(4):
         p.append(k.poly([(0, 0), (0.7 * S, 0.5 * S), (0.55 * S, 1.3 * S), (0.15 * S, 1.8 * S), (0, 1.2 * S)], 0.06 * S, loc=(0, 0, top + 9.0 * S), rot=(0, 0, a * 90), m=gold))
     p.append(k.sphere(0.4 * S, (0, 0, top + 11.9 * S), m=gold, seg=10, rings=6))
-    return p
+    return _glow(p, door)
 
 
 def senbon_torii():
@@ -179,7 +186,7 @@ def castle():
     for sx in (-1, 1):
         x = sx * (11 * 0.3 + 0.4)
         p.append(k.tube([(x, 0, z + 3.6), (x + sx * 0.5, 0, z + 4.6), (x + sx * 0.2, 0, z + 5.6), (x - sx * 0.4, 0, z + 6.0)], [0.55, 0.5, 0.35, 0.0], m=gold, n=6))
-    return p
+    return _glow(p, lit)
 
 
 def waterfall():
@@ -236,7 +243,7 @@ def waterfall():
         a = math.pi * (0.05 + 0.9 * i / 7)
         r = rng.uniform(2.5, 4.5)
         p.append(_stone(rng, (math.cos(a) * 16, -6 + math.sin(a) * 13, 0.8), r, (1.2, 1.0, 0.8), rock))
-    return p
+    return _glow(p, water)
 
 
 def mountain_range():
@@ -271,20 +278,20 @@ def mountain_range():
 ASSETS = [
     dict(name="pagoda", build=pagoda, budget=8000, size=[25, 56, 25], priority=4, order=1,
          replaces="New landmark (no part version): north-east, outside the wall near the shrine hall (src/night/Arena.luau backdrop())",
-         notes="Ghosted (no collision). Code hangs warm lights in the ground-storey doors."),
+         notes="Ghosted. pagoda_glow is the ground-storey doors: code sets Neon, warm. Stone lanterns stand at the plinth corners."),
     dict(name="senbon_torii", build=senbon_torii, budget=700, size=[11.5, 9.5, 1.3], priority=4, order=2,
          replaces="New prop: the senbon-torii tunnel up the south sando stairs (src/night/Arena.luau sando())",
          notes="Pillars 7 studs apart (inner gap 6.2), so they straddle the 7-stud sando_stairs."),
     dict(name="sando_stairs", build=sando_stairs, budget=1200, size=[9.2, 7, 12], priority=4, order=3,
          replaces="New prop: stone stair flights of the south sando (src/night/Arena.luau sando())",
-         notes="Low end faces -Z; climbs 6 studs over 12 toward +Z. Ghosted: a terrain wedge under it is the walkable slope."),
+         notes="Low end faces -Z; climbs 6 studs over 12 toward +Z. Ghosted: an invisible WedgePart per flight is the walkable slope."),
     dict(name="castle", build=castle, budget=4000, size=[44, 68, 33], priority=4, order=4,
          replaces="New backdrop: castle keep on the north-west ridge (src/night/Arena.luau backdrop())",
-         notes="Far scenery: no shadows, ghosted."),
+         notes="Far scenery: no shadows, ghosted. castle_glow is the lit windows: code sets Neon, warm, so they read at 400+ studs."),
     dict(name="waterfall", build=waterfall, budget=4000, size=[70, 96, 55], priority=4, order=5,
          replaces="New backdrop: waterfall cliff in the west (src/night/Arena.luau backdrop())",
-         notes="Code adds mist and spray particles at the pool."),
+         notes="waterfall_glow is the cascade: code sets Neon, pale blue, slightly transparent, and adds spray and mist particles."),
     dict(name="mountain_range", build=mountain_range, budget=4000, size=[750, 170, 290], priority=4, order=6,
          replaces="Terrain mountain balls in src/night/Arena.luau ground() (kept as the nil-id fallback)",
-         notes="One 70-degree arc; placed 6 times around radius ~600 with varied yaw and scale."),
+         notes="One 70-degree arc; placed 6 times, bounding box at radius 510 (ridges at 560 and 650), leaving a gap at the moon bearing."),
 ]
