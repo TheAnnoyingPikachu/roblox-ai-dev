@@ -21,8 +21,15 @@ Arena.SPAWN = CFrame.lookAt(Vector3.new(0, 0, 80), Vector3.new(0, 0, 0))
 
 local RADIUS = 100
 local PIT = Vector3.new(0, 0, -65)
-local PAGODA = Vector3.new(74, -1, -175)
-local WATERFALL = Vector3.new(-330, -1, -40)
+-- The surface everyone actually walks on (measured in Studio): the lawn's top voxel layer, -4..0 at
+-- occupancy 0.75, reads as y = -2 + 4 * 0.75 = 1. That covers the Courtyard part (top y = 0), so
+-- anything meant to be seen on the ground stands on FLOOR. Never change the lawn's height: player
+-- height against enemy hover and the Y hit bands depends on it.
+local FLOOR = 1
+local PAGODA = Vector3.new(74, FLOOR, -175)
+local WATERFALL = Vector3.new(-330, FLOOR, -40)
+local POND = Vector3.new(-60, 0, -10)
+local POND_RADIUS = 18
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(22, 18, 26)
 local VERMILION = Color3.fromRGB(196, 40, 28)
@@ -273,6 +280,39 @@ end
 
 -- Ground, wall and paths --------------------------------------------------------------------
 
+-- Cobbled paths as { minX, maxX, minZ, maxZ }.
+local PATHS = {
+	{ -6, 6, 30, 104 }, -- entrance to stage
+	{ -6, 6, -48, -20 }, -- stage to the boss pit
+	{ 22, 58, -6, 6 }, -- stage to the stalls
+	{ -41, -21, -6, 6 }, -- stage to the pond
+}
+
+-- Material of the ground at (x, z), or nil to leave the lawn.
+local function groundMaterial(x: number, z: number): Enum.Material?
+	local M = Enum.Material
+	local fromCentre = math.sqrt(x * x + z * z)
+	local mossy = math.noise(x / 16, z / 16, 7) > 0.08
+	if math.abs(x) <= 18 and z >= 102 and z <= 154 then
+		return if math.abs(x) <= 7 then M.Cobblestone else M.Pavement -- yatai street
+	elseif fromCentre > RADIUS + 5 then
+		return if mossy then M.LeafyGrass else nil
+	end
+	for _, path in PATHS do
+		if x >= path[1] and x <= path[2] and z >= path[3] and z <= path[4] then
+			return M.Cobblestone
+		end
+	end
+	local nearTree = (Vector3.new(x, 0, z) - Vector3.new(-55, 0, 45)).Magnitude < 15
+	local nearPond = (Vector3.new(x, 0, z) - POND).Magnitude < POND_RADIUS + 5
+	if fromCentre <= 32 then
+		return M.Pavement
+	elseif nearTree or nearPond or (fromCentre > 84 and mossy and math.abs(x) > 16) then
+		return M.LeafyGrass
+	end
+	return M.Sand
+end
+
 local function ground()
 	local terrain = Workspace.Terrain
 	terrain:Clear()
@@ -296,45 +336,30 @@ local function ground()
 	terrain.WaterWaveSpeed = 4
 	terrain:FillBlock(CFrame.new(0, -6, 0), Vector3.new(1400, 10, 1400), M.Grass)
 
-	-- The Courtyard part stays as the walkable collision at y = 0. The terrain level with it is what
-	-- you see: raked gravel, a stone plaza round the stage, cobbled paths and moss at the wall.
-	local court = pillar(folder, Vector3.new(0, -1, 0), 1, RADIUS, SLATE, Enum.Material.Slate)
-	court.Name = "Courtyard"
-	court.Transparency = 1
-	terrain:FillCylinder(CFrame.new(0, -2.5, 0), 5, RADIUS + 6, M.Sand)
-	terrain:FillCylinder(CFrame.new(0, -2, 0), 4, 32, M.Pavement)
-	for _, path in
-		{
-			{ Vector3.new(12, 4, 74), Vector3.new(0, -2, 67) }, -- entrance to stage
-			{ Vector3.new(12, 4, 28), Vector3.new(0, -2, -34) }, -- stage to the boss pit
-			{ Vector3.new(36, 4, 12), Vector3.new(40, -2, 0) }, -- stage to the stalls
-			{ Vector3.new(20, 4, 12), Vector3.new(-31, -2, 0) }, -- stage to the pond
-		}
-	do
-		terrain:FillBlock(CFrame.new(path[2]), path[1], M.Cobblestone)
-	end
-	local rng = Random.new(5)
-	for _ = 1, 40 do
-		local angle = rng:NextNumber(0, math.pi * 2)
-		local distance = rng:NextNumber(84, 102)
-		local x, z = math.cos(angle) * distance, math.sin(angle) * distance
-		local radius = rng:NextNumber(5, 10)
-		if math.abs(x) > 16 + radius then -- keeps the entrance and hall thresholds clean
-			terrain:FillCylinder(CFrame.new(x, -2, z), 4, radius, M.LeafyGrass)
+	-- Paint in the voxels, materials only: fills would change the surface height. A pond column
+	-- becomes a mud bed under water (water cells are always whole, so its surface is y = 0).
+	local region = Region3.new(Vector3.new(-160, -8, -160), Vector3.new(160, 4, 164))
+	local materials, occupancy = terrain:ReadVoxels(region, 4)
+	local corner = region.CFrame.Position - region.Size / 2
+	local BED, SURFACE, ABOVE = 1, 2, 3 -- layers -8..-4, -4..0, 0..4
+	for ix = 1, materials.Size.X do
+		for iz = 1, materials.Size.Z do
+			local x, z = corner.X + (ix - 0.5) * 4, corner.Z + (iz - 0.5) * 4
+			if (Vector3.new(x, 0, z) - POND).Magnitude < POND_RADIUS then
+				materials[ix][BED][iz] = M.Mud
+				materials[ix][SURFACE][iz] = M.Water
+				occupancy[ix][SURFACE][iz] = 1
+				materials[ix][ABOVE][iz] = M.Air
+				occupancy[ix][ABOVE][iz] = 0
+			else
+				materials[ix][SURFACE][iz] = groundMaterial(x, z) or materials[ix][SURFACE][iz]
+			end
 		end
 	end
-	terrain:FillCylinder(CFrame.new(-55, -2, 45), 4, 15, M.LeafyGrass) -- sacred tree
-	terrain:FillCylinder(CFrame.new(-60, -2, -10), 4, 23, M.LeafyGrass) -- pond bank
-	for _ = 1, 30 do
-		local angle = rng:NextNumber(0, math.pi * 2)
-		local distance = rng:NextNumber(112, 300)
-		local at = CFrame.new(math.cos(angle) * distance, -3, math.sin(angle) * distance)
-		terrain:FillCylinder(at, 4, rng:NextNumber(12, 30), M.LeafyGrass)
-	end
-	-- Koi pond: a real basin under the Courtyard part, west (I1). Water tops out at y = 0.4.
-	terrain:FillCylinder(CFrame.new(-60, -2, -10), 4, 19.5, M.Mud)
-	terrain:FillCylinder(CFrame.new(-60, -1.6, -10), 3.6, 18, M.Air)
-	terrain:FillCylinder(CFrame.new(-60, -1.8, -10), 4.4, 18, M.Water)
+	terrain:WriteVoxels(region, 4, materials, occupancy)
+
+	local court = pillar(folder, Vector3.new(0, -1, 0), 1, RADIUS, SLATE, Enum.Material.Slate)
+	court.Name = "Courtyard"
 
 	-- Stone wall with a wooden fence on top; open at the entrance and behind the shrine hall.
 	local segments = 48
@@ -457,14 +482,15 @@ end
 -- Boss pit, shrine hall, sacred tree ---------------------------------------------------------
 
 local function pit()
-	decor(pillar(folder, PIT + Vector3.new(0, -0.05, 0), 0.2, 20, Color3.fromRGB(46, 42, 54), Enum.Material.Slate))
-	decor(pillar(folder, PIT + Vector3.new(0, -0.02, 0), 0.2, 13, Color3.fromRGB(28, 24, 34), Enum.Material.Basalt))
+	local floorPit = PIT + Vector3.new(0, FLOOR, 0)
+	decor(pillar(folder, floorPit - Vector3.new(0, 0.05, 0), 0.2, 20, Color3.fromRGB(46, 42, 54), Enum.Material.Slate))
+	decor(pillar(folder, floorPit - Vector3.new(0, 0.02, 0), 0.2, 13, Color3.fromRGB(28, 24, 34), Enum.Material.Basalt))
 	local rng = Random.new(65)
 	for i = 1, 12 do
 		local angle = i / 12 * math.pi * 2 + rng:NextNumber(-0.2, 0.2)
 		local length = rng:NextNumber(5, 12)
 		local from = rng:NextNumber(3, 10)
-		local mid = PIT + Vector3.new(math.cos(angle), 0, math.sin(angle)) * (from + length / 2)
+		local mid = floorPit + Vector3.new(math.cos(angle), 0, math.sin(angle)) * (from + length / 2)
 		decor(
 			part(
 				folder,
@@ -476,7 +502,8 @@ local function pit()
 			)
 		)
 	end
-	local core = decor(part(folder, Vector3.new(1, 0.1, 1), PIT + Vector3.new(0, 0.1, 0), PURPLE, Enum.Material.Neon))
+	local core =
+		decor(part(folder, Vector3.new(1, 0.1, 1), floorPit + Vector3.new(0, 0.1, 0), PURPLE, Enum.Material.Neon))
 	glow(core, PURPLE, 30, 2)
 	for _, x in { -30, 30 } do
 		part(folder, Vector3.new(8, 1.5, 8), Vector3.new(x, 0.75, -80), STONE, Enum.Material.Slate)
@@ -630,27 +657,35 @@ local function bridge(z: number, halfLength: number)
 end
 
 local function pond()
-	local centre = Vector3.new(-60, 0, -10)
+	local centre = POND
+	-- Water cannot sit at FLOOR, so this sheet over it is the walkable surface, exactly where the
+	-- lawn was, and the koi show through it.
+	local sheet = pillar(folder, POND, FLOOR, POND_RADIUS, Color3.fromRGB(26, 74, 86), Enum.Material.Glass)
+	sheet.Name = "PondSurface"
+	sheet.Transparency = 0.55
+	sheet.Reflectance = 0.15
 	for i = 0, 23 do
 		local angle = i / 24 * math.pi * 2
-		local at = centre + Vector3.new(math.cos(angle) * 18.8, 0.35, math.sin(angle) * 18.8)
-		part(
-			folder,
-			Vector3.new(5.2, 0.9, 1.8),
-			CFrame.lookAt(at, centre + Vector3.new(0, 0.35, 0)),
-			Color3.fromRGB(120, 118, 112),
-			Enum.Material.Slate
+		local at = centre + Vector3.new(math.cos(angle) * 18.8, FLOOR + 0.35, math.sin(angle) * 18.8)
+		decor(
+			part(
+				folder,
+				Vector3.new(5.2, 0.9, 1.8),
+				CFrame.lookAt(at, centre + Vector3.new(0, FLOOR + 0.35, 0)),
+				Color3.fromRGB(120, 118, 112),
+				Enum.Material.Slate
+			)
 		)
 	end
 	bridge(-21, 15)
 	bridge(1, 15)
 	for i, z in { -15, -10, -5 } do
-		pillar(folder, centre + Vector3.new(i * 1.5 - 3, 0.2, z + 10), 0.5, 1.6, STONE, Enum.Material.Slate)
+		decor(pillar(folder, centre + Vector3.new(i * 1.5 - 3, FLOOR, z + 10), 0.2, 1.6, STONE, Enum.Material.Slate))
 	end
 	local rng = Random.new(7)
 	local koi = { Color3.fromRGB(255, 120, 40), Color3.fromRGB(250, 245, 240), Color3.fromRGB(230, 60, 40) }
 	for i = 1, 8 do
-		local at = centre + Vector3.new(rng:NextNumber(-12, 12), 0.15, rng:NextNumber(-12, 12))
+		local at = centre + Vector3.new(rng:NextNumber(-12, 12), -0.35, rng:NextNumber(-12, 12))
 		if i <= 5 then
 			local yaw = rng:NextNumber(0, 6.28)
 			local fish = Models.night("koi", folder, at - Vector3.new(0, 0.15, 0), math.deg(yaw))
@@ -665,7 +700,7 @@ local function pond()
 			decor(
 				pillar(
 					folder,
-					at + Vector3.new(0, 0.3, 0),
+					at + Vector3.new(0, FLOOR + 0.37, 0),
 					0.08,
 					rng:NextNumber(0.8, 1.4),
 					Color3.fromRGB(60, 120, 60),
@@ -675,10 +710,10 @@ local function pond()
 		end
 	end
 	fireflies(folder, centre + Vector3.new(0, 4, 0), Vector3.new(40, 6, 40))
-	for _, at in { Vector3.new(-68, 0.36, -10), Vector3.new(-50, 0.36, -12), Vector3.new(-56, 0.36, 6) } do
+	for _, at in { Vector3.new(-68, FLOOR, -10), Vector3.new(-50, FLOOR, -12), Vector3.new(-56, FLOOR, 6) } do
 		prop("lily_pads", folder, at, rng:NextNumber(0, 360))
 	end
-	for _, at in { Vector3.new(-82, 0, -10), Vector3.new(-65.7, 0, 11.3), Vector3.new(-65.7, 0, -31.3) } do
+	for _, at in { Vector3.new(-82, FLOOR, -10), Vector3.new(-65.7, FLOOR, 11.3), Vector3.new(-65.7, FLOOR, -31.3) } do
 		prop("garden_rocks", folder, at, rng:NextNumber(0, 360))
 	end
 end
@@ -808,7 +843,7 @@ local function demonGate(at: Vector3)
 		SpreadAngle = Vector2.new(30, 30),
 		Rate = 25,
 	})
-	local floor = decor(pillar(folder, at + Vector3.new(0, 0.02, 0), 0.1, 7, PURPLE, Enum.Material.Neon))
+	local floor = decor(pillar(folder, at + Vector3.new(0, FLOOR + 0.02, 0), 0.1, 7, PURPLE, Enum.Material.Neon))
 	floor.Transparency = 0.55
 	glow(floor, PURPLE, 24, 2.5)
 
@@ -971,52 +1006,52 @@ local SANDO_TOP = 24
 local function sandoY(z: number): number
 	local along = math.clamp(z - SANDO_FOOT, 0, 66)
 	local flights = math.floor(along / 18)
-	return flights * 6 + math.min(along - flights * 18, 12) / 2
+	return FLOOR + flights * 6 + math.min(along - flights * 18, 12) / 2
 end
 
 local function sando()
 	local terrain = Workspace.Terrain
 	local M = Enum.Material
-	-- Paved street, then a smooth hill whose north face follows the stairs.
-	terrain:FillBlock(CFrame.new(0, -2.5, 128), Vector3.new(36, 5, 52), M.Pavement)
-	terrain:FillBlock(CFrame.new(0, -2.5, 128), Vector3.new(14, 5, 52), M.Cobblestone)
+	-- A smooth hill whose north face follows the stairs, a paved summit and a cutting for the flights.
+	-- A block fill reads about 2 studs above its top, so landings fill to their height minus 2.
 	terrain:FillBall(Vector3.new(0, -150.5, 242), 174.5, M.Grass)
-	terrain:FillCylinder(CFrame.new(0, 11.5, 242), 25, 26, M.Pavement)
+	terrain:FillBlock(CFrame.new(0, FLOOR + SANDO_TOP - 22, 242), Vector3.new(52, 40, 52), M.Pavement)
 	for i = 0, 3 do
-		local y = i * 6
+		local y = FLOOR + i * 6
 		local z = SANDO_FOOT + i * 18
 		terrain:FillBlock(CFrame.new(0, y + 20, z + 9), Vector3.new(13, 40, 18), M.Air)
-		terrain:FillBlock(CFrame.new(0, y - 6, z + 9), Vector3.new(13, 12, 18), M.Slate)
+		terrain:FillBlock(CFrame.new(0, y - 8, z + 9), Vector3.new(13, 12, 18), M.Slate)
 		terrain:FillWedge(CFrame.new(0, y + 3, z + 6), Vector3.new(13, 6, 12), M.Slate)
-		terrain:FillBlock(CFrame.new(0, y + 3, z + 15), Vector3.new(13, 6, 6), M.Slate)
+		terrain:FillBlock(CFrame.new(0, y + 1, z + 15), Vector3.new(13, 6, 6), M.Slate)
 	end
 
 	for i = 0, 5 do
 		local z = 112 + (i // 2) * 14
 		local x = if i % 2 == 0 then -15 else 15
-		stall(i + 1, STALLS[i % #STALLS + 1], CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(0, 0, z)))
+		stall(i + 1, STALLS[i % #STALLS + 1], CFrame.lookAt(Vector3.new(x, FLOOR, z), Vector3.new(0, FLOOR, z)))
 	end
 	for z = 106, 142, 18 do
 		for _, x in { -9, 9 } do
-			pillar(folder, Vector3.new(x, 0, z), 12, 0.3, WOOD, Enum.Material.Wood)
+			pillar(folder, Vector3.new(x, FLOOR, z), 12, 0.3, WOOD, Enum.Material.Wood)
 		end
 		if z < 142 then
-			garland(Vector3.new(-9, 12, z), Vector3.new(9, 12, z + 18), 2)
-			garland(Vector3.new(9, 12, z), Vector3.new(-9, 12, z + 18), 2)
+			garland(Vector3.new(-9, FLOOR + 12, z), Vector3.new(9, FLOOR + 12, z + 18), 2)
+			garland(Vector3.new(9, FLOOR + 12, z), Vector3.new(-9, FLOOR + 12, z + 18), 2)
 		end
 	end
 	for _, x in { -6.5, 6.5 } do
-		stoneLantern(folder, Vector3.new(x, 0, SANDO_FOOT - 2))
+		stoneLantern(folder, Vector3.new(x, FLOOR, SANDO_FOOT - 2))
 		for landing = 1, 3 do
 			local z = SANDO_FOOT + landing * 18 - 3
-			stoneLantern(folder, Vector3.new(x * 0.86, sandoY(z), z))
+			stoneLantern(folder, Vector3.new(x * 0.86, groundY(x * 0.86, z), z))
 		end
-		stoneLantern(folder, Vector3.new(x * 1.3, SANDO_TOP, 228))
-		stoneLantern(folder, Vector3.new(x * 1.3, SANDO_TOP, 240))
+		for _, z in { 228, 240 } do
+			stoneLantern(folder, Vector3.new(x * 1.3, groundY(x * 1.3, z), z))
+		end
 	end
 
 	for i = 0, 3 do
-		local y = i * 6
+		local y = FLOOR + i * 6
 		local z = SANDO_FOOT + i * 18 + 6
 		if prop("sando_stairs", folder, Vector3.new(0, y, z)) then
 			-- Exact walkable slope over the coarser terrain wedge.
@@ -1031,8 +1066,8 @@ local function sando()
 	end
 
 	-- Inner shrine on the summit, behind a smaller vermilion torii.
-	Models.night("entrance_torii", folder, Vector3.new(0, SANDO_TOP, 224), 0, 0.6)
-	Models.night("shrine_hall", folder, Vector3.new(0, SANDO_TOP, 250), 0, 0.5)
+	Models.night("entrance_torii", folder, Vector3.new(0, groundY(0, 224), 224), 0, 0.6)
+	Models.night("shrine_hall", folder, Vector3.new(0, groundY(0, 250), 250), 0, 0.5)
 	fireflies(folder, Vector3.new(0, SANDO_TOP, 190), Vector3.new(70, 16, 70))
 end
 
@@ -1048,7 +1083,7 @@ local function spot(degrees: number, radius: number): Vector3
 	for _, gate in GATES do
 		assert((at - gate).Magnitude >= 14, "decoration at a demon gate")
 	end
-	return at
+	return at + Vector3.new(0, FLOOR, 0)
 end
 
 local function garden()
@@ -1065,7 +1100,7 @@ local function garden()
 	for _, degrees in { 245, 295 } do
 		prop("garden_rocks", folder, spot(degrees, 97), rng:NextNumber(0, 360))
 	end
-	prop("zen_garden", folder, Vector3.new(-30, 0, 80))
+	prop("zen_garden", folder, Vector3.new(-30, FLOOR, 80))
 
 	-- A close band of bamboo, pine and cedar outside the wall frames the courtyard, under the menu
 	-- orbit's sightline (camera radius 130, height 54).
@@ -1074,7 +1109,7 @@ local function garden()
 		if math.abs(degrees - 90) > 14 and math.abs(degrees - 270) > 22 then
 			local angle = math.rad(degrees)
 			local distance = rng:NextNumber(110, 122)
-			local at = Vector3.new(math.cos(angle) * distance, -1, math.sin(angle) * distance)
+			local at = Vector3.new(math.cos(angle) * distance, FLOOR - 0.3, math.sin(angle) * distance)
 			local yaw = rng:NextNumber(0, 360)
 			if step % 4 == 0 then
 				prop("bamboo_cluster", folder, at, yaw, rng:NextNumber(0.9, 1.15))
@@ -1111,17 +1146,17 @@ local function banners()
 	-- Between the stalls, cloth toward the courtyard.
 	for i, z in { -27, -9, 9, 27 } do
 		local frame = CFrame.lookAt(Vector3.new(60, 0, z), Vector3.new(0, 0, z))
-		prop(names[i % 2 + 1], folder, frame.Position, yawOf(frame))
+		prop(names[i % 2 + 1], folder, frame.Position + Vector3.new(0, FLOOR, 0), yawOf(frame))
 	end
 	-- Along the wall, cloth toward the centre.
 	for i, degrees in { 30, 80, 100, 118, 150, 190, 240, 308, 335 } do
 		local at = spot(degrees, 99)
-		prop(names[i % 2 + 1], folder, at, yawOf(CFrame.lookAt(at, Vector3.zero)))
+		prop(names[i % 2 + 1], folder, at, yawOf(CFrame.lookAt(at, Vector3.new(0, FLOOR, 0))))
 	end
 	-- Down both sides of the yatai street, cloth across it.
 	for i, z in { 119, 133, 147 } do
 		for side, x in { -10, 10 } do
-			prop(names[(i + side) % 2 + 1], folder, Vector3.new(x, 0, z))
+			prop(names[(i + side) % 2 + 1], folder, Vector3.new(x, FLOOR, z))
 		end
 	end
 end
@@ -1246,7 +1281,7 @@ local function backdrop()
 	if castle then
 		Workspace.Terrain:FillBall(keep - Vector3.new(0, 84, 0), 90, Enum.Material.Rock)
 	end
-	local fall = prop("waterfall", folder, WATERFALL, yawOf(CFrame.lookAt(WATERFALL, Vector3.new(0, -1, 0))))
+	local fall = prop("waterfall", folder, WATERFALL, yawOf(CFrame.lookAt(WATERFALL, Vector3.new(0, FLOOR, 0))))
 	neon(fall, Color3.fromRGB(176, 214, 255), 0.2)
 	if fall then
 		local toward = -WATERFALL.Unit
@@ -1274,7 +1309,7 @@ local function ambient()
 		local angle = i / 6 * math.pi * 2 + 0.4
 		fog(folder, Vector3.new(math.cos(angle) * 230, 8, math.sin(angle) * 230), Vector3.new(180, 8, 180), 50, 70, 0.6)
 	end
-	fog(folder, Vector3.new(-60, 1.5, -10), Vector3.new(30, 1, 30), 10, 16, 1)
+	fog(folder, POND + Vector3.new(0, FLOOR + 1, 0), Vector3.new(30, 1, 30), 10, 16, 1)
 end
 
 -- An occasional firework over the backdrop. A short Enabled pulse, because property changes
