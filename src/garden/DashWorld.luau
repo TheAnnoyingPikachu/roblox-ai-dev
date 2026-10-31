@@ -161,7 +161,8 @@ function DashWorld.build(): { arch: BasePart, prompt: ProximityPrompt, label: (s
 	)
 	water.Name = "Water"
 	water.Transparency = 0.25
-	swap("dash_island", folder, Vector3.new(-10, 100, 350), 0)
+	-- Base 75 puts the pond under the fall line (fellY 125) and the rim trees just below the decks.
+	swap("dash_island", folder, Vector3.new(-10, 75, 350), 0)
 	arches(folder)
 	wall(folder, Vector3.new(1, WALL, 40), Vector3.new(-140, DECK_TOP + WALL / 2, 300))
 	wall(folder, Vector3.new(40, WALL, 1), Vector3.new(-120, DECK_TOP + WALL / 2, 280))

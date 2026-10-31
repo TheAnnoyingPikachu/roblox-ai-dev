@@ -390,7 +390,7 @@ local DASH: DashConfig = {
 	coinsPerDay = 6,
 	fellY = 125,
 	zone = { radius = 16, height = 14 },
-	minFinish = 28,
+	minFinish = 25,
 	maxSpeed = 95,
 	slack = 12,
 	maxStrikes = 3,

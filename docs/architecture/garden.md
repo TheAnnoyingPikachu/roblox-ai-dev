@@ -218,7 +218,7 @@ export type DashConfig = {
 	coinsPerDay: number, -- 6
 	fellY: number, -- 125
 	zone: { radius: number, height: number }, -- 16, 14
-	minFinish: number, -- 28
+	minFinish: number, -- 25
 	maxSpeed: number, -- 95
 	slack: number, -- 12
 	maxStrikes: number, -- 3
@@ -680,7 +680,7 @@ Clients never write server state. The ODDS card, Index and forecast tables read 
 23. `dashReady` toggles, so the menu button and the pad need one action. `home` doubles as leaving a round, so no third action.
 24. A round has no results phase: racers go home at once, and the card shows over the garden.
 25. `Dash` owns its round state outside `State.live`, because a round outlives any one player.
-26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the 28 s check need sub-second values.
+26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the 25 s check need sub-second values.
 
 ## 9. Models and naming
 
