@@ -894,7 +894,8 @@ local function entrance()
 	-- Nights-won leaderboard: a lantern board beside the entrance path, facing west.
 	local board = part(folder, Vector3.new(1, 12, 16), Vector3.new(24, 7, 82), INK, Enum.Material.Wood)
 	board.Name = "Leaderboard"
-	local frameModel = Models.night("leaderboard_frame", folder, Vector3.new(24, 0, 82), 270)
+	-- Set back 1.2 studs, or the frame's backing covers the text face of the board.
+	local frameModel = Models.night("leaderboard_frame", folder, Vector3.new(25.2, 0, 82), 270)
 	for _, z in { -8.6, 8.6 } do
 		if frameModel == nil then
 			pillar(folder, Vector3.new(24, 0, 82 + z), 14, 0.5, VERMILION, Enum.Material.Wood)
