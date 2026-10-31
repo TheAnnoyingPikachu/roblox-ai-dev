@@ -1,0 +1,223 @@
+{
+  "egg_starter": {
+    "fbx": "build/blender/garden/egg_starter.fbx",
+    "png": "build/blender/garden/egg_starter.png",
+    "preview": "build/blender/garden/previews/egg_starter.png",
+    "size_studs": [
+      2.12,
+      3.11,
+      2.12
+    ],
+    "tris": 1482,
+    "parts": {
+      "egg_starter": 1482
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg starter (src/garden/Plots.luau 274-295)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "glow": {}
+  },
+  "egg_meadow": {
+    "fbx": "build/blender/garden/egg_meadow.fbx",
+    "png": "build/blender/garden/egg_meadow.png",
+    "preview": "build/blender/garden/previews/egg_meadow.png",
+    "size_studs": [
+      3.19,
+      2.89,
+      2.94
+    ],
+    "tris": 2043,
+    "parts": {
+      "egg_meadow": 2043
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg meadow (src/garden/Plots.luau 274-295)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "glow": {}
+  },
+  "egg_forest": {
+    "fbx": "build/blender/garden/egg_forest.fbx",
+    "png": "build/blender/garden/egg_forest.png",
+    "preview": "build/blender/garden/previews/egg_forest.png",
+    "size_studs": [
+      2.59,
+      3.32,
+      2.4
+    ],
+    "tris": 2380,
+    "parts": {
+      "egg_forest": 2380
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg forest (src/garden/Plots.luau 274-295)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "glow": {}
+  },
+  "egg_sunset": {
+    "fbx": "build/blender/garden/egg_sunset.fbx",
+    "png": "build/blender/garden/egg_sunset.png",
+    "preview": "build/blender/garden/previews/egg_sunset.png",
+    "size_studs": [
+      2.22,
+      3.2,
+      2.2
+    ],
+    "tris": 2406,
+    "parts": {
+      "egg_sunset": 2406
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg sunset (src/garden/Plots.luau 274-295)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "glow": {}
+  },
+  "egg_moon": {
+    "fbx": "build/blender/garden/egg_moon.fbx",
+    "png": "build/blender/garden/egg_moon.png",
+    "preview": "build/blender/garden/previews/egg_moon.png",
+    "size_studs": [
+      3.61,
+      4.42,
+      1.92
+    ],
+    "tris": 1964,
+    "parts": {
+      "egg_moon": 1784,
+      "egg_moon_glow": 180
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg moon (src/garden/Plots.luau 274-295)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic. egg_moon_glow is Neon.",
+    "glow": {
+      "egg_moon_glow": [
+        255,
+        245,
+        190
+      ]
+    }
+  },
+  "egg_star": {
+    "fbx": "build/blender/garden/egg_star.fbx",
+    "png": "build/blender/garden/egg_star.png",
+    "preview": "build/blender/garden/previews/egg_star.png",
+    "size_studs": [
+      3.14,
+      3.37,
+      2.09
+    ],
+    "tris": 1324,
+    "parts": {
+      "egg_star": 1244,
+      "egg_star_glow": 80
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg star (src/garden/Plots.luau 274-295)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic. egg_star_glow is the Neon core seen through star pockets, front and back.",
+    "glow": {
+      "egg_star_glow": [
+        255,
+        226,
+        120
+      ]
+    }
+  },
+  "egg_celestial": {
+    "fbx": "build/blender/garden/egg_celestial.fbx",
+    "png": "build/blender/garden/egg_celestial.png",
+    "preview": "build/blender/garden/previews/egg_celestial.png",
+    "size_studs": [
+      4.82,
+      4.1,
+      2.1
+    ],
+    "tris": 2422,
+    "parts": {
+      "egg_celestial": 1870,
+      "egg_celestial_glow": 552
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "New top tier; no egg today",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "New top tier, deliberately larger than the others. egg_celestial_glow (halo, constellations, moonlets, crown star) is Neon.",
+    "glow": {
+      "egg_celestial_glow": [
+        255,
+        238,
+        180
+      ]
+    }
+  },
+  "egg_shell_fragment": {
+    "fbx": "build/blender/garden/egg_shell_fragment.fbx",
+    "png": "build/blender/garden/egg_shell_fragment.png",
+    "preview": "build/blender/garden/previews/egg_shell_fragment.png",
+    "size_studs": [
+      0.84,
+      0.71,
+      0.23
+    ],
+    "tris": 80,
+    "parts": {
+      "egg_shell_fragment": 80
+    },
+    "target_size_studs": [
+      1.1,
+      1.1,
+      0.4
+    ],
+    "tris_budget": 200,
+    "priority": "P1",
+    "replaces": "Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "Upload skips its texture so code can tint it from EGG_COLOURS; set Color, spin and scale per piece.",
+    "glow": {}
+  }
+}
