@@ -20,6 +20,7 @@ export type Racer = {
 	legAt: number, -- when this leg began: GO, the last checkpoint or the last server teleport
 	settleUntil: number, -- samples before this time are ignored
 	arriving: boolean, -- teleported, and no sample has shown the racer at lastPos yet
+	touched: boolean, -- reached the next checkpoint before its leg floor; it counts once the floor passes
 	finished: number?, -- seconds from GO
 	out: boolean, -- left or struck out
 }
@@ -165,6 +166,7 @@ function DashRules.start(r: Round, t: number, entrants: { Entrant }): (Round, { 
 			legAt = out.goAt,
 			settleUntil = t + DASH.settle,
 			arriving = false,
+			touched = false,
 			out = false,
 		}
 	end
@@ -280,10 +282,13 @@ function DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, {
 	end
 	if pos.y < DASH.fellY then
 		table.insert(events, { kind = "splash", id = id, cp = racer.next - 1 })
-	elseif
-		DashRules.inZone(pos, DASH.checkpoints[racer.next])
-		and t - racer.legAt + 1e-9 >= LEG_MIN[racer.next] -- early: no event and no strike, it counts once due
-	then
+		return out, events
+	end
+	-- Early: no event and no strike. The touch is kept, so moving on before the floor passes loses
+	-- nothing; it counts once due, wherever the racer is by then.
+	racer.touched = racer.touched or DashRules.inZone(pos, DASH.checkpoints[racer.next])
+	if racer.touched and t - racer.legAt + 1e-9 >= LEG_MIN[racer.next] then
+		racer.touched = false
 		racer.legAt = t
 		if racer.next < #DASH.checkpoints then
 			racer.next += 1
@@ -308,6 +313,7 @@ function DashRules.teleported(r: Round, id: number, t: number, at: Vec3): Round
 	racer.legAt = math.max(t, r.goAt)
 	racer.settleUntil = t + DASH.settle
 	racer.arriving = true
+	racer.touched = false -- sent back: the leg starts over
 	return out
 end
 

@@ -13,7 +13,7 @@ export function stampText({ sha, time, ref, run }) {
   return `sha=${sha.toLowerCase()};time=${time};ref=${ref ?? ""};run=${run ?? ""}\n`;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const env = process.env;
   const sha = env.GITHUB_SHA || execSync("git rev-parse HEAD").toString().trim();
   const text = stampText({

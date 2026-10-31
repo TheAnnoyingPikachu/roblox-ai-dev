@@ -46,7 +46,7 @@ export function checkScope(changed, loadTask) {
   return { ok: outside.length === 0 || allLegacy, allLegacy, outside, legacy, tasks: tasks.map((t) => t.task.task_id) };
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const base = process.argv[2];
   if (!base) {
     console.error("usage: node tools/check-scope.mjs <base-ref>");

@@ -140,4 +140,4 @@ async function main() {
   console.log(`Verified: version ${env.VERSION} carries build ${env.GITHUB_SHA.slice(0, 7)} and every scripted node.`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

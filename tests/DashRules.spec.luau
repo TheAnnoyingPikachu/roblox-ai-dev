@@ -495,7 +495,26 @@ describe("DashRules running rounds", function()
 		return { x = x, y = 144, z = z }
 	end
 
-	it("never holds or flags the fastest honest walk: every corner cut, 16 studs/s, 30.8 s", function()
+	it("keeps a checkpoint touched early, counts it at the floor, and drops it after a fall", function()
+		local r = race({ 1, 2, 3 })
+		local early = DashRules.sample(r, 1, CP[1], GO + 1)
+		expect(early.racers[1].next).toBe(1)
+		-- Moved on along the deck, out of the zone, before the floor passed.
+		local away = { x = CP[1].x + 40, y = CP[1].y, z = CP[1].z }
+		local due = 0
+		local cur = early
+		for i = 1, 20 do
+			cur = DashRules.sample(cur, 1, { x = away.x + i, y = away.y, z = away.z }, GO + 1 + i)
+			if cur.racers[1].next == 2 and due == 0 then
+				due = i
+			end
+		end
+		expect(due > 0).toBe(true)
+		local sent = DashRules.teleported(early, 1, GO + 2, CP[1])
+		expect(sent.racers[1].touched).toBe(false)
+	end)
+
+	it("never flags the fastest honest walk: every corner cut, 16 studs/s", function()
 		local path = { flat(-120, 300), flat(95, 312), flat(95, 388), flat(-120, 400) }
 		local r, _, events = walk(race({ 1, 2, 3 }), 1, path, GO, 16)
 		local names = {}

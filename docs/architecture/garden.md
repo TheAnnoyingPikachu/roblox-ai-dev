@@ -687,7 +687,7 @@ Clients never write server state. The ODDS card, Index and forecast tables read 
 23. `dashReady` toggles, so the menu button and the pad need one action. `home` doubles as leaving a round for a racer, so no third action; it leaves a ready player ready.
 24. A round has no results phase: racers go home at once, and the card shows over the garden.
 25. `Dash` owns its round state outside `State.live`, because a round outlives any one player.
-26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the 25 s check need sub-second values.
+26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the leg floors need sub-second values.
 
 ## 9. Models and naming
 

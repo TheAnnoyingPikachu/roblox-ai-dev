@@ -312,3 +312,123 @@ Bot notes: `Humanoid:MoveTo` works on decks and in the air but does nothing on a
 - The fastest honest run in Studio. 30.8 s is computed: 493 studs at the measured 16, and a spec walks it at 5 Hz. If a run ever beats 28 s, it is held, not flagged.
 - Leg floors, `arriving`, m5 and respawn facing are spec-only; no real slow connection was tried. Only the start spot's facing was logged live.
 - More than one client, the prize path, and anything with DataStores on. GARDEN-011's open acceptance criteria stay open.
+
+## Fix verification (58b64c1)
+
+Reviewer: A15 (did not write GARDEN-012). Date: 2026-10-31. Range `93349a9..58b64c1`, plus the connected code. Line numbers refer to `58b64c1`.
+
+**Nothing was run in Studio by this reviewer.** The Studio proof above is the fix engineer's: read, not repeated. Labels as above. Scripts against the real `DashRules` and `GardenConfig` were kept out of the repo.
+
+**Verdict:** every blocker and major is closed, and nothing new reaches that level. 9 findings Closed, 2 Partial (m3, m8), 0 Open. 3 new minors, one of them a small regression from the silent hold (n1). Not ready for the checkpoint yet: the open GARDEN-011 criteria below still stand.
+
+### Tool runs (local, 2026-10-31, at `58b64c1`)
+
+| Command | Result |
+|---|---|
+| `lune run tests/run` | **465/465 passed**, 0 failed, 0 load errors. `test-results.json` deleted |
+| `selene src tests` | 0 errors, 0 warnings, 0 parse errors |
+| `stylua --check` on the 11 changed `.luau` files | Clean on the git blobs (LF). The worktree fails only on `core.autocrlf` CRLF, as before |
+| `rojo build` of `default`, `garden`, `night`, `relay` | All build (outputs in the scratchpad) |
+| `node tools/check-place.mjs garden.project.json <built place>` | Matches |
+| `node tools/validate-tasks.mjs` | 48 task files valid, re-run after this review's edit to GARDEN-011 |
+| `node tools/check-scope.mjs origin/main` | Prints `Tasks in this PR: ...` and `All 96 changed files are in scope.`, exit 0 |
+| `node --test tools/place-check/place-check.test.mjs` | 7/7 |
+| `tools/scan-secrets.sh` | No secrets found |
+
+### Per finding
+
+| Finding | Status | Evidence |
+|---|---|---|
+| B1 | **Closed** | `src/shared/GardenConfig.luau:428-432`. Computed: all six gaps are 6, worst platform corner 7.21, against a computed reach of 7.82 onto a pad and the 7.3 to 7.9 logged. A crossing by hand is still not proved |
+| M1 | **Closed** | `src/garden/GardenServer.server.luau:204`. See HOME below. `garden.md`, decision 0012, GDD T9 and checkpoint item 10 agree |
+| m1 | **Closed** | `GardenConfig.luau:421-424`. Computed at 60 Hz: z 300 to 292 all 100%, z 290 94.8%. Each ball is clear of its own (x, 300) 46.6% of its cycle, so the spec's 20% is loose. Passable, see Course below |
+| m2 | **Closed** | `DashRules.luau:283-293`, `:300-312`. The 25.2 s finish is gone: fuzz fastest 28.15 s. T7 is corrected. 100 studs just after settle is ignored; from 3 s after a fall up to 297 studs passes, the floor having restarted, and T7 says so |
+| m3 | **Partial** | `DashRules.luau:257-263`. (b) holds for any stale sample over 30 studs from the target. A narrow path remains: see the note under this table. (a) rests on the Studio figure of 16 studs in all, which I read but did not repeat |
+| m4 | **Closed** | `src/garden-client/DashFx.client.luau:145-152`. `mesh` and `piece` leave every other part with no collide and no query, so the ray in `rayParams` (Include, the folder) can only find a `Collider`, whose parent is the key in `platforms` (`:207`) |
+| m5 | **Closed** | `DashRules.luau:252-255`, spec `:524`. Respawn `cp` is 4, and `facing(4)` is valid |
+| m6 | **Closed** | `src/garden/Dash.luau:69-71`. All three call sites pass the right `cp` (`:119,135,211`); `cp` never reaches 5, so `facing` cannot index past the list |
+| m7 | **Closed** | `DashFx.client.luau:334,635`, `Menu.client.luau:344`. Computed: mutations give "Any weather", "Moonfall" or "Celestial Egg" and nothing longer, so the fix engineer is right that my Index example could not happen. Sizes are estimates, no device check |
+| m8 | **Partial** | Every row of the m8 table is fixed, and the `NightAssets.luau` header now matches the generator. `docs/architecture/garden.md:690` still says "the 25 s check" |
+| m9 | **Closed** | `tools/check-scope.mjs:49`, `tools/verify-publish.mjs:143`, `tools/write-build-info.mjs:16`. See Tools below, and n3 |
+
+**m3 residual (Computed):** after a teleport, a stale sample 29 studs from the target passes and ends `arriving`, the next stale sample at 32.2 is stored, and the real arrival then measures 32.2 against the 31 allowed: a flag. That needs ping over 1.2 s and a flag within 30 studs of the checkpoint. The comment at `DashRules.luau:58` is true of one sample, not of a chain. Low risk, worth no code by itself.
+
+### New findings
+
+No new blocker or major.
+
+**n1 (Minor, regression). A zone left while held is lost, with no message. `src/shared/DashRules.luau:283-286`.** A hold only pays out while the racer is still inside the zone. Before GARDEN-012 any in-zone sample counted. CP3 is the weak spot: leg 3 cut at both corners is 79 studs, 4.94 s against a floor of 5.19 s, and a racer leaving the deck near its corner is in the zone for about 0.55 s (Computed, 5 Hz, all sample offsets):
+
+| Line through CP3 | Net forward gain on the bridge that loses CP3 | Latency spike at the CP2 capture that loses CP3 |
+|---|---|---|
+| x 95, then the deck corner at z 388 | 3 studs | 0.15 s |
+| x 95, then the deck edge at z 390 | 3.75 studs | 0.35 s |
+| x 95, then the deck edge at z 392 | 6.25 studs | 0.35 s |
+| Middle of the bridge, then z 400 | Never (tested up to 16 studs and 1 s) | Never |
+
+A racer who stops at the deck edge for a pad is in the zone and is counted, so a loss also needs an unbroken bridge crossing and a pad in place on arrival. That makes it rare, but it falls on the fastest runners. The result: no "Checkpoint 3" toast, then CP4 and the finish do nothing, so it reads as a refused finish. A forward pendulum knock on the x 95 line gives more than the 3 studs needed (GDD T7 says a knock saves about half a second). Not permanent: the floor keeps elapsing, so walking back counts, and any fall sends the racer to CP2 for a counted second crossing.
+
+Fix: latch the arrival. On the first in-zone sample for `next`, set a flag, and count the checkpoint once the floor passes whether or not the racer is still inside; a teleport clears it. The floors stay intact, because the time gate is unchanged.
+
+**n2 (Minor, documents and a spec title). Claims about the fastest run that the code does not meet.**
+
+| Where | Says | Computed |
+|---|---|---|
+| GDD T7 `game4-gdd.md:646`, `GARDEN-V02.md:17` | fastest honest walk 30.8 s | **29.7 s**. A racer can wait at the barrier at x -101.5 through the 5 s hold, 18.5 studs ahead of the start spot. Still above 28, so `minFinish` is fine |
+| GDD T7 `:646`, `garden.md:470`, spec title `tests/DashRules.spec.luau:498` | the walk is untouched by the floors, "neither held" | Held on that very line at CP3 and CP4, one sample each. From the barrier, held about 1 s at CP1. Harmless, but the spec checks only events, so it cannot see a hold |
+| GDD T7 `:646` | a walker is in a zone for 2 s | True on the centre line. 0.55 to 0.6 s on the corner chords at CP2 and CP3 (n1) |
+
+**n3 (Minor, tools). The guard now throws when there is no script path.** `pathToFileURL(process.argv[1])` raises `ERR_INVALID_ARG_TYPE` under `node -e` or `--input-type=module`, so `import("./tools/check-scope.mjs")` from a one-liner fails for all three tools; the old comparison returned false. Nothing in CI or the repo imports them that way, and `node --test` is fine. Fix: `process.argv[1] && ...`.
+
+### Regression checks
+
+**Floors: can a finish get through with them bypassed? No (Read and Computed).** `finish` has one caller, behind the gate at `DashRules.luau:285`. `legAt` only moves forward (`:287`, `:308`), the gate needs all five legs in order, and the five floors add up to 28. 100,000 adversarial runs (sitting in the next zone, fall spam, NaN and huge positions, random samples) gave 20,378 finishes, fastest 28.15 s, none under the floor. Removing the gate, the restart on teleport or the `legAt` move each fails specs.
+
+**Can anyone be stranded at a zone forever? No.** `t - legAt` grows until the next teleport, and the zone check runs on every sample, moved or not (`:283`). A racer standing in a zone counted at GO + 5.2 s. n1 is the only way to lose a zone, and returning recovers it.
+
+**Honest player, one sent back, one on a slow connection (Computed):**
+
+| Case | Result |
+|---|---|
+| Centre line at 16 | Finish 32.9 s, never held, 0 strikes |
+| Spec's cut line at 16 | Finish 30.9 s at this sample offset, held one sample at CP3 and CP4 |
+| From the barrier at 16 | Finish 29.7 s, held about 1 s at CP1, counted about 0.8 s before the zone ends |
+| Sent back by a fall, each leg | Zone edge in 5.25, 6.5, 5.25, 6.5, 5.25 s against floors of 5.19, 6.22, 5.19, 6.22, 5.19. Not held. The first margin is 0.06 s, and being held there is harmless because each of those zones is crossed in 2 s |
+| Fall at the finish while held | Sent to CP4, floor restarts, the walk beats it |
+| Centre line, latency 0 to 0.8 s varying per sample, random falls | 3,000 runs, 0 strikes, all finished |
+| Held at the finish | Cannot be lost: the deck ends inside the zone |
+
+**HOME (Read).** Only `isRacer` has specs; the `home` branch itself is covered by the fix engineer's Studio notes.
+
+| When | Result |
+|---|---|
+| Countdown | No `leave`, stays ready, countdown runs on, and `start` fetches them from the gate |
+| Starting | Racer goes out and home. The round runs on, or a last leaver ends it as `empty`, which shows "Round over." (`DashFx.client.luau:477`). They may ready again for the next round |
+| Racing, still running | Goes out and home. `running` ends the round if nobody is left |
+| Racing, finished | Same. What they won stays. A last leaver ends it as `empty`, with the winner kept on the card |
+| Queued during a round | Not a racer, stays ready |
+
+**Course (Computed).** Only `lift` changed for the balls; their z 293 to 307 path with radius 5 fits the deck's z 288 to 312. Platforms cover x -2 to 82 and z 386 to 414, clear of the bridge, the arches at x -100 and -120, and the decks except for the intended 6-stud gaps. `GardenConfig.DASH.decks` is the old `DECKS` value for value, and `DECK_COLOURS` keeps its order. A straight hop has 1.46 s of each cycle with a 1-stud margin, which matches the GDD's "about 1.5 s". Ball Alley is still passable with no hit: a search of walks at up to 16 studs/s, waiting allowed, found one in 6.35 s. Whether it is fun is still a playtest question.
+
+**Is the reach test a tautology? No.** It reads the same `decks` that `DashWorld` builds and the live obstacle data, derives air time from gravity and JumpPower, and measures rectangle gaps through `DashRules.pose` at take-off and landing. Each mutation below failed the named test:
+
+| Mutation (scratch copy) | Failed |
+|---|---|
+| Platform 3 to x 37 (gaps of 9 and 3) | keeps every required gap |
+| Last deck pulled back to x -16 | keeps every required gap |
+| Platform sway 14 | keeps every required gap, safe moment |
+| Platform y 147 | keeps every required gap, safe moment |
+| Old 4-platform spacing | keeps every required gap, 11 surfaces, `GardenConfig.spec` |
+| Ball `lift` 8 | threatens every lane |
+
+Its one weakness: the limit is theoretical (7.82 onto a pad), about 0.5 stud over the lowest reach logged at a run, 7.3. A gap near 7.8 would pass the spec and fail live. Today's worst, 7.21, is under 7.3 but over the 7.1 logged from a standstill, so that corner is not always reachable from a stop, and a safe moment comes round each cycle.
+
+**Tools.** `check-scope`, `write-build-info` and `verify-publish` all reach their main path on Windows; the last two were run in a throwaway clone (the stamp written, and `missing env` with exit 1). The scope check also passes from a backslash path and an absolute path with a lower-case drive letter, and fails properly: no task change exits 1, no argument exits 2. CI is `ubuntu-latest`: the POSIX form of the CI path is byte-identical to the old guard, so CI behaves as before (Computed with `pathToFileURL(p, { windows: false })`, not run on Linux).
+
+**Documents against the code.** Checked: GDD T2, T7, T9, T10, T11, decision 0012, `garden.md` sections 3.2, 3.8, 4.1, 4.3a, 5, 9, and checkpoint items 10 and 11. Values match (28, 5.19, 6.22, 5 platforms, x positions, phases, `lift` 4, 8.15, 7.2, 1.5 s). The exceptions are `garden.md:690` (m8) and the claims in n2. One unchecked: GDD T11 says the game does not offer click-to-move. Nothing in `garden.project.json` or the client code sets a movement mode, so a player's own Roblox setting may still offer it on a pad, where `MoveTo` does nothing. Needs a live look.
+
+### Still open
+
+- GARDEN-011 criteria: v1 save with DataStores on, greybox feel gate, 3 to 6 player staging playtest with a build stamp, the SHANNON checkpoint.
+- Everything under "Only a live session can prove" and "Could not prove", a crossing by hand first.
+- n1, n2, n3, m3's residual and `garden.md:690` are small and none blocks the live tests. n1 is the one worth fixing before a playtest, since a lost CP3 would read as a broken finish.
