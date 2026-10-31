@@ -32,5 +32,17 @@
   "risk_level": "medium",
   "status": "in_review",
   "notes": "Fixes found on the way, all visual: uploaded models faced backwards (yaw), the leaderboard text was covered, and the pit, pond and paths were buried under the lawn. Open for the owner: Enemies.luau assumes the ground is y = 0 while players stand at y = 1; this task keeps y = 1. Enemies.luau:155 places enemy meshes at yaw 0, so they may share the facing flip; not checked. Upload is run by the Director after merge. Director review (real models): stairs rebuilt as one flight, waterfall relit, mountain arcs tapered. sando_stairs and mountain_range must be re-uploaded before merge: until then the old stair mesh is scaled to the new manifest height and shows as giant wedges. The reviewed screenshots of those two use the new geometry through a scratch stand-in, without the baked texture, so review them again after the upload.",
-  "evidence": []
+  "evidence": [],
+  "files": [
+    "src/night/Arena.luau",
+    "src/shared/NightAssets.luau",
+    "tools/blender/night/manifest.json",
+    "tools/blender/night/uploaded.json",
+    "docs/assets/register.md",
+    "docs/assets/night-blender-plan.md",
+    "docs/game-design/game3-gdd.md"
+  ],
+  "tests": [
+    "tests/NightAssets.spec.luau"
+  ]
 }
