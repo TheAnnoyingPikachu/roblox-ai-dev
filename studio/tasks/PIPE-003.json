@@ -1,0 +1,53 @@
+{
+  "task_id": "PIPE-003",
+  "project_id": "PIPE-001",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Reusable kit for saves, remotes, rate limits and UI, written once with Roblox services injected so saves and remote validation run headless under Lune, plus a test that src/shared and src/kit stay pure.",
+  "inputs": [
+    "src/garden/Profiles.luau (save pattern after GARDEN-006)",
+    "src/shared/GardenProgress.luau lock helpers",
+    "docs/qa/garden-review.md",
+    "docs/decisions/0008-egg-garden.md (remote checks)"
+  ],
+  "dependencies": [
+    "PIPE-001"
+  ],
+  "acceptance_criteria": [
+    "SaveStore: failed load never writes; fresh lock refused, stale lock taken; coalesced writes; re-apply on the stored record; in-flight changes kept; failed flush requeues; lost lock goes offline; finish releases (SaveStore.spec)",
+    "Router, Payload, RateLimit, Format, BuildStamp covered in Kit.spec, including NaN, oversize and extra-argument payloads and malformed spam being rate limited",
+    "Purity.spec fails if src/shared or src/kit uses a Roblox global",
+    "Roblox adapters Saves, Remotes and Ui build in every project; no existing game file changes",
+    "Decision 0011 records the save and remote contracts"
+  ],
+  "verification": "CI (Lune specs, Rojo builds, Selene); QA review of SaveStore against src/garden/Profiles.luau by a thread that did not write it",
+  "output_artifacts": [
+    "src/kit/",
+    "src/kit-roblox/modules/",
+    "tests/fakes/DataStore.luau",
+    "docs/decisions/0011-shared-kit-and-pipeline-trust.md"
+  ],
+  "files": [
+    "src/kit/*.luau",
+    "src/kit/CLAUDE.md",
+    "src/kit-roblox/modules/*.luau",
+    "tests/fakes/DataStore.luau",
+    "docs/decisions/0011-shared-kit-and-pipeline-trust.md",
+    "default.project.json",
+    "relay.project.json",
+    "night.project.json",
+    "garden.project.json"
+  ],
+  "tests": [
+    "Kit.spec.luau",
+    "SaveStore.spec.luau",
+    "Purity.spec.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "evidence": [
+    "CI green on b4f2444: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/41223094653. lune run tests/run 349/349 (Kit, SaveLock, SaveStore and Purity suites included); Selene clean after the UDim2.fromScale fix; all 4 projects build. Roblox adapters not yet run in Studio."
+  ],
+  "notes": "Medium: the save engine will hold player data for every new game. No existing game uses it yet; Neon Spire is the first planned user. The Roblox adapters are not unit-tested and need a Studio check with DataStores on in the first game that uses them."
+}

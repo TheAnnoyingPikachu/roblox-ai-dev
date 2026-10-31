@@ -2,6 +2,9 @@
 -- Headless test runner: `lune run tests/run`.
 -- Writes test-results.json (machine-readable evidence) and exits 1 on any failure.
 -- Every *.spec.luau in tests/ must be listed in SPECS, so a spec can't be skipped silently.
+--
+-- Fast loop for one task: `lune run tests/run SaveStore Kit` runs only the specs whose file name
+-- contains one of the arguments (a task file's `tests` list). CI always runs everything.
 
 local fs = require("@lune/fs")
 local serde = require("@lune/serde")
@@ -68,6 +71,15 @@ local SPECS = {
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,
+	["Kit.spec.luau"] = function()
+		require("./Kit.spec")
+	end,
+	["SaveStore.spec.luau"] = function()
+		require("./SaveStore.spec")
+	end,
+	["Purity.spec.luau"] = function()
+		require("./Purity.spec")
+	end,
 }
 
 local T = require("./framework")
@@ -83,8 +95,24 @@ if #unlisted > 0 then
 	process.exit(1)
 end
 
+local filters = process.args
+local function selected(file: string): boolean
+	if #filters == 0 then
+		return true
+	end
+	for _, f in filters do
+		if string.find(file, (string.gsub(f, "%.spec%.luau$", "")), 1, true) then
+			return true
+		end
+	end
+	return false
+end
+
 local loadErrors = {}
 for file, load in SPECS do
+	if not selected(file) then
+		continue
+	end
 	local ok, err = pcall(load)
 	if not ok then
 		table.insert(loadErrors, `{file}: {err}`)
@@ -115,6 +143,8 @@ fs.writeFile(
 		passed = total - failed,
 		failed = failed,
 		loadErrors = loadErrors,
+		-- Non-empty means a partial run: not valid as task evidence (CLAUDE.md rule 3).
+		filters = filters,
 		results = results,
 	}, true)
 )

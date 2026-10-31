@@ -5,6 +5,15 @@
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"
+      },
+      "Kit": {
+        "$path": "src/kit"
+      },
+      "KitRoblox": {
+        "$path": "src/kit-roblox/modules"
+      },
+      "BuildInfo": {
+        "$path": "build-info/BuildInfo.txt"
       }
     },
     "ServerScriptService": {
@@ -16,12 +25,18 @@
         "Props": {
           "$path": "src/relay/Props.luau"
         }
+      },
+      "BuildStamp": {
+        "$path": "src/kit-roblox/BuildStamp.server.luau"
       }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "NightClient": {
           "$path": "src/night-client"
+        },
+        "BuildStamp": {
+          "$path": "src/kit-roblox/BuildStamp.client.luau"
         }
       },
       "$properties": {

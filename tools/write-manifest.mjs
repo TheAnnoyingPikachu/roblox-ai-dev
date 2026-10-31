@@ -19,6 +19,8 @@ const manifest = {
   publication_mode: "Published",
   authorised_by: env.GITHUB_TRIGGERING_ACTOR,
   published_version: Number(env.VERSION),
+  build_stamp: readFileSync("build-info/BuildInfo.txt", "utf8").trim(),
+  post_publish_verification: env.VERIFIED || "not run",
 };
 
 console.log(JSON.stringify(manifest, null, 2));

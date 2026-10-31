@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install toolchain (versions pinned in rokit.toml)
         env:
@@ -39,6 +41,17 @@ jobs:
       - name: Unit tests
         run: lune run tests/run
 
+      - name: Task scope (changed files stay inside the changed tasks' files lists)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags --depth=200 origin "${BASE_SHA}"
+          node tools/check-scope.mjs "${BASE_SHA}"
+
+      - name: Stamp build (build-info/BuildInfo.txt)
+        run: node tools/write-build-info.mjs
+
       - name: Build place
         run: |
           mkdir -p build
@@ -47,6 +60,16 @@ jobs:
           rojo build night.project.json --output build/night.rbxl
           rojo build garden.project.json --output build/garden.rbxl
           sha256sum build/place.rbxl build/relay.rbxl build/night.rbxl build/garden.rbxl | tee build/place.rbxl.sha256
+
+      - name: Check built places (every project node, its scripts and this commit's stamp)
+        run: |
+          node tools/check-place.mjs default.project.json build/place.rbxl --sha "$GITHUB_SHA"
+          node tools/check-place.mjs relay.project.json build/relay.rbxl --sha "$GITHUB_SHA"
+          node tools/check-place.mjs night.project.json build/night.rbxl --sha "$GITHUB_SHA"
+          node tools/check-place.mjs garden.project.json build/garden.rbxl --sha "$GITHUB_SHA"
+
+      - name: Tool tests (place check, post-publish verify, build stamp)
+        run: node --test tools/place-check/place-check.test.mjs
 
       - name: Upload evidence
         if: always()
