@@ -91,10 +91,10 @@ input for the workflow: `pagoda,senbon_torii,sando_stairs,castle,waterfall,mount
 |---|---|---|
 | `pagoda` | 27.56 x 52.46 x 27.56 | 7758 |
 | `senbon_torii` | 10.56 x 9.95 x 1.44 | 678 |
-| `sando_stairs` | 9.22 x 6.96 x 12.0 | 436 |
+| `sando_stairs` | 8.24 x 24.33 x 66.04 | 2056 |
 | `castle` | 42.43 x 61.5 x 42.43 | 3912 |
 | `waterfall` | 77.04 x 98.78 x 53.9 | 3879 |
-| `mountain_range` | 745.74 x 168.54 x 287.2 | 3896 |
+| `mountain_range` | 908.59 x 168.58 x 333.43 | 4920 |
 | `bamboo_cluster` | 13.83 x 24.84 x 13.68 | 3528 |
 | `pine_tree` | 18.71 x 18.65 x 12.23 | 1912 |
 | `hydrangea_bush` | 6.24 x 4.1 x 4.77 | 1600 |
@@ -132,3 +132,18 @@ Measured in Studio, correcting the conventions at the top of this plan (facts):
 Open point for the owner: `Enemies.luau` `groundAt` and `PLAYER_ROOT` assume the ground is y = 0,
 while players stand at y = 1. This build keeps y = 1 so combat does not move; lowering the floor
 to match the code would change player height against enemy hover and the Y hit bands.
+
+### Director review with the real models (NIGHT-010)
+
+- Stairs: `sando_stairs` is now one 66-stud flight of 42 steps (24 up, about 1 in 3) placed once.
+  The hill is written voxel by voxel (`hillY`, `raiseHill`) so it follows the same slope, with the
+  ground flush to the low side walls. An invisible WedgePart is the walkable surface.
+- Waterfall: no model change. The rock drops its baked texture for a lit Slate tint, because the
+  bake is near black at night and point lights fade long before the courtyard. The sheet is a dim
+  grey Neon, below the bloom threshold, with falling foam particles, spray, a pool disc and three
+  cool lights. Water particles stack: keep the foot spray rate low or it blows out to white.
+- Mountains: each arc gained 9-degree tails tapering to the horizon. The ring radius moved from
+  510 to 487 so the ridges stay put as the bounding box grew. The tails meet at the moon's bearing,
+  which keeps the low saddle.
+- A changed manifest height rescales the old uploaded mesh until its new upload lands, because
+  `Models.night` fits every model to the manifest height. Upload before merging such a change.
