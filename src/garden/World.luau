@@ -306,12 +306,18 @@ local function cart()
 			)
 		)
 	end
-	-- Five pedestals with display eggs.
-	local eggs = { "meadow", "forest", "sunset", "moon", "star" }
+	-- Six pedestals with display eggs; a Blender model replaces its part egg once it has loaded.
+	local eggs = { "meadow", "forest", "sunset", "moon", "star", "celestial" }
 	for k, id in eggs do
-		local x = -7 + (k - 1) * 3.5
+		local x = -7 + (k - 1) * 2.8
 		pillar(folder, (at(x, 4.9, -1.5)).Position, 1, 0.9, PASTELS[k], Enum.Material.SmoothPlastic)
-		Plots.egg(folder, id, at(x, 7.4, -1.5))
+		local cframe = at(x, 7.4, -1.5)
+		local fallback = Plots.egg(folder, id, cframe)
+		task.spawn(function()
+			if Plots.eggModel(folder, id, cframe) then
+				fallback:Destroy()
+			end
+		end)
 	end
 	-- Chalkboard sign "EGGS" on top.
 	local sign = part(folder, Vector3.new(7, 2.2, 0.3), at(0, 13, -2), Color3.fromRGB(45, 60, 50), Enum.Material.Slate)

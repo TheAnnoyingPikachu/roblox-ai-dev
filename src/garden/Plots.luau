@@ -93,6 +93,12 @@ local EGG_LOOKS: { [string]: EggLook } = {
 		spots = Color3.fromRGB(255, 215, 110),
 		glow = true,
 	},
+	celestial = {
+		colour = Color3.fromRGB(255, 250, 230),
+		material = Enum.Material.Foil,
+		spots = Color3.fromRGB(255, 225, 140),
+		glow = true,
+	},
 }
 
 -- Fence styles (GDD H4).
@@ -179,8 +185,9 @@ type BedView = {
 	lockGui: SurfaceGui,
 	hatch: ProximityPrompt,
 	water: ProximityPrompt,
-	egg: Part?,
+	egg: BasePart?,
 	eggId: string,
+	eggMesh: boolean, -- `egg` was built from the Blender model
 	key: string,
 }
 type PadView = { part: Part, coins: { Part }, gui: BillboardGui, label: TextLabel, locked: boolean?, pending: number }
@@ -270,8 +277,27 @@ local function frameOf(n: number): CFrame
 	return CFrame.lookAt(centre, Vector3.zero) -- local -Z faces the plaza
 end
 
--- A new egg part of kind `id` (also used for the cart's display eggs).
-function Plots.egg(parent: Instance, id: string, cframe: CFrame): Part
+-- The egg's Blender model at `cframe`, named Egg for HatchFx, or nil while it has no uploaded id.
+-- Yields on the first load of each egg.
+function Plots.eggModel(parent: Instance, id: string, cframe: CFrame): MeshPart?
+	local mesh = Models.nightPart(`egg_{id}`, parent, cframe.Position)
+	if mesh then
+		mesh.Name = "Egg"
+		mesh.CFrame = cframe
+		decor(mesh)
+	end
+	return mesh
+end
+
+-- A new egg of kind `id` (also used for the cart's display eggs). Never yields, because
+-- Plots.refresh must not: the model only once it is loaded, else the part egg.
+function Plots.egg(parent: Instance, id: string, cframe: CFrame): BasePart
+	if Models.nightReady(`egg_{id}`) then
+		local mesh = Plots.eggModel(parent, id, cframe)
+		if mesh then
+			return mesh
+		end
+	end
 	local look = EGG_LOOKS[id] or EGG_LOOKS.meadow
 	local egg = decor(ball(parent, Vector3.new(2.2, 3, 2.2), cframe, look.colour, look.material))
 	egg.Name = "Egg"
@@ -286,7 +312,7 @@ function Plots.egg(parent: Instance, id: string, cframe: CFrame): Part
 	spots.LockedToPart = true
 	spots.LightEmission = if look.glow then 1 else 0
 	spots.Parent = egg
-	if id == "star" then
+	if id == "star" or id == "celestial" then
 		local sparkles = Instance.new("Sparkles")
 		sparkles.SparkleColor = Color3.fromRGB(255, 230, 140)
 		sparkles.Parent = egg
@@ -404,6 +430,7 @@ local function buildBed(view: PlotView, beds: Folder, i: number)
 		water = prompts.Water,
 		egg = nil,
 		eggId = "",
+		eggMesh = false,
 		key = "",
 	}
 	view.bedCentres[i] = vec((view.frame * CFrame.new(x, SOIL_TOP, z)).Position)
@@ -749,7 +776,9 @@ local function refreshBed(view: PlotView, i: number, profile: Profile, now: numb
 	local state = GardenRules.bedState(profile, i, now)
 	local bed = profile.beds[i]
 	local egg = if bed and state ~= "locked" then bed.egg else ""
-	local key = `{state}|{egg}|{bed and bed.planted or 0}|{bed and bed.ready or 0}|{owned}`
+	-- In the key, so a part egg built before its model loaded becomes the model on the next refresh.
+	local eggMesh = Models.nightReady(`egg_{egg}`)
+	local key = `{state}|{egg}|{bed and bed.planted or 0}|{bed and bed.ready or 0}|{owned}|{eggMesh}`
 	if key == bv.key then
 		return
 	end
@@ -769,12 +798,13 @@ local function refreshBed(view: PlotView, i: number, profile: Profile, now: numb
 	if label and cost then
 		label.Text = `{GardenRules.short(cost)} coins`
 	end
-	if egg ~= bv.eggId then
+	if egg ~= bv.eggId or eggMesh ~= bv.eggMesh then
 		if bv.egg then
 			bv.egg:Destroy()
 			bv.egg = nil
 		end
 		bv.eggId = egg
+		bv.eggMesh = eggMesh
 		if egg ~= "" then
 			local centre = view.bedCentres[i]
 			bv.egg = Plots.egg(bv.model, egg, CFrame.new(centre.x, centre.y + 1.3, centre.z) * view.frame.Rotation)
@@ -924,6 +954,9 @@ function Plots.build(root: Instance)
 			if Models.spawn(s.id, warm, Vector3.zero, 1) then
 				warmed[s.id] = true
 			end
+		end
+		for _, e in GardenConfig.EGGS do
+			Plots.eggModel(warm, e.id, CFrame.identity)
 		end
 		warm:Destroy()
 		for n = 1, COUNT do
