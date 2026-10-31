@@ -674,7 +674,7 @@
     "png": "build/blender/night/katana_saya.png",
     "preview": "build/blender/night/previews/katana_saya.png",
     "size_studs": [
-      0.41,
+      0.42,
       4.39,
       0.69
     ],
@@ -691,14 +691,14 @@
     "priority": "P2",
     "replaces": "New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom. Gear turns it edge up on the hip."
+    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward."
   },
   "kodachi_saya": {
     "fbx": "build/blender/night/kodachi_saya.fbx",
     "png": "build/blender/night/kodachi_saya.png",
     "preview": "build/blender/night/previews/kodachi_saya.png",
     "size_studs": [
-      0.4,
+      0.41,
       2.79,
       0.54
     ],
@@ -715,14 +715,14 @@
     "priority": "P2",
     "replaces": "New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom. Gear turns it edge up on the hip."
+    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward."
   },
   "nodachi_saya": {
     "fbx": "build/blender/night/nodachi_saya.fbx",
     "png": "build/blender/night/nodachi_saya.png",
     "preview": "build/blender/night/previews/nodachi_saya.png",
     "size_studs": [
-      0.42,
+      0.43,
       6.19,
       0.87
     ],
@@ -739,7 +739,7 @@
     "priority": "P2",
     "replaces": "New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom. Gear turns it edge up on the hip."
+    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward."
   },
   "blade_inferno": {
     "fbx": "build/blender/night/blade_inferno.fbx",

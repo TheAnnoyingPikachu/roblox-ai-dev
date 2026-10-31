@@ -36,9 +36,10 @@ local GUARD = math.rad(20)
 local GRIP = (CFrame.new(0, 0, PALM) * CFrame.Angles(-GUARD, 0, 0)):Inverse()
 -- The kashira hangs this far below the Handle (hero and old models alike).
 local POMMEL = 0.1
--- Saya on the left hip: mouth this far ahead of the torso centre, tip down by SAYA_TILT, edge up.
+-- Saya on the left hip, edge up: mouth this far ahead of the torso centre, tip this far below it
+-- (a fixed drop, so a long saya sits flatter and stays off the ground).
 local SAYA_FRONT = 1.1
-local SAYA_TILT = math.rad(24)
+local SAYA_DROP = 1.5
 
 local function colours(id: string): { Color3 }
 	for _, c in NightProgress.COSMETICS do
@@ -159,7 +160,8 @@ local function dress(parent: Instance, handle: BasePart, weapon: string, blade: 
 			meshBlade, glow = swapped, swappedGlow
 		end
 		meshBlade.Color = tint[1] or Color3.fromRGB(220, 225, 235)
-		meshBlade.Material = Enum.Material.Neon
+		-- Neon bloom whites out a whole blade, so with detail lines only the lines glow.
+		meshBlade.Material = if glow then Enum.Material.Metal else Enum.Material.Neon
 		if glow then
 			glow.Color = tint[2] or tint[1] or Color3.fromRGB(140, 150, 165)
 			glow.Material = Enum.Material.Neon
@@ -251,9 +253,15 @@ local function wearSaya(character: Model, weapon: string)
 	saya.Name = SAYA
 	local _, size = saya:GetBoundingBox()
 	local belt = if torso.Name == "Torso" then -0.75 else -0.1 -- R6 torso is one tall block
-	local up, ahead = math.sin(SAYA_TILT), math.cos(SAYA_TILT)
-	local turn = CFrame.fromMatrix(Vector3.zero, Vector3.new(-1, 0, 0), Vector3.new(0, up, -ahead))
-	Models.attach(saya, torso, CFrame.new(-torso.Size.X / 2 - 0.12, belt, size.Y / 2 * ahead - SAYA_FRONT) * turn)
+	local down = math.asin(SAYA_DROP / size.Y)
+	local ahead = math.cos(down)
+	-- The model's +Y runs from mouth to tip, its edge toward -Z.
+	local turn = CFrame.fromMatrix(Vector3.zero, Vector3.xAxis, Vector3.new(0, -math.sin(down), ahead))
+	Models.attach(
+		saya,
+		torso,
+		CFrame.new(-torso.Size.X / 2 - 0.12, belt - SAYA_DROP / 2, size.Y / 2 * ahead - SAYA_FRONT) * turn
+	)
 end
 
 -- Twin Kodachi: the second blade, welded to the left hand with the same grip.

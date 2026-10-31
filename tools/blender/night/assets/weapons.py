@@ -452,18 +452,19 @@ def saya(w):
             s = length * (0.42 + 0.17 * i)
             parts.append(loft([ring(s - 0.05, 1.0), ring(s - 0.04, 1.05), ring(s + 0.04, 1.05), ring(s + 0.05, 1.0)], metal, "band"))
 
-        # Kurikata knob on the outer flat, sageo coiled round the body with two tails.
+        # Kurikata knob on the outer flat (-X, away from the body on the left hip), sageo coiled
+        # round the body with two tails that hang toward the spine, which is down when worn.
         sk = 0.5 + 0.06 * length
         kx = ax * (1 - 0.1 * sk / end)
-        parts.append(k.box((0.075, 0.09, 0.18), (kx + 0.03, cy(sk) + 0.3 * ay, Z0 + sk), m=horn, bevel=0.025))
+        parts.append(k.box((0.075, 0.09, 0.18), (-kx - 0.03, cy(sk) + 0.3 * ay, Z0 + sk), m=horn, bevel=0.025))
         pitch, turns, each = 0.15, 2.5, 12
         coil = []
         for i in range(int(turns * each) + 1):
             a = 2 * math.pi * i / each
             s = sk + 0.14 + pitch * i / each
             f = 1 - 0.1 * s / end
-            coil.append(((ax * f + 0.028) * math.cos(a), cy(s) + (ay * f + 0.028) * math.sin(a), Z0 + s))
-        link = [(kx + 0.05, cy(sk) + 0.3 * ay, Z0 + sk + 0.06), (kx + 0.05, cy(sk) + 0.2 * ay, Z0 + sk + 0.1)]
+            coil.append((-(ax * f + 0.028) * math.cos(a), cy(s) + (ay * f + 0.028) * math.sin(a), Z0 + s))
+        link = [(-kx - 0.05, cy(sk) + 0.3 * ay, Z0 + sk + 0.06), (-kx - 0.05, cy(sk) + 0.2 * ay, Z0 + sk + 0.1)]
         parts.append(k.tube(link + coil, 0.031, m=cord, n=5))
         ex, ey, ez = coil[-1]
         for side, drop in ((1, 0.42), (-1, 0.34)):
@@ -767,7 +768,7 @@ for i, (name, w) in enumerate(WEAPONS.items()):
     ASSETS.append(dict(
         name=f"{name}_saya", build=saya(w), budget=1500, size=[1, round(w["blade"] + 0.3, 2), 1], priority=2, order=22.5 + i * 0.1,
         replaces="New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
-        notes="Built in the sword's frame: edge toward -Z, mouth at the bottom. Gear turns it edge up on the hip.",
+        notes="Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward.",
     ))
 for i, (art, (fn, tint)) in enumerate(ARTS.items()):
     ASSETS.append(dict(
