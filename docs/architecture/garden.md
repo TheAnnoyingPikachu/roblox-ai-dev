@@ -31,7 +31,7 @@ Rojo project `garden.project.json`:
 | `src/relay-client/Menu.client.luau` | **copied** (forked) to `src/garden-client/Menu.client.luau` | Same look, toasts, gold dot, music player; new panels (section 6) |
 | everything else under `src/relay`, `src/relay-client`, `src/night`, `src/night-client` | not used | |
 
-Every file under `src/relay`, `src/relay-client`, `src/night` and `src/night-client` stays byte-identical except the new `Models.luau` entries.
+Every file under `src/relay`, `src/relay-client`, `src/night` and `src/night-client` stays byte-identical except the new `Models.luau` entries and the v0.2 changes in section 9.
 
 ### File ownership by task
 
@@ -222,6 +222,7 @@ export type DashConfig = {
 	maxSpeed: number, -- 95
 	slack: number, -- 12
 	maxStrikes: number, -- 3
+	settle: number, -- 1, seconds after a server teleport with no checks: the client's old position can still arrive
 	knockMax: number, -- 70
 	swing: number, -- 50, pendulum amplitude in degrees
 	start: Spot, -- (-120, 140, 300)
@@ -339,7 +340,7 @@ HatchRules.percent(bp: number): string -- "60.00" (two decimals, for the ODDS pa
 GardenProgress.SCHEMA_VERSION = 2 -- decision 0012
 GardenProgress.CONFIG: MetaRules.Config<Profile> -- COSMETICS, slots { fence = "picket", can = "tin" }, QUESTS, DAILY, DAILY_MINUTES, WEEKLY, maxCoins 1e15, scale = scaled
 
-GardenProgress.defaults(now: number): Profile -- decision 0008 defaults; starter egg ready now + 8
+GardenProgress.defaults(now: number): Profile -- decision 0008 defaults, plus prizeEggs {} and dash { day = -1, prizes = 0, coins = 0 } (0012); starter egg ready now + 8
 GardenProgress.sanitize(record: any, now: number?): Profile -- H7 and decision 0008; game fields before MetaRules.sanitizeMeta
 GardenProgress.scaled(p: Profile, base: number, minutes: number): number -- max(base, floor(income * 60 * minutes + 1e-9))
 GardenProgress.login(p: Profile, now: number, today: number): (Profile, number, number) -- pays unbanked then offline; returns offline, unbanked
@@ -398,6 +399,7 @@ export type Racer = {
 	strikes: number,
 	lastPos: Vec3?, -- last sample that differed; nil just after a server teleport
 	lastAt: number, -- server time of lastPos
+	settleUntil: number, -- samples before this time are ignored
 	finished: number?, -- seconds from GO
 	out: boolean, -- left or struck out
 }
@@ -431,8 +433,8 @@ DashRules.isRacer(r: Round, id: number): boolean -- in the round and not out
 DashRules.setReady(r: Round, id: number, ready: boolean, t: number): (Round, boolean) -- changed; refused for a racer; third ready in idle starts the countdown, below minPlayers cancels it
 DashRules.start(r: Round, t: number, entrants: { Entrant }): (Round, { Event }) -- call when a countdown is due; entrants = ready players with a character; below minPlayers: idle, ready = entrants; else starting, ready cleared, "start"
 DashRules.step(r: Round, t: number): (Round, { Event }) -- timed changes: starting to racing ("go"); racing to idle at the limit, 20 s after the first finish or when nobody is running ("over"); idle with minPlayers ready starts a countdown
-DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, { Event }) -- one 5 Hz sample while racing, in this order: speed, fall, zone; no-op otherwise
-DashRules.teleported(r: Round, id: number): Round -- clears lastPos after any server teleport, so it is never a speed breach
+DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, { Event }) -- one 5 Hz sample while racing, in this order: settle, speed, fall, zone; no-op otherwise
+DashRules.teleported(r: Round, id: number, t: number): Round -- after any server teleport: clears lastPos, sets settleUntil = t + DASH.settle
 DashRules.leave(r: Round, id: number, t: number): (Round, { Event }) -- removes from ready; a racer goes out; may give "over" with reason "empty"
 DashRules.respawnCp(r: Round, id: number): number -- 0 = start, else the last checkpoint reached
 DashRules.respawnPoint(cp: number): Vec3 -- deck position, 4 studs up
@@ -446,6 +448,7 @@ DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velo
 
 `sample` rules, all from GDD T7:
 
+0. **Settle:** before `settleUntil` the sample is ignored. A server `PivotTo` does not reach the client at once, so the next samples can still show the old position; without this a fall would count as a second fall and then a speed breach.
 1. **Speed:** if `lastPos` is set and `pos` differs from it, a horizontal distance above `maxSpeed × (t − lastAt) + slack` is a breach: `strikes + 1`. At `maxStrikes`: `out` true, event `out`. Else event `flag` with `cp = respawnCp`.
 2. **Fall:** `pos.y < fellY`: event `splash` with `cp = respawnCp`.
 3. **Zone:** if `inZone(pos, checkpoints[next])`: a middle checkpoint gives `next + 1` and event `checkpoint`. The last one: below `minFinish` from GO is a breach as in step 1; otherwise `finished`, `places + 1`, `winner` if unset, `egg = prizeTo == nil and eligible` (setting `prizeTo`), event `finish`.
@@ -457,7 +460,7 @@ DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velo
 
 `knock`: sweeper: root within 2.5 of the arm segments (both sides of the hub) in the plane and 0 to 6 above the deck: tangent × `knock`, up 20. Ball and pendulum: distance to the pose at most `size + 2`: away × `knock`, up 20. Clamp to `knockMax`.
 
-`tests/DashRules.spec.luau` covers every GDD T10 check value, and: phases and cancels; ready kept through a running round; order enforced (zones out of order do nothing); fall to the right checkpoint; leave at every phase; down to 1 racer; everyone leaves; capped first finisher passes the egg to the next eligible; nobody eligible; nobody finishes; `pose` deterministic for a fixed `t`; `knock` never above `knockMax` over a sweep of times and positions; inputs never mutated.
+`tests/DashRules.spec.luau` covers every GDD T10 check value, and: phases and cancels; ready kept through a running round; order enforced (zones out of order do nothing); fall to the right checkpoint; leave at every phase; down to 1 racer; everyone leaves; capped first finisher passes the egg to the next eligible; nobody eligible; nobody finishes; a stale sample inside the settle time is neither a fall nor a strike; `pose` deterministic for a fixed `t`; `knock` never above `knockMax` over a sweep of times and positions; inputs never mutated.
 
 ## 4. Server (`src/garden`)
 

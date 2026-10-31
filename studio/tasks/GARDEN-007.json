@@ -40,6 +40,9 @@
   "tests": [],
   "risk_level": "medium",
   "status": "in_review",
-  "evidence": [],
+  "evidence": [
+    "python docs/game-design/game4-pacing-check.py, 2026-10-31: worst buy-hatch-release return 52.3% (Meadow, Rainbow Shower), Celestial 0.01%; 60 min/day player Moon day 2, Star day 5, Level 25 day 7, first Celestial day 12. Tables copied into decision 0012 and GDD S3, T6",
+    "node tools/validate-tasks.mjs: 46 task files valid; check-scope against origin/main ok, nothing outside the tasks' files; lune run tests/run GardenConfig 9/9 (no code changed). Nothing run in Studio: this task is docs only"
+  ],
   "notes": "Tasks GARDEN-008 to GARDEN-011 are created in this PR. Decisions for SHANNON are in docs/checkpoints/GARDEN-V02.md."
 }

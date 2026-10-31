@@ -31,7 +31,7 @@ Status: Proposed by A09 for SHANNON (CLAUDE.md rule 8), on the Studio Director's
 | Coins | every other finisher: `GardenProgress.scaled(p, 100, 1)` (1 minute of income, at least 100) |
 | Coin cap | 6 per player per UTC day |
 | Plant gate | the egg's own unlock level (Level 10 for Moon); no price, no stock check |
-| Minimum finish, speed limit, strikes | 28 s; `95 × dt + 12` studs; 3 |
+| Minimum finish, speed limit, strikes, settle after a teleport | 28 s; `95 × dt + 12` studs; 3; 1 s |
 
 - **Eligible** = under the prize cap and a saving session, taken at the start of the round. A first finisher who is not eligible stays the winner on the card; the egg goes to the next eligible finisher in the grace time.
 - No XP, quests or Index entries come from the Dash, so a solo player misses nothing that cannot be got elsewhere.

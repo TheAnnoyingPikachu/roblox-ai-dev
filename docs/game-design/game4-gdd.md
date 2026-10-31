@@ -641,7 +641,7 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 
 - **The server owns the round:** ready list, phases, timers, ordered checkpoints, finish, prizes. All of it is pure rules in `DashRules`; the client sends only `dashReady`.
 - **Checkpoints** come from the server's own 5 Hz samples of each root: a checkpoint counts when the root is inside its zone (radius 16, height 14) and it is the next one. Each zone spans the course, and at walking speed a sample lands every 3.2 studs, so honest players cannot slip through.
-- **Falls:** the server sees y below 125 and moves the player to their last checkpoint.
+- **Falls:** the server sees y below 125 and moves the player to their last checkpoint. For 1 s after any server teleport the samples are ignored, because the client's old position can still arrive; a fall never counts as a strike.
 - **Minimum finish time, 28 s.** That is 540 studs at 19.3 studs/s, below any honest run (33.75 s flat out, and a bounce saves about 2 s). A finish earlier than that is refused: one strike, back to the last checkpoint.
 - **Speed check:** horizontal distance from the last *changed* sample must be at most `95 × dt + 12` studs (walk 16, largest knockback 70, margin). Measuring from the last change means a phone that freezes for 2 s and catches up is not punished. A breach is one strike, and the player goes back to their last checkpoint.
 - **Strikes:** 3 in a round and the player is out of that round, with no accusation: "You are out of this round." The server logs the UserId. No kick, no save change.
@@ -653,6 +653,7 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 ### T8. UI
 
 - **DASH button** on the HUD (7th quick button) opens the **DASH panel**: what it is, ready count (`2 / 3 ready`), READY / NOT READY, prizes today (`1 / 3`), and the prize eggs with PLANT. Gold dot when a prize egg can be planted now.
+- **Ready players** see "Splash Dash starts in 12" on the HUD wherever they are, so the teleport never comes as a surprise.
 - **Pad:** a floating label with the count and the state ("2 / 3 ready", "Starting in 12", "Race running").
 - **During a round:** top-centre timer, checkpoint pips (`3 / 5`), "3, 2, 1, GO!", a splash and a short "Back to checkpoint 2" on a fall. HOME still works and leaves the round.
 - **Results card:** places, names, times, who got the egg; large text, no input needed, closes on tap or after 6 s. Never "so close" or "you nearly won" (G4.3).
