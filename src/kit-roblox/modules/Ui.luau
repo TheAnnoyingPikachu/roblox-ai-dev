@@ -105,7 +105,7 @@ function Ui.label(parent: Instance, text: string, options: { size: number?, mute
 	label.TextSize = o.size or 18
 	label.TextWrapped = true
 	label.AutomaticSize = Enum.AutomaticSize.Y
-	label.Size = UDim2.new(1, 0, 0, 0)
+	label.Size = UDim2.fromScale(1, 0)
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Parent = parent
 	return label
