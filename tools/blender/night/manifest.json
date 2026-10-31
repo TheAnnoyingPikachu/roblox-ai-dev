@@ -581,75 +581,345 @@
     "png": "build/blender/night/katana.png",
     "preview": "build/blender/night/previews/katana.png",
     "size_studs": [
-      0.63,
+      0.94,
       5.84,
-      0.92
+      1.02
     ],
-    "tris": 608,
+    "tris": 2816,
     "parts": {
-      "katana": 496,
-      "katana_blade": 112
+      "katana": 1966,
+      "katana_blade": 366,
+      "katana_glow": 484
     },
-    "target_size_studs": [
-      0.9,
-      5.9,
-      0.6
+    "root": [
+      0.0,
+      -2.11,
+      0.06
     ],
-    "tris_budget": 800,
+    "target_size_studs": [
+      1,
+      5.84,
+      1
+    ],
+    "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "katana Tool parts in src/night/Gear.luau 19-23 and 76-129",
+    "replaces": "katana Tool parts in src/night/Gear.luau buildTool",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "<name>_blade: set TextureID empty, Material Neon, Color = Blade Art tint; add TrailTop/TrailBottom attachments in code. Origin is the pommel end."
+    "notes": "<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
   },
   "kodachi": {
     "fbx": "build/blender/night/kodachi.fbx",
     "png": "build/blender/night/kodachi.png",
     "preview": "build/blender/night/previews/kodachi.png",
     "size_studs": [
-      0.63,
+      0.84,
       3.84,
-      0.92
+      0.84
     ],
-    "tris": 576,
+    "tris": 2300,
     "parts": {
-      "kodachi": 464,
-      "kodachi_blade": 112
+      "kodachi": 1674,
+      "kodachi_blade": 302,
+      "kodachi_glow": 324
     },
-    "target_size_studs": [
-      0.9,
-      3.9,
-      0.6
+    "root": [
+      0.0,
+      -1.31,
+      0.095
     ],
-    "tris_budget": 800,
+    "target_size_studs": [
+      1,
+      3.84,
+      1
+    ],
+    "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "kodachi Tool parts in src/night/Gear.luau 19-23 and 76-129",
+    "replaces": "kodachi Tool parts in src/night/Gear.luau buildTool",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "<name>_blade: set TextureID empty, Material Neon, Color = Blade Art tint; add TrailTop/TrailBottom attachments in code. Origin is the pommel end."
+    "notes": "<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
   },
   "nodachi": {
     "fbx": "build/blender/night/nodachi.fbx",
     "png": "build/blender/night/nodachi.png",
     "preview": "build/blender/night/previews/nodachi.png",
     "size_studs": [
-      0.63,
+      1.2,
       8.24,
-      0.93
+      1.26
     ],
-    "tris": 656,
+    "tris": 2907,
     "parts": {
-      "nodachi": 544,
-      "nodachi_blade": 112
+      "nodachi": 1998,
+      "nodachi_blade": 428,
+      "nodachi_glow": 481
+    },
+    "root": [
+      0.0,
+      -3.01,
+      0.03
+    ],
+    "target_size_studs": [
+      1,
+      8.24,
+      1
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "nodachi Tool parts in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "<name>_blade SmoothPlastic, Blade Art colour 1; <name>_glow Neon, colour 2 (both untextured: Roblox ignores Color on a textured MeshPart). Trail attachments in code. Pommel at the bottom."
+  },
+  "katana_saya": {
+    "fbx": "build/blender/night/katana_saya.fbx",
+    "png": "build/blender/night/katana_saya.png",
+    "preview": "build/blender/night/previews/katana_saya.png",
+    "size_studs": [
+      0.42,
+      4.39,
+      0.69
+    ],
+    "tris": 900,
+    "parts": {
+      "katana_saya": 900
     },
     "target_size_studs": [
-      0.9,
-      8.3,
-      0.6
+      1,
+      4.5,
+      1
     ],
-    "tris_budget": 800,
+    "tris_budget": 1500,
     "priority": "P2",
-    "replaces": "nodachi Tool parts in src/night/Gear.luau 19-23 and 76-129",
+    "replaces": "New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
     "script": "tools/blender/night/assets/weapons.py",
-    "notes": "<name>_blade: set TextureID empty, Material Neon, Color = Blade Art tint; add TrailTop/TrailBottom attachments in code. Origin is the pommel end."
+    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward."
+  },
+  "kodachi_saya": {
+    "fbx": "build/blender/night/kodachi_saya.fbx",
+    "png": "build/blender/night/kodachi_saya.png",
+    "preview": "build/blender/night/previews/kodachi_saya.png",
+    "size_studs": [
+      0.41,
+      2.79,
+      0.54
+    ],
+    "tris": 900,
+    "parts": {
+      "kodachi_saya": 900
+    },
+    "target_size_studs": [
+      1,
+      2.9,
+      1
+    ],
+    "tris_budget": 1500,
+    "priority": "P2",
+    "replaces": "New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward."
+  },
+  "nodachi_saya": {
+    "fbx": "build/blender/night/nodachi_saya.fbx",
+    "png": "build/blender/night/nodachi_saya.png",
+    "preview": "build/blender/night/previews/nodachi_saya.png",
+    "size_studs": [
+      0.43,
+      6.19,
+      0.87
+    ],
+    "tris": 1272,
+    "parts": {
+      "nodachi_saya": 1272
+    },
+    "target_size_studs": [
+      1,
+      6.3,
+      1
+    ],
+    "tris_budget": 1500,
+    "priority": "P2",
+    "replaces": "New: scabbard on the left hip while the sword is held (src/night/Gear.luau)",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Built in the sword's frame: edge toward -Z, mouth at the bottom, kurikata on -X. Gear turns it edge up on the left hip, mouth forward."
+  },
+  "blade_inferno": {
+    "fbx": "build/blender/night/blade_inferno.fbx",
+    "png": "build/blender/night/blade_inferno.png",
+    "preview": "build/blender/night/previews/blade_inferno.png",
+    "size_studs": [
+      0.09,
+      4.22,
+      0.82
+    ],
+    "tris": 706,
+    "parts": {
+      "blade_inferno_blade": 334,
+      "blade_inferno_glow": 372
+    },
+    "root": [
+      0.0,
+      -2.11,
+      0.148
+    ],
+    "target_size_studs": [
+      1,
+      4.2,
+      1
+    ],
+    "tris_budget": 1800,
+    "priority": "P2",
+    "replaces": "inferno Blade Art: replaces only the blade in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Untextured. Katana size: Gear stretches it about `root` per weapon (blade length along, width factor across)."
+  },
+  "blade_lightning": {
+    "fbx": "build/blender/night/blade_lightning.fbx",
+    "png": "build/blender/night/blade_lightning.png",
+    "preview": "build/blender/night/previews/blade_lightning.png",
+    "size_studs": [
+      0.09,
+      4.22,
+      0.74
+    ],
+    "tris": 294,
+    "parts": {
+      "blade_lightning_blade": 214,
+      "blade_lightning_glow": 80
+    },
+    "root": [
+      0.0,
+      -2.11,
+      0.269
+    ],
+    "target_size_studs": [
+      1,
+      4.2,
+      1
+    ],
+    "tris_budget": 1800,
+    "priority": "P2",
+    "replaces": "lightning Blade Art: replaces only the blade in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Untextured. Katana size: Gear stretches it about `root` per weapon (blade length along, width factor across)."
+  },
+  "blade_void": {
+    "fbx": "build/blender/night/blade_void.fbx",
+    "png": "build/blender/night/blade_void.png",
+    "preview": "build/blender/night/previews/blade_void.png",
+    "size_studs": [
+      0.14,
+      4.22,
+      1.21
+    ],
+    "tris": 402,
+    "parts": {
+      "blade_void_blade": 298,
+      "blade_void_glow": 104
+    },
+    "root": [
+      -0.013,
+      -2.11,
+      0.203
+    ],
+    "target_size_studs": [
+      1,
+      4.2,
+      1
+    ],
+    "tris_budget": 1800,
+    "priority": "P2",
+    "replaces": "void Blade Art: replaces only the blade in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Untextured. Katana size: Gear stretches it about `root` per weapon (blade length along, width factor across)."
+  },
+  "blade_galaxy": {
+    "fbx": "build/blender/night/blade_galaxy.fbx",
+    "png": "build/blender/night/blade_galaxy.png",
+    "preview": "build/blender/night/previews/blade_galaxy.png",
+    "size_studs": [
+      0.62,
+      4.22,
+      1.32
+    ],
+    "tris": 286,
+    "parts": {
+      "blade_galaxy_blade": 130,
+      "blade_galaxy_glow": 156
+    },
+    "root": [
+      -0.015,
+      -2.11,
+      0.222
+    ],
+    "target_size_studs": [
+      1,
+      4.2,
+      1
+    ],
+    "tris_budget": 1800,
+    "priority": "P2",
+    "replaces": "galaxy Blade Art: replaces only the blade in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Untextured. Katana size: Gear stretches it about `root` per weapon (blade length along, width factor across)."
+  },
+  "blade_gold": {
+    "fbx": "build/blender/night/blade_gold.fbx",
+    "png": "build/blender/night/blade_gold.png",
+    "preview": "build/blender/night/previews/blade_gold.png",
+    "size_studs": [
+      0.49,
+      4.22,
+      0.65
+    ],
+    "tris": 1298,
+    "parts": {
+      "blade_gold_blade": 586,
+      "blade_gold_glow": 712
+    },
+    "root": [
+      -0.0,
+      -2.11,
+      0.09
+    ],
+    "target_size_studs": [
+      1,
+      4.2,
+      1
+    ],
+    "tris_budget": 1800,
+    "priority": "P2",
+    "replaces": "gold Blade Art: replaces only the blade in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Untextured. Katana size: Gear stretches it about `root` per weapon (blade length along, width factor across)."
+  },
+  "blade_shadow": {
+    "fbx": "build/blender/night/blade_shadow.fbx",
+    "png": "build/blender/night/blade_shadow.png",
+    "preview": "build/blender/night/previews/blade_shadow.png",
+    "size_studs": [
+      0.09,
+      4.22,
+      1.01
+    ],
+    "tris": 754,
+    "parts": {
+      "blade_shadow_blade": 370,
+      "blade_shadow_glow": 384
+    },
+    "root": [
+      0.0,
+      -2.11,
+      -0.165
+    ],
+    "target_size_studs": [
+      1,
+      4.2,
+      1
+    ],
+    "tris_budget": 1800,
+    "priority": "P2",
+    "replaces": "shadow Blade Art: replaces only the blade in src/night/Gear.luau buildTool",
+    "script": "tools/blender/night/assets/weapons.py",
+    "notes": "Untextured. Katana size: Gear stretches it about `root` per weapon (blade length along, width factor across)."
   },
   "cedar_tree": {
     "fbx": "build/blender/night/cedar_tree.fbx",

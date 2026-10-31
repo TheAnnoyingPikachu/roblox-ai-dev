@@ -3,9 +3,10 @@
 -- Do not edit by hand. Custom Blender models for Hundred Demon Night (docs/assets/register.md).
 -- size: measured Roblox size in studs (x, y, z); parts: mesh names inside the uploaded model;
 -- model: Model asset id (InsertService:LoadAsset); decal / texture: Decal and Image asset ids.
+-- root: blade root relative to the `_blade` mesh centre, in studs, for lining up swapped blades.
 -- A nil model id means not uploaded yet: the game keeps its current visual for that asset.
 
-export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number? }
+export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number?, root: { number }? }
 
 local NightAssets: { [string]: Asset } = {
 	shrine_hall = {
@@ -177,25 +178,97 @@ local NightAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	katana = {
-		size = { 0.63, 5.84, 0.92 },
-		parts = { "katana", "katana_blade" },
-		model = 130033665575014,
-		decal = 130940189694086,
+		size = { 0.94, 5.84, 1.02 },
+		parts = { "katana", "katana_blade", "katana_glow" },
+		model = 128223383052265,
+		decal = 114640526358499,
 		texture = nil,
+		root = { 0, -2.11, 0.06 },
 	},
 	kodachi = {
-		size = { 0.63, 3.84, 0.92 },
-		parts = { "kodachi", "kodachi_blade" },
-		model = 126327875446889,
-		decal = 89721088670503,
+		size = { 0.84, 3.84, 0.84 },
+		parts = { "kodachi", "kodachi_blade", "kodachi_glow" },
+		model = 123064479503944,
+		decal = 84951035823710,
 		texture = nil,
+		root = { 0, -1.31, 0.095 },
 	},
 	nodachi = {
-		size = { 0.63, 8.24, 0.93 },
-		parts = { "nodachi", "nodachi_blade" },
-		model = 114510079315413,
-		decal = 124995875264537,
+		size = { 1.2, 8.24, 1.26 },
+		parts = { "nodachi", "nodachi_blade", "nodachi_glow" },
+		model = 103425016375046,
+		decal = 120040464318044,
 		texture = nil,
+		root = { 0, -3.01, 0.03 },
+	},
+	katana_saya = {
+		size = { 0.42, 4.39, 0.69 },
+		parts = { "katana_saya" },
+		model = 115104271530319,
+		decal = 128161651992846,
+		texture = nil,
+	},
+	kodachi_saya = {
+		size = { 0.41, 2.79, 0.54 },
+		parts = { "kodachi_saya" },
+		model = 124829526755877,
+		decal = 72159511435573,
+		texture = nil,
+	},
+	nodachi_saya = {
+		size = { 0.43, 6.19, 0.87 },
+		parts = { "nodachi_saya" },
+		model = 131645651535244,
+		decal = 129477102758470,
+		texture = nil,
+	},
+	blade_inferno = {
+		size = { 0.09, 4.22, 0.82 },
+		parts = { "blade_inferno_blade", "blade_inferno_glow" },
+		model = 133565487546305,
+		decal = nil,
+		texture = nil,
+		root = { 0, -2.11, 0.148 },
+	},
+	blade_lightning = {
+		size = { 0.09, 4.22, 0.74 },
+		parts = { "blade_lightning_blade", "blade_lightning_glow" },
+		model = 117505846738177,
+		decal = nil,
+		texture = nil,
+		root = { 0, -2.11, 0.269 },
+	},
+	blade_void = {
+		size = { 0.14, 4.22, 1.21 },
+		parts = { "blade_void_blade", "blade_void_glow" },
+		model = 108307365953294,
+		decal = nil,
+		texture = nil,
+		root = { -0.013, -2.11, 0.203 },
+	},
+	blade_galaxy = {
+		size = { 0.62, 4.22, 1.32 },
+		parts = { "blade_galaxy_blade", "blade_galaxy_glow" },
+		model = 104926048992645,
+		decal = nil,
+		texture = nil,
+		root = { -0.015, -2.11, 0.222 },
+	},
+	blade_gold = {
+		size = { 0.49, 4.22, 0.65 },
+		parts = { "blade_gold_blade", "blade_gold_glow" },
+		model = 137189385895923,
+		decal = nil,
+		texture = nil,
+		root = { 0, -2.11, 0.09 },
+	},
+	blade_shadow = {
+		size = { 0.09, 4.22, 1.01 },
+		parts = { "blade_shadow_blade", "blade_shadow_glow" },
+		model = 136561234193621,
+		decal = nil,
+		texture = nil,
+		root = { 0, -2.11, -0.165 },
 	},
 	cedar_tree = {
 		size = { 10.8, 26.5, 10.8 },
