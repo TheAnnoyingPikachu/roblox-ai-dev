@@ -98,6 +98,23 @@
         "type": "string"
       }
     },
+    "files": {
+      "description": "Exact files this task may change, as repo paths or globs (* within a folder, ** across folders, trailing / for a whole folder). CI fails a PR that changes a file outside the files of the tasks it changes. Required for every task not listed in studio/legacy-unscoped.txt.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[^\\s/][^\\s]*$"
+      }
+    },
+    "tests": {
+      "description": "Spec files that must pass for this task (tests/<Name>.spec.luau), run alone with `lune run tests/run <Name> ...`. Use an empty list only for docs-only tasks. Required with files.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_]+\\.spec\\.luau$"
+      }
+    },
     "risk_level": {
       "enum": [
         "low",

@@ -2,7 +2,8 @@
 
 Foundation for an AI-run Roblox studio: a reproducible Rojo project, headless Luau tests,
 CI merge gates and an approval-gated Open Cloud publish workflow. See `CLAUDE.md` for the
-operating rules and `studio/gates.md` for the release gates.
+operating rules, `docs/architecture/README.md` for the one-page architecture and
+`studio/gates.md` for the release gates.
 
 ## Layout
 
@@ -10,6 +11,10 @@ operating rules and `studio/gates.md` for the release gates.
 src/server/        server-only services (authoritative state, remotes)
 src/client/        UI and input; never decides outcomes
 src/shared/        pure rules and config, unit-tested under Lune
+src/kit/           pure reusable building blocks (saves, router, limits, format, stamp)
+src/kit-roblox/    thin Roblox adapters for the kit, and the build stamp scripts
+src/<game>/        each game's server; src/<game>-client/ its client (see src/<game>/CLAUDE.md)
+build-info/        build stamp placeholder; CI writes the commit into it
 tests/             test runner and specs
 studio/            task schema, task files, gates
 docs/              design, architecture, decisions, asset register

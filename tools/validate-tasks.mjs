@@ -2,13 +2,21 @@
 // Validates studio/tasks/*.json against studio/task.schema.json without external deps.
 // Supports the subset of JSON Schema the task schema uses, plus cross-file checks:
 // unique task ids, file name matches task_id, and every dependency exists.
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const schema = JSON.parse(readFileSync("studio/task.schema.json", "utf8"));
 const dir = "studio/tasks";
 const errors = [];
 const tasks = new Map();
+// Tasks written before scoped tasks; every other task needs `files` and `tests` (PIPE-002).
+const legacy = new Set(
+  readFileSync("studio/legacy-unscoped.txt", "utf8")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith("#")),
+);
+const runner = readFileSync("tests/run.luau", "utf8");
 
 function check(value, rule, path) {
   if (rule.enum && !rule.enum.includes(value)) errors.push(`${path}: must be one of ${rule.enum.join(", ")}`);
@@ -41,11 +49,25 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
   if (tasks.has(task.task_id)) errors.push(`${file}: duplicate task_id ${task.task_id}`);
   if (task.status === "accepted" && !(task.evidence?.length > 0)) errors.push(`${file}: accepted tasks need evidence`);
   if (task.verifier && task.verifier === task.owner) errors.push(`${file}: owner cannot verify its own task`);
+  if (!legacy.has(task.task_id)) {
+    if (!("files" in task)) errors.push(`${file}: missing files (the exact files this task may change)`);
+    if (!("tests" in task)) errors.push(`${file}: missing tests (spec files that must pass; [] for docs only)`);
+  } else if ("files" in task) {
+    errors.push(`${file}: has files, so remove ${task.task_id} from studio/legacy-unscoped.txt`);
+  }
+  for (const f of task.files ?? []) if (f.split("/").includes("..")) errors.push(`${file}: files entry ${f} uses ..`);
+  // Once work is in review, its specs must exist and be registered with the runner.
+  if (["in_review", "accepted"].includes(task.status))
+    for (const spec of task.tests ?? []) {
+      if (!existsSync(join("tests", spec))) errors.push(`${file}: tests entry ${spec} does not exist in tests/`);
+      else if (!runner.includes(`["${spec}"]`)) errors.push(`${file}: ${spec} is not registered in tests/run.luau`);
+    }
   tasks.set(task.task_id, task);
 }
 
 for (const [id, task] of tasks)
   for (const dep of task.dependencies ?? []) if (!tasks.has(dep)) errors.push(`${id}: unknown dependency ${dep}`);
+for (const id of legacy) if (!tasks.has(id)) errors.push(`studio/legacy-unscoped.txt: unknown task ${id}`);
 
 if (errors.length) {
   console.error(errors.map((e) => `ERROR ${e}`).join("\n"));
