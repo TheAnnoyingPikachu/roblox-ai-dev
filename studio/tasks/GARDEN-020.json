@@ -31,8 +31,8 @@
     "docs/assets/register.md"
   ],
   "risk_level": "low",
-  "status": "in_progress",
-  "notes": "Numbered 020 to stay clear of the designer's GARDEN tasks. upload-assets.mjs and write-assets-module.mjs moved to tools/blender/ exactly as on origin/game5/spire, so that branch merges without a conflict. src/relay/Models.luau line 158 and the NightAssets.luau header still name the old script path; left alone because this task changes no game code. Upload is run by the Director after merge.",
+  "status": "in_review",
+  "notes": "Numbered 020 to stay clear of the designer's GARDEN tasks. upload-assets.mjs and write-assets-module.mjs moved to tools/blender/ exactly as on origin/game5/spire, so that branch merges without a conflict. src/relay/Models.luau line 158 and the NightAssets.luau header still name the old script path; left alone because this task changes no game code. Upload is run by the Director after merge. egg_shell_fragment uploads untextured so code can tint it. GardenAssets.luau keeps the NightAssets shape as asked, so Neon colours live in manifest.json and tools/blender/garden/README.md; a generic Models loader that needs them can add the Spire glow field later. Facing follows from the NIGHT-010 measurement and is unseen in Studio for Garden until the upload.",
   "evidence": [],
   "files": [
     ".github/workflows/upload-assets.yml",

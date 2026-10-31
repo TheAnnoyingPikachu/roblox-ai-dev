@@ -46,7 +46,7 @@ def _load(name, entry):
     for ob in meshes:
         ob.data.materials.clear()
         rgb = entry["glow"].get(ob.name)
-        ob.data.materials.append(kit.flat(tuple(rgb), emit=2.5) if rgb else tex_mat)
+        ob.data.materials.append(kit.flat(tuple(rgb), emit=1.0) if rgb else tex_mat)
 
     bpy.context.view_layer.update()
     corners = [ob.matrix_world @ Vector(c) for ob in meshes for c in ob.bound_box]
@@ -66,8 +66,8 @@ def render(manifest, samples=256):
     scene.cycles.device = "CPU"
     scene.cycles.samples = samples
     scene.cycles.use_denoising = True
-    scene.render.resolution_x = 2800
-    scene.render.resolution_y = 1100
+    scene.render.resolution_x = 3000
+    scene.render.resolution_y = 860
     scene.render.film_transparent = False
     ground = kit._studio(scene, (232, 246, 226))
     scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = kit.lin((205, 234, 252))
@@ -93,7 +93,7 @@ def render(manifest, samples=256):
     scene.collection.objects.link(cam)
     direction = Vector((0, -1, 0.13)).normalized()
     # Distance that fits the row across the sensor at this lens, with a margin.
-    distance = width * 1.08 / (2 * math.tan(cam_data.angle_x / 2))
+    distance = width * 1.05 / (2 * math.tan(cam_data.angle_x / 2))
     cam.location = centre + direction * distance
     cam.rotation_euler = (-direction).to_track_quat("-Z", "Y").to_euler()
     cam_data.clip_end = distance * 4

@@ -207,7 +207,7 @@ def egg_sunset():
         ray.data.transform(Matrix.Diagonal((1, 0.34, 1, 1)))
         p, n = k.egg_at(theta, 0.8, -0.1, **e)
         out = Vector((n.x, n.y, 0)).normalized()
-        aim = (out + Vector((0, 0, 0.34))).normalized()
+        aim = (out + Vector((0, 0, 0.85))).normalized()
         side = Vector((0, 0, 1)).cross(out).normalized()
         frame = Matrix((side, aim.cross(side), aim)).transposed().to_4x4()
         ray.data.transform(Matrix.Translation(p) @ frame)
@@ -460,8 +460,9 @@ def egg_celestial():
 def egg_shell_fragment():
     """A curved jagged shard; tinted per egg by code, so it is uploaded untextured."""
     e = dict(H=1.9, R=0.72)
-    # A smooth shell arc on top, a broken zigzag below: the classic cartoon shard.
-    outline = [(-1, 0.45), (-0.56, 0.84), (0, 1), (0.56, 0.84), (1, 0.45), (0.76, -0.1), (0.46, 0.3), (0.16, -0.32), (-0.16, 0.2), (-0.46, -0.28), (-0.76, 0.12)]
+    # A smooth shell arc on top, a broken zigzag below: the classic cartoon shard. The outline must
+    # stay star-shaped round the hub (0, 0.55) or the mid ring folds over itself.
+    outline = [(-1, 0.45), (-0.56, 0.84), (0, 1), (0.56, 0.84), (1, 0.45), (0.8, 0.1), (0.5, 0.18), (0.16, -0.32), (-0.16, 0.2), (-0.46, -0.28), (-0.76, 0.12)]
     bm = bmesh.new()
 
     def rim(scale, lift):

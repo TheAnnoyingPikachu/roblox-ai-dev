@@ -80,8 +80,8 @@
     "preview": "build/blender/garden/previews/egg_sunset.png",
     "size_studs": [
       2.16,
-      2.76,
-      2.25
+      2.84,
+      2.14
     ],
     "tris": 2212,
     "parts": {
@@ -200,9 +200,9 @@
     "png": "build/blender/garden/egg_shell_fragment.png",
     "preview": "build/blender/garden/previews/egg_shell_fragment.png",
     "size_studs": [
-      1.2,
-      0.77,
-      0.41
+      0.99,
+      0.62,
+      0.26
     ],
     "tris": 88,
     "parts": {
@@ -302,9 +302,9 @@
     "png": "build/blender/garden/dash_platform.png",
     "preview": "build/blender/garden/previews/dash_platform.png",
     "size_studs": [
-      15.77,
+      15.99,
       4.21,
-      15.85
+      16.08
     ],
     "tris": 1816,
     "parts": {
@@ -394,7 +394,7 @@
     },
     "target_size_studs": [
       80,
-      45,
+      48,
       80
     ],
     "tris_budget": 5000,

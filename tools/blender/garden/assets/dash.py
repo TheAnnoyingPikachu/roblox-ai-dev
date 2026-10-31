@@ -41,7 +41,7 @@ def dash_sweeper():
     radii = [1.02 + 0.3 * abs(math.cos(i * math.pi / 3)) for i in range(25)]
     arm = _pad(path, radii, a, b, every=2)
     for x in (-span, span):
-        arm.append(k.sphere(tip, (x, 0, height), m=end, scale=(1, 1, 1), seg=14, rings=8, name="bumper"))
+        arm.append(k.sphere(tip, (x, 0, height), m=end, seg=14, rings=8, name="bumper"))
     arm.append(k.lathe([(1.9, -1.15), (2.05, -0.6), (2.05, 0.6), (1.9, 1.15)], loc=(0, 0, height), rot=(90, 0, 0), m=hub_m, n=20, name="hub"))
     for y in (-1.15, 1.15):
         f = k.flower(1.5, k.flat((255, 170, 120)), heart, lobes=6)
@@ -143,7 +143,7 @@ def dash_platform():
     count = 9
     for i in range(count):
         a = i * 360 / count
-        parts.append(_petal(4.6, 2.5, 0.7, petal_a if i % 2 else petal_b, a, top - 0.02, 3.4))
+        parts.append(_petal(4.72, 2.5, 0.7, petal_a if i % 2 else petal_b, a, top - 0.02, 3.4))
         parts.append(_petal(4.3, 2.3, 0.6, under, a + 180 / count, top - 0.7, 3.2))
     for i, a in enumerate((20, 140, 262)):
         blade = k.leaf(8.0, 1.9, leaf_m, droop=-0.04, n=8, steps=7, name="sepal")
@@ -308,7 +308,6 @@ def dash_island():
         x, y = rr * math.cos(math.radians(a)), rr * math.sin(math.radians(a))
         z = 11.5 + rr * 0.32
         parts.append(k.cyl(w, length, (x, y, z - length / 2 + 1), m=rock, n=7, r2=0.0, name="spire"))
-        parts[-1].data.transform(Matrix.Translation((0, 0, 0)))
     # Flip each point so the tip hangs down.
     for ob in parts[1:]:
         lo = min(v.co.z for v in ob.data.vertices)
@@ -365,7 +364,7 @@ def dash_island():
 GHOST = "Decorative: keep part collision for play, mesh CanCollide false."
 ASSETS = [
     dict(name="dash_sweeper", build=dash_sweeper, budget=3000, size=[24, 8, 24], priority=2, order=1, replaces="New: Splash Dash mini-game",
-         notes="dash_sweeper_arm is 24 long and symmetric, so its bounding box centre is the spin axis. Spin it about Y in code; weld nothing to the post."),
+         notes="dash_sweeper_arm is 24 long and symmetric, so its bounding box centre is the spin axis. Spin it about Y in code; the post stays still."),
     dict(name="dash_ball", build=dash_ball, budget=3000, size=[12, 12, 12], priority=2, order=2, replaces="New: Splash Dash mini-game",
          notes="Roll or bounce it as a Ball part with this mesh welded; keep the mesh CanCollide false."),
     dict(name="dash_pendulum", build=dash_pendulum, budget=3000, size=[24, 19, 3], priority=2, order=3, replaces="New: Splash Dash mini-game",
@@ -376,6 +375,6 @@ ASSETS = [
          notes="One arch for start, checkpoint and finish: tint dash_arch_glow per role, and put the word on a SurfaceGui over the blank board, on both faces. Opening about 19 wide. " + GHOST, glow={"glow": (120, 255, 190)}),
     dict(name="dash_ready_pad", build=dash_ready_pad, budget=3000, size=[14, 11, 14], priority=2, order=6, replaces="New: Splash Dash plaza ready pad",
          notes="Blank sign board faces the front for a SurfaceGui. " + GHOST),
-    dict(name="dash_island", build=dash_island, budget=5000, size=[80, 45, 80], priority=2, order=7, replaces="New: Splash Dash floating island base",
+    dict(name="dash_island", build=dash_island, budget=5000, size=[80, 48, 80], priority=2, order=7, replaces="New: Splash Dash floating island base",
          notes="Grass top is flat at 30 studs above the lowest rock; decoration stays near the rim. The waterfall spills off the front. " + GHOST),
 ]
