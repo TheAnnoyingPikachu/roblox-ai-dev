@@ -341,7 +341,7 @@ local function weathersFor(mutation: string): string
 			end
 		end
 	end
-	return if #names == #GardenConfig.WEATHERS then "any weather" else table.concat(names, ", ")
+	return if #names == #GardenConfig.WEATHERS then "Any weather" else table.concat(names, ", ")
 end
 
 -- Two-decimal percent rows for an odds table, with a checked total.
