@@ -866,17 +866,17 @@
     "png": "build/blender/night/blade_gold.png",
     "preview": "build/blender/night/previews/blade_gold.png",
     "size_studs": [
-      0.45,
+      0.49,
       4.22,
-      0.62
+      0.65
     ],
-    "tris": 1318,
+    "tris": 1298,
     "parts": {
       "blade_gold_blade": 586,
-      "blade_gold_glow": 732
+      "blade_gold_glow": 712
     },
     "root": [
-      0.0,
+      -0.0,
       -2.11,
       0.09
     ],

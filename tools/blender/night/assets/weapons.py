@@ -283,7 +283,7 @@ def tsuba(w, iron, rim):
     design = w["tsuba"]
     if design == "maru":  # round, five sakura petals cut through
         outline = oval(0.43, 0.47, 32)
-        holes = [petal(math.pi / 2 + i * 2 * math.pi / 5, 0.215, 0.385, 0.17) for i in range(5)]
+        holes = [petal(math.pi / 2 + i * 2 * math.pi / 5, 0.2, 0.39, 0.24) for i in range(5)]
     elif design == "aoi":  # four heart lobes on the axes, deep notches on the diagonals
         rr = 0.36
 
@@ -672,16 +672,16 @@ def gold():
         s = 0.38 + 1.2 * u
         phi = -math.pi / 2 + 2.25 * 2 * math.pi * u
         w = blade.w(s)
-        coil.append((0.125 * math.cos(phi), ys(s) + w / 2 + (w / 2 + 0.065) * math.sin(phi), Z0 + s))
-        radii.append(lerp(0.014, 0.07, ease(u * 2)))
+        coil.append((0.135 * math.cos(phi), ys(s) + w / 2 + (w / 2 + 0.075) * math.sin(phi), Z0 + s))
+        radii.append(lerp(0.016, 0.085, ease(u * 1.8)))
     x, y, z = coil[-1]
     head = [(x + 0.012, y, z + 0.09), (x + 0.022, y, z + 0.2), (x + 0.03, y, z + 0.33), (x + 0.03, y, z + 0.46), (x + 0.024, y, z + 0.56)]
-    dragon = [k.tube(coil + head, radii + [0.088, 0.1, 0.075, 0.056, 0], m=d, n=6)]
+    dragon = [k.tube(coil + head, radii + [0.1, 0.116, 0.088, 0.062, 0], m=d, n=6)]
     jaw = [(x + 0.06, y, z + 0.16), (x + 0.1, y, z + 0.28), (x + 0.098, y, z + 0.42)]
     dragon.append(k.tube(jaw, [0.042, 0.032, 0], m=d, n=5))
     for side in (1, -1):
-        horn = [(x, y + side * 0.06, z + 0.2), (x - 0.02, y + side * 0.15, z + 0.09), (x - 0.03, y + side * 0.22, z - 0.08), (x - 0.02, y + side * 0.24, z - 0.3)]
-        dragon.append(k.tube(horn, [0.036, 0.03, 0.018, 0], m=d, n=5))
+        horn = [(x, y + side * 0.06, z + 0.2), (x - 0.015, y + side * 0.13, z + 0.12), (x - 0.02, y + side * 0.18, z - 0.02)]
+        dragon.append(k.tube(horn, [0.042, 0.03, 0], m=d, n=5))
         dragon.append(k.sphere(0.022, (x + 0.075, y + side * 0.06, z + 0.26), m=d, seg=6, rings=2))
 
     def scroll(s):
