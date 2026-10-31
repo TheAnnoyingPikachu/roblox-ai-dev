@@ -160,7 +160,7 @@ function DashWorld.build(): { arch: BasePart, prompt: ProximityPrompt, label: (s
 		Enum.Material.SmoothPlastic
 	)
 	water.Name = "Water"
-	water.Transparency = 0.25
+	water.Transparency = 1 -- only catches falls: the island pond is the water players see
 	-- Base 75 puts the pond under the fall line (fellY 125) and the rim trees just below the decks.
 	swap("dash_island", folder, Vector3.new(-10, 75, 350), 0)
 	arches(folder)
