@@ -1,6 +1,6 @@
-# Egg Garden: architecture (v0.1)
+# Egg Garden: architecture (v0.2)
 
-Owner: A09. Inputs: `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) and `docs/decisions/0008-egg-garden.md` (save schema, economy, odds, remotes, child safety). If this file and the GDD disagree on a rule, the GDD wins and this file is fixed; the resolutions in section 8 are the exception (they settle what the GDD leaves open).
+Owner: A09. Inputs: `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) and `docs/decisions/0008-egg-garden.md` (save schema, economy, odds, remotes, child safety), amended by `docs/decisions/0012-egg-garden-v02.md` (Celestial Egg, Splash Dash, schema v2). If this file and the GDD disagree on a rule, the GDD wins and this file is fixed; the resolutions in section 8 are the exception (they settle what the GDD leaves open).
 
 ## 1. Place, files and who owns them
 
@@ -40,6 +40,12 @@ Every file under `src/relay`, `src/relay-client`, `src/night` and `src/night-cli
 | GARDEN-003 | `src/shared/{GardenConfig,WorldRules,GardenRules,HatchRules,GardenProgress}.luau`, `src/shared/MetaRules.luau` (section 3.1 additions only), `tests/<Module>.spec.luau` for the 5 new modules, `tests/MetaRules.spec.luau` (new cases only), `tests/run.luau` (`SPECS`) |
 | GARDEN-004 | `src/garden/*`, `src/relay/Models.luau` (new entries only), `docs/assets/register.md` (mesh, music and SFX rows) |
 | GARDEN-005 | `src/garden-client/*` |
+| GARDEN-008 | `src/shared/{GardenConfig,GardenRules,HatchRules,GardenProgress,DashRules}.luau`, their specs, `tests/run.luau`, `docs/architecture/README.md` |
+| GARDEN-009 | `src/garden/**` (new `Dash.luau`, `DashWorld.luau`), `src/relay/Models.luau` (section 9 only) |
+| GARDEN-010 | `src/garden-client/**` (new `DashFx.client.luau`) |
+| Artist | `src/shared/GardenAssets.luau` (generated), `tools/blender/garden/**`, `assets/garden/**`, `docs/assets/register.md` rows |
+
+GARDEN-009 and GARDEN-010 code against section 3 and may start with stubs once GARDEN-008's signatures are merged; they share no files.
 
 GARDEN-004 and GARDEN-005 code against the signatures in section 3 and may start with stubs; GARDEN-003 must not change a signature without updating this file in the same PR.
 
@@ -48,8 +54,8 @@ GARDEN-004 and GARDEN-005 code against the signatures in section 3 and may start
 - Same as `docs/architecture/night.md` section 2: `--!strict`, no Roblox globals, requires by string (`require("./GardenRules")`), functions return new tables and never mutate inputs, `floor(x + 1e-9)` for every floor of a product.
 - Times are integer server `os.time()` seconds passed in as `now`; days are `MetaRules.dayOf(now)` passed in as `today`. Pad accrual takes `dt` in seconds.
 - Positions are `Vec3 = { x: number, y: number, z: number }` (structurally the same as `CombatRules.Vec3`); "horizontal" means the x, z plane.
-- Ids are strings as in decision 0008: eggs `starter meadow forest sunset moon star`; species `bunny frog pup cat owl fox turtle lion dragon`; mutations `normal golden moonlit rainbow`; sizes `normal big huge`; weathers `clear sunbeam moonfall shower`; rarities `common uncommon rare epic legendary mythic`; gates `open friends closed`.
-- Dependency graph (no cycles): `GardenConfig` (types and data, no requires except `MetaRules` for the `Cosmetic`/`Quest` types); `WorldRules → Rng, GardenConfig`; `GardenRules → GardenConfig, WorldRules, MetaRules`; `HatchRules → Rng, GardenConfig, GardenRules, MetaRules`; `GardenProgress → MetaRules, GardenConfig, GardenRules, HatchRules`.
+- Ids are strings as in decisions 0008 and 0012: eggs `starter meadow forest sunset moon star celestial`; species `bunny frog pup cat owl fox turtle lion dragon`; mutations `normal golden moonlit rainbow celestial`; sizes `normal big huge`; weathers `clear sunbeam moonfall shower`; rarities `common uncommon rare epic legendary mythic`; gates `open friends closed`.
+- Dependency graph (no cycles): `GardenConfig` (types and data, no requires except `MetaRules` for the `Cosmetic`/`Quest` types); `WorldRules → Rng, GardenConfig`; `GardenRules → GardenConfig, WorldRules, MetaRules`; `HatchRules → Rng, GardenConfig, GardenRules, MetaRules`; `GardenProgress → MetaRules, GardenConfig, GardenRules, HatchRules`; `DashRules → GardenConfig`.
 - XP and quest progress: `HatchRules` adds hatch and Index XP itself (GDD N); every other XP and all quest progress is added by the `GardenProgress` wrappers, the only module holding the MetaRules config. The server calls the `GardenProgress` wrapper where one exists, else the `GardenRules` function.
 
 ## 3. Pure modules: exact signatures
@@ -86,14 +92,15 @@ export type Egg = {
 	level: number, -- unlock level (starter 1)
 	stock: Stock?, -- nil: always in stock, unlimited (meadow); unused for starter
 	odds: { Odds }, -- species, sums to 10000
-	top: string?, -- Lucky Meter species
+	top: string?, -- Lucky Meter species. A sold egg must have top and meter: rollSpecies gives odds[1] without one
 	meter: number?,
 	xp: number,
+	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
 }
 export type Species = { id: string, name: string, rarity: string, rate: number }
 export type Mutation = { id: string, name: string, mult: number }
 export type Size = { id: string, name: string, mult: number, scale: number, bp: number }
-export type Weather = { id: string, name: string, mutation: { Odds } } -- in MUTATIONS order, sums to 10000
+export type Weather = { id: string, name: string, mutation: { Odds } } -- MUTATIONS order without egg-only mutations, sums to 10000
 
 export type Bed = { egg: string, planted: number, ready: number, waters: number, helps: number, lastWater: number }
 export type Creature = { id: number, s: string, m: string, z: string, placed: number, fav: boolean } -- placed 0 = storage
@@ -123,13 +130,15 @@ export type Profile = {
 	daily: { streak: number, last: number },
 	week: { key: number, days: number, lastDay: number, claimed: boolean },
 	quests: { day: number, progress: { [string]: number }, claimed: { [string]: boolean } },
+	prizeEggs: { [string]: number }, -- egg id -> count, v2; only counts >= 1
+	dash: { day: number, prizes: number, coins: number }, -- v2; day -1 until the first reward
 }
 
-GardenConfig.EGGS: { Egg } -- starter, meadow, forest, sunset, moon, star; the stock index i is position - 1
+GardenConfig.EGGS: { Egg } -- starter, meadow, forest, sunset, moon, star, celestial (always last); the stock index i is position - 1
 GardenConfig.SPECIES: { Species } -- E1 order
 GardenConfig.RARITIES: { { id: string, name: string, colour: { number } } } -- common..mythic, RGB 0-255
 GardenConfig.RARE = 3 -- RARITIES index of "rare": rareHatches counts rarity index >= 3
-GardenConfig.MUTATIONS: { Mutation } -- normal 1, golden 3, moonlit 5, rainbow 10
+GardenConfig.MUTATIONS: { Mutation } -- normal 1, golden 3, moonlit 5, rainbow 10, celestial 20
 GardenConfig.SIZES: { Size } -- normal 1.0/1.0/8000, big 1.5/1.4/1700, huge 2.5/2.0/300
 GardenConfig.WEATHERS: { Weather } -- clear, sunbeam, moonfall, shower
 GardenConfig.WEATHER_ODDS = { weekday: { Odds }, weekend: { Odds } } -- F table
@@ -140,7 +149,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 36
+GardenConfig.INDEX_SIZE = 38 -- count of indexable pairs: 9 * 4 + 2
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 GardenConfig.RELEASE_SECONDS = 6 -- 0008 amendment 2026-10-26 (was 30)
 GardenConfig.PAD = { radius = 4.5, height = 6 }
@@ -157,15 +166,88 @@ GardenConfig.QUESTS: { MetaRules.Quest } -- H5 with reward = base and minutes
 GardenConfig.DAILY = { 50, 75, 100, 125, 150, 200, 400 }
 GardenConfig.DAILY_MINUTES = { 2, 3, 4, 5, 6, 8, 15 }
 GardenConfig.WEEKLY = { days = 5, reward = 500, minutes = 30 }
+GardenConfig.PRIZE_STORE = 1_000_000 -- sanitise limit per egg in prizeEggs
+GardenConfig.DASH: DashConfig -- below
 
 GardenConfig.egg(id: string): Egg?
 GardenConfig.species(id: string): Species?
 GardenConfig.mutation(id: string): Mutation?
 GardenConfig.size(id: string): Size?
 GardenConfig.rarityIndex(speciesId: string): number -- 1..6, 0 if unknown
+GardenConfig.fixedBy(mutationId: string): Egg? -- the egg whose `mutation` is this id; nil for weather mutations
+GardenConfig.indexable(speciesId: string, mutationId: string): boolean -- both known; for an egg-only mutation, the species is in that egg's odds
 ```
 
-The five lookup helpers are the only functions; the module is otherwise data.
+The lookup helpers are the only functions; the module is otherwise data.
+
+New data (decision 0012, GDD S1 and T):
+
+```luau
+-- appended to EGGS:
+{ id = "celestial", name = "Celestial Egg", price = 1_000_000_000, grow = 28800, level = 25,
+  stock = { chance = 5, min = 1, max = 1 }, odds = odds({ "lion", 8500, "dragon", 1500 }),
+  top = "dragon", meter = 10, xp = 1000, mutation = "celestial" }
+-- appended to MUTATIONS:
+{ id = "celestial", name = "Celestial", mult = 20 }
+
+export type Spot = { x: number, y: number, z: number }
+export type Obstacle = {
+	kind: string, -- "sweeper" | "ball" | "pendulum" | "platform"
+	model: string, -- section 9
+	at: Spot, -- sweeper hub; ball and platform path centre; pendulum hinge
+	period: number, -- seconds per cycle
+	phase: number, -- 0..1, fraction of a cycle
+	size: number, -- sweeper arm length; ball or bob radius; platform half width
+	reach: number, -- ball and platform travel either side of `at`; pendulum rod length; 0 for a sweeper
+	axis: string?, -- "x" | "z": direction of ball, platform and pendulum travel
+	lift: number?, -- ball bounce height
+	knock: number, -- velocity on a hit; 0 for a platform
+}
+export type DashConfig = {
+	name: string, -- "Splash Dash"
+	minPlayers: number, -- 3
+	maxPlayers: number, -- 6
+	countdown: number, -- 15
+	starting: number, -- 5
+	limit: number, -- 120
+	grace: number, -- 20
+	prizeEgg: string, -- "moon"
+	prizesPerDay: number, -- 3
+	coinsBase: number, -- 100
+	coinsMinutes: number, -- 1
+	coinsPerDay: number, -- 6
+	fellY: number, -- 125
+	zone: { radius: number, height: number }, -- 16, 14
+	minFinish: number, -- 28
+	maxSpeed: number, -- 95
+	slack: number, -- 12
+	maxStrikes: number, -- 3
+	knockMax: number, -- 70
+	swing: number, -- 50, pendulum amplitude in degrees
+	start: Spot, -- (-120, 140, 300)
+	checkpoints: { Spot }, -- (-20,140,300), (100,140,300), (100,140,400), (-20,140,400), (-120,140,400); the last is the finish
+	obstacles: { Obstacle },
+}
+```
+
+First-pass obstacles (tuned at the greybox gate; not economy values, decision 0012):
+
+| Kind | `at` | `period` | `phase` | `size` | `reach` | `axis` | `lift` | `knock` |
+|---|---|---|---|---|---|---|---|---|
+| sweeper | (−85, 140, 300) | 6 | 0 | 20 | 0 | | | 45 |
+| sweeper | (−45, 140, 300) | 5 | 0.5 | 20 | 0 | | | 45 |
+| ball | (10, 140, 300) | 4 | 0 | 5 | 7 | z | 8 | 55 |
+| ball | (35, 140, 300) | 4 | 0.25 | 5 | 7 | z | 8 | 55 |
+| ball | (60, 140, 300) | 4 | 0.5 | 5 | 7 | z | 8 | 55 |
+| ball | (85, 140, 300) | 4 | 0.75 | 5 | 7 | z | 8 | 55 |
+| pendulum | (100, 170, 325) | 5 | 0 | 4 | 26 | x | | 65 |
+| pendulum | (100, 170, 350) | 5 | 0.33 | 4 | 26 | x | | 65 |
+| pendulum | (100, 170, 375) | 5 | 0.66 | 4 | 26 | x | | 65 |
+| platform | (76, 140, 400) | 7 | 0 | 6 | 8 | z | | 0 |
+| platform | (52, 140, 400) | 7 | 0.5 | 6 | 8 | z | | 0 |
+| platform | (28, 140, 400) | 7 | 0 | 6 | 8 | z | | 0 |
+| platform | (4, 140, 400) | 7 | 0.5 | 6 | 8 | z | | 0 |
+| sweeper | (−70, 140, 400) | 5 | 0.25 | 12 | 0 | | | 45 |
 
 ### 3.3 `WorldRules`
 
@@ -212,6 +294,8 @@ GardenRules.isFull(p: Profile): boolean -- no free pad and storage at 60
 GardenRules.eggUnlocked(p: Profile, egg: string): boolean -- sold and level >= unlock
 GardenRules.stockLeft(p: Profile, egg: string, now: number): number -- math.huge for meadow, 0 for unsold or unknown
 GardenRules.buyEgg(p: Profile, egg: string, now: number): (Profile, boolean) -- D1 rules except distance
+GardenRules.canPlantPrize(p: Profile, egg: string): boolean -- prizeEggs[egg] >= 1, level >= egg.level, an empty bed
+GardenRules.plantPrize(p: Profile, egg: string, now: number): (Profile, boolean) -- lowest empty bed; count - 1 (nil at 0); coins and stock unchanged
 GardenRules.waterCut(egg: string): number -- floor(0.05 * grow)
 GardenRules.canWater(p: Profile, bed: number, now: number, helper: boolean): boolean
 GardenRules.water(p: Profile, bed: number, now: number, helper: boolean): (Profile, boolean) -- bed change only, no XP
@@ -241,7 +325,7 @@ HatchRules.pick(odds: { GardenConfig.Odds }, r: number): string -- first id whos
 HatchRules.rollSpecies(egg: string, pity: number, rng: Rng.State): (string, boolean, Rng.State) -- species, forced; no draw when forced or starter
 HatchRules.rollMutation(weather: string, rng: Rng.State): (string, Rng.State)
 HatchRules.rollSize(rng: Rng.State): (string, Rng.State)
-HatchRules.roll(p: Profile, bed: number, now: number, weather: string, rng: Rng.State): Outcome? -- nil unless the bed is ripe and the garden not full; starter: pup normal normal, no draws
+HatchRules.roll(p: Profile, bed: number, now: number, weather: string, rng: Rng.State): Outcome? -- nil unless the bed is ripe and the garden not full; starter: pup normal normal, no draws; an egg with `mutation` takes it with no mutation draw (draw order species, size)
 HatchRules.apply(p: Profile, bed: number, o: Outcome, now: number): (Profile, boolean, Result?) -- re-checks ripe (same egg) and not full; empties the bed; creature id = nextId; lowest free pad else storage; pity; index; hatches + 1; XP egg.xp (+50 if new entry)
 HatchRules.hatch(p: Profile, bed: number, now: number, weather: string, rng: Rng.State): (Profile, boolean, Outcome?, Result?) -- roll then apply
 HatchRules.nextPity(egg: string, pity: number, species: string): number -- 0 on the top species, else pity + 1
@@ -252,7 +336,7 @@ HatchRules.percent(bp: number): string -- "60.00" (two decimals, for the ODDS pa
 ### 3.6 `GardenProgress`
 
 ```luau
-GardenProgress.SCHEMA_VERSION = 1
+GardenProgress.SCHEMA_VERSION = 2 -- decision 0012
 GardenProgress.CONFIG: MetaRules.Config<Profile> -- COSMETICS, slots { fence = "picket", can = "tin" }, QUESTS, DAILY, DAILY_MINUTES, WEEKLY, maxCoins 1e15, scale = scaled
 
 GardenProgress.defaults(now: number): Profile -- decision 0008 defaults; starter egg ready now + 8
@@ -274,6 +358,10 @@ GardenProgress.like(p: Profile, target: number, liker: number, today: number): (
 GardenProgress.receiveLike(p: Profile): Profile -- likes + 1
 GardenProgress.setGate(p: Profile, gate: string): (Profile, boolean)
 GardenProgress.gateAllows(gate: string, isFriend: boolean): boolean -- open: true; friends: isFriend; closed: false (owners are checked separately)
+GardenProgress.dashPrizesToday(p: Profile, today: number): number -- 0 when dash.day ~= today
+GardenProgress.dashEligible(p: Profile, today: number): boolean -- prizes today < DASH.prizesPerDay
+GardenProgress.dashPrize(p: Profile, today: number): (Profile, boolean) -- prizeEggs[DASH.prizeEgg] + 1, prizes + 1; refused at the cap; resets the counters on a new day
+GardenProgress.dashCoins(p: Profile, today: number): (Profile, number) -- scaled(p, coinsBase, coinsMinutes), capped at MAX_COINS, coins counter + 1; 0 paid at the cap
 GardenProgress.levelFor(xp: number): number
 GardenProgress.questsFor(today: number): { MetaRules.Quest }
 GardenProgress.isUnlocked(p: Profile, id: string): boolean
@@ -291,6 +379,85 @@ Quest stat keys: `hatches`, `waters`, `collects`, `rareHatches`, `mutants`, `rel
 - `MetaRules.spec`: `index` unlock; `reward` without `scale` returns the base; `maxCoins` respected; a profile without `wins` sanitises without gaining one.
 - `GardenProgress.spec`: `sanitize(defaults(now))` equals `defaults(now)`; `login` pays unbanked before offline and never twice; `snapshot` then `login` after 0 s pays exactly `unbanked`.
 - `HatchRules.spec`: `apply` re-applied to a copy of the original profile gives the same creature (no re-roll); `apply` refuses when the bed's egg differs from the outcome's.
+- v0.2, `GardenConfig.spec`: weather ids equal `MUTATIONS` without egg-only mutations; `INDEX_SIZE` equals the count of `indexable` pairs; every sold egg has `top` and `meter`; `celestial` is last in `EGGS`; existing stock unchanged for a fixed window.
+- v0.2, `HatchRules.spec`: a Celestial hatch is always `celestial` in all 4 weathers and only lion or dragon; `pity = 9` forces a dragon; no weather roll ever gives `celestial` (walk `r` 1..10000 in every table).
+- v0.2, `GardenRules.spec`: the 60% test uses `egg.mutation` when set and checks 24 pairs; `plantPrize` refusals (no egg, level, no bed), lowest bed, count down, coins and stock unchanged.
+- v0.2, `GardenProgress.spec`: a literal v1 record loads with every field kept and `prizeEggs = {}`; `prizeEggs` and `dash` survive `sanitize` (the flush path); `bunny:celestial` is dropped from `index` and `creatures`; caps and day rollover; re-applying `dashPrize` to a copy of the stored record gives the same result.
+
+### 3.8 `DashRules` (new)
+
+Pure Splash Dash rules (GDD T). Same conventions as section 2, except that `t` is a float `workspace:GetServerTimeNow()` time passed in by the server, because finish times need better than 1 s. Used by the server for the round and by the client for obstacle poses and hit tests.
+
+```luau
+export type Vec3 = { x: number, y: number, z: number }
+export type Phase = "idle" | "countdown" | "starting" | "racing"
+export type Entrant = { id: number, eligible: boolean } -- id: UserId
+export type Racer = {
+	next: number, -- index in DASH.checkpoints of the checkpoint to reach next
+	eligible: boolean, -- may take the egg
+	strikes: number,
+	lastPos: Vec3?, -- last sample that differed; nil just after a server teleport
+	lastAt: number, -- server time of lastPos
+	finished: number?, -- seconds from GO
+	out: boolean, -- left or struck out
+}
+export type Round = {
+	phase: Phase,
+	ready: { number }, -- UserIds in ready order; survives a running round (the next round's queue)
+	at: number, -- countdown end (countdown), GO (starting), time limit (racing); 0 in idle
+	goAt: number,
+	racers: { [number]: Racer },
+	places: number, -- finishers so far
+	winner: number?, -- first finisher
+	prizeTo: number?, -- first eligible finisher
+}
+export type Event = {
+	kind: string, -- "start" | "go" | "checkpoint" | "splash" | "flag" | "out" | "finish" | "over"
+	id: number?, -- the racer
+	ids: { number }?, -- start: racers in spot order; over: racers still in the round
+	cp: number?, -- checkpoint: reached; splash, flag: the checkpoint to return to (0 = start)
+	place: number?, -- finish
+	time: number?, -- finish: seconds from GO
+	egg: boolean?, -- finish: this finisher takes the egg
+	winner: number?, -- over
+	prizeTo: number?, -- over
+	reason: string?, -- over: "finished" | "time" | "empty"
+}
+export type Pose = { x: number, y: number, z: number, angle: number } -- angle in radians
+
+DashRules.new(): Round
+DashRules.isReady(r: Round, id: number): boolean
+DashRules.isRacer(r: Round, id: number): boolean -- in the round and not out
+DashRules.setReady(r: Round, id: number, ready: boolean, t: number): (Round, boolean) -- changed; refused for a racer; third ready in idle starts the countdown, below minPlayers cancels it
+DashRules.start(r: Round, t: number, entrants: { Entrant }): (Round, { Event }) -- call when a countdown is due; entrants = ready players with a character; below minPlayers: idle, ready = entrants; else starting, ready cleared, "start"
+DashRules.step(r: Round, t: number): (Round, { Event }) -- timed changes: starting to racing ("go"); racing to idle at the limit, 20 s after the first finish or when nobody is running ("over"); idle with minPlayers ready starts a countdown
+DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, { Event }) -- one 5 Hz sample while racing, in this order: speed, fall, zone; no-op otherwise
+DashRules.teleported(r: Round, id: number): Round -- clears lastPos after any server teleport, so it is never a speed breach
+DashRules.leave(r: Round, id: number, t: number): (Round, { Event }) -- removes from ready; a racer goes out; may give "over" with reason "empty"
+DashRules.respawnCp(r: Round, id: number): number -- 0 = start, else the last checkpoint reached
+DashRules.respawnPoint(cp: number): Vec3 -- deck position, 4 studs up
+DashRules.startSpot(i: number): Vec3 -- spots 1..6 on the start deck, 6 studs apart along z
+DashRules.inZone(pos: Vec3, spot: Vec3): boolean -- horizontal <= zone.radius and |dy| <= zone.height
+DashRules.status(r: Round): { [string]: any } -- GardenStatus.dash: { phase, ready, need, at, goAt, racers = { ids not out } }
+
+DashRules.pose(o: GardenConfig.Obstacle, t: number): Pose -- pure in server time, the same for every client and round
+DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velocity for a hit, magnitude <= DASH.knockMax, else nil; nil for platforms
+```
+
+`sample` rules, all from GDD T7:
+
+1. **Speed:** if `lastPos` is set and `pos` differs from it, a horizontal distance above `maxSpeed × (t − lastAt) + slack` is a breach: `strikes + 1`. At `maxStrikes`: `out` true, event `out`. Else event `flag` with `cp = respawnCp`.
+2. **Fall:** `pos.y < fellY`: event `splash` with `cp = respawnCp`.
+3. **Zone:** if `inZone(pos, checkpoints[next])`: a middle checkpoint gives `next + 1` and event `checkpoint`. The last one: below `minFinish` from GO is a breach as in step 1; otherwise `finished`, `places + 1`, `winner` if unset, `egg = prizeTo == nil and eligible` (setting `prizeTo`), event `finish`.
+4. `lastPos`, `lastAt` update only when `pos` changed.
+
+`step` ends a round at the earliest of `goAt + limit`, `first finish + grace`, or nobody running; it then clears `racers`, keeps `ready`, and starts a new countdown if `ready` is at least `minPlayers`.
+
+`pose`: with `c = 2π × (t / period + phase)`. Sweeper: `at`, `angle = c` (one turn each period). Ball: `at + reach × sin c` along `axis`, `y = at.y + size + lift × |cos c|`. Pendulum: `a = swing × sin c`, bob at `at + reach × (sin a along axis, −cos a in y)`, `angle = a`. Platform: `at + reach × sin c` along `axis`.
+
+`knock`: sweeper: root within 2.5 of the arm segments (both sides of the hub) in the plane and 0 to 6 above the deck: tangent × `knock`, up 20. Ball and pendulum: distance to the pose at most `size + 2`: away × `knock`, up 20. Clamp to `knockMax`.
+
+`tests/DashRules.spec.luau` covers every GDD T10 check value, and: phases and cancels; ready kept through a running round; order enforced (zones out of order do nothing); fall to the right checkpoint; leave at every phase; down to 1 racer; everyone leaves; capped first finisher passes the egg to the next eligible; nobody eligible; nobody finishes; `pose` deterministic for a fixed `t`; `knock` never above `knockMax` over a sweep of times and positions; inputs never mutated.
 
 ## 4. Server (`src/garden`)
 
@@ -303,7 +470,9 @@ Quest stat keys: `hatches`, `waters`, `collects`, `rareHatches`, `mutants`, `rel
 | `Remotes.luau` | Module | Copied from Night: creates `ReplicatedStorage.GardenRemotes` (`Request`, `Fx`) and `ReplicatedStorage.GardenStatus`; returns them plus `fx(kind, data)` = `Fx:FireAllClients` and `notice(player, text)` = `Fx:FireClient(player, "notice", { text = text })`. |
 | `Profiles.luau` | Module | Copied from Night (4.2). |
 | `Plots.luau` | Module | Builds the 6 plot shells once (fence, gate, sign, 12 bed sites, 20 pad sites, decor, under 300 parts each); `refresh(plot, profile)` rebuilds the changing parts (bed eggs and locks, pad locks, creature models, sign text, fence style, prompt `Enabled`); `clear(plot)`; geometry. |
-| `World.luau` | Module | Builds Hatchling Valley (GDD I1, I4 lighting baseline): plaza, Great Egg Tree (`Models.spawn("eggTree")`), cart with five display eggs and its "Shop" prompt (opens the client's EGGS panel; the prompt itself changes nothing), forecast board, Top Gardens board, Wild Meadow gate, paths, meadows (at most 600 flowers), river, 16 blossom trees (`Models.spawn("sakura")`), windmill, barn, far scenery. Under 6,000 parts with the plots. |
+| `Dash.luau` | Module | v0.2. The one live `Round` (a `DashRules.Round`); turns player state into entrants, runs `start`, `step` and `sample`, and carries out their events: teleports, start arch, `Profiles.apply` for prizes, Fx, notices. Collision group for characters. |
+| `DashWorld.luau` | Module | v0.2. Builds the static Splash Island once: decks, rails, water plane, arches, ready pad and its prompt and label, under `Workspace.Garden.Dash`. Under 150 parts. Moving obstacles are not here: they exist only on clients. |
+| `World.luau` | Module | Builds Hatchling Valley (GDD I1, I4 lighting baseline): plaza, Great Egg Tree (`Models.spawn("eggTree")`), cart with six display eggs (spacing 2.8) and its "Shop" prompt (opens the client's EGGS panel; the prompt itself changes nothing), forecast board, Top Gardens board, Wild Meadow gate, paths, meadows (at most 600 flowers), river, 16 blossom trees (`Models.spawn("sakura")`), windmill, barn, far scenery. Under 6,000 parts with the plots. |
 
 Server module APIs (signatures for cross-file calls):
 
@@ -315,7 +484,7 @@ Profiles.get(player: Player): GardenConfig.Profile?
 Profiles.isOnline(player: Player): boolean
 Profiles.apply(player: Player, label: string, change: (GardenConfig.Profile) -> GardenConfig.Profile) -- in memory now, queued for the store, published
 Profiles.bank(player: Player, coins: number, pads: number, today: number) -- pad banking: in memory now; merged into the last queued op if it is this day's bank; publishes only Coins
-Profiles.request(player: Player, action: string, arg: string?): boolean -- buyEgg, buyBed, buyPenSlot, place, store, release, favourite, setGate, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic; decides on the in-memory profile, applies only if accepted
+Profiles.request(player: Player, action: string, arg: string?): boolean -- buyEgg, plantPrize, buyBed, buyPenSlot, place, store, release, favourite, setGate, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic; decides on the in-memory profile, applies only if accepted
 Profiles.step(now: number) -- 1 Hz: publish dirty sessions, flush due queues (7 s / 60 s), income board writes (120 s)
 Profiles.finish(player: Player, now: number) -- bank already done by the caller; leave op, waits at most 10 s for a running write, final flush (releases the lock; no retry wait past 25 s), then drops the session
 Profiles.finishAll(now: number) -- BindToClose: finish every session in parallel
@@ -335,6 +504,22 @@ Plots.prompts: RBXScriptSignal -- (player, plot, bed, kind: "Hatch" | "Water") f
 
 -- World.luau
 World.build(): { cart: GardenRules.Vec3, board: (rows: { { name: string, income: number } }) -> (), forecast: (status: { [string]: any }) -> () }
+
+-- Remotes.luau
+Remotes.fxTo(player: Player, kind: string, data: { [string]: any }) -- one player only, as notice
+
+-- Dash.luau
+Dash.prompt: ProximityPrompt -- the ready pad; GardenServer connects Triggered through `admit`
+Dash.toggle(player: Player): boolean -- the dashReady action and the pad prompt
+Dash.leave(player: Player) -- PlayerRemoving and the home action: leaves ready and any round; home teleports after it
+Dash.isRacing(player: Player): boolean
+Dash.place(player: Player): boolean -- CharacterAdded: moves a racer's new character to the start or last checkpoint; false when not racing
+Dash.step(roots: { [Player]: GardenRules.Vec3 }, today: number) -- 5 Hz, from fastTick
+Dash.status(): { [string]: any } -- GardenStatus.dash, 1 Hz
+Dash.close() -- BindToClose: ends the round with no prize and no teleports
+
+-- DashWorld.luau
+DashWorld.build(): { arch: BasePart, prompt: ProximityPrompt, label: (status: { [string]: any }) -> () }
 ```
 
 ### 4.2 Profiles (copied from Night)
@@ -366,6 +551,8 @@ Every 1 s:
 7. `Profiles.step(now)`.
 8. Every 60 s: `World.board(Profiles.topIncome())` in a spawned thread.
 
+`fastTick` calls `Dash.step(roots, today)` last, under its own `guarded`, so a Dash fault never stops the pads. `slowTick` adds `status.dash = Dash.status()`.
+
 `Request` calls and prompt triggers are handled when they arrive, between ticks.
 
 - **Hatch prompt:** checks (decision 0008) → `weather = WorldRules.weatherAt(now)` → `o = HatchRules.roll(profile, bed, now, weather, Rng.seed(Random.new():NextInteger(1, 2^31 - 1)))`; nil → `notice` if `GardenRules.isFull`; else `Profiles.apply(player, "hatch", fn(p) (GardenProgress.hatch(p, bed, o, now, today)))`, `Fx("hatch", { owner, bed, id, s, m, z })` with the in-memory creature id, and `Fx("announce", { name = DisplayName, s, m, z })` when `HatchRules.announce(o)`.
@@ -373,6 +560,45 @@ Every 1 s:
 - **like:** after the gate check (which may yield on `IsFriendsWith`), `GardenProgress.like` is re-checked on the liker's current profile; then `apply(liker, "like", GardenProgress.like(p, target, liker.UserId, today))` and `apply(target, "liked", GardenProgress.receiveLike)`; `Fx("like", { owner = target, by = liker })`. The two sides (and the two sides of a helper water) are re-applied to their own stored records independently, so the counterpart op is best effort.
 - **release** (via `Profiles.request`) also fires `Fx("release", { owner, id })` for the meadow run-off.
 - **PlayerAdded:** `Plots.assign` (if no plot is free: `notice` every 10 s and retry every second until one frees up), set up `State.live`, `Profiles.load`, spawn the character at `Plots.gate`. **PlayerRemoving:** drop `State.live`, bank every pad, free the plot (`Plots.free`, so a waiting player can take it), then `Profiles.finish`. **BindToClose:** the same for every player, in parallel, via `Profiles.finishAll`.
+
+### 4.3a Splash Dash round on the server
+
+`Dash.step` each 0.2 s, with `t = workspace:GetServerTimeNow()`:
+
+1. If a countdown is due: entrants are ready players with a root and a session, `eligible = Profiles.isOnline(player) and GardenProgress.dashEligible(profile, today)`; `DashRules.start`.
+2. `DashRules.step`, then `DashRules.sample` for each racer with a root.
+3. Carry out each event, in order, without yielding:
+
+| Event | Server does |
+|---|---|
+| `start` | `PivotTo(DashRules.startSpot(i))`, `DashRules.teleported`; the arch stays closed (`CanCollide` true) |
+| `go` | arch `CanCollide` false |
+| `checkpoint` | `Remotes.fxTo(player, "dashCheckpoint", { cp, total = 5 })` |
+| `splash` | `PivotTo(respawnPoint(cp))`, `teleported`, `fxTo(player, "dashSplash", { cp, reason = "fall" })` |
+| `flag` | the same with `reason = "check"`, and `warn` with the UserId |
+| `out` | move to the plot gate, `notice` "You are out of this round." |
+| `finish` | prize below, then `Remotes.fx("dashFinish", { by = id, name = DisplayName, place, time, egg, coins })` |
+| `over` | arch `CanCollide` true; each racer in `ids` moved to `Plots.gate`; `Remotes.fx("dashOver", { winner, prize, reason })` with display names |
+
+**Prize:** the same step that accepts the finish, before anything can yield:
+
+```luau
+local today = MetaRules.dayOf(os.time())
+if e.egg then
+	Profiles.apply(player, "dashPrize", function(p) return (GardenProgress.dashPrize(p, today)) end)
+else
+	local _, coins = GardenProgress.dashCoins(profile, today) -- for the Fx
+	Profiles.apply(player, "dashCoins", function(p) return (select(1, GardenProgress.dashCoins(p, today))) end)
+end
+```
+
+The op is pure and captures `today`, so re-applying it to the stored record is safe, and the leave flush writes it. `onLeave` calls `Dash.leave(player)` first; it never grants anything.
+
+**GardenServer changes:** `REQUEST_ARGS` adds `dashReady = false`, `plantPrize = true`; `dashReady` returns `Dash.toggle(player)`; `home` calls `Dash.leave(player)` before `toGate`; `plantPrize` falls through to `Profiles.request`; CharacterAdded runs `if not Dash.place(player) then toGate(...) end`; `onLeave` and `BindToClose` call `Dash.leave` and `Dash.close`; the pad prompt goes through `admit`.
+
+**Collisions:** `PhysicsService:RegisterCollisionGroup("Racers")` with `CollisionGroupSetCollidable("Racers", "Racers", false)`. Every character part joins it in CharacterAdded and DescendantAdded, for the whole session. shortcut: this also stops players bumping in the garden, which is harmless; scope it to rounds only if a playtest asks.
+
+**Moving characters:** always `character:PivotTo` on the server, then `DashRules.teleported`. The client zeroes its own velocity on `dashSplash`.
 
 ### 4.4 How plots, eggs, pads and creatures are represented
 
@@ -394,6 +620,12 @@ Every 1 s:
 | `like` | `{ owner, by }` | a like is accepted |
 | `release` | `{ owner, id }` | a release is accepted (before the model is removed) |
 | `notice` | `{ text }` | to one player, for a refusal that needs words |
+| `dashCheckpoint` | `{ cp, total }` | to one racer: checkpoint `cp` of `total` reached |
+| `dashSplash` | `{ cp, reason }` | to one racer: moved back to `cp` (0 = start); `reason` `"fall"` or `"check"` |
+| `dashFinish` | `{ by, name, place, time, egg, coins }` | to all: a racer finished; `by` UserId, `name` display name, `time` seconds, `egg` boolean, `coins` paid |
+| `dashOver` | `{ winner, prize, reason }` | to all: display names or nil; `reason` `"finished"`, `"time"` or `"empty"` |
+
+`GardenStatus` adds `dash = { phase, ready, need, at, goAt, racers }` (`DashRules.status`), and `stock.celestial` through `WorldRules.stockFor`. `at` and `goAt` are server times, so 1 Hz is enough: clients count down locally with `workspace:GetServerTimeNow()`. No new player attributes: `prizeEggs` and `dash` are in `Profile`.
 
 ## 6. Client (`src/garden-client`)
 
@@ -403,7 +635,12 @@ Every 1 s:
 | `Menu.client.luau` | LocalScript | Forked Relay menu: title "EGG GARDEN", camera orbit, PLAY (camera flies to own gate), INDEX (36 entries, silhouettes, which eggs and weathers can produce them, every weather's mutation table), CREATURES (pen and storage lists with Place, Store, Release with confirmation "Release Berry Cat to the wild meadow? +324 coins", Favourite), EGGS (cart panel: price, grow time, stock left, unlock, Lucky Meter, ODDS card, BUY), LOCKER (fence, can), REWARDS, STATS, SETTINGS (writes `ClientState`), How to Play and Odds cards, toasts (`LastReward` without its `#n` suffix, `notice`), music by weather. Sends `Request` only. |
 | `Hud.client.luau` | LocalScript | Coins and income (short format), level and XP bar, weather chip and the next two, restock timer, HOME button (`home`), Index count, gold dot, "While you were away" card (`OfflineCoins` > 0), hatch announcement banners (setting), first-session prompts and arrows (GDD H2, `hatches = 0` at join), per-viewer prompt visibility: each bed's `Hatch`/`Water` prompt `Enabled` locally only when the action can succeed for this player (owner, ripe/growing, cooldown, caps, gate, garden not full), using `GardenRules` on the owner's `Profile` attribute and `workspace:GetServerTimeNow()`. |
 | `HatchFx.client.luau` | LocalScript | Reveal (wobble 1.5 s or 0.4 s Fast Hatch, crack, pop, rarity burst, name, rarity, mutation, size; never shows another creature), coin pops, water splash in the can's colour, like hearts, egg growth scale (40% to 100% by `GardenRules.growFraction`) and ripe glow/wobble, BillboardGui time left; weather looks from `GardenStatus` (I4 lighting tweens, rain, rainbow beam, fireflies, lamp lights), stingers; SFX. |
-| `CreatureFx.client.luau` | LocalScript | Creature bob, hop and turn tweens; mutation looks (Golden texture swap, Moonlit and Rainbow `Highlight`, falling back to particles and a tinted `SelectionBox` past about 31 highlights); ambient life (windmill sails, butterflies, petals). |
+| `CreatureFx.client.luau` | LocalScript | Creature bob, hop and turn tweens; mutation looks (Golden texture swap, Moonlit, Rainbow and Celestial `Highlight`, falling back to particles and a tinted `SelectionBox` past about 31 highlights); ambient life (windmill sails, butterflies, petals). |
+| `DashFx.client.luau` | LocalScript | v0.2. Splash Dash on the client: clones and drives the obstacles from `DashRules.pose(o, workspace:GetServerTimeNow())`, hit tests its own root with `DashRules.knock`, sets `AssemblyLinearVelocity`, carries the root on platforms, zeroes velocity on `dashSplash`; round HUD (countdown, GO, timer, checkpoint pips, splash text), results card, pad prompt text. Sends nothing. |
+
+v0.2 changes in the existing files (GDD S4, T8): `Menu` Index grid uses `GardenConfig.indexable` with cell width `1 / cells`; `weathersFor` uses `GardenConfig.fixedBy`; the ODDS card branches on `egg.mutation`; `MUTATION_COLOURS.celestial`; a new `Dash` panel (READY, prizes today, prize eggs with PLANT using `GardenRules.canPlantPrize`). `Hud`: DASH quick button, column height 384, gold dot. `ClientState`: `EGG_COLOURS.celestial`, `Status.dash`. `HatchFx`: shell fragments (section 9).
+
+`DashFx` detail: runs obstacles only while the local player is in `status.dash.racers`, and parks them otherwise. Obstacle parts have `CanCollide` false, because `knock` decides hits; platforms have `CanCollide` true. Each Heartbeat for each obstacle: `pose`, `PivotTo`, then `knock` against the local root with a 0.5 s cooldown per obstacle. A hit sets `root.AssemblyLinearVelocity` and `Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)`, so the walk controller does not cancel it. Platform carry: a raycast down 5 studs finds a platform part, and the root gets that platform's movement since the last frame.
 
 Clients never write server state. The ODDS card, Index and forecast tables read `GardenConfig` (the same data the server rolls from) and format with `HatchRules.percent`.
 
@@ -434,3 +671,41 @@ Clients never write server state. The ODDS card, Index and forecast tables read 
 17. `OfflineCoins` shows the offline payout only; the saved `unbanked` is added silently.
 18. Leaderstats `Income` is a StringValue (short format); `Index` an IntValue.
 19. `short` truncates to one decimal and drops ".0" (`1250` → "1.2K", `2000` → "2K").
+20. Weather tables keep 4 rows; egg-only mutations are not in them (decision 0012). Display code that loops weather tables needs no change, and `HatchRules.pick`'s last-row fallback can never return `celestial`.
+21. Prize eggs are a count per egg, not a list: two Moon Eggs are the same thing, and the store cannot grow large.
+22. `prizeEggs` keeps sold eggs only, so the starter can never be a prize.
+23. `dashReady` toggles, so the menu button and the pad need one action. `home` doubles as leaving a round, so no third action.
+24. A round has no results phase: racers go home at once, and the card shows over the garden.
+25. `Dash` owns its round state outside `State.live`, because a round outlives any one player.
+26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the 28 s check need sub-second values.
+
+## 9. Models and naming
+
+The artist's Blender models are registered by these exact names, as keys of `src/shared/GardenAssets.luau`, generated like `NightAssets.luau` (same `Asset` type, `tools/blender/garden`). A nil `model` id means not uploaded yet, and the game keeps the part-built fallback, so code never waits for art.
+
+**Loading:** `src/relay/Models.luau` changes in exactly four places, and Relay and Night keep their behaviour:
+
+1. `local GardenAssets = require(Shared.GardenAssets)`.
+2. `loadNight` reads `NightAssets[name] or GardenAssets[name]`.
+3. `CLIENT_MODELS` adds `egg_shell_fragment`, `dash_sweeper`, `dash_ball`, `dash_pendulum`, `dash_platform`; clients clone these from `ReplicatedStorage.NightModels` (the folder name is historical).
+4. `Models.preloadGarden()`, the `preloadNight` loop over `GardenAssets`; `GardenServer` calls it at start.
+
+If `GardenAssets.luau` has not landed when GARDEN-009 starts, GARDEN-009 adds `return {}` with the type export; the generated file replaces it.
+
+| Name | Where | Target size (studs) | How code uses it | Fallback |
+|---|---|---|---|---|
+| `egg_starter`, `egg_meadow`, `egg_forest`, `egg_sunset`, `egg_moon`, `egg_star`, `egg_celestial` | server, `Plots.egg` (beds and cart) | 2.2 × 3 × 2.2, one mesh | `` Models.nightPart(`egg_{id}`, ...) `` only when `Models.nightReady(name)`, because `Plots.refresh` must not yield; renamed `Egg`, since `HatchFx` finds it by that name and scales its `Size` | stretched Ball from `EGG_LOOKS` |
+| `egg_shell_fragment` | client, `HatchFx` reveal | about 1, one mesh | up to 6 clones burst from the crack, tinted from `EGG_COLOURS`, `TextureID` cleared | the existing burst |
+| `dash_sweeper` | client, `DashFx` | 40 long: two arms, symmetric about the hub | `PivotTo` at the pose | a bar and hub of parts |
+| `dash_ball` | client, `DashFx` | 10 diameter | `PivotTo` at the pose | Ball part |
+| `dash_pendulum` | client, `DashFx` | 30 tall, bob 8 wide, hinge at the top centre | `PivotTo`, with the offset below | rod and Ball |
+| `dash_platform` | client, `DashFx` | 12 × 2 × 12 | `PivotTo` at the pose; `CanCollide` true | Block part |
+| `dash_arch` | server, `DashWorld` | 28 wide, 18 high, walk-through | decor; the barrier is a separate invisible part | parts |
+| `dash_ready_pad` | server, `DashWorld` | 12 wide, low | decor; a flat part carries the prompt | Cylinder part |
+| `dash_island` | server, `DashWorld` | about 300 × 160 from above | decor under the decks, never walked on | none, the decks stand alone |
+
+Three contract points for the artist and engineers:
+
+- **Pivots are not kept.** `loadNight` rebuilds each asset into a new Model, whose pivot is its bounding box centre. A sweeper therefore has to be symmetric about its hub. For the pendulum, `DashFx` pivots at the hinge and places the model half its height below it along the rod.
+- **Size:** `DashFx` scales each dash model to the config (`size`, `reach`) with `Model:ScaleTo` using `GardenAssets[name].size`. Hit tests use the config, never the mesh, so a model that differs from the table still plays the same.
+- **Collision:** the decks are `DashWorld` parts. No mesh collision is used on the course.
