@@ -254,14 +254,15 @@ local function wearSaya(character: Model, weapon: string)
 	saya.Name = SAYA
 	local _, size = saya:GetBoundingBox()
 	local belt = if torso.Name == "Torso" then -0.75 else -0.1 -- R6 torso is one tall block
-	local down = math.asin(SAYA_DROP / size.Y)
+	local drop = math.min(SAYA_DROP, size.Y / 3) -- a short saya stays flat, clear of the leg
+	local down = math.asin(drop / size.Y)
 	local ahead = math.cos(down)
 	-- The model's +Y runs from mouth to tip, its edge toward -Z.
 	local turn = CFrame.fromMatrix(Vector3.zero, Vector3.xAxis, Vector3.new(0, -math.sin(down), ahead))
 	Models.attach(
 		saya,
 		torso,
-		CFrame.new(-torso.Size.X / 2 - SAYA_OUT, belt - SAYA_DROP / 2, size.Y / 2 * ahead - SAYA_FRONT) * turn
+		CFrame.new(-torso.Size.X / 2 - SAYA_OUT, belt - drop / 2, size.Y / 2 * ahead - SAYA_FRONT) * turn
 	)
 end
 
