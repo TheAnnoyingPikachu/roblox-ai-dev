@@ -2,8 +2,8 @@
 
 Procedural Blender Python models for the eggs and the Splash Dash kit (plan:
 `docs/assets/garden-blender-plan.md`, task `studio/tasks/GARDEN-020.json`). The game reads them
-through `src/shared/GardenAssets.luau`; until the ids are uploaded every asset there is nil, and no
-game code uses them yet.
+through `src/shared/GardenAssets.luau`; until the ids are uploaded every asset there is nil and the
+game keeps its part-built fallbacks.
 
 ## Rebuild everything (one command)
 
@@ -52,19 +52,22 @@ A count of exactly `budget * 0.97` means it fired: trim the model instead.
 - Roblox's FBX importer comes in about 100x too big, so size comes from the manifest. Scale each
   model to the manifest height as `Models.night` does. The manifest height is measured, not the
   target, so a tall egg stays taller than a short one.
-- Moving pieces are separate meshes: `dash_sweeper_arm` and `dash_pendulum_hammer`.
+- The model contract is `docs/architecture/garden.md` section 9 (on branch `garden/v2` until it
+  merges): names, sizes and how code places each model. `tests/GardenAssets.spec.luau` pins it.
+- **Pivots are not kept.** `loadNight` rebuilds each asset into a new Model whose pivot is its
+  bounding box centre, and `DashFx` moves the whole Model. So moving pieces are one mesh, nothing
+  static goes in them, and the bounding box centre is where code expects it: the hub on all three
+  axes for `dash_sweeper`; for `dash_pendulum`, the hinge is the top face centre and the Model hangs
+  half its height below it.
+- **Eggs are one mesh** of about 2.2 x 3 x 2.2 and at most 2.8 wide, because `Models.nightPart` keeps
+  a single MeshPart and destroys the rest, and the v0.2 cart spaces eggs 2.8 apart. `fit` in
+  `assets/eggs.py` enforces the size. Their glowing pieces are baked bright, not Neon.
 
 ## Glow meshes
 
-Each `<asset>_glow` mesh stays untextured; code sets it to Neon in the colour under `glow` in
-`manifest.json`. `GardenAssets.luau` keeps the NightAssets shape, so it does not carry those colours.
-
-| Mesh | Colour (sRGB) | Notes |
-|---|---|---|
-| `egg_moon_glow` | 255, 245, 190 | stars |
-| `egg_star_glow` | 255, 226, 120 | core, seen through star pockets front and back |
-| `egg_celestial_glow` | 255, 214, 110 | halo, constellations, moonlets, crown star |
-| `dash_arch_glow` | 120, 255, 190 | strip inside the arch; tint per role |
+`dash_arch_glow` is the only glow mesh: it stays untextured and code sets it to Neon, tinted per
+role (default colour under `glow` in `manifest.json`, 120, 255, 190). `GardenAssets.luau` keeps the
+NightAssets shape, so it does not carry that colour.
 
 `egg_shell_fragment` uploads without a texture, so code can tint it per egg from `EGG_COLOURS`.
 

@@ -15,6 +15,22 @@ def moved(objs, x=0.0, y=0.0, z=0.0):
     return objs
 
 
+def fit(build):
+    """Eggs follow architecture section 9: one mesh, because Plots.egg uses Models.nightPart, which
+    keeps a single MeshPart, and about 2.2 x 3 x 2.2, with the v0.2 cart spacing them 2.8 apart."""
+
+    def built():
+        parts = build()
+        lo, hi = k._ground_dims(parts)
+        size = hi - lo
+        scale = min(1.0, 2.8 / max(size.x, size.y), 3.3 / size.z)
+        for ob in parts:
+            ob.data.transform(Matrix.Scale(scale, 4))
+        return parts
+
+    return built
+
+
 def egg_starter():
     e = dict(H=2.62, R=1.06)
     speck = k.paint(
@@ -104,7 +120,7 @@ def egg_meadow():
 
     # A big daisy crown, flowers on stems out of the grass, little ones on the shell.
     parts += k.stick(k.flower(0.52, pink, sun), 28, 0.9, 0.03, **e)
-    for theta, height, m, r, out_by in ((-62, 1.75, white, 0.34, 0.5), (118, 1.5, lilac, 0.31, 0.46), (205, 1.9, sun, 0.32, 0.5)):
+    for theta, height, m, r, out_by in ((-62, 1.75, white, 0.3, 0.16), (118, 1.5, lilac, 0.28, 0.14), (205, 1.9, sun, 0.3, 0.16)):
         p = k.egg_at(theta, 0.32, 0.02, **e)[0]
         side = Vector((p.x, p.y, 0)).normalized()
         tip = Vector((p.x, p.y, 0)) + side * out_by + Vector((0, 0, height))
@@ -282,9 +298,7 @@ def egg_moon():
         s = k.star(r, star_m)
         s.data.transform(Matrix.Translation(end + Vector((0, 0, r * 0.7))) @ Matrix.Rotation(math.radians(90), 4, "X"))
         glow.append(s)
-    for ob in parts + glow:
-        ob.data.transform(Matrix.Scale(0.9, 4))
-    return {"": parts, "glow": glow}
+    return parts + glow
 
 
 def _star_outline(r, inner):
@@ -338,7 +352,7 @@ def egg_star():
         k.boolean(gem, k.poly(_star_outline(0.78, 0.36), 1.5, loc=(0, y, middle), m=deep, name="pocket"))
     k.apply_cuts()
     k.sharpen(gem)
-    core = k.ico(0.8, (0, 0, middle), m=k.glow((255, 226, 120)), subdiv=2, name="core")
+    core = k.ico(0.8, (0, 0, middle), m=k.glow((255, 246, 190)), subdiv=2, name="core")
 
     # Wide cut points, like a Moravian star, kept clear of the two pockets.
     parts = [gem]
@@ -351,19 +365,20 @@ def egg_star():
         parts.append(k.facet(spike, shades))
     crown = k.cyl(0.34, 0.78, (0, 0, 2.98), m=shades[0], n=5, r2=0, name="crown")
     parts.append(k.facet(crown, shades))
-    return {"": parts, "glow": [core]}
+    return parts + [core]
 
 
 def _feather_wing(side, m):
+    """Swept up, not out, so the widest egg still fits the cart."""
     feathers = []
-    shoulder = Vector((0.72, 0.34, 2.05))
+    shoulder = Vector((0.52, 0.28, 1.72))
     for length, width, angle, drop in (
-        (2.05, 0.3, 66, 0.0),
-        (2.1, 0.32, 48, -0.06),
-        (1.95, 0.32, 30, -0.14),
-        (1.7, 0.3, 12, -0.22),
-        (1.4, 0.28, -8, -0.3),
-        (1.2, 0.25, 42, 0.08),
+        (1.44, 0.22, 84, 0.0),
+        (1.4, 0.24, 71, -0.05),
+        (1.26, 0.24, 57, -0.12),
+        (1.04, 0.23, 42, -0.2),
+        (0.82, 0.2, 26, -0.28),
+        (0.86, 0.2, 66, 0.06),
     ):
         f = k.leaf(length, width, m, droop=0.1, n=4, steps=4, name="feather")
         place = (
@@ -378,33 +393,32 @@ def _feather_wing(side, m):
 
 
 def egg_celestial():
-    e = dict(H=2.72, R=1.0)
-    lift = 0.46
+    e = dict(H=2.32, R=0.86)
+    lift = 0.36
     pearl = k.paint(
         "ce_pearl",
         [(0, (255, 226, 214)), (0.37, (255, 246, 232)), (0.372, (78, 88, 205)), (0.545, (104, 96, 226)), (0.547, (255, 252, 244)), (1, (246, 240, 255))],
         lift,
-        lift + 2.72,
+        lift + 2.32,
     )
-    gold = k.paint("ce_gold", [(0, (252, 190, 76)), (0.35, (255, 212, 104)), (1, (255, 236, 150))], 0, 3.0)
-    plume_r = k.paint("ce_plume_r", [(0, (255, 251, 240)), (0.42, (255, 240, 200)), (1, (255, 190, 64))], 0.7, 2.75, axis="X")
-    plume_l = k.paint("ce_plume_l", [(0, (255, 251, 240)), (0.42, (255, 240, 200)), (1, (255, 190, 64))], -0.7, -2.75, axis="X")
-    light = k.glow((255, 214, 110))
+    gold = k.paint("ce_gold", [(0, (252, 190, 76)), (0.35, (255, 212, 104)), (1, (255, 236, 150))], 0, 2.6)
+    plume = k.paint("ce_plume", [(0, (255, 251, 240)), (0.45, (255, 240, 200)), (1, (255, 190, 64))], 1.9, 3.2)
+    light = k.glow((255, 196, 70))
 
     parts = [k.shell(pearl, nu=22, nv=11, **e)]
-    # Gold belt with a scalloped band, ribs to the crown, a lotus cup at the foot.
+    # Gold belt with a zigzag band, ribs to the crown, a lotus cup at the foot.
     for v in (0.42, 0.53):
-        parts.append(k.ridge([(i * 30, v) for i in range(13)], 0.055, 0.05, gold, **e))
-    parts.append(k.ridge([(i * 15, 0.475 + 0.03 * (-1) ** i) for i in range(25)], 0.024, 0.04, gold, **e))
+        parts.append(k.ridge([(i * 30, v) for i in range(13)], 0.05, 0.045, gold, **e))
+    parts.append(k.ridge([(i * 15, 0.475 + 0.03 * (-1) ** i) for i in range(25)], 0.022, 0.036, gold, **e))
     for i in range(6):
         theta = i * 60 + 30
-        parts.append(k.ridge([(theta, 0.55 + 0.42 * s / 3) for s in range(4)], [0.06, 0.05, 0.04, 0.05], 0.035, gold, **e))
+        parts.append(k.ridge([(theta, 0.55 + 0.42 * j / 3) for j in range(4)], [0.05, 0.042, 0.034, 0.042], 0.03, gold, **e))
     for i in range(8):
         theta = i * 45
-        parts.append(k.ridge([(theta, 0.02), (theta, 0.14), (theta, 0.27)], [0.05, 0.22, 0.012], 0.07, gold, **e))
+        parts.append(k.ridge([(theta, 0.02), (theta, 0.14), (theta, 0.27)], [0.05, 0.19, 0.012], 0.06, gold, **e))
 
     # Constellations, front and back, on the upper shell.
-    glow = []
+    lights = []
     for nodes, lines in (
         ([(-34, 0.74), (-6, 0.84), (24, 0.76), (40, 0.62), (-14, 0.63)], [(0, 1), (1, 2), (2, 3), (0, 4), (4, 2)]),
         ([(150, 0.8), (178, 0.68), (206, 0.78), (232, 0.64), (170, 0.6)], [(0, 1), (1, 2), (2, 3), (1, 4)]),
@@ -412,49 +426,35 @@ def egg_celestial():
         for a, b in lines:
             (t0, v0), (t1, v1) = nodes[a], nodes[b]
             path = [(t0 + (t1 - t0) * j / 3, v0 + (v1 - v0) * j / 3) for j in range(4)]
-            glow.append(k.ridge(path, 0.03, 0.03, light, **e))
+            lights.append(k.ridge(path, 0.026, 0.026, light, **e))
         for t, v in nodes:
-            glow.append(k.stick(k.star(0.17, light, points=4, inner=0.3), t, v, 0.015, **e))
+            lights.append(k.stick(k.star(0.15, light, points=4, inner=0.3), t, v, 0.015, **e))
     for t in (0, 180):
-        parts.append(k.stick(k.lathe([(0.3, -0.02), (0.28, 0.06), (0.19, 0.03)], m=gold, n=12, name="setting"), t, 0.475, 0.0, **e))
-        glow.append(k.stick(k.star(0.24, light, points=4, inner=0.34), t, 0.475, 0.03, **e))
-    moved(parts + glow, z=lift)
+        parts.append(k.stick(k.lathe([(0.26, -0.02), (0.24, 0.05), (0.16, 0.03)], m=gold, n=12, name="setting"), t, 0.475, 0.0, **e))
+        lights.append(k.stick(k.star(0.21, light, points=4, inner=0.34), t, 0.475, 0.03, **e))
+    moved(parts + lights, z=lift)
 
     # Pedestal, crown finial, halo.
-    parts.append(
-        k.lathe(
-            [(0.82, 0.0), (0.84, 0.1), (0.66, 0.16), (0.28, 0.32), (0.42, 0.52), (0, 0.56)],
-            m=gold,
-            n=14,
-            name="foot",
-        )
-    )
-    top = lift + 2.72
-    parts.append(
-        k.lathe(
-            [(0.3, top - 0.1), (0.24, top + 0.02), (0.1, top + 0.1), (0.13, top + 0.2), (0, top + 0.34)],
-            m=gold,
-            n=8,
-            name="finial",
-        )
-    )
-    s = k.star(0.26, light, points=4, inner=0.3)
-    s.data.transform(Matrix.Translation((0, 0, top + 0.56)) @ Matrix.Rotation(math.radians(90), 4, "X"))
-    glow.append(s)
-    glow.append(k.ring(0.58, top + 0.3, 0.05, light, n=18, sides=4, name="halo"))
-    glow[-1].data.transform(Matrix.Translation((0, 0, top + 0.3)) @ Matrix.Rotation(math.radians(-14), 4, "X") @ Matrix.Translation((0, 0, -top - 0.3)))
+    parts.append(k.lathe([(0.64, 0.0), (0.66, 0.08), (0.52, 0.13), (0.22, 0.25), (0.34, 0.4), (0, 0.44)], m=gold, n=14, name="foot"))
+    top = lift + 2.32
+    parts.append(k.lathe([(0.26, top - 0.1), (0.2, top + 0.02), (0.09, top + 0.09), (0.11, top + 0.17), (0, top + 0.28)], m=gold, n=8, name="finial"))
+    s = k.star(0.2, light, points=4, inner=0.3)
+    s.data.transform(Matrix.Translation((0, 0, top + 0.42)) @ Matrix.Rotation(math.radians(90), 4, "X"))
+    lights.append(s)
+    halo = k.ring(0.46, top + 0.24, 0.042, light, n=18, sides=4, name="halo")
+    halo.data.transform(Matrix.Translation((0, 0, top + 0.24)) @ Matrix.Rotation(math.radians(-14), 4, "X") @ Matrix.Translation((0, 0, -top - 0.24)))
+    lights.append(halo)
 
     # The orbit: a tilted gold ring with three moons riding on it.
-    orbit = k.ring(1.72, 0, 0.065, gold, n=24, sides=5, name="orbit")
-    tilt = Matrix.Translation((0, 0, lift + 1.2)) @ Matrix.Rotation(math.radians(-13), 4, "Y") @ Matrix.Rotation(math.radians(20), 4, "X")
+    orbit = k.ring(1.27, 0, 0.055, gold, n=24, sides=5, name="orbit")
+    tilt = Matrix.Translation((0, 0, lift + 1.02)) @ Matrix.Rotation(math.radians(-13), 4, "Y") @ Matrix.Rotation(math.radians(20), 4, "X")
     orbit.data.transform(tilt)
     parts.append(orbit)
-    for a, r in ((20, 0.15), (150, 0.12), (265, 0.17)):
-        x, y = 1.72 * math.cos(math.radians(a)), 1.72 * math.sin(math.radians(a))
-        glow.append(k.sphere(r, tilt @ Vector((x, y, 0)), m=light, seg=7, rings=4, name="moonlet"))
+    for a, r in ((20, 0.12), (150, 0.1), (265, 0.13)):
+        x, y = 1.27 * math.cos(math.radians(a)), 1.27 * math.sin(math.radians(a))
+        lights.append(k.sphere(r, tilt @ Vector((x, y, 0)), m=light, seg=7, rings=4, name="moonlet"))
 
-    parts += _feather_wing(1, plume_r) + _feather_wing(-1, plume_l)
-    return {"": parts, "glow": glow}
+    return parts + lights + _feather_wing(1, plume) + _feather_wing(-1, plume)
 
 
 def egg_shell_fragment():
@@ -481,22 +481,23 @@ def egg_shell_fragment():
     return [k._obj("shard", bm, k.paint("sh_shell", [(0, k.CREAM), (1, (255, 250, 236))], 0, 1.2, dots=[((240, 170, 180), 8, 0.15)]))]
 
 
-NOTES = "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic."
+NOTES = "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it."
+LOOKS = "Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today."
 ASSETS = [
-    dict(name="egg_starter", build=egg_starter, budget=2500, size=[2.2, 3, 2.2], priority=1, order=1, replaces="Plots.egg starter (src/garden/Plots.luau 274-295)",
-         notes=NOTES),
-    dict(name="egg_meadow", build=egg_meadow, budget=2500, size=[2.2, 3, 2.2], priority=1, order=2, replaces="Plots.egg meadow (src/garden/Plots.luau 274-295)",
-         notes=NOTES),
-    dict(name="egg_forest", build=egg_forest, budget=2500, size=[2.2, 3, 2.2], priority=1, order=3, replaces="Plots.egg forest (src/garden/Plots.luau 274-295)",
-         notes=NOTES),
-    dict(name="egg_sunset", build=egg_sunset, budget=2500, size=[2.2, 3, 2.2], priority=1, order=4, replaces="Plots.egg sunset (src/garden/Plots.luau 274-295)",
-         notes=NOTES),
-    dict(name="egg_moon", build=egg_moon, budget=2500, size=[2.2, 3, 2.2], priority=1, order=5, replaces="Plots.egg moon (src/garden/Plots.luau 274-295)",
-         notes=NOTES + " egg_moon_glow is Neon.", glow={"glow": (255, 245, 190)}),
-    dict(name="egg_star", build=egg_star, budget=2500, size=[2.2, 3, 2.2], priority=1, order=6, replaces="Plots.egg star (src/garden/Plots.luau 274-295)",
-         notes=NOTES + " egg_star_glow is the Neon core seen through star pockets, front and back.", glow={"glow": (255, 226, 120)}),
-    dict(name="egg_celestial", build=egg_celestial, budget=2500, size=[2.2, 3, 2.2], priority=1, order=7, replaces="New top tier; no egg today",
-         notes="New top tier, deliberately larger than the others. egg_celestial_glow (halo, constellations, moonlets, crown star) is Neon.", glow={"glow": (255, 214, 110)}),
-    dict(name="egg_shell_fragment", build=egg_shell_fragment, budget=200, size=[1.1, 1.1, 0.4], priority=1, order=8, replaces="Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
-         notes="Upload skips its texture so code can tint it from EGG_COLOURS; set Color, spin and scale per piece."),
+    dict(name=f"egg_{id}", build=fit(build), budget=2500, size=[2.2, 3, 2.2], priority=1, order=order, replaces=replaces, notes=notes)
+    for order, (id, build, replaces, notes) in enumerate(
+        (
+            ("starter", egg_starter, "Plots.egg starter (src/garden/Plots.luau 274-295)", NOTES),
+            ("meadow", egg_meadow, "Plots.egg meadow (src/garden/Plots.luau 274-295)", NOTES),
+            ("forest", egg_forest, "Plots.egg forest (src/garden/Plots.luau 274-295)", NOTES),
+            ("sunset", egg_sunset, "Plots.egg sunset (src/garden/Plots.luau 274-295)", NOTES),
+            ("moon", egg_moon, "Plots.egg moon (src/garden/Plots.luau 274-295)", f"{NOTES} {LOOKS}"),
+            ("star", egg_star, "Plots.egg star (src/garden/Plots.luau 274-295)", f"{NOTES} {LOOKS}"),
+            ("celestial", egg_celestial, "New top tier: Plots.egg fallback from EGG_LOOKS", f"{NOTES} {LOOKS}"),
+        ),
+        1,
+    )
+] + [
+    dict(name="egg_shell_fragment", build=egg_shell_fragment, budget=200, size=[1, 0.6, 0.3], priority=1, order=8, replaces="Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
+         notes="One mesh, about 1 stud. Upload skips its texture: HatchFx bursts up to 6 clones tinted from EGG_COLOURS."),
 ]

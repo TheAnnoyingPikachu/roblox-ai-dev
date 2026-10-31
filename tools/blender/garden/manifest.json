@@ -21,7 +21,7 @@
     "priority": "P1",
     "replaces": "Plots.egg starter (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
     "glow": {}
   },
   "egg_meadow": {
@@ -29,9 +29,9 @@
     "png": "build/blender/garden/egg_meadow.png",
     "preview": "build/blender/garden/previews/egg_meadow.png",
     "size_studs": [
-      3.19,
+      2.76,
       2.89,
-      2.94
+      2.72
     ],
     "tris": 2043,
     "parts": {
@@ -46,7 +46,7 @@
     "priority": "P1",
     "replaces": "Plots.egg meadow (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
     "glow": {}
   },
   "egg_forest": {
@@ -54,9 +54,9 @@
     "png": "build/blender/garden/egg_forest.png",
     "preview": "build/blender/garden/previews/egg_forest.png",
     "size_studs": [
-      2.43,
-      3.31,
-      2.56
+      2.42,
+      3.3,
+      2.55
     ],
     "tris": 2422,
     "parts": {
@@ -71,7 +71,7 @@
     "priority": "P1",
     "replaces": "Plots.egg forest (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
     "glow": {}
   },
   "egg_sunset": {
@@ -96,7 +96,7 @@
     "priority": "P1",
     "replaces": "Plots.egg sunset (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic.",
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
     "glow": {}
   },
   "egg_moon": {
@@ -104,14 +104,13 @@
     "png": "build/blender/garden/egg_moon.png",
     "preview": "build/blender/garden/previews/egg_moon.png",
     "size_studs": [
-      3.15,
-      3.59,
-      1.72
+      2.8,
+      3.2,
+      1.53
     ],
     "tris": 1964,
     "parts": {
-      "egg_moon": 1784,
-      "egg_moon_glow": 180
+      "egg_moon": 1964
     },
     "target_size_studs": [
       2.2,
@@ -122,28 +121,21 @@
     "priority": "P1",
     "replaces": "Plots.egg moon (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic. egg_moon_glow is Neon.",
-    "glow": {
-      "egg_moon_glow": [
-        255,
-        245,
-        190
-      ]
-    }
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
+    "glow": {}
   },
   "egg_star": {
     "fbx": "build/blender/garden/egg_star.fbx",
     "png": "build/blender/garden/egg_star.png",
     "preview": "build/blender/garden/previews/egg_star.png",
     "size_studs": [
-      3.14,
-      3.37,
-      2.09
+      2.8,
+      3.01,
+      1.86
     ],
-    "tris": 1308,
+    "tris": 1300,
     "parts": {
-      "egg_star": 1228,
-      "egg_star_glow": 80
+      "egg_star": 1300
     },
     "target_size_studs": [
       2.2,
@@ -154,28 +146,21 @@
     "priority": "P1",
     "replaces": "Plots.egg star (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Plots.egg replacement; scale to the manifest height, keep the bed and hatch logic. egg_star_glow is the Neon core seen through star pockets, front and back.",
-    "glow": {
-      "egg_star_glow": [
-        255,
-        226,
-        120
-      ]
-    }
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
+    "glow": {}
   },
   "egg_celestial": {
     "fbx": "build/blender/garden/egg_celestial.fbx",
     "png": "build/blender/garden/egg_celestial.png",
     "preview": "build/blender/garden/previews/egg_celestial.png",
     "size_studs": [
-      4.82,
-      4.0,
-      3.44
+      2.59,
+      3.3,
+      2.55
     ],
     "tris": 2488,
     "parts": {
-      "egg_celestial": 1830,
-      "egg_celestial_glow": 658
+      "egg_celestial": 2488
     },
     "target_size_studs": [
       2.2,
@@ -184,16 +169,10 @@
     ],
     "tris_budget": 2500,
     "priority": "P1",
-    "replaces": "New top tier; no egg today",
+    "replaces": "New top tier: Plots.egg fallback from EGG_LOOKS",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "New top tier, deliberately larger than the others. egg_celestial_glow (halo, constellations, moonlets, crown star) is Neon.",
-    "glow": {
-      "egg_celestial_glow": [
-        255,
-        214,
-        110
-      ]
-    }
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
+    "glow": {}
   },
   "egg_shell_fragment": {
     "fbx": "build/blender/garden/egg_shell_fragment.fbx",
@@ -209,15 +188,15 @@
       "egg_shell_fragment": 88
     },
     "target_size_studs": [
-      1.1,
-      1.1,
-      0.4
+      1,
+      0.6,
+      0.3
     ],
     "tris_budget": 200,
     "priority": "P1",
     "replaces": "Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
     "script": "tools/blender/garden/assets/eggs.py",
-    "notes": "Upload skips its texture so code can tint it from EGG_COLOURS; set Color, spin and scale per piece.",
+    "notes": "One mesh, about 1 stud. Upload skips its texture: HatchFx bursts up to 6 clones tinted from EGG_COLOURS.",
     "glow": {}
   },
   "dash_sweeper": {
@@ -225,25 +204,24 @@
     "png": "build/blender/garden/dash_sweeper.png",
     "preview": "build/blender/garden/previews/dash_sweeper.png",
     "size_studs": [
-      23.93,
-      7.6,
-      8.6
+      40.0,
+      12.0,
+      6.0
     ],
-    "tris": 1884,
+    "tris": 1652,
     "parts": {
-      "dash_sweeper": 474,
-      "dash_sweeper_arm": 1410
+      "dash_sweeper": 1652
     },
     "target_size_studs": [
-      24,
-      8,
-      24
+      40,
+      12,
+      6
     ],
     "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "New: Splash Dash mini-game",
+    "replaces": "DashFx sweeper fallback (bar and hub of parts)",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "dash_sweeper_arm is 24 long and symmetric, so its bounding box centre is the spin axis. Spin it about Y in code; weld nothing to the post.",
+    "notes": "One mesh: DashFx moves the whole Model, whose pivot is its bounding box centre, and that is exactly the hub on all three axes. Arm lies along X at angle 0, 20 each side of the hub, with a post above and below. The hub sits at the pose: if at.y is the deck surface, add about 3 so the arm rides in the 0 to 6 knock band.",
     "glow": {}
   },
   "dash_ball": {
@@ -251,24 +229,24 @@
     "png": "build/blender/garden/dash_ball.png",
     "preview": "build/blender/garden/previews/dash_ball.png",
     "size_studs": [
-      12.06,
-      12.28,
-      12.06
+      10.06,
+      10.0,
+      10.06
     ],
-    "tris": 2334,
+    "tris": 2276,
     "parts": {
-      "dash_ball": 2334
+      "dash_ball": 2276
     },
     "target_size_studs": [
-      12,
-      12,
-      12
+      10,
+      10,
+      10
     ],
     "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "New: Splash Dash mini-game",
+    "replaces": "DashFx ball fallback (Ball part)",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "Roll or bounce it as a Ball part with this mesh welded; keep the mesh CanCollide false.",
+    "notes": "One mesh; bounding box centre is the ball centre, so PivotTo the pose.",
     "glow": {}
   },
   "dash_pendulum": {
@@ -276,25 +254,24 @@
     "png": "build/blender/garden/dash_pendulum.png",
     "preview": "build/blender/garden/previews/dash_pendulum.png",
     "size_studs": [
-      27.4,
-      19.5,
-      5.38
+      8.0,
+      30.0,
+      8.0
     ],
-    "tris": 2434,
+    "tris": 1030,
     "parts": {
-      "dash_pendulum": 968,
-      "dash_pendulum_hammer": 1466
+      "dash_pendulum": 1030
     },
     "target_size_studs": [
-      24,
-      19,
-      3
+      8,
+      30,
+      8
     ],
     "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "New: Splash Dash mini-game",
+    "replaces": "DashFx pendulum fallback (rod and Ball)",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "dash_pendulum_hammer hangs from the axle: pivot it about the Z axis through the hub, 1 stud (at height scale 1) below the top of the hammer mesh's bounding box. Swings along X, across the course.",
+    "notes": "One mesh, rod and bob only, because the whole Model swings. The hinge is the centre of the top face; the bob centre is 26 below it. DashFx pivots at the hinge and places the Model half its height below along the rod. The beam it hangs from is static, so it is not in this model: DashWorld needs one at the hinge height.",
     "glow": {}
   },
   "dash_platform": {
@@ -302,24 +279,24 @@
     "png": "build/blender/garden/dash_platform.png",
     "preview": "build/blender/garden/previews/dash_platform.png",
     "size_studs": [
-      15.99,
-      4.21,
-      16.08
+      12.0,
+      2.01,
+      12.06
     ],
-    "tris": 1816,
+    "tris": 1346,
     "parts": {
-      "dash_platform": 1816
+      "dash_platform": 1346
     },
     "target_size_studs": [
-      16,
-      4.2,
-      16
+      12,
+      2,
+      12
     ],
     "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "New: Splash Dash mini-game",
+    "replaces": "DashFx platform fallback (Block part)",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "Flat walkable top at the top of the mesh. Use an invisible 16-wide cylinder for collision at that height.",
+    "notes": "One mesh; flat walkable top, 1 above the bounding box centre. CanCollide true (DashFx); the carry raycast finds this part.",
     "glow": {}
   },
   "dash_arch": {
@@ -327,9 +304,9 @@
     "png": "build/blender/garden/dash_arch.png",
     "preview": "build/blender/garden/previews/dash_arch.png",
     "size_studs": [
-      29.2,
-      20.61,
-      6.4
+      28.0,
+      18.01,
+      6.0
     ],
     "tris": 2840,
     "parts": {
@@ -338,14 +315,14 @@
     },
     "target_size_studs": [
       28,
-      21,
-      4.5
+      18,
+      4
     ],
     "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "New: Splash Dash mini-game",
+    "replaces": "DashWorld arch fallback (parts)",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "One arch for start, checkpoint and finish: tint dash_arch_glow per role, and put the word on a SurfaceGui over the blank board, on both faces. Opening about 19 wide. Decorative: keep part collision for play, mesh CanCollide false.",
+    "notes": "One arch for start, checkpoint and finish: tint dash_arch_glow per role and put the word on a SurfaceGui over the blank board, on both faces. Opening about 18 wide, 10 high. The barrier is a separate invisible part. Decor from DashWorld; no mesh collision.",
     "glow": {
       "dash_arch_glow": [
         120,
@@ -359,24 +336,24 @@
     "png": "build/blender/garden/dash_ready_pad.png",
     "preview": "build/blender/garden/previews/dash_ready_pad.png",
     "size_studs": [
-      14.0,
-      11.22,
-      14.0
+      12.0,
+      1.27,
+      12.0
     ],
-    "tris": 1164,
+    "tris": 756,
     "parts": {
-      "dash_ready_pad": 1164
+      "dash_ready_pad": 756
     },
     "target_size_studs": [
-      14,
-      11,
-      14
+      12,
+      1,
+      12
     ],
     "tris_budget": 3000,
     "priority": "P2",
-    "replaces": "New: Splash Dash plaza ready pad",
+    "replaces": "DashWorld ready pad fallback (Cylinder part)",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "Blank sign board faces the front for a SurfaceGui. Decorative: keep part collision for play, mesh CanCollide false.",
+    "notes": "Low, as section 9 asks, so no sign post: DashWorld's flat part carries the prompt and its label. Decor from DashWorld; no mesh collision.",
     "glow": {}
   },
   "dash_island": {
@@ -384,24 +361,24 @@
     "png": "build/blender/garden/dash_island.png",
     "preview": "build/blender/garden/previews/dash_island.png",
     "size_studs": [
-      79.49,
-      48.19,
-      82.97
+      299.69,
+      66.15,
+      158.03
     ],
-    "tris": 4988,
+    "tris": 4708,
     "parts": {
-      "dash_island": 4988
+      "dash_island": 4708
     },
     "target_size_studs": [
-      80,
-      48,
-      80
+      300,
+      66,
+      160
     ],
     "tris_budget": 5000,
     "priority": "P2",
-    "replaces": "New: Splash Dash floating island base",
+    "replaces": "None: the decks stand alone without it",
     "script": "tools/blender/garden/assets/dash.py",
-    "notes": "Grass top is flat at 30 studs above the lowest rock; decoration stays near the rim. The waterfall spills off the front. Decorative: keep part collision for play, mesh CanCollide false.",
+    "notes": "Long axis X, the course direction. The grass rim is 48 above the lowest rock and the basin floor 3 below the rim, so base.Y 70 puts the rim level with the water plane at y 118; centre it on about (-10, 350). Decoration stays on the rim, under 18 tall, below the decks at y 140. The waterfall spills off the front. Decor from DashWorld; no mesh collision.",
     "glow": {}
   }
 }

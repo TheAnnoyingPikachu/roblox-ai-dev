@@ -6,8 +6,9 @@ Conventions as Night (1 unit = 1 stud, origin at base centre) except the front: 
 Blender -Y, not +Y. NIGHT-010 measured uploaded models arriving with their Blender +Y side on
 Roblox +Z at yaw 0, so a -Y front reaches Roblox -Z, the LookVector of an unrotated CFrame.
 
-Glowing pieces go in a separate `glow` part (mesh `<asset>_glow`): the game leaves them untextured
-and sets them to Neon in the colour listed under `glow` in manifest.json.
+A `glow` part (mesh `<asset>_glow`) stays untextured and the game sets it to Neon in the colour under
+`glow` in manifest.json. Only multi-mesh assets can have one: eggs and moving pieces are one mesh
+(docs/architecture/garden.md section 9), so their glowing pieces are baked bright.
 """
 
 import importlib.util

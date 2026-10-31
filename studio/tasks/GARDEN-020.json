@@ -11,12 +11,15 @@
     "src/garden/Plots.luau EGG_LOOKS and Plots.egg",
     "src/garden-client/ClientState.luau EGG_COLOURS",
     "origin/game5/spire .github/workflows/upload-assets.yml, tools/blender/upload-assets.mjs, tools/blender/write-assets-module.mjs",
-    "studio/tasks/NIGHT-010.json notes on origin/night/map-v2 (measured facing)"
+    "studio/tasks/NIGHT-010.json notes on origin/night/map-v2 (measured facing)",
+    "origin/garden/v2 docs/architecture/garden.md section 9 (model names, sizes, placement)"
   ],
   "dependencies": [],
   "acceptance_criteria": [
     "15 assets exist as Blender scripts, FBX and PNG in assets/garden/, with manifest entries; build/blender/garden/contact_sheet.png and eggs_lineup.png are reviewed",
-    "Every egg is 800-2.5k tris, egg_shell_fragment under 200, Splash Dash pieces 500-3k and dash_island up to 5k (manifest tris)",
+    "Every egg is 800-2.5k tris, egg_shell_fragment under 200, Splash Dash pieces 500-3k and dash_island up to 5k (manifest tris), with no decimation",
+    "Names, sizes and mesh counts match docs/architecture/garden.md section 9; GardenAssets.spec.luau proves them",
+    "Moving models are one mesh with the bounding box centre where section 9 expects it, because pivots are not kept on import",
     "Fronts sit on Blender -Y so they reach Roblox -Z at yaw 0, per the Studio measurement in NIGHT-010",
     "src/shared/GardenAssets.luau is generated with nil ids; GardenAssets.spec.luau proves it matches the manifest",
     "The upload workflow offers night, spire and garden, and regenerating NightAssets.luau through the moved script changes only its header line",
@@ -32,7 +35,7 @@
   ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "Numbered 020 to stay clear of the designer's GARDEN tasks. upload-assets.mjs and write-assets-module.mjs moved to tools/blender/ exactly as on origin/game5/spire, so that branch merges without a conflict. src/relay/Models.luau line 158 and the NightAssets.luau header still name the old script path; left alone because this task changes no game code. Upload is run by the Director after merge. egg_shell_fragment uploads untextured so code can tint it. GardenAssets.luau keeps the NightAssets shape as asked, so Neon colours live in manifest.json and tools/blender/garden/README.md; a generic Models loader that needs them can add the Spire glow field later. Facing follows from the NIGHT-010 measurement and is unseen in Studio for Garden until the upload.",
+  "notes": "Numbered 020 to stay clear of the designer's GARDEN tasks. upload-assets.mjs and write-assets-module.mjs moved to tools/blender/ exactly as on origin/game5/spire, so that branch merges without a conflict. src/relay/Models.luau line 158 and the NightAssets.luau header still name the old script path; left alone because this task changes no game code. Upload is run by the Director after merge. The designer's architecture section 9 overrides the first brief where they differ, on the coordinator's instruction: sweeper 40 long, ball 10, pendulum 30 tall, platform 12 x 2, ready pad 12 wide and low, island 300 x 160 (the brief said 24, 12, a hammer on a beam, 16, 14 with a sign post, 80 x 80). For SHANNON's checkpoint: (1) eggs are one mesh because Models.nightPart keeps one MeshPart, so the moon, star and celestial glowing pieces are baked bright, not the separate Neon meshes the brief asked for; to get Neon, make nightPart keep the glow mesh and return the eggs to two parts. (2) dash_pendulum has no beam, since the whole Model swings; DashWorld needs a static beam at the hinge height, y 170. (3) dash_sweeper's hub sits at the pose: at.y 140 is the deck level, so unless DashFx adds about 3, half the arm is under the deck. (4) dash_ready_pad has no sign post because section 9 says low. egg_shell_fragment uploads untextured so code can tint it. tools/check-scope.mjs prints nothing on Windows because its main guard compares a file URL with a backslash path; scope was checked by calling checkScope directly. Facing follows from the NIGHT-010 measurement and is unseen in Studio for Garden until the upload.",
   "evidence": [],
   "files": [
     ".github/workflows/upload-assets.yml",
