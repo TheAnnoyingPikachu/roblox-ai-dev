@@ -517,7 +517,7 @@ Status: draft for SHANNON. The owner asked for "an even higher tier of egg that 
 
 - **Fact (computed):** with the existing eggs, a 1 hour a day player gets Moon on day 2 and Star on day 5, matching the section B targets.
 - **Fact (computed):** the suggested 2,500,000 is under 5 minutes of income at Level 25 (about 8,700 coins/s) and cheaper than the last bed. Prices up to 200,000,000 do not move the first purchase at 1 hour a day: only level and stock do.
-- **Result:** 1,000,000,000 is about 6 days of earnings at Level 25, the same price as the Rainbow fence, the existing long-term coin goal. First Celestial: day 12 at 1 hour a day, day 17 at 30 minutes, day 6 at 3 hours. Nothing before Level 25 changes.
+- **Result:** 1,000,000,000 is 4 to 7 days of earnings at Level 25 (150M to 280M coins a day), the same price as the Rainbow fence, the existing long-term coin goal. First Celestial: day 12 at 1 hour a day, day 17 at 30 minutes, day 6 at 3 hours. Nothing before Level 25 changes.
 - Payback rises at every tier: 19 s, 44 s, 63 s, 107 s, 373 s, then 64,429 s (about 18 hours of income).
 - **Known effect:** income climbs past the old ceiling. At day 45, a 1 hour a day player earns about 496,000 coins/s against 42,752 without the egg. It is the last tier, so no later purchase gets skipped; only the cosmetics at 1B and 10B come sooner, and those were within reach by day 45 anyway.
 

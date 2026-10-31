@@ -1,7 +1,7 @@
 # 0008: Egg Garden profiles, coins, odds, remotes and child safety
 
 Date: 2026-10-25
-Status: Proposed by A09 for SHANNON (CLAUDE.md rule 8). Implements `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) sections C to H and J; module map in `docs/architecture/garden.md`. Review before the first production release.
+Status: Proposed by A09 for SHANNON (CLAUDE.md rule 8). Implements `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) sections C to H and J; module map in `docs/architecture/garden.md`. Review before the first production release. Amended by decision 0012 (v0.2: Celestial Egg, Splash Dash, schema v2).
 
 ## Decision
 
