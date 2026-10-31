@@ -120,18 +120,18 @@
     "texture": null
   },
   "katana": {
-    "model": 130033665575014,
-    "decal": 130940189694086,
+    "model": 128223383052265,
+    "decal": 114640526358499,
     "texture": null
   },
   "kodachi": {
-    "model": 126327875446889,
-    "decal": 89721088670503,
+    "model": 123064479503944,
+    "decal": 84951035823710,
     "texture": null
   },
   "nodachi": {
-    "model": 114510079315413,
-    "decal": 124995875264537,
+    "model": 103425016375046,
+    "decal": 120040464318044,
     "texture": null
   },
   "cedar_tree": {
@@ -182,6 +182,51 @@
   "koi": {
     "model": 116045312463423,
     "decal": 103154342340939,
+    "texture": null
+  },
+  "katana_saya": {
+    "model": 115104271530319,
+    "decal": 128161651992846,
+    "texture": null
+  },
+  "kodachi_saya": {
+    "model": 124829526755877,
+    "decal": 72159511435573,
+    "texture": null
+  },
+  "nodachi_saya": {
+    "model": 131645651535244,
+    "decal": 129477102758470,
+    "texture": null
+  },
+  "blade_inferno": {
+    "model": 133565487546305,
+    "decal": null,
+    "texture": null
+  },
+  "blade_lightning": {
+    "model": 117505846738177,
+    "decal": null,
+    "texture": null
+  },
+  "blade_void": {
+    "model": 108307365953294,
+    "decal": null,
+    "texture": null
+  },
+  "blade_galaxy": {
+    "model": 104926048992645,
+    "decal": null,
+    "texture": null
+  },
+  "blade_gold": {
+    "model": 137189385895923,
+    "decal": null,
+    "texture": null
+  },
+  "blade_shadow": {
+    "model": 136561234193621,
+    "decal": null,
     "texture": null
   }
 }
