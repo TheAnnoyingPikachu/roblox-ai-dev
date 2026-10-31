@@ -209,13 +209,13 @@ def shot(file, parts_list, label, w=600, h=600, direction=(1, -0.12, 0.1), crop=
 
     text = bpy.data.curves.new("label", "FONT")
     text.body = label
-    text.size = cam_data.ortho_scale * 0.038 * (max(w, h) / w)
+    text.size = cam_data.ortho_scale * (0.02 if w > h else 0.038)
     note = bpy.data.objects.new("label", text)
     note.data.materials.append(kit.mat("label", (255, 225, 170), kind="flat", emit=3.0))
     scene.collection.objects.link(note)
     note.parent = cam
-    aspect = h / w
-    note.location = (-cam_data.ortho_scale * 0.47, cam_data.ortho_scale * (-aspect / 2 + 0.03), -2)
+    y = h / w / 2 - 0.04 if w > h else -h / w / 2 + 0.03  # top left on wide shots, clear of the swords
+    note.location = (-cam_data.ortho_scale * 0.47, cam_data.ortho_scale * y, -2)
     path = os.path.join(OUT, f"{file}.png")
     scene.render.filepath = path
     scene.render.image_settings.file_format = "PNG"
@@ -246,6 +246,17 @@ def hilt_tile(weapon):
     grip = {"katana": 1.4, "kodachi": 1.0, "nodachi": 2.0}[weapon]
     crop = (Vector((lo.x, lo.y, lo.z)), Vector((hi.x, hi.y, lo.z + grip + 0.75)))
     return shot(f"hilt_{weapon}", [parts], f"{weapon} hilt", direction=(1, -0.75, 0.4), crop=crop, pad=1.05)
+
+
+def tsuba_tile(weapon):
+    kit.reset()
+    parts = sword(weapon)
+    lo, hi = bounds(list(parts.values()))
+    size = {"katana": 0.56, "kodachi": 0.5, "nodachi": 0.72}[weapon]
+    grip = hi.z - lo.z - LENGTHS[weapon] - 0.24
+    z = lo.z + grip + 0.2
+    crop = (Vector((-size, -size, z - 0.05)), Vector((size, size, z + 0.05)))
+    return shot(f"tsuba_{weapon}", [parts], f"{weapon} tsuba", direction=(0.22, 0.12, 1), crop=crop, pad=1.25)
 
 
 def art_tile(art):
@@ -305,6 +316,7 @@ def main():
         [lineup("lineup", [lambda w=w: sword(w) for w in reversed(heroes)] + [lambda w=w: load(f"{w}_saya") for w in reversed(heroes)], "lineup")],
         [hero_tile(w) for w in heroes],
         [hilt_tile(w) for w in heroes],
+        [tsuba_tile(w) for w in heroes],
         [art_tile(a) for a in arts[:3]],
         [art_tile(a) for a in arts[3:]],
     ]

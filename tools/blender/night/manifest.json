@@ -585,9 +585,9 @@
       5.84,
       1.02
     ],
-    "tris": 2784,
+    "tris": 2816,
     "parts": {
-      "katana": 1934,
+      "katana": 1966,
       "katana_blade": 366,
       "katana_glow": 484
     },
@@ -616,9 +616,9 @@
       3.84,
       0.84
     ],
-    "tris": 2268,
+    "tris": 2300,
     "parts": {
-      "kodachi": 1642,
+      "kodachi": 1674,
       "kodachi_blade": 302,
       "kodachi_glow": 324
     },
@@ -649,9 +649,9 @@
     ],
     "tris": 2907,
     "parts": {
-      "nodachi": 1950,
-      "nodachi_blade": 424,
-      "nodachi_glow": 533
+      "nodachi": 1998,
+      "nodachi_blade": 428,
+      "nodachi_glow": 481
     },
     "root": [
       0.0,
@@ -674,9 +674,9 @@
     "png": "build/blender/night/katana_saya.png",
     "preview": "build/blender/night/previews/katana_saya.png",
     "size_studs": [
-      0.39,
+      0.41,
       4.39,
-      0.67
+      0.69
     ],
     "tris": 900,
     "parts": {
@@ -698,9 +698,9 @@
     "png": "build/blender/night/kodachi_saya.png",
     "preview": "build/blender/night/previews/kodachi_saya.png",
     "size_studs": [
-      0.38,
+      0.4,
       2.79,
-      0.52
+      0.54
     ],
     "tris": 900,
     "parts": {
@@ -722,9 +722,9 @@
     "png": "build/blender/night/nodachi_saya.png",
     "preview": "build/blender/night/previews/nodachi_saya.png",
     "size_studs": [
-      0.4,
+      0.42,
       6.19,
-      0.85
+      0.87
     ],
     "tris": 1272,
     "parts": {
@@ -866,19 +866,19 @@
     "png": "build/blender/night/blade_gold.png",
     "preview": "build/blender/night/previews/blade_gold.png",
     "size_studs": [
-      0.34,
+      0.45,
       4.22,
-      0.58
+      0.62
     ],
     "tris": 1318,
     "parts": {
-      "blade_gold_blade": 1054,
-      "blade_gold_glow": 264
+      "blade_gold_blade": 586,
+      "blade_gold_glow": 732
     },
     "root": [
-      -0.02,
+      0.0,
       -2.11,
-      0.121
+      0.09
     ],
     "target_size_studs": [
       1,

@@ -35,7 +35,7 @@ SHAKUDO = (40, 34, 46)
 WEAPONS = {
     "katana": dict(
         blade=4.2, grip=1.4, width=0.32, sori=0.2, saki=0.74, r=0.165, tsuba="maru", ito=(30, 34, 78), metal=k.GOLD,
-        guard=IRON, rim=k.GOLD, saya=(24, 22, 32), flake=k.GOLD, cord=(40, 48, 120), bands=0, step=0.06,
+        guard=IRON, rim=k.GOLD, saya=(24, 22, 32), flake=k.GOLD, cord=(66, 84, 190), bands=0, step=0.06,
     ),
     "kodachi": dict(
         blade=2.6, grip=1.0, width=0.28, sori=0.09, saki=0.78, r=0.15, tsuba="aoi", ito=(150, 24, 30), metal=SILVER,
@@ -43,7 +43,7 @@ WEAPONS = {
     ),
     "nodachi": dict(
         blade=6.0, grip=2.0, width=0.38, sori=0.32, saki=0.7, r=0.19, tsuba="mokko", ito=(26, 24, 30), metal=k.GOLD,
-        guard=IRON, rim=k.GOLD, saya=(20, 20, 26), flake=(120, 22, 26), cord=(110, 52, 150), bands=3, step=0.075,
+        guard=IRON, rim=k.GOLD, saya=(20, 20, 26), flake=(120, 22, 26), cord=(150, 70, 200), bands=3, step=0.095,
     ),
 }
 
@@ -369,7 +369,7 @@ def hilt(w):
     lo, hi = -grip + 0.05, -0.15
     turns = max(3, round((hi - lo) / 0.2))
     pitch = (hi - lo) / turns
-    cord = 0.42 * pitch
+    cord = 0.54 * pitch
 
     def waist(z):
         return 1 - 0.06 * math.sin(math.pi * (z - lo) / (hi - lo))
@@ -392,15 +392,17 @@ def hilt(w):
     for i in range(turns + 1):
         z = lo + i * pitch
         for side in (1, -1):
-            parts.append(k.box((0.12, 0.05, 0.075), (0, side * (b * waist(z) + 0.022), z), m=ito))
+            parts.append(k.sphere(0.05, (0, side * (b * waist(z) + 0.012), z), m=ito, scale=(1.3, 0.6, 0.85), seg=6, rings=2))
 
     # Menuki: small gold blossoms in the middle windows, one on each flat.
     gold = k.mat("menuki", k.GOLD, var=0.14, scale=20)
     mid = turns // 2
+    blossom = polar(lambda t: 0.088 * (0.7 + 0.3 * abs(math.cos(2.5 * t)) ** 0.6), 20)
     for sigma, i in ((1, mid), (-1, mid - 1)):
         z = lo + i * pitch
-        for dy, dz, size in ((0, 0.03, 0.05), (0.042, -0.024, 0.042), (-0.042, -0.024, 0.042)):
-            parts.append(k.sphere(size, (sigma * (a * waist(z) + 0.022), dy, z + dz), m=gold, scale=(0.5, 1, 1), seg=6, rings=3))
+        x = sigma * (a * waist(z) + 0.03)
+        parts.append(k.plate([blossom], 0.024, loc=(x, 0, z), rot=(0, 90, 0), m=gold))
+        parts.append(k.sphere(0.03, (x + sigma * 0.012, 0, z), m=metal, scale=(0.6, 1, 1), seg=6, rings=2))
     return parts
 
 
@@ -422,9 +424,9 @@ def saya(w):
         wf = w0 / KATANA_W
         ax, ay = 0.036 * wf + 0.075, w0 / 2 + 0.065
         end = length + 0.14
-        lacquer = k.mat("lacquer", w["saya"], kind="patches", scale=70, rgb2=w["flake"])
+        lacquer = k.mat("lacquer", w["saya"], kind="patches", scale=130, rgb2=w["flake"])
         ramp = next(n for n in lacquer.node_tree.nodes if n.type == "VALTORGB")
-        ramp.color_ramp.elements[1].position = 0.66
+        ramp.color_ramp.elements[1].position = 0.7
         horn = k.mat("horn", (30, 26, 30), var=0.2, scale=12)
         metal = k.mat("metal", w["metal"], var=0.14, scale=9)
         cord = k.mat("cord", w["cord"], var=0.3, scale=60, kind="wood")
@@ -460,13 +462,13 @@ def saya(w):
             a = 2 * math.pi * i / each
             s = sk + 0.14 + pitch * i / each
             f = 1 - 0.1 * s / end
-            coil.append(((ax * f + 0.022) * math.cos(a), cy(s) + (ay * f + 0.022) * math.sin(a), Z0 + s))
+            coil.append(((ax * f + 0.028) * math.cos(a), cy(s) + (ay * f + 0.028) * math.sin(a), Z0 + s))
         link = [(kx + 0.05, cy(sk) + 0.3 * ay, Z0 + sk + 0.06), (kx + 0.05, cy(sk) + 0.2 * ay, Z0 + sk + 0.1)]
-        parts.append(k.tube(link + coil, 0.022, m=cord, n=5))
+        parts.append(k.tube(link + coil, 0.031, m=cord, n=5))
         ex, ey, ez = coil[-1]
         for side, drop in ((1, 0.42), (-1, 0.34)):
             pts = [(ex, ey, ez), (ex + side * 0.03, ey - 0.06, ez + 0.08), (ex + side * 0.06, ey - 0.13, ez + drop * 0.55), (ex + side * 0.07, ey - 0.16, ez + drop)]
-            parts.append(k.tube(pts, [0.022, 0.022, 0.024, 0], m=cord, n=5))
+            parts.append(k.tube(pts, [0.031, 0.031, 0.034, 0], m=cord, n=5))
         return parts
 
     return build
@@ -660,7 +662,9 @@ def gold():
     profile = [(0, 0), (0.05, 0.36), (0.13, 0.5), (0.16, groove), (0.28, groove), (0.31, 0.5), (0.64, 0.34), (1, 0)]
     blade = Blade(stations, profile, m, ridge=5)
 
-    # Kurikara: a dragon coiled round the lower blade, head on the outer flat looking up it.
+    # Kurikara: a dragon coiled round the lower blade, head on the outer flat looking up it. It
+    # lives in the glow part so the darker art colour lifts it off the blade.
+    d = k.mat("dragon", (200, 140, 20), kind="flat")
     count = 30
     coil, radii = [], []
     for i in range(count):
@@ -668,26 +672,27 @@ def gold():
         s = 0.38 + 1.2 * u
         phi = -math.pi / 2 + 2.25 * 2 * math.pi * u
         w = blade.w(s)
-        coil.append((0.105 * math.cos(phi), ys(s) + w / 2 + (w / 2 + 0.05) * math.sin(phi), Z0 + s))
-        radii.append(lerp(0.012, 0.05, ease(u * 2.2)) * (1 - 0.15 * ease((u - 0.7) / 0.3)))
+        coil.append((0.125 * math.cos(phi), ys(s) + w / 2 + (w / 2 + 0.065) * math.sin(phi), Z0 + s))
+        radii.append(lerp(0.014, 0.07, ease(u * 2)))
     x, y, z = coil[-1]
-    head = [(x + 0.012, y, z + 0.08), (x + 0.018, y + 0.005, z + 0.16), (x + 0.012, y + 0.01, z + 0.25), (x + 0.004, y + 0.012, z + 0.36)]
-    parts = [blade.mesh(), k.tube(coil + head, radii + [0.062, 0.066, 0.05, 0.0], m=m, n=6)]
-    jaw = [(x + 0.02, y + 0.03, z + 0.1), (x + 0.042, y + 0.04, z + 0.2), (x + 0.03, y + 0.045, z + 0.3)]
-    parts.append(k.tube(jaw, [0.03, 0.02, 0], m=m, n=5))
+    head = [(x + 0.012, y, z + 0.09), (x + 0.022, y, z + 0.2), (x + 0.03, y, z + 0.33), (x + 0.03, y, z + 0.46), (x + 0.024, y, z + 0.56)]
+    dragon = [k.tube(coil + head, radii + [0.088, 0.1, 0.075, 0.056, 0], m=d, n=6)]
+    jaw = [(x + 0.06, y, z + 0.16), (x + 0.1, y, z + 0.28), (x + 0.098, y, z + 0.42)]
+    dragon.append(k.tube(jaw, [0.042, 0.032, 0], m=d, n=5))
     for side in (1, -1):
-        horn = [(x, y + side * 0.03, z + 0.13), (x - 0.03, y + side * 0.1, z + 0.04), (x - 0.05, y + side * 0.16, z - 0.1), (x - 0.04, y + side * 0.15, z - 0.24)]
-        parts.append(k.tube(horn, [0.024, 0.02, 0.012, 0], m=m, n=5))
+        horn = [(x, y + side * 0.06, z + 0.2), (x - 0.02, y + side * 0.15, z + 0.09), (x - 0.03, y + side * 0.22, z - 0.08), (x - 0.02, y + side * 0.24, z - 0.3)]
+        dragon.append(k.tube(horn, [0.036, 0.03, 0.018, 0], m=d, n=5))
+        dragon.append(k.sphere(0.022, (x + 0.075, y + side * 0.06, z + 0.26), m=d, seg=6, rings=2))
 
     def scroll(s):
         return 0.62 + 0.09 * math.sin(s * 9)
 
     glow = blade.line(lambda s: 0.22, 0.016, BASE, edge - 0.2, step=0.7, lift=0.006)
-    glow += blade.line(scroll, 0.016, 1.9, edge - 0.05, step=0.05)
-    for s in (2.0, 2.6, 3.2):
+    glow += blade.line(scroll, 0.016, 2.25, edge - 0.05, step=0.05)
+    for s in (2.5, 3.05, 3.6):
         glow.append(blade.star(s, 0.86, 0.04))
         glow.append(blade.star(s, -0.86, 0.04))
-    return {"blade": parts, "glow": glow}
+    return {"blade": [blade.mesh()], "glow": glow + dragon}
 
 
 def shadow():
