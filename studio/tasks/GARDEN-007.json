@@ -1,0 +1,44 @@
+{
+  "task_id": "GARDEN-007",
+  "project_id": "GARDEN-001",
+  "owner": "A09",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Design and architecture for Egg Garden v0.2: the Celestial Egg and the Splash Dash mini-game, with the GDD sections, decision 0012, the pacing check, the architecture update and the implementation task split.",
+  "inputs": [
+    "Studio Director rulings on the owner's v0.2 requests (Celestial Egg, Splash Dash)",
+    "docs/game-design/game4-gdd.md",
+    "docs/architecture/garden.md",
+    "docs/decisions/0008-egg-garden.md",
+    "src/shared/GardenConfig.luau, GardenRules.luau, HatchRules.luau, GardenProgress.luau"
+  ],
+  "dependencies": [
+    "GARDEN-006"
+  ],
+  "acceptance_criteria": [
+    "docs/game-design/game4-gdd.md sections S and T give rules, check values, UI and every edge case the Director listed",
+    "docs/decisions/0012-egg-garden-v02.md records the economy, schema v2, migration and remotes; python docs/game-design/game4-pacing-check.py reproduces its pacing tables",
+    "docs/architecture/garden.md has exact Luau signatures, request actions, Fx payloads, status fields, the file list with ownership and the model naming contract",
+    "GARDEN-008, GARDEN-009 and GARDEN-010 have disjoint files; node tools/validate-tasks.mjs passes"
+  ],
+  "verification": "SHANNON reviews with the milestone checkpoint in GARDEN-011; CI task checks",
+  "output_artifacts": [
+    "docs/game-design/game4-gdd.md",
+    "docs/game-design/game4-pacing-check.py",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/architecture/garden.md"
+  ],
+  "files": [
+    "docs/game-design/game4-gdd.md",
+    "docs/game-design/game4-pacing-check.py",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/decisions/0008-egg-garden.md",
+    "docs/architecture/garden.md",
+    "studio/tasks/GARDEN-00*.json",
+    "studio/tasks/GARDEN-01*.json"
+  ],
+  "tests": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "evidence": []
+}
