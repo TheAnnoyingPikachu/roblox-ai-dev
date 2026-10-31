@@ -1,8 +1,9 @@
 --!strict
--- Pure Egg Garden progression and the saved profile (GDD G, H5 and H7, decision 0008): defaults,
--- sanitise, login and offline payout, snapshots, banking, XP and quest stats around the plot and
--- hatch rules, likes, the gate, and the shared rewards (MetaRules with Garden's config, scaled by
--- income). No Roblox APIs; every input comes from the server.
+-- Pure Egg Garden progression and the saved profile (GDD G, H5, H7 and T5, decisions 0008 and
+-- 0012): defaults, sanitise, login and offline payout, snapshots, banking, XP and quest stats
+-- around the plot and hatch rules, likes, the gate, Splash Dash rewards, and the shared rewards
+-- (MetaRules with Garden's config, scaled by income). No Roblox APIs; every input comes from the
+-- server.
 
 local GardenConfig = require("./GardenConfig")
 local GardenRules = require("./GardenRules")
@@ -13,11 +14,12 @@ local GardenProgress = {}
 
 type Profile = GardenConfig.Profile
 
-GardenProgress.SCHEMA_VERSION = 1
+GardenProgress.SCHEMA_VERSION = 2 -- decision 0012
 
 local MAX_COINS = GardenConfig.MAX_COINS
 local MAX_COUNT = MetaRules.MAX_COUNT
 local MAX_TIME = 1e12
+local DASH = GardenConfig.DASH
 
 local function floor(x: number): number
 	return math.floor(x + 1e-9)
@@ -87,6 +89,8 @@ function GardenProgress.defaults(now: number): Profile
 		daily = { streak = 0, last = -1 },
 		week = { key = -1, days = 0, lastDay = -1, claimed = false },
 		quests = { day = -1, progress = {}, claimed = {} },
+		prizeEggs = {},
+		dash = { day = -1, prizes = 0, coins = 0 },
 	}
 end
 
@@ -115,13 +119,7 @@ local function sanitizeCreatures(p: Profile, list: any)
 	local stored: { number } = {}
 	for _, c in ipairs(list) do
 		local id = type(c) == "table" and MetaRules.count(c.id, MAX_COUNT) or 0
-		local known = id >= 1
-			and type(c.s) == "string"
-			and GardenConfig.species(c.s)
-			and type(c.m) == "string"
-			and GardenConfig.mutation(c.m)
-			and type(c.z) == "string"
-			and GardenConfig.size(c.z)
+		local known = id >= 1 and GardenConfig.indexable(c.s, c.m) and GardenConfig.size(c.z)
 		if known and not seen[id] then
 			seen[id] = true
 			local pad = MetaRules.count(c.placed, MAX_COUNT)
@@ -184,7 +182,7 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 	if type(record.index) == "table" then
 		for _, key in ipairs(record.index) do
 			local s, m = string.match(if type(key) == "string" then key else "", "^(%w+):(%w+)$")
-			if s and m and GardenConfig.species(s) and GardenConfig.mutation(m) and not table.find(p.index, key) then
+			if s and m and GardenConfig.indexable(s, m) and not table.find(p.index, key) then
 				table.insert(p.index, key)
 			end
 		end
@@ -218,6 +216,23 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 				end
 			end
 		end
+	end
+	-- A v1 record has neither field and keeps the defaults. Every flush passes through here, so
+	-- dropping either would lose it (decision 0012).
+	if type(record.prizeEggs) == "table" then
+		for _, egg in GardenConfig.EGGS do
+			local n = if egg.price then MetaRules.count(record.prizeEggs[egg.id], GardenConfig.PRIZE_STORE) else 0
+			if n >= 1 then
+				p.prizeEggs[egg.id] = n
+			end
+		end
+	end
+	if type(record.dash) == "table" then
+		p.dash = {
+			day = MetaRules.dayNumber(record.dash.day),
+			prizes = MetaRules.count(record.dash.prizes, DASH.prizesPerDay),
+			coins = MetaRules.count(record.dash.coins, DASH.coinsPerDay),
+		}
 	end
 	return MetaRules.sanitizeMeta(CONFIG, record, p)
 end
@@ -387,6 +402,46 @@ end
 -- Owners are checked separately.
 function GardenProgress.gateAllows(gate: string, isFriend: boolean): boolean
 	return gate == "open" or (gate == "friends" and isFriend)
+end
+
+-- Splash Dash rewards (GDD T5, decision 0012) -------------------------------------------------
+
+local function dashToday(p: Profile, today: number): Profile
+	local out = GardenRules.copy(p)
+	if out.dash.day ~= today then
+		out.dash = { day = today, prizes = 0, coins = 0 }
+	end
+	return out
+end
+
+function GardenProgress.dashPrizesToday(p: Profile, today: number): number
+	return if p.dash.day == today then p.dash.prizes else 0
+end
+
+function GardenProgress.dashEligible(p: Profile, today: number): boolean
+	return GardenProgress.dashPrizesToday(p, today) < DASH.prizesPerDay
+end
+
+-- Saved at any level and with any beds: planting has its own gate (GardenRules.plantPrize).
+function GardenProgress.dashPrize(p: Profile, today: number): (Profile, boolean)
+	if not GardenProgress.dashEligible(p, today) then
+		return p, false
+	end
+	local out = dashToday(p, today)
+	out.prizeEggs[DASH.prizeEgg] = math.min(GardenConfig.PRIZE_STORE, (out.prizeEggs[DASH.prizeEgg] or 0) + 1)
+	out.dash.prizes += 1
+	return out, true
+end
+
+function GardenProgress.dashCoins(p: Profile, today: number): (Profile, number)
+	local out = dashToday(p, today)
+	if out.dash.coins >= DASH.coinsPerDay then
+		return p, 0
+	end
+	local paid = math.min(MAX_COINS - out.coins, GardenProgress.scaled(out, DASH.coinsBase, DASH.coinsMinutes))
+	out.coins += paid
+	out.dash.coins += 1
+	return out, paid
 end
 
 -- Shared meta (MetaRules with Garden's config) -----------------------------------------------

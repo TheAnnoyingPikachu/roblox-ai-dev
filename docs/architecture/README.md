@@ -10,7 +10,7 @@ code; open the long docs only at the sections a task's `inputs` name.
 | Bake Rush (pilot) | `default.project.json` | `src/server` | `src/client` | `BakeRules`, `BakeConfig`, `SaveRules`, `RewardRules` | `src/server/CLAUDE.md` |
 | Relay Rounds | `relay.project.json` | `src/relay` | `src/relay-client` | `RelayRules`, `StyleRules`, `ProgressRules` | `src/relay/CLAUDE.md` |
 | Hundred Demon Night | `night.project.json` | `src/night` | `src/night-client` | `Rng`, `CombatRules`, `WaveRules`, `BossRules`, `BlessingRules`, `RunRules`, `NightProgress`, `NightAssets` | `src/night/CLAUDE.md` |
-| Egg Garden | `garden.project.json` | `src/garden` | `src/garden-client` | `GardenConfig`, `WorldRules`, `GardenRules`, `HatchRules`, `GardenProgress` | `src/garden/CLAUDE.md` |
+| Egg Garden | `garden.project.json` | `src/garden` | `src/garden-client` | `GardenConfig`, `WorldRules`, `GardenRules`, `HatchRules`, `GardenProgress`, `DashRules` | `src/garden/CLAUDE.md` |
 | Neon Spire (planned) | `spire.project.json` (SPIRE-003) | `src/spire` | `src/spire-client` | planned in `docs/architecture/spire.md` §3 | add `src/spire/CLAUDE.md` with the first code |
 
 Shared by every game: `MetaRules` (XP, levels, coins, daily/weekly rewards, quests, cosmetics),

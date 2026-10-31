@@ -1,7 +1,8 @@
 --!strict
--- Egg Garden data (GDD sections C to H, decision 0008): eggs, species, odds, mutations, sizes,
--- weather tables, costs, cosmetics, quests and the saved profile type. Data only, plus five
--- lookups. The server rolls from and the client's ODDS panel reads these same tables.
+-- Egg Garden data (GDD sections C to H, S and T, decisions 0008 and 0012): eggs, species, odds,
+-- mutations, sizes, weather tables, costs, cosmetics, quests, Splash Dash and the saved profile
+-- type. Data only, plus seven lookups. The server rolls from and the client's ODDS panel reads
+-- these same tables.
 
 local MetaRules = require("./MetaRules")
 
@@ -17,14 +18,15 @@ export type Egg = {
 	level: number, -- unlock level (starter 1)
 	stock: Stock?, -- nil: always in stock, unlimited (meadow); unused for starter
 	odds: { Odds }, -- species, sums to 10000
-	top: string?, -- Lucky Meter species
+	top: string?, -- Lucky Meter species. A sold egg must have top and meter: rollSpecies gives odds[1] without one
 	meter: number?,
 	xp: number,
+	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
 }
 export type Species = { id: string, name: string, rarity: string, rate: number }
 export type Mutation = { id: string, name: string, mult: number }
 export type Size = { id: string, name: string, mult: number, scale: number, bp: number }
-export type Weather = { id: string, name: string, mutation: { Odds } } -- in MUTATIONS order, sums to 10000
+export type Weather = { id: string, name: string, mutation: { Odds } } -- MUTATIONS order without egg-only ones, sums to 10000
 
 export type Bed = { egg: string, planted: number, ready: number, waters: number, helps: number, lastWater: number }
 export type Creature = { id: number, s: string, m: string, z: string, placed: number, fav: boolean } -- placed 0 = storage
@@ -54,6 +56,48 @@ export type Profile = {
 	daily: { streak: number, last: number },
 	week: { key: number, days: number, lastDay: number, claimed: boolean },
 	quests: { day: number, progress: { [string]: number }, claimed: { [string]: boolean } },
+	prizeEggs: { [string]: number }, -- egg id -> count, v2; only counts >= 1
+	dash: { day: number, prizes: number, coins: number }, -- v2; day -1 until the first reward
+}
+
+export type Spot = { x: number, y: number, z: number }
+export type Obstacle = {
+	kind: string, -- "sweeper" | "ball" | "pendulum" | "platform"
+	model: string, -- architecture section 9
+	at: Spot, -- sweeper hub; ball and platform path centre; pendulum hinge
+	period: number, -- seconds per cycle
+	phase: number, -- 0..1, fraction of a cycle
+	size: number, -- sweeper arm length; ball or bob radius; platform half width
+	reach: number, -- ball and platform travel either side of `at`; pendulum rod length; 0 for a sweeper
+	axis: string?, -- "x" | "z": direction of ball, platform and pendulum travel
+	lift: number?, -- ball bounce height
+	knock: number, -- velocity on a hit; 0 for a platform
+}
+export type DashConfig = {
+	name: string,
+	minPlayers: number,
+	maxPlayers: number,
+	countdown: number,
+	starting: number,
+	limit: number,
+	grace: number,
+	prizeEgg: string,
+	prizesPerDay: number,
+	coinsBase: number,
+	coinsMinutes: number,
+	coinsPerDay: number,
+	fellY: number,
+	zone: { radius: number, height: number },
+	minFinish: number,
+	maxSpeed: number,
+	slack: number,
+	maxStrikes: number,
+	settle: number, -- seconds after a server teleport with no checks: the client's old position can still arrive
+	knockMax: number,
+	swing: number, -- pendulum amplitude in degrees
+	start: Spot,
+	checkpoints: { Spot }, -- the last is the finish
+	obstacles: { Obstacle },
 }
 
 local function odds(list: { any }): { Odds }
@@ -64,7 +108,8 @@ local function odds(list: { any }): { Odds }
 	return out
 end
 
--- The stock index i of an egg is its position - 1 (forest 2, sunset 3, moon 4, star 5).
+-- The stock index i of an egg is its position - 1 (forest 2, sunset 3, moon 4, star 5, celestial 6),
+-- so a new egg goes last or every later egg's stock changes.
 local EGGS: { Egg } = {
 	{ id = "starter", name = "Starter Egg", grow = 8, level = 1, odds = odds({ "pup", 10000 }), xp = 10 },
 	{
@@ -126,6 +171,19 @@ local EGGS: { Egg } = {
 		meter = 25,
 		xp = 400,
 	},
+	{
+		id = "celestial",
+		name = "Celestial Egg",
+		price = 1_000_000_000,
+		grow = 28800,
+		level = 25,
+		stock = { chance = 5, min = 1, max = 1 },
+		odds = odds({ "lion", 8500, "dragon", 1500 }),
+		top = "dragon",
+		meter = 10,
+		xp = 1000,
+		mutation = "celestial",
+	},
 }
 GardenConfig.EGGS = EGGS
 
@@ -157,6 +215,7 @@ local MUTATIONS: { Mutation } = {
 	{ id = "golden", name = "Golden", mult = 3 },
 	{ id = "moonlit", name = "Moonlit", mult = 5 },
 	{ id = "rainbow", name = "Rainbow", mult = 10 },
+	{ id = "celestial", name = "Celestial", mult = 20 }, -- egg-only: in no weather table
 }
 GardenConfig.MUTATIONS = MUTATIONS
 
@@ -209,7 +268,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 36
+GardenConfig.INDEX_SIZE = 38 -- count of indexable pairs: 9 * 4 + 2
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 -- 0008 amendment 2026-10-26: release never returns its egg price (buy, hatch, release <= 60% of it).
 GardenConfig.RELEASE_SECONDS = 6
@@ -288,6 +347,82 @@ GardenConfig.QUESTS = QUESTS
 GardenConfig.DAILY = { 50, 75, 100, 125, 150, 200, 400 }
 GardenConfig.DAILY_MINUTES = { 2, 3, 4, 5, 6, 8, 15 }
 GardenConfig.WEEKLY = { days = 5, reward = 500, minutes = 30 }
+GardenConfig.PRIZE_STORE = 1_000_000 -- sanitise limit per egg in prizeEggs
+
+local function obstacle(
+	kind: string,
+	at: { number },
+	period: number,
+	phase: number,
+	size: number,
+	reach: number,
+	axis: string?,
+	lift: number?,
+	knock: number
+): Obstacle
+	return {
+		kind = kind,
+		model = `dash_{kind}`,
+		at = { x = at[1], y = at[2], z = at[3] },
+		period = period,
+		phase = phase,
+		size = size,
+		reach = reach,
+		axis = axis,
+		lift = lift,
+		knock = knock,
+	}
+end
+
+-- GDD T and decision 0012. The obstacles are first-pass values, tuned at the greybox gate.
+local DASH: DashConfig = {
+	name = "Splash Dash",
+	minPlayers = 3,
+	maxPlayers = 6,
+	countdown = 15,
+	starting = 5,
+	limit = 120,
+	grace = 20,
+	prizeEgg = "moon",
+	prizesPerDay = 3,
+	coinsBase = 100,
+	coinsMinutes = 1,
+	coinsPerDay = 6,
+	fellY = 125,
+	zone = { radius = 16, height = 14 },
+	minFinish = 28,
+	maxSpeed = 95,
+	slack = 12,
+	maxStrikes = 3,
+	settle = 1,
+	knockMax = 70,
+	swing = 50,
+	start = { x = -120, y = 140, z = 300 },
+	checkpoints = {
+		{ x = -20, y = 140, z = 300 },
+		{ x = 100, y = 140, z = 300 },
+		{ x = 100, y = 140, z = 400 },
+		{ x = -20, y = 140, z = 400 },
+		{ x = -120, y = 140, z = 400 },
+	},
+	obstacles = {
+		obstacle("sweeper", { -85, 140, 300 }, 6, 0, 20, 0, nil, nil, 45),
+		obstacle("sweeper", { -45, 140, 300 }, 5, 0.5, 20, 0, nil, nil, 45),
+		obstacle("ball", { 10, 140, 300 }, 4, 0, 5, 7, "z", 8, 55),
+		obstacle("ball", { 35, 140, 300 }, 4, 0.25, 5, 7, "z", 8, 55),
+		obstacle("ball", { 60, 140, 300 }, 4, 0.5, 5, 7, "z", 8, 55),
+		obstacle("ball", { 85, 140, 300 }, 4, 0.75, 5, 7, "z", 8, 55),
+		obstacle("pendulum", { 100, 170, 325 }, 5, 0, 4, 26, "x", nil, 65),
+		obstacle("pendulum", { 100, 170, 350 }, 5, 0.33, 4, 26, "x", nil, 65),
+		obstacle("pendulum", { 100, 170, 375 }, 5, 0.66, 4, 26, "x", nil, 65),
+		obstacle("platform", { 76, 140, 400 }, 7, 0, 6, 8, "z", nil, 0),
+		obstacle("platform", { 52, 140, 400 }, 7, 0.5, 6, 8, "z", nil, 0),
+		obstacle("platform", { 28, 140, 400 }, 7, 0, 6, 8, "z", nil, 0),
+		obstacle("platform", { 4, 140, 400 }, 7, 0.5, 6, 8, "z", nil, 0),
+		obstacle("sweeper", { -70, 140, 400 }, 5, 0.25, 12, 0, nil, nil, 45),
+	},
+}
+GardenConfig.DASH = DASH
 
 local function find<T>(list: { T }, id: string): T?
 	for _, item in list do
@@ -325,6 +460,26 @@ function GardenConfig.rarityIndex(speciesId: string): number
 		end
 	end
 	return 0
+end
+
+-- The egg whose `mutation` is this id; nil for weather mutations.
+function GardenConfig.fixedBy(mutationId: string): Egg?
+	for _, egg in EGGS do
+		if egg.mutation == mutationId then
+			return egg
+		end
+	end
+	return nil
+end
+
+-- Both known; an egg-only mutation needs a species from that egg's odds. The one definition of
+-- what the Index and saved creatures may hold, and of INDEX_SIZE.
+function GardenConfig.indexable(speciesId: string, mutationId: string): boolean
+	if find(SPECIES, speciesId) == nil or find(MUTATIONS, mutationId) == nil then
+		return false
+	end
+	local egg = GardenConfig.fixedBy(mutationId)
+	return egg == nil or find(egg.odds, speciesId) ~= nil
 end
 
 return GardenConfig

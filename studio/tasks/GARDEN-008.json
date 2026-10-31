@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-008",
   "owner": "A10",
   "verifier": "A15",
@@ -46,5 +46,10 @@
     "WorldRules.spec.luau",
     "DashRules.spec.luau"
   ],
-  "notes": "First task of the split: GARDEN-009 and GARDEN-010 code against these signatures. docs/architecture/README.md gets DashRules in the Egg Garden row only. Pinned places that change: the 60% test in GardenRules.spec; the weather order check, the D1 string and the mutation string in GardenConfig.spec; schemaVersion in GardenProgress.spec."
+  "notes": "First task of the split: GARDEN-009 and GARDEN-010 code against these signatures. docs/architecture/README.md gets DashRules in the Egg Garden row only. Pinned places that change: the 60% test in GardenRules.spec; the weather order check, the D1 string and the mutation string in GardenConfig.spec; schemaVersion in GardenProgress.spec. Choices the architecture leaves open, for A09 to fold into section 3.8: (1) Round.at in racing moves to min(limit, first finish + grace), because Round has no field for the first finish, so `at` is always the real end and step just compares it; (2) a sweeper's arms lie along (cos a, -sin a) in x, z, which is CFrame.Angles(0, angle, 0) as DashFx uses it; (3) knock's 'away' is horizontal, with +x when the root is straight below the centre, so a hit never pushes a root into the deck; (4) setReady refuses a seventh ready; (5) a speed breach ends that sample, so a breach never counts a fall or a zone; (6) the speed check allows 1e-9 so the T10 31-stud value holds in floats, and fails on NaN; (7) a last runner striking out with no finisher ends with reason empty; (8) HatchRules.apply also refuses a fixed mutation from any other egg, and any other mutation from the Celestial Egg. Design note for the checkpoint: the 28 s minimum finish has less margin than T7 says. Zones are 16 radius, so an honest run is about 495 studs, 30.9 s at walk speed, about 29 s with a bounce; T7 says 33.75 s. Check at the greybox gate.",
+  "evidence": [
+    "2026-10-31, worktree rad-garden, branch garden/v2, uncommitted: lune run tests/run 447/447 passed, 0 failed, 0 load errors (352 before this task; 95 new, 55 of them in tests/DashRules.spec.luau). No filters, so a full run; test-results.json deleted after",
+    "stylua --check and selene 0 errors, 0 warnings on the 5 shared modules, their specs and tests/run.luau; rojo build garden.project.json succeeds; node tools/validate-tasks.mjs valid; src/shared/MetaRules.luau unchanged",
+    "Covered by spec: every GDD S2 and T10 value and the decision 0012 return, income and payback table; a literal v1 record; 3,000 scrambled records plus every field set to every junk value (no error, idempotent); 100.00% celestial for the Celestial Egg in 4 weathers; pick walked 1..10000 in every weather table; published against rolled odds over 20,000 rolls per egg and weather; pinned stock for 6 fixed windows, taken before the egg was added; 200,000 random round requests with invariants checked after each. Nothing run in Studio: this task is pure rules"
+  ]
 }

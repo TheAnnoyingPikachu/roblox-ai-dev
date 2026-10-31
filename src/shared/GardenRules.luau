@@ -212,6 +212,24 @@ function GardenRules.buyEgg(p: Profile, egg: string, now: number): (Profile, boo
 	return out, true
 end
 
+function GardenRules.canPlantPrize(p: Profile, egg: string): boolean
+	return GardenRules.eggUnlocked(p, egg) and (p.prizeEggs[egg] or 0) >= 1 and GardenRules.firstEmptyBed(p) ~= nil
+end
+
+-- A won egg (decision 0012): the egg's own level gate, no price and no stock check.
+function GardenRules.plantPrize(p: Profile, egg: string, now: number): (Profile, boolean)
+	if not GardenRules.canPlantPrize(p, egg) then
+		return p, false
+	end
+	local out = GardenRules.copy(p)
+	local left = out.prizeEggs[egg] - 1
+	out.prizeEggs[egg] = (if left > 0 then left else nil) :: any
+	local ready = now + (GardenConfig.egg(egg) :: GardenConfig.Egg).grow
+	out.beds[GardenRules.firstEmptyBed(p) :: number] =
+		{ egg = egg, planted = now, ready = ready, waters = 0, helps = 0, lastWater = 0 }
+	return out, true
+end
+
 function GardenRules.waterCut(egg: string): number
 	local e = GardenConfig.egg(egg)
 	return if e then floor(GardenConfig.WATER.cut * e.grow) else 0
