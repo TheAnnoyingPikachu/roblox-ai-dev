@@ -278,11 +278,11 @@ local function wearOffhand(character: Model, weapon: string, blade: string)
 	handle.CanTouch, handle.CanQuery = false, false
 	handle.Parent = model
 	dress(model, handle, weapon, blade)
-	local grip = hand:FindFirstChild("LeftGripAttachment") :: Attachment?
 	local weld = Instance.new("Weld")
 	weld.Name = "OffhandGrip"
 	weld.Part0, weld.Part1 = hand, handle
-	weld.C0 = if grip then grip.CFrame else CFrame.new(0, -hand.Size.Y / 2, 0) * CFrame.Angles(-math.pi / 2, 0, 0)
+	-- The engine's own grip frame: R6's LeftGripAttachment lacks this rotation.
+	weld.C0 = CFrame.new(0, -hand.Size.Y / 2, 0) * CFrame.Angles(-math.pi / 2, 0, 0)
 	weld.C1 = GRIP
 	-- Last: the blade's WeldConstraints take their offsets when they enter the world, so the
 	-- handle must not have moved to the hand yet.
