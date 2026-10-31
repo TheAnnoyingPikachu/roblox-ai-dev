@@ -1,7 +1,7 @@
 --!strict
 -- Egg Garden HUD (GDD H2, F, G1; docs/architecture/garden.md section 6): coins and income (short
 -- format), level and XP bar, Index count, weather chip with the next two windows, restock and
--- next-ripe timers, quick buttons with the gold dot, HOME and LIKE, the "While you were away" card,
+-- next-ripe timers, quick buttons with the gold dots, HOME and LIKE, the "While you were away" card,
 -- hatch announcement banners, first-session prompts with a guide beam, and per-viewer bed prompt
 -- visibility. Sends only Request("home") and Request("like", userId); the server checks both.
 
@@ -186,12 +186,24 @@ local ripeText = timerLine(100, UI.LEAF)
 local quick = new("Frame", {
 	AnchorPoint = Vector2.new(0, 0.5),
 	Position = UDim2.new(0, 12, 0.5, 0),
-	Size = UDim2.fromOffset(if touchOnly then 120 else 136, 330),
+	Size = UDim2.fromOffset(if touchOnly then 120 else 136, 384),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, { new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
 ClientState.autoScale(quick)
 local rewardsDot: Frame
+local dashDot: Frame
+local quickButtons: { [string]: TextButton } = {}
+local function goldDot(parent: Instance): Frame
+	return new("Frame", {
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(1, -4, 0, 4),
+		Size = UDim2.fromOffset(16, 16),
+		BackgroundColor3 = UI.GOLD,
+		Visible = false,
+		Parent = parent,
+	}, { corner(8), stroke(UI.WHITE, 2) })
+end
 for i, item in
 	{
 		{ "MENU", "Menu", UI.LILAC },
@@ -199,6 +211,7 @@ for i, item in
 		{ "CREATURES", "Creatures", UI.SKY },
 		{ "INDEX", "Index", UI.LEAF },
 		{ "REWARDS", "Rewards", UI.CORAL },
+		{ "DASH", "Dash", UI.AQUA },
 		{ "HOME", "Home", UI.PINK },
 	}
 do
@@ -220,17 +233,21 @@ do
 			ClientState.open(item[2])
 		end
 	end)
+	quickButtons[item[2]] = b
 	if item[2] == "Rewards" then
-		rewardsDot = new("Frame", {
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(1, -4, 0, 4),
-			Size = UDim2.fromOffset(16, 16),
-			BackgroundColor3 = UI.GOLD,
-			Visible = false,
-			Parent = b,
-		}, { corner(8), stroke(UI.WHITE, 2) })
+		rewardsDot = goldDot(b)
+	elseif item[2] == "Dash" then
+		dashDot = goldDot(b)
 	end
 end
+
+-- In a race only HOME stays (it leaves the round), and the race timer takes the coin bar's place.
+ClientState.RacingChanged:Connect(function(racing: boolean)
+	coinBox.Visible = not racing
+	for name, b in quickButtons do
+		b.Visible = name == "Home" or not racing
+	end
+end)
 
 -- LIKE: shown inside another player's garden while their gate allows it.
 local likeButton = button({
@@ -275,6 +292,7 @@ local function refresh()
 	xpText.Text = if maxed then "MAX LEVEL" else `{commas(profile.xp - from)} / {commas(to - from)} XP`
 	indexText.Text = `Index {#profile.index} / {GardenConfig.INDEX_SIZE}`
 	rewardsDot.Visible = ClientState.rewardsReady(profile)
+	dashDot.Visible = ClientState.prizeReady(profile)
 	if lastLevel and level > lastLevel then
 		ClientState.toast(`LEVEL UP! Level {level}`, UI.GOLD)
 		ClientState.sound(ClientState.SFX.fanfare, 0.45)
@@ -440,7 +458,11 @@ fx.OnClientEvent:Connect(function(kind: string, data: any)
 		end
 		table.insert(words, if sp then sp.name else tostring(data.s))
 		banner.Text = `{tostring(data.name)} hatched a {table.concat(words, " ")}!`
-		banner.BackgroundColor3 = ClientState.rarityColour(tostring(data.s))
+		local celestial = data.m == "celestial"
+		banner.BackgroundColor3 = if celestial
+			then ClientState.CELESTIAL
+			else ClientState.rarityColour(tostring(data.s))
+		banner.TextColor3 = if celestial then UI.INK else UI.WHITE
 		banner.Visible = true
 		bannerToken += 1
 		local token = bannerToken
@@ -724,11 +746,12 @@ task.spawn(function()
 	while true do
 		tick += 1
 		updatePrompts()
-		if hud.Visible then
+		if hud.Visible and not ClientState.racing then
 			updateTutorial()
 			updateLike()
 			markerText.Position = UDim2.fromOffset(0, math.sin(os.clock() * 4) * 4)
 		else
+			tutorial.Visible = false
 			beam.Enabled = false
 			marker.Enabled = false
 		end

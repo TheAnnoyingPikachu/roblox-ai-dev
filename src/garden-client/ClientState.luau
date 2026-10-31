@@ -3,6 +3,7 @@
 -- the server, signals between the client scripts (reveal hiding, toasts, menu open), read-only
 -- parsers for GardenStatus and Profile attributes, one-shot sounds and the shared pastel UI kit.
 
+local GuiService = game:GetService("GuiService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,12 +20,21 @@ local MetaRules = require(Shared:WaitForChild("MetaRules"))
 local ClientState = {}
 
 export type Settings = { music: boolean, sfx: boolean, fastHatch: boolean, announcements: boolean }
+export type DashStatus = {
+	phase: string, -- idle | countdown | starting | racing
+	ready: { number },
+	need: number,
+	at: number, -- countdown end, GO or time limit by phase, server time
+	goAt: number,
+	racers: { number },
+}
 export type Status = {
 	weather: string,
 	weatherLeft: number,
 	forecast: { string },
 	stockLeft: number,
 	stockWindow: number,
+	dash: DashStatus,
 }
 
 ClientState.settings = { music = true, sfx = true, fastHatch = false, announcements = true } :: Settings
@@ -39,8 +49,11 @@ local menuChanged = Instance.new("BindableEvent")
 ClientState.MenuChanged = menuChanged.Event -- (open: boolean)
 local openRequested = Instance.new("BindableEvent")
 ClientState.OpenRequested = openRequested.Event -- (panel: string) HUD buttons ask Menu to open a panel
+local racingChanged = Instance.new("BindableEvent")
+ClientState.RacingChanged = racingChanged.Event -- (racing: boolean) from DashFx to Hud and Menu
 
 ClientState.menuOpen = true
+ClientState.racing = false -- this client is in a running Splash Dash round
 -- The egg the ODDS card shows (nil: every egg and weather).
 ClientState.oddsEgg = nil :: string?
 -- Creatures whose model stays hidden until their reveal ends (read by CreatureFx on spawn), keyed
@@ -71,6 +84,11 @@ function ClientState.open(panel: string)
 	openRequested:Fire(panel)
 end
 
+function ClientState.setRacing(racing: boolean)
+	ClientState.racing = racing
+	racingChanged:Fire(racing)
+end
+
 function ClientState.json(value: any): any
 	if type(value) ~= "string" then
 		return nil
@@ -84,7 +102,19 @@ end
 local statusValue = ReplicatedStorage:WaitForChild("GardenStatus") :: StringValue
 ClientState.statusValue = statusValue
 local cachedRaw: string? = nil
-local cached: Status = { weather = "clear", weatherLeft = 0, forecast = {}, stockLeft = 0, stockWindow = 0 }
+local function dashOf(d: any): DashStatus
+	local dash = if type(d) == "table" then d else {}
+	return {
+		phase = if type(dash.phase) == "string" then dash.phase else "idle",
+		ready = if type(dash.ready) == "table" then dash.ready else {},
+		need = tonumber(dash.need) or GardenConfig.DASH.minPlayers,
+		at = tonumber(dash.at) or 0,
+		goAt = tonumber(dash.goAt) or 0,
+		racers = if type(dash.racers) == "table" then dash.racers else {},
+	}
+end
+local cached: Status =
+	{ weather = "clear", weatherLeft = 0, forecast = {}, stockLeft = 0, stockWindow = 0, dash = dashOf(nil) }
 local cachedAt = os.clock()
 
 function ClientState.status(): Status
@@ -100,6 +130,7 @@ function ClientState.status(): Status
 				forecast = if type(d.forecast) == "table" then d.forecast else {},
 				stockLeft = tonumber(d.stockLeft) or 0,
 				stockWindow = tonumber(d.stockWindow) or 0,
+				dash = dashOf(d.dash),
 			}
 		end
 	end
@@ -252,7 +283,21 @@ ClientState.EGG_COLOURS = {
 	sunset = { Color3.fromRGB(255, 170, 80), Color3.fromRGB(255, 120, 170) },
 	moon = { Color3.fromRGB(60, 70, 140), Color3.fromRGB(30, 30, 80) },
 	star = { Color3.fromRGB(255, 252, 235), Color3.fromRGB(255, 205, 90) },
+	celestial = { Color3.fromRGB(255, 246, 205), Color3.fromRGB(170, 150, 255) },
 } :: { [string]: { Color3 } }
+
+-- The pale white-gold of everything Celestial (GDD S5).
+ClientState.CELESTIAL = Color3.fromRGB(255, 236, 170)
+
+-- True when a prize egg can be planted now (the DASH gold dot, GDD T8).
+function ClientState.prizeReady(p: any): boolean
+	for egg in p.prizeEggs do
+		if GardenRules.canPlantPrize(p, egg) then
+			return true
+		end
+	end
+	return false
+end
 
 -- True when a daily, weekly or quest reward can be claimed now (the gold dot).
 function ClientState.rewardsReady(p: any): boolean
@@ -309,6 +354,29 @@ function ClientState.sound(id: string, volume: number, at: Vector3?, pitch: numb
 	task.delay(8, done)
 end
 
+-- One-shot particle burst at a point (default sparkle texture).
+function ClientState.burst(at: Vector3, colour: Color3, count: number, speed: number, size: number?)
+	local a = Instance.new("Attachment")
+	a.WorldPosition = at
+	a.Parent = Workspace.Terrain
+	local e = Instance.new("ParticleEmitter")
+	e.Color = ColorSequence.new(colour, Color3.new(1, 1, 1))
+	e.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, size or 0.6),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	e.Transparency = NumberSequence.new(0, 0.4)
+	e.Lifetime = NumberRange.new(0.5, 1.1)
+	e.Speed = NumberRange.new(speed * 0.5, speed)
+	e.SpreadAngle = Vector2.new(180, 180)
+	e.Acceleration = Vector3.new(0, -12, 0)
+	e.LightEmission = 0.7
+	e.Rate = 0
+	e.Parent = a
+	e:Emit(count)
+	task.delay(1.5, a.Destroy, a)
+end
+
 -- Registered licensed SFX (docs/assets/register.md), pitched for a soft garden feel. No slot sounds.
 ClientState.SFX = {
 	tick = "rbxassetid://9117060347", -- beep: coin pickups (pitched up), timers
@@ -336,6 +404,7 @@ ClientState.UI = {
 	LILAC = Color3.fromRGB(190, 160, 240),
 	GOLD = Color3.fromRGB(255, 196, 64),
 	CORAL = Color3.fromRGB(255, 120, 110),
+	AQUA = Color3.fromRGB(70, 190, 205),
 	GREY = Color3.fromRGB(205, 198, 200),
 	WHITE = Color3.new(1, 1, 1),
 }
@@ -398,8 +467,11 @@ function ClientState.button(props: { [string]: any }, onClick: () -> ()): TextBu
 	return b
 end
 
--- Small bounce on a GuiObject (coin counter pulse, new toast).
+-- Small bounce on a GuiObject (coin counter pulse, new toast); none with the Reduce Motion setting.
 function ClientState.pop(target: GuiObject)
+	if GuiService.ReducedMotionEnabled then
+		return
+	end
 	local scale = target:FindFirstChild("Pop") :: UIScale?
 	if not scale then
 		scale = new("UIScale", { Name = "Pop", Parent = target })
