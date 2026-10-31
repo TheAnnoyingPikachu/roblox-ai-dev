@@ -218,7 +218,7 @@ export type DashConfig = {
 	coinsPerDay: number, -- 6
 	fellY: number, -- 125
 	zone: { radius: number, height: number }, -- 16, 14
-	minFinish: number, -- 25
+	minFinish: number, -- 28, shared over the legs by length
 	maxSpeed: number, -- 95
 	slack: number, -- 12
 	maxStrikes: number, -- 3
@@ -227,6 +227,7 @@ export type DashConfig = {
 	swing: number, -- 50, pendulum amplitude in degrees
 	start: Spot, -- (-120, 140, 300)
 	checkpoints: { Spot }, -- (-20,140,300), (100,140,300), (100,140,400), (-20,140,400), (-120,140,400); the last is the finish
+	decks: { Deck }, -- { x1, x2, z1, z2 } in course order, built by DashWorld, read by the reach spec
 	obstacles: { Obstacle },
 }
 ```
@@ -237,17 +238,18 @@ First-pass obstacles (tuned at the greybox gate; not economy values, decision 00
 |---|---|---|---|---|---|---|---|---|
 | sweeper | (−85, 140, 300) | 6 | 0 | 20 | 0 | | | 45 |
 | sweeper | (−45, 140, 300) | 5 | 0.5 | 20 | 0 | | | 45 |
-| ball | (10, 140, 300) | 4 | 0 | 5 | 7 | z | 8 | 55 |
-| ball | (35, 140, 300) | 4 | 0.25 | 5 | 7 | z | 8 | 55 |
-| ball | (60, 140, 300) | 4 | 0.5 | 5 | 7 | z | 8 | 55 |
-| ball | (85, 140, 300) | 4 | 0.75 | 5 | 7 | z | 8 | 55 |
+| ball | (10, 140, 300) | 4 | 0 | 5 | 7 | z | 4 | 55 |
+| ball | (35, 140, 300) | 4 | 0.25 | 5 | 7 | z | 4 | 55 |
+| ball | (60, 140, 300) | 4 | 0.5 | 5 | 7 | z | 4 | 55 |
+| ball | (85, 140, 300) | 4 | 0.75 | 5 | 7 | z | 4 | 55 |
 | pendulum | (100, 170, 325) | 5 | 0 | 4 | 26 | x | | 65 |
 | pendulum | (100, 170, 350) | 5 | 0.33 | 4 | 26 | x | | 65 |
 | pendulum | (100, 170, 375) | 5 | 0.66 | 4 | 26 | x | | 65 |
 | platform | (76, 140, 400) | 7 | 0 | 6 | 8 | z | | 0 |
-| platform | (52, 140, 400) | 7 | 0.5 | 6 | 8 | z | | 0 |
-| platform | (28, 140, 400) | 7 | 0 | 6 | 8 | z | | 0 |
-| platform | (4, 140, 400) | 7 | 0.5 | 6 | 8 | z | | 0 |
+| platform | (58, 140, 400) | 7 | 0.5 | 6 | 8 | z | | 0 |
+| platform | (40, 140, 400) | 7 | 0 | 6 | 8 | z | | 0 |
+| platform | (22, 140, 400) | 7 | 0.5 | 6 | 8 | z | | 0 |
+| platform | (4, 140, 400) | 7 | 0 | 6 | 8 | z | | 0 |
 | sweeper | (−70, 140, 400) | 5 | 0.25 | 12 | 0 | | | 45 |
 
 ### 3.3 `WorldRules`
@@ -397,9 +399,11 @@ export type Racer = {
 	next: number, -- index in DASH.checkpoints of the checkpoint to reach next
 	eligible: boolean, -- may take the egg
 	strikes: number,
-	lastPos: Vec3?, -- last sample that differed; nil just after a server teleport
+	lastPos: Vec3?, -- last sample that differed, or where the server last moved the racer
 	lastAt: number, -- server time of lastPos
+	legAt: number, -- when this leg began: GO, the last checkpoint or the last server teleport
 	settleUntil: number, -- samples before this time are ignored
+	arriving: boolean, -- teleported, and no sample has shown the racer at lastPos yet
 	finished: number?, -- seconds from GO
 	out: boolean, -- left or struck out
 }
@@ -433,9 +437,11 @@ DashRules.isRacer(r: Round, id: number): boolean -- in the round and not out
 DashRules.setReady(r: Round, id: number, ready: boolean, t: number): (Round, boolean) -- changed; refused for a racer; third ready in idle starts the countdown, below minPlayers cancels it
 DashRules.start(r: Round, t: number, entrants: { Entrant }): (Round, { Event }) -- call when a countdown is due; entrants = ready players with a character; below minPlayers: idle, ready = entrants; else starting, ready cleared, "start"
 DashRules.step(r: Round, t: number): (Round, { Event }) -- timed changes: starting to racing ("go"); racing to idle at the limit, 20 s after the first finish or when nobody is running ("over"); idle with minPlayers ready starts a countdown
-DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, { Event }) -- one 5 Hz sample while racing, in this order: settle, speed, fall, zone; no-op otherwise
-DashRules.teleported(r: Round, id: number, t: number): Round -- after any server teleport: clears lastPos, sets settleUntil = t + DASH.settle
+DashRules.sample(r: Round, id: number, pos: Vec3, t: number): (Round, { Event }) -- one 5 Hz sample while racing, in this order: settle, arrival, speed, fall, zone; a finisher gets the fall check only; no-op otherwise
+DashRules.teleported(r: Round, id: number, t: number, at: Vec3): Round -- after any server teleport: lastPos = at, lastAt = t, legAt = max(t, goAt), settleUntil = t + DASH.settle, arriving
+DashRules.legMin(cp: number): number -- seconds the leg to checkpoint cp takes at least: its share of minFinish by length
 DashRules.leave(r: Round, id: number, t: number): (Round, { Event }) -- removes from ready; a racer goes out; may give "over" with reason "empty"
+DashRules.facing(cp: number): Vec3 -- flat direction towards the next checkpoint, cp 0 to one before the finish
 DashRules.respawnCp(r: Round, id: number): number -- 0 = start, else the last checkpoint reached
 DashRules.respawnPoint(cp: number): Vec3 -- deck position, 4 studs up
 DashRules.startSpot(i: number): Vec3 -- spots 1..6 on the start deck, 6 studs apart along z
@@ -449,9 +455,10 @@ DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velo
 `sample` rules, all from GDD T7:
 
 0. **Settle:** before `settleUntil` the sample is ignored. A server `PivotTo` does not reach the client at once, so the next samples can still show the old position; without this a fall would count as a second fall and then a speed breach.
+   **Arrival:** while `arriving`, for 2 s past `settleUntil`, a sample more than 30 studs from `lastPos` is stale and is ignored too, which covers a ping over 1 s. 30 is under the 31 studs a sample may move, so a stale sample that does pass cannot cause a strike. Any other sample ends `arriving`.
 1. **Speed:** if `lastPos` is set and `pos` differs from it, a horizontal distance above `maxSpeed × (t − lastAt) + slack` is a breach: `strikes + 1`. At `maxStrikes`: `out` true, event `out`. Else event `flag` with `cp = respawnCp`.
 2. **Fall:** `pos.y < fellY`: event `splash` with `cp = respawnCp`.
-3. **Zone:** if `inZone(pos, checkpoints[next])`: a middle checkpoint gives `next + 1` and event `checkpoint`. The last one: below `minFinish` from GO is a breach as in step 1; otherwise `finished`, `places + 1`, `winner` if unset, `egg = prizeTo == nil and eligible` (setting `prizeTo`), event `finish`.
+3. **Zone:** if `inZone(pos, checkpoints[next])` and `t - legAt >= legMin(next)`: `legAt = t`; a middle checkpoint gives `next + 1` and event `checkpoint`; the last one sets `finished`, `places + 1`, `winner` if unset, `egg = prizeTo == nil and eligible` (setting `prizeTo`), event `finish`. Sooner than the floor nothing happens, with no strike. The floors add up to `minFinish`, so no finish comes earlier.
 4. `lastPos`, `lastAt` update only when `pos` changed.
 
 `step` ends a round at the earliest of `goAt + limit`, `first finish + grace`, or nobody running; it then clears `racers`, keeps `ready`, and starts a new countdown if `ready` is at least `minPlayers`.
@@ -460,7 +467,7 @@ DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velo
 
 `knock`: sweeper: root within 2.5 of the arm segments (both sides of the hub) in the plane and 0 to 6 above the deck: tangent × `knock`, up 20. Ball and pendulum: distance to the pose at most `size + 2`: away × `knock`, up 20. Clamp to `knockMax`.
 
-`tests/DashRules.spec.luau` covers every GDD T10 check value, and: phases and cancels; ready kept through a running round; order enforced (zones out of order do nothing); fall to the right checkpoint; leave at every phase; down to 1 racer; everyone leaves; capped first finisher passes the egg to the next eligible; nobody eligible; nobody finishes; a stale sample inside the settle time is neither a fall nor a strike; `pose` deterministic for a fixed `t`; `knock` never above `knockMax` over a sweep of times and positions; inputs never mutated.
+`tests/DashRules.spec.luau` covers every GDD T10 check value, and: phases and cancels; ready kept through a running round; order enforced (zones out of order do nothing); fall to the right checkpoint; leave at every phase; down to 1 racer; everyone leaves; capped first finisher passes the egg to the next eligible; nobody eligible; nobody finishes; a stale sample inside the settle time is neither a fall nor a strike; idle-then-hop takes the whole `minFinish`; the fastest honest walk and a walk after a fall on any leg are neither held nor flagged; every required gap is under the default jump at every moment of the platform cycle, with a safe moment in each; every Ball Alley lane is threatened; `pose` deterministic for a fixed `t`; `knock` never above `knockMax` over a sweep of times and positions; inputs never mutated.
 
 ## 4. Server (`src/garden`)
 
@@ -514,7 +521,7 @@ Remotes.fxTo(player: Player, kind: string, data: { [string]: any }) -- one playe
 -- Dash.luau
 Dash.prompt: ProximityPrompt -- the ready pad; GardenServer connects Triggered through `admit`
 Dash.toggle(player: Player): boolean -- the dashReady action and the pad prompt
-Dash.leave(player: Player) -- PlayerRemoving and the home action: leaves ready and any round; home teleports after it
+Dash.leave(player: Player) -- PlayerRemoving, and the home action for a racer: leaves ready and any round; home teleports after it. A player who is only ready stays ready on home (GDD T3)
 Dash.isRacing(player: Player): boolean
 Dash.place(player: Player): boolean -- CharacterAdded: moves a racer's new character to the start or last checkpoint; false when not racing
 Dash.step(roots: { [Player]: GardenRules.Vec3 }, today: number) -- 5 Hz, from fastTick
@@ -597,11 +604,11 @@ end
 
 The op is pure and captures `today`, so re-applying it to the stored record is safe, and the leave flush writes it. `onLeave` calls `Dash.leave(player)` first; it never grants anything.
 
-**GardenServer changes:** `REQUEST_ARGS` adds `dashReady = false`, `plantPrize = true`; `dashReady` returns `Dash.toggle(player)`; `home` calls `Dash.leave(player)` before `toGate`; `plantPrize` falls through to `Profiles.request`; CharacterAdded runs `if not Dash.place(player) then toGate(...) end`; `onLeave` and `BindToClose` call `Dash.leave` and `Dash.close`; the pad prompt goes through `admit`.
+**GardenServer changes:** `REQUEST_ARGS` adds `dashReady = false`, `plantPrize = true`; `dashReady` returns `Dash.toggle(player)`; `home` calls `Dash.leave(player)` before `toGate` when `Dash.isRacing(player)`, which includes the start hold; `plantPrize` falls through to `Profiles.request`; CharacterAdded runs `if not Dash.place(player) then toGate(...) end`; `onLeave` and `BindToClose` call `Dash.leave` and `Dash.close`; the pad prompt goes through `admit`.
 
 **Collisions:** `PhysicsService:RegisterCollisionGroup("Racers")` with `CollisionGroupSetCollidable("Racers", "Racers", false)`. Every character part joins it in CharacterAdded and DescendantAdded, for the whole session. shortcut: this also stops players bumping in the garden, which is harmless; scope it to rounds only if a playtest asks.
 
-**Moving characters:** always `character:PivotTo` on the server, then `DashRules.teleported`. The client zeroes its own velocity on `dashSplash`.
+**Moving characters:** always `character:PivotTo` on the server, facing along the course (`DashRules.facing`), then `DashRules.teleported` with the target. The client zeroes its own velocity on `dashSplash`.
 
 ### 4.4 How plots, eggs, pads and creatures are represented
 
@@ -635,7 +642,7 @@ The op is pure and captures `today`, so re-applying it to the stored record is s
 | File | Kind | Owns |
 |---|---|---|
 | `ClientState.luau` | ModuleScript | Client-only settings `{ music, sfx, fastHatch, announcements: boolean }` with `SettingsChanged`; `reveal(owner, id, hidden)` with `hidden` keyed `"<owner>:<id>"` (creature ids are per profile), so CreatureFx hides only that garden's creature until its reveal ends. |
-| `Menu.client.luau` | LocalScript | Forked Relay menu: title "EGG GARDEN", camera orbit, PLAY (camera flies to own gate), INDEX (36 entries, silhouettes, which eggs and weathers can produce them, every weather's mutation table), CREATURES (pen and storage lists with Place, Store, Release with confirmation "Release Berry Cat to the wild meadow? +324 coins", Favourite), EGGS (cart panel: price, grow time, stock left, unlock, Lucky Meter, ODDS card, BUY), LOCKER (fence, can), REWARDS, STATS, SETTINGS (writes `ClientState`), How to Play and Odds cards, toasts (`LastReward` without its `#n` suffix, `notice`), music by weather. Sends `Request` only. |
+| `Menu.client.luau` | LocalScript | Forked Relay menu: title "EGG GARDEN", camera orbit, PLAY (camera flies to own gate), INDEX (38 entries, silhouettes, which eggs and weathers can produce them, every weather's mutation table), CREATURES (pen and storage lists with Place, Store, Release with confirmation "Release Berry Cat to the wild meadow? +324 coins", Favourite), EGGS (cart panel: price, grow time, stock left, unlock, Lucky Meter, ODDS card, BUY), LOCKER (fence, can), REWARDS, STATS, SETTINGS (writes `ClientState`), How to Play and Odds cards, toasts (`LastReward` without its `#n` suffix, `notice`), music by weather. Sends `Request` only. |
 | `Hud.client.luau` | LocalScript | Coins and income (short format), level and XP bar, weather chip and the next two, restock timer, HOME button (`home`), Index count, gold dot, "While you were away" card (`OfflineCoins` > 0), hatch announcement banners (setting), first-session prompts and arrows (GDD H2, `hatches = 0` at join), per-viewer prompt visibility: each bed's `Hatch`/`Water` prompt `Enabled` locally only when the action can succeed for this player (owner, ripe/growing, cooldown, caps, gate, garden not full), using `GardenRules` on the owner's `Profile` attribute and `workspace:GetServerTimeNow()`. |
 | `HatchFx.client.luau` | LocalScript | Reveal (wobble 1.5 s or 0.4 s Fast Hatch, crack, pop, rarity burst, name, rarity, mutation, size; never shows another creature), coin pops, water splash in the can's colour, like hearts, egg growth scale (40% to 100% by `GardenRules.growFraction`) and ripe glow/wobble, BillboardGui time left; weather looks from `GardenStatus` (I4 lighting tweens, rain, rainbow beam, fireflies, lamp lights), stingers; SFX. |
 | `CreatureFx.client.luau` | LocalScript | Creature bob, hop and turn tweens; mutation looks (Golden texture swap, Moonlit, Rainbow and Celestial `Highlight`, falling back to particles and a tinted `SelectionBox` past about 31 highlights); ambient life (windmill sails, butterflies, petals). |
@@ -643,7 +650,7 @@ The op is pure and captures `today`, so re-applying it to the stored record is s
 
 v0.2 changes in the existing files (GDD S4, T8): `Menu` Index grid uses `GardenConfig.indexable` with cell width `1 / cells`; `weathersFor` uses `GardenConfig.fixedBy`; the ODDS card branches on `egg.mutation`; `MUTATION_COLOURS.celestial`; a new `Dash` panel (READY, prizes today, prize eggs with PLANT using `GardenRules.canPlantPrize`). `Hud`: DASH quick button, column height 384, gold dot. `ClientState`: `EGG_COLOURS.celestial`, `Status.dash`. `HatchFx`: shell fragments (section 9).
 
-`DashFx` detail: runs obstacles only while the local player is in `status.dash.racers`, and parks them otherwise. Obstacle parts have `CanCollide` false, because `knock` decides hits; platforms have `CanCollide` true. Each Heartbeat for each obstacle: `pose`, `PivotTo`, then `knock` against the local root with a 0.5 s cooldown per obstacle. A hit sets `root.AssemblyLinearVelocity` and `Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)`, so the walk controller does not cancel it. Platform carry: a raycast down 5 studs finds a platform part, and the root gets that platform's movement since the last frame.
+`DashFx` detail: runs obstacles only while the local player is in `status.dash.racers`, and parks them otherwise. Obstacle parts have `CanCollide` false, because `knock` decides hits. A platform is walked on one invisible `Collider` block of 12 x 2 x 12 in its model, also the carry ray's target; its mesh is only the look. Each Heartbeat for each obstacle: `pose`, `PivotTo`, then `knock` against the local root with a 0.5 s cooldown per obstacle. A hit sets `root.AssemblyLinearVelocity` and `Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)`, so the walk controller does not cancel it. Platform carry: a raycast down 5 studs finds a platform part, and the root gets that platform's movement since the last frame.
 
 Clients never write server state. The ODDS card, Index and forecast tables read `GardenConfig` (the same data the server rolls from) and format with `HatchRules.percent`.
 
@@ -677,7 +684,7 @@ Clients never write server state. The ODDS card, Index and forecast tables read 
 20. Weather tables keep 4 rows; egg-only mutations are not in them (decision 0012). Display code that loops weather tables needs no change, and `HatchRules.pick`'s last-row fallback can never return `celestial`.
 21. Prize eggs are a count per egg, not a list: two Moon Eggs are the same thing, and the store cannot grow large.
 22. `prizeEggs` keeps sold eggs only, so the starter can never be a prize.
-23. `dashReady` toggles, so the menu button and the pad need one action. `home` doubles as leaving a round, so no third action.
+23. `dashReady` toggles, so the menu button and the pad need one action. `home` doubles as leaving a round for a racer, so no third action; it leaves a ready player ready.
 24. A round has no results phase: racers go home at once, and the card shows over the garden.
 25. `Dash` owns its round state outside `State.live`, because a round outlives any one player.
 26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the 25 s check need sub-second values.
@@ -702,7 +709,7 @@ If `GardenAssets.luau` has not landed when GARDEN-009 starts, GARDEN-009 adds `r
 | `dash_sweeper` | client, `DashFx` | 40 long: two arms, symmetric about the hub | `PivotTo` at the pose | a bar and hub of parts |
 | `dash_ball` | client, `DashFx` | 10 diameter | `PivotTo` at the pose | Ball part |
 | `dash_pendulum` | client, `DashFx` | 30 tall, bob 8 wide, hinge at the top centre | `PivotTo`, with the offset below | rod and Ball |
-| `dash_platform` | client, `DashFx` | 12 × 2 × 12 | `PivotTo` at the pose; `CanCollide` true | Block part |
+| `dash_platform` | client, `DashFx` | 12 × 2 × 12 | `PivotTo` at the pose; decor, the walked surface is the invisible `Collider` block | Block part |
 | `dash_arch` | server, `DashWorld` | 28 wide, 18 high, walk-through | decor; the barrier is a separate invisible part | parts |
 | `dash_ready_pad` | server, `DashWorld` | 12 wide, low | decor; a flat part carries the prompt | Cylinder part |
 | `dash_island` | server, `DashWorld` | about 300 × 160 from above | decor under the decks, never walked on | none, the decks stand alone |

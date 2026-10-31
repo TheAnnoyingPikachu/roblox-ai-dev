@@ -245,3 +245,70 @@ Pass means the rule and the server or client code were checked. Nothing here was
 - `GetServerTimeNow` agreement across clients, the feel on a phone with real ping, and whether honest players ever log a strike.
 - Text sizes and gamepad selection on a device. Server frame time and network use with 6 racers.
 - That publishing restarts every server, on staging first.
+
+## Fixes (GARDEN-012)
+
+Fix engineer's section, for the re-review. Labels as above; **Studio** means logged in a scratch place built from `a26ede3` with `minPlayers` 1 and `countdown` 3 set in the scratch copy only, one client, uploaded meshes loaded, DataStores off, build stamp `dev` (so rule 13 is not met).
+
+| Finding | Status | What changed |
+|---|---|---|
+| B1 | Fixed | 5 platforms at x 76, 58, 40, 22, 4, phases 0, 0.5, 0, 0.5, 0. `DECKS` moved to `GardenConfig.DASH.decks`, so `DashRules.spec` walks all 11 surfaces and checks each gap against the jump from gravity, WalkSpeed and JumpPower, at 280 moments of the cycle, for where the target is at take-off and on landing. |
+| M1 | Fixed | `home` calls `Dash.leave` only for `Dash.isRacing`. In `starting` a racer counts, so HOME leaves the round and goes home, as T9 says. A last leaver gets "Round over." on the card, not "Time is up." |
+| m1 | Fixed | Ball `lift` 4. Walks hit (Computed, 400 starts): z 300 100%, 299 100%, 298 100%, 295 100%, 290 94.5%. Each ball leaves z 300 clear at least 20% of its cycle. |
+| m2 | Fixed | `minFinish` 28, shared over the legs by length. A leg's floor runs from GO, the last checkpoint or the last server teleport. Early is silent, so nobody honest is flagged, and a fall restarts the floor. The strike at the finish is gone: the floors make it unreachable. `teleported` now takes the target, which closes the second path. T7 corrected. |
+| m3 | Fixed (b); (a) needs nothing | (b) `arriving`: for 2 s past settle a sample over 30 studs from the target is ignored. (a) assumed a knock keeps 65 studs/s for 0.48 s. It does not: Studio shows 16 studs in all, against 31 allowed per sample. |
+| m4 | Fixed | Every platform has one invisible 12 x 2 x 12 `Collider`, also the carry's ray target. The mesh is decor. |
+| m5 | Fixed | A finisher still gets the fall check. |
+| m6 | Fixed | `DashRules.facing`; every server teleport in a round faces along the course. |
+| m7 | Fixed | Pill 480 wide, third text "Next race: ready". The Index example did not happen: `weathersFor` already returned "any weather" for all four. Capitalised; the only other value is "Moonfall". |
+| m8 | Fixed | GDD T7 and T10, `garden.md` (INDEX 38, section 9, `Dash.leave`), both comments, checkpoint item 10. |
+| m9 | Fixed | `pathToFileURL` in all three tools. `node tools/check-scope.mjs origin/main` now prints its result here. On Linux the two forms give the same string for these paths. |
+
+### Studio proof
+
+Physics as read in the place: gravity 196.2, WalkSpeed 16, JumpPower 50 with `CharacterUseJumpPower` on, `StreamingEnabled` false. Displacement is flat, from the hit to where the push ended.
+
+| Test | Time | Hits | Velocity after the hit (h, up) | Displacement | Result |
+|---|---|---|---|---|---|
+| Pendulum, standing at (100, 143.2, 350) | 16.1 s | 4 | 65, 50 | 15.7 | off the bridge, splash each time |
+| Pendulum, walking the bridge at 16 | 16 s | 2 | 57 at (53, 40, 22) just after | 16.2 | off the bridge, x 114 |
+| Ball, standing at (35, 143.2, 300) | 16.6 s | 8 | 55, 50 | 11.4 | a second hit puts it in the water |
+| Ball, walking z 300 | 16 s | 4 | 55, 50 | 12.0 | first hit on the line at (33.4, 143.1, 300.0) |
+| Sweeper, standing at (-73, 143.2, 300) | 8 s | 5 | 45, 50 | 7.9 | carried round by the arm |
+| Sweeper, walking z 296 | 8 s | 7 | 45, 50 | 8.0 | |
+| Last Sprint sweeper, standing | 9 s | 4 | 45, 50 | 7.7 | |
+
+So the Director's question is answered: a one-shot velocity with `ChangeState(Jumping)` does move a walking character, and no `LinearVelocity` is needed. The push decays at about 145 studs/s^2 in the air. The state replaces the rules' 20 up with about 50, so a knock peaks 7.3 up; left as it plays well on a bridge.
+
+**Lily Hop, by physics, first attempt, no CFrame moves, round running:**
+
+| Hop | Wait | Take-off | Landing | Air |
+|---|---|---|---|---|
+| Deck to 1 | 1.13 s | (88.5, 143.1, 400.0) | (81.2, 143.8, 396.8) | 0.47 s |
+| 1 to 2 | 2.85 s | (70.5, 144.1, 403.6) | (62.9, 144.1, 400.3) | 0.48 s |
+| 2 to 3 | 2.33 s | (52.7, 144.1, 403.4) | (45.0, 144.0, 400.2) | 0.48 s |
+| 3 to 4 | 2.30 s | (34.5, 144.1, 403.4) | (26.8, 143.9, 400.2) | 0.48 s |
+| 4 to 5 | 2.32 s | (16.6, 144.1, 403.4) | (8.9, 144.0, 400.2) | 0.48 s |
+| 5 to last deck | 0.00 s | (-1.4, 144.1, 404.4) | (-9.3, 142.9, 400.8) | 0.50 s |
+
+The bot then walked on and finished: `dashFinish` place 1, 76.8 s, 100 coins, no egg (saving is off in Studio, so not eligible). Reach measured 7.3 to 7.9 at a run, 7.1 from a standstill on to a pad. Falls on earlier tries respawned at (100, 143.1, 400.0) as they should.
+
+Bot notes: `Humanoid:MoveTo` works on decks and in the air but does nothing on a pad, even with a part argument, because the carry writes the root each frame. On pads the bot used `Player:Move`, the call keyboard, gamepad and thumbstick make. `Humanoid.Jump` has to be set in `PreRender`, or the default control script clears it.
+
+**M1 (Studio):** ready, then HOME in the countdown: phase `countdown`, ready 1, player at the gate, and the round then started. HOME in `starting`: racers 0, phase `idle`, player at the gate. The start spot faced (1.00, 0.00).
+
+**Screenshots:** the 5 pads with even gaps, and the balls in the lane, were captured in the round with the ScreenGuis off.
+
+### Choices made
+
+- Finish before the floor: held in silence, not a strike (m2). An exploiter loses nothing by this; an honest player can never be hit by it.
+- The speed limit is unchanged. A client can still move 155 studs/s between samples, so nothing can stop obstacle skipping, only its pace. T7 says so, and checkpoint item 11 asks.
+- Platform tops stay 1 stud above the decks, since a jump clears it. The spec includes the rise.
+- `lift` 4 means a blind walk is hit nearly always. A racer who watches a ball has a clear moment, but whether Ball Alley is fun or just punishing needs real players.
+
+### Could not prove
+
+- A crossing by hand, on keyboard, phone or gamepad. A bot times jumps from `DashRules.pose`; a player reads them by eye. A first-try crossing is not a difficulty measure.
+- The fastest honest run in Studio. 30.8 s is computed: 493 studs at the measured 16, and a spec walks it at 5 Hz. If a run ever beats 28 s, it is held, not flagged.
+- Leg floors, `arriving`, m5 and respawn facing are spec-only; no real slow connection was tried. Only the start spot's facing was logged live.
+- More than one client, the prize path, and anything with DataStores on. GARDEN-011's open acceptance criteria stay open.

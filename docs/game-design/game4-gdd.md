@@ -585,10 +585,11 @@ Status: draft for SHANNON. The owner asked for an obstacle mini-game that needs 
 | 1. Sweeper Green | (−20, 140, 300) | 100 | 2 spinning sweepers (`dash_sweeper`) | 44 |
 | 2. Ball Alley | (100, 140, 300) | 120 | 4 big bouncing balls crossing the alley (`dash_ball`) | 24 |
 | 3. Pendulum Bridge | (100, 140, 400) | 100 | 3 swinging pendulums (`dash_pendulum`) | 10 |
-| 4. Lily Hop | (−20, 140, 400) | 120 | 4 moving platforms (`dash_platform`) | 12 each |
+| 4. Lily Hop | (−20, 140, 400) | 120 | 5 moving platforms (`dash_platform`) | 12 each |
 | 5. Last Sprint and finish | (−120, 140, 400) | 100 | 1 sweeper, finish arch (`dash_arch`) | 24 |
 
 - Total 540 studs: 33.75 s at walking speed 16, about 40 s for a flawless run with the platform waits. **Hypothesis:** a typical run takes 70 to 90 s. To be checked at the greybox feel gate.
+- **Lily Hop reach:** the platforms sit at x 76, 58, 40, 22 and 4, so every gap along the course is 6 studs, the first and last deck edges included. A default jump clears 8.15 flat (0.51 s at 16 studs/s; 7.3 to 7.9 measured in Studio). They slide 8 studs either side in z, alternate ones in opposite directions, so the worst gap is 7.2 (a corner) and about 1.5 s of every 7 s cycle gives a straight jump onto the next platform. `DashRules.spec` checks every required gap against the jump at every moment of the cycle.
 - The pool (`dash_island` base and a blue water plane) sits at y 118. A root below y 125 counts as a fall.
 - Walk and jump only, so phone and gamepad play the same as PC.
 - Moonfall dims the world: obstacles keep Neon accents and each arch has a `PointLight`, so the course stays readable.
@@ -642,12 +643,12 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 - **The server owns the round:** ready list, phases, timers, ordered checkpoints, finish, prizes. All of it is pure rules in `DashRules`; the client sends only `dashReady`.
 - **Checkpoints** come from the server's own 5 Hz samples of each root: a checkpoint counts when the root is inside its zone (radius 16, height 14) and it is the next one. Each zone spans the course, and at walking speed a sample lands every 3.2 studs, so honest players cannot slip through.
 - **Falls:** the server sees y below 125 and moves the player to their last checkpoint. For 1 s after any server teleport the samples are ignored, because the client's old position can still arrive; a fall never counts as a strike.
-- **Minimum finish time, 25 s (lowered from 28 at the build check: an honest run with the 16-stud zones and a bounce is about 29 s, which left too little margin).** That is 540 studs at 21.6 studs/s, below any honest run (33.75 s flat out, and a bounce saves about 2 s). A finish earlier than that is refused: one strike, back to the last checkpoint.
-- **Speed check:** horizontal distance from the last *changed* sample must be at most `95 × dt + 12` studs (walk 16, largest knockback 70, margin). Measuring from the last change means a phone that freezes for 2 s and catches up is not punished. A breach is one strike, and the player goes back to their last checkpoint.
+- **Minimum time per checkpoint.** Each leg has a floor, its share of 28 s by length (5.19 s for 100 studs, 6.22 s for 120), counted from GO, the last checkpoint or the last server teleport. A zone reached sooner does not count yet: no strike and no message, and it counts as soon as the floor passes with the racer still inside. So no run finishes under 28 s (540 studs at 19.3 studs/s), and a fall restarts the floor without ever flagging anyone. The fastest honest walk is 30.8 s: 493 studs at 16 with every corner cut, which a spec walks at 5 Hz untouched by the floors. A knock moves a racer at most 16 studs in 0.45 s (measured), so it saves about half a second, and a walker is in a zone for 2 s.
+- **Speed check:** horizontal distance from the last *changed* sample must be at most `95 × dt + 12` studs (walk 16, largest knockback 70, margin). Measuring from the last change means a phone that freezes for 2 s and catches up is not punished. A breach is one strike, and the player goes back to their last checkpoint. After a server teleport samples are measured from its target, and for 2 s past the settle a sample over 30 studs from the target counts as a stale one and is ignored, so a slow connection does not take a second strike.
 - **Strikes:** 3 in a round and the player is out of that round, with no accusation: "You are out of this round." The server logs the UserId. No kick, no save change.
 - **Obstacles run on each client** from `workspace:GetServerTimeNow()`, because anchored parts moved by CFrame do not push characters. `DashRules.pose` gives every obstacle's position as a pure function of server time, so every client sees the same motion. Each client tests its own root with `DashRules.knock` and sets its own velocity (at most 70 studs/s). Moving platforms carry the player by adding the platform's frame movement to the root.
 - **Fairness:** the schedule is the same for everyone and for every round. Hits are decided by what you see on your own screen, so a slow connection does not hit you with something you cannot see. Players do not collide with each other (collision group), so another player's lag never matters.
-- **What an exploiter can do:** ignore knockback, or walk a little faster than the checks catch. **What they cannot do:** skip checkpoints, finish under 28 s, teleport, get more than 3 eggs a day, start a round alone, or affect anything another player owns. They can beat honest players to one Moon Egg. Accepted: the client is trusted for its own physics, as it already is for pads (decision 0008), and the prize is capped.
+- **What an exploiter can do:** ignore knockback, and move faster than a walk: the speed check allows 155 studs/s between samples, and more after standing still, so a client can miss the obstacles and hop from zone to zone. **What they cannot do:** skip a checkpoint, reach one before its floor, finish under 28 s, get more than 3 eggs a day, start a round alone, or affect anything another player owns. They can beat honest players to one Moon Egg. Accepted: the client is trusted for its own physics, as it already is for pads (decision 0008), and the prize is capped.
 - The client never reports a hit, a checkpoint or a time.
 
 ### T8. UI
@@ -681,7 +682,8 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 | Round during a weather event | No effect on the round, the prize or any odds. Prize eggs hatch later, under the weather at that moment. HOME is always there if a player wants to get back and hatch. |
 | Round crosses midnight UTC | Eligibility is taken at the start; the grant uses the day of the finish. A capped player's new day does not reopen that round. |
 | Character resets or dies in a round | The new character goes to the last checkpoint, not the plot. |
-| HOME during a round | Leaves the round and teleports home. |
+| HOME during a round | Leaves the round and teleports home, in the 5 s start hold too. If that was the last racer the round ends with no prize. |
+| HOME while ready | Teleports home and stays ready, and a countdown carries on. NOT READY is the way out of the queue. |
 | Player is waiting for a plot | No session, so cannot ready. |
 | Server shutdown | The round stops with no prize. Prizes already applied save in `BindToClose`. Racers need no teleport. |
 | Server crash | No round state is saved, so nothing is stuck. |
@@ -695,7 +697,8 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 | Drops to 2 at 112, third again at 113 | cancelled at 112, new end 128 |
 | Countdown ends at 115 | GO at 120, time limit at 240 |
 | First finish at GO + 45 | round ends at GO + 65 at the latest |
-| Finish at GO + 27.9 / GO + 28.0 | refused with a strike / accepted |
+| Finish at GO + 27.9 / GO + 28.0 | not counted, no strike / accepted |
+| CP1 reached at GO + 5.1 / GO + 5.19 | not counted, no strike / counted (a leg of 100 studs) |
 | Samples 0.2 s apart | 31 studs allowed, 32 is a strike |
 | Frozen 2 s, then 100 studs | allowed (`95 × 2.2 + 12 = 221`) |
 | Coins at 60.5 coins/s income | 3,630 |
@@ -709,7 +712,8 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 - **Fact:** characters are client-simulated in Roblox, so root positions are client-owned (decision 0008).
 - **Assumption:** the place keeps StreamingEnabled off. If it is on, teleports need `RequestStreamAroundAsync`. To check at staging.
 - **Assumption:** `workspace:GetServerTimeNow()` agrees across clients to within a frame or two, close enough for the same obstacle motion.
-- **Assumption:** a client can set its own root velocity reliably while the humanoid walks. Knockback feel is tuned at the greybox gate; obstacle data is not an economy value.
+- **Fact (Studio, one client):** a client can set its own root velocity while the humanoid walks. With `ChangeState(Jumping)` the push survives: a walker hit at 65 studs/s travels 16 studs in 0.45 s, 55 about 12, 45 about 8, and leaves a 10-wide bridge. The humanoid then has 50 studs/s upward from the state, not the 20 the rules ask for, so a knock peaks 7.3 studs up. Knockback feel is tuned at the greybox gate; obstacle data is not an economy value.
+- **Fact (Studio):** `Humanoid:MoveTo` does nothing on a platform, because the carry writes the root every frame; `Player:Move`, which keyboard, gamepad and thumbstick all use, walks normally. Click-to-move does not work on a platform, and the game does not offer it.
 - **Hypothesis:** the prize brings friends into a shared activity with no way to lose anything.
 - **Hypothesis:** a typical run takes 70 to 90 s, so 120 s is enough for most players to finish.
 

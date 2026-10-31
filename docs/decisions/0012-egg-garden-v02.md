@@ -31,7 +31,7 @@ Status: Proposed by A09 for SHANNON (CLAUDE.md rule 8), on the Studio Director's
 | Coins | every other finisher: `GardenProgress.scaled(p, 100, 1)` (1 minute of income, at least 100) |
 | Coin cap | 6 per player per UTC day |
 | Plant gate | the egg's own unlock level (Level 10 for Moon); no price, no stock check |
-| Minimum finish, speed limit, strikes, settle after a teleport | 25 s (was 28); `95 × dt + 12` studs; 3; 1 s |
+| Minimum finish, speed limit, strikes, settle after a teleport | 28 s, shared over the legs by length and held with no strike (GARDEN-012, was 25 with a strike at the finish); `95 × dt + 12` studs; 3; 1 s |
 
 - **Eligible** = under the prize cap and a saving session, taken at the start of the round. A first finisher who is not eligible stays the winner on the card; the egg goes to the next eligible finisher in the grace time.
 - No XP, quests or Index entries come from the Dash, so a solo player misses nothing that cannot be got elsewhere.
@@ -77,7 +77,7 @@ dash = { day, prizes, coins }            -- UTC day of the counters; default { d
   | `plantPrize` | egg id | `prizeEggs[egg] >= 1`, `level >= egg.level`, an empty bed exists. Lowest empty bed, `planted = now`, `ready = now + grow`; coins and stock unchanged |
 
 - **Ready pad:** one server `ProximityPrompt` "Ready", sharing the 0.35 s limit and the `dashReady` handler.
-- **Leaving a round:** the existing `home` action also leaves the round.
+- **Leaving a round:** the existing `home` action also leaves the round. It does nothing to a player who is only ready (GDD T3).
 - **`Fx`:** `dashCheckpoint { cp, total }` and `dashSplash { cp, reason }` to one racer (`reason` is `"fall"` or `"check"`); `dashFinish { by, name, place, time, egg, coins }` and `dashOver { winner, prize, reason }` to all clients. Display only.
 - **`GardenStatus`:** new field `dash = { phase, ready, need, at, goAt, racers }`: `phase` is `idle`, `countdown`, `starting` or `racing`; `ready` and `racers` are UserId lists; `need` is 3; `at` and `goAt` are `workspace:GetServerTimeNow()` times, 0 when unused.
 - **Player attributes:** none new. `prizeEggs` and `dash` reach the client in the existing `Profile` attribute.

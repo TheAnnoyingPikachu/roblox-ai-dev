@@ -53,5 +53,10 @@
     "DashRules.spec.luau",
     "GardenConfig.spec.luau"
   ],
+  "evidence": [
+    "Local 2026-10-31 at a26ede3 (rules and client code; later commits are documents): lune run tests/run 465/465 passed, 0 failed, 0 load errors; selene src tests 0 errors, 0 warnings; stylua clean on the changed .luau files as LF",
+    "Studio scratch place, minPlayers 1, countdown 3, build stamp dev (local build, rule 13 is not met by this): logged numbers in docs/qa/garden-v02-review.md Fixes. Pendulum 65, ball 55, sweeper 45 studs/s measured on a standing and a walking character; Lily Hop crossed by physics, deck to deck, 6 of 6 hops on the first attempt",
+    "Not done: a run by hand, on a phone or gamepad, with more than one client, or with DataStores on. See the review"
+  ],
   "notes": "Over the ten-file guide because the 11 findings touch rules, server, client, tools and five documents; they are one review and one fix pass. Models.luau and NightAssets.luau change one comment each (m8). DashConfig gains `decks`, moved from DashWorld, so the reach spec can read them."
 }
