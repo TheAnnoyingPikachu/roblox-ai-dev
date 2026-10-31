@@ -3,6 +3,8 @@
 -- leaderboard board and the ambient life (fireflies, petals, fog, lantern flicker, idle yokai).
 -- Built once at server start from parts, Roblox materials, terrain and the generated meshes in
 -- Models (docs/assets/register.md). No game rules live here.
+-- Decoration never touches combat: props placed through `prop` are ghosted (no collision or
+-- queries, so movement and telegraph raycasts ignore them) and `spot` refuses the open floor.
 
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
@@ -19,6 +21,8 @@ Arena.SPAWN = CFrame.lookAt(Vector3.new(0, 0, 80), Vector3.new(0, 0, 0))
 
 local RADIUS = 100
 local PIT = Vector3.new(0, 0, -65)
+local PAGODA = Vector3.new(74, -1, -175)
+local WATERFALL = Vector3.new(-330, -1, -40)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(22, 18, 26)
 local VERMILION = Color3.fromRGB(196, 40, 28)
@@ -74,6 +78,38 @@ local function decor(p: BasePart): BasePart
 	return p
 end
 
+-- A decorative Night model, ghosted and shadowless. New map props have no part version: nil until
+-- their ids are uploaded, so they simply do not appear.
+local function prop(name: string, parent: Instance, base: Vector3, yaw: number?, scale: number?): Model?
+	local model = Models.night(name, parent, base, yaw, scale)
+	if model then
+		Models.ghost(model)
+		for _, p in model:GetChildren() do
+			(p :: BasePart).CastShadow = false
+		end
+	end
+	return model
+end
+
+-- Sets a model's <name>_glow mesh to real Neon (baked textures do not emit in Roblox).
+local function neon(model: Model?, colour: Color3, transparency: number?)
+	local strip = model and model:FindFirstChild(model.Name .. "_glow") :: BasePart?
+	if strip then
+		strip.Material = Enum.Material.Neon
+		strip.Color = colour
+		strip.Transparency = transparency or 0
+	end
+end
+
+-- Height of the terrain at (x, z), so trees stand on the sando hill.
+local function groundY(x: number, z: number): number
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = { Workspace.Terrain }
+	local hit = Workspace:Raycast(Vector3.new(x, 300, z), Vector3.new(0, -400, 0), params)
+	return if hit then hit.Position.Y else -1
+end
+
 -- Yaw in degrees that turns a model's front (-Z) the way `frame` looks (Models.night yaw).
 local function yawOf(frame: CFrame): number
 	return math.deg(math.atan2(-frame.LookVector.X, -frame.LookVector.Z))
@@ -115,6 +151,24 @@ local function fireflies(parent: Instance, centre: Vector3, size: Vector3)
 		Speed = NumberRange.new(0.3, 1),
 		SpreadAngle = Vector2.new(180, 180),
 		Rate = 5,
+	})
+end
+
+-- Low soft mist over a box.
+local function fog(parent: Instance, centre: Vector3, size: Vector3, from: number, to: number, rate: number)
+	cloud(parent, centre, size, {
+		Texture = "rbxasset://textures/particles/smoke_main.dds",
+		Color = ColorSequence.new(Color3.fromRGB(150, 130, 190)),
+		Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.5, 0.88),
+			NumberSequenceKeypoint.new(1, 1),
+		}),
+		Size = NumberSequence.new(from, to),
+		Lifetime = NumberRange.new(10, 14),
+		Speed = NumberRange.new(0.5, 1.5),
+		SpreadAngle = Vector2.new(180, 0),
+		Rate = rate,
 	})
 end
 
@@ -193,26 +247,26 @@ end
 
 local function lighting()
 	Lighting.ClockTime = 0
-	Lighting.Brightness = 1.5
-	Lighting.Ambient = Color3.fromRGB(40, 35, 60)
-	Lighting.OutdoorAmbient = Color3.fromRGB(70, 60, 100)
+	Lighting.Brightness = 1.8
+	Lighting.Ambient = Color3.fromRGB(38, 36, 64)
+	Lighting.OutdoorAmbient = Color3.fromRGB(72, 72, 120)
 	Lighting.EnvironmentDiffuseScale = 0.6
 	Lighting.EnvironmentSpecularScale = 0.8
 	Lighting.GlobalShadows = true
 	effect("Atmosphere", {
-		Density = 0.35,
-		Offset = 0.1,
-		Color = Color3.fromRGB(90, 60, 140),
-		Decay = Color3.fromRGB(40, 20, 60),
-		Glare = 0.2,
-		Haze = 1.2,
+		Density = 0.33,
+		Offset = 0.15,
+		Color = Color3.fromRGB(74, 76, 146),
+		Decay = Color3.fromRGB(32, 26, 70),
+		Glare = 0.25,
+		Haze = 1.6,
 	})
 	effect("Sky", { MoonAngularSize = 20, StarCount = 3000 })
-	effect("BloomEffect", { Intensity = 0.6, Size = 30, Threshold = 1.2 })
+	effect("BloomEffect", { Intensity = 0.8, Size = 28, Threshold = 1.05 })
 	effect("ColorCorrectionEffect", {
-		TintColor = Color3.fromRGB(225, 215, 255),
-		Contrast = 0.1,
-		Saturation = 0.15,
+		TintColor = Color3.fromRGB(232, 226, 255),
+		Contrast = 0.14,
+		Saturation = 0.2,
 		Brightness = 0,
 	})
 end
@@ -222,33 +276,65 @@ end
 local function ground()
 	local terrain = Workspace.Terrain
 	terrain:Clear()
-	terrain:FillBlock(CFrame.new(0, -6, 0), Vector3.new(1400, 10, 1400), Enum.Material.Grass)
-	local rng = Random.new(1001)
-	-- Far mountains ring the shrine beyond 300 studs.
-	for i = 1, 22 do
-		local angle = i / 22 * math.pi * 2 + rng:NextNumber(-0.1, 0.1)
-		local distance = rng:NextNumber(340, 520)
-		local at = Vector3.new(math.cos(angle) * distance, -rng:NextNumber(20, 50), math.sin(angle) * distance)
-		terrain:FillBall(at, rng:NextNumber(90, 150), if i % 3 == 0 then Enum.Material.Rock else Enum.Material.Grass)
-	end
-	-- Koi pond: shallow water over the courtyard, west (I1).
-	terrain:FillCylinder(CFrame.new(-60, 0, -10), 1.2, 18, Enum.Material.Water)
-
-	local court = pillar(folder, Vector3.new(0, -1, 0), 1, RADIUS, SLATE, Enum.Material.Slate)
-	court.Name = "Courtyard"
-	local cobble = Color3.fromRGB(120, 116, 110)
-	for _, path in
+	local M = Enum.Material
+	for material, colour in
 		{
-			{ Vector3.new(10, 0.1, 84), Vector3.new(0, 0.05, 58) }, -- entrance to stage
-			{ Vector3.new(10, 0.1, 20), Vector3.new(0, 0.05, -26) }, -- stage to the boss pit
-			{ Vector3.new(36, 0.1, 8), Vector3.new(34, 0.05, 0) }, -- stage to the stalls
-			{ Vector3.new(22, 0.1, 8), Vector3.new(-27, 0.05, 0) }, -- stage to the pond
+			[M.Grass] = Color3.fromRGB(44, 66, 48),
+			[M.LeafyGrass] = Color3.fromRGB(58, 88, 50),
+			[M.Sand] = Color3.fromRGB(128, 122, 114),
+			[M.Pavement] = Color3.fromRGB(112, 108, 112),
+			[M.Cobblestone] = Color3.fromRGB(96, 92, 90),
+			[M.Mud] = Color3.fromRGB(46, 40, 38),
 		}
 	do
-		part(folder, path[1], path[2], cobble, Enum.Material.Cobblestone)
+		terrain:SetMaterialColor(material, colour)
 	end
-	-- Approach path outside the entrance.
-	part(folder, Vector3.new(12, 1, 40), Vector3.new(0, -0.5, 120), cobble, Enum.Material.Cobblestone)
+	terrain.WaterColor = Color3.fromRGB(14, 46, 56)
+	terrain.WaterTransparency = 0.7
+	terrain.WaterReflectance = 0.6
+	terrain.WaterWaveSize = 0.05
+	terrain.WaterWaveSpeed = 4
+	terrain:FillBlock(CFrame.new(0, -6, 0), Vector3.new(1400, 10, 1400), M.Grass)
+
+	-- The Courtyard part stays as the walkable collision at y = 0. The terrain level with it is what
+	-- you see: raked gravel, a stone plaza round the stage, cobbled paths and moss at the wall.
+	local court = pillar(folder, Vector3.new(0, -1, 0), 1, RADIUS, SLATE, Enum.Material.Slate)
+	court.Name = "Courtyard"
+	court.Transparency = 1
+	terrain:FillCylinder(CFrame.new(0, -2.5, 0), 5, RADIUS + 6, M.Sand)
+	terrain:FillCylinder(CFrame.new(0, -2, 0), 4, 32, M.Pavement)
+	for _, path in
+		{
+			{ Vector3.new(12, 4, 74), Vector3.new(0, -2, 67) }, -- entrance to stage
+			{ Vector3.new(12, 4, 28), Vector3.new(0, -2, -34) }, -- stage to the boss pit
+			{ Vector3.new(36, 4, 12), Vector3.new(40, -2, 0) }, -- stage to the stalls
+			{ Vector3.new(20, 4, 12), Vector3.new(-31, -2, 0) }, -- stage to the pond
+		}
+	do
+		terrain:FillBlock(CFrame.new(path[2]), path[1], M.Cobblestone)
+	end
+	local rng = Random.new(5)
+	for _ = 1, 40 do
+		local angle = rng:NextNumber(0, math.pi * 2)
+		local distance = rng:NextNumber(84, 102)
+		local x, z = math.cos(angle) * distance, math.sin(angle) * distance
+		local radius = rng:NextNumber(5, 10)
+		if math.abs(x) > 16 + radius then -- keeps the entrance and hall thresholds clean
+			terrain:FillCylinder(CFrame.new(x, -2, z), 4, radius, M.LeafyGrass)
+		end
+	end
+	terrain:FillCylinder(CFrame.new(-55, -2, 45), 4, 15, M.LeafyGrass) -- sacred tree
+	terrain:FillCylinder(CFrame.new(-60, -2, -10), 4, 23, M.LeafyGrass) -- pond bank
+	for _ = 1, 30 do
+		local angle = rng:NextNumber(0, math.pi * 2)
+		local distance = rng:NextNumber(112, 300)
+		local at = CFrame.new(math.cos(angle) * distance, -3, math.sin(angle) * distance)
+		terrain:FillCylinder(at, 4, rng:NextNumber(12, 30), M.LeafyGrass)
+	end
+	-- Koi pond: a real basin under the Courtyard part, west (I1). Water tops out at y = 0.4.
+	terrain:FillCylinder(CFrame.new(-60, -2, -10), 4, 19.5, M.Mud)
+	terrain:FillCylinder(CFrame.new(-60, -1.6, -10), 3.6, 18, M.Air)
+	terrain:FillCylinder(CFrame.new(-60, -1.8, -10), 4.4, 18, M.Water)
 
 	-- Stone wall with a wooden fence on top; open at the entrance and behind the shrine hall.
 	local segments = 48
@@ -429,6 +515,7 @@ local function shrineHall()
 	end
 	for _, x in { -22, 22 } do
 		paperLantern(folder, at + Vector3.new(x, 12, 21), Color3.fromRGB(255, 120, 60), true)
+		prop("sake_barrels", folder, Vector3.new(x * 0.886, 1.5, -98), 180)
 	end
 end
 
@@ -588,6 +675,12 @@ local function pond()
 		end
 	end
 	fireflies(folder, centre + Vector3.new(0, 4, 0), Vector3.new(40, 6, 40))
+	for _, at in { Vector3.new(-68, 0.36, -10), Vector3.new(-50, 0.36, -12), Vector3.new(-56, 0.36, 6) } do
+		prop("lily_pads", folder, at, rng:NextNumber(0, 360))
+	end
+	for _, at in { Vector3.new(-82, 0, -10), Vector3.new(-65.7, 0, 11.3), Vector3.new(-65.7, 0, -31.3) } do
+		prop("garden_rocks", folder, at, rng:NextNumber(0, 360))
+	end
 end
 
 -- Festival stalls (east) ---------------------------------------------------------------------
@@ -604,78 +697,82 @@ local STALLS = {
 local STALL_MODELS =
 	{ c82828 = "festival_stall_red", f0f0eb = "festival_stall_white", ["283278"] = "festival_stall_indigo" }
 
-local function stalls()
+-- One stall at `frame` (local -Z is its front): model or parts, sign and lanterns.
+local function stall(i: number, info: { any }, frame: CFrame)
+	-- The Night stall model replaces the counter, posts, awning, goods and crates; the sign
+	-- (SurfaceGui text) and lanterns stay.
 	local accent = { Color3.fromRGB(240, 240, 235), Color3.fromRGB(200, 40, 40), Color3.fromRGB(240, 240, 235) }
+	local asset = STALL_MODELS[string.lower((info[2] :: Color3):ToHex())]
+	local built = Models.night(asset, folder, frame.Position, yawOf(frame)) ~= nil
+	if not built then
+		part(folder, Vector3.new(9, 3, 2.5), frame * CFrame.new(0, 1.5, -2.5), WOOD, Enum.Material.WoodPlanks)
+		for _, x in { -4.3, 4.3 } do
+			for _, depth in { -3.6, 3 } do
+				part(
+					folder,
+					Vector3.new(0.5, 8, 0.5),
+					frame * CFrame.new(x, 4, depth),
+					Color3.fromRGB(70, 46, 32),
+					Enum.Material.Wood
+				)
+			end
+		end
+		-- Striped fabric awning sloping down to the front.
+		for s = 1, 3 do
+			local colour = if s == 2 then info[2] else accent[(i % 2) + 1]
+			part(
+				folder,
+				Vector3.new(3.4, 0.25, 9),
+				frame * CFrame.new(-6.8 + s * 3.4, 8.4, -0.6) * CFrame.Angles(math.rad(-14), 0, 0),
+				colour,
+				Enum.Material.Fabric
+			)
+		end
+	end
+	local sign = part(folder, Vector3.new(8, 2.4, 0.3), frame * CFrame.new(0, 10.6, -4.4), INK, Enum.Material.Wood)
+	label(sign, info[1], Color3.fromRGB(255, 220, 150))
+	for _, x in { -4.3, 4.3 } do
+		paperLantern(
+			folder,
+			(frame * CFrame.new(x, 6.4, -5)).Position,
+			if x < 0 then Color3.fromRGB(255, 80, 60) else Color3.fromRGB(255, 200, 120),
+			x < 0
+		)
+	end
+	if not built then
+		for g = -1, 1 do
+			local good = decor(
+				part(
+					folder,
+					Vector3.new(1, 0.8, 1),
+					frame * CFrame.new(g * 2.6, 3.4, -2.5),
+					Color3.fromHSV((i * 0.17 + g * 0.08) % 1, 0.7, 0.9)
+				)
+			)
+			good.Shape = Enum.PartType.Ball
+		end
+		part(
+			folder,
+			Vector3.new(2, 2, 2),
+			frame * CFrame.new(5.8, 1, -1),
+			Color3.fromRGB(150, 110, 70),
+			Enum.Material.Wood
+		)
+		part(
+			folder,
+			Vector3.new(1.6, 1.6, 1.6),
+			frame * CFrame.new(5.6, 2.8, -0.8) * CFrame.Angles(0, 0.4, 0),
+			Color3.fromRGB(140, 100, 64),
+			Enum.Material.Wood
+		)
+	end
+end
+
+local function stalls()
 	for i, info in STALLS do
 		local z = (i - 3) * 18
 		-- Local frame: -Z faces the courtyard centre (west).
-		local frame = CFrame.lookAt(Vector3.new(62, 0, z), Vector3.new(0, 0, z))
-		-- The Night stall model replaces the counter, posts, awning, goods and crates; the sign
-		-- (SurfaceGui text) and lanterns stay.
-		local stall = STALL_MODELS[string.lower((info[2] :: Color3):ToHex())]
-		local built = Models.night(stall, folder, Vector3.new(62, 0, z), yawOf(frame)) ~= nil
-		if not built then
-			part(folder, Vector3.new(9, 3, 2.5), frame * CFrame.new(0, 1.5, -2.5), WOOD, Enum.Material.WoodPlanks)
-			for _, x in { -4.3, 4.3 } do
-				for _, depth in { -3.6, 3 } do
-					part(
-						folder,
-						Vector3.new(0.5, 8, 0.5),
-						frame * CFrame.new(x, 4, depth),
-						Color3.fromRGB(70, 46, 32),
-						Enum.Material.Wood
-					)
-				end
-			end
-			-- Striped fabric awning sloping down to the front.
-			for s = 1, 3 do
-				local colour = if s == 2 then info[2] else accent[(i % 2) + 1]
-				part(
-					folder,
-					Vector3.new(3.4, 0.25, 9),
-					frame * CFrame.new(-6.8 + s * 3.4, 8.4, -0.6) * CFrame.Angles(math.rad(-14), 0, 0),
-					colour,
-					Enum.Material.Fabric
-				)
-			end
-		end
-		local sign = part(folder, Vector3.new(8, 2.4, 0.3), frame * CFrame.new(0, 10.6, -4.4), INK, Enum.Material.Wood)
-		label(sign, info[1], Color3.fromRGB(255, 220, 150))
-		for _, x in { -4.3, 4.3 } do
-			paperLantern(
-				folder,
-				(frame * CFrame.new(x, 6.4, -5)).Position,
-				if x < 0 then Color3.fromRGB(255, 80, 60) else Color3.fromRGB(255, 200, 120),
-				x < 0
-			)
-		end
-		if not built then
-			for g = -1, 1 do
-				local good = decor(
-					part(
-						folder,
-						Vector3.new(1, 0.8, 1),
-						frame * CFrame.new(g * 2.6, 3.4, -2.5),
-						Color3.fromHSV((i * 0.17 + g * 0.08) % 1, 0.7, 0.9)
-					)
-				)
-				good.Shape = Enum.PartType.Ball
-			end
-			part(
-				folder,
-				Vector3.new(2, 2, 2),
-				frame * CFrame.new(5.8, 1, -1),
-				Color3.fromRGB(150, 110, 70),
-				Enum.Material.Wood
-			)
-			part(
-				folder,
-				Vector3.new(1.6, 1.6, 1.6),
-				frame * CFrame.new(5.6, 2.8, -0.8) * CFrame.Angles(0, 0.4, 0),
-				Color3.fromRGB(140, 100, 64),
-				Enum.Material.Wood
-			)
-		end
+		stall(i, info, CFrame.lookAt(Vector3.new(62, 0, z), Vector3.new(0, 0, z)))
 	end
 end
 
@@ -686,11 +783,7 @@ local GATES = { Vector3.new(60, 0, 60), Vector3.new(-60, 0, -60), Vector3.new(60
 local function demonGate(at: Vector3)
 	local frame = CFrame.lookAt(at, Vector3.zero)
 	local gate = Models.night("demon_gate", folder, at, yawOf(frame))
-	local neon = gate and gate:FindFirstChild("demon_gate_glow") :: BasePart?
-	if neon then
-		neon.Material = Enum.Material.Neon
-		neon.Color = PURPLE
-	end
+	neon(gate, PURPLE)
 	if gate == nil then
 		for _, x in { -6, 6 } do
 			local foot = (frame * CFrame.new(x, 0, 0)).Position
@@ -813,9 +906,39 @@ local function rimLanterns()
 	end
 end
 
--- Strings of small lanterns from the stage roof corners to poles on the rim.
-local function lanternStrings()
+-- One sagging string of small lanterns from a to b.
+local function garland(a: Vector3, b: Vector3, sag: number)
 	local colours = { Color3.fromRGB(255, 80, 60), Color3.fromRGB(255, 190, 110), Color3.fromRGB(255, 240, 220) }
+	local count = math.floor((b - a).Magnitude / 6)
+	local previous: Attachment? = nil
+	for k = 0, count do
+		local s = k / count
+		local at = a:Lerp(b, s) - Vector3.new(0, sag * 4 * s * (1 - s), 0)
+		local bulb = decor(part(folder, Vector3.new(0.9, 1.1, 0.9), at, colours[k % 3 + 1], Enum.Material.Neon))
+		bulb.Shape = Enum.PartType.Ball
+		if k % 4 == 2 then
+			glow(bulb, WARM, 10, 1)
+		end
+		local attachment = Instance.new("Attachment")
+		attachment.Position = Vector3.new(0, 0.5, 0)
+		attachment.Parent = bulb
+		if previous then
+			local beam = Instance.new("Beam")
+			beam.Attachment0 = previous
+			beam.Attachment1 = attachment
+			beam.Width0, beam.Width1 = 0.12, 0.12
+			beam.Color = ColorSequence.new(INK)
+			beam.LightInfluence = 1
+			beam.Parent = bulb
+		end
+		previous = attachment
+	end
+end
+
+-- Strings from the stage roof corners to poles on the rim, then pole to pole round the wall. The
+-- rim string skips the north chord, which would cross the boss pit.
+local function lanternStrings()
+	local poles: { Vector3 } = {}
 	for _, corner in
 		{ Vector3.new(16, 0, -16), Vector3.new(-16, 0, -16), Vector3.new(16, 0, 16), Vector3.new(-16, 0, 16) }
 	do
@@ -824,32 +947,181 @@ local function lanternStrings()
 			local angle = diagonal + spread
 			local pole = Vector3.new(math.cos(angle) * 88, 0, math.sin(angle) * 88)
 			pillar(folder, pole, 12, 0.35, WOOD, Enum.Material.Wood)
-			local a = corner + Vector3.new(0, 16, 0)
-			local b = pole + Vector3.new(0, 12, 0)
-			local count = math.floor((b - a).Magnitude / 6)
-			local previous: Attachment? = nil
-			for k = 0, count do
-				local s = k / count
-				local at = a:Lerp(b, s) - Vector3.new(0, 4 * 4 * s * (1 - s), 0)
-				local bulb = decor(part(folder, Vector3.new(0.9, 1.1, 0.9), at, colours[k % 3 + 1], Enum.Material.Neon))
-				bulb.Shape = Enum.PartType.Ball
-				if k % 4 == 2 then
-					glow(bulb, WARM, 10, 1)
-				end
-				local attachment = Instance.new("Attachment")
-				attachment.Position = Vector3.new(0, 0.5, 0)
-				attachment.Parent = bulb
-				if previous then
-					local beam = Instance.new("Beam")
-					beam.Attachment0 = previous
-					beam.Attachment1 = attachment
-					beam.Width0, beam.Width1 = 0.12, 0.12
-					beam.Color = ColorSequence.new(INK)
-					beam.LightInfluence = 1
-					beam.Parent = bulb
-				end
-				previous = attachment
+			garland(corner + Vector3.new(0, 16, 0), pole + Vector3.new(0, 12, 0), 4)
+			table.insert(poles, pole)
+		end
+	end
+	table.sort(poles, function(a, b)
+		return math.atan2(a.Z, a.X) < math.atan2(b.Z, b.X)
+	end)
+	for i, pole in poles do
+		local other = poles[i % #poles + 1]
+		if pole.Z > -50 or other.Z > -50 or math.sign(pole.X) == math.sign(other.X) then
+			garland(pole + Vector3.new(0, 12, 0), other + Vector3.new(0, 12, 0), 2.5)
+		end
+	end
+end
+
+-- South sando: yatai street, stone stairs and senbon-torii tunnel up a hill to an inner shrine ----
+
+local SANDO_FOOT = 152 -- z where the stairs start: four flights of 6 over 12, landings of 6
+local SANDO_TOP = 24
+
+-- Height of the stair line at z.
+local function sandoY(z: number): number
+	local along = math.clamp(z - SANDO_FOOT, 0, 66)
+	local flights = math.floor(along / 18)
+	return flights * 6 + math.min(along - flights * 18, 12) / 2
+end
+
+local function sando()
+	local terrain = Workspace.Terrain
+	local M = Enum.Material
+	-- Paved street, then a smooth hill whose north face follows the stairs.
+	terrain:FillBlock(CFrame.new(0, -2.5, 128), Vector3.new(36, 5, 52), M.Pavement)
+	terrain:FillBlock(CFrame.new(0, -2.5, 128), Vector3.new(14, 5, 52), M.Cobblestone)
+	terrain:FillBall(Vector3.new(0, -150.5, 242), 174.5, M.Grass)
+	terrain:FillCylinder(CFrame.new(0, 11.5, 242), 25, 26, M.Pavement)
+	for i = 0, 3 do
+		local y = i * 6
+		local z = SANDO_FOOT + i * 18
+		terrain:FillBlock(CFrame.new(0, y + 20, z + 9), Vector3.new(13, 40, 18), M.Air)
+		terrain:FillBlock(CFrame.new(0, y - 6, z + 9), Vector3.new(13, 12, 18), M.Slate)
+		terrain:FillWedge(CFrame.new(0, y + 3, z + 6), Vector3.new(13, 6, 12), M.Slate)
+		terrain:FillBlock(CFrame.new(0, y + 3, z + 15), Vector3.new(13, 6, 6), M.Slate)
+	end
+
+	for i = 0, 5 do
+		local z = 112 + (i // 2) * 14
+		local x = if i % 2 == 0 then -15 else 15
+		stall(i + 1, STALLS[i % #STALLS + 1], CFrame.lookAt(Vector3.new(x, 0, z), Vector3.new(0, 0, z)))
+	end
+	for z = 106, 142, 18 do
+		for _, x in { -9, 9 } do
+			pillar(folder, Vector3.new(x, 0, z), 12, 0.3, WOOD, Enum.Material.Wood)
+		end
+		if z < 142 then
+			garland(Vector3.new(-9, 12, z), Vector3.new(9, 12, z + 18), 2)
+			garland(Vector3.new(9, 12, z), Vector3.new(-9, 12, z + 18), 2)
+		end
+	end
+	for _, x in { -6.5, 6.5 } do
+		stoneLantern(folder, Vector3.new(x, 0, SANDO_FOOT - 2))
+		for landing = 1, 3 do
+			local z = SANDO_FOOT + landing * 18 - 3
+			stoneLantern(folder, Vector3.new(x * 0.86, sandoY(z), z))
+		end
+		stoneLantern(folder, Vector3.new(x * 1.3, SANDO_TOP, 228))
+		stoneLantern(folder, Vector3.new(x * 1.3, SANDO_TOP, 240))
+	end
+
+	for i = 0, 3 do
+		local y = i * 6
+		local z = SANDO_FOOT + i * 18 + 6
+		if prop("sando_stairs", folder, Vector3.new(0, y, z)) then
+			-- Exact walkable slope over the coarser terrain wedge.
+			local ramp = wedge(folder, Vector3.new(9, 6, 12), CFrame.new(0, y + 3.4, z), STONE, Enum.Material.Slate)
+			ramp.Transparency = 1
+		end
+	end
+	for z = SANDO_FOOT + 1, SANDO_FOOT + 64, 3 do
+		-- On a flight the feet sit on the sloped side blocks; on a landing, on the ground.
+		local onFlight = (z - SANDO_FOOT) % 18 < 12
+		prop("senbon_torii", folder, Vector3.new(0, sandoY(z) + (if onFlight then 0.6 else 0), z))
+	end
+
+	-- Inner shrine on the summit, behind a smaller vermilion torii.
+	Models.night("entrance_torii", folder, Vector3.new(0, SANDO_TOP, 224), 0, 0.6)
+	Models.night("shrine_hall", folder, Vector3.new(0, SANDO_TOP, 250), 0, 0.5)
+	fireflies(folder, Vector3.new(0, SANDO_TOP, 190), Vector3.new(70, 16, 70))
+end
+
+-- Garden and banners ------------------------------------------------------------------------------
+
+-- A point `radius` from the centre at `degrees` (0 = east, 90 = south). Decoration inside the wall
+-- only lives in the band along it, clear of the boss pit (GDD I1) and the demon gates.
+local function spot(degrees: number, radius: number): Vector3
+	local angle = math.rad(degrees)
+	local at = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+	assert(radius >= 88, "decoration on the fighting floor")
+	assert((at - PIT).Magnitude >= 30, "decoration in the boss pit")
+	for _, gate in GATES do
+		assert((at - gate).Magnitude >= 14, "decoration at a demon gate")
+	end
+	return at
+end
+
+local function garden()
+	local rng = Random.new(77)
+	for _, degrees in { -18, 0, 18, 180, 200, 212 } do
+		prop("bamboo_cluster", folder, spot(degrees, 97), rng:NextNumber(0, 360))
+	end
+	for _, degrees in { 108, 160 } do
+		prop("pine_tree", folder, spot(degrees, 97), rng:NextNumber(0, 360))
+	end
+	for _, degrees in { 38, 52, 68, 128, 172, 232, 300, 330 } do
+		prop("hydrangea_bush", folder, spot(degrees, 98), rng:NextNumber(0, 360))
+	end
+	for _, degrees in { 245, 295 } do
+		prop("garden_rocks", folder, spot(degrees, 97), rng:NextNumber(0, 360))
+	end
+	prop("zen_garden", folder, Vector3.new(-30, 0, 80))
+
+	-- A close band of bamboo, pine and cedar outside the wall frames the courtyard, under the menu
+	-- orbit's sightline (camera radius 130, height 54).
+	for step = 0, 23 do
+		local degrees = step * 15 + 7
+		if math.abs(degrees - 90) > 14 and math.abs(degrees - 270) > 22 then
+			local angle = math.rad(degrees)
+			local distance = rng:NextNumber(110, 122)
+			local at = Vector3.new(math.cos(angle) * distance, -1, math.sin(angle) * distance)
+			local yaw = rng:NextNumber(0, 360)
+			if step % 4 == 0 then
+				prop("bamboo_cluster", folder, at, yaw, rng:NextNumber(0.9, 1.15))
+			elseif step % 4 == 2 then
+				prop("pine_tree", folder, at, yaw, rng:NextNumber(1, 1.3))
+			else
+				prop("cedar_tree", folder, at, yaw, rng:NextNumber(0.65, 0.95))
 			end
+		end
+	end
+	for _ = 1, 26 do
+		local angle = rng:NextNumber(0, math.pi * 2)
+		local distance = rng:NextNumber(128, 150)
+		local x, z = math.cos(angle) * distance, math.sin(angle) * distance
+		if math.abs(x) > 30 then
+			prop("cedar_tree", folder, Vector3.new(x, groundY(x, z) - 0.5, z), math.deg(angle), rng:NextNumber(0.7, 1))
+		end
+	end
+	-- Cedars crowd the sando hill, standing on its slope.
+	for i = 1, 22 do
+		local angle = i * 2.4
+		local distance = 34 + i * 2.2
+		local x, z = math.cos(angle) * distance, 242 + math.sin(angle) * distance
+		if math.abs(x) > 11 then
+			prop("cedar_tree", folder, Vector3.new(x, groundY(x, z) - 0.5, z), math.deg(angle), 0.7 + (i % 4) * 0.1)
+		end
+	end
+	fireflies(folder, Vector3.new(90, 6, 0), Vector3.new(24, 10, 70))
+	fireflies(folder, Vector3.new(-96, 6, -30), Vector3.new(16, 10, 60))
+end
+
+local function banners()
+	local names = { "nobori_red", "nobori_indigo" }
+	-- Between the stalls, cloth toward the courtyard.
+	for i, z in { -27, -9, 9, 27 } do
+		local frame = CFrame.lookAt(Vector3.new(60, 0, z), Vector3.new(0, 0, z))
+		prop(names[i % 2 + 1], folder, frame.Position, yawOf(frame))
+	end
+	-- Along the wall, cloth toward the centre.
+	for i, degrees in { 30, 80, 100, 118, 150, 190, 240, 308, 335 } do
+		local at = spot(degrees, 99)
+		prop(names[i % 2 + 1], folder, at, yawOf(CFrame.lookAt(at, Vector3.zero)))
+	end
+	-- Down both sides of the yatai street, cloth across it.
+	for i, z in { 119, 133, 147 } do
+		for side, x in { -10, 10 } do
+			prop(names[(i + side) % 2 + 1], folder, Vector3.new(x, 0, z))
 		end
 	end
 end
@@ -884,11 +1156,15 @@ local function forest()
 		end
 		local angle = rng:NextNumber(0, math.pi * 2)
 		local distance = rng:NextNumber(150, 320)
-		local base = Vector3.new(math.cos(angle) * distance, -1, math.sin(angle) * distance)
+		local x, z = math.cos(angle) * distance, math.sin(angle) * distance
+		local base = Vector3.new(x, groundY(x, z), z)
 		local height = rng:NextNumber(14, 26)
-		local cedar = Models.night("cedar_tree", trees, base, math.deg(angle), height / 26)
-		if cedar then
-			for _, p in cedar:GetChildren() do
+		local cleared = (math.abs(x) < 14 and z > 100)
+			or (base - PAGODA).Magnitude < 26
+			or (base - WATERFALL).Magnitude < 62
+		local cedar = if cleared then nil else Models.night("cedar_tree", trees, base, math.deg(angle), height / 26)
+		if cleared or cedar then
+			for _, p in if cedar then cedar:GetChildren() else {} do
 				(p :: BasePart).CastShadow = false
 			end
 			-- Keep the random sequence of the part forest so the layout does not change.
@@ -921,21 +1197,134 @@ local function forest()
 	moon.Shape = Enum.PartType.Ball
 	-- Drifting low fog over the courtyard.
 	for _, at in { Vector3.new(50, 2, 50), Vector3.new(-50, 2, -50), Vector3.new(50, 2, -50), Vector3.new(-50, 2, 50) } do
-		cloud(folder, at, Vector3.new(60, 2, 60), {
+		fog(folder, at, Vector3.new(60, 2, 60), 14, 20, 1.5)
+	end
+end
+
+-- Far mountains, or the older terrain ones while the model has no id. The arcs leave a gap at the
+-- moon's bearing (-78 degrees), so no ridge crosses its disc.
+local function mountains()
+	local placed = false
+	for _, degrees in { -156, -120, -36, 24, 84, 144 } do
+		local angle = math.rad(degrees)
+		local at = Vector3.new(math.cos(angle) * 510, -10, math.sin(angle) * 510)
+		placed = prop("mountain_range", folder, at, yawOf(CFrame.lookAt(at, Vector3.new(0, -10, 0)))) ~= nil
+		if not placed then
+			break
+		end
+	end
+	if placed then
+		return
+	end
+	local terrain = Workspace.Terrain
+	local rng = Random.new(1001)
+	-- Far mountains ring the shrine beyond 300 studs.
+	for i = 1, 22 do
+		local angle = i / 22 * math.pi * 2 + rng:NextNumber(-0.1, 0.1)
+		local distance = rng:NextNumber(340, 520)
+		local at = Vector3.new(math.cos(angle) * distance, -rng:NextNumber(20, 50), math.sin(angle) * distance)
+		terrain:FillBall(at, rng:NextNumber(90, 150), if i % 3 == 0 then Enum.Material.Rock else Enum.Material.Grass)
+	end
+end
+
+-- Landmarks beyond the wall: the pagoda by the shrine hall, the castle on its north-west hill and
+-- the waterfall in the west.
+local function backdrop()
+	local warm = Color3.fromRGB(255, 190, 110)
+	local pagoda = prop("pagoda", folder, PAGODA)
+	neon(pagoda, warm)
+	if pagoda then
+		for _, x in { -17, 17 } do
+			for _, z in { -17, 17 } do
+				stoneLantern(folder, PAGODA + Vector3.new(x, 0, z))
+			end
+		end
+	end
+	local keep = Vector3.new(-250, 38, -340)
+	local castle = prop("castle", folder, keep, yawOf(CFrame.lookAt(keep, Vector3.new(0, keep.Y, 0))))
+	neon(castle, warm)
+	if castle then
+		Workspace.Terrain:FillBall(keep - Vector3.new(0, 84, 0), 90, Enum.Material.Rock)
+	end
+	local fall = prop("waterfall", folder, WATERFALL, yawOf(CFrame.lookAt(WATERFALL, Vector3.new(0, -1, 0))))
+	neon(fall, Color3.fromRGB(176, 214, 255), 0.2)
+	if fall then
+		local toward = -WATERFALL.Unit
+		fog(folder, WATERFALL + toward * 8 + Vector3.new(0, 6, 0), Vector3.new(34, 8, 34), 22, 34, 3)
+		cloud(folder, WATERFALL - toward * 8 + Vector3.new(0, 44, 0), Vector3.new(14, 76, 6), {
 			Texture = "rbxasset://textures/particles/smoke_main.dds",
-			Color = ColorSequence.new(Color3.fromRGB(150, 130, 190)),
-			Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 1),
-				NumberSequenceKeypoint.new(0.5, 0.88),
-				NumberSequenceKeypoint.new(1, 1),
-			}),
-			Size = NumberSequence.new(14, 20),
-			Lifetime = NumberRange.new(10, 14),
-			Speed = NumberRange.new(0.5, 1.5),
-			SpreadAngle = Vector2.new(180, 0),
-			Rate = 1.5,
+			Color = ColorSequence.new(Color3.fromRGB(226, 240, 255)),
+			LightEmission = 0.6,
+			Transparency = NumberSequence.new(0.7, 1),
+			Size = NumberSequence.new(3, 7),
+			Lifetime = NumberRange.new(1.5, 2.5),
+			Speed = NumberRange.new(14, 20),
+			EmissionDirection = Enum.NormalId.Bottom,
+			Rate = 18,
 		})
 	end
+end
+
+-- Sky-wide life: petals over the courtyard and mist banks round the forest and the pond.
+local function ambient()
+	local sky = decor(part(folder, Vector3.new(190, 1, 190), Vector3.new(0, 22, 0), WHITE))
+	sky.Transparency = 1
+	petals(sky, 14)
+	for i = 0, 5 do
+		local angle = i / 6 * math.pi * 2 + 0.4
+		fog(folder, Vector3.new(math.cos(angle) * 230, 8, math.sin(angle) * 230), Vector3.new(180, 8, 180), 50, 70, 0.6)
+	end
+	fog(folder, Vector3.new(-60, 1.5, -10), Vector3.new(30, 1, 30), 10, 16, 1)
+end
+
+-- An occasional firework over the backdrop. A short Enabled pulse, because property changes
+-- replicate to clients. Emitters sit far outside the wall, so they never hide a fight.
+local function fireworks()
+	local shells: { ParticleEmitter } = {}
+	for _, at in
+		{
+			Vector3.new(-170, 150, -330),
+			Vector3.new(190, 170, -300),
+			Vector3.new(260, 140, 120),
+			Vector3.new(-260, 160, 180),
+		}
+	do
+		local holder = decor(part(folder, Vector3.one, at, WHITE))
+		holder.Transparency = 1
+		table.insert(
+			shells,
+			emitter(holder, {
+				LightEmission = 1,
+				LightInfluence = 0,
+				Brightness = 4,
+				Size = NumberSequence.new(4, 0),
+				Lifetime = NumberRange.new(1.6, 2.4),
+				Speed = NumberRange.new(60, 80),
+				SpreadAngle = Vector2.new(180, 180),
+				Drag = 1.6,
+				Acceleration = Vector3.new(0, -14, 0),
+				Rate = 500,
+				Enabled = false,
+			})
+		)
+	end
+	local colours = {
+		Color3.fromRGB(255, 90, 80),
+		Color3.fromRGB(255, 210, 110),
+		Color3.fromRGB(150, 200, 255),
+		Color3.fromRGB(255, 150, 210),
+	}
+	task.spawn(function()
+		local rng = Random.new()
+		while true do
+			task.wait(rng:NextNumber(7, 14))
+			local shell = shells[rng:NextInteger(1, #shells)]
+			shell.Color = ColorSequence.new(colours[rng:NextInteger(1, #colours)])
+			shell.Enabled = true
+			task.wait(0.14)
+			shell.Enabled = false
+		end
+	end)
 end
 
 local function celebration()
@@ -1003,6 +1392,7 @@ function Arena.build(): (CFrame, (rows: { { name: string, wins: number } }) -> (
 	lighting()
 	ground()
 	folder.Parent = Workspace
+	mountains()
 	stage()
 	pit()
 	for _, at in GATES do
@@ -1016,9 +1406,16 @@ function Arena.build(): (CFrame, (rows: { { name: string, wins: number } }) -> (
 	pond()
 	sacredTree()
 	shrineHall()
+	sando()
+	task.wait()
+	garden()
+	banners()
 	sakuraRing()
 	forest()
+	backdrop()
+	ambient()
 	celebration()
+	fireworks()
 	local parts = 0
 	for _, d in folder:GetDescendants() do
 		if d:IsA("BasePart") then
