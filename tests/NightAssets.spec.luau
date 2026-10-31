@@ -1,6 +1,6 @@
 --!strict
 -- src/shared/NightAssets.luau is generated from tools/blender/night/manifest.json; this keeps the
--- two in step (run tools/blender/night/write-assets-module.mjs after a build or an upload).
+-- two in step (run tools/blender/write-assets-module.mjs night after a build or an upload).
 local fs = require("@lune/fs")
 local serde = require("@lune/serde")
 local T = require("./framework")

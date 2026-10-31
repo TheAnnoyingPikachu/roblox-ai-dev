@@ -1,0 +1,77 @@
+{
+  "egg_starter": {
+    "model": 109104720692700,
+    "decal": 99995396678067,
+    "texture": null
+  },
+  "egg_meadow": {
+    "model": 71372750936172,
+    "decal": 125982450804945,
+    "texture": null
+  },
+  "egg_forest": {
+    "model": 89874757209114,
+    "decal": 109811088843078,
+    "texture": null
+  },
+  "egg_sunset": {
+    "model": 100526753027938,
+    "decal": 91870430062785,
+    "texture": null
+  },
+  "egg_moon": {
+    "model": 134236173057663,
+    "decal": 73120615063274,
+    "texture": null
+  },
+  "egg_star": {
+    "model": 77444416035716,
+    "decal": 99247584793670,
+    "texture": null
+  },
+  "egg_celestial": {
+    "model": 83922903857532,
+    "decal": 96336588125035,
+    "texture": null
+  },
+  "egg_shell_fragment": {
+    "model": 117958998597273,
+    "decal": null,
+    "texture": null
+  },
+  "dash_sweeper": {
+    "model": 114035093345928,
+    "decal": 91527826397887,
+    "texture": null
+  },
+  "dash_ball": {
+    "model": 118244370155981,
+    "decal": 107755380975825,
+    "texture": null
+  },
+  "dash_pendulum": {
+    "model": 85413652569497,
+    "decal": 72542923116878,
+    "texture": null
+  },
+  "dash_platform": {
+    "model": 106898487600166,
+    "decal": 102972449294603,
+    "texture": null
+  },
+  "dash_arch": {
+    "model": 121114795657919,
+    "decal": 106256655197860,
+    "texture": null
+  },
+  "dash_ready_pad": {
+    "model": 74459385858625,
+    "decal": 90998500062591,
+    "texture": null
+  },
+  "dash_island": {
+    "model": 110954283750085,
+    "decal": 127563154953102,
+    "texture": null
+  }
+}

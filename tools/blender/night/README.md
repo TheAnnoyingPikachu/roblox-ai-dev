@@ -47,13 +47,13 @@ the code it replaces and wiring notes.
 
 1. `python tools/blender/night/export_assets.py` copies each FBX and a 256-colour PNG into
    `assets/night/` (committed; about 20 MB). Commit them with the script changes.
-2. After merge, the Director runs the **Upload Night assets** workflow
+2. After merge, the Director runs the **Upload Blender assets** workflow (input `game: night`)
    (`.github/workflows/upload-assets.yml`, environment `assets`: secret `ROBLOX_API_KEY`,
    variable `ROBLOX_CREATOR_USER_ID`). It uploads every FBX as a Model and every PNG as a Decal
-   with `upload-assets.mjs`, polls each operation, resolves the decal's image id, and publishes
+   with `tools/blender/upload-assets.mjs`, polls each operation, resolves the decal's image id, and publishes
    `uploaded.json` and `NightAssets.luau` as the run artifact. CI uploads the committed files, not
    a fresh Blender build, so it ships exactly what was reviewed.
-3. Copy both files into the repo (or run `node tools/blender/night/write-assets-module.mjs`
+3. Copy both files into the repo (or run `node tools/blender/write-assets-module.mjs night`
    with the `uploaded.json`), fill the asset ids in `docs/assets/register.md`, open a PR.
 
 ## How the game uses them

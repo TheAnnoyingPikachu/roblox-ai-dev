@@ -74,6 +74,9 @@ local SPECS = {
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,
+	["GardenAssets.spec.luau"] = function()
+		require("./GardenAssets.spec")
+	end,
 	["Kit.spec.luau"] = function()
 		require("./Kit.spec")
 	end,

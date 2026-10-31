@@ -31,6 +31,6 @@ Specs: `Rng CombatRules WaveRules BossRules BlessingRules RunRules MetaRules Nig
 - `Combat` requests are validated and rate-limited on the server; clients skip their own predicted `swing`/`dash` Fx.
 - `Hurt.key` makes each attack hit and each dodge count at most once per player.
 - Stores `NightProfile<suffix>`, `NightWins<suffix>`; `PRODUCTION_UNIVERSE_ID` stays nil without SHANNON.
-- `NightAssets.luau` is generated: change `uploaded.json` and run `tools/blender/night/write-assets-module.mjs`.
+- `NightAssets.luau` is generated: change `uploaded.json` and run `node tools/blender/write-assets-module.mjs night`.
 
 Fast check: `lune run tests/run Rng Combat Wave Boss Blessing RunRules MetaRules NightProgress NightAssets`.
