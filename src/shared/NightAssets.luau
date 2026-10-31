@@ -284,8 +284,8 @@ local NightAssets: { [string]: Asset } = {
 	sando_stairs = {
 		size = { 8.24, 24.33, 66.04 },
 		parts = { "sando_stairs" },
-		model = 105904083817503,
-		decal = 129732003157294,
+		model = 110540709831615,
+		decal = 111760210179061,
 		texture = nil,
 	},
 	castle = {
@@ -305,8 +305,8 @@ local NightAssets: { [string]: Asset } = {
 	mountain_range = {
 		size = { 908.59, 168.58, 333.43 },
 		parts = { "mountain_range" },
-		model = 122060265935271,
-		decal = 128475870501872,
+		model = 80431845451117,
+		decal = 108721672302843,
 		texture = nil,
 	},
 	bamboo_cluster = {
