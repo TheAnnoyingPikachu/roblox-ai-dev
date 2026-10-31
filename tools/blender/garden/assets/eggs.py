@@ -363,11 +363,9 @@ def _feather_wing(side, m):
         (1.95, 0.32, 30, -0.14),
         (1.7, 0.3, 12, -0.22),
         (1.4, 0.28, -8, -0.3),
-        (1.25, 0.24, 55, 0.14),
-        (1.2, 0.25, 28, 0.03),
-        (1.0, 0.24, 2, -0.12),
+        (1.2, 0.25, 42, 0.08),
     ):
-        f = k.leaf(length, width, m, droop=0.1, n=4, steps=5, name="feather")
+        f = k.leaf(length, width, m, droop=0.1, n=4, steps=4, name="feather")
         place = (
             Matrix.Diagonal((side, 1, 1, 1))
             @ Matrix.Translation(shoulder + Vector((0, 0, drop)))
@@ -393,69 +391,67 @@ def egg_celestial():
     plume_l = k.paint("ce_plume_l", [(0, (255, 251, 240)), (0.42, (255, 240, 200)), (1, (255, 190, 64))], -0.7, -2.75, axis="X")
     light = k.glow((255, 214, 110))
 
-    parts = [k.shell(pearl, nu=24, nv=12, **e)]
+    parts = [k.shell(pearl, nu=22, nv=11, **e)]
     # Gold belt with a scalloped band, ribs to the crown, a lotus cup at the foot.
     for v in (0.42, 0.53):
-        parts.append(k.ridge([(i * 22.5, v) for i in range(17)], 0.055, 0.05, gold, **e))
-    parts.append(k.ridge([(i * 11.25, 0.475 + 0.032 * math.cos(math.radians(i * 11.25 * 12))) for i in range(33)], 0.024, 0.04, gold, **e))
-    for i in range(8):
-        theta = i * 45 + 22.5
-        parts.append(k.ridge([(theta, 0.55 + 0.42 * s / 5) for s in range(6)], [0.06, 0.05, 0.045, 0.04, 0.04, 0.05], 0.035, gold, **e))
+        parts.append(k.ridge([(i * 30, v) for i in range(13)], 0.055, 0.05, gold, **e))
+    parts.append(k.ridge([(i * 15, 0.475 + 0.03 * (-1) ** i) for i in range(25)], 0.024, 0.04, gold, **e))
+    for i in range(6):
+        theta = i * 60 + 30
+        parts.append(k.ridge([(theta, 0.55 + 0.42 * s / 3) for s in range(4)], [0.06, 0.05, 0.04, 0.05], 0.035, gold, **e))
     for i in range(8):
         theta = i * 45
-        parts.append(k.ridge([(theta, 0.02), (theta, 0.1), (theta, 0.18), (theta, 0.27)], [0.05, 0.22, 0.17, 0.012], 0.07, gold, **e))
+        parts.append(k.ridge([(theta, 0.02), (theta, 0.14), (theta, 0.27)], [0.05, 0.22, 0.012], 0.07, gold, **e))
 
     # Constellations, front and back, on the upper shell.
     glow = []
     for nodes, lines in (
         ([(-34, 0.74), (-6, 0.84), (24, 0.76), (40, 0.62), (-14, 0.63)], [(0, 1), (1, 2), (2, 3), (0, 4), (4, 2)]),
         ([(150, 0.8), (178, 0.68), (206, 0.78), (232, 0.64), (170, 0.6)], [(0, 1), (1, 2), (2, 3), (1, 4)]),
-        ([(-92, 0.3), (-62, 0.24), (-38, 0.32)], [(0, 1), (1, 2)]),
-        ([(88, 0.32), (118, 0.24), (146, 0.33)], [(0, 1), (1, 2)]),
     ):
         for a, b in lines:
             (t0, v0), (t1, v1) = nodes[a], nodes[b]
-            path = [(t0 + (t1 - t0) * j / 4, v0 + (v1 - v0) * j / 4) for j in range(5)]
+            path = [(t0 + (t1 - t0) * j / 3, v0 + (v1 - v0) * j / 3) for j in range(4)]
             glow.append(k.ridge(path, 0.03, 0.03, light, **e))
         for t, v in nodes:
             glow.append(k.stick(k.star(0.17, light, points=4, inner=0.3), t, v, 0.015, **e))
     for t in (0, 180):
-        parts.append(k.stick(k.lathe([(0.3, -0.02), (0.28, 0.05), (0.21, 0.07), (0.19, 0.03)], m=gold, n=12, name="setting"), t, 0.475, 0.0, **e))
+        parts.append(k.stick(k.lathe([(0.3, -0.02), (0.28, 0.06), (0.19, 0.03)], m=gold, n=12, name="setting"), t, 0.475, 0.0, **e))
         glow.append(k.stick(k.star(0.24, light, points=4, inner=0.34), t, 0.475, 0.03, **e))
     moved(parts + glow, z=lift)
 
     # Pedestal, crown finial, halo.
     parts.append(
         k.lathe(
-            [(0.82, 0.0), (0.84, 0.1), (0.66, 0.16), (0.3, 0.3), (0.26, 0.4), (0.42, 0.52), (0, 0.56)],
+            [(0.82, 0.0), (0.84, 0.1), (0.66, 0.16), (0.28, 0.32), (0.42, 0.52), (0, 0.56)],
             m=gold,
-            n=16,
+            n=14,
             name="foot",
         )
     )
     top = lift + 2.72
     parts.append(
         k.lathe(
-            [(0.3, top - 0.1), (0.24, top + 0.02), (0.1, top + 0.1), (0.13, top + 0.2), (0.05, top + 0.3), (0, top + 0.34)],
+            [(0.3, top - 0.1), (0.24, top + 0.02), (0.1, top + 0.1), (0.13, top + 0.2), (0, top + 0.34)],
             m=gold,
-            n=10,
+            n=8,
             name="finial",
         )
     )
     s = k.star(0.26, light, points=4, inner=0.3)
     s.data.transform(Matrix.Translation((0, 0, top + 0.56)) @ Matrix.Rotation(math.radians(90), 4, "X"))
     glow.append(s)
-    glow.append(k.ring(0.58, top + 0.3, 0.05, light, n=20, sides=5, name="halo"))
+    glow.append(k.ring(0.58, top + 0.3, 0.05, light, n=18, sides=4, name="halo"))
     glow[-1].data.transform(Matrix.Translation((0, 0, top + 0.3)) @ Matrix.Rotation(math.radians(-14), 4, "X") @ Matrix.Translation((0, 0, -top - 0.3)))
 
     # The orbit: a tilted gold ring with three moons riding on it.
-    orbit = k.ring(1.72, 0, 0.065, gold, n=28, sides=5, name="orbit")
+    orbit = k.ring(1.72, 0, 0.065, gold, n=24, sides=5, name="orbit")
     tilt = Matrix.Translation((0, 0, lift + 1.2)) @ Matrix.Rotation(math.radians(-13), 4, "Y") @ Matrix.Rotation(math.radians(20), 4, "X")
     orbit.data.transform(tilt)
     parts.append(orbit)
     for a, r in ((20, 0.15), (150, 0.12), (265, 0.17)):
         x, y = 1.72 * math.cos(math.radians(a)), 1.72 * math.sin(math.radians(a))
-        glow.append(k.sphere(r, tilt @ Vector((x, y, 0)), m=light, seg=8, rings=5, name="moonlet"))
+        glow.append(k.sphere(r, tilt @ Vector((x, y, 0)), m=light, seg=7, rings=4, name="moonlet"))
 
     parts += _feather_wing(1, plume_r) + _feather_wing(-1, plume_l)
     return {"": parts, "glow": glow}
@@ -469,7 +465,7 @@ def egg_shell_fragment():
     bm = bmesh.new()
 
     def rim(scale, lift):
-        return [bm.verts.new(k.egg_at(60 * x * scale, 0.5 + 0.2 * (y - 0.3) * scale, lift, **e)[0]) for x, y in outline]
+        return [bm.verts.new(k.egg_at(44 * x * scale, 0.5 + 0.16 * (y - 0.55) * scale, lift, **e)[0]) for x, y in outline]
 
     outer, outer_mid, outer_hub = rim(1, 0), rim(0.5, 0), bm.verts.new(k.egg_at(0, 0.5, 0, **e)[0])
     inner, inner_mid, inner_hub = rim(1, -0.07), rim(0.5, -0.07), bm.verts.new(k.egg_at(0, 0.5, -0.07, **e)[0])

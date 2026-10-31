@@ -104,9 +104,9 @@
     "png": "build/blender/garden/egg_moon.png",
     "preview": "build/blender/garden/previews/egg_moon.png",
     "size_studs": [
-      3.61,
-      4.42,
-      1.92
+      3.15,
+      3.59,
+      1.72
     ],
     "tris": 1964,
     "parts": {
@@ -168,14 +168,14 @@
     "png": "build/blender/garden/egg_celestial.png",
     "preview": "build/blender/garden/previews/egg_celestial.png",
     "size_studs": [
-      4.83,
+      4.82,
       4.0,
-      3.45
+      3.44
     ],
-    "tris": 2424,
+    "tris": 2488,
     "parts": {
-      "egg_celestial": 1734,
-      "egg_celestial_glow": 690
+      "egg_celestial": 1830,
+      "egg_celestial_glow": 658
     },
     "target_size_studs": [
       2.2,
@@ -200,13 +200,13 @@
     "png": "build/blender/garden/egg_shell_fragment.png",
     "preview": "build/blender/garden/previews/egg_shell_fragment.png",
     "size_studs": [
-      0.68,
-      0.73,
-      0.22
+      1.2,
+      0.77,
+      0.41
     ],
-    "tris": 56,
+    "tris": 88,
     "parts": {
-      "egg_shell_fragment": 56
+      "egg_shell_fragment": 88
     },
     "target_size_studs": [
       1.1,
@@ -225,7 +225,7 @@
     "png": "build/blender/garden/dash_sweeper.png",
     "preview": "build/blender/garden/previews/dash_sweeper.png",
     "size_studs": [
-      23.94,
+      23.93,
       7.6,
       8.6
     ],
@@ -251,13 +251,13 @@
     "png": "build/blender/garden/dash_ball.png",
     "preview": "build/blender/garden/previews/dash_ball.png",
     "size_studs": [
-      12.04,
+      12.06,
       12.28,
-      12.04
+      12.06
     ],
-    "tris": 2910,
+    "tris": 2334,
     "parts": {
-      "dash_ball": 2910
+      "dash_ball": 2334
     },
     "target_size_studs": [
       12,
@@ -384,13 +384,13 @@
     "png": "build/blender/garden/dash_island.png",
     "preview": "build/blender/garden/previews/dash_island.png",
     "size_studs": [
-      73.11,
-      48.14,
-      72.13
+      79.49,
+      48.19,
+      82.97
     ],
-    "tris": 4850,
+    "tris": 4988,
     "parts": {
-      "dash_island": 4850
+      "dash_island": 4988
     },
     "target_size_studs": [
       80,

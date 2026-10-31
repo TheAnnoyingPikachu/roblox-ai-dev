@@ -57,7 +57,7 @@ def dash_ball():
     spot = k.flat(k.BUTTER)
     spot2 = k.flat(k.SKY)
     valve = k.flat((240, 240, 250))
-    parts = [k.sphere(6, (0, 0, 6), m=shell_m, seg=36, rings=20, name="ball")]
+    parts = [k.sphere(6, (0, 0, 6), m=shell_m, seg=32, rings=18, name="ball")]
     # Fibonacci spread of raised dots, so no axis looks bald as it rolls.
     count = 22
     golden = math.pi * (3 - math.sqrt(5))
@@ -66,7 +66,7 @@ def dash_ball():
         r = math.sqrt(1 - z * z)
         n = Vector((r * math.cos(i * golden), r * math.sin(i * golden), z))
         size = 1.2 if i % 3 else 0.85
-        cap = k.lathe([(size, -0.3), (size * 0.96, 0.06), (size * 0.6, 0.14), (0, 0.17)], m=spot2 if i % 2 else spot, n=14, name="dot")
+        cap = k.lathe([(size, -0.3), (size * 0.95, 0.08), (0, 0.17)], m=spot2 if i % 2 else spot, n=14, name="dot")
         cap.data.transform(
             Matrix.Translation(n * 5.92 + Vector((0, 0, 6))) @ Vector((0, 0, 1)).rotation_difference(n).to_matrix().to_4x4()
         )
@@ -329,17 +329,17 @@ def dash_island():
         parts.append(k.puff(5.2, (p.x, p.y, top + h + 2), c, scale=(1, 1, 0.9), name="crown"))
         parts.append(k.puff(3.4, (p.x + 3.4, p.y - 1.4, top + h + 0.2), c, name="crown"))
         parts.append(k.puff(3.0, (p.x - 3.2, p.y + 1.6, top + h + 0.6), c, name="crown"))
-    for a in (1.0, 2.2, 3.3, 4.5, 5.8, 0.1):
+    for a in (1.0, 2.2, 3.3, 5.8):
         p = rim_spot(a, 0.88)
         parts.append(k.puff(3.0, (p.x, p.y, top + 0.8), bush, name="bush"))
         parts.append(k.puff(2.0, (p.x + 2.8, p.y + 1, top + 0.4), bush, name="bush"))
-    for a in (0.9, 2.0, 4.2, 5.5):
+    for a in (0.9, 2.0, 5.5):
         p = rim_spot(a, 0.8)
         for ob in k.mushroom(2.0, 3.0, cap, stem):
             ob.data.transform(Matrix.Translation((p.x, p.y, top - 0.1)))
             parts.append(ob)
-    for i in range(14):
-        a = i * 2 * math.pi / 14 + rng.uniform(-0.1, 0.1)
+    for i in range(8):
+        a = i * 2 * math.pi / 8 + rng.uniform(-0.1, 0.1)
         p = rim_spot(a, rng.uniform(0.7, 0.94))
         for ob in k.flower(1.5, petals[i % 4], heart, lobes=5):
             ob.data.transform(Matrix.Translation((p.x, p.y, top + 0.25)))
@@ -357,7 +357,7 @@ def dash_island():
 
     parts.append(k.surface(4, 8, curtain, m=water, thickness=0.5, name="fall"))
     bottom = top + 0.3 - 21
-    for x, r in ((-3.4, 2.1), (0.3, 2.6), (3.2, 1.9)):
+    for x, r in ((-2.4, 2.3), (2.2, 2.6)):
         parts.append(k.puff(r, (start.x + x, start.y - 3.5, bottom), k.flat(k.SNOW), name="mist"))
     return parts
 
