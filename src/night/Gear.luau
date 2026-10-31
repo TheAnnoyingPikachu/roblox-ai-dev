@@ -38,7 +38,8 @@ local GRIP = (CFrame.new(0, 0, PALM) * CFrame.Angles(-GUARD, 0, 0)):Inverse()
 local POMMEL = 0.1
 -- Saya on the left hip, edge up: mouth this far ahead of the torso centre, tip this far below it
 -- (a fixed drop, so a long saya sits flatter and stays off the ground).
-local SAYA_FRONT = 1.1
+local SAYA_FRONT = 0.55
+local SAYA_OUT = 0.3
 local SAYA_DROP = 1.5
 
 local function colours(id: string): { Color3 }
@@ -260,7 +261,7 @@ local function wearSaya(character: Model, weapon: string)
 	Models.attach(
 		saya,
 		torso,
-		CFrame.new(-torso.Size.X / 2 - 0.12, belt - SAYA_DROP / 2, size.Y / 2 * ahead - SAYA_FRONT) * turn
+		CFrame.new(-torso.Size.X / 2 - SAYA_OUT, belt - SAYA_DROP / 2, size.Y / 2 * ahead - SAYA_FRONT) * turn
 	)
 end
 
@@ -461,7 +462,10 @@ function Gear.give(player: Player)
 		wear(tool, character, profile.weapon, profile.blade)
 	end)
 	tool.Unequipped:Connect(function()
-		unwear(character)
+		-- A swapped weapon's old tool reports this after the new one is already worn.
+		if character:FindFirstChildOfClass("Tool") == nil then
+			unwear(character)
+		end
 	end)
 	tool.Parent = player:FindFirstChildOfClass("Backpack") or character
 	humanoid:EquipTool(tool)
