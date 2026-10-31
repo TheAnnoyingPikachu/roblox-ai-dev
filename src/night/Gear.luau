@@ -282,8 +282,10 @@ local function wearOffhand(character: Model, weapon: string, blade: string)
 	weld.Part0, weld.Part1 = hand, handle
 	weld.C0 = if grip then grip.CFrame else CFrame.new(0, -hand.Size.Y / 2, 0) * CFrame.Angles(-math.pi / 2, 0, 0)
 	weld.C1 = GRIP
-	weld.Parent = handle
+	-- Last: the blade's WeldConstraints take their offsets when they enter the world, so the
+	-- handle must not have moved to the hand yet.
 	model.Parent = character
+	weld.Parent = handle
 end
 
 local function wear(tool: Tool, character: Model, weapon: string, blade: string)
