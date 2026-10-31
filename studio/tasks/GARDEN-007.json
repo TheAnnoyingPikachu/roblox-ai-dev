@@ -26,7 +26,8 @@
     "docs/game-design/game4-gdd.md",
     "docs/game-design/game4-pacing-check.py",
     "docs/decisions/0012-egg-garden-v02.md",
-    "docs/architecture/garden.md"
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V02.md"
   ],
   "files": [
     "docs/game-design/game4-gdd.md",
@@ -34,11 +35,11 @@
     "docs/decisions/0012-egg-garden-v02.md",
     "docs/decisions/0008-egg-garden.md",
     "docs/architecture/garden.md",
-    "studio/tasks/GARDEN-00*.json",
-    "studio/tasks/GARDEN-01*.json"
+    "docs/checkpoints/GARDEN-V02.md"
   ],
   "tests": [],
   "risk_level": "medium",
   "status": "in_review",
-  "evidence": []
+  "evidence": [],
+  "notes": "Tasks GARDEN-008 to GARDEN-011 are created in this PR. Decisions for SHANNON are in docs/checkpoints/GARDEN-V02.md."
 }

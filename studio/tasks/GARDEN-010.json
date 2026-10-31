@@ -1,0 +1,39 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "GARDEN-010",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden v0.2 client: DashFx obstacles and knockback, round HUD and results card, the DASH panel with prize planting, and every Celestial UI change (cart, ODDS card, Index grid, mutation look, reveal).",
+  "inputs": [
+    "docs/architecture/garden.md sections 5, 6, 9",
+    "docs/game-design/game4-gdd.md sections S4, S5, T7, T8",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-008"
+  ],
+  "acceptance_criteria": [
+    "Only src/garden-client/** changes",
+    "The client sends only dashReady, plantPrize and the existing actions; obstacles and hits use DashRules.pose and DashRules.knock with workspace:GetServerTimeNow()",
+    "Two clients side by side show the same obstacle motion, and a hit moves only the character of that client (Studio multi-client test, note with the build stamp)",
+    "The Index shows 38 entries, 5 cells for lion and dragon and 4 for the rest; the Celestial ODDS card totals 100.00%, shows the guaranteed mutation and matches GardenConfig",
+    "DASH panel states all work: ready, cap reached, below Level 10, beds full, saving off, under 3 players (manual check against GDD T9)",
+    "The race is fully playable on a phone-sized viewport and a gamepad, and the 7-button column fits 360 pixels tall (Studio device emulation)",
+    "No player-facing string contains the trademark: grep -ri wipeout src returns nothing",
+    "Results and reveal have no near-miss wording (GDD G4.3); selene and stylua clean"
+  ],
+  "verification": "CI, a playtest note with the build stamp, QA review in GARDEN-011",
+  "output_artifacts": [
+    "src/garden-client/DashFx.client.luau"
+  ],
+  "files": [
+    "src/garden-client/**"
+  ],
+  "tests": [
+    "DashRules.spec.luau"
+  ],
+  "notes": "Greybox feel gate before art: play the course on part-built fallbacks first. Obstacle data lives in GardenConfig.DASH (GARDEN-008); tuning it is not an economy change (decision 0012 Consequences)."
+}

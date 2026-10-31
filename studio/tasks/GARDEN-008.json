@@ -1,0 +1,50 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "GARDEN-008",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden v0.2 pure rules: the Celestial Egg data and hatch rule, schema v2 with prizeEggs and dash, prize planting and rewards, and the new DashRules round state machine, with specs.",
+  "inputs": [
+    "docs/architecture/garden.md sections 3.2, 3.4 to 3.8",
+    "docs/decisions/0012-egg-garden-v02.md Decision",
+    "docs/game-design/game4-gdd.md sections S4, T5, T7, T10"
+  ],
+  "dependencies": [
+    "GARDEN-007"
+  ],
+  "acceptance_criteria": [
+    "Signatures match docs/architecture/garden.md section 3 exactly; DashRules has no Roblox API and never mutates inputs (DashRules.spec)",
+    "Every GDD T10 check value and every case named under section 3.8 passes in tests/DashRules.spec.luau",
+    "lion:celestial and dragon:celestial are the only new Index entries and INDEX_SIZE equals the count of indexable pairs (GardenConfig.spec)",
+    "A Celestial hatch is always the celestial mutation in all 4 weathers, only lion or dragon; no weather roll can give celestial (HatchRules.spec)",
+    "Buy, hatch and release is at most 60% for 6 sold eggs x 4 weathers, using the fixed mutation of the egg (GardenRules.spec, 24 checks)",
+    "A literal v1 record loads with every v1 field kept, prizeEggs empty and dash at day -1; prizeEggs and dash survive sanitize; bunny:celestial is dropped from index and creatures (GardenProgress.spec)",
+    "Existing egg stock for a fixed window is unchanged by adding celestial (GardenConfig.spec)",
+    "lune run tests/run passes in full, including Relay and Night specs; stylua and selene clean"
+  ],
+  "verification": "CI; QA review in GARDEN-011",
+  "output_artifacts": [
+    "src/shared/DashRules.luau",
+    "tests/DashRules.spec.luau"
+  ],
+  "files": [
+    "src/shared/GardenConfig.luau",
+    "src/shared/GardenRules.luau",
+    "src/shared/HatchRules.luau",
+    "src/shared/GardenProgress.luau",
+    "src/shared/DashRules.luau",
+    "docs/architecture/README.md"
+  ],
+  "tests": [
+    "GardenConfig.spec.luau",
+    "GardenRules.spec.luau",
+    "HatchRules.spec.luau",
+    "GardenProgress.spec.luau",
+    "WorldRules.spec.luau",
+    "DashRules.spec.luau"
+  ],
+  "notes": "First task of the split: GARDEN-009 and GARDEN-010 code against these signatures. docs/architecture/README.md gets DashRules in the Egg Garden row only. Pinned places that change: the 60% test in GardenRules.spec; the weather order check, the D1 string and the mutation string in GardenConfig.spec; schemaVersion in GardenProgress.spec."
+}

@@ -1,0 +1,45 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "GARDEN-011",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "QA review of Egg Garden v0.2 against GDD sections S and T and decision 0012, and the milestone checkpoint for SHANNON.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md sections S, T",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/checkpoints/GARDEN-V02.md",
+    "GARDEN-008, GARDEN-009 and GARDEN-010 pull requests"
+  ],
+  "dependencies": [
+    "GARDEN-008",
+    "GARDEN-009",
+    "GARDEN-010"
+  ],
+  "acceptance_criteria": [
+    "Every GDD T9 and S6 case is checked, with evidence or a filed defect",
+    "Reviewed that the server decides every Dash outcome from its own samples, and that prizes survive the leave, offline and shutdown paths",
+    "A v1 save loaded on the v2 build keeps every field (Studio test with DataStores on)",
+    "Pacing script re-run against the merged GardenConfig values with the same results",
+    "Greybox feel gate and a 3 to 6 player staging playtest recorded with the build stamp (CLAUDE.md rule 13)",
+    "docs/checkpoints/GARDEN-V02.md is put to SHANNON once, with the evidence of the milestone"
+  ],
+  "verification": "QA report with test notes and CI links; SHANNON signs off at the checkpoint",
+  "output_artifacts": [
+    "docs/qa/garden-v02-review.md"
+  ],
+  "files": [
+    "docs/qa/garden-v02-review.md",
+    "docs/checkpoints/GARDEN-V02.md"
+  ],
+  "tests": [
+    "DashRules.spec.luau",
+    "GardenConfig.spec.luau",
+    "GardenRules.spec.luau",
+    "HatchRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "Milestone checkpoint list: docs/checkpoints/GARDEN-V02.md. Reviewer must not have written GARDEN-008, GARDEN-009 or GARDEN-010 (CLAUDE.md rule 2). Nothing publishes before SHANNON answers item 1 of the checkpoint."
+}
