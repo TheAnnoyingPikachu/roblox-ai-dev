@@ -104,7 +104,7 @@ function Saves.start(options: Options)
 	function api.load(player: Player)
 		local key = keyFor(player)
 		byKey[key] = player
-		local session = saves:load(key, os.time())
+		local session = saves:load(key, os.time(), CLOSE_BUDGET)
 		player:SetAttribute("ProfileOnline", session.status == "online")
 		if options.onStatus then
 			options.onStatus(player, session.status)
@@ -141,33 +141,28 @@ function Saves.start(options: Options)
 	function api.finish(player: Player)
 		local key = keyFor(player)
 		saves:finish(key, os.time(), CLOSE_BUDGET)
-		byKey[key] = nil
+		if byKey[key] == player then -- a rejoin may already own the key
+			byKey[key] = nil
+		end
 	end
 
 	Players.PlayerRemoving:Connect(api.finish)
 
+	-- Every open session, not Players:GetPlayers(): on shutdown players are usually removed already
+	-- while their PlayerRemoving finish is still writing; finishAll waits for those too.
 	game:BindToClose(function()
-		local pending = 0
-		for _, player in Players:GetPlayers() do
-			pending += 1
-			task.spawn(function()
-				api.finish(player)
-				pending -= 1
-			end)
-		end
-		local started = os.clock()
-		while pending > 0 and os.clock() - started < CLOSE_BUDGET + 2 do
-			task.wait(0.1)
-		end
+		saves:finishAll(os.time(), function(run)
+			task.spawn(run)
+		end, CLOSE_BUDGET)
 	end)
 
 	task.spawn(function()
 		while true do
 			task.wait(1)
-			saves:step(os.time(), function(flush, self, key, now)
+			saves:step(os.time(), function(run, key)
 				task.spawn(function()
 					-- A stored write adopts the record re-read from the store; republish it.
-					if flush(self, key, now) and byKey[key] then
+					if run() and byKey[key] then
 						changed(byKey[key])
 					end
 				end)

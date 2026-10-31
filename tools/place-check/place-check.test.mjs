@@ -81,6 +81,9 @@ test("globToRegExp handles *, ** and folder prefixes", () => {
   assert.ok(globToRegExp("docs/**/*.md").test("docs/a/b/c.md"));
   assert.ok(globToRegExp("docs/**/*.md").test("docs/c.md"));
   assert.ok(!globToRegExp("ci.yml").test("ciXyml"));
+  assert.ok(globToRegExp("src/**/x.luau").test("src/x.luau"));
+  assert.ok(globToRegExp("src/**/x.luau").test("src/a/b/x.luau"));
+  assert.ok(!globToRegExp("src/**/x.luau").test("src/evilx.luau"));
 });
 
 test("checkScope enforces the changed tasks' files", () => {
@@ -98,4 +101,8 @@ test("checkScope enforces the changed tasks' files", () => {
   const legacy = checkScope(["studio/tasks/OLD-001.json", "anything.txt"], load);
   assert.equal(legacy.ok, true);
   assert.deepEqual(legacy.legacy, ["OLD-001"]);
+  // A legacy task alongside a scoped one does not switch enforcement off (QA on PR #16).
+  const mixed = checkScope(["studio/tasks/OLD-001.json", "studio/tasks/X-001.json", "src/garden/Profiles.luau", "src/kit/A.luau"], load);
+  assert.equal(mixed.ok, false);
+  assert.deepEqual(mixed.outside, ["src/garden/Profiles.luau"]);
 });

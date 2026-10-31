@@ -105,8 +105,22 @@ local function withRetries(self: any, label: string, operation: () -> any, deadl
 end
 
 -- Loads (and locks) `key`. Blocks until done. Returns the session; check `session.status`.
-function SaveStore.load(self: any, key: string, now: number): Session<any>
+-- A rejoin while the previous session for `key` is still finishing waits for that final write
+-- (at most `budget` seconds, default 25) so the old lock is released, not left to go stale.
+-- A live session for `key` is returned as it is.
+function SaveStore.load(self: any, key: string, now: number, budget: number?): Session<any>
 	local o = self.o
+	local existing = self.sessions[key]
+	if existing and existing.closing then
+		local started = o.clock()
+		while self.sessions[key] == existing and o.clock() - started < (budget or 25) do
+			o.wait(0.1)
+		end
+	end
+	existing = self.sessions[key]
+	if existing and not existing.closing then
+		return existing
+	end
 	local session: Session<any> = {
 		id = o.newId(),
 		key = key,
@@ -114,6 +128,8 @@ function SaveStore.load(self: any, key: string, now: number): Session<any>
 		status = "offline",
 		queue = {},
 		writing = false,
+		-- Garden's Profiles used 0 so its login op was written on the next step; the kit has no
+		-- login op, so the first write comes `coalesce` seconds after the first change.
 		lastWrite = now,
 		closing = false,
 	}
@@ -194,11 +210,12 @@ local function goOffline(self: any, session: Session<any>)
 	end
 end
 
--- One UpdateAsync as described at the top. Returns true when the record was stored.
-function SaveStore.flush(self: any, key: string, now: number, final: boolean?, deadline: number?): boolean
+-- One UpdateAsync as described at the top, for this exact session (never looked up again by key,
+-- so a rejoin that replaces `sessions[key]` cannot redirect a running finish). True when stored.
+local function flushSession(self: any, session: Session<any>, now: number, final: boolean?, deadline: number?): boolean
 	local o = self.o
-	local session = self.sessions[key]
-	if session == nil or session.status ~= "online" or o.store == nil then
+	local key = session.key
+	if session.status ~= "online" or o.store == nil then
 		return false
 	end
 	session.writing = true
@@ -240,14 +257,23 @@ function SaveStore.flush(self: any, key: string, now: number, final: boolean?, d
 	return false
 end
 
--- Flushes every due session. `spawn` runs each flush (task.spawn on Roblox; default: inline).
-function SaveStore.step(self: any, now: number, spawn: ((f: any, ...any) -> ())?)
-	for key in self.sessions do
+function SaveStore.flush(self: any, key: string, now: number, final: boolean?, deadline: number?): boolean
+	local session = self.sessions[key]
+	return session ~= nil and flushSession(self, session, now, final, deadline)
+end
+
+-- Flushes every due session. `spawn(run, key)` runs each flush (`run()` returns true when stored);
+-- on Roblox it wraps task.spawn. Default: inline.
+function SaveStore.step(self: any, now: number, spawn: ((run: () -> boolean, key: string) -> ())?)
+	for key, session in self.sessions do
 		if SaveStore.due(self, key, now) then
+			local function run(): boolean
+				return flushSession(self, session, now)
+			end
 			if spawn then
-				spawn(SaveStore.flush, self, key, now)
+				spawn(run, key)
 			else
-				SaveStore.flush(self, key, now)
+				run()
 			end
 		end
 	end
@@ -273,10 +299,39 @@ function SaveStore.finish(self: any, key: string, now: number, budget: number?)
 		while session.writing and o.clock() - started < self.inflightWait do
 			o.wait(0.1)
 		end
-		SaveStore.flush(self, key, now, true, started + limit)
+		flushSession(self, session, now, true, started + limit)
 	end
 	if self.sessions[key] == session then
 		self.sessions[key] = nil
+	end
+end
+
+-- Shutdown (BindToClose): finishes every open session, including ones whose finish another thread
+-- (PlayerRemoving) already started, and waits for all of them within `budget` (default 25).
+-- `spawn` runs each finish concurrently (task.spawn on Roblox; default: inline).
+function SaveStore.finishAll(self: any, now: number, spawn: ((f: () -> ()) -> ())?, budget: number?)
+	local o = self.o
+	local limit = budget or 25
+	local pending = 0
+	local keys = {}
+	for key in self.sessions do
+		table.insert(keys, key)
+	end
+	for _, key in keys do
+		pending += 1
+		local function run()
+			SaveStore.finish(self, key, now, limit)
+			pending -= 1
+		end
+		if spawn then
+			spawn(run)
+		else
+			run()
+		end
+	end
+	local started = o.clock()
+	while pending > 0 and o.clock() - started < limit + 2 do
+		o.wait(0.1)
 	end
 end
 

@@ -104,12 +104,22 @@ async function main() {
 
   const deadline = Date.now() + 5 * 60 * 1000;
   let outcome = readTask(created.json);
+  let lastStatus = created.status;
   while (!outcome.done && Date.now() < deadline) {
     await new Promise((r) => setTimeout(r, 3000));
     const polled = await call("GET", `${API}/${created.json.path}`, env.ROBLOX_API_KEY);
+    lastStatus = polled.status;
     if (polled.status === 200) outcome = readTask(polled.json);
+    else if ([401, 403, 404].includes(polled.status)) {
+      console.error(
+        `::error title=Verify publish::Open Cloud refused reading the Luau execution task (HTTP ${polled.status}). ` +
+          "The publish went through, but it is NOT verified. SHANNON: the environment's ROBLOX_API_KEY needs " +
+          "universe.place.luau-execution-session:write (it covers creating and reading tasks) for this universe.",
+      );
+      process.exit(polled.status === 404 ? 1 : 3);
+    }
   }
-  if (!outcome.done) outcome = { done: true, ok: false, error: "timed out after 5 minutes" };
+  if (!outcome.done) outcome = { done: true, ok: false, error: `timed out after 5 minutes (last poll HTTP ${lastStatus})` };
 
   const record = {
     verified: outcome.ok,

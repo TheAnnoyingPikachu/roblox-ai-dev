@@ -23,7 +23,9 @@ local function add(n: number)
 end
 
 local ids = 0
-local function make(store: any?)
+-- `onWait` runs inside every injected wait: it stands in for other Roblox threads that run while
+-- this one yields (a rejoin, a PlayerRemoving finish).
+local function make(store: any?, onWait: ((seconds: number) -> ())?)
 	local clock = FakeDataStore.clock()
 	local saves = SaveStore.new({
 		store = store,
@@ -34,7 +36,12 @@ local function make(store: any?)
 		snapshot = function(p: Profile, now: number): Profile
 			return { coins = p.coins, lastSeen = now }
 		end,
-		wait = clock.wait,
+		wait = function(seconds)
+			clock.wait(seconds)
+			if onWait then
+				onWait(seconds)
+			end
+		end,
 		clock = clock.time,
 		newId = function()
 			ids += 1
@@ -256,5 +263,85 @@ describe("SaveStore.finish", function()
 		saves:finish("k", 1)
 		saves:finish("k", 2)
 		expect(saves:apply("k", add(1))).toBe(false)
+	end)
+end)
+
+describe("SaveStore rejoin and shutdown races (QA on PR #16)", function()
+	it("a finish waiting on an in-flight write still writes its own session after a rejoin replaced the key", function()
+		local store = FakeDataStore.new()
+		local saves: any
+		local rejoined: any = nil
+		saves = make(store, function()
+			-- While the old finish waits, its write lands and the player rejoins this server.
+			local old = saves:session("k")
+			if old and old.writing then
+				old.writing = false
+				rejoined = {
+					id = "new",
+					key = "k",
+					profile = { coins = 0, lastSeen = 0 },
+					status = "busy",
+					queue = {},
+					writing = false,
+					lastWrite = 0,
+					closing = false,
+				}
+				saves.sessions["k"] = rejoined
+			end
+		end)
+		local s = saves:load("k", 0)
+		saves:apply("k", add(9))
+		s.writing = true
+		saves:finish("k", 5)
+		local rec = store:read("k")
+		expect(rec.coins).toBe(9)
+		expect(rec.lock).toBeNil()
+		expect(saves:session("k")).toBe(rejoined) -- the old finish does not drop the new session
+	end)
+
+	it("a rejoin waits for the closing session's final write, then claims the released lock", function()
+		local store = FakeDataStore.new()
+		local saves: any
+		local finished = false
+		saves = make(store, function()
+			local old = saves:session("k")
+			if old and old.closing and not finished then
+				finished = true
+				old.closing = false -- let the real finish run (stands in for the other thread)
+				saves:apply("k", add(3))
+				saves:finish("k", 2)
+			end
+		end)
+		saves:load("k", 0)
+		saves:session("k").closing = true -- PlayerRemoving's finish has started
+		local s = saves:load("k", 3)
+		expect(finished).toBe(true)
+		expect(s.status).toBe("online")
+		expect(s.profile.coins).toBe(3)
+	end)
+
+	it("finishAll covers sessions whose finish already started, and waits for them", function()
+		local store = FakeDataStore.new()
+		local saves: any
+		saves = make(store, function()
+			-- The PlayerRemoving finish for "a" completes while finishAll waits on it.
+			local a = saves:session("a")
+			if a and a.closing then
+				a.closing = false
+				saves:finish("a", 4)
+			end
+		end)
+		saves:load("a", 0)
+		saves:load("b", 0)
+		saves:apply("a", add(1))
+		saves:apply("b", add(2))
+		saves:session("a").closing = true
+		saves:finishAll(5)
+		expect(saves:session("a")).toBeNil()
+		expect(saves:session("b")).toBeNil()
+		expect(store:read("a").coins).toBe(1)
+		expect(store:read("a").lock).toBeNil()
+		expect(store:read("b").coins).toBe(2)
+		expect(store:read("b").lock).toBeNil()
 	end)
 end)
