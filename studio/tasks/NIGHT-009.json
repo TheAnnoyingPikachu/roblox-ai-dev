@@ -40,15 +40,17 @@
   "notes": "Roblox ignores Color on a textured MeshPart, so the hamon is thin Neon geometry (<weapon>_glow), not a blade texture. Upload the heroes and art blades in one run: art blades line up using the new models' root values. No animation assets added: the hold uses Tool.Grip, the built-in tool animations and a mirrored left arm.",
   "evidence": [],
   "files": [
+    "assets/night/",
+    "tools/blender/night/",
+    "docs/assets/register.md",
+    "docs/assets/night-blender-plan.md",
+    "src/shared/NightAssets.luau",
+    "tests/NightAssets.spec.luau",
     "src/night/Gear.luau",
     "src/night-client/CombatFx.client.luau",
-    "src/shared/NightAssets.luau",
-    "tools/blender/night/manifest.json",
-    "tools/blender/night/uploaded.json",
-    "docs/assets/register.md",
-    "docs/assets/night-blender-plan.md"
+    "studio/tasks/NIGHT-009.json"
   ],
   "tests": [
-    "tests/NightAssets.spec.luau"
+    "NightAssets.spec.luau"
   ]
 }
