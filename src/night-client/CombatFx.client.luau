@@ -365,16 +365,25 @@ local function bladeSweep(character: Model, finisher: boolean)
 	anim.Parent = tool
 	local grip = baseGrip[tool] or tool.Grip
 	baseGrip[tool] = grip
+	-- Twin Kodachi: the left blade (Gear wearOffhand) sweeps with the right.
+	local offhand = character:FindFirstChild("NightOffhand")
+	local offWeld = offhand and offhand:FindFirstChild("OffhandGrip", true) :: Weld?
 	local start = os.clock()
 	local conn: RBXScriptConnection
 	conn = RunService.RenderStepped:Connect(function()
 		local f = (os.clock() - start) / 0.15
 		if f >= 1 or tool.Parent ~= character then
 			tool.Grip = grip
+			if offWeld then
+				offWeld.C1 = grip
+			end
 			conn:Disconnect()
 			return
 		end
 		tool.Grip = grip * CFrame.Angles(math.rad(-60 + 120 * f), 0, 0)
+		if offWeld then
+			offWeld.C1 = grip * CFrame.Angles(math.rad(60 - 120 * f), 0, 0)
+		end
 	end)
 end
 
