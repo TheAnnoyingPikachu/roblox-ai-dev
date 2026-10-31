@@ -6,7 +6,14 @@
 -- root: blade root relative to the `_blade` mesh centre, in studs, for lining up swapped blades.
 -- A nil model id means not uploaded yet: the game keeps its current visual for that asset.
 
-export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number?, root: { number }? }
+export type Asset = {
+	size: { number },
+	parts: { string },
+	model: number?,
+	decal: number?,
+	texture: number?,
+	root: { number }?,
+}
 
 local NightAssets: { [string]: Asset } = {
 	shrine_hall = {
