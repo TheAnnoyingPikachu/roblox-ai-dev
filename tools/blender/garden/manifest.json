@@ -199,6 +199,256 @@
     "notes": "One mesh, about 1 stud. Upload skips its texture: HatchFx bursts up to 6 clones tinted from EGG_COLOURS.",
     "glow": {}
   },
+  "creature_duck": {
+    "fbx": "build/blender/garden/creature_duck.fbx",
+    "png": "build/blender/garden/creature_duck.png",
+    "preview": "build/blender/garden/previews/creature_duck.png",
+    "size_studs": [
+      2.76,
+      3.21,
+      2.76
+    ],
+    "tris": 1892,
+    "parts": {
+      "creature_duck": 1892
+    },
+    "target_size_studs": [
+      2.8,
+      3.0,
+      2.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Puddle Duckling (common). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_lamb": {
+    "fbx": "build/blender/garden/creature_lamb.fbx",
+    "png": "build/blender/garden/creature_lamb.png",
+    "preview": "build/blender/garden/previews/creature_lamb.png",
+    "size_studs": [
+      3.15,
+      3.64,
+      3.6
+    ],
+    "tris": 2354,
+    "parts": {
+      "creature_lamb": 2354
+    },
+    "target_size_studs": [
+      3.2,
+      3.8,
+      3.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Clover Lamb (uncommon). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_hedgehog": {
+    "fbx": "build/blender/garden/creature_hedgehog.fbx",
+    "png": "build/blender/garden/creature_hedgehog.png",
+    "preview": "build/blender/garden/previews/creature_hedgehog.png",
+    "size_studs": [
+      2.73,
+      2.72,
+      3.61
+    ],
+    "tris": 2156,
+    "parts": {
+      "creature_hedgehog": 2156
+    },
+    "target_size_studs": [
+      3.0,
+      2.8,
+      3.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Acorn Hedgehog (rare). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_deer": {
+    "fbx": "build/blender/garden/creature_deer.fbx",
+    "png": "build/blender/garden/creature_deer.png",
+    "preview": "build/blender/garden/previews/creature_deer.png",
+    "size_studs": [
+      3.44,
+      5.15,
+      3.33
+    ],
+    "tris": 2442,
+    "parts": {
+      "creature_deer": 2442
+    },
+    "target_size_studs": [
+      3.6,
+      5.0,
+      3.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Blossom Fawn (epic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_panda": {
+    "fbx": "build/blender/garden/creature_panda.fbx",
+    "png": "build/blender/garden/creature_panda.png",
+    "preview": "build/blender/garden/previews/creature_panda.png",
+    "size_studs": [
+      4.14,
+      4.52,
+      4.45
+    ],
+    "tris": 2044,
+    "parts": {
+      "creature_panda": 2044
+    },
+    "target_size_studs": [
+      4.4,
+      4.5,
+      4.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Bamboo Panda (epic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_unicorn": {
+    "fbx": "build/blender/garden/creature_unicorn.fbx",
+    "png": "build/blender/garden/creature_unicorn.png",
+    "preview": "build/blender/garden/previews/creature_unicorn.png",
+    "size_studs": [
+      2.26,
+      5.82,
+      3.91
+    ],
+    "tris": 2410,
+    "parts": {
+      "creature_unicorn": 2410
+    },
+    "target_size_studs": [
+      4.0,
+      5.5,
+      4.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Daisy Unicorn (legendary). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_phoenix": {
+    "fbx": "build/blender/garden/creature_phoenix.fbx",
+    "png": "build/blender/garden/creature_phoenix.png",
+    "preview": "build/blender/garden/previews/creature_phoenix.png",
+    "size_studs": [
+      4.3,
+      5.46,
+      4.09
+    ],
+    "tris": 1770,
+    "parts": {
+      "creature_phoenix": 1770
+    },
+    "target_size_studs": [
+      4.6,
+      5.5,
+      4.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Ember Phoenix (mythic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_whale": {
+    "fbx": "build/blender/garden/creature_whale.fbx",
+    "png": "build/blender/garden/creature_whale.png",
+    "preview": "build/blender/garden/previews/creature_whale.png",
+    "size_studs": [
+      5.65,
+      4.34,
+      5.37
+    ],
+    "tris": 2246,
+    "parts": {
+      "creature_whale": 2246
+    },
+    "target_size_studs": [
+      6.0,
+      4.5,
+      5.0
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Aurora Whale (divine). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_kirin": {
+    "fbx": "build/blender/garden/creature_kirin.fbx",
+    "png": "build/blender/garden/creature_kirin.png",
+    "preview": "build/blender/garden/previews/creature_kirin.png",
+    "size_studs": [
+      3.75,
+      6.25,
+      4.74
+    ],
+    "tris": 2780,
+    "parts": {
+      "creature_kirin": 2780
+    },
+    "target_size_studs": [
+      4.6,
+      6.0,
+      5.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Nimbus Kirin (divine). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_axolotl": {
+    "fbx": "build/blender/garden/creature_axolotl.fbx",
+    "png": "build/blender/garden/creature_axolotl.png",
+    "preview": "build/blender/garden/previews/creature_axolotl.png",
+    "size_studs": [
+      3.56,
+      2.92,
+      5.53
+    ],
+    "tris": 2464,
+    "parts": {
+      "creature_axolotl": 2464
+    },
+    "target_size_studs": [
+      3.4,
+      3.0,
+      5.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Stardust Axolotl (secret). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
   "dash_sweeper": {
     "fbx": "build/blender/garden/dash_sweeper.fbx",
     "png": "build/blender/garden/dash_sweeper.png",
