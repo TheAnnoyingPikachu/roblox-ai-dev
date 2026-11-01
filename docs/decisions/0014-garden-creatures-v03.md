@@ -40,7 +40,7 @@ Prices, grow times, levels, stock and XP of the existing eggs are unchanged. `to
 - Last in `EGGS` (position 8, stock index 7), so no existing egg's stock roll changes.
 - The only source of `whale`, `kirin` and `axolotl`. It fixes no mutation, so `GardenConfig.indexable` and `fixedBy` are unchanged and no new Index pairs come from it beyond the species' four weather mutations.
 - Lucky Meter applies (G4.4 and 0008 promise it on every egg): long-run axolotl share 6.6%.
-- 60% rule: expected release about 38,000 coins, 0.0008% of the price.
+- 60% rule: expected release about 38,000 coins, 0.0007% of the price (exact; the bound is 0.0013%).
 
 **Changed from the Director's number: price 5,000,000,000, not 25,000,000,000.** See Pacing check. Level 32, grow 12 h, stock 3%, XP 3,000, odds and meter are the Director's.
 
@@ -78,7 +78,7 @@ No new `Request` action, `Fx` kind, `GardenStatus` field or attribute. `stock.au
 | `moon` | 6.3% | 12.0% | 12.3% | 299 | 84 |
 | `star` | 1.9% | 3.7% | 3.9% | 735 | 272 |
 | `celestial` | 0.01% | 0.01% | 0.0% | 20,488 | 48,808 |
-| `aurora` | 0.0008% | 0.0008% | 0.0% | 6,362 | 785,864 |
+| `aurora` | 0.00067% | 0.00128% | 0.0% | 6,362 | 785,864 |
 
 **Result (simulated):** first buys and income (coins/s at the end of the day).
 

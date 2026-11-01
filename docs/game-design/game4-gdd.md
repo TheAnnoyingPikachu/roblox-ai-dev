@@ -714,11 +714,11 @@ Order in `GardenConfig.SPECIES` is by rarity then rate, as below. Release value 
 |---|---|---|---|---|---|---|
 | `bunny` | Sprout Bunny | Common | 1 | 6 | soft squeak | 9117010574 PSE "Mouse Vocal 1", 0.8 |
 | `frog` | Toadstool Frog | Common | 2 | 12 | ribbit | 9113857727 PSE "Comic Frog Croaks Ribbit 5" |
-| `duck` | Puddle Duckling | Common | 3 | 18 | quack | **to find** (licensed only; else bunny's clip at 1.4) |
+| `duck` | Puddle Duckling | Common | 3 | 18 | quack | 1840105521 APM duck quack, 1.2 (registered, GARDEN-025) |
 | `pup` | Bumble Pup | Uncommon | 5 | 30 | yip | 9113956178 PSE "Coyotes Gruff Barking 14", 1.35 |
 | `lamb` | Clover Lamb | Uncommon | 8 | 48 | baa | 9116206434 PSE "Lamb Big Lamb 17", 1.3 |
 | `cat` | Berry Cat | Uncommon | 12 | 72 | meow | **to find** (licensed only; else bunny's clip at 1.1) |
-| `owl` | Pumpkin Owl | Rare | 30 | 180 | hoot | **to find** (licensed only; else phoenix's clip at 0.6) |
+| `owl` | Pumpkin Owl | Rare | 30 | 180 | hoot | 9117181540 PSE owl hoot, 1.0 (registered, GARDEN-025) |
 | `hedgehog` | Acorn Hedgehog | Rare | 45 | 270 | snuffle squeak | 9118058248 PSE "Rat Squeaks 18", 0.9 |
 | `fox` | Cactus Fox | Rare | 70 | 420 | fox yip | 9113955402 PSE "Coyotes Gruff Barking 9", 1.5 |
 | `turtle` | Lotus Turtle | Epic | 180 | 1,080 | slow bloop | 9112872058 PSE "Small Bubbles Pop 3", 0.8 |
@@ -726,7 +726,7 @@ Order in `GardenConfig.SPECIES` is by rarity then rate, as below. Release value 
 | `panda` | Bamboo Panda | Epic | 350 | 2,100 | cub grunt | 9117348418 PSE "Pig Grunts 12", 1.1 (a better cub clip welcome) |
 | `lion` | Sunflower Lion | Legendary | 500 | 3,000 | small roar | 9116308659 PSE "Lion Roar Tired 12", 1.25 |
 | `unicorn` | Daisy Unicorn | Legendary | 800 | 4,800 | foal whinny | 9119235894 PSE "Small Creature Whinnying 14" |
-| `dragon` | Moonblossom Dragon | Mythic | 1,500 | 9,000 | small purr-growl | 9116311855 PSE "Lion Snarl 10", 0.8 (fallback; a purr-growl welcome) |
+| `dragon` | Moonblossom Dragon | Mythic | 1,500 | 9,000 | small purr-growl | 9125470864 PSE "Creature Growls Lion Deep Guttural Rumbling 19", 0.9 (registered, GARDEN-025) |
 | `phoenix` | Ember Phoenix | Mythic | 2,500 | 15,000 | bright chirp | 9117236946 PSE "Parakeet Chirps 6", 0.9 |
 | `whale` | Aurora Whale | Divine | 5,000 | 30,000 | whale coo | 9114124842 PSE "Dolphin Vocal Human-Like Pulsing 6", 0.7 |
 | `kirin` | Nimbus Kirin | Divine | 7,500 | 45,000 | flute chime | 1846547135 APM "Flute Gliss Up", 1.2 |
@@ -811,7 +811,7 @@ The v0.2 script with the roster, odds and the Aurora added; the player model is 
 | `moon` | 6.3% | 12.0% | 12.3% | 299 | 84 |
 | `star` | 1.9% | 3.7% | 3.9% | 735 | 272 |
 | `celestial` | 0.01% | 0.01% | 0.0% | 20,488 | 48,808 |
-| `aurora` | 0.0008% | 0.0008% | 0.0% | 6,362 | 785,864 |
+| `aurora` | 0.00067% | 0.00128% | 0.0% | 6,362 | 785,864 |
 
 Payback rises at every tier. The mid game earns more than in v0.2 (Sunset 75 against 48 coins/s per hatch, Moon 299 against 233, Star 735 against 537), because every egg now carries a rarer species.
 
