@@ -1,0 +1,50 @@
+{
+  "task_id": "NIGHT-010",
+  "project_id": "NIGHT-001",
+  "owner": "A12",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Improve the Night map: a dense, atmospheric, readable festival shrine at night, with new Blender props, terrain ground, a lighting pass and ambient VFX, keeping combat untouched.",
+  "inputs": [
+    "Owner request (2026-10-28): improve the map",
+    "src/night/Arena.luau",
+    "docs/game-design/game3-gdd.md section I",
+    "docs/assets/night-blender-plan.md"
+  ],
+  "dependencies": [
+    "NIGHT-008"
+  ],
+  "acceptance_criteria": [
+    "15 new props exist as Blender scripts, FBX and PNG in assets/night/, manifest entries and nil-id NightAssets entries; map_props_sheet.png is reviewed",
+    "With nil ids the game runs: a run starts, wave 1 spawns, no new script errors",
+    "The walkable surface stays at the measured y = 1 across the courtyard and pond, so player height against enemy hover and the Y hit bands is unchanged (cobblestone paths read 1.2)",
+    "Spawn, gates, boss pit, stage and bridge collision are unchanged; decoration is ghosted and spot() refuses the fighting floor, the pit and the gates",
+    "Register rows read Pending upload until the Director runs the upload"
+  ],
+  "verification": "lune run tests/run, selene src tests, stylua --check, rojo build night.project.json, node tools/validate-tasks.mjs; Studio playtest with nil ids and floor height sampled against the unmodified build; after the upload, playtest with the generated NightAssets.luau and review stair direction, castle, waterfall and mountain placement, which could not be seen before upload",
+  "output_artifacts": [
+    "tools/blender/night/assets/map_landmarks.py, map_garden.py, map_festival.py",
+    "assets/night/",
+    "src/night/Arena.luau",
+    "src/shared/NightAssets.luau",
+    "docs/assets/register.md, docs/assets/night-blender-plan.md, docs/game-design/game3-gdd.md"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Fixes found on the way, all visual: uploaded models faced backwards (yaw), the leaderboard text was covered, and the pit, pond and paths were buried under the lawn. Open for the owner: Enemies.luau assumes the ground is y = 0 while players stand at y = 1; this task keeps y = 1. Enemies.luau:155 places enemy meshes at yaw 0, so they may share the facing flip; not checked. Upload is run by the Director after merge. Director review (real models): stairs rebuilt as one flight, waterfall relit, mountain arcs tapered. sando_stairs and mountain_range must be re-uploaded before merge: until then the old stair mesh is scaled to the new manifest height and shows as giant wedges. The reviewed screenshots of those two use the new geometry through a scratch stand-in, without the baked texture, so review them again after the upload.",
+  "evidence": [],
+  "files": [
+    "assets/night/",
+    "tools/blender/night/",
+    "docs/assets/register.md",
+    "docs/assets/night-blender-plan.md",
+    "src/shared/NightAssets.luau",
+    "tests/NightAssets.spec.luau",
+    "src/night/Arena.luau",
+    "docs/game-design/game3-gdd.md",
+    "studio/tasks/NIGHT-010.json"
+  ],
+  "tests": [
+    "NightAssets.spec.luau"
+  ]
+}

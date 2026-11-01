@@ -25,9 +25,10 @@ const lines = [
 	"-- Do not edit by hand. Custom Blender models for Hundred Demon Night (docs/assets/register.md).",
 	"-- size: measured Roblox size in studs (x, y, z); parts: mesh names inside the uploaded model;",
 	"-- model: Model asset id (InsertService:LoadAsset); decal / texture: Decal and Image asset ids.",
+	"-- root: blade root relative to the `_blade` mesh centre, in studs, for lining up swapped blades.",
 	"-- A nil model id means not uploaded yet: the game keeps its current visual for that asset.",
 	"",
-	"export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number? }",
+	"export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number?, root: { number }? }",
 	"",
 	"local NightAssets: { [string]: Asset } = {",
 ];
@@ -40,6 +41,7 @@ for (const [name, entry] of Object.entries(manifest)) {
 	lines.push(`\t\tmodel = ${id(u.model)},`);
 	lines.push(`\t\tdecal = ${id(u.decal)},`);
 	lines.push(`\t\ttexture = ${id(u.texture)},`);
+	if (entry.root) lines.push(`\t\troot = { ${entry.root.join(", ")} },`);
 	lines.push("\t},");
 }
 lines.push("}", "", "return NightAssets", "");

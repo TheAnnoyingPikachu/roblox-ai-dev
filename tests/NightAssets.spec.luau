@@ -30,6 +30,12 @@ describe("NightAssets", function()
 				expected += 1
 			end
 			expect(parts).toBe(expected)
+			expect(asset.root == nil).toBe(entry.root == nil)
+			if entry.root then
+				for i = 1, 3 do
+					expect(asset.root[i]).toBe(entry.root[i])
+				end
+			end
 		end
 		local total = 0
 		for _ in NightAssets do

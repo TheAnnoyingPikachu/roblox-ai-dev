@@ -20,7 +20,16 @@ const OUT = path.join(ROOT, "tools/blender/night/uploaded.json");
 const FILES = path.join(ROOT, "assets/night");
 const API = "https://apis.roblox.com";
 // Tinted by code (Color must show), so they stay untextured.
-const UNTEXTURED = new Set(["slash_arc", "demon_wing"]);
+const UNTEXTURED = new Set([
+	"slash_arc",
+	"demon_wing",
+	"blade_inferno",
+	"blade_lightning",
+	"blade_void",
+	"blade_galaxy",
+	"blade_gold",
+	"blade_shadow",
+]);
 
 const key = process.env.ROBLOX_API_KEY;
 const userId = process.env.ROBLOX_CREATOR_USER_ID;

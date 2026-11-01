@@ -342,20 +342,22 @@ Centre (0, 0, 0). North is −Z. A circular stone courtyard, radius 100, inside 
 | Boss pit | north, (0, 0, −65); no props within 30 studs | Cracked slate ring with purple neon cracks; two oni statues (reused mesh) at (±30, 0, −80) |
 | Shrine main hall | north, (0, 0, −115), outside the wall as the backdrop | Generated mesh |
 | Sacred tree | south-west, (−55, 0, 45) | Generated mesh, with paper streamers of parts |
-| Koi pond | west, (−60, 0, −10), radius 18 | Shallow terrain water, two red arched bridges, stepping stones |
+| Koi pond | west, (−60, 0, −10), radius 18 | Terrain water in a mud basin under a translucent walkable sheet at floor height, two red arched bridges, stepping stones, lily pads |
 | Festival stalls | east, five stalls along x = 60 | Fabric awnings in red, white and indigo, signs, crates, hanging lanterns |
 | Demon gates | (±60, 0, ±60); gate 1 is south-east | Black torii with purple neon, swirling particle portal, glow on the ground |
 | Entrance and spawn | south, stairs at (0, 0, 95), spawn at (0, 0, 80) | Two komainu (reused mesh), stone lanterns, the leaderboard board |
 | Stone lanterns | 16 around the rim at radius 92 | Parts, warm `PointLight` (range 18) |
 | Lantern strings | from stage corners to the rim | Beams with small neon lanterns every 6 studs |
 | Sakura ring | 12 trees outside the wall, radius 110–130 | Generated sakura mesh (reused) |
-| Far scenery | beyond 200 studs | Terrain mountains, a forest of part trees, a big low moon |
+| Far scenery | beyond 200 studs | Mesh mountain arcs (terrain mountains until uploaded), cedar forest, a big low moon, five-storey pagoda north-east, castle north-west, waterfall west |
+| Yatai street and sando | south, outside the entrance, z 102 to 250 | Six stalls, lantern strings and nobori on a paved street; stone stairs and a senbon-torii tunnel up a hill to an inner shrine |
+| Wall band and beyond | radius 88 to 150 | Bamboo, pine, hydrangea, rocks, nobori and a raked-gravel garden, all ghosted; nothing inside radius 88 except the low zen garden west of the spawn |
 
 ### I2. Look
 
-- **Lighting:** `ClockTime` 0, `Ambient` (40, 35, 60), `OutdoorAmbient` (70, 60, 100); `Atmosphere` density 0.35, colour (90, 60, 140), decay (40, 20, 60); `Bloom` intensity 0.6; `ColorCorrection` tint (225, 215, 255), contrast 0.1, saturation 0.15; sky moon angular size 20.
-- **Materials:** Slate courtyard with Cobblestone paths, WoodPlanks stage, red Wood torii, Neon accents only on lanterns, gates and VFX, Fabric awnings, Grass outside the wall.
-- **Life:** fireflies (particles) near the pond and tree, falling sakura petals, drifting fog, lantern flicker, yokai idling at the gates in the menu orbit.
+- **Lighting:** `ClockTime` 0, `Brightness` 1.8, `Ambient` (38, 36, 64), `OutdoorAmbient` (72, 72, 120); `Atmosphere` density 0.27, haze 0.9, colour (78, 80, 150), decay (46, 42, 92); `Bloom` intensity 0.7, threshold 1.15; `ColorCorrection` tint (232, 226, 255), contrast 0.14, saturation 0.2; sky moon angular size 20.
+- **Materials:** terrain gravel courtyard with a stone plaza, Cobblestone paths and moss at the wall (the walkable surface is y = 1, see `docs/assets/night-blender-plan.md`), WoodPlanks stage, red Wood torii, Neon accents only on lanterns, gates and VFX, Fabric awnings, Grass outside the wall.
+- **Life:** fireflies (particles) near the pond, tree, bamboo and sando, sakura petals over the courtyard, drifting fog and far mist banks, occasional fireworks over the backdrop, lantern flicker, yokai idling at the gates in the menu orbit.
 - **Budgets:** arena under 5,000 parts; each enemy under 15 parts; at most 32 enemies alive (`12 + 4 × 5`).
 - **First screenshot test:** the start-menu orbit frame must show lit lanterns, the stage, a torii or demon gate, the moon and festival stalls (acceptance, section M).
 

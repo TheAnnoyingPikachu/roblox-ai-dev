@@ -1,0 +1,56 @@
+{
+  "task_id": "NIGHT-009",
+  "project_id": "NIGHT-001",
+  "owner": "A12",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Owner request: make swords in Blender and fix how they are held. Hero rebuilds of the katana, kodachi and nodachi, a saya per weapon, one legendary blade per top Blade Art, and a natural guard hold on R15 and R6 with a real second blade for Twin Kodachi.",
+  "inputs": [
+    "tools/blender/night/assets/weapons.py, tools/blender/night/kit.py",
+    "src/night/Gear.luau, src/night-client/CombatFx.client.luau",
+    "src/shared/NightProgress.luau (Blade Art colours)",
+    "Studio screenshots of the old hold"
+  ],
+  "dependencies": [
+    "NIGHT-008"
+  ],
+  "acceptance_criteria": [
+    "katana, kodachi and nodachi stay within 3000 tris with a curved blade, kissaki, shinogi, hamon, habaki, seppa, tsuba per weapon, same panels, diamond ito, menuki and kashira, at the same overall height as the old models",
+    "<weapon>_saya exists per weapon with koiguchi, kojiri, kurikata and sageo cord",
+    "blade_inferno, blade_lightning, blade_void, blade_galaxy, blade_gold and blade_shadow replace only the blade and land on the habaki on all three weapons",
+    "The hand closes on the middle of the tsuka, offset from the Handle's measured length, for hero models and the part fallback; the blade points forward and up with the edge away from the player",
+    "Twin Kodachi shows a blade in each hand that sweep together, on R15 and R6",
+    "The saya shows on the left hip only while the sword is held, on R15 and R6",
+    "New assets have nil ids until uploaded and the game runs without them",
+    "docs/assets/register.md has a Pending upload row per new asset"
+  ],
+  "verification": "lune run tests/run, selene src tests, stylua --check, rojo build night.project.json, node tools/validate-tasks.mjs; review build/blender/night/swords_sheet.png and build/blender/night/grip_shots/; after the upload run, playtest Night with the generated NightAssets.luau",
+  "output_artifacts": [
+    "tools/blender/night/",
+    "assets/night/",
+    "src/night/Gear.luau",
+    "src/night-client/CombatFx.client.luau",
+    "src/shared/NightAssets.luau",
+    "tests/NightAssets.spec.luau",
+    "docs/assets/register.md",
+    "docs/assets/night-blender-plan.md"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Roblox ignores Color on a textured MeshPart, so the hamon is thin Neon geometry (<weapon>_glow), not a blade texture. Upload the heroes and art blades in one run: art blades line up using the new models' root values. No animation assets added: the hold uses Tool.Grip, the built-in tool animations and a mirrored left arm.",
+  "evidence": [],
+  "files": [
+    "assets/night/",
+    "tools/blender/night/",
+    "docs/assets/register.md",
+    "docs/assets/night-blender-plan.md",
+    "src/shared/NightAssets.luau",
+    "tests/NightAssets.spec.luau",
+    "src/night/Gear.luau",
+    "src/night-client/CombatFx.client.luau",
+    "studio/tasks/NIGHT-009.json"
+  ],
+  "tests": [
+    "NightAssets.spec.luau"
+  ]
+}
