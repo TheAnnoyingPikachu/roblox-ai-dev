@@ -81,6 +81,7 @@ local toasts = new("Frame", {
 	Position = UDim2.new(0.5, 0, 0, 96),
 	Size = UDim2.fromOffset(380, 300),
 	BackgroundTransparency = 1,
+	ZIndex = 20, -- over the panels
 	Parent = gui,
 }, { new("UIListLayout", { Padding = UDim.new(0, 6), HorizontalAlignment = Enum.HorizontalAlignment.Center }) })
 ClientState.autoScale(toasts)
@@ -698,8 +699,8 @@ renderers.Index = function()
 	end
 end
 
--- ADMIN: every creature in every size, for the owner (decision 0013). Only the owner sees the
--- buttons that open this; the server decides on GardenConfig.ADMINS --------------------------------
+-- ADMIN: every creature in every size, for the owner (decision 0013). Only the owner sees the HUD
+-- button that opens this; the server decides on GardenConfig.ADMINS --------------------------------
 
 local adminPanel = panel("Admin")
 local adminSize = "normal"
@@ -1479,9 +1480,6 @@ local MENU_ITEMS = {
 	{ "STATS", "Stats", UI.SKY },
 	{ "SETTINGS", "Settings", UI.LILAC },
 }
-if GardenConfig.ADMINS[player.UserId] then
-	table.insert(MENU_ITEMS, { "ADMIN", "Admin", UI.CORAL })
-end
 local playButton: TextButton
 for i, item in MENU_ITEMS do
 	local b = button({

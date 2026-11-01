@@ -17,7 +17,7 @@
   "acceptance_criteria": [
     "Every species, mutation and size a save can hold can be chosen and survives sanitize; nothing else is accepted (GardenRules.spec.luau)",
     "adminGrant from any UserId outside GardenConfig.ADMINS returns false and changes nothing, whatever the client sends",
-    "A non-owner sees no ADMIN button in the start menu or the HUD",
+    "A non-owner sees no ADMIN button in the HUD",
     "A grant fills the pen, then storage, then is refused, and pays no XP, hatch count or coins",
     "lune run tests/run, selene, stylua, rojo build, validate-tasks and check-scope pass"
   ],
@@ -42,6 +42,11 @@
     "GardenRules.spec.luau",
     "GardenConfig.spec.luau"
   ],
-  "evidence": [],
+  "evidence": [
+    "Local 2026-11-01: lune run tests/run 470/470, selene 0 errors, validate-tasks 51 valid, check-scope in scope",
+    "Studio scratch place, signed in as 96807256, build stamp dev (local build, rule 13 is not met by this), DataStores off: HUD ADMIN button shown, panel opened by mouse, Huge Rainbow Toadstool Frog and Huge Celestial Moonblossom Dragon tapped in, on pads 1 and 2 as models, Index counted, coins, XP and hatches unchanged, scroll position kept; bunny:celestial:normal and a malformed arg refused",
+    "Studio, same account with ADMINS changed to { [1] = true } in the scratch copy: no ADMIN button; adminGrant dragon:celestial:huge and bunny:normal:normal both false; profile string unchanged, 0 creatures",
+    "Not done: a saved grant with DataStores on, a phone, a gamepad"
+  ],
   "notes": "Requested by SHANNON 2026-11-01. Publishing this build was approved in the same request."
 }
