@@ -1,0 +1,46 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "GARDEN-024",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Put the v0.3 roster, rarities, odds, widened Celestial Egg, Aurora Egg, Index 80 and the Species.cry field into the pure modules and their specs, with old saves loading unchanged.",
+  "inputs": [
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "docs/game-design/game4-gdd.md §U1, §U2, §U3, §U4, §U5, §U6, §U10",
+    "docs/architecture/garden.md §3.2, §3.7",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-022"
+  ],
+  "acceptance_criteria": [
+    "GardenConfig: 19 species in U1 order, 8 rarities in U1 order with the U1 colours, EGGS with the U2 odds and aurora last, INDEX_SIZE 80, Species.cry present (nil for every species until GARDEN-025 registers clips); GardenConfig.spec checks the §3.7 v0.3 list",
+    "GardenRules.spec: 28 egg-weather checks under 60% and the U6 pinned return table (worst meadow shower 54.2)",
+    "HatchRules.spec: the Celestial Egg's odds are exactly the Legendary and Mythic species; announce is true for a Divine and a Secret; pity 19 on aurora forces an axolotl",
+    "GardenProgress.spec: a literal pre-0014 v2 record and a record holding whale:rainbow and pity.aurora both pass sanitize unchanged; schemaVersion stays 2",
+    "GDD U10 rows for these modules are ticked in docs/game-design/game4-gdd.md; lune run tests/run, selene, stylua, validate-tasks and check-scope pass; Purity.spec stays green"
+  ],
+  "verification": "CI, then an independent QA read of the odds against decision 0014 (GARDEN-026)",
+  "output_artifacts": [],
+  "files": [
+    "src/shared/GardenConfig.luau",
+    "src/shared/HatchRules.luau",
+    "src/shared/GardenRules.luau",
+    "src/shared/GardenProgress.luau",
+    "tests/GardenConfig.spec.luau",
+    "tests/HatchRules.spec.luau",
+    "tests/GardenRules.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "docs/game-design/game4-gdd.md"
+  ],
+  "tests": [
+    "GardenConfig.spec.luau",
+    "HatchRules.spec.luau",
+    "GardenRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "Economy values are decision 0014's; do not tune them here. HatchRules LEGENDARY = 5 and GardenConfig.RARE = 3 stay as they are because the new rarities are appended. If the pinned return digits differ from U6 by rounding, re-derive them from docs/game-design/game4-v03-pacing-check.py and say so in the PR."
+}

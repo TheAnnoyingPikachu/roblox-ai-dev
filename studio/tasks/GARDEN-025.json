@@ -1,0 +1,45 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "GARDEN-025",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Show the v0.3 roster in the world and the menus: creature_<id> model loading with fallbacks, the Aurora Egg on the cart and panels, the 80-cell Index, the textured Celestial and Golden looks, Secret text readability and the species cries.",
+  "inputs": [
+    "docs/architecture/garden.md §6.1, §6.2, §9.1",
+    "docs/game-design/game4-gdd.md §U1, §U7, §U8, §U10",
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-024"
+  ],
+  "acceptance_criteria": [
+    "Plots.makeCreature uses Models.night(creature_<id>) when Models.nightReady, else the generated mesh for the nine old species, else the part fallback with a colour for every one of the 19 ids; ReplicatedStorage.GardenSpecies holds one clone per species (Model or MeshPart) and the ADMIN preview shows both kinds",
+    "No mutation changes TextureID, Color or Material; Celestial is the pulsing Highlight, halo, stars, light and rim of §6.2, Golden a Highlight with Sparkles that takes a Highlight only while 8 are free; a Studio screenshot shows a Celestial, a Golden and a Normal Lion side by side with their textures",
+    "Cries play through ClientState.cry only: reveal (0.5 owner, 0.25 others), own-pad banking (0.2), idle within 60 studs every 12 to 30 s with one cry per 2 s across the garden (0.2), ADMIN tap (0.5); silent with sfx off and for a species with no cry; every id used has a docs/assets/register.md row from ProSoundEffects or APMOfficial and is set in GardenConfig.SPECIES[i].cry",
+    "Cart shows 8 eggs; EGGS panel, ODDS card and Index (80 cells, a fifth cell for lion, unicorn, dragon and phoenix) show the Aurora and the new species; Secret rarity text has a pale stroke or pill on tags and banners",
+    "lune run tests/run, selene, stylua, rojo build garden.project.json, check-place, validate-tasks and check-scope pass; Relay and Night files other than Models.luau are byte-identical"
+  ],
+  "verification": "CI, a Studio run with the build stamp in the notes (rule 13), and the GARDEN-026 QA review",
+  "output_artifacts": [
+    "docs/assets/register.md"
+  ],
+  "files": [
+    "src/relay/Models.luau",
+    "src/garden/Plots.luau",
+    "src/garden/World.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden-client/*.luau",
+    "docs/assets/register.md",
+    "docs/architecture/garden.md",
+    "src/garden/CLAUDE.md"
+  ],
+  "tests": [
+    "GardenAssets.spec.luau",
+    "GardenConfig.spec.luau"
+  ],
+  "notes": "Setting GardenConfig.SPECIES[i].cry ids means touching src/shared/GardenConfig.luau, which is GARDEN-024's file: either land the registered ids through GARDEN-024's PR or add src/shared/GardenConfig.luau to this task's files in the PR and say so here (TASKS.md rule). Cat, owl and duck have no licensed clip on the Director's shortlist: search ProSoundEffects and APMOfficial first; if nothing fits, use the U1 fallback or leave the cry nil (silent), never an unlicensed clip. Does not depend on GARDEN-023: with no uploaded model Models.nightReady is false and the old visual stays."
+}

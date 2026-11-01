@@ -1,0 +1,53 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-022",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "design",
+  "objective": "Turn the Director's v0.3 roster (19 species, 8 rarities, widened Celestial Egg, Aurora Egg, cries, textured Celestial look, Blender creature models) into the GDD record, decision 0014, the architecture contract, the checkpoint list and the task files, with a pacing check.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md §E, §S, §C3",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/decisions/0013-garden-admin-catalogue.md",
+    "docs/checkpoints/GARDEN-V02.md",
+    "docs/architecture/garden.md §6, §9",
+    "src/shared/GardenConfig.luau"
+  ],
+  "dependencies": [
+    "GARDEN-021"
+  ],
+  "acceptance_criteria": [
+    "GDD section U holds the one roster, rarity, odds, Aurora, Index 80, sound, look and pacing record, and E1/E2/E3/E5 point at it with no second table",
+    "Decision 0014 is Proposed with every economy value, the widened Celestial rule, the new egg, the no-schema-change statement and the price choice backed by the pacing numbers",
+    "Architecture 3.2 (Species.cry), 6.1, 6.2 and 9.1 are written so GARDEN-023/024/025 can start without reading this task's chat",
+    "docs/game-design/game4-v03-pacing-check.py runs with python and its output matches the numbers in U6 and 0014; every egg's buy-hatch-release return is under 60% by the spec's bound",
+    "node tools/validate-tasks.mjs passes with GARDEN-022 to GARDEN-026 present"
+  ],
+  "verification": "A15 reads the four docs against the Director's roster; python docs/game-design/game4-v03-pacing-check.py; node tools/validate-tasks.mjs",
+  "output_artifacts": [
+    "docs/game-design/game4-gdd.md",
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V03.md",
+    "docs/game-design/game4-v03-pacing-check.py"
+  ],
+  "files": [
+    "docs/game-design/game4-gdd.md",
+    "docs/game-design/game4-v03-pacing-check.py",
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V03.md",
+    "studio/tasks/GARDEN-023.json",
+    "studio/tasks/GARDEN-024.json",
+    "studio/tasks/GARDEN-025.json",
+    "studio/tasks/GARDEN-026.json"
+  ],
+  "tests": [],
+  "evidence": [
+    "Local 2026-11-01: python docs/game-design/game4-v03-pacing-check.py ran (worst bound 56.4%; first Aurora day 26 / 18 / 11 at 30 / 60 / 180 min a day; income day 45 and 90 at 60 min 926,120 and 1,658,800 coins/s); node tools/validate-tasks.mjs 56 valid"
+  ],
+  "notes": "Changed from the Director's numbers: Aurora price 5B (was 25B: first Aurora day 26 at 1 h/day, 16 days after the first Celestial; target 4 to 10) and Meadow odds bunny 5800 / frog 2400 / duck 1100 / pup 500 / lamb 100 / cat 100 (the Director's row returns 62.1% of the price in Rainbow Shower by the spec's Lucky Meter bound, limit 60%). Everything else is the Director's. Checkpoint: docs/checkpoints/GARDEN-V03.md."
+}

@@ -1,0 +1,38 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "GARDEN-026",
+  "owner": "A15",
+  "verifier": "A04",
+  "task_type": "test",
+  "objective": "Independent QA and security review of Egg Garden v0.3 (GARDEN-023 to GARDEN-025) against decision 0014 and GDD section U, producing the review and the evidence for the v0.3 checkpoint.",
+  "inputs": [
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "docs/game-design/game4-gdd.md §U",
+    "docs/architecture/garden.md §3.2, §6.1, §6.2, §9.1",
+    "docs/checkpoints/GARDEN-V03.md",
+    "docs/qa/garden-v02-review.md"
+  ],
+  "dependencies": [
+    "GARDEN-024",
+    "GARDEN-025"
+  ],
+  "acceptance_criteria": [
+    "docs/qa/garden-v03-review.md exists in the garden-v02-review.md format: scope, tool runs, severity table, verdict, findings labelled Computed, Read or Director",
+    "Odds, prices, levels, grow times, meters and INDEX_SIZE in GardenConfig equal decision 0014 (Computed, by script); every egg's buy-hatch-release return is under 60% by the spec's bound",
+    "A pre-0014 save loads unchanged and a save holding a new species survives sanitize; no new remote, Fx kind or attribute exists; adminGrant still refuses non-admins for the new ids",
+    "Cries obey the sfx setting, never play on a refusal, and every id used has a register row from a licensed partner; no mutation changes TextureID, Color or Material (Read)",
+    "The checkpoint doc lists the evidence: CI run link, test counts, build stamp, screenshot of the three Lions, a recording of the cries"
+  ],
+  "verification": "A04 reads the review; CI run link and test-results.json attached as evidence",
+  "output_artifacts": [
+    "docs/qa/garden-v03-review.md"
+  ],
+  "files": [
+    "docs/qa/garden-v03-review.md",
+    "docs/checkpoints/GARDEN-V03.md"
+  ],
+  "tests": [],
+  "notes": "Reviewer must not have written GARDEN-023, 024 or 025 (CLAUDE.md rule 2). Studio facts count only with the build stamp (rule 13)."
+}
