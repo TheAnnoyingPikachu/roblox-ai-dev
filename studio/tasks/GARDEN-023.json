@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "low",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-023",
   "owner": "A11",
   "verifier": "A15",
@@ -27,6 +27,11 @@
   "output_artifacts": [
     "src/shared/GardenAssets.luau",
     "docs/assets/garden-blender-plan.md"
+  ],
+  "evidence": [
+    "19 creature_<id> entries in tools/blender/garden/manifest.json, uploaded.json and src/shared/GardenAssets.luau (upload-assets run 41359537619); lune run tests/run 480/480 with GardenAssets.spec green",
+    "Studio 2026-11-01, build dev: all 19 models load through Models.night at server start, GetExtentsSize equals the manifest size for every one, and an unrotated placement faces Roblox -Z (the README's unverified Blender -Y front holds; Plots keeps CREATURE_YAW 0). Sizes read right next to each other: commons near 3 to 4 studs, Legendary and Mythic 5 to 6, kirin tallest at 6.25",
+    "docs/assets/register.md: 19 creature_<id> model rows in the GARDEN-020 table (added in GARDEN-025's PR, same branch)"
   ],
   "files": [
     "tools/blender/garden/**",

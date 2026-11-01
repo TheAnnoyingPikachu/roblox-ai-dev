@@ -871,11 +871,11 @@ Every species gets a custom Blender model `creature_<id>` (architecture section 
 | `tests/GardenRules.spec` 60% and pinned-return tests | 24 checks, v0.2 pins | Done (GARDEN-024): 28 checks, U6 pins |
 | `tests/HatchRules.spec` | celestial odds lion/dragon, announce at index 5 | Done (GARDEN-024): widened odds; `divine` and `secret` announce |
 | `tests/GardenProgress.spec` | v1 and v2 literal records | Done (GARDEN-024): add a record holding `whale:rainbow` and `pity.aurora`, and one holding only old ids, both unchanged by `sanitize` |
-| `Plots.FALLBACK` colours, `ClientState.EGG_COLOURS`, `Plots.EGG_LOOKS` | 9 species, 7 eggs | 10 new species colours, `aurora` egg colour and look |
-| `World.luau` cart | 7 pedestals | 8 (spacing 2.5) or two rows |
-| Menu Index grid | 38 cells, celestial fifth cell for lion and dragon | 80 cells, fifth cell for the four Celestial species; Secret and Divine colours |
-| Menu ODDS card, EGGS panel | 7 eggs | an eighth row "5B coins - grows in 12:00:00 - level 32", sold out most of the time, plain text |
-| `CreatureFx.applyLook` | repaints Golden and Celestial | U8 |
-| `HatchFx`, `Menu` ADMIN, `CreatureFx` | no cries | U7 |
-| `Plots.tag`, banners | rarity colour as plain text | Secret stroke or pill (U1) |
-| `docs/assets/register.md` | 9 generated creature meshes, 5 Garden audio rows | 19 `creature_*` model rows, up to 19 cry rows |
+| `Plots.FALLBACK` colours, `ClientState.EGG_COLOURS`, `Plots.EGG_LOOKS` | 9 species, 7 eggs | Done (GARDEN-025): 10 new species colours, `aurora` teal-violet shell with pale star spots, glow |
+| `World.luau` cart | 7 pedestals | Done (GARDEN-025): the cart had 6 sold eggs; now 7 at spacing 2.6 |
+| Menu Index grid | 38 cells, celestial fifth cell for lion and dragon | Done (GARDEN-025): 80 cells from `indexable`, fifth cell for the four Celestial species; colours from `RARITIES` |
+| Menu ODDS card, EGGS panel | 7 eggs | Done (GARDEN-025): both loop `EGGS`, the Aurora row reads "5B coins - grows in 12:00:00 - level 32" |
+| `CreatureFx.applyLook` | repaints Golden and Celestial | Done (GARDEN-025): U8 |
+| `HatchFx`, `Menu` ADMIN, `CreatureFx` | no cries | Done (GARDEN-025): U7 through `ClientState.cry` |
+| `Plots.tag`, banners | rarity colour as plain text | Done (GARDEN-025): pale stroke on the pad tag; the HatchFx card is dark text on cream and the Hud banner is white text on the rarity pill, so both read as they are |
+| `docs/assets/register.md` | 9 generated creature meshes, 5 Garden audio rows | Done (GARDEN-025): 19 `creature_*` model rows, 18 cry rows (cat reuses the bunny clip) |
