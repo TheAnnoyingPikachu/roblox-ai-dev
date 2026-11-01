@@ -494,7 +494,7 @@ Profiles.get(player: Player): GardenConfig.Profile?
 Profiles.isOnline(player: Player): boolean
 Profiles.apply(player: Player, label: string, change: (GardenConfig.Profile) -> GardenConfig.Profile) -- in memory now, queued for the store, published
 Profiles.bank(player: Player, coins: number, pads: number, today: number) -- pad banking: in memory now; merged into the last queued op if it is this day's bank; publishes only Coins
-Profiles.request(player: Player, action: string, arg: string?): boolean -- buyEgg, plantPrize, buyBed, buyPenSlot, place, store, release, favourite, setGate, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic; decides on the in-memory profile, applies only if accepted
+Profiles.request(player: Player, action: string, arg: string?): boolean -- buyEgg, plantPrize, buyBed, buyPenSlot, place, store, release, favourite, setGate, claimDaily, claimWeekly, claimQuest, buyCosmetic, equipCosmetic, adminGrant (owner only, router-checked, decision 0013); decides on the in-memory profile, applies only if accepted
 Profiles.step(now: number) -- 1 Hz: publish dirty sessions, flush due queues (7 s / 60 s), income board writes (120 s)
 Profiles.finish(player: Player, now: number) -- bank already done by the caller; leave op, waits at most 10 s for a running write, final flush (releases the lock; no retry wait past 25 s), then drops the session
 Profiles.finishAll(now: number) -- BindToClose: finish every session in parallel

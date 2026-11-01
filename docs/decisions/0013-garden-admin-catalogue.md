@@ -16,3 +16,5 @@ Status: Accepted by SHANNON 2026-11-01 (asked for the menu in the published game
 - SHANNON's income can pass any honest player's, and it shows on the shared income board. Accepted: the board is not a prize.
 - Adding an admin is a one-line change in `GardenConfig`, reviewed like any other code.
 - A remote `Request` for `adminGrant` from anyone else returns false and changes nothing.
+- A granted creature is a normal creature: releasing one pays coins and counts for quests (a Huge Celestial Dragon pays 450,000). Only the owner can do this.
+- A granted Index entry takes the place of a hatch's first find, so that key's 50 XP is not paid on a later hatch, and it counts towards Index-gated cosmetics.
