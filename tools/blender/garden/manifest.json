@@ -199,6 +199,231 @@
     "notes": "One mesh, about 1 stud. Upload skips its texture: HatchFx bursts up to 6 clones tinted from EGG_COLOURS.",
     "glow": {}
   },
+  "creature_bunny": {
+    "fbx": "build/blender/garden/creature_bunny.fbx",
+    "png": "build/blender/garden/creature_bunny.png",
+    "preview": "build/blender/garden/previews/creature_bunny.png",
+    "size_studs": [
+      2.6,
+      4.0,
+      2.4
+    ],
+    "tris": 2048,
+    "parts": {
+      "creature_bunny": 2048
+    },
+    "target_size_studs": [
+      2.6,
+      4.0,
+      2.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Sprout Bunny mesh (src/relay/Models.luau MESHES.bunny)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_frog": {
+    "fbx": "build/blender/garden/creature_frog.fbx",
+    "png": "build/blender/garden/creature_frog.png",
+    "preview": "build/blender/garden/previews/creature_frog.png",
+    "size_studs": [
+      3.2,
+      3.5,
+      3.2
+    ],
+    "tris": 1358,
+    "parts": {
+      "creature_frog": 1358
+    },
+    "target_size_studs": [
+      3.2,
+      3.5,
+      3.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Toadstool Frog mesh (src/relay/Models.luau MESHES.frog)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_pup": {
+    "fbx": "build/blender/garden/creature_pup.fbx",
+    "png": "build/blender/garden/creature_pup.png",
+    "preview": "build/blender/garden/previews/creature_pup.png",
+    "size_studs": [
+      3.0,
+      3.8,
+      3.6
+    ],
+    "tris": 2284,
+    "parts": {
+      "creature_pup": 2284
+    },
+    "target_size_studs": [
+      3.0,
+      3.8,
+      3.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Bumble Pup mesh (src/relay/Models.luau MESHES.pup)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_cat": {
+    "fbx": "build/blender/garden/creature_cat.fbx",
+    "png": "build/blender/garden/creature_cat.png",
+    "preview": "build/blender/garden/previews/creature_cat.png",
+    "size_studs": [
+      3.2,
+      4.2,
+      3.0
+    ],
+    "tris": 2006,
+    "parts": {
+      "creature_cat": 2006
+    },
+    "target_size_studs": [
+      3.2,
+      4.2,
+      3.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Berry Cat mesh (src/relay/Models.luau MESHES.cat)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_owl": {
+    "fbx": "build/blender/garden/creature_owl.fbx",
+    "png": "build/blender/garden/creature_owl.png",
+    "preview": "build/blender/garden/previews/creature_owl.png",
+    "size_studs": [
+      4.2,
+      4.5,
+      3.8
+    ],
+    "tris": 2158,
+    "parts": {
+      "creature_owl": 2158
+    },
+    "target_size_studs": [
+      4.2,
+      4.5,
+      3.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Pumpkin Owl mesh (src/relay/Models.luau MESHES.owl)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_fox": {
+    "fbx": "build/blender/garden/creature_fox.fbx",
+    "png": "build/blender/garden/creature_fox.png",
+    "preview": "build/blender/garden/previews/creature_fox.png",
+    "size_studs": [
+      3.6,
+      4.5,
+      4.2
+    ],
+    "tris": 2246,
+    "parts": {
+      "creature_fox": 2246
+    },
+    "target_size_studs": [
+      3.6,
+      4.5,
+      4.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Cactus Fox mesh (src/relay/Models.luau MESHES.fox)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_turtle": {
+    "fbx": "build/blender/garden/creature_turtle.fbx",
+    "png": "build/blender/garden/creature_turtle.png",
+    "preview": "build/blender/garden/previews/creature_turtle.png",
+    "size_studs": [
+      3.8,
+      3.5,
+      3.8
+    ],
+    "tris": 1990,
+    "parts": {
+      "creature_turtle": 1990
+    },
+    "target_size_studs": [
+      3.8,
+      3.5,
+      3.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Lotus Turtle mesh (src/relay/Models.luau MESHES.turtle)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_lion": {
+    "fbx": "build/blender/garden/creature_lion.fbx",
+    "png": "build/blender/garden/creature_lion.png",
+    "preview": "build/blender/garden/previews/creature_lion.png",
+    "size_studs": [
+      4.6,
+      5.2,
+      4.6
+    ],
+    "tris": 2112,
+    "parts": {
+      "creature_lion": 2112
+    },
+    "target_size_studs": [
+      4.6,
+      5.2,
+      4.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Sunflower Lion mesh (src/relay/Models.luau MESHES.lion)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_dragon": {
+    "fbx": "build/blender/garden/creature_dragon.fbx",
+    "png": "build/blender/garden/creature_dragon.png",
+    "preview": "build/blender/garden/previews/creature_dragon.png",
+    "size_studs": [
+      6.0,
+      5.5,
+      4.8
+    ],
+    "tris": 2210,
+    "parts": {
+      "creature_dragon": 2210
+    },
+    "target_size_studs": [
+      6.0,
+      5.5,
+      4.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Moonblossom Dragon mesh (src/relay/Models.luau MESHES.dragon)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
   "dash_sweeper": {
     "fbx": "build/blender/garden/dash_sweeper.fbx",
     "png": "build/blender/garden/dash_sweeper.png",
