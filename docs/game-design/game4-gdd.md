@@ -866,11 +866,11 @@ Every species gets a custom Blender model `creature_<id>` (architecture section 
 
 | Place | Assumption | Change |
 |---|---|---|
-| `GardenConfig.SPECIES`, `RARITIES`, `EGGS` | 9, 6, 7 | 19, 8, 8; `INDEX_SIZE` 80; `Species.cry?` |
-| `tests/GardenConfig.spec` | pinned lists, `#EGGS` 7, 38 pairs, last egg `celestial` | 19 species in U1 order, 8 rarities, `#EGGS` 8, last egg `aurora`, 80 pairs, every sold egg's `top` is its rarest species, every row sums to 10,000, every `cry.pitch` in 0.5 to 2 |
-| `tests/GardenRules.spec` 60% and pinned-return tests | 24 checks, v0.2 pins | 28 checks, U6 pins |
-| `tests/HatchRules.spec` | celestial odds lion/dragon, announce at index 5 | widened odds; `divine` and `secret` announce |
-| `tests/GardenProgress.spec` | v1 and v2 literal records | add a record holding `whale:rainbow` and `pity.aurora`, and one holding only old ids, both unchanged by `sanitize` |
+| `GardenConfig.SPECIES`, `RARITIES`, `EGGS` | 9, 6, 7 | Done (GARDEN-024): 19, 8, 8; `INDEX_SIZE` 80; `Species.cry?` (nil for all 19 until GARDEN-025 registers clips) |
+| `tests/GardenConfig.spec` | pinned lists, `#EGGS` 7, 38 pairs, last egg `celestial` | Done (GARDEN-024): 19 species in U1 order, 8 rarities, `#EGGS` 8, last egg `aurora`, 80 pairs, every sold egg's `top` is its rarest species, every row sums to 10,000, every `cry.pitch` in 0.5 to 2 |
+| `tests/GardenRules.spec` 60% and pinned-return tests | 24 checks, v0.2 pins | Done (GARDEN-024): 28 checks, U6 pins |
+| `tests/HatchRules.spec` | celestial odds lion/dragon, announce at index 5 | Done (GARDEN-024): widened odds; `divine` and `secret` announce |
+| `tests/GardenProgress.spec` | v1 and v2 literal records | Done (GARDEN-024): add a record holding `whale:rainbow` and `pity.aurora`, and one holding only old ids, both unchanged by `sanitize` |
 | `Plots.FALLBACK` colours, `ClientState.EGG_COLOURS`, `Plots.EGG_LOOKS` | 9 species, 7 eggs | 10 new species colours, `aurora` egg colour and look |
 | `World.luau` cart | 7 pedestals | 8 (spacing 2.5) or two rows |
 | Menu Index grid | 38 cells, celestial fifth cell for lion and dragon | 80 cells, fifth cell for the four Celestial species; Secret and Divine colours |

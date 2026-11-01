@@ -86,7 +86,9 @@ describe("GardenProgress defaults", function()
 		expect(p.nextId).toBe(1)
 		expect(p.stock.w).toBe(-1)
 		expect(`{p.gate} {p.fence} {p.can}`).toBe("open picket tin")
-		expect(p.pity.meadow + p.pity.forest + p.pity.sunset + p.pity.moon + p.pity.star + p.pity.celestial).toBe(0)
+		expect(
+			p.pity.meadow + p.pity.forest + p.pity.sunset + p.pity.moon + p.pity.star + p.pity.celestial + p.pity.aurora
+		).toBe(0)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(`{p.dash.day} {p.dash.prizes} {p.dash.coins}`).toBe("-1 0 0")
 		expect(p.pity.starter).toBeNil()
@@ -462,9 +464,11 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(same(p.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
 		expect(p.pity.celestial).toBe(0)
+		expect(p.pity.aurora).toBe(0)
 		expect(p.lock).toBeNil()
 		local expected = v1Record()
 		expected.pity.celestial = 0
+		expected.pity.aurora = 0
 		for field, value in expected do
 			if field ~= "schemaVersion" and field ~= "lock" then
 				expect(`{field} {same(p[field], value)}`).toBe(`{field} true`)
@@ -544,6 +548,96 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		local bad = GardenProgress.sanitize({ dash = { day = "x", prizes = -1, coins = 0 / 0 } }, NOW)
 		expect(same(bad.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
 		expect(GardenProgress.sanitize({ dash = 5 }, NOW).dash.day).toBe(-1)
+	end)
+end)
+
+describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function()
+	-- A literal v2 save from before 0014: old ids only, a Celestial in a bed, prizeEggs and dash.
+	local function v2Record(): any
+		return {
+			schemaVersion = 2,
+			xp = 99_000,
+			coins = 1_234_567_890,
+			lastSeen = NOW - 7200,
+			unbanked = 7,
+			nextId = 12,
+			bedCount = 6,
+			penSlots = 9,
+			beds = {
+				{
+					egg = "celestial",
+					planted = NOW - 600,
+					ready = NOW + 28000,
+					waters = 1,
+					helps = 0,
+					lastWater = NOW - 500,
+				},
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "star", planted = NOW - 4000, ready = NOW + 9000, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "moon", planted = NOW - 1, ready = NOW + 3599, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+			},
+			creatures = {
+				{ id = 3, s = "cat", m = "golden", z = "big", placed = 1, fav = true },
+				{ id = 5, s = "dragon", m = "celestial", z = "huge", placed = 2, fav = false },
+				{ id = 8, s = "lion", m = "celestial", z = "normal", placed = 9, fav = false },
+				{ id = 11, s = "owl", m = "moonlit", z = "normal", placed = 0, fav = false },
+			},
+			pity = { meadow = 3, forest = 4, sunset = 5, moon = 6, star = 7, celestial = 8 },
+			index = { "cat:golden", "dragon:celestial", "lion:celestial", "owl:moonlit", "pup:normal" },
+			stock = { w = 6_000_000, bought = { forest = 2, celestial = 1 } },
+			hatches = 77,
+			waters = 88,
+			likes = 11,
+			gate = "friends",
+			fence = "candy",
+			can = "ducky",
+			owned = { candy = true },
+			helped = { day = DAY, count = 4 },
+			liked = { day = DAY, ids = { 111, 222 } },
+			daily = { streak = 3, last = DAY - 1 },
+			week = { key = 2900, days = 2, lastDay = DAY - 1, claimed = false },
+			quests = { day = DAY, progress = { hatches = 2, waters = 5 }, claimed = { hatch5 = true } },
+			prizeEggs = { moon = 2 },
+			dash = { day = DAY, prizes = 1, coins = 3 },
+		}
+	end
+
+	it("loads a literal pre-0014 v2 record with every field kept and only pity.aurora added", function()
+		local record = v2Record()
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(p.schemaVersion).toBe(2)
+		expect(GardenProgress.SCHEMA_VERSION).toBe(2)
+		local expected = v2Record()
+		expected.pity.aurora = 0
+		expect(same(p, expected)).toBe(true)
+		expect(same(record, v2Record())).toBe(true) -- input unchanged
+		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
+	end)
+
+	it("keeps a record holding whale:rainbow, an Aurora Egg and pity.aurora unchanged", function()
+		local record = v2Record()
+		record.beds[2] =
+			{ egg = "aurora", planted = NOW - 100, ready = NOW + 43100, waters = 0, helps = 0, lastWater = 0 }
+		table.insert(record.creatures, { id = 11, s = "whale", m = "rainbow", z = "huge", placed = 3, fav = false })
+		record.creatures[4].id = 10
+		record.creatures[4].s = "axolotl"
+		table.insert(record.index, "whale:rainbow")
+		table.insert(record.index, "axolotl:moonlit")
+		table.insert(record.index, "phoenix:celestial")
+		record.pity.aurora = 19
+		record.stock.bought.aurora = 1
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(same(p, record)).toBe(true)
+		expect(p.schemaVersion).toBe(2)
+		-- Clamps still apply to the new ids: pity at the meter, stock at max, no celestial Divine.
+		record.pity.aurora = 99
+		record.stock.bought.aurora = 5
+		table.insert(record.index, "whale:celestial")
+		table.insert(record.creatures, { id = 20, s = "kirin", m = "celestial", z = "normal", placed = 4, fav = false })
+		p = GardenProgress.sanitize(record, NOW)
+		expect(`{p.pity.aurora} {p.stock.bought.aurora} {#p.index} {#p.creatures}`).toBe("20 1 8 5")
 	end)
 end)
 

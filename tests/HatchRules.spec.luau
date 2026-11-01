@@ -31,11 +31,15 @@ describe("HatchRules.pick", function()
 	it("maps r to the first cumulative bp at the boundaries", function()
 		local odds = egg("meadow").odds
 		expect(HatchRules.pick(odds, 1)).toBe("bunny")
-		expect(HatchRules.pick(odds, 6000)).toBe("bunny")
-		expect(HatchRules.pick(odds, 6001)).toBe("frog")
-		expect(HatchRules.pick(odds, 9000)).toBe("frog")
-		expect(HatchRules.pick(odds, 9001)).toBe("pup")
-		expect(HatchRules.pick(odds, 9900)).toBe("pup")
+		expect(HatchRules.pick(odds, 5800)).toBe("bunny")
+		expect(HatchRules.pick(odds, 5801)).toBe("frog")
+		expect(HatchRules.pick(odds, 8200)).toBe("frog")
+		expect(HatchRules.pick(odds, 8201)).toBe("duck")
+		expect(HatchRules.pick(odds, 9300)).toBe("duck")
+		expect(HatchRules.pick(odds, 9301)).toBe("pup")
+		expect(HatchRules.pick(odds, 9800)).toBe("pup")
+		expect(HatchRules.pick(odds, 9801)).toBe("lamb")
+		expect(HatchRules.pick(odds, 9900)).toBe("lamb")
 		expect(HatchRules.pick(odds, 9901)).toBe("cat")
 		expect(HatchRules.pick(odds, 10000)).toBe("cat")
 		local clear = GardenConfig.WEATHERS[1].mutation
@@ -180,19 +184,24 @@ describe("HatchRules rolls", function()
 	end)
 end)
 
-describe("HatchRules Celestial Egg (S1)", function()
-	it("always hatches lion or dragon with mutation celestial, in every weather", function()
+local CELESTIAL = { "lion", "unicorn", "dragon", "phoenix" } -- every Legendary and Mythic (U3)
+
+describe("HatchRules Celestial Egg (S1, widened by U3)", function()
+	it("always hatches a Legendary or Mythic with mutation celestial, in every weather", function()
 		local seen: { [string]: boolean } = {}
 		for _, w in GardenConfig.WEATHERS do
-			for seed = 1, 2000 do
+			for seed = 1, 4000 do
 				local o = HatchRules.roll(ripe("celestial"), 1, NOW, w.id, Rng.seed(seed, 41)) :: HatchRules.Outcome
 				expect(o.m).toBe("celestial")
-				expect(o.s == "lion" or o.s == "dragon").toBe(true)
+				expect(`{o.s} {table.find(CELESTIAL, o.s) ~= nil}`).toBe(`{o.s} true`)
 				seen[`{w.id}:{o.s}`] = true
 			end
 		end
 		for _, w in GardenConfig.WEATHERS do
-			expect(seen[`{w.id}:lion`] and seen[`{w.id}:dragon`]).toBe(true)
+			for _, s in CELESTIAL do
+				local key = `{w.id}:{s}`
+				expect(`{key} {seen[key]}`).toBe(`{key} true`)
+			end
 		end
 	end)
 
@@ -206,28 +215,28 @@ describe("HatchRules Celestial Egg (S1)", function()
 		end
 	end)
 
-	it("forces a dragon at pity 9 with no species draw", function()
+	it("forces a phoenix at pity 9 with no species draw", function()
 		local p = ripe("celestial")
 		p.pity.celestial = 9
 		local rng = Rng.seed(55)
 		local o = HatchRules.roll(p, 1, NOW, "clear", rng) :: HatchRules.Outcome
-		expect(`{o.s} {o.m} {o.z} {o.forced}`).toBe(`dragon celestial {(HatchRules.rollSize(rng))} true`)
+		expect(`{o.s} {o.m} {o.z} {o.forced}`).toBe(`phoenix celestial {(HatchRules.rollSize(rng))} true`)
 		p.pity.celestial = 8
 		local s, forced, state = HatchRules.rollSpecies("celestial", 8, rng)
 		expect(forced).toBe(false)
-		expect(s == "lion" or s == "dragon").toBe(true)
+		expect(table.find(CELESTIAL, s) ~= nil).toBe(true)
 		expect(state ~= rng).toBe(true)
 	end)
 
-	it("gives a long-run dragon share of 18.7% with the Lucky Meter", function()
-		local dragons, pity, rng = 0, 0, Rng.seed(808)
+	it("gives a long-run phoenix share of 11.4% with the Lucky Meter", function()
+		local top, pity, rng = 0, 0, Rng.seed(808)
 		for _ = 1, 100_000 do
 			local s
 			s, _, rng = HatchRules.rollSpecies("celestial", pity, rng)
 			pity = HatchRules.nextPity("celestial", pity, s)
-			dragons += if s == "dragon" then 1 else 0
+			top += if s == "phoenix" then 1 else 0
 		end
-		expect(math.abs(dragons / 1000 - 18.7) <= 0.5).toBe(true)
+		expect(math.abs(top / 1000 - 11.4) <= 0.5).toBe(true)
 	end)
 
 	it("adds the Index entry, 1,050 XP on the first hatch, and is always announced", function()
@@ -237,14 +246,66 @@ describe("HatchRules Celestial Egg (S1)", function()
 		expect(out.index[1]).toBe("lion:celestial")
 		expect((r :: any).xp).toBe(1000 + 50)
 		expect(out.pity.celestial).toBe(1)
-		for _, s in { "lion", "dragon" } do
+		for _, s in CELESTIAL do
 			expect(HatchRules.announce(outcome("celestial", s, "celestial", "normal"))).toBe(true)
+			expect(select(2, HatchRules.apply(p, 1, outcome("celestial", s, "celestial", "normal"), NOW))).toBe(true)
 		end
 	end)
 
-	it("publishes 85.00 and 15.00 on the ODDS card", function()
-		local odds = egg("celestial").odds
-		expect(`{HatchRules.percent(odds[1].bp)} {HatchRules.percent(odds[2].bp)}`).toBe("85.00 15.00")
+	it("publishes 60.00, 25.00, 12.00 and 3.00 on the ODDS card", function()
+		local out = {}
+		for _, o in egg("celestial").odds do
+			table.insert(out, HatchRules.percent(o.bp))
+		end
+		expect(table.concat(out, " ")).toBe("60.00 25.00 12.00 3.00")
+	end)
+end)
+
+describe("HatchRules Aurora Egg (U3)", function()
+	it("hatches only Mythic, Divine or Secret, with a weather mutation roll", function()
+		local seen: { [string]: boolean } = {}
+		for _, w in GardenConfig.WEATHERS do
+			for seed = 1, 4000 do
+				local o = HatchRules.roll(ripe("aurora"), 1, NOW, w.id, Rng.seed(seed, 42)) :: HatchRules.Outcome
+				expect(`{o.s} {GardenConfig.rarityIndex(o.s) >= 6}`).toBe(`{o.s} true`)
+				expect(o.m == "celestial").toBe(false)
+				seen[`{w.id}:{o.m}`] = true
+			end
+		end
+		expect(seen["shower:rainbow"] and seen["moonfall:moonlit"] and seen["sunbeam:golden"]).toBe(true)
+		expect(select(2, HatchRules.apply(ripe("aurora"), 1, outcome("aurora", "whale", "celestial", "normal"), NOW))).toBe(
+			false
+		)
+	end)
+
+	it("forces an axolotl at pity 19 with no species draw", function()
+		local p = ripe("aurora")
+		p.pity.aurora = 19
+		local rng = Rng.seed(56)
+		local o = HatchRules.roll(p, 1, NOW, "clear", rng) :: HatchRules.Outcome
+		local m, state = HatchRules.rollMutation("clear", rng)
+		expect(`{o.s} {o.m} {o.z} {o.forced}`).toBe(`axolotl {m} {(HatchRules.rollSize(state))} true`)
+		local s, forced, drawn = HatchRules.rollSpecies("aurora", 18, rng)
+		expect(forced).toBe(false)
+		expect(GardenConfig.rarityIndex(s) >= 6).toBe(true)
+		expect(drawn ~= rng).toBe(true)
+		local out = HatchRules.apply(p, 1, o, NOW)
+		expect(out.pity.aurora).toBe(0)
+		expect(out.index[1]).toBe(`axolotl:{m}`)
+	end)
+
+	it("gives a long-run axolotl share of 6.6% with the Lucky Meter, and 3,050 XP on a first hatch", function()
+		local top, pity, rng = 0, 0, Rng.seed(809)
+		for _ = 1, 100_000 do
+			local s
+			s, _, rng = HatchRules.rollSpecies("aurora", pity, rng)
+			pity = HatchRules.nextPity("aurora", pity, s)
+			top += if s == "axolotl" then 1 else 0
+		end
+		expect(math.abs(top / 1000 - 6.6) <= 0.5).toBe(true)
+		local _, ok, r = HatchRules.apply(ripe("aurora"), 1, outcome("aurora", "kirin", "golden", "big"), NOW)
+		expect(ok).toBe(true)
+		expect((r :: any).xp).toBe(3000 + 50)
 	end)
 end)
 
@@ -287,10 +348,11 @@ describe("HatchRules: celestial comes from the Celestial Egg alone", function()
 end)
 
 describe("HatchRules: what is published is what is rolled", function()
-	it("keeps species, mutations and sizes within 1 point through roll, for every sold egg and weather", function()
+	it("keeps species, mutations and sizes within 1.5 points through roll, for every sold egg and weather", function()
 		local N = 20000
+		-- 1.5 points is about 4 sigma at N = 20,000; the v0.3 odds put sunset/sunbeam owl at exactly -1.00.
 		local function agrees(label: string, counts: { [string]: number }, id: string, bp: number)
-			local close = math.abs(100 * (counts[id] or 0) / N - bp / 100) <= 1
+			local close = math.abs(100 * (counts[id] or 0) / N - bp / 100) <= 1.5
 			expect(`{label} {id} {close}`).toBe(`{label} {id} true`)
 		end
 		for position, e in GardenConfig.EGGS do
@@ -396,9 +458,12 @@ describe("HatchRules.apply", function()
 		expect(select(2, HatchRules.apply(p, 1, outcome("forest", "frog", "normal", "tiny"), NOW))).toBe(false)
 	end)
 
-	it("announces Legendary and Mythic species, any Rainbow and any Huge", function()
+	it("announces Legendary, Mythic, Divine and Secret species, any Rainbow and any Huge", function()
 		expect(HatchRules.announce(outcome("moon", "lion", "normal", "normal"))).toBe(true)
 		expect(HatchRules.announce(outcome("moon", "dragon", "normal", "normal"))).toBe(true)
+		expect(HatchRules.announce(outcome("aurora", "whale", "normal", "normal"))).toBe(true)
+		expect(HatchRules.announce(outcome("aurora", "axolotl", "normal", "normal"))).toBe(true)
+		expect(HatchRules.announce(outcome("sunset", "panda", "golden", "big"))).toBe(false)
 		expect(HatchRules.announce(outcome("meadow", "bunny", "rainbow", "normal"))).toBe(true)
 		expect(HatchRules.announce(outcome("meadow", "bunny", "normal", "huge"))).toBe(true)
 		expect(HatchRules.announce(outcome("moon", "turtle", "moonlit", "big"))).toBe(false)

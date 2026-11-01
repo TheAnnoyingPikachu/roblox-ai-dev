@@ -23,7 +23,8 @@ export type Egg = {
 	xp: number,
 	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
 }
-export type Species = { id: string, name: string, rarity: string, rate: number }
+export type Cry = { id: number, pitch: number } -- Creator Store audio asset id (registered first) and PlaybackSpeed
+export type Species = { id: string, name: string, rarity: string, rate: number, cry: Cry? } -- cry nil: the client is silent
 export type Mutation = { id: string, name: string, mult: number }
 export type Size = { id: string, name: string, mult: number, scale: number, bp: number }
 export type Weather = { id: string, name: string, mutation: { Odds } } -- MUTATIONS order without egg-only ones, sums to 10000
@@ -110,8 +111,8 @@ local function odds(list: { any }): { Odds }
 	return out
 end
 
--- The stock index i of an egg is its position - 1 (forest 2, sunset 3, moon 4, star 5, celestial 6),
--- so a new egg goes last or every later egg's stock changes.
+-- The stock index i of an egg is its position - 1 (forest 2, sunset 3, moon 4, star 5, celestial 6,
+-- aurora 7), so a new egg goes last or every later egg's stock changes. Odds: GDD U2, decision 0014.
 local EGGS: { Egg } = {
 	{ id = "starter", name = "Starter Egg", grow = 8, level = 1, odds = odds({ "pup", 10000 }), xp = 10 },
 	{
@@ -120,7 +121,7 @@ local EGGS: { Egg } = {
 		price = 50,
 		grow = 30,
 		level = 1,
-		odds = odds({ "bunny", 6000, "frog", 3000, "pup", 900, "cat", 100 }),
+		odds = odds({ "bunny", 5800, "frog", 2400, "duck", 1100, "pup", 500, "lamb", 100, "cat", 100 }),
 		top = "cat",
 		meter = 50,
 		xp = 10,
@@ -132,8 +133,8 @@ local EGGS: { Egg } = {
 		grow = 180,
 		level = 2,
 		stock = { chance = 100, min = 2, max = 4 },
-		odds = odds({ "frog", 4000, "pup", 3500, "cat", 2000, "owl", 500 }),
-		top = "owl",
+		odds = odds({ "frog", 3000, "pup", 3000, "lamb", 1500, "cat", 1700, "owl", 500, "hedgehog", 300 }),
+		top = "hedgehog",
 		meter = 30,
 		xp = 25,
 	},
@@ -144,8 +145,23 @@ local EGGS: { Egg } = {
 		grow = 900,
 		level = 5,
 		stock = { chance = 60, min = 1, max = 2 },
-		odds = odds({ "cat", 4500, "owl", 3500, "fox", 1700, "turtle", 300 }),
-		top = "turtle",
+		odds = odds({
+			"cat",
+			3500,
+			"owl",
+			2500,
+			"hedgehog",
+			1500,
+			"fox",
+			1700,
+			"turtle",
+			300,
+			"deer",
+			300,
+			"panda",
+			200,
+		}),
+		top = "panda",
 		meter = 40,
 		xp = 60,
 	},
@@ -156,7 +172,22 @@ local EGGS: { Egg } = {
 		grow = 3600,
 		level = 10,
 		stock = { chance = 30, min = 1, max = 1 },
-		odds = odds({ "fox", 5000, "turtle", 4000, "lion", 950, "dragon", 50 }),
+		odds = odds({
+			"fox",
+			4000,
+			"turtle",
+			2500,
+			"deer",
+			1500,
+			"panda",
+			1000,
+			"lion",
+			600,
+			"unicorn",
+			350,
+			"dragon",
+			50,
+		}),
 		top = "dragon",
 		meter = 100,
 		xp = 150,
@@ -168,40 +199,67 @@ local EGGS: { Egg } = {
 		grow = 14400,
 		level = 18,
 		stock = { chance = 10, min = 1, max = 1 },
-		odds = odds({ "turtle", 5500, "lion", 4000, "dragon", 500 }),
-		top = "dragon",
+		odds = odds({ "turtle", 3000, "panda", 2500, "lion", 2500, "unicorn", 1500, "dragon", 400, "phoenix", 100 }),
+		top = "phoenix",
 		meter = 25,
 		xp = 400,
 	},
 	{
+		-- Every Legendary and Mythic species (decision 0014 amends 0012's lion/dragon list).
 		id = "celestial",
 		name = "Celestial Egg",
 		price = 1_000_000_000,
 		grow = 28800,
 		level = 25,
 		stock = { chance = 5, min = 1, max = 1 },
-		odds = odds({ "lion", 8500, "dragon", 1500 }),
-		top = "dragon",
+		odds = odds({ "lion", 6000, "unicorn", 2500, "dragon", 1200, "phoenix", 300 }),
+		top = "phoenix",
 		meter = 10,
 		xp = 1000,
 		mutation = "celestial",
 	},
+	{
+		-- GDD U3: the only source of whale, kirin and axolotl; weather mutation roll, nothing fixed.
+		id = "aurora",
+		name = "Aurora Egg",
+		price = 5_000_000_000,
+		grow = 43200,
+		level = 32,
+		stock = { chance = 3, min = 1, max = 1 },
+		odds = odds({ "dragon", 3500, "phoenix", 3000, "whale", 2000, "kirin", 1200, "axolotl", 300 }),
+		top = "axolotl",
+		meter = 20,
+		xp = 3000,
+	},
 }
 GardenConfig.EGGS = EGGS
 
+-- GDD U1 order: rarity, then rate. `cry` stays nil until the clip's row is in docs/assets/register.md
+-- (rule 9); GARDEN-025 registers the clips and fills `cry = { id = <asset id>, pitch = <PlaybackSpeed> }`.
 local SPECIES: { Species } = {
 	{ id = "bunny", name = "Sprout Bunny", rarity = "common", rate = 1 },
 	{ id = "frog", name = "Toadstool Frog", rarity = "common", rate = 2 },
+	{ id = "duck", name = "Puddle Duckling", rarity = "common", rate = 3 },
 	{ id = "pup", name = "Bumble Pup", rarity = "uncommon", rate = 5 },
+	{ id = "lamb", name = "Clover Lamb", rarity = "uncommon", rate = 8 },
 	{ id = "cat", name = "Berry Cat", rarity = "uncommon", rate = 12 },
 	{ id = "owl", name = "Pumpkin Owl", rarity = "rare", rate = 30 },
+	{ id = "hedgehog", name = "Acorn Hedgehog", rarity = "rare", rate = 45 },
 	{ id = "fox", name = "Cactus Fox", rarity = "rare", rate = 70 },
 	{ id = "turtle", name = "Lotus Turtle", rarity = "epic", rate = 180 },
+	{ id = "deer", name = "Blossom Fawn", rarity = "epic", rate = 250 },
+	{ id = "panda", name = "Bamboo Panda", rarity = "epic", rate = 350 },
 	{ id = "lion", name = "Sunflower Lion", rarity = "legendary", rate = 500 },
+	{ id = "unicorn", name = "Daisy Unicorn", rarity = "legendary", rate = 800 },
 	{ id = "dragon", name = "Moonblossom Dragon", rarity = "mythic", rate = 1500 },
+	{ id = "phoenix", name = "Ember Phoenix", rarity = "mythic", rate = 2500 },
+	{ id = "whale", name = "Aurora Whale", rarity = "divine", rate = 5000 },
+	{ id = "kirin", name = "Nimbus Kirin", rarity = "divine", rate = 7500 },
+	{ id = "axolotl", name = "Stardust Axolotl", rarity = "secret", rate = 25000 },
 }
 GardenConfig.SPECIES = SPECIES
 
+-- Appended only, so no rarityIndex moves (HatchRules LEGENDARY = 5 and RARE = 3 stay valid).
 GardenConfig.RARITIES = {
 	{ id = "common", name = "Common", colour = { 180, 180, 180 } },
 	{ id = "uncommon", name = "Uncommon", colour = { 90, 200, 90 } },
@@ -209,6 +267,8 @@ GardenConfig.RARITIES = {
 	{ id = "epic", name = "Epic", colour = { 170, 80, 255 } },
 	{ id = "legendary", name = "Legendary", colour = { 255, 200, 40 } },
 	{ id = "mythic", name = "Mythic", colour = { 255, 110, 200 } },
+	{ id = "divine", name = "Divine", colour = { 90, 230, 230 } },
+	{ id = "secret", name = "Secret", colour = { 60, 55, 85 } }, -- dark on purpose: the client strokes its text (U1)
 }
 GardenConfig.RARE = 3 -- RARITIES index of "rare": rareHatches counts rarity index >= 3
 
@@ -270,7 +330,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 38 -- count of indexable pairs: 9 * 4 + 2
+GardenConfig.INDEX_SIZE = 80 -- count of indexable pairs: 19 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 -- 0008 amendment 2026-10-26: release never returns its egg price (buy, hatch, release <= 60% of it).
 GardenConfig.RELEASE_SECONDS = 6
