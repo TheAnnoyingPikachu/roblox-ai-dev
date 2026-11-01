@@ -531,6 +531,63 @@ describe("GardenRules watering (D2)", function()
 	end)
 end)
 
+describe("GardenRules admin catalogue (decision 0013)", function()
+	it("gives every species, mutation and size a save can hold, and nothing else", function()
+		local given = 0
+		for _, s in GardenConfig.SPECIES do
+			for _, m in GardenConfig.MUTATIONS do
+				for _, z in GardenConfig.SIZES do
+					local p, ok = GardenRules.grant(GardenProgress.defaults(NOW), s.id, m.id, z.id)
+					expect(ok).toBe(GardenConfig.indexable(s.id, m.id))
+					if ok then
+						given += 1
+						local kept = GardenProgress.sanitize(p, NOW).creatures[1]
+						expect(kept.s == s.id and kept.m == m.id and kept.z == z.id).toBe(true)
+					end
+				end
+			end
+		end
+		expect(given).toBe(GardenConfig.INDEX_SIZE * #GardenConfig.SIZES)
+		local base = GardenProgress.defaults(NOW)
+		expect(select(2, GardenRules.grant(base, "bunny", "celestial", "normal"))).toBe(false)
+		expect(select(2, GardenRules.grant(base, "nope", "normal", "normal"))).toBe(false)
+		expect(select(2, GardenRules.grant(base, "bunny", "nope", "normal"))).toBe(false)
+		expect(select(2, GardenRules.grant(base, "bunny", "normal", "nope"))).toBe(false)
+	end)
+
+	it("adds the Index entry once and pays no XP, hatch or coins", function()
+		local base = GardenProgress.defaults(NOW)
+		local p = GardenRules.grant(base, "dragon", "celestial", "huge")
+		p = GardenRules.grant(p, "dragon", "celestial", "big")
+		expect(#p.creatures).toBe(2)
+		expect(p.creatures[1].id ~= p.creatures[2].id).toBe(true)
+		expect(p.nextId).toBe(base.nextId + 2)
+		expect(#p.index).toBe(1)
+		expect(p.xp).toBe(base.xp)
+		expect(p.hatches).toBe(base.hatches)
+		expect(p.coins).toBe(base.coins)
+		expect(#base.creatures).toBe(0)
+	end)
+
+	it("fills the pen, then storage, then refuses", function()
+		local p = GardenProgress.defaults(NOW)
+		for i = 1, p.penSlots + GardenConfig.STORAGE do
+			p = GardenRules.grant(p, "bunny", "normal", "normal")
+			expect(p.creatures[i].placed).toBe(if i <= p.penSlots then i else 0)
+		end
+		expect(select(2, GardenRules.grant(p, "bunny", "normal", "normal"))).toBe(false)
+	end)
+
+	it("lets only the owner in", function()
+		local count = 0
+		for _ in GardenConfig.ADMINS do
+			count += 1
+		end
+		expect(count).toBe(1)
+		expect(GardenConfig.ADMINS[96807256]).toBe(true)
+	end)
+end)
+
 describe("GardenRules beds, pen and storage (C1, C2)", function()
 	it("sells beds 4 to 12 at the C1 costs, then stops", function()
 		local p = rich(1)

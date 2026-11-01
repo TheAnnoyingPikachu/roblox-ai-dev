@@ -950,11 +950,16 @@ function Plots.build(root: Instance)
 	-- Load every creature mesh once up front; refreshes use only the ones that loaded (warmed).
 	task.spawn(function()
 		local warm = Instance.new("Folder")
+		local species = Instance.new("Folder") -- one mesh each, for the admin catalogue's previews
+		species.Name = "GardenSpecies"
 		for _, s in GardenConfig.SPECIES do
-			if Models.spawn(s.id, warm, Vector3.zero, 1) then
+			local mesh = Models.spawn(s.id, warm, Vector3.zero, 1)
+			if mesh then
 				warmed[s.id] = true
+				mesh.Parent = species
 			end
 		end
+		species.Parent = ReplicatedStorage
 		for _, e in GardenConfig.EGGS do
 			Plots.eggModel(warm, e.id, CFrame.identity)
 		end

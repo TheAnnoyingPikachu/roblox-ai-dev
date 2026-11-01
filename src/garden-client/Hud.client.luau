@@ -204,17 +204,19 @@ local function goldDot(parent: Instance): Frame
 		Parent = parent,
 	}, { corner(8), stroke(UI.WHITE, 2) })
 end
-for i, item in
-	{
-		{ "MENU", "Menu", UI.LILAC },
-		{ "EGGS", "Eggs", UI.GOLD },
-		{ "CREATURES", "Creatures", UI.SKY },
-		{ "INDEX", "Index", UI.LEAF },
-		{ "REWARDS", "Rewards", UI.CORAL },
-		{ "DASH", "Dash", UI.AQUA },
-		{ "HOME", "Home", UI.PINK },
-	}
-do
+local QUICK = {
+	{ "MENU", "Menu", UI.LILAC },
+	{ "EGGS", "Eggs", UI.GOLD },
+	{ "CREATURES", "Creatures", UI.SKY },
+	{ "INDEX", "Index", UI.LEAF },
+	{ "REWARDS", "Rewards", UI.CORAL },
+	{ "DASH", "Dash", UI.AQUA },
+	{ "HOME", "Home", UI.PINK },
+}
+if GardenConfig.ADMINS[player.UserId] then
+	table.insert(QUICK, { "ADMIN", "Admin", UI.CORAL })
+end
+for i, item in QUICK do
 	local b = button({
 		Size = UDim2.new(1, 0, 0, 46),
 		Text = item[1],

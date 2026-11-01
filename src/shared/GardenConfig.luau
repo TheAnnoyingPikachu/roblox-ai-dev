@@ -282,6 +282,7 @@ GardenConfig.WEATHER_ACTIVE = 300
 GardenConfig.SEEDS = { stock = 9001, weather = 4242 }
 GardenConfig.LIKES = { perDay = 30 }
 GardenConfig.MAX_COINS = 1e15
+GardenConfig.ADMINS = { [96807256] = true } :: { [number]: boolean } -- SHANNON (genetheman); decision 0013
 GardenConfig.GATES = { "open", "friends", "closed" }
 
 local function cosmetic(
