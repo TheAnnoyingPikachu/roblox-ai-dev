@@ -1,7 +1,7 @@
 # 0012: Egg Garden v0.2: Celestial Egg, Splash Dash prizes, schema v2 and remotes
 
 Date: 2026-10-31
-Status: Accepted by SHANNON 2026-11-01, migration included (`docs/checkpoints/GARDEN-V02.md`). Proposed by A09 (CLAUDE.md rule 8), on the Studio Director's rulings of 2026-10-31. Implements `docs/game-design/game4-gdd.md` sections S and T; signatures in `docs/architecture/garden.md`. Amends decision 0008: where the two disagree, this record wins.
+Status: Accepted by SHANNON 2026-11-01, migration included (`docs/checkpoints/GARDEN-V02.md`). Proposed by A09 (CLAUDE.md rule 8), on the Studio Director's rulings of 2026-10-31. Implements `docs/game-design/game4-gdd.md` sections S and T; signatures in `docs/architecture/garden.md`. Amends decision 0008: where the two disagree, this record wins. **Amended by 0014 (2026-11-01, Proposed):** the Celestial Egg's species rule widens from "lion 8500, dragon 1500" to every Legendary and Mythic species, and the Aurora Egg, not the Celestial, becomes the last tier; the Index grows to 80.
 
 ## Decision
 

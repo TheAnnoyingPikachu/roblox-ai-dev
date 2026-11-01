@@ -1,0 +1,56 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-025",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Show the v0.3 roster in the world and the menus: creature_<id> model loading with fallbacks, the Aurora Egg on the cart and panels, the 80-cell Index, the textured Celestial and Golden looks, Secret text readability and the species cries.",
+  "inputs": [
+    "docs/architecture/garden.md §6.1, §6.2, §9.1",
+    "docs/game-design/game4-gdd.md §U1, §U7, §U8, §U10",
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-024"
+  ],
+  "acceptance_criteria": [
+    "Plots.makeCreature uses Models.night(creature_<id>) when Models.nightReady, else the generated mesh for the nine old species, else the part fallback with a colour for every one of the 19 ids; ReplicatedStorage.GardenSpecies holds one clone per species (Model or MeshPart) and the ADMIN preview shows both kinds",
+    "No mutation changes TextureID, Color or Material; Celestial is the pulsing Highlight, halo, stars, light and rim of §6.2, Golden a Highlight with Sparkles that takes a Highlight only while 8 are free; a Studio screenshot shows a Celestial, a Golden and a Normal Lion side by side with their textures",
+    "Cries play through ClientState.cry only: reveal (0.5 owner, 0.25 others), own-pad banking (0.2), idle within 60 studs every 12 to 30 s with one cry per 2 s across the garden (0.2), ADMIN tap (0.5); silent with sfx off and for a species with no cry; every id used has a docs/assets/register.md row from ProSoundEffects or APMOfficial and is set in GardenConfig.SPECIES[i].cry",
+    "Cart shows 8 eggs; EGGS panel, ODDS card and Index (80 cells, a fifth cell for lion, unicorn, dragon and phoenix) show the Aurora and the new species; Secret rarity text has a pale stroke or pill on tags and banners",
+    "lune run tests/run, selene, stylua, rojo build garden.project.json, check-place, validate-tasks and check-scope pass; Relay and Night files other than Models.luau are byte-identical"
+  ],
+  "verification": "CI, a Studio run with the build stamp in the notes (rule 13), and the GARDEN-026 QA review",
+  "output_artifacts": [
+    "docs/assets/register.md"
+  ],
+  "evidence": [
+    "lune run tests/run: 480/480 passed (GardenConfig + GardenAssets 22/22; the cry pitch check covers all 19 ids); selene 0 errors; stylua --check clean on LF copies; validate-tasks 56 valid; check-scope origin/main all in scope; rojo build garden.project.json and check-place pass",
+    "Studio 2026-11-01, build dev (local file: DataStores offline, prizes withheld as expected): all 19 creature_<id> Models load at server start (ReplicatedStorage.GardenSpecies holds 19 Models whose extents equal the manifest sizes); placed creatures face the plot front at CREATURE_YAW 0, so the README's unverified Blender -Y front holds and no yaw fix was needed",
+    "Studio: adminGrant of every species plus lion:celestial, dragon:celestial, lion:golden, unicorn:golden:big. Golden = gold Highlight (fill 0.5) + Sparkles, Celestial = Highlight pulsing 0.45 to 0.7 + halo + star emitter + PointLight; TextureID kept and Material Plastic on every creature; screenshot of Normal, Golden and Celestial Sunflower Lion side by side with their faces visible; Secret pad tag readable with the pale stroke",
+    "Studio: all 19 cries loaded and played once through ClientState.cry at their pitch (IsLoaded true, no sound errors in the output); tapping an ADMIN catalogue picture plays the cry 2D; Index 19 rows / 80 cells; ADMIN catalogue 19 rows with Model previews in the ViewportFrame; Egg Cart shows the Aurora Egg row '5B coins - grows in 12:00:00 - level 32' with the teal-violet icon; no client or server script errors. Output noise: transient 'Asset content representation is being generated' for the freshly uploaded creature textures, which still render",
+    "Found in Studio and fixed: a Model's MeshPart replicates after the Model itself, so CreatureFx.track now defers on DescendantAdded and returns (the 0.5 Hz sweep retries) while a Model has no parts; without it Highlights and extras were never applied to Model creatures",
+    "Cries (id, pitch): bunny 9117010574 0.8; frog 9113857727 1.0; duck 1840105521 1.2 (APM Duck Squawk, found by search); pup 9113956178 1.35; lamb 9116206434 1.3; cat 9117010574 1.1 (U1 fallback: no ProSoundEffects or APMOfficial meow exists in the Creator Store search); owl 9117181540 1.0 (PSE Owl Hooting Reverberant Several 1, found by search); hedgehog 9118058248 0.9; fox 9113955402 1.5; turtle 9112872058 0.8; deer 9113442509 1.2; panda 9117348418 1.1; lion 9116308659 1.25; unicorn 9119235894 1.0; dragon 9125470864 0.9 (PSE Creature Growls Lion Deep Guttural Rumbling 19, calm purr-growl, replaces Lion Snarl 10); phoenix 9117236946 0.9; whale 9114124842 0.7; kirin 1846547135 1.2; axolotl 9112872239 1.3",
+    "Not verified in Studio: a real hatch reveal and a pad banking cry (no ripe egg of a new species and no second player); the HatchFx reveal card and the Hud banner keep their existing Secret readability (dark text on cream, white text on the rarity pill) with no code change"
+  ],
+  "files": [
+    "src/relay/Models.luau",
+    "src/garden/Plots.luau",
+    "src/garden/World.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden-client/*.luau",
+    "src/shared/GardenConfig.luau",
+    "docs/assets/register.md",
+    "docs/architecture/garden.md",
+    "docs/game-design/game4-gdd.md",
+    "src/garden/CLAUDE.md"
+  ],
+  "tests": [
+    "GardenAssets.spec.luau",
+    "GardenConfig.spec.luau"
+  ],
+  "notes": "src/shared/GardenConfig.luau and docs/game-design/game4-gdd.md were added to files in this PR (TASKS.md rule): the registered cry ids live in GardenConfig.SPECIES[i].cry and the U10 rows are ticked. Cat has no licensed meow in the Creator Store (ProSoundEffects or APMOfficial), so it uses the U1 fallback (the bunny's Mouse Vocal 1 at 1.1); owl and duck got licensed clips by search; the dragon got a calmer PSE purr-growl. src/relay/Models.luau and GardenServer were not changed (Models.night already does everything 9.1 asks). Does not depend on GARDEN-023: with no uploaded model Models.nightReady is false and the old visual stays."
+}

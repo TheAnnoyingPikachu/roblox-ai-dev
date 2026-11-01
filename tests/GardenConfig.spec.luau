@@ -62,7 +62,7 @@ describe("GardenConfig odds tables", function()
 		end
 	end)
 
-	it("matches the E2, E3, E4 and F tables", function()
+	it("matches the U2, E3, E4 and F tables", function()
 		local function row(odds: { GardenConfig.Odds }): string
 			local out = {}
 			for _, o in odds do
@@ -70,12 +70,27 @@ describe("GardenConfig odds tables", function()
 			end
 			return table.concat(out, ", ")
 		end
-		expect(row((GardenConfig.egg("meadow") :: any).odds)).toBe("bunny 6000, frog 3000, pup 900, cat 100")
-		expect(row((GardenConfig.egg("forest") :: any).odds)).toBe("frog 4000, pup 3500, cat 2000, owl 500")
-		expect(row((GardenConfig.egg("sunset") :: any).odds)).toBe("cat 4500, owl 3500, fox 1700, turtle 300")
-		expect(row((GardenConfig.egg("moon") :: any).odds)).toBe("fox 5000, turtle 4000, lion 950, dragon 50")
-		expect(row((GardenConfig.egg("star") :: any).odds)).toBe("turtle 5500, lion 4000, dragon 500")
-		expect(row((GardenConfig.egg("celestial") :: any).odds)).toBe("lion 8500, dragon 1500")
+		expect(row((GardenConfig.egg("meadow") :: any).odds)).toBe(
+			"bunny 5800, frog 2400, duck 1100, pup 500, lamb 100, cat 100"
+		)
+		expect(row((GardenConfig.egg("forest") :: any).odds)).toBe(
+			"frog 3000, pup 3000, lamb 1500, cat 1700, owl 500, hedgehog 300"
+		)
+		expect(row((GardenConfig.egg("sunset") :: any).odds)).toBe(
+			"cat 3500, owl 2500, hedgehog 1500, fox 1700, turtle 300, deer 300, panda 200"
+		)
+		expect(row((GardenConfig.egg("moon") :: any).odds)).toBe(
+			"fox 4000, turtle 2500, deer 1500, panda 1000, lion 600, unicorn 350, dragon 50"
+		)
+		expect(row((GardenConfig.egg("star") :: any).odds)).toBe(
+			"turtle 3000, panda 2500, lion 2500, unicorn 1500, dragon 400, phoenix 100"
+		)
+		expect(row((GardenConfig.egg("celestial") :: any).odds)).toBe(
+			"lion 6000, unicorn 2500, dragon 1200, phoenix 300"
+		)
+		expect(row((GardenConfig.egg("aurora") :: any).odds)).toBe(
+			"dragon 3500, phoenix 3000, whale 2000, kirin 1200, axolotl 300"
+		)
 		expect(row((GardenConfig.egg("starter") :: any).odds)).toBe("pup 10000")
 		local mutation = {}
 		for _, w in GardenConfig.WEATHERS do
@@ -98,7 +113,7 @@ describe("GardenConfig odds tables", function()
 end)
 
 describe("GardenConfig eggs, species and costs", function()
-	it("matches the D1 egg table, meters and hatch XP", function()
+	it("matches the D1 and U3 egg table, meters and hatch XP", function()
 		local out = {}
 		for _, e in GardenConfig.EGGS do
 			local stock = if e.stock then `{e.stock.chance}%{e.stock.min}-{e.stock.max}` else "-"
@@ -108,25 +123,45 @@ describe("GardenConfig eggs, species and costs", function()
 			)
 		end
 		expect(table.concat(out, " | ")).toBe(
-			"starter - 8 1 - - - 10 | meadow 50 30 1 - cat 50 10 | forest 400 180 2 100%2-4 owl 30 25 | "
-				.. "sunset 3000 900 5 60%1-2 turtle 40 60 | moon 25000 3600 10 30%1-1 dragon 100 150 | "
-				.. "star 200000 14400 18 10%1-1 dragon 25 400 | celestial 1000000000 28800 25 5%1-1 dragon 10 1000"
+			"starter - 8 1 - - - 10 | meadow 50 30 1 - cat 50 10 | forest 400 180 2 100%2-4 hedgehog 30 25 | "
+				.. "sunset 3000 900 5 60%1-2 panda 40 60 | moon 25000 3600 10 30%1-1 dragon 100 150 | "
+				.. "star 200000 14400 18 10%1-1 phoenix 25 400 | celestial 1000000000 28800 25 5%1-1 phoenix 10 1000 | "
+				.. "aurora 5000000000 43200 32 3%1-1 axolotl 20 3000"
 		)
 	end)
 
-	it("keeps every sold egg on a Lucky Meter and the Celestial Egg last, fixed to its mutation", function()
+	it("keeps every sold egg on a Lucky Meter, Celestial fixed to its mutation and the Aurora Egg last", function()
 		for _, e in GardenConfig.EGGS do
 			if e.price then
 				expect(`{e.id} {e.top ~= nil and e.meter ~= nil}`).toBe(`{e.id} true`)
 			end
 			expect(e.mutation).toBe(if e.id == "celestial" then "celestial" else nil)
 		end
-		expect(GardenConfig.EGGS[#GardenConfig.EGGS].id).toBe("celestial")
-		expect(#GardenConfig.EGGS).toBe(7) -- stock index 6
+		expect(GardenConfig.EGGS[#GardenConfig.EGGS].id).toBe("aurora")
+		expect(#GardenConfig.EGGS).toBe(8) -- stock index 7
 		expect((GardenConfig.egg("celestial") :: any).name).toBe("Celestial Egg")
+		expect((GardenConfig.egg("aurora") :: any).name).toBe("Aurora Egg")
 	end)
 
-	it("keeps the stock of every existing egg for fixed windows, and seeds Celestial with index 6", function()
+	it("gives every sold egg its rarest species as top (rarity index, then rate)", function()
+		for _, e in GardenConfig.EGGS do
+			if e.top then
+				local best = e.odds[1].id
+				for _, o in e.odds do
+					local a, b =
+						GardenConfig.species(o.id) :: GardenConfig.Species,
+						GardenConfig.species(best) :: GardenConfig.Species
+					local ra, rb = GardenConfig.rarityIndex(o.id), GardenConfig.rarityIndex(best)
+					if ra > rb or (ra == rb and a.rate > b.rate) then
+						best = o.id
+					end
+				end
+				expect(`{e.id} {e.top}`).toBe(`{e.id} {best}`)
+			end
+		end
+	end)
+
+	it("keeps the stock of every existing egg for fixed windows, and seeds Celestial 6 and Aurora 7", function()
 		-- Copied from WorldRules.stockFor before the Celestial Egg was added.
 		local pinned = { "2 1 0 0", "4 2 0 0", "4 0 0 0", "4 0 0 1", "3 0 0 0", "3 2 1 0" }
 		for i, row in pinned do
@@ -135,23 +170,64 @@ describe("GardenConfig eggs, species and costs", function()
 			expect(`{s.forest} {s.sunset} {s.moon} {s.star}`).toBe(row)
 			local r, state = Rng.int(Rng.seed(window, 9001, 6), 1, 10000)
 			expect(s.celestial).toBe(if r <= 500 then (Rng.int(state, 1, 1)) else 0)
+			r, state = Rng.int(Rng.seed(window, 9001, 7), 1, 10000)
+			expect(s.aurora).toBe(if r <= 300 then (Rng.int(state, 1, 1)) else 0)
 		end
 	end)
 
-	it("matches the E1 species table and mutation multipliers", function()
+	it("matches the U1 species table in rarity-then-rate order, and the mutation multipliers", function()
 		local out = {}
-		for _, s in GardenConfig.SPECIES do
+		for i, s in GardenConfig.SPECIES do
 			table.insert(out, `{s.id} {s.rarity} {s.rate}`)
+			local prev = GardenConfig.SPECIES[i - 1]
+			if prev then
+				local ri, rp = GardenConfig.rarityIndex(s.id), GardenConfig.rarityIndex(prev.id)
+				expect(`{s.id} {ri > rp or (ri == rp and s.rate > prev.rate)}`).toBe(`{s.id} true`)
+			end
 		end
 		expect(table.concat(out, ", ")).toBe(
-			"bunny common 1, frog common 2, pup uncommon 5, cat uncommon 12, owl rare 30, fox rare 70, "
-				.. "turtle epic 180, lion legendary 500, dragon mythic 1500"
+			"bunny common 1, frog common 2, duck common 3, pup uncommon 5, lamb uncommon 8, cat uncommon 12, "
+				.. "owl rare 30, hedgehog rare 45, fox rare 70, turtle epic 180, deer epic 250, panda epic 350, "
+				.. "lion legendary 500, unicorn legendary 800, dragon mythic 1500, phoenix mythic 2500, "
+				.. "whale divine 5000, kirin divine 7500, axolotl secret 25000"
 		)
 		local mult = {}
 		for _, m in GardenConfig.MUTATIONS do
 			table.insert(mult, `{m.id} {m.mult}`)
 		end
 		expect(table.concat(mult, ", ")).toBe("normal 1, golden 3, moonlit 5, rainbow 10, celestial 20")
+	end)
+
+	it("lists the 8 U1 rarities in order with their colours", function()
+		local out = {}
+		for _, r in GardenConfig.RARITIES do
+			table.insert(out, `{r.id} {r.name} {table.concat(r.colour, ",")}`)
+		end
+		expect(table.concat(out, "; ")).toBe(
+			"common Common 180,180,180; uncommon Uncommon 90,200,90; rare Rare 70,140,255; epic Epic 170,80,255; "
+				.. "legendary Legendary 255,200,40; mythic Mythic 255,110,200; divine Divine 90,230,230; "
+				.. "secret Secret 60,55,85"
+		)
+	end)
+
+	it("gives every cry present a positive integer id and a pitch in 0.5 to 2", function()
+		for _, s in GardenConfig.SPECIES do
+			local cry = s.cry
+			if cry then
+				expect(`{s.id} {cry.id > 0 and cry.id == math.floor(cry.id)}`).toBe(`{s.id} true`)
+				expect(`{s.id} {cry.pitch >= 0.5 and cry.pitch <= 2}`).toBe(`{s.id} true`)
+			end
+		end
+	end)
+
+	it("puts exactly the Legendary and Mythic species in the Celestial Egg", function()
+		local want = {}
+		for _, s in GardenConfig.SPECIES do
+			if s.rarity == "legendary" or s.rarity == "mythic" then
+				table.insert(want, s.id)
+			end
+		end
+		expect(ids((GardenConfig.egg("celestial") :: any).odds)).toBe(table.concat(want, " "))
 	end)
 
 	it("fixes celestial to its egg, in no weather table", function()
@@ -168,7 +244,7 @@ describe("GardenConfig eggs, species and costs", function()
 		end
 	end)
 
-	it("counts 38 indexable pairs, the only new ones being lion:celestial and dragon:celestial", function()
+	it("counts 80 indexable pairs, the celestial ones being lion, unicorn, dragon and phoenix", function()
 		local count = 0
 		local special = {}
 		for _, s in GardenConfig.SPECIES do
@@ -182,8 +258,9 @@ describe("GardenConfig eggs, species and costs", function()
 			end
 		end
 		expect(count).toBe(GardenConfig.INDEX_SIZE)
-		expect(count).toBe(38)
-		expect(table.concat(special, " ")).toBe("lion:celestial dragon:celestial")
+		expect(count).toBe(80)
+		expect(table.concat(special, " ")).toBe("lion:celestial unicorn:celestial dragon:celestial phoenix:celestial")
+		expect(GardenConfig.indexable("whale", "celestial")).toBe(false) -- the Aurora fixes nothing
 		expect(GardenConfig.indexable("nope", "normal")).toBe(false)
 		expect(GardenConfig.indexable("bunny", "nope")).toBe(false)
 	end)
@@ -212,9 +289,13 @@ describe("GardenConfig eggs, species and costs", function()
 		expect(GardenConfig.size("nope")).toBeNil()
 		expect(GardenConfig.rarityIndex("bunny")).toBe(1)
 		expect(GardenConfig.rarityIndex("owl")).toBe(GardenConfig.RARE)
+		expect(GardenConfig.rarityIndex("lion")).toBe(5)
 		expect(GardenConfig.rarityIndex("dragon")).toBe(6)
+		expect(GardenConfig.rarityIndex("whale")).toBe(7)
+		expect(GardenConfig.rarityIndex("axolotl")).toBe(8)
 		expect(GardenConfig.rarityIndex("nope")).toBe(0)
 		expect(GardenConfig.RARITIES[GardenConfig.RARE].id).toBe("rare")
+		expect(GardenConfig.RARE).toBe(3)
 	end)
 end)
 

@@ -1,4 +1,4 @@
-"""The seven eggs and the hatch shell fragment. Each egg has its own silhouette from all sides,
+"""The eight eggs and the hatch shell fragment. Each egg has its own silhouette from all sides,
 because players walk round the beds: see docs/assets/garden-blender-plan.md."""
 
 import math
@@ -457,6 +457,39 @@ def egg_celestial():
     return parts + lights + _feather_wing(1, plume) + _feather_wing(-1, plume)
 
 
+def egg_aurora():
+    e = dict(H=2.62, R=1.06)
+    # Teal foot to violet crown, with soft mint and pink bands in the ramp and pale star specks.
+    sky = k.paint(
+        "au_shell",
+        [(0, (38, 168, 160)), (0.2, (46, 150, 196)), (0.3, (120, 236, 206)), (0.4, (58, 118, 206)), (0.55, (88, 104, 216)), (0.64, (236, 150, 222)), (0.74, (112, 92, 212)), (1, (142, 92, 220))],
+        0,
+        2.62,
+        dots=[((232, 242, 255), 5, 0.12)],
+    )
+    mint = k.glow((104, 244, 186))
+    pink = k.glow((255, 132, 214))
+    gold = k.glow(k.GOLD_HI)
+    cloud = k.paint("au_cloud", [(0, (214, 228, 250)), (1, (255, 255, 255))], 0, 1.2)
+
+    parts = [k.shell(sky, nu=28, nv=12, **e)]
+    # Aurora curtains: wavy tapered ribbons in low relief, staggered round the shell.
+    for start, sweep, v, m, cycles in ((-110, 170, 0.47, mint, 1.5), (40, 160, 0.6, pink, 1.5), (150, 160, 0.35, mint, 1.5), (-150, 150, 0.7, pink, 2), (-40, 130, 0.26, pink, 1)):
+        count = 24
+        path = [(start + sweep * j / count, v + 0.04 * math.sin(j / count * cycles * math.pi * 2)) for j in range(count + 1)]
+        widths = [0.012 + 0.08 * math.sin(j / count * math.pi) ** 1.2 for j in range(count + 1)]
+        parts.append(k.ridge(path, widths, 0.035, m, **e))
+    # A crown of tiny gold stars round the top, one on the tip.
+    for i in range(6):
+        parts.append(k.stick(k.star(0.14, gold), i * 60 + 30, 0.86, 0.01, spin=i * 25, **e))
+    parts.append(k.stick(k.star(0.17, gold), 0, 1, 0.02, **e))
+    # A cloud nest round the foot, like the one the aurora whale rides.
+    for theta, r, z in ((-20, 0.44, 0.08), (30, 0.36, 0.1), (82, 0.44, 0.06), (134, 0.38, 0.1), (190, 0.44, 0.06), (244, 0.38, 0.1), (298, 0.42, 0.08)):
+        p = k.egg_at(theta, 0.1, 0.12, **e)[0]
+        parts.append(k.puff(r, (p.x, p.y, z + r * 0.5), cloud, scale=(1, 1, 0.75), name="cloud"))
+    return parts
+
+
 def egg_shell_fragment():
     """A curved jagged shard; tinted per egg by code, so it is uploaded untextured."""
     e = dict(H=1.9, R=0.72)
@@ -494,10 +527,11 @@ ASSETS = [
             ("moon", egg_moon, "Plots.egg moon (src/garden/Plots.luau 274-295)", f"{NOTES} {LOOKS}"),
             ("star", egg_star, "Plots.egg star (src/garden/Plots.luau 274-295)", f"{NOTES} {LOOKS}"),
             ("celestial", egg_celestial, "New top tier: Plots.egg fallback from EGG_LOOKS", f"{NOTES} {LOOKS}"),
+            ("aurora", egg_aurora, "Plots.egg aurora (part fallback)", f"{NOTES} {LOOKS}"),
         ),
         1,
     )
 ] + [
-    dict(name="egg_shell_fragment", build=egg_shell_fragment, budget=200, size=[1, 0.6, 0.3], priority=1, order=8, replaces="Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
+    dict(name="egg_shell_fragment", build=egg_shell_fragment, budget=200, size=[1, 0.6, 0.3], priority=1, order=9, replaces="Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
          notes="One mesh, about 1 stud. Upload skips its texture: HatchFx bursts up to 6 clones tinted from EGG_COLOURS."),
 ]

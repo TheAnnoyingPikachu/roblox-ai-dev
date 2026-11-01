@@ -19,7 +19,7 @@ import bpy  # noqa: E402
 import kit  # noqa: E402
 from mathutils import Vector  # noqa: E402
 
-EGGS = ["egg_starter", "egg_meadow", "egg_forest", "egg_sunset", "egg_moon", "egg_star", "egg_celestial"]
+EGGS = ["egg_starter", "egg_meadow", "egg_forest", "egg_sunset", "egg_moon", "egg_star", "egg_celestial", "egg_aurora"]
 GAP = 0.9  # studs between eggs
 
 

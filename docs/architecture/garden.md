@@ -1,6 +1,6 @@
-# Egg Garden: architecture (v0.2)
+# Egg Garden: architecture (v0.3)
 
-Owner: A09. Inputs: `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) and `docs/decisions/0008-egg-garden.md` (save schema, economy, odds, remotes, child safety), amended by `docs/decisions/0012-egg-garden-v02.md` (Celestial Egg, Splash Dash, schema v2). If this file and the GDD disagree on a rule, the GDD wins and this file is fixed; the resolutions in section 8 are the exception (they settle what the GDD leaves open).
+Owner: A09; v0.3 sections (3.2 `cry`, 6 sounds and looks, 9 creature models) by A11. Inputs: `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) and `docs/decisions/0008-egg-garden.md` (save schema, economy, odds, remotes, child safety), amended by `docs/decisions/0012-egg-garden-v02.md` (Celestial Egg, Splash Dash, schema v2) and `docs/decisions/0014-garden-creatures-v03.md` (19 species, 8 rarities, Aurora Egg; GDD section U). If this file and the GDD disagree on a rule, the GDD wins and this file is fixed; the resolutions in section 8 are the exception (they settle what the GDD leaves open).
 
 ## 1. Place, files and who owns them
 
@@ -44,6 +44,11 @@ Every file under `src/relay`, `src/relay-client`, `src/night` and `src/night-cli
 | GARDEN-009 | `src/garden/**` (new `Dash.luau`, `DashWorld.luau`), `src/relay/Models.luau` (section 9 only) |
 | GARDEN-010 | `src/garden-client/**` (new `DashFx.client.luau`) |
 | Artist | `src/shared/GardenAssets.luau` (generated), `tools/blender/garden/**`, `assets/garden/**`, `docs/assets/register.md` rows |
+| GARDEN-023 (v0.3 art) | `tools/blender/garden/**`, `assets/garden/**`, `src/shared/GardenAssets.luau`, `tests/GardenAssets.spec.luau`, `docs/assets/register.md`, `docs/assets/garden-blender-plan.md` |
+| GARDEN-024 (v0.3 rules) | `src/shared/{GardenConfig,HatchRules,GardenRules,GardenProgress}.luau`, their specs, `docs/game-design/game4-gdd.md` |
+| GARDEN-025 (v0.3 server and client) | `src/relay/Models.luau`, `src/garden/{Plots,World,GardenServer.server}.luau`, `src/garden-client/*.luau`, `docs/assets/register.md` (cry rows), `docs/architecture/garden.md`, `src/garden/CLAUDE.md` |
+
+GARDEN-024 lands first (data and specs); GARDEN-025 codes against section 3.2's `cry` and section 9's names and may start on stubs; GARDEN-023 shares no code file with either and can land in any order, because `Models.nightReady` keeps the old visual until a model is uploaded.
 
 GARDEN-009 and GARDEN-010 code against section 3 and may start with stubs once GARDEN-008's signatures are merged; they share no files.
 
@@ -54,7 +59,7 @@ GARDEN-004 and GARDEN-005 code against the signatures in section 3 and may start
 - Same as `docs/architecture/night.md` section 2: `--!strict`, no Roblox globals, requires by string (`require("./GardenRules")`), functions return new tables and never mutate inputs, `floor(x + 1e-9)` for every floor of a product.
 - Times are integer server `os.time()` seconds passed in as `now`; days are `MetaRules.dayOf(now)` passed in as `today`. Pad accrual takes `dt` in seconds.
 - Positions are `Vec3 = { x: number, y: number, z: number }` (structurally the same as `CombatRules.Vec3`); "horizontal" means the x, z plane.
-- Ids are strings as in decisions 0008 and 0012: eggs `starter meadow forest sunset moon star celestial`; species `bunny frog pup cat owl fox turtle lion dragon`; mutations `normal golden moonlit rainbow celestial`; sizes `normal big huge`; weathers `clear sunbeam moonfall shower`; rarities `common uncommon rare epic legendary mythic`; gates `open friends closed`.
+- Ids are strings as in decisions 0008, 0012 and 0014: eggs `starter meadow forest sunset moon star celestial aurora`; species `bunny frog duck pup lamb cat owl hedgehog fox turtle deer panda lion unicorn dragon phoenix whale kirin axolotl` (GDD U1 order: rarity, then rate); mutations `normal golden moonlit rainbow celestial`; sizes `normal big huge`; weathers `clear sunbeam moonfall shower`; rarities `common uncommon rare epic legendary mythic divine secret`; gates `open friends closed`.
 - Dependency graph (no cycles): `GardenConfig` (types and data, no requires except `MetaRules` for the `Cosmetic`/`Quest` types); `WorldRules → Rng, GardenConfig`; `GardenRules → GardenConfig, WorldRules, MetaRules`; `HatchRules → Rng, GardenConfig, GardenRules, MetaRules`; `GardenProgress → MetaRules, GardenConfig, GardenRules, HatchRules`; `DashRules → GardenConfig`.
 - XP and quest progress: `HatchRules` adds hatch and Index XP itself (GDD N); every other XP and all quest progress is added by the `GardenProgress` wrappers, the only module holding the MetaRules config. The server calls the `GardenProgress` wrapper where one exists, else the `GardenRules` function.
 
@@ -97,7 +102,8 @@ export type Egg = {
 	xp: number,
 	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
 }
-export type Species = { id: string, name: string, rarity: string, rate: number }
+export type Cry = { id: number, pitch: number } -- v0.3: Creator Store audio asset id (registered first) and PlaybackSpeed
+export type Species = { id: string, name: string, rarity: string, rate: number, cry: Cry? } -- cry nil until registered: the client is silent
 export type Mutation = { id: string, name: string, mult: number }
 export type Size = { id: string, name: string, mult: number, scale: number, bp: number }
 export type Weather = { id: string, name: string, mutation: { Odds } } -- MUTATIONS order without egg-only mutations, sums to 10000
@@ -134,9 +140,9 @@ export type Profile = {
 	dash: { day: number, prizes: number, coins: number }, -- v2; day -1 until the first reward
 }
 
-GardenConfig.EGGS: { Egg } -- starter, meadow, forest, sunset, moon, star, celestial (always last); the stock index i is position - 1
-GardenConfig.SPECIES: { Species } -- E1 order
-GardenConfig.RARITIES: { { id: string, name: string, colour: { number } } } -- common..mythic, RGB 0-255
+GardenConfig.EGGS: { Egg } -- starter, meadow, forest, sunset, moon, star, celestial, aurora (a new egg always goes last); the stock index i is position - 1
+GardenConfig.SPECIES: { Species } -- GDD U1 order: rarity, then rate; 19 entries
+GardenConfig.RARITIES: { { id: string, name: string, colour: { number } } } -- common..mythic, divine, secret (appended, so no rarityIndex moves), RGB 0-255
 GardenConfig.RARE = 3 -- RARITIES index of "rare": rareHatches counts rarity index >= 3
 GardenConfig.MUTATIONS: { Mutation } -- normal 1, golden 3, moonlit 5, rainbow 10, celestial 20
 GardenConfig.SIZES: { Size } -- normal 1.0/1.0/8000, big 1.5/1.4/1700, huge 2.5/2.0/300
@@ -149,7 +155,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 38 -- count of indexable pairs: 9 * 4 + 2
+GardenConfig.INDEX_SIZE = 80 -- count of indexable pairs: 19 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix); was 38
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 GardenConfig.RELEASE_SECONDS = 6 -- 0008 amendment 2026-10-26 (was 30)
 GardenConfig.PAD = { radius = 4.5, height = 6 }
@@ -383,6 +389,9 @@ Quest stat keys: `hatches`, `waters`, `collects`, `rareHatches`, `mutants`, `rel
 - `GardenProgress.spec`: `sanitize(defaults(now))` equals `defaults(now)`; `login` pays unbanked before offline and never twice; `snapshot` then `login` after 0 s pays exactly `unbanked`.
 - `HatchRules.spec`: `apply` re-applied to a copy of the original profile gives the same creature (no re-roll); `apply` refuses when the bed's egg differs from the outcome's.
 - v0.2, `GardenConfig.spec`: weather ids equal `MUTATIONS` without egg-only mutations; `INDEX_SIZE` equals the count of `indexable` pairs; every sold egg has `top` and `meter`; `celestial` is last in `EGGS`; existing stock unchanged for a fixed window.
+- v0.3, `GardenConfig.spec`: 19 species in U1 order and 8 rarities in U1 order; `aurora` is last in `EGGS` and `#EGGS` is 8; every egg's odds sum to 10,000 and name known species; every sold egg's `top` is its rarest species (highest `rarityIndex`, then rate); `indexable` pairs count 80; every `cry`, when present, has an integer `id > 0` and `pitch` in 0.5 to 2; the celestial egg's odds are exactly the species with rarity `legendary` or `mythic`. `GardenRules.spec`: 28 egg-weather checks and the U6 pinned table. `HatchRules.spec`: `announce` true for a Divine and a Secret. `GardenProgress.spec`: a literal pre-0014 v2 record and a record holding `whale:rainbow` and `pity.aurora` both pass `sanitize` unchanged.
+
+**Why `cry` lives in `GardenConfig` and not in a client table (decision 0014):** three client files play cries (`HatchFx` reveal and banking, `CreatureFx` idle, `Menu` admin catalogue) and all three already require `GardenConfig` for the species row they are showing, so one field beside `name` and `rate` is read where the species is already in hand. The values are numbers, so the module stays pure (`Purity.spec`) and `GardenConfig.spec` can check them; a client table would duplicate the species list and drift. `cry` is display data: changing a clip or a pitch needs a register row, not a decision. The server never reads it.
 - v0.2, `HatchRules.spec`: a Celestial hatch is always `celestial` in all 4 weathers and only lion or dragon; `pity = 9` forces a dragon; no weather roll ever gives `celestial` (walk `r` 1..10000 in every table).
 - v0.2, `GardenRules.spec`: the 60% test uses `egg.mutation` when set and checks 24 pairs; `plantPrize` refusals (no egg, level, no bed), lowest bed, count down, coins and stock unchanged.
 - v0.2, `GardenProgress.spec`: a literal v1 record loads with every field kept and `prizeEggs = {}`; `prizeEggs` and `dash` survive `sanitize` (the flush path); `bunny:celestial` is dropped from `index` and `creatures`; caps and day rollover; re-applying `dashPrize` to a copy of the stored record gives the same result.
@@ -645,7 +654,7 @@ The op is pure and captures `today`, so re-applying it to the stored record is s
 | `Menu.client.luau` | LocalScript | Forked Relay menu: title "EGG GARDEN", camera orbit, PLAY (camera flies to own gate), INDEX (38 entries, silhouettes, which eggs and weathers can produce them, every weather's mutation table), CREATURES (pen and storage lists with Place, Store, Release with confirmation "Release Berry Cat to the wild meadow? +324 coins", Favourite), EGGS (cart panel: price, grow time, stock left, unlock, Lucky Meter, ODDS card, BUY), LOCKER (fence, can), REWARDS, STATS, SETTINGS (writes `ClientState`), ADMIN (owner's creature catalogue, decision 0013), How to Play and Odds cards, toasts (`LastReward` without its `#n` suffix, `notice`), music by weather. Sends `Request` only. |
 | `Hud.client.luau` | LocalScript | Coins and income (short format), level and XP bar, weather chip and the next two, restock timer, HOME button (`home`), Index count, gold dot, "While you were away" card (`OfflineCoins` > 0), hatch announcement banners (setting), first-session prompts and arrows (GDD H2, `hatches = 0` at join), per-viewer prompt visibility: each bed's `Hatch`/`Water` prompt `Enabled` locally only when the action can succeed for this player (owner, ripe/growing, cooldown, caps, gate, garden not full), using `GardenRules` on the owner's `Profile` attribute and `workspace:GetServerTimeNow()`. |
 | `HatchFx.client.luau` | LocalScript | Reveal (wobble 1.5 s or 0.4 s Fast Hatch, crack, pop, rarity burst, name, rarity, mutation, size; never shows another creature), coin pops, water splash in the can's colour, like hearts, egg growth scale (40% to 100% by `GardenRules.growFraction`) and ripe glow/wobble, BillboardGui time left; weather looks from `GardenStatus` (I4 lighting tweens, rain, rainbow beam, fireflies, lamp lights), stingers; SFX. |
-| `CreatureFx.client.luau` | LocalScript | Creature bob, hop and turn tweens; mutation looks (Golden texture swap, Moonlit, Rainbow and Celestial `Highlight`, falling back to particles and a tinted `SelectionBox` past about 31 highlights); ambient life (windmill sails, butterflies, petals). |
+| `CreatureFx.client.luau` | LocalScript | Creature bob, hop and turn tweens; mutation looks (v0.3: layered on the texture, never a repaint; Golden, Moonlit, Rainbow and Celestial `Highlight`, falling back to particles and a tinted `SelectionBox` past about 31 highlights; 6.2 below); idle cries (6.1); ambient life (windmill sails, butterflies, petals). |
 | `DashFx.client.luau` | LocalScript | v0.2. Splash Dash on the client: clones and drives the obstacles from `DashRules.pose(o, workspace:GetServerTimeNow())`, hit tests its own root with `DashRules.knock`, sets `AssemblyLinearVelocity`, carries the root on platforms, zeroes velocity on `dashSplash`; round HUD (countdown, GO, timer, checkpoint pips, splash text), results card, pad prompt text. Sends nothing. |
 
 v0.2 changes in the existing files (GDD S4, T8): `Menu` Index grid uses `GardenConfig.indexable` with cell width `1 / cells`; `weathersFor` uses `GardenConfig.fixedBy`; the ODDS card branches on `egg.mutation`; `MUTATION_COLOURS.celestial`; a new `Dash` panel (READY, prizes today, prize eggs with PLANT using `GardenRules.canPlantPrize`). `Hud`: DASH quick button, column height 384, gold dot. `ClientState`: `EGG_COLOURS.celestial`, `Status.dash`. `HatchFx`: shell fragments (section 9).
@@ -653,6 +662,39 @@ v0.2 changes in the existing files (GDD S4, T8): `Menu` Index grid uses `GardenC
 `DashFx` detail: runs obstacles only while the local player is in `status.dash.racers`, and parks them otherwise. Obstacle parts have `CanCollide` false, because `knock` decides hits. A platform is walked on one invisible `Collider` block of 12 x 2 x 12 in its model, also the carry ray's target; its mesh is only the look. Each Heartbeat for each obstacle: `pose`, `PivotTo`, then `knock` against the local root with a 0.5 s cooldown per obstacle. A hit sets `root.AssemblyLinearVelocity` and `Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)`, so the walk controller does not cancel it. Platform carry: a raycast down 5 studs finds a platform part, and the root gets that platform's movement since the last frame.
 
 Clients never write server state. The ODDS card, Index and forecast tables read `GardenConfig` (the same data the server rolls from) and format with `HatchRules.percent`.
+
+### 6.1 Creature cries (v0.3, GDD U7; display only)
+
+One function plays every cry, so the `sfx` setting, roll-off and clean-up live in one place:
+
+```luau
+-- ClientState. Silent when settings.sfx is off or the species has no cry (never a placeholder).
+-- volume: see the table. at: world position for 3D, nil for 2D. Uses ClientState.sound underneath.
+function ClientState.cry(species: string, volume: number, at: Vector3?)
+```
+
+`ClientState.cry` looks up `GardenConfig.species(id).cry`; with `{ id, pitch }` it calls `ClientState.sound(`rbxassetid://{id}`, volume, at, pitch)`. Nothing else formats the id or sets `PlaybackSpeed`.
+
+| Caller | When | `volume`, `at` | Rule |
+|---|---|---|---|
+| `HatchFx` | the reveal, right after the pop (both the 1.5 s and the 0.4 s Fast Hatch paths) | 0.5 for the owner, 0.25 for every other client; at the bed | once per reveal, before the name card; nothing on a refused hatch |
+| `HatchFx` | `collect` Fx for the local player's own pad | 0.2; at the pad | species from the creature model on that pad (`S` attribute, `Plots` sets it); skipped when the pad has no model (just stored or released) |
+| `CreatureFx` | idle | 0.2; at the creature's main part | per view: `nextCry = now + random(12, 30)`; a 1 Hz check (not every frame) plays the view whose `nextCry` has passed when it is within 60 studs of `workspace.CurrentCamera`, not hidden by `ClientState.reveal`, and the garden-wide `lastCry` is at least 2 s old; it then draws a new `nextCry`. A view out of range when its time comes draws a new `nextCry` without playing; no queue. New views start with a full random delay so a `Plots.refresh` does not make a chorus. |
+| `Menu` ADMIN | tapping a species row (0013 catalogue) | 0.5; nil (2D) | the owner's panel only; plays even while the menu camera is in orbit |
+
+Limits that must stay true: one `Sound` per cry, destroyed on `Ended` (as `ClientState.sound` already does); at most one idle cry per 2 s across the garden; nothing on a `Request` refusal, a purchase or a timer; the server sends no sound and no new `Fx`. Cries of species whose `cry` is nil are silent; the client logs nothing for them.
+
+### 6.2 Mutation looks (v0.3, GDD U8; display only)
+
+`CreatureFx.applyLook(view)` keeps its signature (returns the `Highlight` or `SelectionBox` the frame loop tints, or nil) and these rules replace the Golden and Celestial branches:
+
+- **No mutation changes `TextureID`, `Color` or `Material` on any part.** The Golden and Celestial repaint and the `Foil` material are removed. Moonlit and Rainbow are unchanged.
+- **`view.parts`** is every `BasePart` of the creature (a `MeshPart` alone, a one-MeshPart Model from `Models.night`, the part fallback). **`main`** is the `PrimaryPart` when set, else the largest part by volume. Emitters, halo, light and the pulse attach to `main`; a `Highlight` adorns `view.inst` (the whole Model or the part), so a multi-part Model lights as one.
+- **Golden:** `Highlight` fill (255, 200, 60), `FillTransparency` 0.5, outline (255, 230, 140) `OutlineTransparency` 0.3, `DepthMode` Occluded, taken only while `highlights <= HIGHLIGHT_BUDGET - 8` (a reserve of 8 for the rarer looks; Golden is the common mutation); otherwise the gold `SelectionBox` fallback (surface 0.85, line 0.05). `Sparkles` (255, 220, 120) on `main` either way.
+- **Celestial:** `Highlight` fill `ClientState.CELESTIAL`, outline `ClientState.CELESTIAL` `OutlineTransparency` 0.2 (the faint gold rim), `DepthMode` Occluded; the frame loop that already cycles the Rainbow fill sets `FillTransparency = 0.575 + 0.125 * sin(2π t / 2.4)` (0.45 to 0.7 over 2.4 s); past the budget the `SelectionBox` (surface 0.9, line 0.05) carries the same pulse on `Transparency`. Extras as today: halo, star emitter (rate 7, lifetime 2.2 to 3.6 s, speed 0.3 to 0.8, size 0.5 to 0, gold to white), `PointLight` range 14 brightness 1.4. Extras never count against the budget.
+- **Budget:** `HIGHLIGHT_BUDGET` stays about 31 with the existing `Destroying` bookkeeping; the existing shortcut (a fallback stays a `SelectionBox` after a Highlight frees up) stands.
+- **Reveal and preview:** `HatchFx`'s reveal copy and the ADMIN `ViewportFrame` clone get the same `applyLook` result, so the player sees one Celestial, not two.
+- **Secret rarity text:** wherever a rarity colour is used as text on a dark or textured background (the pad tag's rarity line in `Plots.tag`, the reveal name card and the announcement banner in `HatchFx` and `Hud`), a Secret draws with `TextStrokeColor3` (235, 230, 255) and `TextStrokeTransparency` 0.2, or as white text on a midnight pill. `ClientState.rarityColour` itself returns the true colour (60, 55, 85) for fills, chips and bursts. Divine (90, 230, 230) needs nothing.
 
 ## 7. Scaffolding
 
@@ -719,3 +761,24 @@ Three contract points for the artist and engineers:
 - **Pivots are not kept.** `loadNight` rebuilds each asset into a new Model, whose pivot is its bounding box centre. A sweeper therefore has to be symmetric about its hub. For the pendulum, `DashFx` pivots at the hinge and places the model half its height below it along the rod.
 - **Size:** `DashFx` scales each dash model to the config (`size`, `reach`) with `Model:ScaleTo` using `GardenAssets[name].size`. Hit tests use the config, never the mesh, so a model that differs from the table still plays the same.
 - **Collision:** the decks are `DashWorld` parts. No mesh collision is used on the course.
+
+### 9.1 Creature models (v0.3, decision 0014, GDD U9)
+
+Every species gets a custom Blender model named **`creature_<id>`** (`creature_bunny` … `creature_axolotl`, 19 names, the ids of GDD U1) as a key of `src/shared/GardenAssets.luau`, generated from `tools/blender/garden/manifest.json` like the eggs, with a register row before upload. Two artists are building to this; engineers wire nothing new per species, the names and `Models.nightReady` do it.
+
+| Contract point | Rule |
+|---|---|
+| Mesh | **one mesh** per model (one `parts` entry, named `creature_<id>`), one baked 1024 PNG; no separate eyes, no Neon pieces (bake glow bright). `Models.nightPart` is not used for creatures, but one mesh keeps the look loops, the tag and the Highlight simple. |
+| Origin and facing | origin at the **base centre**, lowest point at y = 0; **front on Blender −Y** (the egg and dash convention in `docs/assets/garden-blender-plan.md`), so an unrotated placement faces Roblox −Z and the pad's `yaw` turns it towards the plot front. |
+| Size | height **2.8 to 6 studs** at Normal size, chosen by the artist so rarer reads bigger (commons near 3, Legendary and Mythic near 5.5 to 6, the axolotl about 4 and long); footprint **within 6 × 6** studs so a Huge (×2.0) stays inside its pad ring. The manifest's `target_size_studs` is the record; `tests/GardenAssets.spec.luau` pins `size` to the manifest and must also check every `creature_*` height is within 2.8 to 6 and x, z within 6. |
+| Triangles | budget 3,000 each (`tris_budget` in the manifest); 120 creatures on screen is the I4 budget. |
+| Loading | `Models.preloadGarden()` already loads every uploaded `GardenAssets` entry at server start, so `Models.nightReady("creature_<id>")` is true for the uploaded ones before the first `Plots.refresh`. |
+| Placement | `Plots.makeCreature`: `` if Models.nightReady(`creature_{c.s}`) then Models.night(`creature_{c.s}`, holding, base, yawDegrees, size.scale) `` → a **Model with one MeshPart**, scaled by `GardenConfig.SIZES[z].scale` through the `scale` argument (`Model:ScaleTo`), stood on the pad centre by `Models.place` (bounding box centred, lowest point on `base`). `yawDegrees` is the pad facing (`view.frame.Rotation * CREATURE_YAW`) as degrees about Y. Every part: `Anchored`, `CanCollide = false`, `CanTouch = false`. `Model.Name = tostring(c.id)`, attributes `Id`, `S`, `M`, `Z` as today, on the Model. |
+| Fallback order | (1) `creature_<id>` when `nightReady`; (2) for the nine v0.1 species, the generated mesh through `Models.spawn(c.s, …)` when `warmed[c.s]` (unchanged); (3) the part fallback `fallbackCreature` with a `FALLBACK` colour (the ten new ids need colours). Code never waits for art, and a species with a failed upload shows (2) or (3). |
+| Tag | `tag(mainPart, c, height)` with `height = model:GetExtentsSize().Y`; the `BillboardGui` sits on the MeshPart (the Model has no adornee). |
+| Client | `CreatureFx` already accepts `Model` or `BasePart` (`views`, `GetExtentsSize`, `PivotTo`); the look rules in 6.2 define `main`. `HatchFx`'s reveal clones whichever instance is on the pad (`Model` or `BasePart`) and pivots it. |
+| Preview folder | `ReplicatedStorage.GardenSpecies` (decision 0013) holds **one clone per species, named by species id**: the `Model` from `` Models.night(`creature_{id}`, folder, Vector3.zero, 0, 1) `` when ready, else the `MeshPart` from `Models.spawn`, else nothing (the ADMIN panel shows the name without a picture, as today). `Menu`'s `ViewportFrame` code must take either: clone, `PivotTo` or `CFrame`, size from `GetExtentsSize()` or `Size`. |
+| Mutation looks | must work on the Model: Highlight on the Model, extras on `main` (6.2). No look may depend on the creature being a single `MeshPart`. |
+| Upload | the Director's upload step as for the eggs (`tools/blender/garden/README.md`); until it runs, `model = nil` in `GardenAssets` and nothing changes in game. A register row per model, as the egg rows. |
+
+Manifest entries for the 19 models follow the egg entries' shape: `target_size_studs`, `tris_budget` 3000, `priority` (P1 for the ten new species, which have only the part fallback; P2 for the nine with a generated mesh), `replaces` "Plots.makeCreature (Models.spawn <id> or fallbackCreature)", `script` `tools/blender/garden/assets/creatures.py`, and `notes` with the front and height rule.
