@@ -25,7 +25,13 @@
   ],
   "verification": "CI, then an independent QA read of the odds against decision 0014 (GARDEN-026)",
   "output_artifacts": [],
-  "evidence": "lune run tests/run: 480/480 passed (GardenConfig 19, HatchRules 29, GardenRules 35, GardenProgress 47; Purity green). selene src tests: 0 errors. stylua --check clean on the changed files as LF. validate-tasks and check-scope origin/main pass. Pinned U6 table matches the GDD digits exactly (worst meadow shower 54.2, bound 56.4); no re-derivation needed. Species.cry is nil for all 19 (no register rows yet, rule 9). HatchRules.spec's 20,000-roll through-roll tolerance widened from 1 to 1.5 points: the v0.3 sunset/sunbeam owl seed lands at exactly -1.00 (the 100,000-roll rollSpecies check still holds at 0.5).",
+  "evidence": [
+    "lune run tests/run: 480/480 passed (GardenConfig 19, HatchRules 29, GardenRules 35, GardenProgress 47; Purity green)",
+    "selene src tests: 0 errors; stylua --check clean on the changed files as LF; validate-tasks and check-scope origin/main pass",
+    "Pinned U6 table matches the GDD digits exactly (worst meadow shower 54.2, bound 56.4); no re-derivation needed",
+    "Species.cry is nil for all 19 (no register rows yet, rule 9)",
+    "HatchRules.spec 20,000-roll through-roll tolerance widened from 1 to 1.5 points: the v0.3 sunset/sunbeam owl seed lands at exactly -1.00; the 100,000-roll rollSpecies check still holds at 0.5"
+  ],
   "files": [
     "src/shared/GardenConfig.luau",
     "src/shared/HatchRules.luau",
