@@ -15,3 +15,12 @@ Decision `docs/decisions/0014-garden-creatures-v03.md` (Proposed), GDD section U
 | 9 | **Every species has a licensed cry** (ProSoundEffects or APMOfficial, each registered first): duck, owl and a calmer dragon clip were found during GARDEN-025; the cat reuses the bunny's mouse squeak at a higher pitch because no licensed meow exists. Cries play at the hatch, when the owner banks that pad, idly near the camera and on an admin catalogue tap, and follow the sound-effects setting. | Accept; swap the cat's clip when a licensed meow appears. | Set any species' `cry` to nil in `GardenConfig`: it goes silent, nothing else changes. |
 | 10 | **Celestial and Golden keep their texture** (no flat repaint): Celestial is a pulsing white-gold Highlight, halo, stars, light and rim; Golden a gold Highlight with Sparkles that takes a Highlight only while 8 are free. | Accept, checked at the greybox gate with a side-by-side screenshot. | Return to the repaint for Golden only (one branch in `applyLook`); Celestial stays as proposed since the repaint is what SHANNON asked to fix. |
 | 11 | **Creature models for all 19 species by the artists** (`creature_<id>`, 2.8 to 6 studs, one mesh), replacing the nine generated meshes when uploaded. The game never waits for art: the old mesh or the part fallback shows until then. | Accept. | Keep the generated meshes for the old nine and model only the new ten; same contract, fewer uploads. |
+
+## Evidence (Director, 2026-11-01)
+
+- CI on `garden/creatures` at 62f03d0: run 41363413428 green (480/480 Lune tests, selene, stylua, validate-tasks, check-scope 73 files, rojo builds); PR #20.
+- Models: 19 `creature_<id>` and `egg_aurora` uploaded (upload-assets runs 41359537619 and 41363287252), all ids in `GardenAssets.luau`, 20 register rows.
+- Studio (local build, stamp dev, DataStores offline): all 19 species spawn as Blender models facing the plot front at manifest heights; Celestial and Golden keep their faces; Secret tag readable; every cry loads and plays; Aurora Egg on the cart; admin catalogue shows 19 Model previews; Index 6 / 80 after six grants.
+- QA GARDEN-026: ship, 0 blockers, 0 majors, 6 minors (m4, m5 fixed; m1, m2, m3, m6 left, see `docs/qa/garden-v03-review.md`).
+- Not done: a live hatch of a new species with DataStores on, phone and gamepad, a cuteness pass on the cries by ear.
+
