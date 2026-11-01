@@ -234,28 +234,41 @@ local EGGS: { Egg } = {
 }
 GardenConfig.EGGS = EGGS
 
--- GDD U1 order: rarity, then rate. `cry` stays nil until the clip's row is in docs/assets/register.md
--- (rule 9); GARDEN-025 registers the clips and fills `cry = { id = <asset id>, pitch = <PlaybackSpeed> }`.
+-- GDD U1 order: rarity, then rate. Every `cry` id has a row in docs/assets/register.md (rule 9,
+-- ProSoundEffects or APMOfficial only); `pitch` is the PlaybackSpeed (U7). Cat has no licensed meow:
+-- it reuses the bunny's clip re-pitched, as U1 allows.
 local SPECIES: { Species } = {
-	{ id = "bunny", name = "Sprout Bunny", rarity = "common", rate = 1 },
-	{ id = "frog", name = "Toadstool Frog", rarity = "common", rate = 2 },
-	{ id = "duck", name = "Puddle Duckling", rarity = "common", rate = 3 },
-	{ id = "pup", name = "Bumble Pup", rarity = "uncommon", rate = 5 },
-	{ id = "lamb", name = "Clover Lamb", rarity = "uncommon", rate = 8 },
-	{ id = "cat", name = "Berry Cat", rarity = "uncommon", rate = 12 },
-	{ id = "owl", name = "Pumpkin Owl", rarity = "rare", rate = 30 },
-	{ id = "hedgehog", name = "Acorn Hedgehog", rarity = "rare", rate = 45 },
-	{ id = "fox", name = "Cactus Fox", rarity = "rare", rate = 70 },
-	{ id = "turtle", name = "Lotus Turtle", rarity = "epic", rate = 180 },
-	{ id = "deer", name = "Blossom Fawn", rarity = "epic", rate = 250 },
-	{ id = "panda", name = "Bamboo Panda", rarity = "epic", rate = 350 },
-	{ id = "lion", name = "Sunflower Lion", rarity = "legendary", rate = 500 },
-	{ id = "unicorn", name = "Daisy Unicorn", rarity = "legendary", rate = 800 },
-	{ id = "dragon", name = "Moonblossom Dragon", rarity = "mythic", rate = 1500 },
-	{ id = "phoenix", name = "Ember Phoenix", rarity = "mythic", rate = 2500 },
-	{ id = "whale", name = "Aurora Whale", rarity = "divine", rate = 5000 },
-	{ id = "kirin", name = "Nimbus Kirin", rarity = "divine", rate = 7500 },
-	{ id = "axolotl", name = "Stardust Axolotl", rarity = "secret", rate = 25000 },
+	{ id = "bunny", name = "Sprout Bunny", rarity = "common", rate = 1, cry = { id = 9117010574, pitch = 0.8 } },
+	{ id = "frog", name = "Toadstool Frog", rarity = "common", rate = 2, cry = { id = 9113857727, pitch = 1 } },
+	{ id = "duck", name = "Puddle Duckling", rarity = "common", rate = 3, cry = { id = 1840105521, pitch = 1.2 } },
+	{ id = "pup", name = "Bumble Pup", rarity = "uncommon", rate = 5, cry = { id = 9113956178, pitch = 1.35 } },
+	{ id = "lamb", name = "Clover Lamb", rarity = "uncommon", rate = 8, cry = { id = 9116206434, pitch = 1.3 } },
+	{ id = "cat", name = "Berry Cat", rarity = "uncommon", rate = 12, cry = { id = 9117010574, pitch = 1.1 } },
+	{ id = "owl", name = "Pumpkin Owl", rarity = "rare", rate = 30, cry = { id = 9117181540, pitch = 1 } },
+	{ id = "hedgehog", name = "Acorn Hedgehog", rarity = "rare", rate = 45, cry = { id = 9118058248, pitch = 0.9 } },
+	{ id = "fox", name = "Cactus Fox", rarity = "rare", rate = 70, cry = { id = 9113955402, pitch = 1.5 } },
+	{ id = "turtle", name = "Lotus Turtle", rarity = "epic", rate = 180, cry = { id = 9112872058, pitch = 0.8 } },
+	{ id = "deer", name = "Blossom Fawn", rarity = "epic", rate = 250, cry = { id = 9113442509, pitch = 1.2 } },
+	{ id = "panda", name = "Bamboo Panda", rarity = "epic", rate = 350, cry = { id = 9117348418, pitch = 1.1 } },
+	{ id = "lion", name = "Sunflower Lion", rarity = "legendary", rate = 500, cry = { id = 9116308659, pitch = 1.25 } },
+	{ id = "unicorn", name = "Daisy Unicorn", rarity = "legendary", rate = 800, cry = { id = 9119235894, pitch = 1 } },
+	{
+		id = "dragon",
+		name = "Moonblossom Dragon",
+		rarity = "mythic",
+		rate = 1500,
+		cry = { id = 9125470864, pitch = 0.9 },
+	},
+	{ id = "phoenix", name = "Ember Phoenix", rarity = "mythic", rate = 2500, cry = { id = 9117236946, pitch = 0.9 } },
+	{ id = "whale", name = "Aurora Whale", rarity = "divine", rate = 5000, cry = { id = 9114124842, pitch = 0.7 } },
+	{ id = "kirin", name = "Nimbus Kirin", rarity = "divine", rate = 7500, cry = { id = 1846547135, pitch = 1.2 } },
+	{
+		id = "axolotl",
+		name = "Stardust Axolotl",
+		rarity = "secret",
+		rate = 25000,
+		cry = { id = 9112872239, pitch = 1.3 },
+	},
 }
 GardenConfig.SPECIES = SPECIES
 

@@ -600,7 +600,7 @@ renderers.Odds = function()
 		true
 end
 
--- INDEX: 9 species x 4 mutations, plus Celestial for the two species of the Celestial Egg -----------
+-- INDEX: 19 species x 4 mutations, plus Celestial for the species of the Celestial Egg (80 cells) ---
 
 local MUTATION_COLOURS = {
 	normal = Color3.fromRGB(180, 225, 190),
@@ -705,11 +705,11 @@ end
 local adminPanel = panel("Admin")
 local adminSize = "normal"
 
--- Shows the species' real mesh; nothing if the server has not loaded it.
+-- Shows the species' real model (a Model or a MeshPart); nothing if the server has not loaded it.
 local function preview(parent: Instance, species: string)
 	local folder = ReplicatedStorage:FindFirstChild("GardenSpecies")
-	local mesh = folder and folder:FindFirstChild(species) :: BasePart?
-	if mesh == nil then
+	local mesh = folder and folder:FindFirstChild(species)
+	if not (mesh and (mesh:IsA("BasePart") or mesh:IsA("Model"))) then
 		return
 	end
 	local view = new("ViewportFrame", {
@@ -721,10 +721,16 @@ local function preview(parent: Instance, species: string)
 		Parent = parent,
 	}, { corner(10) })
 	local copy = mesh:Clone()
-	copy.CFrame = CFrame.identity
+	local box: CFrame, size: Vector3
+	if copy:IsA("Model") then
+		box, size = copy:GetBoundingBox()
+	else
+		box, size = (copy :: BasePart).CFrame, (copy :: BasePart).Size
+	end
+	copy:PivotTo(copy:GetPivot() - box.Position) -- bounding box centred on the origin
 	copy.Parent = view
 	local eye = new("Camera", { FieldOfView = 30, Parent = view })
-	eye.CFrame = CFrame.lookAt(Vector3.new(0.45, 0.25, -1).Unit * mesh.Size.Magnitude * 2, Vector3.zero)
+	eye.CFrame = CFrame.lookAt(Vector3.new(0.45, 0.25, -1).Unit * size.Magnitude * 2, Vector3.zero)
 	view.CurrentCamera = eye
 end
 
@@ -743,6 +749,17 @@ renderers.Admin = function()
 	for i, sp in GardenConfig.SPECIES do
 		local r = row(adminPanel, 146, i)
 		preview(r, sp.id)
+		-- Tapping the picture plays the species' cry, 2D (U7); drawn over the preview so it gets the click.
+		local tap = new("TextButton", {
+			Size = UDim2.new(0, 138, 1, 0),
+			ZIndex = 2,
+			BackgroundTransparency = 1,
+			Text = "",
+			Parent = r,
+		})
+		tap.Activated:Connect(function()
+			ClientState.cry(sp.id, 0.5)
+		end)
 		label(r, 138, 8, -148, 24, sp.name, ClientState.rarityColour(sp.id))
 		label(r, 138, 34, -148, 18, ClientState.rarityName(sp.id), UI.MUTED)
 		local cells = new("Frame", {
