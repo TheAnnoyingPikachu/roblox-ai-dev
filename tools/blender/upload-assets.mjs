@@ -16,7 +16,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const GAMES = {
-	night: { label: "Hundred Demon Night", prefix: "HDN", untextured: ["slash_arc", "demon_wing"] },
+	night: { label: "Hundred Demon Night", prefix: "HDN", untextured: ["slash_arc", "demon_wing", "blade_inferno", "blade_lightning", "blade_void", "blade_galaxy", "blade_gold", "blade_shadow"] },
 	spire: { label: "Neon Spire", prefix: "NSP", untextured: [] },
 	garden: { label: "Egg Garden", prefix: "EGG", untextured: ["egg_shell_fragment"] },
 };

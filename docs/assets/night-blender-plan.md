@@ -55,7 +55,9 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 | 19 | `leaderboard_frame` | Parts `Arena.luau` 641-667 | 2 x 16 x 19 | 1.5k | Ink notice board (kokuban) with red posts and roof; the text face stays a part with the SurfaceGui | P2 |
 | 20 | `taiko_drum` | Part `Arena.luau` 306-314 | 3.4 x 4 x 3.4 | 1k | Barrel drum with tacks on a wooden stand | P2 |
 | 21 | `wall_segment` | Wall and fence parts `Arena.luau` 224-246 (42 segments) | 13.6 x 8.6 x 2.4 | 600 | Stone wall with slate cap and wooden fence on top | P2 |
-| 22 | `katana`, `kodachi`, `nodachi` | Tool parts `src/night/Gear.luau` 19-23, 76-129 | blade 4.2 / 2.6 / 6, grip 1.4 / 1 / 2 | 800 each | Wrapped grip, gold tsuba, curved blade as a separate `blade` mesh that keeps the Blade Art tint and trail attachments | P2 |
+| 22 | `katana`, `kodachi`, `nodachi` | Tool parts `src/night/Gear.luau` | blade 4.2 / 2.6 / 6, grip 1.4 / 1 / 2 | 3k each | Hero rebuild (NIGHT-009): curved blade with kissaki, shinogi ridge, habaki, seppa, tsuba per weapon (round with sakura cut-outs, aoi with inome cut-outs, large mokko with crescents), same panels, diamond ito, menuki, kashira. `blade` takes the Blade Art colour; `glow` holds the hamon, shinogi and yokote lines | P2 |
+| 22a | `katana_saya`, `kodachi_saya`, `nodachi_saya` | New: left hip while the sword is held | 4.4 / 2.8 / 6.2 long | 1.5k each | Lacquer with koiguchi, kojiri, kurikata and sageo cord | P2 |
+| 22b | `blade_inferno`, `blade_lightning`, `blade_void`, `blade_galaxy`, `blade_gold`, `blade_shadow` | New: replaces only the blade for that Blade Art | katana size | 1.8k each | Flame edge, zigzag bolt, obsidian shards, crystals, kurikara dragon, spined demon blade. One mesh per art, stretched per weapon by Gear about its root (6 assets, not 18). Sakura, ember, moonlight, rainbow and steel keep the hero blade | P2 |
 | 23 | `cedar_tree` | Forest parts `Arena.luau` 747-775 (x140) | 11 x 26 x 11 | 400 | Low-poly stacked cedar cones; very low budget because of the count | P3 |
 | 24 | `mask_kitsune`, `mask_tengu`, `mask_oni`, `mask_eclipse`, `mask_okame`, `mask_hannya` | Mask parts `Gear.luau` 134-235 | 1.3 x 1.6 x 1.2 (face; horns and ears extra) | 3k each | Sculpted face shells (brow, cheekbones, nose, carved eye holes), horns/ears/teeth and side ties, in each cosmetic's colours (`src/shared/NightProgress.luau` 80-86) | P3 |
 | 25 | `slash_arc`, `demon_wing` | VFX parts `CombatFx.client.luau` 144-178 (slash), 1218-1233 (Trigger wings) | arc 8 x 0.2 x 8; wing 0.3 x 3.5 x 3 | arc 300, wing 900 | White untextured shapes the code tints; crescent with taper, bat wing with arm and finger bones and a scalloped membrane | P3 |
@@ -75,7 +77,78 @@ Props 500-3k tris, landmarks up to 9k, hero/boss 5-10k. Repeated props (forest, 
 
 - Fact: the FBX is exported at 1 unit = 1 stud. Assumption: the Roblox importer is set to
   "studs" scale; either way `Models.luau` sets `Size` explicitly from the manifest.
-- Fact: a textured MeshPart ignores `Color`. Masks and blades that the code tints per cosmetic
-  either ship one texture per variant (masks) or keep the tinted piece untextured (blade, VFX).
+- Fact: a textured MeshPart ignores `Color` (retested in Studio for NIGHT-009). Masks and blades
+  that the code tints per cosmetic either ship one texture per variant (masks) or keep the tinted
+  piece untextured (blade, VFX). So the hamon is thin Neon geometry (`<weapon>_glow`), not a texture.
+- Fact: Gear applies `blade_<art>` with the `root` values of the new hero models, so hero and art
+  blades must be uploaded in the same run.
 - The stage and bridges are walked on: keep the current invisible collision parts and set the
   meshes `CanCollide = false`, or use `CollisionFidelity = PreciseConvexDecomposition`.
+
+## Map v2 (NIGHT-010)
+
+Owner request (2026-10-28): "improve the map". 15 new props, priority P4, so `build.py` keeps them
+at the end of the manifest. Scripts: `assets/map_landmarks.py`, `map_garden.py`, `map_festival.py`.
+With nil ids `src/night/Arena.luau` skips them (`prop`), so they appear only after upload. Upload
+input for the workflow: `pagoda,senbon_torii,sando_stairs,castle,waterfall,mountain_range,bamboo_cluster,pine_tree,hydrangea_bush,garden_rocks,zen_garden,lily_pads,nobori_red,nobori_indigo,sake_barrels`.
+
+| Asset | Size (x, y, z studs) | Tris |
+|---|---|---|
+| `pagoda` | 27.56 x 52.46 x 27.56 | 7758 |
+| `senbon_torii` | 10.56 x 9.95 x 1.44 | 678 |
+| `sando_stairs` | 8.24 x 24.33 x 66.04 | 2056 |
+| `castle` | 42.43 x 61.5 x 42.43 | 3912 |
+| `waterfall` | 77.04 x 98.78 x 53.9 | 3879 |
+| `mountain_range` | 908.59 x 168.58 x 333.43 | 4920 |
+| `bamboo_cluster` | 13.83 x 24.84 x 13.68 | 3528 |
+| `pine_tree` | 18.71 x 18.65 x 12.23 | 1912 |
+| `hydrangea_bush` | 6.24 x 4.1 x 4.77 | 1600 |
+| `garden_rocks` | 7.95 x 3.04 x 4.24 | 960 |
+| `zen_garden` | 18.7 x 2.77 x 11.7 | 2522 |
+| `lily_pads` | 8.14 x 0.73 x 5.38 | 768 |
+| `nobori_red` | 2.28 x 11.5 x 1.1 | 872 |
+| `nobori_indigo` | 2.28 x 11.5 x 1.1 | 872 |
+| `sake_barrels` | 9.55 x 5.65 x 3.45 | 2946 |
+
+`pagoda_glow`, `castle_glow` and `waterfall_glow` are separate meshes the code sets to real Neon:
+a baked bright texture is lit like any other pixel in Roblox and does not glow at night.
+
+Rebuild just these with `build.py -- <names>`. `export_assets.py` needs every manifest FBX in
+`build/`, so copy a subset by hand or build everything first. Contact sheet, written to
+`build/blender/night/map_props_sheet.png`: `kit.contact_sheet(names, cols=5)`, then move the file.
+
+Measured in Studio, correcting the conventions at the top of this plan (facts):
+
+- Uploaded models face **+Z at yaw 0**, not -Z. `yawOf` in `Arena.luau` adds the half turn, and
+  explicit yaws in Arena are written for this. This was already wrong in the live game: stalls,
+  oni statues, komainu and the shrine hall all faced backwards.
+- The surface people walk on is terrain at **y = 1** (`FLOOR` in `Arena.luau`), not y = 0: the
+  lawn's top voxel layer, -4..0 at occupancy 0.75, reads as `-2 + 4 * occupancy`. It covers the
+  Courtyard part. Anything meant to be seen on the ground stands on `FLOOR`.
+- Terrain fills do not stop where their box stops: `FillBlock` reads about 2 studs above its top,
+  `FillCylinder` lifts a surface it touches to y = 2. To change material without changing height,
+  write materials through `ReadVoxels` / `WriteVoxels` and leave occupancy alone.
+- Water ignores partial occupancy, so its surface snaps to y = 0 or y = 4. The pond is water at
+  y = 0 under `PondSurface`, a translucent walkable part at y = 1.
+- Cobblestone terrain reads y = 1.2 where sand and grass read 1.0 (a material offset).
+- Particles at 400 studs need a size around 10 to read, and distant emitters show only part of a
+  short pulse, so fireworks stay sparse.
+
+Open point for the owner: `Enemies.luau` `groundAt` and `PLAYER_ROOT` assume the ground is y = 0,
+while players stand at y = 1. This build keeps y = 1 so combat does not move; lowering the floor
+to match the code would change player height against enemy hover and the Y hit bands.
+
+### Director review with the real models (NIGHT-010)
+
+- Stairs: `sando_stairs` is now one 66-stud flight of 42 steps (24 up, about 1 in 3) placed once.
+  The hill is written voxel by voxel (`hillY`, `raiseHill`) so it follows the same slope, with the
+  ground flush to the low side walls. An invisible WedgePart is the walkable surface.
+- Waterfall: no model change. The rock drops its baked texture for a lit Slate tint, because the
+  bake is near black at night and point lights fade long before the courtyard. The sheet is a dim
+  grey Neon, below the bloom threshold, with falling foam particles, spray, a pool disc and three
+  cool lights. Water particles stack: keep the foot spray rate low or it blows out to white.
+- Mountains: each arc gained 9-degree tails tapering to the horizon. The ring radius moved from
+  510 to 487 so the ridges stay put as the bounding box grew. The tails meet at the moon's bearing,
+  which keeps the low saddle.
+- A changed manifest height rescales the old uploaded mesh until its new upload lands, because
+  `Models.night` fits every model to the manifest height. Upload before merging such a change.

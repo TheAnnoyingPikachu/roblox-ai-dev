@@ -29,12 +29,15 @@ const lines = [
 	`-- Do not edit by hand. Custom Blender models for ${label} (docs/assets/register.md).`,
 	"-- size: measured Roblox size in studs (x, y, z); parts: mesh names inside the uploaded model;",
 	"-- model: Model asset id (InsertService:LoadAsset); decal / texture: Decal and Image asset ids.",
+	...(game === "night" ? ["-- root: blade root relative to the `_blade` mesh centre, in studs, for lining up swapped blades."] : []),
 	"-- A nil model id means not uploaded yet: the game keeps its current visual for that asset.",
 	...(game === "spire" ? ["-- glow: sRGB Neon colour per glow mesh (left untextured, set to Neon by Models.luau)."] : []),
 	"",
 	game === "spire"
 		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n}"
-		: "export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number? }",
+		: game === "night"
+			? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n\troot: { number }?,\n}"
+			: "export type Asset = { size: { number }, parts: { string }, model: number?, decal: number?, texture: number? }",
 	"",
 	`local ${moduleName}: { [string]: Asset } = {`,
 ];
@@ -52,6 +55,7 @@ for (const [name, entry] of Object.entries(manifest)) {
 	lines.push(`\t\tmodel = ${id(u.model)},`);
 	lines.push(`\t\tdecal = ${id(u.decal)},`);
 	lines.push(`\t\ttexture = ${id(u.texture)},`);
+	if (entry.root) lines.push(`\t\troot = { ${entry.root.join(", ")} },`);
 	lines.push("\t},");
 }
 lines.push("}", "", `return ${moduleName}`, "");

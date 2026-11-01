@@ -1,5 +1,7 @@
 # Egg Garden v0.2 checkpoint (put to SHANNON once, at the end of GARDEN-011)
 
+**Outcome, 2026-11-01: SHANNON approved every recommendation below, the schema v2 migration (item 1) included.**
+
 Work continues on the recommended option for everything here except item 1. Attach the milestone's evidence when asking: CI run, test counts, build stamp, playtest notes.
 
 | # | Decision | Recommendation | If rejected |

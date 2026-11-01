@@ -145,6 +145,15 @@ def mat(name, rgb, var=0.12, scale=2.0, kind="noise", emit=0.0, rgb2=None, rough
             ramp.color_ramp.elements[0].color = lin(rgb)
             ramp.color_ramp.elements[1].color = lin(rgb2)
             ramp.color_ramp.elements[1].position = 0.62 if kind == "stripes" else 0.5
+        elif kind == "cells":
+            # Rounded beads with darker gaps (ray skin): Voronoi distance, light at the cell centres.
+            tex = nodes.new("ShaderNodeTexVoronoi")
+            tex.inputs["Scale"].default_value = scale
+            links.new(coord.outputs["Object"], tex.inputs["Vector"])
+            links.new(tex.outputs["Distance"], ramp.inputs["Fac"])
+            ramp.color_ramp.elements[0].color = lin(hi)
+            ramp.color_ramp.elements[1].color = lin(lo)
+            ramp.color_ramp.elements[1].position = 0.75
         elif kind == "grad":
             sep = nodes.new("ShaderNodeSeparateXYZ")
             links.new(coord.outputs["Generated"], sep.inputs[0])
@@ -337,6 +346,30 @@ def poly(points2d, depth, loc=(0, 0, 0), rot=(0, 0, 0), m=None, bevel=0.0, name=
     return _obj(name, bm, m, _xf(loc, rot))
 
 
+def plate(loops, depth, loc=(0, 0, 0), rot=(0, 0, 0), m=None, name="plate"):
+    """Flat shape in local x/y extruded `depth` along local z (centred). loops[0] is the outline,
+    further loops are holes (2D curve fill is even-odd), e.g. a tsuba with cut-outs."""
+    cu = bpy.data.curves.new(name, "CURVE")
+    cu.dimensions = "2D"
+    cu.fill_mode = "BOTH"
+    cu.extrude = depth / 2
+    for loop in loops:
+        sp = cu.splines.new("POLY")
+        sp.points.add(len(loop) - 1)
+        for p, (x, y) in zip(sp.points, loop):
+            p.co = (x, y, 0, 1)
+        sp.use_cyclic_u = True
+    ob = bpy.data.objects.new(name, cu)
+    bpy.context.scene.collection.objects.link(ob)
+    _select([ob])
+    bpy.ops.object.convert(target="MESH")
+    ob = bpy.context.view_layer.objects.active
+    ob.data.transform(_xf(loc, rot))
+    if m is not None:
+        ob.data.materials.append(m)
+    return ob
+
+
 def rope(a, b, sag, r, m, n=8, steps=10, name="rope"):
     """Hanging rope from a to b with a parabolic sag (shimenawa, lantern strings)."""
     a, b = Vector(a), Vector(b)
@@ -513,7 +546,8 @@ def _join(name, objs):
     bm.from_mesh(ob.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
     bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=0.0001)
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    if not name.endswith("_glow"):  # open flat strips already face out; recalc could flip them
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.to_mesh(ob.data)
     bm.free()
     return ob
@@ -580,8 +614,15 @@ def _ground_dims(objs):
     return lo, hi
 
 
-def finalize(name, groups, budget, center=True):
+def tinted(part):
+    """Parts the game colours in code (src/relay/Models.luau `tinted`): never textured."""
+    return part.endswith("_blade") or part.endswith("_glow")
+
+
+def finalize(name, groups, budget, center=True, root=None, tint=None):
     """groups: {part: [objects]} or a list (one part named after the asset).
+    root: Blender point of the blade root, stored relative to the `_blade` part's centre so the
+    game can line up swapped blades. tint: (blade, glow) sRGB for the preview, as in game.
     Returns stats for the manifest."""
     if isinstance(groups, (list, tuple)):
         groups = {"": groups}
@@ -620,8 +661,9 @@ def finalize(name, groups, budget, center=True):
     lo, hi = _ground_dims(parts)
     dims = hi - lo
 
-    # One shared UV atlas for all parts.
-    _select(parts)
+    # One shared UV atlas for all parts; code-tinted parts stay out of it when others need it.
+    atlas = [p for p in parts if not tinted(p.name)] or parts
+    _select(atlas)
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.004, area_weight=0.0)
@@ -629,7 +671,7 @@ def finalize(name, groups, budget, center=True):
     bpy.ops.object.mode_set(mode="OBJECT")
 
     os.makedirs(PREVIEWS, exist_ok=True)
-    final = _bake(parts, max(dims))
+    final = _bake(atlas, max(dims))
     png = os.path.join(OUT, f"{name}.png")
     final.filepath_raw = png
     final.file_format = "PNG"
@@ -647,7 +689,12 @@ def finalize(name, groups, budget, center=True):
     baked.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
     for p in parts:
         p.data.materials.clear()
-        p.data.materials.append(baked)
+        if tinted(p.name) and tint:
+            # Neon in game: flat bright colour.
+            colour = tint[0] if p.name.endswith("_blade") else tint[1]
+            p.data.materials.append(mat(f"pv_tint_{p.name}", colour, kind="flat", emit=0.5, rough=0.35))
+        else:
+            p.data.materials.append(baked)
 
     fbx = os.path.join(OUT, f"{name}.fbx")
     _select(parts)
@@ -667,7 +714,7 @@ def finalize(name, groups, budget, center=True):
         bake_anim=False,
     )
     preview(name, parts, lo, hi)
-    return {
+    stats = {
         "fbx": os.path.relpath(fbx, ROOT).replace("\\", "/"),
         "png": os.path.relpath(png, ROOT).replace("\\", "/"),
         "preview": os.path.relpath(os.path.join(PREVIEWS, f"{name}.png"), ROOT).replace("\\", "/"),
@@ -676,6 +723,11 @@ def finalize(name, groups, budget, center=True):
         "tris": total,
         "parts": {p.name: _tris(p) for p in parts},
     }
+    if root is not None:
+        blo, bhi = _ground_dims([p for p in parts if p.name.endswith("_blade")])
+        r = Vector(root) + offset - (blo + bhi) / 2
+        stats["root"] = [round(r.x, 3), round(r.z, 3), round(-r.y, 3)]  # Roblox axes
+    return stats
 
 
 # Preview ------------------------------------------------------------------------------------

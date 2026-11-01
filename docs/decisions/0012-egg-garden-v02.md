@@ -1,7 +1,7 @@
 # 0012: Egg Garden v0.2: Celestial Egg, Splash Dash prizes, schema v2 and remotes
 
 Date: 2026-10-31
-Status: Proposed by A09 for SHANNON (CLAUDE.md rule 8), on the Studio Director's rulings of the same date. Implements `docs/game-design/game4-gdd.md` sections S and T; signatures in `docs/architecture/garden.md`. Amends decision 0008: where the two disagree, this record wins. The save schema step is a player-data migration, so it waits for SHANNON's approval at the GARDEN-011 checkpoint (rule 7).
+Status: Accepted by SHANNON 2026-11-01, migration included (`docs/checkpoints/GARDEN-V02.md`). Proposed by A09 (CLAUDE.md rule 8), on the Studio Director's rulings of 2026-10-31. Implements `docs/game-design/game4-gdd.md` sections S and T; signatures in `docs/architecture/garden.md`. Amends decision 0008: where the two disagree, this record wins.
 
 ## Decision
 
