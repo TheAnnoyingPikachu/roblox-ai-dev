@@ -120,3 +120,9 @@ This is a code review with a scripted check against the real pure modules. **Not
 - The Creator Store listings behind the 18 cry rows and the 19 uploaded models; the register is taken at its word.
 - The pacing simulation's player model (Part 2 of the script): run, not audited.
 - Splash Dash, weather, cosmetics, quests and `Profiles`: unchanged by the diff and not re-read.
+
+## Fixes after the review (Director, 2026-11-01)
+
+- m4: Aurora return digits corrected in GDD U6 and decision 0014; U1 cry column updated for duck, owl and dragon (commit 6dcd90f).
+- m5: `egg_aurora` Blender model built, uploaded (run 41363287252) and registered; `Plots.egg` picks it up through `GardenAssets` like the other eggs.
+- m1, m2, m3, m6: left as noted, conservative choice; m3 and m6 predate v0.3.
