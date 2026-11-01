@@ -1,10 +1,11 @@
 --!strict
 -- Egg Garden world effects (GDD D3, I2, I4; docs/architecture/garden.md sections 5 and 6): the hatch
--- reveal (wobble 1.5 s or 0.4 s with Fast Hatch, crack, pop, rarity burst and a card with name,
--- rarity, mutation and size; it only ever shows the creature the server hatched), coin pops, water
--- splashes in the can's colour, like hearts, release run-off, egg growth and ripe glow with a
+-- reveal (wobble 1.5 s or 0.4 s with Fast Hatch, crack with shell fragments, pop, rarity burst, a
+-- white-gold finish for Celestial and a card with name, rarity, mutation and size; it only ever
+-- shows the creature the server hatched), coin pops, water splashes in the can's colour, like hearts, release run-off, egg growth and ripe glow with a
 -- time-left label, and weather looks from GardenStatus with stingers. Display only: sends nothing.
 
+local GuiService = game:GetService("GuiService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -56,27 +57,7 @@ local function positionOf(inst: Instance?): Vector3?
 	return nil
 end
 
--- One-shot particle burst at a point (default sparkle texture).
-local function burst(at: Vector3, colour: Color3, count: number, speed: number, size: number?)
-	local a = new("Attachment", { WorldPosition = at, Parent = Workspace.Terrain })
-	local e = new("ParticleEmitter", {
-		Color = ColorSequence.new(colour, UI.WHITE),
-		Size = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, size or 0.6),
-			NumberSequenceKeypoint.new(1, 0),
-		}),
-		Transparency = NumberSequence.new(0, 0.4),
-		Lifetime = NumberRange.new(0.5, 1.1),
-		Speed = NumberRange.new(speed * 0.5, speed),
-		SpreadAngle = Vector2.new(180, 180),
-		Acceleration = Vector3.new(0, -12, 0),
-		LightEmission = 0.7,
-		Rate = 0,
-		Parent = a,
-	})
-	e:Emit(count)
-	task.delay(1.5, a.Destroy, a)
-end
+local burst = ClientState.burst
 
 -- Floating BillboardGui that rises and fades.
 local function float(at: Vector3, build: (BillboardGui) -> (), rise: number?)
@@ -137,6 +118,16 @@ local card = new("TextButton", {
 }, { corner(24) })
 local cardStroke = stroke(UI.PINK, 5)
 cardStroke.Parent = card
+local cardShine = new("UIGradient", {
+	Rotation = 20,
+	Enabled = false,
+	Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, UI.WHITE),
+		ColorSequenceKeypoint.new(0.5, ClientState.CELESTIAL),
+		ColorSequenceKeypoint.new(1, ClientState.EGG_COLOURS.celestial[2]:Lerp(UI.WHITE, 0.45)),
+	}),
+	Parent = card,
+})
 ClientState.autoScale(card)
 local cardRarity =
 	text({ Position = UDim2.fromOffset(20, 12), Size = UDim2.new(1, -40, 0, 26), Text = "", Parent = card })
@@ -166,8 +157,10 @@ end)
 local function showCard(s: string, m: string, z: string)
 	local colour = ClientState.rarityColour(s)
 	local mu, sz = GardenConfig.mutation(m), GardenConfig.size(z)
-	cardStroke.Color = colour
-	cardRarity.Text = string.upper(ClientState.rarityName(s))
+	local celestial = m == "celestial"
+	cardShine.Enabled = celestial
+	cardStroke.Color = if celestial then UI.GOLD else colour
+	cardRarity.Text = `{if celestial then "CELESTIAL " else ""}{string.upper(ClientState.rarityName(s))}`
 	cardRarity.TextColor3 = colour
 	cardName.Text = ClientState.creatureName(s, m, z)
 	cardName.TextColor3 = colour
@@ -187,6 +180,9 @@ end
 
 -- Eggs: growth, ripe glow and wobble, time left -----------------------------------------------------
 
+-- A plain copy of each bed's mesh egg: the server removes the part before the reveal can clone it.
+local meshCopies: { [Instance]: BasePart } = {}
+
 type EggView = { base: CFrame, size: Vector3, label: TextLabel, light: PointLight, sparkle: ParticleEmitter }
 local eggs: { [BasePart]: EggView } = {}
 local lastEgg: { [Instance]: string } = {} -- bed model -> egg id, kept for the reveal after the egg part is gone
@@ -195,6 +191,14 @@ local function eggView(part: BasePart): EggView
 	local view = eggs[part]
 	if view then
 		return view
+	end
+	local bed = part.Parent
+	if bed and part:IsA("MeshPart") then
+		local old = meshCopies[bed]
+		if old then
+			old:Destroy()
+		end
+		meshCopies[bed] = part:Clone()
 	end
 	local bb = new("BillboardGui", {
 		Size = UDim2.fromOffset(110, 34),
@@ -317,6 +321,57 @@ local function shellPart(colour: Color3, size: Vector3, cf: CFrame): Part
 	})
 end
 
+-- Up to 6 tinted shell meshes from the crack; false before egg_shell_fragment is uploaded.
+local function fragments(centre: Vector3, colours: { Color3 }): boolean
+	local shared = ReplicatedStorage:FindFirstChild("NightModels")
+	local model = shared and shared:FindFirstChild("egg_shell_fragment")
+	local mesh = model and model:FindFirstChildWhichIsA("MeshPart")
+	if mesh == nil then
+		return false
+	end
+	for i = 1, 6 do
+		local angle = i / 6 * math.pi * 2
+		local f = mesh:Clone()
+		f.TextureID = ""
+		f.Color = colours[i % 2 + 1]
+		f.Anchored = true
+		f.CanCollide = false
+		f.CanQuery = false
+		f.CanTouch = false
+		f.CFrame = CFrame.new(centre)
+		f.Parent = fxFolder
+		TweenService:Create(f, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {
+			CFrame = CFrame.new(centre + Vector3.new(math.cos(angle) * 4, 1 + i % 3, math.sin(angle) * 4))
+				* CFrame.Angles(angle, angle * 2, 0),
+			Transparency = 1,
+		}):Play()
+		task.delay(0.65, f.Destroy, f)
+	end
+	return true
+end
+
+-- A pale column of light that fades with the burst, so it adds no time to the reveal.
+local function pillar(centre: Vector3)
+	local p = new("Part", {
+		Shape = Enum.PartType.Cylinder,
+		Material = Enum.Material.Neon,
+		Color = ClientState.CELESTIAL,
+		Size = Vector3.new(60, 3, 3),
+		CFrame = CFrame.new(centre + Vector3.new(0, 28, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+		Transparency = 0.35,
+		Anchored = true,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+		Parent = fxFolder,
+	})
+	TweenService
+		:Create(p, TweenInfo.new(1.2, Enum.EasingStyle.Quad), { Size = Vector3.new(60, 9, 9), Transparency = 1 })
+		:Play()
+	task.delay(1.25, p.Destroy, p)
+end
+
 local function reveal(data: any)
 	local id = tonumber(data.id)
 	local s, m, z = tostring(data.s), tostring(data.m), tostring(data.z)
@@ -338,7 +393,16 @@ local function reveal(data: any)
 	local egg = if bed then lastEgg[bed] or "meadow" else "meadow"
 	local colours = ClientState.EGG_COLOURS[egg] or ClientState.EGG_COLOURS.meadow
 	local centre = at + Vector3.new(0, 2.2, 0)
-	local shell = shellPart(colours[1], Vector3.new(2.2, 3, 2.2), CFrame.new(centre))
+	local copy = bed and meshCopies[bed]
+	local shell = copy or shellPart(colours[1], Vector3.new(2.2, 3, 2.2), CFrame.new(centre))
+	if copy and bed then
+		meshCopies[bed] = nil
+		copy.CanCollide = false
+		copy.CanQuery = false
+		copy.CanTouch = false
+		copy.CFrame = CFrame.new(centre)
+		copy.Parent = fxFolder
+	end
 	new("Highlight", {
 		FillTransparency = 1,
 		OutlineColor = colours[2],
@@ -366,20 +430,29 @@ local function reveal(data: any)
 	shell:Destroy()
 	local rarity = GardenConfig.rarityIndex(s)
 	local colour = ClientState.rarityColour(s)
-	for side = -1, 1, 2 do
-		local half =
-			shellPart(if side < 0 then colours[1] else colours[2], Vector3.new(2.2, 1.6, 2.2), CFrame.new(centre))
-		TweenService:Create(half, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
-			CFrame = CFrame.new(centre + Vector3.new(side * 2.5, if side < 0 then 1.5 else 0.6, 0))
-				* CFrame.Angles(0, 0, side * 1.2),
-			Transparency = 1,
-		}):Play()
-		task.delay(0.55, half.Destroy, half)
+	if not fragments(centre, colours) then
+		for side = -1, 1, 2 do
+			local half =
+				shellPart(if side < 0 then colours[1] else colours[2], Vector3.new(2.2, 1.6, 2.2), CFrame.new(centre))
+			TweenService:Create(half, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+				CFrame = CFrame.new(centre + Vector3.new(side * 2.5, if side < 0 then 1.5 else 0.6, 0))
+					* CFrame.Angles(0, 0, side * 1.2),
+				Transparency = 1,
+			}):Play()
+			task.delay(0.55, half.Destroy, half)
+		end
 	end
 	ClientState.sound(SFX.puff, if mine then 0.5 else 0.2, centre, 1.3)
 	burst(centre, colour, 20 + rarity * 12, 8 + rarity * 2, 0.6 + rarity * 0.1)
 	if rarity >= 5 then
 		burst(centre + Vector3.new(0, 2, 0), UI.GOLD, 60, 16, 1.2)
+	end
+	if m == "celestial" then
+		burst(centre, ClientState.CELESTIAL, 90, 14, 1.5)
+		burst(centre + Vector3.new(0, 3, 0), UI.WHITE, 60, 20, 1)
+		if not GuiService.ReducedMotionEnabled then
+			pillar(centre)
+		end
 	end
 	if mine then
 		-- Soft chimes rising with rarity; a short acoustic stinger (unpitched) for Legendary and Mythic.

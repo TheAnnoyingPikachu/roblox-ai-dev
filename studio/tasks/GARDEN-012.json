@@ -1,0 +1,62 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-012",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Fix all 11 findings of the Egg Garden v0.2 QA review on Director rulings, and prove the course in Studio with real physics.",
+  "inputs": [
+    "docs/qa/garden-v02-review.md",
+    "docs/architecture/garden.md sections 3.2, 3.8, 4.1, 6, 9",
+    "docs/game-design/game4-gdd.md section T",
+    "docs/decisions/0012-egg-garden-v02.md"
+  ],
+  "dependencies": [
+    "GARDEN-011"
+  ],
+  "acceptance_criteria": [
+    "Every required gap in the course is under the default jump reach at every moment of the platform cycle, computed from gravity, WalkSpeed and JumpPower, deck edges included, with a safe moment in every cycle (DashRules.spec.luau, course)",
+    "HOME keeps a ready player ready and never cancels a countdown; a racer leaves the round, in the start hold too (DashRules.spec.luau HOME, Studio log)",
+    "Balls threaten the z 300 lane and each ball leaves a clear moment (DashRules.spec.luau)",
+    "A client that stands still and hops takes the whole minFinish, and honest walkers, also after a fall on any leg, are neither held nor flagged (DashRules.spec.luau)",
+    "node tools/check-scope.mjs origin/main prints its result on Windows and CI keeps the same behaviour",
+    "All minors fixed or listed with the conservative choice in the Fixes section of docs/qa/garden-v02-review.md",
+    "Studio, real physics: pendulums, balls and sweepers knock a walking character, and Lily Hop is crossed with no CFrame moves (logged numbers in the review)",
+    "lune run tests/run, selene, stylua, rojo build, validate-tasks and check-scope pass"
+  ],
+  "verification": "CI, a QA re-review of B1 and M1, and the hand crossing on keyboard, phone and gamepad with the build stamp",
+  "output_artifacts": [
+    "docs/qa/garden-v02-review.md"
+  ],
+  "files": [
+    "src/shared/DashRules.luau",
+    "src/shared/GardenConfig.luau",
+    "src/shared/NightAssets.luau",
+    "src/relay/Models.luau",
+    "src/garden/Dash.luau",
+    "src/garden/DashWorld.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden-client/DashFx.client.luau",
+    "src/garden-client/Menu.client.luau",
+    "tools/check-scope.mjs",
+    "tools/verify-publish.mjs",
+    "tools/write-build-info.mjs",
+    "docs/game-design/game4-gdd.md",
+    "docs/architecture/garden.md",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/qa/garden-v02-review.md",
+    "docs/checkpoints/GARDEN-V02.md"
+  ],
+  "tests": [
+    "DashRules.spec.luau",
+    "GardenConfig.spec.luau"
+  ],
+  "evidence": [
+    "Local 2026-10-31 at a26ede3 (rules and client code; later commits are documents): lune run tests/run 465/465 passed, 0 failed, 0 load errors; selene src tests 0 errors, 0 warnings; stylua clean on the changed .luau files as LF",
+    "Studio scratch place, minPlayers 1, countdown 3, build stamp dev (local build, rule 13 is not met by this): logged numbers in docs/qa/garden-v02-review.md Fixes. Pendulum 65, ball 55, sweeper 45 studs/s measured on a standing and a walking character; Lily Hop crossed by physics, deck to deck, 6 of 6 hops on the first attempt",
+    "Not done: a run by hand, on a phone or gamepad, with more than one client, or with DataStores on. See the review"
+  ],
+  "notes": "Over the ten-file guide because the 11 findings touch rules, server, client, tools and five documents; they are one review and one fix pass. Models.luau and NightAssets.luau change one comment each (m8). DashConfig gains `decks`, moved from DashWorld, so the reach spec can read them."
+}

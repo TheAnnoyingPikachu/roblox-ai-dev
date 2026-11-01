@@ -45,6 +45,7 @@ local CLOSE_BUDGET = 25 -- BindToClose has 30 s
 local INFLIGHT_WAIT = 10 -- leave: longest wait for a running write before the final one
 local OFFLINE_TEXT = "Saving is offline on this server: progress here lasts this session only."
 local BUSY_TEXT = "Your garden is still saving on another server, so this visit is not saved. Rejoin in a minute."
+local PRIZE_LOST_TEXT = "Saving stopped on this server before your prize egg was saved: it lasts this visit only."
 
 local function storeSuffix(): string
 	if RunService:IsStudio() then
@@ -74,6 +75,7 @@ type Session = {
 	lastWrite: number,
 	dirty: boolean,
 	closing: boolean,
+	prizes: number, -- prize eggs queued but not yet stored, so a lost lock can say so
 }
 local sessions: { [Player]: Session } = {}
 local changed = Instance.new("BindableEvent")
@@ -143,6 +145,7 @@ local function flush(
 	session.writing = true
 	session.lastWrite = now
 	local ops = session.queue
+	local prizes = session.prizes
 	session.queue = {}
 	local lost = false
 	local ok, stored = withRetries(`flush {player.UserId}`, function()
@@ -169,9 +172,10 @@ local function flush(
 		session.queue = {}
 		if not session.closing then
 			player:SetAttribute("ProfileOnline", false)
-			Remotes.notice(player, OFFLINE_TEXT)
+			Remotes.notice(player, if session.prizes > 0 then PRIZE_LOST_TEXT else OFFLINE_TEXT)
 		end
 	elseif ok and stored ~= nil then
+		session.prizes -= prizes
 		local p = GardenProgress.sanitize(stored, now)
 		for _, op in session.queue do
 			p = op(p)
@@ -201,6 +205,9 @@ function Profiles.apply(player: Player, label: string, change: Change)
 	session.profile = result
 	if session.online then
 		table.insert(session.queue, change)
+		if label == "dashPrize" then
+			session.prizes += 1
+		end
 	end
 	publish(player, session.profile)
 end
@@ -255,6 +262,7 @@ function Profiles.load(player: Player)
 		lastWrite = 0, -- the login op is written on the first step
 		dirty = false,
 		closing = false,
+		prizes = 0,
 	}
 	local busy = false
 	if okStore then
@@ -312,6 +320,12 @@ local ACTIONS: { [string]: Handler } = {
 			return p, false
 		end
 		return GardenRules.buyEgg(p, arg, now)
+	end,
+	plantPrize = function(p, now, _, arg)
+		if arg == nil then
+			return p, false
+		end
+		return GardenRules.plantPrize(p, arg, now)
 	end,
 	buyBed = function(p)
 		return GardenRules.buyBed(p)

@@ -1,0 +1,57 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-011",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "QA review of Egg Garden v0.2 against GDD sections S and T and decision 0012, and the milestone checkpoint for SHANNON.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md sections S, T",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/checkpoints/GARDEN-V02.md",
+    "GARDEN-008, GARDEN-009 and GARDEN-010 pull requests"
+  ],
+  "dependencies": [
+    "GARDEN-008",
+    "GARDEN-009",
+    "GARDEN-010"
+  ],
+  "acceptance_criteria": [
+    "Every GDD T9 and S6 case is checked, with evidence or a filed defect",
+    "Reviewed that the server decides every Dash outcome from its own samples, and that prizes survive the leave, offline and shutdown paths",
+    "A v1 save loaded on the v2 build keeps every field (Studio test with DataStores on)",
+    "Pacing script re-run against the merged GardenConfig values with the same results",
+    "Greybox feel gate and a 3 to 6 player staging playtest recorded with the build stamp (CLAUDE.md rule 13)",
+    "docs/checkpoints/GARDEN-V02.md is put to SHANNON once, with the evidence of the milestone"
+  ],
+  "verification": "QA report with test notes and CI links; SHANNON signs off at the checkpoint",
+  "output_artifacts": [
+    "docs/qa/garden-v02-review.md"
+  ],
+  "files": [
+    "docs/qa/garden-v02-review.md",
+    "docs/checkpoints/GARDEN-V02.md"
+  ],
+  "tests": [
+    "DashRules.spec.luau",
+    "GardenConfig.spec.luau",
+    "GardenRules.spec.luau",
+    "HatchRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "evidence": [
+    "docs/qa/garden-v02-review.md: 1 blocker (Lily Hop gaps of 12 studs against a default jump of about 8.7), 1 major (HOME un-readies a ready player), 9 minor. Every GDD T9 and S6 case has evidence or a filed defect",
+    "Local 2026-10-31 at 186756b: lune run tests/run 450/450 passed, 0 failed, 0 load errors; selene src tests 0 errors, 0 warnings; stylua --check clean on the 28 changed .luau files as LF git blobs (10 worktree files are CRLF from core.autocrlf); rojo build of default, garden, night and relay succeed; tools/check-place.mjs matches, 54 scripts; tools/scan-secrets.sh clean; node tools/validate-tasks.mjs 47 valid",
+    "checkScope called directly on origin/main...HEAD: ok true, 90 changed files, 0 outside, because node tools/check-scope.mjs prints nothing on Windows (finding m9)",
+    "Pacing script re-run: same numbers as decision 0012 (worst return 52.3%, Celestial payback 64,429 s, first Celestial day 12 at 60 min/day, day 45 income 42,752 and 496,000)",
+    "Scripted checks against the real DashRules, kept out of the repo: obstacle hit rates by lane, jump reach, the 25.2 s checkpoint-hop finish, and the speed check cases, all in the review",
+    "Not done: nothing run in Studio by this reviewer, no build stamp (CLAUDE.md rule 13). Open acceptance criteria: v1 save with DataStores on, greybox feel gate, 3 to 6 player staging playtest, the SHANNON checkpoint. Not to be accepted until B1 and M1 are fixed and re-reviewed",
+    "Fix verification of GARDEN-012 (93349a9..58b64c1), section in docs/qa/garden-v02-review.md: B1, M1, m1, m2, m4, m5, m6, m7, m9 Closed; m3 and m8 Partial; none Open. 3 new minors, no new blocker or major. n1, a regression: a zone left while held is lost with no message (src/shared/DashRules.luau:283-286), reachable on the fastest line at CP3 with 3 studs of gain or a 0.15 s latency spike, recovered by walking back or a fall",
+    "Local 2026-10-31 at 58b64c1: lune run tests/run 465/465 passed, 0 failed, 0 load errors; selene src tests 0 errors, 0 warnings; stylua --check clean on the 11 changed .luau files as LF git blobs; rojo build of default, garden, night and relay succeed; tools/check-place.mjs matches; node tools/validate-tasks.mjs 48 valid; tools/scan-secrets.sh clean; node --test tools/place-check/place-check.test.mjs 7/7; node tools/check-scope.mjs origin/main prints its result, 96 files in scope, exit 0",
+    "Scripted checks against the real DashRules, kept out of the repo: 100,000 adversarial runs gave 20,378 finishes, fastest 28.15 s, none under the floor; 3,000 honest runs with varying latency and random falls gave 0 strikes and all finished; fastest honest walk from the barrier 29.7 s; a no-hit Ball Alley walk exists; 6 config mutations each failed the reach or lane specs, and 5 rule mutations each failed specs, so the reach test is not a tautology",
+    "Not done: nothing run in Studio by this reviewer, nothing run on Linux, no build stamp (CLAUDE.md rule 13). The Studio proof in the review is the fix engineer's. Open acceptance criteria unchanged: v1 save with DataStores on, greybox feel gate, 3 to 6 player staging playtest, the SHANNON checkpoint"
+  ],
+  "notes": "Milestone checkpoint list: docs/checkpoints/GARDEN-V02.md. Reviewer must not have written GARDEN-008, GARDEN-009 or GARDEN-010 (CLAUDE.md rule 2). Nothing publishes before SHANNON answers item 1 of the checkpoint."
+}

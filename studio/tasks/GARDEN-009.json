@@ -1,0 +1,50 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-009",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden v0.2 server: Dash.luau round runtime, DashWorld.luau static course and ready pad, the two new Request actions, status, prizes through Profiles.apply, and the Blender model hook-up.",
+  "inputs": [
+    "docs/architecture/garden.md sections 4.1, 4.3a, 5, 9",
+    "docs/game-design/game4-gdd.md sections T3, T4, T9",
+    "docs/decisions/0012-egg-garden-v02.md Remote contract",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-008"
+  ],
+  "acceptance_criteria": [
+    "Only src/garden/**, src/relay/Models.luau (the four changes in architecture section 9) and the GardenAssets stub change",
+    "Every outcome comes from DashRules on server samples; no remote accepts a position, time, hit or checkpoint (code review in GARDEN-011)",
+    "The prize is applied in the same step that accepts the finish, and a winner who leaves at once still has it after rejoin (Studio test, DataStores on)",
+    "Every GDD T9 case that involves the server is exercised in a 3-client Studio test, with notes and the build stamp",
+    "Pads keep accruing for racers and gardening keeps working for non-racers during a round (Studio test)",
+    "An old v1 profile in the studio store loads and saves as v2 with nothing lost (Studio test)",
+    "Six pedestals fit the cart; the world stays under 6,000 parts (GDD I4)",
+    "src/garden/CLAUDE.md lists the new files, DashRules and decision 0012",
+    "rojo build garden.project.json and node tools/check-place.mjs garden.project.json build/garden.rbxl pass; relay and night projects still build; selene clean"
+  ],
+  "verification": "CI, a playtest note with the build stamp, QA review in GARDEN-011",
+  "output_artifacts": [
+    "src/garden/Dash.luau",
+    "src/garden/DashWorld.luau"
+  ],
+  "files": [
+    "src/garden/**",
+    "src/relay/Models.luau",
+    "src/shared/GardenAssets.luau"
+  ],
+  "tests": [
+    "DashRules.spec.luau",
+    "GardenProgress.spec.luau",
+    "GardenRules.spec.luau"
+  ],
+  "evidence": [
+    "2026-10-31, worktree rad-garden, branch garden/v2, uncommitted: stylua --check clean on src/garden and src/relay/Models.luau (run with --line-endings Windows on the CRLF checkout files); selene src/garden src/relay/Models.luau 0 errors, 0 warnings; rojo build of garden, night and relay projects succeed; node tools/check-place.mjs garden.project.json build/garden.rbxl matches; node tools/validate-tasks.mjs valid",
+    "Signatures checked by reading src/shared/DashRules.luau, GardenProgress.luau and GardenRules.luau as written by GARDEN-008. Lune not run (shared modules were being written at the time). Nothing run in Studio: every Studio acceptance criterion is still open, with no build stamp yet"
+  ],
+  "notes": "src/shared/GardenAssets.luau had not landed, and the Director's brief said to create nothing under src/shared, so no stub was added: Models.luau loads it with FindFirstChild and uses an empty table without it. The generated file works with no code change. Part-built fallbacks come first so the greybox feel gate can run without art. Publishing needs the GARDEN-011 checkpoint (schema v2 is a data migration, rule 7). Changes for the architecture owner, whose file is outside this task: Dash.track(character) joins the Racers group (not in section 4.1); the prize notices are server-sent (GARDEN-010 should not repeat the capped-winner or saving-off text on finish); the HOME button removes a ready player from ready as section 4.1 says, although GDD T3 lets a player stay ready while gardening, so a checkpoint item. Known limit, accepted by decision 0012: a flush still retrying 10 s after leave loses its ops, a prize included (N2), and the player has gone so cannot be told."
+}

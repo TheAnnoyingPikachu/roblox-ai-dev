@@ -180,6 +180,149 @@ describe("HatchRules rolls", function()
 	end)
 end)
 
+describe("HatchRules Celestial Egg (S1)", function()
+	it("always hatches lion or dragon with mutation celestial, in every weather", function()
+		local seen: { [string]: boolean } = {}
+		for _, w in GardenConfig.WEATHERS do
+			for seed = 1, 2000 do
+				local o = HatchRules.roll(ripe("celestial"), 1, NOW, w.id, Rng.seed(seed, 41)) :: HatchRules.Outcome
+				expect(o.m).toBe("celestial")
+				expect(o.s == "lion" or o.s == "dragon").toBe(true)
+				seen[`{w.id}:{o.s}`] = true
+			end
+		end
+		for _, w in GardenConfig.WEATHERS do
+			expect(seen[`{w.id}:lion`] and seen[`{w.id}:dragon`]).toBe(true)
+		end
+	end)
+
+	it("takes no mutation draw: species, then size, the same in every weather", function()
+		local rng = Rng.seed(1234)
+		local s, _, state = HatchRules.rollSpecies("celestial", 0, rng)
+		local z = HatchRules.rollSize(state)
+		for _, w in GardenConfig.WEATHERS do
+			local o = HatchRules.roll(ripe("celestial"), 1, NOW, w.id, rng) :: HatchRules.Outcome
+			expect(`{o.s} {o.m} {o.z} {o.forced}`).toBe(`{s} celestial {z} false`)
+		end
+	end)
+
+	it("forces a dragon at pity 9 with no species draw", function()
+		local p = ripe("celestial")
+		p.pity.celestial = 9
+		local rng = Rng.seed(55)
+		local o = HatchRules.roll(p, 1, NOW, "clear", rng) :: HatchRules.Outcome
+		expect(`{o.s} {o.m} {o.z} {o.forced}`).toBe(`dragon celestial {(HatchRules.rollSize(rng))} true`)
+		p.pity.celestial = 8
+		local s, forced, state = HatchRules.rollSpecies("celestial", 8, rng)
+		expect(forced).toBe(false)
+		expect(s == "lion" or s == "dragon").toBe(true)
+		expect(state ~= rng).toBe(true)
+	end)
+
+	it("gives a long-run dragon share of 18.7% with the Lucky Meter", function()
+		local dragons, pity, rng = 0, 0, Rng.seed(808)
+		for _ = 1, 100_000 do
+			local s
+			s, _, rng = HatchRules.rollSpecies("celestial", pity, rng)
+			pity = HatchRules.nextPity("celestial", pity, s)
+			dragons += if s == "dragon" then 1 else 0
+		end
+		expect(math.abs(dragons / 1000 - 18.7) <= 0.5).toBe(true)
+	end)
+
+	it("adds the Index entry, 1,050 XP on the first hatch, and is always announced", function()
+		local p = ripe("celestial")
+		local out, ok, r = HatchRules.apply(p, 1, outcome("celestial", "lion", "celestial", "normal"), NOW)
+		expect(ok).toBe(true)
+		expect(out.index[1]).toBe("lion:celestial")
+		expect((r :: any).xp).toBe(1000 + 50)
+		expect(out.pity.celestial).toBe(1)
+		for _, s in { "lion", "dragon" } do
+			expect(HatchRules.announce(outcome("celestial", s, "celestial", "normal"))).toBe(true)
+		end
+	end)
+
+	it("publishes 85.00 and 15.00 on the ODDS card", function()
+		local odds = egg("celestial").odds
+		expect(`{HatchRules.percent(odds[1].bp)} {HatchRules.percent(odds[2].bp)}`).toBe("85.00 15.00")
+	end)
+end)
+
+describe("HatchRules: celestial comes from the Celestial Egg alone", function()
+	it("is never picked from any weather table for any r", function()
+		for _, w in GardenConfig.WEATHERS do
+			for r = 1, 10000 do
+				expect(HatchRules.pick(w.mutation, r) == "celestial").toBe(false)
+			end
+			expect(HatchRules.pick(w.mutation, 10001) == "celestial").toBe(false) -- the last-row fallback
+		end
+		expect((HatchRules.rollMutation("celestial", Rng.seed(1)) == "celestial")).toBe(false)
+	end)
+
+	it("never rolls for another egg, in any weather", function()
+		for position, e in GardenConfig.EGGS do
+			if e.id ~= "celestial" then
+				for _, w in GardenConfig.WEATHERS do
+					for seed = 1, 500 do
+						local o =
+							HatchRules.roll(ripe(e.id), 1, NOW, w.id, Rng.seed(seed, position)) :: HatchRules.Outcome
+						expect(o.m == "celestial").toBe(false)
+					end
+				end
+			end
+		end
+	end)
+
+	it("is refused for another egg or an impossible species, and a Celestial Egg takes nothing else", function()
+		expect(select(2, HatchRules.apply(ripe("moon"), 1, outcome("moon", "dragon", "celestial", "normal"), NOW))).toBe(
+			false
+		)
+		expect(select(2, HatchRules.apply(ripe("meadow"), 1, outcome("meadow", "bunny", "celestial", "normal"), NOW))).toBe(
+			false
+		)
+		local p = ripe("celestial")
+		expect(select(2, HatchRules.apply(p, 1, outcome("celestial", "fox", "celestial", "normal"), NOW))).toBe(false)
+		expect(select(2, HatchRules.apply(p, 1, outcome("celestial", "dragon", "golden", "normal"), NOW))).toBe(false)
+	end)
+end)
+
+describe("HatchRules: what is published is what is rolled", function()
+	it("keeps species, mutations and sizes within 1 point through roll, for every sold egg and weather", function()
+		local N = 20000
+		local function agrees(label: string, counts: { [string]: number }, id: string, bp: number)
+			local close = math.abs(100 * (counts[id] or 0) / N - bp / 100) <= 1
+			expect(`{label} {id} {close}`).toBe(`{label} {id} true`)
+		end
+		for position, e in GardenConfig.EGGS do
+			if e.price == nil then
+				continue
+			end
+			local p = ripe(e.id)
+			for weather, w in GardenConfig.WEATHERS do
+				local species: { [string]: number } = {}
+				local mutations: { [string]: number } = {}
+				local sizes: { [string]: number } = {}
+				for i = 1, N do
+					local o = HatchRules.roll(p, 1, NOW, w.id, Rng.seed(i, position, weather)) :: HatchRules.Outcome
+					species[o.s] = (species[o.s] or 0) + 1
+					mutations[o.m] = (mutations[o.m] or 0) + 1
+					sizes[o.z] = (sizes[o.z] or 0) + 1
+				end
+				local label = `{e.id} {w.id}`
+				for _, o in e.odds do
+					agrees(label, species, o.id, o.bp)
+				end
+				for _, o in if e.mutation then { { id = e.mutation, bp = 10000 } } else w.mutation do
+					agrees(label, mutations, o.id, o.bp)
+				end
+				for _, z in GardenConfig.SIZES do
+					agrees(label, sizes, z.id, z.bp)
+				end
+			end
+		end
+	end)
+end)
+
 describe("HatchRules.apply", function()
 	it("empties the bed, uses nextId and the lowest free pad, and counts the hatch", function()
 		local p = ripe("moon")

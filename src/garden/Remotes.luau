@@ -34,6 +34,11 @@ function Remotes.fx(kind: string, data: { [string]: any })
 	fxEvent:FireAllClients(kind, data)
 end
 
+-- A display-only event to one player.
+function Remotes.fxTo(player: Player, kind: string, data: { [string]: any })
+	fxEvent:FireClient(player, kind, data)
+end
+
 -- A refusal that needs words, to one player only.
 function Remotes.notice(player: Player, text: string)
 	fxEvent:FireClient(player, "notice", { text = text })

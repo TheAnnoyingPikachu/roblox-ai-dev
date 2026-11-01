@@ -18,6 +18,7 @@ local HatchRules = require(Shared:WaitForChild("HatchRules"))
 local MetaRules = require(Shared:WaitForChild("MetaRules"))
 local Rng = require(Shared:WaitForChild("Rng"))
 local WorldRules = require(Shared:WaitForChild("WorldRules"))
+local Models = require(script.Parent:WaitForChild("Models"))
 local Plots = require(script.Parent:WaitForChild("Plots"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))
 local Remotes = require(script.Parent:WaitForChild("Remotes"))
@@ -38,6 +39,8 @@ local WAIT_REPEAT = 10 -- seconds between reminders while waiting for a plot
 -- Request actions (decision 0008): true takes a string argument, false takes none.
 local REQUEST_ARGS: { [string]: boolean } = {
 	buyEgg = true,
+	plantPrize = true,
+	dashReady = false,
 	buyBed = false,
 	buyPenSlot = false,
 	place = true,
@@ -56,7 +59,18 @@ local REQUEST_ARGS: { [string]: boolean } = {
 -- Actions whose argument is a creature id or UserId (must match ^%d+$).
 local ID_ARGS: { [string]: boolean } = { place = true, store = true, release = true, favourite = true, like = true }
 
+Models.preloadGarden()
 local world = World.build()
+local Dash = require(script.Parent:WaitForChild("Dash")) -- builds the island under Workspace.Garden
+
+-- Every Dash call from a gardening path goes through this, so a Dash fault never stops the pads, a
+-- teleport home or a save.
+local function guarded(name: string, fn: () -> ())
+	local ok, err = pcall(fn)
+	if not ok then
+		warn(`[GardenServer] {name} failed: {tostring(err)}`)
+	end
+end
 
 local function vec(v: Vector3): Vec3
 	return { x = v.X, y = v.Y, z = v.Z }
@@ -182,7 +196,16 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 		end
 	elseif action == "like" then
 		return like(player, arg)
+	elseif action == "dashReady" then
+		return Dash.toggle(player)
 	elseif action == "home" then
+		-- A racer leaves the round, in the start hold too. Ready stays: GDD T3 lets a player ready up
+		-- and keep gardening; NOT READY is the way out of the queue.
+		if Dash.isRacing(player) then
+			guarded("dash leave", function()
+				Dash.leave(player)
+			end)
+		end
 		if rootOf(player) == nil then
 			return false
 		end
@@ -285,6 +308,12 @@ Plots.prompts:Connect(function(player: Player, plot: number, bed: number, kind: 
 	end
 end)
 
+Dash.prompt.Triggered:Connect(function(player: Player)
+	if admit(player) then
+		Dash.toggle(player)
+	end
+end)
+
 -- Loop (garden.md 4.3) --------------------------------------------------------------------------
 
 -- Banks every pad of `player` the root stands on (or every pad when `root` is nil, on leave).
@@ -350,6 +379,9 @@ local function fastTick()
 			end
 		end
 	end
+	guarded("dash tick", function()
+		Dash.step(roots, today)
+	end)
 end
 
 local lastStatus = ""
@@ -368,7 +400,7 @@ local function slowTick()
 	end
 	local forecast = WorldRules.forecast(now, 3)
 	local window = WorldRules.stockWindow(now)
-	local status = {
+	local status: { [string]: any } = {
 		weather = WorldRules.weatherAt(now),
 		weatherLeft = WorldRules.weatherLeft(now),
 		forecast = { forecast[2] and forecast[2].kind, forecast[3] and forecast[3].kind },
@@ -376,6 +408,9 @@ local function slowTick()
 		stockWindow = window,
 		stock = WorldRules.stockFor(window),
 	}
+	guarded("dash status", function()
+		status.dash = Dash.status()
+	end)
 	local json = HttpService:JSONEncode(status)
 	if json ~= lastStatus then
 		lastStatus = json
@@ -388,13 +423,6 @@ local function slowTick()
 		task.spawn(function()
 			world.board(Profiles.topIncome())
 		end)
-	end
-end
-
-local function guarded(name: string, fn: () -> ())
-	local ok, err = pcall(fn)
-	if not ok then
-		warn(`[GardenServer] {name} failed: {tostring(err)}`)
 	end
 end
 
@@ -455,12 +483,23 @@ local function onPlayer(player: Player)
 	}
 	player:SetAttribute("Plot", plot)
 	player.CharacterAdded:Connect(function(character)
+		guarded("dash track", function()
+			Dash.track(character)
+		end)
 		character:WaitForChild("HumanoidRootPart", 10)
 		local live = State.live[player]
 		if live then
-			toGate(player, live.plot)
+			local ok, placed = pcall(Dash.place, player)
+			if not (ok and placed) then
+				toGate(player, live.plot)
+			end
 		end
 	end)
+	if player.Character then -- spawned while waiting for a plot
+		guarded("dash track", function()
+			Dash.track(player.Character :: Model)
+		end)
+	end
 	Profiles.load(player)
 	local profile = Profiles.get(player)
 	if profile and State.live[player] then
@@ -472,6 +511,9 @@ end
 -- Leave (GDD L): bank every pad, free the plot (a waiting player can take it during the final
 -- write, which needs no plot), then the final write.
 local function onLeave(player: Player)
+	guarded("dash leave", function()
+		Dash.leave(player)
+	end)
 	local live = State.live[player]
 	State.live[player] = nil -- the loop, router and prompts stop serving this plot at once
 	if live then
@@ -501,6 +543,7 @@ end
 Players.PlayerRemoving:Connect(onLeave)
 
 game:BindToClose(function()
+	guarded("dash close", Dash.close)
 	local now = os.time()
 	for player, live in State.live do
 		State.live[player] = nil

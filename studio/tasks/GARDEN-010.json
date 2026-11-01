@@ -1,0 +1,44 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-010",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Egg Garden v0.2 client: DashFx obstacles and knockback, round HUD and results card, the DASH panel with prize planting, and every Celestial UI change (cart, ODDS card, Index grid, mutation look, reveal).",
+  "inputs": [
+    "docs/architecture/garden.md sections 5, 6, 9",
+    "docs/game-design/game4-gdd.md sections S4, S5, T7, T8",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-008"
+  ],
+  "acceptance_criteria": [
+    "Only src/garden-client/** changes",
+    "The client sends only dashReady, plantPrize and the existing actions; obstacles and hits use DashRules.pose and DashRules.knock with workspace:GetServerTimeNow()",
+    "Two clients side by side show the same obstacle motion, and a hit moves only the character of that client (Studio multi-client test, note with the build stamp)",
+    "The Index shows 38 entries, 5 cells for lion and dragon and 4 for the rest; the Celestial ODDS card totals 100.00%, shows the guaranteed mutation and matches GardenConfig",
+    "DASH panel states all work: ready, cap reached, below Level 10, beds full, saving off, under 3 players (manual check against GDD T9)",
+    "The race is fully playable on a phone-sized viewport and a gamepad, and the 7-button column fits 360 pixels tall (Studio device emulation)",
+    "No player-facing string contains the trademark: grep -ri wipeout src returns nothing",
+    "Results and reveal have no near-miss wording (GDD G4.3); selene and stylua clean"
+  ],
+  "verification": "CI, a playtest note with the build stamp, QA review in GARDEN-011",
+  "output_artifacts": [
+    "src/garden-client/DashFx.client.luau"
+  ],
+  "files": [
+    "src/garden-client/**"
+  ],
+  "tests": [
+    "DashRules.spec.luau"
+  ],
+  "notes": "Greybox feel gate before art: play the course on part-built fallbacks first. Obstacle data lives in GardenConfig.DASH (GARDEN-008); tuning it is not an economy change (decision 0012 Consequences). Contract points settled in code, for GARDEN-011: (1) garden.md says obstacles are parked; DashFx destroys them after each round and rebuilds them on entry, so models that load late are picked up. (2) garden.md says PivotTo at the pose; the sweeper is lifted 2 studs because its pose sits on the deck while DashRules hits 0 to 6 above it. (3) DashFx scales models by their measured bounding box, not GardenAssets[name].size. (4) Live place is not in the GDD or remotes: it is a client estimate from replicated root positions; the results card uses only dashFinish. (5) egg_celestial is not in CLIENT_MODELS, so the reveal uses a client copy of the bed's mesh egg and a ball before the upload. (6) Collision group needs no client code: Dash.track joins characters on the server and platforms stay in Default. (7) Reduced motion reads GuiService.ReducedMotionEnabled; the game has no setting of its own and no camera shake. Also changed for QA items: Menu ask spaces every request 0.4 s apart (replacing the buy-then-equip wait), action stacks real button widths, and panels widen below 900 px so 18 px text fits.",
+  "evidence": [
+    "Local 2026-10-31, uncommitted on garden/v2 alongside GARDEN-008 and GARDEN-009: stylua --check src/garden-client clean; selene src/garden-client 0 errors, 0 warnings, 0 parse errors; rojo build garden.project.json -o build/garden.rbxl succeeds; node tools/check-place.mjs garden.project.json build/garden.rbxl matches; grep -ri wipeout src returns nothing",
+    "Code review against src/shared/DashRules.luau, src/garden/Dash.luau and src/garden/DashWorld.luau as they stood in the worktree: sweeper bar uses the (cos a, -sin a) arm direction of DashRules.knock, Dash.toggle returns changed, the pad prompt is found by its name Ready under Workspace.Garden.Dash",
+    "Not run: lune (per the task brief), and nothing in Studio. Every acceptance criterion that names Studio, device emulation, two clients or a playtest note with the build stamp is still open for GARDEN-011"
+  ]
+}

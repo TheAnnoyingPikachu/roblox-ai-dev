@@ -1,8 +1,9 @@
 --!strict
 -- Egg Garden creature looks (GDD I3, I4 "Life"; docs/architecture/garden.md section 6): idle bob,
 -- hop and turn on every creature (local CFrame offsets, no rigs), mutation looks from the `M`
--- attribute (Golden texture swap, Moonlit and Rainbow Highlights with a SelectionBox fallback past
--- the Highlight budget), hiding a creature while HatchFx reveals it, and ambient life (windmill
+-- attribute (Golden texture swap, Moonlit, Rainbow and Celestial Highlights with a SelectionBox
+-- fallback past the Highlight budget; Celestial adds a white-gold body, stars, a glow and a halo),
+-- hiding a creature while HatchFx reveals it, and ambient life (windmill
 -- sails, butterflies, drifting petals). Display only: sends nothing and changes nothing the server owns.
 
 local RunService = game:GetService("RunService")
@@ -26,6 +27,7 @@ type View = {
 	phase: number,
 	hopAt: number,
 	look: Instance?,
+	extras: { Instance }, -- emitters, lights and the halo, switched off during a reveal
 	mutation: string,
 	hidden: boolean,
 }
@@ -76,6 +78,24 @@ local RAINBOW = ColorSequence.new({
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 110, 255)),
 })
 
+-- A soft ring above the creature, drawn in UI so it needs no asset and always faces the camera.
+local function halo(view: View, main: BasePart): BillboardGui
+	local size = if view.inst:IsA("Model") then view.inst:GetExtentsSize() else main.Size
+	return ClientState.new("BillboardGui", {
+		Size = UDim2.fromScale(math.max(size.X * 0.7, 2), 0.9),
+		StudsOffsetWorldSpace = Vector3.new(0, size.Y * 0.5 + 1, 0),
+		LightInfluence = 0,
+		MaxDistance = 160,
+		Adornee = main,
+		Parent = main,
+	}, {
+		ClientState.new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1 }, {
+			ClientState.new("UICorner", { CornerRadius = UDim.new(1, 0) }),
+			ClientState.stroke(ClientState.CELESTIAL, 4),
+		}),
+	})
+end
+
 -- Mutation looks (I3). Returns the Highlight or SelectionBox that the frame loop tints, if any.
 local function applyLook(view: View): Instance?
 	local m = view.mutation
@@ -83,19 +103,39 @@ local function applyLook(view: View): Instance?
 	if main == nil or m == "normal" then
 		return nil
 	end
-	if m == "golden" then
+	local celestial = m == "celestial"
+	if m == "golden" or celestial then
 		for _, p in view.parts do
 			if p:IsA("MeshPart") then
 				p.TextureID = ""
 			end
-			p.Color = Color3.fromRGB(255, 200, 60)
+			p.Color = if celestial then ClientState.CELESTIAL else Color3.fromRGB(255, 200, 60)
 			p.Material = Enum.Material.Foil
 		end
+	end
+	if m == "golden" then
 		ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main })
 		return nil
 	end
-	local fill = if m == "moonlit" then Color3.fromRGB(120, 140, 255) else Color3.fromRGB(255, 120, 200)
-	emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4)
+	local fill = if celestial
+		then ClientState.CELESTIAL
+		elseif m == "moonlit" then Color3.fromRGB(120, 140, 255)
+		else Color3.fromRGB(255, 120, 200)
+	if celestial then
+		local stars = emitter(main, ColorSequence.new(ClientState.UI.GOLD, ClientState.UI.WHITE), 7)
+		stars.Size = NumberSequence.new(0.5, 0)
+		stars.Lifetime = NumberRange.new(2.2, 3.6)
+		stars.Speed = NumberRange.new(0.3, 0.8)
+		view.extras = {
+			stars,
+			halo(view, main),
+			ClientState.new("PointLight", { Color = fill, Range = 14, Brightness = 1.4, Parent = main }),
+		}
+	else
+		view.extras = {
+			emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4),
+		}
+	end
 	if highlights < HIGHLIGHT_BUDGET then
 		highlights += 1
 		local h = ClientState.new("Highlight", {
@@ -143,6 +183,7 @@ local function track(inst: Instance)
 		phase = math.random() * math.pi * 2,
 		hopAt = os.clock() + 2 + math.random() * 6,
 		look = nil,
+		extras = {},
 		mutation = tostring(inst:GetAttribute("M") or "normal"),
 		hidden = false,
 	}
@@ -204,9 +245,14 @@ RunService.RenderStepped:Connect(function()
 			if view.look then
 				(view.look :: any).Enabled = not hidden
 			end
+			for _, extra in view.extras do
+				(extra :: any).Enabled = not hidden
+			end
 		end
-		if view.look and view.mutation == "rainbow" and not hidden then
-			local hue = Color3.fromHSV((t * 0.25 + view.phase) % 1, 0.55, 1)
+		if view.look and view.mutation ~= "moonlit" and not hidden then
+			local hue = if view.mutation == "rainbow"
+				then Color3.fromHSV((t * 0.25 + view.phase) % 1, 0.55, 1)
+				else ClientState.CELESTIAL:Lerp(Color3.new(1, 1, 1), 0.5 + math.sin(t * 0.8 + view.phase) * 0.5)
 			if view.look:IsA("Highlight") then
 				view.look.FillColor = hue
 				view.look.OutlineColor = hue

@@ -2,7 +2,8 @@
 -- Egg Garden menus (GDD H2-H6, E5-E6, decision 0008), forked from the Relay / Night menu: start
 -- menu over a camera orbit of Hatchling Valley, EGGS (cart panel with ODDS cards and the Lucky
 -- Meter), INDEX, CREATURES (place, store, release, favourite, pen slots, gate), LOCKER, REWARDS,
--- STATS, SETTINGS, How to Play and Odds cards, toasts and music by weather. The client only asks;
+-- DASH (Splash Dash ready state and prize eggs), STATS, SETTINGS, How to Play and Odds cards, toasts
+-- and music by weather. The client only asks;
 -- the server decides every outcome through Request(action, arg).
 
 local GuiService = game:GetService("GuiService")
@@ -35,7 +36,14 @@ local commas, short = ClientState.commas, ClientState.short
 
 local profile: any = ClientState.profile()
 
+-- Requests go out at least 0.4 s apart: a second one inside the server's 0.35 s limit is refused.
+local nextAsk = 0
 local function ask(action: string, arg: string?): boolean
+	local slot = math.max(os.clock(), nextAsk)
+	nextAsk = slot + 0.4
+	if slot > os.clock() then
+		task.wait(slot - os.clock())
+	end
 	local ok, result = pcall(request.InvokeServer, request, action, arg)
 	return ok and result == true
 end
@@ -213,6 +221,31 @@ local function label(
 	})
 end
 
+-- A card of wrapped body text, as tall as it needs; 18 px at any screen size.
+local function para(parent: Instance, s: string, order: number, colour: Color3?): TextLabel
+	local r = row(parent, 0, order)
+	r.AutomaticSize = Enum.AutomaticSize.Y
+	new("UIPadding", {
+		PaddingLeft = UDim.new(0, 14),
+		PaddingRight = UDim.new(0, 14),
+		PaddingTop = UDim.new(0, 8),
+		PaddingBottom = UDim.new(0, 8),
+		Parent = r,
+	})
+	return text({
+		Size = UDim2.fromScale(1, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		Text = s,
+		Font = Enum.Font.GothamMedium,
+		TextColor3 = colour or UI.INK,
+		TextScaled = false,
+		TextSize = 18,
+		TextWrapped = true,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Parent = r,
+	})
+end
+
 local function clear(f: Instance)
 	for _, c in f:GetChildren() do
 		if c:IsA("GuiObject") then
@@ -221,7 +254,8 @@ local function clear(f: Instance)
 	end
 end
 
--- Right-aligned action button; slot 1 is rightmost.
+-- Right-aligned action button; slot 1 is rightmost, and each later slot sits left of the real
+-- widths before it, so buttons of different widths never overlap.
 local function action(
 	parent: Instance,
 	s: string,
@@ -232,9 +266,11 @@ local function action(
 	width: number?
 )
 	local w = width or 120
+	local right = if (slot or 1) == 1 then 10 else parent:GetAttribute("ActionRight") or 10
+	parent:SetAttribute("ActionRight", right + w + 8)
 	local b = button({
 		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, -10 - ((slot or 1) - 1) * (w + 8), 0.5, 0),
+		Position = UDim2.new(1, -right, 0.5, 0),
 		Size = UDim2.fromOffset(w, 40),
 		Text = s,
 		BackgroundColor3 = if active then colour else UI.GREY,
@@ -293,6 +329,10 @@ local function eggsUsing(species: string): string
 end
 
 local function weathersFor(mutation: string): string
+	local fixed = GardenConfig.fixedBy(mutation)
+	if fixed then
+		return fixed.name
+	end
 	local names = {}
 	for _, w in GardenConfig.WEATHERS do
 		for _, o in w.mutation do
@@ -301,7 +341,7 @@ local function weathersFor(mutation: string): string
 			end
 		end
 	end
-	return if #names == #GardenConfig.WEATHERS then "any weather" else table.concat(names, ", ")
+	return if #names == #GardenConfig.WEATHERS then "Any weather" else table.concat(names, ", ")
 end
 
 -- Two-decimal percent rows for an odds table, with a checked total.
@@ -349,6 +389,19 @@ local function mutationName(id: string): string
 	return if m then `{m.name}  x{m.mult}` else id
 end
 
+-- "Every Celestial Egg hatches Legendary or Mythic with the Celestial mutation." (GDD S5)
+local function guarantee(egg: any): string
+	local rarities = {}
+	for _, o in egg.odds do
+		local name = ClientState.rarityName(o.id)
+		if not table.find(rarities, name) then
+			table.insert(rarities, name)
+		end
+	end
+	local m = GardenConfig.mutation(egg.mutation)
+	return `Every {egg.name} hatches {table.concat(rarities, " or ")} with the {if m then m.name else egg.mutation} mutation.`
+end
+
 -- EGGS: the cart panel --------------------------------------------------------------------------
 
 local eggsPanel = panel("Eggs")
@@ -388,15 +441,15 @@ renderers.Eggs = function()
 		end
 		local price = egg.price :: number
 		order += 1
-		local r = row(eggsPanel, 112, order)
+		local r = row(eggsPanel, if egg.mutation then 210 else 166, order)
 		eggIcon(r, egg.id, 12, 12, 64)
-		label(r, 72, 8, -330, 28, egg.name)
+		label(r, 72, 8, -86, 28, egg.name)
 		label(
 			r,
 			72,
 			38,
-			-330,
-			20,
+			-86,
+			22,
 			`{short(price)} coins  -  grows in {ClientState.clock(egg.grow)}  -  level {egg.level}`,
 			UI.MUTED
 		)
@@ -404,9 +457,9 @@ renderers.Eggs = function()
 		label(
 			r,
 			72,
-			60,
-			-330,
-			20,
+			62,
+			-86,
+			22,
 			if left == math.huge
 				then "Always in stock"
 				elseif left > 0 then `{left} left this restock`
@@ -419,13 +472,23 @@ renderers.Eggs = function()
 			label(
 				r,
 				72,
-				82,
-				-330,
-				18,
+				86,
+				-86,
+				22,
 				`Lucky Meter {pity} / {egg.meter}: {if best then best.name else egg.top} by hatch {egg.meter}`,
 				UI.LILAC
 			)
 		end
+		if egg.mutation then
+			(r:FindFirstChildOfClass("UIStroke") :: UIStroke).Color = UI.GOLD
+			label(r, 72, 110, -86, 44, guarantee(egg), UI.LEAF).TextWrapped = true
+		end
+		local strip = new("Frame", {
+			Position = UDim2.new(0, 0, 1, -52),
+			Size = UDim2.new(1, 0, 0, 48),
+			BackgroundTransparency = 1,
+			Parent = r,
+		})
 		local unlocked = GardenRules.eggUnlocked(profile, egg.id)
 		local buyText = if not unlocked
 			then `LEVEL {egg.level}`
@@ -433,7 +496,7 @@ renderers.Eggs = function()
 			elseif empty == nil then "BEDS FULL"
 			else `BUY {short(price)}`
 		local canBuy = unlocked and left > 0 and empty ~= nil and profile.coins >= price
-		action(r, buyText, UI.PINK, canBuy, function()
+		action(strip, buyText, UI.PINK, canBuy, function()
 			if ask("buyEgg", egg.id) then
 				ClientState.sound(ClientState.SFX.chime, 0.3, nil, 1.8)
 				toast(`{egg.name} planted in bed {empty}!`, UI.LEAF)
@@ -444,12 +507,10 @@ renderers.Eggs = function()
 				toast(if far then "Walk to the Egg Cart to buy eggs" else "Could not buy that egg right now", UI.CORAL)
 			end
 		end, 1, 130)
-		-- Slots assume equal widths; ODDS sits left of the 130-wide BUY button.
-		local odds = action(r, "ODDS", UI.LILAC, true, function()
+		action(strip, "ODDS", UI.LILAC, true, function()
 			ClientState.oddsEgg = egg.id
 			openPanel("Odds")
 		end, 2, 90)
-		odds.Position = UDim2.new(1, -148, 0.5, 0)
 	end
 end
 
@@ -458,6 +519,7 @@ local oddsPanel = panel("Odds")
 renderers.Odds = function()
 	clear(oddsPanel)
 	local only = ClientState.oddsEgg :: string?
+	local onlyEgg = only and GardenConfig.egg(only)
 	local weather = ClientState.status().weather
 	local order = 0
 	for _, egg in GardenConfig.EGGS do
@@ -467,17 +529,25 @@ renderers.Odds = function()
 		order += 1
 		heading(oddsPanel, `{string.upper(egg.name)}: CREATURES`, order)
 		order = oddsRows(oddsPanel, order + 1, egg.odds, speciesName, ClientState.rarityColour)
+		if egg.mutation then
+			heading(oddsPanel, "MUTATION", order)
+			order = oddsRows(oddsPanel, order + 1, { { id = egg.mutation, bp = 10000 } }, function(id)
+				return `{mutationName(id)}, any weather`
+			end)
+			para(oddsPanel, guarantee(egg), order, UI.LEAF)
+			order += 1
+		end
 		if egg.meter and egg.top then
-			local r = row(oddsPanel, 56, order)
+			local r = row(oddsPanel, 60, order)
 			local pity = profile.pity[egg.id] or 0
 			local best = GardenConfig.species(egg.top)
 			label(r, 14, 6, -28, 22, `Lucky Meter {pity} / {egg.meter}`, UI.LILAC)
 			label(
 				r,
 				14,
-				30,
+				32,
 				-28,
-				18,
+				22,
 				`{if best then best.name else egg.top} is guaranteed by hatch {egg.meter} of this egg.`,
 				UI.MUTED
 			)
@@ -495,7 +565,7 @@ renderers.Odds = function()
 		return if s then `{s.name}  x{s.mult} coins` else id
 	end)
 	for _, w in GardenConfig.WEATHERS do
-		if only and w.id ~= weather then
+		if onlyEgg and (onlyEgg.mutation or w.id ~= weather) then
 			continue
 		end
 		order += 1
@@ -528,13 +598,14 @@ renderers.Odds = function()
 		true
 end
 
--- INDEX: 9 species x 4 mutations ------------------------------------------------------------------
+-- INDEX: 9 species x 4 mutations, plus Celestial for the two species of the Celestial Egg -----------
 
 local MUTATION_COLOURS = {
 	normal = Color3.fromRGB(180, 225, 190),
 	golden = Color3.fromRGB(255, 205, 70),
 	moonlit = Color3.fromRGB(140, 150, 255),
 	rainbow = Color3.fromRGB(255, 140, 200),
+	celestial = ClientState.CELESTIAL,
 }
 
 local indexPanel = panel("Index")
@@ -544,15 +615,15 @@ renderers.Index = function()
 	for _, key in profile.index do
 		found[key] = true
 	end
-	local top = row(indexPanel, 48, 0)
+	local top = row(indexPanel, 56, 0)
 	label(top, 14, 6, -28, 22, `{#profile.index} / {GardenConfig.INDEX_SIZE} found`, UI.LEAF)
-	label(top, 14, 28, -28, 16, `Each new entry: +50 XP and +2% income forever (now +{#profile.index * 2}%)`, UI.MUTED)
+	label(top, 14, 30, -28, 20, `Each new entry: +50 XP and +2% income forever (now +{#profile.index * 2}%)`, UI.MUTED)
 	for i, sp in GardenConfig.SPECIES do
 		local any = false
 		for _, m in GardenConfig.MUTATIONS do
 			any = any or found[`{sp.id}:{m.id}`] == true
 		end
-		local r = row(indexPanel, 118, i)
+		local r = row(indexPanel, 144, i)
 		label(
 			r,
 			14,
@@ -567,36 +638,46 @@ renderers.Index = function()
 			14,
 			30,
 			-28,
-			16,
+			20,
 			`{ClientState.rarityName(sp.id)}  -  {sp.rate} coins/s  -  from {eggsUsing(sp.id)}`,
 			UI.MUTED
 		)
 		local cells = new("Frame", {
-			Position = UDim2.fromOffset(10, 52),
-			Size = UDim2.new(1, -20, 0, 58),
+			Position = UDim2.fromOffset(10, 54),
+			Size = UDim2.new(1, -20, 0, 82),
 			BackgroundTransparency = 1,
 			Parent = r,
 		}, { new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6) }) })
+		local kinds = {}
 		for _, m in GardenConfig.MUTATIONS do
+			if GardenConfig.indexable(sp.id, m.id) then
+				table.insert(kinds, m)
+			end
+		end
+		for _, m in kinds do
 			local has = found[`{sp.id}:{m.id}`] == true
 			local cell = new("Frame", {
-				Size = UDim2.new(0.25, -5, 1, 0),
+				Size = UDim2.new(1 / #kinds, -5, 1, 0),
 				BackgroundColor3 = if has then MUTATION_COLOURS[m.id] or UI.MINT else Color3.fromRGB(90, 80, 95),
 				Parent = cells,
 			}, { corner(10) })
+			if m.id == "celestial" then
+				stroke(UI.GOLD, 2).Parent = cell
+			end
 			text({
-				Position = UDim2.fromScale(0.05, 0.06),
-				Size = UDim2.fromScale(0.9, 0.5),
+				Position = UDim2.fromOffset(4, 4),
+				Size = UDim2.new(1, -8, 0, 28),
 				Text = if has then m.name else "?",
 				TextColor3 = if has then UI.INK else UI.WHITE,
 				Parent = cell,
 			})
 			text({
-				Position = UDim2.fromScale(0.05, 0.58),
-				Size = UDim2.fromScale(0.9, 0.34),
+				Position = UDim2.fromOffset(4, 34),
+				Size = UDim2.new(1, -8, 0, 44),
 				Text = if has then "Found" else weathersFor(m.id),
 				TextColor3 = if has then UI.INK else Color3.fromRGB(220, 210, 225),
 				Font = Enum.Font.GothamMedium,
+				TextWrapped = true,
 				Parent = cell,
 			})
 		end
@@ -606,6 +687,13 @@ renderers.Index = function()
 		order += 1
 		heading(indexPanel, `MUTATIONS IN {string.upper(w.name)}`, order)
 		order = oddsRows(indexPanel, order + 1, w.mutation, mutationName)
+	end
+	for _, m in GardenConfig.MUTATIONS do
+		local fixed = GardenConfig.fixedBy(m.id)
+		if fixed then
+			order += 1
+			para(indexPanel, `{mutationName(m.id)}: only from the {fixed.name}, in any weather.`, order, UI.MUTED)
+		end
 	end
 end
 
@@ -856,7 +944,6 @@ renderers.Locker = function()
 			action(r, `BUY {short(price)}`, UI.GOLD, profile.coins >= price, function()
 				if ask("buyCosmetic", c.id) then
 					toast(`Bought {c.name}!`, UI.LEAF)
-					task.wait(0.4) -- the server's 0.35 s request limit (Night m6)
 					ask("equipCosmetic", c.id)
 				end
 			end, 1, 140)
@@ -1018,6 +1105,133 @@ renderers.Stats = function()
 	end
 end
 
+-- DASH: Splash Dash ready state, prizes today and prize eggs (GDD T8, T9) -------------------------
+
+local DASH = GardenConfig.DASH
+local PRIZE = GardenConfig.egg(DASH.prizeEgg) :: GardenConfig.Egg
+local dashPanel = panel("Dash")
+local dashLine: TextLabel? = nil
+local dashWaiting = false -- a READY press is on its way; the next GardenStatus shows the result
+
+local function dashText(dash: ClientState.DashStatus): (string, string)
+	if dash.phase == "countdown" then
+		return `Starting in {math.max(0, math.ceil(dash.at - ClientState.now()))}`, `{#dash.ready} players ready`
+	elseif dash.phase == "starting" then
+		return "Race starting", "Ready up now for the next race."
+	elseif dash.phase == "racing" then
+		return "Race running", "Ready up now for the next race."
+	end
+	return `{#dash.ready} / {dash.need} ready`,
+		if #Players:GetPlayers() < dash.need
+			then `Needs {dash.need} players`
+			else `Starts when {dash.need} players are ready`
+end
+
+renderers.Dash = function()
+	clear(dashPanel)
+	local dash = ClientState.status().dash
+	local racer = table.find(dash.racers, player.UserId) ~= nil
+	local ready = table.find(dash.ready, player.UserId) ~= nil
+	local tooFew = #Players:GetPlayers() < dash.need
+	local head, detail = dashText(dash)
+	local top = row(dashPanel, 96, 1)
+	dashLine = label(top, 14, 8, -232, 32, head, UI.LEAF)
+	label(top, 14, 44, -232, 44, detail, UI.MUTED).TextWrapped = true
+	local readyButton: TextButton
+	readyButton = action(
+		top,
+		if dashWaiting
+			then "..."
+			elseif racer then "IN RACE"
+			elseif ready then "NOT READY"
+			elseif tooFew then `NEEDS {dash.need} PLAYERS`
+			else "READY",
+		if ready then UI.CORAL else UI.LEAF,
+		not dashWaiting and not racer and (ready or not tooFew),
+		function()
+			if dashWaiting then
+				return
+			end
+			dashWaiting = true
+			readyButton.Text = "..." -- changed in place, so a gamepad keeps its selection
+			if not ask("dashReady") then
+				toast("Could not change that right now", UI.CORAL)
+			end
+		end,
+		1,
+		200
+	)
+
+	local got = GardenProgress.dashPrizesToday(profile, MetaRules.dayOf(ClientState.now()))
+	local cap = DASH.prizesPerDay
+	para(
+		dashPanel,
+		if not player:GetAttribute("ProfileOnline")
+			then "Saving is off on this server, so prizes are off this visit."
+			elseif got >= cap then `{got} / {cap} prizes today. You can still race for fun and coins.`
+			else `Prizes today: {got} / {cap}`,
+		2,
+		if got >= cap then UI.MUTED else UI.LEAF
+	)
+
+	heading(dashPanel, "YOUR PRIZE EGGS", 3)
+	local held = false
+	for i, egg in GardenConfig.EGGS do
+		local count = profile.prizeEggs[egg.id] or 0
+		if count < 1 then
+			continue
+		end
+		held = true
+		local can = GardenRules.canPlantPrize(profile, egg.id)
+		local low = GardenRules.level(profile) < egg.level
+		local r = row(dashPanel, 96, 3 + i)
+		eggIcon(r, egg.id, 12, 14, 64)
+		label(r, 72, 8, -232, 30, `{egg.name} x{count}`)
+		label(
+			r,
+			72,
+			42,
+			-232,
+			44,
+			if low
+				then `Saved for you. Plant it at Level {egg.level}.`
+				elseif can then `Free to plant. Grows in {ClientState.clock(egg.grow)}.`
+				else "Saved for you until a bed is free.",
+			UI.MUTED
+		).TextWrapped =
+			true
+		action(r, if can then "PLANT" elseif low then `LEVEL {egg.level}` else "BEDS FULL", UI.LEAF, can, function()
+			local bed = GardenRules.firstEmptyBed(profile)
+			if ask("plantPrize", egg.id) then
+				ClientState.sound(ClientState.SFX.chime, 0.3, nil, 1.8)
+				toast(`{egg.name} planted in bed {bed}!`, UI.LEAF)
+			else
+				toast("Could not plant that egg right now", UI.CORAL)
+			end
+		end, 1, 140)
+	end
+	if not held then
+		para(dashPanel, `No prize eggs yet. Finish a race first to win a {PRIZE.name}.`, 3, UI.MUTED)
+	end
+
+	heading(dashPanel, "HOW TO PLAY", 50)
+	para(
+		dashPanel,
+		`Press READY or use the pad in the plaza. When {DASH.minPlayers} players are ready, a short countdown starts and everyone ready goes to Splash Island.`,
+		51
+	)
+	para(
+		dashPanel,
+		"Walk and jump to the finish, through every checkpoint. Fall in the water and you go back to your last checkpoint. Players pass through each other.",
+		52
+	)
+	para(
+		dashPanel,
+		`The first finisher wins a {PRIZE.name}, up to {cap} a day. Every other finisher earns coins. Prize eggs are kept safe until you plant them.`,
+		53
+	)
+end
+
 -- SETTINGS, How to Play -------------------------------------------------------------------------
 
 local setting = panel("Settings")
@@ -1062,7 +1276,7 @@ end
 local help = panel("Help")
 renderers.Help = function()
 	clear(help)
-	for i, para in
+	for i, body in
 		{
 			"Buy eggs at the Egg Cart in the plaza. Each egg is planted in your first empty bed.",
 			"Eggs grow in real time, even when you are offline. Water them to grow faster (once a minute).",
@@ -1071,10 +1285,11 @@ renderers.Help = function()
 			"Weather changes every 10 minutes. Sunbeam, Moonfall and Rainbow Shower make Golden, Moonlit and Rainbow creatures more likely.",
 			"The Lucky Meter on each egg guarantees its best creature within a set number of hatches.",
 			"Visit other gardens to water their eggs and leave a like. Nobody can ever take what you own.",
+			"Splash Dash is an optional race for 3 or more players. Open DASH to get ready and to plant prize eggs.",
 		}
 	do
 		local r = row(help, 64, i)
-		local t = label(r, 14, 6, -28, 52, para)
+		local t = label(r, 14, 6, -28, 52, body)
 		t.TextWrapped = true
 		t.Font = Enum.Font.GothamMedium
 	end
@@ -1087,6 +1302,7 @@ local TITLES = {
 	Creatures = "MY CREATURES",
 	Locker = "LOCKER",
 	Rewards = "REWARDS",
+	Dash = "SPLASH DASH",
 	Stats = "STATS",
 	Settings = "SETTINGS",
 	Help = "HOW TO PLAY",
@@ -1097,8 +1313,14 @@ openPanel = function(name: string)
 		f.Visible = key == name
 	end
 	panelTitle.Text = TITLES[name] or string.upper(name)
-	-- Beside the start menu's buttons when it is open, centred otherwise.
-	panelHolder.Position = if ClientState.menuOpen then UDim2.fromScale(0.64, 0.53) else UDim2.fromScale(0.5, 0.53)
+	-- Beside the start menu's buttons when it is open, centred otherwise; nearly full screen on a
+	-- phone, where the 18 px text needs the width.
+	local narrow = camera.ViewportSize.X < 900
+	panelHolder.Size = if narrow then UDim2.fromScale(0.94, 0.92) else UDim2.fromScale(0.64, 0.76)
+	panelHolder.Position = if narrow
+		then UDim2.fromScale(0.5, 0.5)
+		elseif ClientState.menuOpen then UDim2.fromScale(0.64, 0.53)
+		else UDim2.fromScale(0.5, 0.53)
 	panelHolder.Visible = true
 	panels[name].CanvasPosition = Vector2.zero
 	renderers[name]()
@@ -1256,7 +1478,7 @@ hideMenu = function()
 			camera.CameraSubject = humanoid
 		end
 	end
-	if type(plot) == "number" then
+	if type(plot) == "number" and not ClientState.racing then
 		flying = true
 		local frame = ClientState.plotFrame(plot)
 		local goal = CFrame.lookAt(
@@ -1288,6 +1510,18 @@ ClientState.MenuChanged:Connect(function(open: boolean)
 		menu.Visible = true
 		panelHolder.Visible = false
 		selectFirst(column)
+	end
+end)
+
+-- A round starting takes the player out of any menu: the race needs the camera and the controls.
+ClientState.RacingChanged:Connect(function(racing: boolean)
+	if racing then
+		panelHolder.Visible = false
+		confirm.Visible = false
+		GuiService.SelectedObject = nil
+		if ClientState.menuOpen then
+			hideMenu()
+		end
 	end
 end)
 
@@ -1360,6 +1594,8 @@ task.spawn(function()
 			if restockLabel then
 				restockLabel.Text = `Restock in {ClientState.clock(ClientState.left(status.stockLeft))}`
 			end
+		elseif name == "Dash" and dashLine then
+			dashLine.Text = (dashText(status.dash))
 		end
 		lastWindow = status.stockWindow
 		task.wait(1)
@@ -1373,6 +1609,20 @@ ClientState.statusValue:GetPropertyChangedSignal("Value"):Connect(function()
 		oddsWeather = weather
 		if visiblePanel() == "Odds" then
 			rerender("Odds")
+		end
+	end
+end)
+
+-- The Dash panel changes with the ready list, the phase and who is in the server.
+local dashSeen = ""
+ClientState.statusValue:GetPropertyChangedSignal("Value"):Connect(function()
+	local dash = ClientState.status().dash
+	local key = `{dash.phase}|{table.concat(dash.ready, ",")}|{table.concat(dash.racers, ",")}|{#Players:GetPlayers()}`
+	if key ~= dashSeen or dashWaiting then
+		dashSeen = key
+		dashWaiting = false
+		if visiblePanel() == "Dash" then
+			rerender("Dash")
 		end
 	end
 end)

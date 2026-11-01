@@ -61,7 +61,8 @@ function HatchRules.rollSize(rng: Rng.State): (string, Rng.State)
 	return HatchRules.pick(GardenConfig.SIZES :: any, r), state
 end
 
--- Nil unless the bed is ripe and the garden is not full. Draw order: species, mutation, size.
+-- Nil unless the bed is ripe and the garden is not full. Draw order: species, mutation, size; an
+-- egg that fixes its mutation takes no mutation draw, so the weather cannot touch it.
 function HatchRules.roll(p: Profile, bed: number, now: number, weather: string, rng: Rng.State): Outcome?
 	if GardenRules.bedState(p, bed, now) ~= "ripe" or GardenRules.isFull(p) then
 		return nil
@@ -71,10 +72,12 @@ function HatchRules.roll(p: Profile, bed: number, now: number, weather: string, 
 		return { egg = egg, s = "pup", m = "normal", z = "normal", forced = false }
 	end
 	local s, forced, state = HatchRules.rollSpecies(egg, p.pity[egg] or 0, rng)
-	local m, z
-	m, state = HatchRules.rollMutation(weather, state)
-	z = HatchRules.rollSize(state)
-	return { egg = egg, s = s, m = m, z = z, forced = forced }
+	local e = GardenConfig.egg(egg)
+	local m = if e then e.mutation else nil
+	if m == nil then
+		m, state = HatchRules.rollMutation(weather, state)
+	end
+	return { egg = egg, s = s, m = m :: string, z = (HatchRules.rollSize(state)), forced = forced }
 end
 
 function HatchRules.nextPity(egg: string, pity: number, species: string): number
@@ -89,8 +92,10 @@ function HatchRules.apply(p: Profile, bed: number, o: Outcome, now: number): (Pr
 	if e == nil or GardenRules.bedState(p, bed, now) ~= "ripe" or p.beds[bed].egg ~= o.egg then
 		return p, false, nil
 	end
-	local known = GardenConfig.species(o.s) and GardenConfig.mutation(o.m) and GardenConfig.size(o.z)
-	if GardenRules.isFull(p) or not known then
+	local known = GardenConfig.indexable(o.s, o.m) and GardenConfig.size(o.z)
+	-- An egg-only mutation comes from that egg alone, and such an egg gives nothing else.
+	local fixed = GardenConfig.fixedBy(o.m)
+	if GardenRules.isFull(p) or not known or e.mutation ~= (fixed and fixed.mutation) then
 		return p, false, nil
 	end
 	local out = GardenRules.copy(p)

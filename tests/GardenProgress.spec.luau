@@ -3,7 +3,9 @@ local T = require("./framework")
 local GardenConfig = require("../src/shared/GardenConfig")
 local GardenProgress = require("../src/shared/GardenProgress")
 local GardenRules = require("../src/shared/GardenRules")
+local HatchRules = require("../src/shared/HatchRules")
 local MetaRules = require("../src/shared/MetaRules")
+local Rng = require("../src/shared/Rng")
 
 local describe, it, expect = T.describe, T.it, T.expect
 
@@ -70,7 +72,7 @@ end
 describe("GardenProgress defaults", function()
 	it("starts with 100 coins, 3 beds, 6 pads and a starter egg ready 8 s after creation", function()
 		local p = GardenProgress.defaults(NOW)
-		expect(p.schemaVersion).toBe(1)
+		expect(p.schemaVersion).toBe(2)
 		expect(p.coins).toBe(100)
 		expect(p.xp).toBe(0)
 		expect(p.bedCount).toBe(3)
@@ -84,7 +86,9 @@ describe("GardenProgress defaults", function()
 		expect(p.nextId).toBe(1)
 		expect(p.stock.w).toBe(-1)
 		expect(`{p.gate} {p.fence} {p.can}`).toBe("open picket tin")
-		expect(p.pity.meadow + p.pity.forest + p.pity.sunset + p.pity.moon + p.pity.star).toBe(0)
+		expect(p.pity.meadow + p.pity.forest + p.pity.sunset + p.pity.moon + p.pity.star + p.pity.celestial).toBe(0)
+		expect(next(p.prizeEggs)).toBeNil()
+		expect(`{p.dash.day} {p.dash.prizes} {p.dash.coins}`).toBe("-1 0 0")
 		expect(p.pity.starter).toBeNil()
 		expect((p :: any).wins).toBeNil()
 	end)
@@ -97,6 +101,8 @@ describe("GardenProgress defaults", function()
 		local full = checkGarden()
 		full.owned = { candy = true }
 		full.fence = "candy"
+		full.prizeEggs = { moon = 2 }
+		full.dash = { day = DAY, prizes = 2, coins = 1 }
 		expect(same(GardenProgress.sanitize(full, NOW), full)).toBe(true)
 	end)
 end)
@@ -396,6 +402,361 @@ describe("GardenProgress rewards (H5)", function()
 		expect(bought.coins).toBe(0)
 		expect(GardenProgress.equipCosmetic(bought, "candy").fence).toBe("candy")
 		expect(select(2, GardenProgress.equipCosmetic(p, "ducky"))).toBe(false) -- level 4
+	end)
+end)
+
+describe("GardenProgress schema v2 migration (decision 0012)", function()
+	-- A literal v1 save: no prizeEggs, no dash, no celestial anywhere, with the session lock.
+	local function v1Record(): any
+		return {
+			schemaVersion = 1,
+			xp = 12345,
+			coins = 987_654_321,
+			lastSeen = NOW - 3600,
+			unbanked = 42,
+			nextId = 9,
+			bedCount = 5,
+			penSlots = 8,
+			beds = {
+				{
+					egg = "star",
+					planted = NOW - 600,
+					ready = NOW + 13000,
+					waters = 2,
+					helps = 1,
+					lastWater = NOW - 100,
+				},
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "moon", planted = NOW - 4000, ready = NOW - 400, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "meadow", planted = NOW - 1, ready = NOW + 29, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+			},
+			creatures = {
+				{ id = 3, s = "cat", m = "golden", z = "big", placed = 1, fav = true },
+				{ id = 5, s = "dragon", m = "rainbow", z = "huge", placed = 8, fav = false },
+				{ id = 8, s = "bunny", m = "moonlit", z = "normal", placed = 0, fav = false },
+			},
+			pity = { meadow = 3, forest = 4, sunset = 5, moon = 6, star = 7 },
+			index = { "cat:golden", "dragon:rainbow", "bunny:moonlit" },
+			stock = { w = 6_000_000, bought = { forest = 2, moon = 1 } },
+			hatches = 77,
+			waters = 88,
+			likes = 11,
+			gate = "friends",
+			fence = "candy",
+			can = "ducky",
+			owned = { candy = true },
+			helped = { day = DAY, count = 4 },
+			liked = { day = DAY, ids = { 111, 222 } },
+			daily = { streak = 3, last = DAY - 1 },
+			week = { key = 2900, days = 2, lastDay = DAY - 1, claimed = false },
+			quests = { day = DAY, progress = { hatches = 2, waters = 5 }, claimed = { hatch5 = true } },
+			lock = { session = "old", at = NOW - 10 },
+		}
+	end
+
+	it("loads a literal v1 record with every field kept and only the new fields added", function()
+		local record = v1Record()
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(p.schemaVersion).toBe(2)
+		expect(next(p.prizeEggs)).toBeNil()
+		expect(same(p.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
+		expect(p.pity.celestial).toBe(0)
+		expect(p.lock).toBeNil()
+		local expected = v1Record()
+		expected.pity.celestial = 0
+		for field, value in expected do
+			if field ~= "schemaVersion" and field ~= "lock" then
+				expect(`{field} {same(p[field], value)}`).toBe(`{field} true`)
+			end
+		end
+		for field in p do
+			if field ~= "prizeEggs" and field ~= "dash" then
+				expect(expected[field] ~= nil).toBe(true)
+			end
+		end
+		expect(same(record, v1Record())).toBe(true) -- input unchanged
+	end)
+
+	it("pays a v1 player exactly as before on the first login", function()
+		local out, offline, unbanked = GardenProgress.login(GardenProgress.sanitize(v1Record(), NOW), NOW, DAY)
+		expect(unbanked).toBe(42)
+		expect(out.coins).toBe(987_654_321 + 42 + offline)
+		expect(out.schemaVersion).toBe(2)
+	end)
+
+	it("keeps prizeEggs and dash through the flush path", function()
+		local p = GardenProgress.dashPrize(GardenProgress.sanitize(v1Record(), NOW), DAY)
+		local stored = GardenProgress.locked(GardenProgress.snapshot(p, 0, NOW), "s", NOW)
+		local again = GardenProgress.sanitize(stored, NOW + 7)
+		expect(again.prizeEggs.moon).toBe(1)
+		expect(same(again.dash, { day = DAY, prizes = 1, coins = 0 })).toBe(true)
+		local logged = GardenProgress.login(again, NOW + 7, DAY)
+		expect(logged.prizeEggs.moon).toBe(1)
+		expect(logged.dash.prizes).toBe(1)
+	end)
+
+	it("keeps Celestial eggs, creatures and entries, and drops impossible pairs", function()
+		local p = GardenProgress.sanitize({
+			beds = { { egg = "celestial", planted = NOW, ready = NOW + 99999 } },
+			pity = { celestial = 99 },
+			stock = { w = 5, bought = { celestial = 4 } },
+			creatures = {
+				creature(1, "lion", "celestial", "normal", 1),
+				creature(2, "bunny", "celestial", "normal", 2),
+				creature(3, "dragon", "celestial", "huge", 0),
+				creature(4, "turtle", "celestial", "normal", 0),
+			},
+			index = { "lion:celestial", "bunny:celestial", "dragon:celestial", "turtle:celestial" },
+		}, NOW)
+		expect(p.beds[1].egg).toBe("celestial")
+		expect(p.beds[1].ready).toBe(NOW + 28800)
+		expect(p.pity.celestial).toBe(10)
+		expect(p.stock.bought.celestial).toBe(1)
+		expect(table.concat(p.index, " ")).toBe("lion:celestial dragon:celestial")
+		expect(#p.creatures).toBe(2)
+		expect(GardenRules.find(p, 2)).toBeNil()
+		expect(GardenRules.find(p, 4)).toBeNil()
+		expect(p.nextId).toBe(4)
+	end)
+
+	it("keeps sold prize eggs only, counts of at least 1, clamped to 1,000,000", function()
+		local p = GardenProgress.sanitize({
+			prizeEggs = {
+				moon = 2.9,
+				star = 5e9,
+				meadow = 0.5,
+				forest = -3,
+				sunset = 0 / 0,
+				celestial = "x",
+				starter = 4,
+				nope = 7,
+				[1] = 3,
+			},
+		}, NOW)
+		expect(same(p.prizeEggs, { moon = 2, star = 1_000_000 })).toBe(true)
+		expect(next(GardenProgress.sanitize({ prizeEggs = "moon" }, NOW).prizeEggs)).toBeNil()
+	end)
+
+	it("clamps dash counters to their daily caps and falls back to day -1", function()
+		local p = GardenProgress.sanitize({ dash = { day = DAY + 0.5, prizes = 99, coins = 99.5 } }, NOW)
+		expect(same(p.dash, { day = DAY, prizes = 3, coins = 6 })).toBe(true)
+		local bad = GardenProgress.sanitize({ dash = { day = "x", prizes = -1, coins = 0 / 0 } }, NOW)
+		expect(same(bad.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
+		expect(GardenProgress.sanitize({ dash = 5 }, NOW).dash.day).toBe(-1)
+	end)
+end)
+
+describe("GardenProgress.sanitize on junk", function()
+	local NIL = {} -- stands for a missing value in JUNK
+	local JUNK: { any } = {
+		NIL,
+		0,
+		-1,
+		1.5,
+		1e308,
+		-1e308,
+		0 / 0,
+		math.huge,
+		-math.huge,
+		"",
+		"x",
+		"moon",
+		"bunny:celestial",
+		"dragon:celestial",
+		true,
+		false,
+		{},
+		{ 1, 2, 3 },
+		{ "x", true, {} },
+		{ moon = 1e12, a = { b = {} } },
+		{ { egg = "celestial", id = 1, s = "lion", m = "celestial", z = "huge" } },
+	}
+
+	-- Walks `value`, replacing about one in six of its nodes with junk.
+	local function scramble(value: any, rng: number): (any, number)
+		local r
+		r, rng = Rng.int(rng, 1, 6)
+		if r == 1 then
+			r, rng = Rng.int(rng, 1, #JUNK)
+			return if JUNK[r] == NIL then nil else JUNK[r], rng
+		end
+		if type(value) ~= "table" then
+			return value, rng
+		end
+		local out = {}
+		for k, v in value do
+			out[k], rng = scramble(v, rng)
+		end
+		return out, rng
+	end
+
+	local function base(): Profile
+		local p = checkGarden()
+		p.bedCount = 4
+		p.beds[2] = { egg = "celestial", planted = NOW, ready = NOW + 900, waters = 1, helps = 2, lastWater = NOW }
+		p.beds[4] = { egg = "moon", planted = NOW, ready = NOW + 900, waters = 1, helps = 2, lastWater = NOW }
+		table.insert(p.creatures, creature(3, "dragon", "celestial", "huge", 3))
+		table.insert(p.index, "dragon:celestial")
+		p.prizeEggs = { moon = 3, star = 1 }
+		p.dash = { day = DAY, prizes = 2, coins = 5 }
+		p.stock = { w = 6_000_000, bought = { forest = 2, celestial = 1 } }
+		p.liked = { day = DAY, ids = { 1, 2, 3 } }
+		p.helped = { day = DAY, count = 2 }
+		p.owned = { candy = true }
+		p.quests = { day = DAY, progress = { hatches = 2 }, claimed = { hatch5 = true } }
+		p.daily = { streak = 2, last = DAY }
+		p.week = { key = 2900, days = 3, lastDay = DAY, claimed = true }
+		return p
+	end
+
+	it("never errors and is idempotent on 3,000 scrambled records, with and without now", function()
+		local rng = Rng.seed(2026)
+		local source = base()
+		for i = 1, 3000 do
+			local record
+			record, rng = scramble(source, rng)
+			local now = if i % 2 == 0 then NOW else nil
+			local ok, first = pcall(GardenProgress.sanitize, record, now)
+			if not ok then
+				error(`record {i}: {first}`)
+			end
+			if not same(GardenProgress.sanitize(first, now), first) then
+				error(`record {i}: a second sanitize changed it`)
+			end
+		end
+	end)
+
+	it("returns defaults for values of every wrong type", function()
+		for _, value in JUNK do
+			if type(value) ~= "table" then
+				expect(same(GardenProgress.sanitize(value, NOW), GardenProgress.defaults(NOW))).toBe(true)
+			end
+		end
+	end)
+
+	it("sets every field to every junk value in turn without an error", function()
+		local source = base() :: any
+		for field in source do
+			for _, value in JUNK do
+				local record = GardenRules.copy(source);
+				(record :: any)[field] = if value == NIL then nil else value
+				local first = GardenProgress.sanitize(record, NOW)
+				expect(`{field} {same(GardenProgress.sanitize(first, NOW), first)}`).toBe(`{field} true`)
+			end
+		end
+	end)
+end)
+
+describe("GardenProgress Splash Dash prizes (T5, decision 0012)", function()
+	it("adds a Moon Egg and counts it, at any level and with full beds", function()
+		local p = GardenProgress.defaults(NOW)
+		for i = 1, 3 do
+			p.beds[i] = { egg = "meadow", planted = NOW, ready = NOW + 30, waters = 0, helps = 0, lastWater = 0 }
+		end
+		local out, ok = GardenProgress.dashPrize(p, DAY)
+		expect(ok).toBe(true)
+		expect(out.prizeEggs.moon).toBe(1)
+		expect(same(out.dash, { day = DAY, prizes = 1, coins = 0 })).toBe(true)
+		expect(GardenRules.level(out)).toBe(1)
+		expect(next(p.prizeEggs)).toBeNil() -- input unchanged
+		expect(p.dash.day).toBe(-1)
+		-- It waits through saves, and plants once a bed and the level are there.
+		local stored = GardenProgress.sanitize(GardenProgress.snapshot(out, 0, NOW), NOW)
+		expect(stored.prizeEggs.moon).toBe(1)
+		expect(GardenRules.canPlantPrize(stored, "moon")).toBe(false)
+		stored.xp = MetaRules.xpForLevel(10)
+		expect(GardenRules.canPlantPrize(stored, "moon")).toBe(false) -- beds still full
+		stored.beds[2].egg = ""
+		expect(GardenRules.canPlantPrize(stored, "moon")).toBe(true)
+	end)
+
+	it("goes 2 to 3 on a win, then is not eligible until the next UTC day", function()
+		local p = GardenProgress.defaults(NOW)
+		p.dash = { day = DAY, prizes = 2, coins = 4 }
+		expect(GardenProgress.dashEligible(p, DAY)).toBe(true)
+		local out, ok = GardenProgress.dashPrize(p, DAY)
+		expect(ok).toBe(true)
+		expect(GardenProgress.dashPrizesToday(out, DAY)).toBe(3)
+		expect(GardenProgress.dashEligible(out, DAY)).toBe(false)
+		local same1, refused = GardenProgress.dashPrize(out, DAY)
+		expect(refused).toBe(false)
+		expect(same1).toBe(out)
+		expect(GardenProgress.dashPrizesToday(out, DAY + 1)).toBe(0)
+		expect(GardenProgress.dashEligible(out, DAY + 1)).toBe(true)
+		local tomorrow = GardenProgress.dashPrize(out, DAY + 1)
+		expect(same(tomorrow.dash, { day = DAY + 1, prizes = 1, coins = 0 })).toBe(true)
+		expect(tomorrow.prizeEggs.moon).toBe(2) -- the daily reset never touches the eggs
+	end)
+
+	it("resets at 00:00:00 UTC, not a second before", function()
+		local midnight = (DAY + 1) * 86400
+		local p = GardenProgress.defaults(NOW)
+		for _ = 1, 3 do
+			p = GardenProgress.dashPrize(p, MetaRules.dayOf(midnight - 1))
+		end
+		expect(GardenProgress.dashEligible(p, MetaRules.dayOf(midnight - 1))).toBe(false)
+		expect(GardenProgress.dashEligible(p, MetaRules.dayOf(midnight))).toBe(true)
+	end)
+
+	it("gives the same result when re-applied to a copy of the stored record, and adds one egg once", function()
+		local stored = GardenProgress.sanitize(GardenProgress.defaults(NOW), NOW)
+		local memory = GardenProgress.dashPrize(stored, DAY)
+		local written = GardenProgress.dashPrize(GardenRules.copy(stored), DAY)
+		expect(same(memory, written)).toBe(true)
+		expect(written.prizeEggs.moon).toBe(1)
+		-- A failed UpdateAsync retries from the old record, so a retry cannot stack.
+		expect(same(GardenProgress.dashPrize(GardenRules.copy(stored), DAY), written)).toBe(true)
+	end)
+
+	it("hatches a planted prize as a normal Moon Egg with its Lucky Meter and 150 XP", function()
+		local p = GardenProgress.defaults(NOW)
+		p.xp = MetaRules.xpForLevel(10)
+		p.prizeEggs = { moon = 1 }
+		p = GardenRules.plantPrize(p, "moon", NOW)
+		local out, ok, r = GardenProgress.hatch(
+			p,
+			2,
+			{ egg = "moon", s = "fox", m = "normal", z = "normal", forced = false } :: HatchRules.Outcome,
+			NOW + 3600,
+			DAY
+		)
+		expect(ok).toBe(true)
+		expect((r :: any).xp).toBe(150 + 50)
+		expect(out.pity.moon).toBe(1)
+	end)
+
+	it("pays 1 minute of income, at least 100: 3,630 at 60.5 coins/s, 100 at 0", function()
+		local p = checkGarden()
+		local out, paid = GardenProgress.dashCoins(p, DAY)
+		expect(paid).toBe(3630)
+		expect(out.coins).toBe(p.coins + 3630)
+		expect(same(out.dash, { day = DAY, prizes = 0, coins = 1 })).toBe(true)
+		local poor, base = GardenProgress.dashCoins(GardenProgress.defaults(NOW), DAY)
+		expect(base).toBe(100)
+		expect(poor.coins).toBe(200)
+		expect(p.dash.coins).toBe(0) -- input unchanged
+	end)
+
+	it("stops at 6 coin rewards a UTC day, resets the next day, and never passes MAX_COINS", function()
+		local p = GardenProgress.defaults(NOW)
+		for i = 1, 6 do
+			local paid
+			p, paid = GardenProgress.dashCoins(p, DAY)
+			expect(paid).toBe(100)
+			expect(p.dash.coins).toBe(i)
+		end
+		local capped, none = GardenProgress.dashCoins(p, DAY)
+		expect(none).toBe(0)
+		expect(capped).toBe(p)
+		local tomorrow, paid = GardenProgress.dashCoins(p, DAY + 1)
+		expect(paid).toBe(100)
+		expect(tomorrow.dash.coins).toBe(1)
+		local rich = GardenProgress.defaults(NOW)
+		rich.coins = 1e15 - 40
+		local top, last = GardenProgress.dashCoins(rich, DAY)
+		expect(top.coins).toBe(1e15)
+		expect(last).toBe(40)
 	end)
 end)
 

@@ -61,15 +61,33 @@ describe("GardenRules income (C3)", function()
 		expect(GardenRules.income(GardenProgress.defaults(NOW))).toBe(0)
 	end)
 
-	it("applies mutation and size multipliers and the index bonus up to x1.72", function()
+	it("applies mutation and size multipliers and the index bonus up to x1.76", function()
 		expect(GardenRules.rate(creature(1, "dragon", "rainbow", "huge", 1))).toBe(1500 * 10 * 2.5)
 		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1))).toBe(150)
 		expect(GardenRules.rate(creature(1, "nope", "normal", "normal", 1))).toBe(0)
 		local p = GardenProgress.defaults(NOW)
-		for i = 1, 36 do
+		for i = 1, GardenConfig.INDEX_SIZE do
 			p.index[i] = `x{i}`
 		end
-		expect(near(GardenRules.indexMult(p), 1.72)).toBe(true)
+		expect(near(GardenRules.indexMult(p), 1.76)).toBe(true)
+	end)
+
+	it("matches the S2 check values for Celestial creatures", function()
+		local lion = creature(1, "lion", "celestial", "normal", 1)
+		local dragon = creature(2, "dragon", "celestial", "normal", 2)
+		local huge = creature(3, "dragon", "celestial", "huge", 3)
+		expect(GardenRules.rate(lion)).toBe(10000)
+		expect(GardenRules.releaseValue(lion)).toBe(60000)
+		expect(GardenRules.rate(dragon)).toBe(30000)
+		expect(GardenRules.releaseValue(dragon)).toBe(180000)
+		expect(GardenRules.rate(huge)).toBe(75000)
+		expect(GardenRules.releaseValue(huge)).toBe(450000)
+		-- The exact long-run dragon share with a meter of 10, size average 1.13.
+		local share = 0.15 / (1 - 0.85 ^ 10)
+		local average = (500 * (1 - share) + 1500 * share) * 20 * 1.13
+		expect(math.floor(average)).toBe(15521)
+		expect(math.floor(average * 6 / 1000)).toBe(93) -- about 93,000 coins
+		expect(string.format("%.2f", 100 * average * 6 / 1_000_000_000)).toBe("0.01")
 	end)
 
 	it("pays floor(rate x 6) on release (324 for a Big Golden Berry Cat) and refuses favourites", function()
@@ -94,7 +112,8 @@ describe("GardenRules income (C3)", function()
 
 	-- Director ruling (0008 amendment 2026-10-26): the expected coins from buying, hatching and
 	-- releasing an egg are at most 60% of its price, for every sold egg in every weather. The Lucky
-	-- Meter is bounded from above by adding top rate / meter to the species average.
+	-- Meter is bounded from above by adding top rate / meter to the species average. An egg with a
+	-- fixed mutation uses it, not the weather table: the table would understate it 20 times over.
 	it("never returns more than 60% of an egg's price on buy, hatch and release, in any weather", function()
 		local size = 0
 		for _, z in GardenConfig.SIZES do
@@ -115,8 +134,12 @@ describe("GardenRules income (C3)", function()
 			end
 			for _, w in GardenConfig.WEATHERS do
 				local mutation = 0
-				for _, o in w.mutation do
+				for _, o in if egg.mutation then { { id = egg.mutation, bp = 10000 } } else w.mutation do
 					mutation += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp / 10000
+				end
+				expect(mutation >= 1).toBe(true)
+				if egg.mutation then
+					expect(mutation).toBe(20)
 				end
 				local expected = species * mutation * size * GardenConfig.RELEASE_SECONDS
 				if expected > 0.6 * price then
@@ -125,7 +148,72 @@ describe("GardenRules income (C3)", function()
 				checked += 1
 			end
 		end
-		expect(checked).toBe(20) -- 5 sold eggs x 4 weathers
+		expect(checked).toBe(24) -- 6 sold eggs x 4 weathers
+	end)
+
+	-- The exact long-run figures of decision 0012 and docs/game-design/game4-pacing-check.py.
+	it("reproduces the decision's return, average income and payback for every egg", function()
+		local PINNED = {
+			meadow = "27.4 52.3 3 19",
+			forest = "12.1 23.0 9 44",
+			sunset = "8.3 15.9 48 63",
+			moon = "4.9 9.3 233 107",
+			star = "1.4 2.7 537 373",
+			celestial = "0.01 0.01 15521 64429",
+		}
+		local size = 0
+		for _, z in GardenConfig.SIZES do
+			size += z.mult * z.bp / 10000
+		end
+		local function mult(weather: string): number
+			local out = 0
+			for _, w in GardenConfig.WEATHERS do
+				if w.id == weather then
+					for _, o in w.mutation do
+						out += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp / 10000
+					end
+				end
+			end
+			return out
+		end
+		local event = mult("clear") / 2
+		for _, o in GardenConfig.WEATHER_ODDS.weekday do
+			event += mult(o.id) * o.bp / 20000
+		end
+		local worst, worstAt = 0, ""
+		for _, egg in GardenConfig.EGGS do
+			local price = egg.price
+			if price == nil then
+				continue
+			end
+			local q, rest = 0, 0
+			for _, o in egg.odds do
+				if o.id == egg.top then
+					q = o.bp / 10000
+				else
+					rest += (GardenConfig.species(o.id) :: GardenConfig.Species).rate * o.bp / 10000
+				end
+			end
+			local share = q / (1 - (1 - q) ^ (egg.meter :: number))
+			local top = (GardenConfig.species(egg.top :: string) :: GardenConfig.Species).rate
+			local base = (share * top + (1 - share) * rest / (1 - q)) * size
+			local fixed = if egg.mutation
+				then (GardenConfig.mutation(egg.mutation) :: GardenConfig.Mutation).mult
+				else nil
+			local function back(weather: string): number
+				return 100 * base * (fixed or mult(weather)) * GardenConfig.RELEASE_SECONDS / price
+			end
+			for _, w in GardenConfig.WEATHERS do
+				if back(w.id) > worst then
+					worst, worstAt = back(w.id), `{egg.id} {w.id}`
+				end
+			end
+			local rate = base * (fixed or event)
+			local digits = if fixed then "%.2f" else "%.1f"
+			local row = `{string.format(digits, back("clear"))} {string.format(digits, back("shower"))}`
+			expect(`{egg.id} {row} {string.format("%.0f %.0f", rate, price / rate)}`).toBe(`{egg.id} {PINNED[egg.id]}`)
+		end
+		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 52.3")
 	end)
 
 	it("formats short numbers, truncating to one decimal", function()
@@ -275,6 +363,108 @@ describe("GardenRules beds and eggs (D1)", function()
 	end)
 end)
 
+describe("GardenRules Celestial Egg (S1)", function()
+	local function stockedAt(egg: string, stocked: boolean): number
+		local t = NOW
+		while (WorldRules.stockFor(WorldRules.stockWindow(t))[egg] > 0) ~= stocked do
+			t += 300
+		end
+		return t
+	end
+
+	it("sells it at the cart like any egg: level 25, 1,000,000,000 coins, one per stocked window", function()
+		local t = stockedAt("celestial", true)
+		local p = rich(25)
+		expect(GardenRules.stockLeft(p, "celestial", t)).toBe(1)
+		local out, ok = GardenRules.buyEgg(p, "celestial", t)
+		expect(ok).toBe(true)
+		expect(out.coins).toBe(1e12 - 1e9)
+		expect(out.beds[1].egg).toBe("celestial")
+		expect(out.beds[1].ready).toBe(t + 28800)
+		expect(GardenRules.stockLeft(out, "celestial", t)).toBe(0)
+		expect(select(2, GardenRules.buyEgg(out, "celestial", t))).toBe(false)
+		expect(select(2, GardenRules.buyEgg(rich(24), "celestial", t))).toBe(false)
+		local poor = rich(25)
+		poor.coins = 999_999_999
+		expect(select(2, GardenRules.buyEgg(poor, "celestial", t))).toBe(false)
+		expect(select(2, GardenRules.buyEgg(p, "celestial", stockedAt("celestial", false)))).toBe(false)
+	end)
+
+	it("cuts 1,440 s per water and ripens in 17,280 s with 8 waters", function()
+		expect(GardenRules.waterCut("celestial")).toBe(1440)
+		local p = GardenProgress.defaults(NOW)
+		p.beds[1] = { egg = "celestial", planted = NOW, ready = NOW + 28800, waters = 0, helps = 0, lastWater = 0 }
+		for i = 0, 7 do
+			p = GardenRules.water(p, 1, NOW + 60 * i, i >= 5)
+		end
+		expect(p.beds[1].ready - p.beds[1].planted).toBe(17280)
+	end)
+end)
+
+describe("GardenRules prize eggs (decision 0012)", function()
+	local function winner(level: number, count: number): Profile
+		local p = rich(level)
+		p.prizeEggs = { moon = count }
+		return p
+	end
+
+	it("plants at Level 10, not 9, at ready = now + 3,600 with coins and stock unchanged", function()
+		local poor = winner(10, 1)
+		poor.coins = 0
+		poor.stock = { w = 12, bought = { moon = 1 } }
+		expect(GardenRules.canPlantPrize(winner(9, 1), "moon")).toBe(false)
+		expect(select(2, GardenRules.plantPrize(winner(9, 1), "moon", NOW))).toBe(false)
+		expect(GardenRules.canPlantPrize(poor, "moon")).toBe(true)
+		local out, ok = GardenRules.plantPrize(poor, "moon", NOW)
+		expect(ok).toBe(true)
+		expect(out.beds[1].egg).toBe("moon")
+		expect(out.beds[1].planted).toBe(NOW)
+		expect(out.beds[1].ready).toBe(NOW + 3600)
+		expect(out.coins).toBe(0)
+		expect(out.stock.w).toBe(12)
+		expect(out.stock.bought.moon).toBe(1)
+		expect(out.prizeEggs.moon).toBeNil() -- no zero counts
+		expect(poor.prizeEggs.moon).toBe(1) -- input unchanged
+		expect(poor.beds[1].egg).toBe("")
+	end)
+
+	it("ignores stock: plants in a window with no Moon Eggs", function()
+		local t = NOW
+		while WorldRules.stockFor(WorldRules.stockWindow(t)).moon > 0 do
+			t += 300
+		end
+		expect(select(2, GardenRules.plantPrize(winner(10, 1), "moon", t))).toBe(true)
+	end)
+
+	it("uses the lowest empty bed and counts down", function()
+		local p = winner(10, 2)
+		p.beds[1] = { egg = "meadow", planted = NOW, ready = NOW + 30, waters = 0, helps = 0, lastWater = 0 }
+		local out = GardenRules.plantPrize(p, "moon", NOW)
+		expect(out.beds[2].egg).toBe("moon")
+		expect(out.prizeEggs.moon).toBe(1)
+		local last = GardenRules.plantPrize(out, "moon", NOW)
+		expect(last.beds[3].egg).toBe("moon")
+		expect(last.prizeEggs.moon).toBeNil()
+		expect(select(2, GardenRules.plantPrize(last, "moon", NOW))).toBe(false) -- spent once only
+	end)
+
+	it("refuses with no egg, with full beds keeps the egg, and refuses unsold or unknown eggs", function()
+		expect(select(2, GardenRules.plantPrize(rich(25), "moon", NOW))).toBe(false)
+		local full = winner(10, 1)
+		for i = 1, full.bedCount do
+			full.beds[i] = { egg = "meadow", planted = NOW, ready = NOW + 30, waters = 0, helps = 0, lastWater = 0 }
+		end
+		local same, ok = GardenRules.plantPrize(full, "moon", NOW)
+		expect(ok).toBe(false)
+		expect(same.prizeEggs.moon).toBe(1)
+		local odd = rich(25)
+		odd.prizeEggs = { starter = 1, nope = 1 }
+		expect(GardenRules.canPlantPrize(odd, "starter")).toBe(false)
+		expect(GardenRules.canPlantPrize(odd, "nope")).toBe(false)
+		expect(GardenRules.canPlantPrize(odd, nil :: any)).toBe(false)
+	end)
+end)
+
 describe("GardenRules watering (D2)", function()
 	local function planted(egg: string): Profile
 		local p = GardenProgress.defaults(0)
@@ -285,12 +475,12 @@ describe("GardenRules watering (D2)", function()
 
 	it("cuts floor(5% of grow time) per water", function()
 		local cuts = {}
-		for _, id in { "meadow", "forest", "sunset", "moon", "star" } do
+		for _, id in { "meadow", "forest", "sunset", "moon", "star", "celestial" } do
 			table.insert(cuts, tostring(GardenRules.waterCut(id)))
 			local out = GardenRules.water(planted(id), 1, NOW, false)
 			expect(out.beds[1].ready).toBe(NOW + (GardenConfig.egg(id) :: any).grow - GardenRules.waterCut(id))
 		end
-		expect(table.concat(cuts, " ")).toBe("1 9 45 180 720")
+		expect(table.concat(cuts, " ")).toBe("1 9 45 180 720 1440")
 		expect(GardenRules.waterCut("nope")).toBe(0)
 	end)
 
