@@ -1,0 +1,53 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-021",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Give the owner an in-game catalogue of every creature, server-checked, that adds the chosen creature to their own garden.",
+  "inputs": [
+    "docs/decisions/0013-garden-admin-catalogue.md",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-012"
+  ],
+  "acceptance_criteria": [
+    "Every species, mutation and size a save can hold can be chosen and survives sanitize; nothing else is accepted (GardenRules.spec.luau)",
+    "adminGrant from any UserId outside GardenConfig.ADMINS returns false and changes nothing, whatever the client sends",
+    "A non-owner sees no ADMIN button in the HUD",
+    "A grant fills the pen, then storage, then is refused, and pays no XP, hatch count or coins",
+    "lune run tests/run, selene, stylua, rojo build, validate-tasks and check-scope pass"
+  ],
+  "verification": "CI, an independent QA review of the server gate, and a Studio run of the menu",
+  "output_artifacts": [
+    "docs/decisions/0013-garden-admin-catalogue.md"
+  ],
+  "files": [
+    "src/shared/GardenConfig.luau",
+    "src/shared/GardenRules.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/Plots.luau",
+    "src/garden/Profiles.luau",
+    "src/garden/CLAUDE.md",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/Hud.client.luau",
+    "tests/GardenRules.spec.luau",
+    "docs/architecture/garden.md",
+    "docs/decisions/0013-garden-admin-catalogue.md"
+  ],
+  "tests": [
+    "GardenRules.spec.luau",
+    "GardenConfig.spec.luau"
+  ],
+  "evidence": [
+    "Local 2026-11-01: lune run tests/run 470/470, selene 0 errors, validate-tasks 51 valid, check-scope in scope",
+    "Studio scratch place, signed in as 96807256, build stamp dev (local build, rule 13 is not met by this), DataStores off: HUD ADMIN button shown, panel opened by mouse, Huge Rainbow Toadstool Frog and Huge Celestial Moonblossom Dragon tapped in, on pads 1 and 2 as models, Index counted, coins, XP and hatches unchanged, scroll position kept; bunny:celestial:normal and a malformed arg refused",
+    "Studio, same account with ADMINS changed to { [1] = true } in the scratch copy: no ADMIN button; adminGrant dragon:celestial:huge and bunny:normal:normal both false; profile string unchanged, 0 creatures",
+    "Not done: a saved grant with DataStores on, a phone, a gamepad",
+    "Independent QA 2026-11-01: no blockers or majors. adminGrant reaches GardenRules.grant only through the router's ADMINS check. HUD height and docs findings fixed; release value and Index XP recorded in decision 0013; gamepad selection loss on a size tap left as is, same as Locker and Settings"
+  ],
+  "notes": "Requested by SHANNON 2026-11-01. Publishing this build was approved in the same request."
+}

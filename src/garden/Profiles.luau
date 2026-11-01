@@ -391,6 +391,13 @@ local ACTIONS: { [string]: Handler } = {
 		end
 		return GardenProgress.equipCosmetic(p, arg)
 	end,
+	adminGrant = function(p, _, _, arg)
+		local s, m, z = string.match(arg or "", "^(%a+):(%a+):(%a+)$")
+		if s == nil or m == nil or z == nil then
+			return p, false
+		end
+		return GardenRules.grant(p, s, m, z)
+	end,
 }
 
 local rewardCount = 0

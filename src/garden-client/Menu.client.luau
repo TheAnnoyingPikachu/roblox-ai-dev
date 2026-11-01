@@ -2,7 +2,8 @@
 -- Egg Garden menus (GDD H2-H6, E5-E6, decision 0008), forked from the Relay / Night menu: start
 -- menu over a camera orbit of Hatchling Valley, EGGS (cart panel with ODDS cards and the Lucky
 -- Meter), INDEX, CREATURES (place, store, release, favourite, pen slots, gate), LOCKER, REWARDS,
--- DASH (Splash Dash ready state and prize eggs), STATS, SETTINGS, How to Play and Odds cards, toasts
+-- DASH (Splash Dash ready state and prize eggs), STATS, SETTINGS, ADMIN (owner's creature catalogue),
+-- How to Play and Odds cards, toasts
 -- and music by weather. The client only asks;
 -- the server decides every outcome through Request(action, arg).
 
@@ -80,6 +81,7 @@ local toasts = new("Frame", {
 	Position = UDim2.new(0.5, 0, 0, 96),
 	Size = UDim2.fromOffset(380, 300),
 	BackgroundTransparency = 1,
+	ZIndex = 20, -- over the panels
 	Parent = gui,
 }, { new("UIListLayout", { Padding = UDim.new(0, 6), HorizontalAlignment = Enum.HorizontalAlignment.Center }) })
 ClientState.autoScale(toasts)
@@ -697,6 +699,84 @@ renderers.Index = function()
 	end
 end
 
+-- ADMIN: every creature in every size, for the owner (decision 0013). Only the owner sees the HUD
+-- button that opens this; the server decides on GardenConfig.ADMINS --------------------------------
+
+local adminPanel = panel("Admin")
+local adminSize = "normal"
+
+-- Shows the species' real mesh; nothing if the server has not loaded it.
+local function preview(parent: Instance, species: string)
+	local folder = ReplicatedStorage:FindFirstChild("GardenSpecies")
+	local mesh = folder and folder:FindFirstChild(species) :: BasePart?
+	if mesh == nil then
+		return
+	end
+	local view = new("ViewportFrame", {
+		Position = UDim2.fromOffset(10, 10),
+		Size = UDim2.fromOffset(116, 126),
+		BackgroundColor3 = UI.WHITE,
+		Ambient = Color3.fromRGB(190, 190, 190),
+		LightColor = Color3.fromRGB(255, 255, 255),
+		Parent = parent,
+	}, { corner(10) })
+	local copy = mesh:Clone()
+	copy.CFrame = CFrame.identity
+	copy.Parent = view
+	local eye = new("Camera", { FieldOfView = 30, Parent = view })
+	eye.CFrame = CFrame.lookAt(Vector3.new(0.45, 0.25, -1).Unit * mesh.Size.Magnitude * 2, Vector3.zero)
+	view.CurrentCamera = eye
+end
+
+renderers.Admin = function()
+	clear(adminPanel)
+	local top = row(adminPanel, 56, 0)
+	label(top, 14, 6, -310, 22, "Tap a creature to add it", UI.LEAF)
+	label(top, 14, 30, -310, 20, `Storage {GardenRules.storageCount(profile)} / {GardenConfig.STORAGE}`, UI.MUTED)
+	for i = #GardenConfig.SIZES, 1, -1 do
+		local size = GardenConfig.SIZES[i]
+		action(top, size.name, if size.id == adminSize then UI.PINK else UI.SKY, true, function()
+			adminSize = size.id
+			renderers.Admin()
+		end, #GardenConfig.SIZES - i + 1, 88)
+	end
+	for i, sp in GardenConfig.SPECIES do
+		local r = row(adminPanel, 146, i)
+		preview(r, sp.id)
+		label(r, 138, 8, -148, 24, sp.name, ClientState.rarityColour(sp.id))
+		label(r, 138, 34, -148, 18, ClientState.rarityName(sp.id), UI.MUTED)
+		local cells = new("Frame", {
+			Position = UDim2.fromOffset(138, 58),
+			Size = UDim2.new(1, -148, 0, 78),
+			BackgroundTransparency = 1,
+			Parent = r,
+		}, { new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6) }) })
+		local kinds = {}
+		for _, m in GardenConfig.MUTATIONS do
+			if GardenConfig.indexable(sp.id, m.id) then
+				table.insert(kinds, m)
+			end
+		end
+		for _, m in kinds do
+			local rate = GardenRules.rate({ id = 0, s = sp.id, m = m.id, z = adminSize, placed = 0, fav = false })
+			button({
+				Size = UDim2.new(1 / #kinds, -5, 1, 0),
+				Text = `{m.name}\n{short(rate)}/s`,
+				BackgroundColor3 = MUTATION_COLOURS[m.id] or UI.MINT,
+				TextColor3 = UI.INK,
+				Parent = cells,
+			}, function()
+				local name = ClientState.creatureName(sp.id, m.id, adminSize)
+				if ask("adminGrant", `{sp.id}:{m.id}:{adminSize}`) then
+					toast(`{name} added to your garden`, UI.LEAF)
+				else
+					toast("Not added: your storage may be full", UI.CORAL)
+				end
+			end)
+		end
+	end
+end
+
 -- CREATURES: pen, storage, release, favourite, pen slots, gate ------------------------------------
 
 local confirm = new("Frame", {
@@ -1305,6 +1385,7 @@ local TITLES = {
 	Dash = "SPLASH DASH",
 	Stats = "STATS",
 	Settings = "SETTINGS",
+	Admin = "ADMIN CATALOGUE",
 	Help = "HOW TO PLAY",
 }
 

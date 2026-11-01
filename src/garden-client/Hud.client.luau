@@ -186,7 +186,7 @@ local ripeText = timerLine(100, UI.LEAF)
 local quick = new("Frame", {
 	AnchorPoint = Vector2.new(0, 0.5),
 	Position = UDim2.new(0, 12, 0.5, 0),
-	Size = UDim2.fromOffset(if touchOnly then 120 else 136, 384),
+	Size = UDim2.fromOffset(if touchOnly then 120 else 136, if GardenConfig.ADMINS[player.UserId] then 438 else 384),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, { new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
@@ -204,17 +204,19 @@ local function goldDot(parent: Instance): Frame
 		Parent = parent,
 	}, { corner(8), stroke(UI.WHITE, 2) })
 end
-for i, item in
-	{
-		{ "MENU", "Menu", UI.LILAC },
-		{ "EGGS", "Eggs", UI.GOLD },
-		{ "CREATURES", "Creatures", UI.SKY },
-		{ "INDEX", "Index", UI.LEAF },
-		{ "REWARDS", "Rewards", UI.CORAL },
-		{ "DASH", "Dash", UI.AQUA },
-		{ "HOME", "Home", UI.PINK },
-	}
-do
+local QUICK = {
+	{ "MENU", "Menu", UI.LILAC },
+	{ "EGGS", "Eggs", UI.GOLD },
+	{ "CREATURES", "Creatures", UI.SKY },
+	{ "INDEX", "Index", UI.LEAF },
+	{ "REWARDS", "Rewards", UI.CORAL },
+	{ "DASH", "Dash", UI.AQUA },
+	{ "HOME", "Home", UI.PINK },
+}
+if GardenConfig.ADMINS[player.UserId] then
+	table.insert(QUICK, { "ADMIN", "Admin", UI.CORAL })
+end
+for i, item in QUICK do
 	local b = button({
 		Size = UDim2.new(1, 0, 0, 46),
 		Text = item[1],

@@ -55,6 +55,7 @@ local REQUEST_ARGS: { [string]: boolean } = {
 	claimQuest = true,
 	buyCosmetic = true,
 	equipCosmetic = true,
+	adminGrant = true,
 }
 -- Actions whose argument is a creature id or UserId (must match ^%d+$).
 local ID_ARGS: { [string]: boolean } = { place = true, store = true, release = true, favourite = true, like = true }
@@ -187,6 +188,9 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 		return false
 	end
 	if ID_ARGS[action] and string.match(arg, "^%d+$") == nil then
+		return false
+	end
+	if action == "adminGrant" and not GardenConfig.ADMINS[player.UserId] then
 		return false
 	end
 	if action == "buyEgg" then

@@ -6,7 +6,7 @@ verified (GARDEN-006); v0.2 (Celestial Egg, Splash Dash) built in GARDEN-009, St
 - Project `garden.project.json`; publish target `garden-staging` (Max Players 6, set in place settings).
 - Long docs, open only the section you need: `docs/architecture/garden.md` (§3 signatures, §4 server,
   §5 Fx, §6 client), `docs/game-design/game4-gdd.md`, decisions `docs/decisions/0008-egg-garden.md` and
-  `docs/decisions/0012-egg-garden-v02.md`.
+  `docs/decisions/0012-egg-garden-v02.md`, `docs/decisions/0013-garden-admin-catalogue.md`.
 
 ## Files
 
@@ -37,7 +37,8 @@ WorldRules GardenProgress MetaRules DashRules`.
 - Router checks: loaded session and plot, string action, arg nil or string <= 32, shared 0.35 s limit.
 - Stores `GardenProfile<suffix>`, `GardenIncome<suffix>`; `PRODUCTION_UNIVERSE_ID` stays nil without SHANNON.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.
-- New economy values, remotes or schema fields need a decision record (0008, 0012).
+- New economy values, remotes or schema fields need a decision record (0008, 0012, 0013).
+- `adminGrant` is refused in the router unless `GardenConfig.ADMINS[player.UserId]`; hidden buttons are not the check.
 
 Fast check: `lune run tests/run Garden Hatch WorldRules MetaRules` then
 `rojo build garden.project.json -o build/garden.rbxl && node tools/check-place.mjs garden.project.json build/garden.rbxl`.

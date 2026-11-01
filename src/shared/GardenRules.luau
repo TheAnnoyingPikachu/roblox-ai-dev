@@ -169,6 +169,25 @@ function GardenRules.isFull(p: Profile): boolean
 	return GardenRules.freePad(p) == nil and GardenRules.storageCount(p) >= GardenConfig.STORAGE
 end
 
+-- Admin catalogue (decision 0013): the same placement as a hatch and the Index entry, but no XP,
+-- hatch count or Lucky Meter. Accepts exactly what a save may hold. GardenServer checks ADMINS.
+function GardenRules.grant(p: Profile, s: string, m: string, z: string): (Profile, boolean)
+	if GardenRules.isFull(p) or not GardenConfig.indexable(s, m) or GardenConfig.size(z) == nil then
+		return p, false
+	end
+	local out = GardenRules.copy(p)
+	table.insert(
+		out.creatures,
+		{ id = out.nextId, s = s, m = m, z = z, placed = GardenRules.freePad(out) or 0, fav = false }
+	)
+	out.nextId += 1
+	local key = `{s}:{m}`
+	if table.find(out.index, key) == nil then
+		table.insert(out.index, key)
+	end
+	return out, true
+end
+
 -- Eggs and watering (D1, D2) ------------------------------------------------------------------
 
 function GardenRules.eggUnlocked(p: Profile, egg: string): boolean
