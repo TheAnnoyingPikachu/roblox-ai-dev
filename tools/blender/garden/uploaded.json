@@ -2,37 +2,37 @@
   "egg_starter": {
     "model": 106137122038836,
     "decal": 71300666806804,
-    "texture": null
+    "texture": 86930851182641
   },
   "egg_meadow": {
     "model": 109814098409123,
     "decal": 112662411463963,
-    "texture": null
+    "texture": 124083212291553
   },
   "egg_forest": {
     "model": 88229783158198,
     "decal": 111363269717993,
-    "texture": null
+    "texture": 82321478414273
   },
   "egg_sunset": {
     "model": 136866091038762,
     "decal": 88136423700939,
-    "texture": null
+    "texture": 96940634873280
   },
   "egg_moon": {
     "model": 128552194858121,
     "decal": 138846614212342,
-    "texture": null
+    "texture": 126212814990711
   },
   "egg_star": {
     "model": 127195469560907,
     "decal": 91985615463059,
-    "texture": null
+    "texture": 131465711408158
   },
   "egg_celestial": {
     "model": 118040363770639,
     "decal": 111793977297297,
-    "texture": null
+    "texture": 116495039637738
   },
   "egg_shell_fragment": {
     "model": 117958998597273,
@@ -172,6 +172,6 @@
   "egg_aurora": {
     "model": 90708058640493,
     "decal": 89635596724181,
-    "texture": null
+    "texture": 117664669239010
   }
 }
