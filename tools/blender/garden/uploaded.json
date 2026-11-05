@@ -173,5 +173,125 @@
     "model": 90708058640493,
     "decal": 89635596724181,
     "texture": 117664669239010
+  },
+  "sakura_large_a": {
+    "model": 118768583402070,
+    "decal": 75987592909059,
+    "texture": null
+  },
+  "sakura_large_b": {
+    "model": 80025604568425,
+    "decal": 133511932939285,
+    "texture": null
+  },
+  "sakura_large_c": {
+    "model": 70821572781068,
+    "decal": 72623111684824,
+    "texture": null
+  },
+  "hill_a": {
+    "model": 95772915791564,
+    "decal": 105964285945899,
+    "texture": null
+  },
+  "hill_b": {
+    "model": 99322192975497,
+    "decal": 74316618976067,
+    "texture": null
+  },
+  "hill_c": {
+    "model": 136732270719020,
+    "decal": 93076431399957,
+    "texture": null
+  },
+  "spawn_pad": {
+    "model": 97261615527440,
+    "decal": 82411999867120,
+    "texture": null
+  },
+  "lantern": {
+    "model": 85713860223122,
+    "decal": 80754903041603,
+    "texture": null
+  },
+  "garden_icon_book": {
+    "model": null,
+    "decal": 122011214578966,
+    "texture": null
+  },
+  "garden_icon_calendar": {
+    "model": null,
+    "decal": 93373656413215,
+    "texture": null
+  },
+  "garden_icon_chart": {
+    "model": null,
+    "decal": 125161776973528,
+    "texture": null
+  },
+  "garden_icon_check": {
+    "model": null,
+    "decal": 86514886641455,
+    "texture": null
+  },
+  "garden_icon_cog": {
+    "model": null,
+    "decal": 70407167350707,
+    "texture": null
+  },
+  "garden_icon_coin": {
+    "model": null,
+    "decal": 83198070035191,
+    "texture": null
+  },
+  "garden_icon_egg": {
+    "model": null,
+    "decal": 87340734325342,
+    "texture": null
+  },
+  "garden_icon_flag": {
+    "model": null,
+    "decal": 117414575414212,
+    "texture": null
+  },
+  "garden_icon_gift": {
+    "model": null,
+    "decal": 83464405856125,
+    "texture": null
+  },
+  "garden_icon_hanger": {
+    "model": null,
+    "decal": 70395840759038,
+    "texture": null
+  },
+  "garden_icon_heart": {
+    "model": null,
+    "decal": 116009901825008,
+    "texture": null
+  },
+  "garden_icon_home": {
+    "model": null,
+    "decal": 89023549681528,
+    "texture": null
+  },
+  "garden_icon_lock": {
+    "model": null,
+    "decal": 100731273774008,
+    "texture": null
+  },
+  "garden_icon_paw": {
+    "model": null,
+    "decal": 117397006123715,
+    "texture": null
+  },
+  "garden_icon_petal": {
+    "model": null,
+    "decal": 98877696272329,
+    "texture": null
+  },
+  "garden_icon_swap": {
+    "model": null,
+    "decal": 90071667306881,
+    "texture": null
   }
 }

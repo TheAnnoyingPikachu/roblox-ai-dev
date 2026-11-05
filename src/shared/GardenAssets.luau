@@ -18,8 +18,8 @@ local GardenAssets: { [string]: Asset } = {
 	sakura_large_a = {
 		size = { 28.84, 34.23, 29.3 },
 		parts = { "sakura_large_a" },
-		model = nil,
-		decal = nil,
+		model = 118768583402070,
+		decal = 75987592909059,
 		texture = nil,
 	},
 	egg_meadow = {
@@ -32,8 +32,8 @@ local GardenAssets: { [string]: Asset } = {
 	sakura_large_b = {
 		size = { 34.65, 41.75, 36.91 },
 		parts = { "sakura_large_b" },
-		model = nil,
-		decal = nil,
+		model = 80025604568425,
+		decal = 133511932939285,
 		texture = nil,
 	},
 	egg_forest = {
@@ -46,8 +46,8 @@ local GardenAssets: { [string]: Asset } = {
 	sakura_large_c = {
 		size = { 33.41, 45.9, 34.57 },
 		parts = { "sakura_large_c" },
-		model = nil,
-		decal = nil,
+		model = 70821572781068,
+		decal = 72623111684824,
 		texture = nil,
 	},
 	egg_sunset = {
@@ -60,8 +60,8 @@ local GardenAssets: { [string]: Asset } = {
 	hill_a = {
 		size = { 220, 160, 120 },
 		parts = { "hill_a" },
-		model = nil,
-		decal = nil,
+		model = 95772915791564,
+		decal = 105964285945899,
 		texture = nil,
 	},
 	egg_moon = {
@@ -74,8 +74,8 @@ local GardenAssets: { [string]: Asset } = {
 	hill_b = {
 		size = { 220, 160, 120 },
 		parts = { "hill_b" },
-		model = nil,
-		decal = nil,
+		model = 99322192975497,
+		decal = 74316618976067,
 		texture = nil,
 	},
 	egg_star = {
@@ -88,8 +88,8 @@ local GardenAssets: { [string]: Asset } = {
 	hill_c = {
 		size = { 220, 160, 120 },
 		parts = { "hill_c" },
-		model = nil,
-		decal = nil,
+		model = 136732270719020,
+		decal = 93076431399957,
 		texture = nil,
 	},
 	egg_celestial = {
@@ -102,8 +102,8 @@ local GardenAssets: { [string]: Asset } = {
 	spawn_pad = {
 		size = { 10, 0.6, 10 },
 		parts = { "spawn_pad" },
-		model = nil,
-		decal = nil,
+		model = 97261615527440,
+		decal = 82411999867120,
 		texture = nil,
 	},
 	egg_aurora = {
@@ -116,8 +116,8 @@ local GardenAssets: { [string]: Asset } = {
 	lantern = {
 		size = { 1.2, 4.5, 1.2 },
 		parts = { "lantern" },
-		model = nil,
-		decal = nil,
+		model = 85713860223122,
+		decal = 80754903041603,
 		texture = nil,
 	},
 	egg_shell_fragment = {
