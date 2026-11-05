@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "medium",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-042",
   "owner": "A11",
   "verifier": "A15",
@@ -29,7 +29,9 @@
     "src/garden/Wheel.luau",
     "src/garden/WheelWorld.luau"
   ],
-  "evidence": [],
+  "evidence": [
+    "Local run 2026-11-05 on garden/wheel: lune run tests/run 508/508; selene 0; stylua --check clean; rojo build garden.project.json + check-place match; validate-tasks and check-scope pass. Studio run (build dev, local file, 'build dev' corner stamp; DataStores unreachable from a local file so a scratchpad-only harness script patched Profiles.isOnline to true to exercise the prize path in memory; never in the repo): Workspace.Garden.Wheel built (54 descendants, Parts attribute 2903), Play prompt and empty SpinsLabel present. W11 step 2 with Seed 12345: scripted PivotTo onto drops 1..8 at at+2.6 gave wheelCatch i=1..8 with scores 1,2,3,4,5,3(cone),6(gold),7 and no catch for drop 9+ from the stand; the server score 7 equals WheelRules.sample on the planned 5 Hz samples (simScore 7). Wheel.start refused while a round ran. Rounds 2..4 catching every non-cone drop scored 38 = simulation, tier lucky, wheelOver then wheelSpin in the same step (spinIds 207621..3, spinsLeft 2,1,0); Profile after each: prizeEggs changed by exactly one (run A: forest, forest, meadow; run B: moon, moon, forest), wheelToday.spins 1,2,3. Round 5 started practice=true, tier none, nothing applied. Departure: GardenConfig.WHEEL.centre/stand moved +10 x to (-30,0,-52)/(-30,0,-38): plot 6's fence corner (-44,-61) and its plaza path cut through the design position; the only neighbour now is the plaza lamp at (-16,-39), about 2 studs inside the fence's NE corner. The wheel_stand fallback is placed at yaw 180 (its front is -z at yaw 0 per the artist) with the axle at stand + (0, 5, +0.5)."
+  ],
   "files": [
     "src/garden/Wheel.luau",
     "src/garden/WheelWorld.luau",

@@ -539,9 +539,11 @@ GardenConfig.DASH = DASH
 -- values; the rest is feel, tuned at the greybox gate.
 local WHEEL: WheelConfig = {
 	name = "Petal Catch",
-	centre = { x = -40, y = 0, z = -52 },
+	-- Moved 10 studs east of the design's (-40, -52): plot 6's fence corner (-44, -61) and its plaza
+	-- path cut through the patch there (garden-wheel.md W2 allows up to 10 studs; not an economy value).
+	centre = { x = -30, y = 0, z = -52 },
 	size = 30,
-	stand = { x = -40, y = 0, z = -38 },
+	stand = { x = -30, y = 0, z = -38 },
 	promptRange = 12,
 	round = 45,
 	lead = 2,

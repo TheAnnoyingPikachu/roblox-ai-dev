@@ -56,6 +56,7 @@ local REQUEST_ARGS: { [string]: boolean } = {
 	buyCosmetic = true,
 	equipCosmetic = true,
 	adminGrant = true,
+	wheelStart = false,
 }
 -- Actions whose argument is a creature id or UserId (must match ^%d+$).
 local ID_ARGS: { [string]: boolean } = { place = true, store = true, release = true, favourite = true, like = true }
@@ -63,9 +64,10 @@ local ID_ARGS: { [string]: boolean } = { place = true, store = true, release = t
 Models.preloadGarden()
 local world = World.build()
 local Dash = require(script.Parent:WaitForChild("Dash")) -- builds the island under Workspace.Garden
+local Wheel = require(script.Parent:WaitForChild("Wheel")) -- builds the Petal Patch under Workspace.Garden
 
--- Every Dash call from a gardening path goes through this, so a Dash fault never stops the pads, a
--- teleport home or a save.
+-- Every Dash or Wheel call from a gardening path goes through this, so a mini-game fault never stops
+-- the pads, a teleport home or a save.
 local function guarded(name: string, fn: () -> ())
 	local ok, err = pcall(fn)
 	if not ok then
@@ -202,6 +204,8 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 		return like(player, arg)
 	elseif action == "dashReady" then
 		return Dash.toggle(player)
+	elseif action == "wheelStart" then
+		return Wheel.start(player)
 	elseif action == "home" then
 		-- A racer leaves the round, in the start hold too. Ready stays: GDD T3 lets a player ready up
 		-- and keep gardening; NOT READY is the way out of the queue.
@@ -210,6 +214,9 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 				Dash.leave(player)
 			end)
 		end
+		guarded("wheel leave", function()
+			Wheel.leave(player)
+		end)
 		if rootOf(player) == nil then
 			return false
 		end
@@ -318,6 +325,14 @@ Dash.prompt.Triggered:Connect(function(player: Player)
 	end
 end)
 
+Wheel.prompt.Triggered:Connect(function(player: Player)
+	if admit(player) then
+		guarded("wheel start", function()
+			Wheel.start(player)
+		end)
+	end
+end)
+
 -- Loop (garden.md 4.3) --------------------------------------------------------------------------
 
 -- Banks every pad of `player` the root stands on (or every pad when `root` is nil, on leave).
@@ -385,6 +400,9 @@ local function fastTick()
 	end
 	guarded("dash tick", function()
 		Dash.step(roots, today)
+	end)
+	guarded("wheel tick", function()
+		Wheel.step(roots, today)
 	end)
 end
 
@@ -518,6 +536,9 @@ local function onLeave(player: Player)
 	guarded("dash leave", function()
 		Dash.leave(player)
 	end)
+	guarded("wheel leave", function()
+		Wheel.leave(player)
+	end)
 	local live = State.live[player]
 	State.live[player] = nil -- the loop, router and prompts stop serving this plot at once
 	if live then
@@ -548,6 +569,7 @@ Players.PlayerRemoving:Connect(onLeave)
 
 game:BindToClose(function()
 	guarded("dash close", Dash.close)
+	guarded("wheel close", Wheel.close)
 	local now = os.time()
 	for player, live in State.live do
 		State.live[player] = nil

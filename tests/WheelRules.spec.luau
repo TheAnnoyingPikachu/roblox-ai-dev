@@ -146,7 +146,7 @@ describe("WheelRules schedule (W3.1, W10)", function()
 		-- Pinned for seed 12345 so a drift in either Rng or the shuffle shows up as a literal change.
 		expect(kinds(DROPS)).toBe("pppppcgpcppgppppccppcppcpcppppcpgcgppppc")
 		expect(string.format("%.3f %.3f %.3f %.3f", DROPS[1].x, DROPS[1].z, DROPS[40].x, DROPS[40].z)).toBe(
-			"-42.317 -46.225 -32.144 -55.494"
+			"-32.317 -46.225 -22.144 -55.494"
 		)
 	end)
 end)

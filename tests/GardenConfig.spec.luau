@@ -347,7 +347,7 @@ describe("GardenConfig Petal Catch (garden-wheel.md W, decision 0016)", function
 			"100 10 16 4 7 1"
 		)
 		expect(`{W.catchRadius} {W.ring.min} {W.ring.max} {W.size} {W.promptRange}`).toBe("3.5 4 12 30 12")
-		expect(`{W.centre.x},{W.centre.y},{W.centre.z} {W.stand.x},{W.stand.y},{W.stand.z}`).toBe("-40,0,-52 -40,0,-38")
+		expect(`{W.centre.x},{W.centre.y},{W.centre.z} {W.stand.x},{W.stand.y},{W.stand.z}`).toBe("-30,0,-52 -30,0,-38")
 		expect(`{W.points.pink} {W.points.gold} {W.points.cone}`).toBe("1 3 -2")
 	end)
 
