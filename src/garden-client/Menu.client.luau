@@ -1271,7 +1271,7 @@ renderers.Dash = function()
 		if got >= cap then UI.MUTED else UI.LEAF
 	)
 
-	heading(dashPanel, "YOUR PRIZE EGGS", 3)
+	heading(dashPanel, "PRIZE EGGS", 3) -- Splash Dash and Petal Catch share the store
 	local held = false
 	for i, egg in GardenConfig.EGGS do
 		local count = profile.prizeEggs[egg.id] or 0

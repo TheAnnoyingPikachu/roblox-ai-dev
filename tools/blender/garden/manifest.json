@@ -880,5 +880,280 @@
     "script": "tools/blender/garden/assets/dash.py",
     "notes": "Long axis X, the course direction. The grass rim is 48 above the lowest rock and the basin floor 3 below the rim, so base.Y 70 puts the rim level with the water plane at y 118; centre it on about (-10, 350). Decoration stays on the rim, under 18 tall, below the decks at y 140. The waterfall spills off the front. Decor from DashWorld; no mesh collision.",
     "glow": {}
+  },
+  "wheel_stand": {
+    "fbx": "build/blender/garden/wheel_stand.fbx",
+    "png": "build/blender/garden/wheel_stand.png",
+    "preview": "build/blender/garden/previews/wheel_stand.png",
+    "size_studs": [
+      7.0,
+      8.0,
+      2.0
+    ],
+    "tris": 1220,
+    "parts": {
+      "wheel_stand": 1220
+    },
+    "target_size_studs": [
+      7,
+      8,
+      2
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "WheelWorld stand fallback (Wood post and board)",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Static decor. Front on Blender -Y (Roblox -Z at yaw 0). The pointer is the top centre of the bounding box. The disc is not in this model: its axle is 5 up and 0.5 in front of the bounding box centre, so the board face sits at depth 0 and the pointer hangs in front of the disc.",
+    "glow": {}
+  },
+  "wheel_disc": {
+    "fbx": "build/blender/garden/wheel_disc.fbx",
+    "png": "build/blender/garden/wheel_disc.png",
+    "preview": "build/blender/garden/previews/wheel_disc.png",
+    "size_studs": [
+      6.0,
+      6.0,
+      0.6
+    ],
+    "tris": 1300,
+    "parts": {
+      "wheel_disc": 1300
+    },
+    "target_size_studs": [
+      6,
+      6,
+      0.6
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "WheelFx disc fallback (Cylinder and 8 wedge parts)",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "One mesh, symmetric about the axle on all three axes, so the bounding box centre is the axle. Faces Blender -Y; the client turns it about Roblox z. Wedges clockwise from the top at rest: meadow, forest, sunset, coins, moon, star, celestial, aurora (EGG_COLOURS pairs, Coins gold), 45 degrees each, meadow centred under the pointer at angle 0. Client-only clone from NightModels; no collision.",
+    "glow": {}
+  },
+  "wheel_basket": {
+    "fbx": "build/blender/garden/wheel_basket.fbx",
+    "png": "build/blender/garden/wheel_basket.png",
+    "preview": "build/blender/garden/previews/wheel_basket.png",
+    "size_studs": [
+      1.6,
+      1.5,
+      1.6
+    ],
+    "tris": 926,
+    "parts": {
+      "wheel_basket": 926
+    },
+    "target_size_studs": [
+      1.6,
+      1.5,
+      1.6
+    ],
+    "tris_budget": 1500,
+    "priority": "P2",
+    "replaces": "WheelFx basket fallback (Cylinder)",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Handle arcs along x. Welded to the right hand by the client. Client-only clone from NightModels; no collision.",
+    "glow": {}
+  },
+  "petal_pink": {
+    "fbx": "build/blender/garden/petal_pink.fbx",
+    "png": "build/blender/garden/petal_pink.png",
+    "preview": "build/blender/garden/previews/petal_pink.png",
+    "size_studs": [
+      1.2,
+      0.1,
+      0.8
+    ],
+    "tris": 52,
+    "parts": {
+      "petal_pink": 52
+    },
+    "target_size_studs": [
+      1.2,
+      0.1,
+      0.8
+    ],
+    "tris_budget": 100,
+    "priority": "P2",
+    "replaces": "WheelFx pink drop fallback (flattened Ball)",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Flat, lying horizontal, notched tip along +x. Client-only clone from NightModels; no collision.",
+    "glow": {}
+  },
+  "petal_gold": {
+    "fbx": "build/blender/garden/petal_gold.fbx",
+    "png": "build/blender/garden/petal_gold.png",
+    "preview": "build/blender/garden/previews/petal_gold.png",
+    "size_studs": [
+      1.2,
+      0.1,
+      0.8
+    ],
+    "tris": 52,
+    "parts": {
+      "petal_gold": 52
+    },
+    "target_size_studs": [
+      1.2,
+      0.1,
+      0.8
+    ],
+    "tris_budget": 100,
+    "priority": "P2",
+    "replaces": "WheelFx gold drop fallback (flattened Ball)",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Same shape as petal_pink, baked bright gold. Client-only clone from NightModels; no collision.",
+    "glow": {}
+  },
+  "pinecone": {
+    "fbx": "build/blender/garden/pinecone.fbx",
+    "png": "build/blender/garden/pinecone.png",
+    "preview": "build/blender/garden/previews/pinecone.png",
+    "size_studs": [
+      0.7,
+      1.0,
+      0.7
+    ],
+    "tris": 124,
+    "parts": {
+      "pinecone": 124
+    },
+    "target_size_studs": [
+      0.8,
+      1,
+      0.8
+    ],
+    "tris_budget": 200,
+    "priority": "P2",
+    "replaces": "WheelFx cone drop fallback (brown Ball)",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Upright, stem at the top, round scales. Client-only clone from NightModels; no collision.",
+    "glow": {}
+  },
+  "wheel_tree": {
+    "fbx": "build/blender/garden/wheel_tree.fbx",
+    "png": "build/blender/garden/wheel_tree.png",
+    "preview": "build/blender/garden/previews/wheel_tree.png",
+    "size_studs": [
+      23.67,
+      19.96,
+      24.0
+    ],
+    "tris": 1432,
+    "parts": {
+      "wheel_tree": 1432
+    },
+    "target_size_studs": [
+      24,
+      20,
+      24
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "Props.sakura canopy fallback in WheelWorld",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Trunk (radius about 2 at the canopy) at the bounding box centre in x and z; canopy underside about 13, top 20. Decor: WheelWorld's own trunk Cylinder collides.",
+    "glow": {}
+  },
+  "creature_moth": {
+    "fbx": "build/blender/garden/creature_moth.fbx",
+    "png": "build/blender/garden/creature_moth.png",
+    "preview": "build/blender/garden/previews/creature_moth.png",
+    "size_studs": [
+      4.1,
+      3.19,
+      1.82
+    ],
+    "tris": 2425,
+    "parts": {
+      "creature_moth": 2425
+    },
+    "target_size_studs": [
+      4.8,
+      3.2,
+      3.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/v04.py",
+    "notes": "Lantern Moth (rare, V2.4). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are. The lantern is baked bright, no Neon.",
+    "glow": {}
+  },
+  "fence_starlit_post": {
+    "fbx": "build/blender/garden/fence_starlit_post.fbx",
+    "png": "build/blender/garden/fence_starlit_post.png",
+    "preview": "build/blender/garden/previews/fence_starlit_post.png",
+    "size_studs": [
+      1.0,
+      3.94,
+      1.0
+    ],
+    "tris": 344,
+    "parts": {
+      "fence_starlit_post": 344
+    },
+    "target_size_studs": [
+      1,
+      4,
+      1
+    ],
+    "tris_budget": 1200,
+    "priority": "P2",
+    "replaces": "Plots.refresh fence post part when fence == starlit",
+    "script": "tools/blender/garden/assets/v04.py",
+    "notes": "Stands on the origin, star finial facing -Y. Plots places the PointLights (one per 3 posts), not the model.",
+    "glow": {}
+  },
+  "fence_starlit_rail": {
+    "fbx": "build/blender/garden/fence_starlit_rail.fbx",
+    "png": "build/blender/garden/fence_starlit_rail.png",
+    "preview": "build/blender/garden/previews/fence_starlit_rail.png",
+    "size_studs": [
+      6.0,
+      0.4,
+      0.3
+    ],
+    "tris": 164,
+    "parts": {
+      "fence_starlit_rail": 164
+    },
+    "target_size_studs": [
+      6,
+      0.4,
+      0.3
+    ],
+    "tris_budget": 600,
+    "priority": "P2",
+    "replaces": "Plots.refresh fence rail part when fence == starlit",
+    "script": "tools/blender/garden/assets/v04.py",
+    "notes": "Runs along X, stands on the origin; stars on both faces so either side can face out.",
+    "glow": {}
+  },
+  "pad_clover": {
+    "fbx": "build/blender/garden/pad_clover.fbx",
+    "png": "build/blender/garden/pad_clover.png",
+    "preview": "build/blender/garden/previews/pad_clover.png",
+    "size_studs": [
+      5.0,
+      0.0,
+      5.0
+    ],
+    "tris": 32,
+    "parts": {
+      "pad_clover": 32
+    },
+    "target_size_studs": [
+      5,
+      0.1,
+      5
+    ],
+    "tris_budget": 100,
+    "priority": "P2",
+    "replaces": "plain green pad (Decal on the pad top when pad == clover)",
+    "script": "tools/blender/garden/assets/v04.py",
+    "notes": "A decal, not a model: use the texture id on a Decal on the pad top face over pad colour (120, 190, 90); the flat quad FBX only carries it through the upload. 1024 baked, downscale to 256 at upload if required.",
+    "glow": {}
   }
 }

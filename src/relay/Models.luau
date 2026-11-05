@@ -174,6 +174,11 @@ local CLIENT_MODELS = {
 	dash_ball = true,
 	dash_pendulum = true,
 	dash_platform = true,
+	wheel_disc = true,
+	wheel_basket = true,
+	petal_pink = true,
+	petal_gold = true,
+	pinecone = true,
 }
 
 -- Pieces the code colours itself (Blade Art blade, gate neon) stay untextured.

@@ -20,12 +20,15 @@ verified (GARDEN-006); v0.2 (Celestial Egg, Splash Dash) built in GARDEN-009, St
 | `World.luau` | Hatchling Valley, cart, boards, lighting |
 | `Dash.luau` | Splash Dash: the one live `Round`, entrants, carrying out `DashRules` events, prizes, collision group |
 | `DashWorld.luau` | Splash Island decks, start barrier, arches, ready pad and its prompt and label |
+| `Wheel.luau` | Petal Catch: one round per player, catches from the 5 Hz root samples, the roll and the prize (`docs/architecture/garden-wheel.md`) |
+| `WheelWorld.luau` | the Petal Patch, blossom tree, wheel stand with the Play prompt and the empty `SpinsLabel` |
 | `../garden-client/*` | Menu (panels), Hud, HatchFx (reveal), CreatureFx; display only |
 
 Pure rules: `GardenConfig` (data and types), `WorldRules` (weather, stock), `GardenRules` (beds, pads,
 pen, income), `HatchRules` (rolls, odds), `GardenProgress` (MetaRules config, sanitise, lock, login,
-offline), `DashRules` (round, sample checks, obstacle poses). Specs: `GardenConfig GardenRules HatchRules
-WorldRules GardenProgress MetaRules DashRules`.
+offline), `DashRules` (round, sample checks, obstacle poses), `WheelRules` (petal schedule, catches, tiers, roll,
+award). Specs: `GardenConfig GardenRules HatchRules WorldRules GardenProgress MetaRules DashRules
+WheelRules`.
 
 ## Must stay true
 
@@ -34,6 +37,8 @@ WorldRules GardenProgress MetaRules DashRules`.
 - A Dash outcome comes only from `DashRules` on server samples; no remote carries a position, time or hit.
 - A prize is applied in the step that accepts the finish, without yielding; `Dash.leave` grants nothing.
 - Dash calls from gardening paths go through `guarded`: a Dash fault must not stop pads, teleports or saves.
+- A wheel outcome comes only from `WheelRules` on server samples; `Wheel.leave` grants nothing; a spin is one
+  `Profiles.apply` with `WheelRules.award`. Wheel calls go through `guarded` like Dash.
 - Router checks: loaded session and plot, string action, arg nil or string <= 32, shared 0.35 s limit.
 - Stores `GardenProfile<suffix>`, `GardenIncome<suffix>`; `PRODUCTION_UNIVERSE_ID` stays nil without SHANNON.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.

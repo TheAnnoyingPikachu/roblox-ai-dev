@@ -54,6 +54,7 @@ local function v3(record: any): any
 	out.tradesToday = { day = -1, count = 0 }
 	out.milestones = {}
 	out.pad = "plain"
+	out.wheelToday = out.wheelToday or { day = -1, spins = 0 }
 	for _, c in out.creatures or {} do
 		c.c, c.fa, c.n = "none", 0, ""
 	end
@@ -103,6 +104,7 @@ describe("GardenProgress defaults", function()
 		expect(same(p.tradesToday, { day = -1, count = 0 })).toBe(true)
 		expect(next(p.milestones)).toBeNil()
 		expect(p.pad).toBe("plain")
+		expect(same(p.wheelToday, { day = -1, spins = 0 })).toBe(true)
 		expect(p.coins).toBe(100)
 		expect(p.xp).toBe(0)
 		expect(p.bedCount).toBe(3)
@@ -123,6 +125,7 @@ describe("GardenProgress defaults", function()
 		expect(same(p.login, LoginRules.defaults())).toBe(true)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(`{p.dash.day} {p.dash.prizes} {p.dash.coins}`).toBe("-1 0 0")
+		expect(`{p.wheelToday.day} {p.wheelToday.spins}`).toBe("-1 0")
 		expect(p.pity.starter).toBeNil()
 		expect((p :: any).wins).toBeNil()
 	end)
@@ -495,6 +498,7 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		expect(p.schemaVersion).toBe(3)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(same(p.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
+		expect(same(p.wheelToday, { day = -1, spins = 0 })).toBe(true)
 		expect(p.pity.celestial).toBe(0)
 		expect(p.pity.aurora).toBe(0)
 		expect(p.lock).toBeNil()
@@ -507,7 +511,7 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 			end
 		end
 		for field in p do
-			if field ~= "prizeEggs" and field ~= "dash" then
+			if field ~= "prizeEggs" and field ~= "dash" and field ~= "wheelToday" then
 				expect(expected[field] ~= nil).toBe(true)
 			end
 		end
@@ -582,6 +586,17 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		expect(same(bad.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
 		expect(GardenProgress.sanitize({ dash = 5 }, NOW).dash.day).toBe(-1)
 	end)
+
+	it("clamps wheelToday.spins to spinsPerDay and falls back to the default (decision 0016)", function()
+		local p = GardenProgress.sanitize({ wheelToday = { day = DAY + 0.5, spins = 9 } }, NOW)
+		expect(same(p.wheelToday, { day = DAY, spins = 3 })).toBe(true)
+		local bad = GardenProgress.sanitize({ wheelToday = { day = "x", spins = -1 } }, NOW)
+		expect(same(bad.wheelToday, { day = -1, spins = 0 })).toBe(true)
+		expect(same(GardenProgress.sanitize({ wheelToday = 5 }, NOW).wheelToday, { day = -1, spins = 0 })).toBe(true)
+		local kept = GardenProgress.sanitize({ wheelToday = { day = DAY, spins = 2 } }, NOW)
+		local stored = GardenProgress.sanitize(GardenProgress.snapshot(kept, 0, NOW), NOW)
+		expect(same(stored.wheelToday, { day = DAY, spins = 2 })).toBe(true)
+	end)
 end)
 
 describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function()
@@ -644,6 +659,7 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		local expected = v3(v2Record())
 		expected.schemaVersion = 3
 		expected.pity.aurora = 0
+		expected.wheelToday = { day = -1, spins = 0 } -- decision 0016
 		expect(same(p, expected)).toBe(true)
 		expect(same(record, v2Record())).toBe(true) -- input unchanged
 		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
@@ -661,6 +677,8 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		table.insert(record.index, "phoenix:celestial")
 		record.pity.aurora = 19
 		record.stock.bought.aurora = 1
+		record.schemaVersion = 3
+		record.wheelToday = { day = DAY, spins = 2 }
 		local p: any = GardenProgress.sanitize(record, NOW)
 		local expected = v3(record)
 		expected.schemaVersion = 3
@@ -763,6 +781,7 @@ describe("GardenProgress schema v3 (decision 0015)", function()
 			tradesToday = { day = DAY, count = 2 },
 			milestones = { ["20"] = true },
 			pad = "plain",
+			wheelToday = { day = -1, spins = 0 },
 		}
 	end
 

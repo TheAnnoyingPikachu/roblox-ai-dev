@@ -173,5 +173,60 @@
     "model": 90708058640493,
     "decal": 89635596724181,
     "texture": 117664669239010
+  },
+  "wheel_stand": {
+    "model": 95675509123129,
+    "decal": 89961096573509,
+    "texture": null
+  },
+  "wheel_disc": {
+    "model": 138174258423389,
+    "decal": 101877597507841,
+    "texture": null
+  },
+  "wheel_basket": {
+    "model": 115953487774215,
+    "decal": 78559448014177,
+    "texture": null
+  },
+  "petal_pink": {
+    "model": 93527896601051,
+    "decal": 129702755590565,
+    "texture": null
+  },
+  "petal_gold": {
+    "model": 91837854179531,
+    "decal": 73151584771942,
+    "texture": null
+  },
+  "pinecone": {
+    "model": 88452000750336,
+    "decal": 122016992060691,
+    "texture": null
+  },
+  "wheel_tree": {
+    "model": 121150205623910,
+    "decal": 77607558508827,
+    "texture": null
+  },
+  "creature_moth": {
+    "model": 90835297344313,
+    "decal": 105097164467776,
+    "texture": null
+  },
+  "fence_starlit_post": {
+    "model": 128886258846971,
+    "decal": 123753965073363,
+    "texture": null
+  },
+  "fence_starlit_rail": {
+    "model": 118445586788031,
+    "decal": 116130627311005,
+    "texture": null
+  },
+  "pad_clover": {
+    "model": 130242543650945,
+    "decal": 88634157811969,
+    "texture": null
   }
 }
