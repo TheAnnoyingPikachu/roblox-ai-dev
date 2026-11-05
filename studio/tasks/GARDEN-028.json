@@ -1,0 +1,52 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "GARDEN-028",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Put the v0.4 rules into the pure modules and their specs: the new TradeRules module, charms in rate and the hatch roll, the three rare weathers and the weekend event, the Lantern Moth, milestones, pet-name validation, the follower rule and schema v3 with old saves loading unchanged.",
+  "inputs": [
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "docs/game-design/game4-gdd.md §V1, §V2, §V3, §V4, §V5, §V6, §V8",
+    "docs/architecture/garden.md §2, §3.9, §3.10",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-027"
+  ],
+  "acceptance_criteria": [
+    "TradeRules.spec covers every transition and refusal of GDD V1.3, tick expiries, fairness at exactly 50% and just under, canCommit after a pick changed, give and undo idempotent and slot-preserving with index, xp and coins untouched, trades capped at 30, tradesToday rollover, heal (missing give, missing undo, void skipped, older-than-kept ignored) and a give-then-undo round trip",
+    "GardenConfig.spec: 20 species with moth after hedgehog, 7 weathers whose tables sum to 10,000 in MUTATIONS order, weekday and raw weekend odds sum to 10,000, CHARMS as 0015, INDEX_SIZE 84 equals the indexable count, MILESTONES, TRADE, NAME and the pad/starlit cosmetics present; WorldRules.spec: oddsFor sums to 10,000 for both weekend tables, weekendEvent deterministic and the same for every window of a weekend, eventFor frequencies within 1 point over 20,000 windows, eventStatus bounds",
+    "HatchRules.spec: all existing seeded rolls unchanged; a Snowfall roll gives frosted at 25% +/- 1 point over 20,000 rolls and none in Clear; the Moth only in rare weathers and only from Forest and Sunset with the 300 bp substitution; apply stores c, fa = 0, n = ''; announce true for stormy; GardenRules.spec: rate includes the charm, 49 egg-weather checks under 60% with charm expectation and Moth odds, the V6 pinned table, favourite sets fa, follower picks the latest fa then the highest id, validName accepts and refuses the V5 examples, setName stores as given",
+    "GardenProgress.spec: SCHEMA_VERSION 3; a literal v2 record and the pre-0014 record load with every field kept and the v3 defaults; sanitize keeps trades (30), tradesToday, milestones, pad, c, fa, n and strips control characters from n; claimMilestone pays once each, refuses early, adds the aurora prize at 80; title; Purity.spec stays green",
+    "GDD V8 rows for these modules are ticked; lune run tests/run, selene, stylua, validate-tasks and check-scope pass"
+  ],
+  "verification": "CI, then the GARDEN-032 QA read of the values against decision 0015",
+  "output_artifacts": [],
+  "files": [
+    "src/shared/TradeRules.luau",
+    "src/shared/GardenConfig.luau",
+    "src/shared/GardenRules.luau",
+    "src/shared/WorldRules.luau",
+    "src/shared/HatchRules.luau",
+    "src/shared/GardenProgress.luau",
+    "tests/TradeRules.spec.luau",
+    "tests/GardenConfig.spec.luau",
+    "tests/GardenRules.spec.luau",
+    "tests/WorldRules.spec.luau",
+    "tests/HatchRules.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "docs/game-design/game4-gdd.md"
+  ],
+  "tests": [
+    "TradeRules.spec.luau",
+    "GardenConfig.spec.luau",
+    "GardenRules.spec.luau",
+    "WorldRules.spec.luau",
+    "HatchRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "Economy values are decision 0015's; do not tune them here. Draw the charm last and only in a rare weather so every existing seeded spec stays valid. favourite gains a now argument: update GardenProgress and the Profiles.request handler in GARDEN-029, not here. If the V6 pinned digits differ by rounding, re-derive from docs/game-design/game4-v04-pacing-check.py and say so in the PR. Register TradeRules.spec.luau in tests/run.luau SPECS."
+}

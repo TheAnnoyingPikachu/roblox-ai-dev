@@ -1,6 +1,6 @@
-# Egg Garden: architecture (v0.3)
+# Egg Garden: architecture (v0.4)
 
-Owner: A09; v0.3 sections (3.2 `cry`, 6 sounds and looks, 9 creature models) by A11. Inputs: `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) and `docs/decisions/0008-egg-garden.md` (save schema, economy, odds, remotes, child safety), amended by `docs/decisions/0012-egg-garden-v02.md` (Celestial Egg, Splash Dash, schema v2) and `docs/decisions/0014-garden-creatures-v03.md` (19 species, 8 rarities, Aurora Egg; GDD section U). If this file and the GDD disagree on a rule, the GDD wins and this file is fixed; the resolutions in section 8 are the exception (they settle what the GDD leaves open).
+Owner: A09; v0.3 sections (3.2 `cry`, 6 sounds and looks, 9 creature models) by A11. Inputs: `docs/game-design/game4-gdd.md` (the GDD; section letters below refer to it) and `docs/decisions/0008-egg-garden.md` (save schema, economy, odds, remotes, child safety), amended by `docs/decisions/0012-egg-garden-v02.md` (Celestial Egg, Splash Dash, schema v2) and `docs/decisions/0014-garden-creatures-v03.md` (19 species, 8 rarities, Aurora Egg; GDD section U); v0.4 (3.9, 3.10, 4.5, 4.6, 5.1, 6.3, 7, 9.2) by A11 from `docs/decisions/0015-garden-v04-trading-charms.md` (safe trading, charms and event weather, followers, milestones, pet names, egg looks; GDD section V). If this file and the GDD disagree on a rule, the GDD wins and this file is fixed; the resolutions in section 8 are the exception (they settle what the GDD leaves open).
 
 ## 1. Place, files and who owns them
 
@@ -47,6 +47,12 @@ Every file under `src/relay`, `src/relay-client`, `src/night` and `src/night-cli
 | GARDEN-023 (v0.3 art) | `tools/blender/garden/**`, `assets/garden/**`, `src/shared/GardenAssets.luau`, `tests/GardenAssets.spec.luau`, `docs/assets/register.md`, `docs/assets/garden-blender-plan.md` |
 | GARDEN-024 (v0.3 rules) | `src/shared/{GardenConfig,HatchRules,GardenRules,GardenProgress}.luau`, their specs, `docs/game-design/game4-gdd.md` |
 | GARDEN-025 (v0.3 server and client) | `src/relay/Models.luau`, `src/garden/{Plots,World,GardenServer.server}.luau`, `src/garden-client/*.luau`, `docs/assets/register.md` (cry rows), `docs/architecture/garden.md`, `src/garden/CLAUDE.md` |
+| GARDEN-028 (v0.4 rules) | `src/shared/{TradeRules,GardenConfig,GardenRules,WorldRules,HatchRules,GardenProgress}.luau`, their specs, `tests/run.luau`, `docs/game-design/game4-gdd.md` (V8 ticks) |
+| GARDEN-029 (v0.4 server) | `src/garden/{Trades,GardenServer.server,Profiles,Remotes,State,Plots,World}.luau`, `src/garden/CLAUDE.md`, `docs/architecture/garden.md` |
+| GARDEN-030 (v0.4 client) | `src/garden-client/*.luau` (new `TradeFx`, `FollowerFx`, `BedFx`), `src/garden-client/CLAUDE.md` |
+| GARDEN-031 (v0.4 art) | `tools/blender/garden/**`, `assets/garden/**`, `src/shared/GardenAssets.luau`, `tests/GardenAssets.spec.luau`, `docs/assets/register.md`, `docs/assets/garden-blender-plan.md` |
+
+GARDEN-028 lands first; GARDEN-029 and GARDEN-030 code against 3.9, 3.10, 5.1 and 6.3 and share no file; GARDEN-031 shares no code file (the Moth and the egg textures appear through `Models.nightReady` when uploaded).
 
 GARDEN-024 lands first (data and specs); GARDEN-025 codes against section 3.2's `cry` and section 9's names and may start on stubs; GARDEN-023 shares no code file with either and can land in any order, because `Models.nightReady` keeps the old visual until a model is uploaded.
 
@@ -59,8 +65,8 @@ GARDEN-004 and GARDEN-005 code against the signatures in section 3 and may start
 - Same as `docs/architecture/night.md` section 2: `--!strict`, no Roblox globals, requires by string (`require("./GardenRules")`), functions return new tables and never mutate inputs, `floor(x + 1e-9)` for every floor of a product.
 - Times are integer server `os.time()` seconds passed in as `now`; days are `MetaRules.dayOf(now)` passed in as `today`. Pad accrual takes `dt` in seconds.
 - Positions are `Vec3 = { x: number, y: number, z: number }` (structurally the same as `CombatRules.Vec3`); "horizontal" means the x, z plane.
-- Ids are strings as in decisions 0008, 0012 and 0014: eggs `starter meadow forest sunset moon star celestial aurora`; species `bunny frog duck pup lamb cat owl hedgehog fox turtle deer panda lion unicorn dragon phoenix whale kirin axolotl` (GDD U1 order: rarity, then rate); mutations `normal golden moonlit rainbow celestial`; sizes `normal big huge`; weathers `clear sunbeam moonfall shower`; rarities `common uncommon rare epic legendary mythic divine secret`; gates `open friends closed`.
-- Dependency graph (no cycles): `GardenConfig` (types and data, no requires except `MetaRules` for the `Cosmetic`/`Quest` types); `WorldRules → Rng, GardenConfig`; `GardenRules → GardenConfig, WorldRules, MetaRules`; `HatchRules → Rng, GardenConfig, GardenRules, MetaRules`; `GardenProgress → MetaRules, GardenConfig, GardenRules, HatchRules`; `DashRules → GardenConfig`.
+- Ids are strings as in decisions 0008, 0012 and 0014: eggs `starter meadow forest sunset moon star celestial aurora`; species `bunny frog duck pup lamb cat owl hedgehog fox turtle deer panda lion unicorn dragon phoenix whale kirin axolotl` (GDD U1 order: rarity, then rate); mutations `normal golden moonlit rainbow celestial`; charms `none frosted blooming stormy` (v0.4); sizes `normal big huge`; weathers `clear sunbeam moonfall shower snowfall petals thunder` (the last three rare, v0.4); species also `moth` (v0.4, after `hedgehog`); rarities `common uncommon rare epic legendary mythic divine secret`; gates `open friends closed`.
+- Dependency graph (no cycles): `GardenConfig` (types and data, no requires except `MetaRules` for the `Cosmetic`/`Quest` types); `WorldRules → Rng, GardenConfig`; `GardenRules → GardenConfig, WorldRules, MetaRules`; `HatchRules → Rng, GardenConfig, GardenRules, MetaRules`; `GardenProgress → MetaRules, GardenConfig, GardenRules, HatchRules`; `DashRules → GardenConfig`; `TradeRules → GardenConfig, GardenRules, MetaRules` (v0.4).
 - XP and quest progress: `HatchRules` adds hatch and Index XP itself (GDD N); every other XP and all quest progress is added by the `GardenProgress` wrappers, the only module holding the MetaRules config. The server calls the `GardenProgress` wrapper where one exists, else the `GardenRules` function.
 
 ## 3. Pure modules: exact signatures
@@ -478,6 +484,129 @@ DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velo
 
 `tests/DashRules.spec.luau` covers every GDD T10 check value, and: phases and cancels; ready kept through a running round; order enforced (zones out of order do nothing); fall to the right checkpoint; leave at every phase; down to 1 racer; everyone leaves; capped first finisher passes the egg to the next eligible; nobody eligible; nobody finishes; a stale sample inside the settle time is neither a fall nor a strike; idle-then-hop takes the whole `minFinish`; the fastest honest walk and a walk after a fall on any leg are neither held nor flagged; every required gap is under the default jump at every moment of the platform cycle, with a safe moment in each; every Ball Alley lane is threatened; `pose` deterministic for a fixed `t`; `knock` never above `knockMax` over a sweep of times and positions; inputs never mutated.
 
+### 3.9 v0.4 changes to the pure modules (decision 0015, GDD V)
+
+**`GardenConfig` (3.2):**
+
+```luau
+export type Creature = { id: number, s: string, m: string, z: string, c: string, placed: number, fav: boolean, fa: number, n: string }
+-- c: charm id, "none" default; fa: os.time() the favourite lock was last turned on, 0 default; n: filtered pet name, "" = species name
+export type Charm = { id: string, name: string, mult: number, weather: string, bp: number } -- rolled only in `weather`
+export type Egg = { ...existing..., event: { s: string, bp: number, from: string }? } -- Moth substitution in a rare weather (V2.4)
+export type TradeRecord = { id: string, at: number, with: number, gave: Creature, got: Creature, gotId: number, undone: boolean }
+export type Profile = {
+	...existing fields...,
+	trades: { TradeRecord }, -- v3, newest last, at most TRADE.kept
+	tradesToday: { day: number, count: number }, -- v3, day -1 until the first trade
+	milestones: { [string]: boolean }, -- v3, "20" | "40" | "60" | "80" -> true
+	pad: string, -- v3, cosmetic slot, "plain" default
+}
+
+GardenConfig.CHARMS: { Charm } -- frosted 1.5 snowfall 2500; blooming 2 petals 1500; stormy 3 thunder 1000 (V2.1)
+GardenConfig.WEATHERS: { Weather } -- clear, sunbeam, moonfall, shower, snowfall, petals, thunder (V2.2 tables)
+GardenConfig.WEATHER_ODDS -- weekday 5200/2500/1500/500/100/100/100; weekend 2900/3500/2000/1000/200/200/200 (raw)
+GardenConfig.WEATHER_EVENT_BONUS = 800 -- moved from clear to the weekend's event weather by WorldRules.oddsFor
+GardenConfig.RARE_WEATHERS = { "snowfall", "petals", "thunder" }
+GardenConfig.SEEDS = { stock = 9001, weather = 4242, event = 7777 }
+GardenConfig.SPECIES -- 20: `moth` Lantern Moth, rare, 55, after hedgehog (U1 order); cry nil until registered
+GardenConfig.INDEX_SIZE = 84
+GardenConfig.TRADE = { perDay = 3, range = 15, fair = 0.5, hold = 10, confirm = 20, invite = 30, pick = 120, undo = 600, kept = 30, emoteGap = 1, declineGap = 60, emotes = 4 }
+GardenConfig.MILESTONES: { { at: number, coins: number, title: string?, egg: string? } } -- 20 5000 "Hatchling Keeper"; 40 50000; 60 1000000; 80 0 "Garden Legend" egg "aurora"
+GardenConfig.NAME = { max = 20, cooldown = 10, perDay = 3 }
+GardenConfig.COSMETICS -- adds pad "plain" (level 1, default), pad "clover" Clover Pads (index 40), fence "starlit" Starlit (index 60)
+
+GardenConfig.charm(id: string): Charm? -- "none" returns nil; a creature with c = "none" multiplies by 1
+GardenConfig.charmFor(weather: string): Charm? -- nil for the four old weathers
+GardenConfig.isRare(weather: string): boolean -- charmFor ~= nil
+```
+
+`indexable` is unchanged (charms are not part of the key). The `forest` row gets `event = { s = "moth", bp = 300, from = "frog" }`, `sunset` `{ s = "moth", bp = 300, from = "cat" }`; their `odds` stay U2.
+
+**`WorldRules` (3.3):**
+
+```luau
+WorldRules.week(unix: number): number -- floor((floor(unix / 86400) + 3) / 7), Monday-based, matches weekday()
+WorldRules.weekendEvent(unix: number): string -- RARE_WEATHERS[Rng.int(Rng.seed(week(unix), SEEDS.event), 1, 3)]
+WorldRules.oddsFor(unix: number): { GardenConfig.Odds } -- weekday table as is; weekend: EVENT_BONUS moved from clear to weekendEvent(unix); always sums to 10000
+WorldRules.eventFor(window: number): string -- now picks from oddsFor(window * 600)
+WorldRules.eventStatus(unix: number): { weather: string, startsAt: number, endsAt: number, active: boolean } -- this week's event, Saturday 00:00 to Monday 00:00 UTC; for GardenStatus.event
+```
+
+**`GardenRules` (3.4):**
+
+```luau
+GardenRules.rate(c: Creature): number -- base * mutation * size * charm (charm "none" = 1)
+GardenRules.favourite(p: Profile, id: number, now: number): (Profile, boolean) -- toggles; sets fa = now when turning on
+GardenRules.follower(p: Profile): Creature? -- fav with the highest fa, then the highest id
+GardenRules.validName(raw: string): string? -- trimmed; 1..20; [A-Za-z0-9 '-]; no double spaces; nil otherwise
+GardenRules.setName(p: Profile, id: number, filtered: string): (Profile, boolean) -- owned; stores n (already filtered by the server)
+GardenRules.grant -- sets c = "none", fa = 0, n = "" (0013 catalogue may also grant a charm: arg species:mutation:size[:charm])
+```
+
+**`HatchRules` (3.5):**
+
+```luau
+export type Outcome = { egg: string, s: string, m: string, z: string, c: string, forced: boolean }
+HatchRules.oddsFor(egg: string, weather: string): { GardenConfig.Odds } -- egg.odds, with event.from reduced by event.bp and event.s added, only when isRare(weather)
+HatchRules.rollSpecies(egg, pity, rng, weather: string?) -- uses oddsFor; weather nil = the plain odds (old call sites and specs unchanged)
+HatchRules.rollCharm(weather: string, rng: Rng.State): (string, Rng.State) -- "none" with no draw unless charmFor(weather); else bp in 10000 gives the charm
+HatchRules.roll -- draw order species, mutation, size, charm; starter: no draws, c = "none"
+HatchRules.apply -- known also requires GardenConfig.charm(o.c) or o.c == "none"; creature gets c, fa = 0, n = ""
+HatchRules.announce(o) -- also true for o.c == "stormy"
+```
+
+**`GardenProgress` (3.6):**
+
+```luau
+GardenProgress.SCHEMA_VERSION = 3 -- decision 0015
+GardenProgress.CONFIG.slots = { fence = "picket", can = "tin", pad = "plain" }
+GardenProgress.defaults(now) -- plus trades {}, tradesToday { day = -1, count = 0 }, milestones {}, pad "plain"
+GardenProgress.sanitize(record, now?) -- v3 step after dash: trades (list, each with a 16-char id, at, with, gave and got through the creature sanitiser, gotId, undone; at most TRADE.kept, newest kept), tradesToday (dayNumber, count 0..perDay), milestones (only "20" "40" "60" "80" true), pad (known pad cosmetic and unlocked, else "plain"); creatures: c known charm or "none", fa count, n string with %c stripped and cut to 20 bytes
+GardenProgress.claimMilestone(p: Profile, n: number, today: number): (Profile, boolean, number) -- #index >= n, not claimed; coins (cap MAX_COINS), prizeEggs[egg] + 1 when set; returns coins paid
+GardenProgress.title(p: Profile): string? -- "Garden Legend" if milestones["80"], else "Hatchling Keeper" if ["20"], else nil
+GardenProgress.favourite(p, id, now) -- wrapper passing now (Profiles.request calls it)
+GardenProgress.hatch -- unchanged signature; quest stat mutants counts m ~= "normal" (a charm alone is not a mutant)
+```
+
+### 3.10 `TradeRules` (new, pure)
+
+Pure trade state machine and the two idempotent profile changes (GDD V1). Same conventions as section 2; `now` is `os.time()`. Depends on `GardenConfig`, `GardenRules`, `MetaRules` only.
+
+```luau
+export type Side = { user: number, pick: number?, ready: boolean, confirmed: boolean }
+export type State = "proposed" | "picking" | "hold" | "confirm" | "committing" | "done" | "cancelled"
+export type Trade = { state: State, a: Side, b: Side, at: number, id: string?, reason: string?, emoteAt: { [number]: number } }
+-- at: when the current state expires (proposed +30, picking +120, hold +10, confirm +20; 0 in committing, done, cancelled)
+export type Ledger = { id: string, at: number, a: number, b: number, ca: Creature, cb: Creature, undoAt: number?, void: boolean? }
+export type Action = "accept" | "cancel" | "confirm" | "pick" | "emote"
+
+TradeRules.new(a: number, b: number, now: number): Trade -- proposed
+TradeRules.side(t: Trade, user: number): (Side?, Side?) -- mine, theirs; nil when not in the trade
+TradeRules.value(c: Creature): number -- GardenRules.rate(c)
+TradeRules.fair(x: Creature, y: Creature): boolean -- min(value) >= TRADE.fair * max(value)
+TradeRules.unfairTo(x: Creature, y: Creature): number -- 0 fair; 1 when x's owner gives the more valuable one; 2 when y's does
+TradeRules.tradable(p: Profile, id: number): (Creature?, string?) -- owned and not fav; reason "missing" | "fav"
+TradeRules.tradesToday(p: Profile, today: number): number -- 0 when tradesToday.day ~= today
+TradeRules.canTrade(p: Profile, today: number): boolean -- tradesToday < TRADE.perDay
+TradeRules.step(t: Trade, user: number, action: Action, arg: number?, now: number): (Trade, boolean, string?)
+-- the pure transitions of GDD V1.3: accept in proposed (by b) -> picking; pick in picking (own creature id; clears both ready) ; accept in picking
+-- with both picks -> ready, both ready -> hold (at = now + 10); confirm in confirm -> confirmed, both -> committing; cancel before
+-- committing -> cancelled (reason "declined" in proposed by b, else "cancelled"); emote: at most one per TRADE.emoteGap per user, arg 1..emotes,
+-- never changes state (ok true, the server forwards it). Refusals return the trade unchanged with a reason.
+TradeRules.tick(t: Trade, now: number): Trade -- hold past at -> confirm (at = now + 20); any other state past at -> cancelled "expired"
+TradeRules.canCommit(pa: Profile, pb: Profile, t: Trade, today: number): (boolean, string?, number?) -- both picks tradable, fair, both canTrade; reason "missing" | "fav" | "unfair" | "limit" and the side (1 | 2) the message names
+TradeRules.ledger(t: Trade, pa: Profile, pb: Profile, id: string, now: number): Ledger -- ca = a's pick from pa, cb = b's pick from pb
+TradeRules.give(p: Profile, user: number, L: Ledger, today: number): Profile -- V1.4 step 3; idempotent on trades[].id; unchanged profile when the given creature is not there as recorded
+TradeRules.canUndo(p: Profile, id: string, now: number): (boolean, string?) -- record present, not undone, now - at <= TRADE.undo, the got creature (gotId) present; reason "missing" | "undone" | "late" | "released"
+TradeRules.undo(p: Profile, user: number, L: Ledger): Profile -- idempotent on undone; removes the got creature, re-adds the gave creature (new id, same slot), marks undone
+TradeRules.heal(p: Profile, user: number, mine: { Ledger }, confirmed: (Ledger) -> boolean, now: number): Profile
+-- for each record in `mine`, oldest first, not void, newer than the oldest kept record when #trades == kept: if not in trades and confirmed(L) -> give;
+-- if L.undoAt and the record is not undone -> undo. `confirmed` is the server's counterpart-ledger lookup (it yields; heal calls it only for missing records)
+TradeRules.status(t: Trade, names: { [number]: string }, creatures: { [number]: Creature? }): { [string]: any } -- the `trade` Fx payload (section 5)
+```
+
+`tests/TradeRules.spec.luau` must cover: every transition and every refusal of V1.3 (wrong user, wrong state, pick of a favourite, pick of a creature not owned, accept without both picks, confirm before the hold ends, cancel in every state, emote gap and range); `tick` expiries; fairness at exactly 50% (allowed) and just under (refused) with charms and sizes in the value; `canCommit` after a pick was released or favourited; `give` idempotent (applied twice equals once), refuses on a changed creature, keeps the pad or storage slot, never touches `index`, `xp` or `coins`, caps `trades` at 30 and increments `tradesToday` with day rollover; `undo` idempotent, refuses when the got creature is gone, returns the creature to the right slot; `heal` applies a missing give, a missing undo, skips void and ignores records older than the oldest kept; a round trip give then undo on both profiles equals the originals except `trades`, `tradesToday` and `nextId`; inputs never mutated.
+
 ## 4. Server (`src/garden`)
 
 ### 4.1 Files
@@ -485,12 +614,13 @@ DashRules.knock(o: GardenConfig.Obstacle, pose: Pose, root: Vec3): Vec3? -- velo
 | File | Kind | Owns |
 |---|---|---|
 | `GardenServer.server.luau` | Script | Entry point. Requires everything; plot assignment on join (lowest free 1 to 6) and release on leave; character spawn at the gate; `Request` router (common checks from decision 0008, world checks, then `Profiles.request`); `like` and `home`; bed prompt handlers (`Hatch`, `Water`); the Heartbeat loop (4.3); `GardenStatus`; hatch announcements; `BindToClose`. |
-| `State.luau` | Module | The single mutable live state: `State.live: { [Player]: Live }` with `Live = { plot: number, pads: GardenRules.Pads, lastRequest: number, inside: { [number]: number }, visits: { [number]: boolean }, friends: { [number]: boolean }, boardIncome: number, boardAt: number }` (`inside`: plot -> seconds a disallowed player has been inside; `visits`: own pads already counted as a collect during the current visit; `friends`: IsFriendsWith cache by owner UserId). |
+| `State.luau` | Module | The single mutable live state: `State.live: { [Player]: Live }` with `Live = { plot: number, pads: GardenRules.Pads, lastRequest: number, inside: { [number]: number }, visits: { [number]: boolean }, friends: { [number]: boolean }, boardIncome: number, boardAt: number, nameAt: number, renames: { [number]: { day: number, count: number } }, declined: { [number]: number } }` (v0.4: `nameAt` os.clock of the last naming, `renames` per creature today, `declined` UserId -> os.time the player last declined or cancelled a trade with them) (`inside`: plot -> seconds a disallowed player has been inside; `visits`: own pads already counted as a collect during the current visit; `friends`: IsFriendsWith cache by owner UserId). |
 | `Remotes.luau` | Module | Copied from Night: creates `ReplicatedStorage.GardenRemotes` (`Request`, `Fx`) and `ReplicatedStorage.GardenStatus`; returns them plus `fx(kind, data)` = `Fx:FireAllClients` and `notice(player, text)` = `Fx:FireClient(player, "notice", { text = text })`. |
 | `Profiles.luau` | Module | Copied from Night (4.2). |
 | `Plots.luau` | Module | Builds the 6 plot shells once (fence, gate, sign, 12 bed sites, 20 pad sites, decor, under 300 parts each); `refresh(plot, profile)` rebuilds the changing parts (bed eggs and locks, pad locks, creature models, sign text, fence style, prompt `Enabled`); `clear(plot)`; geometry. |
 | `Dash.luau` | Module | v0.2. The one live `Round` (a `DashRules.Round`); turns player state into entrants, runs `start`, `step` and `sample`, and carries out their events: teleports, start arch, `Profiles.apply` for prizes, Fx, notices. Collision group for characters. |
 | `DashWorld.luau` | Module | v0.2. Builds the static Splash Island once: decks, rails, water plane, arches, ready pad and its prompt and label, under `Workspace.Garden.Dash`. Under 150 parts. Moving obstacles are not here: they exist only on clients. |
+| `Trades.luau` | Module | v0.4 (4.5). Live trades, the `GardenTrades<suffix>` ledger, the commit, undo and heal sequences. |
 | `World.luau` | Module | Builds Hatchling Valley (GDD I1, I4 lighting baseline): plaza, Great Egg Tree (`Models.spawn("eggTree")`), cart with six display eggs (spacing 2.8) and its "Shop" prompt (opens the client's EGGS panel; the prompt itself changes nothing), forecast board, Top Gardens board, Wild Meadow gate, paths, meadows (at most 600 flowers), river, 16 blossom trees (`Models.spawn("sakura")`), windmill, barn, far scenery. Under 6,000 parts with the plots. |
 
 Server module APIs (signatures for cross-file calls):
@@ -626,6 +756,46 @@ The op is pure and captures `today`, so re-applying it to the stored record is s
 - **Instances:** `Workspace.Garden.Plots.Plot<n>` (Model; attributes `Owner` UserId or 0, `Gate`) with `Beds.Bed<i>` (Model; attributes `Locked`, `Egg`, `Planted`, `Ready`; child `Soil` part holding the `Hatch` and `Water` ProximityPrompts, `MaxActivationDistance` 10; child `Egg` part when planted), `Pads.Pad<i>` (Part; attributes `Locked`, `Pending`), `Creatures.<id>` (MeshPart from `Models.spawn(species)` or a part-built fallback Model; anchored on its pad; attributes `Id`, `S`, `M`, `Z`, `Pad`, `Hatched` (`workspace:GetServerTimeNow()` at creation)), `Sign` (SurfaceGui), `Fence`.
 - **Mutation looks** are applied client-side (`CreatureFx`) from the `M` attribute; the server sets only the base mesh, texture and scale (`SIZES[z].scale`).
 
+### 4.5 Trades on the server (v0.4, GDD V1)
+
+New file `src/garden/Trades.luau` (Module). Owns the live trades (`{ [Player]: Trade }`, one entry per player pointing at the shared pair table), the ledger store, the commit and undo sequences and the heal. Nothing in it decides a value: `TradeRules` does.
+
+```luau
+Trades.propose(player: Player, targetUserId: number): boolean -- V1.1 checks (friends both ways through GardenServer.isFriend with wait = true, same server, within 15, both online, both under the daily limit, neither trading, decline cooldown), then TradeRules.new; sends `trade` to both
+Trades.act(player: Player, action: "accept" | "cancel" | "confirm" | "pick" | "emote", arg: number?): boolean -- distance re-check, TradeRules.step, sends `trade` (or `tradeEmote`) to both; a refusal with a reason sends a notice
+Trades.undo(player: Player, id: string): boolean -- both present and online, canUndo on both current profiles, then the undo sequence
+Trades.locked(player: Player, id: number): boolean -- the creature is picked in a live trade (router refuses release, store, place, favourite, name on it)
+Trades.step(now: number) -- 1 Hz: TradeRules.tick; distance and presence checks (cancel "apart" | "left" | "offline"); committing -> commit sequence once
+Trades.leave(player: Player) -- PlayerRemoving: cancel "left"
+Trades.heal(player: Player, profile: Profile) -- from Profiles.load after login; reads the ledger (GetAsync, 3 tries; on failure skips, a later load tries again) and applies TradeRules.heal through Profiles.apply(player, "tradeHeal", ...)
+Trades.close() -- BindToClose: cancel every live trade; a commit already past its ledger writes finishes its applies (they do not yield)
+```
+
+**Commit sequence** (one spawned thread per trade, state `committing`; both clients show the spinner):
+
+1. `id = string.sub(string.gsub(HttpService:GenerateGUID(false), "-", ""), 1, 16)`; `L = TradeRules.ledger(t, pa, pb, id, now)` from the current in-memory profiles.
+2. `ledgerAppend(a, L)` then `ledgerAppend(b, L)`: `UpdateAsync("player_<UserId>", list -> list + L, keep the newest 30)`, `withRetries` as Profiles. First fails: cancel "failed". Second fails: cancel "failed" and spawn `ledgerMark(a, id, { void = true })` (best effort).
+3. Both profiles may have changed during the yields: `TradeRules.canCommit(pa, pb, t, today)` again; on refusal cancel with that reason and mark both ledger copies void (best effort).
+4. **No yield from here:** `Profiles.apply(a, "trade", function(p) return TradeRules.give(p, a.UserId, L, today) end)`, then the same for `b`. `today` and `L` are captured, so the re-apply inside `UpdateAsync` is deterministic and `give`'s id guard makes a retried flush a no-op. Then `state = done`, `trade` Fx with the record to both, and the two `Profiles.Changed` refreshes already rebuild both plots.
+5. `Profiles.apply` with label `"trade"` or `"tradeUndo"` increments `session.trades` like `prizes`, so a lost lock can say "a trade may not have saved; it will be checked when you next play" (`TRADE_LOST_TEXT`).
+
+**Undo sequence:** `Trades.undo` → both present, `canUndo` on both → `ledgerMark(a, id, { undoAt = now })`, `ledgerMark(b, ...)` (first fails: notice "Could not undo right now, try again"; second fails: notice, and the first mark stays: the heal would apply an undo to `a` only if `b`'s copy also carries `undoAt`, so it does nothing) → no yield: `Profiles.apply(a, "tradeUndo", undo(L))`, `Profiles.apply(b, "tradeUndo", undo(L))` → `trade` Fx `undone` to both.
+
+**Heal** (`Profiles.load`, after `apply(login)` and before the player can act): `mine = GetAsync("player_<UserId>") or {}`; `confirmed = function(L) return ledgerHas(other, L.id, L.undoAt ~= nil) end` (one `GetAsync` of the counterpart key per missing record, cached per load); `Profiles.apply(player, "tradeHeal", function(p) return TradeRules.heal(p, player.UserId, mine, confirmedSync, now) end)` where `confirmedSync` reads from the cache filled before the apply (the apply itself must not yield: the server resolves every needed counterpart lookup first, then applies). A heal that changes anything logs the trade ids.
+
+**GardenServer changes:** `REQUEST_ARGS` adds `tradePropose = true`, `tradeAccept = false`, `tradeCancel = false`, `tradeConfirm = false`, `tradePick = true`, `tradeEmote = true`, `tradeUndo = true`, `name = true`, `claimMilestone = true`; `ID_ARGS` adds `tradePropose`, `tradePick`, `tradeEmote`; `tradeUndo` must match `^%x+$` with length 16; `claimMilestone` must be one of `20 40 60 80`; `name` must match `^(%d+):(.+)$` (section 4.6). `release`, `store`, `place`, `favourite` and `name` are refused while `Trades.locked(player, id)`. `onLeave` calls `Trades.leave` before banking; `slowTick` calls `Trades.step(now)` under `guarded`; `BindToClose` calls `Trades.close`. `status.event = WorldRules.eventStatus(now)` joins `GardenStatus`. `publish` (Profiles) sets `Follower` from `GardenRules.follower(profile)`.
+
+### 4.6 Pet names on the server (v0.4, GDD V5)
+
+The one `Request` that yields before its apply. In `onRequest`, action `name`:
+
+1. `local idText, raw = string.match(arg, "^(%d+):(.+)$")`; `id = tonumber(idText)`; `name = GardenRules.validName(raw)`; refuse when nil, when `GardenRules.canName(profile, id)` is false, when `Trades.locked(player, id)`, when `os.clock() - live.nameAt < NAME.cooldown` (10 s), or when `live.renames[id]` is at `NAME.perDay` (3) for `today` (server memory; reset on a new day or rejoin).
+2. `live.nameAt = os.clock()`; `renames[id]` += 1 now (a failed filter still spends one: it protects the filter budget).
+3. `local ok, result = pcall(function() return TextService:FilterStringAsync(name, player.UserId):GetNonChatStringForBroadcastAsync() end)`; not ok, not a string, or empty → `notice` "That name could not be checked. Try again in a moment." and `return false`.
+4. After the yield: `profile = Profiles.get(player)`; if nil or `not GardenRules.canName(profile, id)` → false. Then `Profiles.apply(player, "name", function(p) return (GardenRules.setName(p, id, result)) end)`; `return true`. The filtered string is captured, so the re-apply writes the same text.
+
+`Plots.refresh` reads `n` into the pad tag and sets attribute `N` on the creature; the server never puts a name into `Fx("announce")`, the board or a notice to other players.
+
 ## 5. `Fx` payloads
 
 `Fx:FireAllClients(kind: string, data: table)`, except `notice` (`FireClient`). `owner`, `by` = UserId; `bed`, `pad` = index; `id` = creature id.
@@ -645,6 +815,19 @@ The op is pure and captures `today`, so re-applying it to the stored record is s
 | `dashOver` | `{ winner, prize, reason }` | to all: display names or nil; `reason` `"finished"`, `"time"` or `"empty"` |
 
 `GardenStatus` adds `dash = { phase, ready, need, at, goAt, racers }` (`DashRules.status`), and `stock.celestial` through `WorldRules.stockFor`. `at` and `goAt` are server times, so 1 Hz is enough: clients count down locally with `workspace:GetServerTimeNow()`. No new player attributes: `prizeEggs` and `dash` are in `Profile`.
+
+### 5.1 v0.4 payloads (decision 0015)
+
+| `kind` | `data` | Sent when |
+|---|---|---|
+| `hatch` | `{ owner, bed, id, s, m, z, c }` | as before, plus the charm (`"none"` most of the time) |
+| `announce` | `{ name, s, m, z, c }` | as before; also for `c == "stormy"`. Never carries a pet name |
+| `trade` | `{ state, id?, reason?, at, a = { user, name, pick?, ready, confirmed }, b = { ... }, record? }` to the two players only (`fxTo`), on every state change. `pick` = `{ id, s, m, z, c, n, rate }` (the creature as the server sees it; `rate` = `GardenRules.rate` so the panel shows the server's value); `at` = `os.time()` the state expires (the client draws the 10 s bar from it); `reason` on `cancelled`: `declined cancelled expired apart left offline unfair limit fav missing failed`; `record` on `done` and `undone`: this player's `TradeRecord`. |
+| `tradeEmote` | `{ by, emote }` to the other player only; `emote` 1..4 | an accepted `tradeEmote` |
+| `notice` | `{ text }` | the kind refusals of V1.1, V1.2, V1.5 and V5 |
+
+`GardenStatus` adds `event = { weather, startsAt, endsAt, active }` (`WorldRules.eventStatus`) for the forecast board and the Hud chip; `weather` can now be any of 7 ids. **Player attributes:** `Follower` (creature id, 0 none; set by `publish`). **Creature model attributes:** `C` (charm id) and `N` (pet name) beside `Id S M Z Pad Hatched`. No other new remote, attribute or Fx kind: milestones and names show through `Profile` and `LastReward`.
+
 
 ## 6. Client (`src/garden-client`)
 
@@ -696,10 +879,27 @@ Limits that must stay true: one `Sound` per cry, destroyed on `Ended` (as `Clien
 - **Reveal and preview:** `HatchFx`'s reveal copy and the ADMIN `ViewportFrame` clone get the same `applyLook` result, so the player sees one Celestial, not two.
 - **Secret rarity text:** wherever a rarity colour is used as text on a dark or textured background (the pad tag's rarity line in `Plots.tag`, the reveal name card and the announcement banner in `HatchFx` and `Hud`), a Secret draws with `TextStrokeColor3` (235, 230, 255) and `TextStrokeTransparency` 0.2, or as white text on a midnight pill. `ClientState.rarityColour` itself returns the true colour (60, 55, 85) for fills, chips and bursts. Divine (90, 230, 230) needs nothing.
 
+### 6.3 v0.4 client (GDD V)
+
+| File | v0.4 change |
+|---|---|
+| `ClientState.luau` | `settings` gains `followers = true`, `trades = true`; `creatureName(s, m, z, c, n)` ("Sprinkles the Berry Cat", else "Frosted Golden Berry Cat" with the charm first); `charmName`, `CHARM_COLOURS` (frosted 170 220 255, blooming 255 150 190, stormy 110 100 160); `weatherName` for 7 ids; `Status.event`; `title(p)` from `GardenProgress.title`; `tradeState` (the last `trade` payload) with `TradeChanged` |
+| `Menu.client.luau` | INDEX: 84 cells (`indexable`), a CLAIM card at the top when `#index >= n` and `milestones[n]` is unset (gold dot), each card names its reward; `claimMilestone <n>`. CREATURES: rows show the pet name and the charm, a NAME button opening a TextBox card (20 chars, live count, OK sends `name "<id>:<text>"`, refused characters greyed as typed), Favourite as before. LOCKER: a PADS row (`plain`, `clover`) and the `starlit` fence. STATS: a "Trades" list (last 30: date, with, gave, got, undone; UNDO button while `TradeRules.canUndo` says so, sends `tradeUndo <id>`). DASH panel's prize-egg list titled "Prize eggs" (the 80 voucher lands there). SETTINGS: Followers and Trade invites toggles. ODDS card: the Moth row ("only in Snowfall, Petal Storm or Thunder") and, during a rare weather, the charm line ("Frosted ×1.5: 25.00% of hatches now"). Index silhouettes list the rare weathers for the Moth |
+| `Hud.client.luau` | weather chip and the two next windows for 7 weathers; a "This weekend: Thunder" line from `status.event` (Monday to Friday), "Thunder weekend!" while active; a TRADE button when a Roblox friend (`LocalPlayer:IsFriendsWith` cached per session) is within 15 studs, sending `tradePropose <userId>`; hidden when `settings.trades` is off; announcement banners carry the charm name |
+| `TradeFx.client.luau` (new) | the Trade panel driven only by `trade` payloads: invite card (ACCEPT, NO, 30 s), two columns (mine, theirs) with the pick cards (model preview from `GardenSpecies`, name, rarity, mutation, size, charm, coins/s), a picker list of own creatures (favourites greyed "Favourite", picked-elsewhere greyed), the fairness line ("Fair" green, or the server's kind message), TRADE, the 10 s bar (`at - now` over `TRADE.hold`, "Hold on... either of you can still cancel"), CONFIRM with the sentence "Give X, get Y", CANCEL in every state before `committing`, a spinner in `committing`, the done card with UNDO (visible for 10 min), the four emote buttons and the incoming emote pop; a cancelled card says the reason in plain words and closes after 4 s. Sends `tradeAccept`, `tradeCancel`, `tradeConfirm`, `tradePick <id>`, `tradeEmote <n>`, `tradeUndo <id>` only; decides nothing (it never computes fairness, it displays `rate` from the payload) |
+| `FollowerFx.client.luau` (new) | V3: one follower view per player with `Follower ~= 0`, cloned from `GardenSpecies`, scaled, looks through `CreatureFx.applyLook`, name tag (pet name or species) under `Workspace.GardenFollowers`; hop pacing from `ClientState.followerStep(view, ownerRoot, dt)`; hidden for racers and during the owner's reveal; cry on a hop (0.2, 6 s per follower); every part `Anchored`, `CanCollide`, `CanQuery`, `CanTouch` false. Also draws the **player title tag** ("Hatchling Keeper" / "Garden Legend") over characters from `title(profileOf(player))`. Honours `settings.followers` |
+| `CreatureFx.client.luau` | charm looks layered after the mutation look (V2.1 table; emitters on `main`, the Stormy light flicker in the frame loop; never a repaint); `applyLook(view)` also applies the charm so followers and previews get both; skips bob and hop for views under `GardenFollowers` (FollowerFx moves them); idle cries unchanged |
+| `HatchFx.client.luau` | the reveal card shows the charm ("Stormy!" in its colour) and the pet name slot (empty at a hatch); weather looks for Snowfall (falling snow, cool light), Petal Storm (pink petals, warm light), Thunder (dark sky, distant flashes every 6 to 12 s, no loud sound: a soft rumble at 0.3) with stingers (registered); crack sound per egg from V7 |
+| `BedFx.client.luau` (new) | V7 egg looks per bed: particle, light and the Aurora Highlight by `Egg` attribute of the bed; off beyond 40 studs from the camera; at most 2 emitters per bed, lights on Moon and above only, the Aurora Highlight only within `HIGHLIGHT_BUDGET` (shared counter with `CreatureFx` through `ClientState.highlights`); removed when the bed empties. The growth scale and ripe wobble stay in `HatchFx` |
+| `DashFx.client.luau` | no change; followers are `CanQuery` false so the platform carry ray ignores them |
+
+Clients never write server state; the Trade panel shows the server's `rate` and reasons; the name TextBox sends raw text and shows what comes back in the profile.
+
 ## 7. Scaffolding
 
 - `garden.project.json` (section 1), `src/garden/.gitkeep`, `src/garden-client/.gitkeep`.
 - CI builds `build/garden.rbxl`; `publish.yml` offers `garden-staging` and maps `garden-*` to `garden.project.json`. The `garden-staging` environment (variables `ROBLOX_UNIVERSE_ID`, `ROBLOX_PLACE_ID`, secret `ROBLOX_API_KEY`) is created by a human.
+- **DataStores (v0.4):** `GardenProfile<suffix>` (profiles, key `player_<UserId>`), ordered `GardenIncome<suffix>` (board), and new `GardenTrades<suffix>` (standard store, key `player_<UserId>`, value a list of at most 30 `TradeRules.Ledger` records, newest last; written only by `Trades.luau`; the same `_studio` / `_staging` / production suffix rule as 0008; `PRODUCTION_UNIVERSE_ID` still nil without SHANNON). The ledger is never read by a client and never deleted by code; SHANNON can read it for moderation.
 - **Publish checklist (Garden places):** set **Max Players = 6** (Creator Hub > the place > Settings, or Studio Game Settings > Places) to match `Plots.COUNT`. A place file cannot carry this setting, so `publish.yml` cannot set it; `GardenServer` warns in the server log when `Players.MaxPlayers` is higher, and extra players wait for a plot with a notice.
 
 ## 8. Resolutions of points the GDD leaves open
@@ -730,6 +930,13 @@ Limits that must stay true: one `Sound` per cry, destroyed on `Ended` (as `Clien
 24. A round has no results phase: racers go home at once, and the card shows over the garden.
 25. `Dash` owns its round state outside `State.live`, because a round outlives any one player.
 26. Times in `DashRules` use `GetServerTimeNow` floats, not `os.time()`: finish times and the leg floors need sub-second values.
+27. (v0.4) A trade id is 16 hex characters, not a GUID, so `tradeUndo <id>` fits the 32-character `Request` argument.
+28. (v0.4) The arriving creature takes the leaving creature's pad or storage slot, so a full garden never refuses a trade or an undo.
+29. (v0.4) The trade ledger is keyed per player (two writes per trade) rather than per trade, because the heal at load must find a player's trades without an index.
+30. (v0.4) `name` is the one action whose argument holds two parts (`"<id>:<name>"`) and the one `Request` that yields (the filter) before its apply; the rate limit and a 10 s naming cooldown bound the filter calls.
+31. (v0.4) The rename limit per creature per day lives in server memory, not the save: it protects the filter budget, and a rejoin resetting it costs nothing.
+32. (v0.4) Charm chances, not multipliers, keep the 60% rule: each rare weather's expected mutation × charm stays under Rainbow Shower's ×2.0.
+33. (v0.4) Index-count cosmetics (Clover Pads at 40, Starlit at 60) unlock by the existing `index` kind; the milestone claim pays the coins, title or voucher. No new unlock kind in `MetaRules`.
 
 ## 9. Models and naming
 
@@ -782,3 +989,14 @@ Every species gets a custom Blender model named **`creature_<id>`** (`creature_b
 | Upload | the Director's upload step as for the eggs (`tools/blender/garden/README.md`); until it runs, `model = nil` in `GardenAssets` and nothing changes in game. A register row per model, as the egg rows. |
 
 Manifest entries for the 19 models follow the egg entries' shape: `target_size_studs`, `tris_budget` 3000, `priority` (P1 for the ten new species, which have only the part fallback; P2 for the nine with a generated mesh), `replaces` "Plots.makeCreature (Models.spawn <id> or fallbackCreature)", `script` `tools/blender/garden/assets/creatures.py`, and `notes` with the front and height rule.
+
+### 9.2 v0.4 models and textures (decision 0015, GDD V2.4, V4, V7)
+
+| Name | Where | Target size (studs) | How code uses it | Fallback |
+|---|---|---|---|---|
+| `creature_moth` | `Plots.makeCreature`, `GardenSpecies`, followers | height about 3.2, wings within 6 × 6, one mesh, origin at the base centre, front on Blender −Y (9.1 contract) | as every `creature_<id>` | the part fallback with a `FALLBACK.moth` colour (pale amber) |
+| `egg_starter` … `egg_aurora` (8) | `Plots.egg` (beds and cart) | unchanged 2.2 × 3 × 2.2 | **re-baked 1024 textures** per V7; same asset names, new texture ids in `GardenAssets` (`Models.night` applies whatever is uploaded) | the current texture |
+| `pad_clover` | `Plots.refresh` pad parts when `pad == "clover"` | decal 256 × 256, clover on green | `Decal` on the pad top face, pad colour (120, 190, 90) | plain green pad, no decal |
+| `fence_starlit` posts and rail | `Plots.refresh` fence when `fence == "starlit"` | post 1 × 4 × 1, rail 6 × 0.4 × 0.3 | as the other fence styles (colours from the cosmetic row: (40, 45, 100), (235, 230, 255)); one `PointLight` per 3 posts, range 6, within the plot's light budget | part fence in those colours, no lights |
+
+Sounds to register before use (rule 9, licensed partners only): the Moth cry (soft flutter), five egg crack variants (twig snap, warm chime, low bell, bright chime, aurora shimmer), three weather stingers (Snowfall, Petal Storm, Thunder) and a soft thunder rumble. Nothing plays until its row exists and its id is in the client table.

@@ -1,0 +1,39 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "GARDEN-032",
+  "owner": "A15",
+  "verifier": "A04",
+  "task_type": "test",
+  "objective": "Independent QA and security review of Egg Garden v0.4 (GARDEN-028 to GARDEN-031) against decision 0015 and GDD section V, with the trade safety rules tried from a second client and the evidence for the v0.4 checkpoint.",
+  "inputs": [
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "docs/game-design/game4-gdd.md §V",
+    "docs/architecture/garden.md §3.9, §3.10, §4.5, §4.6, §5.1, §6.3",
+    "docs/checkpoints/GARDEN-V04.md",
+    "docs/qa/garden-v03-review.md"
+  ],
+  "dependencies": [
+    "GARDEN-028",
+    "GARDEN-029",
+    "GARDEN-030"
+  ],
+  "acceptance_criteria": [
+    "docs/qa/garden-v04-review.md exists in the garden-v03-review.md format: scope, tool runs, severity table, verdict, findings labelled Computed, Read or Director",
+    "Trade safety tried, not read: a non-friend cannot propose; a trade with the lower side under 50% is refused with the kind message; favourites cannot be picked; cancel works at every step; a fourth trade in a day is refused; walking apart cancels; a traded creature adds no Index entry and no XP; undo returns both creatures to the right slots and refuses after 10 minutes or when the creature was released; the ledger holds every trade; a flush failure forced on one side (fake store) heals at the next load with no duplicate and no loss (Computed, two clients, build stamp)",
+    "Charms, weathers and the Moth in GardenConfig equal decision 0015 (Computed, by script); 49 egg-weather pairs are under 60% by the spec's bound; every existing seeded hatch spec still passes unchanged; a v2 save loads unchanged plus the v3 defaults",
+    "Names: a refused character set, a filtered word shown as the filter returns it, the cooldown and rename limit, no name in an announce payload or on the board (Read and tried); no client computes fairness or writes a name; followers have no collision or query; nothing new is sent by the client beyond the listed actions",
+    "The checkpoint doc lists the evidence: CI run link, test counts, build stamp, the two-client trade recording, the weather and Stormy screenshots, the follower, a named tag, the eight eggs"
+  ],
+  "verification": "A04 reads the review; CI run link and test-results.json attached as evidence",
+  "output_artifacts": [
+    "docs/qa/garden-v04-review.md"
+  ],
+  "files": [
+    "docs/qa/garden-v04-review.md",
+    "docs/checkpoints/GARDEN-V04.md"
+  ],
+  "tests": [],
+  "notes": "Reviewer must not have written GARDEN-028, 029, 030 or 031 (CLAUDE.md rule 2). The trade write order (ledger first, two applies in one step, heal at load) is the item to attack hardest: try a crash between the two flushes with the fake DataStore. Studio facts count only with the build stamp (rule 13)."
+}

@@ -1,0 +1,44 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "GARDEN-030",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Build the v0.4 client: the Trade panel with the 10 s bar, confirm step and emotes (TradeFx), followers and player title tags (FollowerFx), the per-tier egg looks (BedFx), charm looks and three new weather looks, the milestone claim cards, the NAME button and pet names everywhere a creature is named, and the two new settings.",
+  "inputs": [
+    "docs/architecture/garden.md §5.1, §6, §6.1, §6.2, §6.3",
+    "docs/game-design/game4-gdd.md §V1.3, §V2.1, §V3, §V4, §V5, §V7",
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "src/garden-client/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-028"
+  ],
+  "acceptance_criteria": [
+    "TradeFx renders only from trade payloads (invite card, picks with the server's rate, fairness line, TRADE, 10 s bar from at, CONFIRM sentence, CANCEL before committing, spinner, done card with UNDO for 10 minutes, cancelled reason in plain words, four emote buttons and the incoming pop); it never computes fairness and sends only the seven trade actions; favourites and creatures picked elsewhere are greyed",
+    "FollowerFx: one visual copy per player with Follower ~= 0 from GardenSpecies with mutation and charm looks and the name tag, hop pacing from ClientState, hidden for racers and during the owner's reveal, a cry on a hop at most every 6 s, every part Anchored and CanCollide, CanQuery, CanTouch false; title tags for Hatchling Keeper and Garden Legend; the Followers setting hides all of them",
+    "BedFx: V7 effects per egg within 2 emitters per bed, lights on Moon and above only, the Aurora Highlight within the shared budget, off beyond 40 studs, removed when the bed empties; the cart egg shows the texture without effects",
+    "Menu: 84-cell Index with the milestone CLAIM cards and gold dot, CREATURES rows with the pet name, charm and a NAME TextBox card (20 chars, allowed characters only, sends name '<id>:<text>'), LOCKER PADS row and Starlit fence, STATS Trades list with UNDO, ODDS card Moth row and the charm line in rare weather; Hud: 7 weathers, the weekend event line, the TRADE button only when a friend is within 15 studs and the setting is on; HatchFx: charm on the reveal card, Snowfall, Petal Storm and Thunder looks and stingers, crack sound per egg; CreatureFx: charm looks layered, never a repaint, followers not bobbed",
+    "Studio run with the build stamp: a trade seen from both clients, a follower hopping onto Splash Island and vanishing during a round, a named tag, the three weather looks, a Stormy creature next to a Normal one, the eight eggs side by side; lune run tests/run, selene, stylua, rojo build, check-place, validate-tasks and check-scope pass"
+  ],
+  "verification": "CI, a Studio run with the build stamp recorded (rule 13), and the GARDEN-032 QA review",
+  "output_artifacts": [],
+  "files": [
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/Hud.client.luau",
+    "src/garden-client/HatchFx.client.luau",
+    "src/garden-client/CreatureFx.client.luau",
+    "src/garden-client/ClientState.luau",
+    "src/garden-client/TradeFx.client.luau",
+    "src/garden-client/FollowerFx.client.luau",
+    "src/garden-client/BedFx.client.luau",
+    "src/garden-client/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "tests": [
+    "GardenConfig.spec.luau"
+  ],
+  "notes": "Display only: no client computes a value, a fairness result or a name filter; the trade panel shows what the server sent. Keep the G4 rules in the trade UI: no countdown text except the 10 s bar and the quiet expiry, no 'last chance', no sounds on the hold. Sound ids (stingers, crack sounds, the Moth cry when found) need a docs/assets/register.md row from ProSoundEffects or APMOfficial before use; silent until then. Can start on stubs of 3.9 and 5.1 once GARDEN-028's signatures are merged; shares no file with GARDEN-029."
+}

@@ -1,0 +1,57 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-027",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "design",
+  "objective": "Turn the Director's v0.4 feature list (safe trading, charms and event weather, followers, Index milestones) and SHANNON's two additions (pet naming, egg looks pass) into GDD section V, decision 0015, the architecture contract, the checkpoint list and the task files, with a pacing check.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md §B, §C, §E, §F, §G, §H, §S, §T, §U",
+    "docs/decisions/0008-egg-garden.md",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/decisions/0013-garden-admin-catalogue.md",
+    "docs/decisions/0014-garden-creatures-v03.md",
+    "docs/architecture/garden.md §3, §4, §5, §6, §9",
+    "docs/checkpoints/GARDEN-V03.md",
+    "src/shared/GardenConfig.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/Profiles.luau"
+  ],
+  "dependencies": [
+    "GARDEN-026"
+  ],
+  "acceptance_criteria": [
+    "GDD section V holds V1 trading (rules, state machine, write order, undo, numbers), V2 charms and event weather, V3 followers, V4 milestones, V5 pet names, V6 pacing, V7 egg looks, V8 what assumed the old shapes; G3, E3, F, H7 and A point at it",
+    "Decision 0015 is Proposed with every economy value, the remote additions, the schema v3 migration note (old saves gain trades, tradesToday, milestones, pad; creatures gain c, fa, n) and the text-filtering requirement cited",
+    "Architecture 3.9, 3.10 (TradeRules), 4.5 (Trades.luau, commit, undo, heal), 4.6 (names), 5.1, 6.3, 7 (GardenTrades store) and 9.2 are written so GARDEN-028 to 031 can start without this task's chat",
+    "docs/game-design/game4-v04-pacing-check.py runs with python and its output matches V6 and 0015; all 49 egg-weather pairs are under 60% by the spec's bound with charms and the Moth",
+    "node tools/validate-tasks.mjs passes with GARDEN-027 to GARDEN-032 present"
+  ],
+  "verification": "A15 reads the four docs against the Director's list and SHANNON's brief; python docs/game-design/game4-v04-pacing-check.py; node tools/validate-tasks.mjs",
+  "output_artifacts": [
+    "docs/game-design/game4-gdd.md",
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V04.md",
+    "docs/game-design/game4-v04-pacing-check.py"
+  ],
+  "files": [
+    "docs/game-design/game4-gdd.md",
+    "docs/game-design/game4-v04-pacing-check.py",
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V04.md",
+    "studio/tasks/GARDEN-028.json",
+    "studio/tasks/GARDEN-029.json",
+    "studio/tasks/GARDEN-030.json",
+    "studio/tasks/GARDEN-031.json",
+    "studio/tasks/GARDEN-032.json"
+  ],
+  "tests": [],
+  "evidence": [
+    "Local 2026-11-05: python docs/game-design/game4-v04-pacing-check.py ran (worst bound 56.4% at meadow shower, 49 pairs under 60%; rare weathers x1.468 / x1.898 / x1.644 against Rainbow Shower x2.000; 60 min/day income day 90 1,584,700 with charms against 1,612,800 without; 73 charmed hatches in 90 days); node tools/validate-tasks.mjs valid"
+  ],
+  "notes": "Chosen here, not by the Director: charm chances 25/15/10% (keeps the 60% rule with the fixed multipliers), the three new weather mutation tables, the weekday 1% / weekend 10% event split, the Moth's 300 bp out of frog and cat, the trade timers (invite 30 s, picking 120 s, confirm 20 s), the 60 s decline cooldown, the 'fa' and 'pad' fields, and the per-player trade ledger with heal at load. Checkpoint: docs/checkpoints/GARDEN-V04.md."
+}
