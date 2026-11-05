@@ -61,7 +61,7 @@ describe("GardenRules income (C3)", function()
 		expect(GardenRules.income(GardenProgress.defaults(NOW))).toBe(0)
 	end)
 
-	it("applies mutation and size multipliers and the index bonus up to x1.76", function()
+	it("applies mutation and size multipliers and the index bonus up to x2.6 (U4)", function()
 		expect(GardenRules.rate(creature(1, "dragon", "rainbow", "huge", 1))).toBe(1500 * 10 * 2.5)
 		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1))).toBe(150)
 		expect(GardenRules.rate(creature(1, "nope", "normal", "normal", 1))).toBe(0)
@@ -69,10 +69,10 @@ describe("GardenRules income (C3)", function()
 		for i = 1, GardenConfig.INDEX_SIZE do
 			p.index[i] = `x{i}`
 		end
-		expect(near(GardenRules.indexMult(p), 1.76)).toBe(true)
+		expect(near(GardenRules.indexMult(p), 2.6)).toBe(true)
 	end)
 
-	it("matches the S2 check values for Celestial creatures", function()
+	it("matches the S2 and U3 check values for Celestial and Aurora creatures", function()
 		local lion = creature(1, "lion", "celestial", "normal", 1)
 		local dragon = creature(2, "dragon", "celestial", "normal", 2)
 		local huge = creature(3, "dragon", "celestial", "huge", 3)
@@ -82,11 +82,22 @@ describe("GardenRules income (C3)", function()
 		expect(GardenRules.releaseValue(dragon)).toBe(180000)
 		expect(GardenRules.rate(huge)).toBe(75000)
 		expect(GardenRules.releaseValue(huge)).toBe(450000)
-		-- The exact long-run dragon share with a meter of 10, size average 1.13.
-		local share = 0.15 / (1 - 0.85 ^ 10)
-		local average = (500 * (1 - share) + 1500 * share) * 20 * 1.13
-		expect(math.floor(average)).toBe(15521)
-		expect(math.floor(average * 6 / 1000)).toBe(93) -- about 93,000 coins
+		local phoenix = creature(4, "phoenix", "celestial", "huge", 4)
+		expect(GardenRules.rate(phoenix)).toBe(125000) -- the new top Celestial
+		expect(GardenRules.releaseValue(phoenix)).toBe(750000)
+		for id, want in { whale = 5000, kirin = 7500, axolotl = 25000 } do
+			expect(GardenRules.rate(creature(5, id, "normal", "normal", 5))).toBe(want)
+			expect(GardenRules.releaseValue(creature(5, id, "normal", "normal", 5))).toBe(want * 6)
+		end
+		local best = creature(6, "axolotl", "rainbow", "huge", 6)
+		expect(GardenRules.rate(best)).toBe(625000) -- the new top single creature
+		expect(GardenRules.releaseValue(best)).toBe(3_750_000)
+		-- The exact long-run phoenix share with a meter of 10, size average 1.13.
+		local share = 0.03 / (1 - 0.97 ^ 10)
+		local rest = (500 * 6000 + 800 * 2500 + 1500 * 1200) / 9700
+		local average = (rest * (1 - share) + 2500 * share) * 20 * 1.13
+		expect(math.floor(average)).toBe(20488)
+		expect(math.floor(average * 6 / 1000)).toBe(122) -- about 122,000 coins
 		expect(string.format("%.2f", 100 * average * 6 / 1_000_000_000)).toBe("0.01")
 	end)
 
@@ -148,18 +159,19 @@ describe("GardenRules income (C3)", function()
 				checked += 1
 			end
 		end
-		expect(checked).toBe(24) -- 6 sold eggs x 4 weathers
+		expect(checked).toBe(28) -- 7 sold eggs x 4 weathers
 	end)
 
-	-- The exact long-run figures of decision 0012 and docs/game-design/game4-pacing-check.py.
+	-- The exact long-run figures of decision 0014 (GDD U6) and docs/game-design/game4-v03-pacing-check.py.
 	it("reproduces the decision's return, average income and payback for every egg", function()
 		local PINNED = {
-			meadow = "27.4 52.3 3 19",
-			forest = "12.1 23.0 9 44",
-			sunset = "8.3 15.9 48 63",
-			moon = "4.9 9.3 233 107",
-			star = "1.4 2.7 537 373",
-			celestial = "0.01 0.01 15521 64429",
+			meadow = "28.4 54.2 3 19",
+			forest = "15.9 30.3 12 33",
+			sunset = "13.1 24.9 75 40",
+			moon = "6.3 12.0 299 84",
+			star = "1.9 3.7 735 272",
+			celestial = "0.01 0.01 20488 48808",
+			aurora = "0.0 0.0 6362 785864",
 		}
 		local size = 0
 		for _, z in GardenConfig.SIZES do
@@ -213,7 +225,7 @@ describe("GardenRules income (C3)", function()
 			local row = `{string.format(digits, back("clear"))} {string.format(digits, back("shower"))}`
 			expect(`{egg.id} {row} {string.format("%.0f %.0f", rate, price / rate)}`).toBe(`{egg.id} {PINNED[egg.id]}`)
 		end
-		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 52.3")
+		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 54.2")
 	end)
 
 	it("formats short numbers, truncating to one decimal", function()
@@ -390,6 +402,21 @@ describe("GardenRules Celestial Egg (S1)", function()
 		expect(select(2, GardenRules.buyEgg(p, "celestial", stockedAt("celestial", false)))).toBe(false)
 	end)
 
+	it("sells the Aurora Egg at level 32 for 5,000,000,000 coins, one per stocked window (U3)", function()
+		local t = stockedAt("aurora", true)
+		local p = rich(32)
+		expect(GardenRules.stockLeft(p, "aurora", t)).toBe(1)
+		local out, ok = GardenRules.buyEgg(p, "aurora", t)
+		expect(ok).toBe(true)
+		expect(out.coins).toBe(1e12 - 5e9)
+		expect(out.beds[1].egg).toBe("aurora")
+		expect(out.beds[1].ready).toBe(t + 43200)
+		expect(GardenRules.stockLeft(out, "aurora", t)).toBe(0)
+		expect(select(2, GardenRules.buyEgg(rich(31), "aurora", t))).toBe(false)
+		expect(select(2, GardenRules.buyEgg(p, "aurora", stockedAt("aurora", false)))).toBe(false)
+		expect(GardenRules.waterCut("aurora")).toBe(2160)
+	end)
+
 	it("cuts 1,440 s per water and ripens in 17,280 s with 8 waters", function()
 		expect(GardenRules.waterCut("celestial")).toBe(1440)
 		local p = GardenProgress.defaults(NOW)
@@ -475,12 +502,12 @@ describe("GardenRules watering (D2)", function()
 
 	it("cuts floor(5% of grow time) per water", function()
 		local cuts = {}
-		for _, id in { "meadow", "forest", "sunset", "moon", "star", "celestial" } do
+		for _, id in { "meadow", "forest", "sunset", "moon", "star", "celestial", "aurora" } do
 			table.insert(cuts, tostring(GardenRules.waterCut(id)))
 			local out = GardenRules.water(planted(id), 1, NOW, false)
 			expect(out.beds[1].ready).toBe(NOW + (GardenConfig.egg(id) :: any).grow - GardenRules.waterCut(id))
 		end
-		expect(table.concat(cuts, " ")).toBe("1 9 45 180 720 1440")
+		expect(table.concat(cuts, " ")).toBe("1 9 45 180 720 1440 2160")
 		expect(GardenRules.waterCut("nope")).toBe(0)
 	end)
 

@@ -284,6 +284,7 @@ ClientState.EGG_COLOURS = {
 	moon = { Color3.fromRGB(60, 70, 140), Color3.fromRGB(30, 30, 80) },
 	star = { Color3.fromRGB(255, 252, 235), Color3.fromRGB(255, 205, 90) },
 	celestial = { Color3.fromRGB(255, 246, 205), Color3.fromRGB(170, 150, 255) },
+	aurora = { Color3.fromRGB(60, 130, 150), Color3.fromRGB(80, 50, 140) },
 } :: { [string]: { Color3 } }
 
 -- The pale white-gold of everything Celestial (GDD S5).
@@ -352,6 +353,16 @@ function ClientState.sound(id: string, volume: number, at: Vector3?, pitch: numb
 	s.Ended:Once(done)
 	s:Play()
 	task.delay(8, done)
+end
+
+-- A species' cry (GDD U7, architecture 6.1): the only caller of its registered clip. Silent when the
+-- species has no cry; `at` nil plays 2D.
+function ClientState.cry(species: string, volume: number, at: Vector3?)
+	local sp = GardenConfig.species(species)
+	local cry = sp and sp.cry
+	if cry then
+		ClientState.sound(`rbxassetid://{cry.id}`, volume, at, cry.pitch)
+	end
 end
 
 -- One-shot particle burst at a point (default sparkle texture).

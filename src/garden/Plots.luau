@@ -99,6 +99,12 @@ local EGG_LOOKS: { [string]: EggLook } = {
 		spots = Color3.fromRGB(255, 225, 140),
 		glow = true,
 	},
+	aurora = {
+		colour = Color3.fromRGB(45, 95, 125),
+		material = Enum.Material.Foil,
+		spots = Color3.fromRGB(225, 235, 255),
+		glow = true,
+	},
 }
 
 -- Fence styles (GDD H4).
@@ -175,6 +181,16 @@ local FALLBACK: { [string]: Color3 } = {
 	turtle = Color3.fromRGB(70, 190, 180),
 	lion = Color3.fromRGB(255, 170, 60),
 	dragon = Color3.fromRGB(200, 170, 255),
+	duck = Color3.fromRGB(255, 230, 120),
+	lamb = Color3.fromRGB(245, 245, 235),
+	hedgehog = Color3.fromRGB(170, 120, 80),
+	deer = Color3.fromRGB(220, 170, 120),
+	panda = Color3.fromRGB(235, 235, 235),
+	unicorn = Color3.fromRGB(255, 220, 240),
+	phoenix = Color3.fromRGB(255, 120, 50),
+	whale = Color3.fromRGB(120, 180, 230),
+	kirin = Color3.fromRGB(190, 220, 255),
+	axolotl = Color3.fromRGB(255, 170, 200),
 }
 
 type BedView = {
@@ -312,7 +328,7 @@ function Plots.egg(parent: Instance, id: string, cframe: CFrame): BasePart
 	spots.LockedToPart = true
 	spots.LightEmission = if look.glow then 1 else 0
 	spots.Parent = egg
-	if id == "star" or id == "celestial" then
+	if id == "star" or id == "celestial" or id == "aurora" then
 		local sparkles = Instance.new("Sparkles")
 		sparkles.SparkleColor = Color3.fromRGB(255, 230, 140)
 		sparkles.Parent = egg
@@ -682,7 +698,14 @@ local function tag(target: BasePart, c: GardenConfig.Creature, height: number)
 	textLabel(gui, nameOf(c), WHITE, UDim2.fromScale(1, 0.58), UDim2.fromScale(0, 0))
 	local rarity = GardenConfig.RARITIES[GardenConfig.rarityIndex(c.s)]
 	local colour = if rarity then Color3.fromRGB(rarity.colour[1], rarity.colour[2], rarity.colour[3]) else WHITE
-	textLabel(gui, if rarity then rarity.name else "", colour, UDim2.fromScale(1, 0.42), UDim2.fromScale(0, 0.58))
+	local line =
+		textLabel(gui, if rarity then rarity.name else "", colour, UDim2.fromScale(1, 0.42), UDim2.fromScale(0, 0.58))
+	if rarity and rarity.id == "secret" then
+		-- Midnight text on a dark garden needs a pale stroke (GDD U1).
+		local stroke = line:FindFirstChildOfClass("UIStroke") :: UIStroke
+		stroke.Color = Color3.fromRGB(235, 230, 255)
+		stroke.Transparency = 0.2
+	end
 end
 
 local function fallbackCreature(c: GardenConfig.Creature, base: Vector3, facing: CFrame, scale: number): Model
@@ -705,6 +728,19 @@ local function fallbackCreature(c: GardenConfig.Creature, base: Vector3, facing:
 	return model
 end
 
+-- The Blender model (architecture 9.1): one MeshPart in a Model, scaled by size, standing on `base`.
+local function blenderCreature(c: GardenConfig.Creature, base: Vector3, facing: CFrame, scale: number): Model?
+	local _, yaw = facing:ToEulerAnglesYXZ()
+	local model = Models.night(`creature_{c.s}`, holding, base, math.deg(yaw), scale)
+	local mesh = model and model:FindFirstChildWhichIsA("MeshPart")
+	if model == nil or mesh == nil then
+		return nil
+	end
+	Models.ghost(model) -- the owner walks onto the pad to bank it
+	tag(mesh, c, model:GetExtentsSize().Y)
+	return model
+end
+
 local function makeCreature(view: PlotView, c: GardenConfig.Creature): Instance
 	local size = GardenConfig.size(c.z)
 	local scale = if size then size.scale else 1
@@ -712,8 +748,11 @@ local function makeCreature(view: PlotView, c: GardenConfig.Creature): Instance
 	local base = Vector3.new(centre.x, centre.y, centre.z)
 	local facing = view.frame.Rotation * CFrame.Angles(0, CREATURE_YAW, 0)
 	local model: Instance
-	local mesh = if warmed[c.s] then Models.spawn(c.s, holding, base, scale) else nil
-	if mesh then
+	local blender = if Models.nightReady(`creature_{c.s}`) then blenderCreature(c, base, facing, scale) else nil
+	local mesh = if blender == nil and warmed[c.s] then Models.spawn(c.s, holding, base, scale) else nil
+	if blender then
+		model = blender
+	elseif mesh then
 		mesh.CFrame = CFrame.new(base + Vector3.new(0, mesh.Size.Y / 2, 0)) * facing
 		mesh.CanCollide = false -- the owner walks onto the pad to bank it
 		mesh.CanTouch = false
@@ -734,10 +773,11 @@ local function makeCreature(view: PlotView, c: GardenConfig.Creature): Instance
 	return model
 end
 
--- The key includes whether the mesh is warmed, so a fallback built before the warm-up finished is
--- rebuilt as the mesh on the next refresh.
+-- The key includes whether the mesh is warmed and the Blender model loaded, so a fallback built
+-- before the warm-up finished is rebuilt as the mesh or model on the next refresh.
 local function creatureKey(c: GardenConfig.Creature): string
-	return `{c.s}{c.m}{c.z}{c.placed}{if warmed[c.s] then "w" else ""}`
+	local ready = if Models.nightReady(`creature_{c.s}`) then "n" elseif warmed[c.s] then "w" else ""
+	return `{c.s}{c.m}{c.z}{c.placed}{ready}`
 end
 
 local function refreshCreatures(view: PlotView, profile: Profile)
@@ -947,12 +987,17 @@ function Plots.build(root: Instance)
 		buildPlot(folder, n)
 	end
 	folder.Parent = root
-	-- Load every creature mesh once up front; refreshes use only the ones that loaded (warmed).
+	-- Load every creature model and mesh once up front; refreshes use only the ones that loaded.
 	task.spawn(function()
 		local warm = Instance.new("Folder")
-		local species = Instance.new("Folder") -- one mesh each, for the admin catalogue's previews
+		local species = Instance.new("Folder") -- one Model or MeshPart each, for the admin catalogue's previews
 		species.Name = "GardenSpecies"
 		for _, s in GardenConfig.SPECIES do
+			local model = Models.night(`creature_{s.id}`, species, Vector3.zero, 0, 1) -- yields until loaded
+			if model then
+				model.Name = s.id
+				continue
+			end
 			local mesh = Models.spawn(s.id, warm, Vector3.zero, 1)
 			if mesh then
 				warmed[s.id] = true

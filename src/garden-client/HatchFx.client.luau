@@ -443,6 +443,7 @@ local function reveal(data: any)
 		end
 	end
 	ClientState.sound(SFX.puff, if mine then 0.5 else 0.2, centre, 1.3)
+	ClientState.cry(s, if mine then 0.5 else 0.25, centre)
 	burst(centre, colour, 20 + rarity * 12, 8 + rarity * 2, 0.6 + rarity * 0.1)
 	if rarity >= 5 then
 		burst(centre + Vector3.new(0, 2, 0), UI.GOLD, 60, 16, 1.2)
@@ -488,6 +489,14 @@ local function coinPop(data: any)
 	burst(at + Vector3.new(0, 1, 0), UI.GOLD, if mine then 14 else 6, 6, 0.5)
 	if mine then
 		ClientState.sound(SFX.tick, 0.25, nil, 1.7 + math.random() * 0.25)
+		-- The banked pad's creature answers (U7); nothing when it was just stored or released.
+		local creatures = find(data.owner, { "Creatures" })
+		for _, c in if creatures then creatures:GetChildren() else {} do
+			if c:GetAttribute("Pad") == tonumber(data.pad) then
+				ClientState.cry(tostring(c:GetAttribute("S")), 0.2, at)
+				break
+			end
+		end
 	end
 end
 

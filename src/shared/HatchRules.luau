@@ -132,7 +132,7 @@ function HatchRules.hatch(
 	return out, ok, o, result
 end
 
--- Server-wide banner: Legendary or Mythic species, any Rainbow, any Huge.
+-- Server-wide banner: Legendary or better (Mythic, Divine, Secret), any Rainbow, any Huge.
 function HatchRules.announce(o: Outcome): boolean
 	return GardenConfig.rarityIndex(o.s) >= LEGENDARY or o.m == "rainbow" or o.z == "huge"
 end

@@ -174,6 +174,31 @@
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
     "glow": {}
   },
+  "egg_aurora": {
+    "fbx": "build/blender/garden/egg_aurora.fbx",
+    "png": "build/blender/garden/egg_aurora.png",
+    "preview": "build/blender/garden/previews/egg_aurora.png",
+    "size_studs": [
+      2.13,
+      2.76,
+      2.17
+    ],
+    "tris": 2046,
+    "parts": {
+      "egg_aurora": 2046
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg aurora (part fallback)",
+    "script": "tools/blender/garden/assets/eggs.py",
+    "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
+    "glow": {}
+  },
   "egg_shell_fragment": {
     "fbx": "build/blender/garden/egg_shell_fragment.fbx",
     "png": "build/blender/garden/egg_shell_fragment.png",
@@ -197,6 +222,481 @@
     "replaces": "Hatch burst shell pieces (src/garden-client/HatchFx.client.luau)",
     "script": "tools/blender/garden/assets/eggs.py",
     "notes": "One mesh, about 1 stud. Upload skips its texture: HatchFx bursts up to 6 clones tinted from EGG_COLOURS.",
+    "glow": {}
+  },
+  "creature_bunny": {
+    "fbx": "build/blender/garden/creature_bunny.fbx",
+    "png": "build/blender/garden/creature_bunny.png",
+    "preview": "build/blender/garden/previews/creature_bunny.png",
+    "size_studs": [
+      2.6,
+      4.0,
+      2.4
+    ],
+    "tris": 2048,
+    "parts": {
+      "creature_bunny": 2048
+    },
+    "target_size_studs": [
+      2.6,
+      4.0,
+      2.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Sprout Bunny mesh (src/relay/Models.luau MESHES.bunny)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_duck": {
+    "fbx": "build/blender/garden/creature_duck.fbx",
+    "png": "build/blender/garden/creature_duck.png",
+    "preview": "build/blender/garden/previews/creature_duck.png",
+    "size_studs": [
+      2.76,
+      3.21,
+      2.76
+    ],
+    "tris": 1892,
+    "parts": {
+      "creature_duck": 1892
+    },
+    "target_size_studs": [
+      2.8,
+      3.0,
+      2.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Puddle Duckling (common). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_frog": {
+    "fbx": "build/blender/garden/creature_frog.fbx",
+    "png": "build/blender/garden/creature_frog.png",
+    "preview": "build/blender/garden/previews/creature_frog.png",
+    "size_studs": [
+      3.2,
+      3.5,
+      3.2
+    ],
+    "tris": 1358,
+    "parts": {
+      "creature_frog": 1358
+    },
+    "target_size_studs": [
+      3.2,
+      3.5,
+      3.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Toadstool Frog mesh (src/relay/Models.luau MESHES.frog)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_lamb": {
+    "fbx": "build/blender/garden/creature_lamb.fbx",
+    "png": "build/blender/garden/creature_lamb.png",
+    "preview": "build/blender/garden/previews/creature_lamb.png",
+    "size_studs": [
+      3.15,
+      3.64,
+      3.6
+    ],
+    "tris": 2354,
+    "parts": {
+      "creature_lamb": 2354
+    },
+    "target_size_studs": [
+      3.2,
+      3.8,
+      3.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Clover Lamb (uncommon). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_pup": {
+    "fbx": "build/blender/garden/creature_pup.fbx",
+    "png": "build/blender/garden/creature_pup.png",
+    "preview": "build/blender/garden/previews/creature_pup.png",
+    "size_studs": [
+      3.0,
+      3.8,
+      3.6
+    ],
+    "tris": 2284,
+    "parts": {
+      "creature_pup": 2284
+    },
+    "target_size_studs": [
+      3.0,
+      3.8,
+      3.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Bumble Pup mesh (src/relay/Models.luau MESHES.pup)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_hedgehog": {
+    "fbx": "build/blender/garden/creature_hedgehog.fbx",
+    "png": "build/blender/garden/creature_hedgehog.png",
+    "preview": "build/blender/garden/previews/creature_hedgehog.png",
+    "size_studs": [
+      2.73,
+      2.72,
+      3.61
+    ],
+    "tris": 2156,
+    "parts": {
+      "creature_hedgehog": 2156
+    },
+    "target_size_studs": [
+      3.0,
+      2.8,
+      3.4
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Acorn Hedgehog (rare). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_cat": {
+    "fbx": "build/blender/garden/creature_cat.fbx",
+    "png": "build/blender/garden/creature_cat.png",
+    "preview": "build/blender/garden/previews/creature_cat.png",
+    "size_studs": [
+      3.2,
+      4.2,
+      3.0
+    ],
+    "tris": 2006,
+    "parts": {
+      "creature_cat": 2006
+    },
+    "target_size_studs": [
+      3.2,
+      4.2,
+      3.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Berry Cat mesh (src/relay/Models.luau MESHES.cat)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_deer": {
+    "fbx": "build/blender/garden/creature_deer.fbx",
+    "png": "build/blender/garden/creature_deer.png",
+    "preview": "build/blender/garden/previews/creature_deer.png",
+    "size_studs": [
+      3.44,
+      5.15,
+      3.33
+    ],
+    "tris": 2442,
+    "parts": {
+      "creature_deer": 2442
+    },
+    "target_size_studs": [
+      3.6,
+      5.0,
+      3.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Blossom Fawn (epic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_owl": {
+    "fbx": "build/blender/garden/creature_owl.fbx",
+    "png": "build/blender/garden/creature_owl.png",
+    "preview": "build/blender/garden/previews/creature_owl.png",
+    "size_studs": [
+      4.2,
+      4.5,
+      3.8
+    ],
+    "tris": 2158,
+    "parts": {
+      "creature_owl": 2158
+    },
+    "target_size_studs": [
+      4.2,
+      4.5,
+      3.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Pumpkin Owl mesh (src/relay/Models.luau MESHES.owl)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_panda": {
+    "fbx": "build/blender/garden/creature_panda.fbx",
+    "png": "build/blender/garden/creature_panda.png",
+    "preview": "build/blender/garden/previews/creature_panda.png",
+    "size_studs": [
+      4.14,
+      4.52,
+      4.45
+    ],
+    "tris": 2044,
+    "parts": {
+      "creature_panda": 2044
+    },
+    "target_size_studs": [
+      4.4,
+      4.5,
+      4.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Bamboo Panda (epic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_fox": {
+    "fbx": "build/blender/garden/creature_fox.fbx",
+    "png": "build/blender/garden/creature_fox.png",
+    "preview": "build/blender/garden/previews/creature_fox.png",
+    "size_studs": [
+      3.6,
+      4.5,
+      4.2
+    ],
+    "tris": 2246,
+    "parts": {
+      "creature_fox": 2246
+    },
+    "target_size_studs": [
+      3.6,
+      4.5,
+      4.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Cactus Fox mesh (src/relay/Models.luau MESHES.fox)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_unicorn": {
+    "fbx": "build/blender/garden/creature_unicorn.fbx",
+    "png": "build/blender/garden/creature_unicorn.png",
+    "preview": "build/blender/garden/previews/creature_unicorn.png",
+    "size_studs": [
+      2.26,
+      5.82,
+      3.91
+    ],
+    "tris": 2410,
+    "parts": {
+      "creature_unicorn": 2410
+    },
+    "target_size_studs": [
+      4.0,
+      5.5,
+      4.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Daisy Unicorn (legendary). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_turtle": {
+    "fbx": "build/blender/garden/creature_turtle.fbx",
+    "png": "build/blender/garden/creature_turtle.png",
+    "preview": "build/blender/garden/previews/creature_turtle.png",
+    "size_studs": [
+      3.8,
+      3.5,
+      3.8
+    ],
+    "tris": 1990,
+    "parts": {
+      "creature_turtle": 1990
+    },
+    "target_size_studs": [
+      3.8,
+      3.5,
+      3.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Lotus Turtle mesh (src/relay/Models.luau MESHES.turtle)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_phoenix": {
+    "fbx": "build/blender/garden/creature_phoenix.fbx",
+    "png": "build/blender/garden/creature_phoenix.png",
+    "preview": "build/blender/garden/previews/creature_phoenix.png",
+    "size_studs": [
+      4.3,
+      5.46,
+      4.09
+    ],
+    "tris": 1770,
+    "parts": {
+      "creature_phoenix": 1770
+    },
+    "target_size_studs": [
+      4.6,
+      5.5,
+      4.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Ember Phoenix (mythic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_lion": {
+    "fbx": "build/blender/garden/creature_lion.fbx",
+    "png": "build/blender/garden/creature_lion.png",
+    "preview": "build/blender/garden/previews/creature_lion.png",
+    "size_studs": [
+      4.6,
+      5.2,
+      4.6
+    ],
+    "tris": 2112,
+    "parts": {
+      "creature_lion": 2112
+    },
+    "target_size_studs": [
+      4.6,
+      5.2,
+      4.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Sunflower Lion mesh (src/relay/Models.luau MESHES.lion)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_whale": {
+    "fbx": "build/blender/garden/creature_whale.fbx",
+    "png": "build/blender/garden/creature_whale.png",
+    "preview": "build/blender/garden/previews/creature_whale.png",
+    "size_studs": [
+      5.65,
+      4.34,
+      5.37
+    ],
+    "tris": 2246,
+    "parts": {
+      "creature_whale": 2246
+    },
+    "target_size_studs": [
+      6.0,
+      4.5,
+      5.0
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Aurora Whale (divine). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_dragon": {
+    "fbx": "build/blender/garden/creature_dragon.fbx",
+    "png": "build/blender/garden/creature_dragon.png",
+    "preview": "build/blender/garden/previews/creature_dragon.png",
+    "size_studs": [
+      6.0,
+      5.5,
+      4.8
+    ],
+    "tris": 2210,
+    "parts": {
+      "creature_dragon": 2210
+    },
+    "target_size_studs": [
+      6.0,
+      5.5,
+      4.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Roblox-generated Moonblossom Dragon mesh (src/relay/Models.luau MESHES.dragon)",
+    "script": "tools/blender/garden/assets/creatures_a.py",
+    "notes": "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings.",
+    "glow": {}
+  },
+  "creature_kirin": {
+    "fbx": "build/blender/garden/creature_kirin.fbx",
+    "png": "build/blender/garden/creature_kirin.png",
+    "preview": "build/blender/garden/previews/creature_kirin.png",
+    "size_studs": [
+      3.75,
+      6.25,
+      4.74
+    ],
+    "tris": 2780,
+    "parts": {
+      "creature_kirin": 2780
+    },
+    "target_size_studs": [
+      4.6,
+      6.0,
+      5.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Nimbus Kirin (divine). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_axolotl": {
+    "fbx": "build/blender/garden/creature_axolotl.fbx",
+    "png": "build/blender/garden/creature_axolotl.png",
+    "preview": "build/blender/garden/previews/creature_axolotl.png",
+    "size_studs": [
+      3.56,
+      2.92,
+      5.53
+    ],
+    "tris": 2464,
+    "parts": {
+      "creature_axolotl": 2464
+    },
+    "target_size_studs": [
+      3.4,
+      3.0,
+      5.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/creatures_b.py",
+    "notes": "Stardust Axolotl (secret). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
     "glow": {}
   },
   "dash_sweeper": {

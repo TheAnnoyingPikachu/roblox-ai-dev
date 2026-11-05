@@ -1,4 +1,4 @@
-# Egg Garden: game design spec (v0.1)
+# Egg Garden: game design spec (v0.3)
 
 Status: draft for SHANNON. Concept D in `game4-concepts.md`. Needs decision record 0008 (economy, remotes, save schema; CLAUDE.md rule 8) and a task file before build. v0.2 adds sections S (Celestial Egg) and T (Splash Dash) with decision 0012; earlier sections are updated where those change them.
 
@@ -46,7 +46,7 @@ Each player in the server is given the lowest-numbered free plot (1 to 6) on joi
 ### C3. Income
 
 - Creature rate: `rate = baseRate(species) × mutationMult × sizeMult` (tables in E).
-- Index bonus: `indexMult = 1 + 0.02 × indexCount` (0 to 38 entries, so up to ×1.76).
+- Index bonus: `indexMult = 1 + 0.02 × indexCount` (0 to 80 entries, so up to ×2.6; was 38 and ×1.76 before v0.3, section U4).
 - Garden income: `income = (sum of rate over placed creatures) × indexMult`. Shown on the HUD and on the garden sign.
 - **Pads (online):** each placed creature's pad accrues `rate × indexMult` per second (fractions kept, no cap). The server checks each player's root at 5 Hz: a pad whose centre is within 4.5 studs horizontally and 6 studs vertically is **banked**: `floor(pending + 1e-9)` coins added, the fraction stays. Only the owner banks their own pads.
 - **Nothing is lost:** on leave, all pads are banked. The autosave every 60 s also stores the unbanked total (`unbanked`) and `lastSeen`; on the next load `unbanked` is added to coins.
@@ -71,8 +71,9 @@ Each player in the server is given the lowest-numbered free plot (1 to 6) on joi
 | `moon` | Moon Egg | 25,000 | 1 h | Level 10 | 30% chance, 1 |
 | `star` | Star Egg | 200,000 | 4 h | Level 18 | 10% chance, 1 |
 | `celestial` | Celestial Egg | 1,000,000,000 | 8 h | Level 25 | 5% chance, 1 (section S) |
+| `aurora` | Aurora Egg | 5,000,000,000 | 12 h | Level 32 | 3% chance, 1 (section U3, v0.3) |
 
-- **Restock:** window `s = floor(unix / 300)` (every 5 minutes, the same for every server). For egg index `i` (forest 2, sunset 3, moon 4, star 5, celestial 6), `state = Rng.seed(s, 9001, i)`; `r = Rng.int(state, 1, 10000)`; in stock if `r ≤ chance × 100`; then quantity `Rng.int(next state, min, max)`. Stock is **per player**: each player can buy that many of each egg in that window, so nobody competes for stock.
+- **Restock:** window `s = floor(unix / 300)` (every 5 minutes, the same for every server). For egg index `i` (forest 2, sunset 3, moon 4, star 5, celestial 6, aurora 7), `state = Rng.seed(s, 9001, i)`; `r = Rng.int(state, 1, 10000)`; in stock if `r ≤ chance × 100`; then quantity `Rng.int(next state, min, max)`. Stock is **per player**: each player can buy that many of each egg in that window, so nobody competes for stock.
 - `buyEgg(id)` is accepted when the player is within 25 studs of the egg cart (server position), the egg is unlocked by level, the player's buys this window are below the stock, coins ≥ price, and a bed is empty. The egg is planted in the lowest-numbered empty bed: `planted = now`, `ready = now + growTime`.
 
 ### D2. Watering
@@ -94,39 +95,19 @@ All rolls use `Rng` (`src/shared/Rng.luau`) with state passed in, so tests are d
 
 ### E1. Species
 
-| Id | Name | Rarity | Base rate (coins/s) | Release value (Normal) |
-|---|---|---|---|---|
-| `bunny` | Sprout Bunny | Common | 1 | 6 |
-| `frog` | Toadstool Frog | Common | 2 | 12 |
-| `pup` | Bumble Pup | Uncommon | 5 | 30 |
-| `cat` | Berry Cat | Uncommon | 12 | 72 |
-| `owl` | Pumpkin Owl | Rare | 30 | 180 |
-| `fox` | Cactus Fox | Rare | 70 | 420 |
-| `turtle` | Lotus Turtle | Epic | 180 | 1,080 |
-| `lion` | Sunflower Lion | Legendary | 500 | 3,000 |
-| `dragon` | Moonblossom Dragon | Mythic | 1,500 | 9,000 |
-
-Rarity colours: Common grey, Uncommon green, Rare blue, Epic purple, Legendary gold, Mythic pink.
+**v0.3 (decision 0014): the roster is 19 species in 8 rarities. The one table is U1.** The nine v0.1 species keep their ids, names, rarities and rates; the ten new ones and the two new rarities (Divine, Secret) are listed there with their cries. Rarity colours: U1.
 
 ### E2. Species odds per egg (basis points, each row sums to 10,000)
 
-| Egg | Outcomes | Lucky Meter (top species guaranteed by hatch n) |
-|---|---|---|
-| `starter` | Bumble Pup 10000 (fixed, Normal, Normal size) | – |
-| `meadow` | Sprout Bunny 6000, Toadstool Frog 3000, Bumble Pup 900, Berry Cat 100 | Berry Cat by 50 |
-| `forest` | Toadstool Frog 4000, Bumble Pup 3500, Berry Cat 2000, Pumpkin Owl 500 | Pumpkin Owl by 30 |
-| `sunset` | Berry Cat 4500, Pumpkin Owl 3500, Cactus Fox 1700, Lotus Turtle 300 | Lotus Turtle by 40 |
-| `moon` | Cactus Fox 5000, Lotus Turtle 4000, Sunflower Lion 950, Moonblossom Dragon 50 | Moonblossom Dragon by 100 |
-| `star` | Lotus Turtle 5500, Sunflower Lion 4000, Moonblossom Dragon 500 | Moonblossom Dragon by 25 |
-| `celestial` | Sunflower Lion 8500, Moonblossom Dragon 1500 | Moonblossom Dragon by 10 |
+**v0.3: the one odds table is U2** (every egg's outcomes changed to hold the new species; `starter` is still Bumble Pup 10000, fixed, Normal, Normal size).
 
 **Lucky Meter (pity):** `pity[egg]` counts hatches of that egg since its top species last hatched. If `pity[egg] ≥ meter − 1`, the species is the top species without a roll. After the hatch, `pity[egg] = 0` if the species is the top species, else `+1`. The meter is shown on each egg ("Lucky Meter 37 / 100").
 
-Expected income per hatch at base rates (for balancing, not shown): Meadow 1.77, Forest 6.45, Sunset 33.2, Moon 162, Star 374, Celestial 650 coins/s before its ×20 (section S2).
+Expected income per hatch at base rates (for balancing, not shown): U6.
 
 ### E3. Mutations (rolled by the weather at hatch time, basis points)
 
-The Celestial mutation (×20) is not in this table: only the Celestial Egg gives it, always, in any weather (section S).
+The Celestial mutation (×20) is not in this table: only the Celestial Egg gives it, always, in any weather (section S, widened in U3). The Aurora Egg (U3) rolls from this table like every other egg; it fixes nothing.
 
 | Weather | Normal ×1 | Golden ×3 | Moonlit ×5 | Rainbow ×10 |
 |---|---|---|---|---|
@@ -141,7 +122,7 @@ Normal ×1.0 (8000), Big ×1.5 (1700), Huge ×2.5 (300). Model scale 1.0, 1.4 an
 
 ### E5. Garden Index
 
-- 38 entries: 9 species × 4 weather mutations, plus `lion:celestial` and `dragon:celestial`; key `"<species>:<mutation>"`. An entry is discovered at its first hatch and kept forever (also after release).
+- **80 entries (v0.3, U4):** 19 species × 4 weather mutations, plus the 4 Celestial pairs `lion`, `unicorn`, `dragon`, `phoenix` `:celestial`; key `"<species>:<mutation>"`. An entry is discovered at its first hatch and kept forever (also after release). (v0.2 had 38.)
 - Each new entry: +50 XP and +2% income (C3). Undiscovered entries show as silhouettes with the eggs and weather that can produce them.
 
 ### E6. Published odds (in game)
@@ -493,7 +474,7 @@ Status: draft for SHANNON. The owner asked for "an even higher tier of egg that 
 | `celestial` | Celestial Egg | 1,000,000,000 coins | 8 h (28,800 s) | Level 25 | 5% chance, 1 | 1,000 | Moonblossom Dragon by 10 |
 
 - Sold at the Egg Cart for coins only. No Robux, no paid odds (decision 0002). Bought like every other egg (D1): cart distance, level, per-player stock, coins, empty bed.
-- **Species:** Sunflower Lion 8500, Moonblossom Dragon 1500 (basis points). Legendary or Mythic only.
+- **Species:** every Legendary and Mythic species. v0.2: Sunflower Lion 8500, Moonblossom Dragon 1500; **v0.3 (U3): lion 6000, unicorn 2500, dragon 1200, phoenix 300, top phoenix by 10.**
 - **Mutation:** always `celestial` (Celestial, ×20). No mutation draw; the weather has no effect. The mutation is in no weather table, so nothing else can roll it.
 - **Size:** the normal size roll (E4). Draw order: species (skipped when the Lucky Meter forces it), then size.
 - **Stock:** egg index 6 in the D1 formula. It goes last in `EGGS`, so the stock of every existing egg stays exactly the same.
@@ -519,7 +500,7 @@ Status: draft for SHANNON. The owner asked for "an even higher tier of egg that 
 - **Fact (computed):** the suggested 2,500,000 is under 5 minutes of income at Level 25 (about 8,700 coins/s) and cheaper than the last bed. Prices up to 200,000,000 do not move the first purchase at 1 hour a day: only level and stock do.
 - **Result:** 1,000,000,000 is 4 to 7 days of earnings at Level 25 (150M to 280M coins a day), the same price as the Rainbow fence, the existing long-term coin goal. First Celestial: day 12 at 1 hour a day, day 17 at 30 minutes, day 6 at 3 hours. Nothing before Level 25 changes.
 - Payback rises at every tier: 19 s, 44 s, 63 s, 107 s, 373 s, then 64,429 s (about 18 hours of income).
-- **Known effect:** income climbs past the old ceiling. At day 45, a 1 hour a day player earns about 496,000 coins/s against 42,752 without the egg. It is the last tier, so no later purchase gets skipped; only the cosmetics at 1B and 10B come sooner, and those were within reach by day 45 anyway.
+- **Known effect:** income climbs past the old ceiling. At day 45, a 1 hour a day player earns about 496,000 coins/s against 42,752 without the egg. ~~It is the last tier~~ (v0.3: the Aurora Egg is the last tier, and the Celestial is widened to every Legendary and Mythic; section U3 and U6 carry the current numbers), so no later purchase gets skipped; only the cosmetics at 1B and 10B come sooner, and those were within reach by day 45 anyway.
 
 ### S4. Everything that assumed 4 mutations or 36 entries
 
@@ -548,7 +529,7 @@ Status: draft for SHANNON. The owner asked for "an even higher tier of egg that 
 - **Egg cart panel:** a sixth row, "1B coins - grows in 8:00:00 - level 25". Sold out most of the time; the row says so with the normal text and no extra pressure.
 - **ODDS card:** species table to two decimals, then "Celestial x20 100.00%, any weather", the Lucky Meter, sizes. Text: "Every Celestial Egg hatches Legendary or Mythic with the Celestial mutation."
 - **Index:** lion and dragon rows get a fifth cell, labelled "Celestial Egg" until found.
-- **Mutation look:** white-gold body (Foil, like Golden but pale), slow gold and white star particles, a pale Highlight when the budget allows (same fallback as Moonlit).
+- **Mutation look:** ~~white-gold body (Foil, like Golden but pale)~~ v0.3: the texture stays; pulsing white-gold Highlight, halo, slow stars, light and a gold rim (U8; the flat repaint turned the creature into a featureless blob).
 - **Reveal:** the same reveal with the `egg_celestial` model and the top rarity chime. No near-miss, no extra drama timer. Every hatch is announced (already true for Legendary and Mythic).
 
 ### S6. Edge cases
@@ -720,3 +701,181 @@ Yes without a gate, no with one (`game4-pacing-check.py`, worst case: all 3 priz
 **Cut on purpose:** spectators, saved times or leaderboards, voting, more courses, power-ups, XP or quests for the Dash, rewards that scale with place beyond first.
 
 **Cut order if the cycle runs long:** the Last Sprint sweeper; moving platforms become fixed stepping stones; the pad's floating label (the panel still shows it).
+
+## U. Creatures v0.3 (decision 0014)
+
+Status: proposed for SHANNON. The owner asked: "expand the amount of creatures and rarities, give them blender models and everything, also fix the effects of celestial rarity and make more rarities. finally make each creature make the sound of what animal it is, try keep it cute". The Studio Director fixed the roster; this section is the design record. Where it and E1 to E5 or S disagree, this section wins. Labels: **Fact** (in code or computed by the committed script), **Assumption**, **Hypothesis**.
+
+### U1. Roster: 19 species, 8 rarities
+
+Order in `GardenConfig.SPECIES` is by rarity then rate, as below. Release value = rate × 6 (C4). Cry: one short licensed clip per species, played as U7 says; "source" is the Creator Store asset id and partner, PSE = ProSoundEffects, APM = APMOfficial. Pitch 1.0 unless given. **A cry is nil in config until its row is in `docs/assets/register.md`** (rule 9); the three marked "to find" ship silent if nothing licensed is found.
+
+| Id | Name | Rarity | Rate (coins/s) | Release | Cry | Source (asset id, partner, clip name, pitch) |
+|---|---|---|---|---|---|---|
+| `bunny` | Sprout Bunny | Common | 1 | 6 | soft squeak | 9117010574 PSE "Mouse Vocal 1", 0.8 |
+| `frog` | Toadstool Frog | Common | 2 | 12 | ribbit | 9113857727 PSE "Comic Frog Croaks Ribbit 5" |
+| `duck` | Puddle Duckling | Common | 3 | 18 | quack | 1840105521 APM duck quack, 1.2 (registered, GARDEN-025) |
+| `pup` | Bumble Pup | Uncommon | 5 | 30 | yip | 9113956178 PSE "Coyotes Gruff Barking 14", 1.35 |
+| `lamb` | Clover Lamb | Uncommon | 8 | 48 | baa | 9116206434 PSE "Lamb Big Lamb 17", 1.3 |
+| `cat` | Berry Cat | Uncommon | 12 | 72 | meow | **to find** (licensed only; else bunny's clip at 1.1) |
+| `owl` | Pumpkin Owl | Rare | 30 | 180 | hoot | 9117181540 PSE owl hoot, 1.0 (registered, GARDEN-025) |
+| `hedgehog` | Acorn Hedgehog | Rare | 45 | 270 | snuffle squeak | 9118058248 PSE "Rat Squeaks 18", 0.9 |
+| `fox` | Cactus Fox | Rare | 70 | 420 | fox yip | 9113955402 PSE "Coyotes Gruff Barking 9", 1.5 |
+| `turtle` | Lotus Turtle | Epic | 180 | 1,080 | slow bloop | 9112872058 PSE "Small Bubbles Pop 3", 0.8 |
+| `deer` | Blossom Fawn | Epic | 250 | 1,500 | bleat | 9113442509 PSE "Billy Goat 1", 1.2 |
+| `panda` | Bamboo Panda | Epic | 350 | 2,100 | cub grunt | 9117348418 PSE "Pig Grunts 12", 1.1 (a better cub clip welcome) |
+| `lion` | Sunflower Lion | Legendary | 500 | 3,000 | small roar | 9116308659 PSE "Lion Roar Tired 12", 1.25 |
+| `unicorn` | Daisy Unicorn | Legendary | 800 | 4,800 | foal whinny | 9119235894 PSE "Small Creature Whinnying 14" |
+| `dragon` | Moonblossom Dragon | Mythic | 1,500 | 9,000 | small purr-growl | 9125470864 PSE "Creature Growls Lion Deep Guttural Rumbling 19", 0.9 (registered, GARDEN-025) |
+| `phoenix` | Ember Phoenix | Mythic | 2,500 | 15,000 | bright chirp | 9117236946 PSE "Parakeet Chirps 6", 0.9 |
+| `whale` | Aurora Whale | Divine | 5,000 | 30,000 | whale coo | 9114124842 PSE "Dolphin Vocal Human-Like Pulsing 6", 0.7 |
+| `kirin` | Nimbus Kirin | Divine | 7,500 | 45,000 | flute chime | 1846547135 APM "Flute Gliss Up", 1.2 |
+| `axolotl` | Stardust Axolotl | Secret | 25,000 | 150,000 | bubble pop | 9112872239 PSE "Small Bubbles Pop 5", 1.3 |
+
+New in v0.3: `duck`, `lamb`, `hedgehog`, `deer`, `panda`, `unicorn`, `phoenix`, `whale`, `kirin`, `axolotl`; rarities `divine` and `secret`. The nine old species keep their ids, rates and rarities, so every saved creature and Index key is still valid (U5).
+
+**Rarities** (`GardenConfig.RARITIES`, order kept, two appended so no existing `rarityIndex` changes; `HatchRules` LEGENDARY = 5 and `GardenConfig.RARE = 3` stay valid):
+
+| # | Id | Name | Colour (RGB) | Note |
+|---|---|---|---|---|
+| 1 | `common` | Common | 180, 180, 180 | grey |
+| 2 | `uncommon` | Uncommon | 90, 200, 90 | green |
+| 3 | `rare` | Rare | 70, 140, 255 | blue |
+| 4 | `epic` | Epic | 170, 80, 255 | purple |
+| 5 | `legendary` | Legendary | 255, 200, 40 | gold; announced (E, `HatchRules.announce`) |
+| 6 | `mythic` | Mythic | 255, 110, 200 | pink; announced |
+| 7 | `divine` | Divine | 90, 230, 230 | aqua; **new**; announced (index ≥ 5) |
+| 8 | `secret` | Secret | 60, 55, 85 | midnight; **new**; announced. Dark on purpose: **wherever a rarity colour is text on a dark or textured background (pad name tag, reveal and announcement banners), Secret gets a pale text stroke (235, 230, 255, transparency 0.2), or white text on a midnight pill.** `ClientState.rarityColour` stays the true colour for fills, chips and bursts. |
+
+Rarity is a label and a colour; nothing else keys on it except `announce` (index ≥ 5) and the `rare1` quest (index ≥ 3), both unchanged.
+
+### U2. Egg odds (basis points, each row sums to 10,000)
+
+`EGGS` order is kept and `aurora` goes last (stock index 7), so every existing egg's stock roll is unchanged. `top` is the rarest species in the egg. Starter unchanged.
+
+| Egg | Price | Outcomes | Lucky Meter |
+|---|---|---|---|
+| `meadow` | 50 | bunny 5800, frog 2400, duck 1100, pup 500, lamb 100, cat 100 | cat by 50 |
+| `forest` | 400 | frog 3000, pup 3000, lamb 1500, cat 1700, owl 500, hedgehog 300 | hedgehog by 30 |
+| `sunset` | 3,000 | cat 3500, owl 2500, hedgehog 1500, fox 1700, turtle 300, deer 300, panda 200 | panda by 40 |
+| `moon` | 25,000 | fox 4000, turtle 2500, deer 1500, panda 1000, lion 600, unicorn 350, dragon 50 | dragon by 100 |
+| `star` | 200,000 | turtle 3000, panda 2500, lion 2500, unicorn 1500, dragon 400, phoenix 100 | phoenix by 25 |
+| `celestial` | 1,000,000,000 | lion 6000, unicorn 2500, dragon 1200, phoenix 300 (mutation fixed `celestial`, U3) | phoenix by 10 |
+| `aurora` | 5,000,000,000 | dragon 3500, phoenix 3000, whale 2000, kirin 1200, axolotl 300 (weather mutation roll) | axolotl by 20 |
+
+**Changed from the Director's table: Meadow** (was bunny 5000, frog 2500, duck 1500, pup 800, lamb 100, cat 100). **Fact (computed):** `tests/GardenRules.spec.luau` checks the 60% rule with the Lucky Meter bounded from above (`species average + top rate / meter`); the Director's Meadow reaches 62.1% of its price in Rainbow Shower by that bound (exact 59.8%), so the spec would fail. The row above gives 56.4% bounded, 54.2% exact; the duck is still 11% of Meadow hatches. No other egg was changed: the bound is 32.8% (Forest), 26.7%, 12.3%, 3.9%, 0.0%, 0.0%.
+
+**Long-run top-species share with the meter (Fact, computed):** Meadow cat 1.6%, Forest hedgehog 4.5%, Sunset panda 3.1%, Moon dragon 1.0%, Star phoenix 3.5%, Celestial phoenix 11.4%, Aurora axolotl 6.6%.
+
+### U3. The two top eggs
+
+**Celestial Egg, widened.** Decision 0012 said "Legendary or Mythic, lion and dragon". With the roster it is **every Legendary and Mythic**: lion 6000, unicorn 2500, dragon 1200, phoenix 300, top phoenix by 10. Price, grow, level, stock, XP and the fixed `celestial` mutation are unchanged. The odds card text stays true ("Every Celestial Egg hatches Legendary or Mythic with the Celestial mutation"). Average hatch 20,488 coins/s before the Index bonus (was 15,521); Huge Celestial Ember Phoenix 125,000 coins/s, release 750,000 (the old top, Huge Celestial Dragon 75,000, is now second).
+
+**Aurora Egg (new, the last tier).**
+
+| Id | Name | Price | Grow | Unlock | Stock per 300 s window | XP on hatch | Mutation | Lucky Meter |
+|---|---|---|---|---|---|---|---|---|
+| `aurora` | Aurora Egg | 5,000,000,000 coins | 12 h (43,200 s) | Level 32 | 3% chance, 1 | 3,000 | normal weather roll (E3), no fixed mutation | Stardust Axolotl by 20 |
+
+- Sold at the cart for coins, like every egg (D1): distance, level, per-player stock, coins, empty bed. Position 8 in `EGGS`, stock index 7, `Rng.seed(s, 9001, 7)`.
+- **Species:** Mythic, Divine or Secret only (U2). The only egg that hatches `whale`, `kirin` and `axolotl`, so 12 Index entries exist only through it.
+- **Mutation:** rolled from the weather table like every other egg. No new mutation. `GardenConfig.indexable` is unchanged: the Aurora adds no fixed pairs, so `dragon:celestial` still comes only from the Celestial Egg.
+- **Water:** D2 rules; each water cuts 2,160 s; 8 waters (the 40% cap, 17,280 s) ripen it in 25,920 s (7 h 12 min).
+- **Lucky Meter 20:** long-run axolotl share 6.6% (3% unmetered). `pity = 19` forces an axolotl with no species draw.
+- **Check values:** Normal Aurora Whale 5,000 coins/s (release 30,000); Normal Nimbus Kirin 7,500 (45,000); Normal Stardust Axolotl 25,000 (150,000); Huge Rainbow Stardust Axolotl 25,000 × 10 × 2.5 = 625,000 coins/s (release 3,750,000), the new top single creature. Average hatch 6,362 coins/s before the Index bonus. Buy, hatch, release: about 38,000 coins, 0.0008% of the price in every weather.
+- **Why it is a collection egg, not an income egg (Fact, computed):** an average Aurora hatch (6,362 coins/s) earns less than an average Celestial hatch (20,488) at five times the price; payback 785,864 s (9 days of income) against 48,808 s. What it sells is the Index (+2% of all income per entry, 12 entries only here, +24% at full) and the Secret. **Hypothesis:** that is enough; live data decides. If Aurora sits unsold, the lever is a fixed `aurora` mutation (a new decision), not the price.
+- **Changed from the Director's number: price 5,000,000,000, not 25,000,000,000.** U6: at 25B the first Aurora comes on day 26 at 1 h/day, 16 days after the first Celestial (target 4 to 10); level is not the gate (Level 32 arrives on day 11, before any price does), so the price moved. 5B gives day 18 (8 days after). Grow, level, stock, XP, odds and meter are the Director's.
+
+### U4. Index 80 and the income ceiling
+
+- **Fact:** 19 × 4 weather mutations + 4 Celestial pairs (`lion`, `unicorn`, `dragon`, `phoenix` `:celestial`) = **80** entries. `INDEX_SIZE` 80; a spec counts `indexable` pairs so it cannot drift. Bonus stays 2% per entry: **at most ×2.6** (was ×1.76). `golden` fence at 20 entries unchanged (a count, not a share); with 80 entries it is reached earlier in play (Assumption: around Level 10 instead of about Level 14 at 1 h/day, from the script's hatch counts, not pinned).
+- **C3 ceiling:** the theoretical top (20 Huge Rainbow Stardust Axolotls at ×2.6) is 32.5M coins/s, or 2.8e12 coins a day; `MAX_COINS` 1e15 holds for about a year even at that cap and for decades at the simulated incomes (U6). `GardenRules.short` already formats to T. Offline pay at 8 h × 0.5 of 1.7M coins/s is 24.5B per login; fine.
+- **S5 and 0012 "Celestial is the last tier":** no longer true; the Aurora Egg is. No purchase after the Aurora exists, so nothing gets skipped; the 10B Galaxy can comes about a week sooner at 1 h/day.
+- **Leaderboard:** Top Gardens will be led by Aurora owners; Divine and Secret names show in the Index and tags. SHANNON's catalogue (0013) can grant any of the 80 pairs.
+
+### U5. Save schema: unchanged (schema v2)
+
+**Fact:** new species and rarities are new ids in the same fields (`creatures[].s`, `index[]`, `pity.aurora`, `stock.bought.aurora`). `GardenProgress.sanitize` already loops over `EGGS` and accepts any `indexable` pair, so **old saves load as they are, with no migration and no `schemaVersion` bump** (rule 7: nothing to approve beyond the design). A v2 record from before v0.3 reads `pity.aurora = 0`. A build older than 0014 that reads a save holding a new species would drop those creatures and Index keys on load, as 0012 warned for Celestial: publishing v0.3 restarts every server and there is no rollback past 0014 without SHANNON (same rule, same reason).
+
+### U6. Pacing results (`docs/game-design/game4-v03-pacing-check.py`, 2026-11-01)
+
+The v0.2 script with the roster, odds and the Aurora added; the player model is unchanged (median of 15 seeded runs, 90 days).
+
+**Fact (computed), exact:** return on buy, hatch and release (must stay under 60%), the spec's bounded worst case, average income per hatch and payback. For `tests/GardenRules.spec.luau`'s pinned table: `meadow "28.4 54.2 3 19"`, `forest "15.9 30.3 12 33"`, `sunset "13.1 24.9 75 40"`, `moon "6.3 12.0 299 84"`, `star "1.9 3.7 735 272"`, `celestial "0.01 0.01 20488 48808"`, `aurora "0.0 0.0 6362 785864"`, worst `"meadow shower 54.2"`, 28 checks (7 sold eggs × 4 weathers). If the spec's rounding differs by one digit, re-derive from the script; the script is the record.
+
+| Egg | Clear | Rainbow Shower | Spec bound (worst) | Avg coins/s | Payback s |
+|---|---|---|---|---|---|
+| `meadow` | 28.4% | 54.2% | 56.4% | 3 | 19 |
+| `forest` | 15.9% | 30.3% | 32.8% | 12 | 33 |
+| `sunset` | 13.1% | 24.9% | 26.7% | 75 | 40 |
+| `moon` | 6.3% | 12.0% | 12.3% | 299 | 84 |
+| `star` | 1.9% | 3.7% | 3.9% | 735 | 272 |
+| `celestial` | 0.01% | 0.01% | 0.0% | 20,488 | 48,808 |
+| `aurora` | 0.00067% | 0.00128% | 0.0% | 6,362 | 785,864 |
+
+Payback rises at every tier. The mid game earns more than in v0.2 (Sunset 75 against 48 coins/s per hatch, Moon 299 against 233, Star 735 against 537), because every egg now carries a rarer species.
+
+**Result (simulated):** first buys and income. "day N" is the calendar day.
+
+| Player | Moon | Star | Level 25 | First Celestial | Level 32 | First Aurora | Income day 45 | Income day 90 |
+|---|---|---|---|---|---|---|---|---|
+| 30 min/day | day 3 | day 8 | day 13 | day 15 | day 20 | day 26 | 307,392 | 853,200 |
+| 60 min/day | day 2 | day 5 | day 7 | day 10 | day 11 | **day 18** | **926,120** | **1,658,800** |
+| 180 min/day | 70 min | day 2 | day 3 | day 5 | day 4 | day 11 | 1,766,700 | 2,684,700 |
+
+- The 60 min row still reproduces the section B targets (Moon day 2, Star day 5). The first Celestial moves from day 12 to day 10 at 1 h/day (day 17 to 15, day 6 to 5) because of the richer mid game, not because of any Celestial change.
+- **Aurora target, "4 to 10 days after the first Celestial at 1 h/day":** met at 5B, day 18, 8 days after. 30 min/day: 11 days after; 3 h/day: 6 days after.
+- Price check at 1 h/day (Level 32 reached on day 11 in every row): 2.5B day 16, **5B day 18**, 7.5B day 20, 10B day 20, 25B day 26.
+- **Income ceiling:** day 45 at 1 h/day is 926,120 coins/s (v0.2 said 496,000; the roster alone without the Aurora gives 740,520). Day 90: 1,658,800.
+- **Assumption:** the script's player is close to a real one; it matches the two targets it can be checked against. **Assumption:** stock is seen only while online (3% per 5 min window, so about one Aurora in stock per 3 days at 1 h/day), which is why stock and not price sets the late spread.
+
+### U7. Sounds (client only, display only)
+
+**Fact:** every cry goes through `ClientState.sound(id, volume, at, pitch)`, which is silent when `ClientState.settings.sfx` is off; nothing is sent to or decided by the server. Ids live in `GardenConfig.SPECIES[i].cry = { id, pitch }` (nil until registered; architecture 3.2 says why), and the client plays `rbxassetid://<id>` at `PlaybackSpeed = pitch`.
+
+| When | Where and volume | Rule |
+|---|---|---|
+| 1. Hatch reveal | 3D at the bed, after the pop; 0.5 for the owner, 0.25 for everyone else | once per reveal; Fast Hatch too |
+| 2. Banking a pad | the owner only, 3D at the pad, 0.2 | on the `collect` Fx for the owner's own pad; the species is the pad's creature (`S` attribute on the model) |
+| 3. Idle | 3D at the creature, 0.2 | a creature within 60 studs of the camera cries every 12 to 30 s (uniform, per creature); at most one idle cry every 2 s across the whole garden; never while hidden for a reveal (`ClientState.reveal` hidden set); a creature out of range is skipped, not queued |
+| 4. Admin catalogue (0013) | 2D, 0.5 | tapping a species row plays its cry; the owner's panel only |
+
+- **Pitch** is per species (U1): cute means small animals near 1.0 and big animals pitched up (1.1 to 1.5); the deep clips (whale 0.7, turtle 0.8, dragon 0.8) are pitched down on purpose because they are bubbles and purrs, not roars.
+- **Licence:** only Roblox-licensed partners on the Creator Store (ProSoundEffects, APMOfficial), each with a row in `docs/assets/register.md` before its id enters `GardenConfig` (rule 9, as the existing audio rows). No clip from the free library, no uploads of third-party recordings.
+- **Gaps:** cat, owl, duck have no licensed clip yet; dragon and panda use the nearest clip. The client engineer searches the two partners first; if nothing fits, the fallback in U1 (a shortlist clip re-pitched) or silence. A missing `cry` is silence, never a placeholder sound.
+- **Budget:** one `Sound` instance per cry, destroyed on `Ended`, as `ClientState.sound` does; idle cries from six full gardens are bounded by the 2 s garden-wide gap (at most 30 a minute, in practice far fewer because of the 60 stud range).
+- **Child safety:** cries are ambient, never a prompt; nothing plays on a refusal or a purchase.
+
+### U8. Celestial and Golden look (client, display only)
+
+**Problem (Fact, read in `CreatureFx.applyLook`):** Golden and Celestial clear `TextureID` and paint every part flat gold or white-gold with `Foil`, so the creature becomes a featureless blob. **Rule for v0.3: no mutation ever changes a part's `TextureID`, `Color` or `Material`.** The look is layered on top of the textured model:
+
+| Mutation | Highlight (within the budget of about 31) | Past the budget | Extras |
+|---|---|---|---|
+| Golden | fill (255, 200, 60), `FillTransparency` 0.5, outline (255, 230, 140) 0.3, `Occluded`; **only while at least 8 Highlights are free** (Golden is the common mutation and must not starve the rarer looks) | gold `SelectionBox` as today (surface 0.85, line 0.05) | `Sparkles` (255, 220, 120) as today |
+| Moonlit, Rainbow | unchanged | unchanged | unchanged |
+| Celestial | fill `ClientState.CELESTIAL` (white-gold), `FillTransparency` **pulsing 0.45 to 0.7 and back over 2.4 s** (sine, in the frame loop that already cycles Rainbow), outline white-gold 0.2 as the faint gold rim, `Occluded` | white-gold `SelectionBox` (surface 0.9, line 0.05) whose `Transparency` carries the same pulse | halo, slow star emitter (rate 7, lifetime 2.2 to 3.6 s, speed 0.3 to 0.8, size 0.5 to 0) and `PointLight` (range 14, brightness 1.4), as today; these never count against the budget |
+
+On a multi-part Model the Highlight adorns the whole Model; emitters, halo, light and the name tag attach to the main part (the `PrimaryPart`, else the largest part by volume). The reveal and the admin preview show the same look. **Assumption:** keeping the texture under a 0.45 fill still reads as "Celestial" at pad distance; checked at the greybox gate with a screenshot of a Celestial Lion next to a Golden and a Normal one.
+
+### U9. Models
+
+Every species gets a custom Blender model `creature_<id>` (architecture section 9): one mesh, 2.8 to 6 studs tall, footprint within 6 × 6, loaded as a one-MeshPart Model and scaled by E4. Until a model is uploaded the nine old species keep their generated mesh and the ten new ones use the part fallback in their colours, so code never waits for art. I5 is superseded for creatures.
+
+### U10. Everything that assumed 9 species, 6 rarities, 38 entries or 7 eggs
+
+| Place | Assumption | Change |
+|---|---|---|
+| `GardenConfig.SPECIES`, `RARITIES`, `EGGS` | 9, 6, 7 | Done (GARDEN-024): 19, 8, 8; `INDEX_SIZE` 80; `Species.cry?` (nil for all 19 until GARDEN-025 registers clips) |
+| `tests/GardenConfig.spec` | pinned lists, `#EGGS` 7, 38 pairs, last egg `celestial` | Done (GARDEN-024): 19 species in U1 order, 8 rarities, `#EGGS` 8, last egg `aurora`, 80 pairs, every sold egg's `top` is its rarest species, every row sums to 10,000, every `cry.pitch` in 0.5 to 2 |
+| `tests/GardenRules.spec` 60% and pinned-return tests | 24 checks, v0.2 pins | Done (GARDEN-024): 28 checks, U6 pins |
+| `tests/HatchRules.spec` | celestial odds lion/dragon, announce at index 5 | Done (GARDEN-024): widened odds; `divine` and `secret` announce |
+| `tests/GardenProgress.spec` | v1 and v2 literal records | Done (GARDEN-024): add a record holding `whale:rainbow` and `pity.aurora`, and one holding only old ids, both unchanged by `sanitize` |
+| `Plots.FALLBACK` colours, `ClientState.EGG_COLOURS`, `Plots.EGG_LOOKS` | 9 species, 7 eggs | Done (GARDEN-025): 10 new species colours, `aurora` teal-violet shell with pale star spots, glow |
+| `World.luau` cart | 7 pedestals | Done (GARDEN-025): the cart had 6 sold eggs; now 7 at spacing 2.6 |
+| Menu Index grid | 38 cells, celestial fifth cell for lion and dragon | Done (GARDEN-025): 80 cells from `indexable`, fifth cell for the four Celestial species; colours from `RARITIES` |
+| Menu ODDS card, EGGS panel | 7 eggs | Done (GARDEN-025): both loop `EGGS`, the Aurora row reads "5B coins - grows in 12:00:00 - level 32" |
+| `CreatureFx.applyLook` | repaints Golden and Celestial | Done (GARDEN-025): U8 |
+| `HatchFx`, `Menu` ADMIN, `CreatureFx` | no cries | Done (GARDEN-025): U7 through `ClientState.cry` |
+| `Plots.tag`, banners | rarity colour as plain text | Done (GARDEN-025): pale stroke on the pad tag; the HatchFx card is dark text on cream and the Hud banner is white text on the rarity pill, so both read as they are |
+| `docs/assets/register.md` | 9 generated creature meshes, 5 Garden audio rows | Done (GARDEN-025): 19 `creature_*` model rows, 18 cry rows (cat reuses the bunny clip) |

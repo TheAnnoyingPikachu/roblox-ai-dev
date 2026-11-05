@@ -1,9 +1,9 @@
 --!strict
 -- Egg Garden creature looks (GDD I3, I4 "Life"; docs/architecture/garden.md section 6): idle bob,
 -- hop and turn on every creature (local CFrame offsets, no rigs), mutation looks from the `M`
--- attribute (Golden texture swap, Moonlit, Rainbow and Celestial Highlights with a SelectionBox
--- fallback past the Highlight budget; Celestial adds a white-gold body, stars, a glow and a halo),
--- hiding a creature while HatchFx reveals it, and ambient life (windmill
+-- attribute layered on the texture (Golden, Moonlit, Rainbow and Celestial Highlights with a
+-- SelectionBox fallback past the Highlight budget; Celestial adds a pulsing fill, stars, a glow and
+-- a halo), idle cries, hiding a creature while HatchFx reveals it, and ambient life (windmill
 -- sails, butterflies, drifting petals). Display only: sends nothing and changes nothing the server owns.
 
 local RunService = game:GetService("RunService")
@@ -30,6 +30,7 @@ type View = {
 	extras: { Instance }, -- emitters, lights and the halo, switched off during a reveal
 	mutation: string,
 	hidden: boolean,
+	nextCry: number, -- os.clock of this creature's next idle cry (6.1)
 }
 local views: { [Instance]: View } = {}
 
@@ -96,27 +97,63 @@ local function halo(view: View, main: BasePart): BillboardGui
 	})
 end
 
--- Mutation looks (I3). Returns the Highlight or SelectionBox that the frame loop tints, if any.
+-- The part extras attach to: the PrimaryPart, else the largest part by volume (6.2).
+local function mainOf(view: View): BasePart?
+	local primary = if view.inst:IsA("Model") then view.inst.PrimaryPart else nil
+	local best, bestVolume = primary, -1
+	for _, p in view.parts do
+		local v = p.Size.X * p.Size.Y * p.Size.Z
+		if primary == nil and v > bestVolume then
+			best, bestVolume = p, v
+		end
+	end
+	return best
+end
+
+-- A Highlight over the whole creature while `need` are free under the budget, else a SelectionBox.
+local function adorn(view: View, fill: Color3, fillT: number, outline: Color3, outlineT: number, need: number): Instance
+	if highlights + need <= HIGHLIGHT_BUDGET then
+		highlights += 1
+		local h = ClientState.new("Highlight", {
+			FillColor = fill,
+			FillTransparency = fillT,
+			OutlineColor = outline,
+			OutlineTransparency = outlineT,
+			DepthMode = Enum.HighlightDepthMode.Occluded,
+			Adornee = view.inst,
+			Parent = view.inst,
+		})
+		h.Destroying:Once(function()
+			highlights -= 1
+		end)
+		return h
+	end
+	-- shortcut: fallbacks stay SelectionBoxes after a Highlight frees up; re-check on respawn is enough.
+	return ClientState.new("SelectionBox", {
+		Color3 = outline,
+		SurfaceColor3 = fill,
+		SurfaceTransparency = if fill == ClientState.CELESTIAL then 0.9 else 0.85,
+		LineThickness = 0.05,
+		Transparency = 0.4,
+		Adornee = view.inst,
+		Parent = view.inst,
+	})
+end
+
+-- Mutation looks (GDD U8, architecture 6.2), layered on the texture: no mutation changes TextureID,
+-- Color or Material. Returns the Highlight or SelectionBox that the frame loop tints, if any.
 local function applyLook(view: View): Instance?
 	local m = view.mutation
-	local main = view.parts[1]
+	local main = mainOf(view)
 	if main == nil or m == "normal" then
 		return nil
 	end
-	local celestial = m == "celestial"
-	if m == "golden" or celestial then
-		for _, p in view.parts do
-			if p:IsA("MeshPart") then
-				p.TextureID = ""
-			end
-			p.Color = if celestial then ClientState.CELESTIAL else Color3.fromRGB(255, 200, 60)
-			p.Material = Enum.Material.Foil
-		end
-	end
 	if m == "golden" then
-		ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main })
-		return nil
+		view.extras = { ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main }) }
+		-- Golden is the common mutation: it takes a Highlight only while 8 stay free for the rarer looks.
+		return adorn(view, Color3.fromRGB(255, 200, 60), 0.5, Color3.fromRGB(255, 230, 140), 0.3, 8)
 	end
+	local celestial = m == "celestial"
 	local fill = if celestial
 		then ClientState.CELESTIAL
 		elseif m == "moonlit" then Color3.fromRGB(120, 140, 255)
@@ -131,37 +168,12 @@ local function applyLook(view: View): Instance?
 			halo(view, main),
 			ClientState.new("PointLight", { Color = fill, Range = 14, Brightness = 1.4, Parent = main }),
 		}
-	else
-		view.extras = {
-			emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4),
-		}
+		return adorn(view, fill, 0.45, fill, 0.2, 1)
 	end
-	if highlights < HIGHLIGHT_BUDGET then
-		highlights += 1
-		local h = ClientState.new("Highlight", {
-			FillColor = fill,
-			FillTransparency = 0.6,
-			OutlineColor = fill,
-			OutlineTransparency = 0.3,
-			DepthMode = Enum.HighlightDepthMode.Occluded,
-			Adornee = view.inst,
-			Parent = view.inst,
-		})
-		h.Destroying:Once(function()
-			highlights -= 1
-		end)
-		return h
-	end
-	-- shortcut: fallbacks stay SelectionBoxes after a Highlight frees up; re-check on respawn is enough.
-	return ClientState.new("SelectionBox", {
-		Color3 = fill,
-		SurfaceColor3 = fill,
-		SurfaceTransparency = 0.85,
-		LineThickness = 0.05,
-		Transparency = 0.4,
-		Adornee = view.inst,
-		Parent = view.inst,
-	})
+	view.extras = {
+		emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4),
+	}
+	return adorn(view, fill, 0.6, fill, 0.3, 1)
 end
 
 local function track(inst: Instance)
@@ -169,15 +181,16 @@ local function track(inst: Instance)
 		return
 	end
 	local id = tonumber(inst:GetAttribute("Id")) or tonumber(inst.Name)
-	if id == nil then
-		return
+	local parts = partsOf(inst)
+	if id == nil or #parts == 0 then
+		return -- a Model whose MeshPart has not replicated yet: the sweep below retries
 	end
 	local base = pivot(inst)
 	local plot = inst.Parent and inst.Parent.Parent
 	local view: View = {
 		inst = inst,
 		key = `{plot and plot:GetAttribute("Owner") or 0}:{id}`,
-		parts = partsOf(inst),
+		parts = parts,
 		base = base,
 		written = base,
 		phase = math.random() * math.pi * 2,
@@ -186,6 +199,7 @@ local function track(inst: Instance)
 		extras = {},
 		mutation = tostring(inst:GetAttribute("M") or "normal"),
 		hidden = false,
+		nextCry = os.clock() + 12 + math.random() * 18, -- a full delay, so a refresh is never a chorus
 	}
 	view.look = applyLook(view)
 	views[inst] = view
@@ -199,7 +213,7 @@ task.spawn(function()
 	local root = Workspace:WaitForChild("Garden")
 	root.DescendantAdded:Connect(function(inst)
 		if inst.Parent and inst.Parent.Name == "Creatures" then
-			track(inst)
+			task.defer(track, inst) -- after the Model's MeshPart has replicated too
 		end
 	end)
 end)
@@ -249,16 +263,25 @@ RunService.RenderStepped:Connect(function()
 				(extra :: any).Enabled = not hidden
 			end
 		end
-		if view.look and view.mutation ~= "moonlit" and not hidden then
-			local hue = if view.mutation == "rainbow"
-				then Color3.fromHSV((t * 0.25 + view.phase) % 1, 0.55, 1)
-				else ClientState.CELESTIAL:Lerp(Color3.new(1, 1, 1), 0.5 + math.sin(t * 0.8 + view.phase) * 0.5)
+		local celestial = view.mutation == "celestial"
+		if view.look and (celestial or view.mutation == "rainbow") and not hidden then
+			local hue = if celestial
+				then ClientState.CELESTIAL:Lerp(Color3.new(1, 1, 1), 0.5 + math.sin(t * 0.8 + view.phase) * 0.5)
+				else Color3.fromHSV((t * 0.25 + view.phase) % 1, 0.55, 1)
+			-- Celestial fill breathes 0.45 to 0.7 and back over 2.4 s (U8).
+			local pulse = 0.575 + 0.125 * math.sin(2 * math.pi * t / 2.4)
 			if view.look:IsA("Highlight") then
 				view.look.FillColor = hue
 				view.look.OutlineColor = hue
+				if celestial then
+					view.look.FillTransparency = pulse
+				end
 			elseif view.look:IsA("SelectionBox") then
 				view.look.Color3 = hue
 				view.look.SurfaceColor3 = hue
+				if celestial then
+					view.look.Transparency = pulse
+				end
 			end
 		end
 		if (view.base.Position - eye).Magnitude > 160 then
@@ -274,6 +297,31 @@ RunService.RenderStepped:Connect(function()
 		local cf = view.base * CFrame.new(0, bob + hop, 0) * CFrame.Angles(0, turn, 0)
 		setPivot(inst, cf)
 		view.written = cf
+	end
+end)
+
+-- Idle cries (GDD U7, architecture 6.1): each creature within 60 studs every 12 to 30 s, at most one
+-- cry per 2 s across the garden, none while hidden for a reveal; out of range it just redraws.
+local lastCry = -math.huge
+task.spawn(function()
+	while true do
+		task.wait(1)
+		local now = os.clock()
+		local eye = camera.CFrame.Position
+		for inst, view in views do
+			if now < view.nextCry then
+				continue
+			end
+			view.nextCry = now + 12 + math.random() * 18
+			if
+				now - lastCry >= 2
+				and not ClientState.hidden[view.key]
+				and (view.base.Position - eye).Magnitude <= 60
+			then
+				lastCry = now
+				ClientState.cry(tostring(inst:GetAttribute("S")), 0.2, view.base.Position)
+			end
+		end
 	end
 end)
 
