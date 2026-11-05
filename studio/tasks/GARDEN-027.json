@@ -47,7 +47,8 @@
     "studio/tasks/GARDEN-029.json",
     "studio/tasks/GARDEN-030.json",
     "studio/tasks/GARDEN-031.json",
-    "studio/tasks/GARDEN-032.json"
+    "studio/tasks/GARDEN-032.json",
+    "docs/production/garden-v04-v05-plan.md"
   ],
   "tests": [],
   "evidence": [

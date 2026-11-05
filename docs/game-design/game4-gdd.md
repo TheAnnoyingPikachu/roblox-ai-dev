@@ -1074,19 +1074,19 @@ Rules: the egg on the cart shows the same texture without the particle or light;
 
 | Place | Assumption | Change |
 |---|---|---|
-| `GardenConfig.Creature` | `{ id, s, m, z, placed, fav }` | adds `c` (charm, `"none"`), `fa` (favourited at, 0), `n` (name, `""`); every constructor (`HatchRules.apply`, `GardenRules.grant`, `TradeRules.give`, defaults) sets all three |
-| `GardenConfig.Profile` | schema v2 | v3: `trades`, `tradesToday`, `milestones`, `pad`; `SCHEMA_VERSION` 3; a v2 record loads with `{}`, `{ day = -1, count = 0 }`, `{}`, `"plain"` and every creature gets `c = "none"`, `fa = 0`, `n = ""` (decision 0015) |
-| `GardenRules.rate` | base × mutation × size | × charm; `releaseValue`, `income`, trade value and the 60% spec follow |
-| `GardenRules.favourite(p, id)` | toggles | `favourite(p, id, now)` sets `fa = now` when turning on |
-| `GardenConfig.WEATHERS`, `WEATHER_ODDS` | 4 rows; two odds tables | 7 rows; the weekend table carries the three rare weathers at 200 and `oddsFor` adds the event bonus |
-| `WorldRules.eventFor` | picks from the raw table | picks from `oddsFor(window start)`; `weekendEvent`, `isRare` new; `GardenStatus.event` |
-| `HatchRules.roll` | 3 draws; egg odds fixed | 4 draws (charm last, only in a rare weather); `oddsFor(egg, weather)` for the Moth |
-| `HatchRules.Outcome`, `Fx hatch`, `announce` | `{ s, m, z }` | add `c`; Stormy announced |
-| `GardenConfig.SPECIES`, `INDEX_SIZE` | 19, 80 | 20 (`moth` after `hedgehog`), 84; `tests/GardenConfig.spec` pins both |
-| `tests/GardenRules.spec` 60% test | 28 pairs | 49 pairs with charm expectation and Moth odds; V6 pins |
-| `tests/HatchRules.spec` seeded rolls | old sequences | unchanged (charm draws last and only in rare weathers); new: a Snowfall roll gives `frosted` at the expected rate, `none` in Clear; Moth only in rare weathers and only from Forest and Sunset |
-| `GardenProgress.sanitize` | v2 fields | v3 fields and creature fields; a literal v2 record loads with every old field kept |
-| `GardenProgress.CONFIG.slots` | fence, can | plus `pad = "plain"`; `COSMETICS` gains `plain`, `clover` (index 40) and `starlit` (fence, index 60) |
+| `GardenConfig.Creature` | `{ id, s, m, z, placed, fav }` | Done (GARDEN-028): adds `c` (charm, `"none"`), `fa` (favourited at, 0), `n` (name, `""`); every constructor (`HatchRules.apply`, `GardenRules.grant`, `TradeRules.give`, defaults) sets all three |
+| `GardenConfig.Profile` | schema v2 | Done (GARDEN-028): v3: `trades`, `tradesToday`, `milestones`, `pad`; `SCHEMA_VERSION` 3; a v2 record loads with `{}`, `{ day = -1, count = 0 }`, `{}`, `"plain"` and every creature gets `c = "none"`, `fa = 0`, `n = ""` (decision 0015) |
+| `GardenRules.rate` | base × mutation × size | Done (GARDEN-028): × charm; `releaseValue`, `income`, trade value and the 60% spec follow |
+| `GardenRules.favourite(p, id)` | toggles | Done (GARDEN-028; `follower`, `validName`, `setName` too): `favourite(p, id, now)` sets `fa = now` when turning on |
+| `GardenConfig.WEATHERS`, `WEATHER_ODDS` | 4 rows; two odds tables | Done (GARDEN-028): 7 rows; the weekend table carries the three rare weathers at 200 and `oddsFor` adds the event bonus |
+| `WorldRules.eventFor` | picks from the raw table | Done (GARDEN-028; `isRare` lives in `GardenConfig`, `eventStatus` added): picks from `oddsFor(window start)`; `weekendEvent`, `isRare` new; `GardenStatus.event` |
+| `HatchRules.roll` | 3 draws; egg odds fixed | Done (GARDEN-028): 4 draws (charm last, only in a rare weather); `oddsFor(egg, weather)` for the Moth |
+| `HatchRules.Outcome`, `Fx hatch`, `announce` | `{ s, m, z }` | Done for the pure part (GARDEN-028; Fx in GARDEN-029): add `c`; Stormy announced |
+| `GardenConfig.SPECIES`, `INDEX_SIZE` | 19, 80 | Done (GARDEN-028): 20 (`moth` after `hedgehog`), 84; `tests/GardenConfig.spec` pins both |
+| `tests/GardenRules.spec` 60% test | 28 pairs | Done (GARDEN-028): 49 pairs with charm expectation and Moth odds; V6 pins |
+| `tests/HatchRules.spec` seeded rolls | old sequences | Done (GARDEN-028): unchanged (charm draws last and only in rare weathers); new: a Snowfall roll gives `frosted` at the expected rate, `none` in Clear; Moth only in rare weathers and only from Forest and Sunset |
+| `GardenProgress.sanitize` | v2 fields | Done (GARDEN-028; v2, pre-0014 and v3 literals): v3 fields and creature fields; a literal v2 record loads with every old field kept |
+| `GardenProgress.CONFIG.slots` | fence, can | Done (GARDEN-028): plus `pad = "plain"`; `COSMETICS` gains `plain`, `clover` (index 40) and `starlit` (fence, index 60) |
 | `Plots.refresh`, tags | fence, can; tag = name and rarity | pad skin; `C` attribute; tag line 1 pet name |
 | `GardenServer` router | one id arg | `name` parses `"<id>:<name>"`; new `trade*` actions routed to `Trades`; `Follower` attribute via `publish` |
 | `Profiles.load` | login only | `Trades.heal` after login (reads the ledger) |

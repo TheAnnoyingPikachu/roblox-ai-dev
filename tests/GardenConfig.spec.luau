@@ -100,15 +100,64 @@ describe("GardenConfig odds tables", function()
 			"clear: normal 9790, golden 200, moonlit 0, rainbow 10; "
 				.. "sunbeam: normal 7450, golden 2500, moonlit 0, rainbow 50; "
 				.. "moonfall: normal 7750, golden 200, moonlit 2000, rainbow 50; "
-				.. "shower: normal 8500, golden 500, moonlit 0, rainbow 1000"
+				.. "shower: normal 8500, golden 500, moonlit 0, rainbow 1000; "
+				.. "snowfall: normal 8800, golden 1000, moonlit 150, rainbow 50; "
+				.. "petals: normal 8500, golden 1000, moonlit 0, rainbow 500; "
+				.. "thunder: normal 8800, golden 800, moonlit 300, rainbow 100"
 		)
-		expect(row(GardenConfig.WEATHER_ODDS.weekday)).toBe("clear 5500, sunbeam 2500, moonfall 1500, shower 500")
-		expect(row(GardenConfig.WEATHER_ODDS.weekend)).toBe("clear 3500, sunbeam 3500, moonfall 2000, shower 1000")
+		expect(row(GardenConfig.WEATHER_ODDS.weekday)).toBe(
+			"clear 5200, sunbeam 2500, moonfall 1500, shower 500, snowfall 100, petals 100, thunder 100"
+		)
+		expect(row(GardenConfig.WEATHER_ODDS.weekend)).toBe(
+			"clear 2900, sunbeam 3500, moonfall 2000, shower 1000, snowfall 200, petals 200, thunder 200"
+		)
+		expect(GardenConfig.WEATHER_EVENT_BONUS).toBe(800)
+		expect(table.concat(GardenConfig.RARE_WEATHERS, " ")).toBe("snowfall petals thunder")
+		expect(#GardenConfig.WEATHERS).toBe(7)
 		local sizes = {}
 		for _, z in GardenConfig.SIZES do
 			table.insert(sizes, `{z.id} {z.mult} {z.scale} {z.bp}`)
 		end
 		expect(table.concat(sizes, ", ")).toBe("normal 1 1 8000, big 1.5 1.4 1700, huge 2.5 2 300")
+	end)
+
+	it("matches decision 0015: charms, the Moth substitution, trade, milestone and name values", function()
+		local charms = {}
+		for _, c in GardenConfig.CHARMS do
+			table.insert(charms, `{c.id} {c.name} {c.mult} {c.weather} {c.bp}`)
+			expect(GardenConfig.charm(c.id)).toBe(c)
+			expect(GardenConfig.charmFor(c.weather)).toBe(c)
+			expect(GardenConfig.isRare(c.weather)).toBe(true)
+		end
+		expect(table.concat(charms, ", ")).toBe(
+			"frosted Frosted 1.5 snowfall 2500, blooming Blooming 2 petals 1500, stormy Stormy 3 thunder 1000"
+		)
+		expect(GardenConfig.charm("none")).toBeNil()
+		expect(GardenConfig.charm("nope")).toBeNil()
+		for _, w in { "clear", "sunbeam", "moonfall", "shower", "nope" } do
+			expect(GardenConfig.charmFor(w)).toBeNil()
+			expect(GardenConfig.isRare(w)).toBe(false)
+		end
+		local events = {}
+		for _, e in GardenConfig.EGGS do
+			if e.event then
+				table.insert(events, `{e.id} {e.event.s} {e.event.bp} {e.event.from}`)
+			end
+		end
+		expect(table.concat(events, ", ")).toBe("forest moth 300 frog, sunset moth 300 cat")
+		local TR = GardenConfig.TRADE
+		expect(
+			`{TR.perDay} {TR.range} {TR.fair} {TR.hold} {TR.confirm} {TR.invite} {TR.pick} {TR.undo} {TR.kept} {TR.emoteGap} {TR.declineGap} {TR.emotes}`
+		).toBe("3 15 0.5 10 20 30 120 600 30 1 60 4")
+		local milestones = {}
+		for _, m in GardenConfig.MILESTONES do
+			table.insert(milestones, `{m.at} {m.coins} {m.title or "-"} {m.egg or "-"}`)
+		end
+		expect(table.concat(milestones, ", ")).toBe(
+			"20 5000 Hatchling Keeper -, 40 50000 - -, 60 1000000 - -, 80 0 Garden Legend aurora"
+		)
+		expect(`{GardenConfig.NAME.max} {GardenConfig.NAME.cooldown} {GardenConfig.NAME.perDay}`).toBe("20 10 3")
+		expect(GardenConfig.SEEDS.event).toBe(7777)
 	end)
 end)
 
@@ -187,7 +236,7 @@ describe("GardenConfig eggs, species and costs", function()
 		end
 		expect(table.concat(out, ", ")).toBe(
 			"bunny common 1, frog common 2, duck common 3, pup uncommon 5, lamb uncommon 8, cat uncommon 12, "
-				.. "owl rare 30, hedgehog rare 45, fox rare 70, turtle epic 180, deer epic 250, panda epic 350, "
+				.. "owl rare 30, hedgehog rare 45, moth rare 55, fox rare 70, turtle epic 180, deer epic 250, panda epic 350, "
 				.. "lion legendary 500, unicorn legendary 800, dragon mythic 1500, phoenix mythic 2500, "
 				.. "whale divine 5000, kirin divine 7500, axolotl secret 25000"
 		)
@@ -196,6 +245,9 @@ describe("GardenConfig eggs, species and costs", function()
 			table.insert(mult, `{m.id} {m.mult}`)
 		end
 		expect(table.concat(mult, ", ")).toBe("normal 1, golden 3, moonlit 5, rainbow 10, celestial 20")
+		expect(#GardenConfig.SPECIES).toBe(20)
+		expect((GardenConfig.species("moth") :: any).name).toBe("Lantern Moth")
+		expect((GardenConfig.species("moth") :: any).cry).toBeNil() -- until a clip is registered
 	end)
 
 	it("lists the 8 U1 rarities in order with their colours", function()
@@ -244,7 +296,7 @@ describe("GardenConfig eggs, species and costs", function()
 		end
 	end)
 
-	it("counts 80 indexable pairs, the celestial ones being lion, unicorn, dragon and phoenix", function()
+	it("counts 84 indexable pairs, the celestial ones being lion, unicorn, dragon and phoenix", function()
 		local count = 0
 		local special = {}
 		for _, s in GardenConfig.SPECIES do
@@ -258,7 +310,9 @@ describe("GardenConfig eggs, species and costs", function()
 			end
 		end
 		expect(count).toBe(GardenConfig.INDEX_SIZE)
-		expect(count).toBe(80)
+		expect(count).toBe(84)
+		expect(GardenConfig.indexable("moth", "rainbow")).toBe(true)
+		expect(GardenConfig.indexable("moth", "celestial")).toBe(false)
 		expect(table.concat(special, " ")).toBe("lion:celestial unicorn:celestial dragon:celestial phoenix:celestial")
 		expect(GardenConfig.indexable("whale", "celestial")).toBe(false) -- the Aurora fixes nothing
 		expect(GardenConfig.indexable("nope", "normal")).toBe(false)
@@ -346,8 +400,8 @@ describe("GardenConfig meta data", function()
 		end
 		expect(table.concat(out, " ")).toBe(
 			"fence:picket:L1 fence:bamboo:L3 fence:stone:L6 fence:hedge:L10 fence:crystal:L16 fence:golden:i20 "
-				.. "fence:candy:$1000000 fence:rainbow:$1000000000 can:tin:L1 can:ducky:L4 can:flower:L8 "
-				.. "can:moon:L14 can:star:$10000000 can:galaxy:$10000000000"
+				.. "fence:starlit:i60 fence:candy:$1000000 fence:rainbow:$1000000000 can:tin:L1 can:ducky:L4 can:flower:L8 "
+				.. "can:moon:L14 can:star:$10000000 can:galaxy:$10000000000 pad:plain:L1 pad:clover:i40"
 		)
 	end)
 

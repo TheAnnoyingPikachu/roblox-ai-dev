@@ -22,15 +22,37 @@ export type Egg = {
 	meter: number?,
 	xp: number,
 	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
+	event: { s: string, bp: number, from: string }?, -- v0.4: `from` gives `bp` to `s` in a rare weather (V2.4)
 }
 export type Cry = { id: number, pitch: number } -- Creator Store audio asset id (registered first) and PlaybackSpeed
 export type Species = { id: string, name: string, rarity: string, rate: number, cry: Cry? } -- cry nil: the client is silent
 export type Mutation = { id: string, name: string, mult: number }
 export type Size = { id: string, name: string, mult: number, scale: number, bp: number }
 export type Weather = { id: string, name: string, mutation: { Odds } } -- MUTATIONS order without egg-only ones, sums to 10000
+export type Charm = { id: string, name: string, mult: number, weather: string, bp: number } -- rolled only in `weather`
 
 export type Bed = { egg: string, planted: number, ready: number, waters: number, helps: number, lastWater: number }
-export type Creature = { id: number, s: string, m: string, z: string, placed: number, fav: boolean } -- placed 0 = storage
+-- placed 0 = storage; c charm ("none"), fa when the favourite lock was last turned on (0), n filtered pet name ("")
+export type Creature = {
+	id: number,
+	s: string,
+	m: string,
+	z: string,
+	c: string,
+	placed: number,
+	fav: boolean,
+	fa: number,
+	n: string,
+}
+export type TradeRecord = {
+	id: string,
+	at: number,
+	with: number,
+	gave: Creature,
+	got: Creature,
+	gotId: number,
+	undone: boolean,
+}
 export type Profile = {
 	schemaVersion: number,
 	xp: number,
@@ -59,6 +81,10 @@ export type Profile = {
 	quests: { day: number, progress: { [string]: number }, claimed: { [string]: boolean } },
 	prizeEggs: { [string]: number }, -- egg id -> count, v2; only counts >= 1
 	dash: { day: number, prizes: number, coins: number }, -- v2; day -1 until the first reward
+	trades: { TradeRecord }, -- v3; newest last, at most TRADE.kept
+	tradesToday: { day: number, count: number }, -- v3; day -1 until the first trade
+	milestones: { [string]: boolean }, -- v3; "20" | "40" | "60" | "80" -> true
+	pad: string, -- v3; cosmetic slot
 }
 
 export type Spot = { x: number, y: number, z: number }
@@ -137,6 +163,7 @@ local EGGS: { Egg } = {
 		top = "hedgehog",
 		meter = 30,
 		xp = 25,
+		event = { s = "moth", bp = 300, from = "frog" },
 	},
 	{
 		id = "sunset",
@@ -164,6 +191,7 @@ local EGGS: { Egg } = {
 		top = "panda",
 		meter = 40,
 		xp = 60,
+		event = { s = "moth", bp = 300, from = "cat" },
 	},
 	{
 		id = "moon",
@@ -246,6 +274,7 @@ local SPECIES: { Species } = {
 	{ id = "cat", name = "Berry Cat", rarity = "uncommon", rate = 12, cry = { id = 9117010574, pitch = 1.1 } },
 	{ id = "owl", name = "Pumpkin Owl", rarity = "rare", rate = 30, cry = { id = 9117181540, pitch = 1 } },
 	{ id = "hedgehog", name = "Acorn Hedgehog", rarity = "rare", rate = 45, cry = { id = 9118058248, pitch = 0.9 } },
+	{ id = "moth", name = "Lantern Moth", rarity = "rare", rate = 55 }, -- v0.4 event creature; cry until registered
 	{ id = "fox", name = "Cactus Fox", rarity = "rare", rate = 70, cry = { id = 9113955402, pitch = 1.5 } },
 	{ id = "turtle", name = "Lotus Turtle", rarity = "epic", rate = 180, cry = { id = 9112872058, pitch = 0.8 } },
 	{ id = "deer", name = "Blossom Fawn", rarity = "epic", rate = 250, cry = { id = 9113442509, pitch = 1.2 } },
@@ -318,13 +347,71 @@ local WEATHERS: { Weather } = {
 		name = "Rainbow Shower",
 		mutation = odds({ "normal", 8500, "golden", 500, "moonlit", 0, "rainbow", 1000 }),
 	},
+	-- v0.4 rare weathers (GDD V2.2, decision 0015): each also rolls its charm.
+	{
+		id = "snowfall",
+		name = "Snowfall",
+		mutation = odds({ "normal", 8800, "golden", 1000, "moonlit", 150, "rainbow", 50 }),
+	},
+	{
+		id = "petals",
+		name = "Petal Storm",
+		mutation = odds({ "normal", 8500, "golden", 1000, "moonlit", 0, "rainbow", 500 }),
+	},
+	{
+		id = "thunder",
+		name = "Thunder",
+		mutation = odds({ "normal", 8800, "golden", 800, "moonlit", 300, "rainbow", 100 }),
+	},
 }
 GardenConfig.WEATHERS = WEATHERS
 
+-- V2.3. The weekend table is raw: WorldRules.oddsFor moves WEATHER_EVENT_BONUS from clear to the
+-- week's event weather.
 GardenConfig.WEATHER_ODDS = {
-	weekday = odds({ "clear", 5500, "sunbeam", 2500, "moonfall", 1500, "shower", 500 }),
-	weekend = odds({ "clear", 3500, "sunbeam", 3500, "moonfall", 2000, "shower", 1000 }),
+	weekday = odds({
+		"clear",
+		5200,
+		"sunbeam",
+		2500,
+		"moonfall",
+		1500,
+		"shower",
+		500,
+		"snowfall",
+		100,
+		"petals",
+		100,
+		"thunder",
+		100,
+	}),
+	weekend = odds({
+		"clear",
+		2900,
+		"sunbeam",
+		3500,
+		"moonfall",
+		2000,
+		"shower",
+		1000,
+		"snowfall",
+		200,
+		"petals",
+		200,
+		"thunder",
+		200,
+	}),
 }
+GardenConfig.WEATHER_EVENT_BONUS = 800
+GardenConfig.RARE_WEATHERS = { "snowfall", "petals", "thunder" }
+
+-- V2.1: a second layer on top of the mutation, drawn last and only in its weather.
+local CHARMS: { Charm } = {
+	{ id = "frosted", name = "Frosted", mult = 1.5, weather = "snowfall", bp = 2500 },
+	{ id = "blooming", name = "Blooming", mult = 2, weather = "petals", bp = 1500 },
+	{ id = "stormy", name = "Stormy", mult = 3, weather = "thunder", bp = 1000 },
+}
+GardenConfig.CHARMS = CHARMS
 
 GardenConfig.BED_COSTS = {
 	[4] = 500,
@@ -343,7 +430,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 80 -- count of indexable pairs: 19 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
+GardenConfig.INDEX_SIZE = 84 -- count of indexable pairs: 20 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 -- 0008 amendment 2026-10-26: release never returns its egg price (buy, hatch, release <= 60% of it).
 GardenConfig.RELEASE_SECONDS = 6
@@ -352,8 +439,30 @@ GardenConfig.RANGE = { cart = 25, bed = 12 }
 GardenConfig.RESTOCK = 300
 GardenConfig.WEATHER_WINDOW = 600
 GardenConfig.WEATHER_ACTIVE = 300
-GardenConfig.SEEDS = { stock = 9001, weather = 4242 }
+GardenConfig.SEEDS = { stock = 9001, weather = 4242, event = 7777 }
 GardenConfig.LIKES = { perDay = 30 }
+-- v0.4 (decision 0015): trade limits in seconds and counts, Index milestones, pet names.
+GardenConfig.TRADE = {
+	perDay = 3,
+	range = 15,
+	fair = 0.5,
+	hold = 10,
+	confirm = 20,
+	invite = 30,
+	pick = 120,
+	undo = 600,
+	kept = 30,
+	emoteGap = 1,
+	declineGap = 60,
+	emotes = 4,
+}
+GardenConfig.MILESTONES = {
+	{ at = 20, coins = 5_000, title = "Hatchling Keeper" },
+	{ at = 40, coins = 50_000 },
+	{ at = 60, coins = 1_000_000 },
+	{ at = 80, coins = 0, title = "Garden Legend", egg = "aurora" },
+} :: { { at: number, coins: number, title: string?, egg: string? } }
+GardenConfig.NAME = { max = 20, cooldown = 10, perDay = 3 }
 GardenConfig.MAX_COINS = 1e15
 GardenConfig.ADMINS = { [96807256] = true } :: { [number]: boolean } -- SHANNON (genetheman); decision 0013
 GardenConfig.GATES = { "open", "friends", "closed" }
@@ -384,6 +493,7 @@ local COSMETICS: { MetaRules.Cosmetic } = {
 	cosmetic("fence", "hedge", "Hedge", { { 70, 140, 60 }, { 50, 110, 45 } }, { level = 10 }),
 	cosmetic("fence", "crystal", "Crystal", { { 170, 220, 255 }, { 120, 180, 255 } }, { level = 16 }),
 	cosmetic("fence", "golden", "Golden", { { 255, 200, 60 }, { 200, 140, 20 } }, { index = 20 }),
+	cosmetic("fence", "starlit", "Starlit", { { 30, 40, 110 }, { 255, 245, 200 } }, { index = 60 }),
 	cosmetic("fence", "candy", "Candy Cane", { { 255, 255, 255 }, { 230, 40, 50 } }, { price = 1_000_000 }),
 	cosmetic(
 		"fence",
@@ -404,6 +514,8 @@ local COSMETICS: { MetaRules.Cosmetic } = {
 		{ { 160, 60, 255 }, { 40, 0, 90 }, { 255, 255, 255 } },
 		{ price = 10_000_000_000 }
 	),
+	cosmetic("pad", "plain", "Plain Pads", { { 150, 110, 70 } }, { level = 1 }),
+	cosmetic("pad", "clover", "Clover Pads", { { 60, 150, 70 }, { 120, 200, 90 } }, { index = 40 }),
 }
 GardenConfig.COSMETICS = COSMETICS
 
@@ -532,6 +644,24 @@ end
 
 function GardenConfig.size(id: string): Size?
 	return find(SIZES, id)
+end
+
+-- "none" (and anything unknown) returns nil: a creature with c = "none" multiplies by 1.
+function GardenConfig.charm(id: string): Charm?
+	return find(CHARMS, id)
+end
+
+function GardenConfig.charmFor(weather: string): Charm?
+	for _, c in CHARMS do
+		if c.weather == weather then
+			return c
+		end
+	end
+	return nil
+end
+
+function GardenConfig.isRare(weather: string): boolean
+	return GardenConfig.charmFor(weather) ~= nil
 end
 
 function GardenConfig.rarityIndex(speciesId: string): number

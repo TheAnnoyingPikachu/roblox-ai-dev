@@ -50,7 +50,8 @@ function GardenRules.rate(c: Creature): number
 	if s == nil or m == nil or z == nil then
 		return 0
 	end
-	return s.rate * m.mult * z.mult
+	local charm = GardenConfig.charm(c.c)
+	return s.rate * m.mult * z.mult * (if charm then charm.mult else 1)
 end
 
 function GardenRules.indexMult(p: Profile): number
@@ -169,17 +170,25 @@ function GardenRules.isFull(p: Profile): boolean
 	return GardenRules.freePad(p) == nil and GardenRules.storageCount(p) >= GardenConfig.STORAGE
 end
 
+-- Every constructor of a saved creature (hatch, grant, trade) goes through here (GDD V8).
+function GardenRules.newCreature(id: number, s: string, m: string, z: string, c: string, placed: number): Creature
+	return { id = id, s = s, m = m, z = z, c = c, placed = placed, fav = false, fa = 0, n = "" }
+end
+
 -- Admin catalogue (decision 0013): the same placement as a hatch and the Index entry, but no XP,
 -- hatch count or Lucky Meter. Accepts exactly what a save may hold. GardenServer checks ADMINS.
-function GardenRules.grant(p: Profile, s: string, m: string, z: string): (Profile, boolean)
-	if GardenRules.isFull(p) or not GardenConfig.indexable(s, m) or GardenConfig.size(z) == nil then
+function GardenRules.grant(p: Profile, s: string, m: string, z: string, c: string?): (Profile, boolean)
+	local charm = c or "none"
+	if
+		GardenRules.isFull(p)
+		or not GardenConfig.indexable(s, m)
+		or GardenConfig.size(z) == nil
+		or (charm ~= "none" and GardenConfig.charm(charm) == nil)
+	then
 		return p, false
 	end
 	local out = GardenRules.copy(p)
-	table.insert(
-		out.creatures,
-		{ id = out.nextId, s = s, m = m, z = z, placed = GardenRules.freePad(out) or 0, fav = false }
-	)
+	table.insert(out.creatures, GardenRules.newCreature(out.nextId, s, m, z, charm, GardenRules.freePad(out) or 0))
 	out.nextId += 1
 	local key = `{s}:{m}`
 	if table.find(out.index, key) == nil then
@@ -357,13 +366,56 @@ function GardenRules.release(p: Profile, id: number): (Profile, boolean, number)
 	return out, true, value
 end
 
-function GardenRules.favourite(p: Profile, id: number): (Profile, boolean)
+-- Toggles the lock; `fa` records when it was last turned on (the follower rule, V3).
+function GardenRules.favourite(p: Profile, id: number, now: number): (Profile, boolean)
 	if GardenRules.find(p, id) == nil then
 		return p, false
 	end
 	local out = GardenRules.copy(p)
 	local c = GardenRules.find(out, id) :: Creature
 	c.fav = not c.fav
+	if c.fav then
+		c.fa = now
+	end
+	return out, true
+end
+
+-- The favourite that follows the player: the most recently favourited, then the highest id.
+function GardenRules.follower(p: Profile): Creature?
+	local best: Creature? = nil
+	for _, c in p.creatures do
+		if c.fav and (best == nil or c.fa > best.fa or (c.fa == best.fa and c.id > best.id)) then
+			best = c
+		end
+	end
+	return best
+end
+
+-- Pet names (V5) ------------------------------------------------------------------------------
+
+-- Trimmed; 1 to NAME.max characters; ASCII letters, digits, spaces, ' and -; no double spaces.
+-- Nil otherwise. The server filters the result through TextService before storing it.
+function GardenRules.validName(raw: string): string?
+	if type(raw) ~= "string" then
+		return nil
+	end
+	local name = string.match(raw, "^%s*(.-)%s*$") :: string
+	if #name < 1 or #name > GardenConfig.NAME.max then
+		return nil
+	end
+	if not string.match(name, "^[A-Za-z0-9 '%-]+$") or string.find(name, "  ", 1, true) then
+		return nil
+	end
+	return name
+end
+
+-- Stores an already filtered name on an owned creature ("" shows the species name again).
+function GardenRules.setName(p: Profile, id: number, filtered: string): (Profile, boolean)
+	if GardenRules.find(p, id) == nil or type(filtered) ~= "string" then
+		return p, false
+	end
+	local out = GardenRules.copy(p);
+	(GardenRules.find(out, id) :: Creature).n = filtered
 	return out, true
 end
 

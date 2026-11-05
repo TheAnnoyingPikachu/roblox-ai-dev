@@ -32,7 +32,21 @@ local function same(a: any, b: any): boolean
 end
 
 local function creature(id: number, s: string, m: string, z: string, placed: number): GardenConfig.Creature
-	return { id = id, s = s, m = m, z = z, placed = placed, fav = false }
+	return { id = id, s = s, m = m, z = z, c = "none", placed = placed, fav = false, fa = 0, n = "" }
+end
+
+-- What a v2 record (or older) becomes under schema v3 (decision 0015): the four profile fields and
+-- the three creature fields at their defaults, nothing else touched.
+local function v3(record: any): any
+	local out = GardenRules.copy(record)
+	out.trades = {}
+	out.tradesToday = { day = -1, count = 0 }
+	out.milestones = {}
+	out.pad = "plain"
+	for _, c in out.creatures or {} do
+		c.c, c.fa, c.n = "none", 0, ""
+	end
+	return out
 end
 
 -- Income 60.5 coins/s (GDD C3 check garden).
@@ -72,7 +86,12 @@ end
 describe("GardenProgress defaults", function()
 	it("starts with 100 coins, 3 beds, 6 pads and a starter egg ready 8 s after creation", function()
 		local p = GardenProgress.defaults(NOW)
-		expect(p.schemaVersion).toBe(2)
+		expect(p.schemaVersion).toBe(3)
+		expect(GardenProgress.SCHEMA_VERSION).toBe(3)
+		expect(#p.trades).toBe(0)
+		expect(same(p.tradesToday, { day = -1, count = 0 })).toBe(true)
+		expect(next(p.milestones)).toBeNil()
+		expect(p.pad).toBe("plain")
 		expect(p.coins).toBe(100)
 		expect(p.xp).toBe(0)
 		expect(p.bedCount).toBe(3)
@@ -237,7 +256,7 @@ describe("GardenProgress banking and quest stats", function()
 		local out, ok, result = GardenProgress.hatch(
 			p,
 			1,
-			{ egg = "sunset", s = "owl", m = "golden", z = "normal", forced = false },
+			{ egg = "sunset", s = "owl", m = "golden", z = "normal", c = "none", forced = false },
 			NOW,
 			DAY
 		)
@@ -250,7 +269,7 @@ describe("GardenProgress banking and quest stats", function()
 		local plain = GardenProgress.hatch(
 			ripe(out, "sunset"),
 			1,
-			{ egg = "sunset", s = "cat", m = "normal", z = "big", forced = false },
+			{ egg = "sunset", s = "cat", m = "normal", z = "big", c = "none", forced = false },
 			NOW,
 			DAY
 		)
@@ -260,7 +279,7 @@ describe("GardenProgress banking and quest stats", function()
 		local _, refused = GardenProgress.hatch(
 			p,
 			1,
-			{ egg = "moon", s = "fox", m = "normal", z = "normal", forced = false },
+			{ egg = "moon", s = "fox", m = "normal", z = "normal", c = "none", forced = false },
 			NOW,
 			DAY
 		)
@@ -460,13 +479,13 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 	it("loads a literal v1 record with every field kept and only the new fields added", function()
 		local record = v1Record()
 		local p: any = GardenProgress.sanitize(record, NOW)
-		expect(p.schemaVersion).toBe(2)
+		expect(p.schemaVersion).toBe(3)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(same(p.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
 		expect(p.pity.celestial).toBe(0)
 		expect(p.pity.aurora).toBe(0)
 		expect(p.lock).toBeNil()
-		local expected = v1Record()
+		local expected = v3(v1Record())
 		expected.pity.celestial = 0
 		expected.pity.aurora = 0
 		for field, value in expected do
@@ -486,7 +505,7 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		local out, offline, unbanked = GardenProgress.login(GardenProgress.sanitize(v1Record(), NOW), NOW, DAY)
 		expect(unbanked).toBe(42)
 		expect(out.coins).toBe(987_654_321 + 42 + offline)
-		expect(out.schemaVersion).toBe(2)
+		expect(out.schemaVersion).toBe(3)
 	end)
 
 	it("keeps prizeEggs and dash through the flush path", function()
@@ -604,19 +623,19 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		}
 	end
 
-	it("loads a literal pre-0014 v2 record with every field kept and only pity.aurora added", function()
+	it("loads a literal pre-0014 v2 record with every field kept, pity.aurora and the v3 defaults added", function()
 		local record = v2Record()
 		local p: any = GardenProgress.sanitize(record, NOW)
-		expect(p.schemaVersion).toBe(2)
-		expect(GardenProgress.SCHEMA_VERSION).toBe(2)
-		local expected = v2Record()
+		expect(p.schemaVersion).toBe(3)
+		local expected = v3(v2Record())
+		expected.schemaVersion = 3
 		expected.pity.aurora = 0
 		expect(same(p, expected)).toBe(true)
 		expect(same(record, v2Record())).toBe(true) -- input unchanged
 		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
 	end)
 
-	it("keeps a record holding whale:rainbow, an Aurora Egg and pity.aurora unchanged", function()
+	it("keeps a record holding whale:rainbow, an Aurora Egg and pity.aurora, adding only the v3 defaults", function()
 		local record = v2Record()
 		record.beds[2] =
 			{ egg = "aurora", planted = NOW - 100, ready = NOW + 43100, waters = 0, helps = 0, lastWater = 0 }
@@ -629,8 +648,10 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		record.pity.aurora = 19
 		record.stock.bought.aurora = 1
 		local p: any = GardenProgress.sanitize(record, NOW)
-		expect(same(p, record)).toBe(true)
-		expect(p.schemaVersion).toBe(2)
+		local expected = v3(record)
+		expected.schemaVersion = 3
+		expect(same(p, expected)).toBe(true)
+		expect(p.schemaVersion).toBe(3)
 		-- Clamps still apply to the new ids: pity at the meter, stock at max, no celestial Divine.
 		record.pity.aurora = 99
 		record.stock.bought.aurora = 5
@@ -638,6 +659,237 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		table.insert(record.creatures, { id = 20, s = "kirin", m = "celestial", z = "normal", placed = 4, fav = false })
 		p = GardenProgress.sanitize(record, NOW)
 		expect(`{p.pity.aurora} {p.stock.bought.aurora} {#p.index} {#p.creatures}`).toBe("20 1 8 5")
+	end)
+end)
+
+describe("GardenProgress schema v3 (decision 0015)", function()
+	local function tradeRecord(id: string, at: number, undone: boolean): any
+		return {
+			id = id,
+			at = at,
+			with = 777,
+			gave = creature(3, "cat", "golden", "big", 1),
+			got = {
+				id = 9,
+				s = "moth",
+				m = "normal",
+				z = "normal",
+				c = "frosted",
+				placed = 0,
+				fav = true,
+				fa = 5,
+				n = "Pebble",
+			},
+			gotId = 12,
+			undone = undone,
+		}
+	end
+
+	-- A literal v3 save with every new field in use.
+	local function v3Record(): any
+		return {
+			schemaVersion = 3,
+			xp = 99_000,
+			coins = 5_000,
+			lastSeen = NOW - 60,
+			unbanked = 0,
+			nextId = 13,
+			bedCount = 3,
+			penSlots = 6,
+			beds = {
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+				{ egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 },
+			},
+			creatures = {
+				{
+					id = 3,
+					s = "cat",
+					m = "golden",
+					z = "big",
+					c = "stormy",
+					placed = 1,
+					fav = true,
+					fa = NOW - 9,
+					n = "Sprinkles",
+				},
+				{
+					id = 12,
+					s = "moth",
+					m = "normal",
+					z = "normal",
+					c = "frosted",
+					placed = 2,
+					fav = false,
+					fa = 0,
+					n = "",
+				},
+			},
+			pity = { meadow = 3, forest = 4, sunset = 5, moon = 6, star = 7, celestial = 8, aurora = 9 },
+			index = { "cat:golden", "moth:normal" },
+			stock = { w = 6_000_000, bought = {} },
+			hatches = 7,
+			waters = 8,
+			likes = 1,
+			gate = "open",
+			fence = "picket",
+			can = "tin",
+			owned = {},
+			helped = { day = -1, count = 0 },
+			liked = { day = -1, ids = {} },
+			daily = { streak = 0, last = -1 },
+			week = { key = -1, days = 0, lastDay = -1, claimed = false },
+			quests = { day = -1, progress = {}, claimed = {} },
+			prizeEggs = {},
+			dash = { day = -1, prizes = 0, coins = 0 },
+			trades = {
+				tradeRecord("0123456789abcdef", NOW - 100, false),
+				tradeRecord("fedcba9876543210", NOW - 50, true),
+			},
+			tradesToday = { day = DAY, count = 2 },
+			milestones = { ["20"] = true },
+			pad = "plain",
+		}
+	end
+
+	it("keeps a literal v3 record field for field", function()
+		local record = v3Record()
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(same(p, v3Record())).toBe(true)
+		expect(same(record, v3Record())).toBe(true) -- input unchanged
+		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
+	end)
+
+	it("keeps at most 30 trades (newest), clamps tradesToday and keeps only known milestones", function()
+		local record = v3Record()
+		record.trades = {}
+		for i = 1, 35 do
+			table.insert(record.trades, tradeRecord(string.format("%016x", i), NOW - 1000 + i, false))
+		end
+		table.insert(record.trades, tradeRecord("short", NOW, false))
+		table.insert(record.trades, tradeRecord("0123456789abcdeg", NOW, false)) -- not hex
+		table.insert(record.trades, {
+			id = "0123456789abcdef",
+			at = NOW,
+			with = 1,
+			gave = "x",
+			got = creature(1, "cat", "normal", "normal", 0),
+			gotId = 1,
+		})
+		table.insert(record.trades, "junk")
+		local bad = tradeRecord("00000000000000ff", NOW, false)
+		bad.gave.s = "yeti"
+		table.insert(record.trades, bad)
+		record.tradesToday = { day = DAY + 0.5, count = 99 }
+		record.milestones = { ["20"] = true, ["40"] = "yes", ["60"] = false, ["80"] = true, ["99"] = true, x = true }
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(#p.trades).toBe(30)
+		expect(p.trades[1].id).toBe(string.format("%016x", 6))
+		expect(p.trades[30].id).toBe(string.format("%016x", 35))
+		expect(same(p.tradesToday, { day = DAY, count = 3 })).toBe(true)
+		expect(same(p.milestones, { ["20"] = true, ["80"] = true })).toBe(true)
+		local junk = GardenProgress.sanitize({ trades = 5, tradesToday = "x", milestones = 1, pad = 2 }, NOW)
+		expect(`{#junk.trades} {junk.tradesToday.day} {next(junk.milestones)} {junk.pad}`).toBe("0 -1 nil plain")
+	end)
+
+	it("keeps c, fa and n on creatures and in trade records, stripping control characters from names", function()
+		local record = v3Record()
+		record.creatures[1].n = "Spr\0ink\tles\n\r is fine but long"
+		record.creatures[1].fa = -5
+		record.creatures[2].c = "shiny"
+		record.creatures[2].n = 42
+		record.trades[1].got.n = "a\1b"
+		record.trades[1].gave.c = "nope"
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(p.creatures[1].n).toBe("Sprinkles is fine bu") -- 20 bytes after the strip
+		expect(p.creatures[1].fa).toBe(0)
+		expect(p.creatures[1].c).toBe("stormy")
+		expect(`{p.creatures[2].c} [{p.creatures[2].n}]`).toBe("none []")
+		expect(p.trades[1].got.n).toBe("ab")
+		expect(p.trades[1].gave.c).toBe("none")
+		expect(p.trades[1].got.c).toBe("frosted")
+		expect(p.trades[1].got.fav).toBe(true)
+		expect(GardenRules.rate(p.creatures[1])).toBe(12 * 3 * 1.5 * 3)
+	end)
+
+	it("keeps the pad skin when unlocked and falls back to plain, like the fence", function()
+		local record = v3Record()
+		record.pad = "clover"
+		expect(GardenProgress.sanitize(record, NOW).pad).toBe("plain") -- 2 Index entries < 40
+		for i = 1, 40 do
+			record.index[i] =
+				`{GardenConfig.SPECIES[(i - 1) % 20 + 1].id}:{GardenConfig.MUTATIONS[(i - 1) // 20 + 1].id}`
+		end
+		expect(GardenProgress.sanitize(record, NOW).pad).toBe("clover")
+		record.pad = "picket" -- a fence is not a pad
+		expect(GardenProgress.sanitize(record, NOW).pad).toBe("plain")
+		local p = GardenProgress.sanitize(record, NOW)
+		expect(GardenProgress.isUnlocked(p, "clover")).toBe(true)
+		expect(GardenProgress.isUnlocked(p, "starlit")).toBe(false)
+		expect(GardenProgress.equipCosmetic(p, "clover").pad).toBe("clover")
+		expect(select(2, GardenProgress.equipCosmetic(p, "starlit"))).toBe(false)
+		for i = 41, 60 do
+			p.index[i] = `{GardenConfig.SPECIES[(i - 1) % 20 + 1].id}:{GardenConfig.MUTATIONS[(i - 1) // 20 + 1].id}`
+		end
+		expect(GardenProgress.equipCosmetic(p, "starlit").fence).toBe("starlit")
+	end)
+
+	it("claims each milestone once at its Index count, paying the V4 coins and the Aurora voucher at 80", function()
+		local p = GardenProgress.defaults(NOW)
+		p.coins = 0
+		local function fill(n: number)
+			for i = #p.index + 1, n do
+				p.index[i] =
+					`{GardenConfig.SPECIES[(i - 1) % 20 + 1].id}:{GardenConfig.MUTATIONS[(i - 1) // 20 + 1].id}`
+			end
+		end
+		fill(19)
+		expect(select(2, GardenProgress.claimMilestone(p, 20))).toBe(false)
+		fill(20)
+		local out, ok, paid = GardenProgress.claimMilestone(p, 20)
+		expect(`{ok} {paid} {out.coins} {out.milestones["20"]}`).toBe("true 5000 5000 true")
+		expect(GardenProgress.title(out)).toBe("Hatchling Keeper")
+		expect(GardenProgress.title(p)).toBeNil()
+		expect(p.coins).toBe(0) -- input unchanged
+		local again, refused, none = GardenProgress.claimMilestone(out, 20)
+		expect(`{refused} {none}`).toBe("false 0")
+		expect(again).toBe(out)
+		expect(select(2, GardenProgress.claimMilestone(out, 40))).toBe(false)
+		expect(select(2, GardenProgress.claimMilestone(out, 30))).toBe(false) -- not a milestone
+		p = out
+		fill(80)
+		local paidTotal = 0
+		for _, n in { 40, 60, 80 } do
+			p, ok, paid = GardenProgress.claimMilestone(p, n)
+			expect(`{n} {ok}`).toBe(`{n} true`)
+			paidTotal += paid
+		end
+		expect(paidTotal).toBe(50_000 + 1_000_000)
+		expect(p.coins).toBe(5_000 + 50_000 + 1_000_000)
+		expect(p.prizeEggs.aurora).toBe(1)
+		expect(GardenProgress.title(p)).toBe("Garden Legend")
+		expect(same(p.milestones, { ["20"] = true, ["40"] = true, ["60"] = true, ["80"] = true })).toBe(true)
+		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
+		expect(p.xp).toBe(0) -- no XP, no hatch count
+		local rich = GardenProgress.defaults(NOW)
+		rich.coins = 1e15 - 10
+		rich.index = p.index
+		local capped, _, last = GardenProgress.claimMilestone(rich, 60)
+		expect(capped.coins).toBe(1e15)
+		expect(last).toBe(10)
+		-- The 80 title replaces the 20 title; a title needs its claim, not just the count.
+		local late = GardenProgress.defaults(NOW)
+		late.index = p.index
+		expect(GardenProgress.title(late)).toBeNil()
+		expect(GardenProgress.title(GardenProgress.claimMilestone(late, 80))).toBe("Garden Legend")
+	end)
+
+	it("wraps favourite with now", function()
+		local p = checkGarden()
+		local out, ok = GardenProgress.favourite(p, 2, NOW + 3)
+		expect(ok).toBe(true)
+		expect(`{out.creatures[2].fav} {out.creatures[2].fa}`).toBe(`true {NOW + 3}`)
+		expect(select(2, GardenProgress.favourite(p, 99, NOW))).toBe(false)
 	end)
 end)
 
@@ -811,7 +1063,7 @@ describe("GardenProgress Splash Dash prizes (T5, decision 0012)", function()
 		local out, ok, r = GardenProgress.hatch(
 			p,
 			2,
-			{ egg = "moon", s = "fox", m = "normal", z = "normal", forced = false } :: HatchRules.Outcome,
+			{ egg = "moon", s = "fox", m = "normal", z = "normal", c = "none", forced = false } :: HatchRules.Outcome,
 			NOW + 3600,
 			DAY
 		)

@@ -78,16 +78,22 @@ async function create(assetType, file, contentType, displayName, description) {
 }
 
 // The decal's content is a small model whose Texture points at the image asset.
+// The decal's XML is served only once Roblox has processed it, so this polls for up to two minutes.
 async function imageOf(decalId) {
-	try {
-		const { location } = await (await call(`${API}/asset-delivery-api/v1/assetId/${decalId}`)).json();
-		const text = Buffer.from(await (await fetch(location)).arrayBuffer()).toString("latin1");
-		const ids = [...text.matchAll(/(?:id=|rbxassetid:\/\/)(\d+)/g)].map((m) => Number(m[1])).filter((id) => id !== decalId);
-		return ids[0] ?? null;
-	} catch (err) {
-		console.warn(`  image id for decal ${decalId} not resolved (${err.message}); the game resolves it at runtime`);
-		return null;
+	let lastError = "no id in the decal";
+	for (let attempt = 0; attempt < 12; attempt++) {
+		try {
+			const { location } = await (await call(`${API}/asset-delivery-api/v1/assetId/${decalId}`)).json();
+			const text = Buffer.from(await (await fetch(location)).arrayBuffer()).toString("latin1");
+			const ids = [...text.matchAll(/(?:id=|rbxassetid:\/\/)(\d+)/g)].map((m) => Number(m[1])).filter((id) => id !== decalId);
+			if (ids[0]) return ids[0];
+		} catch (err) {
+			lastError = err.message;
+		}
+		await new Promise((r) => setTimeout(r, 10000));
 	}
+	console.warn(`  image id for decal ${decalId} not resolved (${lastError}); fill it by hand (Studio: game:GetObjects("rbxassetid://${decalId}")[1].Texture)`);
+	return null;
 }
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));

@@ -34,7 +34,8 @@
     "src/shared/GardenAssets.luau",
     "tests/GardenAssets.spec.luau",
     "docs/assets/register.md",
-    "docs/assets/garden-blender-plan.md"
+    "docs/assets/garden-blender-plan.md",
+    "tools/blender/upload-assets.mjs"
   ],
   "tests": [
     "GardenAssets.spec.luau"

@@ -33,12 +33,17 @@ def fit(build):
 
 def egg_starter():
     e = dict(H=2.62, R=1.06)
+    # Linen grain under soft speckle, and a painted smiley crack on the front.
+    smile = k.egg_at(0, 0.43, **e)[0]
     speck = k.paint(
         "st_shell",
         [(0, (255, 205, 208)), (0.5, (255, 236, 206)), (1, (255, 244, 220))],
         0,
         2.8,
-        dots=[((240, 150, 165), 4.2, 0.2), ((130, 205, 170), 3.2, 0.13)],
+        dots=[((245, 170, 182), 4.2, 0.2), ((255, 196, 206), 7, 0.1), ((130, 205, 170), 3.2, 0.13)],
+        grain=(0.1, 60),
+        marks=[((200, 140, 128), smile, 0.3, 0.35, smile.z - 0.03)]
+        + [((200, 140, 128), k.egg_at(t, 0.54, **e)[0], 0, 0.065) for t in (-16, 16)],
     )
     yolk = k.flat((255, 196, 96))
     crack = k.flat((205, 150, 135))
@@ -93,12 +98,20 @@ def _ladybug(red, black, white):
 def egg_meadow():
     e = dict(H=2.56, R=1.05)
     rng = random.Random(4)
+    # Painted four-leaf clovers (four discs and a stem disc each) and fine dew specks.
+    clover = (62, 148, 78)
+    marks = []
+    for theta, v in ((60, 0.56), (105, 0.72), (150, 0.5), (215, 0.58), (255, 0.72), (300, 0.52), (-15, 0.8)):
+        marks += [(clover, k.egg_at(theta + dt, v + dv, **e)[0], 0, 0.1) for dt, dv in ((-7, 0), (7, 0), (0, -0.033), (0, 0.033))]
+        marks.append((clover, k.egg_at(theta + 5, v - 0.085, **e)[0], 0, 0.035))
+        marks.append(((165, 235, 150), k.egg_at(theta, v, **e)[0], 0, 0.03))
     body = k.paint(
         "me_shell",
         [(0, (135, 215, 125)), (0.5, (190, 240, 170)), (1, (226, 250, 205))],
         0,
         2.7,
-        dots=[((255, 255, 250), 3.0, 0.2)],
+        dots=[((255, 255, 250), 3.0, 0.14), ((255, 255, 255), 9, 0.08)],
+        marks=marks,
     )
     turf = k.paint("me_turf", [(0, (85, 175, 85)), (1, (125, 205, 90))], 0, 1.3)
     greens = [k.flat(c) for c in ((110, 205, 90), (140, 222, 100), (88, 188, 96))]
@@ -137,14 +150,37 @@ def egg_meadow():
     return parts
 
 
+def _tiny_mushroom(cap, stem):
+    """About 60 tris, standing on local z = 0 (k.mushroom is too heavy to scatter)."""
+    return [
+        k.lathe([(0.045, 0), (0.04, 0.1)], m=stem, n=6, name="tiny_stem"),
+        k.lathe([(0.06, 0.08), (0.12, 0.1), (0.08, 0.17), (0, 0.2)], m=cap, n=8, name="tiny_cap"),
+    ]
+
+
+def _fern(length, m, stem):
+    """Fern frond along local +X, curling up in z, four pairs of leaflets."""
+    parts = [k.tube([(0, 0, 0), (length * 0.5, 0, 0.06), (length, 0, 0.2)], [0.025, 0.02, 0.0], m=stem, n=4, name="frond")]
+    for i in range(4):
+        s = (i + 1) / 5
+        for side in (1, -1):
+            lf = k.leaf(0.1 + length * 0.3 * (1 - s * 0.5), 0.06, m, droop=0.15, n=3, steps=2, name="leaflet")
+            lf.data.transform(Matrix.Translation((length * s, 0, 0.2 * s * s)) @ Matrix.Rotation(math.radians(side * 55), 4, "Z"))
+            parts.append(lf)
+    return parts
+
+
 def egg_forest():
     e = dict(H=2.62, R=1.06)
+    # Wavy bark grain with painted moss patches between the ground moss and the cap.
     bark_m = k.paint(
         "fo_bark",
         [(0, (170, 116, 76)), (0.55, (214, 156, 104)), (1, (198, 138, 90))],
         0,
         2.0,
         dots=[((156, 104, 70), 4, 0.2)],
+        grain=(0.16, 6, "wave"),
+        splat=[((118, 200, 96), 2.6, 0.6, 0.5, 1.75), ((165, 236, 110), 2.6, 0.7, 0.5, 1.75)],
     )
     cap_m = k.paint("fo_cap", [(0, (240, 186, 110)), (1, (214, 150, 86))], 1.6, 2.9, dots=[((190, 124, 68), 5, 0.3)])
     lip = k.flat((196, 130, 74))
@@ -153,6 +189,7 @@ def egg_forest():
     tan = k.paint("fo_tan", [(0, (242, 190, 120)), (1, (214, 150, 90))], 0.2, 1.6, dots=[((255, 240, 205), 5, 0.25)])
     stem_m = k.flat((255, 240, 216))
     leaf_m = k.flat((130, 205, 95))
+    stem = k.flat((96, 160, 80))
     wood = k.flat((168, 116, 76))
 
     def bark(t, v):
@@ -163,7 +200,7 @@ def egg_forest():
         return 0.63 + 0.015 * math.sin(math.radians(t) * 6)
 
     parts = [
-        k.shell(bark_m, nu=32, nv=9, v1=0.68, warp=bark, **e),
+        k.shell(bark_m, nu=28, nv=8, v1=0.68, warp=bark, **e),
         k.shell(cap_m, nu=28, nv=6, v0=cap_edge, warp=lambda t, v: 0.11 + 0.03 * math.sin(math.radians(t) * 10 + v * 30), name="cap", **e),
     ]
     p = k.egg_at(0, 0.63, 0.13, **e)[0]
@@ -181,9 +218,13 @@ def egg_forest():
 
     parts.append(k.shell(moss, nu=30, nv=3, v1=moss_top, warp=lambda t, v: 0.08, name="moss", **e))
     parts.append(k.shell(moss, nu=50, nv=1, v0=drip, v1=0.64, warp=lambda t, v: 0.085, name="drip", **e))
-    for theta, v, r in ((-105, 0.2, 0.36), (130, 0.17, 0.36), (-10, 0.11, 0.34), (235, 0.14, 0.32)):
+    for theta, v, r in ((-105, 0.2, 0.36), (130, 0.17, 0.36)):
         p = k.egg_at(theta, v, 0.05, **e)[0]
         parts.append(k.puff(r, p, moss, scale=(1, 1, 0.72), name="lump"))
+    # Tiny mushrooms grow sideways out of the bark, a fern curls up the side.
+    for theta, v, cap, spin in ((-18, 0.47, red, 0), (-30, 0.4, tan, 40), (80, 0.42, red, 0), (205, 0.4, tan, 20)):
+        parts += k.stick(_tiny_mushroom(cap, stem_m), theta, v, -0.01, spin=spin, s=1.5, **e)
+    parts += k.stick(_fern(0.75, leaf_m, stem), -95, 0.4, 0.0, spin=0, **e)
 
     # Mushrooms lean out from the base, the biggest feature after the cap.
     for theta, reach, r, h, cap, lean in ((38, 1.0, 0.62, 1.0, red, 16), (-52, 0.98, 0.44, 0.72, tan, -14), (178, 0.98, 0.54, 0.86, red, 14)):
@@ -192,9 +233,7 @@ def egg_forest():
         for ob in k.mushroom(r, h, cap, stem_m):
             ob.data.transform(place)
             parts.append(ob)
-    # A small shelf mushroom and an oak-green leaf on the cap.
-    for ob in k.mushroom(0.2, 0.3, tan, stem_m):
-        parts.append(k.stick(ob, -120, 0.46, 0.02, **e))
+    # An oak-green leaf on the cap.
     sprig = k.leaf(0.62, 0.2, leaf_m, droop=0.2)
     sprig.data.transform(Matrix.Translation(top + Vector((0.1, -0.02, 0.2))) @ k.rot_z(-30))
     parts.append(sprig)
@@ -203,11 +242,16 @@ def egg_forest():
 
 def egg_sunset():
     e = dict(H=2.62, R=1.06)
+    # Violet foot to orange crown, a painted ray crest under the sun and a cartoon shine.
+    shine = k.egg_at(-38, 0.66, **e)[0]
     body = k.paint(
         "su_shell",
-        [(0, (255, 112, 170)), (0.38, (255, 132, 140)), (0.72, (255, 170, 84)), (1, (255, 205, 110))],
+        [(0, (168, 104, 214)), (0.26, (255, 112, 170)), (0.5, (255, 136, 136)), (0.76, (255, 170, 84)), (1, (255, 205, 110))],
         0,
         2.7,
+        rough=0.2,
+        rays=((255, 222, 128), 14, 1.5, 0.5),
+        marks=[((255, 230, 200), shine, 0, 0.16), ((255, 230, 200), shine + Vector((0.02, -0.02, -0.3)), 0, 0.065)],
     )
     gold = k.paint("su_gold", [(0, (255, 186, 70)), (1, (255, 232, 130))], 1.6, 3.1)
     cloud = k.paint("su_cloud", [(0, (255, 214, 232)), (1, (255, 250, 245))], 0, 1.5)
@@ -250,28 +294,32 @@ def egg_sunset():
 def egg_moon():
     e = dict(H=2.42, R=0.94)
     lift = 0.5
+    # Painted craters: dark floor, pale blue rim. Glow discs and a thin crescent inlay sit on top.
+    marks = []
+    for theta, v, r in ((-22, 0.7, 0.22), (30, 0.32, 0.2), (70, 0.66, 0.18), (150, 0.55, 0.26), (215, 0.38, 0.2), (265, 0.7, 0.18), (120, 0.25, 0.14), (-95, 0.78, 0.13)):
+        c = k.egg_at(theta, v, **e)[0] + Vector((0, 0, lift))
+        marks += [((24, 26, 76), c, 0, r * 0.78), ((160, 186, 242), c, r * 0.78, r)]
     body = k.paint(
         "mo_shell",
-        [(0, (34, 34, 96)), (0.6, (48, 58, 128)), (1, (70, 84, 168))],
+        [(0, (28, 28, 86)), (0.6, (44, 52, 122)), (1, (66, 80, 164))],
         lift,
         lift + 2.42,
         dots=[((170, 185, 245), 5, 0.1)],
+        marks=marks,
     )
-    rim = k.flat((104, 120, 200))
-    floor = k.flat((38, 40, 104))
     silver = k.paint("mo_crescent", [(0, (255, 232, 170)), (1, (255, 248, 214))], 0, 3.0, dots=[((244, 208, 140), 2.6, 0.2)])
     thread = k.flat((255, 236, 180))
     star_m = k.glow((255, 245, 190))
+    spot_m = k.glow((255, 240, 200))
 
     parts = [k.shell(body, nu=26, nv=13, **e)]
-    for theta, v, r in ((-28, 0.66, 0.3), (24, 0.42, 0.24), (70, 0.68, 0.22), (150, 0.55, 0.3), (215, 0.38, 0.24), (265, 0.7, 0.22)):
-        bowl = k.lathe([(r * 1.1, -0.03), (r, 0.03), (r * 0.76, 0.05), (r * 0.62, 0.012)], m=rim, n=12, name="crater_rim")
-        base = k.lathe([(r * 0.66, 0.0), (0, 0.012)], m=floor, n=12, name="crater_floor")
-        k.stick([bowl, base], theta, v, -0.01, **e)
-        parts += [bowl, base]
     glow = []
-    for theta, v, r, spin in ((-62, 0.52, 0.17, 10), (6, 0.62, 0.2, -12), (48, 0.82, 0.15, 20), (108, 0.42, 0.16, 0), (182, 0.76, 0.18, 30), (240, 0.56, 0.15, -20), (-12, 0.3, 0.13, 8)):
+    for theta, v, r, spin in ((-75, 0.6, 0.17, 10), (6, 0.58, 0.2, -12), (48, 0.82, 0.15, 20), (108, 0.42, 0.16, 0), (182, 0.76, 0.18, 30), (240, 0.56, 0.15, -20), (-5, 0.25, 0.13, 8)):
         glow.append(k.stick(k.star(r, star_m), theta, v, 0.0, spin=spin, **e))
+    for theta, v, r in ((-60, 0.3, 0.07), (-5, 0.82, 0.06), (25, 0.5, 0.05), (95, 0.58, 0.07), (135, 0.4, 0.05), (170, 0.3, 0.06), (200, 0.62, 0.05), (250, 0.3, 0.07), (300, 0.5, 0.05), (330, 0.9, 0.06), (-45, 0.62, 0.05)):
+        glow.append(k.stick(k.lathe([(r, 0), (0, 0.02)], m=spot_m, n=8, name="spot"), theta, v, 0.0, **e))
+    crescent = [(-42 + 15 * math.sin(math.radians(a)), 0.43 + 0.1 * math.cos(math.radians(a))) for a in range(-125, 126, 25)]
+    parts.append(k.ridge(crescent, [0.012 + 0.05 * math.cos(math.radians(a) * 0.7) for a in range(-125, 126, 25)], 0.02, silver, **e))
     moved(parts + glow, z=lift)
 
     # The crescent: inner edge hugs the egg, outer edge bulges, tapering to two tips.
@@ -313,7 +361,7 @@ def _star_outline(r, inner):
 def egg_star():
     e = dict(H=2.72, R=1.06)
     shades = [k.flat(c) for c in ((255, 230, 120), (255, 200, 66), (242, 160, 40), (208, 120, 30), (160, 84, 24))]
-    edge = k.flat((255, 236, 150), name="st_edge")
+    edge = k.flat((255, 248, 200), name="st_edge")
     deep = k.flat((150, 80, 26), name="st_pocket")
     frame_m = k.flat((255, 232, 130), name="st_frame")
     middle = 1.3
@@ -363,8 +411,15 @@ def egg_star():
         spike = k.cyl(r, h, (0, 0, h / 2), m=shades[0], n=5, r2=0, name="spike")
         k.stick(spike, theta, v, -0.2, spin=theta, **e)
         parts.append(k.facet(spike, shades))
-    crown = k.cyl(0.34, 0.78, (0, 0, 2.98), m=shades[0], n=5, r2=0, name="crown")
-    parts.append(k.facet(crown, shades))
+    # Small embossed stars between the points, and a star topper on a short stub.
+    for theta, v in ((35, 0.33), (-35, 0.66), (145, 0.66), (215, 0.33), (130, 0.36), (235, 0.64)):
+        s = k.star(0.15, shades[0], depth=0.07, name="emboss")
+        k.stick(s, theta, v, 0.05, spin=theta, **e)
+        parts.append(k.facet(s, shades[:4]))
+    parts.append(k.cyl(0.07, 0.3, (0, 0, 2.9), m=shades[1], n=5, name="stub"))
+    topper = k.star(0.34, shades[0], depth=0.12, name="topper")
+    topper.data.transform(Matrix.Translation((0, 0, 3.36)) @ Matrix.Rotation(math.radians(90), 4, "X"))
+    parts.append(k.facet(topper, shades[:4]))
     return parts + [core]
 
 
@@ -395,13 +450,15 @@ def _feather_wing(side, m):
 def egg_celestial():
     e = dict(H=2.32, R=0.86)
     lift = 0.36
+    # White-gold pearl, a fine gold filigree painted over the enamel band, gold baked bright.
     pearl = k.paint(
         "ce_pearl",
-        [(0, (255, 226, 214)), (0.37, (255, 246, 232)), (0.372, (78, 88, 205)), (0.545, (104, 96, 226)), (0.547, (255, 252, 244)), (1, (246, 240, 255))],
+        [(0, (255, 230, 196)), (0.37, (255, 248, 228)), (0.372, (78, 88, 205)), (0.545, (104, 96, 226)), (0.547, (255, 251, 236)), (1, (250, 244, 224))],
         lift,
         lift + 2.32,
+        splat=[((255, 228, 150), 6, 0.78, lift + 0.9, lift + 1.26, "swirl")],
     )
-    gold = k.paint("ce_gold", [(0, (252, 190, 76)), (0.35, (255, 212, 104)), (1, (255, 236, 150))], 0, 2.6)
+    gold = k.paint("ce_gold", [(0, (252, 190, 76)), (0.35, (255, 212, 104)), (1, (255, 236, 150))], 0, 2.6, emit=0.08)
     plume = k.paint("ce_plume", [(0, (255, 251, 240)), (0.45, (255, 240, 200)), (1, (255, 190, 64))], 1.9, 3.2)
     light = k.glow((255, 196, 70))
 
@@ -441,7 +498,7 @@ def egg_celestial():
     s = k.star(0.2, light, points=4, inner=0.3)
     s.data.transform(Matrix.Translation((0, 0, top + 0.42)) @ Matrix.Rotation(math.radians(90), 4, "X"))
     lights.append(s)
-    halo = k.ring(0.46, top + 0.24, 0.042, light, n=18, sides=4, name="halo")
+    halo = k.ring(0.52, top + 0.24, 0.05, light, n=24, sides=4, name="halo")
     halo.data.transform(Matrix.Translation((0, 0, top + 0.24)) @ Matrix.Rotation(math.radians(-14), 4, "X") @ Matrix.Translation((0, 0, -top - 0.24)))
     lights.append(halo)
 
@@ -462,13 +519,16 @@ def egg_aurora():
     # Teal foot to violet crown, with soft mint and pink bands in the ramp and pale star specks.
     sky = k.paint(
         "au_shell",
-        [(0, (38, 168, 160)), (0.2, (46, 150, 196)), (0.3, (120, 236, 206)), (0.4, (58, 118, 206)), (0.55, (88, 104, 216)), (0.64, (236, 150, 222)), (0.74, (112, 92, 212)), (1, (142, 92, 220))],
+        [(0, (240, 248, 255)), (0.06, (232, 244, 255)), (0.1, (38, 168, 160)), (0.2, (46, 150, 196)), (0.3, (120, 236, 206)), (0.4, (58, 118, 206)), (0.55, (88, 104, 216)), (0.64, (236, 150, 222)), (0.74, (112, 92, 212)), (1, (142, 92, 220))],
         0,
         2.62,
         dots=[((232, 242, 255), 5, 0.12)],
+        splat=[((248, 252, 255), 9, 0.72, 0, 0.5)],  # snow drifting up from the foot
     )
     mint = k.glow((104, 244, 186))
     pink = k.glow((255, 132, 214))
+    pale = k.glow((214, 250, 236))
+    lilac = k.glow((226, 190, 255))
     gold = k.glow(k.GOLD_HI)
     cloud = k.paint("au_cloud", [(0, (214, 228, 250)), (1, (255, 255, 255))], 0, 1.2)
 
@@ -479,6 +539,12 @@ def egg_aurora():
         path = [(start + sweep * j / count, v + 0.04 * math.sin(j / count * cycles * math.pi * 2)) for j in range(count + 1)]
         widths = [0.012 + 0.08 * math.sin(j / count * math.pi) ** 1.2 for j in range(count + 1)]
         parts.append(k.ridge(path, widths, 0.035, m, **e))
+    # A second, thinner layer of curtains behind the first for depth.
+    for start, sweep, v, m, cycles in ((-80, 150, 0.53, pale, 2), (70, 140, 0.42, lilac, 2), (180, 150, 0.66, pale, 1.5), (-20, 120, 0.32, lilac, 2.5)):
+        count = 20
+        path = [(start + sweep * j / count, v + 0.03 * math.sin(j / count * cycles * math.pi * 2 + 1)) for j in range(count + 1)]
+        widths = [0.01 + 0.04 * math.sin(j / count * math.pi) ** 1.2 for j in range(count + 1)]
+        parts.append(k.ridge(path, widths, 0.025, m, **e))
     # A crown of tiny gold stars round the top, one on the tip.
     for i in range(6):
         parts.append(k.stick(k.star(0.14, gold), i * 60 + 30, 0.86, 0.01, spin=i * 25, **e))
@@ -517,7 +583,7 @@ def egg_shell_fragment():
 NOTES = "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it."
 LOOKS = "Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today."
 ASSETS = [
-    dict(name=f"egg_{id}", build=fit(build), budget=2500, size=[2.2, 3, 2.2], priority=1, order=order, replaces=replaces, notes=notes)
+    dict(name=f"egg_{id}", build=fit(build), budget=3000 if id in ("celestial", "aurora") else 2500, size=[2.2, 3, 2.2], priority=1, order=order, replaces=replaces, notes=notes)
     for order, (id, build, replaces, notes) in enumerate(
         (
             ("starter", egg_starter, "Plots.egg starter (src/garden/Plots.luau 274-295)", NOTES),
