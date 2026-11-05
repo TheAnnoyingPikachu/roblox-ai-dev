@@ -1,0 +1,52 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-041",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Add the pure Petal Catch rules: GardenConfig.WHEEL and Profile.wheelToday, WheelRules (seeded schedule, catch samples, tiers, roll, idempotent award), the GardenProgress defaults and sanitise for wheelToday, and their specs.",
+  "inputs": [
+    "docs/architecture/garden-wheel.md §2",
+    "docs/game-design/game4-wheel.md §W3, §W4, §W6, §W10, §W12",
+    "docs/decisions/0016-garden-petal-catch-wheel.md",
+    "src/shared/DashRules.luau (conventions), src/shared/Rng.luau",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-040"
+  ],
+  "acceptance_criteria": [
+    "GardenConfig.WHEEL holds every value of garden-wheel.md §2.1 with the decision 0016 odds; GardenConfig.spec checks 8 wedges, both columns sum to 10,000, every non-coins wedge is a sold egg, drops sum to 40 and spinAt < luckyAt <= pink + 3 x gold",
+    "WheelRules exports schedule, new, bandAt, sample, tier, finish, roll, spinsToday, spinsLeft, canSpin, spinId and award with the §2.2 signatures, uses no Roblox API (Purity.spec), never mutates its inputs, and schedule follows the §2.2 algorithm exactly (fixed 26/4/10 composition, Fisher-Yates with Rng.int, ring spots, 1 s gap from startAt + 2)",
+    "award is idempotent on (today, n): a second application returns the same profile and false; out-of-order and past-cap ops are refused; eggs cap at PRIZE_STORE, coins at MAX_COINS and pay scaled(100, 10)",
+    "GardenProgress.defaults and sanitize carry wheelToday = { day, spins } (day by dayNumber, spins by count up to spinsPerDay); a literal v2 record loads with the default and every other field equal; SCHEMA_VERSION is 3 (shared with v0.4: whichever task merges first bumps it)",
+    "tests/WheelRules.spec.luau covers the §W12 list and every §W10 check value and is registered in tests/run.luau; lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass"
+  ],
+  "verification": "CI (WheelRules, GardenConfig, GardenProgress, Purity specs) and the GARDEN-045 QA review",
+  "output_artifacts": [
+    "src/shared/WheelRules.luau",
+    "tests/WheelRules.spec.luau"
+  ],
+  "evidence": [
+    "Local run 2026-11-05 on garden/wheel: lune run tests/run 508/508 pass (28 new: WheelRules 21, GardenConfig 3, GardenProgress 4 incl. updated v1/v2 migration cases); selene 0 errors; stylua --check clean; validate-tasks and check-scope origin/main pass. W10 values covered: schedule 40 drops at 102..141, 26/4/10 for 200 seeds, spots 4..12, algorithm pinned to seed 12345 (kinds string and drops 1 and 40 spots); band 104.25..105.75; catch at 3.4 not 3.6; 104.0 miss then 104.4 catch; 106.0 landed; score floor; tiers 11/12/23/24, practice none; both columns 10,000; 100,000 rolls within 15% per wedge both wheels; EV 127.0 / 189.1; award idempotent, out-of-order and cap refused, day rollover, coins 36,300 / 100 and MAX_COINS clamp, celestial 999,999 -> 1,000,000; sanitize v2 -> default wheelToday, spins 9 -> 3. SCHEMA_VERSION bumped to 3 here (v0.4 had not)."
+  ],
+  "files": [
+    "src/shared/WheelRules.luau",
+    "src/shared/GardenConfig.luau",
+    "src/shared/GardenProgress.luau",
+    "tests/WheelRules.spec.luau",
+    "tests/GardenConfig.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "tests/run.luau",
+    "studio/tasks/GARDEN-041.json"
+  ],
+  "tests": [
+    "WheelRules.spec.luau",
+    "GardenConfig.spec.luau",
+    "GardenProgress.spec.luau",
+    "Purity.spec.luau"
+  ],
+  "notes": "Pure module, no Roblox calls: the server and the client both call WheelRules.schedule, so any drift between them is a scoring bug; the spec pins the algorithm with literal expected drops for one seed. Odds, thresholds, cap and coinsMinutes are economy values (decision 0016): do not tune them here. If the v0.4 schema task has already bumped SCHEMA_VERSION to 3, add wheelToday to its v3 and do not bump again."
+}
