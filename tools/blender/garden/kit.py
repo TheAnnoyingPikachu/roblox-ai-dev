@@ -62,9 +62,16 @@ GOLD_LO = (205, 130, 40)
 # Materials -----------------------------------------------------------------------------------
 
 
-def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4):
+def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4, grain=None, splat=(), rays=None, marks=(), emit=0.0):
     """Baked colour: `stops` [(0-1, rgb), ...] along an object axis from lo to hi, then optional
-    hard polka `dots` [(rgb, scale, size), ...] and `bands` (rgb, period in studs)."""
+    hard polka `dots` [(rgb, scale, size), ...] and `bands` (rgb, period in studs).
+    grain (amount, scale[, "noise"|"wave"]) shades the colour by a fine texture (linen, bark).
+    splat [(rgb, scale, threshold, z0, z1[, "noise"|"wave"|"swirl"]), ...]: hard patches of a texture
+    above the threshold between two object heights (moss, filigree, snow).
+    rays (rgb, count, z0, width): angular stripes round the object axis above z0 (a sun crest).
+    marks [(rgb, centre, r_in, r_out[, below_z]), ...]: painted discs and rings round an object
+    point, optionally only below a height (craters, clover leaves, a smile).
+    emit: emission strength of the whole colour, so the bake comes out bright."""
     if name in _night._materials:
         return _night._materials[name]
     m = mat(name, stops[0][1], kind="flat", rough=rough)
@@ -94,15 +101,66 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4)
         mix.inputs[7].default_value = lin(rgb)
         return mix.outputs[2]
 
+    def op(operation, a, b=None):
+        """Math node on sockets or numbers."""
+        node = nt.nodes.new("ShaderNodeMath")
+        node.operation = operation
+        for i, x in enumerate((a,) if b is None else (a, b)):
+            if isinstance(x, (int, float)):
+                node.inputs[i].default_value = x
+            else:
+                nt.links.new(x, node.inputs[i])
+        return node.outputs[0]
+
+    def texture(kind, scale):
+        tex = nt.nodes.new("ShaderNodeTexNoise" if kind == "noise" else "ShaderNodeTexWave")
+        tex.inputs["Scale"].default_value = scale
+        if kind == "noise":
+            tex.inputs["Detail"].default_value = 6
+        else:  # "wave": vertical grain; "swirl": diagonal, heavily distorted (filigree)
+            tex.inputs["Distortion"].default_value = 4 if kind == "wave" else 9
+            tex.inputs["Detail"].default_value = 3
+            if kind == "swirl":
+                tex.bands_direction = "DIAGONAL"
+        nt.links.new(coord.outputs["Object"], tex.inputs["Vector"])
+        return tex.outputs["Fac"]
+
+    if grain:
+        amount, scale, kind = (tuple(grain) + ("noise",))[:3]
+        shade_ = nt.nodes.new("ShaderNodeMapRange")
+        shade_.inputs["To Min"].default_value = 1 - amount
+        shade_.inputs["To Max"].default_value = 1 + amount
+        nt.links.new(texture(kind, scale), shade_.inputs["Value"])
+        mul = nt.nodes.new("ShaderNodeMix")
+        mul.data_type = "RGBA"
+        mul.blend_type = "MULTIPLY"
+        mul.inputs[0].default_value = 1.0
+        nt.links.new(colour, mul.inputs[6])
+        nt.links.new(shade_.outputs["Result"], mul.inputs[7])
+        colour = mul.outputs[2]
+    for rgb, scale, threshold, z0, z1, *kind in splat:
+        hit = op("GREATER_THAN", texture(kind[0] if kind else "noise", scale), threshold)
+        zone = op("MULTIPLY", op("GREATER_THAN", sep.outputs["Z"], z0), op("LESS_THAN", sep.outputs["Z"], z1))
+        colour = over(op("MULTIPLY", hit, zone), rgb)
+    if rays:
+        rgb, count, z0, width = rays
+        angle = op("ARCTAN2", sep.outputs["Y"], sep.outputs["X"])
+        stripe = op("GREATER_THAN", op("SINE", op("MULTIPLY", angle, count)), 1 - width)
+        colour = over(op("MULTIPLY", stripe, op("GREATER_THAN", sep.outputs["Z"], z0)), rgb)
+    for rgb, centre, r_in, r_out, *below in marks:
+        dist = nt.nodes.new("ShaderNodeVectorMath")
+        dist.operation = "DISTANCE"
+        dist.inputs[1].default_value = tuple(centre)
+        nt.links.new(coord.outputs["Object"], dist.inputs[0])
+        mask = op("MULTIPLY", op("LESS_THAN", dist.outputs["Value"], r_out), op("GREATER_THAN", dist.outputs["Value"], r_in))
+        if below:
+            mask = op("MULTIPLY", mask, op("LESS_THAN", sep.outputs["Z"], below[0]))
+        colour = over(mask, rgb)
     for rgb, scale, size in dots:
         cells = nt.nodes.new("ShaderNodeTexVoronoi")
         cells.inputs["Scale"].default_value = scale
         nt.links.new(coord.outputs["Object"], cells.inputs["Vector"])
-        hit = nt.nodes.new("ShaderNodeMath")
-        hit.operation = "LESS_THAN"
-        hit.inputs[1].default_value = size
-        nt.links.new(cells.outputs["Distance"], hit.inputs[0])
-        colour = over(hit.outputs[0], rgb)
+        colour = over(op("LESS_THAN", cells.outputs["Distance"], size), rgb)
     if bands:
         rgb, period = bands
         wave = nt.nodes.new("ShaderNodeMath")
@@ -117,6 +175,9 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4)
         nt.links.new(sine.outputs[0], hit.inputs[0])
         colour = over(hit.outputs[0], rgb)
     nt.links.new(colour, bsdf.inputs["Base Color"])
+    if emit > 0:
+        nt.links.new(colour, bsdf.inputs["Emission Color"])
+        bsdf.inputs["Emission Strength"].default_value = emit
     return m
 
 
