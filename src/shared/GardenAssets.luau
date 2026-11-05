@@ -253,6 +253,55 @@ local GardenAssets: { [string]: Asset } = {
 		decal = 127563154953102,
 		texture = nil,
 	},
+	wheel_stand = {
+		size = { 7, 8, 2 },
+		parts = { "wheel_stand" },
+		model = 95675509123129,
+		decal = 89961096573509,
+		texture = nil,
+	},
+	wheel_disc = {
+		size = { 6, 6, 0.6 },
+		parts = { "wheel_disc" },
+		model = 138174258423389,
+		decal = 101877597507841,
+		texture = nil,
+	},
+	wheel_basket = {
+		size = { 1.6, 1.5, 1.6 },
+		parts = { "wheel_basket" },
+		model = 115953487774215,
+		decal = 78559448014177,
+		texture = nil,
+	},
+	petal_pink = {
+		size = { 1.2, 0.1, 0.8 },
+		parts = { "petal_pink" },
+		model = 93527896601051,
+		decal = 129702755590565,
+		texture = nil,
+	},
+	petal_gold = {
+		size = { 1.2, 0.1, 0.8 },
+		parts = { "petal_gold" },
+		model = 91837854179531,
+		decal = 73151584771942,
+		texture = nil,
+	},
+	pinecone = {
+		size = { 0.7, 1, 0.7 },
+		parts = { "pinecone" },
+		model = 88452000750336,
+		decal = 122016992060691,
+		texture = nil,
+	},
+	wheel_tree = {
+		size = { 23.67, 19.96, 24 },
+		parts = { "wheel_tree" },
+		model = 121150205623910,
+		decal = 77607558508827,
+		texture = nil,
+	},
 }
 
 return GardenAssets
