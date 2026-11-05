@@ -3,6 +3,7 @@ local T = require("./framework")
 local GardenConfig = require("../src/shared/GardenConfig")
 local GardenProgress = require("../src/shared/GardenProgress")
 local GardenRules = require("../src/shared/GardenRules")
+local HatchRules = require("../src/shared/HatchRules")
 local MetaRules = require("../src/shared/MetaRules")
 local WorldRules = require("../src/shared/WorldRules")
 
@@ -12,8 +13,8 @@ type Profile = GardenConfig.Profile
 
 local NOW = 1_800_000_000
 
-local function creature(id: number, s: string, m: string, z: string, placed: number): GardenConfig.Creature
-	return { id = id, s = s, m = m, z = z, placed = placed, fav = false }
+local function creature(id: number, s: string, m: string, z: string, placed: number, c: string?): GardenConfig.Creature
+	return { id = id, s = s, m = m, z = z, c = c or "none", placed = placed, fav = false, fa = 0, n = "" }
 end
 
 -- The C3 check garden: a Big Golden Berry Cat and a Normal Sprout Bunny with 5 Index entries.
@@ -61,15 +62,21 @@ describe("GardenRules income (C3)", function()
 		expect(GardenRules.income(GardenProgress.defaults(NOW))).toBe(0)
 	end)
 
-	it("applies mutation and size multipliers and the index bonus up to x2.6 (U4)", function()
+	it("applies mutation, size and charm multipliers and the index bonus up to x2.68 (U4, V2)", function()
 		expect(GardenRules.rate(creature(1, "dragon", "rainbow", "huge", 1))).toBe(1500 * 10 * 2.5)
 		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1))).toBe(150)
 		expect(GardenRules.rate(creature(1, "nope", "normal", "normal", 1))).toBe(0)
+		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1, "frosted"))).toBe(225)
+		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1, "blooming"))).toBe(300)
+		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1, "stormy"))).toBe(450)
+		expect(GardenRules.rate(creature(1, "owl", "moonlit", "normal", 1, "shiny"))).toBe(150) -- unknown = x1
+		expect(GardenRules.rate(creature(1, "axolotl", "rainbow", "huge", 1, "stormy"))).toBe(1_875_000) -- V6 ceiling
+		expect(GardenRules.releaseValue(creature(1, "moth", "normal", "normal", 1, "stormy"))).toBe(990)
 		local p = GardenProgress.defaults(NOW)
 		for i = 1, GardenConfig.INDEX_SIZE do
 			p.index[i] = `x{i}`
 		end
-		expect(near(GardenRules.indexMult(p), 2.6)).toBe(true)
+		expect(near(GardenRules.indexMult(p), 2.68)).toBe(true)
 	end)
 
 	it("matches the S2 and U3 check values for Celestial and Aurora creatures", function()
@@ -111,86 +118,174 @@ describe("GardenRules income (C3)", function()
 		expect(GardenRules.find(out, 1)).toBeNil()
 		expect(#out.index).toBe(5) -- the Index entry stays
 		expect(#p.creatures).toBe(2) -- input unchanged
-		local fav = GardenRules.favourite(p, 1)
+		local fav = GardenRules.favourite(p, 1, NOW)
 		expect((GardenRules.find(fav, 1) :: any).fav).toBe(true)
+		expect((GardenRules.find(fav, 1) :: any).fa).toBe(NOW)
 		local _, refused, none = GardenRules.release(fav, 1)
 		expect(refused).toBe(false)
 		expect(none).toBe(0)
-		expect((GardenRules.find(GardenRules.favourite(fav, 1), 1) :: any).fav).toBe(false)
-		expect(select(2, GardenRules.favourite(p, 99))).toBe(false)
+		local off = GardenRules.favourite(fav, 1, NOW + 5)
+		expect((GardenRules.find(off, 1) :: any).fav).toBe(false)
+		expect((GardenRules.find(off, 1) :: any).fa).toBe(NOW) -- turning off keeps the last time on
+		expect(select(2, GardenRules.favourite(p, 99, NOW))).toBe(false)
 		expect(select(2, GardenRules.release(p, 99))).toBe(false)
+		expect(p.creatures[1].fav).toBe(false) -- input unchanged
+	end)
+
+	it("follows the most recently favourited creature, then the highest id (V3)", function()
+		local p = checkGarden()
+		table.insert(p.creatures, creature(3, "frog", "normal", "normal", 0))
+		expect(GardenRules.follower(p)).toBeNil()
+		p = GardenRules.favourite(p, 1, NOW)
+		expect((GardenRules.follower(p) :: any).id).toBe(1)
+		p = GardenRules.favourite(p, 3, NOW + 10)
+		expect((GardenRules.follower(p) :: any).id).toBe(3) -- stored creatures can follow too
+		p = GardenRules.favourite(p, 2, NOW + 10)
+		expect((GardenRules.follower(p) :: any).id).toBe(3) -- tie: the highest id
+		p = GardenRules.favourite(p, 3, NOW + 20) -- off
+		expect((GardenRules.follower(p) :: any).id).toBe(2)
+		p = GardenRules.favourite(p, 1, NOW + 30)
+		p = GardenRules.favourite(p, 1, NOW + 40) -- on again, later
+		expect((GardenRules.follower(p) :: any).id).toBe(1)
+		expect((GardenRules.follower(p) :: any).fa).toBe(NOW + 40)
+	end)
+
+	it("validates pet names as V5 and stores the filtered text as given", function()
+		expect(GardenRules.validName("Sprinkles")).toBe("Sprinkles")
+		expect(GardenRules.validName("  Pebble  ")).toBe("Pebble")
+		expect(GardenRules.validName("Mr O'Neil-Jones 2")).toBe("Mr O'Neil-Jones 2")
+		expect(GardenRules.validName("abcdefghijklmnopqrst")).toBe("abcdefghijklmnopqrst") -- 20
+		expect(GardenRules.validName("abcdefghijklmnopqrstu")).toBeNil() -- 21
+		expect(GardenRules.validName("")).toBeNil()
+		expect(GardenRules.validName("   ")).toBeNil()
+		expect(GardenRules.validName("two  spaces")).toBeNil()
+		expect(GardenRules.validName("hi!")).toBeNil()
+		expect(GardenRules.validName("under_score")).toBeNil()
+		expect(GardenRules.validName("tab\tname")).toBeNil()
+		expect(GardenRules.validName("new\nline")).toBeNil()
+		expect(GardenRules.validName("émile")).toBeNil()
+		expect(GardenRules.validName("<b>x</b>")).toBeNil()
+		expect(GardenRules.validName(nil :: any)).toBeNil()
+		expect(GardenRules.validName(42 :: any)).toBeNil()
+		local p = checkGarden()
+		local out, ok = GardenRules.setName(p, 1, "###")
+		expect(ok).toBe(true)
+		expect((GardenRules.find(out, 1) :: any).n).toBe("###") -- whatever the filter returned
+		expect(p.creatures[1].n).toBe("") -- input unchanged
+		expect(GardenRules.setName(out, 1, "").creatures[1].n).toBe("")
+		expect(select(2, GardenRules.setName(p, 99, "x"))).toBe(false)
+		expect(select(2, GardenRules.setName(p, 1, nil :: any))).toBe(false)
+		expect(GardenRules.rate(GardenRules.find(out, 1) :: any)).toBe(54) -- a name changes nothing else
 	end)
 
 	-- Director ruling (0008 amendment 2026-10-26): the expected coins from buying, hatching and
 	-- releasing an egg are at most 60% of its price, for every sold egg in every weather. The Lucky
 	-- Meter is bounded from above by adding top rate / meter to the species average. An egg with a
 	-- fixed mutation uses it, not the weather table: the table would understate it 20 times over.
-	it("never returns more than 60% of an egg's price on buy, hatch and release, in any weather", function()
+	-- v0.4 (decision 0015): the rare weathers multiply by their charm expectation too, and Forest and
+	-- Sunset roll the Moth there.
+	local function sizeAvg(): number
 		local size = 0
 		for _, z in GardenConfig.SIZES do
 			size += z.mult * z.bp / 10000
 		end
+		return size
+	end
+
+	local function mutationAvg(w: GardenConfig.Weather): number
+		local out = 0
+		for _, o in w.mutation do
+			out += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp / 10000
+		end
+		return out
+	end
+
+	local function charmAvg(weather: string): number
+		local c = GardenConfig.charmFor(weather)
+		return if c then 1 + (c.mult - 1) * c.bp / 10000 else 1
+	end
+
+	it("never returns more than 60% of an egg's price on buy, hatch and release, in any weather", function()
+		local size = sizeAvg()
 		local checked = 0
+		local worst, worstAt = 0, ""
 		for _, egg in GardenConfig.EGGS do
 			local price = egg.price
 			if price == nil then
 				continue
 			end
-			local species = 0
-			for _, o in egg.odds do
-				species += (GardenConfig.species(o.id) :: GardenConfig.Species).rate * o.bp / 10000
-			end
-			if egg.top and egg.meter then
-				species += (GardenConfig.species(egg.top) :: GardenConfig.Species).rate / egg.meter
-			end
 			for _, w in GardenConfig.WEATHERS do
-				local mutation = 0
-				for _, o in if egg.mutation then { { id = egg.mutation, bp = 10000 } } else w.mutation do
-					mutation += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp / 10000
+				local species = 0
+				for _, o in HatchRules.oddsFor(egg.id, w.id) do
+					species += (GardenConfig.species(o.id) :: GardenConfig.Species).rate * o.bp / 10000
 				end
+				if egg.top and egg.meter then
+					species += (GardenConfig.species(egg.top) :: GardenConfig.Species).rate / egg.meter
+				end
+				local mutation = if egg.mutation
+					then (GardenConfig.mutation(egg.mutation) :: GardenConfig.Mutation).mult
+					else mutationAvg(w)
 				expect(mutation >= 1).toBe(true)
 				if egg.mutation then
 					expect(mutation).toBe(20)
 				end
-				local expected = species * mutation * size * GardenConfig.RELEASE_SECONDS
+				local expected = species * mutation * charmAvg(w.id) * size * GardenConfig.RELEASE_SECONDS
 				if expected > 0.6 * price then
 					error(`{egg.id} in {w.id}: expected release {expected} > 60% of {price}`)
+				end
+				if 100 * expected / price > worst then
+					worst, worstAt = 100 * expected / price, `{egg.id} {w.id}`
 				end
 				checked += 1
 			end
 		end
-		expect(checked).toBe(28) -- 7 sold eggs x 4 weathers
+		expect(checked).toBe(49) -- 7 sold eggs x 7 weathers
+		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 56.4")
 	end)
 
-	-- The exact long-run figures of decision 0014 (GDD U6) and docs/game-design/game4-v03-pacing-check.py.
+	it("keeps every rare weather's mutation x charm expectation under Rainbow Shower's x2 (V2.2)", function()
+		local out = {}
+		for _, w in GardenConfig.WEATHERS do
+			-- In basis points, so the product is exact: 1.468125, 1.8975, 1.644.
+			local mutBp, charm = 0, GardenConfig.charmFor(w.id)
+			for _, o in w.mutation do
+				mutBp += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp
+			end
+			local charmBp = if charm then 10000 + (charm.mult - 1) * charm.bp else 10000
+			if charm then
+				table.insert(out, `{w.id} {string.format("%.4f", mutBp * charmBp / 1e8)}`)
+				expect(mutBp * charmBp < 20000 * 10000).toBe(true)
+			end
+		end
+		expect(table.concat(out, ", ")).toBe("snowfall 1.4681, petals 1.8975, thunder 1.6440")
+		expect(mutationAvg(GardenConfig.WEATHERS[4])).toBe(2)
+	end)
+
+	-- The exact long-run figures of decision 0015 (GDD V6) and docs/game-design/game4-v04-pacing-check.py:
+	-- return in Clear, in Rainbow Shower and in the worst rare weather, average coins/s, payback s.
 	it("reproduces the decision's return, average income and payback for every egg", function()
 		local PINNED = {
-			meadow = "28.4 54.2 3 19",
-			forest = "15.9 30.3 12 33",
-			sunset = "13.1 24.9 75 40",
-			moon = "6.3 12.0 299 84",
-			star = "1.9 3.7 735 272",
-			celestial = "0.01 0.01 20488 48808",
-			aurora = "0.0 0.0 6362 785864",
+			meadow = "28.4 54.2 51.4 3 18",
+			forest = "15.9 30.3 33.8 12 33",
+			sunset = "13.1 24.9 24.2 75 40",
+			moon = "6.3 12.0 11.4 301 83",
+			star = "1.9 3.7 3.5 741 270",
+			celestial = "0.0 0.0 0.0 20488 48808",
+			aurora = "0.0 0.0 0.0 6412 779799",
 		}
-		local size = 0
-		for _, z in GardenConfig.SIZES do
-			size += z.mult * z.bp / 10000
-		end
+		local size = sizeAvg()
 		local function mult(weather: string): number
-			local out = 0
 			for _, w in GardenConfig.WEATHERS do
 				if w.id == weather then
-					for _, o in w.mutation do
-						out += (GardenConfig.mutation(o.id) :: GardenConfig.Mutation).mult * o.bp / 10000
-					end
+					return mutationAvg(w)
 				end
 			end
-			return out
+			return 0
 		end
+		-- Half the hatches land in a window's clear half; the other half follow the weekday table.
 		local event = mult("clear") / 2
 		for _, o in GardenConfig.WEATHER_ODDS.weekday do
-			event += mult(o.id) * o.bp / 20000
+			event += mult(o.id) * charmAvg(o.id) * o.bp / 20000
 		end
 		local worst, worstAt = 0, ""
 		for _, egg in GardenConfig.EGGS do
@@ -198,31 +293,41 @@ describe("GardenRules income (C3)", function()
 			if price == nil then
 				continue
 			end
-			local q, rest = 0, 0
-			for _, o in egg.odds do
-				if o.id == egg.top then
-					q = o.bp / 10000
-				else
-					rest += (GardenConfig.species(o.id) :: GardenConfig.Species).rate * o.bp / 10000
-				end
-			end
-			local share = q / (1 - (1 - q) ^ (egg.meter :: number))
 			local top = (GardenConfig.species(egg.top :: string) :: GardenConfig.Species).rate
-			local base = (share * top + (1 - share) * rest / (1 - q)) * size
+			local function base(weather: string?): number
+				local q, rest = 0, 0
+				for _, o in HatchRules.oddsFor(egg.id, weather) do
+					if o.id == egg.top then
+						q = o.bp / 10000
+					else
+						rest += (GardenConfig.species(o.id) :: GardenConfig.Species).rate * o.bp / 10000
+					end
+				end
+				local share = q / (1 - (1 - q) ^ (egg.meter :: number))
+				return (share * top + (1 - share) * rest / (1 - q)) * size
+			end
 			local fixed = if egg.mutation
 				then (GardenConfig.mutation(egg.mutation) :: GardenConfig.Mutation).mult
 				else nil
 			local function back(weather: string): number
-				return 100 * base * (fixed or mult(weather)) * GardenConfig.RELEASE_SECONDS / price
+				return 100
+					* base(weather)
+					* (fixed or mult(weather))
+					* charmAvg(weather)
+					* GardenConfig.RELEASE_SECONDS
+					/ price
 			end
+			local rare = 0
 			for _, w in GardenConfig.WEATHERS do
 				if back(w.id) > worst then
 					worst, worstAt = back(w.id), `{egg.id} {w.id}`
 				end
+				if GardenConfig.isRare(w.id) then
+					rare = math.max(rare, back(w.id))
+				end
 			end
-			local rate = base * (fixed or event)
-			local digits = if fixed then "%.2f" else "%.1f"
-			local row = `{string.format(digits, back("clear"))} {string.format(digits, back("shower"))}`
+			local rate = base(nil) * (fixed or event)
+			local row = string.format("%.1f %.1f %.1f", back("clear"), back("shower"), rare)
 			expect(`{egg.id} {row} {string.format("%.0f %.0f", rate, price / rate)}`).toBe(`{egg.id} {PINNED[egg.id]}`)
 		end
 		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 54.2")
@@ -576,6 +681,11 @@ describe("GardenRules admin catalogue (decision 0013)", function()
 		end
 		expect(given).toBe(GardenConfig.INDEX_SIZE * #GardenConfig.SIZES)
 		local base = GardenProgress.defaults(NOW)
+		local charmed = GardenRules.grant(base, "moth", "golden", "big", "stormy")
+		expect(`{charmed.creatures[1].c} {charmed.creatures[1].fa} [{charmed.creatures[1].n}]`).toBe("stormy 0 []")
+		expect(GardenProgress.sanitize(charmed, NOW).creatures[1].c).toBe("stormy")
+		expect(GardenRules.grant(base, "moth", "golden", "big").creatures[1].c).toBe("none")
+		expect(select(2, GardenRules.grant(base, "moth", "golden", "big", "shiny"))).toBe(false)
 		expect(select(2, GardenRules.grant(base, "bunny", "celestial", "normal"))).toBe(false)
 		expect(select(2, GardenRules.grant(base, "nope", "normal", "normal"))).toBe(false)
 		expect(select(2, GardenRules.grant(base, "bunny", "nope", "normal"))).toBe(false)

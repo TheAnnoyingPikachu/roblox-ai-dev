@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-028",
   "owner": "A09",
   "verifier": "A15",
@@ -24,7 +24,10 @@
     "GDD V8 rows for these modules are ticked; lune run tests/run, selene, stylua, validate-tasks and check-scope pass"
   ],
   "verification": "CI, then the GARDEN-032 QA read of the values against decision 0015",
-  "output_artifacts": [],
+  "output_artifacts": [
+    "src/shared/TradeRules.luau",
+    "tests/TradeRules.spec.luau"
+  ],
   "files": [
     "src/shared/TradeRules.luau",
     "src/shared/GardenConfig.luau",
@@ -48,5 +51,5 @@
     "HatchRules.spec.luau",
     "GardenProgress.spec.luau"
   ],
-  "notes": "Economy values are decision 0015's; do not tune them here. Draw the charm last and only in a rare weather so every existing seeded spec stays valid. favourite gains a now argument: update GardenProgress and the Profiles.request handler in GARDEN-029, not here. If the V6 pinned digits differ by rounding, re-derive from docs/game-design/game4-v04-pacing-check.py and say so in the PR. Register TradeRules.spec.luau in tests/run.luau SPECS."
+  "notes": "Economy values are decision 0015's; do not tune them here. Draw the charm last and only in a rare weather so every existing seeded spec stays valid. favourite gains a now argument: update GardenProgress and the Profiles.request handler in GARDEN-029, not here. If the V6 pinned digits differ by rounding, re-derive from docs/game-design/game4-v04-pacing-check.py and say so in the PR. Register TradeRules.spec.luau in tests/run.luau SPECS. Evidence (2026-11-05, branch garden/v04): lune run tests/run 523/523 passed (TradeRules.spec 24 tests; GardenConfig 15, WorldRules 9, HatchRules 29, GardenRules 36, GardenProgress 57); selene 0 warnings; stylua --check clean on LF copies; validate-tasks 62 valid; check-scope 13 files in scope. Deviations: claimMilestone(p, n) takes no today (nothing is daily); GardenConfig.isRare instead of WorldRules.isRare; grant accepts an optional charm; V2.2 Petal Storm expectation is exactly 1.8975 (GDD 1.898 rounds half up, the pacing script prints 1.897 from float), the spec pins 4 decimals."
 }

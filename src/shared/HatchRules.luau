@@ -12,7 +12,7 @@ local HatchRules = {}
 
 type Profile = GardenConfig.Profile
 
-export type Outcome = { egg: string, s: string, m: string, z: string, forced: boolean } -- forced: by the Lucky Meter
+export type Outcome = { egg: string, s: string, m: string, z: string, c: string, forced: boolean } -- forced: by the Lucky Meter
 export type Result = { creature: GardenConfig.Creature, xp: number, newEntry: boolean }
 
 local LEGENDARY = 5 -- RARITIES index of "legendary"
@@ -29,8 +29,33 @@ function HatchRules.pick(odds: { GardenConfig.Odds }, r: number): string
 	return odds[#odds].id
 end
 
--- No draw for the starter or when the Lucky Meter forces the top species.
-function HatchRules.rollSpecies(egg: string, pity: number, rng: Rng.State): (string, boolean, Rng.State)
+-- The egg's species odds at this weather: in a rare weather the event creature takes `event.bp`
+-- from `event.from` (GDD V2.4). The one place the substitution happens; the ODDS card reads it too.
+function HatchRules.oddsFor(egg: string, weather: string?): { GardenConfig.Odds }
+	local e = GardenConfig.egg(egg)
+	if e == nil then
+		return {}
+	end
+	local event = e.event
+	if event == nil or weather == nil or not GardenConfig.isRare(weather) then
+		return e.odds
+	end
+	local out: { GardenConfig.Odds } = {}
+	for _, o in e.odds do
+		table.insert(out, { id = o.id, bp = if o.id == event.from then o.bp - event.bp else o.bp })
+	end
+	table.insert(out, { id = event.s, bp = event.bp })
+	return out
+end
+
+-- No draw for the starter or when the Lucky Meter forces the top species. `weather` nil = the
+-- plain odds.
+function HatchRules.rollSpecies(
+	egg: string,
+	pity: number,
+	rng: Rng.State,
+	weather: string?
+): (string, boolean, Rng.State)
 	local e = GardenConfig.egg(egg)
 	if e == nil then
 		return "", false, rng
@@ -42,7 +67,17 @@ function HatchRules.rollSpecies(egg: string, pity: number, rng: Rng.State): (str
 		return e.top, true, rng
 	end
 	local r, state = Rng.int(rng, 1, 10000)
-	return HatchRules.pick(e.odds, r), false, state
+	return HatchRules.pick(HatchRules.oddsFor(egg, weather), r), false, state
+end
+
+-- "none" with no draw outside a rare weather; else the weather's charm at its bp in 10,000.
+function HatchRules.rollCharm(weather: string, rng: Rng.State): (string, Rng.State)
+	local charm = GardenConfig.charmFor(weather)
+	if charm == nil then
+		return "none", rng
+	end
+	local r, state = Rng.int(rng, 1, 10000)
+	return if r <= charm.bp then charm.id else "none", state
 end
 
 function HatchRules.rollMutation(weather: string, rng: Rng.State): (string, Rng.State)
@@ -61,23 +96,26 @@ function HatchRules.rollSize(rng: Rng.State): (string, Rng.State)
 	return HatchRules.pick(GardenConfig.SIZES :: any, r), state
 end
 
--- Nil unless the bed is ripe and the garden is not full. Draw order: species, mutation, size; an
--- egg that fixes its mutation takes no mutation draw, so the weather cannot touch it.
+-- Nil unless the bed is ripe and the garden is not full. Draw order: species, mutation, size,
+-- charm (last, and only in a rare weather, so older seeded rolls are unchanged); an egg that fixes
+-- its mutation takes no mutation draw, so the weather cannot touch it (its charm still rolls).
 function HatchRules.roll(p: Profile, bed: number, now: number, weather: string, rng: Rng.State): Outcome?
 	if GardenRules.bedState(p, bed, now) ~= "ripe" or GardenRules.isFull(p) then
 		return nil
 	end
 	local egg = p.beds[bed].egg
 	if egg == "starter" then
-		return { egg = egg, s = "pup", m = "normal", z = "normal", forced = false }
+		return { egg = egg, s = "pup", m = "normal", z = "normal", c = "none", forced = false }
 	end
-	local s, forced, state = HatchRules.rollSpecies(egg, p.pity[egg] or 0, rng)
+	local s, forced, state = HatchRules.rollSpecies(egg, p.pity[egg] or 0, rng, weather)
 	local e = GardenConfig.egg(egg)
 	local m = if e then e.mutation else nil
 	if m == nil then
 		m, state = HatchRules.rollMutation(weather, state)
 	end
-	return { egg = egg, s = s, m = m :: string, z = (HatchRules.rollSize(state)), forced = forced }
+	local z
+	z, state = HatchRules.rollSize(state)
+	return { egg = egg, s = s, m = m :: string, z = z, c = (HatchRules.rollCharm(weather, state)), forced = forced }
 end
 
 function HatchRules.nextPity(egg: string, pity: number, species: string): number
@@ -92,7 +130,9 @@ function HatchRules.apply(p: Profile, bed: number, o: Outcome, now: number): (Pr
 	if e == nil or GardenRules.bedState(p, bed, now) ~= "ripe" or p.beds[bed].egg ~= o.egg then
 		return p, false, nil
 	end
-	local known = GardenConfig.indexable(o.s, o.m) and GardenConfig.size(o.z)
+	local known = GardenConfig.indexable(o.s, o.m)
+		and GardenConfig.size(o.z)
+		and (o.c == "none" or GardenConfig.charm(o.c))
 	-- An egg-only mutation comes from that egg alone, and such an egg gives nothing else.
 	local fixed = GardenConfig.fixedBy(o.m)
 	if GardenRules.isFull(p) or not known or e.mutation ~= (fixed and fixed.mutation) then
@@ -100,7 +140,7 @@ function HatchRules.apply(p: Profile, bed: number, o: Outcome, now: number): (Pr
 	end
 	local out = GardenRules.copy(p)
 	out.beds[bed] = { egg = "", planted = 0, ready = 0, waters = 0, helps = 0, lastWater = 0 }
-	local creature = { id = out.nextId, s = o.s, m = o.m, z = o.z, placed = GardenRules.freePad(out) or 0, fav = false }
+	local creature = GardenRules.newCreature(out.nextId, o.s, o.m, o.z, o.c, GardenRules.freePad(out) or 0)
 	table.insert(out.creatures, creature)
 	out.nextId += 1
 	if e.meter then
@@ -132,9 +172,9 @@ function HatchRules.hatch(
 	return out, ok, o, result
 end
 
--- Server-wide banner: Legendary or better (Mythic, Divine, Secret), any Rainbow, any Huge.
+-- Server-wide banner: Legendary or better (Mythic, Divine, Secret), any Rainbow, any Huge, Stormy.
 function HatchRules.announce(o: Outcome): boolean
-	return GardenConfig.rarityIndex(o.s) >= LEGENDARY or o.m == "rainbow" or o.z == "huge"
+	return GardenConfig.rarityIndex(o.s) >= LEGENDARY or o.m == "rainbow" or o.z == "huge" or o.c == "stormy"
 end
 
 -- "60.00": two decimals, for the ODDS panel.
