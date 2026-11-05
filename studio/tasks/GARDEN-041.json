@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "medium",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-041",
   "owner": "A11",
   "verifier": "A15",
@@ -29,7 +29,9 @@
     "src/shared/WheelRules.luau",
     "tests/WheelRules.spec.luau"
   ],
-  "evidence": [],
+  "evidence": [
+    "Local run 2026-11-05 on garden/wheel: lune run tests/run 508/508 pass (28 new: WheelRules 21, GardenConfig 3, GardenProgress 4 incl. updated v1/v2 migration cases); selene 0 errors; stylua --check clean; validate-tasks and check-scope origin/main pass. W10 values covered: schedule 40 drops at 102..141, 26/4/10 for 200 seeds, spots 4..12, algorithm pinned to seed 12345 (kinds string and drops 1 and 40 spots); band 104.25..105.75; catch at 3.4 not 3.6; 104.0 miss then 104.4 catch; 106.0 landed; score floor; tiers 11/12/23/24, practice none; both columns 10,000; 100,000 rolls within 15% per wedge both wheels; EV 127.0 / 189.1; award idempotent, out-of-order and cap refused, day rollover, coins 36,300 / 100 and MAX_COINS clamp, celestial 999,999 -> 1,000,000; sanitize v2 -> default wheelToday, spins 9 -> 3. SCHEMA_VERSION bumped to 3 here (v0.4 had not)."
+  ],
   "files": [
     "src/shared/WheelRules.luau",
     "src/shared/GardenConfig.luau",

@@ -59,6 +59,7 @@ export type Profile = {
 	quests: { day: number, progress: { [string]: number }, claimed: { [string]: boolean } },
 	prizeEggs: { [string]: number }, -- egg id -> count, v2; only counts >= 1
 	dash: { day: number, prizes: number, coins: number }, -- v2; day -1 until the first reward
+	wheelToday: { day: number, spins: number }, -- v3 (decision 0016): Petal Catch spins applied on UTC day `day`
 }
 
 export type Spot = { x: number, y: number, z: number }
@@ -101,6 +102,31 @@ export type DashConfig = {
 	checkpoints: { Spot }, -- the last is the finish
 	decks: { Deck }, -- in course order; Lily Hop has no deck, its platforms go between the last two
 	obstacles: { Obstacle },
+}
+-- Petal Catch (docs/architecture/garden-wheel.md 2.1, decision 0016).
+export type Wedge = { id: string, standard: number, lucky: number } -- id: an egg id or "coins"; bp
+export type WheelConfig = {
+	name: string,
+	centre: Spot, -- patch centre, ground level
+	size: number, -- fence square
+	stand: Spot, -- faces +z (the plaza)
+	promptRange: number,
+	round: number, -- seconds
+	lead: number, -- first drop after startAt
+	gap: number, -- between drops
+	drops: { pink: number, gold: number, cone: number },
+	points: { pink: number, gold: number, cone: number },
+	canopy: number, -- drop height above centre.y
+	fall: number, -- studs/s
+	band: { top: number, bottom: number }, -- catchable while bottom <= y <= top
+	catchRadius: number,
+	ring: { min: number, max: number }, -- from the trunk
+	spinAt: number,
+	luckyAt: number,
+	spinsPerDay: number,
+	coinsBase: number,
+	coinsMinutes: number,
+	wedges: { Wedge }, -- disc order clockwise from the pointer
 }
 
 local function odds(list: { any }): { Odds }
@@ -508,6 +534,42 @@ local DASH: DashConfig = {
 	},
 }
 GardenConfig.DASH = DASH
+
+-- Petal Catch (garden-wheel.md W, decision 0016). Odds, thresholds, cap and coinsMinutes are economy
+-- values; the rest is feel, tuned at the greybox gate.
+local WHEEL: WheelConfig = {
+	name = "Petal Catch",
+	centre = { x = -40, y = 0, z = -52 },
+	size = 30,
+	stand = { x = -40, y = 0, z = -38 },
+	promptRange = 12,
+	round = 45,
+	lead = 2,
+	gap = 1.0,
+	drops = { pink = 26, gold = 4, cone = 10 },
+	points = { pink = 1, gold = 3, cone = -2 },
+	canopy = 16,
+	fall = 4,
+	band = { top = 7, bottom = 1 },
+	catchRadius = 3.5,
+	ring = { min = 4, max = 12 },
+	spinAt = 12,
+	luckyAt = 24,
+	spinsPerDay = 3,
+	coinsBase = 100,
+	coinsMinutes = 10,
+	wedges = {
+		{ id = "meadow", standard = 3600, lucky = 2000 },
+		{ id = "forest", standard = 2800, lucky = 2500 },
+		{ id = "sunset", standard = 1750, lucky = 2600 },
+		{ id = "coins", standard = 225, lucky = 360 },
+		{ id = "moon", standard = 1200, lucky = 1800 },
+		{ id = "star", standard = 400, lucky = 700 },
+		{ id = "celestial", standard = 20, lucky = 25 },
+		{ id = "aurora", standard = 5, lucky = 15 },
+	},
+}
+GardenConfig.WHEEL = WHEEL
 
 local function find<T>(list: { T }, id: string): T?
 	for _, item in list do

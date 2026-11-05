@@ -336,6 +336,46 @@ describe("GardenConfig Splash Dash (GDD T, decision 0012)", function()
 	end)
 end)
 
+describe("GardenConfig Petal Catch (garden-wheel.md W, decision 0016)", function()
+	local W = GardenConfig.WHEEL
+
+	it("matches the decision's values", function()
+		expect(`{W.name} {W.round} {W.lead} {W.gap} {W.spinAt} {W.luckyAt} {W.spinsPerDay}`).toBe(
+			"Petal Catch 45 2 1 12 24 3"
+		)
+		expect(`{W.coinsBase} {W.coinsMinutes} {W.canopy} {W.fall} {W.band.top} {W.band.bottom}`).toBe(
+			"100 10 16 4 7 1"
+		)
+		expect(`{W.catchRadius} {W.ring.min} {W.ring.max} {W.size} {W.promptRange}`).toBe("3.5 4 12 30 12")
+		expect(`{W.centre.x},{W.centre.y},{W.centre.z} {W.stand.x},{W.stand.y},{W.stand.z}`).toBe("-40,0,-52 -40,0,-38")
+		expect(`{W.points.pink} {W.points.gold} {W.points.cone}`).toBe("1 3 -2")
+	end)
+
+	it("has 8 wedges in disc order, both columns at 10,000, every egg wedge sold", function()
+		local standard, lucky, order = 0, 0, {}
+		for _, w in W.wedges do
+			standard += w.standard
+			lucky += w.lucky
+			table.insert(order, `{w.id} {w.standard}/{w.lucky}`)
+			if w.id ~= "coins" then
+				expect(`{w.id} {(GardenConfig.egg(w.id) or {} :: any).price ~= nil}`).toBe(`{w.id} true`)
+			end
+		end
+		expect(#W.wedges).toBe(8)
+		expect(`{standard} {lucky}`).toBe("10000 10000")
+		expect(table.concat(order, ", ")).toBe(
+			"meadow 3600/2000, forest 2800/2500, sunset 1750/2600, coins 225/360, moon 1200/1800, "
+				.. "star 400/700, celestial 20/25, aurora 5/15"
+		)
+	end)
+
+	it("drops 40 petals and keeps lucky within reach of a perfect round", function()
+		expect(W.drops.pink + W.drops.gold + W.drops.cone).toBe(40)
+		expect(`{W.drops.pink} {W.drops.gold} {W.drops.cone}`).toBe("26 4 10")
+		expect(W.spinAt < W.luckyAt and W.luckyAt <= W.drops.pink + 3 * W.drops.gold).toBe(true)
+	end)
+end)
+
 describe("GardenConfig meta data", function()
 	it("lists the H4 cosmetics with one level-1 default per slot", function()
 		local out = {}

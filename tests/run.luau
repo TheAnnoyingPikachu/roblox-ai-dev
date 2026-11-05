@@ -71,6 +71,9 @@ local SPECS = {
 	["DashRules.spec.luau"] = function()
 		require("./DashRules.spec")
 	end,
+	["WheelRules.spec.luau"] = function()
+		require("./WheelRules.spec")
+	end,
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,

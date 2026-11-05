@@ -72,7 +72,7 @@ end
 describe("GardenProgress defaults", function()
 	it("starts with 100 coins, 3 beds, 6 pads and a starter egg ready 8 s after creation", function()
 		local p = GardenProgress.defaults(NOW)
-		expect(p.schemaVersion).toBe(2)
+		expect(p.schemaVersion).toBe(3)
 		expect(p.coins).toBe(100)
 		expect(p.xp).toBe(0)
 		expect(p.bedCount).toBe(3)
@@ -91,6 +91,7 @@ describe("GardenProgress defaults", function()
 		).toBe(0)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(`{p.dash.day} {p.dash.prizes} {p.dash.coins}`).toBe("-1 0 0")
+		expect(`{p.wheelToday.day} {p.wheelToday.spins}`).toBe("-1 0")
 		expect(p.pity.starter).toBeNil()
 		expect((p :: any).wins).toBeNil()
 	end)
@@ -460,9 +461,10 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 	it("loads a literal v1 record with every field kept and only the new fields added", function()
 		local record = v1Record()
 		local p: any = GardenProgress.sanitize(record, NOW)
-		expect(p.schemaVersion).toBe(2)
+		expect(p.schemaVersion).toBe(3)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(same(p.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
+		expect(same(p.wheelToday, { day = -1, spins = 0 })).toBe(true)
 		expect(p.pity.celestial).toBe(0)
 		expect(p.pity.aurora).toBe(0)
 		expect(p.lock).toBeNil()
@@ -475,7 +477,7 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 			end
 		end
 		for field in p do
-			if field ~= "prizeEggs" and field ~= "dash" then
+			if field ~= "prizeEggs" and field ~= "dash" and field ~= "wheelToday" then
 				expect(expected[field] ~= nil).toBe(true)
 			end
 		end
@@ -486,7 +488,7 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		local out, offline, unbanked = GardenProgress.login(GardenProgress.sanitize(v1Record(), NOW), NOW, DAY)
 		expect(unbanked).toBe(42)
 		expect(out.coins).toBe(987_654_321 + 42 + offline)
-		expect(out.schemaVersion).toBe(2)
+		expect(out.schemaVersion).toBe(3)
 	end)
 
 	it("keeps prizeEggs and dash through the flush path", function()
@@ -549,6 +551,17 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		expect(same(bad.dash, { day = -1, prizes = 0, coins = 0 })).toBe(true)
 		expect(GardenProgress.sanitize({ dash = 5 }, NOW).dash.day).toBe(-1)
 	end)
+
+	it("clamps wheelToday.spins to spinsPerDay and falls back to the default (decision 0016)", function()
+		local p = GardenProgress.sanitize({ wheelToday = { day = DAY + 0.5, spins = 9 } }, NOW)
+		expect(same(p.wheelToday, { day = DAY, spins = 3 })).toBe(true)
+		local bad = GardenProgress.sanitize({ wheelToday = { day = "x", spins = -1 } }, NOW)
+		expect(same(bad.wheelToday, { day = -1, spins = 0 })).toBe(true)
+		expect(same(GardenProgress.sanitize({ wheelToday = 5 }, NOW).wheelToday, { day = -1, spins = 0 })).toBe(true)
+		local kept = GardenProgress.sanitize({ wheelToday = { day = DAY, spins = 2 } }, NOW)
+		local stored = GardenProgress.sanitize(GardenProgress.snapshot(kept, 0, NOW), NOW)
+		expect(same(stored.wheelToday, { day = DAY, spins = 2 })).toBe(true)
+	end)
 end)
 
 describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function()
@@ -604,13 +617,15 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		}
 	end
 
-	it("loads a literal pre-0014 v2 record with every field kept and only pity.aurora added", function()
+	it("loads a literal pre-0014 v2 record with every field kept, pity.aurora and the v3 wheelToday added", function()
 		local record = v2Record()
 		local p: any = GardenProgress.sanitize(record, NOW)
-		expect(p.schemaVersion).toBe(2)
-		expect(GardenProgress.SCHEMA_VERSION).toBe(2)
+		expect(p.schemaVersion).toBe(3)
+		expect(GardenProgress.SCHEMA_VERSION).toBe(3)
 		local expected = v2Record()
+		expected.schemaVersion = 3
 		expected.pity.aurora = 0
+		expected.wheelToday = { day = -1, spins = 0 } -- decision 0016
 		expect(same(p, expected)).toBe(true)
 		expect(same(record, v2Record())).toBe(true) -- input unchanged
 		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
@@ -628,9 +643,11 @@ describe("GardenProgress schema v2 unchanged by v0.3 (decision 0014)", function(
 		table.insert(record.index, "phoenix:celestial")
 		record.pity.aurora = 19
 		record.stock.bought.aurora = 1
+		record.schemaVersion = 3
+		record.wheelToday = { day = DAY, spins = 2 }
 		local p: any = GardenProgress.sanitize(record, NOW)
 		expect(same(p, record)).toBe(true)
-		expect(p.schemaVersion).toBe(2)
+		expect(p.schemaVersion).toBe(3)
 		-- Clamps still apply to the new ids: pity at the meter, stock at max, no celestial Divine.
 		record.pity.aurora = 99
 		record.stock.bought.aurora = 5

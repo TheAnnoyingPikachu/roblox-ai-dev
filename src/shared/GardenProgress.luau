@@ -14,7 +14,7 @@ local GardenProgress = {}
 
 type Profile = GardenConfig.Profile
 
-GardenProgress.SCHEMA_VERSION = 2 -- decision 0012
+GardenProgress.SCHEMA_VERSION = 3 -- decision 0016 (shared with v0.4)
 
 local MAX_COINS = GardenConfig.MAX_COINS
 local MAX_COUNT = MetaRules.MAX_COUNT
@@ -91,6 +91,7 @@ function GardenProgress.defaults(now: number): Profile
 		quests = { day = -1, progress = {}, claimed = {} },
 		prizeEggs = {},
 		dash = { day = -1, prizes = 0, coins = 0 },
+		wheelToday = { day = -1, spins = 0 },
 	}
 end
 
@@ -232,6 +233,12 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 			day = MetaRules.dayNumber(record.dash.day),
 			prizes = MetaRules.count(record.dash.prizes, DASH.prizesPerDay),
 			coins = MetaRules.count(record.dash.coins, DASH.coinsPerDay),
+		}
+	end
+	if type(record.wheelToday) == "table" then -- v3 (decision 0016); a v2 record keeps the default
+		p.wheelToday = {
+			day = MetaRules.dayNumber(record.wheelToday.day),
+			spins = MetaRules.count(record.wheelToday.spins, GardenConfig.WHEEL.spinsPerDay),
 		}
 	end
 	return MetaRules.sanitizeMeta(CONFIG, record, p)
