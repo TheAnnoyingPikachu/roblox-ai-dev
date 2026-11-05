@@ -204,6 +204,13 @@ local GardenAssets: { [string]: Asset } = {
 		decal = 131627929658404,
 		texture = nil,
 	},
+	creature_moth = {
+		size = { 4.1, 3.19, 1.82 },
+		parts = { "creature_moth" },
+		model = 90835297344313,
+		decal = 105097164467776,
+		texture = nil,
+	},
 	dash_sweeper = {
 		size = { 40, 12, 6 },
 		parts = { "dash_sweeper" },
@@ -253,6 +260,7 @@ local GardenAssets: { [string]: Asset } = {
 		decal = 127563154953102,
 		texture = nil,
 	},
+<<<<<<< HEAD
 	wheel_stand = {
 		size = { 7, 8, 2 },
 		parts = { "wheel_stand" },
@@ -300,6 +308,27 @@ local GardenAssets: { [string]: Asset } = {
 		parts = { "wheel_tree" },
 		model = 121150205623910,
 		decal = 77607558508827,
+=======
+	fence_starlit_post = {
+		size = { 1, 3.94, 1 },
+		parts = { "fence_starlit_post" },
+		model = 128886258846971,
+		decal = 123753965073363,
+		texture = nil,
+	},
+	fence_starlit_rail = {
+		size = { 6, 0.4, 0.3 },
+		parts = { "fence_starlit_rail" },
+		model = 118445586788031,
+		decal = 116130627311005,
+		texture = nil,
+	},
+	pad_clover = {
+		size = { 5, 0, 5 },
+		parts = { "pad_clover" },
+		model = 130242543650945,
+		decal = 88634157811969,
+>>>>>>> garden/v04-art
 		texture = nil,
 	},
 }
