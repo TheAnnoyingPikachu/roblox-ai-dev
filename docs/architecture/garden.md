@@ -607,6 +607,52 @@ TradeRules.status(t: Trade, names: { [number]: string }, creatures: { [number]: 
 
 `tests/TradeRules.spec.luau` must cover: every transition and every refusal of V1.3 (wrong user, wrong state, pick of a favourite, pick of a creature not owned, accept without both picks, confirm before the hold ends, cancel in every state, emote gap and range); `tick` expiries; fairness at exactly 50% (allowed) and just under (refused) with charms and sizes in the value; `canCommit` after a pick was released or favourited; `give` idempotent (applied twice equals once), refuses on a changed creature, keeps the pad or storage slot, never touches `index`, `xp` or `coins`, caps `trades` at 30 and increments `tradesToday` with day rollover; `undo` idempotent, refuses when the got creature is gone, returns the creature to the right slot; `heal` applies a missing give, a missing undo, skips void and ignores records older than the oldest kept; a round trip give then undo on both profiles equals the originals except `trades`, `tradesToday` and `nextId`; inputs never mutated.
 
+### 3.11 `LoginRules` (new, pure) and the v0.5 data (decision 0017, GDD X3)
+
+Same conventions as section 2: integer `today` (`MetaRules.dayOf`), copies in, copies out, no Roblox API. `GardenProgress` wraps it like the Dash functions, so the server and the client call `GardenProgress`.
+
+```luau
+-- GardenConfig additions
+export type Egg = { ..., exclusive: string? } -- "weekly" | "monthly": no price, no stock, level 1, planted from prizeEggs
+export type Cosmetic = { ..., grant: string? } -- "login": owned only through a claim; never buyable
+export type LoginSlot = { count: number, coins: number?, minutes: number?, egg: string?, cosmetic: string? } -- coins + minutes, or egg, or coins + cosmetic
+GardenConfig.LOGIN: { week: { LoginSlot }, month: { LoginSlot } } -- X3.1 and X3.2, 7 slots each, counts ascending; month[7].count = 30
+GardenConfig.isPrizeable(egg: Egg): boolean -- price ~= nil or exclusive ~= nil (never the starter)
+GardenConfig.INDEX_SIZE = 108
+GardenConfig.ICON_SET = { "coin", "egg", "paw", "book", "hanger", "gift", "flag", "petal", "home", "chart", "cog", "heart", "swap", "calendar", "lock", "check" }
+
+-- LoginRules
+export type Login = { week: number, weekDays: number, weekLast: number, weekClaimed: number,
+                      month: number, monthDays: number, monthLast: number, monthClaimed: number }
+LoginRules.TRACKS = { "week", "month" }
+LoginRules.defaults(): Login -- keys -1, counts 0
+LoginRules.monthOf(day: number): (number, number) -- (year * 12 + month - 1, days in that month), UTC civil-from-days (Hinnant), pure
+LoginRules.periodOf(track: string, day: number): number -- week: MetaRules.weekOf(day); month: monthOf(day)
+LoginRules.slots(track: string, day: number): { GardenConfig.LoginSlot } -- LOGIN[track], with the month's last slot count = min(30, days in month)
+LoginRules.tick(p: Profile, today: number): Profile -- per track: reset when periodOf ~= stored key; then if *Last ~= today: *Days + 1, *Last = today. Idempotent for the same day.
+LoginRules.nextSlot(p: Profile, track: string, today: number): (number, GardenConfig.LoginSlot?) -- claimed + 1 and its slot, nil past the end
+LoginRules.canClaim(p: Profile, track: string, today: number): boolean -- the stored key is this period and *Days >= nextSlot.count
+LoginRules.claim(p: Profile, track: string, today: number): (Profile, boolean, string) -- pays the next slot: coins via GardenProgress.scaled (capped MAX_COINS), egg into prizeEggs (capped PRIZE_STORE), cosmetic into owned when not owned; *Claimed + 1; the string is the LastReward text ("Weekly Egg!", "1,200 coins", "Blossom Can + 600 coins")
+LoginRules.claimable(p: Profile, today: number): number -- count of slots claimable now over both tracks (the badge)
+LoginRules.sanitize(record: any): Login -- integers, keys >= -1, days 0..31, claimed 0..7; anything else the default
+
+-- GardenProgress additions (wrappers; pacing values nowhere else)
+GardenProgress.loginTick(p: Profile, today: number): Profile -- LoginRules.tick; also called inside GardenProgress.login after MetaRules.login
+GardenProgress.claimLogin(p: Profile, track: string, today: number): (Profile, boolean, string)
+-- removed from Profiles.request and the router: claimDaily, claimWeekly (GardenProgress keeps the functions for MetaRules' sake; nothing calls them)
+GardenProgress.SCHEMA_VERSION = 3 -- unchanged; `login` is added to v3 (0017)
+
+-- GardenRules
+GardenRules.buyEgg -- refuses an egg without a price (already true for the starter; pin it for weekly and monthly)
+GardenRules.canPlantPrize / plantPrize -- unchanged: the gate is the egg's own level, and the login eggs have level 1
+
+-- MetaRules (one condition, shared)
+MetaRules.isUnlocked -- `if c.price or c.grant then return owned[id] == true`
+MetaRules.sanitizeMeta -- `owned` keeps ids whose cosmetic has a price or a grant
+```
+
+`tests/LoginRules.spec.luau` must cover: `monthOf` against a table of known dates (1970-01-01, 2024-02-29, 2026-11-05, 2100-03-01, a December 31 and the January 1 after it: key and length); `tick` counts a day once (twice the same day equals once), counts two days as 2, resets on the Monday after a Sunday and on the 1st after the 31st, keeps the other track when one rolls over, and a fresh default profile counts today as day 1; `canClaim` false before the count, true at it, false after the last slot; `claim` in order (slot 2 refused while slot 1 is unclaimed), pays `scaled` with the floor and the cap, adds the egg to `prizeEggs` once, grants a cosmetic once and pays coins only the second time it would be granted, is idempotent when re-applied to a copy of the stored record, and refuses after a rollover until the new period earns it; the February rule (`slots("month", day in Feb 2026)[7].count == 28`, Feb 2024 29, April 30, May 30); `claimable` counts both tracks; `sanitize` clamps and defaults; inputs never mutated. `GardenConfig.spec` adds X5's pins (26 species in order, `#EGGS` 10, `INDEX_SIZE` 108, the two eggs' odds sum, `top` and `meter`, no price, `level` 1, no sold egg names an exclusive species, 5 `grant` cosmetics, `LOGIN` counts ascending with 7 slots each and slot 5 / slot 4 the eggs). `GardenProgress.spec`: a literal v3 record without `login` loads with the default and every field kept; `prizeEggs.weekly` survives `sanitize`; `pity.weekly` and `pity.monthly` exist and clamp. `MetaRules.spec`: a `grant` cosmetic is locked until owned and `buyCosmetic` refuses it; Relay's and Night's rows unchanged.
+
 ## 4. Server (`src/garden`)
 
 ### 4.1 Files
@@ -796,6 +842,22 @@ The one `Request` that yields before its apply. In `onRequest`, action `name`:
 
 `Plots.refresh` reads `n` into the pad tag and sets attribute `N` on the creature; the server never puts a name into `Fx("announce")`, the board or a notice to other players.
 
+### 4.7 Spawn, join flow and the login tick (v0.5, GDD X2, X3)
+
+**Spawn.** `World.build` creates `Workspace.Garden.Spawn`: a `SpawnLocation` 10 × 1 × 10 at (18, 0.3, 32), `Neutral = true`, `Duration = 0`, `Transparency = 1`, `CanCollide = false`, `CFrame = CFrame.lookAt(pos, Vector3.new(0, 0.3, 0))` so the character faces the tree; `Models.spawn("spawn_pad")` (or the part fallback) sits on it as decor. Roblox places every character there, including respawns. `Players.CharacterAutoLoads` stays on.
+
+**Join flow (replaces 4.3's PlayerAdded line).** `onPlayer`: leaderstats → `Plots.assign` (waiting as today) → `State.live` → `Profiles.load` → `Plots.refresh`. **No `toGate` at join.** `CharacterAdded` keeps `Dash.place` for a racer and otherwise does nothing (the `SpawnLocation` placed the character). A player who respawns during play appears on the plaza; `home` is one button away. The client keeps the start menu open until `Profile` is published, then shows PLAY.
+
+**`play` request** (new, no argument, common checks): `Dash.isRacing` → false; else `toGate(player, live.plot)`; `return true`. It is `home` without `Dash.leave`; the client calls it from PLAY so the camera fly (6.4) and the move happen together. `home` is unchanged.
+
+**Login tick.** `GardenProgress.login` already runs at load and now includes `LoginRules.tick`. While online, `slowTick` keeps `lastDay`; when `MetaRules.dayOf(now) ~= lastDay` it runs, for every session with a profile, `Profiles.apply(player, "loginTick", function(p) return GardenProgress.loginTick(p, today) end)` once, so a player online over midnight UTC gets the new day counted (and the new week or month started) without rejoining; the Rewards badge updates from the published profile. The tick is idempotent, so a flush re-apply or a join-and-rollover in the same second cannot count a day twice.
+
+**`claimLogin <track>`** (router → `Profiles.request`): `track` is `week` or `month`, else refused; `GardenProgress.claimLogin(p, track, today)`; on success `LastReward` = the returned text with the `#n` suffix as today. Rate limit: the shared 0.35 s. `claimDaily` and `claimWeekly` are removed from `Profiles.request`'s action list and the router's known actions.
+
+**World.luau (X2).** `World.build` adds, in this order after the existing builders: `spawnPad()`, `largeSakura()` (12 `Models.spawn("sakura_large_<v>")` with `Props.sakura` scaled ×1.6 as the fallback; thins the existing small sakura within 25 studs), `hills()` (band 1 enlarges the terrain loop: 14 balls, radius 70 to 110, centres 20 to 40 below ground at radius 300 to 360; bands 2 and 3 `Models.spawn("hill_<v>")` at the X2 positions, anchored, `CanCollide` false, `CanQuery` false, `CastShadow` false), `pond()` (terrain Water in a 20 × 14 ellipse at (−50, 0, −92), sand rim, lily pad parts), `lanterns()` (24 `Models.spawn("lantern")` with a `PointLight` each, appended to `lamps` so `World.forecast` lights them with the lamp posts), `meadows()` with the 900 / 70 caps and the plaza flower boxes. Petal emitters are **not** server parts: `CreatureFx`'s ambient loop adds one per large tree within 60 studs of the camera (6.4). `World.build` returns `spawn: SpawnLocation` in its table for QA. Part count attribute `Workspace.Garden:SetAttribute("Parts", n)` after build (the 7,500 check).
+
+**Plots.luau.** `Plots.gateLook(plot): CFrame` = the camera end pose of the PLAY fly: 12 studs outside the gate along the plot's facing, 6 up, looking at the plot centre at eye height. `Plots.gate` unchanged.
+
 ## 5. `Fx` payloads
 
 `Fx:FireAllClients(kind: string, data: table)`, except `notice` (`FireClient`). `owner`, `by` = UserId; `bed`, `pad` = index; `id` = creature id.
@@ -894,6 +956,37 @@ Limits that must stay true: one `Sound` per cry, destroyed on `Ended` (as `Clien
 | `DashFx.client.luau` | no change; followers are `CanQuery` false so the platform carry ray ignores them |
 
 Clients never write server state; the Trade panel shows the server's `rate` and reasons; the name TextBox sends raw text and shows what comes back in the profile.
+
+### 6.4 UI kit (v0.5, GDD X1; display only)
+
+`src/garden-client/UiKit.luau` is a ModuleScript required by `Menu`, `Hud`, `TradeFx`, `DashFx` (round HUD and results card) and the Petal Catch panel when it lands. It owns every widget's geometry, colours, strokes and animation; callers pass content and callbacks and never set a radius, a stroke or a tween themselves. Numbers are GDD X1.3 (pixels at 1920 × 1080; `UiKit.scaleRoot` scales them). `ClientState.UI` keeps its tokens and gains X1.1's; `ClientState.new/corner/stroke/text/button/pop/autoScale` stay for the files not yet migrated (`HatchFx`, `FollowerFx` tags) and `button` becomes a thin call into `UiKit.button`.
+
+```luau
+export type Panel = { frame: Frame, body: ScrollingFrame, setTabs: (labels: { string }, onTab: (string) -> ()) -> (), setTab: (string) -> (), close: () -> (), onClose: (() -> ())? }
+export type Button = TextButton -- face; the edge frame is its child "Edge"
+export type Card = { frame: Frame, icon: Frame, name: TextLabel, pill: TextLabel, select: (boolean) -> () }
+export type Toast = (text: string, icon: string?, colour: Color3?) -> ()
+
+UiKit.scaleRoot(gui: ScreenGui): UIScale -- clamp(min(x / 1920, y / 1080), 0.5, 1), refreshed on ViewportSize
+UiKit.panel(gui: Instance, name: string, accent: Color3): Panel -- 820 x 560 shell: shadow, ribbon with title, close X, body ScrollingFrame; open animation; Escape and gamepad B close
+UiKit.button(parent: Instance, text: string, colour: Color3, size: "large" | "medium" | "small", width: number, onClick: () -> ()): Button -- 3D edge, gradient, press and release animation, tick sound; UiKit.setEnabled(b, enabled)
+UiKit.iconButton(parent: Instance, icon: string, label: string, colour: Color3, onClick: () -> ()): Button -- 96 x 96; icon from GardenIcons[icon] or the 2-letter glyph; UiKit.setBadge(b, count: number?) -- nil none, 0 dot, n count
+UiKit.strip(gui: Instance, items: { { icon: string, label: string, colour: Color3, onClick: () -> () } }, touch: boolean): { [string]: Button } -- the left column; touch shows 5 + MORE and a sheet for the rest
+UiKit.coinPill(parent: Instance): { set: (coins: number, income: number) -> (), gain: (delta: number) -> () } -- short format, pop and the "+N" float (merged within 0.5 s)
+UiKit.levelRing(parent: Instance): { set: (level: number, fraction: number, xpText: string) -> () } -- two clipped half-rings, 0.4 s tween; pulse on level up
+UiKit.card(parent: Instance, kind: "egg" | "creature" | "reward" | "cosmetic" | "showcase", stroke: Color3): Card -- sizes per kind; UIGridLayout is the caller's
+UiKit.grid(parent: Instance, cellW: number, cellH: number): UIGridLayout -- 16 px gaps, centred
+UiKit.chip(parent: Instance, w: number, h: number): Frame -- GLASS HUD chip
+UiKit.toast(gui: Instance): Toast -- bottom-centre stack of 3; ClientState.toast routes here once Hud creates it
+UiKit.tabs(panel: Panel, labels: { string }, onTab: (string) -> ()) -- the 52 px pill row; bumpers move the active tab
+UiKit.startMenu(gui: Instance, onPlay: () -> (), side: { { icon: string, label: string, onClick: () -> () } }): { frame: Frame, showcase: (species: { string }) -> (), setBadge: (label: string, count: number?) -> () } -- logo, PLAY pulse, showcase row (ViewportFrame clones from ReplicatedStorage.GardenSpecies, 4 s rotation), side column
+UiKit.selector(): Frame -- the shared SelectionImageObject (GOLD rounded stroke)
+UiKit.flyTo(camera: Camera, from: CFrame, to: CFrame, seconds: number, done: () -> ()) -- the PLAY fly (Quad out); honours ReducedMotion (instant)
+```
+
+Rules that must stay true: no widget sends a `Request` (callers do, as today); no image other than `GardenIcons` ids and `ViewportFrame`s; every animation is skipped under `GuiService.ReducedMotionEnabled`; one panel open at a time (`UiKit.panel` closes the previous one through `ClientState.setMenu`); the kit never reads `GardenConfig` prices or rules (callers format text). PLAY: `Menu` calls `UiKit.flyTo(camera, orbitPose, Plots-equivalent ClientState.gateLook(plot), 1.6, ...)` and sends `play`; the camera returns to `Custom` on the character at the end.
+
+**File changes:** `Menu.client.luau` rebuilds each panel's content on `UiKit.panel` bodies per the X1.4 mapping (Eggs + Odds, Settings + Help merge into tabbed panels; Index gains GRID / MILESTONES; Creatures PEN / STORAGE / TRADES; Rewards WEEKLY / MONTHLY / QUESTS with the X3.5 slot cards sending `claimLogin week|month`); `Hud.client.luau` replaces the `QUICK` column with `UiKit.strip`, the coin and level chips with `coinPill` and `levelRing`, the weather chips with `chip`s, and sets badges from `LoginRules.claimable` (through `GardenProgress`), quests and prize eggs; `ClientState.luau` tokens, `rewardsReady` → login slots and quests, `gateLook(plot)` mirroring `Plots.gateLook`; `CreatureFx.client.luau` ambient loop adds the petal emitter per large sakura (`Workspace.Garden` models named `sakura_large_*`) within 60 studs, at most 12; `TradeFx`, `DashFx` take their shells from `UiKit.panel`. New `src/shared/GardenIcons.luau` (`{ [icon]: number? }`, generated with the asset workflow; nil until uploaded).
 
 ## 7. Scaffolding
 
@@ -1000,3 +1093,19 @@ Manifest entries for the 19 models follow the egg entries' shape: `target_size_s
 | `fence_starlit` posts and rail | `Plots.refresh` fence when `fence == "starlit"` | post 1 × 4 × 1, rail 6 × 0.4 × 0.3 | as the other fence styles (colours from the cosmetic row: (40, 45, 100), (235, 230, 255)); one `PointLight` per 3 posts, range 6, within the plot's light budget | part fence in those colours, no lights |
 
 Sounds to register before use (rule 9, licensed partners only): the Moth cry (soft flutter), five egg crack variants (twig snap, warm chime, low bell, bright chime, aurora shimmer), three weather stingers (Snowfall, Petal Storm, Thunder) and a soft thunder rumble. Nothing plays until its row exists and its id is in the client table.
+
+### 9.3 v0.5 models, props and icons (decision 0017, GDD X1.5, X2, X3.4)
+
+| Name | Where | Target size (studs) | How code uses it | Fallback |
+|---|---|---|---|---|
+| `creature_puffin`, `creature_otter`, `creature_capybara`, `creature_redpanda`, `creature_peacock`, `creature_snowleopard` | `Plots.makeCreature`, `GardenSpecies`, followers, the showcase | heights 3.0, 3.6, 4.2, 5.0, 5.6 (tail within 6 × 6), 5.8; one mesh, base-centre origin, front −Y (9.1 contract) | as every `creature_<id>` | the part fallback with `FALLBACK` colours (puffin ink and white, otter brown, capybara tan, redpanda rust, peacock white-teal, snowleopard pale grey) |
+| `egg_weekly`, `egg_monthly` | `Plots.egg` (beds; never on the cart), the Rewards slot card, the Dash prize row | 2.2 × 3 × 2.2 | `Models.nightPart` when ready, as every egg | stretched Ball from `EGG_LOOKS`: weekly blossom pink with white petals, monthly deep teal with gold moons |
+| `sakura_large_a`, `sakura_large_b`, `sakura_large_c` | `World.largeSakura` | a 34 tall / 30 canopy (plaza), b 42 / 36, c 45 / 36 (rim); trunk a 2.5-radius cylinder at the origin so a part collider matches | `Models.spawn` at the X2 positions, yaw per tree; 2,500 tris each, one 1024 texture; canopy `CanCollide` false, a separate trunk collider part | `Props.sakura` scaled ×1.6 |
+| `hill_a`, `hill_b`, `hill_c` | `World.hills` bands 2 and 3 | 220 wide × 160 tall × 120 deep at scale 1 (a a single dome, b a double ridge, c a long saddle); snow baked above 70% of the height | `Models.spawn` at scale 1 (band 2) and 2.5 (band 3), random yaw, `CanCollide`, `CanQuery`, `CastShadow` false; 1,200 tris each | terrain `FillBall` Grass with a Snow ball on top at band 3 radii (visibly worse; the mesh is P1) |
+| `spawn_pad` | `World.spawnPad` over the `SpawnLocation` | 10 across, 0.6 high | decor; the `SpawnLocation` is a separate invisible part | Cobblestone cylinder, 4 pastel posts |
+| `lantern` | `World.lanterns` (24) | 1.2 × 4.5 × 1.2; shade centre at 3.6 up (the `PointLight` attachment point) | `Models.spawn`; 600 tris | post and Neon cube |
+| icons (16 decals) | `UiKit.iconButton`, `coinPill`, `toast` | 128 × 128 PNG, transparent | `GardenIcons[name]` (Decal asset id) | the 2-letter glyph |
+
+**Icons pipeline (`tools/icons/`):** `make_icons.py` (Pillow; `python -I tools/icons/make_icons.py build/icons`) draws the 16 names of `GardenConfig.ICON_SET` as flat shapes: white fill, 6 px `INK` (74, 58, 72) outline, one pastel accent, 8 px safe margin, deterministic (no randomness, pinned Pillow version in the script's docstring); `README.md` gives the upload step (Creator Hub Decals, one per file, named `garden_icon_<name>`), the register row format and how `GardenIcons.luau` is written (`{ coin = 123, ... }`, nil for a missing upload). A changed icon is a new upload and a new id; nothing in game breaks while an id is nil.
+
+**Manifest rows** (`tools/blender/garden/manifest.json`, the egg shape): creatures as 9.1 (priority P1, `tris_budget` 3000, script `assets/creatures_c.py`); eggs as 9 (script `assets/eggs.py`); `sakura_large_*` script `assets/valley.py`, `tris_budget` 2500, `replaces` "World.largeSakura (Props.sakura fallback)"; `hill_*` `tris_budget` 1200, `replaces` "World.hills band 2 and 3"; `spawn_pad` 1500, `lantern` 600. Cries for the six species: licensed clips registered before use, nil until then (6.1).

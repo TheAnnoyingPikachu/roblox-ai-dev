@@ -1,0 +1,41 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "GARDEN-056",
+  "owner": "A15",
+  "verifier": "A04",
+  "task_type": "test",
+  "objective": "Independent QA and security review of Egg Garden v0.5 (GARDEN-051 to GARDEN-055) against decision 0017 and GDD section X, with the login tracks attacked for double pay and rollover faults, the spawn and PLAY flow tried from two clients, the UI checked on PC, phone and gamepad, and the evidence for the v0.5 checkpoint.",
+  "inputs": [
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/game-design/game4-gdd.md §X",
+    "docs/architecture/garden.md §3.11, §4.7, §6.4, §9.3",
+    "docs/checkpoints/GARDEN-V05.md",
+    "docs/qa/garden-v04-review.md"
+  ],
+  "dependencies": [
+    "GARDEN-052",
+    "GARDEN-053",
+    "GARDEN-054",
+    "GARDEN-055"
+  ],
+  "acceptance_criteria": [
+    "docs/qa/garden-v05-review.md exists in the garden-v04-review.md format: scope, tool runs, severity table, verdict, findings labelled Computed, Read or Director",
+    "Login tracks tried, not read: a claim re-sent after a forced flush failure pays once; two joins in one UTC day count one day; a day rollover while online counts the next day once; a week rollover (clock to Monday) resets the weekly track and keeps the monthly; a February month ends its track at 28; claimLogin with a bad arg, before the count, and past the last slot is refused; the egg lands in prizeEggs and plants at level 1 from the Dash panel; a login cosmetic cannot be bought and is granted once (Computed, fake store and moved clock, build stamp)",
+    "GardenConfig equals decision 0017 by script (26 species, 10 eggs, Index 108, LOGIN slots, 5 grant cosmetics); no sold egg hatches an exclusive species in 100,000 seeded rolls; a v3 save without login loads with every field kept; claimDaily and claimWeekly are refused",
+    "Spawn and PLAY: both clients appear on the pad facing the tree before their profiles load, PLAY flies and moves each to its own gate, a respawn lands on the pad, a racer's respawn still goes to the course; the valley screenshots show the X2 additions with the Parts attribute under 7,500 and the fixed positions unchanged (cart, boards, Petal Patch, Splash Island)",
+    "UI: every X1.4 panel works with the same requests as v0.4 (script_grep of Request calls against 0008 + 0015 + 0017 tables: nothing else is sent); phone layout at 844 x 390 and gamepad navigation screenshots; ReducedMotion skips animations; no client computes a reward or a date",
+    "The checkpoint doc lists the evidence: CI run link, test counts, build stamp, the side-by-side screenshots, the spawn and PLAY recording, the rollover and claim recording, the Weekly Egg hatch, the pacing script output"
+  ],
+  "verification": "A04 reads the review; CI run link and test-results.json attached as evidence",
+  "output_artifacts": [
+    "docs/qa/garden-v05-review.md"
+  ],
+  "files": [
+    "docs/qa/garden-v05-review.md",
+    "docs/checkpoints/GARDEN-V05.md"
+  ],
+  "tests": [],
+  "notes": "Reviewer must not have written GARDEN-051 to 055 (CLAUDE.md rule 2). Attack hardest: the claim re-apply inside UpdateAsync (the stored record must show claimed advanced exactly once), the rollover tick racing a join at midnight UTC, and the removed join-time gate move (nobody may end up inside the Great Egg Tree). Studio facts count only with the build stamp (rule 13)."
+}

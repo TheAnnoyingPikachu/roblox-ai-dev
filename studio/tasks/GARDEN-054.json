@@ -1,0 +1,44 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "low",
+  "status": "planned",
+  "task_id": "GARDEN-054",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Blender models for the six exclusive species (creature_puffin, creature_otter, creature_capybara, creature_redpanda, creature_peacock, creature_snowleopard) and the two eggs (egg_weekly, egg_monthly) to the 9.1 and 9.3 contracts, manifest rows, register rows, and the GardenAssets entries once uploaded.",
+  "inputs": [
+    "docs/architecture/garden.md §9, §9.1, §9.3",
+    "docs/game-design/game4-gdd.md §X3.3, §X3.4",
+    "docs/assets/garden-blender-plan.md",
+    "tools/blender/garden/README.md"
+  ],
+  "dependencies": [
+    "GARDEN-050",
+    "GARDEN-031"
+  ],
+  "acceptance_criteria": [
+    "Eight manifest rows in tools/blender/garden/manifest.json with target_size_studs, tris_budget (3000 creatures, 2500 eggs), priority P1, replaces, script and the front and height note; tools/blender/garden/build.py builds all eight (fbx, png, preview) with tris under budget",
+    "Every creature is one mesh, base-centre origin, front on -Y, height per 9.3 (3.0 to 5.8), footprint within 6 x 6; tests/GardenAssets.spec.luau pins size to the manifest and passes",
+    "Both eggs are 2.2 x 3 x 2.2 one-mesh models named Egg-compatible per section 9 with the X3 looks (weekly blossom pink with white petals, monthly deep teal with gold moons)",
+    "docs/assets/register.md has a row per model (and per cry when a licensed clip is found; cries stay nil otherwise); src/shared/GardenAssets.luau gains the ids after the Director's upload step, nil until then",
+    "A lineup render (tools/blender/garden/lineup.py) of the six creatures beside bunny and axolotl for scale is attached to the checkpoint"
+  ],
+  "verification": "A15 checks the lineup, the manifest and GardenAssets.spec; CI runs the spec",
+  "output_artifacts": [
+    "tools/blender/garden/assets/creatures_c.py",
+    "build/blender/garden/previews/"
+  ],
+  "files": [
+    "tools/blender/garden/**",
+    "assets/garden/**",
+    "src/shared/GardenAssets.luau",
+    "tests/GardenAssets.spec.luau",
+    "docs/assets/register.md",
+    "docs/assets/garden-blender-plan.md"
+  ],
+  "tests": [
+    "GardenAssets.spec.luau"
+  ],
+  "notes": "Names are fixed by 9.3; the game loads them by name through Models.nightReady, so a misnamed upload is invisible. Upload needs SHANNON's account (rule 7 does not apply to uploads, but the register row must exist first, rule 9). The Blender path is in memory (blender-headless.md)."
+}
