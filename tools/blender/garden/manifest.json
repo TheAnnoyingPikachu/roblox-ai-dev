@@ -699,6 +699,206 @@
     "notes": "Stardust Axolotl (secret). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
     "glow": {}
   },
+  "creature_puffin": {
+    "fbx": "build/blender/garden/creature_puffin.fbx",
+    "png": "build/blender/garden/creature_puffin.png",
+    "preview": "build/blender/garden/previews/creature_puffin.png",
+    "size_studs": [
+      2.38,
+      2.94,
+      3.12
+    ],
+    "tris": 1556,
+    "parts": {
+      "creature_puffin": 1556
+    },
+    "target_size_studs": [
+      2.6,
+      3.0,
+      2.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species, login rewards)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Pebble Puffin (uncommon). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_otter": {
+    "fbx": "build/blender/garden/creature_otter.fbx",
+    "png": "build/blender/garden/creature_otter.png",
+    "preview": "build/blender/garden/previews/creature_otter.png",
+    "size_studs": [
+      4.0,
+      2.57,
+      5.95
+    ],
+    "tris": 1894,
+    "parts": {
+      "creature_otter": 1894
+    },
+    "target_size_studs": [
+      4.0,
+      2.6,
+      5.8
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species, login rewards)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "River Otter (rare). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_capybara": {
+    "fbx": "build/blender/garden/creature_capybara.fbx",
+    "png": "build/blender/garden/creature_capybara.png",
+    "preview": "build/blender/garden/previews/creature_capybara.png",
+    "size_studs": [
+      2.83,
+      4.16,
+      5.56
+    ],
+    "tris": 1612,
+    "parts": {
+      "creature_capybara": 1612
+    },
+    "target_size_studs": [
+      3.2,
+      4.2,
+      4.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species, login rewards)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Spa Capybara (epic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_redpanda": {
+    "fbx": "build/blender/garden/creature_redpanda.fbx",
+    "png": "build/blender/garden/creature_redpanda.png",
+    "preview": "build/blender/garden/previews/creature_redpanda.png",
+    "size_studs": [
+      3.68,
+      5.0,
+      3.61
+    ],
+    "tris": 2424,
+    "parts": {
+      "creature_redpanda": 2424
+    },
+    "target_size_studs": [
+      4.2,
+      5.0,
+      4.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species, login rewards)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Maple Red Panda (legendary). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_peacock": {
+    "fbx": "build/blender/garden/creature_peacock.fbx",
+    "png": "build/blender/garden/creature_peacock.png",
+    "preview": "build/blender/garden/previews/creature_peacock.png",
+    "size_studs": [
+      4.66,
+      5.47,
+      3.21
+    ],
+    "tris": 1702,
+    "parts": {
+      "creature_peacock": 1702
+    },
+    "target_size_studs": [
+      5.0,
+      5.6,
+      4.0
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species, login rewards)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Jewel Peacock (mythic). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "creature_snowleopard": {
+    "fbx": "build/blender/garden/creature_snowleopard.fbx",
+    "png": "build/blender/garden/creature_snowleopard.png",
+    "preview": "build/blender/garden/previews/creature_snowleopard.png",
+    "size_studs": [
+      4.65,
+      5.82,
+      4.37
+    ],
+    "tris": 2328,
+    "parts": {
+      "creature_snowleopard": 2328
+    },
+    "target_size_studs": [
+      4.6,
+      5.8,
+      4.6
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "none (new species, login rewards)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Frost Leopard (divine). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
+    "glow": {}
+  },
+  "egg_weekly": {
+    "fbx": "build/blender/garden/egg_weekly.fbx",
+    "png": "build/blender/garden/egg_weekly.png",
+    "preview": "build/blender/garden/previews/egg_weekly.png",
+    "size_studs": [
+      2.16,
+      3.06,
+      2.16
+    ],
+    "tris": 1300,
+    "parts": {
+      "egg_weekly": 1300
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Plots.egg weekly (part fallback)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Weekly Egg. One mesh for Plots.egg through Models.nightPart (architecture section 9); never on the cart. Gold is baked bright.",
+    "glow": {}
+  },
+  "egg_monthly": {
+    "fbx": "build/blender/garden/egg_monthly.fbx",
+    "png": "build/blender/garden/egg_monthly.png",
+    "preview": "build/blender/garden/previews/egg_monthly.png",
+    "size_studs": [
+      2.18,
+      3.18,
+      2.18
+    ],
+    "tris": 1326,
+    "parts": {
+      "egg_monthly": 1326
+    },
+    "target_size_studs": [
+      2.2,
+      3,
+      2.2
+    ],
+    "tris_budget": 3000,
+    "priority": "P1",
+    "replaces": "Plots.egg monthly (part fallback)",
+    "script": "tools/blender/garden/assets/v05_exclusives.py",
+    "notes": "Monthly Egg. One mesh for Plots.egg through Models.nightPart (architecture section 9); never on the cart. Gold is baked bright.",
+    "glow": {}
+  },
   "dash_sweeper": {
     "fbx": "build/blender/garden/dash_sweeper.fbx",
     "png": "build/blender/garden/dash_sweeper.png",
