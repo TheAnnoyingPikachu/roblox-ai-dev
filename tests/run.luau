@@ -80,6 +80,9 @@ local SPECS = {
 	["GardenAssets.spec.luau"] = function()
 		require("./GardenAssets.spec")
 	end,
+	["LoginRules.spec.luau"] = function()
+		require("./LoginRules.spec")
+	end,
 	["Kit.spec.luau"] = function()
 		require("./Kit.spec")
 	end,

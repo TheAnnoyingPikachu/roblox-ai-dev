@@ -199,9 +199,10 @@ end
 
 -- Eggs and watering (D1, D2) ------------------------------------------------------------------
 
+-- Sold eggs and the login exclusives (level 1); never the starter. buyEgg also needs a price.
 function GardenRules.eggUnlocked(p: Profile, egg: string): boolean
 	local e = type(egg) == "string" and GardenConfig.egg(egg)
-	return if e and e.price ~= nil then GardenRules.level(p) >= e.level else false
+	return if e and GardenConfig.isPrizeable(e) then GardenRules.level(p) >= e.level else false
 end
 
 function GardenRules.stockLeft(p: Profile, egg: string, now: number): number

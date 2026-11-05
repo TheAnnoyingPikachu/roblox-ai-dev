@@ -1,6 +1,7 @@
 --!strict
 local T = require("./framework")
 local GardenConfig = require("../src/shared/GardenConfig")
+local MetaRules = require("../src/shared/MetaRules")
 local Rng = require("../src/shared/Rng")
 local WorldRules = require("../src/shared/WorldRules")
 
@@ -175,21 +176,64 @@ describe("GardenConfig eggs, species and costs", function()
 			"starter - 8 1 - - - 10 | meadow 50 30 1 - cat 50 10 | forest 400 180 2 100%2-4 hedgehog 30 25 | "
 				.. "sunset 3000 900 5 60%1-2 panda 40 60 | moon 25000 3600 10 30%1-1 dragon 100 150 | "
 				.. "star 200000 14400 18 10%1-1 phoenix 25 400 | celestial 1000000000 28800 25 5%1-1 phoenix 10 1000 | "
-				.. "aurora 5000000000 43200 32 3%1-1 axolotl 20 3000"
+				.. "aurora 5000000000 43200 32 3%1-1 axolotl 20 3000 | "
+				.. "weekly - 3600 1 - capybara 12 150 | monthly - 14400 1 - snowleopard 8 400"
 		)
 	end)
 
-	it("keeps every sold egg on a Lucky Meter, Celestial fixed to its mutation and the Aurora Egg last", function()
+	it(
+		"keeps every sold egg on a Lucky Meter, Celestial fixed to its mutation and the Aurora Egg the last sold",
+		function()
+			local lastSold = ""
+			for _, e in GardenConfig.EGGS do
+				if e.price then
+					expect(`{e.id} {e.top ~= nil and e.meter ~= nil}`).toBe(`{e.id} true`)
+					lastSold = e.id
+				end
+				expect(e.mutation).toBe(if e.id == "celestial" then "celestial" else nil)
+			end
+			expect(lastSold).toBe("aurora") -- stock index 7
+			expect(#GardenConfig.EGGS).toBe(10)
+			expect((GardenConfig.egg("celestial") :: any).name).toBe("Celestial Egg")
+			expect((GardenConfig.egg("aurora") :: any).name).toBe("Aurora Egg")
+		end
+	)
+
+	-- GDD X3.3 and X3.4, decision 0017.
+	it("lists the Weekly and Monthly Eggs after aurora: exclusive, unpriced, unstocked, level 1, metered", function()
+		local n = #GardenConfig.EGGS
+		expect(`{GardenConfig.EGGS[n - 1].id} {GardenConfig.EGGS[n].id}`).toBe("weekly monthly")
+		local exclusiveSpecies: { [string]: boolean } = {}
+		for _, e in GardenConfig.EGGS do
+			expect(`{e.id} {GardenConfig.isPrizeable(e)}`).toBe(`{e.id} {e.id ~= "starter"}`)
+			if e.exclusive then
+				expect(`{e.id} {e.exclusive} {e.price} {e.stock} {e.level} {e.top} {e.meter}`).toBe(
+					`{e.id} {e.id} nil nil 1 {e.top} {e.meter}`
+				)
+				for _, o in e.odds do
+					exclusiveSpecies[o.id] = true
+				end
+			else
+				expect(`{e.id} {e.exclusive}`).toBe(`{e.id} nil`)
+			end
+		end
+		expect((GardenConfig.egg("weekly") :: any).name).toBe("Weekly Egg")
+		expect((GardenConfig.egg("monthly") :: any).name).toBe("Monthly Egg")
+		local listed = {}
+		for _, s in GardenConfig.SPECIES do
+			if exclusiveSpecies[s.id] then
+				table.insert(listed, s.id)
+			end
+		end
+		expect(table.concat(listed, " ")).toBe("puffin otter capybara redpanda peacock snowleopard")
+		-- Exclusive means only from its egg: no sold egg's odds name one of the six.
 		for _, e in GardenConfig.EGGS do
 			if e.price then
-				expect(`{e.id} {e.top ~= nil and e.meter ~= nil}`).toBe(`{e.id} true`)
+				for _, o in e.odds do
+					expect(`{e.id} {o.id} {exclusiveSpecies[o.id]}`).toBe(`{e.id} {o.id} nil`)
+				end
 			end
-			expect(e.mutation).toBe(if e.id == "celestial" then "celestial" else nil)
 		end
-		expect(GardenConfig.EGGS[#GardenConfig.EGGS].id).toBe("aurora")
-		expect(#GardenConfig.EGGS).toBe(8) -- stock index 7
-		expect((GardenConfig.egg("celestial") :: any).name).toBe("Celestial Egg")
-		expect((GardenConfig.egg("aurora") :: any).name).toBe("Aurora Egg")
 	end)
 
 	it("gives every sold egg its rarest species as top (rarity index, then rate)", function()
@@ -235,19 +279,30 @@ describe("GardenConfig eggs, species and costs", function()
 			end
 		end
 		expect(table.concat(out, ", ")).toBe(
-			"bunny common 1, frog common 2, duck common 3, pup uncommon 5, lamb uncommon 8, cat uncommon 12, "
-				.. "owl rare 30, hedgehog rare 45, moth rare 55, fox rare 70, turtle epic 180, deer epic 250, panda epic 350, "
-				.. "lion legendary 500, unicorn legendary 800, dragon mythic 1500, phoenix mythic 2500, "
-				.. "whale divine 5000, kirin divine 7500, axolotl secret 25000"
+			"bunny common 1, frog common 2, duck common 3, pup uncommon 5, lamb uncommon 8, puffin uncommon 10, "
+				.. "cat uncommon 12, owl rare 30, hedgehog rare 45, otter rare 50, moth rare 55, fox rare 70, "
+				.. "turtle epic 180, capybara epic 220, deer epic 250, panda epic 350, "
+				.. "lion legendary 500, redpanda legendary 650, unicorn legendary 800, "
+				.. "dragon mythic 1500, peacock mythic 2000, phoenix mythic 2500, "
+				.. "whale divine 5000, snowleopard divine 6000, kirin divine 7500, axolotl secret 25000"
 		)
 		local mult = {}
 		for _, m in GardenConfig.MUTATIONS do
 			table.insert(mult, `{m.id} {m.mult}`)
 		end
 		expect(table.concat(mult, ", ")).toBe("normal 1, golden 3, moonlit 5, rainbow 10, celestial 20")
-		expect(#GardenConfig.SPECIES).toBe(20)
+		expect(#GardenConfig.SPECIES).toBe(26) -- X3.4: 20 + the six login exclusives
 		expect((GardenConfig.species("moth") :: any).name).toBe("Lantern Moth")
 		expect((GardenConfig.species("moth") :: any).cry).toBeNil() -- until a clip is registered
+		local names = {}
+		for _, id in { "puffin", "otter", "capybara", "redpanda", "peacock", "snowleopard" } do
+			local s = GardenConfig.species(id) :: GardenConfig.Species
+			table.insert(names, s.name)
+			expect(`{id} {s.cry}`).toBe(`{id} nil`) -- until registered (X3.4)
+		end
+		expect(table.concat(names, ", ")).toBe(
+			"Pebble Puffin, River Otter, Spa Capybara, Maple Red Panda, Jewel Peacock, Frost Leopard"
+		)
 	end)
 
 	it("lists the 8 U1 rarities in order with their colours", function()
@@ -272,10 +327,10 @@ describe("GardenConfig eggs, species and costs", function()
 		end
 	end)
 
-	it("puts exactly the Legendary and Mythic species in the Celestial Egg", function()
+	it("puts exactly the Legendary and Mythic species in the Celestial Egg, the login exclusives apart", function()
 		local want = {}
 		for _, s in GardenConfig.SPECIES do
-			if s.rarity == "legendary" or s.rarity == "mythic" then
+			if (s.rarity == "legendary" or s.rarity == "mythic") and s.id ~= "redpanda" and s.id ~= "peacock" then
 				table.insert(want, s.id)
 			end
 		end
@@ -296,7 +351,7 @@ describe("GardenConfig eggs, species and costs", function()
 		end
 	end)
 
-	it("counts 84 indexable pairs, the celestial ones being lion, unicorn, dragon and phoenix", function()
+	it("counts 108 indexable pairs, the celestial ones being lion, unicorn, dragon and phoenix", function()
 		local count = 0
 		local special = {}
 		for _, s in GardenConfig.SPECIES do
@@ -310,8 +365,10 @@ describe("GardenConfig eggs, species and costs", function()
 			end
 		end
 		expect(count).toBe(GardenConfig.INDEX_SIZE)
-		expect(count).toBe(84)
+		expect(count).toBe(108) -- 26 x 4 + 4 (X3.4); milestones stay at 20 / 40 / 60 / 80
 		expect(GardenConfig.indexable("moth", "rainbow")).toBe(true)
+		expect(GardenConfig.indexable("snowleopard", "rainbow")).toBe(true)
+		expect(GardenConfig.indexable("redpanda", "celestial")).toBe(false)
 		expect(GardenConfig.indexable("moth", "celestial")).toBe(false)
 		expect(table.concat(special, " ")).toBe("lion:celestial unicorn:celestial dragon:celestial phoenix:celestial")
 		expect(GardenConfig.indexable("whale", "celestial")).toBe(false) -- the Aurora fixes nothing
@@ -394,14 +451,61 @@ describe("GardenConfig meta data", function()
 	it("lists the H4 cosmetics with one level-1 default per slot", function()
 		local out = {}
 		for _, c in GardenConfig.COSMETICS do
-			local unlock = if c.price then `${c.price}` elseif c.index then `i{c.index}` else `L{c.level}`
+			local unlock = if c.price
+				then `${c.price}`
+				elseif c.index then `i{c.index}`
+				elseif c.grant then c.grant
+				else `L{c.level}`
 			table.insert(out, `{c.slot}:{c.id}:{unlock}`)
 			expect(#c.colours > 0).toBe(true)
+			expect(GardenConfig.cosmetic(c.id)).toBe(c)
+			if c.grant then
+				expect(`{c.id} {c.price} {c.level} {c.index}`).toBe(`{c.id} nil nil nil`)
+			end
 		end
 		expect(table.concat(out, " ")).toBe(
 			"fence:picket:L1 fence:bamboo:L3 fence:stone:L6 fence:hedge:L10 fence:crystal:L16 fence:golden:i20 "
 				.. "fence:starlit:i60 fence:candy:$1000000 fence:rainbow:$1000000000 can:tin:L1 can:ducky:L4 can:flower:L8 "
-				.. "can:moon:L14 can:star:$10000000 can:galaxy:$10000000000 pad:plain:L1 pad:clover:i40"
+				.. "can:moon:L14 can:star:$10000000 can:galaxy:$10000000000 pad:plain:L1 pad:clover:i40 "
+				.. "can:blossom:login fence:lantern:login pad:lily:login fence:sakura:login can:peacock:login"
+		)
+		expect(GardenConfig.cosmetic("nope")).toBeNil()
+	end)
+
+	-- GDD X3.1 and X3.2, decision 0017.
+	it("lists the two login tracks: 7 ascending slots each, the eggs at week 5 and month 4, cosmetics once", function()
+		local function row(track: string): string
+			local out = {}
+			local last = 0
+			for _, s in GardenConfig.LOGIN[track] do
+				expect(s.count > last).toBe(true)
+				last = s.count
+				-- coins + minutes, or egg, or coins + minutes + cosmetic
+				expect((s.coins ~= nil) == (s.minutes ~= nil) and (s.egg == nil) == (s.coins ~= nil)).toBe(true)
+				if s.egg then
+					expect((GardenConfig.egg(s.egg) :: GardenConfig.Egg).exclusive).toBe(
+						track == "week" and "weekly" or "monthly"
+					)
+				end
+				if s.cosmetic then
+					expect((GardenConfig.cosmetic(s.cosmetic) :: MetaRules.Cosmetic).grant).toBe("login")
+				end
+				table.insert(
+					out,
+					`{s.count}:{s.egg or `{s.coins}/{s.minutes}`}{if s.cosmetic then "+" .. s.cosmetic else ""}`
+				)
+			end
+			expect(#GardenConfig.LOGIN[track]).toBe(7)
+			return table.concat(out, " ")
+		end
+		expect(row("week")).toBe("1:100/3 2:150/5 3:200/8 4:300/12 5:weekly 6:400/15+blossom 7:500/20+lantern")
+		expect(row("month")).toBe(
+			"3:200/10 7:300/20 12:500/30 18:monthly 22:600/40+lily 26:800/50+sakura 30:1000/60+peacock"
+		)
+		expect(GardenConfig.LOGIN.week[5].egg .. " " .. GardenConfig.LOGIN.month[4].egg).toBe("weekly monthly")
+		expect(#GardenConfig.ICON_SET).toBe(16)
+		expect(table.concat(GardenConfig.ICON_SET, " ")).toBe(
+			"coin egg paw book hanger gift flag petal home chart cog heart swap calendar lock check"
 		)
 	end)
 
@@ -415,6 +519,7 @@ describe("GardenConfig meta data", function()
 				.. "collect50 collects 50 100 3, rare1 rareHatches 1 150 5, mutant1 mutants 1 200 8, "
 				.. "release3 releases 3 100 3"
 		)
+		-- Deprecated by decision 0017 (nothing pays them); still in CONFIG so MetaRules ticks the fields.
 		expect(table.concat(GardenConfig.DAILY, " ")).toBe("50 75 100 125 150 200 400")
 		expect(table.concat(GardenConfig.DAILY_MINUTES, " ")).toBe("2 3 4 5 6 8 15")
 		local W = GardenConfig.WEEKLY

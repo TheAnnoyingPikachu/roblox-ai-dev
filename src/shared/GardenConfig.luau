@@ -23,6 +23,21 @@ export type Egg = {
 	xp: number,
 	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
 	event: { s: string, bp: number, from: string }?, -- v0.4: `from` gives `bp` to `s` in a rare weather (V2.4)
+	exclusive: string?, -- v0.5: "weekly" | "monthly": no price, no stock, level 1, planted from prizeEggs (X3.3)
+}
+-- v0.5 login tracks (X3): coins + minutes, or egg, or coins + cosmetic.
+export type LoginSlot = { count: number, coins: number?, minutes: number?, egg: string?, cosmetic: string? }
+-- week = MetaRules.weekOf(day), month = year * 12 + month - 1; *Days distinct sign-in days this period,
+-- *Last the UTC day last counted (-1 none), *Claimed slots paid in order.
+export type Login = {
+	week: number,
+	weekDays: number,
+	weekLast: number,
+	weekClaimed: number,
+	month: number,
+	monthDays: number,
+	monthLast: number,
+	monthClaimed: number,
 }
 export type Cry = { id: number, pitch: number } -- Creator Store audio asset id (registered first) and PlaybackSpeed
 export type Species = { id: string, name: string, rarity: string, rate: number, cry: Cry? } -- cry nil: the client is silent
@@ -85,6 +100,7 @@ export type Profile = {
 	tradesToday: { day: number, count: number }, -- v3; day -1 until the first trade
 	milestones: { [string]: boolean }, -- v3; "20" | "40" | "60" | "80" -> true
 	pad: string, -- v3; cosmetic slot
+	login: Login, -- v3 + decision 0017; LoginRules
 }
 
 export type Spot = { x: number, y: number, z: number }
@@ -259,6 +275,29 @@ local EGGS: { Egg } = {
 		meter = 20,
 		xp = 3000,
 	},
+	-- GDD X3.3, decision 0017: login-track eggs, never sold, planted from prizeEggs at level 1.
+	{
+		id = "weekly",
+		name = "Weekly Egg",
+		grow = 3600,
+		level = 1,
+		odds = odds({ "puffin", 6000, "otter", 3200, "capybara", 800 }),
+		top = "capybara",
+		meter = 12,
+		xp = 150,
+		exclusive = "weekly",
+	},
+	{
+		id = "monthly",
+		name = "Monthly Egg",
+		grow = 14400,
+		level = 1,
+		odds = odds({ "redpanda", 7000, "peacock", 2500, "snowleopard", 500 }),
+		top = "snowleopard",
+		meter = 8,
+		xp = 400,
+		exclusive = "monthly",
+	},
 }
 GardenConfig.EGGS = EGGS
 
@@ -271,15 +310,19 @@ local SPECIES: { Species } = {
 	{ id = "duck", name = "Puddle Duckling", rarity = "common", rate = 3, cry = { id = 1840105521, pitch = 1.2 } },
 	{ id = "pup", name = "Bumble Pup", rarity = "uncommon", rate = 5, cry = { id = 9113956178, pitch = 1.35 } },
 	{ id = "lamb", name = "Clover Lamb", rarity = "uncommon", rate = 8, cry = { id = 9116206434, pitch = 1.3 } },
+	{ id = "puffin", name = "Pebble Puffin", rarity = "uncommon", rate = 10 }, -- v0.5 login exclusives (X3.4): cries until registered
 	{ id = "cat", name = "Berry Cat", rarity = "uncommon", rate = 12, cry = { id = 9117010574, pitch = 1.1 } },
 	{ id = "owl", name = "Pumpkin Owl", rarity = "rare", rate = 30, cry = { id = 9117181540, pitch = 1 } },
 	{ id = "hedgehog", name = "Acorn Hedgehog", rarity = "rare", rate = 45, cry = { id = 9118058248, pitch = 0.9 } },
+	{ id = "otter", name = "River Otter", rarity = "rare", rate = 50 },
 	{ id = "moth", name = "Lantern Moth", rarity = "rare", rate = 55 }, -- v0.4 event creature; cry until registered
 	{ id = "fox", name = "Cactus Fox", rarity = "rare", rate = 70, cry = { id = 9113955402, pitch = 1.5 } },
 	{ id = "turtle", name = "Lotus Turtle", rarity = "epic", rate = 180, cry = { id = 9112872058, pitch = 0.8 } },
+	{ id = "capybara", name = "Spa Capybara", rarity = "epic", rate = 220 },
 	{ id = "deer", name = "Blossom Fawn", rarity = "epic", rate = 250, cry = { id = 9113442509, pitch = 1.2 } },
 	{ id = "panda", name = "Bamboo Panda", rarity = "epic", rate = 350, cry = { id = 9117348418, pitch = 1.1 } },
 	{ id = "lion", name = "Sunflower Lion", rarity = "legendary", rate = 500, cry = { id = 9116308659, pitch = 1.25 } },
+	{ id = "redpanda", name = "Maple Red Panda", rarity = "legendary", rate = 650 },
 	{ id = "unicorn", name = "Daisy Unicorn", rarity = "legendary", rate = 800, cry = { id = 9119235894, pitch = 1 } },
 	{
 		id = "dragon",
@@ -288,8 +331,10 @@ local SPECIES: { Species } = {
 		rate = 1500,
 		cry = { id = 9125470864, pitch = 0.9 },
 	},
+	{ id = "peacock", name = "Jewel Peacock", rarity = "mythic", rate = 2000 },
 	{ id = "phoenix", name = "Ember Phoenix", rarity = "mythic", rate = 2500, cry = { id = 9117236946, pitch = 0.9 } },
 	{ id = "whale", name = "Aurora Whale", rarity = "divine", rate = 5000, cry = { id = 9114124842, pitch = 0.7 } },
+	{ id = "snowleopard", name = "Frost Leopard", rarity = "divine", rate = 6000 },
 	{ id = "kirin", name = "Nimbus Kirin", rarity = "divine", rate = 7500, cry = { id = 1846547135, pitch = 1.2 } },
 	{
 		id = "axolotl",
@@ -430,7 +475,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 84 -- count of indexable pairs: 20 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
+GardenConfig.INDEX_SIZE = 108 -- count of indexable pairs: 26 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 -- 0008 amendment 2026-10-26: release never returns its egg price (buy, hatch, release <= 60% of it).
 GardenConfig.RELEASE_SECONDS = 6
@@ -482,6 +527,7 @@ local function cosmetic(
 		level = unlock.level,
 		index = unlock.index,
 		price = unlock.price,
+		grant = if unlock.login then "login" else nil,
 	}
 end
 
@@ -516,8 +562,63 @@ local COSMETICS: { MetaRules.Cosmetic } = {
 	),
 	cosmetic("pad", "plain", "Plain Pads", { { 150, 110, 70 } }, { level = 1 }),
 	cosmetic("pad", "clover", "Clover Pads", { { 60, 150, 70 }, { 120, 200, 90 } }, { index = 40 }),
+	-- v0.5 (X3, decision 0017): `grant = "login"`, owned only through a login-track claim, never buyable.
+	cosmetic("can", "blossom", "Blossom Can", { { 255, 190, 215 }, { 240, 120, 160 } }, { login = 1 }),
+	cosmetic("fence", "lantern", "Lantern Fence", { { 120, 80, 50 }, { 255, 200, 90 } }, { login = 1 }),
+	cosmetic("pad", "lily", "Lily Pads", { { 70, 160, 90 }, { 255, 230, 240 } }, { login = 1 }),
+	cosmetic("fence", "sakura", "Sakura Fence", { { 255, 200, 220 }, { 150, 90, 70 } }, { login = 1 }),
+	cosmetic(
+		"can",
+		"peacock",
+		"Peacock Pitcher",
+		{ { 40, 150, 170 }, { 90, 60, 170 }, { 255, 215, 90 } },
+		{ login = 1 }
+	),
 }
 GardenConfig.COSMETICS = COSMETICS
+
+-- X3.1 and X3.2: slots by distinct sign-in count this period, claimed in order. Coins are paid as
+-- GardenProgress.scaled(coins, minutes); month[7] drops to the month's length (LoginRules.slots).
+GardenConfig.LOGIN = {
+	week = {
+		{ count = 1, coins = 100, minutes = 3 },
+		{ count = 2, coins = 150, minutes = 5 },
+		{ count = 3, coins = 200, minutes = 8 },
+		{ count = 4, coins = 300, minutes = 12 },
+		{ count = 5, egg = "weekly" },
+		{ count = 6, coins = 400, minutes = 15, cosmetic = "blossom" },
+		{ count = 7, coins = 500, minutes = 20, cosmetic = "lantern" },
+	},
+	month = {
+		{ count = 3, coins = 200, minutes = 10 },
+		{ count = 7, coins = 300, minutes = 20 },
+		{ count = 12, coins = 500, minutes = 30 },
+		{ count = 18, egg = "monthly" },
+		{ count = 22, coins = 600, minutes = 40, cosmetic = "lily" },
+		{ count = 26, coins = 800, minutes = 50, cosmetic = "sakura" },
+		{ count = 30, coins = 1000, minutes = 60, cosmetic = "peacock" },
+	},
+} :: { [string]: { LoginSlot } }
+
+-- X1.5: the 16 icon decals (GardenIcons holds the ids; glyph fallback until uploaded).
+GardenConfig.ICON_SET = {
+	"coin",
+	"egg",
+	"paw",
+	"book",
+	"hanger",
+	"gift",
+	"flag",
+	"petal",
+	"home",
+	"chart",
+	"cog",
+	"heart",
+	"swap",
+	"calendar",
+	"lock",
+	"check",
+}
 
 -- H5: reward is the base; the paid amount is GardenProgress.scaled(base, minutes).
 local QUESTS: { MetaRules.Quest } = {
@@ -532,6 +633,8 @@ local QUESTS: { MetaRules.Quest } = {
 }
 GardenConfig.QUESTS = QUESTS
 
+-- Deprecated (decision 0017): MetaRules still ticks `daily` and `week`, but nothing pays them; the
+-- login tracks (LOGIN) replaced claimDaily and claimWeekly.
 GardenConfig.DAILY = { 50, 75, 100, 125, 150, 200, 400 }
 GardenConfig.DAILY_MINUTES = { 2, 3, 4, 5, 6, 8, 15 }
 GardenConfig.WEEKLY = { days = 5, reward = 500, minutes = 30 }
@@ -636,6 +739,15 @@ end
 
 function GardenConfig.species(id: string): Species?
 	return find(SPECIES, id)
+end
+
+function GardenConfig.cosmetic(id: string): MetaRules.Cosmetic?
+	return find(COSMETICS, id)
+end
+
+-- What prizeEggs may hold: a sold egg or a login exclusive, never the starter.
+function GardenConfig.isPrizeable(egg: Egg): boolean
+	return egg.price ~= nil or egg.exclusive ~= nil
 end
 
 function GardenConfig.mutation(id: string): Mutation?

@@ -348,15 +348,16 @@ describe("HatchRules: celestial comes from the Celestial Egg alone", function()
 end)
 
 describe("HatchRules: what is published is what is rolled", function()
-	it("keeps species, mutations and sizes within 1.5 points through roll, for every sold egg and weather", function()
+	it("keeps species, mutations and sizes within 1.5 points through roll, for every rolled egg and weather", function()
 		local N = 20000
 		-- 1.5 points is about 4 sigma at N = 20,000; the v0.3 odds put sunset/sunbeam owl at exactly -1.00.
 		local function agrees(label: string, counts: { [string]: number }, id: string, bp: number)
 			local close = math.abs(100 * (counts[id] or 0) / N - bp / 100) <= 1.5
 			expect(`{label} {id} {close}`).toBe(`{label} {id} true`)
 		end
+		-- v0.5: the login exclusives (no price) roll like any egg; only the starter is fixed.
 		for position, e in GardenConfig.EGGS do
-			if e.price == nil then
+			if e.id == "starter" then
 				continue
 			end
 			local p = ripe(e.id)
@@ -564,7 +565,7 @@ describe("HatchRules charms and the Lantern Moth (GDD V2, decision 0015)", funct
 	it("rolls the Moth only in rare weathers and only from Forest and Sunset", function()
 		local moths: { [string]: number } = {}
 		for position, e in GardenConfig.EGGS do
-			if e.price == nil then
+			if e.id == "starter" then
 				continue
 			end
 			for _, w in GardenConfig.WEATHERS do
@@ -612,5 +613,31 @@ describe("HatchRules charms and the Lantern Moth (GDD V2, decision 0015)", funct
 		local stormy =
 			HatchRules.apply(ripe("celestial"), 1, outcome("celestial", "lion", "celestial", "huge", "stormy"), NOW)
 		expect(GardenRules.rate(stormy.creatures[1])).toBe(500 * 20 * 2.5 * 3)
+	end)
+
+	it("rolls the Weekly and Monthly Eggs with weather mutations and charms, and applies their hatch (X3.3)", function()
+		for _, id in { "weekly", "monthly" } do
+			local e = egg(id)
+			local p = ripe(id)
+			local charms, mutated = 0, 0
+			for i = 1, 2000 do
+				local o =
+					HatchRules.roll(p, 1, NOW, "thunder", Rng.seed(i, 51, if id == "weekly" then 1 else 2)) :: HatchRules.Outcome
+				expect(table.find({ e.odds[1].id, e.odds[2].id, e.odds[3].id }, o.s) ~= nil).toBe(true)
+				charms += if o.c == "stormy" then 1 else 0
+				mutated += if o.m ~= "normal" then 1 else 0
+			end
+			expect(`{id} {math.abs(100 * charms / 2000 - 10) <= 1.5} {math.abs(100 * mutated / 2000 - 12) <= 1.5}`).toBe(
+				`{id} true true`
+			)
+			local clear = HatchRules.roll(p, 1, NOW, "clear", Rng.seed(5, 51)) :: HatchRules.Outcome
+			expect(clear.c).toBe("none")
+			-- The Lucky Meter forces the top species at meter - 1.
+			p.pity[id] = (e.meter :: number) - 1
+			expect((HatchRules.roll(p, 1, NOW, "clear", Rng.seed(6)) :: HatchRules.Outcome).s).toBe(e.top)
+			local out, ok = HatchRules.apply(p, 1, outcome(id, e.top :: string, "golden", "big", "stormy"), NOW)
+			expect(ok).toBe(true)
+			expect(`{out.pity[id]} {out.index[1]} {out.xp}`).toBe(`0 {e.top}:golden {e.xp + GardenConfig.XP.index}`)
+		end
 	end)
 end)

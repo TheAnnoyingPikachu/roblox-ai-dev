@@ -17,6 +17,7 @@ export type Cosmetic = {
 	tier: number?,
 	price: number?,
 	index: number?, -- unlocked when #profile.index >= index (decision 0008)
+	grant: string?, -- owned only through a game grant (Garden "login", decision 0017); never buyable
 }
 
 export type Quest = { id: string, label: string, stat: string, goal: number, reward: number, minutes: number? }
@@ -115,7 +116,7 @@ function MetaRules.isUnlocked<P>(config: Config<P>, profile: P, id: string): boo
 		return false
 	end
 	local m = meta(profile)
-	if c.price then
+	if c.price or c.grant then
 		return m.owned[id] == true
 	end
 	if c.level and MetaRules.levelFor(m.xp) < c.level then
@@ -146,7 +147,7 @@ function MetaRules.sanitizeMeta<P>(config: Config<P>, record: any, into: P): P
 	if type(record.owned) == "table" then
 		for id, value in record.owned do
 			local c = type(id) == "string" and MetaRules.cosmetic(config, id)
-			if c and c.price and value == true then
+			if c and (c.price or c.grant) and value == true then
 				p.owned[id] = true
 			end
 		end

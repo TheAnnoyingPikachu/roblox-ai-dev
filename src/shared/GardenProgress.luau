@@ -8,6 +8,7 @@
 local GardenConfig = require("./GardenConfig")
 local GardenRules = require("./GardenRules")
 local HatchRules = require("./HatchRules")
+local LoginRules = require("./LoginRules")
 local MetaRules = require("./MetaRules")
 
 local GardenProgress = {}
@@ -96,6 +97,7 @@ function GardenProgress.defaults(now: number): Profile
 		tradesToday = { day = -1, count = 0 },
 		milestones = {},
 		pad = "plain",
+		login = LoginRules.defaults(),
 	}
 end
 
@@ -251,7 +253,9 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 	-- dropping either would lose it (decision 0012).
 	if type(record.prizeEggs) == "table" then
 		for _, egg in GardenConfig.EGGS do
-			local n = if egg.price then MetaRules.count(record.prizeEggs[egg.id], GardenConfig.PRIZE_STORE) else 0
+			local n = if GardenConfig.isPrizeable(egg)
+				then MetaRules.count(record.prizeEggs[egg.id], GardenConfig.PRIZE_STORE)
+				else 0
 			if n >= 1 then
 				p.prizeEggs[egg.id] = n
 			end
@@ -298,6 +302,8 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 			end
 		end
 	end
+	-- Decision 0017: a record without `login` gets the defaults and counts today at its next tick.
+	p.login = LoginRules.sanitize(record.login)
 	return MetaRules.sanitizeMeta(CONFIG, record, p)
 end
 
@@ -311,7 +317,18 @@ function GardenProgress.login(p: Profile, now: number, today: number): (Profile,
 	out.coins = math.min(MAX_COINS, out.coins + unbanked + offline)
 	out.unbanked = 0
 	out.lastSeen = now
-	return MetaRules.login(CONFIG, out, today), offline, unbanked
+	return LoginRules.tick(MetaRules.login(CONFIG, out, today), today), offline, unbanked
+end
+
+-- Login tracks (GDD X3, decision 0017) --------------------------------------------------------
+
+-- Also run by the server at a UTC day rollover while online (architecture 4.7); idempotent.
+function GardenProgress.loginTick(p: Profile, today: number): Profile
+	return LoginRules.tick(p, today)
+end
+
+function GardenProgress.claimLogin(p: Profile, track: string, today: number): (Profile, boolean, string)
+	return LoginRules.claim(p, track, today)
 end
 
 -- The last op of every flush, so a stored record never pays a banked coin twice.
@@ -562,6 +579,7 @@ function GardenProgress.isUnlocked(p: Profile, id: string): boolean
 	return MetaRules.isUnlocked(CONFIG, p, id)
 end
 
+-- Deprecated (decision 0017): off the router; kept so MetaRules' H5 fields stay ticked and tested.
 function GardenProgress.claimDaily(p: Profile, today: number): (Profile, boolean, number)
 	return MetaRules.claimDaily(CONFIG, p, today)
 end

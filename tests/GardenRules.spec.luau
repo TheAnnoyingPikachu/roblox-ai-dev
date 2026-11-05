@@ -76,7 +76,7 @@ describe("GardenRules income (C3)", function()
 		for i = 1, GardenConfig.INDEX_SIZE do
 			p.index[i] = `x{i}`
 		end
-		expect(near(GardenRules.indexMult(p), 2.68)).toBe(true)
+		expect(near(GardenRules.indexMult(p), 3.16)).toBe(true) -- 108 cells (X3.4); was 2.68 at 84
 	end)
 
 	it("matches the S2 and U3 check values for Celestial and Aurora creatures", function()
@@ -205,13 +205,16 @@ describe("GardenRules income (C3)", function()
 		return if c then 1 + (c.mult - 1) * c.bp / 10000 else 1
 	end
 
+	-- v0.5 (GDD X4): the rule does not apply to an egg with no price; the two login exclusives are
+	-- skipped here and pinned by expected coins/s against the Dash budget below.
 	it("never returns more than 60% of an egg's price on buy, hatch and release, in any weather", function()
 		local size = sizeAvg()
-		local checked = 0
+		local checked, unpriced = 0, {}
 		local worst, worstAt = 0, ""
 		for _, egg in GardenConfig.EGGS do
 			local price = egg.price
 			if price == nil then
+				table.insert(unpriced, egg.id)
 				continue
 			end
 			for _, w in GardenConfig.WEATHERS do
@@ -240,6 +243,7 @@ describe("GardenRules income (C3)", function()
 			end
 		end
 		expect(checked).toBe(49) -- 7 sold eggs x 7 weathers
+		expect(table.concat(unpriced, " ")).toBe("starter weekly monthly")
 		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 56.4")
 	end)
 
@@ -288,9 +292,13 @@ describe("GardenRules income (C3)", function()
 			event += mult(o.id) * charmAvg(o.id) * o.bp / 20000
 		end
 		local worst, worstAt = 0, ""
+		-- X4: expected creature of the login eggs (Lucky Meter, average weather, size) and the per-day
+		-- value of both against the Dash prize cap of 3 Moon Eggs.
+		local LOGIN_PINNED = { weekly = "66.4", monthly = "2382.7" }
+		local perDay, moon = 0, 0
 		for _, egg in GardenConfig.EGGS do
 			local price = egg.price
-			if price == nil then
+			if price == nil and egg.top == nil then
 				continue
 			end
 			local top = (GardenConfig.species(egg.top :: string) :: GardenConfig.Species).rate
@@ -309,6 +317,12 @@ describe("GardenRules income (C3)", function()
 			local fixed = if egg.mutation
 				then (GardenConfig.mutation(egg.mutation) :: GardenConfig.Mutation).mult
 				else nil
+			if price == nil then
+				local rate = base(nil) * event
+				expect(`{egg.id} {string.format("%.1f", rate)}`).toBe(`{egg.id} {LOGIN_PINNED[egg.id]}`)
+				perDay += rate / (if egg.id == "weekly" then 7 else 30)
+				continue
+			end
 			local function back(weather: string): number
 				return 100
 					* base(weather)
@@ -327,10 +341,15 @@ describe("GardenRules income (C3)", function()
 				end
 			end
 			local rate = base(nil) * (fixed or event)
+			if egg.id == "moon" then
+				moon = rate
+			end
 			local row = string.format("%.1f %.1f %.1f", back("clear"), back("shower"), rare)
 			expect(`{egg.id} {row} {string.format("%.0f %.0f", rate, price / rate)}`).toBe(`{egg.id} {PINNED[egg.id]}`)
 		end
 		expect(`{worstAt} {string.format("%.1f", worst)}`).toBe("meadow shower 54.2")
+		expect(string.format("%.1f %.0f", perDay, 3 * moon)).toBe("88.9 904")
+		expect(perDay <= 3 * moon).toBe(true)
 	end)
 
 	it("formats short numbers, truncating to one decimal", function()
@@ -433,6 +452,14 @@ describe("GardenRules beds and eggs (D1)", function()
 		expect(select(2, GardenRules.buyEgg(p, "forest", NOW))).toBe(false) -- level 1 < 2
 		expect(select(2, GardenRules.buyEgg(p, "starter", NOW))).toBe(false)
 		expect(select(2, GardenRules.buyEgg(p, "nope", NOW))).toBe(false)
+		-- X3.3: the login exclusives have no price; unlocked at level 1 for planting, never for buying.
+		p.coins = 1e9
+		for _, id in { "weekly", "monthly" } do
+			expect(GardenRules.eggUnlocked(p, id)).toBe(true)
+			expect(select(2, GardenRules.buyEgg(p, id, NOW))).toBe(false)
+			expect(GardenRules.stockLeft(p, id, NOW)).toBe(0)
+		end
+		p.coins = 1000
 		expect(GardenRules.stockLeft(p, "starter", NOW)).toBe(0)
 		expect(GardenRules.stockLeft(p, "nope", NOW)).toBe(0)
 		p.coins = 49
@@ -594,6 +621,23 @@ describe("GardenRules prize eggs (decision 0012)", function()
 		expect(GardenRules.canPlantPrize(odd, "starter")).toBe(false)
 		expect(GardenRules.canPlantPrize(odd, "nope")).toBe(false)
 		expect(GardenRules.canPlantPrize(odd, nil :: any)).toBe(false)
+	end)
+
+	it("plants the Weekly and Monthly Eggs at level 1 with a free bed (X3.3, 0012 item 3 amended)", function()
+		local p = GardenProgress.defaults(NOW)
+		p.coins = 0
+		expect(GardenRules.canPlantPrize(p, "weekly")).toBe(false) -- none held
+		p.prizeEggs = { weekly = 1, monthly = 1 }
+		expect(GardenRules.level(p)).toBe(1)
+		expect(GardenRules.canPlantPrize(p, "weekly")).toBe(true)
+		expect(GardenRules.canPlantPrize(p, "monthly")).toBe(true)
+		local out, ok = GardenRules.plantPrize(p, "weekly", NOW)
+		expect(ok).toBe(true)
+		expect(`{out.beds[2].egg} {out.beds[2].ready - NOW} {out.coins}`).toBe("weekly 3600 0")
+		out = GardenRules.plantPrize(out, "monthly", NOW)
+		expect(`{out.beds[3].egg} {out.beds[3].ready - NOW}`).toBe("monthly 14400")
+		expect(next(out.prizeEggs)).toBeNil()
+		expect(GardenRules.canPlantPrize(out, "weekly")).toBe(false) -- spent, and no bed left
 	end)
 end)
 

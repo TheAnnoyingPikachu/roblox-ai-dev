@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-051",
   "owner": "A09",
   "verifier": "A15",
@@ -51,5 +51,9 @@
     "MetaRules.spec.luau",
     "Purity.spec.luau"
   ],
-  "notes": "Every number comes from decision 0017 and GDD X3; change none without a decision amendment. The one MetaRules change is the `grant` condition; do not touch the daily or weekly functions (Relay and Night use them). SCHEMA_VERSION stays 3 (checkpoint item 7). If garden/wheel (0016, wheelToday) has merged first, keep both fields under v3."
+  "notes": "Every number comes from decision 0017 and GDD X3; change none without a decision amendment. The one MetaRules change is the `grant` condition; do not touch the daily or weekly functions (Relay and Night use them). SCHEMA_VERSION stays 3 (checkpoint item 7). If garden/wheel (0016, wheelToday) has merged first, keep both fields under v3.",
+  "evidence": [
+    "Local run 2026-11-05 on garden/v05 (base 863cb6f): lune run tests/run 539/539 pass (was 523; +16: LoginRules.spec 8, GardenConfig 2, GardenProgress 2, GardenRules 1, HatchRules 1, MetaRules 1, plus split asserts); selene src tests 0 errors 0 warnings; stylua --check clean on LF copies; docs/game-design/game4-v05-pacing-check.py static agrees with the spec pins (weekly 66.4, monthly 2382.7 coins/s; 88.9 vs Dash cap 904; worst 60% bound meadow shower 56.4).",
+    "Deviations: tests/run.luau registers LoginRules.spec (allowed by check-scope); GardenRules.eggUnlocked now gates on GardenConfig.isPrizeable so canPlantPrize accepts the level-1 exclusives (buyEgg still needs a price); GardenRules.spec indexMult ceiling pin 2.68 -> 3.16 (108 cells); GardenConfig.spec Celestial = Legendary+Mythic minus redpanda/peacock; claimDaily/claimWeekly stay in GardenProgress (3.11), their removal from Profiles.request and the router is the server task."
+  ]
 }

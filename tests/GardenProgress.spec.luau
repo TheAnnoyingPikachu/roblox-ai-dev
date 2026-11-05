@@ -4,6 +4,7 @@ local GardenConfig = require("../src/shared/GardenConfig")
 local GardenProgress = require("../src/shared/GardenProgress")
 local GardenRules = require("../src/shared/GardenRules")
 local HatchRules = require("../src/shared/HatchRules")
+local LoginRules = require("../src/shared/LoginRules")
 local MetaRules = require("../src/shared/MetaRules")
 local Rng = require("../src/shared/Rng")
 
@@ -37,6 +38,16 @@ end
 
 -- What a v2 record (or older) becomes under schema v3 (decision 0015): the four profile fields and
 -- the three creature fields at their defaults, nothing else touched.
+-- Decision 0017 (still schema 3): what a record saved before the login tracks gains on load.
+local function v5(record: any): any
+	local out = GardenRules.copy(record)
+	out.login = LoginRules.defaults()
+	if type(out.pity) == "table" then
+		out.pity.weekly, out.pity.monthly = 0, 0
+	end
+	return out
+end
+
 local function v3(record: any): any
 	local out = GardenRules.copy(record)
 	out.trades = {}
@@ -46,7 +57,7 @@ local function v3(record: any): any
 	for _, c in out.creatures or {} do
 		c.c, c.fa, c.n = "none", 0, ""
 	end
-	return out
+	return v5(out)
 end
 
 -- Income 60.5 coins/s (GDD C3 check garden).
@@ -108,6 +119,8 @@ describe("GardenProgress defaults", function()
 		expect(
 			p.pity.meadow + p.pity.forest + p.pity.sunset + p.pity.moon + p.pity.star + p.pity.celestial + p.pity.aurora
 		).toBe(0)
+		expect(`{p.pity.weekly} {p.pity.monthly}`).toBe("0 0")
+		expect(same(p.login, LoginRules.defaults())).toBe(true)
 		expect(next(p.prizeEggs)).toBeNil()
 		expect(`{p.dash.day} {p.dash.prizes} {p.dash.coins}`).toBe("-1 0 0")
 		expect(p.pity.starter).toBeNil()
@@ -543,7 +556,7 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 		expect(p.nextId).toBe(4)
 	end)
 
-	it("keeps sold prize eggs only, counts of at least 1, clamped to 1,000,000", function()
+	it("keeps prizeable eggs only (sold or exclusive, never the starter), counts of at least 1, clamped", function()
 		local p = GardenProgress.sanitize({
 			prizeEggs = {
 				moon = 2.9,
@@ -555,9 +568,10 @@ describe("GardenProgress schema v2 migration (decision 0012)", function()
 				starter = 4,
 				nope = 7,
 				[1] = 3,
+				weekly = 1.5,
 			},
 		}, NOW)
-		expect(same(p.prizeEggs, { moon = 2, star = 1_000_000 })).toBe(true)
+		expect(same(p.prizeEggs, { moon = 2, star = 1_000_000, weekly = 1 })).toBe(true)
 		expect(next(GardenProgress.sanitize({ prizeEggs = "moon" }, NOW).prizeEggs)).toBeNil()
 	end)
 
@@ -752,12 +766,83 @@ describe("GardenProgress schema v3 (decision 0015)", function()
 		}
 	end
 
-	it("keeps a literal v3 record field for field", function()
+	it("keeps a literal v3 record (no login) field for field, adding only the 0017 defaults", function()
 		local record = v3Record()
 		local p: any = GardenProgress.sanitize(record, NOW)
-		expect(same(p, v3Record())).toBe(true)
+		expect(same(p, v5(v3Record()))).toBe(true)
 		expect(same(record, v3Record())).toBe(true) -- input unchanged
 		expect(same(GardenProgress.sanitize(p, NOW), p)).toBe(true)
+		expect(p.schemaVersion).toBe(3)
+	end)
+
+	-- Decision 0017, GDD X3.6.
+	it("carries login, pity.weekly, pity.monthly and the two exclusive prize eggs, clamped", function()
+		local record = v3Record()
+		record.login = {
+			week = 2960,
+			weekDays = 3,
+			weekLast = DAY,
+			weekClaimed = 2,
+			month = 24322,
+			monthDays = 9,
+			monthLast = DAY,
+			monthClaimed = 1,
+		}
+		record.pity.weekly, record.pity.monthly = 5, 7
+		record.prizeEggs = { weekly = 2, monthly = 1, starter = 3 }
+		record.owned = { blossom = true, lily = true, picket = true }
+		record.can = "blossom"
+		local p: any = GardenProgress.sanitize(record, NOW)
+		expect(same(p.login, record.login)).toBe(true)
+		expect(`{p.pity.weekly} {p.pity.monthly}`).toBe("5 7")
+		expect(same(p.prizeEggs, { weekly = 2, monthly = 1 })).toBe(true)
+		expect(same(p.owned, { blossom = true, lily = true })).toBe(true)
+		expect(p.can).toBe("blossom")
+		record.login = {
+			week = -5,
+			weekDays = 99,
+			weekLast = "x",
+			weekClaimed = 9,
+			month = 0 / 0,
+			monthDays = -1,
+			monthLast = 1.5,
+			monthClaimed = 2.9,
+		}
+		record.pity.weekly, record.pity.monthly = 99, 99
+		record.prizeEggs = { weekly = 5e9, monthly = 0.5 }
+		p = GardenProgress.sanitize(record, NOW)
+		expect(same(p.login, {
+			week = -1,
+			weekDays = 31,
+			weekLast = -1,
+			weekClaimed = 7,
+			month = -1,
+			monthDays = 0,
+			monthLast = 1,
+			monthClaimed = 2,
+		})).toBe(true)
+		expect(`{p.pity.weekly} {p.pity.monthly}`).toBe("12 8")
+		expect(same(p.prizeEggs, { weekly = 1_000_000 })).toBe(true)
+		expect(same(GardenProgress.sanitize({ login = 5 }, NOW).login, LoginRules.defaults())).toBe(true)
+	end)
+
+	it("runs the login tick inside login, and wraps loginTick and claimLogin", function()
+		local p = GardenProgress.defaults(NOW)
+		local monday = 7 * MetaRules.weekOf(DAY) - 3
+		local out = GardenProgress.login(p, monday * 86400, monday)
+		expect(`{out.login.week} {out.login.weekDays} {out.login.weekLast} {out.login.weekClaimed}`).toBe(
+			`{MetaRules.weekOf(monday)} 1 {monday} 0`
+		)
+		expect(`{out.login.month} {out.login.monthDays}`).toBe(`{LoginRules.monthOf(monday)} 1`)
+		expect(same(GardenProgress.loginTick(out, monday), out)).toBe(true) -- idempotent
+		expect(GardenProgress.loginTick(out, monday + 1).login.weekDays).toBe(2)
+		expect(LoginRules.claimable(out, monday)).toBe(1)
+		local claimed, ok, text = GardenProgress.claimLogin(out, "week", monday)
+		expect(`{ok} {text} {claimed.coins - out.coins} {claimed.login.weekClaimed}`).toBe("true 100 coins 100 1")
+		expect(same(GardenProgress.sanitize(claimed, NOW), claimed)).toBe(true)
+		expect(select(2, GardenProgress.claimLogin(claimed, "week", monday))).toBe(false)
+		expect(select(2, GardenProgress.claimLogin(claimed, "month", monday))).toBe(false) -- 1 < 3 sign-ins
+		expect(p.login.weekDays).toBe(0) -- input unchanged
 	end)
 
 	it("keeps at most 30 trades (newest), clamps tradesToday and keeps only known milestones", function()
@@ -1205,7 +1290,7 @@ describe("GardenProgress.sanitize (H7)", function()
 	it("drops unknown and duplicate Index keys and clamps pity and stock", function()
 		local p = GardenProgress.sanitize({
 			index = { "cat:golden", "cat:golden", "yeti:normal", "cat:shiny", 5, "cat", "bunny:normal" },
-			pity = { meadow = 999, forest = -4, sunset = 12.5, moon = "x", star = 25, starter = 3 },
+			pity = { meadow = 999, forest = -4, sunset = 12.5, moon = "x", star = 25, starter = 3, weekly = 99 },
 			stock = { w = 6_000_000.7, bought = { forest = 99, moon = 1, meadow = 4, star = -1 } },
 		}, NOW)
 		expect(table.concat(p.index, " ")).toBe("cat:golden bunny:normal")
@@ -1214,6 +1299,7 @@ describe("GardenProgress.sanitize (H7)", function()
 		expect(p.pity.sunset).toBe(12)
 		expect(p.pity.moon).toBe(0)
 		expect(p.pity.star).toBe(25)
+		expect(p.pity.weekly).toBe(12)
 		expect(p.pity.starter).toBeNil()
 		expect(p.stock.w).toBe(6_000_000)
 		expect(p.stock.bought.forest).toBe(4)
