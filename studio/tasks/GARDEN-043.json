@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "low",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-043",
   "owner": "A11",
   "verifier": "A15",
@@ -27,7 +27,9 @@
   "output_artifacts": [
     "src/garden-client/WheelFx.client.luau"
   ],
-  "evidence": [],
+  "evidence": [
+    "Local run 2026-11-05 on garden/wheel: lune run tests/run 508/508; selene 0; stylua --check clean; rojo build + check-place match; validate-tasks and check-scope pass. Studio run (build dev, same harness as GARDEN-042): on wheelStart the client schedule matched the server (every server wheelCatch had a falling clone; 128 catches over 5 rounds, part fallbacks since no ids are in this branch); HUD showed score 7 / timer / 'Spin 12' and 'Lucky 24' marks / '3 spins left today', then 'Practice' in round 5; basket (fallback) welded to the right hand; stand label read '3 spins left today', '2 spins left today', 'All 3 spins used today · practice rounds open' (and 'Saving is off on this server · practice only' when ProfileOnline was false); end card 'Nice catch! 38 petals' then the wheel panel with 8 pockets, both odds columns (36.00/20.00 ... 0.05/0.15 %) and SPIN armed on wheelSpin arrival; SPIN eased to the server's wedge (moon under the pointer, discRotation 1587.7 = 4 turns + wedge) and showed 'Moon Egg! Saved with your prize eggs. Open DASH to plant it.'; the fourth round's end card read 'Practice round · 38 petals' with no panel and no wheelSpin. Not covered: sfx-off audit by ear (every sound goes through ClientState.sound; no sound is called for a pinecone, an under-12 end or a practice end), gamepad A. Menu DASH heading is 'PRIZE EGGS' (house uppercase style for 'Prize eggs'); src/garden-client/CLAUDE.md is a pointer to src/garden/CLAUDE.md, which lists the new files."
+  ],
   "files": [
     "src/garden-client/WheelFx.client.luau",
     "src/garden-client/Menu.client.luau",
