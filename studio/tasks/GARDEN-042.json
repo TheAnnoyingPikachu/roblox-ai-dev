@@ -1,0 +1,46 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "GARDEN-042",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Run Petal Catch on the server: WheelWorld builds the Petal Patch and the stand with its Play prompt, Wheel keeps one round per player, scores catches from the server's own 5 Hz root samples, rolls the wheel with Rng and applies the prize through Profiles.apply; GardenServer routes wheelStart, home, leave, the fast tick and BindToClose.",
+  "inputs": [
+    "docs/architecture/garden-wheel.md §3, §4",
+    "docs/game-design/game4-wheel.md §W2, §W6, §W9, §W11",
+    "docs/decisions/0016-garden-petal-catch-wheel.md (remote contract, spin idempotence)",
+    "docs/architecture/garden.md §4.3a (the Dash pattern to copy)",
+    "src/garden/Dash.luau, src/garden/DashWorld.luau, src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-041"
+  ],
+  "acceptance_criteria": [
+    "WheelWorld.build creates Workspace.Garden.Wheel (grass, fence with two gaps, trunk, sakura fallback, stand fallback, prompt pad with the Play prompt and the empty SpinsLabel billboard) at GardenConfig.WHEEL.centre and stand, with part fallbacks swapped for wheel_stand and wheel_tree when Models.nightReady; the Parts budget attribute is kept",
+    "Wheel.start refuses without a session, with a round running, while racing or over promptRange from the stand; otherwise it seeds the round (Studio-only Seed attribute override), fixes eligibility (Profiles.isOnline and WheelRules.canSpin) and sends wheelStart; the prompt and the wheelStart action share the handler through admit and the 0.35 s limit",
+    "Wheel.step runs after Dash.step in fastTick under guarded: every catch comes from WheelRules.sample on the tick's root snapshot and is sent as wheelCatch; at endAt the round is removed, and when the tier is spin or lucky the wedge is rolled with Rng, applied in the same step without yielding through Profiles.apply('wheelSpin', WheelRules.award(p, today, n, wedge)), then wheelOver and wheelSpin are sent; tier none sends wheelOver only",
+    "Wheel.leave (home, PlayerRemoving) and Wheel.close (BindToClose) drop rounds and grant nothing; no remote carries a catch, position, score, time or wedge; REQUEST_ARGS has wheelStart = false and nothing else new; GardenStatus is unchanged",
+    "src/garden/CLAUDE.md lists Wheel.luau and WheelWorld.luau and the new must-stay-true line; lune run tests/run, selene, stylua --check, rojo build garden.project.json, check-place, validate-tasks and check-scope pass; a Studio run with the build stamp shows W11 steps 1 to 3 with a seeded round"
+  ],
+  "verification": "CI, a Studio run recorded with the build stamp (rule 13), and the GARDEN-045 QA review",
+  "output_artifacts": [
+    "src/garden/Wheel.luau",
+    "src/garden/WheelWorld.luau"
+  ],
+  "evidence": [],
+  "files": [
+    "src/garden/Wheel.luau",
+    "src/garden/WheelWorld.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/CLAUDE.md",
+    "garden.project.json",
+    "studio/tasks/GARDEN-042.json"
+  ],
+  "tests": [
+    "WheelRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "Copy Dash.luau's shape: rounds in a module table, events carried without yielding, the prize applied before anything can yield, every wheel call from gardening paths wrapped in guarded so a wheel fault never stops pads, teleports or saves. The roll's Rng seed must not derive from the petal seed sent to the client. today for the award is the tick's os.time() day (the day of the finish); eligibility stays as fixed at the start. The Seed attribute override exists only under RunService:IsStudio(). If the patch centre collides with a path or lamp in Studio, move GardenConfig.WHEEL.centre and stand together by up to 10 studs (not an economy value) and note it."
+}
