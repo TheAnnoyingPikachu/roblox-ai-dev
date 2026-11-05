@@ -98,7 +98,10 @@ async function imageOf(decalId) {
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
 const wanted = process.argv.slice(3).flatMap((a) => a.split(",")).map((s) => s.trim()).filter(Boolean);
-for (const name of wanted) if (!manifest[name]) throw new Error(`unknown asset ${name}`);
+// UI icons: decal-only PNGs in assets/<game>/icons/, named like the GardenIcons keys.
+const ICONS = path.join(FILES, "icons");
+const icons = fs.existsSync(ICONS) ? fs.readdirSync(ICONS).filter((f) => /^garden_icon_.*[.]png$/.test(f)).map((f) => f.slice(0, -4)) : [];
+for (const name of wanted) if (!manifest[name] && !icons.includes(name)) throw new Error(`unknown asset ${name}`);
 const uploaded = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : {};
 const failed = [];
 
@@ -117,6 +120,19 @@ for (const name of Object.keys(manifest)) {
 		}
 		uploaded[name] = { model, decal, texture };
 		fs.writeFileSync(OUT, JSON.stringify(uploaded, null, 2) + "\n"); // keep progress if a later asset fails
+	} catch (err) {
+		console.error(`${name}: FAILED ${err.message}`);
+		failed.push(name);
+	}
+}
+
+for (const name of icons) {
+	if (wanted.length && !wanted.includes(name)) continue;
+	try {
+		console.log(`${name}: uploading icon`);
+		const decal = await create("Decal", path.join(ICONS, `${name}.png`), "image/png", `${prefix} ${name}`, `${label}: UI icon (tools/icons)`);
+		uploaded[name] = { model: null, decal, texture: await imageOf(decal) };
+		fs.writeFileSync(OUT, JSON.stringify(uploaded, null, 2) + "\n");
 	} catch (err) {
 		console.error(`${name}: FAILED ${err.message}`);
 		failed.push(name);
