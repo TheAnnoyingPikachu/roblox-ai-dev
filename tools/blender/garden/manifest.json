@@ -24,6 +24,31 @@
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
     "glow": {}
   },
+  "sakura_large_a": {
+    "fbx": "build/blender/garden/sakura_large_a.fbx",
+    "png": "build/blender/garden/sakura_large_a.png",
+    "preview": "build/blender/garden/previews/sakura_large_a.png",
+    "size_studs": [
+      28.84,
+      34.23,
+      29.3
+    ],
+    "tris": 2166,
+    "parts": {
+      "sakura_large_a": 2166
+    },
+    "target_size_studs": [
+      30,
+      34,
+      30
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "World.largeSakura (Props.sakura fallback)",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Plaza sakura: 34 tall, canopy 30. Trunk inside a 2.5-radius cylinder at the origin so a part collider matches; the canopy has no collision.",
+    "glow": {}
+  },
   "egg_meadow": {
     "fbx": "build/blender/garden/egg_meadow.fbx",
     "png": "build/blender/garden/egg_meadow.png",
@@ -47,6 +72,31 @@
     "replaces": "Plots.egg meadow (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
+    "glow": {}
+  },
+  "sakura_large_b": {
+    "fbx": "build/blender/garden/sakura_large_b.fbx",
+    "png": "build/blender/garden/sakura_large_b.png",
+    "preview": "build/blender/garden/previews/sakura_large_b.png",
+    "size_studs": [
+      34.65,
+      41.75,
+      36.91
+    ],
+    "tris": 2166,
+    "parts": {
+      "sakura_large_b": 2166
+    },
+    "target_size_studs": [
+      36,
+      42,
+      36
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "World.largeSakura (Props.sakura fallback)",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Rim sakura: 42 tall, canopy 36. Trunk inside a 2.5-radius cylinder at the origin; the canopy has no collision.",
     "glow": {}
   },
   "egg_forest": {
@@ -74,6 +124,31 @@
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
     "glow": {}
   },
+  "sakura_large_c": {
+    "fbx": "build/blender/garden/sakura_large_c.fbx",
+    "png": "build/blender/garden/sakura_large_c.png",
+    "preview": "build/blender/garden/previews/sakura_large_c.png",
+    "size_studs": [
+      33.41,
+      45.9,
+      34.57
+    ],
+    "tris": 2166,
+    "parts": {
+      "sakura_large_c": 2166
+    },
+    "target_size_studs": [
+      36,
+      45,
+      36
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "World.largeSakura (Props.sakura fallback)",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Rim sakura: 45 tall, canopy 36. Trunk inside a 2.5-radius cylinder at the origin; the canopy has no collision.",
+    "glow": {}
+  },
   "egg_sunset": {
     "fbx": "build/blender/garden/egg_sunset.fbx",
     "png": "build/blender/garden/egg_sunset.png",
@@ -97,6 +172,31 @@
     "replaces": "Plots.egg sunset (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it.",
+    "glow": {}
+  },
+  "hill_a": {
+    "fbx": "build/blender/garden/hill_a.fbx",
+    "png": "build/blender/garden/hill_a.png",
+    "preview": "build/blender/garden/previews/hill_a.png",
+    "size_studs": [
+      220.0,
+      160.0,
+      120.0
+    ],
+    "tris": 972,
+    "parts": {
+      "hill_a": 972
+    },
+    "target_size_studs": [
+      220,
+      160,
+      120
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "World.hills band 2 and 3",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Single dome, open underneath. Snow baked above 70% of the height; band 2 at scale 1, band 3 at 2.5. No collision.",
     "glow": {}
   },
   "egg_moon": {
@@ -124,6 +224,31 @@
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
     "glow": {}
   },
+  "hill_b": {
+    "fbx": "build/blender/garden/hill_b.fbx",
+    "png": "build/blender/garden/hill_b.png",
+    "preview": "build/blender/garden/previews/hill_b.png",
+    "size_studs": [
+      220.0,
+      160.0,
+      120.0
+    ],
+    "tris": 972,
+    "parts": {
+      "hill_b": 972
+    },
+    "target_size_studs": [
+      220,
+      160,
+      120
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "World.hills band 2 and 3",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Double ridge along X, open underneath. Snow baked above 70% of the height. No collision.",
+    "glow": {}
+  },
   "egg_star": {
     "fbx": "build/blender/garden/egg_star.fbx",
     "png": "build/blender/garden/egg_star.png",
@@ -147,6 +272,31 @@
     "replaces": "Plots.egg star (src/garden/Plots.luau 274-295)",
     "script": "tools/blender/garden/assets/eggs.py",
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
+    "glow": {}
+  },
+  "hill_c": {
+    "fbx": "build/blender/garden/hill_c.fbx",
+    "png": "build/blender/garden/hill_c.png",
+    "preview": "build/blender/garden/previews/hill_c.png",
+    "size_studs": [
+      220.0,
+      160.0,
+      120.0
+    ],
+    "tris": 1008,
+    "parts": {
+      "hill_c": 1008
+    },
+    "target_size_studs": [
+      220,
+      160,
+      120
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "World.hills band 2 and 3",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Long saddle along X, open underneath. Snow baked above 70% of the height. No collision.",
     "glow": {}
   },
   "egg_celestial": {
@@ -174,6 +324,31 @@
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
     "glow": {}
   },
+  "spawn_pad": {
+    "fbx": "build/blender/garden/spawn_pad.fbx",
+    "png": "build/blender/garden/spawn_pad.png",
+    "preview": "build/blender/garden/previews/spawn_pad.png",
+    "size_studs": [
+      10.0,
+      0.6,
+      10.0
+    ],
+    "tris": 382,
+    "parts": {
+      "spawn_pad": 382
+    },
+    "target_size_studs": [
+      10,
+      0.6,
+      10
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "World.spawnPad (Cobblestone cylinder, 4 pastel posts)",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Stone disc with a painted petal mosaic; the SpawnLocation is a separate invisible part under it. No posts, so the top stays 0.6 high.",
+    "glow": {}
+  },
   "egg_aurora": {
     "fbx": "build/blender/garden/egg_aurora.fbx",
     "png": "build/blender/garden/egg_aurora.png",
@@ -197,6 +372,31 @@
     "replaces": "Plots.egg aurora (part fallback)",
     "script": "tools/blender/garden/assets/eggs.py",
     "notes": "One mesh for Plots.egg through Models.nightPart (architecture section 9); renamed Egg, so HatchFx finds it. Glowing pieces are baked bright into the one mesh; add Neon sparkle with particles as Plots.egg does today.",
+    "glow": {}
+  },
+  "lantern": {
+    "fbx": "build/blender/garden/lantern.fbx",
+    "png": "build/blender/garden/lantern.png",
+    "preview": "build/blender/garden/previews/lantern.png",
+    "size_studs": [
+      1.2,
+      4.5,
+      1.2
+    ],
+    "tris": 180,
+    "parts": {
+      "lantern": 180
+    },
+    "target_size_studs": [
+      1.2,
+      4.5,
+      1.2
+    ],
+    "tris_budget": 600,
+    "priority": "P1",
+    "replaces": "World.lanterns (post and Neon cube)",
+    "script": "tools/blender/garden/assets/valley.py",
+    "notes": "Stone base, wooden post and frame, paper shade baked warm; shade centre at 3.6 up, the PointLight attachment point.",
     "glow": {}
   },
   "egg_shell_fragment": {
