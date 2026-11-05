@@ -228,5 +228,45 @@
     "model": 130242543650945,
     "decal": 88634157811969,
     "texture": null
+  },
+  "creature_puffin": {
+    "model": 94756345914133,
+    "decal": 119363085923437,
+    "texture": null
+  },
+  "creature_otter": {
+    "model": 96776962013797,
+    "decal": 139038381110534,
+    "texture": null
+  },
+  "creature_capybara": {
+    "model": 102047511477972,
+    "decal": 72006354715561,
+    "texture": null
+  },
+  "creature_redpanda": {
+    "model": 128308625560044,
+    "decal": 85416341012489,
+    "texture": null
+  },
+  "creature_peacock": {
+    "model": 128516016843681,
+    "decal": 78704305928684,
+    "texture": null
+  },
+  "creature_snowleopard": {
+    "model": 100006974097787,
+    "decal": 118576842176914,
+    "texture": null
+  },
+  "egg_weekly": {
+    "model": 76843750584707,
+    "decal": 97952525662928,
+    "texture": null
+  },
+  "egg_monthly": {
+    "model": 130782332472875,
+    "decal": 119283684513159,
+    "texture": null
   }
 }
