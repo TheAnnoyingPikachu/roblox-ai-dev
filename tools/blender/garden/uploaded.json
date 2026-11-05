@@ -173,5 +173,25 @@
     "model": 94791420669178,
     "decal": 134420494935311,
     "texture": 129394552155163
+  },
+  "creature_moth": {
+    "model": 90835297344313,
+    "decal": 105097164467776,
+    "texture": null
+  },
+  "fence_starlit_post": {
+    "model": 128886258846971,
+    "decal": 123753965073363,
+    "texture": null
+  },
+  "fence_starlit_rail": {
+    "model": 118445586788031,
+    "decal": 116130627311005,
+    "texture": null
+  },
+  "pad_clover": {
+    "model": 130242543650945,
+    "decal": 88634157811969,
+    "texture": null
   }
 }
