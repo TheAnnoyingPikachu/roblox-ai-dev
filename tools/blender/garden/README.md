@@ -36,7 +36,7 @@ Render the lineup alone with `--python tools/blender/garden/lineup.py`.
   bands), egg-shell helpers (`shell`, `stick`, `ridge`), toy parts (`flower`, `star`, `leaf`,
   `mushroom`, `facet`) and the creature standard below.
 - `build.py`: runner, manifest, contact sheet. `lineup.py`: the lineup render. `compare.py`: the
-  before/after creature sheet.
+  before/after creature sheet. `refcompare.py`: the reference-vs-remake sheet (below).
 - `assets/eggs.py`, `assets/dash.py`: `ASSETS = [dict(name, build, budget, size, priority, order,
   replaces, notes, glow)]`. `build()` returns a list of objects, or a dict of part name to objects.
 
@@ -67,8 +67,9 @@ A count of exactly `budget * 0.97` means it fired: trim the model instead.
 ## Creature standard (HD pass)
 
 Every `creature_*` is remade to this so all 26 look like one family. The reference builds are
-`creature_bunny` and `creature_dragon` in `assets/creatures_a.py`: read them first, copy their shape.
-Helper docstrings in `kit.py` have the details.
+`creature_bunny` and `creature_fox` in `assets/creatures_a.py` (remade from Roblox AI references,
+see "Reference remakes" below), and `creature_dragon` for a winged species: read them first, copy
+their shape. Helper docstrings in `kit.py` have the details.
 
 ### Helpers
 
@@ -82,6 +83,7 @@ Helper docstrings in `kit.py` have the details.
 | `k.blob(r, loc, mat)` | Separate round pieces in another colour (tail puffs, buds). |
 | `k.leaf(..., n=8, steps=10)` | Petals, wings, leaves. |
 | `k.texel(parts, 0.5)` | Big plain parts (wings, petals, shells) get half the texels so the face gets more. |
+| `k.paint(..., rest=True)` + `k.zone(m, rgb, centre, radii, soft, jag)` | Fur markings painted on the one fused body: white muzzles and cheek ruffs, bibs, dark paws and ear tips, tail tips. A zone is a soft-edged ellipsoid in build-time coordinates (`fuse` stores them as the `rest` attribute, so `fit` cannot move the paint); `jag` 0.2 gives a tufted fur edge. No triangles, no seams: prefer it to `k.lens` for anything flat. |
 
 Banned on creatures: `k.cyl` cones, spheres under 20 segments, `tube`/`leaf` with `n` under 8
 (except hair-thin veins), separate googly eyes.
@@ -111,6 +113,28 @@ Banned on creatures: `k.cyl` cones, spheres under 20 segments, `tube`/`leaf` wit
 - **Colour:** one `k.paint` gradient for the skin, darker at the bottom; pastel palette as before.
   Markings that must sit in an exact place are geometry (`k.lens`), not `paint` marks: `fit`
   scales the model after the paint coordinates are fixed.
+
+### Reference remakes (match the Roblox AI references)
+
+The owner prefers the Roblox AI look (`docs/production/ai-reference-pipeline.md`). Remake each
+creature from its `assets/garden/refs/<id>_*.jpg` shots; these override the defaults above:
+
+- **Head 55 to 60% of the height** with ears, wider than tall (`scale` about `(1.1..1.4, 0.9, 0.9..1.0)`);
+  a small pear or bean body, chunky stubs. For width, add a `k.pair` of cheek elements low on the head.
+- **Face:** `k.face(..., eye_r=0.24..0.27, eye_wide=0.9, spread=29..31, eye_phi=-12..-24, sheen=True,
+  blush_theta=44..46, blush_phi=-24..-34, mouth_w=0.1..0.12, nose_r=0.06..0.1)`: eyes big, round,
+  low and wide, the nose at eye level, the mouth just under it. The references have almost no
+  snout, so use the plain face (nose and mouth on the head), not `snout_face`.
+- **Paint the body with `rest=True`:** `face` then paints the blush as a soft zone (the plush look)
+  instead of a lens, and every marking is a `k.zone`. `skin` is the colour under the blush.
+- **Workflow:** build, then `... --python tools/blender/garden/refcompare.py -- frog duck` and open
+  `build/blender/garden/refcompare/<id>_vs_ref.png`: each Studio shot over a render from the same
+  camera (70 degree field of view, same offsets, scaled to the reference height), so a part that
+  looks smaller in the remake is smaller. Repeat until they read as the same character. Set the
+  `ASSETS` size to the model's own proportions (an even `fit scale` on all three axes), keeping
+  the height. Give separate props painted with gradients, bands or marks `k.rest(prop)` and
+  `paint(..., rest=True)` too, or the fit scale shifts their paint. Every reference from the frog
+  on came out turned 45 degrees towards +X, so its "34" shot is the true front; `TURN` in refcompare.py records each reference's turn.
 
 ### Budget, texture, export
 

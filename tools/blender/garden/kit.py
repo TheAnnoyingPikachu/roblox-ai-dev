@@ -62,9 +62,12 @@ GOLD_LO = (205, 130, 40)
 # Materials -----------------------------------------------------------------------------------
 
 
-def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4, grain=None, splat=(), rays=None, marks=(), emit=0.0):
+def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4, grain=None, splat=(), rays=None, marks=(), emit=0.0, rest=False):
     """Baked colour: `stops` [(0-1, rgb), ...] along an object axis from lo to hi, then optional
     hard polka `dots` [(rgb, scale, size), ...] and `bands` (rgb, period in studs).
+    rest=True reads every coordinate from the `rest` attribute that `fuse` stores (positions at
+    build time) instead of object space, so the paint stays put when `fit` rescales the model,
+    and `zone` can add markings to it. Fused bodies have it; give a prop one with `rest(ob)`.
     grain (amount, scale[, "noise"|"wave"]) shades the colour by a fine texture (linen, bark).
     splat [(rgb, scale, threshold, z0, z1[, "noise"|"wave"|"swirl"]), ...]: hard patches of a texture
     above the threshold between two object heights (moss, filigree, snow).
@@ -77,9 +80,14 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
     m = mat(name, stops[0][1], kind="flat", rough=rough)
     nt = m.node_tree
     bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
-    coord = nt.nodes.new("ShaderNodeTexCoord")
+    if rest:
+        node = nt.nodes.new("ShaderNodeAttribute")
+        node.name, node.attribute_name = "rest", "rest"
+        pos = node.outputs["Vector"]
+    else:
+        pos = nt.nodes.new("ShaderNodeTexCoord").outputs["Object"]
     sep = nt.nodes.new("ShaderNodeSeparateXYZ")
-    nt.links.new(coord.outputs["Object"], sep.inputs[0])
+    nt.links.new(pos, sep.inputs[0])
     span = nt.nodes.new("ShaderNodeMapRange")
     span.inputs["From Min"].default_value = lo
     span.inputs["From Max"].default_value = hi
@@ -88,8 +96,8 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
     elements = ramp.color_ramp.elements
     elements[0].position, elements[0].color = stops[0][0], lin(stops[0][1])
     elements[1].position, elements[1].color = stops[-1][0], lin(stops[-1][1])
-    for pos, rgb in stops[1:-1]:
-        elements.new(pos).color = lin(rgb)
+    for at, rgb in stops[1:-1]:
+        elements.new(at).color = lin(rgb)
     nt.links.new(span.outputs["Result"], ramp.inputs["Fac"])
     colour = ramp.outputs["Color"]
 
@@ -122,7 +130,7 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
             tex.inputs["Detail"].default_value = 3
             if kind == "swirl":
                 tex.bands_direction = "DIAGONAL"
-        nt.links.new(coord.outputs["Object"], tex.inputs["Vector"])
+        nt.links.new(pos, tex.inputs["Vector"])
         return tex.outputs["Fac"]
 
     if grain:
@@ -151,7 +159,7 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
         dist = nt.nodes.new("ShaderNodeVectorMath")
         dist.operation = "DISTANCE"
         dist.inputs[1].default_value = tuple(centre)
-        nt.links.new(coord.outputs["Object"], dist.inputs[0])
+        nt.links.new(pos, dist.inputs[0])
         mask = op("MULTIPLY", op("LESS_THAN", dist.outputs["Value"], r_out), op("GREATER_THAN", dist.outputs["Value"], r_in))
         if below:
             mask = op("MULTIPLY", mask, op("LESS_THAN", sep.outputs["Z"], below[0]))
@@ -159,7 +167,7 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
     for rgb, scale, size in dots:
         cells = nt.nodes.new("ShaderNodeTexVoronoi")
         cells.inputs["Scale"].default_value = scale
-        nt.links.new(coord.outputs["Object"], cells.inputs["Vector"])
+        nt.links.new(pos, cells.inputs["Vector"])
         colour = over(op("LESS_THAN", cells.outputs["Distance"], size), rgb)
     if bands:
         rgb, period = bands
@@ -178,6 +186,58 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
     if emit > 0:
         nt.links.new(colour, bsdf.inputs["Emission Color"])
         bsdf.inputs["Emission Strength"].default_value = emit
+    return m
+
+
+def zone(m, rgb, centre, radii, soft=0.12, jag=0.0, jag_scale=7.0):
+    """A soft-edged fur marking on a `paint(..., rest=True)` material: everything inside the
+    ellipsoid at `centre` with half axes `radii` (studs, build-time coordinates) turns `rgb`.
+    soft: edge blur as a fraction of the radius. jag: noise added to the edge (0.1 to 0.3) for a
+    tufted fur line, like a fox's white tail tip. Layers in call order (the last one wins). Use for
+    muzzles, cheeks, bibs, paws, ear and tail tips, soft blush: no extra triangles, the colour
+    follows the fused surface exactly and fit cannot move it."""
+    nt = m.node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    colour = bsdf.inputs["Base Color"].links[0].from_socket
+
+    def vec(op, a, b):
+        node = nt.nodes.new("ShaderNodeVectorMath")
+        node.operation = op
+        nt.links.new(a, node.inputs[0])
+        node.inputs[1].default_value = b
+        return node.outputs["Vector"]
+
+    rel = vec("DIVIDE", vec("SUBTRACT", nt.nodes["rest"].outputs["Vector"], tuple(centre)), tuple(radii))
+    length = nt.nodes.new("ShaderNodeVectorMath")
+    length.operation = "LENGTH"
+    nt.links.new(rel, length.inputs[0])
+    d = length.outputs["Value"]
+    edge = nt.nodes.new("ShaderNodeMapRange")
+    edge.interpolation_type = "SMOOTHSTEP"
+    edge.inputs["From Min"].default_value, edge.inputs["From Max"].default_value = 1 - soft, 1 + soft
+    edge.inputs["To Min"].default_value, edge.inputs["To Max"].default_value = 1, 0
+    if jag:
+        noise = nt.nodes.new("ShaderNodeTexNoise")
+        noise.inputs["Scale"].default_value = jag_scale
+        noise.inputs["Detail"].default_value = 1
+        nt.links.new(rel, noise.inputs["Vector"])
+        add = nt.nodes.new("ShaderNodeMath")
+        add.operation = "MULTIPLY_ADD"
+        nt.links.new(noise.outputs["Fac"], add.inputs[0])
+        add.inputs[1].default_value = 2 * jag
+        nt.links.new(d, add.inputs[2])
+        sub = nt.nodes.new("ShaderNodeMath")
+        sub.inputs[1].default_value = jag  # noise is 0 to 1: centre it on 0
+        sub.operation = "SUBTRACT"
+        nt.links.new(add.outputs[0], sub.inputs[0])
+        d = sub.outputs[0]
+    nt.links.new(d, edge.inputs["Value"])
+    mix_ = nt.nodes.new("ShaderNodeMix")
+    mix_.data_type = "RGBA"
+    nt.links.new(edge.outputs["Result"], mix_.inputs[0])
+    nt.links.new(colour, mix_.inputs[6])
+    mix_.inputs[7].default_value = lin(rgb)
+    nt.links.new(mix_.outputs[2], bsdf.inputs["Base Color"])
     return m
 
 
@@ -486,7 +546,17 @@ def fuse(elements, m, tris=3200, soft=0.3, res=0.04, name="body"):
         _select([ob])
         bpy.ops.object.modifier_apply(modifier=mod.name)
     print(f"[fuse] {name}: {have} -> {_tris(ob)} tris", flush=True)
-    return ob
+    return rest(ob)
+
+
+def rest(objs):
+    """Stores each mesh's build-time positions as its `rest` attribute (fuse does this for every
+    body), so a paint(..., rest=True) on a separate prop also stays put when fit rescales it."""
+    for ob in objs if isinstance(objs, (list, tuple)) else [objs]:
+        co = [0.0] * (3 * len(ob.data.vertices))
+        ob.data.vertices.foreach_get("co", co)
+        ob.data.attributes.new("rest", "FLOAT_VECTOR", "POINT").data.foreach_set("vector", co)
+    return objs
 
 
 def land(target, centre, d):
@@ -529,15 +599,18 @@ def lens(target, centre, d, r, m, scale=(1, 1), thick=0.35, sink=0.35, up=(0, 0,
     return ob
 
 
-def eye(target, centre, d, r, iris=EYE_INK, name="eye"):
-    """The standard eye: a glossy dark dome, 0.8 as wide as tall (r is half its height), standing
-    0.25 r proud so it catches the light; no white of the eye (a white ring reads googly). A big
-    catchlight at the viewer's upper left and a small one at the lower right, the same on both
-    eyes: one light for the whole family."""
-    dome = lens(target, centre, d, r, flat(iris), scale=(0.8, 1), thick=0.5, sink=0.5, seg=20, name=name)
+def eye(target, centre, d, r, iris=EYE_INK, name="eye", wide=0.8, sheen=False):
+    """The standard eye: a glossy dark dome, `wide` (0.8) as wide as tall (r is half its height),
+    standing 0.25 r proud so it catches the light; no white of the eye (a white ring reads googly).
+    A big catchlight at the viewer's upper left and a small one at the lower right, the same on
+    both eyes: one light for the whole family. sheen: a soft lighter crescent low in the eye, the
+    reflected-sky glint that makes the reference plush eyes read glassy rather than flat black."""
+    dome = lens(target, centre, d, r, flat(iris), scale=(wide, 1), thick=0.5, sink=0.5, seg=24, name=name)
     p, n = land(target, centre, d)
     x, y, _ = _frame(n)
     parts = [dome]
+    if sheen:
+        parts.append(lens(dome, p - y * r * 0.58, n, r * 0.34, flat(mix(iris, (150, 160, 200), 0.3)), scale=(wide * 1.5, 0.6), thick=0.25, sink=0.45, seg=16, name="sheen"))
     for u, v, s in ((-0.3, 0.36, 0.36), (0.3, -0.38, 0.16)):
         spot = p + (x * u * 0.8 + y * v) * r
         parts.append(lens(dome, spot, n, r * s, flat(SNOW), thick=0.3, sink=0.4, seg=12, name="catchlight"))
@@ -563,23 +636,32 @@ def mouth(target, centre, d, width, m, kind="w", r=None, up=(0, 0, 1)):
 
 
 def face(target, centre, R, skin, iris=EYE_INK, nose=NOSE, mouth_kind="w", eye_r=0.24, spread=34, eye_phi=-6,
-         nose_phi=-17, mouth_phi=-26, blush=True, nose_r=0.075):
+         nose_phi=-17, mouth_phi=-26, blush=True, nose_r=0.075, eye_wide=0.8, sheen=False, blush_theta=54,
+         blush_phi=-25, blush_r=0.17, mouth_w=0.17):
     """The standard face on a head of radius R centred at `centre` (front -Y), as fractions of R:
     eyes 0.24 R (half height), 34 degrees each side of the front and 6 below the head's middle, so
     wide apart and low (a big forehead is the baby look); nose 0.075 R at 17 below; mouth 0.17 R
     wide at 26 below; blush ovals 0.17 R at 54 degrees round, 25 below, the skin mixed 55% to pink.
     nose=None or mouth_kind=None leave them out (put them on a snout yourself). Marks the face
-    (within R of its middle) and its parts at FACE_TEXEL."""
+    (within R of its middle) and its parts at FACE_TEXEL.
+    On a body painted with paint(..., rest=True) the blush is a soft painted `zone` (the plush
+    look of the reference creatures) instead of a hard-edged lens; `skin` is then the colour
+    under the blush. The reference-remake values are in README "Reference remakes"."""
     texel(target, FACE_TEXEL, land(target, centre, outward(0, -12))[0], R)
+    painted = target.data.materials[0] if "rest" in target.data.materials[0].node_tree.nodes else None
     parts = []
     for side in (-1, 1):
-        parts += eye(target, centre, outward(side * spread, eye_phi), R * eye_r, iris)
-        if blush:
-            parts.append(lens(target, centre, outward(side * 54, -25), R * 0.17, flat(mix(skin, BLUSH_PINK, 0.55)), scale=(1.5, 0.9), thick=0.18, sink=0.5, name="blush"))
+        parts += eye(target, centre, outward(side * spread, eye_phi), R * eye_r, iris, wide=eye_wide, sheen=sheen)
+        if blush and painted:
+            p, _ = land(target, centre, outward(side * blush_theta, blush_phi))
+            r = R * blush_r
+            zone(painted, mix(skin, BLUSH_PINK, 0.55), p, (r * 1.5, r * 1.5, r * 0.95), soft=0.45)
+        elif blush:
+            parts.append(lens(target, centre, outward(side * blush_theta, blush_phi), R * blush_r, flat(mix(skin, BLUSH_PINK, 0.55)), scale=(1.5, 0.9), thick=0.18, sink=0.5, name="blush"))
     if nose:
         parts.append(lens(target, centre, outward(0, nose_phi), R * nose_r, flat(nose), scale=(1.35, 0.9), thick=0.55, sink=0.4, seg=12, name="nose"))
     if mouth_kind:
-        parts.append(mouth(target, centre, outward(0, mouth_phi), R * 0.17, flat(INKY), mouth_kind))
+        parts.append(mouth(target, centre, outward(0, mouth_phi), R * mouth_w, flat(INKY), mouth_kind))
     return texel(parts, FACE_TEXEL)
 
 
