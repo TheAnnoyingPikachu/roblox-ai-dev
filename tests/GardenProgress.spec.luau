@@ -95,6 +95,22 @@ local function withIncome(income: number, body: () -> ())
 	end
 end
 
+describe("GardenProgress newer schema guard (decisions 0012, 0015; QA m6)", function()
+	it("flags only a record whose schemaVersion is above this build's", function()
+		local newer = GardenProgress.defaults(NOW) :: any
+		newer.schemaVersion = GardenProgress.SCHEMA_VERSION + 1
+		newer.someV4Field = { kept = true }
+		expect(GardenProgress.isNewer(newer)).toBe(true)
+		for _, version in { GardenProgress.SCHEMA_VERSION, 2, 1 } do
+			expect(GardenProgress.isNewer({ schemaVersion = version })).toBe(false)
+		end
+		expect(GardenProgress.isNewer(nil)).toBe(false)
+		for _, junk in { 5, "4", {}, { schemaVersion = "9" } } do
+			expect(GardenProgress.isNewer(junk)).toBe(false)
+		end
+	end)
+end)
+
 describe("GardenProgress defaults", function()
 	it("starts with 100 coins, 3 beds, 6 pads and a starter egg ready 8 s after creation", function()
 		local p = GardenProgress.defaults(NOW)

@@ -29,6 +29,7 @@ local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local MetaRules = require(Shared:WaitForChild("MetaRules"))
 local Remotes = require(script.Parent:WaitForChild("Remotes"))
 local State = require(script.Parent:WaitForChild("State"))
+local Trades = require(script.Parent:WaitForChild("Trades")) -- GardenServer fills Trades.deps before any load
 
 type Profile = GardenConfig.Profile
 type Change = (Profile) -> Profile
@@ -46,6 +47,8 @@ local INFLIGHT_WAIT = 10 -- leave: longest wait for a running write before the f
 local OFFLINE_TEXT = "Saving is offline on this server: progress here lasts this session only."
 local BUSY_TEXT = "Your garden is still saving on another server, so this visit is not saved. Rejoin in a minute."
 local PRIZE_LOST_TEXT = "Saving stopped on this server before your prize egg was saved: it lasts this visit only."
+local TRADE_LOST_TEXT =
+	"Saving stopped on this server: a trade may not have saved; it will be checked when you next play."
 
 local function storeSuffix(): string
 	if RunService:IsStudio() then
@@ -56,6 +59,7 @@ local function storeSuffix(): string
 	end
 	return "_staging"
 end
+Profiles.storeSuffix = storeSuffix -- Trades uses the same suffix for GardenTrades
 
 local okStore, store = pcall(function()
 	return DataStoreService:GetDataStore("GardenProfile" .. storeSuffix())
@@ -76,6 +80,8 @@ type Session = {
 	dirty: boolean,
 	closing: boolean,
 	prizes: number, -- prize eggs queued but not yet stored, so a lost lock can say so
+	trades: number, -- trade and undo ops queued but not yet stored (the heal covers them next load)
+	ready: boolean, -- false until the trade heal ran: Profiles.get hides the profile from the router until then
 }
 local sessions: { [Player]: Session } = {}
 local changed = Instance.new("BindableEvent")
@@ -102,6 +108,7 @@ local function withRetries(label: string, operation: () -> any, deadline: number
 	end
 	return false, lastError
 end
+Profiles.withRetries = withRetries
 
 -- Mirrors the profile onto the player for the client UI and the leaderboard columns.
 local function publish(player: Player, profile: Profile)
@@ -111,6 +118,8 @@ local function publish(player: Player, profile: Profile)
 	player:SetAttribute("Income", income)
 	player:SetAttribute("Level", GardenProgress.levelFor(profile.xp))
 	player:SetAttribute("XP", profile.xp)
+	local follower = GardenRules.follower(profile)
+	player:SetAttribute("Follower", if follower then follower.id else 0)
 	local live = State.live[player]
 	if live then
 		player:SetAttribute("Plot", live.plot)
@@ -146,6 +155,7 @@ local function flush(
 	session.lastWrite = now
 	local ops = session.queue
 	local prizes = session.prizes
+	local trades = session.trades
 	session.queue = {}
 	local lost = false
 	local ok, stored = withRetries(`flush {player.UserId}`, function()
@@ -172,10 +182,17 @@ local function flush(
 		session.queue = {}
 		if not session.closing then
 			player:SetAttribute("ProfileOnline", false)
-			Remotes.notice(player, if session.prizes > 0 then PRIZE_LOST_TEXT else OFFLINE_TEXT)
+			Remotes.notice(
+				player,
+				if session.prizes > 0
+					then PRIZE_LOST_TEXT
+					elseif session.trades > 0 then TRADE_LOST_TEXT
+					else OFFLINE_TEXT
+			)
 		end
 	elseif ok and stored ~= nil then
 		session.prizes -= prizes
+		session.trades -= trades
 		local p = GardenProgress.sanitize(stored, now)
 		for _, op in session.queue do
 			p = op(p)
@@ -207,6 +224,8 @@ function Profiles.apply(player: Player, label: string, change: Change)
 		table.insert(session.queue, change)
 		if label == "dashPrize" then
 			session.prizes += 1
+		elseif label == "trade" or label == "tradeUndo" then
+			session.trades += 1
 		end
 	end
 	publish(player, session.profile)
@@ -242,7 +261,7 @@ end
 
 function Profiles.get(player: Player): Profile?
 	local session = sessions[player]
-	return session and session.profile
+	return if session and session.ready then session.profile else nil
 end
 
 function Profiles.isOnline(player: Player): boolean
@@ -263,12 +282,20 @@ function Profiles.load(player: Player)
 		dirty = false,
 		closing = false,
 		prizes = 0,
+		trades = 0,
+		ready = false,
 	}
 	local busy = false
+	local newer: any = nil
 	if okStore then
 		-- Claims the lock (3 tries, 2 s and 4 s apart, so an old server's final write can land first).
 		local ok, record = withRetries(`load {player.UserId}`, function()
 			local stored = (store :: DataStore):UpdateAsync(keyFor(player), function(old: any)
+				-- A save from a newer build is played read-only, never written by this one (QA m6).
+				newer = if GardenProgress.isNewer(old) then old else nil
+				if newer then
+					return nil
+				end
 				busy = not GardenProgress.canClaim(old, session.id, now)
 				if busy then
 					return nil
@@ -280,7 +307,10 @@ function Profiles.load(player: Player)
 			end
 			return stored
 		end)
-		if ok then
+		if newer then
+			warn(`[Profiles] {player.UserId} has schemaVersion {newer.schemaVersion}; this build plays it unsaved`)
+			session.profile = GardenProgress.sanitize(newer, now)
+		elseif ok then
 			session.online = true
 			session.profile = GardenProgress.sanitize(record, now)
 		end
@@ -294,6 +324,20 @@ function Profiles.load(player: Player)
 	apply(player, "login", function(p)
 		return (GardenProgress.login(p, now, today))
 	end)
+	-- The trade heal (garden.md 4.5) reads the ledger and may yield; the router sees no profile until
+	-- it is done. Only a saving session heals: an offline one would heal in memory and lose it anyway.
+	-- A heal that could not read the ledger starts the session offline (the login op is dropped
+	-- unwritten), so a half-written trade is never played past before a later load heals it (QA M1).
+	if session.online and player.Parent ~= nil then
+		local ok, healed = pcall(Trades.heal, player, session.profile)
+		if not (ok and healed) then
+			warn(`[Profiles] trade heal {player.UserId} failed ({tostring(healed)}); saving is off for this session`)
+			session.online = false
+			session.queue = {}
+			player:SetAttribute("ProfileOnline", false)
+		end
+	end
+	session.ready = true
 	if player.Parent == nil then
 		-- Left while loading (GardenServer's leave found no session): write the login, release the lock.
 		Profiles.finish(player, os.time())
@@ -354,12 +398,15 @@ local ACTIONS: { [string]: Handler } = {
 		end
 		return GardenProgress.release(p, id, today)
 	end,
-	favourite = function(p, _, _, arg)
+	favourite = function(p, now, _, arg)
 		local id = idOf(arg)
 		if id == nil then
 			return p, false
 		end
-		return GardenRules.favourite(p, id)
+		return GardenProgress.favourite(p, id, now)
+	end,
+	claimMilestone = function(p, _, _, arg)
+		return GardenProgress.claimMilestone(p, tonumber(arg) or 0)
 	end,
 	setGate = function(p, _, _, arg)
 		if arg == nil then
@@ -392,11 +439,11 @@ local ACTIONS: { [string]: Handler } = {
 		return GardenProgress.equipCosmetic(p, arg)
 	end,
 	adminGrant = function(p, _, _, arg)
-		local s, m, z = string.match(arg or "", "^(%a+):(%a+):(%a+)$")
+		local s, m, z, c = string.match(arg or "", "^(%a+):(%a+):(%a+):?(%a*)$")
 		if s == nil or m == nil or z == nil then
 			return p, false
 		end
-		return GardenRules.grant(p, s, m, z)
+		return GardenRules.grant(p, s, m, z, if c ~= "" then c else nil)
 	end,
 }
 

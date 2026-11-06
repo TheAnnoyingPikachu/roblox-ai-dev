@@ -3,7 +3,9 @@
 -- format), level and XP bar, Index count, weather chip with the next two windows, restock and
 -- next-ripe timers, quick buttons with the gold dots, HOME and LIKE, the "While you were away" card,
 -- hatch announcement banners, first-session prompts with a guide beam, and per-viewer bed prompt
--- visibility. Sends only Request("home") and Request("like", userId); the server checks both.
+-- visibility; v0.4: 7 weathers, the weekend event line, the INDEX milestone dot and the TRADE button
+-- for a friend within 15 studs. Sends only Request("home"), Request("like", userId) and
+-- Request("tradePropose", userId); the server checks all three.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -138,7 +140,7 @@ local indexText = text({
 local timers = chip({
 	AnchorPoint = Vector2.new(1, 0),
 	Position = UDim2.new(1, -12, 0, 12),
-	Size = UDim2.fromOffset(250, 128),
+	Size = UDim2.fromOffset(250, 152),
 	Parent = hud,
 })
 ClientState.autoScale(timers)
@@ -178,8 +180,9 @@ local function timerLine(y: number, colour: Color3): TextLabel
 	})
 end
 local forecastText = timerLine(52, UI.MUTED)
-local restockText = timerLine(76, UI.CORAL)
-local ripeText = timerLine(100, UI.LEAF)
+local eventText = timerLine(76, UI.LILAC) -- "This weekend: Thunder" (V2.3)
+local restockText = timerLine(100, UI.CORAL)
+local ripeText = timerLine(124, UI.LEAF)
 
 -- Quick buttons (left middle, clear of the thumbstick and jump button) ---------------------------
 
@@ -193,6 +196,7 @@ local quick = new("Frame", {
 ClientState.autoScale(quick)
 local rewardsDot: Frame
 local dashDot: Frame
+local indexDot: Frame
 local quickButtons: { [string]: TextButton } = {}
 local function goldDot(parent: Instance): Frame
 	return new("Frame", {
@@ -240,7 +244,19 @@ for i, item in QUICK do
 		rewardsDot = goldDot(b)
 	elseif item[2] == "Dash" then
 		dashDot = goldDot(b)
+	elseif item[2] == "Index" then
+		indexDot = goldDot(b)
 	end
+end
+
+-- A milestone can be claimed (V4): the INDEX gold dot.
+local function milestoneReady(p: any): boolean
+	for _, m in GardenConfig.MILESTONES do
+		if #p.index >= m.at and p.milestones[tostring(m.at)] ~= true then
+			return true
+		end
+	end
+	return false
 end
 
 -- In a race only HOME stays (it leaves the round), and the race timer takes the coin bar's place.
@@ -270,6 +286,25 @@ likeButton.Activated:Connect(function()
 	end
 end)
 
+-- TRADE: the nearest Roblox friend within TRADE.range, while no trade is live and the setting is on (V1).
+local tradeButton = button({
+	AnchorPoint = Vector2.new(0.5, 1),
+	Position = UDim2.new(0.5, 0, 1, if touchOnly then -210 else -150),
+	Size = UDim2.fromOffset(220, 54),
+	Text = "TRADE",
+	BackgroundColor3 = UI.AQUA,
+	Visible = false,
+	Parent = hud,
+}, function() end)
+ClientState.autoScale(tradeButton)
+local tradeTarget: Player? = nil
+tradeButton.Activated:Connect(function()
+	local target = tradeTarget
+	if target and not ask("tradePropose", tostring(target.UserId)) then
+		ClientState.toast("Could not ask for a trade right now", UI.CORAL)
+	end
+end)
+
 -- Profile-driven text -------------------------------------------------------------------------------
 
 local profile: any = ClientState.profile()
@@ -295,6 +330,7 @@ local function refresh()
 	indexText.Text = `Index {#profile.index} / {GardenConfig.INDEX_SIZE}`
 	rewardsDot.Visible = ClientState.rewardsReady(profile)
 	dashDot.Visible = ClientState.prizeReady(profile)
+	indexDot.Visible = milestoneReady(profile)
 	if lastLevel and level > lastLevel then
 		ClientState.toast(`LEVEL UP! Level {level}`, UI.GOLD)
 		ClientState.sound(ClientState.SFX.fanfare, 0.45)
@@ -326,6 +362,9 @@ local function refreshTimers()
 	local f1, f2 = status.forecast[1] or "clear", status.forecast[2] or "clear"
 	forecastText.Text =
 		`Next: {ClientState.weatherName(f1)} in {ClientState.clock(nextStart - now)}, then {ClientState.weatherName(f2)}`
+	local event = ClientState.weatherName(status.event.weather)
+	eventText.Text = if status.event.active then `{event} weekend!` else `This weekend: {event}`
+	eventText.TextColor3 = ClientState.WEATHER_COLOURS[status.event.weather] or UI.LILAC
 	restockText.Text = `Egg restock in {ClientState.clock(ClientState.left(status.stockLeft))}`
 	local soonest: number? = nil
 	local ripe = 0
@@ -451,7 +490,11 @@ fx.OnClientEvent:Connect(function(kind: string, data: any)
 		local m = GardenConfig.mutation(data.m)
 		local z = GardenConfig.size(data.z)
 		local sp = GardenConfig.species(data.s)
+		local charm = GardenConfig.charm(tostring(data.c))
 		local words = {}
+		if charm then
+			table.insert(words, string.upper(charm.name))
+		end
 		if z and data.z ~= "normal" then
 			table.insert(words, string.upper(z.name))
 		end
@@ -537,6 +580,29 @@ local function updatePrompts()
 				end
 			end
 		end
+	end
+end
+
+local function updateTrade()
+	local r = root()
+	tradeTarget = nil
+	if r and ClientState.settings.trades and ClientState.tradeState == nil then
+		local best: Player? = nil
+		local bestD = GardenConfig.TRADE.range
+		for _, other in Players:GetPlayers() do
+			local orr = other ~= player and other.Character and other.Character:FindFirstChild("HumanoidRootPart")
+			if orr and orr:IsA("BasePart") and isFriend(other.UserId) then
+				local d = (Vector3.new(orr.Position.X, 0, orr.Position.Z) - Vector3.new(r.Position.X, 0, r.Position.Z)).Magnitude
+				if d <= bestD then
+					best, bestD = other, d
+				end
+			end
+		end
+		tradeTarget = best
+	end
+	tradeButton.Visible = tradeTarget ~= nil
+	if tradeTarget then
+		tradeButton.Text = `TRADE WITH {string.upper(tradeTarget.DisplayName)}`
 	end
 end
 
@@ -751,11 +817,13 @@ task.spawn(function()
 		if hud.Visible and not ClientState.racing then
 			updateTutorial()
 			updateLike()
+			updateTrade()
 			markerText.Position = UDim2.fromOffset(0, math.sin(os.clock() * 4) * 4)
 		else
 			tutorial.Visible = false
 			beam.Enabled = false
 			marker.Enabled = false
+			tradeButton.Visible = false
 		end
 		if tick % 4 == 0 then
 			refreshTimers()

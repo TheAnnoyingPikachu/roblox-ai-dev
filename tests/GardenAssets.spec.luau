@@ -38,16 +38,29 @@ describe("GardenAssets", function()
 		expect(total).toBe(count)
 	end)
 
-	it("uses positive whole asset ids or nil, and a texture only with a model", function()
-		for _, asset in GardenAssets do
+	it("uses positive whole asset ids or nil, and a texture only with a model or on a decal-only asset", function()
+		for name, asset in GardenAssets do
 			for _, id in { asset.model, asset.decal, asset.texture } do
 				expect(id == nil or (id > 0 and id == math.floor(id))).toBe(true)
 			end
-			if asset.model == nil then
+			if asset.model == nil and not manifest[name].decal_only then
 				expect(asset.decal).toBeNil()
 				expect(asset.texture).toBeNil()
 			end
 		end
+	end)
+
+	-- QA m2: Models fits a model to its manifest height, so a model id on a flat asset made
+	-- ScaleTo(0) throw at every server start. The Clover pad is a decal on the pad top (9.2).
+	it("gives a model id only to assets with a height, and the Clover pad none", function()
+		for _, asset in GardenAssets do
+			if asset.model ~= nil then
+				expect(asset.size[2] > 0).toBe(true)
+			end
+		end
+		expect(manifest.pad_clover.decal_only).toBe(true)
+		expect(GardenAssets.pad_clover.model).toBeNil()
+		expect(GardenAssets.pad_clover.decal == nil).toBe(false)
 	end)
 
 	-- docs/architecture/garden.md section 9: the loader drops pivots and Plots.egg keeps one MeshPart.

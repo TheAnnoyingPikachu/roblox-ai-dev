@@ -641,6 +641,40 @@ describe("TradeRules.heal (V1.4 step 4)", function()
 		expect(two.trades[1].id).toBe("00000000000000aa")
 	end)
 
+	-- QA B1: a commit cancelled after both ledger writes voids both copies; when only one void mark
+	-- lands, neither heal may complete the trade (it used to give one child a copy of the other's
+	-- creature while the other kept it: two Golden Lions and no Dragon).
+	it("one copy void: neither heal completes a cancelled trade, whichever mark landed", function()
+		local L = ledger()
+		local void = table.clone(L)
+		void.void = true
+		expect(TradeRules.confirms(L)).toBe(true)
+		expect(TradeRules.confirms(void)).toBe(false)
+		expect(TradeRules.confirms(nil)).toBe(false)
+		for _, copies in { { [A] = void, [B] = L }, { [A] = L, [B] = void }, { [A] = void, [B] = void } } do
+			local a, b = profileA(), profileB()
+			-- Each heal reads its own copy and asks the counterpart's copy, as Trades.heal does.
+			local healedA = TradeRules.heal(a, A, { copies[A] }, function(_)
+				return TradeRules.confirms(copies[B])
+			end, NOW + 100)
+			local healedB = TradeRules.heal(b, B, { copies[B] }, function(_)
+				return TradeRules.confirms(copies[A])
+			end, NOW + 100)
+			expect(healedA).toBe(a)
+			expect(healedB).toBe(b)
+		end
+		-- Neither void (every mark lost): both heal to the one commit, still no duplicate (V1.4 residual).
+		local healedA = TradeRules.heal(profileA(), A, { L }, function(_)
+			return TradeRules.confirms(L)
+		end, NOW + 100)
+		local healedB = TradeRules.heal(profileB(), B, { L }, function(_)
+			return TradeRules.confirms(L)
+		end, NOW + 100)
+		expect(GardenRules.find(healedA, 1)).toBeNil()
+		expect(GardenRules.find(healedB, 5)).toBeNil()
+		expect(healedA.creatures[1].s .. " " .. healedB.creatures[1].s).toBe("hedgehog cat")
+	end)
+
 	it("heals the half that a crash left out so both profiles end up as one commit would", function()
 		local L = ledger()
 		local a = TradeRules.give(profileA(), A, L, DAY) -- A flushed

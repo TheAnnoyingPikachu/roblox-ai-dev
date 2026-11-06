@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-032",
   "owner": "A15",
   "verifier": "A04",
@@ -35,5 +35,14 @@
     "docs/checkpoints/GARDEN-V04.md"
   ],
   "tests": [],
-  "notes": "Reviewer must not have written GARDEN-028, 029, 030 or 031 (CLAUDE.md rule 2). The trade write order (ledger first, two applies in one step, heal at load) is the item to attack hardest: try a crash between the two flushes with the fake DataStore. Studio facts count only with the build stamp (rule 13)."
+  "notes": "Reviewer must not have written GARDEN-028, 029, 030 or 031 (CLAUDE.md rule 2). The trade write order (ledger first, two applies in one step, heal at load) is the item to attack hardest: try a crash between the two flushes with the fake DataStore. Studio facts count only with the build stamp (rule 13).",
+  "evidence": [
+    "Review docs/qa/garden-v04-review.md (A15, 2026-11-06) at garden/v04 378a301 against origin/main ffd9f71: verdict FIX FIRST, 1 blocker, 3 major, 8 minor.",
+    "B1 blocker src/garden/Trades.luau:543: the heal confirms a trade from a counterpart ledger copy marked void; a commit cancelled after both ledger writes (leave or offline mid-commit, or the second-write path) with one of the two best-effort void marks lost duplicates one creature and loses the other at the next login (Computed: Golden Lion for Dragon gives two Golden Lions). Fix: confirmed only when the counterpart copy exists and is not void.",
+    "M1 major Trades.luau:514-527 with Profiles.luau:320-326: a failed ledger read skips the heal but the session saves and acts, so a lost half can no longer heal (duplicate plus loss). M2 major Trades.luau:420-441: undo yields between canUndo and the applies with the received creatures unlocked; a release or another commit in that second leaves one side undone. M3 major ClientState.luau:414-448 (Director a): the follower trails on the walk line and blocks the camera.",
+    "Minors: m1 pad tag overlap (Director b), m2 pad_clover height 0 loaded as a Model, ScaleTo(0) error and a stuck nightLoading flag (Director c), m3 Clover decal and Starlit models unused, documented fallback (Director d), m4 no register rows for 11 uploaded models, m5 wheel spin across 00:00 UTC announced but not applied, m6 newer-schemaVersion guard still missing, m7 failed IsFriendsWith cached as not friends, m8 unguarded commit thread. Director e (asset 203785492) is Studio itself, an audio asset requested as a texture, in every Studio session log and nowhere in the repo or place; f needs nothing more than the 6 already set on the published place.",
+    "Verified clean: friends both ways, one creature for one, favourites and every non-creature excluded, fairness and day limit from server profiles at commit, 10 s hold, both confirm, 15 studs and same server throughout, emotes only, no Index/XP/coins, crash between the applies heals to one commit (heal twice too), double confirm, unforgeable undo ids; names filtered with GetNonChatStringForBroadcastAsync and failing closed, never in announce or the board; 0015 values, 49 pairs under 60% (worst 56.41% Meadow in Rainbow Shower), weekend schedule, literal v0.3 save field for field under schema v3; BedFx and follower budgets; ten new Request actions under the router checks.",
+    "Local tool runs at 378a301: lune run tests/run 551/551 passed (test-results.json deleted); reviewer script against the real pure modules 230 checks pass plus the deliberate B1 reproduction; selene 0/0/0; stylua --check clean on 34 LF blobs; rojo build + check-place match (stamp dev); validate-tasks 68 valid; check-scope 104 files in scope. No CI run link yet.",
+    "Not done here: the two-client Studio trade with DataStores on and a forced flush failure (needs the staging place), and the checkpoint evidence block in docs/checkpoints/GARDEN-V04.md (after B1, M1 to M3 are fixed)."
+  ]
 }

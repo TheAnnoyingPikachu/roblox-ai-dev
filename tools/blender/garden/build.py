@@ -72,6 +72,8 @@ def main():
             "notes": asset.get("notes", ""),
             # Neon colour (sRGB) per glow mesh; the game sets those meshes to Neon in it.
             "glow": {f"{name}_{part}": list(rgb) for part, rgb in asset.get("glow", {}).items()},
+            # Uploaded only as a Decal image: GardenAssets gets no model id for it (QA m2).
+            **({"decal_only": True} if asset.get("decal_only") else {}),
         }
         print(f"[garden] {name}: {stats['tris']} tris{' OVER BUDGET' if over else ''}, {time.time() - started:.0f}s", flush=True)
     order = [a["name"] for a in all_specs if a["name"] in manifest]

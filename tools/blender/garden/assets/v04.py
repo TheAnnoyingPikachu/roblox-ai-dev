@@ -158,5 +158,5 @@ ASSETS = [
     dict(name="fence_starlit_rail", build=fence_starlit_rail, budget=600, size=[6, 0.4, 0.3], priority=2, order=51, replaces="Plots.refresh fence rail part when fence == starlit",
          notes="Runs along X, stands on the origin; stars on both faces so either side can face out.", glow={}),
     dict(name="pad_clover", build=pad_clover, budget=100, size=[5, 0.1, 5], priority=2, order=52, replaces="plain green pad (Decal on the pad top when pad == clover)",
-         notes="A decal, not a model: use the texture id on a Decal on the pad top face over pad colour (120, 190, 90); the flat quad FBX only carries it through the upload. 1024 baked, downscale to 256 at upload if required.", glow={}),
+         notes="A decal, not a model: use the texture id on a Decal on the pad top face over pad colour (120, 190, 90); the flat quad FBX only carries it through the upload. 1024 baked, downscale to 256 at upload if required.", glow={}, decal_only=True),
 ]

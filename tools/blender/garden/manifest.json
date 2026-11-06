@@ -1554,6 +1554,7 @@
     "replaces": "plain green pad (Decal on the pad top when pad == clover)",
     "script": "tools/blender/garden/assets/v04.py",
     "notes": "A decal, not a model: use the texture id on a Decal on the pad top face over pad colour (120, 190, 90); the flat quad FBX only carries it through the upload. 1024 baked, downscale to 256 at upload if required.",
-    "glow": {}
+    "glow": {},
+    "decal_only": true
   }
 }

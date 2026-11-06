@@ -9,6 +9,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TextService = game:GetService("TextService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
@@ -23,6 +24,7 @@ local Plots = require(script.Parent:WaitForChild("Plots"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))
 local Remotes = require(script.Parent:WaitForChild("Remotes"))
 local State = require(script.Parent:WaitForChild("State"))
+local Trades = require(script.Parent:WaitForChild("Trades"))
 local World = require(script.Parent:WaitForChild("World"))
 
 type Vec3 = GardenRules.Vec3
@@ -35,9 +37,20 @@ local BOARD_REFRESH = 60
 local FULL_TEXT = "Your garden is full: release or store a creature"
 local WAIT_TEXT = "Every garden here is taken. You will get the next one that frees up."
 local WAIT_REPEAT = 10 -- seconds between reminders while waiting for a plot
+local NAME_FILTER_TEXT = "That name could not be checked. Try again in a moment."
+local NAME = GardenConfig.NAME
 
--- Request actions (decision 0008): true takes a string argument, false takes none.
+-- Request actions (decision 0008, 0015): true takes a string argument, false takes none.
 local REQUEST_ARGS: { [string]: boolean } = {
+	tradePropose = true,
+	tradeAccept = false,
+	tradeCancel = false,
+	tradeConfirm = false,
+	tradePick = true,
+	tradeEmote = true,
+	tradeUndo = true,
+	name = true,
+	claimMilestone = true,
 	buyEgg = true,
 	plantPrize = true,
 	dashReady = false,
@@ -59,20 +72,44 @@ local REQUEST_ARGS: { [string]: boolean } = {
 	wheelStart = false,
 }
 -- Actions whose argument is a creature id or UserId (must match ^%d+$).
-local ID_ARGS: { [string]: boolean } = { place = true, store = true, release = true, favourite = true, like = true }
+local ID_ARGS: { [string]: boolean } = {
+	place = true,
+	store = true,
+	release = true,
+	favourite = true,
+	like = true,
+	tradePropose = true,
+	tradePick = true,
+	tradeEmote = true,
+}
+-- Creature actions refused while the creature is picked in a live trade (GDD V1.3).
+local LOCKABLE: { [string]: boolean } = { place = true, store = true, release = true, favourite = true }
+local TRADE_ACTIONS: { [string]: string } = {
+	tradeAccept = "accept",
+	tradeCancel = "cancel",
+	tradeConfirm = "confirm",
+	tradePick = "pick",
+	tradeEmote = "emote",
+}
+local MILESTONES: { [string]: boolean } = {}
+for _, m in GardenConfig.MILESTONES do
+	MILESTONES[tostring(m.at)] = true
+end
 
 Models.preloadGarden()
 local world = World.build()
 local Dash = require(script.Parent:WaitForChild("Dash")) -- builds the island under Workspace.Garden
 local Wheel = require(script.Parent:WaitForChild("Wheel")) -- builds the Petal Patch under Workspace.Garden
 
--- Every Dash or Wheel call from a gardening path goes through this, so a mini-game fault never stops
--- the pads, a teleport home or a save.
-local function guarded(name: string, fn: () -> ())
-	local ok, err = pcall(fn)
+-- Every Dash, Wheel and Trades call from a gardening path goes through this, so a fault there never
+-- stops the pads, a teleport home or a save. Returns what `fn` returns, nil on a fault.
+local function guarded<T>(name: string, fn: () -> T): T?
+	local ok, result = pcall(fn)
 	if not ok then
-		warn(`[GardenServer] {name} failed: {tostring(err)}`)
+		warn(`[GardenServer] {name} failed: {tostring(result)}`)
+		return nil
 	end
+	return result
 end
 
 local function vec(v: Vector3): Vec3
@@ -112,6 +149,15 @@ local function isFriend(viewer: Player, owner: Player, wait: boolean): boolean
 		local friend = ok and result == true
 		if State.live[viewer] == live then
 			live.friends[owner.UserId] = friend
+			if not ok then
+				-- A failed lookup counts as "not friends" (gates stay closed) for 30 s only, then is
+				-- asked again, so two friends are not refused a trade for the session (QA m7).
+				task.delay(30, function()
+					if live.friends[owner.UserId] == false then
+						live.friends[owner.UserId] = nil
+					end
+				end)
+			end
 		end
 		return friend
 	end
@@ -147,7 +193,66 @@ local function admit(player: Player): (State.Live?, GardenConfig.Profile?)
 	return live, profile
 end
 
+Trades.deps = {
+	get = Profiles.get,
+	isOnline = Profiles.isOnline,
+	apply = Profiles.apply,
+	withRetries = Profiles.withRetries,
+	storeSuffix = Profiles.storeSuffix,
+	playerOf = function(id: number): Player?
+		return Players:GetPlayerByUserId(id)
+	end,
+	rootPos = rootPos,
+	isFriend = function(a: Player, b: Player): boolean
+		return isFriend(a, b, true)
+	end,
+	send = Remotes.fxTo,
+	notice = Remotes.notice,
+}
+
 -- Request remote (decision 0008) ------------------------------------------------------------
+
+-- Pet name (garden.md 4.6): the one request that yields (the filter) before its apply. The cooldown
+-- and the per-creature count are spent before the filter, so a failed filter still costs one.
+local function name(player: Player, live: State.Live, profile: GardenConfig.Profile, arg: string): boolean
+	local idText, raw = string.match(arg, "^(%d+):(.+)$")
+	local id = tonumber(idText)
+	local wanted = if raw then GardenRules.validName(raw) else nil
+	if id == nil or wanted == nil or GardenRules.find(profile, id) == nil or Trades.locked(player, id) then
+		return false
+	end
+	if os.clock() - live.nameAt < NAME.cooldown then
+		return false
+	end
+	local today = MetaRules.dayOf(os.time())
+	local renames = live.renames[id]
+	if renames == nil or renames.day ~= today then
+		renames = { day = today, count = 0 }
+		live.renames[id] = renames
+	end
+	if renames.count >= NAME.perDay then
+		return false
+	end
+	live.nameAt = os.clock()
+	renames.count += 1
+	local ok, result = pcall(function()
+		return TextService:FilterStringAsync(wanted, player.UserId):GetNonChatStringForBroadcastAsync()
+	end)
+	if not ok or type(result) ~= "string" or result == "" then
+		Remotes.notice(player, NAME_FILTER_TEXT)
+		return false
+	end
+	-- After the yield: the creature may have been released or picked.
+	local current = Profiles.get(player)
+	if current == nil or GardenRules.find(current, id) == nil or Trades.locked(player, id) then
+		return false
+	end
+	local filtered = result :: string
+	Profiles.apply(player, "name", function(p)
+		return (GardenRules.setName(p, id, filtered))
+	end)
+	return true
+end
 
 local function like(player: Player, arg: string): boolean
 	local target = Players:GetPlayerByUserId(tonumber(arg) or 0)
@@ -195,7 +300,32 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 	if action == "adminGrant" and not GardenConfig.ADMINS[player.UserId] then
 		return false
 	end
-	if action == "buyEgg" then
+	if LOCKABLE[action] and Trades.locked(player, tonumber(arg) :: number) then
+		return false
+	end
+	local tradeAction = TRADE_ACTIONS[action]
+	if tradeAction then
+		return guarded("trade act", function()
+			return Trades.act(player, tradeAction :: any, if arg then tonumber(arg) else nil)
+		end) == true
+	elseif action == "tradePropose" then
+		return guarded("trade propose", function()
+			return Trades.propose(player, tonumber(arg) :: number)
+		end) == true
+	elseif action == "tradeUndo" then
+		if #arg ~= 16 or string.match(arg, "^%x+$") == nil then
+			return false
+		end
+		return guarded("trade undo", function()
+			return Trades.undo(player, arg)
+		end) == true
+	elseif action == "name" then
+		return name(player, live, profile, arg)
+	elseif action == "claimMilestone" then
+		if not MILESTONES[arg] then
+			return false
+		end
+	elseif action == "buyEgg" then
 		local root = rootPos(player)
 		if root == nil or not GardenRules.within(root, world.cart, GardenConfig.RANGE.cart) then
 			return false
@@ -254,15 +384,24 @@ local function hatch(player: Player, profile: GardenConfig.Profile, bed: number)
 		return
 	end
 	-- Fired before the model appears so the client can hide it until its reveal ends.
-	Remotes.fx(
-		"hatch",
-		{ owner = player.UserId, bed = bed, id = profile.nextId, s = outcome.s, m = outcome.m, z = outcome.z }
-	)
+	Remotes.fx("hatch", {
+		owner = player.UserId,
+		bed = bed,
+		id = profile.nextId,
+		s = outcome.s,
+		m = outcome.m,
+		z = outcome.z,
+		c = outcome.c,
+	})
 	Profiles.apply(player, "hatch", function(p)
 		return (GardenProgress.hatch(p, bed, outcome, now, today))
 	end)
 	if HatchRules.announce(outcome) then
-		Remotes.fx("announce", { name = player.DisplayName, s = outcome.s, m = outcome.m, z = outcome.z })
+		-- Never a pet name here (GDD V5): a hatchling has none, and the species is all the valley sees.
+		Remotes.fx(
+			"announce",
+			{ name = player.DisplayName, s = outcome.s, m = outcome.m, z = outcome.z, c = outcome.c }
+		)
 	end
 end
 
@@ -429,9 +568,13 @@ local function slowTick()
 		stockLeft = WorldRules.restockLeft(now),
 		stockWindow = window,
 		stock = WorldRules.stockFor(window),
+		event = WorldRules.eventStatus(now),
 	}
 	guarded("dash status", function()
 		status.dash = Dash.status()
+	end)
+	guarded("trade tick", function()
+		Trades.step(now)
 	end)
 	local json = HttpService:JSONEncode(status)
 	if json ~= lastStatus then
@@ -502,6 +645,9 @@ local function onPlayer(player: Player)
 		friends = {},
 		boardIncome = -1,
 		boardAt = 0,
+		nameAt = -math.huge,
+		renames = {},
+		declined = {},
 	}
 	player:SetAttribute("Plot", plot)
 	player.CharacterAdded:Connect(function(character)
@@ -533,6 +679,9 @@ end
 -- Leave (GDD L): bank every pad, free the plot (a waiting player can take it during the final
 -- write, which needs no plot), then the final write.
 local function onLeave(player: Player)
+	guarded("trade leave", function()
+		Trades.leave(player)
+	end)
 	guarded("dash leave", function()
 		Dash.leave(player)
 	end)
@@ -568,6 +717,7 @@ end
 Players.PlayerRemoving:Connect(onLeave)
 
 game:BindToClose(function()
+	guarded("trade close", Trades.close)
 	guarded("dash close", Dash.close)
 	guarded("wheel close", Wheel.close)
 	local now = os.time()
