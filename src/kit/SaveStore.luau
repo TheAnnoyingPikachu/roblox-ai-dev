@@ -14,6 +14,9 @@
 --   * A failed flush puts its changes back at the front of the queue.
 --   * A write that finds the lock gone or taken writes nothing and the session goes offline.
 --   * `finish` writes once more and releases the lock.
+--   * With the `newer` option, a stored record it calls newer (written by a later build, before a
+--     rollback) loads read-only: sanitised in memory, offline, never locked or written, so its
+--     unknown fields survive.
 --
 -- Changes must be pure functions of the profile that capture their own inputs (now, ids): the same
 -- function runs on the in-memory copy and again on the stored copy inside UpdateAsync.
@@ -32,6 +35,7 @@ export type Options<P> = {
 	defaults: (now: number) -> P,
 	sanitize: (record: any, now: number) -> P,
 	snapshot: ((p: P, now: number) -> P)?, -- runs last on every write (lastSeen and so on)
+	newer: ((record: any) -> boolean)?, -- true: the stored record is from a newer schema, load it read-only
 	wait: (seconds: number) -> (),
 	clock: () -> number, -- monotonic seconds, for budgets
 	newId: () -> string, -- one id per load (lock owner)
@@ -135,8 +139,14 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 	}
 	if o.store then
 		local busy = false
+		local newer: any = nil
 		local ok, record = withRetries(self, `load {key}`, function()
+			newer = nil
 			local stored = o.store:UpdateAsync(key, function(old: any)
+				if o.newer and old ~= nil and o.newer(old) then
+					newer = old -- cancel: no lock claim, nothing written
+					return nil
+				end
 				busy = not SaveLock.canClaim(old, session.id, now, self.lockStale)
 				if busy then
 					return nil
@@ -148,7 +158,10 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 			end
 			return stored
 		end)
-		if ok then
+		if ok and newer ~= nil then
+			log(self, `{key} has a newer save; this session is read-only`)
+			session.profile = o.sanitize(newer, now)
+		elseif ok then
 			session.status = "online"
 			session.profile = o.sanitize(record, now)
 		elseif busy then

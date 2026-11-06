@@ -4,7 +4,7 @@ Use these in every new game instead of copying another game's `Profiles.luau` or
 
 | Module | Use it for | Tested in |
 |---|---|---|
-| `SaveStore` | Session-locked, coalesced saves. Inject `defaults`, `sanitize`, `snapshot`. | `tests/SaveStore.spec.luau` |
+| `SaveStore` | Session-locked, coalesced saves. Inject `defaults`, `sanitize`, `snapshot`; optional `newer` (a newer-schema record loads read-only, never written). | `tests/SaveStore.spec.luau` |
 | `SaveLock` | The lock on a stored record (`canClaim`, `holds`, `stamp`). | `tests/SaveStore.spec.luau` |
 | `Router` | Server request routing: loading, rate, unknown, payload, handler, in that order. | `tests/Kit.spec.luau` |
 | `Payload` | Argument validators: `string`, `int`, `number`, `boolean`, `enum`, `optional`, `check`. | `tests/Kit.spec.luau` |
@@ -15,6 +15,10 @@ Use these in every new game instead of copying another game's `Profiles.luau` or
 Roblox adapters in `src/kit-roblox/modules` (not unit-tested, keep them thin):
 `Saves.start{...}` (DataStore, PlayerRemoving, BindToClose, 1 Hz flush), `Remotes.create(name, router)`,
 `Ui` (screen, panel, label, button, toast, `setTheme`).
+`UiKit` (the studio UI kit from Egg Garden, architecture garden 6.4: `configure{ tokens, fonts, icons, sound, short,
+rarity, species, previews, accent, menu }` once, then `scaleRoot`, `panel`, `modal`, `button`, `iconButton`, `strip`, `coinPill`,
+`levelRing`, `card`, `grid`, `row`, `bar`, `chip`, `toast`, `startMenu`, `viewport`, `flyTo`; 12 px text minimum, Reduced Motion).
+New games use `UiKit`, not `Ui`.
 
 Rules:
 - Everything in `src/kit` is pure: no Roblox globals (`Purity.spec` enforces it). Services are injected.

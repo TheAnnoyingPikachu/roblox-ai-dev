@@ -32,6 +32,7 @@ export type Options = {
 	defaults: (now: number) -> any,
 	sanitize: (record: any, now: number) -> any,
 	snapshot: ((p: any, now: number) -> any)?,
+	newer: ((record: any) -> boolean)?, -- a newer-schema record loads read-only (SaveStore)
 	onChanged: ((player: Player, profile: any) -> ())?,
 	onStatus: ((player: Player, status: string) -> ())?, -- "online" | "busy" | "offline" | "lost"
 	coalesce: number?,
@@ -64,6 +65,7 @@ function Saves.start(options: Options)
 		defaults = options.defaults,
 		sanitize = options.sanitize,
 		snapshot = options.snapshot,
+		newer = options.newer,
 		wait = function(seconds)
 			task.wait(seconds)
 		end,
