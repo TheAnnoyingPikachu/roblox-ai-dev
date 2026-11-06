@@ -219,7 +219,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_phoenix = {
-		size = { 4.6, 5.5, 4.2 },
+		size = { 5.4, 5.5, 4.33 },
 		parts = { "creature_phoenix" },
 		model = 90581200414813,
 		decal = 139466861545053,
@@ -233,7 +233,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_whale = {
-		size = { 6, 4.5, 5 },
+		size = { 5.22, 4.5, 6.77 },
 		parts = { "creature_whale" },
 		model = 81069178979543,
 		decal = 76458339586149,
@@ -247,14 +247,14 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_kirin = {
-		size = { 4.6, 6, 5.2 },
+		size = { 4.34, 6, 3.8 },
 		parts = { "creature_kirin" },
 		model = 117129296366052,
 		decal = 81207337684836,
 		texture = nil,
 	},
 	creature_axolotl = {
-		size = { 3.4, 3, 5 },
+		size = { 3.35, 3, 2.02 },
 		parts = { "creature_axolotl" },
 		model = 125252285057803,
 		decal = 77805312963916,
@@ -296,14 +296,14 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_peacock = {
-		size = { 5, 5.6, 4 },
+		size = { 3.41, 5.6, 3.28 },
 		parts = { "creature_peacock" },
 		model = 134914584957154,
 		decal = 131658517402031,
 		texture = nil,
 	},
 	creature_snowleopard = {
-		size = { 4.6, 5.8, 4.6 },
+		size = { 4.99, 5.8, 3.94 },
 		parts = { "creature_snowleopard" },
 		model = 113991084601632,
 		decal = 87884971615429,

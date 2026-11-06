@@ -754,18 +754,18 @@
     "png": "build/blender/garden/creature_phoenix.png",
     "preview": "build/blender/garden/previews/creature_phoenix.png",
     "size_studs": [
-      4.6,
+      5.4,
       5.5,
-      4.2
+      4.33
     ],
-    "tris": 5682,
+    "tris": 5716,
     "parts": {
-      "creature_phoenix": 5682
+      "creature_phoenix": 5716
     },
     "target_size_studs": [
-      4.6,
+      5.4,
       5.5,
-      4.2
+      4.33
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -804,18 +804,18 @@
     "png": "build/blender/garden/creature_whale.png",
     "preview": "build/blender/garden/previews/creature_whale.png",
     "size_studs": [
-      6.0,
+      5.22,
       4.5,
-      5.0
+      6.77
     ],
-    "tris": 5666,
+    "tris": 4944,
     "parts": {
-      "creature_whale": 5666
+      "creature_whale": 4944
     },
     "target_size_studs": [
-      6.0,
+      5.22,
       4.5,
-      5.0
+      6.77
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -854,18 +854,18 @@
     "png": "build/blender/garden/creature_kirin.png",
     "preview": "build/blender/garden/previews/creature_kirin.png",
     "size_studs": [
-      4.6,
+      4.34,
       6.0,
-      5.2
+      3.8
     ],
-    "tris": 5822,
+    "tris": 5874,
     "parts": {
-      "creature_kirin": 5822
+      "creature_kirin": 5874
     },
     "target_size_studs": [
-      4.6,
+      4.34,
       6.0,
-      5.2
+      3.8
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -879,18 +879,18 @@
     "png": "build/blender/garden/creature_axolotl.png",
     "preview": "build/blender/garden/previews/creature_axolotl.png",
     "size_studs": [
-      3.4,
+      3.35,
       3.0,
-      5.0
+      2.02
     ],
-    "tris": 5484,
+    "tris": 5658,
     "parts": {
-      "creature_axolotl": 5484
+      "creature_axolotl": 5658
     },
     "target_size_studs": [
-      3.4,
+      3.35,
       3.0,
-      5.0
+      2.02
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1029,18 +1029,18 @@
     "png": "build/blender/garden/creature_peacock.png",
     "preview": "build/blender/garden/previews/creature_peacock.png",
     "size_studs": [
-      5.0,
+      3.41,
       5.6,
-      4.0
+      3.28
     ],
-    "tris": 5978,
+    "tris": 5794,
     "parts": {
-      "creature_peacock": 5978
+      "creature_peacock": 5794
     },
     "target_size_studs": [
-      5.0,
+      3.41,
       5.6,
-      4.0
+      3.28
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1054,18 +1054,18 @@
     "png": "build/blender/garden/creature_snowleopard.png",
     "preview": "build/blender/garden/previews/creature_snowleopard.png",
     "size_studs": [
-      4.6,
+      4.99,
       5.8,
-      4.6
+      3.94
     ],
-    "tris": 5430,
+    "tris": 4964,
     "parts": {
-      "creature_snowleopard": 5430
+      "creature_snowleopard": 4964
     },
     "target_size_studs": [
-      4.6,
+      4.99,
       5.8,
-      4.6
+      3.94
     ],
     "tris_budget": 6000,
     "priority": "P1",

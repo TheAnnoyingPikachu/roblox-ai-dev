@@ -11,7 +11,7 @@ from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from creatures_a import capsules, spline, xf  # noqa: E402
-from creatures_b import WHITE, blob  # noqa: E402
+from creatures_b import WHITE, blob, toward  # noqa: E402
 from eggs import fit  # noqa: E402
 
 
@@ -31,14 +31,6 @@ def settle(parts, size):
     for ob in parts:
         ob.data.transform(m)
     return m
-
-
-def mark(m, rgb, p, r, r_in=0.0, below=None):
-    """paint() mark (disc or ring) at build point p, radius r in build studs, after settle(m);
-    `below`: only under that build height."""
-    s = sum(m.to_scale()) / 3
-    out = (rgb, m @ Vector(p), r_in * s, r * s)
-    return out if below is None else out + ((m @ Vector((0, 0, below))).z,)
 
 
 def paddle(length, width, m, thick=0.12, n=10, root=0.3, ease=1.0, name="paddle"):
@@ -307,59 +299,68 @@ def creature_redpanda():
 
 
 def creature_peacock():
-    """HD standard: one fused bird, a gold beak and feet, a crest of three jewel drops and a fan of
-    seven quill feathers, each eye-spot painted after settle as gold, sapphire, teal and a gem
-    core with a glint, on both faces."""
-    head, R = Vector((0, -0.35, 3.3)), 0.92
+    """Remade from the Roblox AI reference (assets/garden/refs/peacock_*.jpg): a plush peacock chick,
+    a huge round sapphire-blue head over a small green bean body, big dark eyes in white rings, a
+    small orange beak, blue wings hanging at its sides, a crest of quills tipped with blue jewels,
+    and a small fan of green tail feathers with gold and blue eye spots standing up behind (the
+    "Jewel Peacock")."""
+    blue_rgb = (52, 126, 204)
+    fur = k.paint("pc_fur", [(0, (28, 84, 160)), (0.5, (44, 112, 192)), (1, (78, 158, 226))], 1.2, 4.6, rest=True, grain=(0.1, 7))
+    green = k.paint("pc_green", [(0, (60, 140, 50)), (1, (130, 200, 80))], 0, 1.8, rest=True, grain=(0.08, 9))
+    head, R = Vector((0, -0.05, 2.97)), 1.6
     body = k.fuse(
         [
-            (head, R, (1.1, 1.0, 0.95)),
-            ((0, -0.2, 2.5), 0.55),  # neck
-            ((0, 0.1, 1.45), 1.0, (0.95, 1.05, 1.0)),  # egg-shaped body
-            ((0, 0.15, 0.72), 0.75, (0.9, 0.95, 0.6)),  # round seat
-            *k.pair((0.8, 0.3, 1.6), 0.36, (0.4, 0.95, 1.15), (0, -12, 0)),  # folded wings
-            ((0, 0.95, 1.4), 0.45, (0.9, 1.0, 0.9)),  # tail base the fan grows from
+            (head, R, (1.08, 0.94, 0.96)),
+            *k.pair((0.8, -0.4, 2.55), 0.7, (1.0, 0.85, 0.8)),  # full cheeks
+            ((0, 0.1, 1.0), 0.95, (1.05, 1.0, 1.0)),  # bean body
+            ((0, 0.1, 0.45), 1.0, (1.08, 1.04, 0.45)),  # flat seat
         ],
-        k.flat((150, 215, 225)),
+        fur,
         tris=2500,
     )
-    gold = k.flat((248, 196, 80))
-    parts = [body, k.capsule((0, -1.08, 3.06), (0, -1.46, 2.97), 0.14, 0.04, gold, n=12, name="beak")]
-    for s in (-1, 1):
-        parts.append(k.sphere(0.24, (s * 0.4, -0.5, 0.18), m=gold, scale=(0.9, 1.45, 0.55), seg=20, rings=6, name="foot"))
-    # Crest: three gold wires, each topped with a teardrop jewel.
+    k.zone(fur, (78, 156, 62), (0, 0.1, 0.5), (1.35, 1.35, 1.15), soft=0.05)  # green body under the blue head
+    k.zone(fur, (126, 196, 84), (0, -0.7, 0.7), (0.6, 0.4, 0.6), soft=0.5)  # lighter breast
+    for s in (-1, 1):  # white ring round each eye
+        p, _ = k.land(body, head, k.outward(s * 27, -20))
+        k.zone(fur, (250, 250, 252), p, (0.52, 0.5, 0.58), soft=0.06)
+    parts = [body]
+    # Wings: blue drops hanging at the sides, darker at the tips.
+    wing = k.paint("pc_wing", [(0, (24, 76, 150)), (0.6, (46, 120, 200)), (1, (70, 150, 220))], 0.3, 1.9, rest=True)
+    wings = k.fuse([*k.pair((1.2, -0.15, 1.05), 0.68, (0.42, 0.8, 1.1), (0, -16, 0))], wing, tris=500, name="wings")
+    parts.append(wings)
+    # Beak: a short orange point between and below the eyes.
+    p, n = k.land(body, head, k.outward(0, -30))
+    parts.append(k.texel(k.capsule(p - n * 0.1, p + n * 0.36 - Vector((0, 0, 0.08)), 0.2, 0.05, k.flat((242, 142, 66)), n=16, name="beak"), k.FACE_TEXEL))
+    # Crest: five quills fanned on the crown, each ending in a round jewel.
     crest = []
-    for dx, h in ((-0.34, 0.62), (0, 0.78), (0.34, 0.62)):
-        root, tip = head + Vector((dx * 0.25, 0.05, 0.8)), head + Vector((dx, 0.12, 0.8 + h))
-        parts.append(k.tube([root, tip], [0.035, 0.025], m=gold, n=4, name="wire"))
-        crest.append(k.capsule(tip - Vector((0, 0, 0.1)), tip + Vector((0, 0, 0.16)), 0.12, 0.03, k.flat((60, 200, 210)), n=10, name="jewel"))
-    parts += crest
-    # The fan, leaning back 25 degrees behind the body.
-    base, lean = Vector((0, 0.95, 1.7)), Matrix.Rotation(math.radians(-25), 4, "X")
-    fan, eyes_at = [], []
-    for i, (a, length) in enumerate(((-66, 2.45), (-44, 3.05), (-22, 3.45), (0, 3.6), (22, 3.45), (44, 3.05), (66, 2.45))):
-        t, length = math.radians(a), length * 1.08
-        d, w = Vector((math.sin(t), 0, math.cos(t))), Vector((math.cos(t), 0, -math.sin(t)))
-        frame = Matrix.Translation(base + Vector((0, 0.04 * abs(i - 3), 0))) @ lean @ Matrix((d, w, (0, 1, 0))).transposed().to_4x4()
-        f = paddle(length, 0.47, k.flat((60, 170, 160)), thick=0.1, n=8, root=0.1, ease=2.2, name="feather")
-        f.data.transform(frame)
-        fan.append(f)
-        eyes_at.append((frame @ Vector((length * 0.76, 0, 0)), frame @ Vector((length * 0.76 + 0.09, 0.07, 0))))
-    parts += fan
-    parts += k.face(body, head, R, skin=(240, 248, 255), nose=None, mouth_kind=None)
-
-    m = settle(parts, SIZE["creature_peacock"])
-    swap(body, k.paint("pc_body", [(0, (40, 140, 165)), (0.35, (80, 190, 210)), (0.62, (220, 240, 250)), (1, (252, 254, 255))], 0.2, 4.6))
-    spots = []
-    for c, glint in eyes_at:
-        spots += [mark(m, (255, 205, 80), c, 0.42), mark(m, (70, 80, 200), c, 0.32), mark(m, (40, 190, 200), c, 0.22),
-                  mark(m, (30, 40, 120), c, 0.13), mark(m, (235, 245, 255), glint, 0.045)]
-    feather = k.paint("pc_feather", [(0, (25, 120, 95)), (0.5, (45, 170, 140)), (1, (95, 215, 200))], 1.6, 5.6, marks=spots)
-    for f in fan:
-        swap(f, feather)
-    for j in crest:
-        lo, hi = k._ground_dims([j])
-        swap(j, k.paint(f"pc_jewel_{len(spots)}_{lo.x:.2f}", [(0, (30, 120, 190)), (1, (110, 230, 230))], lo.z, hi.z))
+    tops = []
+    for a in (-44, -22, 0, 22, 44):
+        t = math.radians(a)
+        root, _ = k.land(body, head, (math.sin(t) * 0.25, 0.1, 1))
+        d = Vector((math.sin(t), 0.2, math.cos(t))).normalized()
+        tip = root + d * 0.85
+        crest += [("capsule", tuple(root - d * 0.1), tuple(tip), 0.065), (tuple(tip + d * 0.08), 0.18, (1.0, 0.75, 1.15))]
+        tops.append(tip + d * 0.08)
+    jewel = k.paint("pc_crest", [(0, (40, 110, 190)), (1, (30, 70, 180))], 4.4, 5.6, rest=True)
+    parts.append(k.fuse(crest, jewel, tris=650, soft=0.18, name="crest"))
+    for c in tops:
+        k.zone(jewel, (80, 200, 220), c + Vector((0, -0.12, 0)), (0.09, 0.1, 0.1), soft=0.3)
+    # The tail fan: seven flat feathers standing up behind, leaning back, each with an eye spot.
+    feather = k.paint("pc_feather", [(0, (40, 120, 70)), (0.6, (60, 160, 100)), (1, (80, 180, 140))], 0.4, 2.4, rest=True)
+    base = Vector((0, 1.0, 0.7))
+    fan, spots = [], []
+    for a in (-66, -44, -22, 0, 22, 44, 66):
+        t = math.radians(a)
+        d = Vector((math.sin(t), 0.32, math.cos(t))).normalized()
+        fan.append(toward(base + d * 0.95, d, 0.88, (0.45, 0.12, 1.0)))
+        spots.append(base + d * 1.42 - Vector((0, 0.04, 0)))
+    fan.append((tuple(base), 0.32))
+    parts.append(k.texel(k.fuse(fan, feather, tris=900, soft=0.18, name="fan"), 0.7))
+    for c in spots:
+        for rgb, r in (((236, 190, 70), 0.32), ((40, 150, 160), 0.25), ((36, 60, 170), 0.16), ((20, 30, 90), 0.07)):
+            k.zone(feather, rgb, c, (r, r, r), soft=0.12)
+    parts += k.face(body, head, R, skin=blue_rgb, nose=None, mouth_kind=None, eye_r=0.24, eye_wide=0.9, spread=27, eye_phi=-20, sheen=True, blush_theta=50, blush_phi=-38, blush_r=0.12)
+    settle(parts, SIZE["creature_peacock"])
     return parts
 
 
@@ -367,85 +368,88 @@ def creature_peacock():
 
 
 def creature_snowleopard():
-    """HD standard: one fused cub and its own fused tail; rosettes are rings painted at points
-    found on the real surface (none on the face), frost on the ears and tail tip, and a frost
-    snowflake on the forehead."""
-    head, R = Vector((0, -0.35, 3.95)), 1.3
-    ear = (1.0, -0.12, 4.85)
-    tilt = 18
+    """Remade from the Roblox AI reference (assets/garden/refs/snowleopard_*.jpg): a pale grey cub
+    sitting up, a huge round head with round ears (pink inside, dark behind), big dark-blue eyes, a
+    small pink nose on a tiny white muzzle, a white chest and white paws, solid grey spots on the
+    head and rosettes over the body, a frost snowflake on the forehead, and a thick tail curling up
+    behind its left side, spotted and dark at the tip (the "Frost Leopard")."""
+    pale = (232, 232, 236)
+    fur = k.paint("sl_fur", [(0, (164, 154, 146)), (0.35, (208, 200, 192)), (1, (236, 230, 222))], 0, 5.6, rest=True, grain=(0.07, 30))
+    white, spot, ring_in = (246, 244, 242), (92, 90, 94), (150, 146, 148)
+    head, R = Vector((0, -0.1, 3.8)), 1.75
+    muzzle = Vector((0, -1.52, 3.05))
+    ear = Vector((1.7, 0.0, 5.0))
+    tail = spline([(0.5, 1.1, 0.45), (1.3, 1.5, 0.5), (1.9, 1.15, 0.95), (1.95, 0.8, 1.75), (1.7, 0.65, 2.45)], [0.42, 0.5, 0.55, 0.55, 0.42], 18)
     body = k.fuse(
         [
-            (head, R, (1.15, 0.95, 0.9)),
-            ((0, -1.28, 3.6), 0.42, (1.3, 0.75, 0.72)),  # small muzzle
-            ((0, 0.15, 2.15), 1.22, (1.15, 0.95, 1.05)),  # chubby chest
-            ((0, 0.25, 1.05), 1.25, (1.2, 1.05, 0.75)),  # round seat
-            *k.pair((1.0, 0.35, 0.9), 0.7, (0.8, 1.0, 0.9)),  # haunches
-            *k.pair(ear, 0.42, (0.55, 0.28, 0.85), (0, tilt, 0)),  # round cub ears
-            *[("capsule", (s * 0.6, -0.55, 1.7), (s * 0.6, -0.9, 0.38), 0.33) for s in (-1, 1)],  # front legs
-            *k.pair((0.6, -1.0, 0.2), 0.34, (0.9, 1.45, 0.62)),  # front paws
-            *k.pair((1.08, -0.3, 0.2), 0.3, (0.9, 1.45, 0.62)),  # hind paws
+            (head, R, (1.3, 0.95, 0.95)),
+            *k.pair((1.05, -0.65, 3.25), 0.7, (1.0, 0.85, 0.8)),  # full cheeks
+            (muzzle, 0.42, (1.3, 0.75, 0.75)),  # tiny muzzle
+            *k.pair(tuple(ear), 0.68, (1.0, 0.55, 0.95), (0, 30, 0)),  # round ears
+            ((0, 0.05, 1.55), 1.05, (1.05, 0.95, 1.0)),  # chest
+            ((0, 0.35, 0.75), 1.2, (1.12, 1.1, 0.62)),  # seat
+            *k.pair((1.1, 0.3, 0.75), 0.68, (0.8, 1.1, 0.9)),  # haunches
+            ("capsule", (0.6, -0.45, 1.6), (0.62, -0.85, 0.32), 0.34),  # front legs
+            ("capsule", (-0.6, -0.45, 1.6), (-0.62, -0.85, 0.32), 0.34),
+            *k.pair((0.62, -1.0, 0.2), 0.36, (0.95, 1.35, 0.6)),  # front paws
+            *k.pair((1.3, -0.4, 0.18), 0.32, (0.9, 1.4, 0.6)),  # hind paws
+            *capsules(tail),
         ],
-        k.flat((220, 228, 242)),
-        tris=3000,
+        fur,
+        tris=3300,
     )
-    path = []  # the huge tail: from the back, round the right side, its tip by the front paws
-    pts = [Vector(p) for p in ((0.2, 1.3, 0.62), (1.0, 2.05, 0.66), (2.0, 1.6, 0.68), (2.3, 0.45, 0.68), (1.95, -0.65, 0.7), (1.2, -1.35, 0.8), (0.55, -1.55, 0.95))]
-    for a, b in zip(pts, pts[1:]):
-        for j in range(4):
-            path.append(a.lerp(b, j / 4))
-    path.append(pts[-1])
-    last = len(path) - 1
-    radii = [0.5 + 0.24 * math.sin(math.pi * min(1, 1.1 * i / last)) - 0.1 * (i / last) ** 3 for i in range(len(path))]
-    tail = k.fuse([("capsule", a, b, (ra + rb) / 2) for a, b, ra, rb in zip(path, path[1:], radii, radii[1:])], k.flat((220, 228, 242)), tris=1000, name="tail")
-    parts = [body, tail]
+    k.zone(fur, white, (0, -1.05, 1.5), (0.48, 0.5, 0.85), soft=0.25, jag=0.25)  # chest
+    k.zone(fur, white, muzzle + Vector((0, -0.1, -0.1)), (0.6, 0.35, 0.4), soft=0.35)  # muzzle
     for s in (-1, 1):
-        axis = (s * math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt)))
-        # High on the ear: lower down, a ray from the front meets the head before the ear.
-        parts.append(k.lens(body, (s * 1.06, ear[1], 5.05), (0, -1, 0), 0.26, k.flat((235, 190, 205)), scale=(0.45, 0.85), thick=0.2, sink=0.6, up=axis, name="ear_in"))
+        k.zone(fur, white, (s * 0.62, -1.05, 0.15), (0.42, 0.5, 0.3), soft=0.2)  # front paws
+        k.zone(fur, white, (s * 1.3, -0.5, 0.12), (0.38, 0.45, 0.25), soft=0.2)  # hind paws
+        k.zone(fur, (110, 110, 120), (s * ear.x, ear.y + 0.25, ear.z), (0.55, 0.22, 0.6), soft=0.3)  # dark ear backs
+
+    def fibonacci(count):
+        for i in range(count):
+            z = 1 - 2 * (i + 0.5) / count
+            yield Vector((math.sqrt(1 - z * z) * math.cos(i * 2.39996), math.sqrt(1 - z * z) * math.sin(i * 2.39996), z))
+
+    # Solid spots on the crown, the sides and back of the head (never the face).
+    for i, d in enumerate(fibonacci(70)):
+        if d.z < -0.45 or (d.y < -0.3 and d.z < 0.5 and abs(d.x) < 0.75) or abs(d.x) > 0.95:
+            continue
+        p, _ = k.land(body, head, d)
+        r = 0.14 + 0.08 * ((i * 7) % 5) / 4
+        k.zone(fur, spot, p, (r, r, r), soft=0.25)
+    # Rosettes over the body and haunches: a dark blot with a paler heart.
+    for i, d in enumerate(fibonacci(80)):
+        if (d.y < -0.4 and abs(d.x) < 0.5) or not -0.7 < d.z < 0.8:
+            continue
+        p, _ = k.land(body, (0, 0.3, 1.2), d)
+        r = 0.2 + 0.1 * ((i * 7) % 5) / 4
+        k.zone(fur, spot, p, (r, r, r), soft=0.25)
+        if i % 3 == 0:
+            k.zone(fur, ring_in, p, (r * 0.45, r * 0.45, r * 0.45), soft=0.4)
+    # Spots along the top of the tail and a dark tip.
+    for i in range(3, len(tail) - 2, 2):
+        q, r = tail[i]
+        k.zone(fur, spot, q + Vector((0, 0, r * 0.9)), (0.2, 0.2, 0.16), soft=0.25)
+    k.zone(fur, (90, 90, 100), tail[-1][0], (0.5, 0.5, 0.42), soft=0.3)
+    parts = [body]
+    axis = (math.sin(math.radians(30)), 0, math.cos(math.radians(30)))
+    for s in (-1, 1):
+        parts.append(k.lens(body, (s * ear.x, ear.y, ear.z), (s * 0.2, -1, 0), 0.38, k.flat((240, 172, 172)), scale=(0.75, 0.85), thick=0.2, sink=0.6, up=(s * axis[0], 0, axis[2]), name="ear_in"))
     # Frost snowflake on the forehead: six arms laid on the surface.
     flake, crown = [], k.outward(0, 34)
     for i in range(6):
         a = math.radians(60 * i)
         arm = []
         for t in (0.0, 0.5, 1.0):
-            d = crown + Vector((math.cos(a) * 0.2 * t, 0, math.sin(a) * 0.2 * t))
-            p, n = k.land(body, head, d)
+            p, n = k.land(body, head, crown + Vector((math.cos(a) * 0.2 * t, 0, math.sin(a) * 0.2 * t)))
             arm.append(p + n * 0.025)
-        flake.append(k.tube(arm, [0.05, 0.04, 0.022], m=k.flat((150, 215, 255), emit=0.3), n=6, name="flake"))
+        flake.append(k.tube(arm, [0.06, 0.05, 0.026], m=k.flat((140, 200, 250)), n=6, name="flake"))
     parts += k.texel(flake, k.FACE_TEXEL)
-    parts += k.face(body, head, R, skin=(240, 244, 252), iris=(28, 36, 72), nose=(240, 150, 170))
-    # Rosettes on the body (not the front or the face) and along the tail, measured before settle.
-    def fibonacci(count):
-        for i in range(count):
-            z = 1 - 2 * (i + 0.5) / count
-            yield Vector((math.sqrt(1 - z * z) * math.cos(i * 2.39996), math.sqrt(1 - z * z) * math.sin(i * 2.39996), z))
-
-    rings = [k.land(body, (0, 0.25, 1.6), d)[0] for d in fibonacci(52) if d.y > -0.6 and -0.35 < d.z < 0.7]
-    dots = [k.land(body, head, d)[0] for d in fibonacci(20) if d.z > 0.35 and d.y > -0.1]  # crown and nape
-    tail_rings = []
-    for i in range(2, last - 3, 2):
-        t = (path[i + 1] - path[i - 1]).normalized()
-        for side in (-1, 1):  # mostly from above, so a ray never reaches the other arm of the curl
-            out = (t.cross(Vector((0, 0, 1))) * side * 0.6 + Vector((0, 0, 1))).normalized()
-            tail_rings.append(k.land(tail, path[i], out)[0])
-
-    m = settle(parts, SIZE["creature_snowleopard"])
-    # Slate rosettes with frost-blue hearts, sizes varied so they never read as a pattern.
-    rosette, inner, white, frost = (88, 96, 132), (168, 202, 238), (250, 252, 255), (150, 205, 250)
-
-    def ring(p, i, big=0.2):
-        r = big * (0.75 + 0.25 * ((i * 7) % 5) / 4)
-        return [mark(m, rosette, p, r, r_in=r * 0.55), mark(m, inner, p, r * 0.55)]
-
-    marks = [x for i, p in enumerate(rings) for x in ring(p, i)] + [mark(m, rosette, p, 0.1) for p in dots]
-    marks += [mark(m, white, (0, -1.6, 2.1), 1.0), mark(m, white, (0, -1.7, 3.5), 0.62)]  # chest, muzzle over the rosettes
-    marks += [mark(m, white, (s * x, y, 0.2), 0.42) for s in (-1, 1) for x, y in ((0.6, -1.0), (1.08, -0.3))]  # white mittens
-    marks += [mark(m, frost, (s * 1.12, -0.12, 5.3), 0.3) for s in (-1, 1)]  # frosty ear tips
-    fur = [(0, (186, 194, 214)), (0.45, (222, 228, 242)), (1, (242, 246, 253))]
-    swap(body, k.paint("sl_fur", fur, 0.2, 5.2, marks=marks, dots=[((255, 255, 255), 14, 0.035)]))
-    tail_marks = [x for i, p in enumerate(tail_rings) for x in ring(p, i, 0.19)]
-    tail_marks += [mark(m, (214, 234, 255), path[-1], 0.85), mark(m, (178, 216, 252), path[-1], 0.62)]  # frost tip, soft edge
-    swap(tail, k.paint("sl_tail", fur, 0.2, 1.8, marks=tail_marks, dots=[((255, 255, 255), 14, 0.035)]))
+    face = [k.lens(body, muzzle, k.outward(0, 30), 0.11, k.flat((236, 120, 130)), scale=(1.3, 0.9), thick=0.6, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, muzzle, k.outward(0, -14), 0.13, k.flat(k.INKY), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=pale, iris=(28, 70, 156), nose=None, mouth_kind=None, eye_r=0.29, eye_wide=0.9, spread=27, eye_phi=-12, sheen=True, blush_theta=46, blush_phi=-28)
+    settle(parts, SIZE["creature_snowleopard"])
     return parts
 
 
@@ -547,8 +551,8 @@ SPECIES = (
     ("creature_otter", creature_otter, [1.89, 2.6, 2.19], "River Otter (rare)"),
     ("creature_capybara", creature_capybara, [3.03, 4.2, 3.56], "Spa Capybara (epic)"),
     ("creature_redpanda", creature_redpanda, [4.11, 5.0, 5.01], "Maple Red Panda (legendary)"),
-    ("creature_peacock", creature_peacock, [5.0, 5.6, 4.0], "Jewel Peacock (mythic)"),
-    ("creature_snowleopard", creature_snowleopard, [4.6, 5.8, 4.6], "Frost Leopard (divine)"),
+    ("creature_peacock", creature_peacock, [3.41, 5.6, 3.28], "Jewel Peacock (mythic)"),
+    ("creature_snowleopard", creature_snowleopard, [4.99, 5.8, 3.94], "Frost Leopard (divine)"),
 )
 SIZE = {name: size for name, _, size, _ in SPECIES}
 ASSETS = [

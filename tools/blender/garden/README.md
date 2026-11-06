@@ -133,9 +133,8 @@ creature from its `assets/garden/refs/<id>_*.jpg` shots; these override the defa
   looks smaller in the remake is smaller. Repeat until they read as the same character. Set the
   `ASSETS` size to the model's own proportions (an even `fit scale` on all three axes), keeping
   the height. Give separate props painted with gradients, bands or marks `k.rest(prop)` and
-  `paint(..., rest=True)` too, or the fit scale shifts their paint. The frog to cat, owl to
-  capybara and deer to dragon references came out turned 45 degrees towards +X, so their "34" shot is the true
-  front; `TURN` in refcompare.py records each reference's turn.
+  `paint(..., rest=True)` too, or the fit scale shifts their paint. Every reference from the frog
+  on came out turned 45 degrees towards +X, so its "34" shot is the true front; `TURN` in refcompare.py records each reference's turn.
 
 ### Budget, texture, export
 

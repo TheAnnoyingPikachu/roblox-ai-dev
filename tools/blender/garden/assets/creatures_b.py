@@ -1,7 +1,6 @@
 """Ten Egg Garden creatures (batch B) to the HD standard (tools/blender/garden/README.md "Creature
 standard"): one fused body per colour, the kit face, smooth separate props. One mesh each, standing
-on the origin, facing Blender -Y. Second colours on a fused body (hooves, quill coat, galaxy back,
-whale belly) are cut along a plane (`split`), so the edge is clean and sits exactly where placed."""
+on the origin, facing Blender -Y. Markings are k.zone paint on rest-painted bodies."""
 
 import math
 
@@ -122,27 +121,6 @@ def fit(target):
     return wrap
 
 
-def split(ob, m, co, no, where=None):
-    """Gives the faces of `ob` on the +no side of the plane through co the material m, cutting the
-    faces along the plane first (a clean edge, not a jagged face boundary). where(point): only
-    faces whose centre passes it."""
-    mats = ob.data.materials
-    if m.name not in [x.name for x in mats]:
-        mats.append(m)
-    index = [x.name for x in mats].index(m.name)
-    co, no = Vector(co), Vector(no).normalized()
-    bm = bmesh.new()
-    bm.from_mesh(ob.data)
-    bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=co, plane_no=no)
-    for f in bm.faces:
-        p = f.calc_center_median()
-        if (p - co).dot(no) > 0 and (where is None or where(p)):
-            f.material_index = index
-    bm.to_mesh(ob.data)
-    bm.free()
-    return ob
-
-
 def curve(points, step=0.25):
     """Smooth points through `points` (Catmull-Rom), about `step` studs apart."""
     p = [Vector(x) for x in points]
@@ -252,15 +230,6 @@ def toward(loc, d, r, scale):
     """Fuse ellipsoid at loc with its local z axis along d."""
     e = Vector((0, 0, 1)).rotation_difference(Vector(d)).to_euler("XYZ")
     return (tuple(loc), r, scale, tuple(math.degrees(a) for a in e))
-
-
-def snout_face(body, head, R, snout, skin, mouth_w, nostril=0.065, phi=8, spread=36):
-    """Snouted species: eyes just above the snout line, nostrils and a smile on the snout."""
-    ink = k.flat(INK)
-    parts = [k.lens(body, snout, k.outward(s * 20, 14), nostril, ink, thick=0.5, sink=0.5, seg=12, name="nostril") for s in (-1, 1)]
-    parts.append(k.mouth(body, snout, k.outward(0, -32), mouth_w, ink, "smile"))
-    k.texel(parts, k.FACE_TEXEL)
-    return parts + k.face(body, head, R, skin=skin, nose=None, mouth_kind=None, eye_phi=phi, spread=spread)
 
 
 def ears_in(body, ears, axis_tilt, m, r, lean=(0, -1, 0)):
@@ -619,41 +588,124 @@ def creature_unicorn():
 # Ember Phoenix (mythic) -----------------------------------------------------------------------
 
 
+def frond(length, width, m, lobes=0, depth=0.3, steps=10, n=8, flat=0.25, fan=False, name="frond"):
+    """A feather along +X, flat face up, widest past the middle, to a point (fan=True: widening to
+    a round end, like a gill). lobes > 0 notches both edges (`depth` deep) into a fringe."""
+    pts, radii = [], []
+    for i in range(steps + 1):
+        s = i / steps
+        pts.append((length * s, 0, length * 0.06 * math.sin(math.pi * s)))
+        fringe = 1 - depth + depth * abs(math.cos(math.pi * lobes * s)) ** 0.25 if lobes else 1
+        if fan:
+            shape = (0.3 + 0.7 * s / 0.65) if s < 0.65 else math.sqrt(max(0.0, 1 - ((s - 0.65) / 0.35) ** 2))
+        else:
+            shape = math.sin(math.pi * s) ** 0.55 * (0.45 + 0.55 * s)
+        radii.append(width * shape * fringe)
+    ob = k.tube(pts, radii, m=m, n=n, name=name)
+    ob.data.transform(Matrix.Diagonal((1, 1, flat, 1)))
+    return ob
+
+
+def plant(objs, root, d, face=(0, -1, 0)):
+    """Moves parts built along +X, flat face up, so +X runs from root along d and the flat face
+    looks towards `face`."""
+    x = Vector(d).normalized()
+    z = Vector(face) - x * x.dot(Vector(face))
+    z.normalize()
+    m = Matrix.Translation(Vector(root)) @ Matrix((x, z.cross(x), z)).transposed().to_4x4()
+    objs = objs if isinstance(objs, (list, tuple)) else [objs]
+    for ob in objs:
+        ob.data.transform(m)
+    return objs
+
+
+def trail(points, radii, step=0.15):
+    """(point, radius) samples along a smooth curve through points, radii eased between them."""
+    pts = curve(points, step)
+    out = []
+    for i, p in enumerate(pts):
+        t = i / (len(pts) - 1) * (len(radii) - 1)
+        j = min(int(t), len(radii) - 2)
+        out.append((p, radii[j] + (radii[j + 1] - radii[j]) * (t - j)))
+    return out
+
+
+def links(samples):
+    """Fuse capsules between trail samples."""
+    return [("capsule", tuple(a), tuple(b), (ra + rb) / 2) for (a, ra), (b, rb) in zip(samples, samples[1:])]
+
+
+def capsules_of(points, r0, r1):
+    """Fuse capsules along points, radius r0 to r1."""
+    rs = [r0 + (r1 - r0) * i / (len(points) - 1) for i in range(len(points))]
+    return [("capsule", tuple(a), tuple(b), (ra + rb) / 2) for a, b, ra, rb in zip(points, points[1:], rs, rs[1:])]
+
+
 def creature_phoenix():
-    skin_rgb = (255, 112, 58)
-    plumage = k.paint("ph_body", [(0, (210, 40, 64)), (0.45, skin_rgb), (1, (255, 150, 64))], 0.3, 4.1, emit=0.15)
-    gold = k.paint("ph_gold", [(0, (210, 128, 40)), (1, (255, 200, 80))], 0, 0.4, emit=0.3)
-    fire = [(0, (225, 36, 60)), (0.35, (255, 84, 40)), (0.7, (255, 132, 40)), (1, (255, 190, 76))]  # gold, not pale, tips: pale yellow goes lime in cool light
-    crest = k.paint("ph_crest", fire, 3.9, 5.5, emit=0.35)
-    tail = k.paint("ph_tail", fire, 1.2, 3.6, emit=0.35)
-    belly = k.paint("ph_belly", [(0, (255, 160, 70)), (1, (255, 214, 120))], 0.6, 2.2, emit=0.5)
-    beak = k.flat(k.GOLD_MID)
-    head, R = Vector((0, -0.3, 2.95)), 1.15
+    """Remade from the Roblox AI reference (assets/garden/refs/phoenix_*.jpg): a scarlet phoenix chick
+    sitting low, a cream face and chest, a hooked cream beak, big dark eyes with a red glint, spiky
+    feather tufts round the head under a crest of flame tongues, two wings of pointed feathers raised
+    in a V, red at the root and gold at the tips, and a long ragged flame tail trailing behind its
+    left side with a curled tip (the "Ember Phoenix")."""
+    red_rgb = (226, 70, 46)
+    cream_rgb = (252, 226, 188)
+    plume = k.paint("ph_plume", [(0, (170, 34, 40)), (0.35, red_rgb), (0.75, (240, 104, 52)), (1, (246, 138, 66))], 0, 4.4, rest=True, grain=(0.12, 22))
+    fire = [(0, (200, 40, 40)), (0.45, (240, 92, 44)), (0.8, (252, 160, 60)), (1, (255, 214, 120))]
+    head, R = Vector((0, -0.25, 3.3)), 1.1
+    tufts = []  # spiky feather tufts round the crown, sides and back of the head
+    for theta, phi in ((70, 30), (100, 10), (125, -10), (110, 40), (145, 20), (180, 30), (165, 50), (75, 55)):
+        for s in ((-1, 1) if theta != 180 else (1,)):
+            d = k.outward(s * theta, phi)
+            tufts.append(toward(head + d * R * 0.95, d + Vector((0, 0.3, 0.5)), 0.27, (0.5, 0.42, 2.1)))
+    ruff = []  # a ragged hem of feather points round the seat
+    for a in range(0, 360, 30):
+        d = k.outward(a + 15, 0)
+        ruff.append(toward(Vector((0, 0.3, 0.55)) + Vector((d.x * 0.95, d.y * 1.1, 0)), d + Vector((0, 0, -0.5)), 0.22, (0.6, 0.4, 1.8)))
     body = k.fuse(
         [
-            (head, R, (1.12, 1.0, 0.95)),
-            ((0, 0.15, 1.32), 1.15, (1.08, 1.05, 0.95)),
-            ((0, 1.2, 1.15), 0.4, (0.9, 1.0, 0.8)),  # rump under the tail
-            *k.pair((0.45, -0.62, 0.16), 0.28, (0.9, 1.45, 0.6)),  # feet
+            (head, R, (1.1, 0.98, 1.0)),
+            *k.pair((0.55, -0.62, 3.02), 0.46, (1.0, 0.85, 0.8)),  # full cheeks
+            ((0, 0.15, 1.25), 0.95, (1.0, 1.05, 1.15)),  # pear body
+            ((0, 0.35, 0.5), 1.0, (1.05, 1.2, 0.5)),  # low seat
+            *tufts,
+            *ruff,
         ],
-        plumage,
-        tris=2300,
+        plume,
+        tris=1900,
+        soft=0.2,
     )
-    split(body, gold, (0, 0, 0.4), (0, 0, -1), where=lambda p: p.y < -0.3)  # the feet, not the seat
-    parts = [body, k.lens(body, (0, 0.15, 1.2), (0, -1, -0.05), 0.6, belly, scale=(0.9, 1.1), thick=0.3, sink=0.6, name="belly")]
-    parts.append(k.capsule((0, -1.25, 2.74), (0, -1.62, 2.6), 0.2, 0.05, beak, n=16, name="beak"))
-    k.texel(parts[-1], k.FACE_TEXEL)
-    for root, tip, r, bend in (((0, -0.35, 3.85), (0, -0.15, 5.4), 0.3, 0.12), ((0.42, -0.25, 3.8), (0.98, 0.05, 4.95), 0.25, -0.15),
-                               ((-0.42, -0.25, 3.8), (-0.98, 0.05, 4.95), 0.25, 0.15), ((0, 0.25, 3.7), (0, 0.8, 4.65), 0.23, 0.1)):
-        parts.append(flame(root, tip, r, crest, bend=bend, n=10))
-    for root, tip, r, bend in (((0, 1.2, 1.25), (0, 2.35, 3.3), 0.36, 0.1), ((0.4, 1.2, 1.2), (1.3, 2.2, 2.8), 0.3, -0.12), ((-0.4, 1.2, 1.2), (-1.3, 2.2, 2.8), 0.3, 0.12),
-                               ((0.35, 1.25, 0.95), (1.6, 2.1, 1.6), 0.26, -0.1), ((-0.35, 1.25, 0.95), (-1.6, 2.1, 1.6), 0.26, 0.1)):
-        parts.append(flame(root, tip, r, tail, bend=bend, n=10))
+    k.zone(plume, (246, 150, 70), (0, -0.9, 3.0), (1.05, 0.8, 1.0), soft=0.2, jag=0.25)  # orange round the face
+    k.zone(plume, cream_rgb, (0, -1.0, 2.95), (0.85, 0.7, 0.72), soft=0.2, jag=0.2)  # cream face
+    k.zone(plume, (250, 210, 160), (0, -0.85, 1.5), (0.6, 0.5, 0.8), soft=0.1, jag=0.35)  # cream chest
+    k.zone(plume, (196, 48, 40), (0, 1.0, 1.5), (1.1, 0.8, 1.2), soft=0.3, jag=0.35)  # deeper red, ragged, over the back
+    parts = [body]
+    # Beak: hooked, cream, between and below the eyes.
+    p, n = k.land(body, head, k.outward(0, -26))
+    parts.append(k.texel(k.capsule(p - n * 0.1, p + n * 0.18 - Vector((0, 0, 0.16)), 0.22, 0.08, k.flat((250, 220, 150)), n=16, name="beak"), k.FACE_TEXEL))
+    # Crest: flame tongues, the tallest curling back.
+    crest_m = k.paint("ph_crest", fire, 4.1, 5.5, rest=True)
+    for root, tip, r, bend in (((0, -0.3, 4.15), (0, 0.05, 5.5), 0.3, 0.14), ((0.4, -0.15, 4.05), (0.85, 0.15, 4.9), 0.22, -0.15), ((-0.4, -0.15, 4.05), (-0.85, 0.15, 4.9), 0.22, 0.15)):
+        parts.append(k.rest(flame(root, tip, r, crest_m, bend=bend, n=10)))
+    # Wings raised in a V: five pointed feathers each, fanned up and out from the shoulder.
     for s in (-1, 1):
-        wing = k.paint(f"ph_wing{s}", fire, s * 1.0, s * 2.4, axis="X", emit=0.35)
-        for length, width, pitch, yaw in ((1.5, 0.52, 42, 15), (1.3, 0.48, 15, 25), (1.05, 0.42, -10, 35)):
-            parts += k.texel(xf(k.leaf(length, width, wing, droop=0.15, n=8, steps=8), (1.0, 0.15, 1.85), yaw=yaw, pitch=pitch, roll=90, mirror=s < 0), 0.5)
-    parts += k.face(body, head, R, skin=skin_rgb, nose=None, mouth_kind=None, eye_phi=2)
+        wing = k.paint(f"ph_wing{s}", fire, s * 0.7, s * 3.3, axis="X", rest=True)
+        for length, width, pitch, yaw, y in ((2.2, 0.42, 72, 22, 0.42), (2.8, 0.46, 58, 22, 0.42), (3.0, 0.48, 44, 22, 0.42), (2.7, 0.46, 30, 22, 0.42), (2.1, 0.42, 16, 22, 0.42),
+                                             (1.4, 0.4, 66, 10, 0.3), (1.6, 0.42, 46, 10, 0.3), (1.3, 0.38, 26, 10, 0.3)):  # flight feathers, then coverts in front
+            f = frond(length, width, wing, lobes=0, n=6, steps=8)
+            xf(f, (0.62, y, 2.0), yaw=yaw, pitch=pitch, roll=90, mirror=s < 0)
+            parts.append(k.texel(k.rest(f), 0.5))
+    # Flame tail: a ragged chain lying out behind the left side, its tip curling up.
+    path = trail([(0.0, 0.9, 0.42), (0.5, 1.7, 0.32), (1.2, 2.3, 0.32), (1.75, 2.45, 0.66), (1.7, 2.15, 1.12)], [0.52, 0.46, 0.38, 0.28, 0.14], 0.18)
+    tail = links(path)
+    for i in range(2, len(path) - 2, 2):
+        (q, r), (q2, _) = path[i], path[i + 1]
+        t = (q2 - q).normalized()
+        side = t.cross(Vector((0, 0, 1))).normalized()
+        for sd in (-1, 1):
+            tail.append(toward(q + side * sd * r * 0.8 + Vector((0, 0, 0.1)), side * sd + t * 1.1 + Vector((0, 0, 0.3)), r * 0.65, (0.5, 0.36, 2.3)))
+    tail_m = k.paint("ph_tail", fire, 0.8, 2.5, axis="Y", rest=True, grain=(0.1, 14))
+    parts.append(k.fuse(tail, tail_m, tris=750, soft=0.17, name="tail"))
+    parts += k.face(body, head, R, skin=cream_rgb, iris=(70, 22, 26), nose=None, mouth_kind=None, eye_r=0.28, eye_wide=0.88, spread=30, eye_phi=-10, sheen=True, blush_theta=50, blush_phi=-30)
     return parts
 
 
@@ -661,45 +713,36 @@ def creature_phoenix():
 
 
 def creature_whale():
-    skin_rgb = (236, 242, 255)  # the face is on the pale belly, so the blush mixes from that
-    aurora = k.paint(
-        "wh_back",
-        [(0, (40, 196, 204)), (0.3, (60, 132, 236)), (0.65, (124, 78, 230)), (1, (200, 90, 214))],
-        1.5,
-        4.2,
-        dots=[((255, 255, 255), 6, 0.13), ((255, 222, 120), 3.5, 0.1)],
-        emit=0.2,
-    )
-    belly = k.paint("wh_belly", [(0, (200, 220, 252)), (1, (240, 246, 255))], 1.0, 2.6)
-    cloud = k.paint("wh_cloud", [(0, (214, 216, 246)), (1, (255, 255, 255))], 0, 1.4)
-    gold = k.flat((255, 190, 60), emit=0.2)
-    head, R = Vector((0, -0.75, 2.6)), 1.4
-    tail = chain([(0, 1.0, 2.55), (0, 1.75, 2.85), (0, 2.25, 3.35), (0, 2.45, 3.85)], 0.72, 0.28)
+    """Remade from the Roblox AI reference (assets/garden/refs/whale_*.jpg) for shape and face: a
+    round plush whale resting on its white belly, small eyes low on the sides, pink cheeks, a
+    little smile, flippers out at the front and a tail rising behind to upturned flukes. The colours
+    keep the Aurora Whale concept (the reference came from a simpler prompt): soft teal, violet and
+    mint aurora stripes round the body (the "Aurora Whale")."""
+    teal, violet, mint, blue, rose = (64, 196, 196), (146, 108, 222), (150, 236, 206), (88, 128, 226), (214, 150, 230)
+    stripes = [(0, (226, 232, 246)), (0.25, (246, 248, 254))]  # pale belly, then soft bands upwards
+    z = 0.265
+    for rgb, width in ((mint, 0.03), (violet, 0.1), (teal, 0.09), (rose, 0.03), (blue, 0.09), (mint, 0.03), (violet, 0.08), (teal, 0.08), (rose, 0.03), (blue, 0.07), (mint, 0.03), (teal, 0.2)):
+        stripes += [(z, rgb), (min(1, z + width - 0.015), rgb)]
+        z += width
+    skin = k.paint("wh_skin", stripes, 0, 4.5, rest=True, grain=(0.05, 20, "wave"))
+    head, R = Vector((0, -0.55, 1.8)), 2.0
+    tail = chain([(0, 1.3, 2.1), (0, 2.3, 2.55), (0, 2.95, 3.2), (0, 3.2, 3.8)], 1.0, 0.34, step=0.2)
     body = k.fuse(
         [
-            ((0, -0.25, 2.5), 1.55, (1.12, 1.2, 0.92)),
+            (head, R, (0.95, 1.2, 0.9)),
             *tail,
-            *k.pair((0.62, 2.5, 4.0), 0.55, (1.3, 0.65, 0.25), (15, -20, 0)),  # flukes
-            *k.pair((1.62, -0.7, 1.9), 0.64, (1.25, 0.6, 0.28), (0, 25, 20)),  # flippers
+            *k.pair((0.72, 3.35, 4.0), 0.75, (1.25, 0.6, 0.2), (20, -25, 0)),  # flukes, upturned
+            *k.pair((1.78, -0.3, 0.8), 0.86, (1.3, 0.55, 0.22), (0, 30, 40)),  # flippers, forward and down
         ],
-        aurora,
-        tris=2800,
+        skin,
+        tris=3800,
     )
-    split(body, belly, (0, -0.4, 2.3), (0, -0.3, -1))  # pale face, throat and belly, higher at the front
-    puffs = [((0, 0, 0.5), 1.3, (1.5, 1.3, 0.5))]
-    for i in range(10):
-        a = math.radians(36 * i + 10)
-        puffs.append(((2.05 * math.cos(a), 1.6 * math.sin(a), 0.5), 0.62, (1, 1, 0.78)))
-    for i in range(5):
-        a = math.radians(72 * i + 40)
-        puffs.append(((1.2 * math.cos(a), 0.9 * math.sin(a), 0.85), 0.55, (1, 1, 0.8)))
-    nimbus = k.fuse(puffs, cloud, tris=1200, soft=0.35, name="cloud")
-    parts = [body, *k.texel([nimbus], 0.5)]
-    for theta, phi, r in ((150, 52, 0.38), (-150, 34, 0.3), (35, 60, 0.3), (-70, 48, 0.24)):
-        parts += onto([disc(r, star, gold, n=40, cup=0.0, thick=0.3, closed=False, name="star")], body, (0, -0.25, 2.5), k.outward(theta, phi), spin=90, sink=0.02)
-    parts.append(k.mouth(body, head, k.outward(0, -26), 0.42, k.flat(INK), "smile"))
-    k.texel(parts[-1], k.FACE_TEXEL)
-    parts += k.face(body, head, R, skin=skin_rgb, nose=None, mouth_kind=None)
+    for s in (-1, 1):
+        k.zone(skin, teal, (s * 2.0, -0.45, 0.6), (1.05, 0.8, 0.55), soft=0.15)  # teal flippers
+        k.zone(skin, mint, (s * 2.4, -0.75, 0.42), (0.4, 0.4, 0.4), soft=0.4)  # paler tips
+    parts = [body]
+    parts.append(k.texel(k.mouth(body, head, k.outward(0, -14), 0.24, k.flat(INK), "smile"), k.FACE_TEXEL))
+    parts += k.face(body, head, R, skin=(246, 248, 254), nose=None, mouth_kind=None, eye_r=0.17, eye_wide=0.9, spread=68, eye_phi=-2, sheen=True, blush_theta=76, blush_phi=-22, blush_r=0.12)
     return parts
 
 
@@ -707,50 +750,75 @@ def creature_whale():
 
 
 def creature_kirin():
-    skin_rgb = (236, 244, 255)
-    coat = k.paint("ki_coat", [(0, (196, 218, 252)), (0.5, (226, 238, 255)), (1, skin_rgb)], 0.3, 5.4)
-    hoof = k.paint("ki_hoof", [(0, (210, 134, 40)), (1, (252, 196, 84))], 0, 0.5, emit=0.15)
-    gold = k.paint("ki_gold", [(0, (222, 140, 40)), (1, (255, 192, 72))], 5.0, 6.2, emit=0.12)
-    cloud = k.paint("ki_cloud", [(0, (236, 238, 255)), (1, (255, 255, 255))], 0, 5.5, emit=0.1)
-    gems = [k.flat(rgb, emit=0.3) for rgb in ((110, 236, 226), (40, 186, 206), (24, 118, 170))]
-    pink = k.flat((255, 180, 205))
-    head, R = Vector((0, -1.0, 4.2)), 1.32
-    snout = Vector((0, -2.2, 3.72))
-    ear, tilt = (0.95, -0.75, 5.12), 40
+    """Remade from the Roblox AI reference (assets/garden/refs/kirin_*.jpg): a mint fawn-kirin standing
+    on four short legs, a big head with a white lower face, a black button nose, big dark-teal eyes,
+    pointed ears out to the sides with pink insides, thick tan antlers with two tines each, white
+    cloud puffs on its brow, shoulders and hips, a white chest, a scale pattern over the back and a
+    short tail with a white puff (the "Nimbus Kirin")."""
+    mint_rgb = (168, 226, 206)
+    coat = k.paint("ki_coat", [(0, (112, 184, 164)), (0.4, mint_rgb), (1, (200, 242, 226))], 0, 4.6, rest=True)
+    white = (252, 252, 250)
+    head, R = Vector((0, -0.7, 3.45)), 1.38
+    snout = Vector((0, -1.9, 3.0))
+    ear, tilt = Vector((1.62, -0.5, 4.0)), 68
     legs = []
-    for x, y, r in ((0.78, -0.4, 0.33), (0.78, 1.38, 0.35)):
+    for y in (-0.55, 0.85):
         for s in (-1, 1):
-            legs += [("capsule", (s * x, y, 0.26), (s * x, y, 1.8), r), ((s * x, y, 0.22), r + 0.04, (1, 1.05, 0.75))]
+            legs += [("capsule", (s * 0.52, y, 1.3), (s * 0.52, y, 0.28), 0.27), ((s * 0.52, y, 0.18), 0.3, (1.0, 1.1, 0.65))]
+    body_c = Vector((0, 0.15, 1.5))
     body = k.fuse(
         [
-            (head, R, (1.18, 0.97, 0.95)),
-            (snout, 0.56, (1.05, 0.95, 0.74)),
-            ((0, -0.55, 3.2), 0.76),  # neck
-            ((0, 0.5, 2.32), 1.2, (1.3, 1.32, 0.9)),
-            *k.pair(ear, 0.42, (0.5, 0.25, 1.0), (0, tilt, 0)),
+            (head, R, (1.12, 0.95, 0.95)),
+            *k.pair((0.6, -1.2, 3.05), 0.5, (1.0, 0.85, 0.8)),  # full cheeks
+            (snout, 0.36, (1.15, 0.85, 0.8)),  # small muzzle
+            ((0, -0.55, 2.35), 0.5),  # neck
+            ((0, -0.45, 1.7), 0.62),  # chest
+            (body_c, 0.85, (0.95, 1.3, 0.82)),  # barrel body
+            *k.pair(tuple(ear), 0.66, (0.5, 0.25, 1.0), (0, tilt, 0)),  # pointed ears, out to the sides
+            toward((0, 1.25, 1.95), (0, 0.6, 1), 0.2, (0.8, 0.8, 1.5)),  # short tail, flicked up
             *legs,
         ],
         coat,
-        tris=2000,
-        res=0.05,
+        tris=2700,
     )
-    split(body, hoof, (0, 0, 0.36), (0, 0, -1))
-    # Cloud mane: puffs along the crest and out behind both cheeks (so it shows from the front),
-    # and a cloud tail.
-    puffs = [((0, -0.6, 5.3), 0.48), ((0, -0.15, 5.0), 0.5), ((0, 0.15, 4.45), 0.5), ((0, 0.35, 3.85), 0.46), ((0, 0.5, 3.3), 0.4)]
-    puffs += [*k.pair((0.5, -0.2, 4.7), 0.38), *k.pair((0.5, 0.15, 4.05), 0.36), *k.pair((1.25, -0.15, 4.05), 0.4), *k.pair((1.1, 0.1, 3.45), 0.36)]
-    puffs += [((0, 1.9, 2.65), 0.45), ((0, 2.25, 2.3), 0.5), ((0, 2.45, 1.8), 0.42), *k.pair((0.38, 2.15, 2.05), 0.36), *k.pair((0.3, 1.95, 2.55), 0.32)]  # tail
-    mane = k.fuse(puffs, cloud, tris=1400, soft=0.28, name="mane")
-    parts = [body, mane, *ears_in(body, ear, tilt, pink, 0.34)]
+    k.zone(coat, white, (0, -1.85, 2.8), (1.3, 0.9, 0.75), soft=0.2)  # white lower face
+    k.zone(coat, white, (0, -0.95, 1.75), (0.5, 0.4, 0.75), soft=0.2, jag=0.25)  # white chest
+    # Scales over the back and flanks: a darker crescent under each, in staggered rows.
+    for row, z in enumerate((2.05, 1.8, 1.55, 1.3)):
+        for i in range(-4, 5):
+            a = 90 + 22 * i + (11 if row % 2 else 0)
+            for s in (-1, 1):
+                p, n = k.land(body, body_c, k.outward(s * a, 30 - 18 * row))
+                if p.y < -0.5 or p.z < 1.0:
+                    continue
+                k.zone(coat, (130, 196, 176), p, (0.16, 0.16, 0.16), soft=0.2)
+                k.zone(coat, (184, 234, 214), p + Vector((0, 0, 0.06)), (0.14, 0.14, 0.13), soft=0.25)
+    parts = [body, *ears_in(body, ear, tilt, k.flat((246, 180, 192)), 0.4)]
+    # Antlers: thick tan beams rising and out, two tines each, fused with round tips.
+    beams = []
     for s in (-1, 1):
-        beam = [Vector((s * 0.45, -0.85, 5.2)), Vector((s * 0.98, -0.75, 5.72)), Vector((s * 2.0, -0.52, 5.95))]
-        parts.append(k.capsule(beam[0], beam[1], 0.15, 0.12, gold, n=10, name="antler"))
-        parts.append(k.capsule(beam[1], beam[2], 0.12, 0.07, gold, n=10, name="antler"))
-        parts.append(k.capsule(beam[1], beam[1] + Vector((s * 0.05, -0.2, 0.52)), 0.1, 0.06, gold, n=10, name="tine"))
-    gem = k.ico(0.27, m=gems[0], subdiv=1, scale=(1, 1, 0.7), name="gem")
-    onto([gem], body, head, k.outward(0, 42), sink=0.05)
-    parts.append(k.texel(k.facet(gem, gems), k.FACE_TEXEL))
-    parts += snout_face(body, head, R, snout, skin_rgb, 0.32)
+        beams += capsules_of(curve([(s * 0.38, -0.6, 4.3), (s * 0.55, -0.55, 4.85), (s * 0.85, -0.45, 5.35), (s * 1.2, -0.35, 5.85)], 0.12), 0.24, 0.17)
+        beams += capsules_of(curve([(s * 0.58, -0.55, 4.95), (s * 0.48, -0.75, 5.3), (s * 0.45, -0.85, 5.55)], 0.12), 0.17, 0.15)
+        beams += capsules_of(curve([(s * 0.95, -0.42, 5.45), (s * 0.85, -0.6, 5.8), (s * 0.82, -0.66, 6.0)], 0.12), 0.15, 0.14)
+    antler = k.paint("ki_antler", [(0, (190, 120, 72)), (1, (226, 166, 112))], 4.3, 6.0, rest=True)
+    parts.append(k.fuse(beams, antler, tris=700, soft=0.2, name="antlers"))
+    # Cloud puffs: a forelock on the brow, one on each shoulder and hip, and the tail tip.
+    puffs = []
+    for i in range(9):  # a big cloud forelock over the brow
+        a = math.radians(i * 40)
+        puffs.append(((0.72 * math.cos(a), -0.9 + 0.5 * math.sin(a), 4.55 + 0.06 * math.sin(3 * a)), 0.36))
+    puffs += [((0, -0.9, 4.8), 0.48), ((0, -1.4, 4.42), 0.34), ((0.35, -1.3, 4.38), 0.28), ((-0.35, -1.3, 4.38), 0.28)]
+    for s in (-1, 1):
+        for c, r in (((s * 0.6, -0.4, 1.95), 0.22), ((s * 0.68, -0.2, 1.75), 0.2), ((s * 0.56, -0.6, 1.7), 0.18),  # shoulders
+                     ((s * 0.58, 0.8, 1.95), 0.22), ((s * 0.66, 0.95, 1.74), 0.18)):  # hips, sunk half into the coat
+            puffs.append((c, r, (0.7, 1, 0.8)))
+    puffs += [((0, 1.45, 2.3), 0.22), ((0.1, 1.4, 2.15), 0.17), ((-0.1, 1.4, 2.15), 0.17)]  # tail tip
+    cloud = k.paint("ki_cloud", [(0, (226, 234, 240)), (1, (255, 255, 255))], 1.0, 4.8, rest=True)
+    parts.append(k.texel(k.fuse(puffs, cloud, tris=1000, soft=0.3, name="clouds"), 0.7))
+    face = [k.lens(body, snout, k.outward(0, 22), 0.12, k.flat((30, 26, 30)), scale=(1.35, 0.95), thick=0.7, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, snout, k.outward(0, -22), 0.12, k.flat(INK), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=(240, 246, 244), iris=(18, 86, 94), nose=None, mouth_kind=None, eye_r=0.29, eye_wide=0.9, spread=32, eye_phi=-8, sheen=True, blush_theta=48, blush_phi=-24)
     return parts
 
 
@@ -758,58 +826,68 @@ def creature_kirin():
 
 
 def creature_axolotl():
-    skin_rgb = (250, 196, 232)
-    skin = k.paint("ax_skin", [(0, (232, 160, 214)), (1, skin_rgb)], 0.2, 2.2)
-    galaxy = k.paint(
-        "ax_galaxy",
-        [(0, (58, 44, 128)), (0.5, (98, 58, 170)), (1, (60, 46, 136))],
-        -1.0,
-        3.0,
-        axis="Y",
-        dots=[((255, 255, 255), 7, 0.1), ((255, 222, 130), 4, 0.07)],
-        emit=0.5,
-    )
-    gill = k.paint("ax_gill", [(0, (255, 80, 156)), (1, (255, 146, 200))], 1.3, 2.9, emit=0.3)
-    gold = k.flat((255, 196, 70), emit=0.2)
-    head, R = Vector((0, -0.95, 1.4)), 1.05
-    tail = []
-    pts = curve([(0, 1.4, 0.98), (0, 2.0, 1.04), (0.15, 2.5, 1.14), (0.45, 2.9, 1.3)], 0.2)
-    for i, (p, q) in enumerate(zip(pts, pts[1:] + [pts[-1] + (pts[-1] - pts[-2])])):
-        t = i / (len(pts) - 1)
-        tail.append((tuple(p), 0.5 - 0.36 * t, (0.42, 1.0, 1.3), (0, 0, math.degrees(math.atan2(-(q - p).x, (q - p).y)))))
-    legs = []  # stubby: a short capsule out and down from the body to a flat bean
-    for x, y, foot in ((0.5, -0.45, (0.78, -0.62, 0.14)), (0.48, 0.9, (0.72, 1.08, 0.14))):
-        for s in (-1, 1):
-            legs += [("capsule", (s * x, y, 0.48), (s * foot[0], foot[1], foot[2] + 0.06), 0.24), ((s * foot[0], foot[1], foot[2]), 0.24, (1, 1.3, 0.55))]
+    """Remade from the Roblox AI reference (assets/garden/refs/axolotl_*.jpg): a pink axolotl sitting
+    up, a wide round head with big black eyes far apart and a small smile, three big feathery gill
+    fronds a side fanned up and out with gold-flecked fringes, a pear body with little hands, gold
+    stardust flecks, and a tail lying out behind its left side with a scalloped fin along the top
+    (the "Stardust Axolotl")."""
+    pink_rgb = (244, 176, 186)
+    skin = k.paint("ax_skin", [(0, (214, 126, 146)), (0.45, (236, 160, 174)), (1, (250, 196, 204))], 0, 2.3, rest=True)
+    gold = (236, 196, 90)
+    head, R = Vector((0, -0.05, 1.67)), 0.75
+    path = trail([(0.05, 0.45, 0.35), (0.35, 0.95, 0.24), (0.75, 1.3, 0.2), (1.15, 1.45, 0.2)], [0.3, 0.22, 0.15, 0.07], 0.1)
+    fin = []
+    for i in range(1, len(path) - 1):
+        q, r = path[i]
+        if i % 3:
+            continue
+        fin.append(toward(q + Vector((0, 0, r + 0.06)), (0.2, 0.6, 1), 0.13, (0.35, 1.2, 1.6)))  # a few soft fin points
+    hands = []
+    for s in (-1, 1):
+        hand = Vector((s * 0.74, -0.32, 0.5))
+        hands += [("capsule", (s * 0.55, -0.1, 0.85), tuple(hand), 0.11), (tuple(hand), 0.12, (1.0, 1.0, 0.9))]
+        for dx in (-0.08, 0.0, 0.08):
+            hands.append(("capsule", tuple(hand), tuple(hand + Vector((s * 0.06 + dx, -0.08, -0.14))), 0.05))
     body = k.fuse(
         [
-            (head, R, (1.22, 0.95, 0.88)),
-            ((0, 0.4, 0.98), 0.78, (1.0, 1.5, 0.85)),
-            *tail,
-            *legs,
+            (head, R, (1.08, 0.95, 0.86)),
+            *k.pair((0.42, -0.35, 1.45), 0.36, (1.0, 0.85, 0.8)),  # full cheeks
+            ((0, 0.0, 0.62), 0.6, (1.05, 0.95, 1.0)),  # pear body
+            ((0, 0.05, 0.25), 0.62, (1.05, 1.0, 0.45)),  # seat
+            *k.pair((0.4, -0.38, 0.1), 0.15, (1.0, 1.4, 0.6)),  # little feet
+            *hands,
+            *links(path),
+            *fin,
         ],
         skin,
-        tris=2700,
+        tris=2050,
+        res=0.03,
     )
-    split(body, galaxy, (0, 0.3, 1.48), (0, 0.3, 1))  # galaxy along the spine and over the crown
-    # Six gills, three a side, swept up and back: a stalk with a scalloped row of soft fronds
-    # along its back edge and a round tip.
-    fronds = []
+    k.zone(skin, (252, 214, 214), (0, -0.55, 0.55), (0.48, 0.3, 0.48), soft=0.4)  # paler belly
+    for c, r in (((0.12, -0.58, 0.75), 0.1), ((-0.2, -0.55, 0.45), 0.07), ((0.25, -0.5, 1.95), 0.07), ((-0.3, -0.4, 2.1), 0.08), ((0.0, 0.2, 2.3), 0.09), ((0.3, 0.5, 0.7), 0.08), ((-0.35, 0.45, 0.9), 0.07), ((0.6, 1.1, 0.42), 0.07)):
+        k.zone(skin, gold, c, (r, r, r * 1.3), soft=0.15)  # stardust flecks
+    parts = [body]
+    # Gills: three feathery fronds a side, fanned up and out from the back of the head.
+    gill = k.paint("ax_gill", [(0, (232, 120, 156)), (1, (250, 176, 196))], 1.4, 3.0, rest=True, dots=[(gold, 16, 0.1)])
+    fringe = []
     for s in (-1, 1):
-        for root, d in (((0.95, -0.75, 1.95), (0.28, 0.38, 0.88)), ((1.1, -0.65, 1.65), (0.6, 0.5, 0.62)), ((1.18, -0.55, 1.3), (0.68, 0.6, 0.42))):
-            root, d = Vector((s * root[0], root[1], root[2])), Vector((s * d[0], d[1], d[2])).normalized()
-            fronds.append(("capsule", tuple(root), tuple(root + d * 0.7), 0.12))
-            fronds.append((tuple(root + d * 0.73), 0.15))
-            back = (Vector((0, 1, 0.3)) - d * d.dot(Vector((0, 1, 0.3)))).normalized()
-            for t in (0.3, 0.55, 0.8):  # spaced wider than they are thick, so the notches show
-                fronds.append(toward(root + d * 0.7 * t + back * 0.15, back + d * 0.3, 0.105, (0.8, 0.8, 1.6)))
-    gills = k.fuse(fronds, gill, tris=1300, soft=0.15, name="gills")
-    parts = [body, gills]
-    for theta, phi, r in ((160, 60, 0.22), (-25, 72, 0.18)):  # gold stars in the galaxy
-        parts += onto([disc(r, star, gold, n=40, cup=0.0, thick=0.3, closed=False, name="star")], body, (0, 0.4, 0.98), k.outward(theta, phi), spin=90, sink=0.02)
-    parts.append(k.mouth(body, head, k.outward(0, -22), 0.4, k.flat(INK), "smile"))
-    k.texel(parts[-1], k.FACE_TEXEL)
-    parts += k.face(body, head, R, skin=skin_rgb, nose=None, mouth_kind=None, spread=40, eye_phi=0)
+        for root, d, length in (((0.5, 0.1, 2.0), (0.35, 0.15, 1), 1.3), ((0.66, 0.15, 1.82), (0.85, 0.2, 0.8), 1.3), ((0.76, 0.2, 1.56), (1, 0.25, 0.15), 1.05)):
+            f = frond(length, 0.5, gill, steps=22, n=6, flat=0.22, fan=True)
+            base, x = Vector((s * root[0], root[1], root[2])), Vector((s * d[0], d[1], d[2])).normalized()
+            plant(f, base, x, face=(0, -1, 0.1))
+            parts.append(k.rest(f))
+            z = Vector((0, -1, 0.1)) - x * x.dot(Vector((0, -1, 0.1)))
+            y = z.normalized().cross(x)
+            mid = base + x * length * 0.6
+            for t in range(-6, 7):  # filaments round the rim of the fan, from one side over the tip to the other
+                a = math.radians(t * 15)
+                edge = mid + (x * math.cos(a) * 0.4 * length + y * math.sin(a) * 0.5) * 0.98
+                out = (edge - mid).normalized()
+                fringe.append(toward(edge + out * 0.03, out, 0.075, (0.6, 0.45, 1.45)))
+    tips = k.paint("ax_fringe", [(0, (236, 132, 164)), (1, (248, 168, 192))], 1.4, 3.2, rest=True, dots=[(gold, 10, 0.16)])
+    parts.append(k.texel(k.fuse(fringe, tips, tris=900, soft=0.15, res=0.025, name="fringe"), 0.6))
+    parts.append(k.texel(k.mouth(body, head, k.outward(0, -30), 0.09, k.flat(INK), "smile"), k.FACE_TEXEL))
+    parts += k.face(body, head, R, skin=pink_rgb, iris=(22, 20, 30), nose=None, mouth_kind=None, eye_r=0.24, eye_wide=0.9, spread=42, eye_phi=-16, sheen=True, blush_theta=52, blush_phi=-32)
     return parts
 
 
@@ -824,10 +902,10 @@ ASSETS = [
             ("creature_deer", creature_deer, [4.38, 5.0, 3.40], "Blossom Fawn (epic)"),
             ("creature_panda", creature_panda, [3.08, 4.5, 2.78], "Bamboo Panda (epic)"),
             ("creature_unicorn", creature_unicorn, [2.50, 5.5, 4.14], "Daisy Unicorn (legendary)"),
-            ("creature_phoenix", creature_phoenix, [4.6, 5.5, 4.2], "Ember Phoenix (mythic)"),
-            ("creature_whale", creature_whale, [6.0, 4.5, 5.0], "Aurora Whale (divine)"),
-            ("creature_kirin", creature_kirin, [4.6, 6.0, 5.2], "Nimbus Kirin (divine)"),
-            ("creature_axolotl", creature_axolotl, [3.4, 3.0, 5.0], "Stardust Axolotl (secret)"),
+            ("creature_phoenix", creature_phoenix, [5.4, 5.5, 4.33], "Ember Phoenix (mythic)"),
+            ("creature_whale", creature_whale, [5.22, 4.5, 6.77], "Aurora Whale (divine)"),
+            ("creature_kirin", creature_kirin, [4.34, 6.0, 3.8], "Nimbus Kirin (divine)"),
+            ("creature_axolotl", creature_axolotl, [3.35, 3.0, 2.02], "Stardust Axolotl (secret)"),
         )
     )
 ]
