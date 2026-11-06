@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "medium",
-  "status": "planned",
+  "status": "in_progress",
   "task_id": "LANTERN-011",
   "owner": "A14",
   "verifier": "A15",
@@ -41,7 +41,10 @@
     "tools/icons/lantern/**",
     "docs/assets/register.md",
     "docs/assets/lantern-blender-plan.md",
-    ".github/workflows/upload-assets.yml"
+    ".github/workflows/upload-assets.yml",
+    "tools/blender/upload-assets.mjs",
+    "tools/blender/write-assets-module.mjs",
+    "assets/lantern/**"
   ],
   "tests": [
     "LanternAssets.spec.luau"

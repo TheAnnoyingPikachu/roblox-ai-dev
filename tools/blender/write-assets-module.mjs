@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const GAMES = { night: ["NightAssets", "Hundred Demon Night"], spire: ["SpireAssets", "Neon Spire"], garden: ["GardenAssets", "Egg Garden"] };
+const GAMES = { night: ["NightAssets", "Hundred Demon Night"], spire: ["SpireAssets", "Neon Spire"], garden: ["GardenAssets", "Egg Garden"], lantern: ["LanternAssets", "Lantern Express"] };
 const game = process.argv[2] ?? "night";
 if (!GAMES[game]) throw new Error(`unknown game ${game}; use ${Object.keys(GAMES).join(", ")}`);
 const [moduleName, label] = GAMES[game];
