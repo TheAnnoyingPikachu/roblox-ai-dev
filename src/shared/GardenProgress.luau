@@ -8,18 +8,20 @@
 local GardenConfig = require("./GardenConfig")
 local GardenRules = require("./GardenRules")
 local HatchRules = require("./HatchRules")
+local LoginRules = require("./LoginRules")
 local MetaRules = require("./MetaRules")
 
 local GardenProgress = {}
 
 type Profile = GardenConfig.Profile
 
-GardenProgress.SCHEMA_VERSION = 2 -- decision 0012
+GardenProgress.SCHEMA_VERSION = 3 -- decisions 0015 and 0016
 
 local MAX_COINS = GardenConfig.MAX_COINS
 local MAX_COUNT = MetaRules.MAX_COUNT
 local MAX_TIME = 1e12
 local DASH = GardenConfig.DASH
+local TRADE = GardenConfig.TRADE
 
 local function floor(x: number): number
 	return math.floor(x + 1e-9)
@@ -36,7 +38,7 @@ end
 
 local CONFIG: MetaRules.Config<Profile> = {
 	cosmetics = GardenConfig.COSMETICS,
-	slots = { fence = "picket", can = "tin" },
+	slots = { fence = "picket", can = "tin", pad = "plain" },
 	quests = GardenConfig.QUESTS,
 	daily = GardenConfig.DAILY,
 	dailyMinutes = GardenConfig.DAILY_MINUTES,
@@ -91,6 +93,12 @@ function GardenProgress.defaults(now: number): Profile
 		quests = { day = -1, progress = {}, claimed = {} },
 		prizeEggs = {},
 		dash = { day = -1, prizes = 0, coins = 0 },
+		trades = {},
+		tradesToday = { day = -1, count = 0 },
+		milestones = {},
+		pad = "plain",
+		login = LoginRules.defaults(),
+		wheelToday = { day = -1, spins = 0 },
 	}
 end
 
@@ -110,6 +118,33 @@ local function sanitizeBed(record: any): GardenConfig.Bed
 	}
 end
 
+-- The pet name as stored: a string with control characters stripped, cut to NAME.max bytes.
+local function sanitizeName(value: any): string
+	if type(value) ~= "string" then
+		return ""
+	end
+	return string.sub((string.gsub(value, "%c", "")), 1, GardenConfig.NAME.max)
+end
+
+-- Exactly what a save may hold, or nil; the pad is checked by the caller.
+local function sanitizeCreature(c: any): GardenConfig.Creature?
+	local id = type(c) == "table" and MetaRules.count(c.id, MAX_COUNT) or 0
+	if id < 1 or not GardenConfig.indexable(c.s, c.m) or GardenConfig.size(c.z) == nil then
+		return nil
+	end
+	return {
+		id = id,
+		s = c.s,
+		m = c.m,
+		z = c.z,
+		c = if GardenConfig.charm(c.c) then c.c else "none",
+		placed = MetaRules.count(c.placed, MAX_COUNT),
+		fav = c.fav == true,
+		fa = MetaRules.count(c.fa, MAX_TIME),
+		n = sanitizeName(c.n),
+	}
+end
+
 local function sanitizeCreatures(p: Profile, list: any)
 	if type(list) ~= "table" then
 		return
@@ -117,18 +152,16 @@ local function sanitizeCreatures(p: Profile, list: any)
 	local seen: { [number]: boolean } = {}
 	local taken: { [number]: boolean } = {}
 	local stored: { number } = {}
-	for _, c in ipairs(list) do
-		local id = type(c) == "table" and MetaRules.count(c.id, MAX_COUNT) or 0
-		local known = id >= 1 and GardenConfig.indexable(c.s, c.m) and GardenConfig.size(c.z)
-		if known and not seen[id] then
-			seen[id] = true
-			local pad = MetaRules.count(c.placed, MAX_COUNT)
-			if pad < 1 or pad > p.penSlots or taken[pad] then
-				pad = 0
-				table.insert(stored, id)
+	for _, raw in ipairs(list) do
+		local c = sanitizeCreature(raw)
+		if c and not seen[c.id] then
+			seen[c.id] = true
+			if c.placed < 1 or c.placed > p.penSlots or taken[c.placed] then
+				c.placed = 0
+				table.insert(stored, c.id)
 			end
-			taken[pad] = true
-			table.insert(p.creatures, { id = id, s = c.s, m = c.m, z = c.z, placed = pad, fav = c.fav == true })
+			taken[c.placed] = true
+			table.insert(p.creatures, c)
 		end
 	end
 	-- Storage past 60 drops the lowest (oldest) ids first.
@@ -145,6 +178,14 @@ local function sanitizeCreatures(p: Profile, list: any)
 	for _, c in p.creatures do
 		p.nextId = math.max(p.nextId, c.id + 1)
 	end
+end
+
+-- A stored record written by a newer build (higher schemaVersion): this build must not write it, or
+-- the fields it does not know would be lost (decisions 0012, 0015).
+function GardenProgress.isNewer(record: any): boolean
+	return type(record) == "table"
+		and type(record.schemaVersion) == "number"
+		and record.schemaVersion > GardenProgress.SCHEMA_VERSION
 end
 
 -- H7 and decision 0008. Game fields first, so MetaRules' slot checks can read `index`.
@@ -221,7 +262,9 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 	-- dropping either would lose it (decision 0012).
 	if type(record.prizeEggs) == "table" then
 		for _, egg in GardenConfig.EGGS do
-			local n = if egg.price then MetaRules.count(record.prizeEggs[egg.id], GardenConfig.PRIZE_STORE) else 0
+			local n = if GardenConfig.isPrizeable(egg)
+				then MetaRules.count(record.prizeEggs[egg.id], GardenConfig.PRIZE_STORE)
+				else 0
 			if n >= 1 then
 				p.prizeEggs[egg.id] = n
 			end
@@ -234,20 +277,75 @@ function GardenProgress.sanitize(record: any, now: number?): Profile
 			coins = MetaRules.count(record.dash.coins, DASH.coinsPerDay),
 		}
 	end
+	-- v3 (decision 0015): a v2 record has none of these and keeps the defaults; `pad` is a slot.
+	if type(record.trades) == "table" then
+		for _, t in ipairs(record.trades) do
+			local gave = type(t) == "table" and sanitizeCreature(t.gave)
+			local got = type(t) == "table" and sanitizeCreature(t.got)
+			if gave and got and type(t.id) == "string" and string.match(t.id, "^%x+$") and #t.id == 16 then
+				table.insert(p.trades, {
+					id = t.id,
+					at = MetaRules.count(t.at, MAX_TIME),
+					with = MetaRules.count(t.with, math.huge),
+					gave = gave,
+					got = got,
+					gotId = MetaRules.count(t.gotId, MAX_COUNT),
+					undone = t.undone == true,
+				})
+			end
+		end
+		while #p.trades > TRADE.kept do
+			table.remove(p.trades, 1)
+		end
+	end
+	if type(record.tradesToday) == "table" then
+		p.tradesToday = {
+			day = MetaRules.dayNumber(record.tradesToday.day),
+			count = MetaRules.count(record.tradesToday.count, TRADE.perDay),
+		}
+	end
+	if type(record.milestones) == "table" then
+		for _, m in GardenConfig.MILESTONES do
+			if record.milestones[tostring(m.at)] == true then
+				p.milestones[tostring(m.at)] = true
+			end
+		end
+	end
+	-- Decision 0017: a record without `login` gets the defaults and counts today at its next tick.
+	p.login = LoginRules.sanitize(record.login)
+	if type(record.wheelToday) == "table" then -- v3 (decision 0016); a v2 record keeps the default
+		p.wheelToday = {
+			day = MetaRules.dayNumber(record.wheelToday.day),
+			spins = MetaRules.count(record.wheelToday.spins, GardenConfig.WHEEL.spinsPerDay),
+		}
+	end
 	return MetaRules.sanitizeMeta(CONFIG, record, p)
 end
 
 -- Login, snapshots and banking ---------------------------------------------------------------
 
--- Pays the stored `unbanked` first, then offline income from the saved garden; returns both.
-function GardenProgress.login(p: Profile, now: number, today: number): (Profile, number, number)
+-- Pays the stored `unbanked` first, then offline income from the saved garden; returns both, and
+-- the login tick's "(saved for you)" text ("" when no earned slot was paid at a rollover).
+function GardenProgress.login(p: Profile, now: number, today: number): (Profile, number, number, string)
 	local out = GardenProgress.sanitize(p, now)
 	local unbanked = out.unbanked
 	local offline = GardenRules.offline(out, now)
 	out.coins = math.min(MAX_COINS, out.coins + unbanked + offline)
 	out.unbanked = 0
 	out.lastSeen = now
-	return MetaRules.login(CONFIG, out, today), offline, unbanked
+	local ticked, saved = LoginRules.tick(MetaRules.login(CONFIG, out, today), today)
+	return ticked, offline, unbanked, saved
+end
+
+-- Login tracks (GDD X3, decision 0017) --------------------------------------------------------
+
+-- Also run by the server at a UTC day rollover while online (architecture 4.7); idempotent.
+function GardenProgress.loginTick(p: Profile, today: number): (Profile, string)
+	return LoginRules.tick(p, today)
+end
+
+function GardenProgress.claimLogin(p: Profile, track: string, today: number, slot: number?): (Profile, boolean, string)
+	return LoginRules.claim(p, track, today, slot)
 end
 
 -- The last op of every flush, so a stored record never pays a banked coin twice.
@@ -367,6 +465,46 @@ function GardenProgress.release(p: Profile, id: number, today: number): (Profile
 	return MetaRules.addProgress(CONFIG, out, today, { releases = 1 }), true, coins
 end
 
+function GardenProgress.favourite(p: Profile, id: number, now: number): (Profile, boolean)
+	return GardenRules.favourite(p, id, now)
+end
+
+-- Index milestones (GDD V4, decision 0015) ---------------------------------------------------
+
+-- Once each, at `n` Index entries: the coins (capped), and the prize egg when the row has one.
+-- Returns the coins paid.
+function GardenProgress.claimMilestone(p: Profile, n: number): (Profile, boolean, number)
+	local key = tostring(n)
+	local row
+	for _, m in GardenConfig.MILESTONES do
+		if m.at == n then
+			row = m
+		end
+	end
+	if row == nil or #p.index < n or p.milestones[key] then
+		return p, false, 0
+	end
+	local out = GardenRules.copy(p)
+	local paid = math.min(MAX_COINS - out.coins, row.coins)
+	out.coins += paid
+	if row.egg then
+		out.prizeEggs[row.egg] = math.min(GardenConfig.PRIZE_STORE, (out.prizeEggs[row.egg] or 0) + 1)
+	end
+	out.milestones[key] = true
+	return out, true, paid
+end
+
+-- The highest claimed title, for the name tag.
+function GardenProgress.title(p: Profile): string?
+	local title: string? = nil
+	for _, m in GardenConfig.MILESTONES do
+		if m.title and p.milestones[tostring(m.at)] then
+			title = m.title
+		end
+	end
+	return title
+end
+
 -- Likes and the gate (G1, G2) ----------------------------------------------------------------
 
 -- The liker's side: not self, once per target per UTC day, at most 30 given per day.
@@ -458,6 +596,7 @@ function GardenProgress.isUnlocked(p: Profile, id: string): boolean
 	return MetaRules.isUnlocked(CONFIG, p, id)
 end
 
+-- Deprecated (decision 0017): off the router; kept so MetaRules' H5 fields stay ticked and tested.
 function GardenProgress.claimDaily(p: Profile, today: number): (Profile, boolean, number)
 	return MetaRules.claimDaily(CONFIG, p, today)
 end

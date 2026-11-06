@@ -1,0 +1,59 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-051",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Pure rules for v0.5: LoginRules (weekly and monthly tracks, month arithmetic, idempotent tick and claim), the GardenConfig data (LOGIN slots, the weekly and monthly eggs, six exclusive species, Index 108, login-only cosmetics, ICON_SET), GardenProgress wrappers and the `login` save field, the MetaRules `grant` condition, and every spec that pins them.",
+  "inputs": [
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/game-design/game4-gdd.md §X3, §X4, §X5",
+    "docs/architecture/garden.md §2, §3.6, §3.9, §3.11"
+  ],
+  "dependencies": [
+    "GARDEN-050",
+    "GARDEN-028"
+  ],
+  "acceptance_criteria": [
+    "src/shared/LoginRules.luau exports every 3.11 signature; monthOf matches the spec's date table; tick counts a day once and resets each track on its own rollover; claim pays in order, scaled with floor and cap, adds the egg to prizeEggs once, grants a cosmetic once then coins only, is idempotent on a re-applied copy, and refuses after a rollover (tests/LoginRules.spec.luau)",
+    "GardenConfig: 26 species in X3.4 order, EGGS 10 with weekly and monthly after aurora (no price, no stock, level 1, exclusive set, top and meter), INDEX_SIZE 108, five grant = login cosmetics, LOGIN with 7 ascending slots per track and the eggs at week slot 5 and month slot 4, isPrizeable, ICON_SET of 16 (tests/GardenConfig.spec.luau); no sold egg names an exclusive species",
+    "GardenProgress: defaults and sanitize carry login (X3.6 shape and clamps), pity.weekly and pity.monthly, prizeEggs keeps isPrizeable eggs and never the starter; login runs the tick; claimLogin and loginTick wrap LoginRules; claimDaily and claimWeekly are no longer in the request action list; a literal v3 record without login loads with every field kept (tests/GardenProgress.spec.luau)",
+    "MetaRules.isUnlocked treats grant like price and sanitizeMeta keeps granted ids in owned; buyCosmetic refuses a grant cosmetic; Relay and Night specs unchanged (tests/MetaRules.spec.luau)",
+    "GardenRules.buyEgg refuses weekly and monthly; canPlantPrize allows them at level 1 with a free bed (tests/GardenRules.spec.luau); HatchRules seeded rolls unchanged and the two eggs roll weather mutations and charms (tests/HatchRules.spec.luau)",
+    "lune run tests/run passes; Purity.spec covers LoginRules; stylua and selene clean"
+  ],
+  "verification": "CI (lune run tests/run) and A15 review of the data against decision 0017",
+  "output_artifacts": [
+    "src/shared/LoginRules.luau",
+    "tests/LoginRules.spec.luau"
+  ],
+  "files": [
+    "src/shared/LoginRules.luau",
+    "src/shared/GardenConfig.luau",
+    "src/shared/GardenProgress.luau",
+    "src/shared/GardenRules.luau",
+    "src/shared/MetaRules.luau",
+    "tests/LoginRules.spec.luau",
+    "tests/GardenConfig.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "tests/GardenRules.spec.luau",
+    "tests/HatchRules.spec.luau",
+    "tests/MetaRules.spec.luau"
+  ],
+  "tests": [
+    "LoginRules.spec.luau",
+    "GardenConfig.spec.luau",
+    "GardenProgress.spec.luau",
+    "GardenRules.spec.luau",
+    "HatchRules.spec.luau",
+    "MetaRules.spec.luau",
+    "Purity.spec.luau"
+  ],
+  "notes": "Every number comes from decision 0017 and GDD X3; change none without a decision amendment. The one MetaRules change is the `grant` condition; do not touch the daily or weekly functions (Relay and Night use them). SCHEMA_VERSION stays 3 (checkpoint item 7). If garden/wheel (0016, wheelToday) has merged first, keep both fields under v3.",
+  "evidence": [
+    "Local run 2026-11-05 on garden/v05 (base 863cb6f): lune run tests/run 539/539 pass (was 523; +16: LoginRules.spec 8, GardenConfig 2, GardenProgress 2, GardenRules 1, HatchRules 1, MetaRules 1, plus split asserts); selene src tests 0 errors 0 warnings; stylua --check clean on LF copies; docs/game-design/game4-v05-pacing-check.py static agrees with the spec pins (weekly 66.4, monthly 2382.7 coins/s; 88.9 vs Dash cap 904; worst 60% bound meadow shower 56.4).",
+    "Deviations: tests/run.luau registers LoginRules.spec (allowed by check-scope); GardenRules.eggUnlocked now gates on GardenConfig.isPrizeable so canPlantPrize accepts the level-1 exclusives (buyEgg still needs a price); GardenRules.spec indexMult ceiling pin 2.68 -> 3.16 (108 cells); GardenConfig.spec Celestial = Legendary+Mythic minus redpanda/peacock; claimDaily/claimWeekly stay in GardenProgress (3.11), their removal from Profiles.request and the router is the server task."
+  ]
+}

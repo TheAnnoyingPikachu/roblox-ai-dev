@@ -1,6 +1,6 @@
-# Egg Garden: game design spec (v0.3)
+# Egg Garden: game design spec (v0.4)
 
-Status: draft for SHANNON. Concept D in `game4-concepts.md`. Needs decision record 0008 (economy, remotes, save schema; CLAUDE.md rule 8) and a task file before build. v0.2 adds sections S (Celestial Egg) and T (Splash Dash) with decision 0012; earlier sections are updated where those change them.
+Status: draft for SHANNON. Concept D in `game4-concepts.md`. Needs decision record 0008 (economy, remotes, save schema; CLAUDE.md rule 8) and a task file before build. v0.2 adds sections S (Celestial Egg) and T (Splash Dash) with decision 0012; v0.3 section U (decision 0014); v0.4 section V (safe trading, charms and event weather, followers, milestones, pet names, egg looks; decision 0015). Earlier sections are updated where those change them.
 
 ## A. Product
 
@@ -13,7 +13,7 @@ Status: draft for SHANNON. Concept D in `game4-concepts.md`. Needs decision reco
   3. Complete alone; other players only ever help you (watering, likes). Nothing anyone does can take what you own.
   4. Bright, detailed and alive in the first screenshot.
   5. Fair and open odds: every chance is on screen, the Lucky Meter guarantees the top creature, and nothing costs real money.
-- **Non-goals:** stealing, trading, gifting, Robux or paid items (decision 0002), custom chat, rebirth, pets that follow you, combat, more than one map.
+- **Non-goals:** stealing, gifting, Robux or paid items (decision 0002), custom chat, rebirth, combat, more than one map. (v0.4, section V: trading exists only in the limited V1 form, a favourite creature follows its owner, and pet names are the one filtered text input.)
 - **Server size:** 6 players, 6 garden plots.
 
 ## B. Core loop
@@ -41,12 +41,12 @@ Each player in the server is given the lowest-numbered free plot (1 to 6) on joi
 - **Pen:** start with 6 pads, maximum 20. Placed creatures earn; one creature per pad.
 - Pen slot `6 + k + 1` (k = 0 to 13) costs `300 × 2^k` coins: slot 7 300, 8 600, 9 1,200, 10 2,400, 11 4,800, 12 9,600, 13 19,200, 14 38,400, 15 76,800, 16 153,600, 17 307,200, 18 614,400, 19 1,228,800, 20 2,457,600.
 - **Storage:** 60 creatures, which do not earn. `place(id)` moves storage to pen if a pad is free; `store(id)` moves pen to storage if storage has room.
-- **Favourite:** `favourite(id)` toggles a lock. Favourites cannot be released.
+- **Favourite:** `favourite(id)` toggles a lock. Favourites cannot be released or traded (V1); the most recently favourited creature follows its owner (V3).
 
 ### C3. Income
 
-- Creature rate: `rate = baseRate(species) × mutationMult × sizeMult` (tables in E).
-- Index bonus: `indexMult = 1 + 0.02 × indexCount` (0 to 80 entries, so up to ×2.6; was 38 and ×1.76 before v0.3, section U4).
+- Creature rate: `rate = baseRate(species) × mutationMult × sizeMult × charmMult` (tables in E and V2; charm ×1 unless hatched in a rare weather).
+- Index bonus: `indexMult = 1 + 0.02 × indexCount` (0 to 84 entries, so up to ×2.68; 80 and ×2.6 in v0.3, section V2.4).
 - Garden income: `income = (sum of rate over placed creatures) × indexMult`. Shown on the HUD and on the garden sign.
 - **Pads (online):** each placed creature's pad accrues `rate × indexMult` per second (fractions kept, no cap). The server checks each player's root at 5 Hz: a pad whose centre is within 4.5 studs horizontally and 6 studs vertically is **banked**: `floor(pending + 1e-9)` coins added, the fraction stays. Only the owner banks their own pads.
 - **Nothing is lost:** on leave, all pads are banked. The autosave every 60 s also stores the unbanked total (`unbanked`) and `lastSeen`; on the next load `unbanked` is added to coins.
@@ -107,6 +107,8 @@ Expected income per hatch at base rates (for balancing, not shown): U6.
 
 ### E3. Mutations (rolled by the weather at hatch time, basis points)
 
+**v0.4 (V2):** three more weathers (Snowfall, Petal Storm, Thunder) with their own rows in V2.2, and an independent charm layer rolled only in those weathers. The four rows below are unchanged.
+
 The Celestial mutation (×20) is not in this table: only the Celestial Egg gives it, always, in any weather (section S, widened in U3). The Aurora Egg (U3) rolls from this table like every other egg; it fixes nothing.
 
 | Weather | Normal ×1 | Golden ×3 | Moonlit ×5 | Rainbow ×10 |
@@ -122,7 +124,7 @@ Normal ×1.0 (8000), Big ×1.5 (1700), Huge ×2.5 (300). Model scale 1.0, 1.4 an
 
 ### E5. Garden Index
 
-- **80 entries (v0.3, U4):** 19 species × 4 weather mutations, plus the 4 Celestial pairs `lion`, `unicorn`, `dragon`, `phoenix` `:celestial`; key `"<species>:<mutation>"`. An entry is discovered at its first hatch and kept forever (also after release). (v0.2 had 38.)
+- **84 entries (v0.4, V2.4; 80 in v0.3, U4):** 20 species × 4 weather mutations, plus the 4 Celestial pairs `lion`, `unicorn`, `dragon`, `phoenix` `:celestial`; key `"<species>:<mutation>"`. An entry is discovered at its first hatch and kept forever (also after release). (v0.2 had 38.)
 - Each new entry: +50 XP and +2% income (C3). Undiscovered entries show as silhouettes with the eggs and weather that can produce them.
 
 ### E6. Published odds (in game)
@@ -144,6 +146,7 @@ Normal ×1.0 (8000), Big ×1.5 (1700), Huge ×2.5 (300). Model scale 1.0, 1.4 an
 - Weekday from the window start: `d = floor(unix / 86400)`, `weekday = (d + 3) mod 7` with Monday 0 (1 January 1970 was a Thursday); Saturday is 5, Sunday 6.
 - **Forecast board:** shows the current window and the next two, with a countdown to each event. This turns the wait into a plan: hatch a ripe egg now, or wait 6 minutes for a Rainbow Shower.
 - A Rainbow Shower happens on about 1 window in 20 on weekdays (roughly every 3.3 hours) and 1 in 10 at weekends.
+- **v0.4 (V2.3):** the table is now 7 columns (Snowfall, Petal Storm, Thunder at 100 each on weekdays, out of Clear; at the weekend the week's event weather at 1000 and the other two at 200), and the forecast board announces the weekend event all week.
 
 ## G. Player interaction and child safety
 
@@ -161,8 +164,8 @@ Normal ×1.0 (8000), Big ×1.5 (1700), Huge ×2.5 (300). Model scale 1.0, 1.4 an
 ### G3. Cut on purpose
 
 - **No stealing.** Children crying over lost Brainrots (concepts G2), exploit pressure (G2), and no fun in a server of one.
-- **No trading or gifting.** Scams and off-platform trading are the main harm in the genre (G1, G7). Revisit only with a separate decision record, simultaneous two-sided confirmation, value checks, `PolicyService` checks and moderation support.
-- Nothing another player does can remove, lower or move anything you own. The worst they can do is not water your egg.
+- **No gifting, and trading only in the V1 form** (v0.4, decision 0015): friends only, one creature for one creature of comparable value, two confirmations with a 10 s hold, three a day, undo by either side for ten minutes, every trade in a ledger. Scams and off-platform trading are the main harm in the genre (G1, G7); V1 removes the levers (nothing but creatures, no value gap over 2×, no free text, no pressure timers).
+- Nothing another player does can remove, lower or move anything you own without your two confirmations (V1). The worst they can do is not water your egg.
 
 ### G4. Anti-pressure rules (under-18)
 
@@ -197,6 +200,8 @@ Normal ×1.0 (8000), Big ×1.5 (1700), Huge ×2.5 (300). Model scale 1.0, 1.4 an
 | Garden, eggs, hatching, weather, stock, pads | – | **New** pure modules (section N). |
 
 ### H2. Start menu and HUD
+
+(v0.5: the look of every piece below is respecified in section X1 and architecture 6.4; the functions are unchanged. Spawn and PLAY: X2.)
 
 - **Start menu:** title "EGG GARDEN", tagline "Hatch it. Grow it. Collect them all.", over a slow camera orbit of the plaza and gardens. Buttons: PLAY, INDEX, LOCKER, REWARDS, STATS, SETTINGS. Gold dot on anything claimable (reused).
 - **PLAY:** closes the menu; the camera flies to the player's own garden gate.
@@ -234,6 +239,8 @@ The fence style is built around the owner's plot (visible to visitors); the wate
 
 ### H5. Rewards
 
+(v0.5, section X3: the daily streak and the weekly bonus below are replaced by the weekly and monthly login tracks; the daily quests and `scaled` stay.)
+
 Reward amounts scale with the garden so they stay worth claiming: `scaled(base, minutes) = max(base, floor(income × 60 × minutes + 1e-9))`, with `income` from the profile at claim time.
 
 - **Daily streak:** days 1–7: base 50, 75, 100, 125, 150, 200, 400; minutes 2, 3, 4, 5, 6, 8, 15; day 7 repeats while the streak holds; a missed day restarts at 1 (reused rule). Check: day 3 at 60.5 coins/s pays 14,520; at 0.5 coins/s pays 120; at 0 pays 100.
@@ -261,16 +268,18 @@ Reward amounts scale with the garden so they stay worth claiming: `scaled(base, 
 - **Music:** two bright acoustic or ukulele tracks from the Roblox audio library (APM) for normal play, one dreamy track for Moonfall, short stingers when Sunbeam, Moonfall and Rainbow Shower start. To pick and register before use.
 - **SFX** (Roblox library, registered before use): egg wobble, crack, pop, rarity fanfares (soft chimes rising with rarity, no slot sounds), coin collect, water splash, like heart, cart buy.
 
-### H7. Saved profile (schema v2, store `GardenProfile<suffix>`)
+### H7. Saved profile (schema v3 from v0.4, store `GardenProfile<suffix>`; the v2 shape below plus V8's fields)
 
 ```
 { schemaVersion, xp, coins, lastSeen, unbanked, nextId, bedCount, penSlots,
   beds = { { egg, planted, ready, waters, helps, lastWater } },   -- one per bed; empty bed: egg = ""
-  creatures = { { id, s, m, z, placed, fav } },                    -- species, mutation, size
+  creatures = { { id, s, m, z, c, placed, fav, fa, n } },          -- species, mutation, size, charm (v3), favourited at (v3), name (v3)
   pity = { meadow, forest, sunset, moon, star, celestial },
   index = { "<species>:<mutation>", ... },
   stock = { w, bought = { forest, sunset, moon, star, celestial } },
   prizeEggs = { [eggId] = count }, dash = { day, prizes, coins },    -- v2, section T5
+  trades = { { id, at, with, gave, got, gotId, undone } }, tradesToday = { day, count },   -- v3, V1
+  milestones = { ["20"] = true, ... }, pad,                            -- v3, V4
   hatches, waters, likes, gate, fence, can, owned,
   helped = { day, count }, liked = { day, ids },
   daily = { streak, last }, week = { key, days, lastDay, claimed }, quests = { day, progress, claimed } }
@@ -284,7 +293,7 @@ Writes use the `UpdateAsync` re-apply pattern (decision 0006). Random outcomes a
 
 ### I1. Layout ("Hatchling Valley", all ground level)
 
-Centre (0, 0, 0). North is −Z.
+Centre (0, 0, 0). North is −Z. (v0.5, section X2: spawn pad, 12 large sakura, three hill bands, pond, path lanterns and more flowers are added; nothing below moves.)
 
 | Feature | Where | Build |
 |---|---|---|
@@ -879,3 +888,422 @@ Every species gets a custom Blender model `creature_<id>` (architecture section 
 | `HatchFx`, `Menu` ADMIN, `CreatureFx` | no cries | Done (GARDEN-025): U7 through `ClientState.cry` |
 | `Plots.tag`, banners | rarity colour as plain text | Done (GARDEN-025): pale stroke on the pad tag; the HatchFx card is dark text on cream and the Hud banner is white text on the rarity pill, so both read as they are |
 | `docs/assets/register.md` | 9 generated creature meshes, 5 Garden audio rows | Done (GARDEN-025): 19 `creature_*` model rows, 18 cry rows (cat reuses the bunny clip) |
+
+## V. Garden v0.4: safe trading, charms and event weather, followers, milestones, pet names, egg looks (decision 0015)
+
+Status: proposed for SHANNON (checkpoint `docs/checkpoints/GARDEN-V04.md`). SHANNON's brief: **no stealing or taking mechanics of any kind, and trading limited so children cannot be scammed or made sad.** The Studio Director fixed the six features; this section is the design record with the numbers. Where it and G3 ("no trading"), E3, F or H7 disagree, this section wins. Labels: **Fact** (in code or computed by `docs/game-design/game4-v04-pacing-check.py`), **Assumption**, **Hypothesis**.
+
+### V1. Safe trading
+
+**What it is.** Two Roblox friends standing together swap one creature for one creature. Nothing else is ever traded: no coins, no eggs, no prize eggs, no cosmetics, no vouchers. Nothing can be taken: every step needs both players, either can stop it until the last confirm, and either can undo it afterwards. G3's "no trading" is amended to "trading only under the V1 rules"; G4 anti-pressure rules apply in full (no timers except the ones below, no "limited" language, no nudges).
+
+**V1.1 Who may trade (all server-checked, every one a refusal with a kind notice).**
+
+| Rule | Check | Notice when it fails |
+|---|---|---|
+| Friends only | `a:IsFriendsWith(b)` **and** `b:IsFriendsWith(a)` (the existing per-session friends cache, both directions) | "You can only trade with your Roblox friends." |
+| Same server, close together | both have a character; `GardenRules.within(rootA, rootB, 15)` (horizontal, server positions) at propose, at every step and every second during the trade | "Stand next to <name> to trade." / cancelled: "You walked apart, so the trade stopped." |
+| Saving sessions | `Profiles.isOnline` for both (an offline-mode session, V1.5, cannot trade) | "Trading needs saving to be on for both of you." |
+| Daily limit | at most **3 completed trades per player per UTC day** (`tradesToday`, `MetaRules.dayOf`); an undone trade still counts | "You have done your 3 trades for today. More tomorrow!" |
+| Not already trading | one trade per player at a time | "<name> is already trading." |
+| Not pestering | a player who declines or cancels is not proposable by the same player for 60 s (server memory) | "Give <name> a moment before asking again." |
+
+**V1.2 What may be traded.** One creature each. Each side's creature must be owned by that player, not a favourite (`fav`; the Favourite lock is the child's own "never lose this" switch, so it also blocks trading), and not currently picked in another trade. **Fairness:** the server computes each creature's value as `GardenRules.rate(c)` (base × mutation × size × charm, V2) and refuses any pair where the lower value is under **50% of the higher**: "That trade would not be fair to <name>", naming the player who would give the more valuable creature. The check runs when a pick is made (so the panel can say so at once), when TRADE is pressed, and again at commit on both current profiles. Names (V5) travel with the creature; pad coins stay on the pad (resolution 3).
+
+**V1.3 The steps (one state machine per pair, `TradeRules`, server-owned; the client only shows it).**
+
+| State | Who acts | What happens | Time limit |
+|---|---|---|---|
+| `proposed` | A `tradePropose <userId>` | B gets a card "<A> wants to trade with you" with ACCEPT and NO. A sees "Asking <B>...". | 30 s, then expires quietly |
+| `picking` | B `tradeAccept` | the Trade panel opens for both. Each picks one of their own creatures (`tradePick <creatureId>`; favourites are greyed with the word "Favourite"). Both see both picks with name, rarity, mutation, size, charm and coins/s, and a fairness line ("Fair", or the kind message). Either may change their pick; a change clears both TRADE presses. | 120 s without both presses, then cancelled |
+| `hold` | both `tradeAccept` (the TRADE button) with a fair pair | a **10 s bar** for both: "Hold on... either of you can still cancel." CANCEL on both screens. No other button. | 10 s |
+| `confirm` | the bar ends | CONFIRM appears for both, with the two creatures named again ("Give Sprinkles the Berry Cat, get Pebble the Lotus Turtle"). CANCEL still there. | 20 s without both confirms, then cancelled |
+| `committing` | both `tradeConfirm` | the server writes the trade (V1.4); about one second; no button | until done or failed |
+| `done` | server | card "Traded! You got Pebble the Lotus Turtle. Changed your mind? UNDO (10 minutes)" | 10 min undo window |
+| `cancelled` | either `tradeCancel`, a time limit, walking apart, leaving, a failed check | both see why in plain words; nothing changed | |
+
+`tradeCancel` works in every state before `committing`, for either player, with no reason asked. **Emotes:** `tradeEmote <1..4>` sends one of four fixed pictures to the other player (1 thumbs up, 2 heart, 3 wave, 4 no), at most one per second; no text, no chat, no free input anywhere in the trade. **Nothing else counts as a step:** walking away, leaving, or the owner's gate are not consent. While a creature is picked in a live trade, `release`, `store`, `place`, `favourite` and `name` on that creature are refused for the duration.
+
+**V1.4 How the swap is written (no duplicate, no loss).** Two profiles are two DataStore keys, so the swap cannot be one write. The design makes every half idempotent and heals a half-written trade at the next load:
+
+1. **Trade id:** 16 hex characters from the server (`HttpService:GenerateGUID` trimmed), so it fits the 32-character `Request` argument for `tradeUndo`.
+2. **Ledger first.** The server appends the full record `{ id, at, a, b, ca, cb }` (both UserIds and both creatures as they are at that moment) to **both** players' keys in the `GardenTrades<suffix>` DataStore (`player_<UserId>`, at most 30 records kept, two `UpdateAsync`, 3 tries each). If A's write fails: cancelled, nothing changed. If B's write fails after A's succeeded: cancelled, and the record in A's ledger is marked `void` (best effort). The applies below never run unless both ledger writes returned.
+3. **Re-check, then two applies in one step with no yield between them:** `TradeRules.canCommit` on both current in-memory profiles (owned, not favourite, fair, under the limit, both still here); then `Profiles.apply(A, "trade", give(L))` and `Profiles.apply(B, "trade", give(L))`. `give` on one profile: **if `trades` already holds `L.id`, return the profile unchanged** (this is what makes a re-apply inside `UpdateAsync`, a retried flush or a heal safe); else the creature this player gives must be present and equal to the ledger's copy (species, mutation, size, charm, id) and not a favourite, or the profile is returned unchanged and the server warns; then remove it, add the other player's creature with a fresh `nextId` **on the same pad (or storage slot) the leaving creature had**, so a full garden never blocks a trade; append `{ id, at, with, gave, got, gotId, undone = false }` to `trades` (oldest dropped past 30); `tradesToday.count + 1` (reset on a new day). No XP, no Index entry (V1.6), no quest stat.
+4. **Flushes land on their own** (7 s coalescing, 4.2). A crash between the two flushes leaves one profile swapped and the other not. **Heal at load:** after `login`, the server reads the player's own ledger key; for every record not in `trades` (or in `trades` without the `undone` the ledger shows) and not `void`, it reads the other player's ledger key; if the record is there too, the trade did reach step 3 and the missing half is applied now with the same idempotent `give` (or `undo`). Records older than the oldest record still kept in `trades` are ignored when the list is at its cap. One extra read per load, more only when something is missing (within the 0008 budget).
+5. **Lost session lock:** a session that loses its lock (0008 amendment) stops writing, as today; the ledger and the heal cover the trade the next time that player loads.
+
+**Residual (Assumption, documented, not solved):** a ledger write that lands but reports failure leaves a record in both ledgers for a trade the server cancelled; the heal then completes that trade at both players' next loads, consistently (nobody loses a creature, the trade just happens late). If in that window the giver released the creature, `give` refuses on that side and the server warns with the id; the record is in the ledger for SHANNON to look at. This needs a DataStore success reported as a failure, twice in a row within one second of each other; accepted.
+
+**Residual of a cancelled commit (Assumption, QA B1 and M2, GARDEN-033):** a commit cancelled after both ledger writes marks **both** copies `void`, and the heal completes a record only when the counterpart's copy exists **and is not void**, so one landed void mark is enough. Each mark is retried for about two and a half minutes (5 tries) and then logged with the trade id. If every mark on both keys fails, both copies stay live and the trade completes at both next loads as above; if one child released or traded the creature in that window, that side's `give` refuses while the other side's heal still applies, so one creature is duplicated (the child who was paid) and one lost. The same holds for an undo mark taken back after a failed re-check (`undoAt` stripped from both copies, same retries). It needs a DataStore outage on both keys for minutes right after a cancelled commit, plus a release in that window; accepted and documented, the warn names the id for SHANNON.
+
+**V1.5 Undo.** `tradeUndo <tradeId>`: either player, within **10 minutes** of `at`, once per trade, no agreement needed (the other player gets "<name> changed their mind, so Pebble came back to you"; nobody is asked to argue). Needs both players still in this server with saving sessions (the undo is checked on both current profiles first: each must still hold the creature it got, by `gotId`; a released or re-traded creature cannot come back, notice "That creature was released, so the trade cannot be undone"). Same mechanics as V1.4: ledger first (`undoAt` on both keys), then `undo` applied to both in one step (idempotent on `undone`), heal covers a crash. The two creatures go back to the pad or storage slot they now occupy on the other side (the returning creature takes the slot the leaving one had, as in `give`). The trade still counts towards the 3 per day. A favourite lock set on a received creature does not block its return. Undo is not a trade and sends no emotes.
+
+**V1.6 What a traded creature is not.** It adds no Index entry and pays no XP on either side (`give` never touches `index`), so trading cannot complete anyone's Index; the Index is for hatching. It pays no coins and no quest stat. It keeps its name (V5), mutation, size and charm. Releasing it later pays the normal release value; the Index entry rule is the release rule (none).
+
+**V1.7 What both players see afterwards.** STATS gains a "Trades" list (the profile's last 30): date, with whom (display name from the UserId, fetched like the board), gave, got, "undone" when so, and an UNDO button while V1.5 allows it. Every completed trade and undo is in `GardenTrades<suffix>` for moderation.
+
+**V1.8 Numbers (fixed by the Director unless marked).**
+
+| Number | Value |
+|---|---|
+| Friends | Roblox friends, both ways |
+| Distance | 15 studs, horizontal |
+| Fairness | lower value ≥ 50% of the higher, value = `GardenRules.rate` |
+| Hold, confirm, invite, pick (proposed) | 10 s, 20 s, 30 s, 120 s |
+| Trades per player per UTC day | 3 (completed, undone included) |
+| Undo window | 10 minutes, once per trade, either player, both present |
+| Records kept per profile and per ledger key | 30 |
+| Emotes | 4 fixed; 1 per second per player |
+| Decline cooldown (proposed) | 60 s per pair |
+
+**Hypothesis:** with values within 2× of each other, a short hold and a unilateral undo, the worst outcome of a trade is mild regret that the child fixes alone within ten minutes. **Assumption:** the DataStore budget holds: a trade costs 2 ledger writes plus the two normal profile flushes; 3 trades a day per player is nothing against 60 + 40 × players a minute.
+
+### V2. Charms (stacked mutations) and event weather
+
+**V2.1 Charms.** A second layer, independent of the mutation, rolled **only during a rare weather** and stored in the new creature field `c` (`"none"` default). `rate = base × mutation × size × charm`. Charms add no Index entries (the key stays `species:mutation`); a Frosted Golden Lion fills the same cell as a Golden Lion.
+
+| Weather (new) | Charm | Multiplier | Chance per hatch in that weather | Look (client, display only) |
+|---|---|---|---|---|
+| `snowfall` Snowfall | `frosted` Frosted | ×1.5 | 2500 bp (25%) | pale blue rim, slow frost motes, breath puff |
+| `petals` Petal Storm | `blooming` Blooming | ×2 | 1500 bp (15%) | pink petal emitter, a flower on the head (part) |
+| `thunder` Thunder | `stormy` Stormy | ×3 | 1000 bp (10%) | small dark cloud over the head, sparks, a light flicker every few seconds |
+
+Draw order is species, mutation, size, **then charm** (one state), so every seeded roll in the existing specs is unchanged. An egg with a fixed mutation (Celestial) still rolls its charm: the charm is independent of the egg. The starter takes no draws. Charms are announced server-wide only for Stormy.
+
+**V2.2 Mutation tables of the new weathers** (basis points, `MUTATIONS` order without egg-only ones; each sums to 10,000):
+
+| Weather | Normal ×1 | Golden ×3 | Moonlit ×5 | Rainbow ×10 | Expected mutation × charm |
+|---|---|---|---|---|---|
+| Snowfall | 8800 | 1000 | 150 | 50 | 1.305 × 1.125 = **×1.468** |
+| Petal Storm | 8500 | 1000 | 0 | 500 | 1.650 × 1.150 = **×1.898** |
+| Thunder | 8800 | 800 | 300 | 100 | 1.370 × 1.200 = **×1.644** |
+
+**Fact (computed):** Rainbow Shower is ×2.000, so no rare weather beats it in expectation and the 60% rule's worst pair stays Meadow in Rainbow Shower (V6). The Director's multipliers are kept; the charm **chances** are the lever that keeps buy-hatch-release under 60%. At 100% charm chance, Thunder alone would return 146% of a Meadow Egg's price (a coin loop), which is why charms are rolled and not given.
+
+**V2.3 Weather odds** (F table, each row sums to 10,000; existing weathers keep their odds, the new share comes out of Clear):
+
+| Day (UTC) | Clear | Sunbeam | Moonfall | Rainbow Shower | Snowfall | Petal Storm | Thunder |
+|---|---|---|---|---|---|---|---|
+| Monday–Friday | 5200 | 2500 | 1500 | 500 | 100 | 100 | 100 |
+| Saturday, Sunday | 2100 | 3500 | 2000 | 1000 | the week's **event weather 1000**, the other two 200 each |
+
+The stored weekend table is `clear 2900, ..., snowfall 200, petals 200, thunder 200`; `WorldRules.oddsFor` moves `WEATHER_EVENT_BONUS = 800` from Clear to the event weather, so a spec can check the raw table and both resolved tables sum to 10,000. **Weekend event:** `WorldRules.weekendEvent(unix)` = `RARE[Rng.int(Rng.seed(week, SEEDS.event = 7777), 1, 3)]` with `week = floor((floor(unix / 86400) + 3) / 7)` (Monday-based, the same weekday maths as F), so every server agrees and the forecast board can announce it all week ("This weekend: Thunder!"). On weekdays a rare weather is about 1 window in 33 (every 5.5 h); at the weekend the event weather is 1 in 10 (every 100 min) and all three are still possible, so G4.5 holds: every charm can be hatched any day, nothing is exclusive.
+
+**V2.4 Event creature: `moth` Lantern Moth** (Rare, rate 55, between hedgehog and fox in U1 order; release 330; cry a soft flutter, licensed clip to find, nil until registered). It hatches **only during a rare weather** (any of the three, any day) from the Forest and Sunset eggs at **300 bp, replacing part of one existing slot**: Forest `frog 3000 → 2700, moth 300`; Sunset `cat 3500 → 3200, moth 300`. Outside a rare weather those eggs roll their U2 odds unchanged. Data: `Egg.event = { s = "moth", bp = 300, from = "frog" | "cat" }`; `HatchRules.oddsFor(egg, weather)` is the one place that applies it, and the ODDS card shows the moth row with "only in Snowfall, Petal Storm or Thunder". Lucky Meter unchanged (the moth is never `top`). Index: 4 new cells (`moth:normal/golden/moonlit/rainbow`), **`INDEX_SIZE` 84**, so `indexMult` tops at ×2.68. After the event it is in the Index like any other species and comes back with the next rare weather.
+
+### V3. Pet followers
+
+- **Which creature:** the favourite (`fav`). With several, **the most recently favourited**: `favourite` now records `fa = now` (new creature field, 0 default) when it turns the lock on; `GardenRules.follower(p)` = the fav with the highest `fa`, then the highest id. The pad creature stays on its pad and keeps earning; the follower is a visual copy.
+- **Server:** `publish` sets the player attribute `Follower` = that creature's id (0 for none). Nothing else; no positions, no new Fx.
+- **Client (`FollowerFx.client.luau`):** for every player with `Follower ≠ 0`, clone the species preview from `ReplicatedStorage.GardenSpecies` (0013), scale by size, give it the creature's mutation and charm looks through `CreatureFx.applyLook` and its name tag (V5), under `Workspace.GardenFollowers` (client-only). Every part `Anchored`, `CanCollide = false`, `CanQuery = false`, `CanTouch = false`, so it never collides, never blocks a raycast (Dash platform carry) and never enters a Dash hit test (those use the local root only). `ClientState` sets the pacing: target point beside the owner, 4 studs to the side and 1 behind, both measured from the follower's edge (QA M3: trailing on the walk line hid the player behind a Big or Huge one); farther than 6 studs: a hop (0.35 s, up to 9 studs, so the hops outrun a walk; height 1.5 × scale, parabola) towards the target, chained while far; your own follower fades (`LocalTransparencyModifier` 0.6) while it stands between your camera and your head; nearer: the idle bob; over 60 studs (a teleport): snap. It follows through Hatchling Valley and onto Splash Island. **Hidden while its owner is in `status.dash.racers`**, and during that owner's hatch reveal. A hop plays the cry (`ClientState.cry`, 0.2, at the follower) at most once per 6 s per follower, inside the 2 s garden-wide gap of U7. Budget: at most 6 followers in a server; one `Highlight` each only within `HIGHLIGHT_BUDGET`, else the `SelectionBox` fallback.
+- **Setting:** SETTINGS gains "Followers" (client-only, default on); off hides every follower on this client, including your own. Nothing is sent.
+
+### V4. Index milestones
+
+Claimed from the Index panel (a CLAIM card at the top when one is ready; gold dot), server-checked, once each: `milestones: { [string]: true }` keyed `"20"`, `"40"`, `"60"`, `"80"`. `GardenProgress.claimMilestone(p, n)` needs `#index ≥ n` and not claimed; it pays the coins (flat, capped at `MAX_COINS`), marks the key, and `LastReward` shows the toast.
+
+| Entries | Reward | How it shows |
+|---|---|---|
+| 20 | title **"Hatchling Keeper"** and 5,000 coins | the title on the player's name tag (`GardenProgress.title(p)`; drawn client-side by `FollowerFx`, which already walks the characters) |
+| 40 | pad skin **"Clover Pads"** (`pad` cosmetic slot, id `clover`, unlock `index = 40` like the `golden` fence) and 50,000 coins | LOCKER gains a PADS row: `plain` (default) and `clover`; `equipCosmetic` equips it; `Plots.refresh` colours the pad parts green with a clover decal for visitors too |
+| 60 | fence **"Starlit"** (`fence`, id `starlit`, unlock `index = 60`) and 1,000,000 coins | Locker as any fence; deep blue posts with small star lights (art, V7 budget: lights count against the plot's existing light budget) |
+| 80 | an Aurora Egg voucher (`prizeEggs.aurora += 1`, planted free with the existing `plantPrize`, Level 32 as any prize egg) and the title **"Garden Legend"** (replaces Hatchling Keeper) | the DASH panel's prize-egg list already shows and plants prize eggs; it is renamed "Prize eggs" there |
+
+The cosmetics unlock by Index count the moment the count is reached (the existing `MetaRules` `index` unlock; no new unlock kind); the claim pays the coins and the title or voucher. **Fact (simulated, V6):** at 1 h/day the 20th entry comes on day 3, the 40th on day 14, the 60th around day 60 and the 80th not within 90 days (the script's player keeps few creatures; a collector will be earlier). The coins are small against income by the time they come (50,000 at day 14 is about an hour of income) and are meant as a cheer, not an economy lever.
+
+### V5. Pet names
+
+Players name their creatures. **Fact (Roblox Community Standards and the Creator Docs "Text filtering" page): all user-generated text shown to other players must be filtered through `TextService`;** experiences that show unfiltered text are moderated. The name is the first free text in the game, so:
+
+- **Request:** `name` with `arg = "<creatureId>:<name>"`: the creature id before the first colon (digits), the name after it, within the existing 32-character argument (id up to 10 digits, a colon, 20 characters). The router's one-argument contract is unchanged; this is the one action whose argument is parsed into two parts.
+- **Pure validation (`GardenRules.validName(raw): string?`):** trimmed; 1 to 20 characters; only ASCII letters, digits, spaces, `'` and `-`; not only spaces; at most one space in a row. Anything else is refused before any filter call. `GardenRules.canName(p, id)`: owned.
+- **Two steps, because filtering yields.** (1) Router: common checks, `validName`, owned, not picked in a live trade, the 0.35 s limit **plus a 10 s per-player naming cooldown** (`live.nameAt`), **3 renames per creature per UTC day** (`live.renames[id] = { day, count }`, server memory: it resets when the player rejoins, which is fine because it exists to protect the filter budget, not the economy). (2) `TextService:FilterStringAsync(name, player.UserId)` then `GetNonChatStringForBroadcastAsync()` in a `pcall`; a failure or an empty result writes nothing and gives "That name could not be checked. Try again in a moment." (3) Re-check ownership on the current profile (the player may have released it during the yield), then `Profiles.apply(player, "name", GardenRules.setName(p, id, filtered))`, which stores the **filtered broadcast string** in the new creature field `n` (`""` default = show the species name). A filtered-out name is stored as Roblox returns it (hashes and all); that is the platform rule, and the player sees what everyone sees.
+- **Sanitize:** `n` is kept if a string, control characters (`%c`) stripped, truncated to 20 bytes (ASCII only by validation, so a cut never splits a character); otherwise `""`. Sanitize does not filter; the server never writes an unfiltered name, and a client never writes one at all.
+- **Display:** `ClientState.creatureName(s, m, z, c, n)` gives "Sprinkles the Berry Cat" when named; the pad tag puts the name on line 1 and "Berry Cat · Uncommon" on line 2; the hatch card, CREATURES panel, trade window and the follower tag use the same function. **Server-wide announcements and the Top Gardens board never carry a pet name** (species name only), so a bad name reaches at most the people who can already see the tag. Traded creatures keep their name; the receiver can rename.
+- **UI:** a NAME button on each CREATURES row opens a TextBox card (20 characters, live count, OK and Cancel); OK sends the request and closes; the tag updates when the profile does. No name field anywhere else; no names on the first-session prompts.
+
+### V6. Pacing results (`docs/game-design/game4-v04-pacing-check.py`, 2026-11-05)
+
+The v0.3 script with the three weathers, charms, the Moth and the milestone coins added; player model unchanged (median of 15 seeded runs, 90 days). Trading, followers and names move no coins and are not modelled.
+
+**Fact (computed), exact:** buy, hatch and release return by egg and weather, charm chance and Moth odds included; `bound` is the spec's Lucky Meter bound over all 7 weathers.
+
+| Egg | Clear | Sunbeam | Moonfall | Shower | Snowfall | Petal Storm | Thunder | Bound | Avg coins/s | Payback s |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `meadow` | 28.4% | 41.8% | 51.0% | 54.2% | 39.8% | 51.4% | 44.5% | 56.4% | 3 | 18 |
+| `forest` | 15.9% | 23.4% | 28.6% | 30.3% | 26.2% | 33.8% | 29.3% | 36.3% | 12 | 33 |
+| `sunset` | 13.1% | 19.3% | 23.5% | 24.9% | 18.7% | 24.2% | 21.0% | 26.7% | 75 | 40 |
+| `moon` | 6.3% | 9.3% | 11.3% | 12.0% | 8.8% | 11.4% | 9.9% | 12.3% | 301 | 83 |
+| `star` | 1.9% | 2.8% | 3.5% | 3.7% | 2.7% | 3.5% | 3.0% | 3.9% | 741 | 270 |
+| `celestial` | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 20,488 | 48,808 |
+| `aurora` | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 6,412 | 779,799 |
+
+**Worst bound 56.4% at Meadow in Rainbow Shower, unchanged from v0.3; 49 egg-weather pairs (7 sold eggs × 7 weathers) are under 60%.** Petal Storm is the nearest new pair (Meadow 51.4%, Forest 33.8% with the Moth). For `tests/GardenRules.spec.luau`: 49 checks; the pinned returns gain a "worst rare weather" column: `meadow "28.4 54.2 51.4 3 18"`, `forest "15.9 30.3 33.8 12 33"`, `sunset "13.1 24.9 24.2 75 40"`, `moon "6.3 12.0 11.4 301 83"`, `star "1.9 3.7 3.5 741 270"`, `celestial "0.0 0.0 0.0 20488 48808"`, `aurora "0.0 0.0 0.0 6412 779799"`; the average coins/s per hatch move by under 1% (the rare weathers are 3% of weekday windows). If the spec's rounding differs by one digit, re-derive from the script; the script is the record.
+
+**Result (simulated):** first buys, Index milestones and income, charms off against charms on (same seeds).
+
+| Player | Moon | Star | Celestial | Aurora | 20 | 40 | 60 | 80 | Income day 45 | Income day 90 | Charmed hatches in 90 days |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 30 min/day, charms off | day 3 | day 8 | day 15 | day 26 | day 4 | day 27 | >90 | >90 | 323,384 | 859,680 | 0 |
+| 30 min/day, **v0.4** | day 3 | day 8 | day 15 | day 26 | day 4 | day 26 | >90 | >90 | 367,389 | 860,200 | 42 |
+| 60 min/day, charms off | day 2 | day 5 | day 10 | day 19 | day 2 | day 14 | day 60 | >90 | 929,775 | 1,612,800 | 0 |
+| 60 min/day, **v0.4** | day 2 | day 5 | day 10 | day 18 | day 3 | day 14 | day 62 | >90 | 908,420 | 1,584,700 | 73 |
+| 180 min/day, charms off | 70 min | day 2 | day 5 | day 9 | 105 min | day 6 | day 24 | >90 | 1,782,025 | 2,655,950 | 0 |
+| 180 min/day, **v0.4** | 70 min | day 2 | day 5 | day 9 | 111 min | day 6 | day 26 | >90 | 1,959,600 | 2,794,500 | 156 |
+
+- Every section B target still holds (Moon day 2, Star day 5 at 1 h/day); the first Celestial and Aurora do not move. Charms change the 90-day income by under 5% either way (run-to-run noise at 15 seeds); a 1 h/day player hatches about 73 charmed creatures in 90 days, so the layer is felt often without moving the curve. **Hypothesis:** that is the right rate for "a treat during special weather".
+- The 80-entry milestone is not reached in 90 days by the script's player, who keeps only pen + 1 creatures and never chases cells; **Assumption:** collectors reach it in 30 to 60 days. The Aurora voucher at 80 is therefore a late reward, as intended.
+- **Income ceiling:** the theoretical top single creature is a Huge Rainbow Stormy Stardust Axolotl at 1,875,000 coins/s (×3 on 625,000); 20 of them at ×2.68 is 100M coins/s, 8.7e12 a day; `MAX_COINS` 1e15 holds for about four months even at that cap and for decades at simulated incomes. Nothing needs to change.
+
+### V7. Egg looks (art and client, display only)
+
+Every egg tier reads as more special than the last. The mesh contract (section 9, `egg_<id>`) is unchanged: each gets a richer baked 1024 texture and an in-game effect from the client's new `BedFx` (architecture 6.4). Budgets: at most 2 particle emitters per bed, a light only on Moon and above, Highlights only within the existing budget, nothing on the server.
+
+| Egg | Material feel (baked) | Pattern | Particle (bed, client) | Light | Sound on crack (registered first) |
+|---|---|---|---|---|---|
+| `starter` | matte shell | plain cream speckle | none | none | soft crack (existing) |
+| `meadow` | matte, slightly waxy | clover pattern, dew specks | none | none | soft crack |
+| `forest` | bark grain, moss patches | tiny baked mushrooms at the base | 1 drifting leaf mote, slow | none | twig snap crack |
+| `sunset` | satin gradient orange to rose | sun crest on the front | 1 warm shimmer emitter, rate 2 | none | warm chime crack |
+| `moon` | deep navy, matte with craters | glowing cream spots (baked Neon-look highlights) | 1 slow drifting-star mote, rate 1 | `PointLight` range 6, brightness 0.4, cream | low bell crack |
+| `star` | faceted gold foil look (baked, not `Foil` material) | facets with a star on each pole | 1 star-sparkle emitter, rate 3 | `PointLight` range 6, brightness 0.5, gold | bright chime crack |
+| `celestial` | white-gold satin | fine constellation lines | 1 orbiting ring of light motes (`Attachment` orbit, rate 6) | `PointLight` range 8, brightness 0.8, white-gold | the top rarity chime (existing) |
+| `aurora` | pearlescent, aurora bands teal to violet | pale star spots | 1 star mote emitter, rate 3, plus a slow colour-cycling `Highlight` (teal → violet → green over 6 s, `FillTransparency` 0.6, within the budget, else nothing) | `PointLight` range 8, brightness 0.8, cycling with the Highlight | aurora shimmer crack |
+
+Rules: the egg on the cart shows the same texture without the particle or light; the growth scale (40% to 100%) and ripe wobble are unchanged; a ripe egg's existing glow stays; effects stop when the bed empties. **Assumption:** 72 beds × 2 emitters at low rates stays within the I4 budget; `BedFx` turns particles off beyond 40 studs from the camera.
+
+### V8. Everything that assumed the old shapes
+
+| Place | Assumption | Change |
+|---|---|---|
+| `GardenConfig.Creature` | `{ id, s, m, z, placed, fav }` | Done (GARDEN-028): adds `c` (charm, `"none"`), `fa` (favourited at, 0), `n` (name, `""`); every constructor (`HatchRules.apply`, `GardenRules.grant`, `TradeRules.give`, defaults) sets all three |
+| `GardenConfig.Profile` | schema v2 | Done (GARDEN-028): v3: `trades`, `tradesToday`, `milestones`, `pad`; `SCHEMA_VERSION` 3; a v2 record loads with `{}`, `{ day = -1, count = 0 }`, `{}`, `"plain"` and every creature gets `c = "none"`, `fa = 0`, `n = ""` (decision 0015) |
+| `GardenRules.rate` | base × mutation × size | Done (GARDEN-028): × charm; `releaseValue`, `income`, trade value and the 60% spec follow |
+| `GardenRules.favourite(p, id)` | toggles | Done (GARDEN-028; `follower`, `validName`, `setName` too): `favourite(p, id, now)` sets `fa = now` when turning on |
+| `GardenConfig.WEATHERS`, `WEATHER_ODDS` | 4 rows; two odds tables | Done (GARDEN-028): 7 rows; the weekend table carries the three rare weathers at 200 and `oddsFor` adds the event bonus |
+| `WorldRules.eventFor` | picks from the raw table | Done (GARDEN-028; `isRare` lives in `GardenConfig`, `eventStatus` added): picks from `oddsFor(window start)`; `weekendEvent`, `isRare` new; `GardenStatus.event` |
+| `HatchRules.roll` | 3 draws; egg odds fixed | Done (GARDEN-028): 4 draws (charm last, only in a rare weather); `oddsFor(egg, weather)` for the Moth |
+| `HatchRules.Outcome`, `Fx hatch`, `announce` | `{ s, m, z }` | Done for the pure part (GARDEN-028; Fx in GARDEN-029): add `c`; Stormy announced |
+| `GardenConfig.SPECIES`, `INDEX_SIZE` | 19, 80 | Done (GARDEN-028): 20 (`moth` after `hedgehog`), 84; `tests/GardenConfig.spec` pins both |
+| `tests/GardenRules.spec` 60% test | 28 pairs | Done (GARDEN-028): 49 pairs with charm expectation and Moth odds; V6 pins |
+| `tests/HatchRules.spec` seeded rolls | old sequences | Done (GARDEN-028): unchanged (charm draws last and only in rare weathers); new: a Snowfall roll gives `frosted` at the expected rate, `none` in Clear; Moth only in rare weathers and only from Forest and Sunset |
+| `GardenProgress.sanitize` | v2 fields | Done (GARDEN-028; v2, pre-0014 and v3 literals): v3 fields and creature fields; a literal v2 record loads with every old field kept |
+| `GardenProgress.CONFIG.slots` | fence, can | Done (GARDEN-028): plus `pad = "plain"`; `COSMETICS` gains `plain`, `clover` (index 40) and `starlit` (fence, index 60) |
+| `Plots.refresh`, tags | fence, can; tag = name and rarity | pad skin; `C` attribute; tag line 1 pet name |
+| `GardenServer` router | one id arg | `name` parses `"<id>:<name>"`; new `trade*` actions routed to `Trades`; `Follower` attribute via `publish` |
+| `Profiles.load` | login only | `Trades.heal` after login (reads the ledger) |
+| `State.Live` | | `nameAt`, `renames`, `declined` (per-pair decline time) |
+| `ClientState.creatureName` | `(s, m, z)` | `(s, m, z, c, n)`; `CHARM_COLOURS`; `settings.followers`, `settings.trades` |
+| Menu Index grid | 80 cells | 84; milestone CLAIM card; LOCKER PADS row; CREATURES NAME button; STATS Trades list |
+| Hud | weather chip, 4 weathers | 7 weather names and looks, the weekend event line; TRADE button when a friend is within 15 studs |
+| Forecast board | 4 tables | 7 tables and "This weekend: <event>" |
+| `docs/assets/register.md` | | `creature_moth`, moth cry, 8 egg textures, 5 crack sounds, Clover pad decal, Starlit fence parts |
+
+## X. Garden v0.5: look, valley and login rewards (decision 0017)
+
+Status: proposed for SHANNON (checkpoint `docs/checkpoints/GARDEN-V05.md`). SHANNON's brief, verbatim: *"overhaul the UI to look better and more like other popular games, also improve the map area to make it look cooler, fix where you spawn, add like large cherry blossoms and hills on the horizon. also make a new login reward that has a weekly drop with an exclusive weekly egg at the end that has exclusive creatures. make it so you only have to sign in 5 days a week to get the egg and add 2 extra rewards after for people who sign in for 7 days, do the same for monthly and make the egg the fourth final reward with 3 extra rewards, also make it an exclusive monthly egg".* The hard rules stand: no stealing (G3, V1), G4 anti-pressure (no countdowns pushing a sign-in, no purchases, no "limited" language), trading only as V1. Where this section and H2, H5, I1 or I4 disagree, this section wins. Labels: **Fact** (in code or computed by `docs/game-design/game4-v05-pacing-check.py`), **Assumption**, **Hypothesis**. Section W (Petal Catch, decision 0016) lives in `game4-wheel.md`; nothing here moves the Petal Patch.
+
+### X1. UI overhaul
+
+**Goal.** The same panels and the same requests, dressed like the top Roblox pet games (Adopt Me, Grow a Garden, Pet Simulator 99): a left strip of square icon buttons with labels and badges, a top bar with a coin pill and a level ring, chunky ribbon-headed panels with a close X, 3D buttons that bounce, card grids, bottom-centre toasts, and a start menu with a logo, a big PLAY and a creature showcase. One module builds every piece (`src/garden-client/UiKit.luau`, architecture 6.4); `Menu` and `Hud` only compose. Font stays `FredokaOne` everywhere. **Nothing in this section changes a rule, a request or a payload.**
+
+**X1.1 Tokens** (`ClientState.UI`; existing names keep their values, these are added):
+
+| Token | Value | Used for |
+|---|---|---|
+| `SHADOW` | (60, 45, 70) at transparency 0.78 | panel and card drop shadows |
+| `INK_SOFT` | (120, 100, 120) | secondary text, outer strokes |
+| `BADGE` | = `CORAL` | notification badges |
+| `RING` | (255, 236, 170) | level ring track |
+| `GLASS` | white at transparency 0.35 | chip backgrounds over the world |
+| `edge(colour)` | the colour darkened 25% (`Color3:Lerp(INK, 0.25)`) | the 3D bottom edge of every button |
+| `ACCENT[panel]` | Eggs GOLD, Creatures SKY, Index LEAF, Locker LILAC, Rewards CORAL, Stats SKY, Dash AQUA, Settings LILAC, Trade PINK, Admin CORAL, Patch PINK | header ribbons and strip buttons |
+
+**X1.2 Scale.** Every number below is in pixels at 1920 × 1080. `UiKit.scaleRoot(gui)` adds one `UIScale` per `ScreenGui`: `scale = clamp(min(viewX / 1920, viewY / 1080), 0.6, 1.0)`, refreshed on `ViewportSize`. **No text is under 12 px on screen** (GARDEN-058, QA M2): `UiKit.text` gives TextScaled labels a 12 px minimum (their size limits are screen px under a `UIScale`) and fixed sizes a floor of `12 / scale`; at 844 × 390 (scale 0.6) every panel still fits. On touch (`UserInputService.TouchEnabled` and no mouse) the strip shows 5 buttons plus MORE (X1.4), and the strip's buttons never sit under the thumbstick (strip top at `y = 140`, strip bottom above `viewY − 220` in scaled units). `GuiService.ReducedMotionEnabled` disables every bounce and float (as `pop` already does).
+
+**X1.3 Components** (`UiKit` functions; radii and strokes are `UICorner` and `UIStroke`):
+
+| Component | Size | Shape | Behaviour |
+|---|---|---|---|
+| `panel(name)` | 820 × 560, centred; body is a `ScrollingFrame` under the ribbon | radius 24; fill `PANEL`; stroke 4 `WHITE`, outer stroke 2 `INK_SOFT`; shadow: a `SHADOW` frame of the same size offset (0, 10) behind, radius 24 | opens with scale 0.9 → 1 over 0.22 s (Back); closes at once; one panel open at a time; `Escape`, gamepad B and the X close it |
+| ribbon (part of `panel`) | 820 × 72 at the top, overhanging the panel by 6 px each side | radius 20; fill `ACCENT[name]`; title 36 px `WHITE` with `INK` stroke 2, centred; a 16 px lighter band along the top (`UIGradient` white 0.25 → 0) | static |
+| close X (part of `panel`) | 56 × 56, top-right at (−14, −14) outside the corner | radius 18; fill `CORAL`; "X" 30 px `WHITE`; 3D edge 6 px | bounce as a button; closes the panel |
+| `tabs(panel, labels)` | row of 52 px pills, 12 px gap, under the ribbon | radius 16; active `ACCENT`, inactive `CARD` with `INK` text; text 22 px | one active; gamepad bumpers move between tabs |
+| `button(text, colour, w, h)` | large 64 high (text 28), medium 52 (24), small 40 (20); width given | radius 16; face `colour` with a vertical `UIGradient` (white 0.18 at the top → 0); the **3D edge**: a frame of `edge(colour)` the same size offset (0, 6) behind the face; stroke 2 `WHITE` on the face; disabled: `GREY` face, no edge, `INK_SOFT` text | press (`MouseButton1Down`, touch, gamepad A): face moves down 5 px in 0.06 s and the edge hides; release: back up with Back easing 0.18 s and a scale pop 1.06 → 1; the existing tick sound |
+| `iconButton(icon, label, colour)` | 96 × 96, in a 112 px pitch strip | radius 22; face as `button`; icon image 56 × 56 centred at y 10 (or the 2-letter glyph fallback, 30 px `WHITE`); label 18 px `WHITE` at the bottom with `INK` stroke 1 | as `button`; a badge or dot (below) at (−6, −6) of the top-right corner |
+| `badge(n)` / `dot()` | 28 px circle with the count 16 px `WHITE` / 18 px `GOLD` circle with a `WHITE` stroke 2 | fill `BADGE`; stroke 2 `WHITE` | the dot replaces today's gold dot everywhere (`ClientState.rewardsReady`, prize ready, milestone ready, a trade invite, a login reward); a count when it is known (unclaimed login slots, prize eggs) |
+| `coinPill()` | 260 × 60, top-left at (24, 20) | radius 30; fill `CREAM`, stroke 3 `WHITE`, shadow; a 44 px `GOLD` coin circle (icon `coin`) at the left; amount 30 px `INK` short format; income 16 px `LEAF` under the amount | on a gain: the amount pops (existing `pop`) and a "+N" label (24 px `LEAF`, `INK` stroke 1) floats 44 px up and fades over 0.8 s; gains inside 0.5 s merge into one float |
+| `levelRing(level, fraction)` | 84 px ring right of the coin pill at (300, 8); XP bar 200 × 14 to its right | ring: track `RING`, fill `PINK`, 10 px thick, built from two clipped half-rings rotated by the fraction (no images); level 30 px `INK` inside; XP text 16 px `INK_SOFT` over the bar | fills with a 0.4 s tween; a level-up plays the existing toast and a ring pulse |
+| `card(w, h)` | egg 160 × 200, creature 160 × 180, reward slot 120 × 150, in grids with 16 px gaps (`UIGridLayout`) | radius 18; fill `CARD`; stroke 4 in the rarity (or egg) colour; shadow offset (0, 6); an icon area 110 × 110 (egg colour disc, `ViewportFrame` for a creature, image for a reward); name 18 px `INK` (`TextScaled` off, truncated); a price or state pill 30 px high under it (`GOLD` price, `LEAF` READY, `GREY` LOCKED) | hover or selection: scale 1.04; a selected card gets a `GOLD` stroke |
+| `toast(text, icon, colour)` | 440 × 68, bottom-centre, 120 px above the bottom; up to 3 stacked, newest lowest | radius 22; fill `CREAM`; stroke 4 in `colour`; a 48 px icon disc at the left; text 22 px `INK` | slides up 24 px over 0.25 s, holds 2.5 s, fades 0.3 s; the existing `LastReward` and `notice` toasts use it |
+| `chip(w, h)` | HUD chips (weather, restock, next ripe) | radius 16; fill `GLASS`; stroke 2 `WHITE`; text 18 px `INK` with a `WHITE` stroke 1 | unchanged content |
+| `card for the start menu showcase` | 3 cards 200 × 240 in a row under the PLAY button | as `card`, creature `ViewportFrame` with the species' mutation look where cheap (Normal only), name and rarity | the centre card is 1.1 scale; every 4 s the row shifts one species to the left (a 0.4 s slide); the showcase lists the **newest species in `SPECIES` order** (v0.5: the six login exclusives and the Moth) |
+
+**X1.4 Layout.**
+
+- **Left strip** (replaces the `QUICK` column): icon buttons top to bottom **EGGS, CREATURES, INDEX, REWARDS, DASH, PATCH** (when the wheel exists), **LOCKER, HOME**, then **MENU** at the bottom; ADMIN appears above MENU for `GardenConfig.ADMINS` only. Touch: **EGGS, CREATURES, REWARDS, HOME, MORE**, where MORE opens a sheet with the rest. Badges: REWARDS = unclaimed login slots + claimable quests + a milestone claim; DASH = prize eggs to plant; CREATURES = an incoming trade invite (dot).
+- **Top bar:** coin pill and level ring at the left; the weather chip and its two next windows at the right (as today, in `chip`s); the restock and next-ripe lines under it.
+- **Panels:** one `panel` at a time, centred, body content as today. The mapping:
+
+| Existing panel (`Menu`) | v0.5 shell | Inside |
+|---|---|---|
+| Eggs (cart) | panel GOLD, tabs **EGGS / ODDS** | a card grid of sold eggs (price pill, grow time, stock left as a small corner badge, LOCKED pill with the level); BUY on the selected card's detail strip below the grid (name, Lucky Meter bar, stock, BUY, ODDS); the ODDS tab is today's Odds panel per egg with the Moth and charm lines |
+| Odds | the ODDS tab above | unchanged content |
+| Index | panel LEAF, tabs **GRID / MILESTONES** | the 108-cell grid (4 mutation cells per species, species rows in rarity order), the milestone CLAIM cards on the second tab (V4) |
+| Creatures | panel SKY, tabs **PEN / STORAGE / TRADES** | creature cards (name, rarity frame, mutation, size, charm, coins/s, LOVED heart) with PLACE / STORE / RELEASE / NAME / LOVE in the detail strip; the TRADES tab is V1.7's list |
+| Locker | panel LILAC, tabs **FENCE / CAN / PADS** | cards per cosmetic (swatch disc, name, unlock pill; EQUIP / BUY) |
+| Rewards | panel CORAL, tabs **WEEKLY / MONTHLY / QUESTS** | the two login tracks (X3.5) and today's quests as cards |
+| Stats | panel SKY | as today, in two columns of label/value rows |
+| Dash | panel AQUA | READY button, prizes today, the "Prize eggs" card row with PLANT (prize eggs include the Weekly and Monthly Eggs) |
+| Settings | panel LILAC, tabs **GAME / HOW TO PLAY** | toggles as `button`s with ON/OFF pills; the Help panel becomes the second tab |
+| Help | the HOW TO PLAY tab above | unchanged text |
+| Admin (0013) | panel CORAL | the catalogue as a card grid |
+| Trade (`TradeFx`, V1) | panel PINK (built by `TradeFx` through `UiKit`) | two columns of cards, the fairness line, TRADE / CONFIRM / CANCEL as `button`s, the emote row as 4 small icon buttons |
+| Petal Catch (W, other branch) | panel PINK | unchanged content inside the shell |
+
+- **Start menu:** full-screen over the orbit; logo top-centre at y 90: "EGG GARDEN" 110 px `PINK` with a `WHITE` stroke 6 and an `INK_SOFT` shadow label offset (0, 8); the word "EGG" rotated −4°; an egg disc (`EGG_COLOURS.meadow`) 64 px tucked behind the first letter. **PLAY** 380 × 100 `LEAF` 3D button at y 420, idle pulse scale 1 → 1.04 → 1 over 1.6 s; the showcase row under it at y 560; a column of 5 medium icon buttons at the right edge (INDEX, LOCKER, REWARDS, STATS, SETTINGS) with their badges; the tagline 26 px `WHITE` with `INK` stroke under the logo. The gold claim dot stays as the `dot` on REWARDS.
+- **World tags** (pad tag, plot sign, follower tag) are not part of this pass.
+
+**X1.5 Icons.** The project has no icon art, and shapes made of Frames read badly at 56 px. **Decision: 16 icon decals, 128 × 128 PNG, drawn with Pillow by `tools/icons/make_icons.py`** (flat two-tone shapes on transparent, `WHITE` fill with an `INK` 6 px outline, the game's pastel for one accent), uploaded as Decals through the existing asset workflow (register row each, ids in `src/shared/GardenIcons.luau`, a nil id shows the two-letter glyph fallback, so the UI never waits for art). The set: `coin`, `egg`, `paw` (creatures), `book` (index), `hanger` (locker), `gift` (rewards), `flag` (dash), `petal` (patch), `home`, `chart` (stats), `cog` (settings), `heart` (like / loved), `swap` (trade), `calendar` (login tracks), `lock`, `check`. Pillow rather than Blender because they are flat shapes; deterministic output means a re-run gives the same file (GARDEN-055).
+
+**X1.6 Gamepad.** Every panel body is a `SelectionGroup`; opening a panel selects its first card or button (`selectFirst` as today); `SelectionImageObject` is one shared `GOLD` rounded stroke frame (`UiKit.selector`); bumpers change tabs; B closes; the strip is navigable with the d-pad when no panel is open.
+
+**Hypothesis:** the look lifts first-session retention; the measure at the greybox gate is the start-menu frame and the EGGS panel side by side with the v0.4 build.
+
+### X2. Valley
+
+**Spawn (fix).** Today a joining character is moved to the plot gate only after `Profiles.load` returns and only if a plot was assigned; before that the character stands wherever Roblox put it (the world origin, inside the Great Egg Tree). v0.5 adds a **Spawn Plaza pad**: a `SpawnLocation` on the plaza at **(18, 0.3, 32)** (south-east of the cart, between the 135° lamp post and the cart; 10 studs across, `Neutral`, `Duration 0`, facing the Great Egg Tree), so every character appears there, facing the tree with the cart to the left and the gardens behind. The menu's orbit still runs; on **PLAY** the camera flies from the orbit to the player's gate over 1.6 s and the server moves the character to `Plots.gate` on the `play` request (new, no argument; it is `home` plus the first-time flag, X2 table) once the profile is loaded. A player whose profile is still loading sees the start menu until it is. The spawn pad is a model (`spawn_pad`, 9.3): a cobble disc with a pastel egg mosaic and four low posts; the `SpawnLocation` itself is invisible under it. **Assumption:** the spot is clear of the cart (9 studs), the 135° lamp (12) and the forecast board (20); the engineer may move it up to 6 studs.
+
+**Additions** (positions from the centre, north −Z, `polar(angle, radius)` as `World.luau`; sizes in studs; nothing listed in I1 moves: plots, cart, boards, Splash Island, the Petal Patch at (−40, 0, −52)):
+
+| # | What | Where | Size | Build | Tri budget |
+|---|---|---|---|---|---|
+| 1 | Spawn pad | (18, 0.3, 32), facing (0, 0, 0) | 10 across, 0.6 high | `spawn_pad` mesh; fallback a Cobblestone cylinder with 4 pastel posts | 1,500 |
+| 2 | Plaza sakura (4) | radius 58 at 30°, 90°, 150°, 210° | 34 tall, canopy 30 | `sakura_large_a`, `b`, `a`, `c`; trunk collides (a 2.5 radius cylinder part), canopy does not | 2,500 each |
+| 3 | Rim sakura (8) | radius 150 at 20°, 50°, 100°, 140°, 200°, 240°, 290°, 340° | 40 to 45 tall, canopy 36 | `sakura_large_b/c/a/b/c/a/b/c`; the 16 existing small sakura within 25 studs of a large one are dropped (about 8 remain) | 2,500 each |
+| 4 | Petal emitters | one per large tree at canopy centre, 60 stud range | | `ParticleEmitter` rate 3, lifetime 5 to 7, size 0.4, `PASTELS` pink, `Acceleration` (1.2, −1, 0.4), enabled only on the client within 60 studs of the camera (`CreatureFx` ambient loop) | 12 emitters total |
+| 5 | Hills band 1 (near) | radius 300 to 360, 14 hills | 60 to 90 tall, radius 70 to 110 | **Terrain** `FillBall` Grass (the existing hill loop, enlarged): collides, blends with the grass, no asset | voxels |
+| 6 | Hills band 2 (mid) | radius 480 to 560, 12 ridges at 30° steps, random yaw | 150 to 180 tall, 220 wide | **Blender `hill_a/b/c`** (4 of each), scale 1 | 1,200 each |
+| 7 | Mountains band 3 (far) | radius 820 to 950, 8 ridges at 45° steps offset 20° | 380 to 440 tall, 560 wide | the same `hill_a/b/c` at scale 2.5 (snow caps baked above 70% height), behind the `Atmosphere` haze | reuse |
+| 8 | Pond | centre (−50, 0, −92), ellipse 20 × 14 | water 2 deep | Terrain Water with a Sand rim 2 wide; 8 lily pads (cylinder 2.5 × 0.2, `LEAF`), 3 with a pink flower (Ball 0.9); 2 cattail clusters (parts) | parts: 30 |
+| 9 | Path lanterns | 4 per path (6 paths), at 1.5 studs off the path edge every 6 studs from radius 48, alternating sides | 4.5 tall | `lantern` mesh (stone base, wooden frame, paper shade); `PointLight` range 10 brightness 0.8 warm, `Shadows` false, in `World`'s `lamps` list so `World.forecast` lights them at Moonfall | 600 each, 24 total |
+| 10 | More flowers | meadows between plots, the plaza ring edge | | the `meadows()` cap rises from 520 to **900** flowers and 45 to 70 clusters (I1 said at most 600; this amends it), plus 24 flower boxes (parts) around the plaza ring between lamp posts | parts: about 1,000 |
+| 11 | Plaza benches and bunting | 4 benches facing the tree at radius 14; bunting between lamp posts (already fairy lights) | | parts | 60 |
+
+**Why terrain near and meshes far:** band 1 hills are within walking reach, so they must collide and match the grass, which terrain does for free; bands 2 and 3 are silhouettes 500 to 950 studs out, where terrain would cost millions of voxels for a ball the size of a mountain and still read as a blob, while three ridge meshes at 1,200 tris give a controlled skyline with baked snow for under 30,000 tris total. Band 3 is tinted by the existing `Atmosphere` (density 0.28, haze 1), so no second texture is needed.
+
+**Budgets (I4 amended):** world under **7,500 parts** (was 6,000; flowers are the growth); 12 petal emitters plus the existing bed and creature emitters; 24 lantern lights plus 8 lamp posts plus 6 hanging eggs = 38 `PointLight`s in the valley, none casting shadows; 12 large sakura × 2,500 + 20 hill instances (3 meshes) + 24 lanterns (1 mesh) + 1 pad: about 60,000 tris of new static meshes. Streaming stays off (the valley is one place).
+
+**First screenshot test (I4) gains:** the frame must show at least two large sakura, the hill bands and a snow cap, and the spawn pad.
+
+### X3. Login rewards
+
+**Replaces** H5's daily streak and weekly bonus (the daily quests stay). Two tracks count **distinct UTC days signed in**, not consecutive days: a missed day costs nothing but that day; there is no streak to lose, no timer on screen, no "come back or lose it" copy (G4). The panel says which day of the week or month it is and which slots are claimable.
+
+**X3.1 Weekly track.** Week = `MetaRules.weekOf(today)` (Monday-based, UTC). The first sign-in of each UTC day in the week advances `weekDays` by one (1 to 7). Slots unlock at sign-in counts 1 to 7; **the 5th is the Weekly Egg**, so five days in a week earn the egg, and 6 and 7 are extras for a full week. An earned slot is claimable until the week rolls over on Monday; any earned slot still unclaimed then is **paid automatically at the rollover** and the player sees the reward toast with "(saved for you)" (0017 amendment, GARDEN-058: nothing earned is lost; nothing carries over into the new week, so nothing accumulates to be anxious about). Claims are in order (slot n needs slot n − 1 claimed), so the save holds a count, not a list.
+
+| Sign-in | Reward (coins as H5 `scaled(base, minutes)`, floor = base) |
+|---|---|
+| 1 | 100 coins, 3 min |
+| 2 | 150 coins, 5 min |
+| 3 | 200 coins, 8 min |
+| 4 | 300 coins, 12 min |
+| **5** | **Weekly Egg** (`prizeEggs.weekly + 1`) |
+| 6 | 400 coins, 15 min, and the **Blossom Can** (`can` `blossom`, login-only) |
+| 7 | 500 coins, 20 min, and the **Lantern Fence** (`fence` `lantern`, login-only) |
+
+**X3.2 Monthly track.** Month = calendar month, UTC (`LoginRules.monthOf(day)` gives `year * 12 + month − 1` and the month's length by civil-from-days arithmetic, pure). Sign-ins count as above (1 to 31). Seven slots at sign-in counts **3, 7, 12, 18, 22, 26, 30**; the 4th (18) is the Monthly Egg; in a month shorter than 30 days the last slot is at the month's length (February: 28 or 29). Earned slots still unclaimed on the 1st are paid then, as for the week.
+
+| Sign-in | Reward |
+|---|---|
+| 3 | 200 coins, 10 min |
+| 7 | 300 coins, 20 min |
+| 12 | 500 coins, 30 min |
+| **18** | **Monthly Egg** (`prizeEggs.monthly + 1`) |
+| 22 | 600 coins, 40 min, and the **Lily Pads** (`pad` `lily`) |
+| 26 | 800 coins, 50 min, and the **Sakura Fence** (`fence` `sakura`) |
+| 30 (or the month's length) | 1,000 coins, 60 min, and the **Peacock Pitcher** (`can` `peacock`) |
+
+The five login cosmetics are `COSMETICS` rows with `grant = "login"` and no price or level: owned only through `owned[id]`, never buyable, equipped like any cosmetic; a slot whose cosmetic is already owned pays its coins only (the second and later weeks).
+
+**X3.3 The exclusive eggs** (data in `GardenConfig.EGGS`, after `aurora`; no `price`, no `stock`, `level = 1`, `exclusive = "weekly" | "monthly"`):
+
+| Egg | Grow | Odds (bp) | Lucky Meter | XP | Mutation, charm |
+|---|---|---|---|---|---|
+| `weekly` Weekly Egg | 1 h | `puffin` 6000, `otter` 3200, `capybara` 800 | top `capybara`, meter 12 | 150 | weather roll as any egg (E3, V2); charms in rare weather |
+| `monthly` Monthly Egg | 4 h | `redpanda` 7000, `peacock` 2500, `snowleopard` 500 | top `snowleopard`, meter 8 | 400 | as above |
+
+They cannot be bought (`buyEgg` refuses an egg without a price; the cart grid lists priced eggs only), never restock, and are planted from the Dash panel's "Prize eggs" row with the existing `plantPrize`. **Level gate: none.** Decision 0012 item 3 set the plant gate at the egg's own unlock level (Level 10 for the Moon prize) because a 301 coins/s creature on day 1 broke early pacing; these eggs have `level = 1`, and X4 shows why that is safe: the Weekly Egg's expected creature is 66 coins/s (between a Forest and a Sunset hatch) and it cannot arrive before the 5th sign-in, by which time the 1 h/day player already buys Moon Eggs (day 2); the Monthly Egg (2,383 coins/s expected) cannot arrive before the 18th day, after the first Celestial. 0012 item 3 is amended to say so for these two eggs only; the Moon and Aurora vouchers keep their gates.
+
+**X3.4 The six exclusive species** (added to U1's roster in rarity-then-rate order; Index entries `species:normal/golden/moonlit/rainbow`, 24 cells, **`INDEX_SIZE` 108**; release value 6 × rate; cries nil until registered; Blender models `creature_<id>` per 9.1):
+
+| Id | Name | Rarity | Rate | After | Look (for the artist) |
+|---|---|---|---|---|---|
+| `puffin` | Pebble Puffin | uncommon | 10 | `lamb` | round black-and-white puffin with a striped pastel beak, standing on a pebble |
+| `otter` | River Otter | rare | 50 | `hedgehog` (before `moth`) | brown otter on its back holding a lily pad like a plate |
+| `capybara` | Spa Capybara | epic | 220 | `turtle` | capybara with a mandarin on its head and a towel, eyes half closed |
+| `redpanda` | Maple Red Panda | legendary | 650 | `lion` | red panda hugging a maple leaf bigger than itself |
+| `peacock` | Jewel Peacock | mythic | 2000 | `dragon` | white peacock with a fanned tail of pastel gem shapes |
+| `snowleopard` | Frost Leopard | divine | 6000 | `whale` | pale leopard cub with frost-tipped fur and a snowflake on its forehead |
+
+Exclusive means "only from its egg": no sold egg lists them, no weather makes them (unlike the Moth). They are tradable under V1 (value by `rate`, the same fairness band), they enter the Index like any species, and they count for quests (`hatches`, `rareHatches`, `mutants`). **Milestones (V4) stay at 20 / 40 / 60 / 80 and nothing is added at 100 or 108**: the 80 voucher stays the last milestone, and the 28 cells above it are for completionists (hypothesis: a goal with no prize attached is the right shape for the exclusives, which are earned by showing up, not by collecting).
+
+**X3.5 What the player sees.** REWARDS panel, WEEKLY tab: 7 slot cards in a row (120 × 150: reward icon or egg disc, "Day n" label, the coin amount at the player's current income, state pill: CLAIM (`LEAF`, bounce), CLAIMED (`GREY` with a check), or the sign-in count needed (`INK_SOFT`, "Sign in 2 more days")), a line "Week of Monday 3 Nov · signed in 3 days" and nothing counting down. MONTHLY tab: the same with 7 cards labelled by sign-in count. A **CLAIM** on a card sends `claimLogin week` or `claimLogin month` (the server pays the next unclaimed slot, so the client never names a slot); CLAIM ALL presses them in turn (0.4 s apart under the rate limit). On join, when any slot is claimable, a toast "Login reward ready!" and the REWARDS badge show the count. The first hatch of each exclusive species plays the usual reveal and the Index "new entry" line. Weekly and Monthly Eggs appear in the Dash panel's "Prize eggs" row and on the strip's DASH badge.
+
+**X3.6 Save (schema v3, see 0017):** `login = { week, weekDays, weekLast, weekClaimed, month, monthDays, monthLast, monthClaimed }`, all integers (`week` and `month` keys; `*Days` 0 to 31; `*Last` the UTC day last counted, −1 for none; `*Claimed` 0 to 7). The tick (`LoginRules.tick(p, today)`) pays the earned, unclaimed slots of a track whose key moved forward, resets it, then counts today once (`today > *Last`); a key or day behind the stored one changes nothing. It runs inside `GardenProgress.login` at join and from the server at a UTC day rollover while online (architecture 4.7), is idempotent (a re-run sees the new key), and returns the "(saved for you)" toast text. A save that skipped several periods pays its stored period only: the periods between had no sign-in, so they earned nothing. A claim needs `claimed < #track`, `days >= track[claimed + 1].count`; it pays and sets `claimed + 1`, and the queued claim carries the slot number its request saw, so a re-applied claim (flush re-apply, 4.2, or a re-run on a record that already holds it) returns the profile unchanged. The old `daily` and `week` fields stay in the save untouched (MetaRules still ticks them; `claimDaily` and `claimWeekly` leave the router and the UI), so a rollback to v0.4 loses nothing.
+
+### X4. Pacing results (`docs/game-design/game4-v05-pacing-check.py`, 2026-11-05)
+
+The v0.4 script with the six species, the two eggs and the two tracks; `LOGIN = False` is the v0.4 reward model on the same seeds. The simulated player signs in every day (7/7 and 30/30, the most the tracks can pay) and plants a free egg before buying.
+
+**Fact (computed), exact:**
+
+| | Weekly Egg | Monthly Egg | For scale |
+|---|---|---|---|
+| Expected creature, coins/s (Lucky Meter, average weather, size) | **66.4** | **2,382.7** | Forest 12, Sunset 75, Moon 301, Star 741 |
+| Coins as minutes of income per day | weekly track 9.0 | monthly track 7.0 | both **16.0**; replaced streak + weekly bonus at a 7-day streak 10.4; Dash 6; Wheel 30 |
+| Creature value per day from the eggs | 66.4 / 7 | 2,382.7 / 30 | **88.9 coins/s per day** against the Dash prize cap of 3 Moon Eggs = 904 |
+
+Both tracks together pay about half of what the Wheel can pay in coins per day and a tenth of what the Dash can pay in creatures per day, so a player who never signs in daily loses little and a player who does is not carried by it. The 60% rule (0008 amendment) does not apply to an egg with no price; the exclusives can be released (6 × rate) like any creature, which returns at most 36,000 coins for a Frost Leopard, nothing against incomes at day 18.
+
+**Result (simulated, median of 15 seeds, 90 days):**
+
+| Player | Moon | Star | Celestial | Aurora | 20 | 40 | 60 | Income day 45 | Income day 90 | Exclusives hatched | Index day 90 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 30 min/day, v0.4 rewards | day 3 | day 8 | day 15 | day 26 | day 4 | day 26 | >90 | 367,389 | 860,200 | 0 | 56 |
+| 30 min/day, **v0.5** | day 3 | day 8 | day 15 | day 26 | day 4 | day 20 | day 73 | 310,409 | 927,360 | 16 | 62 |
+| 60 min/day, v0.4 rewards | day 2 | day 5 | day 10 | day 18 | day 3 | day 14 | day 62 | 908,420 | 1,584,700 | 0 | 63 |
+| 60 min/day, **v0.5** | day 2 | day 5 | day 11 | day 20 | day 3 | day 13 | day 47 | 859,465 | 1,651,410 | 16 | 69 |
+| 180 min/day, v0.4 rewards | 70 min | day 2 | day 5 | day 9 | 111 min | day 6 | day 26 | 1,959,600 | 2,794,500 | 0 | 69 |
+| 180 min/day, **v0.5** | 70 min | day 2 | day 5 | day 9 | 133 min | day 6 | day 20 | 1,875,510 | 2,907,800 | 16 | 75 |
+
+- Section B targets hold (Moon day 2, Star day 5, Celestial around day 12 at 1 h/day: day 11). The first Aurora at 1 h/day moves from day 18 to day 20, inside 0014's "4 to 10 days after the first Celestial" window (9); income at day 45 is 3% to 15% lower (the free eggs occupy beds that cycled Moon Eggs, and the daily floors are gone), and at day 90 4% to 8% higher (six more species × 2% Index income). Both are within the run-to-run noise of 15 seeds. **Hypothesis:** the tracks are felt as a gift, not as a second economy.
+- Index 40 and 60 come 1 to 15 days earlier because 16 exclusive hatches in 90 days add 6 to 8 cells. The 80 milestone is still not reached by the script's player.
+- The Moon Egg prize comparison justifies the no-gate rule: a Weekly Egg at sign-in 5 is worth a fifth of one Dash win.
+
+### X5. Everything that assumed H5, the roster, the panels or the old spawn
+
+| Place | Assumption | Change |
+|---|---|---|
+| `GardenConfig.Egg` | sold or starter | adds `exclusive: string?` ("weekly" / "monthly"); `weekly`, `monthly` after `aurora`; `GardenConfig.isPrizeable(egg)` = `price ~= nil or exclusive ~= nil` |
+| `GardenConfig.spec` | `aurora` last in `EGGS`, `#EGGS` 8, 20 species, `INDEX_SIZE` 84, every egg with `top` has a price | `aurora` is the last **sold** egg, `#EGGS` 10, 26 species in X3.4 order, `INDEX_SIZE` 108; exclusive eggs have `top`, `meter`, no price, `level` 1; no sold egg's odds name an exclusive species |
+| `GardenConfig.Cosmetic` and `COSMETICS` | unlock by level, index or price | adds `grant: string?`; five `grant = "login"` rows (`blossom` can, `lantern` fence, `lily` pad, `sakura` fence, `peacock` can) |
+| `MetaRules.isUnlocked` | `price` means owned-only | `price or grant` means owned-only (one line; Relay and Night rows have no `grant`) |
+| `MetaRules.sanitizeMeta` `owned` | keeps priced ids | keeps priced or granted ids |
+| `GardenConfig.DAILY`, `DAILY_MINUTES`, `WEEKLY` | paid by `claimDaily` / `claimWeekly` | still in `CONFIG` (MetaRules ticks the fields), never paid; marked deprecated in a comment; `claimDaily` and `claimWeekly` leave `Profiles.request` and the router (an unknown action is refused) |
+| `GardenConfig.LOGIN` (new) | | `{ week = { slots }, month = { slots } }`, each slot `{ count, coins?, minutes?, egg?, cosmetic? }` |
+| `GardenProgress.defaults` / `sanitize` | v3 fields | `login` with the X3.6 shape and clamps; `pity.weekly`, `pity.monthly` from the eggs loop; `prizeEggs` keeps `isPrizeable` eggs (was priced only, resolution 22 amended: the starter is still never a prize) |
+| `GardenProgress.login` | MetaRules login | plus `LoginRules.tick` |
+| `GardenRules.plantPrize`, `canPlantPrize` | level gate = the egg's level | unchanged code; the exclusive eggs are `level` 1 |
+| `GardenRules.buyEgg` | | refuses an egg without a price (state it in the spec: `buyEgg weekly` false) |
+| `HatchRules` | odds tables of sold eggs | the two eggs roll as any egg (species, weather mutation, size, charm); seeded specs unchanged |
+| `GardenServer` router | | `claimLogin <week|month>`, `play`; `slowTick` runs the day-rollover tick (4.7) |
+| `GardenServer` join | `toGate` after load | the `SpawnLocation` places the character; `toGate` only on `play` and `home` (4.7) |
+| `World.luau` | I1 table | X2 additions; `meadows()` caps 900 / 70; the small sakura thinning; `lamps` gains the lanterns |
+| `Plots.gate` | | unchanged; `Plots.gateLook(plot)` (new) returns the camera CFrame for the PLAY fly (12 studs behind the gate, 6 up, looking at the plot centre) |
+| `ClientState.UI` | 15 tokens | X1.1 tokens; `ClientState.rewardsReady(p)` counts login slots instead of the streak and weekly bonus |
+| `Menu`, `Hud` | own widgets | compose `UiKit` (X1.4 mapping); the Rewards panel's daily and weekly rows are gone |
+| `TradeFx`, `DashFx` round HUD, Petal Catch panel | own panels | shells from `UiKit.panel`; content unchanged |
+| Index grid | 84 cells | 108 cells; species rows in rarity order so the grid scrolls in tiers |
+| `docs/assets/register.md` | | 6 creature models, 2 eggs, 3 sakura, 3 hills, lantern, spawn pad, 16 icons, 6 cries when found |
+| GDD I1, I4, H2, H5, H7 | | point here |

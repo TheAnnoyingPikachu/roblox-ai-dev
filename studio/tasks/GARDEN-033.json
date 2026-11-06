@@ -1,0 +1,72 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-033",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Fix the Egg Garden v0.4 QA review (B1, M1 to M3, m1 to m8) so no creature is ever duplicated or lost by a half-written trade or undo, the follower stays out of the camera line, and the uploaded Clover and Starlit art is used.",
+  "inputs": [
+    "docs/qa/garden-v04-review.md",
+    "docs/architecture/garden.md sections 3.10, 4.5, 4.6, 6.3, 9.2",
+    "docs/game-design/game4-gdd.md section V",
+    "docs/decisions/0015-garden-v04-trading-charms.md"
+  ],
+  "dependencies": [
+    "GARDEN-032"
+  ],
+  "acceptance_criteria": [
+    "B1: the heal confirms a trade only from a counterpart copy that exists and is not void (TradeRules.spec.luau 'one copy void'); void marks go to both ledger copies and are retried until they land, bounded, with a warn; the residual is documented beside V1.4",
+    "M1: a failed ledger read at load (own or counterpart, failed kept distinct from absent) starts the session offline with the offline notice (Studio harness)",
+    "M2: tradeUndo is refused while either player trades; both received creatures are locked through Trades.locked for the undo; canUndo runs again on both current profiles after the ledger marks and a failure strips undoAt from both copies and sends the try-again notice (Studio harness)",
+    "M3: the follower stands beside the owner and its hops outrun a walk; the local player's own follower fades when it is between the camera and the head (Studio, Huge follower)",
+    "Every blocker and major fixed with a test or harness case; every minor fixed or listed with the conservative choice in the Fixes (GARDEN-033) section of docs/qa/garden-v04-review.md",
+    "lune run tests/run, selene, stylua, rojo build with check-place, validate-tasks and check-scope pass"
+  ],
+  "verification": "A15 re-reviews B1 and M1 to M3 against the Fixes section; CI run; a two-client trade with DataStores on in garden-staging before the v0.4 checkpoint",
+  "output_artifacts": [
+    "docs/qa/garden-v04-review.md"
+  ],
+  "files": [
+    "studio/tasks/GARDEN-033.json",
+    "src/shared/TradeRules.luau",
+    "src/shared/GardenProgress.luau",
+    "src/shared/GardenAssets.luau",
+    "src/garden/Trades.luau",
+    "src/garden/Profiles.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/Plots.luau",
+    "src/garden/Wheel.luau",
+    "src/relay/Models.luau",
+    "src/garden-client/ClientState.luau",
+    "src/garden-client/FollowerFx.client.luau",
+    "tools/blender/garden/manifest.json",
+    "tools/blender/garden/uploaded.json",
+    "tools/blender/garden/build.py",
+    "tools/blender/garden/assets/v04.py",
+    "tools/blender/write-assets-module.mjs",
+    "tests/TradeRules.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "tests/WheelRules.spec.luau",
+    "tests/GardenAssets.spec.luau",
+    "docs/qa/garden-v04-review.md",
+    "docs/assets/register.md",
+    "docs/architecture/garden.md",
+    "docs/game-design/game4-gdd.md",
+    "docs/decisions/0015-garden-v04-trading-charms.md"
+  ],
+  "tests": [
+    "TradeRules.spec.luau",
+    "GardenProgress.spec.luau",
+    "WheelRules.spec.luau",
+    "GardenAssets.spec.luau"
+  ],
+  "notes": "Over the ten-file guide because the 12 findings touch trading, saves, the wheel, the follower, plots, the asset pipeline and four documents; they are one review and one fix pass, like GARDEN-012. Studio harnesses that need Trades.deps stay scratch scripts (Trades needs Roblox services); their output is recorded in the review.",
+  "evidence": [
+    "Code 87d4111, Clover image id and register rows 466710d (branch garden/v04, local, not pushed). lune run tests/run 555/555 passed, 0 failed, 0 load errors (551 + 4 new: TradeRules one copy void, GardenProgress isNewer, WheelRules spin after 00:00 UTC, GardenAssets decal-only); selene 0/0; stylua --check clean on LF copies of 15 .luau files; validate-tasks 69 valid; check-scope all files in scope; rojo build garden.project.json + check-place match.",
+    "Studio, scratch place = garden.project.json + a Studio-only harness Script, build stamp 466710d ([Build] 466710d in the server log; local build, DataStores off): [H33] 16/16 through Trades.deps (B1 one copy void either way heals nothing, void retry lands after a failed mark; M1 failed own or counterpart read returns false with no apply, absent returns true; M2 undo refused while trading, both gotIds locked during the marks, re-check failure strips undoAt from both copies and changes nobody, clean undo works; m8 faults before and after the applies).",
+    "Studio, same build: Huge lion follower rests 8.6 studs to the side and 5.6 behind, edge at least 1.25 studs off the walk line and in the camera-to-head line on 0 of 138 frames of a straight walk, LTM 0.6 when forced into the camera line; pad tags in studs, no overlap at about 20 and 40 studs; Clover decal on the 6 owned pads and a Starlit fence of 143 meshes with 19 lights (pad and fence set by a Studio-only scratch Profiles.apply, adminGrant grants no cosmetics); no zero-scale error in three plays.",
+    "Not done: two-client trade with DataStores on and a forced flush failure (staging), the Profiles.load offline branches against a live DataStore (Read), the markUntil give-up warn (Read), hand walk on phone or gamepad. Details: docs/qa/garden-v04-review.md, Fixes (GARDEN-033)."
+  ]
+}

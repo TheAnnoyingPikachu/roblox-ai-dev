@@ -2,7 +2,8 @@
 -- Splash Dash on the client (GDD T7, T8; docs/architecture/garden.md section 6): obstacles driven by
 -- DashRules.pose from server time, knockback on this client's own character, platform carry, the
 -- race HUD (timer, place, checkpoint pips, 3-2-1-GO, splash text), the "starts in" pill for ready
--- players, the results card and the pad prompt text. Sends nothing: every outcome is the server's.
+-- players, the results card and the pad prompt text; the race chip and the results card come from
+-- UiKit (architecture 6.4). Sends nothing: every outcome is the server's.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
@@ -16,6 +17,7 @@ local DashRules = require(Shared:WaitForChild("DashRules"))
 local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local UiKit = require(script.Parent:WaitForChild("UiKit"))
 local fx = ReplicatedStorage:WaitForChild("GardenRemotes"):WaitForChild("Fx") :: RemoteEvent
 
 local player = Players.LocalPlayer :: Player
@@ -230,16 +232,11 @@ local flash = new("Frame", {
 	Parent = gui,
 })
 
--- Timer, place and pips take the coin bar's place (Hud hides it in a race).
-local raceChip = new("Frame", {
-	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.new(0.5, 0, 0, 12),
-	Size = UDim2.fromOffset(440, 112),
-	BackgroundColor3 = UI.CREAM,
-	BackgroundTransparency = 0.05,
-	Visible = false,
-	Parent = gui,
-}, { corner(16), stroke(UI.WHITE, 3) })
+-- Timer, place and pips take the coin pill's place (Hud hides it in a race).
+local raceChip = UiKit.chip(gui, 440, 112)
+raceChip.AnchorPoint = Vector2.new(0.5, 0)
+raceChip.Position = UDim2.new(0.5, 0, 0, 12)
+raceChip.Visible = false
 ClientState.autoScale(raceChip)
 local raceTime = text({
 	Position = UDim2.fromOffset(16, 6),
@@ -330,7 +327,7 @@ end
 
 -- "Splash Dash starts in 12" for ready players, wherever they are; under the timers, above the jump button.
 local pill = text({
-	AnchorPoint = Vector2.new(1, 0),
+	AnchorPoint = Vector2.new(0.5, 0),
 	Size = UDim2.fromOffset(480, 48), -- 456 px of text keeps 24 characters above 18 px at UIScale 0.6
 	BackgroundTransparency = 0.05,
 	BackgroundColor3 = UI.AQUA,
@@ -349,74 +346,44 @@ new("UIPadding", {
 	Parent = pill,
 })
 ClientState.autoScale(pill)
-local pillScale = pill:FindFirstChildOfClass("UIScale") :: UIScale
 
--- Results card: no input needed, closes on tap or after 6 s (T8). No near-miss wording (G4.3).
-local results = new("TextButton", {
-	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.fromScale(0.5, 0.5),
-	Size = UDim2.fromOffset(720, 420),
-	BackgroundColor3 = UI.CREAM,
-	AutoButtonColor = false,
-	Text = "",
-	Visible = false,
-	Parent = gui,
-}, { corner(24), stroke(UI.AQUA, 5) })
-ClientState.autoScale(results)
-local resultsTitle = text({
-	Position = UDim2.fromOffset(20, 14),
-	Size = UDim2.new(1, -40, 0, 56),
-	Text = "",
-	TextColor3 = UI.AQUA,
-	Parent = results,
+-- Results card: a kit panel shell in its own scaled ScreenGui; no input needed, closes on tap or
+-- after 6 s (T8). No near-miss wording (G4.3).
+local cardGui = new("ScreenGui", {
+	Name = "GardenDashCard",
+	ResetOnSpawn = false,
+	IgnoreGuiInset = true,
+	DisplayOrder = 6,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	Parent = player:WaitForChild("PlayerGui"),
 })
-new("UIStroke", { Color = UI.WHITE, Thickness = 3, Parent = resultsTitle })
-local resultsList = new("Frame", {
-	Position = UDim2.fromOffset(20, 76),
-	Size = UDim2.new(1, -40, 0, 0),
-	BackgroundTransparency = 1,
-	Parent = results,
-}, { new("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder }) })
-local resultsLine = text({
-	AnchorPoint = Vector2.new(0, 1),
-	Position = UDim2.new(0, 20, 1, -12),
-	Size = UDim2.new(1, -40, 0, 84),
-	Text = "",
-	TextColor3 = UI.LEAF,
-	TextScaled = false,
-	TextSize = 32,
-	TextWrapped = true,
-	Parent = results,
-})
-results.Activated:Connect(function()
-	results.Visible = false
-end)
+UiKit.scaleRoot(cardGui)
+local results: UiKit.Panel? = nil
+
+local function closeResults()
+	local r = results
+	results = nil
+	if r then
+		r.close()
+	end
+end
 
 local function seconds(t: number): string
 	return string.format("%d:%04.1f", t // 60, t % 60)
 end
 
-local function resultRow(order: number, left: string, right: string)
-	local r = new("Frame", {
-		Size = UDim2.new(1, 0, 0, 42),
-		BackgroundTransparency = 1,
-		LayoutOrder = order,
-		Parent = resultsList,
+local function resultRow(body: Instance, order: number, left: string, right: string)
+	local r = UiKit.row(body, 52, order)
+	UiKit.text(r, left, 28, UI.INK, {
+		Position = UDim2.fromOffset(16, 0),
+		Size = UDim2.new(0.5, -16, 1, 0),
+		TextXAlignment = Enum.TextXAlignment.Left,
 	})
-	local function cell(s: string, x: number, w: number, align: Enum.TextXAlignment)
-		text({
-			Position = UDim2.fromOffset(x, 0),
-			Size = UDim2.new(0, w, 1, 0),
-			Text = s,
-			TextScaled = false,
-			TextSize = 34,
-			TextTruncate = Enum.TextTruncate.AtEnd,
-			TextXAlignment = align,
-			Parent = r,
-		})
-	end
-	cell(left, 0, 320, Enum.TextXAlignment.Left)
-	cell(right, 320, 360, Enum.TextXAlignment.Right)
+	UiKit.text(r, right, 28, UI.INK, {
+		Position = UDim2.fromScale(0.5, 0),
+		Size = UDim2.new(0.5, -16, 1, 0),
+		TextXAlignment = Enum.TextXAlignment.Right,
+	})
 end
 
 -- The race state ------------------------------------------------------------------------------------
@@ -457,12 +424,26 @@ local function personalLine(): string
 end
 
 local function showResults(data: any)
-	for _, c in resultsList:GetChildren() do
-		if c:IsA("GuiObject") then
-			c:Destroy()
-		end
-	end
-	resultsTitle.Text = if type(data.winner) == "string" then `{data.winner} wins!` else DASH.name
+	closeResults()
+	local rows = math.max(#finishers, 1)
+	local card = UiKit.modal(
+		cardGui,
+		if type(data.winner) == "string" then `{data.winner} wins!` else DASH.name,
+		UI.AQUA,
+		760,
+		230 + 64 * rows,
+		false
+	)
+	results = card
+	-- A tap anywhere on the card closes it.
+	new("TextButton", {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		Text = "",
+		Selectable = false,
+		ZIndex = 6,
+		Parent = card.frame,
+	}).Activated:Connect(closeResults)
 	table.sort(finishers, function(a, b)
 		return a.place < b.place
 	end)
@@ -471,19 +452,25 @@ local function showResults(data: any)
 			then `  {PRIZE.name}`
 			elseif (tonumber(f.coins) or 0) > 0 then `  +{ClientState.short(f.coins)} coins`
 			else ""
-		resultRow(f.place, `{PLACES[f.place] or f.place}  {f.name or "A racer"}`, `{seconds(f.time)}{prize}`)
+		resultRow(card.body, f.place, `{PLACES[f.place] or f.place}  {f.name or "A racer"}`, `{seconds(f.time)}{prize}`)
 	end
 	if #finishers == 0 then
-		resultRow(1, if data.reason == "empty" then "Round over." else "Time is up.", "No finishers this round")
+		resultRow(
+			card.body,
+			1,
+			if data.reason == "empty" then "Round over." else "Time is up.",
+			"No finishers this round"
+		)
 	end
-	resultsLine.Text = personalLine()
-	results.Size = UDim2.fromOffset(720, 182 + 46 * math.max(#finishers, 1))
-	results.Visible = true
+	UiKit.text(card.body, personalLine(), 28, UI.LEAF, {
+		Size = UDim2.new(1, 0, 0, 72),
+		TextWrapped = true,
+		LayoutOrder = 100,
+	})
 	ClientState.sound(SFX.chime, 0.35, nil, 1.6)
-	local shown = resultsLine.Text
 	task.delay(6, function()
-		if resultsLine.Text == shown then
-			results.Visible = false
+		if results == card then
+			closeResults()
 		end
 	end)
 end
@@ -497,7 +484,7 @@ local function enterRound(go: number)
 	finishers = {}
 	setPips(0)
 	racePlace.Text = ""
-	results.Visible = false
+	closeResults()
 	raceChip.Visible = true
 	buildObstacles()
 	ClientState.setRacing(true)
@@ -628,7 +615,8 @@ local function update()
 	updatePrompt(ready)
 	pill.Visible = ready and not inRound and not ClientState.menuOpen
 	if pill.Visible then
-		pill.Position = UDim2.new(1, -12, 0, 20 + 128 * pillScale.Scale) -- just under Hud's 128-tall timers
+		-- Top centre, where the race chip sits in a round: clear of Hud's chips, strip and toasts.
+		pill.Position = UDim2.new(0.5, 0, 0, 12)
 		pill.Text = if dash.phase == "countdown"
 			then `{DASH.name} starts in {math.max(0, math.ceil(dash.at - now))}`
 			elseif dash.phase == "idle" then `{DASH.name}: {#dash.ready} / {dash.need} ready`

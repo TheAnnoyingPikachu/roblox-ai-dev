@@ -1,0 +1,61 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-050",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "design",
+  "objective": "Turn SHANNON's v0.5 brief (UI overhaul, cooler valley with large cherry blossoms and horizon hills, spawn fix, weekly and monthly login rewards with exclusive eggs and creatures) into GDD section X, decision 0017, the architecture contract (3.11, 4.7, 6.4, 9.3), the checkpoint list, a pacing check and the task files GARDEN-051 to 056.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md §B, §E, §H, §I, §S, §T, §U, §V",
+    "docs/decisions/0008-egg-garden.md",
+    "docs/decisions/0012-egg-garden-v02.md",
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "docs/architecture/garden.md §3, §4, §6, §9",
+    "docs/checkpoints/GARDEN-V04.md",
+    "src/shared/GardenConfig.luau",
+    "src/shared/GardenProgress.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/World.luau",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/Hud.client.luau",
+    "src/garden-client/ClientState.luau"
+  ],
+  "dependencies": [
+    "GARDEN-027"
+  ],
+  "acceptance_criteria": [
+    "GDD section X holds X1 UI (tokens, scale, component table with sizes, radii, strokes, timings, the panel mapping, icons, gamepad), X2 valley (spawn fix, a position and size table, tri and part budgets, terrain-versus-mesh choice), X3 login rewards (both tracks, the two eggs, the six species, the save shape), X4 pacing and X5 everything that assumed H5, the roster, the panels or the old spawn; H2, H5 and I1 point at it",
+    "Decision 0017 is Proposed with every economy value, the remote changes (claimLogin, play; claimDaily and claimWeekly removed), the 0012 item 3 amendment for the two eggs, and the schema note for `login`",
+    "Architecture 3.11 (LoginRules and data signatures, spec list), 4.7 (spawn, join flow, play, login tick at join and at the day rollover while online, World and Plots changes), 6.4 (UiKit API and file changes) and 9.3 (models, icons pipeline, manifest rows) are written so GARDEN-051 to 055 can start without this task's chat",
+    "docs/game-design/game4-v05-pacing-check.py runs with python; both tracks together stay under the Wheel's coins per day and the eggs under the Dash prize cap (the script asserts both); its output matches X4",
+    "node tools/validate-tasks.mjs passes with GARDEN-050 to GARDEN-056 present"
+  ],
+  "verification": "A15 reads the four docs against SHANNON's brief; python docs/game-design/game4-v05-pacing-check.py; node tools/validate-tasks.mjs",
+  "output_artifacts": [
+    "docs/game-design/game4-gdd.md",
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V05.md",
+    "docs/game-design/game4-v05-pacing-check.py"
+  ],
+  "files": [
+    "docs/game-design/game4-gdd.md",
+    "docs/game-design/game4-v05-pacing-check.py",
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V05.md",
+    "studio/tasks/GARDEN-051.json",
+    "studio/tasks/GARDEN-052.json",
+    "studio/tasks/GARDEN-053.json",
+    "studio/tasks/GARDEN-054.json",
+    "studio/tasks/GARDEN-055.json",
+    "studio/tasks/GARDEN-056.json"
+  ],
+  "tests": [],
+  "evidence": [
+    "Local 2026-11-05: python docs/game-design/game4-v05-pacing-check.py ran (Weekly Egg 66.4 coins/s expected, Monthly Egg 2,382.7; both tracks 16.0 minutes of income a day against Wheel 30 and Dash 6; eggs 88.9 coins/s per day against the Dash cap 904; 60 min/day: Moon day 2, Star day 5, Celestial day 11, Aurora day 20, income day 90 1,651,410 against 1,584,700 with the v0.4 rewards); node tools/validate-tasks.mjs valid"
+  ],
+  "notes": "Chosen here, not by SHANNON: the slot values (minutes 3/5/8/12/-/15/20 and 10/20/30/-/40/50/60), the species and their rates, the odds 6000/3200/800 and 7000/2500/500 with meters 12 and 8, level 1 for the two eggs, the login-only cosmetics, the count-based save shape, the spawn pad position (18, 0.3, 32), the hill bands (terrain near, meshes mid and far), the pond position, the Pillow icon pipeline and the UiKit component sizes. Checkpoint: docs/checkpoints/GARDEN-V05.md. Branch garden/v05 forks garden/v04 (design only): the v0.4 code tasks 028 to 031 land first; 051 to 053 depend on them."
+}

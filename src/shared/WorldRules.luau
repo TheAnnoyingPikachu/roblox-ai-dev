@@ -39,13 +39,50 @@ function WorldRules.weatherWindow(unix: number): number
 	return math.floor(unix / WINDOW)
 end
 
--- The window's event kind (may be "clear"); the weekday is taken from the window start.
+-- Monday-based week number, the same maths as weekday().
+function WorldRules.week(unix: number): number
+	return math.floor((math.floor(unix / 86400) + 3) / 7)
+end
+
+-- The week's event weather (GDD V2.3): one of the rare weathers, fixed for the whole week.
+function WorldRules.weekendEvent(unix: number): string
+	local RARE = GardenConfig.RARE_WEATHERS
+	return RARE[Rng.int(Rng.seed(WorldRules.week(unix), GardenConfig.SEEDS.event), 1, #RARE)]
+end
+
+-- The weather table in force at `unix`: weekday as stored; weekend with WEATHER_EVENT_BONUS moved
+-- from clear to the event weather. Always sums to 10,000.
+function WorldRules.oddsFor(unix: number): { GardenConfig.Odds }
+	if not WorldRules.isWeekend(unix) then
+		return GardenConfig.WEATHER_ODDS.weekday
+	end
+	local event = WorldRules.weekendEvent(unix)
+	local out: { GardenConfig.Odds } = {}
+	for _, o in GardenConfig.WEATHER_ODDS.weekend do
+		local bonus = if o.id == "clear"
+			then -GardenConfig.WEATHER_EVENT_BONUS
+			elseif o.id == event then GardenConfig.WEATHER_EVENT_BONUS
+			else 0
+		table.insert(out, { id = o.id, bp = o.bp + bonus })
+	end
+	return out
+end
+
+-- The window's event kind (may be "clear"); the table is taken from the window start.
 function WorldRules.eventFor(window: number): string
-	local odds = if WorldRules.isWeekend(window * WINDOW)
-		then GardenConfig.WEATHER_ODDS.weekend
-		else GardenConfig.WEATHER_ODDS.weekday
 	local r = Rng.int(Rng.seed(window, GardenConfig.SEEDS.weather), 1, 10000)
-	return pick(odds, r)
+	return pick(WorldRules.oddsFor(window * WINDOW), r)
+end
+
+-- This week's event for GardenStatus.event: Saturday 00:00 to Monday 00:00 UTC.
+function WorldRules.eventStatus(unix: number): { weather: string, startsAt: number, endsAt: number, active: boolean }
+	local saturday = (7 * WorldRules.week(unix) + 2) * 86400
+	return {
+		weather = WorldRules.weekendEvent(unix),
+		startsAt = saturday,
+		endsAt = saturday + 2 * 86400,
+		active = unix >= saturday and unix < saturday + 2 * 86400,
+	}
 end
 
 function WorldRules.weatherAt(unix: number): string

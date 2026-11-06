@@ -1,0 +1,52 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-052",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Server side of v0.5: the plaza SpawnLocation and spawn pad, the join flow without a join-time gate move, the `play` request, the login tick at join and at the UTC day rollover while online, `claimLogin` in the router with claimDaily and claimWeekly removed, and the valley additions in World.luau (large sakura, hill bands, pond, lanterns, flowers) with Plots.gateLook.",
+  "inputs": [
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/game-design/game4-gdd.md §X2, §X3.5, §X3.6",
+    "docs/architecture/garden.md §4.1, §4.3, §4.7, §9.3",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-051",
+    "GARDEN-029"
+  ],
+  "acceptance_criteria": [
+    "A joining character appears on the SpawnLocation at (18, 0.3, 32) facing the Great Egg Tree before the profile loads; nobody is moved to a gate at join; `play` moves the loaded player to Plots.gate and is refused while racing; `home` unchanged (Studio, two clients, build stamp)",
+    "GardenProgress.login counts the day at load; a UTC day change while online applies loginTick once per session (clock moved in Studio: the WEEKLY card count rises without rejoining); the tick never counts a day twice across a flush re-apply",
+    "Router: `claimLogin week|month` pays through Profiles.request and sets LastReward; any other arg refused; `claimDaily` and `claimWeekly` are unknown actions; the 0.35 s limit applies",
+    "World.build adds the spawn pad, 12 large sakura at the X2 positions with the small-sakura thinning, the three hill bands (terrain near, hill_a/b/c meshes mid and far with part fallbacks), the pond at (-50, 0, -92) with lily pads, 24 lanterns in the lamps list lit at Moonfall, 900 flowers and the plaza boxes; plots, cart, boards, Splash Island and the Petal Patch positions unchanged; Workspace.Garden Parts attribute under 7,500",
+    "Plots.gateLook(plot) returns the 4.7 camera pose; rojo build garden.project.json and node tools/check-place.mjs pass; lune run tests/run passes"
+  ],
+  "verification": "CI build and check-place; A15 playtest note with the build stamp (spawn, PLAY, rollover, claim, valley screenshots)",
+  "output_artifacts": [
+    "build/garden.rbxl"
+  ],
+  "files": [
+    "src/garden/GardenServer.server.luau",
+    "src/garden/Profiles.luau",
+    "src/garden/World.luau",
+    "src/garden/Plots.luau",
+    "src/garden/State.luau",
+    "src/garden/CLAUDE.md",
+    "src/shared/GardenAssets.luau"
+  ],
+  "tests": [
+    "LoginRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "The join-time toGate (GardenServer onPlayer and the CharacterAdded fallback) is removed, not kept beside the SpawnLocation; Dash.place stays. Petal emitters are client-side (GARDEN-053), not World parts. Mesh names are fixed by architecture 9.3; code must run with every id nil (part fallbacks) because art lands in GARDEN-054 and 055.",
+  "evidence": [
+    "Local run 2026-11-06 on garden/v05-server (base 8a2b300): lune run tests/run 571/571 pass; selene src tests 0 errors 0 warnings; stylua --check clean on LF copies; node tools/validate-tasks.mjs and node tools/check-scope.mjs origin/main pass; rojo build garden.project.json + node tools/check-place.mjs: build/garden.rbxl matches.",
+    "Studio playtest, build stamp `dev` (local build, no CI stamp), one client, Studio API access off (profile offline): the character spawned on Workspace.Garden.Spawn at (19.9, 4.0, 25.7) facing (-0.6, 0, -0.8), the Great Egg Tree, and was not moved at join or by PLAY (this branch's client does not send `play` yet); Request `play` -> true moved it to plot 1's gate (0, 3.35, -64); `play` again within 0.35 s false; `play x` false; `home` true. `claimDaily`, `claimWeekly`, `claimLogin day`, `claimLogin` with no arg: false. `claimLogin week` true once (+100 coins, LastReward `100 coins#1`), then false.",
+    "Rollover (scratch edit: slowTick today + DayShift): +1 day moved weekDays and monthDays 1 -> 2 once (unchanged 3 s later), a second `claimLogin week` paid 150; +3 days (Monday) reset the week (key 2966 -> 2967, day 1, claimed 0) and kept the month (3 days), `claimLogin month` paid 200 once. A Weekly Egg put in prizeEggs by a scratch edit was planted at level 1 (`plantPrize weekly` true, bed 2, egg_weekly model, ready +3600 s; a second plant false). Plots.gateLook(1) = (0, 6, -57) looking at (0, 5, -100).",
+    "Valley: Workspace.Garden Parts 3,947 at build (4,036 with a loaded plot), budget 7,500; 12 large sakura (Blender a/b/c, 4 each) with trunk colliders, 8 of 16 small sakura kept, 20 hill_a/b/c meshes (bands 2 and 3), 14 terrain hills (band 1), pond with water, 8 lily pads and cattails, 24 lantern models, the spawn_pad model, 900 flowers, 24 flower boxes, 4 more benches. Moonfall (scratch ForceWeather) turns on 38/38 valley PointLights (8 lamps, 6 hanging eggs, 24 lanterns), 0 otherwise. Screenshots: plaza with the spawn pad, rim sakura, horizon hill bands with snow caps, pond, Moonfall. Console: no script errors or warnings (only the engine's 'Asset content representation is being generated' texture lines).",
+    "Deviations: spawn at (21, 0.3, 28), 5 studs from X2's (18, 0.3, 32) inside its 6-stud allowance, because the design spot is 7 studs from the 157.5 degree lamp post, not the assumed 12; the place file's Workspace.SpawnLocation is reused (moved to Workspace.Garden.Spawn) so no character can spawn before the script runs; the rollover tick checks each profile's weekLast/monthLast against today instead of a lastDay variable (same idempotent tick, also covers a load that ends across midnight); the large-sakura fallback is the generated `sakura` mesh scaled to height, then Props.sakura (lead's instruction; 4.7 said Props.sakura x1.6); the river had no water since v0.1 (terrain Water does not replace Sand), so the channel is now carved to Air before the water fill, as the pond is; Plots gains EGG_LOOKS weekly/monthly, FALLBACK colours for the six exclusives, and Lantern/Sakura fence and Lily pad looks for the login cosmetics. Not tested: two clients, `play` refused while racing (code path only)."
+  ]
+}

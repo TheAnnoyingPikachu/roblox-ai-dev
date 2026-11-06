@@ -43,6 +43,7 @@ CONFIG = {
 		{ id = "plain", name = "Plain", slot = "cape", colours = {} },
 		{ id = "red", name = "Red", slot = "cape", colours = {}, level = 3 },
 		{ id = "champ", name = "Champ", slot = "cape", colours = {}, wins = 2 },
+		{ id = "wreath", name = "Wreath", slot = "hat", colours = {}, grant = "login" }, -- decision 0017
 	},
 	slots = { hat = "cap", cape = "plain" },
 	quests = {
@@ -122,6 +123,19 @@ describe("MetaRules cosmetics by slot", function()
 		expect(free).toBe(false)
 		expect((MetaRules.equip(CONFIG, bought, "tophat")).hat).toBe("tophat")
 	end)
+
+	it("treats a grant cosmetic as owned-only: locked until granted, never bought (decision 0017)", function()
+		local p = defaults()
+		p.coins = 1e6
+		expect(MetaRules.isUnlocked(CONFIG, p, "wreath")).toBe(false)
+		expect(select(2, MetaRules.buy(CONFIG, p, "wreath"))).toBe(false)
+		expect(select(2, MetaRules.equip(CONFIG, p, "wreath"))).toBe(false)
+		p.owned.wreath = true
+		expect(MetaRules.isUnlocked(CONFIG, p, "wreath")).toBe(true)
+		expect(MetaRules.equip(CONFIG, p, "wreath").hat).toBe("wreath")
+		expect(CONFIG.sanitize({ owned = { wreath = true }, hat = "wreath" }).hat).toBe("wreath")
+		expect(CONFIG.sanitize({ hat = "wreath" }).hat).toBe("cap")
+	end)
 end)
 
 describe("MetaRules.sanitizeMeta", function()
@@ -133,18 +147,19 @@ describe("MetaRules.sanitizeMeta", function()
 		expect(CONFIG.sanitize({ hat = 5 }).hat).toBe("cap")
 	end)
 
-	it("clamps numbers and keeps only priced owned ids", function()
+	it("clamps numbers and keeps only priced or granted owned ids", function()
 		local p = CONFIG.sanitize({
 			xp = -5,
 			coins = 0 / 0,
 			wins = 2.9,
-			owned = { tophat = true, cap = true, nope = true },
+			owned = { tophat = true, cap = true, nope = true, wreath = true },
 			daily = { streak = 3, last = math.huge },
 		})
 		expect(p.xp).toBe(0)
 		expect(p.coins).toBe(0)
 		expect(p.wins).toBe(2)
 		expect(p.owned.tophat).toBe(true)
+		expect(p.owned.wreath).toBe(true)
 		expect(p.owned.cap).toBeNil()
 		expect(p.owned.nope).toBeNil()
 		expect(p.daily.last).toBe(-1)
