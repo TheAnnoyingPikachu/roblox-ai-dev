@@ -807,11 +807,14 @@ local function runEnd(data: any)
 		UI.INK_SOFT,
 		{ LayoutOrder = 3, TextWrapped = true, Size = UDim2.new(1, 0, 0, 60) }
 	)
-	-- QA M4: never "saved" while the server cannot save
+	-- QA M4: never "saved" while the server cannot save; QA r5: while paused the rewards are held
 	local saved = player:GetAttribute("ProfileOnline") ~= false
 	UiKit.text(
 		m.body,
-		if saved then "Everything you earned is saved." else "Saving is paused, so this run is not in your save yet.",
+		if saved
+			then "Everything you earned is saved."
+			elseif s.held then "Saving is paused: the rest of what you earned shows up when it is back on."
+			else "Saving is paused, so this run is not in your save yet.",
 		20,
 		if saved then UI.INK_SOFT else UI.CORAL,
 		{ LayoutOrder = 4, TextWrapped = true, Size = UDim2.new(1, 0, 0, 50) }

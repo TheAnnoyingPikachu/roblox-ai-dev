@@ -291,6 +291,34 @@ describe("LanternProgress: loads and payouts", function()
 	end)
 end)
 
+-- LANTERN-017 (QA r5): a paused session shows nothing until its save is claimed, then what its
+-- changes added to the real save.
+describe("LanternProgress.gained", function()
+	local function rescue(p: Profile, ids: { string }): Profile
+		for _, id in ids do
+			p = (LanternProgress.load(p, { critter(id) }, true, 1, TODAY))
+		end
+		return p
+	end
+
+	it("shows what the changes added to the real save, never what defaults would have paid", function()
+		local real = rescue(fresh(), { "mossmouse", "puddlefrog", "fogpup", "teapotcat" }) -- milestone 4 paid
+		local _, onDefaults = LanternProgress.load(fresh(), { critter("mossmouse") }, true, 1, TODAY)
+		expect(onDefaults.text).toBe("NEW! Moss Mouse · +10 Tickets · +75 XP") -- what r5 showed while paused
+		local after = LanternProgress.count(rescue(real, { "mossmouse" }), "puffs", 3, TODAY)
+		expect(LanternProgress.gained(real, after).text).toBe("+10 Tickets · +31 XP")
+	end)
+
+	it("names new species and the milestone cosmetics and Tickets they reached", function()
+		local real = rescue(fresh(), { "mossmouse", "puddlefrog", "fogpup", "teapotcat", "wickmole", "burrbun" })
+		local after = rescue(real, { "reedfox", "mistfawn", "mossmouse" })
+		local got = LanternProgress.gained(real, after)
+		expect(`{table.concat(got.new, " ")} {got.tickets}`).toBe(`reedfox mistfawn {after.coins - real.coins}`)
+		expect(got.text).toBe(`NEW! Reed Fox, Mist Fawn · Mossback · +{got.tickets} Tickets · +{got.xp} XP`)
+		expect(LanternProgress.gained(after, after).text).toBe("")
+	end)
+end)
+
 describe("LanternProgress: quests and login tracks (nothing earned expires)", function()
 	it("pays a completed, unclaimed quest of the stored day once at the next day, never twice", function()
 		local quest = MetaRules.questsFor(LanternConfig.QUESTS, TODAY)[1]

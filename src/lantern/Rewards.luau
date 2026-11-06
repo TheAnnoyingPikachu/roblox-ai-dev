@@ -48,19 +48,14 @@ local function today(): number
 	return MetaRules.dayOf(os.time())
 end
 
--- Applies `fn` (pure: profile -> (profile, paid)) to `player`'s save; tells them what it paid.
--- `fn` runs once on the live profile for the toast and again inside the save's queue.
-local function pay(player: Player, fn: (Profile) -> (Profile, Paid)): Paid?
-	local profile = saves.get(player)
-	if profile == nil then
-		return nil
-	end
-	local _, paid = fn(profile)
-	if not saves.apply(player, function(p)
-		return (fn(p))
-	end) then
-		return nil
-	end
+-- True while `player`'s save is paused (kept, not claimed yet; QA r5): the live profile may be the
+-- stored save of a crashed server's lock or defaults, so nothing computed on it is shown.
+function Rewards.paused(player: Player): boolean
+	local session = saves.store:session(`player_{player.UserId}`)
+	return session ~= nil and session.retry == true
+end
+
+local function show(player: Player, paid: Paid)
 	local tally = earned[player.UserId] or { tickets = 0, xp = 0 }
 	tally.tickets += paid.tickets
 	tally.xp += paid.xp
@@ -69,7 +64,33 @@ local function pay(player: Player, fn: (Profile) -> (Profile, Paid)): Paid?
 		player:SetAttribute("LastReward", paid.text)
 		remotes.fx(player, "payout", { tickets = paid.tickets, xp = paid.xp, text = paid.text })
 	end
+end
+
+-- Applies `fn` (pure: profile -> (profile, paid)) to `player`'s save; tells them what it paid, or
+-- nothing while paused (`reveal` shows it after the claim). `fn` runs once on the live profile for
+-- the toast and again inside the save's queue.
+local function pay(player: Player, fn: (Profile) -> (Profile, Paid)): Paid?
+	local profile = saves.get(player)
+	if profile == nil then
+		return nil
+	end
+	local _, paid = fn(profile)
+	if not saves.apply(player, function(p)
+		return (fn(p))
+	end) or Rewards.paused(player) then
+		return nil
+	end
+	show(player, paid)
 	return paid
+end
+
+-- After a paused save is claimed: what this session's changes added to the real save (`before` is
+-- the stored save the claim found), in one toast and on the end card (QA r5).
+function Rewards.reveal(player: Player, before: Profile)
+	local profile = saves.get(player)
+	if profile then
+		show(player, LanternProgress.gained(before, profile))
+	end
 end
 
 -- One "load" event: every active member's share (G4: idle members earn no load shares), the
@@ -131,9 +152,13 @@ end
 function Rewards.count(player: Player, key: "puffs" | "stokes" | "mends" | "caught", by: number)
 	local day = today()
 	local before = saves.get(player)
-	if before and saves.apply(player, function(p)
-		return LanternProgress.count(p, key, by, day)
-	end) then
+	if
+		before
+		and saves.apply(player, function(p)
+			return LanternProgress.count(p, key, by, day)
+		end)
+		and not Rewards.paused(player)
+	then
 		local tally = earned[player.UserId] or { tickets = 0, xp = 0 }
 		tally.xp += saves.get(player).xp - before.xp
 		earned[player.UserId] = tally
@@ -185,7 +210,13 @@ function Rewards.runEnd(run: TrainRules.Run, e: TrainRules.Event)
 			local tally = earned[userId] or { tickets = 0, xp = 0 }
 			remotes.fx(player, "runEnd", {
 				reason = e.reason,
-				summary = { critters = critters, dist = dist, tickets = tally.tickets, xp = tally.xp },
+				summary = {
+					critters = critters,
+					dist = dist,
+					tickets = tally.tickets,
+					xp = tally.xp,
+					held = Rewards.paused(player), -- the rest shows after the claim (QA r5)
+				},
 			})
 		end
 	end

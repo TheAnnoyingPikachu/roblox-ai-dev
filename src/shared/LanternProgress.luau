@@ -291,6 +291,25 @@ local function paid(tickets: number, xp: number, new: { string }, extra: { strin
 	return { tickets = tickets, xp = xp, new = new, text = table.concat(parts, " · ") }
 end
 
+-- What `after` holds beyond `before` (Tickets, XP, album species, cosmetics) as one payout: the
+-- changes of a paused session re-run on the real save, shown once it is claimed (QA r5).
+function LanternProgress.gained(before: Profile, after: Profile): Paid
+	local new, names = {}, {}
+	for _, id in after.index do
+		if before.rescues[id] == nil then
+			table.insert(new, id)
+		end
+	end
+	for id in after.owned do
+		if not before.owned[id] then
+			local c = LanternConfig.cosmetic(id)
+			table.insert(names, if c then c.name else id)
+		end
+	end
+	table.sort(names)
+	return paid(math.max(0, after.coins - before.coins), math.max(0, after.xp - before.xp), new, names)
+end
+
 -- Daily quests (GDD G3.5, J) ----------------------------------------------------------------------
 
 -- When `today` moved past the stored quest day, pays that day's completed, unclaimed quests once

@@ -92,10 +92,12 @@ end
 -- QA M4: a session that could not claim its save (a crashed server's lock, a DataStore outage, a lost
 -- lock) plays on and keeps every change; the reclaim loop below claims the save later and stores
 -- them. The player is told at once; the client shows "Saving paused" while ProfileOnline is false.
+-- QA r5: while paused the HUD and menus keep the save as it was read and no reward is shown; after
+-- the claim one toast shows what the session added to the real save (Rewards.reveal).
 local PAUSED = {
-	busy = "Your save is still closing on another server. Saving is paused: everything you earn now is kept and saves in a moment.",
-	offline = "Saving is paused: Roblox saves are not answering. Everything you earn now is kept and saves when they are back.",
-	lost = "Saving is paused: another server has your save open. Everything you earn now is kept and saves when it lets go.",
+	busy = "Your save is still closing on another server. Saving is paused: everything you earn now is kept and shows up in a minute or two.",
+	offline = "Saving is paused: Roblox saves are not answering. Everything you earn now is kept and shows up when they are back.",
+	lost = "Saving is paused: another server has your save open. Everything you earn now is kept and shows up when it lets go.",
 }
 local OFF = "Saving is off on this server: progress here lasts this session only."
 local savingPaused: (Player, string) -> () -- set once the remotes exist (below)
@@ -108,7 +110,11 @@ local saves = Saves.start({
 	sanitize = LanternProgress.sanitize,
 	snapshot = LanternProgress.snapshot,
 	newer = LanternProgress.isNewer,
-	onChanged = publish,
+	onChanged = function(player: Player, profile: LanternProgress.Profile)
+		if not Rewards.paused(player) then -- QA r5: frozen while paused
+			publish(player, profile)
+		end
+	end,
 	onStatus = function(player: Player, status: string)
 		savingPaused(player, status)
 	end,
@@ -509,9 +515,10 @@ local function paint()
 	end
 end
 
--- A reward text (toast and LastReward); never "saved" while saving is paused (QA M4).
+-- A reward text (toast and LastReward); never "saved" while saving is off (QA M4), never shown while
+-- paused: the claim's toast shows what it paid on the real save (QA r5).
 local function tell(player: Player, text: string)
-	if text == "" then
+	if text == "" or Rewards.paused(player) then
 		return
 	end
 	if not saves.isOnline(player) then
@@ -600,6 +607,8 @@ local function profileRequest(
 	local profile = saves.get(player)
 	if profile == nil then
 		return false, "loading"
+	elseif Rewards.paused(player) then
+		return false, "paused" -- QA r5: claims, buys and picks wait for the real save
 	end
 	local _, ok = fn(profile)
 	if not ok then
@@ -842,6 +851,9 @@ savingPaused = function(player: Player, status: string)
 	end
 	player:SetAttribute("ProfileOnline", false)
 	local session = saves.store:session(saveKey(player))
+	if session then
+		publish(player, session.profile) -- the save as read (defaults after a failed load); then frozen
+	end
 	notice(player, if session and session.retry then PAUSED[status] or PAUSED.offline else OFF)
 end
 
@@ -854,10 +866,12 @@ task.spawn(function()
 			local session = saves.store:session(saveKey(player))
 			if session and session.retry then
 				task.spawn(function()
-					if saves.store:reclaim(saveKey(player), os.time()) and player.Parent then
+					local claimed, before = saves.store:reclaim(saveKey(player), os.time())
+					if claimed and player.Parent then
 						player:SetAttribute("ProfileOnline", true)
 						publish(player, saves.get(player))
 						notice(player, "Saving is back on: everything from this session is saved.")
+						Rewards.reveal(player, before)
 					end
 				end)
 			end

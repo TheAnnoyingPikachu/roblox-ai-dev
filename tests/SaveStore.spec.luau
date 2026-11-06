@@ -159,14 +159,16 @@ describe("SaveStore.reclaim", function()
 		local store = crashed()
 		local saves = make(store)
 		local s = saves:load("k", 100)
-		expect(`{s.status} {s.profile.coins} {s.retry}`).toBe("busy 0 true")
+		-- LANTERN-017 (QA r5): it plays on the stored save it found, not on defaults.
+		expect(`{s.status} {s.profile.coins} {s.retry}`).toBe("busy 500 true")
 		saves:apply("k", add(25)) -- a rescue in the busy minutes
-		expect(saves:get("k").coins).toBe(25)
+		expect(saves:get("k").coins).toBe(525)
 		expect(saves:due("k", 200)).toBe(false) -- never flushed while busy
 		expect(saves:reclaim("k", 150)).toBe(false) -- the crashed server's lock is 60 s old
 		expect(`{store.writes} {store:read("k").lock.session}`).toBe("0 crashed")
 		saves:apply("k", add(5))
-		expect(saves:reclaim("k", 210)).toBe(true) -- 120 s: stale
+		local claimed, base = saves:reclaim("k", 210) -- 120 s: stale
+		expect(`{claimed} {base.coins}`).toBe("true 500") -- what the claim found, to show what was added
 		expect(`{s.status} {s.retry} {#s.queue} {saves:get("k").coins}`).toBe("online false 0 530")
 		local rec = store:read("k")
 		expect(`{rec.coins} {rec.lastSeen} {SaveLock.holds(rec, s.id)}`).toBe("530 210 true")

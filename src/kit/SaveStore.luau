@@ -10,7 +10,8 @@
 --   * A session that could not claim its record (busy, a failed load, a lost lock; not a newer
 --     record) keeps every change queued (`retry`). `reclaim` claims the lock once it is free or
 --     stale and stores the stored record with every queued change re-run, then goes online
---     (LANTERN-016, QA M4).
+--     (LANTERN-016, QA M4). A busy session plays on the stored record it found, not on defaults
+--     (LANTERN-017, QA r5); only a failed load starts from defaults.
 --   * When such a session ends (`finish`, `finishAll`) its changes are stored whatever the lock: a
 --     free or stale lock is claimed and released in one write; a fresh lock of another session (a
 --     crashed server's, for up to `lockStale` s) is kept exactly as it was and the changes are
@@ -152,6 +153,7 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 	if o.store then
 		local busy = false
 		local newer: any = nil
+		local seen: any = nil
 		local ok, record = withRetries(self, `load {key}`, function()
 			newer = nil
 			local stored = o.store:UpdateAsync(key, function(old: any)
@@ -161,6 +163,7 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 				end
 				busy = not SaveLock.canClaim(old, session.id, now, self.lockStale)
 				if busy then
+					seen = old
 					return nil
 				end
 				return SaveLock.stamp(o.sanitize(old, now) :: any, session.id, now)
@@ -178,6 +181,7 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 			session.profile = o.sanitize(record, now)
 		elseif busy then
 			session.status = "busy"
+			session.profile = o.sanitize(seen, now) -- the stored save, not defaults (QA r5)
 		end
 		session.retry = session.status ~= "online" and not (ok and newer ~= nil)
 	end
@@ -292,21 +296,22 @@ end
 -- session is online. A fresh lock of another session or a newer record writes nothing.
 -- `final` (the session ends, QA r4): retried until `deadline`; a free or stale lock is released in
 -- the same write and a fresh one is kept exactly as it was, so only a newer record writes nothing.
+-- On success also returns the stored record it found (sanitised, before this session's changes).
 local function reclaimSession(
 	self: any,
 	session: Session<any>,
 	now: number,
 	final: boolean?,
 	deadline: number?
-): boolean
+): (boolean, any?)
 	local o = self.o
 	if not session.retry or session.writing or o.store == nil then
-		return false
+		return false, nil
 	end
 	session.writing = true
 	local ops = session.queue
 	session.queue = {}
-	local busy = false
+	local busy, base = false, nil
 	local function claim()
 		return o.store:UpdateAsync(session.key, function(old: any)
 			local free = SaveLock.canClaim(old, session.id, now, self.lockStale)
@@ -314,7 +319,8 @@ local function reclaimSession(
 			if busy then
 				return nil
 			end
-			local p = o.sanitize(old, now)
+			base = o.sanitize(old, now)
+			local p = base
 			for _, op in ops do
 				p = op(p)
 			end
@@ -342,19 +348,23 @@ local function reclaimSession(
 		end
 		session.profile, session.status, session.retry, session.lastWrite = p, "online", false, now
 		log(self, `{session.key} claimed its record; {#ops} queued changes stored`)
-		return true
+		return true, base
 	end
 	for i, op in ops do
 		table.insert(session.queue, i, op)
 	end
-	return false
+	return false, nil
 end
 
 -- Tries once to claim the record of a session that could not (see the top). True when it is online
--- now. Call it every few seconds while `session(key).retry` is true.
-function SaveStore.reclaim(self: any, key: string, now: number): boolean
+-- now, and the stored record it found before this session's changes (to show what they added).
+-- Call it every few seconds while `session(key).retry` is true.
+function SaveStore.reclaim(self: any, key: string, now: number): (boolean, any?)
 	local session = self.sessions[key]
-	return session ~= nil and not session.closing and reclaimSession(self, session, now)
+	if session == nil or session.closing then
+		return false, nil
+	end
+	return reclaimSession(self, session, now)
 end
 
 function SaveStore.flush(self: any, key: string, now: number, final: boolean?, deadline: number?): boolean

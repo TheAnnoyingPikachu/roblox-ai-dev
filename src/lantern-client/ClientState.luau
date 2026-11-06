@@ -175,6 +175,7 @@ ClientState.CODES = {
 	tickets = "Not enough Tickets",
 	refused = "Not right now",
 	carrying = "Bring it to the train first", -- SIT while carrying (QA M1)
+	paused = "Saving is paused: try again when it is back on", -- QA r5
 } :: { [string]: string }
 
 -- Signals between the client scripts.
