@@ -62,6 +62,159 @@
       ]
     }
   },
+  "train_car_cargo": {
+    "fbx": "build/blender/lantern/train_car_cargo.fbx",
+    "png": "build/blender/lantern/train_car_cargo.png",
+    "preview": "build/blender/lantern/previews/train_car_cargo.png",
+    "size_studs": [
+      8.08,
+      6.99,
+      16.0
+    ],
+    "tris": 5148,
+    "parts": {
+      "train_car_cargo": 5116,
+      "train_car_cargo_lamp_glow": 32
+    },
+    "target_size_studs": [
+      8,
+      7,
+      16
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "cargo car fallback (block wagon)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Cargo car, 16 x 7 x 8: coal bunker in front, crate deck behind. Wheels on y = 0 (rail top), front -Z, floor 2.3 up. Buffer heads end at the bounding box (+-8), buffers and coupling 1.75 up, 2.6 off centre, as the engine. Two meshes: train_car_cargo (textured) and train_car_cargo_lamp_glow (Neon: the bunker lantern, glass centre 6.2 up at the bunker's back corner on the car's left, 1.15 forward of the middle). Static wheels.",
+    "glow": {
+      "train_car_cargo_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "train_car_lamp": {
+    "fbx": "build/blender/lantern/train_car_lamp.fbx",
+    "png": "build/blender/lantern/train_car_lamp.png",
+    "preview": "build/blender/lantern/previews/train_car_lamp.png",
+    "size_studs": [
+      8.08,
+      9.0,
+      16.0
+    ],
+    "tris": 5840,
+    "parts": {
+      "train_car_lamp": 5744,
+      "train_car_lamp_lamp_glow": 96
+    },
+    "target_size_studs": [
+      8,
+      9,
+      16
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "lamp car fallback (block flatcar)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Lamp car, 16 x 9 x 8: flatcar with two turret rings and the lantern rack. Wheels on y = 0, front -Z, floor 2.3 up. Turret rings (3.2 across, lamp_turret_base stands on them): top 2.46 up, centred 4.7 forward and 4.7 back of the middle. Lantern rack across the middle (finial 9 up); its three lanterns (glass centres 6.3 up at x +-1.5 and 6.5 up at x 0) are the train_car_lamp_lamp_glow mesh (Neon). The Mender's stool: cushion top 3.75 up, 1.25 behind the middle on the centre line, facing forward at the rack. Red bulwarks (top 3.4 up) round both ends, open beside the rack.",
+    "glow": {
+      "train_car_lamp_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "train_car_passenger": {
+    "fbx": "build/blender/lantern/train_car_passenger.fbx",
+    "png": "build/blender/lantern/train_car_passenger.png",
+    "preview": "build/blender/lantern/previews/train_car_passenger.png",
+    "size_studs": [
+      8.09,
+      10.0,
+      18.0
+    ],
+    "tris": 7762,
+    "parts": {
+      "train_car_passenger": 7546,
+      "train_car_passenger_lamp_glow": 216
+    },
+    "target_size_studs": [
+      8,
+      10,
+      18
+    ],
+    "tris_budget": 8000,
+    "priority": "P1",
+    "replaces": "passenger car fallback (block coach)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Passenger coach, 18 x 10 x 8. Wheels on y = 0, front -Z, floor 2.3 up. Six forward-facing seats (cushion tops 3.6 up) at x +-1.95 and z -4.1, -0.1, 3.9 from the middle. Eight open round-topped windows, four a side, centred z +-1.78 and +-5.34, sill top 4.68 up at x +-3.8 (the critter window slots), opening 2.6 wide and 3.3 tall. Roof turret plinth: top 9.41 up on the middle. train_car_passenger_lamp_glow (Neon): two cabin lanterns over the aisle (z +-3.6, 7.2 up), the two end-door portholes and the tail lamp (back wall, 6 up). Static wheels.",
+    "glow": {
+      "train_car_passenger_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "lamp_turret_base": {
+    "fbx": "build/blender/lantern/lamp_turret_base.fbx",
+    "png": "build/blender/lantern/lamp_turret_base.png",
+    "preview": "build/blender/lantern/previews/lamp_turret_base.png",
+    "size_studs": [
+      3.0,
+      2.0,
+      3.0
+    ],
+    "tris": 882,
+    "parts": {
+      "lamp_turret_base": 882
+    },
+    "target_size_studs": [
+      3,
+      2,
+      3
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "turret base fallback (cylinder)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Turret drum, 3 x 2 x 3, origin at its base centre: red drum, brass bearing with a hollow well (the head's grips dip into it at high pitch). Stands on the lamp car's turret rings, the passenger roof plinth and the engine's cab roof. One mesh.",
+    "glow": {}
+  },
+  "lamp_turret_head": {
+    "fbx": "build/blender/lantern/lamp_turret_head.fbx",
+    "png": "build/blender/lantern/lamp_turret_head.png",
+    "preview": "build/blender/lantern/previews/lamp_turret_head.png",
+    "size_studs": [
+      2.4,
+      2.4,
+      3.6
+    ],
+    "tris": 1332,
+    "parts": {
+      "lamp_turret_head": 1240,
+      "lamp_turret_head_lamp_glow": 92
+    },
+    "target_size_studs": [
+      2.4,
+      2.4,
+      3.6
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "turret head fallback (block with a pale glass face)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Searchlight head, 2.4 x 2.4 x 3.6, glass front on -Z, symmetric about its hinge: the trunnion axis runs through the bounding-box centre. Place the hinge 1.65 above the base top (0.45 clear at rest; at -15 pitch the hood clears the bearing, at 75 the grips sink into the well). Two meshes: lamp_turret_head (textured) and lamp_turret_head_lamp_glow (Neon lens; code may tint it to the player's lamp colour).",
+    "glow": {
+      "lamp_turret_head_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
   "house_cottage": {
     "fbx": "build/blender/lantern/house_cottage.fbx",
     "png": "build/blender/lantern/house_cottage.png",
@@ -93,5 +246,396 @@
         104
       ]
     }
+  },
+  "item_coal_sack": {
+    "fbx": "build/blender/lantern/item_coal_sack.fbx",
+    "png": "build/blender/lantern/item_coal_sack.png",
+    "preview": "build/blender/lantern/previews/item_coal_sack.png",
+    "size_studs": [
+      1.6,
+      1.4,
+      1.2
+    ],
+    "tris": 714,
+    "parts": {
+      "item_coal_sack": 714
+    },
+    "target_size_studs": [
+      1.6,
+      1.4,
+      1.2
+    ],
+    "tris_budget": 800,
+    "priority": "P1",
+    "replaces": "coal item fallback (dark block)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Coal sack, 1.6 x 1.4 x 1.2, base centre origin: plum-grey sack with two cream stripes, coal heaped in its open neck. One mesh. Welded to backs when carried (code).",
+    "glow": {}
+  },
+  "item_parts_bag": {
+    "fbx": "build/blender/lantern/item_parts_bag.fbx",
+    "png": "build/blender/lantern/item_parts_bag.png",
+    "preview": "build/blender/lantern/previews/item_parts_bag.png",
+    "size_studs": [
+      1.6,
+      1.19,
+      1.2
+    ],
+    "tris": 684,
+    "parts": {
+      "item_parts_bag": 684
+    },
+    "target_size_studs": [
+      1.6,
+      1.2,
+      1.2
+    ],
+    "tris_budget": 800,
+    "priority": "P1",
+    "replaces": "parts item fallback (brown block)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Spare-parts tool bag, 1.6 x 1.2 x 1.2: teal canvas, leather straps and handles, a brass cog on the front (-Z). One mesh.",
+    "glow": {}
+  },
+  "item_oil_can": {
+    "fbx": "build/blender/lantern/item_oil_can.fbx",
+    "png": "build/blender/lantern/item_oil_can.png",
+    "preview": "build/blender/lantern/previews/item_oil_can.png",
+    "size_studs": [
+      0.99,
+      1.6,
+      1.0
+    ],
+    "tris": 572,
+    "parts": {
+      "item_oil_can": 572
+    },
+    "target_size_studs": [
+      1.0,
+      1.6,
+      1.0
+    ],
+    "tris_budget": 600,
+    "priority": "P1",
+    "replaces": "oil item fallback (yellow cylinder)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Lamp-oil can, 1.0 x 1.6 x 1.0: amber can, teal label on the front (-Z), spout leaning forward, handle at the back. One mesh.",
+    "glow": {}
+  },
+  "item_supply_crate": {
+    "fbx": "build/blender/lantern/item_supply_crate.fbx",
+    "png": "build/blender/lantern/item_supply_crate.png",
+    "preview": "build/blender/lantern/previews/item_supply_crate.png",
+    "size_studs": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "tris": 804,
+    "parts": {
+      "item_supply_crate": 804
+    },
+    "target_size_studs": [
+      3,
+      3,
+      3
+    ],
+    "tris_budget": 900,
+    "priority": "P1",
+    "replaces": "supply crate fallback (wooden block)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Supply crate, 3 x 3 x 3: planks, battens, iron corners, rope handles on the left and right, cream-and-amber roundels on four sides and the top. One mesh. Carried in front (code).",
+    "glow": {}
+  },
+  "item_critter_crate": {
+    "fbx": "build/blender/lantern/item_critter_crate.fbx",
+    "png": "build/blender/lantern/item_critter_crate.png",
+    "preview": "build/blender/lantern/previews/item_critter_crate.png",
+    "size_studs": [
+      3.6,
+      3.0,
+      2.59
+    ],
+    "tris": 1132,
+    "parts": {
+      "item_critter_crate": 1056,
+      "item_critter_crate_glow": 76
+    },
+    "target_size_studs": [
+      3.6,
+      3,
+      2.6
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "critter crate fallback (block with handles)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Critter carrier, 3.6 x 3 x 2.6: the long axis is x, brass carry bars at both ends (1.55 up) for the two carriers in line; air holes on the vault and back, runners underneath. Two meshes: item_critter_crate (textured) and item_critter_crate_glow (the round front window on -Z, 1.2 across, centre 1.6 up: Neon, warm by default; code may tint it to the rarity colour beside its rarity light).",
+    "glow": {
+      "item_critter_crate_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "depot_hub": {
+    "fbx": "build/blender/lantern/depot_hub.fbx",
+    "png": "build/blender/lantern/depot_hub.png",
+    "preview": "build/blender/lantern/previews/depot_hub.png",
+    "size_studs": [
+      60.73,
+      30.0,
+      23.92
+    ],
+    "tris": 14224,
+    "parts": {
+      "depot_hub": 13144,
+      "depot_hub_glow": 1080
+    },
+    "target_size_studs": [
+      60,
+      30,
+      24
+    ],
+    "tris_budget": 15000,
+    "priority": "P1",
+    "replaces": "depot fallback (blocks)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Lamplight Depot, 60 x 30 x 24, ground at y = 0, front (the platform canopy) -Z. Red brick hall under a plum barrel roof, round pavilions with scalloped plum domes at both ends, a clock tower (lit clock 18.6 up, LAMPLIGHT DEPOT sign, teal doors at ground level in its middle, lit cupola, finial 30 up); the tower front and clock face are 4.1 in front of the origin. The canopy runs from the hall front (3.1 in front of the origin) to 12 in front, eaves 8.6 up, on iron columns on a line 11.2 in front. Two meshes: depot_hub and depot_hub_glow (Neon: windows front and back, the fanlight, clock face, cupola glass, six lanterns and two lamp posts). CanCollide false; collide with invisible parts: the hall, tower and pavilion boxes.",
+    "glow": {
+      "depot_hub_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "depot_platform": {
+    "fbx": "build/blender/lantern/depot_platform.fbx",
+    "png": "build/blender/lantern/depot_platform.png",
+    "preview": "build/blender/lantern/previews/depot_platform.png",
+    "size_studs": [
+      40.04,
+      2.0,
+      10.02
+    ],
+    "tris": 400,
+    "parts": {
+      "depot_platform": 400
+    },
+    "target_size_studs": [
+      40,
+      2,
+      10
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "platform fallback (block)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Platform, 40 x 2 x 10: brick body, plank deck 2.0 up, stone coping with the cream edge line along the track side (-Z). One mesh. Collide with one box.",
+    "glow": {}
+  },
+  "depot_signal": {
+    "fbx": "build/blender/lantern/depot_signal.fbx",
+    "png": "build/blender/lantern/depot_signal.png",
+    "preview": "build/blender/lantern/previews/depot_signal.png",
+    "size_studs": [
+      2.0,
+      12.0,
+      2.0
+    ],
+    "tris": 924,
+    "parts": {
+      "depot_signal": 880,
+      "depot_signal_lamp_glow": 44
+    },
+    "target_size_studs": [
+      2,
+      12,
+      2
+    ],
+    "tris_budget": 1000,
+    "priority": "P1",
+    "replaces": "signal fallback (cylinder and ball)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Signal post, 2 x 12 x 2: stone plinth, iron post, a lamp head facing -Z (upper lens lit, lower dark teal), brass ball on top, a ladder at the back. Two meshes: depot_signal and depot_signal_lamp_glow (Neon: the upper lens, 11 up).",
+    "glow": {
+      "depot_signal_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "depot_board": {
+    "fbx": "build/blender/lantern/depot_board.fbx",
+    "png": "build/blender/lantern/depot_board.png",
+    "preview": "build/blender/lantern/previews/depot_board.png",
+    "size_studs": [
+      15.96,
+      10.0,
+      1.5
+    ],
+    "tris": 1204,
+    "parts": {
+      "depot_board": 1044,
+      "depot_board_lamp_glow": 160
+    },
+    "target_size_studs": [
+      16,
+      10,
+      1.5
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "board fallback (block frame)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Notice board, 16 x 10 x 1.5: timber posts, a dark felt panel 14.6 wide and 6.6 tall centred 5.2 up, its face on the middle plane, framed 0.3 proud (put the SurfaceGui part just in front, about 14 x 6.4), a plum hood with a cream valance, two gooseneck lamps. Two meshes: depot_board and depot_board_lamp_glow (Neon: the two bulbs).",
+    "glow": {
+      "depot_board_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "dawn_station": {
+    "fbx": "build/blender/lantern/dawn_station.fbx",
+    "png": "build/blender/lantern/dawn_station.png",
+    "preview": "build/blender/lantern/previews/dawn_station.png",
+    "size_studs": [
+      60.4,
+      36.0,
+      30.0
+    ],
+    "tris": 11288,
+    "parts": {
+      "dawn_station": 10108,
+      "dawn_station_glow": 1088,
+      "dawn_station_sun_glow": 92
+    },
+    "target_size_studs": [
+      60,
+      36,
+      30
+    ],
+    "tris_budget": 15000,
+    "priority": "P1",
+    "replaces": "Dawn Station fallback (blocks)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Dawn Station, 60 x 36 x 30, ground at y = 0, front -Z: a cream stone station on a terrace 1.2 high (steps at the front middle), a rotunda under a golden ribbed dome and a lit lantern crowned by a brass sun (36 up), a portico whose pediment is a rising-sun window, cream wings with plum roofs and end pavilions with golden domes and peach pennants. Three meshes: dawn_station, dawn_station_glow (Neon window glow: windows, oculi, fanlight, lanterns, lamp posts) and dawn_station_sun_glow (Neon lamp glow: the rising-sun fan and the lantern room).",
+    "glow": {
+      "dawn_station_glow": [
+        255,
+        196,
+        104
+      ],
+      "dawn_station_sun_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "rail_32": {
+    "fbx": "build/blender/lantern/rail_32.fbx",
+    "png": "build/blender/lantern/rail_32.png",
+    "preview": "build/blender/lantern/previews/rail_32.png",
+    "size_studs": [
+      8.0,
+      1.0,
+      32.0
+    ],
+    "tris": 292,
+    "parts": {
+      "rail_32": 292
+    },
+    "target_size_studs": [
+      8,
+      1,
+      32
+    ],
+    "tris_budget": 600,
+    "priority": "P1",
+    "replaces": "rail fallback (two thin parts)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Track section, 32 x 1 x 8, along z. Rail tops are the top of the asset, 1 up from its base: put the base 1 below the train's rail-top line. Rails 6 apart centre to centre (the wheels at x +-3); 16 sleepers 2 apart, so sections tile seamlessly every 32. One mesh.",
+    "glow": {}
+  },
+  "decor_pine": {
+    "fbx": "build/blender/lantern/decor_pine.fbx",
+    "png": "build/blender/lantern/decor_pine.png",
+    "preview": "build/blender/lantern/previews/decor_pine.png",
+    "size_studs": [
+      9.98,
+      27.97,
+      9.99
+    ],
+    "tris": 2152,
+    "parts": {
+      "decor_pine": 2152
+    },
+    "target_size_studs": [
+      10,
+      28,
+      10
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "pine fallback (cone and cylinder)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Toy pine, 10 x 28 x 10: five scalloped dusk-teal tiers on a plum-brown trunk. One mesh, origin at the trunk foot.",
+    "glow": {}
+  },
+  "decor_birch": {
+    "fbx": "build/blender/lantern/decor_birch.fbx",
+    "png": "build/blender/lantern/decor_birch.png",
+    "preview": "build/blender/lantern/previews/decor_birch.png",
+    "size_studs": [
+      8.11,
+      21.67,
+      8.04
+    ],
+    "tris": 2080,
+    "parts": {
+      "decor_birch": 2080
+    },
+    "target_size_studs": [
+      8,
+      22,
+      8
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "birch fallback (cone and cylinder)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Toy birch, 8 x 22 x 8: cream spotted trunk, six soft sage leaf puffs. One mesh.",
+    "glow": {}
+  },
+  "decor_rock": {
+    "fbx": "build/blender/lantern/decor_rock.fbx",
+    "png": "build/blender/lantern/decor_rock.png",
+    "preview": "build/blender/lantern/previews/decor_rock.png",
+    "size_studs": [
+      7.91,
+      4.05,
+      6.02
+    ],
+    "tris": 720,
+    "parts": {
+      "decor_rock": 720
+    },
+    "target_size_studs": [
+      8,
+      4,
+      6
+    ],
+    "tris_budget": 800,
+    "priority": "P2",
+    "replaces": "rock fallback (ball)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Rock cluster, 8 x 4 x 6: three rounded plum-grey boulders with moss on top, flat underneath. One mesh.",
+    "glow": {}
   }
 }
