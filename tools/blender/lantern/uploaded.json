@@ -223,5 +223,105 @@
     "model": 123496655293136,
     "decal": 102245708627960,
     "texture": null
+  },
+  "lantern_icon_album": {
+    "model": null,
+    "decal": 134716848021857,
+    "texture": null
+  },
+  "lantern_icon_board": {
+    "model": null,
+    "decal": 136049300035018,
+    "texture": null
+  },
+  "lantern_icon_close": {
+    "model": null,
+    "decal": 130335535593690,
+    "texture": null
+  },
+  "lantern_icon_coal": {
+    "model": null,
+    "decal": 128642656200295,
+    "texture": null
+  },
+  "lantern_icon_crate": {
+    "model": null,
+    "decal": 87365053122241,
+    "texture": null
+  },
+  "lantern_icon_critter": {
+    "model": null,
+    "decal": 137815744696475,
+    "texture": null
+  },
+  "lantern_icon_depot": {
+    "model": null,
+    "decal": 125893801348817,
+    "texture": null
+  },
+  "lantern_icon_lamp": {
+    "model": null,
+    "decal": 73707133165420,
+    "texture": null
+  },
+  "lantern_icon_lantern": {
+    "model": null,
+    "decal": 125222803941568,
+    "texture": null
+  },
+  "lantern_icon_locker": {
+    "model": null,
+    "decal": 74307550015147,
+    "texture": null
+  },
+  "lantern_icon_mend": {
+    "model": null,
+    "decal": 106050639880174,
+    "texture": null
+  },
+  "lantern_icon_oil": {
+    "model": null,
+    "decal": 104365865818065,
+    "texture": null
+  },
+  "lantern_icon_parts": {
+    "model": null,
+    "decal": 116764959454978,
+    "texture": null
+  },
+  "lantern_icon_ping": {
+    "model": null,
+    "decal": 97316439894816,
+    "texture": null
+  },
+  "lantern_icon_rewards": {
+    "model": null,
+    "decal": 122754009316795,
+    "texture": null
+  },
+  "lantern_icon_settings": {
+    "model": null,
+    "decal": 101962853762569,
+    "texture": null
+  },
+  "lantern_icon_stoke": {
+    "model": null,
+    "decal": 99098498215989,
+    "texture": null
+  },
+  "lantern_icon_ticket": {
+    "model": null,
+    "decal": 74339933790614,
+    "texture": null
+  },
+  "lantern_icon_train": {
+    "model": null,
+    "decal": 114292111373493,
+    "texture": null
+  },
+  "lantern_icon_xp": {
+    "model": null,
+    "decal": 73359328876052,
+    "texture": null
   }
 }
