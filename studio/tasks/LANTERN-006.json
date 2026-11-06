@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "LANTERN-006",
   "owner": "A09",
   "verifier": "A15",
@@ -35,13 +35,21 @@
   "files": [
     "src/lantern/**",
     "src/relay/Models.luau",
-    "src/shared/LanternAssets.luau"
+    "src/shared/LanternAssets.luau",
+    "src/shared/LanternConfig.luau",
+    "tests/LanternConfig.spec.luau",
+    "docs/architecture/lantern.md"
   ],
   "tests": [
     "TrainRules.spec.luau",
     "LanternProgress.spec.luau",
     "CarryRules.spec.luau",
-    "WispRules.spec.luau"
+    "WispRules.spec.luau",
+    "LanternConfig.spec.luau"
   ],
-  "notes": "src/shared/LanternAssets.luau: write `return {}` with the Asset type only if LANTERN-011 has not landed; the generated file replaces it. Shares no file with LANTERN-007. Delete src/lantern/.gitkeep with the first script."
+  "notes": "Deviations (for LANTERN-013 and the checkpoint): (1) the train is 0018's fallback, anchored cars moved by CFrame (the brief), not Align constraints; two-client jitter is LANTERN-012's check. (2) The stop frame follows the art's LAYOUT (tiles.py): origin on the deck's track edge 4 studs out at the plate top, +Z into the stop, at the stop distance; the deck (depth <= 10) is never caught by the fog. The LANTERN-007 client assumes ClientState.STOP_EDGE = 14: it should be 4 (or read the Stop model's Site attribute). (3) LanternConfig.TILES is the art's LAYOUT (Director, 2026-11-06), with block names and lamps; the spec pins it. (4) Fx adds `shoo { target }` for the LANTERN-007 client and the carry refusal codes gone/taken/hands/big reach players as notices: decision 0018 section 3 needs an amendment (rule 8). (5) The newer-save guard is in the server (sanitize throws inside the load's UpdateAsync, then a GetAsync shows the record read-only) because Saves.start does not pass the kit's `newer` option yet; wiring it is a kit-roblox change outside this task. (6) Weekly boards show display names (GDD G5) via UserService, not GetNameFromUserIdAsync. (7) Lighting.Technology is not scriptable: set Future in lantern.project.json (LANTERN-002) or the place settings. (8) src/shared/LanternAssets.luau is left to the generator (Director): Models.luau loads it optionally. Not verified here: two-player runs, a full three-leg run to Dawn Station, ending by lantern, and leave/rejoin persistence (needs DataStores: a published staging place).",
+  "evidence": [
+    "Local gates 2026-11-06: lune run tests/run 715/715; selene src tests 0 errors 0 warnings; stylua --check on LF copies clean; validate-tasks; check-scope origin/main; rojo build lantern.project.json + check-place matches (see the commit for the counts).",
+    "Studio solo, scratch build of this branch (build stamp 'dev': local build, no CI stamp; DataStores offline in an unpublished place, so saves were checked in memory), server-side test hook only in the scratch place: PLAY seats the player at the Stoker seat, the train leaves 3 s later; jumping off at cruise 20 re-seats in 0.08 s; a menu player who touch-sits is stood up and stepped off; stop 1 arrives 43.1 s after PLAY with the tile built 12 s earlier (17 items for n = 1, as GDD C6); standing up lands on the deck (depth 3); a walked crate pick (speed 9) and load paid +15 Tickets +75 XP (Uncommon, NEW, level 2) with payout/new/load/rescue Fx; a coal sack carrier at depth 148 is caught 2.0 s after the bell, the sack drops there, the character hides anchored under the tile and is back in a seat 10.18 s later; night waves dim 6 per wisp solo, a scripted Aim beam puffed 5 wisps (puffs 5, +10 XP in the save); Aim drops NaN, infinity, length 2, zero, non-Vector3 and a non-turret sender (0 accepted) and lets 13 of a 100 Hz stream through; the Depot pays +30 Tickets +40 XP once and stands everyone on the hub platform; Depot refusals parts/payload/phase/cooldown; leg 2 on the voted Lake Line out of coal coasts to a stop at d 111, ends 'coal', returns to the hub 12.0 s later with the crew kept and the save untouched (45 Tickets, 125 XP, runs 1, bests written); runEnd summary sent. Screenshots of the train at a stop and at night taken in Studio."
+  ]
 }

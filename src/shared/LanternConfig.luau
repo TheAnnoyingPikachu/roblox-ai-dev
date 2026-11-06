@@ -22,8 +22,16 @@ export type Critter = {
 	leg3: boolean?,
 	look: string,
 }
-export type Box = { at: Vec3, size: Vec3 } -- stop frame, centre and size
-export type Tile = { id: string, name: string, lines: { Line }, small: { Vec3 }, big: { Vec3 }, blocks: { Box } }
+export type Box = { name: string?, at: Vec3, size: Vec3 } -- stop frame, centre and size
+export type Tile = {
+	id: string,
+	name: string,
+	lines: { Line },
+	small: { Vec3 },
+	big: { Vec3 },
+	blocks: { Box },
+	lamps: { Vec3 },
+}
 export type Seat = { id: string, kind: SeatKind, at: Vec3 } -- car-local (car frame as the train frame, at the car's centre)
 export type Car = {
 	id: string,
@@ -269,24 +277,29 @@ LanternConfig.CRITTERS = {
 } :: { Critter }
 
 -- Stop tiles (GDD C3, D): sites are data, the mesh is decor ------------------------------------
--- Stop frame: x across the platform (-60..60), z depth from the platform edge (0..160), y up.
--- Big sites run up a central lane (|x| <= 7) and small sites beside it (12 <= |x| <= 25, items
--- spread 1 stud), so the buildings (blocks) stand at |x| >= 28 and never cover a site.
+-- Copied from LAYOUT in tools/blender/lantern/assets/tiles.py (LANTERN-009), the tiles' contract:
+-- the art places its buildings, lamps and a clear lane to exactly these numbers. Stop frame: x
+-- across the tile (-60..60), z the depth from the platform deck's track edge (0) to the far edge
+-- (160), y up from the plate. The deck (depth 0 to 10, 1.8 high, 108 long) and its ramp (10 to 15)
+-- are the same on every tile; sites start at 18. Blocks are { name, x, depth, width, depth size,
+-- height } and collide; lamps are where the street lamps stand (code hangs a PointLight 7.5 up).
 
-local SMALL_X = { -24, -14, 13, 22, -19, 17, 25, -12 }
-local BIG_X = { -6, 5, -3, 7, 2, -7, 4, -2 }
 LanternConfig.BIG_DEPTHS = { 22, 40, 58, 78, 96, 114, 132, 150 }
+LanternConfig.TILE_DECK = { depth = 10, height = 1.8, length = 108, ramp = 15 }
 
-local function tile(id: string, name: string, k: number, blocks: { { number } }): Tile
-	local small, big, boxes = {}, {}, {}
-	for i = 1, 24 do
-		table.insert(small, v(SMALL_X[(i + k) % 8 + 1], 0, 15 + math.floor((i - 1) * 135 / 23 + 0.5)))
+type Layout = { blocks: { { any } }, lamps: { { number } }, big: { { number } }, small: { { number } } }
+
+local function tile(id: string, name: string, layout: Layout): Tile
+	local function sites(list: { { number } }): { Vec3 }
+		local out = {}
+		for _, s in list do
+			table.insert(out, v(s[1], 0, s[2]))
+		end
+		return out
 	end
-	for i, depth in LanternConfig.BIG_DEPTHS do
-		table.insert(big, v(BIG_X[(i + 3 * k) % 8 + 1], 0, depth))
-	end
-	for _, b in blocks do -- { x, z, width, height, depth }
-		table.insert(boxes, { at = v(b[1], b[4] / 2, b[2]), size = v(b[3], b[4], b[5]) })
+	local boxes = {}
+	for _, b in layout.blocks do
+		table.insert(boxes, { name = b[1], at = v(b[2], b[6] / 2, b[3]), size = v(b[4], b[6], b[5]) })
 	end
 	local lines: { Line } = {}
 	for _, line in BOTH do
@@ -294,38 +307,364 @@ local function tile(id: string, name: string, k: number, blocks: { { number } })
 			table.insert(lines, line)
 		end
 	end
-	return { id = id, name = name, lines = lines, small = small, big = big, blocks = boxes }
+	return {
+		id = id,
+		name = name,
+		lines = lines,
+		small = sites(layout.small),
+		big = sites(layout.big),
+		blocks = boxes,
+		lamps = sites(layout.lamps),
+	}
 end
 
+local orchardBlocks = {} -- the orchard's 20 apple trees, 4 across and 5 deep, then the rest
+for i, d in { 34, 56, 78, 100, 122 } do
+	for j, x in { -44, -26, 26, 44 } do
+		table.insert(orchardBlocks, { `apple_{(i - 1) * 4 + j}`, x, d, 2, 2, 15 })
+	end
+end
+table.insert(orchardBlocks, { "store", 32, 146, 16, 14, 13 })
+table.insert(orchardBlocks, { "hives", -36, 146, 8, 3, 2.6 })
+table.insert(orchardBlocks, { "crates", 14, 96, 3.5, 2.5, 2 })
+table.insert(orchardBlocks, { "crates_2", -14, 60, 3.5, 2.5, 2 })
+
 LanternConfig.TILES = {
-	tile("village", "Hollow Village", 0, {
-		{ -44, 30, 24, 16, 28 },
-		{ 44, 52, 22, 14, 26 },
-		{ -45, 100, 26, 18, 30 },
-		{ 45, 128, 24, 16, 30 },
+	tile("village", "Hollow Village", {
+		blocks = {
+			{ "cottage", 22, 46, 15, 12, 17 },
+			{ "house_w", -24, 38, 12, 10, 14 },
+			{ "house_nw", -28, 124, 13, 13, 15 },
+			{ "house_ne", 28, 132, 12, 10.5, 14 },
+			{ "well", 0, 92, 5, 5, 7 },
+			{ "fence_1", 17.15, 36, 5.3, 0.5, 1.2 },
+			{ "fence_2", 26.9, 36, 5.4, 0.5, 1.2 },
+			{ "fence_3", 29.6, 37.8, 0.5, 3.6, 1.2 },
+			{ "tree_1", -47, 72, 2, 2, 13 },
+			{ "tree_2", 49, 92, 2, 2, 14 },
+			{ "tree_3", -50, 152, 2, 2, 12 },
+			{ "tree_4", 50, 152, 2, 2, 13 },
+			{ "tree_5", -46, 22, 2, 2, 11 },
+		},
+		lamps = { { 6.5, 30 }, { -6.5, 62 }, { 6.5, 118 }, { -6.5, 146 } },
+		big = { { -12, 22 }, { 9, 40 }, { -12, 58 }, { 24, 78 }, { -22, 96 }, { 16, 114 }, { -10, 132 }, { 20, 150 } },
+		small = {
+			{ -30, 18 },
+			{ 32, 20 },
+			{ 6, 26 },
+			{ -38, 50 },
+			{ 38, 56 },
+			{ -6, 48 },
+			{ 10, 66 },
+			{ -30, 70 },
+			{ 40, 76 },
+			{ -8, 82 },
+			{ 12, 100 },
+			{ -42, 100 },
+			{ 36, 104 },
+			{ -14, 112 },
+			{ 52, 120 },
+			{ 6, 128 },
+			{ -44, 136 },
+			{ 40, 146 },
+			{ -24, 146 },
+			{ 4, 150 },
+			{ -52, 50 },
+			{ 52, 34 },
+			{ 24, 92 },
+			{ -30, 108 },
+		},
 	}),
-	tile("farm", "Mossy Farm", 1, { { -44, 60, 28, 20, 40 }, { 40, 30, 12, 28, 12 }, { 46, 120, 20, 12, 24 } }),
-	tile("windmill", "Old Windmill", 2, { { 42, 90, 20, 44, 20 }, { -44, 40, 24, 14, 24 }, { -46, 130, 20, 12, 22 } }),
-	tile("orchard", "Apple Orchard", 3, { { -46, 30, 20, 12, 20 }, { 45, 80, 24, 16, 30 }, { -44, 135, 24, 14, 28 } }),
-	tile("inn", "Kettle Inn", 4, {
-		{ -43, 70, 30, 22, 40 },
-		{ 45, 35, 22, 14, 24 },
-		{ 45, 125, 24, 16, 30 },
-		{ -46, 140, 18, 12, 18 },
+	tile("farm", "Mossy Farm", {
+		blocks = {
+			{ "barn", 28, 96, 22, 30, 21 },
+			{ "silo", 49, 70, 8, 8, 24 },
+			{ "farmhouse", -32, 42, 13, 11, 15 },
+			{ "hay_1", 17, 58, 6, 6, 5.5 },
+			{ "hay_2", -28, 142, 6, 6, 5.5 },
+			{ "hay_3", 44, 140, 6, 6, 5.5 },
+			{ "cart", 48, 100, 4, 7, 3 },
+			{ "coop", 28, 148, 7, 6, 5 },
+			{ "fence_w", -57.5, 95, 0.6, 64.6, 1.5 },
+			{ "fence_n", -35.75, 127, 44.1, 0.6, 1.5 },
+			{ "fence_s", -48.75, 63, 18.1, 0.6, 1.5 },
+			{ "fence_se", -19, 63, 10.6, 0.6, 1.5 },
+			{ "fence_e", -14, 69, 0.6, 12.6, 1.5 },
+			{ "tree_1", -50, 22, 2, 2, 13 },
+			{ "tree_2", 52, 152, 2, 2, 14 },
+			{ "tree_3", -52, 152, 2, 2, 12 },
+			{ "tree_4", 52, 30, 2, 2, 12 },
+		},
+		lamps = { { -2.5, 30 }, { 10.5, 62 }, { -2.5, 100 }, { 10.5, 132 } },
+		big = { { -12, 22 }, { 20, 40 }, { -8, 58 }, { -8, 78 }, { -36, 96 }, { 10, 114 }, { 26, 132 }, { -10, 150 } },
+		small = {
+			{ 50, 18 },
+			{ -40, 18 },
+			{ 12, 18 },
+			{ 32, 24 },
+			{ 0, 38 },
+			{ -22, 42 },
+			{ -50, 44 },
+			{ 50, 50 },
+			{ 32, 54 },
+			{ 10, 56 },
+			{ -34, 68 },
+			{ 22, 70 },
+			{ -50, 80 },
+			{ 50, 82 },
+			{ 12, 92 },
+			{ -14, 100 },
+			{ 50, 112 },
+			{ -50, 114 },
+			{ -20, 122 },
+			{ 0, 132 },
+			{ -50, 136 },
+			{ 50, 146 },
+			{ 12, 148 },
+			{ -34, 148 },
+		},
 	}),
-	tile("mill", "Water Mill", 5, { { 44, 60, 28, 24, 36 }, { -45, 110, 26, 16, 30 }, { -46, 30, 20, 12, 20 } }),
-	tile(
-		"lighthouse",
-		"Lake Lighthouse",
-		6,
-		{ { 44, 120, 16, 48, 16 }, { -44, 50, 26, 16, 30 }, { -46, 135, 20, 12, 20 } }
-	),
-	tile(
-		"boathouse",
-		"Reed Boathouse",
-		7,
-		{ { -44, 90, 28, 18, 44 }, { 45, 40, 22, 12, 22 }, { 46, 130, 20, 14, 26 } }
-	),
+	tile("windmill", "Old Windmill", {
+		blocks = {
+			{ "windmill", 24, 100, 18, 18, 44 },
+			{ "cottage", -28, 50, 13, 11, 15 },
+			{ "granary", -30, 128, 14, 18, 13 },
+			{ "cart", -40, 100, 4, 7, 3 },
+			{ "tree_1", -50, 86, 2, 2, 14 },
+			{ "tree_2", 52, 40, 2, 2, 13 },
+			{ "tree_3", 52, 112, 2, 2, 12 },
+			{ "tree_4", -52, 24, 2, 2, 12 },
+		},
+		lamps = { { -6.5, 30 }, { 6.5, 64 }, { -6.5, 100 }, { 6.5, 136 } },
+		big = { { 12, 22 }, { -12, 40 }, { 10, 58 }, { 36, 78 }, { -12, 96 }, { 40, 114 }, { 12, 132 }, { -16, 150 } },
+		small = {
+			{ -50, 18 },
+			{ -24, 18 },
+			{ 34, 18 },
+			{ -6, 20 },
+			{ 50, 34 },
+			{ 18, 40 },
+			{ -40, 44 },
+			{ 34, 52 },
+			{ 50, 64 },
+			{ -50, 68 },
+			{ -20, 68 },
+			{ -2, 72 },
+			{ 12, 86 },
+			{ -44, 94 },
+			{ 50, 94 },
+			{ 6, 110 },
+			{ -34, 110 },
+			{ -50, 120 },
+			{ -18, 122 },
+			{ 30, 130 },
+			{ 50, 148 },
+			{ -46, 148 },
+			{ 28, 148 },
+			{ 2, 148 },
+		},
+	}),
+	tile("orchard", "Apple Orchard", {
+		blocks = orchardBlocks,
+		lamps = { { 6.5, 30 }, { -6.5, 66 }, { 6.5, 104 }, { -6.5, 140 } },
+		big = { { -14, 22 }, { 14, 40 }, { -35, 58 }, { 35, 78 }, { -14, 96 }, { 14, 114 }, { -35, 132 }, { 8, 150 } },
+		small = {
+			{ 50, 18 },
+			{ -50, 18 },
+			{ 24, 18 },
+			{ -34, 34 },
+			{ 34, 36 },
+			{ -50, 46 },
+			{ -10, 48 },
+			{ 50, 50 },
+			{ 22, 60 },
+			{ 4, 70 },
+			{ -50, 72 },
+			{ -18, 74 },
+			{ -32, 86 },
+			{ 16, 90 },
+			{ -50, 92 },
+			{ 30, 104 },
+			{ 50, 106 },
+			{ -34, 108 },
+			{ -50, 120 },
+			{ -8, 128 },
+			{ 26, 134 },
+			{ 50, 138 },
+			{ -18, 148 },
+			{ -50, 148 },
+		},
+	}),
+	tile("inn", "Kettle Inn", {
+		blocks = {
+			{ "inn", -22, 72, 24, 20, 24 },
+			{ "sign", 1, 52, 1, 1, 9 },
+			{ "table_1", -30, 44, 3, 3, 3 },
+			{ "table_2", -14, 42, 3, 3, 3 },
+			{ "table_3", -22, 32, 3, 3, 3 },
+			{ "stable", 32, 118, 16, 22, 12 },
+			{ "tree_1", -50, 120, 2, 2, 13 },
+			{ "tree_2", 52, 40, 2, 2, 14 },
+			{ "tree_3", -48, 150, 2, 2, 12 },
+			{ "tree_4", 50, 152, 2, 2, 13 },
+		},
+		lamps = { { 1.5, 30 }, { 14.5, 64 }, { 1.5, 100 }, { 14.5, 136 } },
+		big = { { -2, 22 }, { -42, 40 }, { 24, 58 }, { -44, 78 }, { -14, 96 }, { 16, 114 }, { -24, 132 }, { 24, 150 } },
+		small = {
+			{ 50, 18 },
+			{ -28, 18 },
+			{ -50, 18 },
+			{ 24, 30 },
+			{ -18, 36 },
+			{ 6, 44 },
+			{ 50, 46 },
+			{ -12, 56 },
+			{ -32, 58 },
+			{ 44, 68 },
+			{ -6, 76 },
+			{ 12, 84 },
+			{ 50, 90 },
+			{ -38, 96 },
+			{ 30, 98 },
+			{ 46, 108 },
+			{ -50, 112 },
+			{ -28, 112 },
+			{ -6, 118 },
+			{ 50, 126 },
+			{ 10, 132 },
+			{ -50, 144 },
+			{ -2, 146 },
+			{ 46, 148 },
+		},
+	}),
+	tile("mill", "Water Mill", {
+		blocks = {
+			{ "stream", -42, 129, 10, 62, 3 },
+			{ "pool", -34.5, 91, 25, 14, 3 },
+			{ "pond", -42, 38, 18, 18, 3 },
+			{ "mill", -28, 110, 18, 18, 22 },
+			{ "cottage", 28, 48, 13, 11, 15 },
+			{ "store", 32, 128, 16, 16, 12 },
+			{ "cart", 16, 96, 4, 7, 3 },
+			{ "tree_1", 54, 90, 2, 2, 14 },
+			{ "tree_2", -54, 20, 2, 2, 12 },
+			{ "tree_3", 52, 152, 2, 2, 13 },
+			{ "tree_4", -54, 76, 2, 2, 13 },
+		},
+		lamps = { { -4.5, 30 }, { 8.5, 64 }, { -4.5, 100 }, { 8.5, 136 } },
+		big = { { -16, 22 }, { 14, 40 }, { -14, 58 }, { 22, 78 }, { -10, 96 }, { 22, 114 }, { -20, 132 }, { 8, 150 } },
+		small = {
+			{ 50, 18 },
+			{ 24, 18 },
+			{ 4, 20 },
+			{ -50, 24 },
+			{ 40, 36 },
+			{ -26, 40 },
+			{ -6, 40 },
+			{ -44, 52 },
+			{ 50, 54 },
+			{ 28, 58 },
+			{ 6, 58 },
+			{ 44, 74 },
+			{ 0, 76 },
+			{ -26, 78 },
+			{ -50, 80 },
+			{ 10, 94 },
+			{ 50, 96 },
+			{ 30, 96 },
+			{ -2, 118 },
+			{ 46, 120 },
+			{ 12, 130 },
+			{ 28, 140 },
+			{ 50, 146 },
+			{ -32, 148 },
+		},
+	}),
+	tile("lighthouse", "Lake Lighthouse", {
+		blocks = {
+			{ "lighthouse", 30, 120, 14, 14, 44 },
+			{ "cottage", -28, 56, 13, 11, 15 },
+			{ "netshed", -32, 122, 12, 16, 11 },
+			{ "nets", -14, 130, 9, 1.5, 4.2 },
+			{ "rock_1", 48, 150, 8, 5, 4 },
+			{ "rock_2", -50, 154, 7, 5, 3.5 },
+			{ "rock_3", 14, 156, 6, 4, 3 },
+			{ "boat", -6, 148, 3.6, 7, 2 },
+			{ "sea", 0, 157, 120, 6, 3 },
+			{ "fence_1", -32.4, 47, 5.2, 0.5, 1.2 },
+			{ "fence_2", -23.6, 47, 5.2, 0.5, 1.2 },
+			{ "tree_1", -50, 24, 2, 2, 12 },
+			{ "tree_2", 52, 34, 2, 2, 13 },
+		},
+		lamps = { { -10.5, 30 }, { 2.5, 64 }, { -10.5, 100 }, { 2.5, 128 } },
+		big = { { 12, 22 }, { -18, 40 }, { 14, 58 }, { -22, 78 }, { 12, 96 }, { -14, 114 }, { 14, 132 }, { -24, 150 } },
+		small = {
+			{ -50, 18 },
+			{ 38, 18 },
+			{ -26, 18 },
+			{ -8, 24 },
+			{ -40, 36 },
+			{ 28, 38 },
+			{ 50, 40 },
+			{ 2, 40 },
+			{ -50, 56 },
+			{ 38, 60 },
+			{ -8, 60 },
+			{ 24, 78 },
+			{ 2, 78 },
+			{ 50, 80 },
+			{ -48, 80 },
+			{ -10, 94 },
+			{ 36, 98 },
+			{ -30, 98 },
+			{ -50, 104 },
+			{ 6, 114 },
+			{ 50, 118 },
+			{ -50, 134 },
+			{ -8, 136 },
+			{ 40, 148 },
+		},
+	}),
+	tile("boathouse", "Reed Boathouse", {
+		blocks = {
+			{ "water", -42, 115, 36, 90, 3 },
+			{ "boathouse", -26, 96, 24, 16, 15 },
+			{ "cottage", 26, 52, 13, 11, 15 },
+			{ "nets", 34, 112, 10, 1.5, 4.2 },
+			{ "boat", -2, 140, 3.6, 7, 2 },
+			{ "tree_1", 52, 24, 2, 2, 13 },
+			{ "tree_2", -52, 30, 2, 2, 12 },
+			{ "tree_3", 54, 150, 2, 2, 14 },
+		},
+		lamps = { { 3.5, 30 }, { 16.5, 64 }, { 3.5, 100 }, { 16.5, 136 }, { -54, 80 } },
+		big = { { -10, 22 }, { 20, 40 }, { -14, 58 }, { 36, 78 }, { -8, 96 }, { 8, 114 }, { 30, 132 }, { -4, 150 } },
+		small = {
+			{ 50, 18 },
+			{ -34, 18 },
+			{ 14, 18 },
+			{ 32, 24 },
+			{ -50, 36 },
+			{ -28, 40 },
+			{ 0, 42 },
+			{ 50, 50 },
+			{ 4, 58 },
+			{ 24, 62 },
+			{ -44, 66 },
+			{ 50, 68 },
+			{ 8, 74 },
+			{ -20, 78 },
+			{ 50, 88 },
+			{ 22, 96 },
+			{ 50, 106 },
+			{ 26, 114 },
+			{ -20, 124 },
+			{ 50, 126 },
+			{ 10, 134 },
+			{ -20, 142 },
+			{ 50, 146 },
+			{ 22, 148 },
+		},
+	}),
 } :: { Tile }
 
 -- Tracks (architecture 3.1, GDD M) -------------------------------------------------------------

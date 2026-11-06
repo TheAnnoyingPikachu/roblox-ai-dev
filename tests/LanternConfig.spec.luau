@@ -143,7 +143,8 @@ describe("LanternConfig critters, tiles and cars", function()
 		for _, tile in LanternConfig.TILES do
 			expect(#tile.small).toBe(24)
 			expect(#tile.big).toBe(8)
-			expect(#tile.blocks >= 3 and #tile.blocks <= 5).toBe(true)
+			expect(#tile.blocks >= 3).toBe(true)
+			expect(#tile.lamps >= 4).toBe(true)
 			for i, site in tile.big do
 				expect(site.z).toBe(LanternConfig.BIG_DEPTHS[i])
 			end
@@ -183,6 +184,32 @@ describe("LanternConfig critters, tiles and cars", function()
 				expect(b.size.y <= 48 and b.at.y == b.size.y / 2).toBe(true)
 			end
 		end
+	end)
+
+	it("matches the art's LAYOUT (tiles.py): sites past the deck and ramp, lamps off the sites", function()
+		local deck = LanternConfig.TILE_DECK
+		expect(`{deck.depth} {deck.height} {deck.length} {deck.ramp}`).toBe("10 1.8 108 15")
+		for _, tile in LanternConfig.TILES do
+			for _, sites in { tile.small, tile.big } do
+				for _, s in sites do
+					expect(`{tile.id} {s.x},{s.z} {s.z >= deck.ramp}`).toBe(`{tile.id} {s.x},{s.z} true`)
+					for _, l in tile.lamps do
+						expect(math.sqrt((s.x - l.x) ^ 2 + (s.z - l.z) ^ 2) >= 3).toBe(true)
+					end
+				end
+			end
+		end
+		-- pinned rows: a change to the art's LAYOUT must be copied here (and the reverse)
+		local village = LanternConfig.tile("village") :: any
+		expect(`{village.big[1].x},{village.big[1].z} {village.small[24].x},{village.small[24].z}`).toBe(
+			"-12,22 -30,108"
+		)
+		expect(`{village.blocks[1].name} {village.blocks[1].at.x},{village.blocks[1].at.z}`).toBe("cottage 22,46")
+		local orchard = LanternConfig.tile("orchard") :: any
+		expect(`{#orchard.blocks} {orchard.blocks[20].name} {orchard.blocks[20].at.x},{orchard.blocks[20].at.z}`).toBe(
+			"24 apple_20 44,122"
+		)
+		expect(#(LanternConfig.tile("boathouse") :: any).lamps).toBe(5)
 	end)
 
 	it("builds the cars as 22 + 16 + 16 + 18 studs with 2-stud gaps, 78 in all, 12 seats and 4 turrets", function()
