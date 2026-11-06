@@ -45,18 +45,20 @@ sRGB. Constants of the same names are in `tools/blender/lantern/kit.py`.
 
 ## 3. Lighting plan (Roblox)
 
-These are starting values for the look review. They are applied on the client, so phases can tween (LANTERN-007). The style-test render (section 10) stands in for them in Blender.
+These are the values the build uses (`TrainFx.client.luau` and `World.luau`; LANTERN-015 retuned the dusk so ground and houses read, LANTERN-016 brought this section in line). They are applied on the client, so phases can tween (LANTERN-007). The style-test render (section 10) stands in for them in Blender.
 
 **Lighting:** `Technology = Future`, `GlobalShadows = true`, `ShadowSoftness = 0.4`, `EnvironmentDiffuseScale = 0.5`, `EnvironmentSpecularScale = 0.4`.
 
-| Phase | ClockTime | Brightness | Ambient | OutdoorAmbient | ColorShift_Top |
-|---|---|---|---|---|---|
-| Depot and stops (dusk) | 18.4 | 1.6 | 44, 38, 74 | 110, 100, 150 | 255, 190, 150 |
-| Ride into night (tween over the 700 studs after stop 3) | 18.4 → 0.5 | 1.6 → 0.6 | | | |
-| Night | 0.5 | 0.6 | 34, 30, 64 | 64, 60, 110 | 150, 150, 255 |
-| Dawn Station | 6.2 | 2.0 | 60, 52, 80 | 150, 130, 150 | 255, 210, 170 |
+| Phase | ClockTime | Brightness | Ambient | OutdoorAmbient | ColorShift_Top | ExposureCompensation |
+|---|---|---|---|---|---|---|
+| Depot and stops (dusk: the sun 9 degrees up in the west) | 17.35 | 2.4 | 84, 74, 116 | 165, 145, 190 | 255, 170, 120 | 0.35 |
+| Ride into night (tween over the 700 studs after stop 3) | 17.35 → 0.5 | 2.4 → 0.8 | | | | |
+| Night | 0.5 | 0.8 | 44, 40, 82 | 86, 82, 140 | 150, 150, 255 | 0.25 |
+| Dawn Station | 6.2 | 2.2 | 70, 60, 92 | 160, 140, 160 | 255, 210, 170 | 0.3 |
 
-**Atmosphere (the fog):** `Color = Fog Lilac`, `Decay = (96, 84, 150)`, `Density = 0.42`, `Offset = 0.25`, `Glare = 0.3`, `Haze = 1.8` at dusk. This gives about 250 studs of view (GDD world, the performance budget). At night use `Density 0.5`, `Color (120, 112, 170)`, `Decay (40, 36, 80)`.
+**Atmosphere (the fog):** `Offset = 0.1` always. At dusk `Color = Horizon Peach (246, 168, 140)` (towards the sun), `Decay = (86, 104, 168)` (teal-violet away from it), `Density = 0.3`, `Glare = 0.5`, `Haze = 2.6`. At night `Density 0.42`, `Color (120, 112, 170)`, `Decay (48, 44, 96)`, `Glare 0`, `Haze 1.6`. At dawn `Density 0.32`, `Color (240, 196, 180)`, `Decay (150, 140, 190)`, `Glare 0.6`, `Haze 2`. The old "about 250 studs of view" was measured at density 0.42 and is not re-measured for the lighter dusk (a phone performance check at the checkpoint).
+
+**Clouds:** `Terrain.Clouds`, `Density 0.6`, `Color (255, 186, 160)` (lit peach by the low sun); `Cover` 0.5 at dusk, 0.3 at night, 0.45 at dawn.
 
 **The fog wall at stops** is client-drawn (GDD L). It is a soft lilac bank about 20 studs tall that rolls in towards the platform:
 - layered transparent parts with smoke `ParticleEmitter`s (Fog Lilac, `LightEmission 0.3`, so it glows faintly instead of reading as murk);
@@ -70,7 +72,7 @@ These are starting values for the look review. They are applied on the client, s
 
 **Post effects:**
 - `Bloom`: Intensity 0.6, Size 24, Threshold 0.92. Neon lamps bloom; cream walls do not.
-- `ColorCorrection`: Saturation 0.08, Contrast 0.05, Tint (255, 246, 240).
+- `ColorCorrection`: Saturation 0.12, Contrast 0.05, Tint (250, 240, 255).
 - `DepthOfField`: off in play; in the start menu, FarIntensity 0.2.
 - The GDD's "Calm night" setting halves the vignette and Bloom.
 

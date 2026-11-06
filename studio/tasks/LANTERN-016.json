@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "high",
-  "status": "in_progress",
+  "status": "in_review",
   "task_id": "LANTERN-016",
   "owner": "A11",
   "verifier": "A15",
@@ -61,6 +61,12 @@
     "LanternConfig.spec.luau",
     "SaveStore.spec.luau"
   ],
-  "evidence": [],
-  "notes": "Created by the Director after the LANTERN-013 review (f45af50)."
+  "evidence": [
+    "Code 68deabc, 0c6d137, c72d113 on game6/concept; Fixes section in docs/qa/lantern-v01-review.md, one line per finding",
+    "lune run tests/run: 736/736 passed (12 new: TrainRules canSit, CarryRules.pace x5, WispRules.turned, SaveStore.reclaim x5); selene 0/0/0; stylua --check clean on an LF copy; validate-tasks; check-scope origin/main; five places built and checked",
+    "Studio play, build 0c6d137 (corner label and [Build] line): M1 sit while carrying -> false, carrying + toast; M2 teleport into the load box -> no load, 'Too fast: your load slipped', crate at the pick-up spot, honest walk loads in 2.1 s; M3 Crew.active false at T+185 and T+252 with the turret keep-alive flowing, true 1 s after a turn; m6 follower 4.6 studs behind at the hub; m7 F swaps seat, R stokes; M4 end card 'Saving is paused, so this run is not in your save yet.'",
+    "Studio play, build c72d113: M4 notice 'Saving is off on this server: progress here lasts this session only.' and the coral 'Saving paused' chip (unpublished file: no DataStore); m10 all 18 character parts in LanternPlayers, not self-collidable",
+    "python -I docs/game-design/game6-pacing.py 300 equals GDD P: casual Dawn 88 / 100 / 92 / 91 / 99% for crews 1 / 2 / 3 / 4 / 6 (crew of 4 was 65%)"
+  ],
+  "notes": "Created by the Director after the LANTERN-013 review (f45af50). LANTERN-016 (A11): m11 left for LANTERN-014 (register.md is outside this task's files); decision 0011's note for the SaveStore reclaim addition is recorded in 0018 amendment 2 (0011 is outside this task's files)."
 }

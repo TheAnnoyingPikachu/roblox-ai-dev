@@ -28,18 +28,18 @@ The train moves only while every crew member is seated or in the fog (a caught p
 3. A player who presses PLAY while the train moves is placed straight into a seat (GDD I4). A non-crew player (still in the start menu) who sits in a train seat is stood up at once and is never carried away.
 4. Nobody walks on a moving car, so no character physics runs on the train; the only moving bodies are the server's own cars.
 
-Train physics: each car is one unanchored assembly whose base part has `RootPriority = 127`, the server is its network owner (`SetNetworkOwner(nil)`, re-asserted after every seat change, since a SeatWeld merges the character into the car assembly), and a rigid `AlignPosition` plus `AlignOrientation` (one attachment, `RigidityEnabled`) pull it to `TrackRules.at(track, d − offset)` every Heartbeat. Cars are not jointed to each other; wheels and decor do not collide; floors do. Clients see interpolated physics replication. **Fallback** if the two-client check in LANTERN-012 shows jitter at cruise speed: anchored server cars and a client-drawn train from the replicated distance and speed, budgeted as its own task (the seat welds then need the client copy; not designed here).
+Train physics **as built** (LANTERN-006, architecture lantern 4.3; amendment 2): each car is an anchored base part with everything else welded to it, moved by the server along `TrackRules.at(track, d − offset)` with a CFrame every Heartbeat and replicated to clients as server parts; seated characters ride on their SeatWelds. There is no client-drawn train. (The proposal was unanchored cars on rigid `AlignPosition` and `AlignOrientation`, with anchored server cars as the fallback; the server build went straight to anchored cars, and the two-client cruise check stays on the checkpoint's evidence list.)
 
 ### 3. Remote contract
 
 `ReplicatedStorage.LanternRemotes` is made by the kit's `Remotes.create("LanternRemotes", router)`: `Request` (RemoteFunction) and `Fx` (RemoteEvent). The server adds one `UnreliableRemoteEvent` named `Aim` to the same folder.
 
-**`Request(action, arg?) -> (ok, code?)`** through `kit/Router`: loading → rate (burst 6, 4 a second; `ping` costs 2 tokens) → known action → `Payload` → handler. `arg` is nil or a string of at most 32 bytes matching the action's pattern; an `arg` to an action that takes none is refused. Refusal codes are short strings the client maps to text (`loading`, `rate`, `unknown`, `payload`, `phase`, `seat`, `far`, `full`, `coal`, `oil`, `parts`, `max`, `cooldown`, `owned`, `locked`, `tickets`, `refused`, `error`).
+**`Request(action, arg?) -> (ok, code?)`** through `kit/Router`: loading → rate (burst 6, 4 a second; `ping` costs 2 tokens) → known action → `Payload` → handler. `arg` is nil or a string of at most 32 bytes matching the action's pattern; an `arg` to an action that takes none is refused. Refusal codes are short strings the client maps to text (`loading`, `rate`, `unknown`, `payload`, `phase`, `seat`, `far`, `full`, `coal`, `oil`, `parts`, `max`, `cooldown`, `owned`, `locked`, `tickets`, `refused`, `error`, and `carrying` from amendment 2).
 
 | Action | `arg` | Accepted when (server state only) |
 |---|---|---|
 | `play` | nil | profile loaded; not in the crew; crew under 6. Joins the crew and places the character per GDD I4 |
-| `sit` | `any`, `turret`, `stoker`, `mender` or `passenger` | in the crew; not in the fog; a free seat of that kind; when the train stands, the character's root within 40 studs of the train |
+| `sit` | `any`, `turret`, `stoker`, `mender` or `passenger` | in the crew; carrying nothing (`carrying`: "Bring it to the train first", amendment 2); not in the fog; a free seat of that kind; when the train stands, the character's root within 40 studs of the train |
 | `stand` | nil | seated; the train is not moving |
 | `drop` | nil | carrying anything (GDD D5) |
 | `stoke` | nil | in the Stoker seat; the train moving; coal ≥ 2; 6 s since the last stoke |
@@ -54,7 +54,7 @@ Train physics: each car is one unanchored assembly whose base part has `RootPrio
 | `badge` | `stoker`, `lamplighter`, `scout`, `mender` or `none` | the role's tier ≥ 1 (or `none`) |
 | `follower` | species id or `none` | the species is in the player's album (or `none`) |
 
-**Server-side prompts** (ProximityPrompt `Triggered`, no remote): `Pick up` on every free item and `Help carry` on a critter crate carried alone, checked by `CarryRules` and the reach from the character's server position (8 studs). **Loading** is automatic: the server checks every carrier's root against the train's load box at 5 Hz during a stop.
+**Server-side prompts** (ProximityPrompt `Triggered`, no remote): `Pick up` on every free item and `Help carry` on a critter crate carried alone, checked by `CarryRules` and the reach from the character's server position (8 studs). **Loading** is automatic: every 10 Hz tick of a stop, the server first runs the carry speed check (GDD G4) and then checks every carrier who passed it, and has passed it once since the pick-up, against the train's load box (amendment 2).
 
 **`Aim:FireServer(dir: Vector3)`** (client to server, unreliable): the lamp direction in the train's frame. Accepted when `typeof(dir) == "Vector3"`, every component finite, `0.5 ≤ dir.Magnitude ≤ 1.5`, the sender sits in a turret seat, and the sender's aim bucket allows it (burst 4, 12 a second; extra events are dropped silently). The server normalises it, clamps pitch to −15° to +75°, stores it with `os.clock()`, and treats it as stale after 0.5 s. The server never receives a hit, a target, a position or a time.
 
@@ -92,13 +92,13 @@ Sanitising (`LanternProgress.sanitize`): numbers floored and clamped (XP 1,000,0
 
 **One save per write:** every reward is computed from the run state and written to each crew member's own record with its own `saves.apply`. No operation changes two players' records as one unit and nothing moves between players, so no ledger, idempotent ids or heal at load are needed (studio lessons, Engineering). Critter species are rolled when a stop is built, never inside a change, so a flush that re-applies a change never re-rolls.
 
-**Weekly boards:** ordered stores `LanternWeekCritters<week><suffix>` and `LanternWeekDist<week><suffix>`, key `player_<UserId>`, written once per player per run end when the run beat their `weekBest` (`UpdateAsync` keeping the larger value); read with `GetSortedAsync` (top 10) every 60 s; names from `GetNameFromUserIdAsync`, cached.
+**Weekly boards:** ordered stores `LanternWeekCritters<week><suffix>` and `LanternWeekDist<week><suffix>`, key `player_<UserId>`, written once per player per run end when the run beat their `weekBest` (`UpdateAsync` keeping the larger value); read with `GetSortedAsync` (top 10) every 60 s; display names from `UserService:GetUserInfosByUserIdsAsync`, cached (GDD G5; amendment 2).
 
 ### 5. Economy values (rule 8; the GDD tables are the record)
 
 - **Train and run (C1):** cruise 20 / 23 / 26 studs/s; accel 4; ride 700 studs; night 3,600; coal 1 per 60 studs; bunker 80 / 100 / 120, full at start; stoke +25% for 6 s, 2 coal, 6 s cooldown; lantern 100; oil store 6; auto-pour +8 under 25; mend +12, 3 s cooldown.
 - **Stops (C2, C3):** calm 70 s; fog 6 studs/s +1 a second to 16 over 160 studs; caught 10 s; walk 16, carrying 15 / 13 / 9 / 13; reach 8; help break 14. Per stop with n active: coal sacks 6 + 3n (5 coal each), Parts bags 2 + n (3 Parts), oil cans 2 + floor(n/2), supply crates 1 + floor(n/2) (10 Parts), critter crates 1 + ceil(n/2); stop 1 of a run has a crate on the 22-stud site.
-- **Nights (C4):** waves at 8 s then every 25 s; wisps a wave 4 / 6 / 8 per min(n, 4) on legs 1 / 2 / 3, + (n − 4) above 4, +1 on the Lake Line; beam 7°, range 80 / 90 / 100; puff 0.6 / 0.45 / 0.35 s; dim 6 / 4.5 / 3.5 / 3 by crew size; Lampeater from 50 s on leg 3, dives every 8 s, −10, shooed by 0.8 s of beam, fed at 15 + 8(n − 1) beam-seconds.
+- **Nights (C4; amendment 2):** waves at 8 s then every 25 s; wisps a wave 4 / 6 / 8 per min(n, 4) on legs 1 / 2 / 3, + (n − 4) above 4, +1 on the Lake Line; wisps drift 6 / 7 / 8 / 8 studs/s by min(n, 4); beam 7°, range 80 / 90 / 100; puff 0.6 / 0.45 / 0.35 s; dim 4.5 / 3.5 / 3.5 / 2.75 by min(n, 4); Lampeater from 50 s on leg 3, dives every 8 s, −10, shooed by 0.8 s of beam, fed at 15 + 8(n − 1) beam-seconds.
 - **Depot (F):** Boiler 30 / 60, Bunker 25 / 50, Lamps 30 / 60 Parts; coal 30 for 12; oil 2 for 10; stay 90 s max; +40 lantern on arrival.
 - **Tickets (H3, C7):** a load worth v pays each active crew member ceil(v × (1 + 0.1(n − 1)) / n): small items 1, supply crate 8, critters 10 / 15 / 25 / 50 / 100 by rarity. Depot +30 each; Dawn +150 each; Lampeater fed +50 each; leftover Parts ceil(Parts / n) each.
 - **XP (H3):** small load 2, big load 5, crew rescue 20, new species 50, puff 2, stoke 1, mend 3, stop left aboard 5, Depot 40, Dawn 150; levels by the shared curve.
@@ -107,7 +107,7 @@ Sanitising (`LanternProgress.sanitize`): numbers floored and clamped (XP 1,000,0
 - **Album (H4):** the five odds rows; species split evenly within a rarity by line and tile; milestones 4 (200 Tickets), 8 (Mossback livery), 12 (Moonlit lamp and 1,000 Tickets).
 - **Cosmetics (H6):** liveries `classic` L1, `ember` L5, `fern` L10, `brass` 2,500, `ivory` 6,000, `mossback` album, `midnight` login; lamps `warm` L1, `mint` L3, `rose` L8, `sky` 1,200, `gold` 4,000, `moonlit` album, `aurora` login. Role badges (H7) by counts 30 / 300 / 1,500 stokes, 100 / 1,000 / 5,000 puffs, 50 / 500 / 2,500 loads, 15 / 150 / 750 mends.
 
-Pacing check (GDD P): a run 24.7 to 28.0 minutes by crew size, legs 8.3 to 9.3 minutes with the Depot, 709 to 868 Tickets and about 1,050 to 1,270 XP a player a run, the album in a median of 10 solo runs.
+Pacing check (GDD P, amendment 2): a run 24.7 to 28.0 minutes by crew size, legs 8.3 to 9.3 minutes with the Depot, 697 to 867 Tickets and about 989 to 1,254 XP a player a run, the album in a median of 11 solo runs (90%: 30); fair crews reach Dawn in 88% to 100% of runs.
 
 ### 6. The 16+ trial and the maturity questionnaire
 
@@ -146,7 +146,7 @@ No combat, no stealing, no trading, no gifting, no text input, no paid anything;
 ## Consequences
 
 - LANTERN-002 adds `lantern.project.json`, the CI build and place check, and the `lantern-staging` target to `publish.yml`; SHANNON creates the experience, sets Max Players 6 and the private server price, and creates the GitHub environment (checkpoint).
-- LANTERN-005 moves the UI kit into `src/kit-roblox/modules/UiKit.luau` with an injected theme and adds the `newer` option to `SaveStore`, both noted in decision 0011; Garden keeps its own `UiKit.luau` until a Garden release moves it.
+- LANTERN-005 moves the UI kit into `src/kit-roblox/modules/UiKit.luau` with an injected theme and adds the `newer` option to `SaveStore`, both noted in decision 0011; Garden's `UiKit.luau` is a shim over the kit since then.
 - `src/relay/Models.luau` reads `LanternAssets` the way it reads `GardenAssets` (three lines); asset names must not collide with Night or Garden names (a spec checks).
 - Any later change to these values, remotes or the schema needs an amendment here or a new record (rule 8); schema v2 keeps every v1 field (studio lessons).
 
@@ -157,3 +157,16 @@ Section 3 as built; no value, schema or client-to-server contract changes.
 - **`Fx shoo {target}`** (server to all, display only): a Lampeater dive that the beams light for 0.8 s is shooed (`WispRules` event `shoo`) instead of dimming the lantern; clients play a sparkle on the moth.
 - **Carry refusal codes `gone`, `taken`, `hands`, `big`** (`CarryRules.canPick`/`canHelp`: the item went first, someone else carries it, the hands hold a big item, small items are held when picking a big one) join `full` and the rest. They come from the server's `Pick up` and `Help carry` prompts, which have no reply channel, so players see them as `Fx notice` words; no `Request` action returns them.
 - **Shapes the clients read:** the `Carry` attribute is JSON `{ small = { kinds }, big = kind?, help = itemId? }` (`help` when the player holds the other end of a critter crate); the `Stop` model (`Workspace.Lantern.Stop`) carries its stop frame as the `Site` CFrame attribute (architecture lantern 4.4: origin on the deck's track edge 4 studs out, +Z into the stop), which the client reads for the fog wall.
+
+## Amendment 2 (2026-11-06, LANTERN-016, the v0.1 QA fixes)
+
+Brings sections 2 to 5 in line with the build and the LANTERN-013 review (`docs/qa/lantern-v01-review.md`). No schema change; one new refusal code; the night values below are data.
+
+- **Nights (section 5, GDD C4 and P):** LANTERN-015 set wisp drift 6 / 7 / 8 / 8 studs/s and dim 4.5 / 3.5 / 3.5 / 3 by min(n, 4) after both unassisted solo Studio runs lost the lantern by wave 5. LANTERN-016 lowers dim for crews of 4+ from 3 to **2.75**: with 3, a crew of 4 was the hardest size (fair crews reached Dawn 88 / 100 / 92 / 65 / 87% for 1 / 2 / 3 / 4 / 6); with 2.75 it is 88 / 100 / 92 / 91 / 99%. Section 5's pacing line is the new GDD P.
+- **`sit` (section 3, QA M1):** refused with the new code **`carrying`** ("Bring it to the train first") while the player carries anything, so SIT never carries a load aboard past the walk and the fog sprint. A helper may sit (they let go; the first carrier keeps the crate).
+- **Loading (section 3, QA M2):** the carry speed check runs every tick before that tick's loads, from the spot where the item was picked up (1.5 × carry speed + 4 studs since the last tick, capped at 0.5 s of movement, and over every 0.5 s window), and a carrier is only tested against the load box after one checked step (the load waits a tick). A failed check drops the load at the last valid position, as before.
+- **Activity (GDD I3, QA M3):** a turret aim counts as activity only when it turned more than 1 degree; the client's keep-alive re-send does not. A puff also counts; a server move or stand-up does not. The idle window stays 180 s.
+- **Saves (section 4, QA M4; a backwards-compatible kit addition for decision 0011's list):** a session that cannot claim its record (a crashed server's lock within 120 s, a DataStore outage at the load, a lock lost mid-session) keeps every change queued; the server tries `SaveStore.reclaim` every 15 s and once more on leave, and on success one `UpdateAsync` stores the stored record with every queued change re-run in order. The player sees "Saving paused" until then, and no text says "saved" while it is paused. A newer record is still never written.
+- **Train physics (section 2):** as built, anchored server cars moved by CFrame (LANTERN-006); no client-drawn train.
+- **Weekly boards (section 4):** display names through `UserService:GetUserInfosByUserIdsAsync`.
+- **Consequences:** Garden's `UiKit.luau` is a shim over the kit since LANTERN-005.

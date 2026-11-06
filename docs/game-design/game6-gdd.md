@@ -87,7 +87,7 @@ Every tile has 24 small sites (up to 3 items each, depth 15 to 150 studs) and 8 
 | Wisp approach | spawn 60 to 75 studs from the train, 4 to 20 high, spread over 3 s; drift at 6 / 7 / 8 studs/s (crew 1 / 2 / 3+) to a lantern point with a 2-stud wobble | in the train's own frame, so a moving train does not change the aim; one or two lamps turn all round, so their wisps come slower (LANTERN-015) |
 | Beam | 7° half-angle cone, range 80 / 90 / 100 studs | Lamps I / II / III |
 | Puff | 0.6 / 0.45 / 0.35 s of beam on a wisp | Lamps I / II / III; the exposure adds up from every beam on it |
-| A wisp that reaches a lantern | dims the lantern by 4.5 / 3.5 / 3.5 / 3 | by crew size 1 / 2 / 3 / 4+ (LANTERN-015: was 6 / 4.5 / 3.5 / 3; both unassisted solo Studio runs lost the lantern by wave 5) |
+| A wisp that reaches a lantern | dims the lantern by 4.5 / 3.5 / 3.5 / 2.75 | by crew size 1 / 2 / 3 / 4+ (LANTERN-015: was 6 / 4.5 / 3.5 / 3; both unassisted solo Studio runs lost the lantern by wave 5. LANTERN-016: 4+ from 3 to 2.75, so a crew of 4 is no harder than a crew of 3, QA m12) |
 | Lampeater | leg 3 only, from 50 s into the night (after two waves) to Dawn Station | circles the train 45 studs out, 25 up |
 | Lampeater dive | every 8 s, 3 s long, at one lantern point | shooed by 0.8 s of beam during the dive; otherwise −10 lantern |
 | Feeding the Lampeater | 15 + 8 × (n − 1) beam-seconds on it in total | it purrs and flies to the moon: +50 Tickets each; at Dawn it flies away anyway |
@@ -110,9 +110,9 @@ Every tile has 24 small sites (up to 3 items each, depth 15 to 150 studs) and 8 
 | 1 | 9 | 3 | 2 | 1 | 2 | 4 / 6 / 8 | 4.5 | 15 |
 | 2 | 12 | 4 | 3 | 2 | 2 | 8 / 12 / 16 | 3.5 | 23 |
 | 3 | 15 | 5 | 3 | 2 | 3 | 12 / 18 / 24 | 3.5 | 31 |
-| 4 | 18 | 6 | 4 | 3 | 3 | 16 / 24 / 32 | 3 | 39 |
-| 5 | 21 | 7 | 4 | 3 | 4 | 17 / 25 / 33 | 3 | 47 |
-| 6 | 24 | 8 | 5 | 4 | 4 | 18 / 26 / 34 | 3 | 55 |
+| 4 | 18 | 6 | 4 | 3 | 3 | 16 / 24 / 32 | 2.75 | 39 |
+| 5 | 21 | 7 | 4 | 3 | 4 | 17 / 25 / 33 | 2.75 | 47 |
+| 6 | 24 | 8 | 5 | 4 | 4 | 18 / 26 / 34 | 2.75 | 55 |
 
 ### C7. Rarity
 
@@ -209,8 +209,9 @@ What the pacing check says a casual crew buys (P): a solo player about 2 upgrade
 
 - Every action is a `Request` validated by the pure rules on the server's own state, or a server-side ProximityPrompt; the server checks reach from the character's server position (pick 8 studs, help 8, load box).
 - The client never sends an amount, a price, an outcome, an item value, a position or a hit. Turret aim is a direction only (E2); pings carry an id and at most an item id.
-- Carry speed is set by the server; a carrier whose server position moves faster than 1.5 × their carry speed + 4 studs over 0.5 s drops their load at their last valid position.
-- Rewards are counted only for active crew members (section I3), so an idle account seated in a crew earns nothing from loads.
+- Carry speed is set by the server; every server tick, before that tick's loads, a carrier whose server position moved more than 1.5 × their carry speed + 4 studs since the last tick (or over the last 0.5 s) drops their load at their last valid position. The check starts where the item was picked up, and a carrier loads only after one checked step (LANTERN-016, QA M2).
+- A carrier cannot press SIT: they walk the load to the train ("Bring it to the train first"; QA M1). A helper may sit and lets go; the first carrier keeps the crate.
+- Rewards are counted only for active crew members (section I3), so an idle account seated in a crew earns nothing from loads; the turret's own keep-alive aim does not count as activity (QA M3).
 - A crew member who leaves loses nothing; nobody gains by leaving or rejoining (loads are paid when they happen, to whoever is there).
 
 ### G5. Moderation surface
@@ -223,10 +224,10 @@ Display names only (crew list, Depot board, announcements, the weekly board). No
 
 | Piece | Source | Plan |
 |---|---|---|
-| Saves, remotes, rate limits, payload checks | `src/kit` (decision 0011) | **Reused**: `SaveStore` through `Saves.start`, `Router`, `Payload`, `RateLimit`, `Remotes.create`. SaveStore gains an optional newer-save guard (a kit addition, LANTERN-005) |
+| Saves, remotes, rate limits, payload checks | `src/kit` (decision 0011) | **Reused**: `SaveStore` through `Saves.start`, `Router`, `Payload`, `RateLimit`, `Remotes.create`. SaveStore gains an optional newer-save guard (a kit addition, LANTERN-005) and `reclaim`: a session that could not claim its save keeps its changes and stores them once it can (LANTERN-016) |
 | Levels, quests, cosmetics, day and week maths | `MetaRules` | **Reused** with a Lantern config (Tickets are the `coins` field) |
 | Login tracks | `LoginRules` (Garden) | **Same pattern**, Lantern's own slots; reuses `LoginRules.monthOf` and `periodOf`, which are pure calendar maths |
-| UI kit | `src/garden-client/UiKit.luau` (architecture garden 6.4) | **Generalised** into `src/kit-roblox/modules/UiKit.luau` with an injected theme, so Lantern and later games share one kit; Garden keeps its file until a Garden release moves it |
+| UI kit | `src/garden-client/UiKit.luau` (architecture garden 6.4) | **Generalised** into `src/kit-roblox/modules/UiKit.luau` with an injected theme, so Lantern and later games share one kit; Garden's own file is a shim over it since LANTERN-005 |
 | Seeded rolls | `Rng` | **Reused** |
 | Mesh loader | `src/relay/Models.luau` | **Reused** in place, plus `LanternAssets` (three lines, as Garden's) |
 | Train, stops, carry, wisps, Depot, album, roles | | **New** pure modules (architecture section 3) |
@@ -345,7 +346,7 @@ One seed for every server from Monday 00:00 UTC (`MetaRules.weekOf`), chosen by 
 
 ### H9. Followers
 
-Pick any rescued species as your **follower** in the ALBUM. It hops behind you at the Depot and rides on the arm of your seat during runs (code bob and hop, no rig; the Garden FollowerFx pattern). Other players see it. Names for followers are v0.2 (a fixed word list, no text input).
+Pick any rescued species as your **follower** in the ALBUM. It hops behind you at Lamplight Depot (the hub and the Depot stops; code hop, no rig). Other players see it. Riding on the arm of your seat during runs (first in O's cut order) and names for followers (a fixed word list, no text input) are v0.2 (LANTERN-016, QA m6).
 
 ### H10. Saved profile
 
@@ -374,7 +375,7 @@ A ping is a coloured marker with the phrase and your name for 8 s and an icon in
 
 ### I3. Crew size and activity
 
-`n` is the number of **active** crew members: those who in the last 180 s had a request accepted, moved 10 studs or more while standing, or sent a turret aim. Loot counts use `n` as the train approaches the stop; waves use `n` at each wave; load shares use `n` at the load. An inactive member stays seated and is carried along, but earns no load shares (G4). Depot, Dawn and Parts payouts go to every crew member aboard.
+`n` is the number of **active** crew members: those who in the last 180 s had a request accepted, walked 10 studs or more while standing (a move or stand-up made by the server does not count), turned their turret aim by more than 1 degree, or puffed a wisp (LANTERN-016, QA M3: the client re-sends a still aim every 0.3 s to keep the beam fresh, which is not activity). 180 s is the same idle window for every input: longer than a night, so a player who stops to read the HUD keeps their share, and short enough that an AFK player is out of shares, the album and wave sizes by the next stop; their next real input counts at once. Nothing already earned is touched. Loot counts use `n` as the train approaches the stop; waves use `n` at each wave; load shares use `n` at the load. An inactive member stays seated and is carried along, but earns no load shares (G4). Depot, Dawn and Parts payouts go to every crew member aboard.
 
 ### I4. Friends joining (nobody waits more than one stop)
 
@@ -393,12 +394,12 @@ Friends reach the server with Roblox's own Join button or a private server (deci
 
 ## J. Failure states: nothing earned is ever lost
 
-**The rule:** a thing is *earned* when a game rule writes it to a player's save. Tickets, XP, album entries, quest progress, login slots, cosmetics, milestones and bests are earned; they never decrease by any game rule, and the only way to spend Tickets is a Locker purchase the player makes. Coal, Parts, oil, the lantern and upgrades belong to the run (the HUD says "for this run") and end with it; leftover Parts are converted, so they never vanish either.
+**The rule:** a thing is *earned* when a game rule writes it to a player's save. Tickets, XP, album entries, quest progress, login slots, cosmetics, milestones and bests are earned; they never decrease by any game rule, and the only way to spend Tickets is a Locker purchase the player makes. Coal, Parts, oil, the lantern and upgrades belong to the run (the HUD says "for this run") and end with it; leftover Parts are converted into Tickets for everyone aboard when the run ends. A player who leaves mid-run leaves the Parts to the crew (their shares grow), and a solo run left early ends with no end card and no conversion: Parts were never earned (LANTERN-016, QA m5).
 
 | Item or value | Carried | Dropped (DROP button) | Carrier caught by the fog | Carrier leaves the game | Left at the stop when the train leaves | Loaded on the train | Run ends (any reason) |
 |---|---|---|---|---|---|---|---|
 | Coal sack | not earned | on the ground, anyone may pick it up | dropped in the fog, gone for this run | dropped where they stood | gone for this run | +5 coal to the run; its Tickets and XP written to the saves at once | coal ends with the run |
-| Parts bag | not earned | as above | as above | as above | gone for this run | +3 Parts to the run's pool; Tickets and XP saved at once | leftover Parts → ceil(Parts / n) Tickets to each crew member |
+| Parts bag | not earned | as above | as above | as above | gone for this run | +3 Parts to the run's pool; Tickets and XP saved at once | leftover Parts → ceil(Parts / n) Tickets to each crew member aboard at the end (not on leaving) |
 | Oil can | not earned | as above | as above | as above | gone for this run | +1 oil (or +8 lantern if the store is full); Tickets and XP saved at once | oil ends with the run |
 | Supply crate | not earned | as above | as above | as above | gone for this run | +10 Parts; Tickets and XP saved at once | as Parts |
 | Critter crate | not rescued yet | as above | dropped in the fog; the critter **goes back to its stop** and its species can be rolled on any later stop | dropped where they stood | goes back to its stop | **rescued**: the album entry, count, Tickets and XP are written to every active crew member's save at once; it rides in the passenger car | stays rescued; the album keeps it |
@@ -412,6 +413,7 @@ Friends reach the server with Roblox's own Join button or a private server (deci
 - **Run ends** by reaching Dawn Station, running out of coal (the train coasts to a halt), the lantern reaching 0, or the last crew member leaving. Every ending returns the crew to Lamplight Depot, the last Depot, with the run end card.
 - **A player leaving mid-run** has already been paid for every load; their carried items drop; the crew carries on.
 - **A server shutting down** runs `BindToClose`, which writes every queued change; the only possible loss is the platform crash case, bounded by the kit's 7-second write coalescing (the same bound as every studio game; assumption S in section S).
+- **Rejoining within 2 minutes of a crash** (the crashed server's save lock is still fresh) or a DataStore outage at the join: the player plays on, the HUD says "Saving paused", every change is kept and the server claims the save every 15 s; once it can, the stored save plus everything earned this session is written and the player is told. The end card never says "saved" while paused (LANTERN-016, QA M4).
 - **Being caught by the fog** never touches the save: it drops what was not yet earned and costs 10 seconds.
 
 ## K. The first three minutes (beat by beat)
@@ -436,7 +438,7 @@ Joining a running crew instead: the player appears per I4. On a stop they are ca
 
 ## L. Feel (what SHANNON judges; each line is an acceptance check)
 
-- **Train:** chuff rate follows speed; steam puffs from the chimney; the whistle at every departure and at the bell; a gentle camera sway while seated; the train never jitters on screen at cruise speed with two clients (decision 0018: server-owned physics with rigid align constraints).
+- **Train:** chuff rate follows speed (v0.2: no chuff sound is registered yet, QA m13); steam puffs from the chimney; the whistle at every departure and at the bell; a gentle camera sway while seated; the train never jitters on screen at cruise speed with two clients (decision 0018 section 2: anchored server cars moved by CFrame).
 - **Stops:** the tile builds before the train stops (no pop-in); items bob slightly and glow by rarity; pick-up has a squash-and-stretch and a soft thud; carried items swing on the back; loading pops the item into the car with a puff of dust and a "+N" float on the coal, Parts or Tickets.
 - **Fog:** a visible wall of rolling mist with wisp silhouettes inside, a rising whoosh, the bell's low clang; the vignette tightens on a player near the front; being caught greys and muffles the screen for the 10 s with a heartbeat-free soft hum (no scare).
 - **Night:** a cool blue night with warm lantern pools; beams are visible cones with dust motes; a lit wisp swells, sparkles and pops with a chime; a dim makes the lanterns gutter; the auto-pour glugs.
@@ -449,7 +451,7 @@ Joining a running crew instead: the player appears per I4. On a stop they are ca
 - **Hollowmere:** a misty valley at the edge of a lake. Lamplight Depot (red brick, brass lamps, a clock) sits between two loops of track: the Forest Line (east, pines and birches, mossy farms) and the Lake Line (west, reeds, a lighthouse, a boathouse). Each loop is 5,700 studs long: stops at 700, 1,400 and 2,100 studs, then the 3,600-stud night stretch back to the Depot; leg 3 leaves the loop 400 studs before the Depot onto the spur to Dawn Station (a white station on a hill facing the sunrise). Atmosphere fog keeps the view to about 250 studs, which is the look and the performance budget at once.
 - **Look:** spooky-cute and warm: dark teal and blue nights, amber lamplight, soft round shapes, every critter with the studio's one shared cute face (glossy eyes with two catchlights, blush). All meshes are procedural Blender static meshes at the HD standard (`tools/blender/garden/README.md` "Creature standard (HD pass)"): full RGB 1024 textures with baked 192-sample AO, 6,000 tris a critter. Critters, wisps and the Lampeater move by code (bob, hop, drift, swoop); players use Roblox's default avatar animations.
 - **Style test first:** the art director's three hero assets (the engine, one critter, one stop house) at the HD standard, reviewed before any feature art (studio lessons). The full asset list with names, sizes and pivots is architecture section 9.
-- **Audio** (licensed Creator Store partners, a register row before use): an ominous-but-cosy day theme, a night theme with a heartbeat-free pulse, a Lampeater theme, a Dawn sting; whistle, chuff, bell, fog whoosh, pick-up, load thunk, five rescue chimes, puff, dim, stoke, pour, ping pop, Depot fanfare, level up.
+- **Audio** (licensed Creator Store partners, a register row before use): an ominous-but-cosy day theme, a night theme with a heartbeat-free pulse, a Lampeater theme, a Dawn sting; whistle, chuff, bell, fog whoosh, pick-up, load thunk, five rescue chimes, puff, dim, stoke, pour, ping pop, Depot fanfare, level up. **v0.1 ships** the menu, day and night music and the whistle, bell, fog whoosh, load tick, rescue chimes (one sound, one to five chimes rising in pitch by rarity), puff and pour; the Lampeater theme, the Dawn sting, the chuff and the pick-up, dim, stoke, ping, Depot fanfare and level-up sounds are **v0.2** (they need register rows first; LANTERN-016, QA m13).
 
 ## N. Monetisation
 
@@ -461,9 +463,9 @@ Off for v0.1 (decision 0002): no Robux prompts, no game passes, no developer pro
 
 **Cut order if the build runs long** (first cut first): follower riding on the seat (keep the Depot follower); the Farthest board (keep Most critters); the Mender seat (auto-pour only); the Lake Line (Forest only, 6 tiles; legs 2 and 3 repeat the Forest Line with leg odds); the Line of the Week vote (every run free; the board waits for v0.2). The core (train, stops, fog, carry, night, Lampeater, Depot upgrades, album, levels, quests, login tracks) stays.
 
-**Later (v0.2 and on, not designed here):** permanent train cars (Greenhouse grows coal, Kitchen, Observatory), the Snow Line biome, fortnightly event lines (Q9), follower names from a word list, Roblox badges, a harder line if the feel gate finds runs too easy (P), cosmetic monetisation after a policy review.
+**Later (v0.2 and on, not designed here):** the follower riding on the seat and the M sounds v0.1 lacks (LANTERN-016); permanent train cars (Greenhouse grows coal, Kitchen, Observatory), the Snow Line biome, fortnightly event lines (Q9), follower names from a word list, Roblox badges, a harder line if the feel gate finds runs too easy (P), cosmetic monetisation after a policy review.
 
-## P. Pacing results (`docs/game-design/game6-pacing.py`, 2026-11-06; nights reworked by LANTERN-015)
+## P. Pacing results (`docs/game-design/game6-pacing.py`, 2026-11-06; nights reworked by LANTERN-015, crews of 4+ by LANTERN-016)
 
 `python -I docs/game-design/game6-pacing.py 300` (seeded, stdlib only). The model: players take the best trip available (coal until tonight's need plus 6 is met, then critter crates, supply crates, small items), skip a trip the fog would catch unless they misjudge (12% casual, 30% new), carry critters in pairs when a partner is free, and buy coal, then Boiler, Lamps and Bunker at Depots. At night each lamp takes its share of a wave in spawn order: it notices a wisp 1 s after it spawns (new players 1.6 s), swings onto it at 120 degrees a second (new 70; a lone lamp turns all round, four lamps a quarter each), holds the beam for the puff time and lands it with chance `hit` (casual 0.5, new 0.35); a wisp one lamp misses gets one more try from the next lamp when it is free in time. Stoking, mending and the help-carry walk to a crate are not modelled.
 
@@ -476,17 +478,18 @@ Off for v0.1 (decision 0002): no Robux prompts, no game passes, no developer pro
 
 | Crew | Run (min, median) | Leg incl. Depot (min) | Night 1 won, casual / new | Meet the Lampeater, casual / new | Reach Dawn, casual / new | Tickets a player a run (casual) | XP a run (casual) | Critters rescued (casual) | Caught a run (casual) | Upgrades bought (casual) | Parts a leg |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 28.0 | 9.3 (8.7 to 10.0) | 100% / 100% | 94% / 22% | 88% / 3% | 697 | 989 | 17.0 | 1.1 | 1.7 | 42 |
-| 2 | 27.4 | 9.3 (7.9 to 10.0) | 100% / 100% | 100% / 18% | 100% / 9% | 718 | 1,005 | 18.0 | 1.1 | 4.0 | 93 |
-| 3 | 26.4 | 8.9 (7.5 to 9.9) | 100% / 92% | 92% / 0% | 92% / 0% | 745 | 1,149 | 26.3 | 0.1 | 3.9 | 105 |
-| 4 | 25.6 | 8.7 (7.4 to 9.6) | 100% / 66% | 65% / 0% | 65% / 0% | 768 | 1,129 | 23.9 | 0.0 | 5.0 | 144 |
-| 6 | 24.6 | 8.3 (7.1 to 9.2) | 100% / 72% | 87% / 0% | 87% / 0% | 866 | 1,254 | 34.5 | 0.0 | 5.6 | 192 |
+| 1 | 28.0 | 9.3 (8.7 to 10.0) | 100% / 100% | 94% / 24% | 88% / 2% | 697 | 989 | 17.0 | 1.1 | 1.7 | 42 |
+| 2 | 27.4 | 9.3 (7.9 to 10.0) | 100% / 100% | 100% / 21% | 100% / 13% | 718 | 1,005 | 18.0 | 1.1 | 4.0 | 93 |
+| 3 | 26.4 | 8.9 (7.5 to 9.9) | 100% / 95% | 92% / 0% | 92% / 0% | 745 | 1,149 | 26.3 | 0.1 | 3.9 | 105 |
+| 4 | 25.6 | 8.7 (7.3 to 9.6) | 100% / 89% | 91% / 0% | 91% / 0% | 778 | 1,130 | 26.2 | 0.0 | 5.7 | 144 |
+| 6 | 24.7 | 8.3 (7.1 to 9.3) | 100% / 93% | 99% / 0% | 99% / 0% | 867 | 1,254 | 35.9 | 0.0 | 6.0 | 192 |
 
-- **The solo retune (LANTERN-015):** with the old numbers (drift 8, dim 6) the same model gives a casual solo the first night 99% of the time but Dawn only 7% (the later nights' 6 and 8 wisps a wave, one lamp, no cover); the new drift 6 and dim 4.5 give 100% and 91% (sweep of 150 runs). Crews of 3 or more keep drift 8 and dim 3.5 / 3: their numbers did not change.
-- **Album:** 12 species in a median of 11 runs solo (90%: 27), 8 in a pair (90%: 21), 8 in a crew of 4 (90%: 21); a Moon Hare in 10% of solo runs.
-- **Levels (solo casual, 989 XP a run):** level 5 after 1 run, 9 after 3, 16 after 10, 28 after 30, 50 after 100.
+- **The solo retune (LANTERN-015):** with the old numbers (drift 8, dim 6) the same model gives a casual solo the first night 99% of the time but Dawn only 7% (the later nights' 6 and 8 wisps a wave, one lamp, no cover); the new drift 6 and dim 4.5 give 100% and 91% (sweep of 150 runs). Crews of 3 or more keep drift 8 and dim 3.5.
+- **The crew-of-4 retune (LANTERN-016, QA m12):** with dim 3 a crew of 4 was the hardest size (casual Dawn 88 / 100 / 92 / **65** / 87%), because four lamps face 8 wisps each on leg 3 and nobody mends. Dim 2.75 for 4+ gives 88 / 100 / 92 / 91 / 99%: no crew size is harder than the solo run, and from two players up the Dawn rate eases off smoothly to 91% at four. Crews of 5 and 6 are the easiest on purpose: the fifth and sixth players add one wisp each (four turrets) and the fifth mends, and making them harder would punish friends for joining (pillar 3). Sweep: dim 2.5 gives 98% for 4, 2.75 gives 91%, 3 gives 65%.
+- **Album:** 12 species in a median of 11 runs solo (90%: 30), 8 in a pair (90%: 19), 7 in a crew of 4 (90%: 15); a Moon Hare in 9% of solo runs.
+- **Levels (solo casual, 988 XP a run):** level 5 after 1 run, 9 after 3, 16 after 10, 28 after 30, 50 after 100.
 - **Login tracks:** a full week 550 Tickets and the livery; a full month 1,400 Tickets, the Ember Kit and the Aurora Beam.
-- **Reading:** legs and runs sit in the 8 to 10 and 25 to 30 minute bands (a crew of 6 clears stops faster: 24.6 minutes). A fair solo player (hit 0.5) wins the first night every time and meets the Lampeater in 94% of runs; a crew of 4 to 6 still loses a third (4) or an eighth (6) of its runs, all at night. New players lose most runs at night from the second leg on, and crews of 3 or more never reach the Lampeater: losing costs nothing earned, but whether that is too harsh is the feel gate's question (checkpoint item, with a crew playtest to measure `hit`); the levers are `DIM`, `WAVES.speed`, `perTurret` and the Lampeater's dive rate.
+- **Reading:** legs and runs sit in the 8 to 10 and 25 to 30 minute bands (a crew of 6 clears stops faster: 24.7 minutes). A fair solo player (hit 0.5) wins the first night every time and meets the Lampeater in 94% of runs; fair crews reach Dawn in 88% to 100% of runs (a crew of 4: 91%), every loss at night. New players lose most runs at night from the second leg on, and crews of 3 or more never reach the Lampeater: losing costs nothing earned, but whether that is too harsh is the feel gate's question (checkpoint item, with a crew playtest to measure `hit`); the levers are `DIM`, `WAVES.speed`, `perTurret` and the Lampeater's dive rate.
 
 ## Q. Acceptance criteria (v0.1)
 
@@ -518,13 +521,13 @@ Off for v0.1 (decision 0002): no Robux prompts, no game passes, no developer pro
 - **Fact:** private servers and joins count as intentional co-play days in Recommended for You (M30).
 - **Fact:** walking on a moving train jitters on Roblox (studio experience in the concept doc), which is why the train moves only while everyone is seated.
 - **Fact:** the kit's `SaveStore` coalesces writes to at most one per 7 s and writes everything queued on `BindToClose` (decision 0011).
-- **Assumption:** server-owned unanchored cars driven by rigid `AlignPosition` and `AlignOrientation` replicate smoothly enough with seated characters welded in; checked in Studio with two clients in LANTERN-012 (fallback in decision 0018).
-- **Assumption:** a 10 Hz server hit test with a 7° cone feels fair at typical latency (under 150 ms), because wisps drift at 8 studs/s and the test runs in the train's frame.
+- **Assumption:** anchored server cars moved by CFrame every Heartbeat (as built, LANTERN-006; decision 0018 section 2) replicate smoothly enough with seated characters welded in; the two-client cruise check is on the checkpoint's evidence list.
+- **Assumption:** a 10 Hz server hit test with a 7° cone feels fair at typical latency (under 150 ms), because wisps drift at 6 to 8 studs/s (6 / 7 / 8 by crew size 1 / 2 / 3+) and the test runs in the train's frame.
 - **Assumption:** Atmosphere fog at about 250 studs of view keeps the two loops and 8 tiles inside a phone's budget without StreamingEnabled.
 - **Assumption:** the maturity questionnaire's answers in decision 0018 give the Mild label; to confirm in Creator Hub at the checkpoint.
 - **Hypothesis:** the fog sprint and the lamp turrets are exciting enough without combat for players aged 16 and up (the concept's riskiest assumption; the feel gate tests it).
 - **Hypothesis:** shared rescues (every crew member gets the critter) make strangers in a public server feel like a crew without any chat.
-- **Hypothesis:** a fair crew reaching Dawn in most runs (P, LANTERN-015: 65% to 100% by crew size) is right for the audience, and the challenge for older players comes from greed at the bell and the weekly board.
+- **Hypothesis:** a fair crew reaching Dawn in most runs (P, LANTERN-016: 88% to 100% by crew size) is right for the audience, and the challenge for older players comes from greed at the bell and the weekly board.
 - **Hypothesis:** the album, quests, login tracks and the weekly line bring players back on days 2 to 7 and 8 to 28 (M31).
 
 ## T. Open questions (for the checkpoint, not now)
