@@ -62,6 +62,231 @@
       ]
     }
   },
+  "critter_mossmouse": {
+    "fbx": "build/blender/lantern/critter_mossmouse.fbx",
+    "png": "build/blender/lantern/critter_mossmouse.png",
+    "preview": "build/blender/lantern/previews/critter_mossmouse.png",
+    "size_studs": [
+      1.83,
+      2.0,
+      1.53
+    ],
+    "tris": 5808,
+    "parts": {
+      "critter_mossmouse": 5808
+    },
+    "target_size_studs": [
+      1.85,
+      2.0,
+      1.55
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the dandelion fluff, on the viewer's right above the head.",
+    "glow": {}
+  },
+  "critter_puddlefrog": {
+    "fbx": "build/blender/lantern/critter_puddlefrog.fbx",
+    "png": "build/blender/lantern/critter_puddlefrog.png",
+    "preview": "build/blender/lantern/previews/critter_puddlefrog.png",
+    "size_studs": [
+      1.56,
+      2.0,
+      1.49
+    ],
+    "tris": 5420,
+    "parts": {
+      "critter_puddlefrog": 5420
+    },
+    "target_size_studs": [
+      1.55,
+      2.0,
+      1.5
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the masthead lantern on top of the walnut hat.",
+    "glow": {}
+  },
+  "critter_wickmole": {
+    "fbx": "build/blender/lantern/critter_wickmole.fbx",
+    "png": "build/blender/lantern/critter_wickmole.png",
+    "preview": "build/blender/lantern/previews/critter_wickmole.png",
+    "size_studs": [
+      1.22,
+      2.1,
+      1.67
+    ],
+    "tris": 5772,
+    "parts": {
+      "critter_wickmole": 5772
+    },
+    "target_size_studs": [
+      1.25,
+      2.1,
+      1.65
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the candle flame on top of the head.",
+    "glow": {}
+  },
+  "critter_burrbun": {
+    "fbx": "build/blender/lantern/critter_burrbun.fbx",
+    "png": "build/blender/lantern/critter_burrbun.png",
+    "preview": "build/blender/lantern/previews/critter_burrbun.png",
+    "size_studs": [
+      1.85,
+      2.3,
+      1.43
+    ],
+    "tris": 5644,
+    "parts": {
+      "critter_burrbun": 5644
+    },
+    "target_size_studs": [
+      1.85,
+      2.3,
+      1.45
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the seed-pod lantern, on the viewer's left at about half height.",
+    "glow": {}
+  },
+  "critter_lanternbeetle": {
+    "fbx": "build/blender/lantern/critter_lanternbeetle.fbx",
+    "png": "build/blender/lantern/critter_lanternbeetle.png",
+    "preview": "build/blender/lantern/previews/critter_lanternbeetle.png",
+    "size_studs": [
+      1.55,
+      2.4,
+      1.39
+    ],
+    "tris": 5814,
+    "parts": {
+      "critter_lanternbeetle": 5814
+    },
+    "target_size_studs": [
+      1.55,
+      2.4,
+      1.4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Uncommon. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the glass abdomen, low at the front (it also glows from the antenna tips).",
+    "glow": {}
+  },
+  "critter_fogpup": {
+    "fbx": "build/blender/lantern/critter_fogpup.fbx",
+    "png": "build/blender/lantern/critter_fogpup.png",
+    "preview": "build/blender/lantern/previews/critter_fogpup.png",
+    "size_studs": [
+      2.34,
+      2.5,
+      2.77
+    ],
+    "tris": 5646,
+    "parts": {
+      "critter_fogpup": 5646
+    },
+    "target_size_studs": [
+      2.35,
+      2.5,
+      2.75
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Uncommon. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the lantern tag under the chin.",
+    "glow": {}
+  },
+  "critter_acornowlet": {
+    "fbx": "build/blender/lantern/critter_acornowlet.fbx",
+    "png": "build/blender/lantern/critter_acornowlet.png",
+    "preview": "build/blender/lantern/previews/critter_acornowlet.png",
+    "size_studs": [
+      2.18,
+      2.5,
+      2.51
+    ],
+    "tris": 5198,
+    "parts": {
+      "critter_acornowlet": 5198
+    },
+    "target_size_studs": [
+      2.2,
+      2.5,
+      2.5
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Uncommon. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the acorn lantern on the cup's front rim.",
+    "glow": {}
+  },
+  "critter_teapotcat": {
+    "fbx": "build/blender/lantern/critter_teapotcat.fbx",
+    "png": "build/blender/lantern/critter_teapotcat.png",
+    "preview": "build/blender/lantern/previews/critter_teapotcat.png",
+    "size_studs": [
+      2.8,
+      2.8,
+      2.25
+    ],
+    "tris": 5886,
+    "parts": {
+      "critter_teapotcat": 5886
+    },
+    "target_size_studs": [
+      2.8,
+      2.8,
+      2.25
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Rare. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the middle of the teapot (its star holes glow).",
+    "glow": {}
+  },
+  "critter_reedfox": {
+    "fbx": "build/blender/lantern/critter_reedfox.fbx",
+    "png": "build/blender/lantern/critter_reedfox.png",
+    "preview": "build/blender/lantern/previews/critter_reedfox.png",
+    "size_studs": [
+      2.45,
+      2.9,
+      2.79
+    ],
+    "tris": 5612,
+    "parts": {
+      "critter_reedfox": 5612
+    },
+    "target_size_studs": [
+      2.45,
+      2.9,
+      2.8
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Rare. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the glowing cattail, top left behind the head.",
+    "glow": {}
+  },
   "house_cottage": {
     "fbx": "build/blender/lantern/house_cottage.fbx",
     "png": "build/blender/lantern/house_cottage.png",
@@ -93,5 +318,180 @@
         104
       ]
     }
+  },
+  "critter_mistfawn": {
+    "fbx": "build/blender/lantern/critter_mistfawn.fbx",
+    "png": "build/blender/lantern/critter_mistfawn.png",
+    "preview": "build/blender/lantern/previews/critter_mistfawn.png",
+    "size_studs": [
+      2.15,
+      3.2,
+      2.1
+    ],
+    "tris": 5836,
+    "parts": {
+      "critter_mistfawn": 5836
+    },
+    "target_size_studs": [
+      2.15,
+      3.2,
+      2.1
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Epic. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at between the two glowing antler buds, at the top of the head.",
+    "glow": {}
+  },
+  "critter_bellturtle": {
+    "fbx": "build/blender/lantern/critter_bellturtle.fbx",
+    "png": "build/blender/lantern/critter_bellturtle.png",
+    "preview": "build/blender/lantern/previews/critter_bellturtle.png",
+    "size_studs": [
+      2.2,
+      2.9,
+      2.96
+    ],
+    "tris": 5076,
+    "parts": {
+      "critter_bellturtle": 5076
+    },
+    "target_size_studs": [
+      2.2,
+      2.9,
+      2.95
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Epic. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the water lily's glowing heart on the bell's front shoulder.",
+    "glow": {}
+  },
+  "critter_moonhare": {
+    "fbx": "build/blender/lantern/critter_moonhare.fbx",
+    "png": "build/blender/lantern/critter_moonhare.png",
+    "preview": "build/blender/lantern/previews/critter_moonhare.png",
+    "size_studs": [
+      1.84,
+      3.5,
+      2.41
+    ],
+    "tris": 5678,
+    "parts": {
+      "critter_moonhare": 5678
+    },
+    "target_size_studs": [
+      1.85,
+      3.5,
+      2.4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Legendary. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the moon lantern hugged to the chest.",
+    "glow": {}
+  },
+  "shadow_wisp": {
+    "fbx": "build/blender/lantern/shadow_wisp.fbx",
+    "png": "build/blender/lantern/shadow_wisp.png",
+    "preview": "build/blender/lantern/previews/shadow_wisp.png",
+    "size_studs": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "tris": 1318,
+    "parts": {
+      "shadow_wisp": 1318
+    },
+    "target_size_studs": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "wisp fallback (dark ball with two white dots)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "One mesh, 2.5 studs, front -Y; eyes baked bright (no Neon). Drifts, wobbles, swells and pops by code. Up to 40 on screen.",
+    "glow": {}
+  },
+  "lampeater_body": {
+    "fbx": "build/blender/lantern/lampeater_body.fbx",
+    "png": "build/blender/lantern/lampeater_body.png",
+    "preview": "build/blender/lantern/previews/lampeater_body.png",
+    "size_studs": [
+      6.0,
+      6.0,
+      16.0
+    ],
+    "tris": 6134,
+    "parts": {
+      "lampeater_body": 6134
+    },
+    "target_size_studs": [
+      6,
+      6,
+      16
+    ],
+    "tris_budget": 7000,
+    "priority": "P1",
+    "replaces": "Lampeater fallback (block body)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "One mesh, front -Y (head forward), thorax at the bounding-box centre where the wings meet it. Lantern-glass eyes baked bright; code may hang a warm PointLight in front of the face. Swoops by code.",
+    "glow": {}
+  },
+  "lampeater_wing_l": {
+    "fbx": "build/blender/lantern/lampeater_wing_l.fbx",
+    "png": "build/blender/lantern/lampeater_wing_l.png",
+    "preview": "build/blender/lantern/previews/lampeater_wing_l.png",
+    "size_studs": [
+      18.0,
+      1.5,
+      12.0
+    ],
+    "tris": 1690,
+    "parts": {
+      "lampeater_wing_l": 1690
+    },
+    "target_size_studs": [
+      18,
+      1.5,
+      12
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Lampeater fallback (wedge part)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "The moth's left wing (Blender +X; it mirrors lampeater_wing_r). Flapped by code about its inner edge: the hinge is the bounding-box face nearest the body. Placed by bounding box at the body's centre height and depth, offset (body width + wing width) / 2 to the moth's left, where its root meets the thorax. Eye-spots on both faces (players look up at it).",
+    "glow": {}
+  },
+  "lampeater_wing_r": {
+    "fbx": "build/blender/lantern/lampeater_wing_r.fbx",
+    "png": "build/blender/lantern/lampeater_wing_r.png",
+    "preview": "build/blender/lantern/previews/lampeater_wing_r.png",
+    "size_studs": [
+      18.0,
+      1.5,
+      12.0
+    ],
+    "tris": 1690,
+    "parts": {
+      "lampeater_wing_r": 1690
+    },
+    "target_size_studs": [
+      18,
+      1.5,
+      12
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Lampeater fallback (wedge part)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "The moth's right wing (Blender -X; it mirrors lampeater_wing_l). Flapped by code about its inner edge: the hinge is the bounding-box face nearest the body. Placed by bounding box at the body's centre height and depth, offset (body width + wing width) / 2 to the moth's right, where its root meets the thorax. Eye-spots on both faces (players look up at it).",
+    "glow": {}
   }
 }
