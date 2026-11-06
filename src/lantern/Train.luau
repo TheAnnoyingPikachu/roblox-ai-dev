@@ -36,7 +36,7 @@ local C3 = Color3.fromRGB
 local cars: { Car } = {}
 local seats: { Seat } = {}
 local isSeat: { [Instance]: boolean } = {}
-local heads: { [string]: { weld: Weld, at: CFrame } } = {} -- by turret seat id
+local heads: { [string]: { weld: Weld, at: CFrame, glass: BasePart } } = {} -- by turret seat id
 local turrets: { { seat: Seat, car: Car, at: Vec3 } } = {}
 local pending: { [Seat]: number } = {} -- seats just given out (Occupant can lag a frame)
 local folder: Model
@@ -209,7 +209,7 @@ local function buildCar(def: LanternConfig.Car): Car
 			weld.C0 = rest
 			weld.Parent = head
 			head.Anchored = false
-			heads[s.id] = { weld = weld, at = rest }
+			heads[s.id] = { weld = weld, at = rest, glass = glass }
 		end
 	end
 	local box = Props.part(
@@ -259,6 +259,19 @@ function Train.build(parent: Instance)
 				Models.ghost(mesh)
 				local _, size = mesh:GetBoundingBox()
 				Models.attach(mesh, car.base, CFrame.new(0, size.Y / 2 - BASE_Y, 0))
+			end
+		end)
+	end
+	-- The lamp heads' mesh (glass front on -Z, symmetric about its centre) replaces the block and glass.
+	for _, h in heads do
+		task.spawn(function()
+			local head = h.weld.Part1 :: BasePart
+			local mesh = Models.night("lamp_turret_head", head, head.Position)
+			if mesh then
+				Models.ghost(mesh)
+				Models.attach(mesh, head, CFrame.new())
+				head.Transparency = 1
+				h.glass.Transparency = 1
 			end
 		end)
 	end

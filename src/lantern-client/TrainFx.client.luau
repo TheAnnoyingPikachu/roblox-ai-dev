@@ -119,7 +119,7 @@ end
 
 local wall: Model? = nil
 local wallFrame: CFrame? = nil
-local wisps: { BasePart } = {}
+local wisps: { PVInstance } = {}
 
 local function slab(model: Model, name: string, size: Vector3, transparency: number): Part
 	local p = new("Part", {
@@ -184,10 +184,22 @@ local function buildWall(frame: CFrame)
 	-- wisp silhouettes inside the bank (soft dark puffs with two glowing eyes; art bible 9)
 	wisps = {}
 	for i = 1, 4 do
-		local w = ClientState.ball(model, "shadow_wisp", Vector3.new(2.5, 2.5, 2.5), rgb(40, 34, 90), Vector3.zero)
-		w.Transparency = 0.25
-		w:SetAttribute("Slot", i)
-		table.insert(wisps, w)
+		local w: PVInstance? = ClientState.model("shadow_wisp") -- the uploaded wisp, eyes and all
+		if w then
+			for _, p in w:GetDescendants() do
+				if p:IsA("BasePart") then
+					p.CanCollide, p.CanQuery, p.CanTouch = false, false, false
+				end
+			end
+			w.Parent = model
+		else
+			local ball =
+				ClientState.ball(model, "shadow_wisp", Vector3.new(2.5, 2.5, 2.5), rgb(40, 34, 90), Vector3.zero)
+			ball.Transparency = 0.25
+			w = ball
+		end
+		(w :: PVInstance):SetAttribute("Slot", i)
+		table.insert(wisps, w :: PVInstance)
 	end
 	model.Parent = Workspace
 	wall, wallFrame = model, frame
@@ -207,7 +219,7 @@ local function placeWall(front: number, t: number)
 	local bob = if ClientState.still() then 0 else math.sin(t * 1.3)
 	for _, w in wisps do
 		local i = w:GetAttribute("Slot") :: number
-		w.CFrame = frame * CFrame.new(-45 + i * 22, 6 + i % 2 * 4 + bob * 0.6, front + 6 + i * 3)
+		w:PivotTo(frame * CFrame.new(-45 + i * 22, 6 + i % 2 * 4 + bob * 0.6, front + 6 + i * 3))
 	end
 end
 

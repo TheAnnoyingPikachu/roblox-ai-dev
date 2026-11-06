@@ -77,12 +77,13 @@ function World.at(track: string, d: number): (Vector3, Vector3)
 	return Vector3.new(p.x, World.RAIL_Y, p.z), v3(f)
 end
 
--- The stop site (architecture 4.4, the art's LAYOUT frame): level with the engine's front at the stop
--- distance, on the platform deck's track edge (4 studs out, on the loop's outer side) at the plate
--- top, looking at the track. Stop frame (x, y, depth) is site * Vector3.new(x, y, depth): +Z runs
--- into the stop, as in the client's stop frame.
+-- The stop site (architecture 4.4, the art's LAYOUT frame): level with the middle of the halted
+-- train (the engine's front is at the stop distance), so the tile's 108-stud deck runs the train's
+-- whole 78 studs and both halves of the tile lead back to a car; on the platform deck's track edge
+-- (4 studs out, on the loop's outer side) at the plate top, looking at the track. Stop frame
+-- (x, y, depth) is site * Vector3.new(x, y, depth): +Z runs into the stop.
 function World.site(line: string, index: number): CFrame
-	local pos, fwd = World.at(line, LanternConfig.TRACKS[line].stops[index])
+	local pos, fwd = World.at(line, LanternConfig.TRACKS[line].stops[index] - LanternConfig.TRAIN_LENGTH / 2)
 	local out = rightOf(fwd) * LanternConfig.OUTER[line]
 	local origin = Vector3.new(pos.X, World.TILE_Y, pos.Z) + out * World.PLATFORM_NEAR
 	return CFrame.lookAt(origin, origin - out)
@@ -381,8 +382,9 @@ end
 -- Art bible section 3: the dusk values (Depot and stops). The client tweens night and dawn.
 -- Technology = Future is set in lantern.project.json (scripts cannot set it).
 local function lighting()
-	local terrain = workspace.Terrain -- the stop tiles' grass (Stops) in the art bible's tints
-	terrain.Decoration = true
+	-- the stop tiles' grass (Stops) in the art bible's tints; Decoration (the blades) is set in
+	-- lantern.project.json (scripts cannot set it)
+	local terrain = workspace.Terrain
 	terrain:SetMaterialColor(Enum.Material.Grass, PAL.grass)
 	terrain:SetMaterialColor(Enum.Material.Ground, PAL.path)
 	Lighting.GlobalShadows = true
@@ -430,17 +432,6 @@ function World.build(): Folder
 	world.Name = "World"
 	ground(world)
 	rails(world)
-	for _, line in { "forest", "lake" } do
-		for i, d in LanternConfig.TRACKS[line].stops do
-			-- The tile brings its own deck, 54 studs either side of the engine's front; this piece
-			-- carries the platform on under the rest of the 78-stud train.
-			local half, back = LanternConfig.TILE_DECK.length / 2, LanternConfig.TRAIN_LENGTH + 22
-			local pos, fwd = World.at(line, d - (half + back) / 2)
-			platform(world, pos, fwd, LanternConfig.OUTER[line], back - half)
-			local far = World.site(line, i) * CFrame.new(0, 0, World.PLATFORM_FAR - World.PLATFORM_NEAR - 1)
-			lamp(world, Vector3.new(0, World.PLATFORM_Y, 0) + Vector3.new(far.X, 0, far.Z) - fwd * (back - 2), 18)
-		end
-	end
 	hub(world)
 	dawnStation(world)
 	decor(world)

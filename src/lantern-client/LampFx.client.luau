@@ -292,11 +292,15 @@ local function wispModel(): Model
 	return model
 end
 
+-- `scale` is relative to the model as drawn first: uploaded templates keep the importer's own scale
+-- (0.01 for the FBX), so an absolute ScaleTo(1) blew wisps up a hundredfold.
 local function place(model: Model, at: Vector3, face: Vector3, scale: number)
 	local cf = CFrame.lookAt(at, at + face)
 	model:PivotTo(cf)
-	if math.abs(model:GetScale() - scale) > 0.01 then
-		model:ScaleTo(scale)
+	local base = (model:GetAttribute("BaseScale") :: number?) or model:GetScale()
+	model:SetAttribute("BaseScale", base)
+	if math.abs(model:GetScale() - base * scale) > base * 0.01 then
+		model:ScaleTo(base * scale)
 	end
 end
 
