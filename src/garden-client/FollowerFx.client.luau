@@ -2,7 +2,7 @@
 -- Egg Garden pet followers and title tags (GDD V3, V4; docs/architecture/garden.md 6.3). For every
 -- player whose `Follower` attribute names a creature, a visual copy of it (cloned from
 -- ReplicatedStorage.GardenSpecies, scaled by size, mutation and charm looks from CreatureFx, name tag)
--- hops behind its owner under Workspace.GardenFollowers. Hidden while the owner races, during the
+-- hops beside its owner under Workspace.GardenFollowers. Hidden while the owner races, during the
 -- owner's hatch reveal and with the Followers setting off. Every part is anchored and never collides,
 -- is queried or touched. Also draws the milestone title over each character. Display only.
 
@@ -22,8 +22,22 @@ local MAX_FOLLOWERS = 6
 local folder = Workspace:FindFirstChild("GardenFollowers")
 	or new("Folder", { Name = "GardenFollowers", Parent = Workspace })
 
-type View = { inst: Instance, id: number, species: string, state: ClientState.FollowerState, cryAt: number }
+type View = {
+	inst: Instance,
+	id: number,
+	species: string,
+	state: ClientState.FollowerState,
+	cryAt: number,
+	faded: boolean?,
+}
 local views: { [Player]: View } = {}
+
+-- True when `at` (a follower's centre, `radius` across) sits on the line from the camera to the head.
+local function blocks(cam: Vector3, head: Vector3, at: Vector3, radius: number): boolean
+	local line = head - cam
+	local k = (at - cam):Dot(line) / line:Dot(line) -- NaN in first person: never blocks
+	return k > 0 and k < 1 and (cam + line * k - at).Magnitude < radius
+end
 
 local function rootOf(p: Player): BasePart?
 	local c = p.Character
@@ -196,6 +210,26 @@ RunService.Heartbeat:Connect(function()
 		local cf, hopped = ClientState.followerStep(view.state, root.CFrame, t)
 		local height = if view.inst:IsA("Model") then view.inst:GetExtentsSize().Y else (view.inst :: BasePart).Size.Y
 		view.inst:PivotTo(cf * CFrame.new(0, height / 2, 0))
+		-- Your own follower fades while it stands between your camera and your head (QA M3).
+		local head = if p == Players.LocalPlayer and p.Character then p.Character:FindFirstChild("Head") else nil
+		local camera = Workspace.CurrentCamera
+		local fade = head ~= nil
+			and head:IsA("BasePart")
+			and camera ~= nil
+			and blocks(
+				camera.CFrame.Position,
+				(head :: BasePart).Position,
+				cf.Position + Vector3.new(0, height / 2, 0),
+				math.max(view.state.half, height / 2)
+			)
+		if fade ~= (view.faded == true) then
+			view.faded = fade
+			for _, part in { view.inst, table.unpack(view.inst:GetDescendants()) } do
+				if part:IsA("BasePart") then
+					part.LocalTransparencyModifier = if fade then 0.6 else 0
+				end
+			end
+		end
 		if
 			hopped
 			and t - view.cryAt >= ClientState.FOLLOWER.cryGap

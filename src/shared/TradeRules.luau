@@ -339,9 +339,16 @@ function TradeRules.undo(p: Profile, user: number, L: Ledger): Profile
 	return out
 end
 
+-- The counterpart's ledger copy confirms a trade only when it exists and is not void: a cancelled
+-- commit voids both copies, and one void mark that landed is enough to stop the heal (QA B1).
+function TradeRules.confirms(theirs: Ledger?): boolean
+	return theirs ~= nil and not theirs.void
+end
+
 -- V1.4 step 4: finishes what a crash left half-written. `mine` is this player's ledger key;
 -- `confirmed(L)` is the counterpart-ledger lookup the server resolved before this apply (called
--- only for records missing from `trades`). Records older than the oldest kept are ignored when
+-- only for records missing from `trades`; `TradeRules.confirms` of the counterpart's copy). Records
+-- older than the oldest kept are ignored when
 -- the list is at its cap.
 function TradeRules.heal(
 	p: Profile,

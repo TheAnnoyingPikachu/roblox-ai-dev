@@ -286,10 +286,16 @@ function Profiles.load(player: Player)
 		ready = false,
 	}
 	local busy = false
+	local newer: any = nil
 	if okStore then
 		-- Claims the lock (3 tries, 2 s and 4 s apart, so an old server's final write can land first).
 		local ok, record = withRetries(`load {player.UserId}`, function()
 			local stored = (store :: DataStore):UpdateAsync(keyFor(player), function(old: any)
+				-- A save from a newer build is played read-only, never written by this one (QA m6).
+				newer = if GardenProgress.isNewer(old) then old else nil
+				if newer then
+					return nil
+				end
 				busy = not GardenProgress.canClaim(old, session.id, now)
 				if busy then
 					return nil
@@ -301,7 +307,10 @@ function Profiles.load(player: Player)
 			end
 			return stored
 		end)
-		if ok then
+		if newer then
+			warn(`[Profiles] {player.UserId} has schemaVersion {newer.schemaVersion}; this build plays it unsaved`)
+			session.profile = GardenProgress.sanitize(newer, now)
+		elseif ok then
 			session.online = true
 			session.profile = GardenProgress.sanitize(record, now)
 		end
@@ -317,10 +326,15 @@ function Profiles.load(player: Player)
 	end)
 	-- The trade heal (garden.md 4.5) reads the ledger and may yield; the router sees no profile until
 	-- it is done. Only a saving session heals: an offline one would heal in memory and lose it anyway.
+	-- A heal that could not read the ledger starts the session offline (the login op is dropped
+	-- unwritten), so a half-written trade is never played past before a later load heals it (QA M1).
 	if session.online and player.Parent ~= nil then
-		local ok, err = pcall(Trades.heal, player, session.profile)
-		if not ok then
-			warn(`[Profiles] trade heal {player.UserId} failed: {tostring(err)}`)
+		local ok, healed = pcall(Trades.heal, player, session.profile)
+		if not (ok and healed) then
+			warn(`[Profiles] trade heal {player.UserId} failed ({tostring(healed)}); saving is off for this session`)
+			session.online = false
+			session.queue = {}
+			player:SetAttribute("ProfileOnline", false)
 		end
 	end
 	session.ready = true

@@ -178,6 +178,14 @@ local function sanitizeCreatures(p: Profile, list: any)
 	end
 end
 
+-- A stored record written by a newer build (higher schemaVersion): this build must not write it, or
+-- the fields it does not know would be lost (decisions 0012, 0015).
+function GardenProgress.isNewer(record: any): boolean
+	return type(record) == "table"
+		and type(record.schemaVersion) == "number"
+		and record.schemaVersion > GardenProgress.SCHEMA_VERSION
+end
+
 -- H7 and decision 0008. Game fields first, so MetaRules' slot checks can read `index`.
 function GardenProgress.sanitize(record: any, now: number?): Profile
 	local p = GardenProgress.defaults(now or 0)

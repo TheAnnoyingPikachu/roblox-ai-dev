@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local GardenAssets = require(Shared:WaitForChild("GardenAssets"))
 local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local Models = require(script.Parent:WaitForChild("Models"))
@@ -224,6 +225,7 @@ type PadView = {
 	pending: number,
 }
 local CLOVER = Color3.fromRGB(120, 190, 90)
+local CLOVER_IMAGE = GardenAssets.pad_clover and GardenAssets.pad_clover.texture
 type CreatureView = { key: string, model: Instance? }
 type PlotView = {
 	n: number,
@@ -237,6 +239,7 @@ type PlotView = {
 	creatureFolder: Folder,
 	fence: Model,
 	fenceStyle: string,
+	fenceModels: boolean?, -- the Starlit fence was built from the uploaded models
 	signTitle: TextLabel,
 	signInfo: TextLabel,
 	signKey: string,
@@ -355,10 +358,24 @@ end
 
 -- Fence -------------------------------------------------------------------------------------
 
+local function starlitReady(): boolean
+	return Models.nightReady("fence_starlit_post") and Models.nightReady("fence_starlit_rail")
+end
+
+-- A loaded Starlit post or rail mesh at `cframe` (never yields: only called once starlitReady).
+local function starlitPiece(view: PlotView, name: string, cframe: CFrame): BasePart
+	local mesh = Models.nightPart(name, view.fence, cframe.Position) :: MeshPart
+	mesh.CFrame = cframe
+	return mesh
+end
+
 local function buildFence(view: PlotView, styleId: string)
 	view.fence:ClearAllChildren()
 	view.fenceStyle = styleId
 	local style = FENCES[styleId] or FENCES.picket
+	-- The uploaded Starlit post and rail models (9.2, QA m3) once both are loaded, else the parts.
+	local models = styleId == "starlit" and starlitReady()
+	view.fenceModels = models
 	local segments = {
 		{ Vector2.new(-HALF, -HALF), Vector2.new(-5, -HALF) },
 		{ Vector2.new(5, -HALF), Vector2.new(HALF, -HALF) },
@@ -381,16 +398,24 @@ local function buildFence(view: PlotView, styleId: string)
 			part(view.fence, Vector3.new(length + 0.4, 0.6, 2), at(3.9), style.rail, style.material)
 		else
 			local rails = { 1.5, 3.1 }
-			for _, y in rails do
-				decor(part(view.fence, Vector3.new(length, 0.35, 0.3), at(y), style.rail, style.material))
-			end
 			local count = math.ceil(length / 5.5)
+			for _, y in rails do
+				if not models then
+					decor(part(view.fence, Vector3.new(length, 0.35, 0.3), at(y), style.rail, style.material))
+					continue
+				end
+				for k = 1, count do -- one 6-stud rail per gap, its ends inside the posts
+					local p2 = a:Lerp(b, (k - 0.5) / count)
+					decor(starlitPiece(view, "fence_starlit_rail", view.frame * CFrame.new(p2.X, y, p2.Y) * rotation))
+				end
+			end
 			for k = 0, count do
 				local p2 = a:Lerp(b, k / count)
 				colourIndex += 1
 				local colour = style.colours[(colourIndex - 1) % #style.colours + 1]
-				local post = if style.round
-					then pillar(
+				local post: BasePart = if models
+					then starlitPiece(view, "fence_starlit_post", view.frame * CFrame.new(p2.X, 2.2, p2.Y) * rotation)
+					elseif style.round then pillar(
 						view.fence,
 						(view.frame * CFrame.new(p2.X, 0.2, p2.Y)).Position,
 						4.2,
@@ -713,7 +738,8 @@ end
 local function tag(target: BasePart, c: GardenConfig.Creature, height: number)
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Tag"
-	gui.Size = UDim2.fromOffset(170, 46)
+	-- In studs, so it shrinks with distance and stays inside the 10-stud pad pitch (QA m1).
+	gui.Size = UDim2.fromScale(6, 1.6)
 	gui.StudsOffset = Vector3.new(0, height / 2 + 1.3, 0)
 	gui.MaxDistance = 45
 	gui.LightInfluence = 0
@@ -899,9 +925,19 @@ local function refreshPads(view: PlotView, profile: Profile)
 				then Color3.fromRGB(160, 160, 165)
 				elseif skin == "clover" then CLOVER
 				else PASTELS[(i - 1) % #PASTELS + 1]
-			pv.part.Material = if skin == "clover" and not locked
-				then Enum.Material.Grass
-				else Enum.Material.SmoothPlastic
+			local clover = skin == "clover" and not locked
+			pv.part.Material = if clover then Enum.Material.Grass else Enum.Material.SmoothPlastic
+			-- The uploaded clover image on the pad top (9.2, QA m3); plain green until it has an image id.
+			local decal = pv.part:FindFirstChild("Clover")
+			if clover and CLOVER_IMAGE and decal == nil then
+				local d = Instance.new("Decal")
+				d.Name = "Clover"
+				d.Face = Enum.NormalId.Right -- a pillar's +X face points up
+				d.Texture = `rbxassetid://{CLOVER_IMAGE}`
+				d.Parent = pv.part
+			elseif not clover and decal then
+				decal:Destroy()
+			end
 			pv.part.Transparency = if locked then 0.5 else 0
 			pv.label.Text = if locked then "🔒" else GardenRules.short(pv.pending)
 			pv.gui.Enabled = locked or pv.pending > 0
@@ -918,7 +954,7 @@ function Plots.refresh(plot: number, profile: Profile)
 	local owned = view.model:GetAttribute("Owner") ~= 0
 	local now = os.time()
 	view.model:SetAttribute("Gate", profile.gate)
-	if profile.fence ~= view.fenceStyle then
+	if profile.fence ~= view.fenceStyle or (profile.fence == "starlit" and not view.fenceModels and starlitReady()) then
 		buildFence(view, profile.fence)
 	end
 	for i = 1, #view.beds do

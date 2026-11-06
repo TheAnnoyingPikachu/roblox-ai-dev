@@ -411,10 +411,12 @@ export type FollowerState = {
 	hopTo: Vector3?,
 	hopAt: number,
 }
-ClientState.FOLLOWER = { behind = 4, side = 2, far = 6, snap = 60, hop = 0.35, cryGap = 6 }
+-- Beside the owner, not behind: trailing on the walk line put a Big or Huge one between the
+-- camera and the character (QA M3). Hops of up to far * 1.5 per `hop` s outrun a 16 studs/s walk.
+ClientState.FOLLOWER = { behind = 1, side = 4, far = 6, snap = 60, hop = 0.35, cryGap = 6 }
 
 -- Where the follower stands: `side` studs beside and `behind` studs behind the owner's root,
--- counted from the follower's edge so a Huge one stands clear of the camera line (Studio check).
+-- counted from the follower's edge so a Huge one stands clear of the camera line.
 function ClientState.followerOffset(half: number): Vector3
 	local F = ClientState.FOLLOWER
 	return Vector3.new(F.side + half, -2.5, F.behind + half)
@@ -442,7 +444,7 @@ function ClientState.followerStep(f: FollowerState, ownerRoot: CFrame, t: number
 	end
 	local gap = target - f.pos
 	if gap.Magnitude > F.far then
-		local step = gap.Unit * math.min(gap.Magnitude, F.far * 0.9)
+		local step = gap.Unit * math.min(gap.Magnitude, F.far * 1.5)
 		f.hopFrom, f.hopTo, f.hopAt = f.pos, f.pos + step, t
 		f.yaw = math.atan2(-step.X, -step.Z)
 		started = true

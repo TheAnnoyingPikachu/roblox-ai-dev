@@ -149,6 +149,15 @@ local function isFriend(viewer: Player, owner: Player, wait: boolean): boolean
 		local friend = ok and result == true
 		if State.live[viewer] == live then
 			live.friends[owner.UserId] = friend
+			if not ok then
+				-- A failed lookup counts as "not friends" (gates stay closed) for 30 s only, then is
+				-- asked again, so two friends are not refused a trade for the session (QA m7).
+				task.delay(30, function()
+					if live.friends[owner.UserId] == false then
+						live.friends[owner.UserId] = nil
+					end
+				end)
+			end
 		end
 		return friend
 	end

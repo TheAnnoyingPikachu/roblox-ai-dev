@@ -350,6 +350,19 @@ describe("WheelRules spins and award (W4.2, W6, W10)", function()
 		expect(select(2, WheelRules.award(profile(3), DAY + 1, 2, "forest"))).toBe(false)
 	end)
 
+	-- QA m5: Wheel.finish numbers the spin on the finish day, so a round that started as spin 3
+	-- and ends after 00:00 UTC is applied as spin 1 of the new day instead of refused.
+	it("applies a spin that ends after 00:00 UTC as spin spinsToday(finish day) + 1", function()
+		local p = profile(2)
+		local startN = WheelRules.spinsToday(p, DAY) + 1
+		expect(select(2, WheelRules.award(p, DAY + 1, startN, "moon"))).toBe(false) -- the old bug
+		local n = WheelRules.spinsToday(p, DAY + 1) + 1
+		local out, ok = WheelRules.award(p, DAY + 1, n, "moon")
+		expect(`{n} {ok} {out.wheelToday.day == DAY + 1} {out.wheelToday.spins} {out.prizeEggs.moon}`).toBe(
+			"1 true true 1 1"
+		)
+	end)
+
 	it("pays scaled(100, 10) on Coins: 36,300 at 60.5 coins/s, 100 at 0, clamped to MAX_COINS", function()
 		withIncome(60.5, function()
 			local out, ok, paid = WheelRules.award(profile(0), DAY, 1, "coins")

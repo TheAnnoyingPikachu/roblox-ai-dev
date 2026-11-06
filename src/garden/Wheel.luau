@@ -91,7 +91,7 @@ end
 
 -- The round's end: the prize is rolled and applied before anything can yield. `today` is the day of
 -- the finish; eligibility stays as fixed at the start. The roll's seed never derives from the petal seed.
-local function finish(player: Player, entry: Entry, tier: WheelRules.Tier, score: number, today: number)
+local function finish(player: Player, tier: WheelRules.Tier, score: number, today: number)
 	rounds[player] = nil
 	local function left(): number
 		local p = Profiles.get(player)
@@ -101,16 +101,22 @@ local function finish(player: Player, entry: Entry, tier: WheelRules.Tier, score
 		Remotes.fxTo(player, "wheelOver", { score = score, tier = tier, spinsLeft = left() })
 		return
 	end
-	local n, lucky = entry.round.n, tier == "lucky"
+	-- The spin is numbered on the finish day: after 00:00 UTC it is spin 1 of the new day (W9, QA m5).
+	local profile = Profiles.get(player)
+	local n, lucky = (if profile then WheelRules.spinsToday(profile, today) else 0) + 1, tier == "lucky"
 	local jitter = math.floor((os.clock() % 1) * 2 ^ 20)
 	local wedge = WheelRules.roll(Rng.seed(os.time(), player.UserId, WheelRules.spinId(today, n) + jitter), lucky)
-	local coins = 0
+	local applied, coins = false, 0
 	Profiles.apply(player, "wheelSpin", function(p)
-		local out, _, paid = WheelRules.award(p, today, n, wedge)
-		coins = paid -- set by the first (in-memory) application; the store re-apply runs elsewhere
+		local out, ok, paid = WheelRules.award(p, today, n, wedge)
+		applied, coins = ok, paid -- read right after the first (in-memory) application
 		return out
 	end)
-	Remotes.fxTo(player, "wheelOver", { score = score, tier = tier, spinsLeft = left() })
+	-- A spin that did not apply is never announced as saved: the end card shows no wheel.
+	Remotes.fxTo(player, "wheelOver", { score = score, tier = if applied then tier else "none", spinsLeft = left() })
+	if not applied then
+		return
+	end
 	Remotes.fxTo(player, "wheelSpin", {
 		wedge = wedge,
 		lucky = lucky,
@@ -137,7 +143,7 @@ function Wheel.step(roots: { [Player]: Vec3 }, today: number)
 		local _, overs = WheelRules.finish(entry.round, t)
 		local over = overs[1]
 		if over then
-			finish(player, entry, over.tier :: WheelRules.Tier, over.score :: number, today)
+			finish(player, over.tier :: WheelRules.Tier, over.score :: number, today)
 			continue
 		end
 		local root = roots[player]

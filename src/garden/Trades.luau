@@ -40,7 +40,8 @@ export type Deps = {
 	ledger: any?, -- harness only: an object with UpdateAsync and GetAsync in place of GardenTrades<suffix>
 }
 
-type Pair = { t: Trade, a: Player, b: Player }
+-- L and applying are set by the commit thread, so its error guard knows how far it got (QA m8).
+type Pair = { t: Trade, a: Player, b: Player, L: Ledger?, applying: boolean? }
 
 local TRADE = GardenConfig.TRADE
 local FRIENDS_TEXT = "You can only trade with your Roblox friends."
@@ -54,6 +55,8 @@ local Trades = {}
 Trades.deps = nil :: Deps?
 
 local live: { [Player]: Pair } = {}
+-- "<UserId>:<creature id>" of the two received creatures while an undo returns them (QA M2).
+local held: { [string]: boolean } = {}
 local closed = false
 local store: DataStore? = nil
 
@@ -98,7 +101,8 @@ local function ledgerAppend(userId: number, L: Ledger): boolean
 	)
 end
 
-local function ledgerMark(userId: number, id: string, fields: { [string]: any }): boolean
+-- Sets (or, with value nil, clears) one field of record `id` in a player's ledger key.
+local function ledgerMark(userId: number, id: string, field: string, value: any): boolean
 	local s = ledgerStore()
 	if s == nil then
 		return false
@@ -110,9 +114,7 @@ local function ledgerMark(userId: number, id: string, fields: { [string]: any })
 				for i, rec in out do
 					if type(rec) == "table" and rec.id == id then
 						local copy = table.clone(rec)
-						for k, v in fields do
-							copy[k] = v
-						end
+						copy[field] = value
 						out[i] = copy
 					end
 				end
@@ -120,6 +122,21 @@ local function ledgerMark(userId: number, id: string, fields: { [string]: any })
 			end)
 		end)
 	)
+end
+
+-- A mark that must land (a void, or an undo mark taken back): retried for about two and a half
+-- minutes, then a warn with the trade id for a person to check (QA B1, M2).
+local MARK_WAITS = { 10, 20, 40, 80 }
+local function markUntil(userId: number, id: string, field: string, value: any)
+	for attempt = 1, #MARK_WAITS + 1 do
+		if ledgerMark(userId, id, field, value) then
+			return
+		end
+		if attempt <= #MARK_WAITS then
+			task.wait(MARK_WAITS[attempt])
+		end
+	end
+	warn(`[Trades] ledger {userId}: could not set {field} on trade {id}; check this trade by hand`)
 end
 
 local function ledgerRead(userId: number): { Ledger }?
@@ -131,7 +148,7 @@ local function ledgerRead(userId: number): { Ledger }?
 		return s:GetAsync(keyFor(userId))
 	end)
 	if not ok then
-		return nil
+		return nil -- failed, which the heal keeps apart from an absent key ({}) (QA M1)
 	end
 	return if type(list) == "table" then list else {}
 end
@@ -266,6 +283,24 @@ function Trades.propose(player: Player, targetUserId: number): boolean
 	return true
 end
 
+-- V1.4 step 3: the two applies, never yielding between them.
+local function applyBoth(pair: Pair, L: Ledger, today: number)
+	for _, player in { pair.a, pair.b } do
+		D().apply(player, "trade", function(p)
+			return TradeRules.give(p, player.UserId, L, today)
+		end)
+	end
+end
+
+local function markDone(pair: Pair, id: string)
+	local t = table.clone(pair.t)
+	t.state = "done"
+	t.id = id
+	t.at = 0
+	pair.t = t
+	send(pair)
+end
+
 -- Commit sequence (V1.4): one thread per trade. Both ledger keys first; then the re-check and the
 -- two applies in one step with no yield between them.
 local function commit(pair: Pair)
@@ -288,21 +323,23 @@ local function commit(pair: Pair)
 	end
 	local id = string.sub((string.gsub(HttpService:GenerateGUID(false), "-", "")), 1, 16)
 	local L = TradeRules.ledger(pair.t, pa, pb, id, now)
+	pair.L = L
+	-- Voids both copies: a write that landed but reported failure is voided too (QA B1).
+	local function void()
+		task.spawn(markUntil, a.UserId, id, "void", true)
+		task.spawn(markUntil, b.UserId, id, "void", true)
+	end
 	if not ledgerAppend(a.UserId, L) then
 		cancel(pair, "failed")
 		return
 	end
 	if not ledgerAppend(b.UserId, L) then
 		cancel(pair, "failed")
-		task.spawn(ledgerMark, a.UserId, id, { void = true })
+		void()
 		return
 	end
 	-- Both profiles may have changed during the yields.
 	pa, pb = d.get(a), d.get(b)
-	local function void()
-		task.spawn(ledgerMark, a.UserId, id, { void = true })
-		task.spawn(ledgerMark, b.UserId, id, { void = true })
-	end
 	if pa == nil or pb == nil or not (d.isOnline(a) and d.isOnline(b)) then
 		void()
 		cancel(pair, if pa == nil or pb == nil then "left" else "offline")
@@ -318,19 +355,35 @@ local function commit(pair: Pair)
 		return
 	end
 	-- No yield from here to the end of the function.
-	d.apply(a, "trade", function(p)
-		return TradeRules.give(p, a.UserId, L, today)
-	end)
-	d.apply(b, "trade", function(p)
-		return TradeRules.give(p, b.UserId, L, today)
-	end)
-	local t = table.clone(pair.t)
-	t.state = "done"
-	t.id = id
-	t.at = 0
-	pair.t = t
+	pair.applying = true
+	applyBoth(pair, L, today)
 	print(`[Trades] {id}: {a.UserId} gave {L.ca.id}, {b.UserId} gave {L.cb.id}`)
-	send(pair)
+	markDone(pair, id)
+	drop(pair)
+end
+
+-- The commit thread under an error guard (QA m8). Before the applies nothing changed: void what the
+-- ledger holds and cancel "failed", which tells both players. Once the applies began the trade
+-- stands: finish both halves (give is idempotent on the id). Either way the pair is dropped.
+local function commitGuarded(pair: Pair)
+	local ok, err = pcall(commit, pair)
+	if ok then
+		return
+	end
+	warn(`[Trades] commit {pair.a.UserId} {pair.b.UserId} failed: {tostring(err)}`)
+	local L = pair.L
+	if L and pair.applying then
+		pcall(applyBoth, pair, L, MetaRules.dayOf(L.at))
+		if pair.t.state ~= "done" then
+			pcall(markDone, pair, L.id)
+		end
+	else
+		if L then
+			task.spawn(markUntil, pair.a.UserId, L.id, "void", true)
+			task.spawn(markUntil, pair.b.UserId, L.id, "void", true)
+		end
+		pcall(cancel, pair, "failed")
+	end
 	drop(pair)
 end
 
@@ -360,7 +413,7 @@ function Trades.act(player: Player, action: TradeRules.Action, arg: number?): bo
 	end
 	if action == "pick" then
 		local c, why = TradeRules.tradable(d.get(player) :: Profile, arg or 0)
-		if c == nil then
+		if c == nil or held[`{player.UserId}:{arg}`] then -- an undo is returning it (QA M2)
 			if why == "fav" then
 				d.notice(player, "A favourite cannot be traded. Unfavourite it first.")
 			end
@@ -397,42 +450,41 @@ function Trades.act(player: Player, action: TradeRules.Action, arg: number?): bo
 	end
 	send(pair)
 	if t.state == "committing" then
-		task.spawn(commit, pair)
+		task.spawn(commitGuarded, pair)
 	end
 	return true
 end
 
--- Undo sequence (V1.5): both present and online, canUndo on both current profiles, undoAt on both
--- ledger keys, then the two applies with no yield.
-function Trades.undo(player: Player, id: string): boolean
+-- Both players here with saving on, and canUndo on both current profiles; else the reason.
+local function undoable(player: Player, partner: Player, id: string, now: number): (boolean, string?)
 	local d = D()
-	local profile = d.get(player)
-	local r = recordOf(profile, id)
-	if closed or profile == nil or r == nil then
-		return false
+	local mine, theirs = d.get(player), d.get(partner)
+	if mine == nil or theirs == nil or not (d.isOnline(player) and d.isOnline(partner)) then
+		return false, "both"
 	end
-	local partner = d.playerOf(r.with)
-	local theirs = partner and d.get(partner)
-	if partner == nil or theirs == nil or not (d.isOnline(player) and d.isOnline(partner)) then
-		d.notice(player, UNDO_BOTH_TEXT)
-		return false
-	end
-	local now = os.time()
-	for _, p in { profile, theirs } do
+	for _, p in { mine, theirs } do
 		local ok, why = TradeRules.canUndo(p, id, now)
 		if not ok then
-			if why == "released" then
-				d.notice(player, UNDO_RELEASED_TEXT)
-			end
-			return false
+			return false, why
 		end
 	end
-	local L: Ledger = { id = id, at = r.at, a = player.UserId, b = partner.UserId, ca = r.gave, cb = r.got }
-	if not ledgerMark(player.UserId, id, { undoAt = now }) or not ledgerMark(partner.UserId, id, { undoAt = now }) then
-		d.notice(player, UNDO_RETRY_TEXT)
-		return false
+	return true, nil
+end
+
+-- Undo sequence (V1.5): both present and online, canUndo on both current profiles, undoAt on both
+-- ledger keys, canUndo again (the marks yield), then the two applies with no yield. Returns
+-- "done", "retry" (nothing marked) or "strip" (an undo mark may have landed and must be taken back).
+local function undoMarked(player: Player, partner: Player, r: GardenConfig.TradeRecord, now: number): string
+	local d = D()
+	local id = r.id
+	if not ledgerMark(player.UserId, id, "undoAt", now) then
+		return "retry"
+	end
+	if not ledgerMark(partner.UserId, id, "undoAt", now) or not undoable(player, partner, id, now) then
+		return "strip"
 	end
 	-- No yield from here.
+	local L: Ledger = { id = id, at = r.at, a = player.UserId, b = partner.UserId, ca = r.gave, cb = r.got }
 	d.apply(player, "tradeUndo", function(p)
 		return TradeRules.undo(p, player.UserId, L)
 	end)
@@ -456,11 +508,63 @@ function Trades.undo(player: Player, id: string): boolean
 		`{player.DisplayName} changed their mind, so your {if species then species.name else r.got.s} came back to you`
 	)
 	print(`[Trades] {id} undone by {player.UserId}`)
-	return true
+	return "done"
 end
 
--- The creature is picked in a live trade (the router refuses release, store, place, favourite, name).
+-- tradeUndo: refused while either player trades (QA M2); both received creatures stay locked
+-- (Trades.locked) from the first check to the applies, and after a "strip" until both undo marks
+-- are taken back, so no second undo can be marked under them.
+function Trades.undo(player: Player, id: string): boolean
+	local d = D()
+	local r = recordOf(d.get(player), id)
+	local partner = r and d.playerOf(r.with)
+	if closed or r == nil then
+		return false
+	elseif partner == nil then
+		d.notice(player, UNDO_BOTH_TEXT)
+		return false
+	end
+	local theirs = recordOf(d.get(partner), id)
+	local keys = { `{player.UserId}:{r.gotId}`, `{partner.UserId}:{if theirs then theirs.gotId else 0}` }
+	if live[player] or live[partner] or held[keys[1]] or held[keys[2]] then
+		d.notice(player, UNDO_RETRY_TEXT)
+		return false
+	end
+	local now = os.time()
+	local ok, why = undoable(player, partner, id, now)
+	if not ok then
+		if why == "both" then
+			d.notice(player, UNDO_BOTH_TEXT)
+		elseif why == "released" then
+			d.notice(player, UNDO_RELEASED_TEXT)
+		end
+		return false
+	end
+	held[keys[1]], held[keys[2]] = true, true
+	local ran, result = pcall(undoMarked, player, partner, r, now)
+	if ran and result == "strip" then
+		task.spawn(function()
+			markUntil(player.UserId, id, "undoAt", nil)
+			markUntil(partner.UserId, id, "undoAt", nil)
+			held[keys[1]], held[keys[2]] = nil, nil
+		end)
+	else
+		held[keys[1]], held[keys[2]] = nil, nil
+	end
+	if not ran then
+		warn(`[Trades] undo {id} failed: {tostring(result)}`)
+	elseif result ~= "done" then
+		d.notice(player, UNDO_RETRY_TEXT)
+	end
+	return ran and result == "done"
+end
+
+-- The creature is picked in a live trade, or an undo is returning it (the router refuses release,
+-- store, place, favourite, name).
 function Trades.locked(player: Player, id: number): boolean
+	if held[`{player.UserId}:{id}`] then
+		return true
+	end
 	local pair = live[player]
 	if pair == nil then
 		return false
@@ -507,21 +611,29 @@ end
 -- Heal (V1.4 step 4) from Profiles.load, after login and before the player can act. Reads this
 -- player's ledger; for each record missing from `trades` (or carrying an undo the profile lacks)
 -- it reads the counterpart's key, so every lookup is resolved before the one apply, which never
--- yields. A DataStore failure skips the heal; the next load tries again.
-function Trades.heal(player: Player, profile: Profile)
+-- yields. Returns false when a ledger read failed (own key or a counterpart's): nothing is applied
+-- and Profiles.load starts the session offline, so nothing writes until a later load heals (QA M1).
+function Trades.heal(player: Player, profile: Profile): boolean
 	local d = D()
 	local uid = player.UserId
 	local mine = ledgerRead(uid)
-	if mine == nil or #mine == 0 then
-		return
+	if mine == nil then
+		return false
+	elseif #mine == 0 then
+		return true
 	end
 	local others: { [number]: { [string]: Ledger }? } = {} -- counterpart UserId -> their records by id
+	local failed = false
 	local function counterpart(L: Ledger): Ledger?
 		local who = if L.a == uid then L.b else L.a
 		if others[who] == nil then
 			local list = ledgerRead(who)
+			if list == nil then
+				failed = true
+				return nil
+			end
 			local byId = {}
-			for _, rec in list or {} do
+			for _, rec in list do
 				byId[rec.id] = rec
 			end
 			others[who] = byId
@@ -540,7 +652,10 @@ function Trades.heal(player: Player, profile: Profile)
 		local copy = table.clone(L)
 		if r == nil or (L.undoAt and not r.undone) then
 			local theirs = counterpart(L)
-			confirmed[L.id] = theirs ~= nil
+			if failed then
+				return false
+			end
+			confirmed[L.id] = TradeRules.confirms(theirs)
 			if L.undoAt and (theirs == nil or theirs.undoAt == nil) then
 				copy.undoAt = nil
 			end
@@ -553,7 +668,7 @@ function Trades.heal(player: Player, profile: Profile)
 	end
 	local healed = TradeRules.heal(profile, uid, resolved, confirmedSync, now)
 	if healed == profile then
-		return
+		return true
 	end
 	local ids = {}
 	for _, r in healed.trades do
@@ -566,6 +681,7 @@ function Trades.heal(player: Player, profile: Profile)
 	d.apply(player, "tradeHeal", function(p)
 		return TradeRules.heal(p, uid, resolved, confirmedSync, now)
 	end)
+	return true
 end
 
 -- BindToClose: every live trade ends; a commit past its ledger writes still finishes its applies.

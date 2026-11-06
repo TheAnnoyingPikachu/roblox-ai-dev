@@ -211,9 +211,13 @@ local function loadNight(name: string): Model?
 		return nil
 	end
 	nightLoading[name] = true
-	local template: Model? = nil
-	local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.model)
-	if ok then
+	-- Built under pcall so nightLoading is cleared on every path; an error leaves no template.
+	local built, result = pcall(function(): Model?
+		local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.model)
+		if not ok then
+			warn(`[Models] {name} failed to load: {tostring(loaded)}`)
+			return nil
+		end
 		local texture = textureOf(entry)
 		local model = Instance.new("Model")
 		model.Name = name
@@ -227,18 +231,23 @@ local function loadNight(name: string): Model?
 			end
 		end
 		loaded:Destroy()
-		if #model:GetChildren() > 0 then
-			-- Fit the measured height uniformly, whatever unit scale the importer used, so the
-			-- manifest size holds and multi-part models keep their layout.
-			local _, extents = model:GetBoundingBox()
-			model:ScaleTo(model:GetScale() * entry.size[2] / extents.Y)
-			template = model
-		else
+		if #model:GetChildren() == 0 then
 			warn(`[Models] {name}: model {entry.model} has no MeshParts`)
+			return nil
 		end
-	else
-		warn(`[Models] {name} failed to load: {tostring(loaded)}`)
+		-- Fit the measured height uniformly, whatever unit scale the importer used, so the
+		-- manifest size holds and multi-part models keep their layout. A flat asset (height 0,
+		-- a decal carrier) keeps its imported scale: ScaleTo(0) throws.
+		local _, extents = model:GetBoundingBox()
+		if entry.size[2] > 0 and extents.Y > 0 then
+			model:ScaleTo(model:GetScale() * entry.size[2] / extents.Y)
+		end
+		return model
+	end)
+	if not built then
+		warn(`[Models] {name} could not be built: {tostring(result)}`)
 	end
+	local template: Model? = if built then result else nil
 	nightTemplates[name] = template or false
 	nightLoading[name] = nil
 	if template and CLIENT_MODELS[name] then

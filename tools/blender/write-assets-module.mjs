@@ -52,7 +52,8 @@ for (const [name, entry] of Object.entries(manifest)) {
 		for (const [p, c] of Object.entries(entry.glow ?? {})) lines.push(`\t\t\t${p} = { ${c.join(", ")} },`);
 		lines.push("\t\t},");
 	}
-	lines.push(`\t\tmodel = ${id(u.model)},`);
+	// A decal-only asset (the Clover pad) keeps its uploaded carrier model out of the game.
+	lines.push(`\t\tmodel = ${entry.decal_only ? "nil" : id(u.model)},`);
 	lines.push(`\t\tdecal = ${id(u.decal)},`);
 	lines.push(`\t\ttexture = ${id(u.texture)},`);
 	if (entry.root) lines.push(`\t\troot = { ${entry.root.join(", ")} },`);
