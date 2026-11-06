@@ -45,7 +45,15 @@ local FLOWERS = {
 	Color3.fromRGB(255, 160, 110),
 	Color3.fromRGB(140, 200, 255),
 }
-local WEATHER_ICON: { [string]: string } = { clear = "⛅", sunbeam = "☀️", moonfall = "🌙", shower = "🌈" }
+local WEATHER_ICON: { [string]: string } = {
+	clear = "⛅",
+	sunbeam = "☀️",
+	moonfall = "🌙",
+	shower = "🌈",
+	snowfall = "❄️",
+	petals = "🌸",
+	thunder = "⛈️",
+}
 
 local folder = Instance.new("Folder")
 folder.Name = "World"
@@ -375,9 +383,9 @@ local function boards()
 	layout.Parent = gui
 	local title = textLabel(gui, "WEATHER", Color3.fromRGB(255, 235, 140))
 	title.Size = UDim2.fromScale(1, 0.14)
-	for k = 1, 3 do
+	for k = 1, 4 do -- now, next, then, and the weekend event line (GDD V2.3)
 		local row = textLabel(gui, "", WHITE)
-		row.Size = UDim2.fromScale(1, 0.14)
+		row.Size = UDim2.fromScale(1, if k == 4 then 0.08 else 0.12)
 		row.LayoutOrder = k
 		forecastRows[k] = row
 	end
@@ -791,6 +799,11 @@ function World.forecast(status: { [string]: any })
 			`{WEATHER_ICON[kinds[1]] or ""} Next: {weatherName(kinds[1] or "clear")} in {clock(toNext)}`
 		forecastRows[3].Text =
 			`{WEATHER_ICON[kinds[2]] or ""} Then: {weatherName(kinds[2] or "clear")} in {clock(toNext + window)}`
+		local event = status.event
+		if type(event) == "table" and type(event.weather) == "string" then
+			local when = if event.active then "This weekend" else "Next weekend"
+			forecastRows[4].Text = `{WEATHER_ICON[event.weather] or ""} {when}: {weatherName(event.weather)}!`
+		end
 	end
 	if weather ~= lastWeather then
 		lastWeather = weather
