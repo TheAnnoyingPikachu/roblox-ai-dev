@@ -19,7 +19,7 @@ One client module `src/garden-client/UiKit.luau` builds every widget (panel with
 1. The H5 daily streak and weekly bonus are replaced. `claimDaily` and `claimWeekly` leave the remote table; the `daily` and `week` save fields stay (untouched, so a rollback loses nothing).
 2. **Weekly track** (Monday-based UTC week, `MetaRules.weekOf`): distinct days signed in, not consecutive. Slots at sign-ins 1 to 7: 100 c / 3 min, 150 / 5, 200 / 8, 300 / 12, **the Weekly Egg**, 400 / 15 + Blossom Can, 500 / 20 + Lantern Fence. Coins are `GardenProgress.scaled(base, minutes)`.
 3. **Monthly track** (UTC calendar month): slots at sign-ins 3, 7, 12, 18, 22, 26, 30 (or the month's length): 200 / 10, 300 / 20, 500 / 30, **the Monthly Egg**, 600 / 40 + Lily Pads, 800 / 50 + Sakura Fence, 1,000 / 60 + Peacock Pitcher.
-4. Unclaimed slots expire at the rollover; claims are in order and pay the next unclaimed earned slot (`claimLogin week|month`), pure and idempotent on re-apply.
+4. ~~Unclaimed slots expire at the rollover~~ (amended below: earned slots still unclaimed are paid at the rollover); claims are in order and pay the next unclaimed earned slot (`claimLogin week|month`), pure and idempotent on re-apply.
 5. **Exclusive eggs:** `weekly` (grow 1 h, `puffin` 6000 / `otter` 3200 / `capybara` 800, meter 12 on `capybara`, XP 150) and `monthly` (grow 4 h, `redpanda` 7000 / `peacock` 2500 / `snowleopard` 500, meter 8 on `snowleopard`, XP 400). No price, no stock, never sold; stored in `prizeEggs`, planted with `plantPrize` at **level 1** (0012 item 3 amended for these two: GDD X3.3 gives the pacing reason; the Moon and Aurora vouchers keep their gates). Weather mutations and charms roll normally.
 6. **Six species**, in rarity-then-rate order: Pebble Puffin (uncommon 10), River Otter (rare 50), Spa Capybara (epic 220), Maple Red Panda (legendary 650), Jewel Peacock (mythic 2000), Frost Leopard (divine 6000). Only their egg hatches them. **`INDEX_SIZE` 108.** Milestones stay 20 / 40 / 60 / 80. Tradable under V1.
 7. Five login cosmetics (`grant = "login"`): owned only through a claim, never buyable; `MetaRules.isUnlocked` treats `grant` like `price` (owned-only).
@@ -45,7 +45,7 @@ pity.weekly, pity.monthly (from the EGGS loop, as every metered egg)
 owned may hold the five login cosmetic ids
 ```
 
-**Why the shape:** two counts and one day per track are the least state that (a) survives a rollover (the key changes, the track resets), (b) never double-counts a day (`*Last`), and (c) never double-pays (claims advance one counter in order; a re-applied claim sees it advanced and returns the profile unchanged). A per-slot boolean list would allow gaps and needs a list sanitiser for nothing.
+**Why the shape:** two counts and one day per track are the least state that (a) survives a rollover (the key changes, the earned unclaimed slots are paid, the track resets), (b) never double-counts a day (`*Last`, counted only when the day is later), and (c) never double-pays (claims advance one counter in order and each queued claim carries the slot number its request saw, so a re-applied claim, also one re-run on a record that already holds it, returns the profile unchanged). A per-slot boolean list would allow gaps and needs a list sanitiser for nothing.
 
 **Migration (no conversion job, as 0012 and 0015):** `sanitize` starts from `defaults`, so any record without `login` gets the default and counts today at its next login tick; `schemaVersion` stays 3 (0015 and 0016 both introduce v3 on their branches; this record adds a field to it, as 0015 did to v2's successor; if SHANNON prefers a bump to 4 when all three land, it is one constant and one spec line). **Rollback:** a pre-0017 build drops `login`, `pity.weekly`, `pity.monthly`, the two prize-egg counts and the five cosmetic ids at its next write; exclusive creatures already hatched are dropped by that build's `sanitize` as unknown species (they come back only if the save was not rewritten). No rollback past 0017 after publishing without SHANNON, as before.
 
@@ -53,7 +53,7 @@ owned may hold the five login cosmetic ids
 
 - The brief asks for a look, not new mechanics: one kit module is the smallest change that makes every panel look the same, and it leaves every rule and request where it is.
 - A `SpawnLocation` is what Roblox already does on join; the bug was moving the character only after a yielding load. Spawning on the plaza facing the tree also gives the start menu's PLAY a fly-to-gate moment.
-- Counting distinct days (not a streak) and expiring unclaimed slots at the rollover keep G4: nothing is lost by missing a day except that day, and there is nothing to count down.
+- Counting distinct days (not a streak) and paying earned slots at the rollover keep G4: nothing is lost by missing a day except that day, nothing earned is lost by not opening REWARDS, and there is nothing to count down.
 - The eggs are gated by sign-ins, not level, because they cannot arrive before day 5 or day 18, when the script's player already buys Moon or Celestial Eggs (GDD X4).
 - Exclusive species in the Index (108) give a reason to keep signing in that is not coins; the milestone ladder is left alone so the Aurora voucher at 80 stays the last prize.
 
@@ -63,6 +63,10 @@ owned may hold the five login cosmetic ids
 - `MetaRules` changes by one condition (`grant`), shared with Relay and Night; their rows have no `grant`, so their specs are unchanged.
 - The world grows to about 7,500 parts and 60,000 static tris; checked at the greybox gate with the part count attribute.
 - Pacing (GDD X4): 16 minutes of income a day in coins (Wheel 30, Dash 6) and 89 coins/s per day in creatures (Dash cap 904); first buys unchanged, first Aurora day 18 → 20 at 1 h/day, income at day 90 up 4% to 8%.
+
+## Amendment (GARDEN-058, 2026-11-06; QA M1, m5, m6)
+
+**Earned rewards are paid at rollover; nothing earned is lost.** When `LoginRules.tick` sees a later week or month, it first pays every earned, unclaimed slot of the ending period, in slot order, exactly as a claim would (coins `scaled` at the current income and capped, the egg into `prizeEggs`, a cosmetic granted once), then starts the new period. It is part of the tick, so it is pure and idempotent on flush re-apply (a re-run sees the new key). The player is told with the reward toast, "Weekly Egg! + 750 coins (saved for you)", at join or at once when online. A save that skipped several periods pays its stored period only: the save keeps one period per track, and the periods between had no sign-in, so they earned nothing. The tick only moves forward (a server clock behind the stored period changes nothing, so a track never resets twice in one UTC day), and a queued claim pays only the slot its request saw. No schema change; the reward values are unchanged (a player who never claims gets what a player who claims gets).
 
 ## Facts, assumptions, hypotheses
 

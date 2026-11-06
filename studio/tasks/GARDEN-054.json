@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "low",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-054",
   "owner": "A11",
   "verifier": "A15",
@@ -40,5 +40,9 @@
   "tests": [
     "GardenAssets.spec.luau"
   ],
-  "notes": "Names are fixed by 9.3; the game loads them by name through Models.nightReady, so a misnamed upload is invisible. Upload needs SHANNON's account (rule 7 does not apply to uploads, but the register row must exist first, rule 9). The Blender path is in memory (blender-headless.md)."
+  "notes": "Names are fixed by 9.3; the game loads them by name through Models.nightReady, so a misnamed upload is invisible. Upload needs SHANNON's account (rule 7 does not apply to uploads, but the register row must exist first, rule 9). The Blender path is in memory (blender-headless.md).",
+  "evidence": [
+    "Uploaded and recorded in 08ca121 (2026-11-05, 'exclusive creatures and eggs uploaded, ids recorded'), merged into garden/v05 at 1263a09. docs/assets/register.md rows: creature_puffin 93559379637968, creature_otter 91312254648802, creature_capybara 81286773736349, creature_redpanda 118251828450061, creature_peacock 134914584957154, creature_snowleopard 113991084601632 (remade in the HD pass, GARDEN-057, runs 42144633890 and 42164982789), egg_weekly 76843750584707 and egg_monthly 130782332472875 (upload-assets run 42088215500).",
+    "In game: GardenAssets.luau carries the ids; Studio (GARDEN-058, local build dev) shows the Weekly and Monthly Egg models on the REWARDS and Dash prize cards and the exclusives in the start-menu showcase. Moved to in_review by GARDEN-058 (QA m10); the lineup render is not attached, so A15's check of it is open."
+  ]
 }

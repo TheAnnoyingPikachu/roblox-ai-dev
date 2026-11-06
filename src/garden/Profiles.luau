@@ -138,6 +138,15 @@ local function publish(player: Player, profile: Profile)
 	changed:Fire(player, profile)
 end
 
+local rewardCount = 0
+
+-- The LastReward toast. The #n suffix makes two equal rewards in a row still change the attribute
+-- (the client strips it).
+local function reward(player: Player, text: string)
+	rewardCount += 1
+	player:SetAttribute("LastReward", `{text}#{rewardCount}`)
+end
+
 -- One UpdateAsync: re-read and sanitise the stored record, run the queued changes in order, then
 -- the snapshot. On success the stored result becomes the in-memory profile, with every change
 -- queued since the flush started re-run on it. On failure the changes go back to the front.
@@ -319,11 +328,14 @@ function Profiles.load(player: Player)
 	sessions[player] = session
 	player:SetAttribute("ProfileOnline", session.online)
 	local today = MetaRules.dayOf(now)
-	local _, offline = GardenProgress.login(session.profile, now, today)
+	local _, offline, _, saved = GardenProgress.login(session.profile, now, today)
 	player:SetAttribute("OfflineCoins", offline)
 	apply(player, "login", function(p)
 		return (GardenProgress.login(p, now, today))
 	end)
+	if saved ~= "" then
+		reward(player, saved) -- earned login slots paid at a rollover while away (QA M1)
+	end
 	-- The trade heal (garden.md 4.5) reads the ledger and may yield; the router sees no profile until
 	-- it is done. Only a saving session heals: an offline one would heal in memory and lose it anyway.
 	-- A heal that could not read the ledger starts the session offline (the login op is dropped
@@ -415,11 +427,12 @@ local ACTIONS: { [string]: Handler } = {
 		end
 		return GardenProgress.setGate(p, arg)
 	end,
-	claimLogin = function(p, _, today, arg) -- the router allows only "week" and "month"
-		if arg == nil then
+	claimLogin = function(p, _, today, arg) -- "week" or "month" (the router) + the slot request pinned
+		local track, slot = string.match(arg or "", "^(%a+)(%d+)$")
+		if track == nil then
 			return p, false
 		end
-		return GardenProgress.claimLogin(p, arg, today)
+		return GardenProgress.claimLogin(p, track, today, tonumber(slot))
 	end,
 	claimQuest = function(p, _, today, arg)
 		if arg == nil then
@@ -448,8 +461,6 @@ local ACTIONS: { [string]: Handler } = {
 	end,
 }
 
-local rewardCount = 0
-
 -- Runs a profile action after GardenServer's common and world checks. The pure rule decides on the
 -- in-memory profile first; only an accepted change is applied and queued.
 function Profiles.request(player: Player, action: string, arg: string?): boolean
@@ -460,23 +471,41 @@ function Profiles.request(player: Player, action: string, arg: string?): boolean
 	end
 	local now = os.time()
 	local today = MetaRules.dayOf(now)
+	if action == "claimLogin" and (arg == "week" or arg == "month") then
+		-- Pin the slot this request pays, so a re-run on a record that already has it pays nothing (QA m5).
+		arg = `{arg}{(session.profile.login :: any)[arg .. "Claimed"] + 1}`
+	end
 	local _, ok, paid = handler(session.profile, now, today, arg)
 	if not ok then
 		return false
 	end
-	local reward = if type(paid) == "string"
+	local text = if type(paid) == "string"
 		then paid
 		elseif paid and paid > 0 then `+{GardenRules.short(paid)} coins`
 		else nil
-	if reward then
-		-- The #n suffix makes two equal rewards in a row still change the attribute (the client strips it).
-		rewardCount += 1
-		player:SetAttribute("LastReward", `{reward}#{rewardCount}`)
+	if text then
+		reward(player, text)
 	end
 	apply(player, action, function(p)
 		return (handler(p, now, today, arg))
 	end)
 	return true
+end
+
+-- The UTC day rollover while online (garden.md 4.7): ticks the login tracks; earned slots of an
+-- ending period are paid by the tick and the player is told with the reward toast (QA M1).
+function Profiles.loginTick(player: Player, today: number)
+	local session = sessions[player]
+	if session == nil then
+		return
+	end
+	local _, saved = GardenProgress.loginTick(session.profile, today)
+	apply(player, "loginTick", function(p)
+		return (GardenProgress.loginTick(p, today))
+	end)
+	if saved ~= "" then
+		reward(player, saved)
+	end
 end
 
 -- 1 Hz: publish dirty sessions, flush due queues, write changed incomes to the board.

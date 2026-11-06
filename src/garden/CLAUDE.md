@@ -45,9 +45,11 @@ WorldRules GardenProgress MetaRules DashRules WheelRules TradeRules`.
 - v0.5 spawn (garden.md 4.7): every character spawns on `Workspace.Garden.Spawn` on the plaza; nobody is moved
   at join. Only `play` (refused while racing) and `home` move a character to `Plots.gate`; `CharacterAdded`
   only re-places a racer (`Dash.place`).
-- Login tracks: `GardenProgress.login` ticks them at load; `slowTick` re-ticks a profile whose `weekLast` or
-  `monthLast` is not today (UTC rollover while online). `claimLogin week|month` is the only login claim;
-  `claimDaily` and `claimWeekly` are unknown actions (decision 0017).
+- Login tracks: `GardenProgress.login` ticks them at load; `slowTick` calls `Profiles.loginTick` for a profile whose
+  `weekLast` or `monthLast` is before today (UTC rollover while online). At a rollover the tick pays the earned,
+  unclaimed slots first (0017 amendment: nothing earned is lost) and its text goes to `LastReward`.
+  `claimLogin week|month` is the only login claim (the slot is pinned in `Profiles.request`); `claimDaily` and
+  `claimWeekly` are unknown actions (decision 0017).
 - Stores `GardenProfile<suffix>`, `GardenIncome<suffix>`; `PRODUCTION_UNIVERSE_ID` stays nil without SHANNON.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.
 - New economy values, remotes or schema fields need a decision record (0008, 0012, 0013).

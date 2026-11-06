@@ -1113,9 +1113,16 @@ function Plots.build(root: Instance)
 			end
 		end
 		species.Parent = ReplicatedStorage
+		-- One MeshPart per loaded egg model, named by egg id, for the client's egg cards (QA m4).
+		local eggs = Instance.new("Folder")
+		eggs.Name = "GardenEggs"
 		for _, e in GardenConfig.EGGS do
-			Plots.eggModel(warm, e.id, CFrame.identity)
+			local mesh = Plots.eggModel(eggs, e.id, CFrame.identity)
+			if mesh then
+				mesh.Name = e.id
+			end
 		end
+		eggs.Parent = ReplicatedStorage
 		warm:Destroy()
 		for n = 1, COUNT do
 			if views[n].model:GetAttribute("Owner") == 0 then

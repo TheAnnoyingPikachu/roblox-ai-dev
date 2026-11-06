@@ -21,5 +21,6 @@
 - Callers compose; they never set a radius, stroke or tween on a kit widget. No widget sends a Request.
 - One panel at a time (`UiKit.panel` closes the previous one, `onClose(byUser)` tells its owner); modals sit over it. Escape and gamepad B close the top one, bumpers change tabs.
 - Icons are `GardenIcons` Decal ids drawn through `rbxthumb://type=Asset`; the two-letter glyph shows until the image loads (or when the id is nil).
-- Every animation checks `GuiService.ReducedMotionEnabled`. Sizes are px at 1920 x 1080 under `scaleRoot` (0.5 to 1).
-- Requests added in v0.5: `play` (PLAY, with the 1.6 s fly to `ClientState.gateLook`) and `claimLogin week|month` (REWARDS); `claimDaily` / `claimWeekly` are gone.
+- Every animation checks `GuiService.ReducedMotionEnabled`. Sizes are px at 1920 x 1080 under `scaleRoot` (0.6 to 1). No text under 12 px on screen: build text with `UiKit.text` and give it room for 12 px at 844 x 390 (GARDEN-058).
+- Requests added in v0.5: `play` (PLAY; the 1.6 s fly to `ClientState.gateLook` starts once `play` returns true) and `claimLogin week|month` (REWARDS); `claimDaily` / `claimWeekly` are gone.
+- Pad tags (Plots, studs-sized) are clamped by `CreatureFx` to their 15-stud size when the camera is closer.

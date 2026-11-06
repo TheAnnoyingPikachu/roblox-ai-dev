@@ -36,8 +36,14 @@ type View = {
 	follower: boolean, -- moved by FollowerFx, not here
 	hidden: boolean,
 	nextCry: number, -- os.clock of this creature's next idle cry (6.1)
+	tag: BillboardGui?, -- the pad tag Plots made (studs-sized), clamped up close
+	tagSize: UDim2,
 }
 local views: { [Instance]: View } = {}
+
+-- Pad tags are sized in studs so neighbours never overlap at 20 to 40 studs (v0.4 m1); closer than
+-- this they keep the size they have here instead of growing over the screen (QA M3).
+local TAG_NEAR = 15
 
 local function pivot(inst: Instance): CFrame
 	return if inst:IsA("BasePart") then inst.CFrame else (inst :: Model):GetPivot()
@@ -180,7 +186,7 @@ local function mutationLook(view: View, main: BasePart): Instance?
 			ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main })
 		)
 		-- Golden is the common mutation: it takes a Highlight only while 8 stay free for the rarer looks.
-		return adorn(view, Color3.fromRGB(255, 200, 60), 0.5, Color3.fromRGB(255, 230, 140), 0.3, 8)
+		return adorn(view, Color3.fromRGB(255, 200, 60), 0.75, Color3.fromRGB(255, 230, 140), 0.3, 8)
 	end
 	local celestial = m == "celestial"
 	local fill = if celestial
@@ -204,7 +210,8 @@ local function mutationLook(view: View, main: BasePart): Instance?
 		view.extras,
 		emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4)
 	)
-	return adorn(view, fill, 0.6, fill, 0.3, 1)
+	-- A light unlit fill, so the HD texture still reads under it (QA m3); the outline carries the colour.
+	return adorn(view, fill, 0.85, fill, 0.3, 1)
 end
 
 -- Charm looks (GDD V2.1), layered after the mutation: Frosted frost motes and a pale rim (only when
@@ -287,6 +294,7 @@ local function track(inst: Instance)
 	local follower = inst.Parent == followers
 	local plot = inst.Parent and inst.Parent.Parent
 	local owner = if follower then inst:GetAttribute("Owner") else plot and plot:GetAttribute("Owner")
+	local tag = if follower then nil else inst:FindFirstChild("Tag", true)
 	local view: View = {
 		inst = inst,
 		key = `{owner or 0}:{id}`,
@@ -304,6 +312,8 @@ local function track(inst: Instance)
 		follower = follower,
 		hidden = false,
 		nextCry = os.clock() + 12 + math.random() * 18, -- a full delay, so a refresh is never a chorus
+		tag = if tag and tag:IsA("BillboardGui") then tag else nil,
+		tagSize = if tag and tag:IsA("BillboardGui") then tag.Size else UDim2.new(),
 	}
 	view.look = applyLook(view)
 	views[inst] = view
@@ -411,6 +421,15 @@ RunService.RenderStepped:Connect(function()
 				view.flashAt = t + 3 + math.random() * 5
 			end
 			flicker.Brightness = if t >= view.flashAt then 2.5 else 0
+		end
+		local tag = view.tag
+		if tag then
+			local k = math.min(1, (view.base.Position - eye).Magnitude / TAG_NEAR)
+			local s = view.tagSize
+			local size = UDim2.fromScale(s.X.Scale * k, s.Y.Scale * k)
+			if tag.Size ~= size then
+				tag.Size = size
+			end
 		end
 		if view.follower or (view.base.Position - eye).Magnitude > 160 then
 			continue
@@ -534,7 +553,8 @@ ClientState.new("ParticleEmitter", {
 local PETAL_RANGE, PETAL_TREES = 60, 12
 local petalTrees: { [Instance]: { at: Vector3, emitter: ParticleEmitter } } = {}
 local function addPetals(tree: Instance)
-	if petalTrees[tree] or not (tree:IsA("Model") or tree:IsA("BasePart")) then
+	-- Models only: the tree's MeshPart inside carries the same name (QA m8), so one emitter per tree.
+	if petalTrees[tree] or not tree:IsA("Model") then
 		return
 	end
 	local count = 0
@@ -544,12 +564,7 @@ local function addPetals(tree: Instance)
 	if count >= PETAL_TREES then
 		return
 	end
-	local box: CFrame, size: Vector3
-	if tree:IsA("Model") then
-		box, size = tree:GetBoundingBox()
-	else
-		box, size = (tree :: BasePart).CFrame, (tree :: BasePart).Size
-	end
+	local box, size = tree:GetBoundingBox()
 	-- The canopy: the top third of the tree, as wide as the tree.
 	local at = box.Position + Vector3.new(0, size.Y * 0.28, 0)
 	local holder = ClientState.new("Part", {

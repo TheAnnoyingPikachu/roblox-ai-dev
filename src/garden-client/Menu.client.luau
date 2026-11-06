@@ -74,10 +74,17 @@ local function toast(message: string, colour: Color3?, icon: string?)
 end
 ClientState.Toasted:Connect(toast)
 
-player:GetAttributeChangedSignal("LastReward"):Connect(function()
+local greeted = false -- set once the first profile is published (onProfile)
+local function showReward()
 	local reward = player:GetAttribute("LastReward")
 	if type(reward) == "string" and reward ~= "" then
 		toast(string.match(reward, "^(.*)#%d+$") or reward, UI.GOLD, "gift") -- "#n" only makes repeats change
+	end
+end
+-- A reward set at load (login slots paid at a rollover, QA M1) waits for the greeting below.
+player:GetAttributeChangedSignal("LastReward"):Connect(function()
+	if greeted then
+		showReward()
 	end
 end)
 
@@ -297,8 +304,14 @@ local function eggStroke(id: string): Color3
 	return if colours then colours[2] else UI.GOLD
 end
 
--- A centred egg disc in a card's icon area.
+-- The egg's model in a card's icon area once the server has published it (QA m4), else a centred
+-- egg disc in its two shell colours.
 local function eggIcon(card: UiKit.Card, egg: string, size: number)
+	local eggs = ReplicatedStorage:FindFirstChild("GardenEggs")
+	if eggs and eggs:FindFirstChild(egg) then
+		UiKit.viewport(card.icon, egg, false, "GardenEggs")
+		return
+	end
 	UiKit.eggDisc(card.icon, egg, size, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5) })
 end
 
@@ -571,7 +584,7 @@ local function oddsTab(p: UiKit.Panel)
 		eggIcon(c, egg.id, 52)
 		c.name.Text = (egg.name:gsub(" Egg$", ""))
 		if egg.exclusive then
-			UiKit.setPill(c, "Login reward", UI.CORAL) -- never a price: not sold (X3.3)
+			UiKit.setPill(c, "Login", UI.CORAL) -- never a price: not sold (X3.3); short for a 12 px pill
 		else
 			UiKit.setPill(c, short(egg.price :: number), UI.GOLD)
 		end
@@ -727,9 +740,10 @@ local function indexGrid(p: UiKit.Panel)
 		for _, m in GardenConfig.MUTATIONS do
 			any = any or found[`{sp.id}:{m.id}`] == true
 		end
-		local r = row(body, 104, order)
+		-- 124 high and cells from x 340: the "from" line and the weather list fit at 12 px (QA M2).
+		local r = row(body, 124, order)
 		local pic = new("Frame", {
-			Position = UDim2.fromOffset(8, 8),
+			Position = UDim2.fromOffset(8, 18),
 			Size = UDim2.fromOffset(88, 88),
 			BackgroundTransparency = 1,
 			Parent = r,
@@ -744,29 +758,31 @@ local function indexGrid(p: UiKit.Panel)
 			if any then sp.name else "???",
 			if any then ClientState.rarityColour(sp.id) else UI.INK_SOFT
 		)
-		text(r, `{sp.rate} coins/s`, 16, UI.INK_SOFT, {
-			Position = UDim2.fromOffset(104, 40),
-			Size = UDim2.fromOffset(170, 20),
-			TextXAlignment = Enum.TextXAlignment.Left,
-		})
-		text(r, `from {eggsUsing(sp.id)}`, 14, UI.INK_SOFT, {
-			Position = UDim2.fromOffset(104, 62),
-			Size = UDim2.fromOffset(176, 34),
-			TextXAlignment = Enum.TextXAlignment.Left,
-			TextYAlignment = Enum.TextYAlignment.Top,
-		})
-		local cells = new("Frame", {
-			Position = UDim2.fromOffset(290, 10),
-			Size = UDim2.new(1, -300, 0, 84),
-			BackgroundTransparency = 1,
-			Parent = r,
-		}, { new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8) }) })
 		local kinds = {}
 		for _, m in GardenConfig.MUTATIONS do
 			if GardenConfig.indexable(sp.id, m.id) then
 				table.insert(kinds, m)
 			end
 		end
+		-- Five cells need 88 px each for "Moonfall," at 12 px; four leave the "from" line more room.
+		local cellsX = if #kinds > 4 then 290 else 340
+		text(r, `{sp.rate} coins/s`, 16, UI.INK_SOFT, {
+			Position = UDim2.fromOffset(104, 38),
+			Size = UDim2.fromOffset(170, 20),
+			TextXAlignment = Enum.TextXAlignment.Left,
+		})
+		text(r, `from {eggsUsing(sp.id)}`, 14, UI.INK_SOFT, {
+			Position = UDim2.fromOffset(104, 58),
+			Size = UDim2.fromOffset(cellsX - 114, 64),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = Enum.TextYAlignment.Top,
+		})
+		local cells = new("Frame", {
+			Position = UDim2.fromOffset(cellsX, 10),
+			Size = UDim2.new(1, -(cellsX + 10), 0, 104),
+			BackgroundTransparency = 1,
+			Parent = r,
+		}, { new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8) }) })
 		for _, m in kinds do
 			local has = found[`{sp.id}:{m.id}`] == true
 			local cell = new("Frame", {
@@ -791,8 +807,8 @@ local function indexGrid(p: UiKit.Panel)
 				14,
 				if has then UI.INK else Color3.fromRGB(230, 220, 235),
 				{
-					Position = UDim2.fromOffset(4, 36),
-					Size = UDim2.new(1, -8, 0, 42),
+					Position = UDim2.fromOffset(2, 36),
+					Size = UDim2.new(1, -4, 0, 62),
 				}
 			)
 		end
@@ -1265,7 +1281,7 @@ local function creaturesTab(p: UiKit.Panel, pen: boolean)
 		36,
 		-360,
 		20,
-		if pen then "Garden gate: who can water and like your garden" else `Storage {#list} / {GardenConfig.STORAGE}`,
+		if pen then "Gate: who can water and like your garden" else `Storage {#list} / {GardenConfig.STORAGE}`,
 		UI.INK_SOFT
 	)
 	if pen then
@@ -1454,14 +1470,14 @@ local function loginTab(p: UiKit.Panel, track: string)
 		-260,
 		22,
 		if track == "week"
-			then "Sign in on 5 days this week for the Weekly Egg. Any 5 days count."
-			else "Sign in on 18 days this month for the Monthly Egg. Any days count.",
+			then "Sign in on any 5 days this week for the Weekly Egg."
+			else "Sign in on any 18 days this month for the Monthly Egg.",
 		UI.INK_SOFT
 	)
 	action(top, if t.ready > 1 then "CLAIM ALL" else "CLAIM", UI.LEAF, t.ready > 0 and not claiming, function()
 		task.spawn(claimAll, track, t.ready)
 	end, 1, 170)
-	local grid = gridBox(body, 2, 96, 176)
+	local grid = gridBox(body, 2, 96, 196) -- 20 over the reward card: a 3-line caption at 12 px (QA M2)
 	for i, slot in t.slots do
 		local claimed = i <= t.claimed
 		local ready = not claimed and i <= t.claimed + t.ready
@@ -1477,7 +1493,7 @@ local function loginTab(p: UiKit.Panel, track: string)
 			local disc = swatch(c.icon, if cos then cos.colours else {})
 			disc.Size = UDim2.fromOffset(52, 52)
 			local coins = short(GardenProgress.scaled(profile, slot.coins or 0, slot.minutes or 0))
-			caption = `{if cos then cos.name else slot.cosmetic}\n+{coins} coins`
+			caption = `{if cos then cos.name else slot.cosmetic}\n+{coins}`
 		else
 			local coin = new("Frame", {
 				AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1493,7 +1509,7 @@ local function loginTab(p: UiKit.Panel, track: string)
 		c.name.Position = UDim2.fromOffset(4, 66)
 		text(c.name.Parent, caption, 16, UI.INK_SOFT, {
 			Position = UDim2.fromOffset(4, 88),
-			Size = UDim2.new(1, -8, 0, 40),
+			Size = UDim2.new(1, -8, 0, 60),
 		})
 		local need = slot.count - t.days
 		if claimed then
@@ -1518,7 +1534,8 @@ local function loginTab(p: UiKit.Panel, track: string)
 				task.spawn(claimAll, track, 1) -- the server pays the next unclaimed slot
 			end)
 		else
-			UiKit.setPill(c, if need > 0 then `{need} more day{if need == 1 then "" else "s"}` else "Soon", UI.INK_SOFT)
+			-- "N more" (sign-ins): "7 more days" needs 62 px at 12 px, the pill has 48 on a phone (QA M2).
+			UiKit.setPill(c, if need > 0 then `{need} more` else "Soon", UI.INK_SOFT)
 		end
 	end
 	local egg = GardenConfig.egg(if track == "week" then "weekly" else "monthly")
@@ -1997,11 +2014,25 @@ RunService.RenderStepped:Connect(function()
 	camera.CFrame = CFrame.lookAt(centre + Vector3.new(math.cos(t) * 120, 52, math.sin(t) * 120), centre)
 end)
 
--- PLAY: send `play` (the server moves the character to its gate) and fly the camera there, then
--- hand it back to the character (architecture 4.7, 6.4).
+-- PLAY: send `play` (the server moves the character to its gate) and, once it is accepted, fly the
+-- camera there, then hand it back to the character (architecture 4.7, 6.4). A refusal keeps the
+-- start menu (QA m7). A round starting hides the menu without `play` or a fly.
+local asking = false
 hideMenu = function()
-	if not loaded then
+	if not loaded or asking then
 		return
+	end
+	if not ClientState.racing then
+		asking = true
+		local accepted = ask("play")
+		asking = false
+		if not accepted and not ClientState.racing then
+			toast("Still loading your garden...", UI.CORAL, "home")
+			return
+		end
+	end
+	if not ClientState.menuOpen then
+		return -- a round start already closed it while `play` was out
 	end
 	ClientState.setMenu(false)
 	start.frame.Visible = false
@@ -2018,9 +2049,6 @@ hideMenu = function()
 		if humanoid then
 			camera.CameraSubject = humanoid
 		end
-	end
-	if not ClientState.racing then
-		task.spawn(ask, "play")
 	end
 	if type(plot) == "number" and not ClientState.racing then
 		flying = true
@@ -2069,12 +2097,12 @@ end)
 
 -- Live refresh --------------------------------------------------------------------------------------
 
-local greeted = false
 local function onProfile(coinsOnly: boolean?)
 	profile = ClientState.profile()
 	refreshMenu()
 	if loaded and not greeted then
 		greeted = true
+		showReward()
 		local n = LoginRules.claimable(profile, today())
 		if n > 0 then
 			toast("Login reward ready!", UI.GOLD, "gift")

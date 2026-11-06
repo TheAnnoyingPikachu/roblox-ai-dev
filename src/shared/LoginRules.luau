@@ -1,8 +1,9 @@
 --!strict
 -- Pure login reward tracks (GDD X3, decision 0017): a weekly (Monday-based UTC week) and a monthly
 -- (UTC calendar month) track count distinct sign-in days, not streaks. Slots are claimed in order;
--- unclaimed slots expire at the rollover. `today` is MetaRules.dayOf(now). Copies in, copies out;
--- no Roblox API. GardenProgress wraps tick and claim for the server.
+-- earned slots still unclaimed at the rollover are paid then (0017 amendment, QA M1), so nothing
+-- earned is lost. `today` is MetaRules.dayOf(now). Copies in, copies out; no Roblox API.
+-- GardenProgress wraps tick and claim for the server.
 
 local GardenConfig = require("./GardenConfig")
 local GardenRules = require("./GardenRules")
@@ -63,26 +64,6 @@ function LoginRules.slots(track: string, day: number): { Slot }
 	return out
 end
 
--- Per track: reset when the period changed, then count today once. Idempotent for the same day.
-function LoginRules.tick(p: Profile, today: number): Profile
-	local out = GardenRules.copy(p)
-	local login: any = out.login
-	for _, track in LoginRules.TRACKS do
-		local key = LoginRules.periodOf(track, today)
-		if login[track] ~= key then
-			login[track] = key
-			login[track .. "Days"] = 0
-			login[track .. "Last"] = -1
-			login[track .. "Claimed"] = 0
-		end
-		if login[track .. "Last"] ~= today then
-			login[track .. "Days"] = math.min(LoginRules.MAX_DAYS, login[track .. "Days"] + 1)
-			login[track .. "Last"] = today
-		end
-	end
-	return out
-end
-
 function LoginRules.nextSlot(p: Profile, track: string, today: number): (number, Slot?)
 	local n = (p.login :: any)[track .. "Claimed"] + 1
 	return n, LoginRules.slots(track, today)[n]
@@ -102,33 +83,85 @@ local function commas(n: number): string
 	return (string.gsub(s, "^,", ""))
 end
 
--- Pays the next slot: coins as GardenProgress.scaled (floor = base, capped), the egg into
--- prizeEggs, the cosmetic into owned once (coins only after that). Returns the LastReward text.
-function LoginRules.claim(p: Profile, track: string, today: number): (Profile, boolean, string)
-	if not LoginRules.canClaim(p, track, today) then
-		return p, false, ""
-	end
-	local _, slot = LoginRules.nextSlot(p, track, today)
-	local s = slot :: Slot
-	local out = GardenRules.copy(p)
-	local text = ""
+-- Pays slot `s` into `out` (a copy): coins as GardenProgress.scaled (floor = base, capped), the egg
+-- into prizeEggs, the cosmetic into owned once (coins only after that). Returns the coins paid and
+-- the names of the egg and of a newly owned cosmetic.
+local function pay(out: Profile, s: Slot): (number, string?, string?)
+	local paid, egg, cosmetic = 0, nil, nil
 	if s.coins then
 		-- The same formula as GardenProgress.scaled (that module wraps this one).
 		local scaled = math.max(s.coins, math.floor(GardenRules.income(out) * 60 * (s.minutes or 0) + 1e-9))
-		local paid = math.min(GardenConfig.MAX_COINS - out.coins, scaled)
+		paid = math.min(GardenConfig.MAX_COINS - out.coins, scaled)
 		out.coins += paid
-		text = `{commas(paid)} coins`
 	end
 	if s.egg then
 		out.prizeEggs[s.egg] = math.min(GardenConfig.PRIZE_STORE, (out.prizeEggs[s.egg] or 0) + 1)
-		text = `{(GardenConfig.egg(s.egg) :: GardenConfig.Egg).name}!`
+		egg = `{(GardenConfig.egg(s.egg) :: GardenConfig.Egg).name}!`
 	end
 	if s.cosmetic and not out.owned[s.cosmetic] then
 		out.owned[s.cosmetic] = true
-		text = `{(GardenConfig.cosmetic(s.cosmetic) :: MetaRules.Cosmetic).name} + {text}`
+		cosmetic = (GardenConfig.cosmetic(s.cosmetic) :: MetaRules.Cosmetic).name
 	end
-	(out.login :: any)[track .. "Claimed"] += 1
+	return paid, egg, cosmetic
+end
+
+-- Pays the next slot and returns the LastReward text. `slot`, when given, is the slot number the
+-- request saw: a re-run on a record that already paid it changes nothing (QA m5).
+function LoginRules.claim(p: Profile, track: string, today: number, slot: number?): (Profile, boolean, string)
+	local n, s = LoginRules.nextSlot(p, track, today)
+	if not LoginRules.canClaim(p, track, today) or (slot ~= nil and slot ~= n) then
+		return p, false, ""
+	end
+	local out = GardenRules.copy(p)
+	local paid, egg, cosmetic = pay(out, s :: Slot)
+	local text = egg or `{commas(paid)} coins`
+	if cosmetic then
+		text = `{cosmetic} + {text}`
+	end
+	(out.login :: any)[track .. "Claimed"] = n
 	return out, true, text
+end
+
+-- Per track: when the period moved forward, pay every earned slot still unclaimed in the ending
+-- period, in order (QA M1: nothing earned is lost), then reset; then count today once. A clock
+-- behind the stored period changes nothing, so two servers never reset a track twice (QA m6).
+-- Idempotent: a re-run sees the new key. Returns the "(saved for you)" toast text, "" if none.
+function LoginRules.tick(p: Profile, today: number): (Profile, string)
+	local out = GardenRules.copy(p)
+	local login: any = out.login
+	local coins, names = 0, {}
+	for _, track in LoginRules.TRACKS do
+		local key = LoginRules.periodOf(track, today)
+		if key > login[track] then
+			-- The save keeps one period per track: any period between had no sign-in, so earned nothing.
+			local slots = LoginRules.slots(track, login[track .. "Last"])
+			for n = login[track .. "Claimed"] + 1, #slots do
+				if login[track .. "Days"] < slots[n].count then
+					break
+				end
+				local paid, egg, cosmetic = pay(out, slots[n])
+				coins += paid
+				if egg then
+					table.insert(names, egg)
+				end
+				if cosmetic then
+					table.insert(names, cosmetic)
+				end
+			end
+			login[track] = key
+			login[track .. "Days"] = 0
+			login[track .. "Last"] = -1
+			login[track .. "Claimed"] = 0
+		end
+		if login[track] == key and today > login[track .. "Last"] then
+			login[track .. "Days"] = math.min(LoginRules.MAX_DAYS, login[track .. "Days"] + 1)
+			login[track .. "Last"] = today
+		end
+	end
+	if coins > 0 then
+		table.insert(names, `{commas(coins)} coins`)
+	end
+	return out, if #names > 0 then `{table.concat(names, " + ")} (saved for you)` else ""
 end
 
 -- Slots claimable now over both tracks (the Rewards badge).

@@ -198,6 +198,10 @@ local function textureOf(entry: NightAssets.Asset): string?
 	return nil
 end
 
+-- Seconds before each retry of a model or texture that did not arrive (Garden QA m2); after the last,
+-- the asset stays on its caller's fallback (generated mesh or parts) for the server's life.
+local RETRY_WAITS = { 2, 6 }
+
 local function loadNight(name: string): Model?
 	while nightLoading[name] do
 		task.wait()
@@ -212,13 +216,19 @@ local function loadNight(name: string): Model?
 	end
 	nightLoading[name] = true
 	-- Built under pcall so nightLoading is cleared on every path; an error leaves no template.
-	local built, result = pcall(function(): Model?
+	local function build(): Model?
 		local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.model)
 		if not ok then
 			warn(`[Models] {name} failed to load: {tostring(loaded)}`)
 			return nil
 		end
 		local texture = textureOf(entry)
+		if texture == nil and (entry.texture or entry.decal) then
+			-- Untextured it would show grey: the caller's fallback looks better.
+			warn(`[Models] {name}: texture {entry.decal or entry.texture} did not load`)
+			loaded:Destroy()
+			return nil
+		end
 		local model = Instance.new("Model")
 		model.Name = name
 		for _, d in loaded:GetDescendants() do
@@ -243,11 +253,22 @@ local function loadNight(name: string): Model?
 			model:ScaleTo(model:GetScale() * entry.size[2] / extents.Y)
 		end
 		return model
-	end)
-	if not built then
-		warn(`[Models] {name} could not be built: {tostring(result)}`)
 	end
-	local template: Model? = if built then result else nil
+	local template: Model? = nil
+	for attempt = 1, #RETRY_WAITS + 1 do
+		local built, result = pcall(build)
+		if not built then
+			warn(`[Models] {name} could not be built: {tostring(result)}`)
+		end
+		template = if built then result else nil
+		if template or attempt > #RETRY_WAITS then
+			break
+		end
+		task.wait(RETRY_WAITS[attempt])
+	end
+	if template == nil then
+		warn(`[Models] {name}: gave up after {#RETRY_WAITS + 1} tries; the fallback stays`)
+	end
 	nightTemplates[name] = template or false
 	nightLoading[name] = nil
 	if template and CLIENT_MODELS[name] then

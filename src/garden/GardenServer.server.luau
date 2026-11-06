@@ -562,11 +562,10 @@ local function slowTick()
 		local profile = Profiles.get(player)
 		if profile then
 			-- UTC day rollover while online (garden.md 4.7): the tick is idempotent, so checking the
-			-- profile's own last counted day also covers a load that finished across midnight.
-			if profile.login.weekLast ~= today or profile.login.monthLast ~= today then
-				Profiles.apply(player, "loginTick", function(p)
-					return GardenProgress.loginTick(p, today)
-				end)
+			-- profile's own last counted day also covers a load that finished across midnight. Only a
+			-- later day ticks: a clock behind the stored day changes nothing (QA m6).
+			if profile.login.weekLast < today or profile.login.monthLast < today then
+				Profiles.loginTick(player, today)
 				profile = Profiles.get(player) :: GardenConfig.Profile
 			end
 			for i = 1, GardenConfig.PEN.max do

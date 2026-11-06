@@ -111,8 +111,18 @@ local function shadowed(parent: Instance?, props: { [string]: any }, radius: num
 	return holder, body
 end
 
--- Text: FredokaOne at `size` px, shrinking to fit its box. props may carry `Outline` (Color3) and
--- `OutlineThickness`.
+-- No text under 12 px on screen (QA M2). Under the kit's UIScale a TextScaled label's size limits are
+-- on-screen px, so its floor is 12; a fixed TextSize is scaled, so its floor is 12 / the kit scale,
+-- re-applied by scaleRoot from the label's KitTextSize attribute when the scale changes.
+local MIN_TEXT = 12
+local kitScale = 1
+
+local function fixedSize(size: number): number
+	return math.max(size, math.ceil(MIN_TEXT / kitScale))
+end
+
+-- Text: FredokaOne at `size` px, shrinking to fit its box down to 12 px on screen. props may carry
+-- `Outline` (Color3) and `OutlineThickness`.
 function UiKit.text(parent: Instance?, s: string, size: number, colour: Color3?, props: { [string]: any }?): TextLabel
 	local p = props or {}
 	local outline = p.Outline
@@ -127,9 +137,10 @@ function UiKit.text(parent: Instance?, s: string, size: number, colour: Color3?,
 	p.Parent = parent
 	local label = new("TextLabel", p)
 	if label.TextScaled then
-		new("UITextSizeConstraint", { MaxTextSize = size, MinTextSize = math.min(size, 10), Parent = label })
+		new("UITextSizeConstraint", { MaxTextSize = math.max(size, MIN_TEXT), MinTextSize = MIN_TEXT, Parent = label })
 	else
-		label.TextSize = size
+		label:SetAttribute("KitTextSize", size)
+		label.TextSize = fixedSize(size)
 	end
 	if outline then
 		new("UIStroke", { Color = outline, Thickness = thickness or 1.5, Parent = label })
@@ -143,9 +154,17 @@ local text = UiKit.text
 function UiKit.scaleRoot(gui: ScreenGui): UIScale
 	local scale = new("UIScale", { Name = "KitScale", Parent = gui })
 	local camera = Workspace.CurrentCamera
+	-- The floor 0.6 keeps an 844 x 390 phone's layout inside the screen with 12 px text (QA M2).
 	local function fit()
 		local view = camera.ViewportSize
-		scale.Scale = math.clamp(math.min(view.X / 1920, view.Y / 1080), 0.5, 1)
+		scale.Scale = math.clamp(math.min(view.X / 1920, view.Y / 1080), 0.6, 1)
+		kitScale = scale.Scale
+		for _, d in gui:GetDescendants() do
+			local size = d:GetAttribute("KitTextSize")
+			if size then
+				(d :: TextLabel).TextSize = fixedSize(size)
+			end
+		end
 	end
 	camera:GetPropertyChangedSignal("ViewportSize"):Connect(fit)
 	fit()
@@ -343,7 +362,7 @@ function UiKit.iconButton(parent: Instance?, icon: string, label: string, colour
 		Name = "Caption",
 		AnchorPoint = Vector2.new(0.5, 1),
 		Position = UDim2.new(0.5, 0, 1, -4),
-		Size = UDim2.new(1, -6, 0, 22),
+		Size = UDim2.new(1, 12, 0, 22), -- a little past the face: CREATURES needs 63 px at 12 px (QA M2)
 		Outline = UI.INK,
 		OutlineThickness = 1.5,
 	})
@@ -394,9 +413,11 @@ export type StripItem = { icon: string, label: string, colour: Color3, onClick: 
 -- in a sheet MORE opens, so the strip stays above the thumbstick.
 function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [string]: Button }
 	local gap = if touch then 12 else 16
+	-- Touch: 120, so at the 0.6 floor the two rows still end 220 above the viewport's bottom (X1.2).
+	local top = if touch then 120 else 140
 	local frame = new("Frame", {
 		Name = "Strip",
-		Position = UDim2.fromOffset(24, 140),
+		Position = UDim2.fromOffset(24, top),
 		BackgroundTransparency = 1,
 		SelectionGroup = true,
 		Parent = gui,
@@ -409,7 +430,7 @@ function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [st
 		Parent = frame,
 	})
 	local sheet: Frame? = nil
-	-- Touch: 2 rows (EGGS CREATURES REWARDS HOME MORE end 140 + 204 from the top, well above the
+	-- Touch: 2 rows (EGGS CREATURES REWARDS HOME MORE end 120 + 204 from the top, above the
 	-- thumbstick on an 844 x 390 phone). Otherwise 5 rows, fewer when the screen is short, so the
 	-- strip ends 220 px above the bottom where it can.
 	local function fit()
@@ -417,7 +438,7 @@ function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [st
 		local kit = root and root:FindFirstChild("KitScale") :: UIScale?
 		local high = (gui :: any).AbsoluteSize and (gui :: any).AbsoluteSize.Y or 1080
 		local virtual = high / (if kit then kit.Scale else 1)
-		local rows = if touch then 2 else math.clamp(math.floor((virtual - 140 - 220 + gap) / (96 + gap)), 3, 5)
+		local rows = if touch then 2 else math.clamp(math.floor((virtual - top - 220 + gap) / (96 + gap)), 3, 5)
 		grid.FillDirectionMaxCells = rows
 		local count = 0
 		for _, c in frame:GetChildren() do
@@ -428,7 +449,7 @@ function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [st
 		local cols = math.max(2, math.ceil(count / rows))
 		frame.Size = UDim2.fromOffset(96 * cols + gap * (cols - 1), 96 * rows + gap * (rows - 1))
 		if sheet then
-			sheet.Position = UDim2.fromOffset(24 + frame.Size.X.Offset + 16, 140)
+			sheet.Position = UDim2.fromOffset(24 + frame.Size.X.Offset + 16, top)
 		end
 	end
 	local out: { [string]: Button } = {}
@@ -436,7 +457,7 @@ function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [st
 	if touch then
 		local holder, body = shadowed(gui, {
 			Name = "MoreSheet",
-			Position = UDim2.fromOffset(24 + 96 * 3 + gap * 2 + 16, 140),
+			Position = UDim2.fromOffset(24 + 96 * 3 + gap * 2 + 16, top),
 			Size = UDim2.fromOffset(96 * 3 + 16 * 4, 96 * 2 + 16 * 3),
 			Visible = false,
 			ZIndex = 8,
@@ -536,8 +557,8 @@ function UiKit.coinPill(parent: Instance): { set: (coins: number, income: number
 		ZIndex = 2,
 	})
 	local income = text(body, "+0 / s", 16, UI.LEAF, {
-		Position = UDim2.fromOffset(62, 36),
-		Size = UDim2.new(1, -72, 0, 18),
+		Position = UDim2.fromOffset(62, 34),
+		Size = UDim2.new(1, -72, 0, 22),
 		TextXAlignment = Enum.TextXAlignment.Left,
 		ZIndex = 2,
 	})
@@ -641,12 +662,12 @@ function UiKit.levelRing(parent: Instance): { set: (level: number, fraction: num
 		Parent = parent,
 	}, { round(), stroke(UI.WHITE, 2) })
 	local fill = new("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = UI.PINK, Parent = bar }, { round() })
-	local xp = text(parent, "", 16, UI.INK_SOFT, {
-		Position = UDim2.fromOffset(300 + 84 + 12, 8 + 24),
-		Size = UDim2.fromOffset(200, 20),
+	local xp = text(parent, "", 18, UI.INK, { -- INK over the world, not INK_SOFT (QA M2, Director c)
+		Position = UDim2.fromOffset(300 + 84 + 12, 8 + 22),
+		Size = UDim2.fromOffset(200, 22),
 		TextXAlignment = Enum.TextXAlignment.Left,
 		Outline = UI.WHITE,
-		OutlineThickness = 1,
+		OutlineThickness = 1.5,
 	})
 	local value = Instance.new("NumberValue")
 	local function draw(p: number)
@@ -852,8 +873,8 @@ function UiKit.eggDisc(parent: Instance, egg: string, size: number, props: { [st
 end
 
 -- The species' real model in a ViewportFrame, filled when the server has loaded it. `dark` draws a
--- silhouette (the Index's undiscovered species).
-function UiKit.viewport(parent: Instance, species: string, dark: boolean?): ViewportFrame
+-- silhouette (the Index's undiscovered species). `folder` is GardenSpecies, or GardenEggs for an egg.
+function UiKit.viewport(parent: Instance, species: string, dark: boolean?, folder: string?): ViewportFrame
 	local view = new("ViewportFrame", {
 		Name = "Preview",
 		Size = UDim2.fromScale(1, 1),
@@ -881,14 +902,15 @@ function UiKit.viewport(parent: Instance, species: string, dark: boolean?): View
 		eye.CFrame = CFrame.lookAt(Vector3.new(0.45, 0.25, -1).Unit * size.Magnitude * 1.9, Vector3.zero)
 		view.CurrentCamera = eye
 	end
-	local folder = ReplicatedStorage:FindFirstChild("GardenSpecies")
-	local mesh = folder and folder:FindFirstChild(species)
+	local name = folder or "GardenSpecies"
+	local models = ReplicatedStorage:FindFirstChild(name)
+	local mesh = models and models:FindFirstChild(species)
 	if mesh then
 		fill(mesh)
 	else
 		-- The server loads the models after join: fill the frame when this one arrives.
 		task.spawn(function()
-			local f = ReplicatedStorage:WaitForChild("GardenSpecies", 60)
+			local f = ReplicatedStorage:WaitForChild(name, 60)
 			local m = f and f:WaitForChild(species, 60)
 			if m then
 				fill(m)
@@ -1240,8 +1262,8 @@ function UiKit.toast(gui: Instance): Toast
 			{ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5) }
 		)
 		text(card, s, 22, UI.INK, {
-			Position = UDim2.fromOffset(68, 6),
-			Size = UDim2.new(1, -80, 1, -12),
+			Position = UDim2.fromOffset(68, 3),
+			Size = UDim2.new(1, -80, 1, -6), -- three lines at 12 px on a phone (a long "saved for you")
 			TextXAlignment = Enum.TextXAlignment.Left,
 		})
 		local slots = {}
@@ -1424,7 +1446,7 @@ function UiKit.startMenu(
 	local row = new("Frame", {
 		Name = "Showcase",
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.fromScale(0.5, 0.52),
+		Position = UDim2.new(0.5, 0, 0.52, 14), -- 14 px clears PLAY at the 0.6 floor (844 x 390)
 		Size = UDim2.fromOffset(PITCH * 3 + 24, 290),
 		BackgroundTransparency = 1,
 		ClipsDescendants = true,
@@ -1541,6 +1563,11 @@ task.spawn(function()
 		table.insert(list, `rbxthumb://type=Asset&id={id}&w=150&h=150`)
 	end
 	pcall(ContentProvider.PreloadAsync, ContentProvider, list)
+	-- The egg models for the egg cards (QA m4): a ViewportFrame shows them grey until loaded.
+	local eggs = ReplicatedStorage:WaitForChild("GardenEggs", 120)
+	if eggs then
+		pcall(ContentProvider.PreloadAsync, ContentProvider, eggs:GetChildren())
+	end
 end)
 
 return UiKit

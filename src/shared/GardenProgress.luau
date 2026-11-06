@@ -324,26 +324,28 @@ end
 
 -- Login, snapshots and banking ---------------------------------------------------------------
 
--- Pays the stored `unbanked` first, then offline income from the saved garden; returns both.
-function GardenProgress.login(p: Profile, now: number, today: number): (Profile, number, number)
+-- Pays the stored `unbanked` first, then offline income from the saved garden; returns both, and
+-- the login tick's "(saved for you)" text ("" when no earned slot was paid at a rollover).
+function GardenProgress.login(p: Profile, now: number, today: number): (Profile, number, number, string)
 	local out = GardenProgress.sanitize(p, now)
 	local unbanked = out.unbanked
 	local offline = GardenRules.offline(out, now)
 	out.coins = math.min(MAX_COINS, out.coins + unbanked + offline)
 	out.unbanked = 0
 	out.lastSeen = now
-	return LoginRules.tick(MetaRules.login(CONFIG, out, today), today), offline, unbanked
+	local ticked, saved = LoginRules.tick(MetaRules.login(CONFIG, out, today), today)
+	return ticked, offline, unbanked, saved
 end
 
 -- Login tracks (GDD X3, decision 0017) --------------------------------------------------------
 
 -- Also run by the server at a UTC day rollover while online (architecture 4.7); idempotent.
-function GardenProgress.loginTick(p: Profile, today: number): Profile
+function GardenProgress.loginTick(p: Profile, today: number): (Profile, string)
 	return LoginRules.tick(p, today)
 end
 
-function GardenProgress.claimLogin(p: Profile, track: string, today: number): (Profile, boolean, string)
-	return LoginRules.claim(p, track, today)
+function GardenProgress.claimLogin(p: Profile, track: string, today: number, slot: number?): (Profile, boolean, string)
+	return LoginRules.claim(p, track, today, slot)
 end
 
 -- The last op of every flush, so a stored record never pays a banked coin twice.

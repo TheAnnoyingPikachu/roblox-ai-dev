@@ -55,12 +55,12 @@ local hud = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency 
 
 local coinPill = UiKit.coinPill(hud)
 local ring = UiKit.levelRing(hud)
-local indexText = text(hud, "", 16, UI.LEAF, {
+local indexText = text(hud, "", 18, UI.INK, { -- INK: LEAF over the world was 2.9:1 (QA M2)
 	Position = UDim2.fromOffset(396, 70),
-	Size = UDim2.fromOffset(200, 20),
+	Size = UDim2.fromOffset(200, 22),
 	TextXAlignment = Enum.TextXAlignment.Left,
 	Outline = UI.WHITE,
-	OutlineThickness = 1,
+	OutlineThickness = 1.5,
 })
 
 -- Weather, event, restock and ripe chips (top right) ----------------------------------------------
@@ -96,14 +96,23 @@ local weatherLeftText = UiKit.chipText(weatherChip, "", {
 	Position = UDim2.fromOffset(64, 36),
 	Size = UDim2.new(1, -74, 0, 22),
 	TextSize = 16,
-	TextColor3 = UI.INK_SOFT,
 })
-local function line(order: number, colour: Color3?): TextLabel
-	local chip = UiKit.chip(chips, 330, 40)
+-- Every chip line is INK on the glass (QA m1: coloured text was 1.5 to 2.5:1); its colour is a dot.
+-- 48 high, so the forecast still fits on two lines at 12 px on a phone (QA M2).
+local function line(order: number, colour: Color3): TextLabel
+	local chip = UiKit.chip(chips, 330, 48)
 	chip.LayoutOrder = order
-	return UiKit.chipText(chip, "", { TextColor3 = colour })
+	new("Frame", {
+		Name = "Dot",
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 12, 0.5, 0),
+		Size = UDim2.fromOffset(14, 14),
+		BackgroundColor3 = colour,
+		Parent = chip,
+	}, { new("UICorner", { CornerRadius = UDim.new(1, 0) }), new("UIStroke", { Color = UI.WHITE, Thickness = 1.5 }) })
+	return UiKit.chipText(chip, "", { Position = UDim2.fromOffset(34, 0), Size = UDim2.new(1, -44, 1, 0) })
 end
-local forecastText = line(2)
+local forecastText = line(2, UI.SKY)
 local eventText = line(3, UI.LILAC) -- "This weekend: Thunder" (V2.3)
 local restockText = line(4, UI.CORAL)
 local ripeText = line(5, UI.LEAF)
@@ -337,8 +346,10 @@ local function refreshTimers()
 		`Next: {ClientState.weatherName(f1)} in {ClientState.clock(nextStart - now)}, then {ClientState.weatherName(f2)}`
 	local event = ClientState.weatherName(status.event.weather)
 	eventText.Text = if status.event.active then `{event} weekend!` else `This weekend: {event}`
-	-- The weather's colour pulled toward INK: pale ones (Snowfall) vanish on a glass chip otherwise.
-	eventText.TextColor3 = (ClientState.WEATHER_COLOURS[status.event.weather] or UI.LILAC):Lerp(UI.INK, 0.45)
+	local dot = eventText.Parent and eventText.Parent:FindFirstChild("Dot") :: Frame?
+	if dot then
+		dot.BackgroundColor3 = ClientState.WEATHER_COLOURS[status.event.weather] or UI.LILAC
+	end
 	restockText.Text = `Egg restock in {ClientState.clock(ClientState.left(status.stockLeft))}`
 	local soonest: number? = nil
 	local ripe = 0

@@ -4,7 +4,7 @@ Decision `docs/decisions/0017-garden-v05-look-valley-login.md` (Proposed), GDD s
 
 | # | Decision | Recommendation | If rejected |
 |---|---|---|---|
-| 1 | **Login tracks replace the daily streak and weekly bonus** (X3): distinct days, not streaks; weekly slots 1 to 7 with the Weekly Egg at 5 and two extras; monthly slots 3 / 7 / 12 / 18 / 22 / 26 / 30 with the Monthly Egg 4th and three extras; unclaimed slots expire at the rollover; no countdown anywhere. | Accept. | Keep the H5 streak beside the tracks: two more rows in REWARDS and 10 more minutes of income a day; a pacing rerun. |
+| 1 | **Login tracks replace the daily streak and weekly bonus** (X3): distinct days, not streaks; weekly slots 1 to 7 with the Weekly Egg at 5 and two extras; monthly slots 3 / 7 / 12 / 18 / 22 / 26 / 30 with the Monthly Egg 4th and three extras; earned slots still unclaimed are paid at the rollover (item 14); no countdown anywhere. | Accept. | Keep the H5 streak beside the tracks: two more rows in REWARDS and 10 more minutes of income a day; a pacing rerun. |
 | 2 | **Reward values** (X3.1, X3.2): 16 minutes of income a day in coins across both tracks (Wheel pays 30, Dash 6, the replaced H5 rewards 10.4), floors 100 to 1,000 coins. | Accept. | Any other minutes table; `GardenConfig.LOGIN` is data and the script reruns in a minute. |
 | 3 | **Exclusive eggs plant at level 1** (0012 item 3 amended for these two only): they cannot arrive before day 5 or day 18, worth 66 and 2,383 coins/s expected against a Moon Egg's 301 at day 2. | Accept. | Gate them at Level 5 and Level 18 as the sold eggs of similar value; one number each. |
 | 4 | **Six exclusive species, Index 108, milestones unchanged at 20 / 40 / 60 / 80** (X3.4): nothing is added at 100 or 108. | Accept. | A 100 milestone (a title) is one row in V4's table and `claimMilestone 100`. |
@@ -17,6 +17,7 @@ Decision `docs/decisions/0017-garden-v05-look-valley-login.md` (Proposed), GDD s
 | 11 | **16 icon decals drawn with Pillow** and uploaded as Decals (owned by SHANNON's account), glyph fallback until then. | Accept. | Text glyphs only; no upload. |
 | 12 | **`claimDaily` and `claimWeekly` leave the remote table**; `claimLogin` and `play` join it. | Accept. | Keep the two actions refusing with a notice for one release. |
 | 13 | **Six creature models, two eggs, three sakura, three hills, a spawn pad and a lantern** from the Blender pipeline (about 60,000 new static tris); cries from licensed partners when found, silent until registered. | Accept. | Any model stays on its part fallback; nothing in code waits. |
+| 14 | **Earned login rewards are paid at the rollover; nothing earned is lost** (0017 amendment, GARDEN-058, QA M1). A child who signs in five days but never opens REWARDS gets the Weekly Egg (and every other earned slot, coins scaled as the claim) on Monday at 00:00 UTC, with the toast "Weekly Egg! + 750 coins (saved for you)"; the same for the month on the 1st. Was: unclaimed slots expired (Sunday 16:00 in Los Angeles). No new value or field. | Accept. | Expire as first proposed: the payout loop leaves `LoginRules.tick` (one block) and its four spec cases go. |
 
 ## Evidence (filled by GARDEN-056)
 
