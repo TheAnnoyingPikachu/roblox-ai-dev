@@ -208,3 +208,10 @@ Reviewer: A15 (did not write GARDEN-058). Date: 2026-11-06. Worktree `rad-v05-qa
 ### Not checked (unchanged)
 
 A Studio play session, two clients, a real phone or the Device Emulator, a gamepad, Reduced Motion live, a forced flush failure, the join-time "(saved for you)" toast with a stored record, the m2 retry and the PLAY refusal live. The Director's items still carry no build stamp. CI has not run on this head.
+
+### Director fixes after the re-review
+
+- n1: trade picker cards at full kit size (no second 0.8 scale), so names keep the 12 px floor; pick card lines and the "Give ..., get ..." line wrap instead of overflowing (`TradeFx.client.luau`). Not re-checked in Studio at 844 x 390.
+- n2: kept; the Admin catalogue is owner-only.
+- n3: `LoginRules.claim` refuses an unknown track before reading it; test "refuses an unknown track without throwing (QA n3)".
+

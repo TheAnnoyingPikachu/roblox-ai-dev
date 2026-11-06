@@ -108,8 +108,11 @@ end
 -- Pays the next slot and returns the LastReward text. `slot`, when given, is the slot number the
 -- request saw: a re-run on a record that already paid it changes nothing (QA m5).
 function LoginRules.claim(p: Profile, track: string, today: number, slot: number?): (Profile, boolean, string)
+	if not LoginRules.canClaim(p, track, today) then
+		return p, false, ""
+	end
 	local n, s = LoginRules.nextSlot(p, track, today)
-	if not LoginRules.canClaim(p, track, today) or (slot ~= nil and slot ~= n) then
+	if slot ~= nil and slot ~= n then
 		return p, false, ""
 	end
 	local out = GardenRules.copy(p)

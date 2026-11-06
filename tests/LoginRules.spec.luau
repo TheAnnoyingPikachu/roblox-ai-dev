@@ -420,4 +420,11 @@ describe("LoginRules rollover payout (QA M1, m5, m6)", function()
 		expect(same(midnight, monday)).toBe(true)
 		expect(LoginRules.canClaim(midnight, "week", MONDAY + 7)).toBe(false) -- slot 2 needs two days
 	end)
+
+	it("refuses an unknown track without throwing (QA n3)", function()
+		local p = garden(range(MONDAY, MONDAY + 2))
+		local out, ok, text = LoginRules.claim(p, "day", MONDAY + 2)
+		expect(`{ok} {text == ""} {same(out, p)}`).toBe("false true true")
+		expect(LoginRules.canClaim(p, "", MONDAY + 2)).toBe(false)
+	end)
 end)

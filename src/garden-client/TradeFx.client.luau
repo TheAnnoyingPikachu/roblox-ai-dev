@@ -156,16 +156,18 @@ local function pickCard(parent: Instance, side: any, other: any, mine: boolean)
 		Parent = c,
 	})
 	UiKit.viewport(pic, tostring(pick.s))
+	-- Wrapped, so a long name drops to a second line at the 12 px floor instead of running out of the card.
 	local function line(y: number, h: number, s: string, colour: Color3?)
 		text(c, s, h - 2, colour or UI.INK, {
 			Position = UDim2.fromOffset(100, y),
 			Size = UDim2.new(1, -108, 0, h),
 			TextXAlignment = Enum.TextXAlignment.Left,
+			TextWrapped = true,
 		})
 	end
 	line(
-		6,
-		28,
+		4,
+		30,
 		ClientState.creatureName(pick.s, pick.m, pick.z, pick.c, pick.n),
 		ClientState.rarityColour(tostring(pick.s))
 	)
@@ -181,12 +183,12 @@ local function pickCard(parent: Instance, side: any, other: any, mine: boolean)
 	if charm then
 		table.insert(bits, charm.name)
 	end
-	line(34, 20, table.concat(bits, "  ·  "), UI.INK_SOFT)
+	line(34, 26, table.concat(bits, "  ·  "), UI.INK_SOFT)
 	local rate = tonumber(pick.rate) or 0
 	local otherRate = if type(other.pick) == "table" then tonumber(other.pick.rate) or 0 else 0
-	line(56, 24, `+{ClientState.short(rate)} coins/s{if side.ready then "  ·  Ready!" else ""}`, UI.LEAF)
+	line(60, 22, `+{ClientState.short(rate)} coins/s{if side.ready then "  ·  Ready!" else ""}`, UI.LEAF)
 	UiKit.bar(c, {
-		Position = UDim2.fromOffset(100, 82),
+		Position = UDim2.fromOffset(100, 84),
 		Size = UDim2.new(1, -114, 0, 10),
 	}, math.clamp(rate / math.max(rate, otherRate, 1), 0.02, 1), if side.ready then UI.LEAF else UI.AQUA)
 end
@@ -204,9 +206,9 @@ local function picker(col: Instance, side: any)
 		LayoutOrder = 3,
 		Parent = col,
 	})
-	-- The kit's 160 x 180 cards at 0.8, so two fit side by side in a column.
-	local grid = new("Frame", { Size = UDim2.fromScale(1.25, 0), BackgroundTransparency = 1, Parent = list })
-	new("UIScale", { Scale = 0.8, Parent = grid })
+	-- The kit's 160 x 180 cards at full size: never scaled again, so names keep the 12 px floor on a
+	-- phone (QA n1); a narrow column shows one card per row and scrolls.
+	local grid = new("Frame", { Size = UDim2.fromScale(1, 0), BackgroundTransparency = 1, Parent = list })
 	UiKit.grid(grid, 160, 180)
 	local creatures = table.clone(ClientState.profile().creatures)
 	table.sort(creatures, function(a, b)
@@ -378,7 +380,8 @@ local function render(data: any)
 	}, { new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 16) }) })
 	column(columns, me, them, true, state)
 	column(columns, them, me, false, state)
-	local fair = text(pp.body, "", 26, UI.INK, { Size = UDim2.new(1, 0, 0, 34), LayoutOrder = 2 })
+	-- Two lines tall and wrapped: "Give <long name>, get <long name>" must be readable in full on a phone.
+	local fair = text(pp.body, "", 26, UI.INK, { Size = UDim2.new(1, 0, 0, 52), LayoutOrder = 2, TextWrapped = true })
 	fairLine = fair
 
 	local both = type(me.pick) == "table" and type(them.pick) == "table"
