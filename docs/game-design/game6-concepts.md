@@ -2,7 +2,7 @@
 
 Author: Market Researcher and Designer (A06). Date: 2026-11-06. Branch `game6/concept`.
 
-SHANNON's brief: "take all you've learned and go make an entirely new game, make it good and likely to succeed in the roblox landscape". Evidence: `game6-market-research.md` (facts M1 to M52, assumptions A1 to A4, hypotheses H1 to H3).
+SHANNON's brief: "take all you've learned and go make an entirely new game, make it good and likely to succeed in the roblox landscape". Evidence: `game6-market-research.md` (facts M1 to M52, assumptions A1 to A4, hypotheses H1 to H3). The studio's own lessons: `docs/production/studio-lessons.md`.
 
 **Must differ from:** Bake Rush (click simulator), Relay Rounds (team race), Hundred Demon Night (wave brawler), Egg Garden (hatch-and-collect garden), Neon Spire (tycoon).
 
@@ -60,7 +60,8 @@ The scores are the designer's judgement (hypotheses), anchored to facts where on
   - **Permanent train cars** that change runs: Greenhouse grows coal, Kitchen heals, Observatory shows the fog timer early.
   - New biomes unlock by reaching Dawn Station: Snow Line, Lake Line.
   - A weekly **Line of the Week**: one seed for every server, with a board for best distance and most critters saved.
-  - Seasonal event lines every two weeks (Q9). Daily quests and streaks reuse `MetaRules`.
+  - Seasonal event lines every two weeks (Q9). Daily quests and streaks reuse `MetaRules`. Weekly and monthly login tracks end in an exclusive livery or critter.
+  - Your favourite rescued critter follows you around the Depot and rides on your seat during runs, so you show it off. Players can name it from a fixed word list; there is no text input.
 - **Social and co-op hook:**
   - Roles: Stoker, Scout, Lamplighter, Medic. They are crew badges unlocked by play and are visible on your avatar.
   - Critter crates need two carriers.
@@ -81,10 +82,12 @@ The scores are the designer's judgement (hypotheses), anchored to facts where on
   - *Animation:* none needed. Players use Roblox's default animations. Wisps, critters and the moth bob, drift and swoop in code, the way Egg Garden's creatures move. Carrying is a weld or `AlignPosition` to the character.
   - *Physics:* walking on a moving train jitters on Roblox, so **the train moves only while every player is seated.** Lamp turrets are seats, and stops are stationary.
   - *Server authority:* the train runs along a fixed spline, so its distance, speed, coal, lantern meter and timers are one pure state machine (Lune-testable, like `RunRules`). Loot and critter rolls happen server-side. Carry is checked by distance, and rewards are paid at Depots.
-  - *Reuse:* the kit, `MetaRules`, cosmetics, the Locker and the settings panel. Audio: ominous-but-cosy music and a train whistle from the Creator Store.
+  - *Reuse:* the kit, `MetaRules`, cosmetics, the Locker, the settings panel and the UI kit. Audio: ominous-but-cosy music and a train whistle from the Creator Store.
+  - *Look first:* following `docs/production/studio-lessons.md`, a style test of three hero assets (the engine, one critter, one stop house) at the HD creature standard comes before any feature work.
+  - *Saves:* every reward goes to its own player's save. Nothing writes two saves at once, so no ledger is needed (studio lessons, Engineering).
 - **Child safety:**
   - No weapons and no combat; light "shoos" wisps away. No blood.
-  - Being caught by the fog drops what you carry (it stays on the ground for anyone to fetch), and you reappear on the train after 10 s. Nothing saved is ever lost.
+  - Only what reaches the train counts as earned, and nothing on the train or in the save is ever lost. A player caught by the fog drops their load and reappears on the train after 10 s. Dropped coal is gone for that run. A dropped critter goes back to its stop and can be rescued on a later run; it never counts as rescued and then lost (studio lesson "never let a player lose something they earned").
   - No player can take anything from another.
   - Running out of coal ends the run at the last Depot with every reward kept.
   - Mild fear only (ominous music, suspense), with no jump scares before the first Depot.
