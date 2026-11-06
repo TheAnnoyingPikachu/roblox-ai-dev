@@ -971,7 +971,7 @@ DEFS.Admin = {
 -- CREATURES: pen, storage, release, love, name, pen pads, gate, trades -----------------------------
 
 local function confirmRelease(message: string, onYes: () -> ())
-	local m = UiKit.modal(gui, "RELEASE?", UI.CORAL, 600, 330)
+	local m = UiKit.modal(gui, "RELEASE?", UI.CORAL, 600, 270)
 	para(m.body, message, 1)
 	local buttons = new("Frame", {
 		Size = UDim2.new(1, 0, 0, 72),
@@ -2070,7 +2070,7 @@ end)
 -- Live refresh --------------------------------------------------------------------------------------
 
 local greeted = false
-local function onProfile()
+local function onProfile(coinsOnly: boolean?)
 	profile = ClientState.profile()
 	refreshMenu()
 	if loaded and not greeted then
@@ -2081,11 +2081,15 @@ local function onProfile()
 		end
 	end
 	local name, tab = visiblePanel()
-	if name and name ~= "Settings" and not (name == "Eggs" and tab == "ODDS") then
+	-- Coins alone only change what is affordable; the viewport-heavy panels wait for the profile.
+	local heavy = name == "Creatures" or name == "Index" or name == "Admin"
+	if name and name ~= "Settings" and not (name == "Eggs" and tab == "ODDS") and not (coinsOnly and heavy) then
 		rerender()
 	end
 end
-player:GetAttributeChangedSignal("Profile"):Connect(onProfile)
+player:GetAttributeChangedSignal("Profile"):Connect(function()
+	onProfile(false)
+end)
 -- Banking changes Coins at 5 Hz; buy buttons follow at most once a second (QA N1).
 local coinsPending = false
 player:GetAttributeChangedSignal("Coins"):Connect(function()
@@ -2093,7 +2097,7 @@ player:GetAttributeChangedSignal("Coins"):Connect(function()
 		coinsPending = true
 		task.delay(1, function()
 			coinsPending = false
-			onProfile()
+			onProfile(true)
 		end)
 	end
 end)

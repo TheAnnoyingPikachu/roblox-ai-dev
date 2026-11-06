@@ -390,8 +390,8 @@ end
 
 export type StripItem = { icon: string, label: string, colour: Color3, onClick: () -> (), main: boolean? }
 
--- Two columns of 96 px icon buttons at (24, 140). Touch: the `main` items plus MORE (3 rows), the
--- rest in a sheet MORE opens, so the strip stays above the thumbstick.
+-- Columns of 96 px icon buttons at (24, 140). Touch: the `main` items plus MORE in 2 rows, the rest
+-- in a sheet MORE opens, so the strip stays above the thumbstick.
 function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [string]: Button }
 	local gap = if touch then 12 else 16
 	local frame = new("Frame", {
@@ -408,14 +408,16 @@ function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [st
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Parent = frame,
 	})
-	-- Touch: 3 rows (5 + MORE). Otherwise 5 rows, fewer when the screen is short, so the strip
-	-- always ends 220 px above the bottom (clear of the thumbstick and the jump button).
+	local sheet: Frame? = nil
+	-- Touch: 2 rows (EGGS CREATURES REWARDS HOME MORE end 140 + 204 from the top, well above the
+	-- thumbstick on an 844 x 390 phone). Otherwise 5 rows, fewer when the screen is short, so the
+	-- strip ends 220 px above the bottom where it can.
 	local function fit()
 		local root = frame:FindFirstAncestorWhichIsA("LayerCollector")
 		local kit = root and root:FindFirstChild("KitScale") :: UIScale?
 		local high = (gui :: any).AbsoluteSize and (gui :: any).AbsoluteSize.Y or 1080
 		local virtual = high / (if kit then kit.Scale else 1)
-		local rows = if touch then 3 else math.clamp(math.floor((virtual - 140 - 220 + gap) / (96 + gap)), 3, 5)
+		local rows = if touch then 2 else math.clamp(math.floor((virtual - 140 - 220 + gap) / (96 + gap)), 3, 5)
 		grid.FillDirectionMaxCells = rows
 		local count = 0
 		for _, c in frame:GetChildren() do
@@ -425,14 +427,16 @@ function UiKit.strip(gui: Instance, items: { StripItem }, touch: boolean): { [st
 		end
 		local cols = math.max(2, math.ceil(count / rows))
 		frame.Size = UDim2.fromOffset(96 * cols + gap * (cols - 1), 96 * rows + gap * (rows - 1))
+		if sheet then
+			sheet.Position = UDim2.fromOffset(24 + frame.Size.X.Offset + 16, 140)
+		end
 	end
 	local out: { [string]: Button } = {}
-	local sheet: Frame? = nil
 	local more: TextButton? = nil
 	if touch then
 		local holder, body = shadowed(gui, {
 			Name = "MoreSheet",
-			Position = UDim2.fromOffset(24 + 96 * 2 + gap + 16, 140),
+			Position = UDim2.fromOffset(24 + 96 * 3 + gap * 2 + 16, 140),
 			Size = UDim2.fromOffset(96 * 3 + 16 * 4, 96 * 2 + 16 * 3),
 			Visible = false,
 			ZIndex = 8,
@@ -1112,11 +1116,6 @@ local function closeWith(panel: Panel, byUser: boolean)
 	if selected and selected:IsDescendantOf(panel.frame) then
 		GuiService.SelectedObject = nil
 	end
-	panel.frame:Destroy()
-	local shade = (panel :: any).shade
-	if shade then
-		shade:Destroy()
-	end
 	if current == panel then
 		current = nil
 	end
@@ -1124,8 +1123,13 @@ local function closeWith(panel: Panel, byUser: boolean)
 	if i then
 		table.remove(modals, i)
 	end
-	if panel.onClose then
+	if panel.onClose then -- before the destroy, so a caller can move reusable content out
 		(panel.onClose :: (boolean) -> ())(byUser)
+	end
+	panel.frame:Destroy()
+	local shade = (panel :: any).shade
+	if shade then
+		shade:Destroy()
 	end
 end
 

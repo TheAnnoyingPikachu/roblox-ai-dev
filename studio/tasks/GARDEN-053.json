@@ -39,7 +39,8 @@
     "src/garden-client/TradeFx.client.luau",
     "src/garden-client/DashFx.client.luau",
     "src/garden-client/CLAUDE.md",
-    "src/shared/GardenIcons.luau"
+    "src/shared/GardenIcons.luau",
+    "src/garden-client/WheelFx.client.luau"
   ],
   "tests": [
     "GardenConfig.spec.luau"

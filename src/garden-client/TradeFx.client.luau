@@ -138,7 +138,7 @@ end
 -- One side's card: the pick (name, rarity, mutation, size, charm, coins/s and a value bar against
 -- the other pick's rate) or a waiting note.
 local function pickCard(parent: Instance, side: any, other: any, mine: boolean)
-	local c = UiKit.row(parent, 112, 2)
+	local c = UiKit.row(parent, 100, 2)
 	if side.ready then
 		(c:FindFirstChildOfClass("UIStroke") :: UIStroke).Color = UI.LEAF
 	end
@@ -151,20 +151,20 @@ local function pickCard(parent: Instance, side: any, other: any, mine: boolean)
 	end
 	local pic = new("Frame", {
 		Position = UDim2.fromOffset(8, 8),
-		Size = UDim2.fromOffset(96, 96),
+		Size = UDim2.fromOffset(84, 84),
 		BackgroundTransparency = 1,
 		Parent = c,
 	})
 	UiKit.viewport(pic, tostring(pick.s))
 	local function line(y: number, h: number, s: string, colour: Color3?)
 		text(c, s, h - 2, colour or UI.INK, {
-			Position = UDim2.fromOffset(112, y),
-			Size = UDim2.new(1, -120, 0, h),
+			Position = UDim2.fromOffset(100, y),
+			Size = UDim2.new(1, -108, 0, h),
 			TextXAlignment = Enum.TextXAlignment.Left,
 		})
 	end
 	line(
-		8,
+		6,
 		28,
 		ClientState.creatureName(pick.s, pick.m, pick.z, pick.c, pick.n),
 		ClientState.rarityColour(tostring(pick.s))
@@ -181,20 +181,20 @@ local function pickCard(parent: Instance, side: any, other: any, mine: boolean)
 	if charm then
 		table.insert(bits, charm.name)
 	end
-	line(38, 20, table.concat(bits, "  ·  "), UI.INK_SOFT)
+	line(34, 20, table.concat(bits, "  ·  "), UI.INK_SOFT)
 	local rate = tonumber(pick.rate) or 0
 	local otherRate = if type(other.pick) == "table" then tonumber(other.pick.rate) or 0 else 0
-	line(60, 24, `+{ClientState.short(rate)} coins/s{if side.ready then "  ·  Ready!" else ""}`, UI.LEAF)
+	line(56, 24, `+{ClientState.short(rate)} coins/s{if side.ready then "  ·  Ready!" else ""}`, UI.LEAF)
 	UiKit.bar(c, {
-		Position = UDim2.fromOffset(112, 90),
-		Size = UDim2.new(1, -126, 0, 12),
+		Position = UDim2.fromOffset(100, 82),
+		Size = UDim2.new(1, -114, 0, 10),
 	}, math.clamp(rate / math.max(rate, otherRate, 1), 0.02, 1), if side.ready then UI.LEAF else UI.AQUA)
 end
 
 -- My picker, under my pick: own creatures by rate as cards; favourites and the current pick greyed.
 local function picker(col: Instance, side: any)
 	local list = new("ScrollingFrame", {
-		Size = UDim2.new(1, 0, 1, -(30 + 8 + 112 + 8)),
+		Size = UDim2.new(1, 0, 1, -(24 + 8 + 100 + 8)),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ScrollBarThickness = 6,
@@ -248,7 +248,7 @@ local function column(parent: Instance, side: any, other: any, mine: boolean, st
 		24,
 		if mine then UI.PINK else UI.AQUA,
 		{
-			Size = UDim2.new(1, 0, 0, 30),
+			Size = UDim2.new(1, 0, 0, 24),
 			LayoutOrder = 1,
 			Outline = UI.WHITE,
 			OutlineThickness = 2,

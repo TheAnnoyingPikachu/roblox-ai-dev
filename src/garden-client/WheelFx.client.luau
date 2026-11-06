@@ -1,8 +1,8 @@
 --!strict
 -- Petal Catch on the client (garden-wheel.md W7, architecture garden-wheel.md 5): the player's own
 -- petals rendered from the server seed with the same WheelRules.schedule, the basket, the round HUD,
--- the end card, the pre-decided wheel animation with both odds columns, the stand's spins label and
--- the sounds. Sends nothing: every catch and the wedge are the server's (G4: no near-miss, no ticking,
+-- the end card and the wheel panel in UiKit shells (architecture 6.4), the pre-decided wheel animation
+-- with both odds columns, the stand's spins label and the sounds. Sends nothing: every catch and the wedge are the server's (G4: no near-miss, no ticking,
 -- no failure sound, no spin-again, no countdown to the next spin).
 
 local GuiService = game:GetService("GuiService")
@@ -18,6 +18,7 @@ local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local HatchRules = require(Shared:WaitForChild("HatchRules"))
 local WheelRules = require(Shared:WaitForChild("WheelRules"))
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local UiKit = require(script.Parent:WaitForChild("UiKit"))
 local fx = ReplicatedStorage:WaitForChild("GardenRemotes"):WaitForChild("Fx") :: RemoteEvent
 
 local player = Players.LocalPlayer :: Player
@@ -352,41 +353,23 @@ end
 
 -- End card and wheel panel ----------------------------------------------------------------------------
 
-local card = new("TextButton", {
-	AnchorPoint = Vector2.new(0.5, 0.5),
-	Position = UDim2.fromScale(0.5, 0.5),
-	Size = UDim2.fromOffset(720, 200),
-	BackgroundColor3 = UI.CREAM,
-	AutoButtonColor = false,
-	Text = "",
-	Visible = false,
-	Parent = gui,
-}, { corner(24), stroke(UI.PINK, 5) })
-ClientState.autoScale(card)
-local cardTitle = text({
-	Position = UDim2.fromOffset(20, 14),
-	Size = UDim2.new(1, -40, 0, 56),
-	Text = "",
-	TextColor3 = UI.PINK,
-	Parent = card,
+-- The end card and the wheel are kit shells in their own scaled ScreenGui; the wheel content below
+-- is built once and moved into the wheel's shell when it shows.
+local cardGui = new("ScreenGui", {
+	Name = "GardenWheelCard",
+	ResetOnSpawn = false,
+	IgnoreGuiInset = true,
+	DisplayOrder = 6,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	Parent = player:WaitForChild("PlayerGui"),
 })
-new("UIStroke", { Color = UI.WHITE, Thickness = 3, Parent = cardTitle })
-local cardLine = text({
-	Position = UDim2.fromOffset(20, 80),
-	Size = UDim2.new(1, -40, 0, 60),
-	Text = "",
-	TextColor3 = UI.LEAF,
-	TextScaled = false,
-	TextSize = 32,
-	TextWrapped = true,
-	Parent = card,
-})
+UiKit.scaleRoot(cardGui)
+local card: UiKit.Panel? = nil
+local cardTitle = ""
 local panel = new("Frame", {
-	Position = UDim2.fromOffset(20, 76),
-	Size = UDim2.new(1, -40, 0, 500),
+	Size = UDim2.new(1, 0, 0, 500),
 	BackgroundTransparency = 1,
 	Visible = false,
-	Parent = card,
 })
 -- The disc: a round frame with 8 pockets at 45 degree steps, rotated as a whole; pointer at the top.
 local discFrame = new("Frame", {
@@ -491,29 +474,60 @@ end
 local cardToken = 0
 local wheelDue = false -- the title phase of a spin or lucky end card: a tap goes straight to the wheel
 local showWheel
-local function closeCard()
-	card.Visible = false
+local function dropCard()
+	panel.Parent = nil -- kept for the next wheel
 	panel.Visible = false
+	local c = card
+	card = nil
+	if c then
+		c.close()
+	end
+end
+
+local function closeCard()
 	wheelDue = false
 	if GuiService.SelectedObject == spinButton then
 		GuiService.SelectedObject = nil
 	end
+	dropCard()
 end
-card.Activated:Connect(function()
-	if wheelDue then
-		showWheel()
-	elseif not panel.Visible then
-		closeCard()
+
+-- A shell of the given height. On the end card a tap anywhere goes on to the wheel or closes it;
+-- the wheel itself closes with its X (its SPIN button must get the taps).
+local function shell(height: number, tapToGo: boolean): UiKit.Panel
+	dropCard()
+	local c = UiKit.modal(cardGui, cardTitle, UI.PINK, 760, height, false)
+	card = c
+	c.onClose = function()
+		panel.Parent = nil -- the wheel content outlives its shell
+		panel.Visible = false
+		wheelDue = false
 	end
-end)
+	if tapToGo then
+		new("TextButton", {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Text = "",
+			Selectable = false,
+			ZIndex = 6,
+			Parent = c.frame,
+		}).Activated:Connect(function()
+			if wheelDue then
+				showWheel()
+			else
+				closeCard()
+			end
+		end)
+	end
+	return c
+end
 
 local function showCard(title: string, line: string, seconds: number?)
-	cardTitle.Text = title
-	cardLine.Text = line
-	cardLine.Visible = line ~= ""
-	card.Size = UDim2.fromOffset(720, 200)
-	panel.Visible = false
-	card.Visible = true
+	cardTitle = title
+	local c = shell(if line ~= "" then 230 else 170, true)
+	if line ~= "" then
+		UiKit.text(c.body, line, 32, UI.LEAF, { Size = UDim2.new(1, 0, 0, 60), LayoutOrder = 1 })
+	end
 	cardToken += 1
 	local token = cardToken
 	if seconds then
@@ -529,7 +543,7 @@ local spinning = false
 local spinArmed = false
 local function arm(on: boolean)
 	spinArmed = on
-	spinButton.BackgroundColor3 = if on then UI.PINK else UI.GREY
+	UiKit.setEnabled(spinButton, on)
 end
 
 local function resultText(data: any): string
@@ -605,8 +619,8 @@ end)
 
 function showWheel()
 	wheelDue = false
-	cardLine.Visible = false
-	card.Size = UDim2.fromOffset(720, 600)
+	local c = shell(600, false)
+	panel.Parent = c.body
 	panel.Visible = true
 	discFrame.Rotation = discAngle
 	resultLine.Text = ""
