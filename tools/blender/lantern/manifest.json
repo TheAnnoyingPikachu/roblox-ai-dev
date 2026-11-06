@@ -1,0 +1,1303 @@
+{
+  "critter_emberkit": {
+    "fbx": "build/blender/lantern/critter_emberkit.fbx",
+    "png": "build/blender/lantern/critter_emberkit.png",
+    "preview": "build/blender/lantern/previews/critter_emberkit.png",
+    "size_studs": [
+      2.89,
+      2.9,
+      2.74
+    ],
+    "tris": 5380,
+    "parts": {
+      "critter_emberkit": 5380
+    },
+    "target_size_studs": [
+      2.9,
+      2.9,
+      2.8
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "One mesh, stands on the origin facing -Y; scale to the manifest height. The mascot and the reference critter for the HD standard. The lantern is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the lantern, on the viewer's right about 0.55 of the height up.",
+    "glow": {}
+  },
+  "train_engine": {
+    "fbx": "build/blender/lantern/train_engine.fbx",
+    "png": "build/blender/lantern/train_engine.png",
+    "preview": "build/blender/lantern/previews/train_engine.png",
+    "size_studs": [
+      8.14,
+      10.98,
+      22.28
+    ],
+    "tris": 10804,
+    "parts": {
+      "train_engine": 10360,
+      "train_engine_lamp_glow": 144,
+      "train_engine_fire_glow": 300
+    },
+    "target_size_studs": [
+      8,
+      11,
+      22
+    ],
+    "tris_budget": 12000,
+    "priority": "P1",
+    "replaces": "engine fallback (red block body, black cylinder boiler, chimney)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Engine and tender, 22 x 11 x 8 (architecture section 9). Wheels on y = 0 (rail top), front -Z, cab floor 2.3 up. Three meshes: train_engine (textured), train_engine_lamp_glow (Neon: headlamp lens and side panes, tender tail lamp) and train_engine_fire_glow (Neon: firebox door and grate, cab spectacles). Chimney top centre (smoke): 5.5 forward of the middle, 11 up. Cab roof (the engine's turret): a gentle arch 8.2 to 8.65 up, 7.9 wide, from 2.1 behind the middle to 6.5 behind. Code adds a SpotLight on the lamp (range 60, angle 50, brightness 3) and an orange PointLight in the cab (range 12). Static: the wheels do not turn.",
+    "glow": {
+      "train_engine_lamp_glow": [
+        255,
+        206,
+        110
+      ],
+      "train_engine_fire_glow": [
+        255,
+        128,
+        48
+      ]
+    }
+  },
+  "train_car_cargo": {
+    "fbx": "build/blender/lantern/train_car_cargo.fbx",
+    "png": "build/blender/lantern/train_car_cargo.png",
+    "preview": "build/blender/lantern/previews/train_car_cargo.png",
+    "size_studs": [
+      8.08,
+      6.99,
+      16.0
+    ],
+    "tris": 5148,
+    "parts": {
+      "train_car_cargo": 5116,
+      "train_car_cargo_lamp_glow": 32
+    },
+    "target_size_studs": [
+      8,
+      7,
+      16
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "cargo car fallback (block wagon)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Cargo car, 16 x 7 x 8: coal bunker in front, crate deck behind. Wheels on y = 0 (rail top), front -Z, floor 2.3 up. Buffer heads end at the bounding box (+-8), buffers and coupling 1.75 up, 2.6 off centre, as the engine. Two meshes: train_car_cargo (textured) and train_car_cargo_lamp_glow (Neon: the bunker lantern, glass centre 6.2 up at the bunker's back corner on the car's left, 1.15 forward of the middle). Static wheels.",
+    "glow": {
+      "train_car_cargo_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "train_car_lamp": {
+    "fbx": "build/blender/lantern/train_car_lamp.fbx",
+    "png": "build/blender/lantern/train_car_lamp.png",
+    "preview": "build/blender/lantern/previews/train_car_lamp.png",
+    "size_studs": [
+      8.08,
+      9.0,
+      16.0
+    ],
+    "tris": 5840,
+    "parts": {
+      "train_car_lamp": 5744,
+      "train_car_lamp_lamp_glow": 96
+    },
+    "target_size_studs": [
+      8,
+      9,
+      16
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "lamp car fallback (block flatcar)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Lamp car, 16 x 9 x 8: flatcar with two turret rings and the lantern rack. Wheels on y = 0, front -Z, floor 2.3 up. Turret rings (3.2 across, lamp_turret_base stands on them): top 2.46 up, centred 4.7 forward and 4.7 back of the middle. Lantern rack across the middle (finial 9 up); its three lanterns (glass centres 6.3 up at x +-1.5 and 6.5 up at x 0) are the train_car_lamp_lamp_glow mesh (Neon). The Mender's stool: cushion top 3.75 up, 1.25 behind the middle on the centre line, facing forward at the rack. Red bulwarks (top 3.4 up) round both ends, open beside the rack.",
+    "glow": {
+      "train_car_lamp_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "train_car_passenger": {
+    "fbx": "build/blender/lantern/train_car_passenger.fbx",
+    "png": "build/blender/lantern/train_car_passenger.png",
+    "preview": "build/blender/lantern/previews/train_car_passenger.png",
+    "size_studs": [
+      8.09,
+      10.0,
+      18.0
+    ],
+    "tris": 7762,
+    "parts": {
+      "train_car_passenger": 7546,
+      "train_car_passenger_lamp_glow": 216
+    },
+    "target_size_studs": [
+      8,
+      10,
+      18
+    ],
+    "tris_budget": 8000,
+    "priority": "P1",
+    "replaces": "passenger car fallback (block coach)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Passenger coach, 18 x 10 x 8. Wheels on y = 0, front -Z, floor 2.3 up. Six forward-facing seats (cushion tops 3.6 up) at x +-1.95 and z -4.1, -0.1, 3.9 from the middle. Eight open round-topped windows, four a side, centred z +-1.78 and +-5.34, sill top 4.68 up at x +-3.8 (the critter window slots), opening 2.6 wide and 3.3 tall. Roof turret plinth: top 9.41 up on the middle. train_car_passenger_lamp_glow (Neon): two cabin lanterns over the aisle (z +-3.6, 7.2 up), the two end-door portholes and the tail lamp (back wall, 6 up). Static wheels.",
+    "glow": {
+      "train_car_passenger_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "lamp_turret_base": {
+    "fbx": "build/blender/lantern/lamp_turret_base.fbx",
+    "png": "build/blender/lantern/lamp_turret_base.png",
+    "preview": "build/blender/lantern/previews/lamp_turret_base.png",
+    "size_studs": [
+      3.0,
+      2.0,
+      3.0
+    ],
+    "tris": 882,
+    "parts": {
+      "lamp_turret_base": 882
+    },
+    "target_size_studs": [
+      3,
+      2,
+      3
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "turret base fallback (cylinder)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Turret drum, 3 x 2 x 3, origin at its base centre: red drum, brass bearing with a hollow well (the head's grips dip into it at high pitch). Stands on the lamp car's turret rings, the passenger roof plinth and the engine's cab roof. One mesh.",
+    "glow": {}
+  },
+  "lamp_turret_head": {
+    "fbx": "build/blender/lantern/lamp_turret_head.fbx",
+    "png": "build/blender/lantern/lamp_turret_head.png",
+    "preview": "build/blender/lantern/previews/lamp_turret_head.png",
+    "size_studs": [
+      2.4,
+      2.4,
+      3.6
+    ],
+    "tris": 1332,
+    "parts": {
+      "lamp_turret_head": 1240,
+      "lamp_turret_head_lamp_glow": 92
+    },
+    "target_size_studs": [
+      2.4,
+      2.4,
+      3.6
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "turret head fallback (block with a pale glass face)",
+    "script": "tools/blender/lantern/assets/train.py",
+    "notes": "Searchlight head, 2.4 x 2.4 x 3.6, glass front on -Z, symmetric about its hinge: the trunnion axis runs through the bounding-box centre. Place the hinge 1.65 above the base top (0.45 clear at rest; at -15 pitch the hood clears the bearing, at 75 the grips sink into the well). Two meshes: lamp_turret_head (textured) and lamp_turret_head_lamp_glow (Neon lens; code may tint it to the player's lamp colour).",
+    "glow": {
+      "lamp_turret_head_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "house_cottage": {
+    "fbx": "build/blender/lantern/house_cottage.fbx",
+    "png": "build/blender/lantern/house_cottage.png",
+    "preview": "build/blender/lantern/previews/house_cottage.png",
+    "size_studs": [
+      20.6,
+      16.56,
+      19.99
+    ],
+    "tris": 9602,
+    "parts": {
+      "house_cottage": 9038,
+      "house_cottage_glow": 564
+    },
+    "target_size_studs": [
+      20.6,
+      16.5,
+      20
+    ],
+    "tris_budget": 10000,
+    "priority": "P1",
+    "replaces": "none (style-test house of the stop_village set; not uploaded on its own)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Ground at y = 0, platform top at 2, platform edge facing -Z towards the track. Two meshes: house_cottage (textured) and house_cottage_glow (Neon: windows, door porthole, dormer, the sign lamp and the lamp post). Code adds a PointLight per lit window (range 12, brightness 1.2) and on the lamp post (range 18). Mesh CanCollide false; collide with invisible parts: the platform box and a cylinder for the house.",
+    "glow": {
+      "house_cottage_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "item_coal_sack": {
+    "fbx": "build/blender/lantern/item_coal_sack.fbx",
+    "png": "build/blender/lantern/item_coal_sack.png",
+    "preview": "build/blender/lantern/previews/item_coal_sack.png",
+    "size_studs": [
+      1.6,
+      1.4,
+      1.2
+    ],
+    "tris": 714,
+    "parts": {
+      "item_coal_sack": 714
+    },
+    "target_size_studs": [
+      1.6,
+      1.4,
+      1.2
+    ],
+    "tris_budget": 800,
+    "priority": "P1",
+    "replaces": "coal item fallback (dark block)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Coal sack, 1.6 x 1.4 x 1.2, base centre origin: plum-grey sack with two cream stripes, coal heaped in its open neck. One mesh. Welded to backs when carried (code).",
+    "glow": {}
+  },
+  "item_parts_bag": {
+    "fbx": "build/blender/lantern/item_parts_bag.fbx",
+    "png": "build/blender/lantern/item_parts_bag.png",
+    "preview": "build/blender/lantern/previews/item_parts_bag.png",
+    "size_studs": [
+      1.6,
+      1.19,
+      1.2
+    ],
+    "tris": 684,
+    "parts": {
+      "item_parts_bag": 684
+    },
+    "target_size_studs": [
+      1.6,
+      1.2,
+      1.2
+    ],
+    "tris_budget": 800,
+    "priority": "P1",
+    "replaces": "parts item fallback (brown block)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Spare-parts tool bag, 1.6 x 1.2 x 1.2: teal canvas, leather straps and handles, a brass cog on the front (-Z). One mesh.",
+    "glow": {}
+  },
+  "item_oil_can": {
+    "fbx": "build/blender/lantern/item_oil_can.fbx",
+    "png": "build/blender/lantern/item_oil_can.png",
+    "preview": "build/blender/lantern/previews/item_oil_can.png",
+    "size_studs": [
+      0.99,
+      1.6,
+      1.0
+    ],
+    "tris": 572,
+    "parts": {
+      "item_oil_can": 572
+    },
+    "target_size_studs": [
+      1.0,
+      1.6,
+      1.0
+    ],
+    "tris_budget": 600,
+    "priority": "P1",
+    "replaces": "oil item fallback (yellow cylinder)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Lamp-oil can, 1.0 x 1.6 x 1.0: amber can, teal label on the front (-Z), spout leaning forward, handle at the back. One mesh.",
+    "glow": {}
+  },
+  "item_supply_crate": {
+    "fbx": "build/blender/lantern/item_supply_crate.fbx",
+    "png": "build/blender/lantern/item_supply_crate.png",
+    "preview": "build/blender/lantern/previews/item_supply_crate.png",
+    "size_studs": [
+      3.0,
+      3.0,
+      3.0
+    ],
+    "tris": 804,
+    "parts": {
+      "item_supply_crate": 804
+    },
+    "target_size_studs": [
+      3,
+      3,
+      3
+    ],
+    "tris_budget": 900,
+    "priority": "P1",
+    "replaces": "supply crate fallback (wooden block)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Supply crate, 3 x 3 x 3: planks, battens, iron corners, rope handles on the left and right, cream-and-amber roundels on four sides and the top. One mesh. Carried in front (code).",
+    "glow": {}
+  },
+  "item_critter_crate": {
+    "fbx": "build/blender/lantern/item_critter_crate.fbx",
+    "png": "build/blender/lantern/item_critter_crate.png",
+    "preview": "build/blender/lantern/previews/item_critter_crate.png",
+    "size_studs": [
+      3.6,
+      3.0,
+      2.59
+    ],
+    "tris": 1132,
+    "parts": {
+      "item_critter_crate": 1056,
+      "item_critter_crate_glow": 76
+    },
+    "target_size_studs": [
+      3.6,
+      3,
+      2.6
+    ],
+    "tris_budget": 1200,
+    "priority": "P1",
+    "replaces": "critter crate fallback (block with handles)",
+    "script": "tools/blender/lantern/assets/items.py",
+    "notes": "Critter carrier, 3.6 x 3 x 2.6: the long axis is x, brass carry bars at both ends (1.55 up) for the two carriers in line; air holes on the vault and back, runners underneath. Two meshes: item_critter_crate (textured) and item_critter_crate_glow (the round front window on -Z, 1.2 across, centre 1.6 up: Neon, warm by default; code may tint it to the rarity colour beside its rarity light).",
+    "glow": {
+      "item_critter_crate_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "depot_hub": {
+    "fbx": "build/blender/lantern/depot_hub.fbx",
+    "png": "build/blender/lantern/depot_hub.png",
+    "preview": "build/blender/lantern/previews/depot_hub.png",
+    "size_studs": [
+      60.73,
+      30.0,
+      23.92
+    ],
+    "tris": 14224,
+    "parts": {
+      "depot_hub": 13144,
+      "depot_hub_glow": 1080
+    },
+    "target_size_studs": [
+      60,
+      30,
+      24
+    ],
+    "tris_budget": 15000,
+    "priority": "P1",
+    "replaces": "depot fallback (blocks)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Lamplight Depot, 60 x 30 x 24, ground at y = 0, front (the platform canopy) -Z. Red brick hall under a plum barrel roof, round pavilions with scalloped plum domes at both ends, a clock tower (lit clock 18.6 up, LAMPLIGHT DEPOT sign, teal doors at ground level in its middle, lit cupola, finial 30 up); the tower front and clock face are 4.1 in front of the origin. The canopy runs from the hall front (3.1 in front of the origin) to 12 in front, eaves 8.6 up, on iron columns on a line 11.2 in front. Two meshes: depot_hub and depot_hub_glow (Neon: windows front and back, the fanlight, clock face, cupola glass, six lanterns and two lamp posts). CanCollide false; collide with invisible parts: the hall, tower and pavilion boxes.",
+    "glow": {
+      "depot_hub_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "depot_platform": {
+    "fbx": "build/blender/lantern/depot_platform.fbx",
+    "png": "build/blender/lantern/depot_platform.png",
+    "preview": "build/blender/lantern/previews/depot_platform.png",
+    "size_studs": [
+      40.04,
+      2.0,
+      10.02
+    ],
+    "tris": 400,
+    "parts": {
+      "depot_platform": 400
+    },
+    "target_size_studs": [
+      40,
+      2,
+      10
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "platform fallback (block)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Platform, 40 x 2 x 10: brick body, plank deck 2.0 up, stone coping with the cream edge line along the track side (-Z). One mesh. Collide with one box.",
+    "glow": {}
+  },
+  "depot_signal": {
+    "fbx": "build/blender/lantern/depot_signal.fbx",
+    "png": "build/blender/lantern/depot_signal.png",
+    "preview": "build/blender/lantern/previews/depot_signal.png",
+    "size_studs": [
+      2.0,
+      12.0,
+      2.0
+    ],
+    "tris": 924,
+    "parts": {
+      "depot_signal": 880,
+      "depot_signal_lamp_glow": 44
+    },
+    "target_size_studs": [
+      2,
+      12,
+      2
+    ],
+    "tris_budget": 1000,
+    "priority": "P1",
+    "replaces": "signal fallback (cylinder and ball)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Signal post, 2 x 12 x 2: stone plinth, iron post, a lamp head facing -Z (upper lens lit, lower dark teal), brass ball on top, a ladder at the back. Two meshes: depot_signal and depot_signal_lamp_glow (Neon: the upper lens, 11 up).",
+    "glow": {
+      "depot_signal_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "depot_board": {
+    "fbx": "build/blender/lantern/depot_board.fbx",
+    "png": "build/blender/lantern/depot_board.png",
+    "preview": "build/blender/lantern/previews/depot_board.png",
+    "size_studs": [
+      15.96,
+      10.0,
+      1.5
+    ],
+    "tris": 1204,
+    "parts": {
+      "depot_board": 1044,
+      "depot_board_lamp_glow": 160
+    },
+    "target_size_studs": [
+      16,
+      10,
+      1.5
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "board fallback (block frame)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Notice board, 16 x 10 x 1.5: timber posts, a dark felt panel 14.6 wide and 6.6 tall centred 5.2 up, its face on the middle plane, framed 0.3 proud (put the SurfaceGui part just in front, about 14 x 6.4), a plum hood with a cream valance, two gooseneck lamps. Two meshes: depot_board and depot_board_lamp_glow (Neon: the two bulbs).",
+    "glow": {
+      "depot_board_lamp_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "dawn_station": {
+    "fbx": "build/blender/lantern/dawn_station.fbx",
+    "png": "build/blender/lantern/dawn_station.png",
+    "preview": "build/blender/lantern/previews/dawn_station.png",
+    "size_studs": [
+      60.4,
+      36.0,
+      30.0
+    ],
+    "tris": 11288,
+    "parts": {
+      "dawn_station": 10108,
+      "dawn_station_glow": 1088,
+      "dawn_station_sun_glow": 92
+    },
+    "target_size_studs": [
+      60,
+      36,
+      30
+    ],
+    "tris_budget": 15000,
+    "priority": "P1",
+    "replaces": "Dawn Station fallback (blocks)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Dawn Station, 60 x 36 x 30, ground at y = 0, front -Z: a cream stone station on a terrace 1.2 high (steps at the front middle), a rotunda under a golden ribbed dome and a lit lantern crowned by a brass sun (36 up), a portico whose pediment is a rising-sun window, cream wings with plum roofs and end pavilions with golden domes and peach pennants. Three meshes: dawn_station, dawn_station_glow (Neon window glow: windows, oculi, fanlight, lanterns, lamp posts) and dawn_station_sun_glow (Neon lamp glow: the rising-sun fan and the lantern room).",
+    "glow": {
+      "dawn_station_glow": [
+        255,
+        196,
+        104
+      ],
+      "dawn_station_sun_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "rail_32": {
+    "fbx": "build/blender/lantern/rail_32.fbx",
+    "png": "build/blender/lantern/rail_32.png",
+    "preview": "build/blender/lantern/previews/rail_32.png",
+    "size_studs": [
+      8.0,
+      1.0,
+      32.0
+    ],
+    "tris": 292,
+    "parts": {
+      "rail_32": 292
+    },
+    "target_size_studs": [
+      8,
+      1,
+      32
+    ],
+    "tris_budget": 600,
+    "priority": "P1",
+    "replaces": "rail fallback (two thin parts)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Track section, 32 x 1 x 8, along z. Rail tops are the top of the asset, 1 up from its base: put the base 1 below the train's rail-top line. Rails 6 apart centre to centre (the wheels at x +-3); 16 sleepers 2 apart, so sections tile seamlessly every 32. One mesh.",
+    "glow": {}
+  },
+  "decor_pine": {
+    "fbx": "build/blender/lantern/decor_pine.fbx",
+    "png": "build/blender/lantern/decor_pine.png",
+    "preview": "build/blender/lantern/previews/decor_pine.png",
+    "size_studs": [
+      9.98,
+      27.97,
+      9.99
+    ],
+    "tris": 2152,
+    "parts": {
+      "decor_pine": 2152
+    },
+    "target_size_studs": [
+      10,
+      28,
+      10
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "pine fallback (cone and cylinder)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Toy pine, 10 x 28 x 10: five scalloped dusk-teal tiers on a plum-brown trunk. One mesh, origin at the trunk foot.",
+    "glow": {}
+  },
+  "decor_birch": {
+    "fbx": "build/blender/lantern/decor_birch.fbx",
+    "png": "build/blender/lantern/decor_birch.png",
+    "preview": "build/blender/lantern/previews/decor_birch.png",
+    "size_studs": [
+      8.11,
+      21.67,
+      8.04
+    ],
+    "tris": 2080,
+    "parts": {
+      "decor_birch": 2080
+    },
+    "target_size_studs": [
+      8,
+      22,
+      8
+    ],
+    "tris_budget": 3000,
+    "priority": "P2",
+    "replaces": "birch fallback (cone and cylinder)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Toy birch, 8 x 22 x 8: cream spotted trunk, six soft sage leaf puffs. One mesh.",
+    "glow": {}
+  },
+  "decor_rock": {
+    "fbx": "build/blender/lantern/decor_rock.fbx",
+    "png": "build/blender/lantern/decor_rock.png",
+    "preview": "build/blender/lantern/previews/decor_rock.png",
+    "size_studs": [
+      7.91,
+      4.05,
+      6.02
+    ],
+    "tris": 720,
+    "parts": {
+      "decor_rock": 720
+    },
+    "target_size_studs": [
+      8,
+      4,
+      6
+    ],
+    "tris_budget": 800,
+    "priority": "P2",
+    "replaces": "rock fallback (ball)",
+    "script": "tools/blender/lantern/assets/depot.py",
+    "notes": "Rock cluster, 8 x 4 x 6: three rounded plum-grey boulders with moss on top, flat underneath. One mesh.",
+    "glow": {}
+  },
+  "stop_village": {
+    "fbx": "build/blender/lantern/stop_village.fbx",
+    "png": "build/blender/lantern/stop_village.png",
+    "preview": "build/blender/lantern/previews/stop_village.png",
+    "size_studs": [
+      120.0,
+      16.56,
+      160.0
+    ],
+    "tris": 24836,
+    "parts": {
+      "stop_village": 23384,
+      "stop_village_glow": 1452
+    },
+    "target_size_studs": [
+      120,
+      16.6,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Village: the hero house_cottage with three neighbours, the well, lanterns strung over the lane. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_village_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_farm": {
+    "fbx": "build/blender/lantern/stop_farm.fbx",
+    "png": "build/blender/lantern/stop_farm.png",
+    "preview": "build/blender/lantern/previews/stop_farm.png",
+    "size_studs": [
+      120.0,
+      24.05,
+      160.0
+    ],
+    "tris": 21480,
+    "parts": {
+      "stop_farm": 20896,
+      "stop_farm_glow": 584
+    },
+    "target_size_studs": [
+      120,
+      24.1,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Farm: the barn with a lantern cupola, the silo, haystacks, the pumpkin field, the farmhouse. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_farm_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_windmill": {
+    "fbx": "build/blender/lantern/stop_windmill.fbx",
+    "png": "build/blender/lantern/stop_windmill.png",
+    "preview": "build/blender/lantern/previews/stop_windmill.png",
+    "size_studs": [
+      120.0,
+      40.18,
+      160.0
+    ],
+    "tris": 21010,
+    "parts": {
+      "stop_windmill": 20310,
+      "stop_windmill_glow": 700
+    },
+    "target_size_studs": [
+      120,
+      40.2,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Windmill: the tower mill and its static sails (lowest tip 15 up), the miller's cottage, the granary on staddle stones, wheat. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_windmill_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_orchard": {
+    "fbx": "build/blender/lantern/stop_orchard.fbx",
+    "png": "build/blender/lantern/stop_orchard.png",
+    "preview": "build/blender/lantern/previews/stop_orchard.png",
+    "size_studs": [
+      120.0,
+      14.58,
+      160.0
+    ],
+    "tris": 15984,
+    "parts": {
+      "stop_orchard": 14760,
+      "stop_orchard_glow": 1224
+    },
+    "target_size_studs": [
+      120,
+      14.6,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Orchard: twenty apple trees hung with paper lanterns, skeps, apple crates, the apple store. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_orchard_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_inn": {
+    "fbx": "build/blender/lantern/stop_inn.fbx",
+    "png": "build/blender/lantern/stop_inn.png",
+    "preview": "build/blender/lantern/previews/stop_inn.png",
+    "size_studs": [
+      120.0,
+      25.89,
+      160.0
+    ],
+    "tris": 15654,
+    "parts": {
+      "stop_inn": 14582,
+      "stop_inn_glow": 1072
+    },
+    "target_size_studs": [
+      120,
+      25.9,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Inn: the two-storey tea room (a teapot sign: tea, not drink), the tea garden, the stable. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_inn_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_mill": {
+    "fbx": "build/blender/lantern/stop_mill.fbx",
+    "png": "build/blender/lantern/stop_mill.png",
+    "preview": "build/blender/lantern/previews/stop_mill.png",
+    "size_studs": [
+      120.0,
+      20.94,
+      160.0
+    ],
+    "tris": 18626,
+    "parts": {
+      "stop_mill": 17794,
+      "stop_mill_glow": 832
+    },
+    "target_size_studs": [
+      120,
+      20.9,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Mill: the mill house and its water wheel (static) in the stream, the mill pond, the miller's cottage, the store. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_mill_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_lighthouse": {
+    "fbx": "build/blender/lantern/stop_lighthouse.fbx",
+    "png": "build/blender/lantern/stop_lighthouse.png",
+    "preview": "build/blender/lantern/previews/stop_lighthouse.png",
+    "size_studs": [
+      120.0,
+      42.2,
+      160.0
+    ],
+    "tris": 13352,
+    "parts": {
+      "stop_lighthouse": 12716,
+      "stop_lighthouse_glow": 592,
+      "stop_lighthouse_beacon_glow": 44
+    },
+    "target_size_studs": [
+      120,
+      42.2,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Lighthouse: the banded lighthouse (beacon_glow: its lantern glass, Neon Lamp Glow; code may add a PointLight, range 30), the keeper's cottage, the net shed, the sandy cove. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_lighthouse_glow": [
+        255,
+        196,
+        104
+      ],
+      "stop_lighthouse_beacon_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "stop_boathouse": {
+    "fbx": "build/blender/lantern/stop_boathouse.fbx",
+    "png": "build/blender/lantern/stop_boathouse.png",
+    "preview": "build/blender/lantern/previews/stop_boathouse.png",
+    "size_studs": [
+      120.0,
+      14.85,
+      160.0
+    ],
+    "tris": 14772,
+    "parts": {
+      "stop_boathouse": 14092,
+      "stop_boathouse_glow": 680
+    },
+    "target_size_studs": [
+      120,
+      14.9,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Boathouse: the boathouse over the inlet, the jetty and its boats, the fisher's cottage. The water is a block (keep out). Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_boathouse_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "critter_mossmouse": {
+    "fbx": "build/blender/lantern/critter_mossmouse.fbx",
+    "png": "build/blender/lantern/critter_mossmouse.png",
+    "preview": "build/blender/lantern/previews/critter_mossmouse.png",
+    "size_studs": [
+      1.83,
+      2.0,
+      1.53
+    ],
+    "tris": 5808,
+    "parts": {
+      "critter_mossmouse": 5808
+    },
+    "target_size_studs": [
+      1.85,
+      2.0,
+      1.55
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the dandelion fluff, on the viewer's right above the head.",
+    "glow": {}
+  },
+  "critter_puddlefrog": {
+    "fbx": "build/blender/lantern/critter_puddlefrog.fbx",
+    "png": "build/blender/lantern/critter_puddlefrog.png",
+    "preview": "build/blender/lantern/previews/critter_puddlefrog.png",
+    "size_studs": [
+      1.56,
+      2.0,
+      1.49
+    ],
+    "tris": 5420,
+    "parts": {
+      "critter_puddlefrog": 5420
+    },
+    "target_size_studs": [
+      1.55,
+      2.0,
+      1.5
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the masthead lantern on top of the walnut hat.",
+    "glow": {}
+  },
+  "critter_wickmole": {
+    "fbx": "build/blender/lantern/critter_wickmole.fbx",
+    "png": "build/blender/lantern/critter_wickmole.png",
+    "preview": "build/blender/lantern/previews/critter_wickmole.png",
+    "size_studs": [
+      1.22,
+      2.1,
+      1.67
+    ],
+    "tris": 5772,
+    "parts": {
+      "critter_wickmole": 5772
+    },
+    "target_size_studs": [
+      1.25,
+      2.1,
+      1.65
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the candle flame on top of the head.",
+    "glow": {}
+  },
+  "critter_burrbun": {
+    "fbx": "build/blender/lantern/critter_burrbun.fbx",
+    "png": "build/blender/lantern/critter_burrbun.png",
+    "preview": "build/blender/lantern/previews/critter_burrbun.png",
+    "size_studs": [
+      1.85,
+      2.3,
+      1.43
+    ],
+    "tris": 5644,
+    "parts": {
+      "critter_burrbun": 5644
+    },
+    "target_size_studs": [
+      1.85,
+      2.3,
+      1.45
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Common. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the seed-pod lantern, on the viewer's left at about half height.",
+    "glow": {}
+  },
+  "critter_lanternbeetle": {
+    "fbx": "build/blender/lantern/critter_lanternbeetle.fbx",
+    "png": "build/blender/lantern/critter_lanternbeetle.png",
+    "preview": "build/blender/lantern/previews/critter_lanternbeetle.png",
+    "size_studs": [
+      1.55,
+      2.4,
+      1.39
+    ],
+    "tris": 5814,
+    "parts": {
+      "critter_lanternbeetle": 5814
+    },
+    "target_size_studs": [
+      1.55,
+      2.4,
+      1.4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Uncommon. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the glass abdomen, low at the front (it also glows from the antenna tips).",
+    "glow": {}
+  },
+  "critter_fogpup": {
+    "fbx": "build/blender/lantern/critter_fogpup.fbx",
+    "png": "build/blender/lantern/critter_fogpup.png",
+    "preview": "build/blender/lantern/previews/critter_fogpup.png",
+    "size_studs": [
+      2.34,
+      2.5,
+      2.77
+    ],
+    "tris": 5646,
+    "parts": {
+      "critter_fogpup": 5646
+    },
+    "target_size_studs": [
+      2.35,
+      2.5,
+      2.75
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Uncommon. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the lantern tag under the chin.",
+    "glow": {}
+  },
+  "critter_acornowlet": {
+    "fbx": "build/blender/lantern/critter_acornowlet.fbx",
+    "png": "build/blender/lantern/critter_acornowlet.png",
+    "preview": "build/blender/lantern/previews/critter_acornowlet.png",
+    "size_studs": [
+      2.18,
+      2.5,
+      2.51
+    ],
+    "tris": 5198,
+    "parts": {
+      "critter_acornowlet": 5198
+    },
+    "target_size_studs": [
+      2.2,
+      2.5,
+      2.5
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Uncommon. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the acorn lantern on the cup's front rim.",
+    "glow": {}
+  },
+  "critter_teapotcat": {
+    "fbx": "build/blender/lantern/critter_teapotcat.fbx",
+    "png": "build/blender/lantern/critter_teapotcat.png",
+    "preview": "build/blender/lantern/previews/critter_teapotcat.png",
+    "size_studs": [
+      2.8,
+      2.8,
+      2.25
+    ],
+    "tris": 5886,
+    "parts": {
+      "critter_teapotcat": 5886
+    },
+    "target_size_studs": [
+      2.8,
+      2.8,
+      2.25
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Rare. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the middle of the teapot (its star holes glow).",
+    "glow": {}
+  },
+  "critter_reedfox": {
+    "fbx": "build/blender/lantern/critter_reedfox.fbx",
+    "png": "build/blender/lantern/critter_reedfox.png",
+    "preview": "build/blender/lantern/previews/critter_reedfox.png",
+    "size_studs": [
+      2.45,
+      2.9,
+      2.79
+    ],
+    "tris": 5612,
+    "parts": {
+      "critter_reedfox": 5612
+    },
+    "target_size_studs": [
+      2.45,
+      2.9,
+      2.8
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Rare. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the glowing cattail, top left behind the head.",
+    "glow": {}
+  },
+  "critter_mistfawn": {
+    "fbx": "build/blender/lantern/critter_mistfawn.fbx",
+    "png": "build/blender/lantern/critter_mistfawn.png",
+    "preview": "build/blender/lantern/previews/critter_mistfawn.png",
+    "size_studs": [
+      2.15,
+      3.2,
+      2.1
+    ],
+    "tris": 5836,
+    "parts": {
+      "critter_mistfawn": 5836
+    },
+    "target_size_studs": [
+      2.15,
+      3.2,
+      2.1
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Epic. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at between the two glowing antler buds, at the top of the head.",
+    "glow": {}
+  },
+  "critter_bellturtle": {
+    "fbx": "build/blender/lantern/critter_bellturtle.fbx",
+    "png": "build/blender/lantern/critter_bellturtle.png",
+    "preview": "build/blender/lantern/previews/critter_bellturtle.png",
+    "size_studs": [
+      2.2,
+      2.9,
+      2.96
+    ],
+    "tris": 5076,
+    "parts": {
+      "critter_bellturtle": 5076
+    },
+    "target_size_studs": [
+      2.2,
+      2.9,
+      2.95
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Epic. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the water lily's glowing heart on the bell's front shoulder.",
+    "glow": {}
+  },
+  "critter_moonhare": {
+    "fbx": "build/blender/lantern/critter_moonhare.fbx",
+    "png": "build/blender/lantern/critter_moonhare.png",
+    "preview": "build/blender/lantern/previews/critter_moonhare.png",
+    "size_studs": [
+      1.84,
+      3.5,
+      2.41
+    ],
+    "tris": 5678,
+    "parts": {
+      "critter_moonhare": 5678
+    },
+    "target_size_studs": [
+      1.85,
+      3.5,
+      2.4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "critter fallback (two balls, ears and the rarity colour)",
+    "script": "tools/blender/lantern/assets/critters.py",
+    "notes": "Legendary. One mesh, stands on the origin facing -Y; scale to the manifest height. Its light is baked bright, no Neon: code adds a small amber PointLight (range 8, brightness 1.5) at the moon lantern hugged to the chest.",
+    "glow": {}
+  },
+  "shadow_wisp": {
+    "fbx": "build/blender/lantern/shadow_wisp.fbx",
+    "png": "build/blender/lantern/shadow_wisp.png",
+    "preview": "build/blender/lantern/previews/shadow_wisp.png",
+    "size_studs": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "tris": 1318,
+    "parts": {
+      "shadow_wisp": 1318
+    },
+    "target_size_studs": [
+      2.5,
+      2.5,
+      2.5
+    ],
+    "tris_budget": 1500,
+    "priority": "P1",
+    "replaces": "wisp fallback (dark ball with two white dots)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "One mesh, 2.5 studs, front -Y; eyes baked bright (no Neon). Drifts, wobbles, swells and pops by code. Up to 40 on screen.",
+    "glow": {}
+  },
+  "lampeater_body": {
+    "fbx": "build/blender/lantern/lampeater_body.fbx",
+    "png": "build/blender/lantern/lampeater_body.png",
+    "preview": "build/blender/lantern/previews/lampeater_body.png",
+    "size_studs": [
+      6.0,
+      6.0,
+      16.0
+    ],
+    "tris": 6134,
+    "parts": {
+      "lampeater_body": 6134
+    },
+    "target_size_studs": [
+      6,
+      6,
+      16
+    ],
+    "tris_budget": 7000,
+    "priority": "P1",
+    "replaces": "Lampeater fallback (block body)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "One mesh, front -Y (head forward), thorax at the bounding-box centre where the wings meet it. Lantern-glass eyes baked bright; code may hang a warm PointLight in front of the face. Swoops by code.",
+    "glow": {}
+  },
+  "lampeater_wing_l": {
+    "fbx": "build/blender/lantern/lampeater_wing_l.fbx",
+    "png": "build/blender/lantern/lampeater_wing_l.png",
+    "preview": "build/blender/lantern/previews/lampeater_wing_l.png",
+    "size_studs": [
+      18.0,
+      1.5,
+      12.0
+    ],
+    "tris": 1690,
+    "parts": {
+      "lampeater_wing_l": 1690
+    },
+    "target_size_studs": [
+      18,
+      1.5,
+      12
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Lampeater fallback (wedge part)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "The moth's left wing (Blender +X; it mirrors lampeater_wing_r). Flapped by code about its inner edge: the hinge is the bounding-box face nearest the body. Placed by bounding box at the body's centre height and depth, offset (body width + wing width) / 2 to the moth's left, where its root meets the thorax. Eye-spots on both faces (players look up at it).",
+    "glow": {}
+  },
+  "lampeater_wing_r": {
+    "fbx": "build/blender/lantern/lampeater_wing_r.fbx",
+    "png": "build/blender/lantern/lampeater_wing_r.png",
+    "preview": "build/blender/lantern/previews/lampeater_wing_r.png",
+    "size_studs": [
+      18.0,
+      1.5,
+      12.0
+    ],
+    "tris": 1690,
+    "parts": {
+      "lampeater_wing_r": 1690
+    },
+    "target_size_studs": [
+      18,
+      1.5,
+      12
+    ],
+    "tris_budget": 2500,
+    "priority": "P1",
+    "replaces": "Lampeater fallback (wedge part)",
+    "script": "tools/blender/lantern/assets/night.py",
+    "notes": "The moth's right wing (Blender -X; it mirrors lampeater_wing_l). Flapped by code about its inner edge: the hinge is the bounding-box face nearest the body. Placed by bounding box at the body's centre height and depth, offset (body width + wing width) / 2 to the moth's right, where its root meets the thorax. Eye-spots on both faces (players look up at it).",
+    "glow": {}
+  }
+}

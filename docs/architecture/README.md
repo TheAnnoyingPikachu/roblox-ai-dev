@@ -12,6 +12,7 @@ code; open the long docs only at the sections a task's `inputs` name.
 | Hundred Demon Night | `night.project.json` | `src/night` | `src/night-client` | `Rng`, `CombatRules`, `WaveRules`, `BossRules`, `BlessingRules`, `RunRules`, `NightProgress`, `NightAssets` | `src/night/CLAUDE.md` |
 | Egg Garden | `garden.project.json` | `src/garden` | `src/garden-client` | `GardenConfig`, `WorldRules`, `GardenRules`, `HatchRules`, `GardenProgress`, `DashRules` | `src/garden/CLAUDE.md` |
 | Neon Spire (planned) | `spire.project.json` (SPIRE-003) | `src/spire` | `src/spire-client` | planned in `docs/architecture/spire.md` §3 | add `src/spire/CLAUDE.md` with the first code |
+| Lantern Express (v0.1 in progress) | `lantern.project.json` | `src/lantern` | `src/lantern-client` | `LanternConfig`, `TrackRules`, `LootRules`, `CarryRules`, `WispRules`, `DepotRules`, `TrainRules`, `LanternProgress` (`docs/architecture/lantern.md` §3); reuses `MetaRules`, `Rng`, `LoginRules` (calendar only) | add `src/lantern/CLAUDE.md` with the first code |
 
 Shared by every game: `MetaRules` (XP, levels, coins, daily/weekly rewards, quests, cosmetics),
 `src/relay/Models.luau` (mesh IDs, required in place) and `src/relay/Props.luau` (part builders).

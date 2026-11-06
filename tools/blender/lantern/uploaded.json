@@ -1,0 +1,327 @@
+{
+  "critter_emberkit": {
+    "model": 95527185900897,
+    "decal": 138730870327348,
+    "texture": null
+  },
+  "train_engine": {
+    "model": 118554052282755,
+    "decal": 112007189971014,
+    "texture": null
+  },
+  "train_car_cargo": {
+    "model": 136813093156712,
+    "decal": 77832437955606,
+    "texture": null
+  },
+  "train_car_lamp": {
+    "model": 92742514849431,
+    "decal": 77223861438692,
+    "texture": null
+  },
+  "train_car_passenger": {
+    "model": 131739498986660,
+    "decal": 113417075670810,
+    "texture": null
+  },
+  "lamp_turret_base": {
+    "model": 126236339964906,
+    "decal": 121641077179320,
+    "texture": null
+  },
+  "lamp_turret_head": {
+    "model": 107874536181404,
+    "decal": 104561995099164,
+    "texture": null
+  },
+  "item_coal_sack": {
+    "model": 108790060369509,
+    "decal": 111214431802585,
+    "texture": null
+  },
+  "item_parts_bag": {
+    "model": 126225998477547,
+    "decal": 134701782636561,
+    "texture": null
+  },
+  "item_oil_can": {
+    "model": 118260626358122,
+    "decal": 115595049489266,
+    "texture": null
+  },
+  "item_supply_crate": {
+    "model": 96481077066825,
+    "decal": 85284652603365,
+    "texture": null
+  },
+  "item_critter_crate": {
+    "model": 131948880327747,
+    "decal": 118385847988573,
+    "texture": null
+  },
+  "depot_hub": {
+    "model": 117435687377999,
+    "decal": 122166143036765,
+    "texture": null
+  },
+  "depot_platform": {
+    "model": 91033999224103,
+    "decal": 89082172038109,
+    "texture": null
+  },
+  "depot_signal": {
+    "model": 137818189414680,
+    "decal": 135573391149002,
+    "texture": null
+  },
+  "depot_board": {
+    "model": 111877687715049,
+    "decal": 111218363769685,
+    "texture": null
+  },
+  "dawn_station": {
+    "model": 82631128154153,
+    "decal": 106518817199289,
+    "texture": null
+  },
+  "rail_32": {
+    "model": 70612102386633,
+    "decal": 133804065019205,
+    "texture": null
+  },
+  "decor_pine": {
+    "model": 96275319282132,
+    "decal": 70368873132661,
+    "texture": null
+  },
+  "decor_birch": {
+    "model": 132134359681568,
+    "decal": 121866462683190,
+    "texture": null
+  },
+  "decor_rock": {
+    "model": 113459400542620,
+    "decal": 121945179879145,
+    "texture": null
+  },
+  "stop_village": {
+    "model": 129043368561577,
+    "decal": 81316277495085,
+    "texture": null
+  },
+  "stop_farm": {
+    "model": 132325397507050,
+    "decal": 114437376769794,
+    "texture": null
+  },
+  "stop_windmill": {
+    "model": 101961239087351,
+    "decal": 87024993773890,
+    "texture": null
+  },
+  "stop_orchard": {
+    "model": 139847932553660,
+    "decal": 94099370068408,
+    "texture": null
+  },
+  "stop_inn": {
+    "model": 107389572491440,
+    "decal": 111214894207061,
+    "texture": null
+  },
+  "stop_mill": {
+    "model": 114902210101896,
+    "decal": 90985102107394,
+    "texture": null
+  },
+  "stop_lighthouse": {
+    "model": 117131753963905,
+    "decal": 85265864631430,
+    "texture": null
+  },
+  "stop_boathouse": {
+    "model": 110568215185585,
+    "decal": 125531339200851,
+    "texture": null
+  },
+  "critter_mossmouse": {
+    "model": 76072759565476,
+    "decal": 105297187319701,
+    "texture": null
+  },
+  "critter_puddlefrog": {
+    "model": 88094247232819,
+    "decal": 73153202233160,
+    "texture": null
+  },
+  "critter_wickmole": {
+    "model": 108307462812100,
+    "decal": 123831905241935,
+    "texture": null
+  },
+  "critter_burrbun": {
+    "model": 126603432660916,
+    "decal": 89169924005627,
+    "texture": null
+  },
+  "critter_lanternbeetle": {
+    "model": 84479154670854,
+    "decal": 96104794586447,
+    "texture": null
+  },
+  "critter_fogpup": {
+    "model": 72713875374435,
+    "decal": 78347966440991,
+    "texture": null
+  },
+  "critter_acornowlet": {
+    "model": 130945160509103,
+    "decal": 118728297335938,
+    "texture": null
+  },
+  "critter_teapotcat": {
+    "model": 99737928567158,
+    "decal": 71777010905710,
+    "texture": null
+  },
+  "critter_reedfox": {
+    "model": 107906861033955,
+    "decal": 71932061945941,
+    "texture": null
+  },
+  "critter_mistfawn": {
+    "model": 74836084530265,
+    "decal": 95420939633714,
+    "texture": null
+  },
+  "critter_bellturtle": {
+    "model": 86754622492833,
+    "decal": 87902868102392,
+    "texture": null
+  },
+  "critter_moonhare": {
+    "model": 99150505002054,
+    "decal": 72968702331336,
+    "texture": null
+  },
+  "shadow_wisp": {
+    "model": 117852831369082,
+    "decal": 91648200468865,
+    "texture": null
+  },
+  "lampeater_body": {
+    "model": 133938308682514,
+    "decal": 134515643923059,
+    "texture": null
+  },
+  "lampeater_wing_l": {
+    "model": 82930470385276,
+    "decal": 122869968985569,
+    "texture": null
+  },
+  "lampeater_wing_r": {
+    "model": 123496655293136,
+    "decal": 102245708627960,
+    "texture": null
+  },
+  "lantern_icon_album": {
+    "model": null,
+    "decal": 134716848021857,
+    "texture": null
+  },
+  "lantern_icon_board": {
+    "model": null,
+    "decal": 136049300035018,
+    "texture": null
+  },
+  "lantern_icon_close": {
+    "model": null,
+    "decal": 130335535593690,
+    "texture": null
+  },
+  "lantern_icon_coal": {
+    "model": null,
+    "decal": 128642656200295,
+    "texture": null
+  },
+  "lantern_icon_crate": {
+    "model": null,
+    "decal": 87365053122241,
+    "texture": null
+  },
+  "lantern_icon_critter": {
+    "model": null,
+    "decal": 137815744696475,
+    "texture": null
+  },
+  "lantern_icon_depot": {
+    "model": null,
+    "decal": 125893801348817,
+    "texture": null
+  },
+  "lantern_icon_lamp": {
+    "model": null,
+    "decal": 73707133165420,
+    "texture": null
+  },
+  "lantern_icon_lantern": {
+    "model": null,
+    "decal": 125222803941568,
+    "texture": null
+  },
+  "lantern_icon_locker": {
+    "model": null,
+    "decal": 74307550015147,
+    "texture": null
+  },
+  "lantern_icon_mend": {
+    "model": null,
+    "decal": 106050639880174,
+    "texture": null
+  },
+  "lantern_icon_oil": {
+    "model": null,
+    "decal": 104365865818065,
+    "texture": null
+  },
+  "lantern_icon_parts": {
+    "model": null,
+    "decal": 116764959454978,
+    "texture": null
+  },
+  "lantern_icon_ping": {
+    "model": null,
+    "decal": 97316439894816,
+    "texture": null
+  },
+  "lantern_icon_rewards": {
+    "model": null,
+    "decal": 122754009316795,
+    "texture": null
+  },
+  "lantern_icon_settings": {
+    "model": null,
+    "decal": 101962853762569,
+    "texture": null
+  },
+  "lantern_icon_stoke": {
+    "model": null,
+    "decal": 99098498215989,
+    "texture": null
+  },
+  "lantern_icon_ticket": {
+    "model": null,
+    "decal": 74339933790614,
+    "texture": null
+  },
+  "lantern_icon_train": {
+    "model": null,
+    "decal": 114292111373493,
+    "texture": null
+  },
+  "lantern_icon_xp": {
+    "model": null,
+    "decal": 73359328876052,
+    "texture": null
+  }
+}

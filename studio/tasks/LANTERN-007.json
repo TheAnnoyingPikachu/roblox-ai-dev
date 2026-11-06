@@ -1,0 +1,46 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "LANTERN-007",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Build the Lantern Express client on the shared UiKit: start menu and panels (album with odds, locker, rewards, board, settings), the HUD and Depot panel, the ping wheel, lamp turret control with the aim sent as a direction, wisp and Lampeater drawing, the fog wall, the train camera and lighting, followers.",
+  "inputs": [
+    "docs/architecture/lantern.md §6, §7",
+    "docs/decisions/0018-lantern-express.md §3",
+    "docs/game-design/game6-gdd.md §E2, §H2, §I2, §K, §L",
+    "docs/architecture/garden.md §6.4"
+  ],
+  "dependencies": [
+    "LANTERN-002",
+    "LANTERN-004",
+    "LANTERN-005"
+  ],
+  "acceptance_criteria": [
+    "Files as architecture section 6; every widget from UiKit; no client file decides an outcome (QA script_grep: only the 0018 actions are sent, and only directions on Aim)",
+    "Turret aim: mouse, touch drag and right stick; the direction is converted into the train frame and sent at most 10 times a second; the local beam draws at once; other players' beams follow their turret heads",
+    "Wisps and the Lampeater are drawn from Fx spawn records with WispRules.pos and lampeaterPos and puff on the server's Fx; the fog wall follows TrainRules.fogFront's formula from BellAt",
+    "Every GDD L line is visible in a Studio recording; no text under 12 px at 844 x 390 (Device Emulator screenshot); Reduced Motion skips animations",
+    "The album WHERE tab shows LootRules.odds summing to 100% for every tile",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; rojo build lantern.project.json and check-place pass"
+  ],
+  "verification": "CI, Studio notes with the build stamp, and the LANTERN-013 QA review",
+  "output_artifacts": [
+    "src/lantern-client/CLAUDE.md"
+  ],
+  "files": [
+    "src/lantern-client/**"
+  ],
+  "tests": [
+    "WispRules.spec.luau",
+    "LootRules.spec.luau"
+  ],
+  "notes": "Shares no file with LANTERN-006. Sounds play only from registered ids (nil until LANTERN-011). Delete src/lantern-client/.gitkeep with the first script. Built by the Client Engineer 2026-11-06. Deviations and gaps: (1) turret aim is mouse-look with the cursor locked (camera behind the head, beam at screen centre) rather than a cursor ray, so one control works on mouse, touch drag and the right stick; (2) the aim is re-sent every 0.3 s while still, because the server drops aims older than 0.5 s; (3) not built in this pass: followers (hop and seat-arm ride), item glow and bob, rescued critters in the passenger windows, livery painting (server-side per architecture 4.1), the caught sound muffle, music (no registered ids); (4) sounds: only the four registered ProSoundEffects ids already in docs/assets/register.md (tick, chime, whoosh, puff) are used; whistle, bell, chuff, glug and music stay nil until LANTERN-011 registers them, and LANTERN-011 should add Lantern to those four rows' Used in; (5) contract assumptions for LANTERN-006 are listed in src/lantern-client/CLAUDE.md (stop frame 14 studs out, ItemId, Kind, lamp_turret_head, train_engine, Carry JSON kinds, LanternBoards and runEnd.summary shapes, ReplicatedStorage.LanternModels).",
+  "evidence": [
+    "Local run 2026-11-06 on game6/client: lune run tests/run all pass (WispRules.spec and LootRules.spec unchanged and green); selene src tests 0 errors 0 warnings; stylua --check clean on an LF copy; validate-tasks and check-scope origin/main pass; rojo build lantern.project.json and garden.project.json + check-place match",
+    "Studio 2026-11-06, lantern.rbxl built from this branch, corner stamp `build 4efd021` (the working tree on top of the LANTERN-005 commit), driven by a scratch Fx emitter and fake LanternRemotes / LanternRun in a scratch build only (not in the repo; the server branch is separate): start menu (LANTERN EXPRESS logo in LuckiestGuy cream with the amber outline, the small lantern, tagline, PLAY, the Ember Kit showcase with part-fallback critters, ALBUM / LOCKER / REWARDS (badge 2) / BOARD / SETTINGS); PLAY sends only `play`; ride HUD (coal 80 / 80 with tonight's need mark, Parts and oil for this run, lantern meter, Next: Stop 1 of 3 Mossy Farm with a calm progress bar, the pulsing Tap to stoke! STOKE, the crew list with the conductor in amber, chimney smoke); stop HUD (Scavenge! bar, carry slots, DROP, SIT, the Scavenge toast); the fog sprint (bell chip turns red, the lilac fog wall rolls in from BellAt with TrainRules.fogFront, mist particles and wisp silhouettes, the violet vignette closes as the front nears, no shake, no black); night at a lamp turret (mouse-look camera behind the head, the warm beam, 16 wisps drawn from Fx records with WispRules.pos as indigo puffs with glowing eyes, the Lampeater circling with WispRules.lampeaterPos, puffs pop into pastel sparkles; the server counted Aim directions only, about 7 a second, each a unit Vector3 in the train frame); Depot panel (Boiler II / Bunker II / Lamps II / Coal / Oil with Parts prices from DepotRules.price, the branch vote below, the `HHH: Boiler II` toast); ALBUM GRID (13 cards, silhouettes for the unfound, x counts, milestones) and WHERE (Near and Far crates for Mossy Farm, each total 100.00%); the rescue reveal (RESCUED! Teapot Cat (Rare), three chimes); the ping wheel on Q (six slices, highlight by direction, sent `ping thanks` / `ping wisps`, the crew-list ping icon)",
+    "Phone check: Studio window sized to an 844 x 390 viewport: start menu fits; HUD with the lantern meter dropped under the Tickets pill (no overlap), carry slots, DROP, SIT, MENU, PING; a script over every visible Lantern TextLabel and TextButton found the smallest rendered text at 12.0 px ('Tonight: 52 / 84'); no script errors in the client log after the Aim send fix"
+  ]
+}

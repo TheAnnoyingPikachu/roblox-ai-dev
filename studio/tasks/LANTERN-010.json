@@ -1,0 +1,35 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-010",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Model the 13 critters at the HD creature standard with the shared cute face, the shadow wisp, and the Lampeater (body and two wings).",
+  "inputs": [
+    "docs/architecture/lantern.md §9",
+    "docs/game-design/game6-gdd.md §H4 (looks), §E4, §M",
+    "tools/blender/garden/README.md (Creature standard (HD pass))",
+    "docs/game-design/game6-art-bible.md (from the art director)"
+  ],
+  "dependencies": [
+    "LANTERN-001"
+  ],
+  "acceptance_criteria": [
+    "critter_<id> for the 13 GDD H4 ids: height 2.0 to 3.5, footprint within 3 x 3, 6,000 tris, one mesh, origin base centre, front -Y; rarer reads bigger and brighter",
+    "shadow_wisp 2.5 studs, 1,500 tris, soft and round with two bright eyes (Mild fear, never a scare); lampeater_body and lampeater_wing_l/_r at their sizes and budgets",
+    "Contact sheet reviewed by the art director before upload"
+  ],
+  "verification": "The art director reviews the contact sheet; A15 checks sizes",
+  "output_artifacts": [
+    "tools/blender/lantern/assets/critters.py",
+    "tools/blender/lantern/assets/night.py"
+  ],
+  "files": [
+    "tools/blender/lantern/assets/critters.py",
+    "tools/blender/lantern/assets/night.py"
+  ],
+  "tests": [],
+  "notes": "Starts after the style test's critter is reviewed. No rigs: everything moves by code."
+}

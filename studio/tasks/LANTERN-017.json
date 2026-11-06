@@ -1,0 +1,74 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "LANTERN-017",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Fix the five minors of the LANTERN-016 re-review (r1 to r5), r4 first: a paused session that ends soon after a crash must not lose what it earned.",
+  "inputs": [
+    "docs/qa/lantern-v01-review.md",
+    "docs/production/studio-lessons.md"
+  ],
+  "dependencies": [
+    "LANTERN-016"
+  ],
+  "acceptance_criteria": [
+    "r4: no earned change is dropped when a paused session ends, whatever the timing (SaveStore spec cases)",
+    "r5: a paused session never shows rewards from a default profile that disappear later",
+    "r1, r2, r3 fixed or the conservative choice recorded",
+    "All gates pass"
+  ],
+  "verification": "Independent QA re-review; CI",
+  "output_artifacts": [
+    "docs/qa/lantern-v01-review.md"
+  ],
+  "files": [
+    "src/lantern/**",
+    "src/lantern-client/**",
+    "src/shared/LanternConfig.luau",
+    "src/shared/TrainRules.luau",
+    "src/shared/CarryRules.luau",
+    "src/shared/WispRules.luau",
+    "src/shared/LootRules.luau",
+    "src/shared/DepotRules.luau",
+    "src/shared/LanternProgress.luau",
+    "src/kit/SaveStore.luau",
+    "src/kit-roblox/modules/UiKit.luau",
+    "tests/TrainRules.spec.luau",
+    "tests/CarryRules.spec.luau",
+    "tests/WispRules.spec.luau",
+    "tests/LanternProgress.spec.luau",
+    "tests/LanternConfig.spec.luau",
+    "tests/SaveStore.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0018-lantern-express.md",
+    "docs/architecture/lantern.md",
+    "docs/game-design/game6-gdd.md",
+    "docs/game-design/game6-art-bible.md",
+    "docs/game-design/game6-pacing.py",
+    "docs/checkpoints/LANTERN-V01.md",
+    "docs/qa/lantern-v01-review.md",
+    "lantern.project.json",
+    "docs/assets/register.md",
+    "docs/decisions/0011-shared-kit-and-pipeline-trust.md",
+    "studio/tasks/LANTERN-017.json"
+  ],
+  "tests": [
+    "TrainRules.spec.luau",
+    "CarryRules.spec.luau",
+    "WispRules.spec.luau",
+    "LanternProgress.spec.luau",
+    "LanternConfig.spec.luau",
+    "SaveStore.spec.luau"
+  ],
+  "evidence": [
+    "Code 561418e (r4), 824cfce (r5), fb81d02 (r1, r2, r3); docs in the following commit",
+    "lune run tests/run: 746/746 passed at fb81d02 (736 + 10 new); selene 0/0/0; stylua --check clean (LF copy); validate-tasks; check-scope origin/main; rojo build + check-place for default, garden, lantern, night, relay",
+    "Studio play at build fb81d02 (unpublished, no DataStore): idle turret player inactive from T+202 into night 1; a session without a store still shows rewards (+5 XP per stop). The paused path and a Lamp Car turret need staging or two players",
+    "docs/qa/lantern-v01-review.md section 'Fixes (LANTERN-017)'",
+    "QA re-review of LANTERN-017 (ed99262): ship to staging. Director then fixed t1 (paused-save wording no longer promises the rewards will show up; the outage limit documented in GDD J, decision 0011 and the checkpoint) and recorded t2/t3 as must-fix before a public launch in docs/checkpoints/LANTERN-V01.md"
+  ],
+  "notes": "Created by the Director after the LANTERN-016 re-review (f0711bd). r4 design: a paused session's end stores its changes under a fresh lock (kept as it was) instead of a pending-changes key; kit changes are closures, not storable. r5: rewards held back until the claim, then one toast of what the session added to the real save. r1: an idle player's lamp keeps shining for the crew but earns them nothing; a puff is not activity."
+}

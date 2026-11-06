@@ -1,0 +1,38 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-008",
+  "owner": "A12",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Model the train (engine, cargo, lamp and passenger cars), the lamp turret base and head, the five carried items, the depot pieces, Dawn Station, the rail and three decor props in the Blender pipeline at the HD standard.",
+  "inputs": [
+    "docs/architecture/lantern.md §9",
+    "docs/game-design/game6-gdd.md §M",
+    "docs/game-design/game6-art-bible.md (from the art director)",
+    "tools/blender/lantern/README.md (from the art director)",
+    "tools/blender/garden/README.md (Creature standard)"
+  ],
+  "dependencies": [
+    "LANTERN-001"
+  ],
+  "acceptance_criteria": [
+    "Every asset of these groups in architecture section 9 at its size, budget, origin (base centre) and front (-Y); the turret head symmetric about its hinge",
+    "Contact sheet and previews reviewed by the art director before upload; full RGB 1024 textures with 192-sample AO",
+    "One Blender process at a time; the build of these assets runs from tools/blender/lantern/build.py"
+  ],
+  "verification": "The art director reviews the contact sheet; A15 checks sizes against architecture section 9",
+  "output_artifacts": [
+    "tools/blender/lantern/assets/train.py",
+    "tools/blender/lantern/assets/items.py",
+    "tools/blender/lantern/assets/depot.py"
+  ],
+  "files": [
+    "tools/blender/lantern/assets/train.py",
+    "tools/blender/lantern/assets/items.py",
+    "tools/blender/lantern/assets/depot.py"
+  ],
+  "tests": [],
+  "notes": "Starts after the art director's style test is reviewed (its task file lives in the art worktree, so it is not a listed dependency). manifest.json and uploads belong to LANTERN-011."
+}

@@ -1,0 +1,42 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "LANTERN-020",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Art bible and the three-asset style test for Lantern Express (train_engine, critter_emberkit, house_cottage) with the Blender tool tree tools/blender/lantern, at the studio's HD standard, before any feature work.",
+  "inputs": [
+    "docs/game-design/game6-concepts.md A",
+    "docs/production/studio-lessons.md",
+    "tools/blender/garden/README.md (Creature standard)"
+  ],
+  "dependencies": [
+    "GAMESIX-001"
+  ],
+  "acceptance_criteria": [
+    "Art bible with palette, lighting plan, shape language, scale rules, UI tokens, thumbnail direction and what Mild means visually",
+    "Three hero assets under their budgets with names and sizes matching docs/architecture/lantern.md section 9",
+    "A style-test render judged by the Director before feature work"
+  ],
+  "verification": "Director review of build/blender/lantern/style_test.png (accepted 2026-11-06)",
+  "output_artifacts": [
+    "docs/game-design/game6-art-bible.md",
+    "assets/lantern/train_engine.*",
+    "assets/lantern/critter_emberkit.*",
+    "assets/lantern/house_cottage.*"
+  ],
+  "files": [
+    "docs/game-design/game6-art-bible.md",
+    "tools/blender/lantern/**",
+    "assets/lantern/**",
+    "studio/tasks/LANTERN-020.json"
+  ],
+  "tests": [],
+  "evidence": [
+    "Art director commit b782f77 on game6/style: train_engine 10,804 tris, critter_emberkit 5,380, house_cottage 9,602; style_test.png reviewed and accepted by the Director 2026-11-06 (merged as 96f7cc3)",
+    "Director ruling: house_cottage stays each village tile's hero house with simpler neighbours; the village tile budget rises to 25,000 tris"
+  ],
+  "notes": "house_cottage is a building block of the village tile, not uploaded on its own."
+}

@@ -83,6 +83,9 @@ local SPECS = {
 	["GardenAssets.spec.luau"] = function()
 		require("./GardenAssets.spec")
 	end,
+	["LanternAssets.spec.luau"] = function()
+		require("./LanternAssets.spec")
+	end,
 	["LoginRules.spec.luau"] = function()
 		require("./LoginRules.spec")
 	end,
@@ -91,6 +94,30 @@ local SPECS = {
 	end,
 	["SaveStore.spec.luau"] = function()
 		require("./SaveStore.spec")
+	end,
+	["LanternConfig.spec.luau"] = function()
+		require("./LanternConfig.spec")
+	end,
+	["LootRules.spec.luau"] = function()
+		require("./LootRules.spec")
+	end,
+	["CarryRules.spec.luau"] = function()
+		require("./CarryRules.spec")
+	end,
+	["WispRules.spec.luau"] = function()
+		require("./WispRules.spec")
+	end,
+	["TrackRules.spec.luau"] = function()
+		require("./TrackRules.spec")
+	end,
+	["DepotRules.spec.luau"] = function()
+		require("./DepotRules.spec")
+	end,
+	["TrainRules.spec.luau"] = function()
+		require("./TrainRules.spec")
+	end,
+	["LanternProgress.spec.luau"] = function()
+		require("./LanternProgress.spec")
 	end,
 	["Purity.spec.luau"] = function()
 		require("./Purity.spec")
