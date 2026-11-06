@@ -23,6 +23,7 @@ local GardenProgress = require(Shared:WaitForChild("GardenProgress"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local HatchRules = require(Shared:WaitForChild("HatchRules"))
 local MetaRules = require(Shared:WaitForChild("MetaRules"))
+local TradeRules = require(Shared:WaitForChild("TradeRules"))
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local remotes = ReplicatedStorage:WaitForChild("GardenRemotes")
 local request = remotes:WaitForChild("Request") :: RemoteFunction
@@ -318,6 +319,7 @@ end
 
 local function eggsUsing(species: string): string
 	local names = {}
+	local rare = false
 	for _, e in GardenConfig.EGGS do
 		if e.price then
 			for _, o in e.odds do
@@ -325,9 +327,17 @@ local function eggsUsing(species: string): string
 					table.insert(names, (e.name:gsub(" Egg$", "")))
 				end
 			end
+			local event = (e :: any).event
+			if event and event.s == species then
+				rare = true
+				table.insert(names, (e.name:gsub(" Egg$", "")))
+			end
 		end
 	end
-	return if #names > 0 then table.concat(names, ", ") .. " Egg" else "Starter Egg"
+	if #names == 0 then
+		return "Starter Egg"
+	end
+	return table.concat(names, ", ") .. " Egg" .. (if rare then ", only in Snowfall, Petal Storm or Thunder" else "")
 end
 
 local function weathersFor(mutation: string): string
@@ -530,7 +540,22 @@ renderers.Odds = function()
 		end
 		order += 1
 		heading(oddsPanel, `{string.upper(egg.name)}: CREATURES`, order)
-		order = oddsRows(oddsPanel, order + 1, egg.odds, speciesName, ClientState.rarityColour)
+		-- In a rare weather the table is the one with the Moth (V2.4), as the server rolls it.
+		order =
+			oddsRows(oddsPanel, order + 1, HatchRules.oddsFor(egg.id, weather), speciesName, ClientState.rarityColour)
+		local event = (egg :: any).event
+		if event then
+			local moth = GardenConfig.species(event.s)
+			para(
+				oddsPanel,
+				`{if moth then moth.name else event.s}: {HatchRules.percent(event.bp)}% from this egg only in Snowfall, Petal Storm or Thunder (taken from {speciesName(
+					event.from
+				)}).`,
+				order,
+				UI.MUTED
+			)
+			order += 1
+		end
 		if egg.mutation then
 			heading(oddsPanel, "MUTATION", order)
 			order = oddsRows(oddsPanel, order + 1, { { id = egg.mutation, bp = 10000 } }, function(id)
@@ -574,6 +599,17 @@ renderers.Odds = function()
 		local now = if w.id == weather then "  (NOW)" else ""
 		heading(oddsPanel, `MUTATIONS IN {string.upper(w.name)}{now}`, order)
 		order = oddsRows(oddsPanel, order + 1, w.mutation, mutationName)
+	end
+	-- Charm line (V2.1): only while a rare weather is on, in the published numbers.
+	local charm = GardenConfig.charmFor(weather)
+	if charm then
+		order += 1
+		para(
+			oddsPanel,
+			`{ClientState.weatherName(weather)} now: {charm.name} x{charm.mult} charm on {HatchRules.percent(charm.bp)}% of hatches, on top of the mutation.`,
+			order,
+			ClientState.CHARM_COLOURS[charm.id]
+		)
 	end
 	if not only then
 		order += 1
@@ -620,6 +656,51 @@ renderers.Index = function()
 	local top = row(indexPanel, 56, 0)
 	label(top, 14, 6, -28, 22, `{#profile.index} / {GardenConfig.INDEX_SIZE} found`, UI.LEAF)
 	label(top, 14, 30, -28, 20, `Each new entry: +50 XP and +2% income forever (now +{#profile.index * 2}%)`, UI.MUTED)
+	-- Milestone cards (V4): CLAIM for every count met and not yet claimed, then the next one to reach.
+	for _, m in GardenConfig.MILESTONES do
+		if profile.milestones[tostring(m.at)] == true then
+			continue
+		end
+		local ready = #profile.index >= m.at
+		local r = row(indexPanel, 64, 0)
+		local rewards = {}
+		if m.coins > 0 then
+			table.insert(rewards, `{commas(m.coins)} coins`)
+		end
+		if m.title then
+			table.insert(rewards, `the title "{m.title}"`)
+		end
+		if m.egg then
+			local egg = GardenConfig.egg(m.egg)
+			table.insert(rewards, `a free {if egg then egg.name else m.egg}`)
+		end
+		for _, c in GardenConfig.COSMETICS do
+			if c.index == m.at then
+				table.insert(rewards, `the {c.name} {c.slot}`)
+			end
+		end
+		label(
+			r,
+			14,
+			6,
+			-180,
+			24,
+			`{m.at} entries: {if ready then "ready to claim!" else `{#profile.index} / {m.at}`}`,
+			UI.GOLD
+		)
+		label(r, 14, 32, -180, 24, table.concat(rewards, ", "), UI.MUTED).TextWrapped = true
+		if ready then
+			stroke(UI.GOLD, 3).Parent = r
+		end
+		action(r, if ready then "CLAIM" else "SOON", UI.GOLD, ready, function()
+			if ask("claimMilestone", tostring(m.at)) then
+				ClientState.sound(ClientState.SFX.fanfare, 0.45)
+			end
+		end, 1, 140)
+		if not ready then
+			break -- one upcoming card at a time
+		end
+	end
 	for i, sp in GardenConfig.SPECIES do
 		local any = false
 		for _, m in GardenConfig.MUTATIONS do
@@ -849,9 +930,111 @@ local function ask2(message: string, onYes: () -> ())
 	end
 end
 
+-- NAME card (V5): a TextBox with a live count and validity from GardenRules.validName; OK sends
+-- `name "<id>:<text>"` and the tag follows the profile. The server filters; this only asks.
+local nameShade = new("Frame", {
+	Size = UDim2.fromScale(1, 1),
+	BackgroundColor3 = Color3.fromRGB(60, 40, 60),
+	BackgroundTransparency = 0.45,
+	Visible = false,
+	ZIndex = 50,
+	Parent = gui,
+})
+local nameCard = new("Frame", {
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.5),
+	Size = UDim2.fromOffset(440, 230),
+	BackgroundColor3 = UI.CREAM,
+	Parent = nameShade,
+}, { corner(20), stroke(UI.SKY, 4) })
+ClientState.autoScale(nameCard)
+local nameTitle =
+	text({ Position = UDim2.fromOffset(20, 14), Size = UDim2.new(1, -40, 0, 30), Text = "", Parent = nameCard })
+local nameBox = new("TextBox", {
+	Position = UDim2.fromOffset(20, 54),
+	Size = UDim2.new(1, -40, 0, 48),
+	BackgroundColor3 = UI.WHITE,
+	Font = Enum.Font.GothamBold,
+	TextSize = 24,
+	TextColor3 = UI.INK,
+	PlaceholderText = "A name (letters, numbers, spaces, ' and -)",
+	PlaceholderColor3 = UI.GREY,
+	ClearTextOnFocus = false,
+	Text = "",
+	Parent = nameCard,
+}, { corner(12), stroke(UI.SKY, 2) })
+local nameCount = text({
+	Position = UDim2.fromOffset(20, 108),
+	Size = UDim2.new(1, -40, 0, 22),
+	Text = "",
+	TextColor3 = UI.MUTED,
+	Font = Enum.Font.GothamBold,
+	Parent = nameCard,
+})
+local nameOk: TextButton
+local nameId = ""
+local function nameCheck()
+	if #nameBox.Text > GardenConfig.NAME.max then
+		nameBox.Text = nameBox.Text:sub(1, GardenConfig.NAME.max)
+	end
+	local valid = GardenRules.validName(nameBox.Text) ~= nil
+	nameCount.Text =
+		`{#nameBox.Text} / {GardenConfig.NAME.max}{if valid or nameBox.Text == "" then "" else "  -  not allowed yet"}`
+	nameCount.TextColor3 = if valid or nameBox.Text == "" then UI.MUTED else UI.CORAL
+	nameOk.BackgroundColor3 = if valid then UI.LEAF else UI.GREY
+	nameOk.AutoButtonColor = valid
+end
+nameBox:GetPropertyChangedSignal("Text"):Connect(nameCheck)
+nameOk = button({
+	Position = UDim2.new(0.5, 8, 1, -70),
+	Size = UDim2.new(0.5, -28, 0, 52),
+	Text = "OK",
+	BackgroundColor3 = UI.LEAF,
+	Parent = nameCard,
+}, function()
+	local name = GardenRules.validName(nameBox.Text)
+	if name == nil then
+		return
+	end
+	nameShade.Visible = false
+	if not ask("name", `{nameId}:{name}`) then
+		toast("That name could not be set right now", UI.CORAL)
+	end
+end)
+button({
+	Position = UDim2.new(0, 20, 1, -70),
+	Size = UDim2.new(0.5, -28, 0, 52),
+	Text = "CANCEL",
+	BackgroundColor3 = UI.CORAL,
+	Parent = nameCard,
+}, function()
+	nameShade.Visible = false
+end)
+nameBox.FocusLost:Connect(function(enterPressed: boolean)
+	if enterPressed and nameShade.Visible then
+		task.defer(function()
+			if GardenRules.validName(nameBox.Text) then
+				nameShade.Visible = false
+				if not ask("name", `{nameId}:{GardenRules.validName(nameBox.Text)}`) then
+					toast("That name could not be set right now", UI.CORAL)
+				end
+			end
+		end)
+	end
+end)
+
+local function openName(c: any)
+	nameId = tostring(c.id)
+	nameTitle.Text = `Name your {ClientState.creatureName(c.s, c.m, c.z, c.c)}`
+	nameBox.Text = c.n or ""
+	nameCheck()
+	nameShade.Visible = true
+	nameBox:CaptureFocus()
+end
+
 local creaturesPanel = panel("Creatures")
 local function creatureRow(c: any, order: number)
-	local name = ClientState.creatureName(c.s, c.m, c.z)
+	local name = ClientState.creatureName(c.s, c.m, c.z, c.c, c.n)
 	local r = row(creaturesPanel, 62, order)
 	new("Frame", {
 		Position = UDim2.fromOffset(0, 8),
@@ -859,17 +1042,10 @@ local function creatureRow(c: any, order: number)
 		BackgroundColor3 = ClientState.rarityColour(c.s),
 		Parent = r,
 	}, { corner(3) })
-	label(r, 16, 6, -390, 26, name, ClientState.rarityColour(c.s))
+	label(r, 16, 6, -490, 26, name, ClientState.rarityColour(c.s))
 	local where = if c.placed > 0 then `pad {c.placed}` else "in storage, not earning"
-	label(
-		r,
-		16,
-		34,
-		-390,
-		18,
-		`{ClientState.rarityName(c.s)}  -  {short(GardenRules.rate(c))} coins/s  -  {where}`,
-		UI.MUTED
-	)
+	local kind = if c.n ~= "" then ClientState.creatureName(c.s, c.m, c.z, c.c) else ClientState.rarityName(c.s)
+	label(r, 16, 34, -490, 18, `{kind}  -  {short(GardenRules.rate(c))} coins/s  -  {where}`, UI.MUTED)
 	local id = tostring(c.id)
 	if c.placed > 0 then
 		action(r, "STORE", UI.SKY, GardenRules.storageCount(profile) < GardenConfig.STORAGE, function()
@@ -893,6 +1069,59 @@ local function creatureRow(c: any, order: number)
 			end
 		end)
 	end, 3, 110)
+	action(r, "NAME", UI.SKY, true, function()
+		openName(c)
+	end, 4, 90)
+end
+
+-- The last 30 trades (V1.7) with UNDO while TradeRules.canUndo allows it.
+local function tradeRows(parent: Instance, order: number): number
+	heading(parent, "TRADES", order)
+	local trades = profile.trades
+	if #trades == 0 then
+		label(
+			row(parent, 40, order + 1),
+			14,
+			8,
+			-28,
+			24,
+			"No trades yet. Stand next to a friend and press TRADE.",
+			UI.MUTED
+		)
+		return order + 2
+	end
+	local now = ClientState.now()
+	for i = #trades, 1, -1 do
+		local t = trades[i]
+		order += 1
+		local r = row(parent, 64, order)
+		local with = Players:GetPlayerByUserId(t.with)
+		local who = if with then with.DisplayName else `player {t.with}`
+		local ok = TradeRules.canUndo(profile, t.id, now)
+		label(r, 14, 6, -170, 24, `{os.date("!%d %b", t.at)}  -  with {who}{if t.undone then "  -  undone" else ""}`)
+		label(
+			r,
+			14,
+			32,
+			-170,
+			24,
+			`Gave {ClientState.creatureName(t.gave.s, t.gave.m, t.gave.z, t.gave.c, t.gave.n)}, got {ClientState.creatureName(
+				t.got.s,
+				t.got.m,
+				t.got.z,
+				t.got.c,
+				t.got.n
+			)}`,
+			UI.MUTED
+		).TextWrapped =
+			true
+		action(r, if t.undone then "UNDONE" elseif ok then "UNDO" else "DONE", UI.CORAL, ok, function()
+			if not ask("tradeUndo", t.id) then
+				toast("Could not undo right now", UI.CORAL)
+			end
+		end, 1, 120)
+	end
+	return order + 1
 end
 
 renderers.Creatures = function()
@@ -960,6 +1189,7 @@ renderers.Creatures = function()
 	if #stored == 0 then
 		label(row(creaturesPanel, 40, 201), 14, 8, -28, 24, "Storage is empty", UI.MUTED)
 	end
+	tradeRows(creaturesPanel, 400)
 end
 
 -- LOCKER: fences and watering cans ----------------------------------------------------------------
@@ -985,9 +1215,9 @@ renderers.Locker = function()
 		LayoutOrder = 0,
 		Parent = locker,
 	}, { new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8) }) })
-	for _, tab in { { "fence", "FENCES" }, { "can", "WATERING CANS" } } do
+	for _, tab in { { "fence", "FENCES" }, { "can", "WATERING CANS" }, { "pad", "PADS" } } do
 		button({
-			Size = UDim2.new(0.5, -4, 1, 0),
+			Size = UDim2.new(1 / 3, -6, 1, 0),
 			Text = tab[2],
 			BackgroundColor3 = if lockerTab == tab[1] then UI.PINK else UI.SKY,
 			Parent = tabs,
@@ -1159,7 +1389,7 @@ renderers.Stats = function()
 	for _, c in profile.creatures do
 		local r = GardenRules.rate(c)
 		if r > bestRate then
-			best, bestRate = ClientState.creatureName(c.s, c.m, c.z), r
+			best, bestRate = ClientState.creatureName(c.s, c.m, c.z, c.c, c.n), r
 		end
 	end
 	local level = GardenRules.level(profile)
@@ -1177,6 +1407,11 @@ renderers.Stats = function()
 			{ "Beds", `{profile.bedCount} / {GardenConfig.BEDS.max}` },
 			{ "Pen pads", `{profile.penSlots} / {GardenConfig.PEN.max}` },
 			{ "Login streak", `{profile.daily.streak} days` },
+			{ "Title", ClientState.title(profile) or "None yet" },
+			{
+				"Trades today",
+				`{TradeRules.tradesToday(profile, MetaRules.dayOf(ClientState.now()))} / {GardenConfig.TRADE.perDay}`,
+			},
 		}
 	do
 		local r = row(stats, 42, i)
@@ -1200,6 +1435,7 @@ renderers.Stats = function()
 			UI.CORAL
 		)
 	end
+	tradeRows(stats, 100)
 end
 
 -- DASH: Splash Dash ready state, prizes today and prize eggs (GDD T8, T9) -------------------------
@@ -1271,7 +1507,7 @@ renderers.Dash = function()
 		if got >= cap then UI.MUTED else UI.LEAF
 	)
 
-	heading(dashPanel, "YOUR PRIZE EGGS", 3)
+	heading(dashPanel, "PRIZE EGGS", 3)
 	local held = false
 	for i, egg in GardenConfig.EGGS do
 		local count = profile.prizeEggs[egg.id] or 0
@@ -1340,6 +1576,8 @@ renderers.Settings = function()
 			{ "sfx", "Sound effects" },
 			{ "fastHatch", "Fast Hatch (short reveal)" },
 			{ "announcements", "Hatch announcements" },
+			{ "followers", "Followers (favourite pets walk behind players)" },
+			{ "trades", "Trade invites from friends" },
 		}
 	do
 		local r = row(setting, 52, i)
@@ -1383,6 +1621,9 @@ renderers.Help = function()
 			"The Lucky Meter on each egg guarantees its best creature within a set number of hatches.",
 			"Visit other gardens to water their eggs and leave a like. Nobody can ever take what you own.",
 			"Splash Dash is an optional race for 3 or more players. Open DASH to get ready and to plant prize eggs.",
+			"Snowfall, Petal Storm and Thunder are rare weathers: creatures hatched then can carry a Frosted, Blooming or Stormy charm, and the Lantern Moth appears.",
+			"Trading: stand next to a Roblox friend and press TRADE to swap one creature for one. Both of you press TRADE, wait 10 seconds, then CONFIRM. Either of you can undo for 10 minutes.",
+			"Name a creature from CREATURES with NAME. Favourite one with LOVE and it follows you around.",
 		}
 	do
 		local r = row(help, 64, i)
