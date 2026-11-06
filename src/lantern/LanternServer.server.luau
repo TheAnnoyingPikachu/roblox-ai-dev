@@ -87,11 +87,14 @@ local function publish(player: Player, profile: LanternProgress.Profile)
 	player:SetAttribute("Lamp", profile.lamp)
 end
 
--- A record from a later build must never be rewritten as v1 (decision 0018 section 4). Until the
--- kit's `newer` option is wired through Saves.start, the load's UpdateAsync is aborted here (no
--- write, the session goes offline) and readOnly() shows the record sanitised in memory.
+-- A record from a later build must never be rewritten as v1 (decision 0018 section 4): the kit's
+-- `newer` option (LANTERN-005) loads it read-only. Where Saves.start does not pass that option on
+-- yet, this guard aborts the load's UpdateAsync instead (no write, the session goes offline) and
+-- readOnly() shows the record sanitised in memory. shortcut: delete the guard once every branch
+-- has the LANTERN-005 kit.
+local kitNewer = false
 local function sanitize(record: any, t: number): LanternProgress.Profile
-	if LanternProgress.isNewer(record) then
+	if not kitNewer and LanternProgress.isNewer(record) then
 		error("newer save: this session stays read-only")
 	end
 	return LanternProgress.sanitize(record, t)
@@ -102,11 +105,13 @@ local saves = Saves.start({
 	defaults = LanternProgress.defaults,
 	sanitize = sanitize,
 	snapshot = LanternProgress.snapshot,
+	newer = LanternProgress.isNewer,
 	onChanged = publish,
-})
+} :: any)
+kitNewer = saves.store.o.newer ~= nil -- the SaveStore kept the option: the kit handles newer saves
 
 local function readOnly(player: Player)
-	if saves.isOnline(player) then
+	if kitNewer or saves.isOnline(player) then
 		return
 	end
 	local key = `player_{player.UserId}`

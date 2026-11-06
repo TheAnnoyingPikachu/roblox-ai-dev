@@ -40,8 +40,8 @@ Pure rules: `TrainRules` (the run), `CarryRules`, `WispRules`, `LootRules`, `Tra
   (depth 10 or less) is never caught. A tile mesh that arrives mirrored is fixed in `Stops.build`'s yaw.
 - The client reads `LanternRun`, `LanternBoards`, `LanternModels` (templates from `Models.night`) and the
   names `train_engine`, `lamp_turret_head`, seat `Kind`, item `ItemId` (architecture lantern 5).
-- A save whose `schemaVersion` is above 1 is never written: `sanitize` throws inside the load's
-  UpdateAsync and `readOnly` shows it in memory (until the kit's `newer` option reaches `Saves.start`).
+- A save whose `schemaVersion` is above 1 is never written: the kit's `newer` option loads it read-only;
+  on a kit without it, `sanitize` throws inside the load's UpdateAsync and `readOnly` shows it in memory.
 - Stores `LanternProfile<suffix>`, `LanternWeekCritters<week><suffix>`, `LanternWeekDist<week><suffix>`.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.
 
