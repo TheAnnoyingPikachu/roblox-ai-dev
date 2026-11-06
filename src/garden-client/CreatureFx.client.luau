@@ -4,7 +4,8 @@
 -- attribute layered on the texture (Golden, Moonlit, Rainbow and Celestial Highlights with a
 -- SelectionBox fallback past the Highlight budget; Celestial adds a pulsing fill, stars, a glow and
 -- a halo), idle cries, hiding a creature while HatchFx reveals it, and ambient life (windmill
--- sails, butterflies, drifting petals). Display only: sends nothing and changes nothing the server owns.
+-- sails, butterflies, drifting petals, petal emitters under the large sakura). Display only: sends
+-- nothing and changes nothing the server owns.
 
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -527,6 +528,89 @@ ClientState.new("ParticleEmitter", {
 	Rate = 10,
 	Parent = petalSky,
 })
+
+-- Petal emitters under each large sakura's canopy (GDD X2 item 4, architecture 6.4): one per
+-- `sakura_large_*` model, at most 12, enabled only within 60 studs of the camera.
+local PETAL_RANGE, PETAL_TREES = 60, 12
+local petalTrees: { [Instance]: { at: Vector3, emitter: ParticleEmitter } } = {}
+local function addPetals(tree: Instance)
+	if petalTrees[tree] or not (tree:IsA("Model") or tree:IsA("BasePart")) then
+		return
+	end
+	local count = 0
+	for _ in petalTrees do
+		count += 1
+	end
+	if count >= PETAL_TREES then
+		return
+	end
+	local box: CFrame, size: Vector3
+	if tree:IsA("Model") then
+		box, size = tree:GetBoundingBox()
+	else
+		box, size = (tree :: BasePart).CFrame, (tree :: BasePart).Size
+	end
+	-- The canopy: the top third of the tree, as wide as the tree.
+	local at = box.Position + Vector3.new(0, size.Y * 0.28, 0)
+	local holder = ClientState.new("Part", {
+		Name = "SakuraPetals",
+		Anchored = true,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		Transparency = 1,
+		Size = Vector3.new(size.X * 0.7, 2, size.Z * 0.7),
+		Position = at,
+		Parent = fxFolder,
+	})
+	local petals = ClientState.new("ParticleEmitter", {
+		Color = ColorSequence.new(Color3.fromRGB(255, 180, 210), Color3.fromRGB(255, 228, 238)),
+		Size = NumberSequence.new(0.4),
+		Squash = NumberSequence.new(-0.5),
+		Lifetime = NumberRange.new(5, 7),
+		Speed = NumberRange.new(0.5, 1.5),
+		Shape = Enum.ParticleEmitterShape.Box,
+		ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume,
+		EmissionDirection = Enum.NormalId.Bottom,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-80, 80),
+		Acceleration = Vector3.new(1.2, -1, 0.4),
+		Rate = 3,
+		Enabled = false,
+		Parent = holder,
+	})
+	petalTrees[tree] = { at = at, emitter = petals }
+	tree.Destroying:Once(function()
+		petalTrees[tree] = nil
+		holder:Destroy()
+	end)
+end
+task.spawn(function()
+	local garden = Workspace:WaitForChild("Garden", 60)
+	if not garden then
+		return
+	end
+	for _, d in garden:GetDescendants() do
+		if string.match(d.Name, "^sakura_large_") then
+			addPetals(d)
+		end
+	end
+	garden.DescendantAdded:Connect(function(d)
+		if string.match(d.Name, "^sakura_large_") then
+			task.defer(addPetals, d) -- after its parts are parented, for the bounding box
+		end
+	end)
+	while true do
+		local eye = camera.CFrame.Position
+		for _, tree in petalTrees do
+			local near = (tree.at - eye).Magnitude <= PETAL_RANGE
+			if tree.emitter.Enabled ~= near then
+				tree.emitter.Enabled = near
+			end
+		end
+		task.wait(1)
+	end
+end)
 
 RunService.Heartbeat:Connect(function()
 	local t = os.clock()
