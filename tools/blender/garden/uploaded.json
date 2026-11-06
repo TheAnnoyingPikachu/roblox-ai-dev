@@ -129,11 +129,6 @@
     "decal": 119021247543469,
     "texture": null
   },
-  "creature_hedgehog": {
-    "model": 91865811495849,
-    "decal": 109034652029292,
-    "texture": null
-  },
   "creature_deer": {
     "model": 119660934266357,
     "decal": 85446515588690,

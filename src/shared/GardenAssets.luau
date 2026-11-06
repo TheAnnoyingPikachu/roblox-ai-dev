@@ -165,8 +165,8 @@ local GardenAssets: { [string]: Asset } = {
 	creature_hedgehog = {
 		size = { 2.57, 2.8, 2.45 },
 		parts = { "creature_hedgehog" },
-		model = 91865811495849,
-		decal = 109034652029292,
+		model = nil,
+		decal = nil,
 		texture = nil,
 	},
 	creature_cat = {

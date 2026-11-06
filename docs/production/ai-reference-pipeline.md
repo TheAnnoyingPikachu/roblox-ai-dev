@@ -74,3 +74,8 @@ All references from the frog on (frog to cat, owl to capybara, deer to dragon, p
 Note: the generated fox came out with a pink flower, but no cactus. The remake adds a small cactus beside the flower so it stays a "Cactus Fox".
 
 The remakes use the new kit helpers (`k.zone` fur markings, the soft painted blush, `sheen` eyes). The values to copy for the other creatures are in the "Reference remakes" section of `tools/blender/garden/README.md`.
+
+## Shipped AI meshes (option 3)
+
+- hedgehog: the Blender remake lost the shaggy quills, so the AI reference ships. It is listed in `Models.MESHES.hedgehog` and left out of the Blender upload: `creature_hedgehog` has no entry in uploaded.json, so Plots falls back to the mesh. Do not upload `creature_hedgehog`.
+- The generated MeshParts face -Z in part space. The 45 degree turn in the refgen place is only the part CFrame, and Plots overwrites it.
