@@ -1,8 +1,8 @@
 --!strict
 -- Egg Garden creature looks (GDD I3, I4 "Life"; docs/architecture/garden.md section 6): idle bob,
 -- hop and turn on every creature (local CFrame offsets, no rigs), mutation looks from the `M`
--- attribute layered on the texture (Golden, Moonlit, Rainbow and Celestial Highlights with a
--- SelectionBox fallback past the Highlight budget; Celestial adds a pulsing fill, stars, a glow and
+-- attribute layered on the texture (Golden, Moonlit, Rainbow and Celestial Highlights with faint
+-- fills, none past the Highlight budget; Celestial adds a shimmering fill, stars, a glow and
 -- a halo), idle cries, hiding a creature while HatchFx reveals it, and ambient life (windmill
 -- sails, butterflies, drifting petals, petal emitters under the large sakura). Display only: sends
 -- nothing and changes nothing the server owns.
@@ -143,8 +143,16 @@ local function mainOf(view: View): BasePart?
 	return best
 end
 
--- A Highlight over the whole creature while `need` are free under the budget, else a SelectionBox.
-local function adorn(view: View, fill: Color3, fillT: number, outline: Color3, outlineT: number, need: number): Instance
+-- A Highlight over the whole creature while `need` are free under the budget, else nothing: the
+-- particles and lights still show the look, and a SelectionBox drew a big box around it (owner).
+local function adorn(
+	view: View,
+	fill: Color3,
+	fillT: number,
+	outline: Color3,
+	outlineT: number,
+	need: number
+): Instance?
 	if ClientState.highlights + need <= ClientState.HIGHLIGHT_BUDGET then
 		ClientState.highlights += 1
 		local h = ClientState.new("Highlight", {
@@ -161,20 +169,15 @@ local function adorn(view: View, fill: Color3, fillT: number, outline: Color3, o
 		end)
 		return h
 	end
-	-- shortcut: fallbacks stay SelectionBoxes after a Highlight frees up; re-check on respawn is enough.
-	return ClientState.new("SelectionBox", {
-		Color3 = outline,
-		SurfaceColor3 = fill,
-		SurfaceTransparency = if fill == ClientState.CELESTIAL then 0.9 else 0.85,
-		LineThickness = 0.05,
-		Transparency = 0.4,
-		Adornee = view.inst,
-		Parent = view.inst,
-	})
+	-- shortcut: a creature past the budget keeps no outline after a Highlight frees up; re-check on respawn is enough.
+	return nil
 end
 
+-- Fills stay faint so eyes, markings and the HD texture read through; the outline carries the colour.
+local FILL = 0.9
+
 -- Mutation looks (GDD U8, architecture 6.2), layered on the texture: no mutation changes TextureID,
--- Color or Material. Returns the Highlight or SelectionBox that the frame loop tints, if any.
+-- Color or Material. Returns the Highlight that the frame loop tints, if any.
 local function mutationLook(view: View, main: BasePart): Instance?
 	local m = view.mutation
 	if m == "normal" then
@@ -186,7 +189,7 @@ local function mutationLook(view: View, main: BasePart): Instance?
 			ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main })
 		)
 		-- Golden is the common mutation: it takes a Highlight only while 8 stay free for the rarer looks.
-		return adorn(view, Color3.fromRGB(255, 200, 60), 0.75, Color3.fromRGB(255, 230, 140), 0.3, 8)
+		return adorn(view, Color3.fromRGB(255, 200, 60), FILL, Color3.fromRGB(255, 230, 140), 0.3, 8)
 	end
 	local celestial = m == "celestial"
 	local fill = if celestial
@@ -202,16 +205,15 @@ local function mutationLook(view: View, main: BasePart): Instance?
 		table.insert(view.extras, halo(view, main))
 		table.insert(
 			view.extras,
-			ClientState.new("PointLight", { Color = fill, Range = 14, Brightness = 1.4, Parent = main })
+			ClientState.new("PointLight", { Color = fill, Range = 14, Brightness = 0.8, Parent = main })
 		)
-		return adorn(view, fill, 0.45, fill, 0.2, 1)
+		return adorn(view, fill, FILL, fill, 0.1, 1)
 	end
 	table.insert(
 		view.extras,
 		emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4)
 	)
-	-- A light unlit fill, so the HD texture still reads under it (QA m3); the outline carries the colour.
-	return adorn(view, fill, 0.85, fill, 0.3, 1)
+	return adorn(view, fill, FILL, fill, 0.3, 1)
 end
 
 -- Charm looks (GDD V2.1), layered after the mutation: Frosted frost motes and a pale rim (only when
@@ -230,7 +232,7 @@ local function charmLook(view: View, main: BasePart)
 		motes.Acceleration = Vector3.new(0.3, -0.3, 0)
 		table.insert(view.extras, motes)
 		if view.look == nil then
-			view.look = adorn(view, colour, 0.75, colour, 0.35, 1)
+			view.look = adorn(view, colour, FILL, colour, 0.35, 1)
 		end
 	elseif c == "blooming" then
 		local petals = emitter(main, ColorSequence.new(colour, Color3.fromRGB(255, 225, 235)), 4)
@@ -398,19 +400,13 @@ RunService.RenderStepped:Connect(function()
 			local hue = if celestial
 				then ClientState.CELESTIAL:Lerp(Color3.new(1, 1, 1), 0.5 + math.sin(t * 0.8 + view.phase) * 0.5)
 				else Color3.fromHSV((t * 0.25 + view.phase) % 1, 0.55, 1)
-			-- Celestial fill breathes 0.45 to 0.7 and back over 2.4 s (U8).
-			local pulse = 0.575 + 0.125 * math.sin(2 * math.pi * t / 2.4)
+			-- Celestial fill breathes 0.82 to 0.94 over 2.4 s: a shimmer, never a solid coat (owner).
+			local pulse = 0.88 + 0.06 * math.sin(2 * math.pi * t / 2.4)
 			if view.look:IsA("Highlight") then
 				view.look.FillColor = hue
 				view.look.OutlineColor = hue
 				if celestial then
 					view.look.FillTransparency = pulse
-				end
-			elseif view.look:IsA("SelectionBox") then
-				view.look.Color3 = hue
-				view.look.SurfaceColor3 = hue
-				if celestial then
-					view.look.Transparency = pulse
 				end
 			end
 		end
