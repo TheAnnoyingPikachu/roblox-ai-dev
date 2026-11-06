@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "in_progress",
+  "status": "in_review",
   "task_id": "GARDEN-058",
   "owner": "A11",
   "verifier": "A15",
@@ -55,5 +55,11 @@
     "LoginRules.spec.luau",
     "GardenProgress.spec.luau"
   ],
-  "notes": "Over the ten-file guide because the 13 findings touch the login rules, the server, the UI kit, three client scripts, the shared model loader and five documents; they are one review and one fix pass, like GARDEN-033. Studio checks use scratch edits of the built place only (clock, kit scale); nothing scratch is committed."
+  "notes": "Over the ten-file guide because the 13 findings touch the login rules, the server, the UI kit, three client scripts, the shared model loader and five documents; they are one review and one fix pass, like GARDEN-033. Studio checks use scratch edits of the built place only (clock, kit scale); nothing scratch is committed.",
+  "evidence": [
+    "Code and docs 214314d (branch garden/v05, local, not pushed). lune run tests/run 577/577 passed, 0 failed, 0 load errors (571 + 6 new LoginRules rollover, re-run, old-save, pinned-claim and clock-behind cases; test-results.json deleted); selene 0/0; stylua --check clean on LF copies of 11 .luau files; validate-tasks 78 valid; check-scope origin/main all 225 in scope, garden/v04 all 150 in scope; rojo build garden.project.json + check-place match.",
+    "Studio, local builds of garden.project.json, build stamp dev (corner label), DataStores off, scratch Script calling the game's Profiles.apply and Profiles.loginTick with the clock moved: 5 sign-ins then +7 days paid 750 coins and the Weekly Egg once with the toast 'Weekly Egg! + 750 coins (saved for you)'; 18 sign-ins then +25 days (1 December) paid 2,650 coins, both eggs and both week cosmetics once; re-runs and slowTick on the earlier real clock changed nothing.",
+    "Studio at a Camera.ViewportSize of exactly 844 x 390 (window resized; kit scale 0.6; touch strip forced by a scratch edit): every visible kit label in the HUD, start menu and 12 panel tabs scanned, 0 under 12 px on screen and 0 clipped; desktop pass at kit scale 1 (scratch edit), 0 under 12 px and 0 clipped. Pad tags about 15% of the width at 5 studs (were about 40% at 6), no overlap at 20 and 40 studs. Rainbow (fill 0.85) and Golden (0.75) axolotls keep the texture; 12 sakura Models, 12 petal emitters; Weekly and Monthly Egg models on the REWARDS and Dash cards; PLAY flew after play returned true.",
+    "Not done: a real phone or the Device Emulator, the join-time saved-rewards toast with a stored record, two clients, the Admin catalogue, trade panel and modals at phone size, the m2 retry path and the PLAY refusal live (Read). Details: docs/qa/garden-v05-review.md, Fixes (GARDEN-058)."
+  ]
 }
