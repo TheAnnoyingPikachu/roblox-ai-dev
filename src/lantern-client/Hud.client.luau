@@ -395,7 +395,10 @@ local function refresh()
 	setBar(coalBar, coal / cap, if coal <= LanternConfig.COAL_LOW then UI.CORAL else UI.GOLD)
 	needMark.Visible = need > 0 and r.Phase ~= "hub"
 	needMark.Position = UDim2.fromScale(math.clamp(need / cap, 0, 1), 0.5)
-	needText.Text = if need > 0 and r.Phase ~= "hub" then `Tonight: {coal} / {need}` else "Full bunker for the run"
+	needText.Text = if need > 0 and r.Phase ~= "hub"
+		then `Tonight: {coal} / {need}`
+		elseif r.Phase == "hub" then "Full bunker for the run"
+		else ""
 	needText.TextColor3 = if coal < need then UI.PINK else UI.CHIP_TEXT
 	local parts = math.floor(r.Parts or 0)
 	poolText.Text = `Parts {parts} · Oil {math.floor(r.Oil or 0)} / {LanternConfig.LANTERN.store} · for this run`

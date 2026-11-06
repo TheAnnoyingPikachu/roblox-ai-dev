@@ -360,10 +360,12 @@ local function ride(species: string)
 		m:ScaleTo(m:GetScale() * 2.4 / size.Y)
 	end
 	local box, fit = m:GetBoundingBox()
-	-- the base's centre is 1.8 above the rail; the critter sits on the sill looking out
+	-- the base's centre is 1.8 above the rail; the critter sits on the sill looking out, the
+	-- platform side (the line's OUTER side, as a multiple of the car's right) filled first
+	local side = slot[1] * ((LanternConfig.OUTER :: any)[ClientState.run().Line] or -1)
 	local at = base.CFrame
-		* CFrame.new(slot[1] * 3.3, 4.68 - 1.8 + fit.Y / 2, slot[2])
-		* CFrame.Angles(0, -slot[1] * math.pi / 2, 0)
+		* CFrame.new(side * 3.3, 4.68 - 1.8 + fit.Y / 2, slot[2])
+		* CFrame.Angles(0, -side * math.pi / 2, 0)
 	m:PivotTo(at * box:ToObjectSpace(m:GetPivot()))
 	for _, p in m:GetDescendants() do
 		if p:IsA("BasePart") then
