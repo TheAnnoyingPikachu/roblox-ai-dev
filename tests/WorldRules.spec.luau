@@ -47,8 +47,8 @@ describe("WorldRules weather (F)", function()
 		local differs = { weekday = 0, weekend = 0 }
 		for w = WorldRules.weatherWindow(SAT_0000) - 144, WorldRules.weatherWindow(SAT_0000) + 143 do
 			local weekend = w * 600 >= SAT_0000
-			local odds = if weekend then GardenConfig.WEATHER_ODDS.weekend else GardenConfig.WEATHER_ODDS.weekday
-			local other = if weekend then GardenConfig.WEATHER_ODDS.weekday else GardenConfig.WEATHER_ODDS.weekend
+			local odds = WorldRules.oddsFor(w * 600)
+			local other = if weekend then GardenConfig.WEATHER_ODDS.weekday else WorldRules.oddsFor(SAT_0000)
 			expect(WorldRules.eventFor(w)).toBe(HatchRules.pick(odds, roll(w)))
 			if HatchRules.pick(odds, roll(w)) ~= HatchRules.pick(other, roll(w)) then
 				differs[if weekend then "weekend" else "weekday"] += 1
@@ -60,7 +60,10 @@ describe("WorldRules weather (F)", function()
 	end)
 
 	it("keeps each weather within 1 point of its odds over 20,000 windows of each table", function()
+		-- The weekend table changes with the week's event, so the expectation is the mean of
+		-- oddsFor over the windows counted.
 		local counts = { weekday = {} :: { [string]: number }, weekend = {} :: { [string]: number } }
+		local want = { weekday = {} :: { [string]: number }, weekend = {} :: { [string]: number } }
 		local n = { weekday = 0, weekend = 0 }
 		local w = 2_900_000
 		while n.weekday < 20000 or n.weekend < 20000 do
@@ -69,15 +72,55 @@ describe("WorldRules weather (F)", function()
 				n[key] += 1
 				local kind = WorldRules.eventFor(w)
 				counts[key][kind] = (counts[key][kind] or 0) + 1
+				for _, o in WorldRules.oddsFor(w * 600) do
+					want[key][o.id] = (want[key][o.id] or 0) + o.bp / 20000
+				end
 			end
 			w += 1
 		end
 		for key, odds in GardenConfig.WEATHER_ODDS do
 			for _, o in odds do
 				local pct = 100 * (counts[key][o.id] or 0) / 20000
-				expect(`{key} {o.id} {math.abs(pct - o.bp / 100) <= 1}`).toBe(`{key} {o.id} true`)
+				expect(`{key} {o.id} {math.abs(pct - want[key][o.id] / 100) <= 1}`).toBe(`{key} {o.id} true`)
 			end
 		end
+		expect(math.abs(want.weekend.clear - 2100) < 1e-6).toBe(true) -- every weekend moves 800 out of clear
+	end)
+
+	it("picks one event weather per Monday-based week from seed 7777 and shifts 800 to it at the weekend", function()
+		local seen: { [string]: boolean } = {}
+		for week = 2800, 2899 do
+			local monday = (7 * week - 3) * 86400
+			expect(WorldRules.week(monday)).toBe(week)
+			expect(WorldRules.week(monday - 1)).toBe(week - 1)
+			expect(WorldRules.weekday(monday)).toBe(0)
+			local event = GardenConfig.RARE_WEATHERS[Rng.int(Rng.seed(week, 7777), 1, 3)]
+			seen[event] = true
+			for t = monday, monday + 7 * 86400 - 1, 3600 do
+				expect(WorldRules.weekendEvent(t)).toBe(event)
+				local total, clear, bonus = 0, 0, 0
+				for _, o in WorldRules.oddsFor(t) do
+					total += o.bp
+					if o.id == "clear" then
+						clear = o.bp
+					elseif o.id == event then
+						bonus = o.bp
+					end
+				end
+				expect(total).toBe(10000)
+				expect(`{clear} {bonus}`).toBe(if WorldRules.isWeekend(t) then "2100 1000" else "5200 100")
+			end
+			local status = WorldRules.eventStatus(monday)
+			expect(`{status.weather} {status.startsAt} {status.endsAt} {status.active}`).toBe(
+				`{event} {monday + 5 * 86400} {monday + 7 * 86400} false`
+			)
+			expect(WorldRules.eventStatus(monday + 5 * 86400).active).toBe(true)
+			expect(WorldRules.eventStatus(monday + 7 * 86400 - 1).active).toBe(true)
+			expect(WorldRules.eventStatus(monday + 7 * 86400).active).toBe(false)
+			expect(WorldRules.eventStatus(monday + 7 * 86400).weather).toBe(WorldRules.weekendEvent(monday + 7 * 86400))
+		end
+		expect(seen.snowfall and seen.petals and seen.thunder).toBe(true)
+		expect(WorldRules.oddsFor(FRI_2359)).toBe(GardenConfig.WEATHER_ODDS.weekday)
 	end)
 
 	it("counts down to the next 300 s mark and forecasts the next windows", function()

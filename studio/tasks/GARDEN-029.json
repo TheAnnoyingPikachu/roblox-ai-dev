@@ -1,0 +1,44 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-029",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Build the v0.4 server: Trades.luau (live trades, the GardenTrades ledger, the ledger-first commit, undo and heal), the trade, name and claimMilestone actions in the router, the Follower attribute, charm and name attributes and the pad skin and Starlit fence in Plots, and GardenStatus.event.",
+  "inputs": [
+    "docs/architecture/garden.md §4.1, §4.2, §4.3, §4.5, §4.6, §5.1, §7",
+    "docs/game-design/game4-gdd.md §V1, §V3, §V4, §V5",
+    "docs/decisions/0015-garden-v04-trading-charms.md",
+    "src/garden/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-028"
+  ],
+  "acceptance_criteria": [
+    "Trades.luau follows 4.5 exactly: propose checks (friends both ways via the existing cache, same server, within 15 studs, both Profiles.isOnline, both under 3 today, neither trading, 60 s decline cooldown); step at 1 Hz cancels on apart, left, offline and expiry; commit writes both ledger keys before any apply, re-checks canCommit, then applies give to both profiles with no yield between; undo writes undoAt to both ledgers then applies; heal runs in Profiles.load after login and resolves counterpart lookups before the apply",
+    "Router: trade* actions, claimMilestone and name in REQUEST_ARGS with the 4.5 argument checks; name parses '<id>:<name>', validates pure, enforces the 10 s cooldown and 3 renames per creature per day, filters with TextService FilterStringAsync + GetNonChatStringForBroadcastAsync in a pcall, writes nothing on failure, re-checks ownership after the yield; release, store, place, favourite and name are refused on a creature picked in a live trade; favourite passes now",
+    "publish sets Follower from GardenRules.follower; Plots sets C and N attributes, the pad tag shows the pet name on line 1 and species and rarity on line 2, pad skin and starlit fence render for visitors; GardenStatus carries event and the 7 weather ids; Fx hatch and announce carry c and never a pet name; trade and tradeEmote go to the two players only",
+    "Two-client Studio test with DataStores on (build stamp in the notes): a full trade, the unfair message, a cancel during the hold, an undo, a Stormy hatch in forced Thunder, a name filtered and shown, a v2 save loaded with every field kept; the ledger holds the trade; a forced flush failure on one side heals at the next load",
+    "lune run tests/run, selene, stylua, rojo build garden.project.json, check-place, validate-tasks and check-scope pass; src/garden/CLAUDE.md lists Trades.luau and the new must-stay-true rules"
+  ],
+  "verification": "CI, a two-client Studio run with the build stamp recorded (rule 13), and the GARDEN-032 QA review",
+  "output_artifacts": [],
+  "files": [
+    "src/garden/Trades.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/Profiles.luau",
+    "src/garden/Remotes.luau",
+    "src/garden/State.luau",
+    "src/garden/Plots.luau",
+    "src/garden/World.luau",
+    "src/garden/CLAUDE.md",
+    "docs/architecture/garden.md"
+  ],
+  "tests": [
+    "TradeRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "The commit's two applies must share one synchronous step: no await, no yield, no pcall around a yielding call between them. Capture today and the ledger record in the closures so the UpdateAsync re-apply is deterministic. The friend check for trading must be the waiting form (isFriend with wait = true) in both directions. Never put a pet name in Fx announce, a notice to a third player or the board. Max Players stays 6. Evidence (2026-11-06, branch garden/v04-server, build stamp `dev` local, DataStores OFF in Studio so every session ran offline): lune run tests/run 523/523; selene 0; stylua --check clean on LF copies; validate-tasks 62 valid; check-scope 48 files in scope; rojo build + check-place match. Studio (owner account 96807256, one client): name 'Sprinkles' filtered and stored (n), 10 s rename cooldown refused then accepted, bad characters refused, Follower attribute 1 -> 2 -> 1 on favourite/unfavourite, claimMilestone 20 paid 5,000 (LastReward +5K coins#1) and refused twice/early/99, Secret axolotl tag 'Pebble / Huge Rainbow Stardust Axolotl · Secret' with C=stormy N=Pebble, 36 Forest hatches in forced Thunder gave 2 Stormy (announced with c) and 1 Lantern Moth, hatch Fx carries c, clover pads rendered (green Grass) and, at 79 Index entries, equipCosmetic starlit rendered the Starlit fence (deep blue posts, pale rails, 19 PointLights, one per 3 posts). Trades (two mock players through Trades.deps, in-memory profiles, fake ledger store, [H2] log): favourite pick refused, unfair notice naming the loser on pick and on TRADE, emote gap, cancel during the hold with the 60 s decline gap, walked-apart cancel from step, a failing second ledger write -> cancelled 'failed' with A's record voided and zero applies, a full trade with write order ledger A -> ledger B -> apply A -> apply B, both records and tradesToday, undo (fav on the got creature does not block) with order mark A -> mark B -> apply -> apply, undo twice refused, heal on a fresh profile re-applied give then undo, heal with the counterpart's undoAt missing applied the give and withheld the undo. Not covered: a real two-client run with DataStores on (needs a published place), the v2 save load (GARDEN-028 spec covers sanitize), a forced flush failure."
+}

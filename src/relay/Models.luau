@@ -174,6 +174,11 @@ local CLIENT_MODELS = {
 	dash_ball = true,
 	dash_pendulum = true,
 	dash_platform = true,
+	wheel_disc = true,
+	wheel_basket = true,
+	petal_pink = true,
+	petal_gold = true,
+	pinecone = true,
 }
 
 -- Pieces the code colours itself (Blade Art blade, gate neon) stay untextured.
@@ -193,6 +198,10 @@ local function textureOf(entry: NightAssets.Asset): string?
 	return nil
 end
 
+-- Seconds before each retry of a model or texture that did not arrive (Garden QA m2); after the last,
+-- the asset stays on its caller's fallback (generated mesh or parts) for the server's life.
+local RETRY_WAITS = { 2, 6 }
+
 local function loadNight(name: string): Model?
 	while nightLoading[name] do
 		task.wait()
@@ -206,10 +215,20 @@ local function loadNight(name: string): Model?
 		return nil
 	end
 	nightLoading[name] = true
-	local template: Model? = nil
-	local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.model)
-	if ok then
+	-- Built under pcall so nightLoading is cleared on every path; an error leaves no template.
+	local function build(): Model?
+		local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.model)
+		if not ok then
+			warn(`[Models] {name} failed to load: {tostring(loaded)}`)
+			return nil
+		end
 		local texture = textureOf(entry)
+		if texture == nil and (entry.texture or entry.decal) then
+			-- Untextured it would show grey: the caller's fallback looks better.
+			warn(`[Models] {name}: texture {entry.decal or entry.texture} did not load`)
+			loaded:Destroy()
+			return nil
+		end
 		local model = Instance.new("Model")
 		model.Name = name
 		for _, d in loaded:GetDescendants() do
@@ -222,17 +241,33 @@ local function loadNight(name: string): Model?
 			end
 		end
 		loaded:Destroy()
-		if #model:GetChildren() > 0 then
-			-- Fit the measured height uniformly, whatever unit scale the importer used, so the
-			-- manifest size holds and multi-part models keep their layout.
-			local _, extents = model:GetBoundingBox()
-			model:ScaleTo(model:GetScale() * entry.size[2] / extents.Y)
-			template = model
-		else
+		if #model:GetChildren() == 0 then
 			warn(`[Models] {name}: model {entry.model} has no MeshParts`)
+			return nil
 		end
-	else
-		warn(`[Models] {name} failed to load: {tostring(loaded)}`)
+		-- Fit the measured height uniformly, whatever unit scale the importer used, so the
+		-- manifest size holds and multi-part models keep their layout. A flat asset (height 0,
+		-- a decal carrier) keeps its imported scale: ScaleTo(0) throws.
+		local _, extents = model:GetBoundingBox()
+		if entry.size[2] > 0 and extents.Y > 0 then
+			model:ScaleTo(model:GetScale() * entry.size[2] / extents.Y)
+		end
+		return model
+	end
+	local template: Model? = nil
+	for attempt = 1, #RETRY_WAITS + 1 do
+		local built, result = pcall(build)
+		if not built then
+			warn(`[Models] {name} could not be built: {tostring(result)}`)
+		end
+		template = if built then result else nil
+		if template or attempt > #RETRY_WAITS then
+			break
+		end
+		task.wait(RETRY_WAITS[attempt])
+	end
+	if template == nil then
+		warn(`[Models] {name}: gave up after {#RETRY_WAITS + 1} tries; the fallback stays`)
 	end
 	nightTemplates[name] = template or false
 	nightLoading[name] = nil

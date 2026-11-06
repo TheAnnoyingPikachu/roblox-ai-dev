@@ -17,7 +17,7 @@ import os
 
 import bmesh
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Euler, Matrix, Vector
 
 _spec = importlib.util.spec_from_file_location(
     "nightkit", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "night", "kit.py")
@@ -62,9 +62,16 @@ GOLD_LO = (205, 130, 40)
 # Materials -----------------------------------------------------------------------------------
 
 
-def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4):
+def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4, grain=None, splat=(), rays=None, marks=(), emit=0.0):
     """Baked colour: `stops` [(0-1, rgb), ...] along an object axis from lo to hi, then optional
-    hard polka `dots` [(rgb, scale, size), ...] and `bands` (rgb, period in studs)."""
+    hard polka `dots` [(rgb, scale, size), ...] and `bands` (rgb, period in studs).
+    grain (amount, scale[, "noise"|"wave"]) shades the colour by a fine texture (linen, bark).
+    splat [(rgb, scale, threshold, z0, z1[, "noise"|"wave"|"swirl"]), ...]: hard patches of a texture
+    above the threshold between two object heights (moss, filigree, snow).
+    rays (rgb, count, z0, width): angular stripes round the object axis above z0 (a sun crest).
+    marks [(rgb, centre, r_in, r_out[, below_z]), ...]: painted discs and rings round an object
+    point, optionally only below a height (craters, clover leaves, a smile).
+    emit: emission strength of the whole colour, so the bake comes out bright."""
     if name in _night._materials:
         return _night._materials[name]
     m = mat(name, stops[0][1], kind="flat", rough=rough)
@@ -94,15 +101,66 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4)
         mix.inputs[7].default_value = lin(rgb)
         return mix.outputs[2]
 
+    def op(operation, a, b=None):
+        """Math node on sockets or numbers."""
+        node = nt.nodes.new("ShaderNodeMath")
+        node.operation = operation
+        for i, x in enumerate((a,) if b is None else (a, b)):
+            if isinstance(x, (int, float)):
+                node.inputs[i].default_value = x
+            else:
+                nt.links.new(x, node.inputs[i])
+        return node.outputs[0]
+
+    def texture(kind, scale):
+        tex = nt.nodes.new("ShaderNodeTexNoise" if kind == "noise" else "ShaderNodeTexWave")
+        tex.inputs["Scale"].default_value = scale
+        if kind == "noise":
+            tex.inputs["Detail"].default_value = 6
+        else:  # "wave": vertical grain; "swirl": diagonal, heavily distorted (filigree)
+            tex.inputs["Distortion"].default_value = 4 if kind == "wave" else 9
+            tex.inputs["Detail"].default_value = 3
+            if kind == "swirl":
+                tex.bands_direction = "DIAGONAL"
+        nt.links.new(coord.outputs["Object"], tex.inputs["Vector"])
+        return tex.outputs["Fac"]
+
+    if grain:
+        amount, scale, kind = (tuple(grain) + ("noise",))[:3]
+        shade_ = nt.nodes.new("ShaderNodeMapRange")
+        shade_.inputs["To Min"].default_value = 1 - amount
+        shade_.inputs["To Max"].default_value = 1 + amount
+        nt.links.new(texture(kind, scale), shade_.inputs["Value"])
+        mul = nt.nodes.new("ShaderNodeMix")
+        mul.data_type = "RGBA"
+        mul.blend_type = "MULTIPLY"
+        mul.inputs[0].default_value = 1.0
+        nt.links.new(colour, mul.inputs[6])
+        nt.links.new(shade_.outputs["Result"], mul.inputs[7])
+        colour = mul.outputs[2]
+    for rgb, scale, threshold, z0, z1, *kind in splat:
+        hit = op("GREATER_THAN", texture(kind[0] if kind else "noise", scale), threshold)
+        zone = op("MULTIPLY", op("GREATER_THAN", sep.outputs["Z"], z0), op("LESS_THAN", sep.outputs["Z"], z1))
+        colour = over(op("MULTIPLY", hit, zone), rgb)
+    if rays:
+        rgb, count, z0, width = rays
+        angle = op("ARCTAN2", sep.outputs["Y"], sep.outputs["X"])
+        stripe = op("GREATER_THAN", op("SINE", op("MULTIPLY", angle, count)), 1 - width)
+        colour = over(op("MULTIPLY", stripe, op("GREATER_THAN", sep.outputs["Z"], z0)), rgb)
+    for rgb, centre, r_in, r_out, *below in marks:
+        dist = nt.nodes.new("ShaderNodeVectorMath")
+        dist.operation = "DISTANCE"
+        dist.inputs[1].default_value = tuple(centre)
+        nt.links.new(coord.outputs["Object"], dist.inputs[0])
+        mask = op("MULTIPLY", op("LESS_THAN", dist.outputs["Value"], r_out), op("GREATER_THAN", dist.outputs["Value"], r_in))
+        if below:
+            mask = op("MULTIPLY", mask, op("LESS_THAN", sep.outputs["Z"], below[0]))
+        colour = over(mask, rgb)
     for rgb, scale, size in dots:
         cells = nt.nodes.new("ShaderNodeTexVoronoi")
         cells.inputs["Scale"].default_value = scale
         nt.links.new(coord.outputs["Object"], cells.inputs["Vector"])
-        hit = nt.nodes.new("ShaderNodeMath")
-        hit.operation = "LESS_THAN"
-        hit.inputs[1].default_value = size
-        nt.links.new(cells.outputs["Distance"], hit.inputs[0])
-        colour = over(hit.outputs[0], rgb)
+        colour = over(op("LESS_THAN", cells.outputs["Distance"], size), rgb)
     if bands:
         rgb, period = bands
         wave = nt.nodes.new("ShaderNodeMath")
@@ -117,6 +175,9 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4)
         nt.links.new(sine.outputs[0], hit.inputs[0])
         colour = over(hit.outputs[0], rgb)
     nt.links.new(colour, bsdf.inputs["Base Color"])
+    if emit > 0:
+        nt.links.new(colour, bsdf.inputs["Emission Color"])
+        bsdf.inputs["Emission Strength"].default_value = emit
     return m
 
 
@@ -294,6 +355,250 @@ def facet(ob, mats, skip=()):
         lit = (poly.normal.dot(light) + 1) / 2
         poly.material_index = last + 1 if poly.index in skip else min(last, int((1 - lit) * (last + 1)))
     return sharpen(ob)
+
+
+# Creature standard (HD pass, README "Creature standard") --------------------------------------
+# Every creature: one fused body (fuse), the standard face (face), separate smooth props (blob,
+# capsule, lens, leaf with n >= 8), budget CREATURE_BUDGET, finalize settings HD.
+
+CREATURE_BUDGET = 6000
+FACE_TEXEL = 2.0
+EYE_INK = (40, 30, 52)
+NOSE = (120, 70, 90)
+BLUSH_PINK = (255, 120, 160)
+
+
+def texel(objs, w, centre=None, radius=None):
+    """Texel density weight for the HD unwrap (2 = twice the texels per stud, 0.5 = half), on
+    every face of objs or only those within `radius` of `centre`. face() marks the face at
+    FACE_TEXEL; mark big plain parts (wings, petals, shells) about 0.5."""
+    for ob in objs if isinstance(objs, (list, tuple)) else [objs]:
+        attr = ob.data.attributes.get("texel") or ob.data.attributes.new("texel", "FLOAT", "FACE")
+        for poly in ob.data.polygons:
+            if centre is None or (poly.center - Vector(centre)).length < radius:
+                attr.data[poly.index].value = w
+    return objs
+
+
+def weigh_islands(objs):
+    """finalize uv_hook: scales each UV island by the largest `texel` weight of its faces
+    (unmarked = 1) before packing, which keeps relative island sizes."""
+    for ob in objs:
+        if "texel" not in ob.data.attributes:
+            continue
+        bm = bmesh.new()
+        bm.from_mesh(ob.data)
+        uv = bm.loops.layers.uv.active
+        weight = bm.faces.layers.float.get("texel")
+        bm.faces.ensure_lookup_table()
+        root = list(range(len(bm.faces)))
+
+        def find(i):
+            while root[i] != i:
+                root[i] = root[root[i]]
+                i = root[i]
+            return i
+
+        for e in bm.edges:  # faces share an island where their UVs agree along a shared edge
+            if len(e.link_faces) != 2:
+                continue
+            f, g = e.link_faces
+            a = {l.vert: l[uv].uv for l in f.loops if l.vert in e.verts}
+            b = {l.vert: l[uv].uv for l in g.loops if l.vert in e.verts}
+            if all((a[v] - b[v]).length < 1e-6 for v in a):
+                root[find(f.index)] = find(g.index)
+        islands = {}
+        for f in bm.faces:
+            islands.setdefault(find(f.index), []).append(f)
+        for faces in islands.values():
+            s = max(f[weight] or 1.0 for f in faces)
+            if s != 1.0:
+                loops = [l for f in faces for l in f.loops]
+                c = sum((l[uv].uv for l in loops), Vector((0, 0))) / len(loops)
+                for l in loops:
+                    l[uv].uv = c + (l[uv].uv - c) * s
+        bm.to_mesh(ob.data)
+        bm.free()
+
+
+# 192-sample AO blurred 0.8 texels (reach 3, half the 6 px island gap, so it never mixes
+# islands), deeper (35% floor) for the toy look, a baked top light, a 10 px bake margin, and
+# texel weights (the face at FACE_TEXEL).
+HD = dict(ao_samples=192, ao_blur=0.8, ao_floor=0.35, toplight=0.14, margin=10, uv_margin=0.006, uv_hook=weigh_islands)
+
+
+def outward(theta, phi):
+    """Unit vector theta degrees round from the front (-Y, positive towards +X), phi degrees up."""
+    t, p = math.radians(theta), math.radians(phi)
+    return Vector((math.sin(t) * math.cos(p), -math.cos(t) * math.cos(p), math.sin(p)))
+
+
+def pair(loc, r, scale=(1, 1, 1), rot=(0, 0, 0)):
+    """A fuse element and its mirror through x = 0 (ears, arms, feet)."""
+    x, y, z = loc
+    return [(loc, r, scale, rot), ((-x, y, z), r, scale, (rot[0], -rot[1], -rot[2]))]
+
+
+def fuse(elements, m, tris=3200, soft=0.3, res=0.04, name="body"):
+    """One smooth organic mesh from overlapping shapes (metaballs): head, body, snout, paws, ears
+    and tail melt together with soft creases instead of hard intersections, and hidden insides cost
+    no triangles or texture. Then decimated to about `tris`.
+
+    elements: (loc, r[, scale[, rot]]) ellipsoids, r the visible radius in studs before blending,
+    scale per axis, rot degrees XYZ; or ("capsule", a, b, r), a rounded segment.
+    soft: blend reach as a fraction of each radius, 0.15 (tight creases) to 0.5 (dough). Shapes
+    swell a little where they overlap."""
+    assert 0.15 <= soft <= 0.6, "soft outside 0.15 to 0.6: metaball stiffness would clamp"
+    x = 1 / (1 + soft)
+    stiff = 0.1 / (1 - x * x) ** 3  # Blender's falloff: stiffness * (1 - d^2 / R^2)^3 = threshold
+    mb = bpy.data.metaballs.new(name)
+    mb.threshold = 0.1
+    mb.resolution = mb.render_resolution = res
+    for e in elements:
+        if e[0] == "capsule":
+            _, a, b, r = e
+            a, b = Vector(a), Vector(b)
+            el = mb.elements.new(type="CAPSULE")
+            el.co = (a + b) / 2
+            el.rotation = Vector((1, 0, 0)).rotation_difference(b - a)
+            el.size_x = (b - a).length / 2
+        else:
+            loc, r, scale, rot = tuple(e) + ((1, 1, 1), (0, 0, 0))[len(e) - 2 :]
+            el = mb.elements.new(type="ELLIPSOID")
+            el.co = loc
+            el.size_x, el.size_y, el.size_z = scale
+            el.rotation = Euler([math.radians(a) for a in rot], "XYZ").to_quaternion()
+        el.radius = r / x
+        el.stiffness = stiff
+    mb.materials.append(m)
+    ob = bpy.data.objects.new(name, mb)
+    bpy.context.scene.collection.objects.link(ob)
+    _select([ob])
+    bpy.context.view_layer.update()
+    bpy.ops.object.convert(target="MESH")
+    ob = bpy.context.view_layer.objects.active
+    ob.name = name
+    bpy.data.metaballs.remove(mb)
+    have = _tris(ob)
+    if have > tris:
+        mod = ob.modifiers.new("decimate", "DECIMATE")
+        mod.ratio = tris / have
+        _select([ob])
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+    print(f"[fuse] {name}: {have} -> {_tris(ob)} tris", flush=True)
+    return ob
+
+
+def land(target, centre, d):
+    """(point, normal) where a ray from far outside along `d` towards `centre` meets `target`:
+    snaps features onto the real (fused) surface, so nothing floats or sinks."""
+    d = Vector(d).normalized()
+    bpy.context.view_layer.update()
+    hit, p, n, _ = target.ray_cast(Vector(centre) + d * 50, -d, depsgraph=bpy.context.evaluated_depsgraph_get())
+    if not hit:
+        raise ValueError(f"land: nothing of {target.name} along {tuple(d)} from {tuple(centre)}")
+    return p, n
+
+
+def _frame(n, up=(0, 0, 1)):
+    """Surface axes: x across (the viewer's right on a front face), y towards `up`, z out."""
+    z = Vector(n).normalized()
+    up = Vector(up)
+    y = up - z * z.dot(up)
+    if y.length < 1e-4:
+        y = Vector((0, 1, 0)) - z * z.y
+    y.normalize()
+    return y.cross(z), y, z
+
+
+def lens(target, centre, d, r, m, scale=(1, 1), thick=0.35, sink=0.35, up=(0, 0, 1), seg=16, name="lens"):
+    """A flattened sphere set into `target` where `land` finds it: eyes, catchlights, blush, noses,
+    inner ears, belly patches, spots. r: radius in studs, scale stretches it along the surface (x
+    across, y towards `up`), thick: thickness as a fraction of r, sink: share of that thickness
+    buried, so the rim never floats on a curved surface. Only the outer half is built: the buried
+    half would cost triangles and texture for nothing."""
+    p, n = land(target, centre, d)
+    x, y, z = _frame(n, up)
+    ob = sphere(r, m=m, scale=(scale[0], scale[1], thick), seg=seg, rings=2 * max(2, seg // 4), name=name)
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.calc_center_median().z < 0], context="FACES")
+    bm.to_mesh(ob.data)
+    bm.free()
+    ob.data.transform(Matrix.Translation(p - z * r * thick * sink) @ Matrix((x, y, z)).transposed().to_4x4())
+    return ob
+
+
+def eye(target, centre, d, r, iris=EYE_INK, name="eye"):
+    """The standard eye: a glossy dark dome, 0.8 as wide as tall (r is half its height), standing
+    0.25 r proud so it catches the light; no white of the eye (a white ring reads googly). A big
+    catchlight at the viewer's upper left and a small one at the lower right, the same on both
+    eyes: one light for the whole family."""
+    dome = lens(target, centre, d, r, flat(iris), scale=(0.8, 1), thick=0.5, sink=0.5, seg=20, name=name)
+    p, n = land(target, centre, d)
+    x, y, _ = _frame(n)
+    parts = [dome]
+    for u, v, s in ((-0.3, 0.36, 0.36), (0.3, -0.38, 0.16)):
+        spot = p + (x * u * 0.8 + y * v) * r
+        parts.append(lens(dome, spot, n, r * s, flat(SNOW), thick=0.3, sink=0.4, seg=12, name="catchlight"))
+    return parts
+
+
+def mouth(target, centre, d, width, m, kind="w", r=None, up=(0, 0, 1)):
+    """Small mouth along the surface: "w" (the cat mouth, default), "smile" (a U) or "o" (a dot,
+    surprised). width: half width in studs; r: line radius, default width / 7."""
+    p, n = land(target, centre, d)
+    r = r or width / 7
+    if kind == "o":
+        return lens(target, centre, d, r * 1.6, m, scale=(1, 1.15), thick=0.4, sink=0.5, seg=12, name="mouth")
+    x, y, _ = _frame(n, up)
+    pts, radii = [], []
+    for i in range(13):
+        u = i / 6 - 1
+        v = -0.4 * abs(math.sin(math.pi * u)) if kind == "w" else 0.35 * (u * u - 1)
+        q, qn = land(target, p + (x * u + y * v) * width, n)
+        pts.append(q + qn * r * 0.2)
+        radii.append(r * (0.6 + 0.4 * math.sin(math.pi * i / 12)))
+    return tube(pts, radii, m=m, n=6, name="mouth")
+
+
+def face(target, centre, R, skin, iris=EYE_INK, nose=NOSE, mouth_kind="w", eye_r=0.24, spread=34, eye_phi=-6,
+         nose_phi=-17, mouth_phi=-26, blush=True, nose_r=0.075):
+    """The standard face on a head of radius R centred at `centre` (front -Y), as fractions of R:
+    eyes 0.24 R (half height), 34 degrees each side of the front and 6 below the head's middle, so
+    wide apart and low (a big forehead is the baby look); nose 0.075 R at 17 below; mouth 0.17 R
+    wide at 26 below; blush ovals 0.17 R at 54 degrees round, 25 below, the skin mixed 55% to pink.
+    nose=None or mouth_kind=None leave them out (put them on a snout yourself). Marks the face
+    (within R of its middle) and its parts at FACE_TEXEL."""
+    texel(target, FACE_TEXEL, land(target, centre, outward(0, -12))[0], R)
+    parts = []
+    for side in (-1, 1):
+        parts += eye(target, centre, outward(side * spread, eye_phi), R * eye_r, iris)
+        if blush:
+            parts.append(lens(target, centre, outward(side * 54, -25), R * 0.17, flat(mix(skin, BLUSH_PINK, 0.55)), scale=(1.5, 0.9), thick=0.18, sink=0.5, name="blush"))
+    if nose:
+        parts.append(lens(target, centre, outward(0, nose_phi), R * nose_r, flat(nose), scale=(1.35, 0.9), thick=0.55, sink=0.4, seg=12, name="nose"))
+    if mouth_kind:
+        parts.append(mouth(target, centre, outward(0, mouth_phi), R * 0.17, flat(INKY), mouth_kind))
+    return texel(parts, FACE_TEXEL)
+
+
+def blob(r, loc, m, scale=(1, 1, 1), rot=(0, 0, 0), name="blob"):
+    """A separate smooth round piece (tail puff, pom-pom, bud): 24 x 12, round in silhouette."""
+    return sphere(r, loc, rot=rot, m=m, scale=scale, seg=24, rings=12, name=name)
+
+
+def capsule(a, b, ra, rb, m, n=16, name="capsule"):
+    """Rounded limb, horn or stem from a to b: round ends of radius ra and rb (small rb: a soft
+    point) on a straight taper. Use for every separate limb or horn, never an 8-sided prism."""
+    a, b = Vector(a), Vector(b)
+    length = (b - a).length
+    angles = [math.radians(90 - 22.5 * i) for i in range(5)]
+    profile = [(ra * math.cos(t), -ra * math.sin(t)) for t in angles]
+    profile += [(rb * math.cos(t), length + rb * math.sin(t)) for t in reversed(angles)]
+    ob = lathe(profile, m=m, n=n, name=name)
+    ob.data.transform(Matrix.Translation(a) @ Vector((0, 0, 1)).rotation_difference(b - a).to_matrix().to_4x4())
+    return ob
 
 
 # Preview: a bright toy shelf instead of the Night slate ---------------------------------------

@@ -22,15 +22,52 @@ export type Egg = {
 	meter: number?,
 	xp: number,
 	mutation: string?, -- fixed: always this mutation, no draw, weather ignored (celestial)
+	event: { s: string, bp: number, from: string }?, -- v0.4: `from` gives `bp` to `s` in a rare weather (V2.4)
+	exclusive: string?, -- v0.5: "weekly" | "monthly": no price, no stock, level 1, planted from prizeEggs (X3.3)
+}
+-- v0.5 login tracks (X3): coins + minutes, or egg, or coins + cosmetic.
+export type LoginSlot = { count: number, coins: number?, minutes: number?, egg: string?, cosmetic: string? }
+-- week = MetaRules.weekOf(day), month = year * 12 + month - 1; *Days distinct sign-in days this period,
+-- *Last the UTC day last counted (-1 none), *Claimed slots paid in order.
+export type Login = {
+	week: number,
+	weekDays: number,
+	weekLast: number,
+	weekClaimed: number,
+	month: number,
+	monthDays: number,
+	monthLast: number,
+	monthClaimed: number,
 }
 export type Cry = { id: number, pitch: number } -- Creator Store audio asset id (registered first) and PlaybackSpeed
 export type Species = { id: string, name: string, rarity: string, rate: number, cry: Cry? } -- cry nil: the client is silent
 export type Mutation = { id: string, name: string, mult: number }
 export type Size = { id: string, name: string, mult: number, scale: number, bp: number }
 export type Weather = { id: string, name: string, mutation: { Odds } } -- MUTATIONS order without egg-only ones, sums to 10000
+export type Charm = { id: string, name: string, mult: number, weather: string, bp: number } -- rolled only in `weather`
 
 export type Bed = { egg: string, planted: number, ready: number, waters: number, helps: number, lastWater: number }
-export type Creature = { id: number, s: string, m: string, z: string, placed: number, fav: boolean } -- placed 0 = storage
+-- placed 0 = storage; c charm ("none"), fa when the favourite lock was last turned on (0), n filtered pet name ("")
+export type Creature = {
+	id: number,
+	s: string,
+	m: string,
+	z: string,
+	c: string,
+	placed: number,
+	fav: boolean,
+	fa: number,
+	n: string,
+}
+export type TradeRecord = {
+	id: string,
+	at: number,
+	with: number,
+	gave: Creature,
+	got: Creature,
+	gotId: number,
+	undone: boolean,
+}
 export type Profile = {
 	schemaVersion: number,
 	xp: number,
@@ -59,6 +96,12 @@ export type Profile = {
 	quests: { day: number, progress: { [string]: number }, claimed: { [string]: boolean } },
 	prizeEggs: { [string]: number }, -- egg id -> count, v2; only counts >= 1
 	dash: { day: number, prizes: number, coins: number }, -- v2; day -1 until the first reward
+	trades: { TradeRecord }, -- v3; newest last, at most TRADE.kept
+	tradesToday: { day: number, count: number }, -- v3; day -1 until the first trade
+	milestones: { [string]: boolean }, -- v3; "20" | "40" | "60" | "80" -> true
+	pad: string, -- v3; cosmetic slot
+	login: Login, -- v3 + decision 0017; LoginRules
+	wheelToday: { day: number, spins: number }, -- v3 (decision 0016): Petal Catch spins applied on UTC day `day`
 }
 
 export type Spot = { x: number, y: number, z: number }
@@ -102,6 +145,31 @@ export type DashConfig = {
 	decks: { Deck }, -- in course order; Lily Hop has no deck, its platforms go between the last two
 	obstacles: { Obstacle },
 }
+-- Petal Catch (docs/architecture/garden-wheel.md 2.1, decision 0016).
+export type Wedge = { id: string, standard: number, lucky: number } -- id: an egg id or "coins"; bp
+export type WheelConfig = {
+	name: string,
+	centre: Spot, -- patch centre, ground level
+	size: number, -- fence square
+	stand: Spot, -- faces +z (the plaza)
+	promptRange: number,
+	round: number, -- seconds
+	lead: number, -- first drop after startAt
+	gap: number, -- between drops
+	drops: { pink: number, gold: number, cone: number },
+	points: { pink: number, gold: number, cone: number },
+	canopy: number, -- drop height above centre.y
+	fall: number, -- studs/s
+	band: { top: number, bottom: number }, -- catchable while bottom <= y <= top
+	catchRadius: number,
+	ring: { min: number, max: number }, -- from the trunk
+	spinAt: number,
+	luckyAt: number,
+	spinsPerDay: number,
+	coinsBase: number,
+	coinsMinutes: number,
+	wedges: { Wedge }, -- disc order clockwise from the pointer
+}
 
 local function odds(list: { any }): { Odds }
 	local out: { Odds } = {}
@@ -137,6 +205,7 @@ local EGGS: { Egg } = {
 		top = "hedgehog",
 		meter = 30,
 		xp = 25,
+		event = { s = "moth", bp = 300, from = "frog" },
 	},
 	{
 		id = "sunset",
@@ -164,6 +233,7 @@ local EGGS: { Egg } = {
 		top = "panda",
 		meter = 40,
 		xp = 60,
+		event = { s = "moth", bp = 300, from = "cat" },
 	},
 	{
 		id = "moon",
@@ -231,6 +301,29 @@ local EGGS: { Egg } = {
 		meter = 20,
 		xp = 3000,
 	},
+	-- GDD X3.3, decision 0017: login-track eggs, never sold, planted from prizeEggs at level 1.
+	{
+		id = "weekly",
+		name = "Weekly Egg",
+		grow = 3600,
+		level = 1,
+		odds = odds({ "puffin", 6000, "otter", 3200, "capybara", 800 }),
+		top = "capybara",
+		meter = 12,
+		xp = 150,
+		exclusive = "weekly",
+	},
+	{
+		id = "monthly",
+		name = "Monthly Egg",
+		grow = 14400,
+		level = 1,
+		odds = odds({ "redpanda", 7000, "peacock", 2500, "snowleopard", 500 }),
+		top = "snowleopard",
+		meter = 8,
+		xp = 400,
+		exclusive = "monthly",
+	},
 }
 GardenConfig.EGGS = EGGS
 
@@ -243,14 +336,19 @@ local SPECIES: { Species } = {
 	{ id = "duck", name = "Puddle Duckling", rarity = "common", rate = 3, cry = { id = 1840105521, pitch = 1.2 } },
 	{ id = "pup", name = "Bumble Pup", rarity = "uncommon", rate = 5, cry = { id = 9113956178, pitch = 1.35 } },
 	{ id = "lamb", name = "Clover Lamb", rarity = "uncommon", rate = 8, cry = { id = 9116206434, pitch = 1.3 } },
+	{ id = "puffin", name = "Pebble Puffin", rarity = "uncommon", rate = 10 }, -- v0.5 login exclusives (X3.4): cries until registered
 	{ id = "cat", name = "Berry Cat", rarity = "uncommon", rate = 12, cry = { id = 9117010574, pitch = 1.1 } },
 	{ id = "owl", name = "Pumpkin Owl", rarity = "rare", rate = 30, cry = { id = 9117181540, pitch = 1 } },
 	{ id = "hedgehog", name = "Acorn Hedgehog", rarity = "rare", rate = 45, cry = { id = 9118058248, pitch = 0.9 } },
+	{ id = "otter", name = "River Otter", rarity = "rare", rate = 50 },
+	{ id = "moth", name = "Lantern Moth", rarity = "rare", rate = 55 }, -- v0.4 event creature; cry until registered
 	{ id = "fox", name = "Cactus Fox", rarity = "rare", rate = 70, cry = { id = 9113955402, pitch = 1.5 } },
 	{ id = "turtle", name = "Lotus Turtle", rarity = "epic", rate = 180, cry = { id = 9112872058, pitch = 0.8 } },
+	{ id = "capybara", name = "Spa Capybara", rarity = "epic", rate = 220 },
 	{ id = "deer", name = "Blossom Fawn", rarity = "epic", rate = 250, cry = { id = 9113442509, pitch = 1.2 } },
 	{ id = "panda", name = "Bamboo Panda", rarity = "epic", rate = 350, cry = { id = 9117348418, pitch = 1.1 } },
 	{ id = "lion", name = "Sunflower Lion", rarity = "legendary", rate = 500, cry = { id = 9116308659, pitch = 1.25 } },
+	{ id = "redpanda", name = "Maple Red Panda", rarity = "legendary", rate = 650 },
 	{ id = "unicorn", name = "Daisy Unicorn", rarity = "legendary", rate = 800, cry = { id = 9119235894, pitch = 1 } },
 	{
 		id = "dragon",
@@ -259,8 +357,10 @@ local SPECIES: { Species } = {
 		rate = 1500,
 		cry = { id = 9125470864, pitch = 0.9 },
 	},
+	{ id = "peacock", name = "Jewel Peacock", rarity = "mythic", rate = 2000 },
 	{ id = "phoenix", name = "Ember Phoenix", rarity = "mythic", rate = 2500, cry = { id = 9117236946, pitch = 0.9 } },
 	{ id = "whale", name = "Aurora Whale", rarity = "divine", rate = 5000, cry = { id = 9114124842, pitch = 0.7 } },
+	{ id = "snowleopard", name = "Frost Leopard", rarity = "divine", rate = 6000 },
 	{ id = "kirin", name = "Nimbus Kirin", rarity = "divine", rate = 7500, cry = { id = 1846547135, pitch = 1.2 } },
 	{
 		id = "axolotl",
@@ -318,13 +418,71 @@ local WEATHERS: { Weather } = {
 		name = "Rainbow Shower",
 		mutation = odds({ "normal", 8500, "golden", 500, "moonlit", 0, "rainbow", 1000 }),
 	},
+	-- v0.4 rare weathers (GDD V2.2, decision 0015): each also rolls its charm.
+	{
+		id = "snowfall",
+		name = "Snowfall",
+		mutation = odds({ "normal", 8800, "golden", 1000, "moonlit", 150, "rainbow", 50 }),
+	},
+	{
+		id = "petals",
+		name = "Petal Storm",
+		mutation = odds({ "normal", 8500, "golden", 1000, "moonlit", 0, "rainbow", 500 }),
+	},
+	{
+		id = "thunder",
+		name = "Thunder",
+		mutation = odds({ "normal", 8800, "golden", 800, "moonlit", 300, "rainbow", 100 }),
+	},
 }
 GardenConfig.WEATHERS = WEATHERS
 
+-- V2.3. The weekend table is raw: WorldRules.oddsFor moves WEATHER_EVENT_BONUS from clear to the
+-- week's event weather.
 GardenConfig.WEATHER_ODDS = {
-	weekday = odds({ "clear", 5500, "sunbeam", 2500, "moonfall", 1500, "shower", 500 }),
-	weekend = odds({ "clear", 3500, "sunbeam", 3500, "moonfall", 2000, "shower", 1000 }),
+	weekday = odds({
+		"clear",
+		5200,
+		"sunbeam",
+		2500,
+		"moonfall",
+		1500,
+		"shower",
+		500,
+		"snowfall",
+		100,
+		"petals",
+		100,
+		"thunder",
+		100,
+	}),
+	weekend = odds({
+		"clear",
+		2900,
+		"sunbeam",
+		3500,
+		"moonfall",
+		2000,
+		"shower",
+		1000,
+		"snowfall",
+		200,
+		"petals",
+		200,
+		"thunder",
+		200,
+	}),
 }
+GardenConfig.WEATHER_EVENT_BONUS = 800
+GardenConfig.RARE_WEATHERS = { "snowfall", "petals", "thunder" }
+
+-- V2.1: a second layer on top of the mutation, drawn last and only in its weather.
+local CHARMS: { Charm } = {
+	{ id = "frosted", name = "Frosted", mult = 1.5, weather = "snowfall", bp = 2500 },
+	{ id = "blooming", name = "Blooming", mult = 2, weather = "petals", bp = 1500 },
+	{ id = "stormy", name = "Stormy", mult = 3, weather = "thunder", bp = 1000 },
+}
+GardenConfig.CHARMS = CHARMS
 
 GardenConfig.BED_COSTS = {
 	[4] = 500,
@@ -343,7 +501,7 @@ GardenConfig.STORAGE = 60
 GardenConfig.WATER = { cooldown = 60, cut = 0.05, owner = 5, helpers = 3, maxCut = 0.4 }
 GardenConfig.XP = { index = 50, ownWater = 3, helperWater = 15, helperCap = 20 }
 GardenConfig.INDEX_BONUS = 0.02
-GardenConfig.INDEX_SIZE = 80 -- count of indexable pairs: 19 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
+GardenConfig.INDEX_SIZE = 108 -- count of indexable pairs: 26 * 4 + 4 celestial pairs (lion, unicorn, dragon, phoenix)
 GardenConfig.OFFLINE = { rate = 0.5, cap = 28_800 }
 -- 0008 amendment 2026-10-26: release never returns its egg price (buy, hatch, release <= 60% of it).
 GardenConfig.RELEASE_SECONDS = 6
@@ -352,8 +510,30 @@ GardenConfig.RANGE = { cart = 25, bed = 12 }
 GardenConfig.RESTOCK = 300
 GardenConfig.WEATHER_WINDOW = 600
 GardenConfig.WEATHER_ACTIVE = 300
-GardenConfig.SEEDS = { stock = 9001, weather = 4242 }
+GardenConfig.SEEDS = { stock = 9001, weather = 4242, event = 7777 }
 GardenConfig.LIKES = { perDay = 30 }
+-- v0.4 (decision 0015): trade limits in seconds and counts, Index milestones, pet names.
+GardenConfig.TRADE = {
+	perDay = 3,
+	range = 15,
+	fair = 0.5,
+	hold = 10,
+	confirm = 20,
+	invite = 30,
+	pick = 120,
+	undo = 600,
+	kept = 30,
+	emoteGap = 1,
+	declineGap = 60,
+	emotes = 4,
+}
+GardenConfig.MILESTONES = {
+	{ at = 20, coins = 5_000, title = "Hatchling Keeper" },
+	{ at = 40, coins = 50_000 },
+	{ at = 60, coins = 1_000_000 },
+	{ at = 80, coins = 0, title = "Garden Legend", egg = "aurora" },
+} :: { { at: number, coins: number, title: string?, egg: string? } }
+GardenConfig.NAME = { max = 20, cooldown = 10, perDay = 3 }
 GardenConfig.MAX_COINS = 1e15
 GardenConfig.ADMINS = { [96807256] = true } :: { [number]: boolean } -- SHANNON (genetheman); decision 0013
 GardenConfig.GATES = { "open", "friends", "closed" }
@@ -373,6 +553,7 @@ local function cosmetic(
 		level = unlock.level,
 		index = unlock.index,
 		price = unlock.price,
+		grant = if unlock.login then "login" else nil,
 	}
 end
 
@@ -384,6 +565,7 @@ local COSMETICS: { MetaRules.Cosmetic } = {
 	cosmetic("fence", "hedge", "Hedge", { { 70, 140, 60 }, { 50, 110, 45 } }, { level = 10 }),
 	cosmetic("fence", "crystal", "Crystal", { { 170, 220, 255 }, { 120, 180, 255 } }, { level = 16 }),
 	cosmetic("fence", "golden", "Golden", { { 255, 200, 60 }, { 200, 140, 20 } }, { index = 20 }),
+	cosmetic("fence", "starlit", "Starlit", { { 30, 40, 110 }, { 255, 245, 200 } }, { index = 60 }),
 	cosmetic("fence", "candy", "Candy Cane", { { 255, 255, 255 }, { 230, 40, 50 } }, { price = 1_000_000 }),
 	cosmetic(
 		"fence",
@@ -404,8 +586,65 @@ local COSMETICS: { MetaRules.Cosmetic } = {
 		{ { 160, 60, 255 }, { 40, 0, 90 }, { 255, 255, 255 } },
 		{ price = 10_000_000_000 }
 	),
+	cosmetic("pad", "plain", "Plain Pads", { { 150, 110, 70 } }, { level = 1 }),
+	cosmetic("pad", "clover", "Clover Pads", { { 60, 150, 70 }, { 120, 200, 90 } }, { index = 40 }),
+	-- v0.5 (X3, decision 0017): `grant = "login"`, owned only through a login-track claim, never buyable.
+	cosmetic("can", "blossom", "Blossom Can", { { 255, 190, 215 }, { 240, 120, 160 } }, { login = 1 }),
+	cosmetic("fence", "lantern", "Lantern Fence", { { 120, 80, 50 }, { 255, 200, 90 } }, { login = 1 }),
+	cosmetic("pad", "lily", "Lily Pads", { { 70, 160, 90 }, { 255, 230, 240 } }, { login = 1 }),
+	cosmetic("fence", "sakura", "Sakura Fence", { { 255, 200, 220 }, { 150, 90, 70 } }, { login = 1 }),
+	cosmetic(
+		"can",
+		"peacock",
+		"Peacock Pitcher",
+		{ { 40, 150, 170 }, { 90, 60, 170 }, { 255, 215, 90 } },
+		{ login = 1 }
+	),
 }
 GardenConfig.COSMETICS = COSMETICS
+
+-- X3.1 and X3.2: slots by distinct sign-in count this period, claimed in order. Coins are paid as
+-- GardenProgress.scaled(coins, minutes); month[7] drops to the month's length (LoginRules.slots).
+GardenConfig.LOGIN = {
+	week = {
+		{ count = 1, coins = 100, minutes = 3 },
+		{ count = 2, coins = 150, minutes = 5 },
+		{ count = 3, coins = 200, minutes = 8 },
+		{ count = 4, coins = 300, minutes = 12 },
+		{ count = 5, egg = "weekly" },
+		{ count = 6, coins = 400, minutes = 15, cosmetic = "blossom" },
+		{ count = 7, coins = 500, minutes = 20, cosmetic = "lantern" },
+	},
+	month = {
+		{ count = 3, coins = 200, minutes = 10 },
+		{ count = 7, coins = 300, minutes = 20 },
+		{ count = 12, coins = 500, minutes = 30 },
+		{ count = 18, egg = "monthly" },
+		{ count = 22, coins = 600, minutes = 40, cosmetic = "lily" },
+		{ count = 26, coins = 800, minutes = 50, cosmetic = "sakura" },
+		{ count = 30, coins = 1000, minutes = 60, cosmetic = "peacock" },
+	},
+} :: { [string]: { LoginSlot } }
+
+-- X1.5: the 16 icon decals (GardenIcons holds the ids; glyph fallback until uploaded).
+GardenConfig.ICON_SET = {
+	"coin",
+	"egg",
+	"paw",
+	"book",
+	"hanger",
+	"gift",
+	"flag",
+	"petal",
+	"home",
+	"chart",
+	"cog",
+	"heart",
+	"swap",
+	"calendar",
+	"lock",
+	"check",
+}
 
 -- H5: reward is the base; the paid amount is GardenProgress.scaled(base, minutes).
 local QUESTS: { MetaRules.Quest } = {
@@ -420,6 +659,8 @@ local QUESTS: { MetaRules.Quest } = {
 }
 GardenConfig.QUESTS = QUESTS
 
+-- Deprecated (decision 0017): MetaRules still ticks `daily` and `week`, but nothing pays them; the
+-- login tracks (LOGIN) replaced claimDaily and claimWeekly.
 GardenConfig.DAILY = { 50, 75, 100, 125, 150, 200, 400 }
 GardenConfig.DAILY_MINUTES = { 2, 3, 4, 5, 6, 8, 15 }
 GardenConfig.WEEKLY = { days = 5, reward = 500, minutes = 30 }
@@ -509,6 +750,44 @@ local DASH: DashConfig = {
 }
 GardenConfig.DASH = DASH
 
+-- Petal Catch (garden-wheel.md W, decision 0016). Odds, thresholds, cap and coinsMinutes are economy
+-- values; the rest is feel, tuned at the greybox gate.
+local WHEEL: WheelConfig = {
+	name = "Petal Catch",
+	-- Moved 10 studs east of the design's (-40, -52): plot 6's fence corner (-44, -61) and its plaza
+	-- path cut through the patch there (garden-wheel.md W2 allows up to 10 studs; not an economy value).
+	centre = { x = -30, y = 0, z = -52 },
+	size = 30,
+	stand = { x = -30, y = 0, z = -38 },
+	promptRange = 12,
+	round = 45,
+	lead = 2,
+	gap = 1.0,
+	drops = { pink = 26, gold = 4, cone = 10 },
+	points = { pink = 1, gold = 3, cone = -2 },
+	canopy = 16,
+	fall = 4,
+	band = { top = 7, bottom = 1 },
+	catchRadius = 3.5,
+	ring = { min = 4, max = 12 },
+	spinAt = 12,
+	luckyAt = 24,
+	spinsPerDay = 3,
+	coinsBase = 100,
+	coinsMinutes = 10,
+	wedges = {
+		{ id = "meadow", standard = 3600, lucky = 2000 },
+		{ id = "forest", standard = 2800, lucky = 2500 },
+		{ id = "sunset", standard = 1750, lucky = 2600 },
+		{ id = "coins", standard = 225, lucky = 360 },
+		{ id = "moon", standard = 1200, lucky = 1800 },
+		{ id = "star", standard = 400, lucky = 700 },
+		{ id = "celestial", standard = 20, lucky = 25 },
+		{ id = "aurora", standard = 5, lucky = 15 },
+	},
+}
+GardenConfig.WHEEL = WHEEL
+
 local function find<T>(list: { T }, id: string): T?
 	for _, item in list do
 		if (item :: any).id == id then
@@ -526,12 +805,39 @@ function GardenConfig.species(id: string): Species?
 	return find(SPECIES, id)
 end
 
+function GardenConfig.cosmetic(id: string): MetaRules.Cosmetic?
+	return find(COSMETICS, id)
+end
+
+-- What prizeEggs may hold: a sold egg or a login exclusive, never the starter.
+function GardenConfig.isPrizeable(egg: Egg): boolean
+	return egg.price ~= nil or egg.exclusive ~= nil
+end
+
 function GardenConfig.mutation(id: string): Mutation?
 	return find(MUTATIONS, id)
 end
 
 function GardenConfig.size(id: string): Size?
 	return find(SIZES, id)
+end
+
+-- "none" (and anything unknown) returns nil: a creature with c = "none" multiplies by 1.
+function GardenConfig.charm(id: string): Charm?
+	return find(CHARMS, id)
+end
+
+function GardenConfig.charmFor(weather: string): Charm?
+	for _, c in CHARMS do
+		if c.weather == weather then
+			return c
+		end
+	end
+	return nil
+end
+
+function GardenConfig.isRare(weather: string): boolean
+	return GardenConfig.charmFor(weather) ~= nil
 end
 
 function GardenConfig.rarityIndex(speciesId: string): number

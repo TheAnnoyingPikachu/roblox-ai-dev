@@ -559,16 +559,37 @@ def _bake_image(name):
     return img
 
 
-def _bake(objs, size):
+def _blur(a, sigma):
+    """Separable gaussian blur of a 2D array; edge pixels repeat."""
+    r = max(1, int(3 * sigma + 0.5))
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    k /= k.sum()
+    for axis in (0, 1):
+        pad = [(r, r) if i == axis else (0, 0) for i in range(2)]
+        p = np.pad(a, pad, mode="edge")
+        a = sum(w * np.take(p, np.arange(i, i + a.shape[axis]), axis=axis) for i, w in enumerate(k))
+    return a
+
+
+def _bake(objs, size, ao_samples=24, ao_blur=0.0, ao_floor=0.5, toplight=0.0, margin=8):
+    """Colour x AO (+ emission). Defaults are the Night look. ao_blur: gaussian sigma in texels
+    (keep 3 sigma within half the gap between UV islands). ao_floor: brightness in full occlusion. toplight: baked
+    light from above, t = toplight * (0.65 n.z + 0.35 (2 h - 1)), h = height 0 to 1: tops move t
+    of the way to white, undersides are multiplied by 1 + t.
+    margin: bake margin in texels."""
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
     scene.cycles.device = "CPU"
     scene.cycles.use_denoising = False
-    scene.render.bake.margin = 8
+    scene.render.bake.margin = margin
     if scene.world is None:
         scene.world = bpy.data.worlds.new("bake")
     scene.world.light_settings.distance = max(0.4, min(4.0, size * 0.12))
     images = {k: _bake_image(f"bake_{k}") for k in ("col", "ao", "emit")}
+    for k in ("normal", "position") if toplight else ():
+        # Raw data, not colour: float and Non-Color, or positions clip at 1.
+        images[k] = bpy.data.images.new(f"bake_{k}", TEX, TEX, alpha=False, float_buffer=True)
+        images[k].colorspace_settings.name = "Non-Color"
     nodes = []
     for ob in objs:
         for slot in ob.material_slots:
@@ -580,14 +601,19 @@ def _bake(objs, size):
                 nodes.append(node)
             m.node_tree.nodes.active = node
     _select(objs)
-    for kind, bake_type, samples in (("col", "DIFFUSE", 1), ("ao", "AO", 24), ("emit", "EMIT", 1)):
+    passes = [("col", "DIFFUSE", 1), ("ao", "AO", ao_samples), ("emit", "EMIT", 1)]
+    if toplight:
+        passes += [("normal", "NORMAL", 1), ("position", "POSITION", 1)]
+    for kind, bake_type, samples in passes:
         for node in nodes:
             node.image = images[kind]
         scene.cycles.samples = samples
         if bake_type == "DIFFUSE":
-            bpy.ops.object.bake(type="DIFFUSE", pass_filter={"COLOR"}, use_clear=True, margin=8)
+            bpy.ops.object.bake(type="DIFFUSE", pass_filter={"COLOR"}, use_clear=True, margin=margin)
+        elif bake_type == "NORMAL":
+            bpy.ops.object.bake(type="NORMAL", normal_space="OBJECT", use_clear=True, margin=margin)
         else:
-            bpy.ops.object.bake(type=bake_type, use_clear=True, margin=8)
+            bpy.ops.object.bake(type=bake_type, use_clear=True, margin=margin)
 
     def px(img):
         a = np.empty(TEX * TEX * 4, dtype=np.float32)
@@ -595,8 +621,18 @@ def _bake(objs, size):
         return a.reshape(TEX, TEX, 4)
 
     col, ao, emit = px(images["col"]), px(images["ao"]), px(images["emit"])
+    if ao_blur:
+        ao[..., 0] = _blur(ao[..., 0], ao_blur)
     out = col.copy()
-    out[..., :3] = np.clip(col[..., :3] * (0.5 + 0.5 * ao[..., :1]) + emit[..., :3] * 0.6, 0, 1)
+    out[..., :3] = np.clip(col[..., :3] * (ao_floor + (1 - ao_floor) * ao[..., :1]) + emit[..., :3] * 0.6, 0, 1)
+    if toplight:
+        nz = px(images["normal"])[..., 2] * 2 - 1
+        z = px(images["position"])[..., 2]
+        h = np.clip(z / max(z.max(), 1e-3), 0, 1)
+        light = (toplight * (0.65 * nz + 0.35 * (2 * h - 1)))[..., None]
+        rgb = out[..., :3]
+        # Lighten towards white (screen), so pale tops never clip; darken by multiplying.
+        out[..., :3] = np.clip(np.where(light > 0, rgb + (1 - rgb) * light, rgb * (1 + light)), 0, 1)
     out[..., 3] = 1
     final = bpy.data.images.new("final", TEX, TEX, alpha=False)
     final.pixels.foreach_set(out.ravel())
@@ -619,11 +655,13 @@ def tinted(part):
     return part.endswith("_blade") or part.endswith("_glow")
 
 
-def finalize(name, groups, budget, center=True, root=None, tint=None):
+def finalize(name, groups, budget, center=True, root=None, tint=None, uv_margin=None, uv_hook=None, **bake):
     """groups: {part: [objects]} or a list (one part named after the asset).
     root: Blender point of the blade root, stored relative to the `_blade` part's centre so the
     game can line up swapped blades. tint: (blade, glow) sRGB for the preview, as in game.
-    Returns stats for the manifest."""
+    uv_margin: gap between UV islands as a fraction of the texture (default: Night's packing).
+    uv_hook(objects): called in object mode between unwrap and pack (e.g. to rescale islands).
+    bake: optional `_bake` settings (Night uses the defaults). Returns stats for the manifest."""
     if isinstance(groups, (list, tuple)):
         groups = {"": groups}
     parts = []
@@ -667,11 +705,18 @@ def finalize(name, groups, budget, center=True, root=None, tint=None):
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.004, area_weight=0.0)
-    bpy.ops.uv.pack_islands(margin=0.004, rotate=True)
+    if uv_hook:
+        bpy.ops.object.mode_set(mode="OBJECT")
+        uv_hook(atlas)
+        bpy.ops.object.mode_set(mode="EDIT")
+    if uv_margin is None:
+        bpy.ops.uv.pack_islands(margin=0.004, rotate=True)
+    else:
+        bpy.ops.uv.pack_islands(margin=uv_margin, rotate=True, margin_method="FRACTION", shape_method="CONCAVE")
     bpy.ops.object.mode_set(mode="OBJECT")
 
     os.makedirs(PREVIEWS, exist_ok=True)
-    final = _bake(atlas, max(dims))
+    final = _bake(atlas, max(dims), **bake)
     png = os.path.join(OUT, f"{name}.png")
     final.filepath_raw = png
     final.file_format = "PNG"

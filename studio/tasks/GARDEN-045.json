@@ -1,0 +1,47 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-045",
+  "owner": "A15",
+  "verifier": "A04",
+  "task_type": "test",
+  "objective": "Independent QA and security review of Petal Catch (GARDEN-041 to 044) against decision 0016 and game4-wheel.md, running the W11 Studio plan with seeded petals and the scripted root walk, and producing the review and the evidence for the GARDEN-WHEEL checkpoint.",
+  "inputs": [
+    "docs/decisions/0016-garden-petal-catch-wheel.md",
+    "docs/game-design/game4-wheel.md §W5, §W6, §W8 to §W12",
+    "docs/architecture/garden-wheel.md",
+    "docs/checkpoints/GARDEN-WHEEL.md",
+    "docs/qa/garden-v03-review.md (format)"
+  ],
+  "dependencies": [
+    "GARDEN-042",
+    "GARDEN-043"
+  ],
+  "acceptance_criteria": [
+    "docs/qa/garden-wheel-review.md exists in the garden-v03-review.md format: scope, tool runs, severity table, verdict, findings labelled Computed, Read or Director",
+    "Computed: GardenConfig.WHEEL odds, thresholds, cap, coins minutes and drop composition equal decision 0016; both columns sum to 10,000; expected hatch income per spin at the U6 rates is 127.0 (standard) and 189.1 (lucky) coins/s, three lucky spins under 598; award is idempotent on (today, n) by a script against the real pure module",
+    "Read: no remote carries a catch, position, score, time or wedge; the only new Request action is wheelStart; the roll's seed does not derive from the petal seed; the prize is applied in the same step as the round end without yielding; Wheel.leave and Wheel.close grant nothing; a v2 save loads with the default wheelToday; the client has no spin-again, no countdown to the next spin, no near-miss text, no failure sound, no slot ticking (GDD G4)",
+    "Studio with the build stamp (rule 13): W11 steps 1 to 6 and 8 pass, including the seeded round (Seed attribute) with the scripted server-side root walk catching exactly the expected drops and the expected score floor, three spins to the cap, the fourth round as practice, a dropped round granting nothing, and the DataStores-off practice path; step 7 (two clients) if a second client is available",
+    "The checkpoint doc's evidence block is filled: CI run link, test counts, build stamp, W11 results, the wheel panel screenshot and a recording of a round and a spin"
+  ],
+  "verification": "A04 reads the review; CI run link and test-results.json attached as evidence",
+  "output_artifacts": [
+    "docs/qa/garden-wheel-review.md"
+  ],
+  "evidence": [
+    "Review docs/qa/garden-v04-review.md (A15, 2026-11-06) at garden/v04 378a301 against origin/main ffd9f71: verdict FIX FIRST, 1 blocker, 3 major, 8 minor. Petal Catch has no blocker or major; this one file is the Petal Catch review the task names docs/qa/garden-wheel-review.md (the Director asked for one review).",
+    "Computed: GardenConfig.WHEEL equals 0016 (wedges in disc order, both columns 10,000, thresholds 12/24, cap 3, coins 10 min and 100, drops 26/4/10); EV per spin 127.0 standard and 189.1 lucky, 3 lucky 567 < 598; 100,000 lucky rolls within 15% of each bp; WheelRules.award twice applies once and refuses out of order; a v2 save gets wheelToday {day -1, spins 0}.",
+    "Read: catches only from the server 5 Hz root samples, wheelStart the only new action, WheelFx sends nothing; the roll seed (os.time, UserId, spinId + jitter, Wheel.luau:105-106) is not derived from the petal seed; one Profiles.apply per spin, Wheel.leave/close/home grant nothing; G4: no purchase, no countdown to the next spin, no near-miss text, no sound on a pinecone or an under-12 end.",
+    "m5 minor src/garden/Wheel.luau:104-120: a round that began as spin 2 or 3 and ends after 00:00 UTC is refused by award (W9 says spin 1 of the new day) but wheelSpin still tells the child the egg was saved.",
+    "Local tool runs at 378a301: lune run tests/run 551/551 passed (test-results.json deleted); reviewer script against the real pure modules 230 checks pass plus the deliberate B1 reproduction; selene 0/0/0; stylua --check clean on 34 LF blobs; rojo build + check-place match (stamp dev); validate-tasks 68 valid; check-scope 104 files in scope. No CI run link yet.",
+    "Open: the W11 Studio steps with a build stamp (no play session here) and the GARDEN-WHEEL.md evidence block."
+  ],
+  "files": [
+    "docs/qa/garden-wheel-review.md",
+    "docs/checkpoints/GARDEN-WHEEL.md",
+    "studio/tasks/GARDEN-045.json"
+  ],
+  "tests": [],
+  "notes": "Reviewer must not have written GARDEN-041, 042 or 043 (CLAUDE.md rule 2). Studio facts count only with the build stamp. The scripted root walk is a server-side command-bar PivotTo of the test character onto WheelRules.schedule(seed, startAt) spots at at + 2.6 s, so every catch is the server's own sample; a client-side move would test replication, not the rules. If GARDEN-044's ids are not uploaded, review the fallbacks and say so; the design does not depend on the art."
+}

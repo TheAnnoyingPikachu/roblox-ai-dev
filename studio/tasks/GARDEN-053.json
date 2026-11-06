@@ -1,0 +1,57 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-053",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "The v0.5 client: the UiKit module (panel, ribbon, close X, tabs, 3D button, icon strip with badges, coin pill, level ring, cards, toasts, chips, start menu with logo, PLAY and showcase, selector, flyTo), Menu and Hud rebuilt on it per the X1.4 mapping, the REWARDS panel's WEEKLY and MONTHLY tabs sending claimLogin, PLAY sending `play` with the camera fly, the petal emitters per large sakura, and the GardenIcons table with glyph fallbacks.",
+  "inputs": [
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/game-design/game4-gdd.md §X1, §X3.5",
+    "docs/architecture/garden.md §6, §6.3, §6.4",
+    "src/garden-client/ClientState.luau"
+  ],
+  "dependencies": [
+    "GARDEN-051",
+    "GARDEN-030"
+  ],
+  "acceptance_criteria": [
+    "src/garden-client/UiKit.luau exports every 6.4 signature with the X1.3 sizes, radii, strokes and timings; no widget sends a Request; every animation is skipped under ReducedMotion; one panel open at a time; gamepad: panels select their first item, bumpers switch tabs, B closes",
+    "Every panel in the X1.4 table exists with the same requests as v0.4 (Eggs + Odds, Index GRID / MILESTONES with 108 cells, Creatures PEN / STORAGE / TRADES, Locker FENCE / CAN / PADS, Rewards WEEKLY / MONTHLY / QUESTS, Stats, Dash with the Prize eggs row including weekly and monthly, Settings GAME / HOW TO PLAY, Admin, Trade); no request or payload field is new except claimLogin and play",
+    "Hud: left icon strip with badges (REWARDS = claimable login slots + quests + milestone, DASH = prize eggs, CREATURES dot on a trade invite), touch shows 5 + MORE, coin pill with the +N float, level ring and XP bar, GLASS weather chips; the start menu shows the logo, the pulsing PLAY, the showcase of the newest species and the side column; PLAY flies the camera to ClientState.gateLook(plot) over 1.6 s and sends play",
+    "REWARDS WEEKLY and MONTHLY tabs: 7 slot cards each with CLAIM / CLAIMED / sign-ins-needed states, the period line with no countdown, CLAIM ALL pressing in turn; a join with a claimable slot shows the toast and the badge",
+    "CreatureFx adds at most 12 petal emitters, one per sakura_large_* model within 60 studs of the camera; GardenIcons.luau exists with nil ids and every icon button shows its glyph; the phone layout at 844 x 390 has no overlap with the thumbstick and jump button (screenshots)",
+    "lune run tests/run GardenConfig passes; stylua and selene clean; rojo build and check-place pass"
+  ],
+  "verification": "A15 playtest note with the build stamp and the side-by-side screenshots (start menu, EGGS, REWARDS, phone layout, gamepad selection)",
+  "output_artifacts": [
+    "src/garden-client/UiKit.luau",
+    "src/shared/GardenIcons.luau"
+  ],
+  "files": [
+    "src/garden-client/UiKit.luau",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/Hud.client.luau",
+    "src/garden-client/ClientState.luau",
+    "src/garden-client/CreatureFx.client.luau",
+    "src/garden-client/TradeFx.client.luau",
+    "src/garden-client/DashFx.client.luau",
+    "src/garden-client/CLAUDE.md",
+    "src/shared/GardenIcons.luau",
+    "src/garden-client/WheelFx.client.luau"
+  ],
+  "tests": [
+    "GardenConfig.spec.luau"
+  ],
+  "notes": "Display only: the client never computes a reward, a slot or a date (it reads login counts from the published profile and calls GardenProgress wrappers for claimable counts). Do not add images beyond GardenIcons ids and ViewportFrames. Keep ClientState.new/corner/stroke/text for HatchFx and FollowerFx; route ClientState.button and toast into UiKit. The pad tag, plot sign and follower tag are out of scope. Built 2026-11-06 (A11). Scope: src/garden-client/WheelFx.client.luau added to files so the Petal Catch end card and wheel panel sit in the kit's PINK shell like every other panel. Deviations for QA: reward slot cards are 96 x 176 (X1.3 says 120 x 150; seven 120 px cards do not fit an 820 px panel); the touch strip is 3 columns x 2 rows (EGGS CREATURES / REWARDS HOME / MORE) and the desktop strip 2 columns x 5 rows (fewer rows on short screens), because one 112 px column of 9 to 10 buttons does not fit 1080 px; the pending-slot pill reads 'N more days' (the header line carries 'Sign in on 5 days...'); the Hud ScreenGui keeps IgnoreGuiInset off so the coin pill is never under the Roblox top bar; claimable counts come from LoginRules.claimable directly (GardenProgress has no wrapper for it); icons are drawn as rbxthumb://type=Asset of the Decal ids with the glyph until loaded; UiKit adds modal, row, bar, text, chipText, icon, eggDisc, viewport, setPill, setColour, touch, current and selectFirst beside the 6.4 list; Panel gains setFooter. Contract consumed (matches GARDEN-052): Request play (nil), claimLogin week|month, plantPrize weekly|monthly; profile.login {week, weekDays, weekLast, weekClaimed, month, monthDays, monthLast, monthClaimed}; LastReward text#n; ClientState.gateLook(plot) = 12 studs outside the gate (local z -42), 6 up, looking at the plot centre 5 up.",
+  "evidence": [
+    "Gates 2026-11-06 on garden/v05-client (commits ba95f98, 9a781d4 and the task commit): lune run tests/run 571/571; selene src tests 0 errors 0 warnings; stylua --check src tests clean on LF copies; node tools/validate-tasks.mjs 76 valid; node tools/check-scope.mjs origin/main all changed files in scope; rojo build garden.project.json and node tools/check-place.mjs: matches",
+    "Studio 2026-11-06, three sessions on scratch builds of this branch, build stamp `[Build] dev (place 0, job ): local build, no CI stamp` (corner label `build dev`); no script errors in the output. This branch's server predates GARDEN-052, so `play` and `claimLogin` were not exercised against a server that accepts them; login and prize-egg states were faked by setting the Profile attribute from the server context, trade/wheel states by firing scratch Fx payloads; creatures came from adminGrant",
+    "Seen at 1736 x 793: start menu (logo, pulsing PLAY, showcase sliding through the six exclusives and the Moth with ViewportFrames filled once the models load, side column with the REWARDS dot); HUD (coin pill with merged +7.9K float, level ring sweep at 290/440 XP, XP bar, Index count, glass weather/next/weekend/restock/ripe chips, strip with REWARDS count 4-5 and DASH count 2); EGG CART EGGS (cards, price/LEVEL pills, stock tags, NEW BED card, detail strip with Lucky Meter, BUY, ODDS) and ODDS (chooser with Weekly and Monthly cards showing 'Login reward'); INDEX GRID (rarity tiers, silhouettes) and MILESTONES; CREATURES PEN (cards, gold selection, footer STORE/LOVE/NAME/RELEASE, gate CLOSED/FRIENDS/OPEN), STORAGE, release modal; LOCKER (lock icons, login cosmetics 'Login reward'); REWARDS WEEKLY with CLAIMED/CLAIM/'N more days' slots and CLAIM ALL, MONTHLY, QUESTS; STATS; DASH with Weekly/Monthly prize eggs and PLANT; PATCH; SETTINGS GAME and HOW TO PLAY; ADMIN; Trade panel picking/hold (bar draining)/cancelled card; Petal Catch end card and wheel spin to Moon in the PINK shell; toasts bottom-centre (LastReward 'Weekly Egg!', notice)",
+    "Gamepad (keyboard-simulated: Studio reports the input as Keyboard, so selectFirst was not triggered by it): ButtonB closed the release modal first and then the panel, R1/L1 cycled PEN/STORAGE/TRADES, the shared GOLD selector drawn on a card set as SelectedObject",
+    "Phone: Studio would not size the viewport above 844 x 337 at that width; at 844 x 337 with a Studio-only scratch edit forcing the touch strip, the strip ends 105 px above the bottom (clear of the thumbstick zone), MORE opens the sheet with the other six, and the EGGS and REWARDS panels fit the screen at UIScale 0.5",
+    "Not checked: a real touch device or the Device Emulator, PLAY's server move and claimLogin payouts against the GARDEN-052 server, the petal emitters (no sakura_large_* models on this branch), ReducedMotion on, a two-client trade"
+  ]
+}

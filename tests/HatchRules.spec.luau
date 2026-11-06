@@ -19,8 +19,8 @@ local function ripe(egg: string): Profile
 	return p
 end
 
-local function outcome(egg: string, s: string, m: string, z: string): HatchRules.Outcome
-	return { egg = egg, s = s, m = m, z = z, forced = false }
+local function outcome(egg: string, s: string, m: string, z: string, c: string?): HatchRules.Outcome
+	return { egg = egg, s = s, m = m, z = z, c = c or "none", forced = false }
 end
 
 local function egg(id: string): GardenConfig.Egg
@@ -348,15 +348,16 @@ describe("HatchRules: celestial comes from the Celestial Egg alone", function()
 end)
 
 describe("HatchRules: what is published is what is rolled", function()
-	it("keeps species, mutations and sizes within 1.5 points through roll, for every sold egg and weather", function()
+	it("keeps species, mutations and sizes within 1.5 points through roll, for every rolled egg and weather", function()
 		local N = 20000
 		-- 1.5 points is about 4 sigma at N = 20,000; the v0.3 odds put sunset/sunbeam owl at exactly -1.00.
 		local function agrees(label: string, counts: { [string]: number }, id: string, bp: number)
 			local close = math.abs(100 * (counts[id] or 0) / N - bp / 100) <= 1.5
 			expect(`{label} {id} {close}`).toBe(`{label} {id} true`)
 		end
+		-- v0.5: the login exclusives (no price) roll like any egg; only the starter is fixed.
 		for position, e in GardenConfig.EGGS do
-			if e.price == nil then
+			if e.id == "starter" then
 				continue
 			end
 			local p = ripe(e.id)
@@ -371,7 +372,7 @@ describe("HatchRules: what is published is what is rolled", function()
 					sizes[o.z] = (sizes[o.z] or 0) + 1
 				end
 				local label = `{e.id} {w.id}`
-				for _, o in e.odds do
+				for _, o in HatchRules.oddsFor(e.id, w.id) do
 					agrees(label, species, o.id, o.bp)
 				end
 				for _, o in if e.mutation then { { id = e.mutation, bp = 10000 } } else w.mutation do
@@ -467,5 +468,176 @@ describe("HatchRules.apply", function()
 		expect(HatchRules.announce(outcome("meadow", "bunny", "rainbow", "normal"))).toBe(true)
 		expect(HatchRules.announce(outcome("meadow", "bunny", "normal", "huge"))).toBe(true)
 		expect(HatchRules.announce(outcome("moon", "turtle", "moonlit", "big"))).toBe(false)
+		expect(HatchRules.announce(outcome("meadow", "bunny", "normal", "normal", "stormy"))).toBe(true)
+		expect(HatchRules.announce(outcome("meadow", "bunny", "normal", "normal", "blooming"))).toBe(false)
+		expect(HatchRules.announce(outcome("meadow", "bunny", "normal", "normal", "frosted"))).toBe(false)
+	end)
+end)
+
+describe("HatchRules charms and the Lantern Moth (GDD V2, decision 0015)", function()
+	local N = 20000
+
+	it("draws the charm last, only in a rare weather, at its published chance", function()
+		for _, charm in GardenConfig.CHARMS do
+			local hits, rng = 0, Rng.seed(61, charm.bp)
+			for _ = 1, N do
+				local c
+				c, rng = HatchRules.rollCharm(charm.weather, rng)
+				hits += if c == charm.id then 1 else 0
+				expect(c == charm.id or c == "none").toBe(true)
+			end
+			expect(`{charm.id} {math.abs(100 * hits / N - charm.bp / 100) <= 1}`).toBe(`{charm.id} true`)
+		end
+		local rng = Rng.seed(62)
+		for _, w in { "clear", "sunbeam", "moonfall", "shower", "nope" } do
+			local c, state = HatchRules.rollCharm(w, rng)
+			expect(`{w} {c}`).toBe(`{w} none`)
+			expect(state).toBe(rng) -- no draw
+		end
+	end)
+
+	it("gives frosted at 25% +/- 1 point over 20,000 Snowfall rolls and none in Clear, after the old draws", function()
+		local frosted, none = 0, 0
+		for i = 1, N do
+			local rng = Rng.seed(i, 63)
+			local o = HatchRules.roll(ripe("meadow"), 1, NOW, "snowfall", rng) :: HatchRules.Outcome
+			frosted += if o.c == "frosted" then 1 else 0
+			-- Species, mutation and size come from the same three draws as before; the charm is the fourth.
+			local s, _, afterS = HatchRules.rollSpecies("meadow", 0, rng, "snowfall")
+			local m, afterM = HatchRules.rollMutation("snowfall", afterS)
+			local z, afterZ = HatchRules.rollSize(afterM)
+			expect(`{o.s} {o.m} {o.z} {o.c}`).toBe(`{s} {m} {z} {(HatchRules.rollCharm("snowfall", afterZ))}`)
+			local clear = HatchRules.roll(ripe("meadow"), 1, NOW, "clear", rng) :: HatchRules.Outcome
+			none += if clear.c == "none" then 1 else 0
+			expect(`{clear.s} {clear.m} {clear.z}`).toBe(`{s} {(HatchRules.rollMutation("clear", afterS))} {z}`)
+		end
+		expect(math.abs(100 * frosted / N - 25) <= 1).toBe(true)
+		expect(none).toBe(N)
+		local fixed = HatchRules.roll(ripe("celestial"), 1, NOW, "thunder", Rng.seed(64)) :: HatchRules.Outcome
+		local s, _, state = HatchRules.rollSpecies("celestial", 0, Rng.seed(64))
+		local z
+		z, state = HatchRules.rollSize(state)
+		expect(`{fixed.s} {fixed.m} {fixed.z} {fixed.c}`).toBe(
+			`{s} celestial {z} {(HatchRules.rollCharm("thunder", state))}`
+		)
+		local starter = HatchRules.roll(ripe("starter"), 1, NOW, "thunder", Rng.seed(65)) :: HatchRules.Outcome
+		expect(`{starter.s} {starter.m} {starter.z} {starter.c}`).toBe("pup normal normal none")
+	end)
+
+	it("substitutes 300 bp of frog (Forest) and cat (Sunset) with the Moth only in a rare weather", function()
+		local function row(odds: { GardenConfig.Odds }): string
+			local out = {}
+			for _, o in odds do
+				table.insert(out, `{o.id} {o.bp}`)
+			end
+			return table.concat(out, ", ")
+		end
+		for _, w in { "snowfall", "petals", "thunder" } do
+			expect(row(HatchRules.oddsFor("forest", w))).toBe(
+				"frog 2700, pup 3000, lamb 1500, cat 1700, owl 500, hedgehog 300, moth 300"
+			)
+			expect(row(HatchRules.oddsFor("sunset", w))).toBe(
+				"cat 3200, owl 2500, hedgehog 1500, fox 1700, turtle 300, deer 300, panda 200, moth 300"
+			)
+			for _, e in GardenConfig.EGGS do
+				if e.event == nil then
+					expect(HatchRules.oddsFor(e.id, w)).toBe(e.odds)
+				end
+			end
+		end
+		for _, w in { "clear", "sunbeam", "moonfall", "shower" } do
+			expect(HatchRules.oddsFor("forest", w)).toBe(egg("forest").odds)
+			expect(HatchRules.oddsFor("sunset", w)).toBe(egg("sunset").odds)
+		end
+		expect(HatchRules.oddsFor("forest", nil)).toBe(egg("forest").odds)
+		expect((HatchRules.rollSpecies("forest", 0, Rng.seed(3)))).toBe(
+			(HatchRules.rollSpecies("forest", 0, Rng.seed(3), "clear"))
+		)
+		expect(#HatchRules.oddsFor("nope", "thunder")).toBe(0)
+		expect(egg("forest").event ~= nil and egg("sunset").event ~= nil).toBe(true)
+		local sum = 0
+		for _, o in HatchRules.oddsFor("forest", "petals") do
+			sum += o.bp
+		end
+		expect(sum).toBe(10000)
+	end)
+
+	it("rolls the Moth only in rare weathers and only from Forest and Sunset", function()
+		local moths: { [string]: number } = {}
+		for position, e in GardenConfig.EGGS do
+			if e.id == "starter" then
+				continue
+			end
+			for _, w in GardenConfig.WEATHERS do
+				for i = 1, 4000 do
+					local o = HatchRules.roll(ripe(e.id), 1, NOW, w.id, Rng.seed(i, position, 66)) :: HatchRules.Outcome
+					if o.s == "moth" then
+						local key = `{e.id} {w.id}`
+						moths[key] = (moths[key] or 0) + 1
+						expect(`{key} {GardenConfig.isRare(w.id) and e.event ~= nil}`).toBe(`{key} true`)
+					end
+				end
+			end
+		end
+		local keys = {}
+		for key in moths do
+			table.insert(keys, key)
+		end
+		table.sort(keys)
+		expect(table.concat(keys, "; ")).toBe(
+			"forest petals; forest snowfall; forest thunder; sunset petals; sunset snowfall; sunset thunder"
+		)
+		for _, count in moths do
+			expect(math.abs(100 * count / 4000 - 3) <= 1.5).toBe(true)
+		end
+		-- The Moth is never top: the Lucky Meter still forces the egg's own top species.
+		local p = ripe("forest")
+		p.pity.forest = 29
+		expect((HatchRules.roll(p, 1, NOW, "thunder", Rng.seed(67)) :: HatchRules.Outcome).s).toBe("hedgehog")
+	end)
+
+	it("applies the charm into the creature with fa 0 and no name, and refuses an unknown charm", function()
+		local p = ripe("sunset")
+		local out, ok, r = HatchRules.apply(p, 1, outcome("sunset", "moth", "golden", "big", "blooming"), NOW)
+		expect(ok).toBe(true)
+		local c = (r :: any).creature
+		expect(`{c.s} {c.m} {c.z} {c.c} {c.fa} [{c.n}] {c.fav} {c.placed}`).toBe(
+			"moth golden big blooming 0 [] false 1"
+		)
+		expect(out.index[1]).toBe("moth:golden") -- the Index key has no charm
+		expect(GardenRules.rate(c)).toBe(55 * 3 * 1.5 * 2)
+		expect(select(2, HatchRules.apply(p, 1, outcome("sunset", "cat", "normal", "normal", "shiny"), NOW))).toBe(
+			false
+		)
+		expect(select(2, HatchRules.apply(p, 1, outcome("sunset", "cat", "normal", "normal", "none"), NOW))).toBe(true)
+		local stormy =
+			HatchRules.apply(ripe("celestial"), 1, outcome("celestial", "lion", "celestial", "huge", "stormy"), NOW)
+		expect(GardenRules.rate(stormy.creatures[1])).toBe(500 * 20 * 2.5 * 3)
+	end)
+
+	it("rolls the Weekly and Monthly Eggs with weather mutations and charms, and applies their hatch (X3.3)", function()
+		for _, id in { "weekly", "monthly" } do
+			local e = egg(id)
+			local p = ripe(id)
+			local charms, mutated = 0, 0
+			for i = 1, 2000 do
+				local o =
+					HatchRules.roll(p, 1, NOW, "thunder", Rng.seed(i, 51, if id == "weekly" then 1 else 2)) :: HatchRules.Outcome
+				expect(table.find({ e.odds[1].id, e.odds[2].id, e.odds[3].id }, o.s) ~= nil).toBe(true)
+				charms += if o.c == "stormy" then 1 else 0
+				mutated += if o.m ~= "normal" then 1 else 0
+			end
+			expect(`{id} {math.abs(100 * charms / 2000 - 10) <= 1.5} {math.abs(100 * mutated / 2000 - 12) <= 1.5}`).toBe(
+				`{id} true true`
+			)
+			local clear = HatchRules.roll(p, 1, NOW, "clear", Rng.seed(5, 51)) :: HatchRules.Outcome
+			expect(clear.c).toBe("none")
+			-- The Lucky Meter forces the top species at meter - 1.
+			p.pity[id] = (e.meter :: number) - 1
+			expect((HatchRules.roll(p, 1, NOW, "clear", Rng.seed(6)) :: HatchRules.Outcome).s).toBe(e.top)
+			local out, ok = HatchRules.apply(p, 1, outcome(id, e.top :: string, "golden", "big", "stormy"), NOW)
+			expect(ok).toBe(true)
+			expect(`{out.pity[id]} {out.index[1]} {out.xp}`).toBe(`0 {e.top}:golden {e.xp + GardenConfig.XP.index}`)
+		end
 	end)
 end)

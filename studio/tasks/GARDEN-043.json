@@ -1,0 +1,45 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "low",
+  "status": "in_review",
+  "task_id": "GARDEN-043",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Show Petal Catch on the client: WheelFx renders the player's own petals from the server seed, the basket, the round HUD, the end card, the pre-decided wheel animation with both odds columns, the stand's spins label and the sounds; Menu's prize list title covers both mini-games; Models lists the client props.",
+  "inputs": [
+    "docs/architecture/garden-wheel.md §4, §5, §6",
+    "docs/game-design/game4-wheel.md §W7, §W8, §W9",
+    "docs/game-design/game4-gdd.md §G4 (binding)",
+    "src/garden-client/DashFx.client.luau (the pattern to copy), src/garden-client/ClientState.luau (SFX, EGG_COLOURS, sound), src/garden-client/CLAUDE.md"
+  ],
+  "dependencies": [
+    "GARDEN-042"
+  ],
+  "acceptance_criteria": [
+    "On wheelStart the client computes WheelRules.schedule(seed, startAt) and shows each drop falling from the canopy at the server's straight-line height (plus a cosmetic sway under 0.5 studs) using petal_pink, petal_gold and pinecone clones or their part fallbacks; a landed petal settles and fades, never shown as a miss; a petal pops to the basket only on wheelCatch, with +1, +3 or a brown -2 float and the W7.2 sounds (none for a pinecone)",
+    "Round HUD shows score, the timer from endAt with GetServerTimeNow, the progress bar with the 12 and 24 marks and either 'N spins left today' or 'Practice'; it is hidden outside a round, fits a 360 px phone with autoScale and stays clear of the jump button and the quick-button column; no new quick button",
+    "End card: 'Nice catch! N petals' then the wheel panel (tier spin or lucky), 'Nice try, play again' or 'Practice round'; the wheel panel shows 8 wedges in the egg colour pairs and gold for Coins, both odds columns as percentages, and a SPIN button that plays the pre-decided 3.5 s ease-out to the wedge from wheelSpin (random offset inside the wedge, no ticking while slowing, never backing up), one chime at the stop, fanfare and a burst for celestial and aurora, and the result line; no spin-again, no countdown to the next spin, no near-miss text anywhere",
+    "SpinsLabel on the stand reads from the local Profile attribute and ProfileOnline: 'N spins left today', 'All 3 spins used today · practice rounds open' or 'Saving is off on this server · practice only'; the disc idles at 0.1 turns/s outside a round; the basket is welded to the local character's hand for the round only",
+    "The client sends nothing new; every sound goes through ClientState.sound and is silent with sfx off; Menu's DASH panel prize list is titled 'Prize eggs'; Models.CLIENT_MODELS adds wheel_disc, wheel_basket, petal_pink, petal_gold, pinecone; Relay and Night behaviour is unchanged; CI, rojo build garden.project.json, check-place, validate-tasks and check-scope pass; a Studio run with the build stamp covers W11 steps 1 to 4 and 8"
+  ],
+  "verification": "CI, a Studio run recorded with the build stamp (rule 13), and the GARDEN-045 QA review",
+  "output_artifacts": [
+    "src/garden-client/WheelFx.client.luau"
+  ],
+  "evidence": [
+    "Local run 2026-11-05 on garden/wheel: lune run tests/run 508/508; selene 0; stylua --check clean; rojo build + check-place match; validate-tasks and check-scope pass. Studio run (build dev, same harness as GARDEN-042): on wheelStart the client schedule matched the server (every server wheelCatch had a falling clone; 128 catches over 5 rounds, part fallbacks since no ids are in this branch); HUD showed score 7 / timer / 'Spin 12' and 'Lucky 24' marks / '3 spins left today', then 'Practice' in round 5; basket (fallback) welded to the right hand; stand label read '3 spins left today', '2 spins left today', 'All 3 spins used today · practice rounds open' (and 'Saving is off on this server · practice only' when ProfileOnline was false); end card 'Nice catch! 38 petals' then the wheel panel with 8 pockets, both odds columns (36.00/20.00 ... 0.05/0.15 %) and SPIN armed on wheelSpin arrival; SPIN eased to the server's wedge (moon under the pointer, discRotation 1587.7 = 4 turns + wedge) and showed 'Moon Egg! Saved with your prize eggs. Open DASH to plant it.'; the fourth round's end card read 'Practice round · 38 petals' with no panel and no wheelSpin. Not covered: sfx-off audit by ear (every sound goes through ClientState.sound; no sound is called for a pinecone, an under-12 end or a practice end), gamepad A. Menu DASH heading is 'PRIZE EGGS' (house uppercase style for 'Prize eggs'); src/garden-client/CLAUDE.md is a pointer to src/garden/CLAUDE.md, which lists the new files."
+  ],
+  "files": [
+    "src/garden-client/WheelFx.client.luau",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/CLAUDE.md",
+    "src/relay/Models.luau",
+    "garden.project.json",
+    "studio/tasks/GARDEN-043.json"
+  ],
+  "tests": [
+    "WheelRules.spec.luau"
+  ],
+  "notes": "Display only: the client never decides a catch or a wedge. wheelSpin follows wheelOver in the same server step, so SPIN waits for it (2 s fallback enables it anyway and the result shows on arrival). GDD G4.3 is binding: no slot-machine ticking, no wobble back from a rarer wedge, no failure sound, no red flash. Models.luau changes are the one CLIENT_MODELS line; if GARDEN-044 has not uploaded ids, every prop keeps its fallback and the task still completes."
+}

@@ -1,0 +1,52 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-056",
+  "owner": "A15",
+  "verifier": "A04",
+  "task_type": "test",
+  "objective": "Independent QA and security review of Egg Garden v0.5 (GARDEN-051 to GARDEN-055) against decision 0017 and GDD section X, with the login tracks attacked for double pay and rollover faults, the spawn and PLAY flow tried from two clients, the UI checked on PC, phone and gamepad, and the evidence for the v0.5 checkpoint.",
+  "inputs": [
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/game-design/game4-gdd.md §X",
+    "docs/architecture/garden.md §3.11, §4.7, §6.4, §9.3",
+    "docs/checkpoints/GARDEN-V05.md",
+    "docs/qa/garden-v04-review.md"
+  ],
+  "dependencies": [
+    "GARDEN-052",
+    "GARDEN-053",
+    "GARDEN-054",
+    "GARDEN-055"
+  ],
+  "acceptance_criteria": [
+    "docs/qa/garden-v05-review.md exists in the garden-v04-review.md format: scope, tool runs, severity table, verdict, findings labelled Computed, Read or Director",
+    "Login tracks tried, not read: a claim re-sent after a forced flush failure pays once; two joins in one UTC day count one day; a day rollover while online counts the next day once; a week rollover (clock to Monday) resets the weekly track and keeps the monthly; a February month ends its track at 28; claimLogin with a bad arg, before the count, and past the last slot is refused; the egg lands in prizeEggs and plants at level 1 from the Dash panel; a login cosmetic cannot be bought and is granted once (Computed, fake store and moved clock, build stamp)",
+    "GardenConfig equals decision 0017 by script (26 species, 10 eggs, Index 108, LOGIN slots, 5 grant cosmetics); no sold egg hatches an exclusive species in 100,000 seeded rolls; a v3 save without login loads with every field kept; claimDaily and claimWeekly are refused",
+    "Spawn and PLAY: both clients appear on the pad facing the tree before their profiles load, PLAY flies and moves each to its own gate, a respawn lands on the pad, a racer's respawn still goes to the course; the valley screenshots show the X2 additions with the Parts attribute under 7,500 and the fixed positions unchanged (cart, boards, Petal Patch, Splash Island)",
+    "UI: every X1.4 panel works with the same requests as v0.4 (script_grep of Request calls against 0008 + 0015 + 0017 tables: nothing else is sent); phone layout at 844 x 390 and gamepad navigation screenshots; ReducedMotion skips animations; no client computes a reward or a date",
+    "The checkpoint doc lists the evidence: CI run link, test counts, build stamp, the side-by-side screenshots, the spawn and PLAY recording, the rollover and claim recording, the Weekly Egg hatch, the pacing script output"
+  ],
+  "verification": "A04 reads the review; CI run link and test-results.json attached as evidence",
+  "output_artifacts": [
+    "docs/qa/garden-v05-review.md"
+  ],
+  "files": [
+    "docs/qa/garden-v05-review.md",
+    "docs/checkpoints/GARDEN-V05.md"
+  ],
+  "tests": [],
+  "notes": "Reviewer must not have written GARDEN-051 to 055 (CLAUDE.md rule 2). Attack hardest: the claim re-apply inside UpdateAsync (the stored record must show claimed advanced exactly once), the rollover tick racing a join at midnight UTC, and the removed join-time gate move (nobody may end up inside the Great Egg Tree). Studio facts count only with the build stamp (rule 13).",
+  "evidence": [
+    "Review docs/qa/garden-v05-review.md (A15, 2026-11-06) of the combined release at garden/v05 7560da3 (v0.4, Petal Catch, v0.5, creature HD), delta garden/v04...garden/v05: verdict FIX FIRST, 0 blockers, 3 majors, 10 minors. The owner's hard rules hold (trading code unchanged, same six trade actions from buttons only, no claim pays a slot twice or past the earned ones, old saves kept, no purchase, countdown or loss sound added).",
+    "M1 major src/shared/LoginRules.luau:72-77: an earned, unclaimed Weekly or Monthly Egg (and every unclaimed slot) is gone at the UTC rollover (Computed J1; Sunday 16:00 Los Angeles); recommend paying earned slots inside the tick at the rollover, for SHANNON under checkpoint item 1.",
+    "M2 major src/garden-client/UiKit.luau:148 (+ :342, :644, :692, :741-748, Hud.client.luau:58-64, Menu.client.luau:1494): at 844 x 390 the 0.5 scale floor puts 18 px text at 9 pt and 16 px at 8 pt (card names, pills, chips, XP, Index, reward cards); Director (c) on PC. M3 major src/garden/Plots.luau:771-778: stud-sized pad tags grow without limit up close (Director b).",
+    "Minors: m1 chip contrast 1.5 to 2.5:1 (Director a); m2 textures resolved at runtime from decals, grey for the server's life if never resolved (Director d); m3 Rainbow Highlight fill 0.6 (Director e); m4 egg cards are discs (Director f); m5 a claim re-run on a record that has it pays the next earned slot (docs say unchanged); m6 tick not monotonic under clock skew; m7 PLAY flies before play is accepted; m8 petal emitters register Model and MeshPart; m9 HD tri budget 6,000 not in 9.1/9.3; m10 GARDEN-055 scope and 054/055 status.",
+    "Local tool runs at 7560da3: lune run tests/run 571/571 (test-results.json deleted); reviewer script 171 checks pass (0017 values, 4,900,070 seeded sold-egg rolls with 0 exclusives, monthOf and weekOf against DateTime 1970-2100, counting, claims, flush re-apply, exclusive eggs, login cosmetics, literal v0.2/v0.3/v0.4 saves kept field for field); pacing script output equals GDD X4; selene 0/0; stylua --check clean on 26 LF blobs; rojo build + check-place match (stamp dev); GardenAssets and GardenIcons regenerate byte-identical; validate-tasks 77 valid; check-scope origin/main all 223 in scope.",
+    "Not done: any Studio play session by the reviewer, two clients, a forced flush failure, a phone or gamepad, Reduced Motion live. The checkpoint evidence block (docs/checkpoints/GARDEN-V05.md) stays pending until M1 to M3 are fixed.",
+    "Re-review (GARDEN-058) at garden/v05 6be8cb7, section 'Re-review (GARDEN-058)' of docs/qa/garden-v05-review.md: verdict SHIP to garden-staging. M1 to M3 and m1 to m10 fixed; no blocker or major. Rollover payout Computed: pays the stored period's earned, unclaimed slots exactly once (re-run, flush re-apply, claim pinned and racing the tick, two servers, a clock behind, old saves); a save several periods behind pays only its stored period, which is correct (the periods between had no sign-in); 40 random 400-day histories pay every earned slot exactly once.",
+    "New minors: n1 TradeFx.client.luau:209, :166-184, :447: at 844 x 390 the trade picker's card names render 9.6 px (nested UIScale 0.8) and long pick details and the confirm line overflow at 12 px (fix before production, check on the Device Emulator at the checkpoint); n2 Menu.client.luau:961-975 Admin cells overflow at 12 px (owner only); n3 LoginRules.luau:110-113 claim throws on an unknown track (unreachable through the router).",
+    "Local tool runs at 6be8cb7: lune run tests/run 577/577 (test-results.json deleted); reviewer script 236 checks pass (171 old, J1/J2 now checks, 65 new K0-K8); selene 0/0; stylua --check clean on 11 LF blobs; rojo build + check-place match (stamp dev); validate-tasks 78 valid; check-scope origin/main 225 and garden/v04 150 in scope. CI not yet run. Checkpoint evidence block in docs/checkpoints/GARDEN-V05.md filled (build stamp dev, recordings and side-by-side frames not made)."
+  ]
+}

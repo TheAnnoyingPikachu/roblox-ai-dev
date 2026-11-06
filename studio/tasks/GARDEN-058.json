@@ -1,0 +1,67 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "high",
+  "status": "in_review",
+  "task_id": "GARDEN-058",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Fix the Egg Garden v0.5 release review (M1 to M3, m1 to m10) so no earned login reward is ever lost at a rollover, phone text stays at 12 px or more, pad tags stop growing up close, and the ten minors are fixed or listed with the conservative choice.",
+  "inputs": [
+    "docs/qa/garden-v05-review.md",
+    "docs/game-design/game4-gdd.md sections X1 and X3",
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/architecture/garden.md sections 3.11, 4.7, 6.4, 9.1, 9.3"
+  ],
+  "dependencies": [
+    "GARDEN-056"
+  ],
+  "acceptance_criteria": [
+    "M1: at a week or month rollover LoginRules.tick pays every earned, unclaimed slot of the ending period in slot order (coins scaled as the claim, eggs into prizeEggs, cosmetics granted), once and idempotent on flush re-apply, then starts the new period; the player gets the reward toast with '(saved for you)'; LoginRules.spec covers week and month rollover, no double pay on re-apply, unearned slots unpaid and an old save several periods behind; decision 0017 amended, GDD X3 and the checkpoint updated",
+    "M2: no text under 12 px on screen at 844 x 390 (kit scale floor and a 12 px text floor), desktop at 1920 x 1080 unchanged apart from the XP and Index lines (Studio)",
+    "M3: pad tags keep their 15-stud size when the camera is closer and still do not overlap at 20 to 40 studs (Studio)",
+    "Every major fixed with a test or Studio proof; every minor fixed or listed with the conservative choice in the Fixes (GARDEN-058) section of docs/qa/garden-v05-review.md",
+    "lune run tests/run, selene, stylua, rojo build with check-place, validate-tasks and check-scope pass"
+  ],
+  "verification": "A15 re-reviews M1 to M3 against the Fixes section; CI run; the rollover payout and phone text checked again in garden-staging before the v0.5 checkpoint",
+  "output_artifacts": [
+    "docs/qa/garden-v05-review.md"
+  ],
+  "files": [
+    "studio/tasks/GARDEN-058.json",
+    "studio/tasks/GARDEN-054.json",
+    "studio/tasks/GARDEN-055.json",
+    "src/shared/LoginRules.luau",
+    "src/shared/GardenProgress.luau",
+    "src/garden/Profiles.luau",
+    "src/garden/GardenServer.server.luau",
+    "src/garden/Plots.luau",
+    "src/garden/CLAUDE.md",
+    "src/relay/Models.luau",
+    "src/garden-client/UiKit.luau",
+    "src/garden-client/Hud.client.luau",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/CreatureFx.client.luau",
+    "src/garden-client/CLAUDE.md",
+    "tests/LoginRules.spec.luau",
+    "tests/GardenProgress.spec.luau",
+    "docs/qa/garden-v05-review.md",
+    "docs/decisions/0017-garden-v05-look-valley-login.md",
+    "docs/game-design/game4-gdd.md",
+    "docs/architecture/garden.md",
+    "docs/checkpoints/GARDEN-V05.md",
+    "src/garden-client/TradeFx.client.luau"
+  ],
+  "tests": [
+    "LoginRules.spec.luau",
+    "GardenProgress.spec.luau"
+  ],
+  "notes": "Over the ten-file guide because the 13 findings touch the login rules, the server, the UI kit, three client scripts, the shared model loader and five documents; they are one review and one fix pass, like GARDEN-033. Studio checks use scratch edits of the built place only (clock, kit scale); nothing scratch is committed.",
+  "evidence": [
+    "Code and docs 214314d (branch garden/v05, local, not pushed). lune run tests/run 577/577 passed, 0 failed, 0 load errors (571 + 6 new LoginRules rollover, re-run, old-save, pinned-claim and clock-behind cases; test-results.json deleted); selene 0/0; stylua --check clean on LF copies of 11 .luau files; validate-tasks 78 valid; check-scope origin/main all 225 in scope, garden/v04 all 150 in scope; rojo build garden.project.json + check-place match.",
+    "Studio, local builds of garden.project.json, build stamp dev (corner label), DataStores off, scratch Script calling the game's Profiles.apply and Profiles.loginTick with the clock moved: 5 sign-ins then +7 days paid 750 coins and the Weekly Egg once with the toast 'Weekly Egg! + 750 coins (saved for you)'; 18 sign-ins then +25 days (1 December) paid 2,650 coins, both eggs and both week cosmetics once; re-runs and slowTick on the earlier real clock changed nothing.",
+    "Studio at a Camera.ViewportSize of exactly 844 x 390 (window resized; kit scale 0.6; touch strip forced by a scratch edit): every visible kit label in the HUD, start menu and 12 panel tabs scanned, 0 under 12 px on screen and 0 clipped; desktop pass at kit scale 1 (scratch edit), 0 under 12 px and 0 clipped. Pad tags about 15% of the width at 5 studs (were about 40% at 6), no overlap at 20 and 40 studs. Rainbow (fill 0.85) and Golden (0.75) axolotls keep the texture; 12 sakura Models, 12 petal emitters; Weekly and Monthly Egg models on the REWARDS and Dash cards; PLAY flew after play returned true.",
+    "Not done: a real phone or the Device Emulator, the join-time saved-rewards toast with a stored record, two clients, the Admin catalogue, trade panel and modals at phone size, the m2 retry path and the PLAY refusal live (Read). Details: docs/qa/garden-v05-review.md, Fixes (GARDEN-058).",
+    "Director after the re-review (2026-11-06): n1 trade picker cards no longer scaled to 0.8 and pick lines and the Give/get line wrap at the 12 px floor (TradeFx); n3 LoginRules.claim checks the track before reading it, test 'refuses an unknown track without throwing'; 578/578. n2 (owner-only Admin cells) left. Phone rendering of the trade picker not re-checked in Studio."
+  ]
+}
