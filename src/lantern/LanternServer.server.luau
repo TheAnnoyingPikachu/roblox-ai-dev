@@ -903,6 +903,9 @@ local function onPlayer(player: Player)
 	player.CharacterAdded:Connect(function(character)
 		onCharacter(player, character)
 	end)
+	if player.Character then -- spawned while the server was still booting
+		onCharacter(player, player.Character)
+	end
 	saves.load(player)
 	if player.Parent == nil then
 		return

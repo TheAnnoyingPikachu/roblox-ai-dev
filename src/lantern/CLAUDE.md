@@ -16,7 +16,7 @@ v0.1 server built on part fallbacks (LANTERN-006); the client is `src/lantern-cl
 | `World.luau` | track paths (`World.at`, `World.site`), rails, platforms, Lamplight Depot, Dawn Station, decor, weekly boards, Lighting and Atmosphere |
 | `Train.luau` | four anchored cars (`train_engine`, `train_car_*`) moved by CFrame, `Seat` parts (`Kind`, `Car`), `lamp_turret_head` parts (`Seat`), load boxes, the train frame (`TrackRules.at(track, D)`, y 0, as the client rebuilds it) |
 | `Stops.luau` | the stop tile (blocks, ground, edges), item models with the `Pick` and `Help` prompts, `sync` to the run's item states |
-| `Carry.luau` | carried items on backs, in front, or the critter crate on Align constraints; the G4 speed check |
+| `Carry.luau` | carried items on backs, in front, or the critter crate on Align constraints; each carrier's G4 samples (`CarryRules.pace`) |
 | `Night.luau` | the `Aim` remote and its checks, fresh beams, turret heads, wisp Fx and puff credit |
 | `Rewards.luau` | every payout (`saves.apply` per player), run-end bests, weekly boards, end card tallies |
 
@@ -40,8 +40,12 @@ Pure rules: `TrainRules` (the run), `CarryRules`, `WispRules`, `LootRules`, `Tra
   (depth 10 or less) is never caught. A tile mesh that arrives mirrored is fixed in `Stops.build`'s yaw.
 - The client reads `LanternRun`, `LanternBoards`, `LanternModels` (templates from `Models.night`) and the
   names `train_engine`, `lamp_turret_head`, seat `Kind`, item `ItemId` (architecture lantern 5).
-- A save whose `schemaVersion` is above 1 is never written: the kit's `newer` option loads it read-only;
-  on a kit without it, `sanitize` throws inside the load's UpdateAsync and `readOnly` shows it in memory.
+- A save whose `schemaVersion` is above 1 is never written: the kit's `newer` option loads it read-only.
+- A session that could not claim its save (busy, offline, lost) keeps every change; the server retries
+  `SaveStore.reclaim` every 15 s, keeps `ProfileOnline` false until then and never says "saved" (QA M4).
+- The G4 carry check (`Carry.check`, `CarryRules.pace`) runs before the tick's loads; only a checked
+  carrier is in the load box. `sit` is refused while carrying (`TrainRules.canSit`). Activity is a real
+  input: a request, 10 studs walked (server moves excluded), a turned aim, a puff (QA M1 to M3).
 - Stores `LanternProfile<suffix>`, `LanternWeekCritters<week><suffix>`, `LanternWeekDist<week><suffix>`.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.
 

@@ -163,8 +163,9 @@ local paused = UiKit.chip(hud, 300, 40)
 paused.Name = "SavingPaused"
 paused.AnchorPoint = Vector2.new(1, 0)
 paused.Position = UDim2.new(1, -16, 0, 108)
+paused.BackgroundColor3, paused.BackgroundTransparency = UI.CORAL, 0.1 -- stands out from the glass chips
 UiKit.chipText(paused, "Saving paused", {
-	TextColor3 = UI.CORAL,
+	TextColor3 = UI.CREAM,
 	TextXAlignment = Enum.TextXAlignment.Center,
 	TextSize = 17,
 })
