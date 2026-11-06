@@ -177,7 +177,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_deer = {
-		size = { 3.6, 5, 3 },
+		size = { 4.38, 5, 3.4 },
 		parts = { "creature_deer" },
 		model = 119660934266357,
 		decal = 85446515588690,
@@ -191,7 +191,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_panda = {
-		size = { 4.4, 4.5, 4 },
+		size = { 3.08, 4.5, 2.78 },
 		parts = { "creature_panda" },
 		model = 78336407336905,
 		decal = 85803031256271,
@@ -205,7 +205,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_unicorn = {
-		size = { 4, 5.5, 4.8 },
+		size = { 2.5, 5.5, 4.14 },
 		parts = { "creature_unicorn" },
 		model = 79476882010566,
 		decal = 89421499938529,
@@ -226,7 +226,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_lion = {
-		size = { 4.6, 5.2, 4.6 },
+		size = { 4.83, 5.2, 3.76 },
 		parts = { "creature_lion" },
 		model = 107535010639154,
 		decal = 79487625709380,
@@ -240,7 +240,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_dragon = {
-		size = { 6, 5.5, 4.8 },
+		size = { 4.38, 5.5, 3.83 },
 		parts = { "creature_dragon" },
 		model = 112896264951202,
 		decal = 82593805880653,
@@ -289,7 +289,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_redpanda = {
-		size = { 4.2, 5, 4 },
+		size = { 4.11, 5, 5.01 },
 		parts = { "creature_redpanda" },
 		model = 118251828450061,
 		decal = 78509853690687,

@@ -423,48 +423,70 @@ def creature_hedgehog():
 
 
 def creature_deer():
-    skin_rgb = (240, 186, 128)
-    tan = k.paint("de_coat", [(0, (214, 150, 96)), (1, skin_rgb)], 0.3, 4.3)
-    hoof, cream, wood = k.flat((132, 90, 74)), k.flat((255, 242, 222)), k.flat((170, 120, 88))
-    pale, deep = k.flat((255, 236, 230)), k.flat((242, 110, 140))
-    rose, sunny, pink, nose = k.flat((255, 128, 160), emit=0.2), k.flat(k.SUNNY), k.flat((255, 170, 195)), k.flat((96, 60, 70))
-    head, R = Vector((0, -0.38, 3.3)), 1.0
-    snout = Vector((0, -1.22, 2.98))
-    ear, tilt = (1.15, -0.2, 3.62), 66
+    """Remade from the Roblox AI reference (assets/garden/refs/deer_*.jpg): a tan fawn standing on
+    four short legs, a huge head with a white lower face and a small muzzle, wide ears held out
+    flat to the sides with cream insides, short forked antlers with a pink blossom at each base,
+    white spots on the crown and back, a shaggy white chest ruff, dark hooves and a white-tipped
+    tail flicked up (the "Blossom Fawn")."""
+    tan_rgb, white = (222, 150, 88), (252, 246, 238)
+    tan = k.paint("de_coat", [(0, (188, 118, 66)), (0.45, tan_rgb), (1, (236, 174, 112))], 0, 3.4, rest=True, grain=(0.05, 30))
+    head, R = Vector((0, -0.45, 2.5)), 0.9
+    snout = Vector((0, -1.2, 2.18))
+    ear, tilt = Vector((1.12, -0.34, 2.54)), 96
+    feet = ((0.36, -0.45), (0.38, 0.72))
     legs = []
-    for x, y, r in ((0.4, -0.38, 0.2), (0.42, 0.82, 0.21)):
+    for x, y in feet:
         for s in (-1, 1):
-            legs += [("capsule", (s * x, y, 0.22), (s * x, y, 1.45), r), ((s * x, y, 0.19), r + 0.02, (1, 1.05, 0.85))]
-    body_c = Vector((0, 0.25, 1.78))
+            legs += [("capsule", (s * x, y, 0.75), (s * x, y, 0.22), 0.25), ((s * x, y, 0.17), 0.27, (1.0, 1.08, 0.7))]
+    body_c = Vector((0, 0.18, 0.96))
+    bib = Vector((0, -0.6, 1.1))
+    ruff = [(bib, 0.44, (1.15, 0.62, 1.25))]  # shaggy chest ruff: a fluffy bib, tufts hanging from its lower edge
+    for i, a in enumerate(range(-75, 76, 25)):
+        t = math.radians(a)
+        d = Vector((math.sin(t) * 0.6, -0.5, -1)).normalized()
+        ruff.append(toward(bib + Vector((math.sin(t) * 0.4, -0.1, -0.36 - 0.1 * math.cos(t))), d, 0.14 + 0.03 * (i % 2), (0.85, 0.8, 1.6)))
     body = k.fuse(
         [
-            (head, R, (1.1, 0.96, 0.94)),
-            (snout, 0.42, (1.1, 0.92, 0.76)),
-            ((0, -0.15, 2.5), 0.5, (1.0, 1.0, 1.15)),  # neck
-            (body_c, 0.8, (1.0, 1.2, 0.86)),
-            *k.pair(ear, 0.52, (0.5, 0.25, 1.0), (0, tilt, 0)),
+            (head, R, (1.18, 0.95, 0.95)),
+            *k.pair((0.5, -0.8, 2.22), 0.4, (1.0, 0.85, 0.8)),  # full cheeks
+            (snout, 0.3, (1.1, 0.95, 0.8)),  # small muzzle
+            (body_c, 0.72, (1.0, 1.26, 0.86)),  # plump barrel body
+            ((0, -0.42, 1.18), 0.5),  # chest
+            *ruff,
+            *k.pair(ear, 0.62, (0.6, 0.28, 1.0), (0, tilt, 0)),  # big ears out flat to the sides
             *legs,
         ],
         tan,
-        tris=2150,
+        tris=2700,
     )
-    split(body, hoof, (0, 0, 0.3), (0, 0, -1))
-    parts = [body, k.sphere(0.24, (0, 1.22, 2.1), m=cream, seg=20, rings=10, name="tail")]
-    parts += ears_in(body, ear, tilt, pink, 0.42)
-    parts.append(k.lens(body, body_c, (0, -1, 0.1), 0.34, cream, scale=(0.8, 1.25), thick=0.22, sink=0.6, name="chest"))
-    muzzle = k.lens(body, snout, k.outward(0, -22), 0.34, cream, scale=(1.15, 0.8), thick=0.25, sink=0.6, name="muzzle")
-    face = [muzzle, k.lens(body, snout, k.outward(0, 22), 0.12, nose, scale=(1.3, 0.85), thick=0.55, sink=0.4, seg=12, name="nose")]
-    face.append(k.mouth(muzzle, snout, k.outward(0, -30), 0.2, k.flat(INK), "smile"))
-    parts += k.texel(face, k.FACE_TEXEL)
-    # Cherry blossom spots on both flanks and over the rump; antler nubs, a blossom on each tip.
-    for theta, phi in ((75, 5), (105, 30), (130, 2), (150, 35), (180, 12)):  # about 35 degrees apart
-        for s in ((1, -1) if theta % 180 else (1,)):
-            parts += onto([disc(0.27, petals(5, 0.4), pale, heart=deep, n=20, cup=-0.12, thick=0.14, hr=0.3, dome=0.1, closed=False, name="spot")], body, body_c, k.outward(s * theta, phi), spin=s * theta, sink=0.012)
+    k.zone(tan, (250, 236, 220), (0, -1.12, 2.3), (0.8, 0.52, 0.6), soft=0.25)  # cream lower face and muzzle
+    k.zone(tan, white, bib + Vector((0, -0.2, -0.1)), (0.6, 0.4, 0.74), soft=0.1, jag=0.3)  # chest ruff
+    for x, y in feet:
+        for s in (-1, 1):
+            k.zone(tan, (98, 62, 48), (s * x, y, 0.06), (0.32, 0.32, 0.17), soft=0.15)  # hooves
+    for theta, phi, r in ((0, 72, 0.07), (-24, 60, 0.06), (24, 60, 0.06), (0, 50, 0.05)):  # crown spots
+        p, _ = k.land(body, head, k.outward(theta, phi))
+        k.zone(tan, white, p, (r, r, r), soft=0.3)
+    for theta, phi, r in ((180, 70, 0.09), (150, 55, 0.08), (210, 55, 0.08), (120, 40, 0.08), (240, 40, 0.08), (100, 20, 0.07), (260, 20, 0.07), (165, 30, 0.07), (195, 30, 0.07), (135, 15, 0.06), (225, 15, 0.06)):
+        p, _ = k.land(body, body_c + Vector((0, 0.15, 0)), k.outward(theta, phi))
+        k.zone(tan, white, p, (r, r, r), soft=0.3)  # back and flank spots
+    parts = [body]
+    # Tail: a short tuft flicked up, three soft points, white underneath.
+    tuft = [toward((0, 0.98 + 0.06 * i, 1.32 + 0.14 * i), (0.25 * (i - 1), 0.45, 1), 0.13 - 0.01 * i, (0.8, 0.8, 1.6)) for i in range(3)]
+    tail_m = k.paint("de_tail", [(0, (252, 244, 232)), (0.5, tan_rgb), (1, (226, 156, 96))], 1.25, 1.75, rest=True)
+    parts.append(k.fuse([((0, 0.92, 1.25), 0.18, (1.0, 1.1, 1.2)), *tuft], tail_m, tris=420, soft=0.3, name="tail"))
+    axis = Vector((math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt))))
     for s in (-1, 1):
-        base, tip = Vector((s * 0.36, -0.3, 4.0)), Vector((s * 0.56, -0.18, 4.6))
-        parts.append(k.capsule(base, tip, 0.13, 0.1, wood, n=12, name="antler"))
-        parts += aim([disc(0.36, petals(5, 0.4), rose, heart=sunny, n=25, cup=0.35, thick=0.16)], tip + (tip - base).normalized() * 0.05, tip - base + Vector((s * 0.3, -0.5, 0)))
-    parts += k.face(body, head, R, skin=skin_rgb, nose=None, mouth_kind=None, eye_phi=8, spread=36)
+        parts.append(k.lens(body, (s * ear.x, ear.y, ear.z), (0, -1, 0.3), 0.54, k.flat((250, 228, 214)), scale=(0.5, 1), thick=0.2, sink=0.6, up=(s * axis.x, 0, axis.z), name="ear_in"))
+    # Short forked antlers: a thick beam rising and curving back and out, a tine forward; a blossom at each base.
+    wood, rose, deep = k.flat((132, 84, 58)), k.flat((250, 176, 196)), k.flat((236, 120, 150))
+    for s in (-1, 1):
+        beam = curve([(s * 0.3, -0.44, 3.1), (s * 0.4, -0.44, 3.44), (s * 0.54, -0.32, 3.72), (s * 0.6, -0.12, 3.82)], 0.1)
+        parts.append(k.tube(beam[:-1], [0.15 - 0.04 * i / (len(beam) - 2) for i in range(len(beam) - 1)], m=wood, n=10, name="antler"))
+        parts.append(k.capsule(beam[-2], beam[-1], 0.11, 0.1, wood, n=12, name="antler_tip"))  # round tip
+        parts.append(k.capsule((s * 0.43, -0.44, 3.5), (s * 0.4, -0.66, 3.72), 0.1, 0.09, wood, n=12, name="tine"))
+        parts += onto([disc(0.22, petals(5, 0.4), rose, heart=deep, n=25, cup=0.3, thick=0.16, hr=0.3, dome=0.15)], body, head, k.outward(s * 30, 52), sink=0.02)
+    parts += k.face(body, head, R, skin=(250, 236, 220), nose=(40, 30, 36), mouth_kind="w", eye_r=0.27, eye_wide=0.9, spread=31, eye_phi=-8, nose_phi=-20, nose_r=0.08, mouth_phi=-27, mouth_w=0.1, sheen=True, blush_theta=46, blush_phi=-22)
     return parts
 
 
@@ -472,38 +494,59 @@ def creature_deer():
 
 
 def creature_panda():
-    white = k.paint("pa_fur", [(0, (226, 226, 236)), (1, (255, 255, 255))], 0.2, 4.2)
-    black = k.paint("pa_black", [(0, (40, 38, 50)), (1, (70, 66, 82))], 0.2, 4.2)
-    bamboo = k.paint("pa_bamboo", [(0, (92, 176, 84)), (1, (150, 218, 112))], 0, 4.2)
-    leaf, leaf_hi, pad = k.flat((110, 200, 100)), k.flat((150, 224, 112)), k.flat((214, 150, 172))
-    head, R = Vector((0, -0.3, 3.1)), 1.2
-    body = k.fuse([(head, R, (1.22, 0.98, 0.92)), ((0, 0.15, 1.4), 1.3, (1.1, 1.1, 0.95)), ((0, 1.55, 0.75), 0.25)], white, tris=2000)
-    limbs = k.fuse(
+    """Remade from the Roblox AI reference (assets/garden/refs/panda_*.jpg): a sitting panda cub, a
+    huge round white head with round black ears, big black eye patches, a small white muzzle with a
+    black nose, a black band round the shoulders, black arms held out at the sides and black legs,
+    a round white belly, and a bamboo shoot with two leaves growing from the top of its head (the
+    "Bamboo Panda")."""
+    white = (246, 246, 248)
+    black = (34, 32, 38)
+    fur = k.paint("pa_fur", [(0, (214, 214, 222)), (0.4, (238, 238, 242)), (1, (255, 255, 255))], 0, 3.0, rest=True)
+    head, R = Vector((0, -0.1, 2.12)), 1.0
+    snout = Vector((0, -0.96, 1.9))
+    ear = Vector((0.88, 0.02, 2.86))
+    paw = Vector((0.98, -0.5, 0.84))
+    body = k.fuse(
         [
-            *k.pair((0.98, -0.15, 4.0), 0.36, (1.0, 0.7, 1.0)),  # ears
-            ((0, 0.45, 2.2), 1.05, (1.2, 0.9, 0.4)),  # shoulder band
-            *chain([(1.3, -0.05, 2.25), (1.35, -0.95, 1.8), (1.05, -1.5, 2.15)], 0.36, 0.32),
-            *chain([(-1.3, -0.05, 2.25), (-0.95, -1.2, 1.65), (0.7, -1.6, 1.6)], 0.36, 0.32),
-            *k.pair((0.88, -0.8, 0.48), 0.52, (0.95, 1.4, 0.85), (-12, 0, 0)),  # legs, soles forward
+            (head, R, (1.26, 0.95, 0.9)),
+            *k.pair((0.64, -0.4, 1.86), 0.48, (1.0, 0.85, 0.8)),  # full cheeks
+            (snout, 0.3, (1.3, 0.9, 0.8)),  # small muzzle
+            ((0, 0.05, 1.1), 0.76, (1.08, 0.98, 0.9)),  # chest
+            ((0, 0.1, 0.58), 0.96, (1.12, 1.05, 0.62)),  # wide round seat
+            *k.pair(ear, 0.34, (1.0, 0.62, 1.0)),  # round ears
+            ("capsule", (0.78, 0.0, 1.3), tuple(paw), 0.33),  # big arms down the sides
+            ("capsule", (-0.78, 0.0, 1.3), (-paw.x, paw.y, paw.z), 0.33),
+            *k.pair(tuple(paw), 0.31, (0.95, 1.1, 0.9)),
+            *k.pair((0.74, -0.4, 0.18), 0.24, (1.0, 1.15, 0.72)),  # small legs, tucked at the sides
         ],
-        black,
-        tris=1250,
-        name="limbs",
+        fur,
+        tris=3000,
     )
-    parts = [body, limbs]
+    soft = dict(soft=0.1)
+    k.zone(fur, black, (0, 0.05, 1.34), (1.3, 1.2, 0.26), **soft)  # shoulder band
     for s in (-1, 1):
-        parts.append(k.lens(limbs, (s * 0.88, -0.8, 0.48), (0, -1, 0.15), 0.22, pad, scale=(1, 1.15), thick=0.2, sink=0.6, name="sole"))
-        parts.append(k.lens(body, head, k.outward(s * 31, -5), R * 0.3, black, scale=(0.8, 1.2), thick=0.2, sink=0.6, up=(-s * 0.45, 0, 1), name="patch"))
-    k.texel(parts[-2:], k.FACE_TEXEL)
-    # Bamboo held upright in both paws, leaves at its top and a sprig on the head.
-    a, b = Vector((0.82, -1.75, 0.12)), Vector((1.4, -1.62, 4.0))
-    nodes = [a.lerp(b, t) for t in (0, 0.32, 0.62, 1.0)]
-    for p, q in zip(nodes, nodes[1:]):
-        parts.append(k.capsule(p, q, 0.13, 0.155, bamboo, n=12, name="bamboo"))
-    for yaw, pitch, length, m in ((-20, 25, 0.95, leaf), (60, 35, 0.85, leaf_hi), (170, 20, 0.8, leaf)):
-        parts += xf(k.leaf(length, 0.25, m, droop=0.3, n=8, steps=8), b, yaw=yaw, pitch=pitch)
-    parts += xf(k.leaf(0.85, 0.27, leaf_hi, droop=0.35, n=8, steps=8), (-0.25, -0.35, 4.12), yaw=160, pitch=28)
-    parts += k.face(body, head, R, skin=(255, 255, 255), nose=(52, 50, 62), nose_r=0.09)
+        k.zone(fur, black, (s * ear.x, ear.y, ear.z), (0.42, 0.36, 0.42), **soft)  # ears
+        k.zone(fur, black, (s * 0.96, -0.2, 1.0), (0.46, 0.6, 0.66), **soft)  # arms
+        k.zone(fur, black, (s * paw.x, paw.y, paw.z), (0.42, 0.44, 0.42), **soft)  # paws
+        k.zone(fur, black, (s * 0.74, -0.4, 0.18), (0.36, 0.4, 0.32), **soft)  # legs
+        e, _ = k.land(body, head, k.outward(s * 30, -8))
+        k.zone(fur, black, e + Vector((0, 0, 0.03)), (0.34, 0.34, 0.36), soft=0.15)  # eye patch: round...
+        k.zone(fur, black, e + Vector((s * 0.14, 0.06, -0.18)), (0.28, 0.3, 0.3), soft=0.18)  # ...drooping outwards
+    parts = [body]
+    face = [k.lens(body, snout, k.outward(0, 22), 0.13, k.flat((30, 28, 34)), scale=(1.4, 0.9), thick=0.7, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, snout, k.outward(0, -20), 0.12, k.flat(k.INKY), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    # Bamboo shoot from the crown: two stalk segments with a node ring, two leaves in a V.
+    green, green_hi = k.flat((84, 176, 70)), k.flat((120, 206, 90))
+    p, _ = k.land(body, head, (0, 0, 1))
+    base = p - Vector((0, 0, 0.08))
+    mid, top = base + Vector((0, 0, 0.26)), base + Vector((0, 0, 0.5))
+    parts.append(k.capsule(base, mid, 0.1, 0.1, green, n=12, name="bamboo"))
+    parts.append(k.capsule(mid, top, 0.095, 0.09, green, n=12, name="bamboo"))
+    parts.append(k.capsule(mid - Vector((0, 0, 0.03)), mid + Vector((0, 0, 0.03)), 0.115, 0.115, green_hi, n=12, name="node"))
+    for yaw in (0, 180):
+        parts += xf(k.leaf(0.7, 0.21, green_hi, droop=0.15, n=8, steps=8), top - Vector((0, 0, 0.04)), yaw=yaw, pitch=38)
+    parts += k.face(body, head, R, skin=white, nose=None, mouth_kind=None, eye_r=0.21, eye_wide=0.9, spread=30, eye_phi=-8, sheen=True, blush_theta=52, blush_phi=-28)
     return parts
 
 
@@ -511,53 +554,65 @@ def creature_panda():
 
 
 def creature_unicorn():
-    skin_rgb = (255, 244, 234)
-    coat = k.paint("un_coat", [(0, (236, 220, 216)), (1, skin_rgb)], 0.3, 5.2)
-    gold = k.paint("un_gold", [(0, (200, 120, 40)), (1, (250, 192, 84))], 0, 0.5, emit=0.15)
-    mane = k.paint("un_mane", [(0, (255, 160, 208)), (0.5, (236, 170, 250)), (1, (190, 172, 255))], 1.2, 5.5)
-    horn_m = k.paint("un_horn", [(0, (240, 168, 60)), (1, (255, 228, 150))], 4.7, 5.8, emit=0.25)
-    white, sunny, pink = k.flat((255, 255, 255)), k.flat((255, 205, 60)), k.flat((255, 172, 198))
-    head, R = Vector((0, -1.0, 4.0)), 1.25
-    snout = Vector((0, -2.05, 3.55))
-    ear, tilt = (0.9, -0.75, 5.0), 28
+    """Remade from the Roblox AI reference (assets/garden/refs/unicorn_*.jpg): a white chibi pony on
+    four stubby legs, a huge head with a soft round muzzle, big dark-blue eyes, pink-lined ears, a
+    tan spiral cone horn, a thick pink mane of locks with a forelock curling down the right side of
+    the face, a long pink tail curling at the ground, and a white daisy in the mane by its left
+    ear (the "Daisy Unicorn")."""
+    white = (252, 242, 232)
+    coat = k.paint("un_coat", [(0, (230, 200, 186)), (0.4, (246, 232, 220)), (1, white)], 0, 3.6, rest=True)
+    head, R = Vector((0, -0.42, 2.6)), 0.86
+    snout = Vector((0, -1.12, 2.22))
+    ear, tilt = Vector((0.7, -0.14, 3.46)), 24
     legs = []
-    for x, y, r in ((0.62, -0.35, 0.3), (0.62, 1.05, 0.31)):
+    for x, y in ((0.34, -0.28), (0.35, 0.7)):
         for s in (-1, 1):
-            legs += [("capsule", (s * x, y, 0.26), (s * x, y, 1.75), r), ((s * x, y, 0.22), r + 0.05, (1, 1.05, 0.78))]
+            legs += [("capsule", (s * x, y, 0.8), (s * x, y, 0.22), 0.26), ((s * x, y, 0.17), 0.28, (1.0, 1.05, 0.72))]
     body = k.fuse(
         [
-            (head, R, (1.28, 0.95, 0.92)),
-            (snout, 0.52, (1.1, 0.85, 0.75)),
-            ((0, -0.55, 3.0), 0.55, (1.0, 1.0, 1.3)),  # neck
-            ((0, 0.35, 2.15), 1.0, (1.25, 1.25, 0.85)),
-            *k.pair(ear, 0.42, (0.5, 0.25, 1.0), (0, tilt, 0)),
+            (head, R, (1.12, 1.0, 1.0)),
+            *k.pair((0.44, -0.72, 2.36), 0.4, (1.0, 0.85, 0.8)),  # full cheeks
+            (snout, 0.4, (1.15, 0.9, 0.82)),  # soft round muzzle
+            ((0, -0.2, 1.7), 0.44, (1.0, 1.0, 1.15)),  # neck
+            ((0, 0.22, 1.0), 0.68, (1.0, 1.3, 0.86)),  # plump barrel body
+            *k.pair(ear, 0.46, (0.7, 0.38, 1.0), (0, tilt, 0)),
             *legs,
         ],
         coat,
-        tris=2050,
-        res=0.05,  # 0.04 gives ~90k triangles, and decimating that to 2k left a sliver on a leg
+        tris=2600,
     )
-    split(body, gold, (0, 0, 0.42), (0, 0, -1))
-    # Smooth locks: a crest from the brow down the neck, two side locks, a tail swishing out to +x.
-    crest = chain([(0, -1.35, 5.1), (0, -0.7, 5.25), (0, -0.15, 4.9), (0, 0.1, 4.3), (0, 0.3, 3.4)], 0.42, 0.3)
-    crest += chain([(0.3, -0.9, 5.15), (0.5, -0.4, 4.85), (0.45, -0.1, 4.25)], 0.3, 0.22) + chain([(-0.3, -0.9, 5.15), (-0.5, -0.4, 4.85), (-0.45, -0.1, 4.25)], 0.3, 0.22)
-    crest += k.pair((0.34, -1.72, 4.85), 0.26)  # forelock either side of the horn
-    tail = chain([(0.05, 1.6, 2.5), (0.5, 2.0, 2.3), (1.05, 2.1, 1.9)], 0.3, 0.42) + chain([(1.05, 2.1, 1.9), (1.5, 1.95, 1.4), (1.62, 1.75, 0.95)], 0.42, 0.18)
-    hair = k.fuse(crest + tail, mane, tris=850, soft=0.3, name="mane")
-    parts = [body, hair, *ears_in(body, ear, tilt, pink, 0.34)]
-    base = k.land(body, head, k.outward(0, 40))[0]
-    parts.append(horn(base - Vector((0, -0.05, 0.08)), (0, -0.35, 1), 1.05, 0.25, horn_m))
-
-    def daisy():
-        return disc(0.27, petals(8, 0.55, 1.2), white, heart=sunny, n=32, cup=0.25, thick=0.14, hr=0.3, dome=0.18, closed=False, name="daisy")
-
-    for centre, d in (
-        ((0.34, -1.72, 4.85), (0.4, -1, 0.5)), ((-0.34, -1.72, 4.85), (-0.4, -1, 0.5)),  # horn crown
-        ((0.5, -0.4, 4.85), (1, 0.1, 0.6)), ((-0.45, -0.1, 4.3), (-1, 0.2, 0.3)), ((0, -0.15, 4.9), (0.2, 0.2, 1)),
-        ((1.05, 2.1, 1.9), (0.5, 1, 0.3)),
+    k.zone(coat, (244, 214, 204), (0, -1.36, 2.2), (0.36, 0.2, 0.3), soft=0.5)  # faintly pink muzzle tip
+    parts = [body]
+    axis = Vector((math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt))))
+    for s in (-1, 1):
+        parts.append(k.lens(body, (s * ear.x, ear.y, ear.z), (0, -1, 0), 0.4, k.flat((248, 170, 182)), scale=(0.5, 1), thick=0.2, sink=0.6, up=(s * axis.x, 0, axis.z), name="ear_in"))
+    # The mane: separate locks fused softly enough that each one keeps its rounded edge.
+    pink = k.paint("un_mane", [(0, (232, 116, 136)), (0.5, (244, 150, 166)), (1, (252, 186, 196))], 0.6, 3.6, rest=True, grain=(0.12, 26, "wave"))
+    locks = []
+    for _, pts, r0, r1 in (
+        (0, [(0, -0.72, 3.38), (0, -0.3, 3.52), (0, 0.15, 3.34), (0, 0.42, 2.94), (0, 0.52, 2.35)], 0.36, 0.24),  # crest
+        (1, [(0.3, -0.62, 3.34), (0.52, -0.25, 3.32), (0.64, 0.1, 3.0), (0.6, 0.3, 2.5), (0.48, 0.42, 2.05)], 0.3, 0.16),  # side locks
+        (-1, [(-0.3, -0.62, 3.34), (-0.52, -0.25, 3.32), (-0.64, 0.1, 3.0), (-0.6, 0.3, 2.5), (-0.48, 0.42, 2.05)], 0.3, 0.16),
+        (1, [(0.24, 0.0, 3.46), (0.34, 0.42, 3.15), (0.3, 0.62, 2.6), (0.22, 0.62, 2.0)], 0.28, 0.17),
+        (-1, [(-0.24, 0.0, 3.46), (-0.34, 0.42, 3.15), (-0.3, 0.62, 2.6), (-0.22, 0.62, 2.0)], 0.28, 0.17),
+        (-1, [(-0.08, -0.95, 3.32), (-0.42, -1.1, 3.12), (-0.78, -0.95, 2.86), (-0.9, -0.78, 2.6), (-0.82, -0.78, 2.42)], 0.22, 0.1),  # forelock, curling down the right
+        (1, [(0.12, -0.95, 3.3), (0.42, -0.98, 3.24), (0.62, -0.8, 3.12)], 0.17, 0.1),
     ):
-        parts += onto([daisy()], hair, centre, d, sink=0.02)
-    parts += snout_face(body, head, R, snout, skin_rgb, 0.28)
+        locks += chain(pts, r0, r1, step=0.12)
+    tail = chain([(0, 1.0, 1.4), (0, 1.36, 1.3), (-0.06, 1.62, 0.95), (0.0, 1.7, 0.5), (0.14, 1.56, 0.2), (0.24, 1.32, 0.3)], 0.38, 0.16, step=0.1)
+    tail += chain([(0.12, 1.0, 1.36), (0.3, 1.3, 1.1), (0.4, 1.46, 0.72), (0.46, 1.4, 0.4)], 0.28, 0.12, step=0.1)
+    hair = k.fuse(locks + tail, pink, tris=1300, soft=0.26, name="mane")
+    parts.append(hair)
+    # Tan cone horn with spiral ridges, between the ears.
+    p, _ = k.land(body, head, k.outward(0, 58))
+    parts.append(horn(p - Vector((0, -0.04, 0.12)), (0, -0.25, 1), 1.38, 0.31, k.paint("un_horn", [(0, (200, 120, 58)), (1, (236, 172, 104))], 3.3, 4.7), n=12, rings=12))
+    daisy = disc(0.2, petals(8, 0.55, 1.2), k.flat((255, 255, 255)), heart=k.flat(k.SUNNY), n=32, cup=0.25, thick=0.14, hr=0.3, dome=0.18, closed=False, name="daisy")
+    parts += onto([daisy], hair, (0.6, 0.1, 2.8), (1, 0.3, 0.1), sink=0.02)
+    ink = k.flat((60, 46, 56))
+    face = [k.lens(body, snout, k.outward(s * 20, 6), 0.05, ink, scale=(0.8, 1.2), thick=0.5, sink=0.5, seg=12, name="nostril") for s in (-1, 1)]
+    face.append(k.mouth(body, snout, k.outward(0, -26), 0.16, k.flat(k.INKY), "smile"))
+    parts += k.texel(face, k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=white, iris=(22, 32, 92), nose=None, mouth_kind=None, eye_r=0.31, eye_wide=0.88, spread=31, eye_phi=-4, sheen=True, blush_theta=50, blush_phi=-24)
     return parts
 
 
@@ -766,9 +821,9 @@ ASSETS = [
             ("creature_duck", creature_duck, [2.4, 3.0, 2.6], "Puddle Duckling (common)"),
             ("creature_lamb", creature_lamb, [3.2, 3.8, 2.3], "Clover Lamb (uncommon)"),
             ("creature_hedgehog", creature_hedgehog, [2.57, 2.8, 2.45], "Acorn Hedgehog (rare)"),
-            ("creature_deer", creature_deer, [3.6, 5.0, 3.0], "Blossom Fawn (epic)"),
-            ("creature_panda", creature_panda, [4.4, 4.5, 4.0], "Bamboo Panda (epic)"),
-            ("creature_unicorn", creature_unicorn, [4.0, 5.5, 4.8], "Daisy Unicorn (legendary)"),
+            ("creature_deer", creature_deer, [4.38, 5.0, 3.40], "Blossom Fawn (epic)"),
+            ("creature_panda", creature_panda, [3.08, 4.5, 2.78], "Bamboo Panda (epic)"),
+            ("creature_unicorn", creature_unicorn, [2.50, 5.5, 4.14], "Daisy Unicorn (legendary)"),
             ("creature_phoenix", creature_phoenix, [4.6, 5.5, 4.2], "Ember Phoenix (mythic)"),
             ("creature_whale", creature_whale, [6.0, 4.5, 5.0], "Aurora Whale (divine)"),
             ("creature_kirin", creature_kirin, [4.6, 6.0, 5.2], "Nimbus Kirin (divine)"),

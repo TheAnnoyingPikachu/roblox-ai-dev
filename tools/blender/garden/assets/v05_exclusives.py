@@ -10,7 +10,7 @@ import kit as k
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from creatures_a import spline, xf  # noqa: E402
+from creatures_a import capsules, spline, xf  # noqa: E402
 from creatures_b import WHITE, blob  # noqa: E402
 from eggs import fit  # noqa: E402
 
@@ -235,68 +235,71 @@ def maple_leaf(size, m, vein=None, n=60):
 
 
 def creature_redpanda():
-    """HD standard: one fused body with its mask, dark limbs and belly painted after settle; the
-    big ringed tail is its own fused shape, so its rings can be measured on it."""
-    head, R = Vector((0, -0.2, 3.35)), 1.2
-    muzzle = Vector((0, -1.18, 3.02))
-    ear = (0.98, -0.05, 4.22)
-    tilt = 22
-    paw = Vector((0.62, -1.08, 2.1))
+    """Remade from the Roblox AI reference (assets/garden/refs/redpanda_*.jpg): an orange red panda
+    cub sitting low with its front legs stretched out on the ground, a huge head, big white-rimmed
+    ears, white cheek patches, brow dots and muzzle, a black nose, dark red tear marks under the
+    eyes, dark maroon legs and paws with pale soles, a bushy ringed tail lying out behind on its
+    right, and a red maple leaf standing on its head (the "Maple Red Panda")."""
+    orange = (226, 108, 48)
+    white, maroon, tear = (252, 246, 238), (88, 36, 36), (176, 40, 36)
+    fur = k.paint("rp_fur", [(0, (170, 64, 34)), (0.4, orange), (1, (240, 136, 62))], 0, 3.2, rest=True, grain=(0.05, 30))
+    head, R = Vector((0, -0.32, 1.86)), 1.04
+    muzzle = Vector((0, -1.2, 1.58))
+    ear, tilt = Vector((0.98, -0.2, 2.52)), 36
+    paw = Vector((0.5, -1.02, 0.14))
+    hind = Vector((0.66, 0.62, 0.3))
+    path = spline([(-0.25, 0.9, 0.44), (-0.5, 1.4, 0.46), (-0.86, 1.7, 0.44), (-1.24, 1.76, 0.44)], [0.38, 0.46, 0.46, 0.4], 12)
     body = k.fuse(
         [
-            (head, R, (1.18, 0.95, 0.9)),
-            (muzzle, 0.42, (1.25, 0.8, 0.72)),
-            ((0, 0.15, 1.75), 1.0, (1.0, 0.95, 1.05)),  # chest
-            ((0, 0.2, 0.9), 1.0, (1.12, 1.05, 0.72)),  # round seat
-            *k.pair(ear, 0.46, (0.55, 0.28, 1.0), (0, tilt, 0)),  # big pointed-round ears
-            *k.pair((0.55, -0.72, 0.2), 0.32, (0.9, 1.45, 0.62)),  # feet
-            *[("capsule", (s * 0.88, -0.15, 2.3), (s * paw.x, paw.y, paw.z), 0.22) for s in (-1, 1)],  # arms round the leaf
-            *k.pair(paw, 0.23, (0.95, 0.9, 1.0)),
+            (head, R, (1.26, 0.95, 0.88)),
+            *k.pair((0.6, -0.62, 1.58), 0.46, (1.0, 0.85, 0.8)),  # full cheeks
+            (muzzle, 0.27, (1.25, 0.9, 0.8)),
+            *k.pair(tuple(ear), 0.5, (0.64, 0.32, 1.0), (0, tilt, 0)),  # big ears up and out
+            ((0, -0.15, 0.86), 0.62, (1.08, 0.98, 0.92)),  # chest
+            ((0, 0.28, 0.5), 0.8, (1.15, 1.2, 0.66)),  # low seat
+            ("capsule", (0.4, -0.5, 0.6), (paw.x, paw.y + 0.08, paw.z + 0.06), 0.24),  # short front legs, paws forward
+            ("capsule", (-0.4, -0.5, 0.6), (-paw.x, paw.y + 0.08, paw.z + 0.06), 0.24),
+            *k.pair(tuple(paw), 0.26, (1.0, 1.25, 0.6)),
+            *k.pair(tuple(hind), 0.38, (0.95, 1.05, 0.95)),  # big hind feet, soles back
+            *capsules(path),
         ],
-        k.flat((205, 88, 42)),
-        tris=3000,
+        fur,
+        tris=3300,
     )
-    path = []  # tail: from under the seat round the right side to the front, thick and bushy
-    pts = [Vector(p) for p in ((0.3, 1.0, 0.75), (0.85, 1.75, 0.78), (1.75, 1.6, 0.78), (2.2, 0.7, 0.72), (2.05, -0.35, 0.7), (1.5, -1.15, 0.72), (0.95, -1.55, 0.8))]
-    for a, b in zip(pts, pts[1:]):
-        for j in range(4):
-            path.append(a.lerp(b, j / 4))
-    path.append(pts[-1])
-    radii = [0.44 + 0.24 * math.sin(math.pi * min(1, 1.15 * i / (len(path) - 1))) - 0.14 * (i / (len(path) - 1)) ** 3 for i in range(len(path))]
-    tail = k.fuse([("capsule", a, b, (ra + rb) / 2) for a, b, ra, rb in zip(path, path[1:], radii, radii[1:])], k.flat((205, 88, 42)), tris=1000, name="tail")
-    parts = [body, tail]
-    cream, rust_in = k.flat((255, 246, 232)), k.flat((120, 42, 30))
+    soft = dict(soft=0.15)
     for s in (-1, 1):
-        axis = (s * math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt)))
-        parts.append(k.lens(body, (s * ear[0], ear[1], ear[2] - 0.05), (0, -1, 0), 0.38, rust_in, scale=(0.4, 0.95), thick=0.2, sink=0.6, up=axis, name="ear_in"))
-    # Maple leaf held up in both paws, tilted back; a small one pinned by the left ear.
-    leaf = maple_leaf(0.98, k.flat((240, 100, 40)), k.flat((185, 45, 30)))
+        k.zone(fur, maroon, (s * 0.48, -0.86, 0.26), (0.36, 0.44, 0.36), **soft)  # front legs and paws
+        k.zone(fur, maroon, (s * hind.x, hind.y, hind.z), (0.42, 0.4, 0.38), **soft)  # hind feet
+        k.zone(fur, (240, 220, 196), (s * hind.x, hind.y + 0.3, hind.z), (0.28, 0.12, 0.28), soft=0.3)  # pale soles
+        k.zone(fur, (40, 26, 28), (s * ear.x, ear.y + 0.14, ear.z), (0.48, 0.2, 0.56), soft=0.2)  # dark ear backs
+        k.zone(fur, white, (s * ear.x, ear.y - 0.14, ear.z), (0.5, 0.17, 0.58), soft=0.2)  # white ear fronts
+        for theta, phi, r, rgb in ((54, -16, (0.34, 0.34, 0.3), white), (20, 30, (0.09, 0.09, 0.09), white), (24, -24, (0.2, 0.2, 0.2), tear), (14, -34, (0.14, 0.14, 0.12), tear)):
+            p, _ = k.land(body, head, k.outward(s * theta, phi))
+            k.zone(fur, rgb, p, r, soft=0.25)  # cheek patch, brow dot, tear mark
+    k.zone(fur, white, muzzle + Vector((0, -0.08, -0.02)), (0.36, 0.26, 0.24), soft=0.2)  # white muzzle
+    for i in range(4, len(path) - 2, 3):  # dark rings round the tail
+        q, r = path[i]
+        rr = math.sqrt(r * r * 1.4 + 0.1 ** 2)
+        k.zone(fur, (120, 44, 34), q, (rr, rr, rr), soft=0.08)
+    k.zone(fur, (238, 196, 150), path[-1][0] + Vector((-0.12, -0.04, 0)), (0.3, 0.3, 0.4), soft=0.2)  # pale tip
+    parts = [body]
+    axis = Vector((math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt))))
+    for s in (-1, 1):
+        parts.append(k.lens(body, Vector((s * ear.x, ear.y, ear.z)) + Vector((s * axis.x, 0, axis.z)) * 0.12, (0, -1, 0), 0.4, k.flat((132, 76, 62)), scale=(0.4, 0.9), thick=0.2, sink=0.6, up=(s * axis.x, 0, axis.z), name="ear_in"))
+    face = [k.lens(body, muzzle, k.outward(0, 24), 0.11, k.flat((26, 22, 26)), scale=(1.35, 0.95), thick=0.7, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, muzzle, k.outward(0, -18), 0.11, k.flat(k.INKY), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    # Maple leaf standing up on the crown.
+    leaf = maple_leaf(0.62, k.flat((236, 84, 44)))
+    p, _ = k.land(body, head, (0, 0.1, 1))
     for ob in leaf:
-        ob.data.transform(Matrix.Translation((0, -1.36, 2.02)) @ Matrix.Rotation(math.radians(-18), 4, "X"))
-    pin = maple_leaf(0.32, k.flat((255, 150, 50)))
-    p, n = k.land(body, head, k.outward(-50, 44))
-    pin[0].data.transform(Matrix.Translation(p + n * 0.03) @ Vector((0, -1, 0)).rotation_difference(n).to_matrix().to_4x4() @ Matrix.Rotation(math.radians(25), 4, "Y"))
-    parts += leaf + pin
-    parts += k.face(body, head, R, skin=(255, 246, 232))
-    rings = []  # buff rings: each a sphere a little wider than the measured tail
-    for i in range(3, len(path) - 4, 4):
-        r = (k.land(tail, path[i], (0, 0, 1))[0] - path[i]).length
-        rings.append((path[i], math.sqrt(r * r + 0.26 ** 2)))
-
-    m = settle(parts, SIZE["creature_redpanda"])
-    rust, white, dark = (214, 92, 44), (255, 246, 232), (66, 38, 34)
-    swap(body, k.paint("rp_fur", [(0, (150, 58, 30)), (0.45, rust), (1, (236, 120, 58))], 0.3, 4.6, marks=[
-        *[mark(m, dark, (s * p[0], p[1], p[2]), r) for s in (-1, 1) for p, r in (((0.55, -0.72, 0.2), 0.48), ((0.8, -0.35, 2.15), 0.3), ((0.7, -0.75, 2.12), 0.3), (paw, 0.3))],
-        *[mark(m, white, (s * 0.98, -0.3, 4.25), 0.34) for s in (-1, 1)],  # white ear fronts
-        mark(m, white, muzzle + Vector((0, -0.2, -0.1)), 0.5),  # muzzle
-        *[mark(m, white, head + Vector((s * 0.85, -0.75, -0.42)), 0.36) for s in (-1, 1)],  # cheeks
-        *[mark(m, white, head + Vector((s * 0.48, -0.9, 0.42)), 0.17) for s in (-1, 1)],  # brows
-    ]))
-    marks = [mark(m, (242, 182, 112), p, r) for p, r in rings]
-    marks.append(mark(m, (92, 44, 34), path[-1], 0.55))  # dark tip
-    swap(tail, k.paint("rp_tail", [(0, (180, 70, 34)), (1, (222, 98, 46))], 0.2, 1.4, marks=marks))
-    lo, hi = k._ground_dims(leaf[:1])
-    swap(leaf[0], k.paint("rp_maple", [(0, (215, 50, 40)), (0.5, (250, 115, 40)), (1, (255, 185, 60))], lo.z, hi.z))
+        ob.data.transform(Matrix.Translation(p + Vector((0, 0, 0.24))) @ Matrix.Rotation(math.radians(-12), 4, "X"))
+    parts.append(k.capsule(p - Vector((0, 0, 0.05)), p + Vector((0, 0, 0.1)), 0.045, 0.04, k.flat((140, 54, 36)), n=8, name="stem"))
+    parts += leaf
+    parts += k.face(body, head, R, skin=white, iris=(56, 30, 24), nose=None, mouth_kind=None, eye_r=0.24, eye_wide=0.9, spread=29, eye_phi=-4, sheen=True, blush_theta=46, blush_phi=-26, blush_r=0.13)
+    settle(parts, SIZE["creature_redpanda"])
+    lo, hi = k._ground_dims(leaf)
+    swap(leaf[0], k.paint("rp_maple", [(0, (196, 44, 34)), (0.5, (236, 84, 44)), (1, (250, 132, 60))], lo.z, hi.z))
     return parts
 
 
@@ -543,7 +546,7 @@ SPECIES = (
     ("creature_puffin", creature_puffin, [2.2, 3.0, 2.35], "Pebble Puffin (uncommon)"),
     ("creature_otter", creature_otter, [1.89, 2.6, 2.19], "River Otter (rare)"),
     ("creature_capybara", creature_capybara, [3.03, 4.2, 3.56], "Spa Capybara (epic)"),
-    ("creature_redpanda", creature_redpanda, [4.2, 5.0, 4.0], "Maple Red Panda (legendary)"),
+    ("creature_redpanda", creature_redpanda, [4.11, 5.0, 5.01], "Maple Red Panda (legendary)"),
     ("creature_peacock", creature_peacock, [5.0, 5.6, 4.0], "Jewel Peacock (mythic)"),
     ("creature_snowleopard", creature_snowleopard, [4.6, 5.8, 4.6], "Frost Leopard (divine)"),
 )

@@ -4,9 +4,14 @@ One mesh per creature, standing on the origin, facing Blender -Y. Replaces the R
 meshes in src/relay/Models.luau MESHES."""
 
 import math
+import os
+import sys
 
 import kit as k
 from mathutils import Matrix, Vector
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from creatures_b import disc, onto, toward  # noqa: E402
 
 WHITE = k.SNOW
 
@@ -447,105 +452,154 @@ def creature_turtle():
 
 
 def creature_lion():
-    """A sunflower lion: the mane is a seed ring with petals round the head; snout, round ears
-    and a tail with a tuft."""
-    gold = k.paint("li_fur", [(0, (232, 170, 76)), (1, (255, 212, 112))], 0, 5.0)
-    yellows = [k.flat((255, 196, 46)), k.flat((255, 216, 80))]
-    seed = k.paint("li_seed", [(0, (104, 68, 46)), (1, (104, 68, 46))], 0, 1, dots=[((140, 98, 66), 9, 0.32)])
-    pink, brown = k.flat((255, 176, 196)), k.flat((120, 78, 52))
-    head, R = Vector((0, -0.5, 3.0)), 1.2
-    snout = Vector((0, -1.55, 2.68))
-    tail = spline([(0.15, 1.2, 0.55), (0.45, 1.85, 0.62), (0.62, 2.12, 1.1), (0.56, 2.05, 1.52)], [0.13, 0.12, 0.11, 0.1], 10)
+    """Remade from the Roblox AI reference (assets/garden/refs/lion_*.jpg): a small sitting cub in
+    ribbed tan fur, a round face with a white muzzle, a big brown nose and small black eyes, round
+    ears, a sunflower mane (a ring of rust-brown ruffles inside two rows of pointed yellow petals)
+    nearly as tall as the whole lion, a white chest tuft, and a tail ending in a big seed-pod tuft
+    that rises up its back (the "Sunflower Lion")."""
+    tan_rgb = (218, 138, 82)
+    fur = k.paint("li_fur", [(0, (184, 104, 58)), (0.45, tan_rgb), (1, (234, 164, 104))], 0, 3.2, rest=True, grain=(0.1, 34, "wave"))
+    head, R = Vector((0, -0.2, 2.02)), 0.74
+    snout = Vector((0, -0.8, 1.76))
+    mane_c = Vector((0, -0.02, 2.1))
+    ear = Vector((0.52, -0.24, 2.58))
     body = k.fuse(
         [
-            (head, R, (1.12, 0.95, 0.93)),
-            (snout, 0.5, (1.25, 0.85, 0.72)),
-            ((0, 0.15, 1.45), 0.95, (1.05, 1.12, 0.95)),  # chest
-            ((0, 0.3, 0.78), 0.95, (1.15, 1.2, 0.8)),  # round seat
-            *k.pair((0.86, -0.5, 4.0), 0.36),  # round ears
-            *k.pair((0.6, -0.65, 0.22), 0.34, (0.9, 1.45, 0.62)),  # feet
-            *k.pair((0.86, -0.55, 1.45), 0.22, (0.85, 0.9, 1.3)),  # arms
-            *capsules(tail),
+            (head, R, (1.1, 1.0, 1.0)),
+            *k.pair((0.34, -0.6, 1.78), 0.3, (1.0, 0.85, 0.8)),  # muzzle cheeks
+            (snout, 0.3, (1.25, 0.95, 0.85)),
+            *k.pair(tuple(ear), 0.24, (1.0, 0.6, 0.95)),  # round ears
+            ((0, 0.04, 0.96), 0.58, (1.05, 0.95, 1.0)),  # chest
+            ((0, 0.18, 0.5), 0.74, (1.15, 1.1, 0.72)),  # seat
+            ("capsule", (0.3, -0.3, 1.0), (0.31, -0.48, 0.2), 0.2),  # front legs
+            ("capsule", (-0.3, -0.3, 1.0), (-0.31, -0.48, 0.2), 0.2),
+            *k.pair((0.31, -0.58, 0.13), 0.21, (1.0, 1.3, 0.68)),  # front paws
+            *k.pair((0.68, -0.32, 0.16), 0.27, (0.95, 1.4, 0.68), (0, 0, 14)),  # big hind feet
         ],
-        gold,
-        tris=2500,
+        fur,
+        tris=1950,
     )
-    parts = [body, k.sphere(0.25, tail[-1][0] + Vector((0, -0.02, 0.12)), m=brown, scale=(1, 1, 1.15), seg=20, rings=10, name="tuft")]
-    for side in (-1, 1):
-        parts.append(k.lens(body, (side * 0.86, -0.5, 4.0), (0, -1, 0.1), 0.2, pink, thick=0.3, sink=0.6, seg=12, name="ear_in"))
-    ring = k.ring(1.38, 0, 0.3, seed, n=24, sides=8, name="mane")
-    ring.data.transform(Matrix.Translation((0, -0.32, 3.0)) @ Matrix.Rotation(math.radians(90), 4, "X"))
-    parts.append(ring)
-    for i in range(16):
-        a = i * 22.5 + 11.25
-        if abs(a - 270) < 30:
-            continue  # these would point down into the chest
-        rad = math.radians(a)
-        p = petal(1.05, 0.42, yellows[i % 2], droop=0.08, tip=0.9, base=0.5, n=8, steps=7)
-        p.data.transform(Matrix.Translation((1.45 * math.cos(rad), -0.25 + 0.03 * (i % 2), 3.0 + 1.45 * math.sin(rad))) @ Matrix.Rotation(math.radians(-a), 4, "Y") @ Matrix.Rotation(math.radians(90), 4, "X"))
-        parts.append(k.texel(p, 0.5))
-    parts += snout_face(body, snout, (255, 240, 212), (120, 78, 52), nose_r=0.14, mouth_w=0.26, muzzle_r=0.5)
-    parts += k.face(body, head, R, skin=(250, 200, 110), nose=None, mouth_kind=None, eye_phi=8, spread=36)
+    k.zone(fur, (252, 244, 232), snout + Vector((0, -0.05, -0.04)), (0.46, 0.32, 0.3), soft=0.2)  # white muzzle
+    k.zone(fur, (252, 244, 232), (0, -0.56, 0.86), (0.14, 0.2, 0.3), soft=0.15, jag=0.25)  # chest tuft
+    for s in (-1, 1):
+        k.zone(fur, (240, 186, 140), (s * 0.68, -0.66, 0.12), (0.24, 0.2, 0.16), soft=0.3)  # paler toes
+    parts = [body]
+    for s in (-1, 1):
+        parts.append(k.lens(body, (s * ear.x, ear.y, ear.z), (s * 0.2, -1, 0.2), 0.14, k.flat((240, 178, 132)), scale=(1, 0.95), thick=0.25, sink=0.6, seg=16, name="ear_in"))
+    # Sunflower mane round the face: rust ruffles, then two rows of pointed yellow petals.
+    rust = k.paint("li_ruff", [(0, (136, 54, 34)), (1, (184, 84, 50))], 1.2, 3.2, rest=True)
+    ruffles = []
+    for i in range(24):  # rolled ruffles, radial all round the face
+        a = math.radians(i * 15 + 7.5)
+        d = Vector((math.cos(a), 0.1, math.sin(a)))
+        ruffles.append(toward(mane_c + Vector((math.cos(a) * 0.9, -0.16, math.sin(a) * 0.9)), d, 0.14, (0.95, 0.65, 2.5)))
+    ruff = k.fuse([(mane_c + Vector((0, -0.02, 0)), 1.0, (1.08, 0.26, 1.08)), *ruffles], rust, tris=900, soft=0.2, name="ruff")
+    parts.append(ruff)
+    k.texel([ruff], 0.7)
+    # Each row is one lobed disc: 14 broad pointed petals, cupped forwards, behind the ruff.
+    for r, rgb, spin, lift in ((1.8, (230, 152, 38), 0, 0.2), (1.58, (252, 200, 62), 180 / 14, 0.1)):
+        flower = disc(r, lambda a: 0.58 + 0.42 * abs(math.cos(7 * a)) ** 1.1, k.flat(rgb), n=98, cup=0.12, thick=0.05, name="petals")
+        flower.data.transform(Matrix.Translation(mane_c + Vector((0, lift, 0))) @ Matrix.Rotation(math.radians(90), 4, "X") @ k.rot_z(spin))
+        parts.append(k.texel(flower, 0.5))
+    # Seed-pod tail tuft up the back, and a leaf at its root.
+    pod_m = k.paint("li_pod", [(0, (230, 140, 60)), (1, (250, 190, 110))], 0.6, 1.9, rest=True, grain=(0.12, 18), dots=[((164, 112, 70), 22, 0.12)])
+    pod = k.fuse(capsules(spline([(0, 0.7, 0.42), (0.08, 1.22, 0.84), (0.08, 1.2, 1.34), (0.04, 0.96, 1.68), (0, 0.6, 1.84)], [0.2, 0.38, 0.4, 0.32, 0.14], 12)), pod_m, tris=550, soft=0.3, name="pod")
+    parts.append(pod)
+    parts += xf(petal(0.4, 0.16, k.flat((70, 140, 60)), droop=0.1, tip=1.0, base=0.45, n=8, steps=8), (-0.3, 0.7, 0.06), yaw=150, pitch=10)
+    face = [k.lens(body, snout, k.outward(0, 24), 0.15, k.flat((92, 42, 36)), scale=(1.35, 1.0), thick=0.7, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, snout, k.outward(0, -24), 0.13, k.flat(k.INKY), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=tan_rgb, nose=None, mouth_kind=None, eye_r=0.17, eye_wide=0.9, spread=27, eye_phi=8, sheen=True, blush_theta=50, blush_phi=-14, blush_r=0.14)
     return parts
 
 
 def creature_dragon():
-    """Body, head, snout, shouldered arms, feet and the curled tail are one fused shape; the
-    moon-flower wings are soft round-tipped petals."""
-    lilac = k.paint("dr_skin", [(0, (184, 156, 234)), (1, (222, 204, 255))], 0, 5.0)
-    belly, white, vein = k.flat((246, 236, 255)), k.flat((255, 250, 255)), k.flat((200, 170, 240))
-    horn, moon, ink = k.flat((255, 240, 210)), k.flat((255, 236, 160)), k.flat(k.INKY)
-    head, R = Vector((0, -0.85, 3.35)), 1.4
-    snout = Vector((0, -2.0, 2.95))
-    tail = []
-    for i in range(25):  # short capsules, or the thin tip turns into beads
-        t = i / 24
-        a = math.radians(-100 + 300 * t)
-        rr = 0.65 - 0.35 * t
-        tail.append((Vector((0.3, 1.8, 1.4)) + Vector((0, rr * math.cos(a), rr * math.sin(a))), 0.3 - 0.19 * t))
+    """Remade from the Roblox AI reference (assets/garden/refs/dragon_*.jpg): a lavender baby dragon
+    sitting up, a huge round head with big dark eyes and pink cheeks, a white crescent moon on the
+    forehead, two big curved pink-tipped horns with a cherry blossom at each base, pointed ears with
+    pink insides and three purple frills behind each cheek, a cream belly with plate lines, paws
+    held to the chest, big feet with pink soles, small purple bat wings, and a tail curling round its
+    right side to the front, tipped with pink spikes (the "Moonblossom Dragon")."""
+    lilac_rgb = (184, 158, 236)
+    skin = k.paint("dr_skin", [(0, (140, 112, 204)), (0.4, lilac_rgb), (1, (212, 194, 250))], 0, 3.3, rest=True)
+    pink_rgb, cream, line = (236, 150, 204), (244, 222, 188), (214, 184, 150)
+    head, R = Vector((0, -0.22, 2.45)), 0.88
+    snout = Vector((0, -1.0, 2.12))
+    ear, tilt = Vector((1.0, -0.12, 2.9)), 52
+    foot = Vector((0.6, -0.54, 0.2))
+    tail = spline([(0, 0.78, 0.4), (-0.55, 1.05, 0.3), (-1.02, 0.55, 0.26), (-1.08, -0.15, 0.28), (-0.86, -0.62, 0.4)], [0.36, 0.3, 0.24, 0.18, 0.12], 16)
+    frills = []
+    for theta, phi, size in ((94, 2, 0.19), (98, -16, 0.18), (102, -34, 0.15)):  # three frills behind each cheek
+        for s in (-1, 1):
+            d = k.outward(s * theta, phi)
+            frills.append(toward(head + Vector((d.x * 0.98, d.y * 0.86, d.z * 0.82)), d + Vector((0, 0.15, 0)), size, (0.55, 0.45, 2.4)))
+    spikes = [toward(tail[-1][0] + Vector((0, -0.04, 0.06)), (dx, -0.5, 1), 0.1, (0.6, 0.6, 2.0)) for dx in (-0.6, 0, 0.6)]
     body = k.fuse(
         [
-            (head, R, (1.08, 0.98, 0.94)),
-            ((0, 0.3, 1.5), 1.25, (1.0, 1.18, 1.0)),
-            (snout, 0.6, (1.3, 0.85, 0.72)),
-            *k.pair((0.7, -0.8, 0.3), 0.42, (0.95, 1.3, 0.7)),  # front feet
-            *k.pair((0.8, 0.95, 0.32), 0.45, (0.95, 1.3, 0.7)),  # back feet
-            *k.pair((0.86, -0.3, 2.0), 0.34, (0.9, 1.0, 1.0)),  # shoulders
-            ("capsule", (0.94, -0.42, 1.95), (0.86, -0.88, 1.5), 0.22),  # arms
-            ("capsule", (-0.94, -0.42, 1.95), (-0.86, -0.88, 1.5), 0.22),
-            *k.pair((0.82, -0.98, 1.42), 0.25, (1.0, 1.1, 0.85)),  # small paws
+            (head, R, (1.15, 0.98, 0.95)),
+            *k.pair((0.5, -0.56, 2.18), 0.4, (1.0, 0.85, 0.8)),  # full cheeks
+            (snout, 0.24, (1.3, 0.9, 0.78)),  # small muzzle
+            ((0, -0.02, 1.25), 0.6, (1.0, 0.95, 1.12)),  # chest
+            ((0, 0.14, 0.56), 0.84, (1.18, 1.1, 0.7)),  # broad seat
+            *k.pair((0.56, -0.08, 0.5), 0.42, (0.9, 1.15, 0.85)),  # haunches
+            *k.pair(ear, 0.58, (0.5, 0.24, 1.0), (0, tilt, 0)),  # big pointed ears, up and out
+            ("capsule", (0.62, -0.18, 1.48), (0.36, -0.62, 1.12), 0.17),  # arms, paws to the chest
+            ("capsule", (-0.62, -0.18, 1.48), (-0.36, -0.62, 1.12), 0.17),
+            *k.pair((0.33, -0.66, 1.1), 0.17, (1.0, 1.0, 0.9)),
+            *k.pair(tuple(foot), 0.27, (1.0, 1.35, 0.75)),  # big feet, soles forward
             *capsules(tail),
+            *spikes,
         ],
-        lilac,
-        tris=2700,
+        skin,
+        tris=2650,
     )
+    k.zone(skin, cream, (0, -0.62, 0.95), (0.46, 0.4, 0.7), soft=0.08)  # cream belly
+    for z in (0.62, 0.9, 1.18, 1.46):  # plate lines across it
+        k.zone(skin, line, (0, -0.7, z), (0.44, 0.3, 0.022), soft=0.4)
+    for s in (-1, 1):
+        k.zone(skin, pink_rgb, (s * foot.x, foot.y - 0.3, foot.z + 0.02), (0.2, 0.12, 0.15), soft=0.15)  # sole pad
+        for dx, dz in ((-0.14, 0.16), (0, 0.2), (0.14, 0.16)):  # toe beans
+            k.zone(skin, pink_rgb, (s * foot.x + dx, foot.y - 0.28, foot.z + dz), (0.06, 0.1, 0.055), soft=0.2)
+    k.zone(skin, pink_rgb, tail[-1][0] + Vector((0, -0.04, 0.3)), (0.3, 0.3, 0.2), soft=0.25)  # pink tail spikes
     parts = [body]
-    for side in (-1, 1):
-        parts.append(k.capsule((side * 0.55, -0.7, 4.35), (side * 0.8, -0.5, 5.1), 0.22, 0.06, horn, n=10, name="horn"))
-        parts.append(k.lens(body, snout, k.outward(side * 20, 14), 0.065, ink, thick=0.5, sink=0.5, seg=12, name="nostril"))
-        for length, width, pitch, yaw in ((2.8, 1.15, 35, 10), (2.45, 1.0, 8, 18), (2.1, 0.88, -18, 24)):
-            wing = petal(length, width, white, droop=0.1, n=10, steps=12)
-            # The vein lies on the petal's flattened top face (same profile as petal()).
-            top = [(length * s, 0, 0.28 * (length * 0.1 * math.sin(s * math.pi * 0.8) + width * math.sin(math.pi * s) ** 0.5 * (0.55 + 0.45 * s)) + 0.01) for s in (0.1, 0.4, 0.7, 0.9)]
-            rib = k.tube(top, [0.045, 0.04, 0.03, 0.02], m=vein, n=4, name="vein")
-            parts += k.texel(xf([wing, rib], (0.5, 0.55, 2.5), yaw=yaw, pitch=pitch, roll=90, mirror=side < 0), 0.5)
-    parts.append(k.mouth(body, snout, k.outward(0, -32), 0.32, ink, "smile"))
+    axis = Vector((math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt))))
+    for s in (-1, 1):
+        parts.append(k.lens(body, (s * ear.x, ear.y, ear.z), (0, -1, 0.3), 0.5, k.flat((244, 168, 196)), scale=(0.38, 1), thick=0.2, sink=0.6, up=(s * axis.x, 0, axis.z), name="ear_in"))
+    # Horns: big, rising and curving out, pink at the tips; a nub in the middle and two behind.
+    horn_m = k.paint("dr_horn", [(0, (176, 112, 204)), (0.45, (220, 128, 196)), (1, (244, 166, 204))], 3.0, 3.6, rest=True)
+    horns = []
+    for s in (-1, 1):
+        horns += capsules(spline([(s * 0.36, -0.2, 3.0), (s * 0.44, -0.12, 3.32), (s * 0.62, 0.02, 3.52), (s * 0.82, 0.16, 3.6)], [0.21, 0.18, 0.14, 0.1], 12))
+        horns.append(toward((s * 0.3, 0.42, 3.1), (s * 0.2, 0.5, 1), 0.1, (0.7, 0.7, 1.5)))
+    horns.append(toward((0, -0.42, 3.16), (0, -0.25, 1), 0.11, (0.7, 0.7, 1.5)))
+    parts.append(k.fuse(horns, horn_m, tris=560, soft=0.2, name="horns"))
+    parts.append(k.fuse(frills, k.flat((186, 128, 224)), tris=420, soft=0.2, name="frills"))
+    # Small bat wings on the back: two rounded vanes a side.
+    wing = k.flat((190, 140, 222))
+    for s in (-1, 1):
+        for length, width, pitch, yaw in ((1.15, 0.4, 42, 28), (0.95, 0.34, 10, 40)):
+            parts += k.texel(xf(petal(length, width, wing, droop=0.12, tip=0.8, base=0.5, n=8, steps=8), (0.36, 0.52, 1.5), yaw=yaw, pitch=pitch, roll=90, mirror=s < 0), 0.5)
+    # Cherry blossoms at the horn bases.
+    blossom, heart = k.flat((250, 176, 200)), k.flat((236, 112, 150))
+    for s in (-1, 1):
+        parts += onto([disc(0.24, lambda a: 0.6 + 0.4 * abs(math.cos(2.5 * a)) ** 0.6, blossom, heart=heart, n=25, cup=0.3, thick=0.16, hr=0.3, dome=0.15)], body, head, k.outward(s * 26, 50))
     # Crescent moon on the forehead: a tapered arc on the surface, horns up.
-    f = Vector((0, -1, 0.55)).normalized()
+    f = k.outward(0, 28)
     pts, radii = [], []
     for i in range(11):
         t = i / 10 * 2 - 1
         a = math.radians(125 * t)
-        p, n = k.land(body, head, f + Vector((0.3 * math.sin(a), 0, -0.3 * math.cos(a))))
-        r = 0.02 + 0.075 * (1 - t * t) ** 0.6
+        p, n = k.land(body, head, f + Vector((0.24 * math.sin(a), 0, -0.24 * math.cos(a))))
+        r = 0.02 + 0.06 * (1 - t * t) ** 0.6
         pts.append(p + n * r * 0.3)
         radii.append(r)
-    parts.append(k.tube(pts, radii, m=moon, n=6, name="crescent"))
-    k.texel([p for p in parts if p.name.startswith(("nostril", "mouth", "crescent"))], k.FACE_TEXEL)
-    for z in (0.95, 1.45, 1.95):
-        parts.append(k.lens(body, (0, 0.3, z), (0, -1, 0), 0.55, belly, scale=(1.0, 0.4), thick=0.5, sink=0.6, seg=12, name="plate"))
-    # With a snout, the eyes sit just above its top line, not low on the head.
-    parts += k.face(body, head, R, skin=(215, 195, 250), nose=None, mouth_kind=None, eye_phi=8, spread=36)
+    parts.append(k.tube(pts, radii, m=k.flat((252, 248, 250)), n=6, name="crescent"))
+    ink = k.flat((70, 50, 80))
+    face = [parts[-1]] + [k.lens(body, snout, k.outward(s * 18, 12), 0.04, ink, scale=(0.8, 1.2), thick=0.5, sink=0.5, seg=12, name="nostril") for s in (-1, 1)]
+    face.append(k.mouth(body, snout, k.outward(0, -26), 0.13, k.flat(k.INKY), "w"))
+    parts += k.texel(face[1:], k.FACE_TEXEL)
+    k.texel(face[0], k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=lilac_rgb, nose=None, mouth_kind=None, eye_r=0.3, eye_wide=0.9, spread=30, eye_phi=-10, sheen=True, blush_theta=46, blush_phi=-24)
     return parts
 
 
@@ -572,8 +626,8 @@ ASSETS = [
             ("owl", "Pumpkin Owl", creature_owl, [3.99, 4.5, 2.9]),
             ("fox", "Cactus Fox", creature_fox, [3.6, 4.5, 2.9]),
             ("turtle", "Lotus Turtle", creature_turtle, [2.83, 3.5, 3.16]),
-            ("lion", "Sunflower Lion", creature_lion, [4.6, 5.2, 4.6]),
-            ("dragon", "Moonblossom Dragon", creature_dragon, [6.0, 5.5, 4.8]),
+            ("lion", "Sunflower Lion", creature_lion, [4.83, 5.2, 3.76]),
+            ("dragon", "Moonblossom Dragon", creature_dragon, [4.38, 5.5, 3.83]),
         ),
         20,
     )

@@ -604,18 +604,18 @@
     "png": "build/blender/garden/creature_deer.png",
     "preview": "build/blender/garden/previews/creature_deer.png",
     "size_studs": [
-      3.6,
+      4.38,
       5.0,
-      3.0
+      3.4
     ],
-    "tris": 5770,
+    "tris": 5966,
     "parts": {
-      "creature_deer": 5770
+      "creature_deer": 5966
     },
     "target_size_studs": [
-      3.6,
+      4.38,
       5.0,
-      3.0
+      3.4
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -654,18 +654,18 @@
     "png": "build/blender/garden/creature_panda.png",
     "preview": "build/blender/garden/previews/creature_panda.png",
     "size_studs": [
-      4.4,
+      3.08,
       4.5,
-      4.0
+      2.78
     ],
-    "tris": 5754,
+    "tris": 5052,
     "parts": {
-      "creature_panda": 5754
+      "creature_panda": 5052
     },
     "target_size_studs": [
-      4.4,
+      3.08,
       4.5,
-      4.0
+      2.78
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -704,18 +704,18 @@
     "png": "build/blender/garden/creature_unicorn.png",
     "preview": "build/blender/garden/previews/creature_unicorn.png",
     "size_studs": [
-      4.0,
+      2.5,
       5.5,
-      4.8
+      4.14
     ],
-    "tris": 5846,
+    "tris": 5832,
     "parts": {
-      "creature_unicorn": 5846
+      "creature_unicorn": 5832
     },
     "target_size_studs": [
-      4.0,
+      2.5,
       5.5,
-      4.8
+      4.14
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -779,18 +779,18 @@
     "png": "build/blender/garden/creature_lion.png",
     "preview": "build/blender/garden/previews/creature_lion.png",
     "size_studs": [
-      4.6,
+      4.83,
       5.2,
-      4.6
+      3.76
     ],
-    "tris": 5956,
+    "tris": 5764,
     "parts": {
-      "creature_lion": 5956
+      "creature_lion": 5764
     },
     "target_size_studs": [
-      4.6,
+      4.83,
       5.2,
-      4.6
+      3.76
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -829,18 +829,18 @@
     "png": "build/blender/garden/creature_dragon.png",
     "preview": "build/blender/garden/previews/creature_dragon.png",
     "size_studs": [
-      6.0,
+      4.38,
       5.5,
-      4.8
+      3.83
     ],
-    "tris": 5904,
+    "tris": 5990,
     "parts": {
-      "creature_dragon": 5904
+      "creature_dragon": 5990
     },
     "target_size_studs": [
-      6.0,
+      4.38,
       5.5,
-      4.8
+      3.83
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1004,18 +1004,18 @@
     "png": "build/blender/garden/creature_redpanda.png",
     "preview": "build/blender/garden/previews/creature_redpanda.png",
     "size_studs": [
-      4.2,
+      4.11,
       5.0,
-      4.0
+      5.01
     ],
-    "tris": 5960,
+    "tris": 5124,
     "parts": {
-      "creature_redpanda": 5960
+      "creature_redpanda": 5124
     },
     "target_size_studs": [
-      4.2,
+      4.11,
       5.0,
-      4.0
+      5.01
     ],
     "tris_budget": 6000,
     "priority": "P1",
