@@ -75,98 +75,98 @@
     "texture": null
   },
   "creature_bunny": {
-    "model": 124191461969555,
-    "decal": 124807646580714,
+    "model": 127855365541226,
+    "decal": 107135539068835,
     "texture": null
   },
   "creature_frog": {
-    "model": 138617300899001,
-    "decal": 90049122555905,
+    "model": 85779194244500,
+    "decal": 115154845071518,
     "texture": null
   },
   "creature_pup": {
-    "model": 112081020969239,
-    "decal": 137327920004020,
+    "model": 128788432800472,
+    "decal": 125611528662930,
     "texture": null
   },
   "creature_cat": {
-    "model": 96638230978028,
-    "decal": 124509323392157,
+    "model": 102770309903015,
+    "decal": 74337708537758,
     "texture": null
   },
   "creature_owl": {
-    "model": 97184488014599,
-    "decal": 126640953731758,
+    "model": 71278636971750,
+    "decal": 118427790256616,
     "texture": null
   },
   "creature_fox": {
-    "model": 122249851797920,
-    "decal": 121842647927945,
+    "model": 96406632938581,
+    "decal": 70831885573088,
     "texture": null
   },
   "creature_turtle": {
-    "model": 93958870229705,
-    "decal": 129936768941715,
+    "model": 107439862403502,
+    "decal": 89156506319145,
     "texture": null
   },
   "creature_lion": {
-    "model": 106292647653499,
-    "decal": 86330195101049,
+    "model": 107535010639154,
+    "decal": 79487625709380,
     "texture": null
   },
   "creature_dragon": {
-    "model": 134313563386294,
-    "decal": 107305529242659,
+    "model": 112896264951202,
+    "decal": 82593805880653,
     "texture": null
   },
   "creature_duck": {
-    "model": 93614888886045,
-    "decal": 120529009551860,
+    "model": 132550240344733,
+    "decal": 90334982289566,
     "texture": null
   },
   "creature_lamb": {
-    "model": 138246388982624,
-    "decal": 125423933399531,
+    "model": 104724352549139,
+    "decal": 119021247543469,
     "texture": null
   },
   "creature_hedgehog": {
-    "model": 140500257685029,
-    "decal": 118287323137561,
+    "model": 91865811495849,
+    "decal": 109034652029292,
     "texture": null
   },
   "creature_deer": {
-    "model": 132110625413983,
-    "decal": 137724111651449,
+    "model": 119660934266357,
+    "decal": 85446515588690,
     "texture": null
   },
   "creature_panda": {
-    "model": 86135151286191,
-    "decal": 134675387445768,
+    "model": 78336407336905,
+    "decal": 85803031256271,
     "texture": null
   },
   "creature_unicorn": {
-    "model": 116430103429647,
-    "decal": 111393599602171,
+    "model": 79476882010566,
+    "decal": 89421499938529,
     "texture": null
   },
   "creature_phoenix": {
-    "model": 113000155015913,
-    "decal": 99523150129418,
+    "model": 90581200414813,
+    "decal": 139466861545053,
     "texture": null
   },
   "creature_whale": {
-    "model": 135085478968748,
-    "decal": 126267975464638,
+    "model": 81069178979543,
+    "decal": 76458339586149,
     "texture": null
   },
   "creature_kirin": {
-    "model": 87596485668968,
-    "decal": 133162158681172,
+    "model": 117129296366052,
+    "decal": 81207337684836,
     "texture": null
   },
   "creature_axolotl": {
-    "model": 87251913775370,
-    "decal": 131627929658404,
+    "model": 125252285057803,
+    "decal": 77805312963916,
     "texture": null
   },
   "egg_aurora": {
@@ -210,8 +210,8 @@
     "texture": null
   },
   "creature_moth": {
-    "model": 90835297344313,
-    "decal": 105097164467776,
+    "model": 104348304093549,
+    "decal": 111011763104396,
     "texture": null
   },
   "fence_starlit_post": {
@@ -230,28 +230,28 @@
     "texture": null
   },
   "creature_puffin": {
-    "model": 94756345914133,
-    "decal": 119363085923437,
+    "model": 93559379637968,
+    "decal": 81203756082890,
     "texture": null
   },
   "creature_otter": {
-    "model": 96776962013797,
-    "decal": 139038381110534,
+    "model": 91312254648802,
+    "decal": 87793769698620,
     "texture": null
   },
   "creature_capybara": {
-    "model": 102047511477972,
-    "decal": 72006354715561,
+    "model": 81286773736349,
+    "decal": 71628690266116,
     "texture": null
   },
   "creature_redpanda": {
-    "model": 128308625560044,
-    "decal": 85416341012489,
+    "model": 118251828450061,
+    "decal": 78509853690687,
     "texture": null
   },
   "creature_peacock": {
-    "model": 128516016843681,
-    "decal": 78704305928684,
+    "model": 134914584957154,
+    "decal": 131658517402031,
     "texture": null
   },
   "creature_snowleopard": {
