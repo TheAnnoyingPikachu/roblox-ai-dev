@@ -28,6 +28,7 @@ type World = {
 	depth: { [number]: number? },
 	loadBox: { [number]: boolean },
 	aim: boolean, -- four perfect beams at night
+	share: number?, -- or one beam on every share-th wisp only (a lone lamp that misses the rest)
 	sitBack: boolean, -- players sit straight back down when stood up
 	fuel: boolean, -- the bunker is full at every stop (the crew loads coal sacks)
 	log: { { t: number, e: Event } },
@@ -66,6 +67,19 @@ end
 local function beams(w: World): { WispRules.Beam }
 	local out = {}
 	local night = w.run.night
+	if night and w.share then
+		local best = nil
+		for id, wisp in night.wisps do
+			if wisp.born <= w.now and id % w.share == 0 and (best == nil or id < best) then
+				best = id
+			end
+		end
+		if best then
+			local p = WispRules.pos(night.wisps[best], w.now)
+			table.insert(out, { origin = TURRET, dir = unit(p.x - TURRET.x, p.y - TURRET.y, p.z - TURRET.z) })
+		end
+		return out
+	end
 	if not (w.aim and night) then
 		return out
 	end
@@ -535,7 +549,7 @@ describe("TrainRules: nights, Depot and run ends", function()
 		local w = world({ A })
 		w.sitBack = true -- nobody aims: the wisps get through
 		untilEvent(w, "night")
-		w.run.oil = 2
+		w.run.oil, w.run.coal = 2, 200 -- coal to spare: the lantern ends this night, not the bunker
 		local pours = {}
 		local oil = 2
 		while w.run.phase == "night" do
@@ -548,6 +562,27 @@ describe("TrainRules: nights, Depot and run ends", function()
 		expect(`{#pours} {w.run.ended} {w.run.lantern}`).toBe("2 lantern 0")
 		expect(pours[2] - pours[1] >= 3 - 1e-6).toBe(true)
 	end)
+
+	it(
+		"solo night 1 (LANTERN-015): a lamp puffing one wisp in four reaches the Depot; an idle lamp does not",
+		function()
+			local function night(share: number?): string
+				local w = world({ A })
+				w.sitBack, w.fuel, w.share = true, true, share
+				untilEvent(w, "night")
+				w.run.oil = 0 -- no oil: the lantern alone
+				local low = 100
+				while w.run.phase == "night" do
+					step(w)
+					low = math.min(low, w.run.lantern)
+				end
+				return `{w.run.phase} {math.floor(low)}`
+			end
+			-- 7 waves of 4 wisps at 4.5: 28 wisps, 7 puffed, 21 through (94.5) leaves 5.5
+			expect(night(4)).toBe("depot 5")
+			expect(night(nil)).toBe("ended 0")
+		end
+	)
 
 	it(
 		"pays the Depot (+40 lantern), stands everyone up, leaves at 90 s with everyone seated, takes the branch vote",

@@ -122,11 +122,11 @@ LanternConfig.WAVES = {
 	heightMin = 4,
 	heightMax = 20,
 	spread = 3,
-	speed = 8,
+	speed = { 6, 7, 8, 8 }, -- studs/s by min(n, 4): one or two lamps cover the whole circle (LANTERN-015)
 	wobble = 2,
 	reach = 3,
 }
-LanternConfig.DIM = { 6, 4.5, 3.5, 3 } -- by min(n, 4)
+LanternConfig.DIM = { 4.5, 3.5, 3.5, 3 } -- by min(n, 4); a solo lamp puffing 1 wisp in 4 sees the Depot (LANTERN-015)
 LanternConfig.BEAM = {
 	halfAngle = 7,
 	range = { 80, 90, 100 },

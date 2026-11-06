@@ -1,6 +1,7 @@
 // Uploads one game's committed Blender models (assets/<game>/<name>.fbx) and textures (<name>.png)
 // with the Roblox Open Cloud Assets API, then writes tools/blender/<game>/uploaded.json.
-// <game> is night (Hundred Demon Night), spire (Neon Spire) or garden (Egg Garden).
+// <game> is night (Hundred Demon Night), spire (Neon Spire), garden (Egg Garden) or lantern
+// (Lantern Express); garden and lantern also upload their UI icons (assets/<game>/icons).
 //
 //   ROBLOX_API_KEY=... ROBLOX_CREATOR_USER_ID=... node tools/blender/upload-assets.mjs <game> [name ...]
 //
@@ -100,9 +101,10 @@ async function imageOf(decalId) {
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
 const wanted = process.argv.slice(3).flatMap((a) => a.split(",")).map((s) => s.trim()).filter(Boolean);
-// UI icons: decal-only PNGs in assets/<game>/icons/, named like the GardenIcons keys.
+// UI icons: decal-only PNGs in assets/<game>/icons/<game>_icon_<name>.png, named like the
+// <Game>Icons keys (GardenIcons, LanternIcons).
 const ICONS = path.join(FILES, "icons");
-const icons = fs.existsSync(ICONS) ? fs.readdirSync(ICONS).filter((f) => /^garden_icon_.*[.]png$/.test(f)).map((f) => f.slice(0, -4)) : [];
+const icons = fs.existsSync(ICONS) ? fs.readdirSync(ICONS).filter((f) => f.startsWith(`${game}_icon_`) && f.endsWith(".png")).map((f) => f.slice(0, -4)) : [];
 for (const name of wanted) if (!manifest[name] && !icons.includes(name)) throw new Error(`unknown asset ${name}`);
 const uploaded = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : {};
 const failed = [];

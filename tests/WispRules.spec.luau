@@ -103,7 +103,7 @@ describe("WispRules sizes and paths", function()
 			end
 			table.insert(rows, `{table.concat(legs, "/")}:{WispRules.dimPer(n)}`)
 		end
-		expect(table.concat(rows, " ")).toBe("4/6/8:6 8/12/16:4.5 12/18/24:3.5 16/24/32:3 17/25/33:3 18/26/34:3")
+		expect(table.concat(rows, " ")).toBe("4/6/8:4.5 8/12/16:3.5 12/18/24:3.5 16/24/32:3 17/25/33:3 18/26/34:3")
 		expect(WispRules.waveSize(4, 2, "lake")).toBe(25)
 		expect(WispRules.waveSize(1, 1, "lake")).toBe(5)
 	end)
@@ -192,6 +192,17 @@ describe("WispRules beams and aims", function()
 		end
 		expect(table.concat(dims, " ")).toBe("1:3.5")
 		expect(#kinds(events, "puff")).toBe(0)
+	end)
+
+	it("drifts slower for a small crew: 6 / 7 / 8 / 8 studs/s by min(n, 4), set on each spawn", function()
+		local speeds = {}
+		for n = 1, 6 do
+			local _, events = run(WispRules.new(0, 9, 1), 0, 9, 0.5, 0, { n = n })
+			table.insert(speeds, events[1].e.wisps[1].speed)
+		end
+		expect(table.concat(speeds, " ")).toBe("6 7 8 8 8 8")
+		-- a solo wisp from 60 studs needs 10 s to reach its lantern, against 7.5 s for a crew of 4
+		expect(60 / WispRules.speed(1) - 60 / WispRules.speed(4)).toBe(2.5)
 	end)
 end)
 

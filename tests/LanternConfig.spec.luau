@@ -65,8 +65,8 @@ describe("LanternConfig numbers (GDD C, F, H)", function()
 		expect(`{w.first} {w.gap} {list(w.perTurret)} {w.lake} {w.spawnMin} {w.spawnMax} {w.heightMin} {w.heightMax}`).toBe(
 			"8 25 4 6 8 1 60 75 4 20"
 		)
-		expect(`{w.spread} {w.speed} {w.wobble} {w.reach}`).toBe("3 8 2 3")
-		expect(list(LanternConfig.DIM)).toBe("6 4.5 3.5 3")
+		expect(`{w.spread} {list(w.speed)} {w.wobble} {w.reach}`).toBe("3 6 7 8 8 2 3")
+		expect(list(LanternConfig.DIM)).toBe("4.5 3.5 3.5 3")
 		local b = LanternConfig.BEAM
 		expect(`{b.halfAngle} {list(b.range)} {list(b.puff)} {b.pitchMin} {b.pitchMax} {b.stale}`).toBe(
 			"7 80 90 100 0.6 0.45 0.35 -15 75 0.5"
@@ -75,8 +75,8 @@ describe("LanternConfig numbers (GDD C, F, H)", function()
 		expect(`{l.at} {l.warn} {l.radius} {l.height} {l.every} {l.dive} {l.shoo} {l.dim} {l.needBase} {l.needPer}`).toBe(
 			"50 3 45 25 8 3 0.8 10 15 8"
 		)
-		-- C4's parenthetical "12 / (min(n, 4) + 1)" gives 6 / 4 / 3 / 2.5; the C4 and C6 tables,
-		-- decision 0018 and the pacing script all use 6 / 4.5 / 3.5 / 3, pinned above.
+		-- LANTERN-015 (solo night balance): drift 6 / 7 / 8 / 8 studs/s and dim 4.5 / 3.5 / 3.5 / 3 by
+		-- min(n, 4), as GDD C4 and C6 and the pacing script; a crew of 4 to 6 keeps 8 and 3.
 	end)
 
 	it("pins the Depot and reward values of F, H3 and 0018 section 5", function()

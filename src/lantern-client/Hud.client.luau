@@ -92,7 +92,8 @@ local needText = UiKit.chipText(coalChip, "", {
 })
 local poolChip = UiKit.chip(left, 380, 44)
 poolChip.Position = UDim2.fromOffset(0, 86)
-local poolText = UiKit.chipText(poolChip, "")
+UiKit.icon(poolChip, "parts", 32, { Position = UDim2.fromOffset(10, 6) })
+local poolText = UiKit.chipText(poolChip, "", { Position = UDim2.fromOffset(50, 0), Size = UDim2.new(1, -58, 1, 0) })
 
 -- Top centre: the lantern meter and the phase chip ---------------------------------------------------
 
@@ -112,6 +113,7 @@ local lampIcon = new("Frame", {
 	BackgroundColor3 = UI.GOLD,
 	Parent = lampChip,
 }, { new("UICorner", { CornerRadius = UDim.new(0.45, 0) }), new("UIStroke", { Color = UI.RING, Thickness = 2 }) })
+UiKit.icon(lampIcon, "lantern", 44, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5) })
 local lampBar =
 	UiKit.bar(lampChip, { Position = UDim2.fromOffset(58, 20), Size = UDim2.new(1, -150, 0, 20) }, 1, UI.GOLD)
 local lampText = UiKit.chipText(lampChip, "100", {
@@ -269,6 +271,11 @@ end)
 local swap = UiKit.button(seats, "LAMP", UI.LILAC, "medium", 200, function()
 	ClientState.request("sit", if player:GetAttribute("Seat") == "turret" then "stoker" else "turret")
 end)
+UiKit.buttonIcon(stoke, "stoke", 44)
+UiKit.buttonIcon(mend, "mend", 44)
+UiKit.buttonIcon(sit, "train")
+UiKit.buttonIcon(depotButton, "depot")
+local swapLamp, swapStoke = UiKit.buttonIcon(swap, "lamp"), UiKit.buttonIcon(swap, "stoke")
 local pulse = new("UIScale", { Parent = stoke })
 local stokeTween = TweenService:Create(
 	pulse,
@@ -442,6 +449,7 @@ local function refresh()
 	depotButton.Text = if r.Phase == "hub" then "VOTE" else "DEPOT"
 	swap.Visible = crew and seated and moving and (seat == "turret" or r.Phase == "night")
 	swap.Text = if seat == "turret" then "STOKER" else "LAMP"
+	swapLamp.Visible, swapStoke.Visible = seat ~= "turret", seat == "turret"
 
 	coins.set(player:GetAttribute("Tickets") or 0)
 	local level = player:GetAttribute("Level") or 1
@@ -491,6 +499,7 @@ local VOTES = {
 	},
 }
 local ROMAN = { "I", "II", "III" }
+local ICON = { boiler = "train", bunker = "coal", lamps = "lamp", coal = "coal", oil = "oil" }
 local panel: UiKit.Panel? = nil
 
 local function fillDepot(p: UiKit.Panel)
@@ -530,14 +539,15 @@ local function fillDepot(p: UiKit.Panel)
 		for _, it in items do
 			order += 1
 			local row = UiKit.row(p.body, 76, order)
+			UiKit.icon(row, ICON[it.id], 52, { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 14, 0.5, 0) })
 			UiKit.text(row, it.name, 26, UI.INK, {
-				Position = UDim2.fromOffset(20, 6),
-				Size = UDim2.new(1, -260, 0, 34),
+				Position = UDim2.fromOffset(80, 6),
+				Size = UDim2.new(1, -320, 0, 34),
 				TextXAlignment = Enum.TextXAlignment.Left,
 			})
 			UiKit.text(row, EFFECT[it.id], 18, UI.INK_SOFT, {
-				Position = UDim2.fromOffset(20, 40),
-				Size = UDim2.new(1, -260, 0, 26),
+				Position = UDim2.fromOffset(80, 40),
+				Size = UDim2.new(1, -320, 0, 26),
 				TextXAlignment = Enum.TextXAlignment.Left,
 			})
 			local price = DepotRules.price(pools :: any, it.id)
@@ -662,7 +672,8 @@ local function runEnd(data: any)
 		}
 	)
 	if tonumber(s.xp) then
-		UiKit.text(m.body, `+{ClientState.short(s.xp)} XP`, 24, UI.LEAF, { LayoutOrder = 2 })
+		local line = UiKit.text(m.body, `+{ClientState.short(s.xp)} XP`, 24, UI.LEAF, { LayoutOrder = 2 })
+		UiKit.icon(line, "xp", 36, { AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(0.5, -60, 0.5, 0) })
 	end
 	UiKit.text(
 		m.body,
@@ -710,7 +721,7 @@ ClientState.Fx.OnClientEvent:Connect(function(kind: string, data: any)
 			else (KIND_TEXT[data.id] or tostring(data.id))
 		toast(`{if who then who.DisplayName else "Crew"}: {what}`, "parts", UI.GOLD)
 	elseif kind == "arrive" then
-		toast(`Scavenge! {tileName(ClientState.run())}`, "coal", UI.MINT)
+		toast(`Scavenge! {tileName(ClientState.run())}`, "critter", UI.MINT)
 	elseif kind == "runEnd" then
 		runEnd(data)
 	elseif kind == "load" and tonumber(data.by) == player.UserId and data.kind ~= "critter" then

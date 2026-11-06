@@ -30,49 +30,67 @@ local function rgb(r: number, g: number, b: number): Color3
 	return Color3.fromRGB(r, g, b)
 end
 type Look = { [string]: any }
+-- Dusk (LANTERN-015): the sun 9 degrees up in the west, so the ground and houses read and the low sun
+-- throws a peach horizon and lit clouds; the Atmosphere's decay paints the sky away from the sun in
+-- teal-violet. Raised ambient and exposure keep the grass green; lanterns stay the brightest pixels.
 local DUSK: Look = {
-	ClockTime = 18.4,
-	Brightness = 1.6,
-	Ambient = rgb(44, 38, 74),
-	OutdoorAmbient = rgb(110, 100, 150),
-	ColorShift_Top = rgb(255, 190, 150),
-	density = 0.42,
-	fog = UI.FOG,
-	decay = rgb(96, 84, 150),
+	ClockTime = 17.35,
+	Brightness = 2.4,
+	Ambient = rgb(84, 74, 116),
+	OutdoorAmbient = rgb(165, 145, 190),
+	ColorShift_Top = rgb(255, 170, 120),
+	exposure = 0.35,
+	density = 0.3,
+	fog = rgb(246, 168, 140), -- Horizon Peach towards the sun
+	decay = rgb(86, 104, 168), -- teal-violet away from it
+	haze = 2.6,
+	glare = 0.5,
+	clouds = 0.5,
 	stars = 0,
 }
+-- Night: darker, never black; ambient and exposure keep silhouettes and the ground readable.
 local NIGHT: Look = {
 	ClockTime = 24.5, -- 0.5, kept above 18.4 so the blend runs forward through the evening
-	Brightness = 0.6,
-	Ambient = rgb(34, 30, 64),
-	OutdoorAmbient = rgb(64, 60, 110),
+	Brightness = 0.8,
+	Ambient = rgb(44, 40, 82),
+	OutdoorAmbient = rgb(86, 82, 140),
 	ColorShift_Top = rgb(150, 150, 255),
-	density = 0.5,
+	exposure = 0.25,
+	density = 0.42,
 	fog = rgb(120, 112, 170),
-	decay = rgb(40, 36, 80),
+	decay = rgb(48, 44, 96),
+	haze = 1.6,
+	glare = 0,
+	clouds = 0.3,
 	stars = 1500,
 }
 local DAWN: Look = {
 	ClockTime = 30.2, -- 6.2 the next morning
-	Brightness = 2,
-	Ambient = rgb(60, 52, 80),
-	OutdoorAmbient = rgb(150, 130, 150),
+	Brightness = 2.2,
+	Ambient = rgb(70, 60, 92),
+	OutdoorAmbient = rgb(160, 140, 160),
 	ColorShift_Top = rgb(255, 210, 170),
-	density = 0.38,
-	fog = rgb(230, 200, 200),
-	decay = rgb(150, 120, 140),
+	exposure = 0.3,
+	density = 0.32,
+	fog = rgb(240, 196, 180),
+	decay = rgb(150, 140, 190),
+	haze = 2,
+	glare = 0.6,
+	clouds = 0.45,
 	stars = 0,
 }
 
 local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or new("Atmosphere", { Parent = Lighting })
-atmosphere.Offset, atmosphere.Glare, atmosphere.Haze = 0.25, 0.3, 1.8
+atmosphere.Offset = 0.1
 local sky = Lighting:FindFirstChildOfClass("Sky") or new("Sky", { Parent = Lighting })
 sky.MoonAngularSize = 14
+local clouds = Workspace.Terrain:FindFirstChildOfClass("Clouds") or new("Clouds", { Parent = Workspace.Terrain })
+clouds.Density, clouds.Color = 0.6, rgb(255, 186, 160) -- dusk clouds lit peach by the low sun
 local bloom = Lighting:FindFirstChildOfClass("BloomEffect") or new("BloomEffect", { Parent = Lighting })
 bloom.Size, bloom.Threshold = 24, 0.92
 local grade = Lighting:FindFirstChildOfClass("ColorCorrectionEffect")
 	or new("ColorCorrectionEffect", { Parent = Lighting })
-grade.Saturation, grade.Contrast, grade.TintColor = 0.08, 0.05, rgb(255, 246, 240)
+grade.Saturation, grade.Contrast, grade.TintColor = 0.12, 0.05, rgb(250, 240, 255)
 Lighting.GlobalShadows, Lighting.ShadowSoftness = true, 0.4
 Lighting.EnvironmentDiffuseScale, Lighting.EnvironmentSpecularScale = 0.5, 0.4
 
@@ -108,9 +126,12 @@ local function applyLight(dt: number)
 	Lighting.Ambient = current.Ambient
 	Lighting.OutdoorAmbient = current.OutdoorAmbient
 	Lighting.ColorShift_Top = current.ColorShift_Top
+	Lighting.ExposureCompensation = current.exposure
 	atmosphere.Density = current.density
 	atmosphere.Color = current.fog
 	atmosphere.Decay = current.decay
+	atmosphere.Haze, atmosphere.Glare = current.haze, current.glare
+	clouds.Cover = current.clouds
 	sky.StarCount = math.floor(current.stars)
 	bloom.Intensity = if ClientState.settings.calm then 0.3 else 0.6 -- Calm night halves Bloom
 end
@@ -415,6 +436,97 @@ local function music(dt: number, r: ClientState.Run)
 	end
 end
 
+-- Loose small items at a stop (GDD L): they float clear of the grass with a gentle bob and a slow
+-- turn, give off a few warm sparkles, and the nearest few within SEEN studs get a soft amber outline
+-- (OUTLINES of Roblox's 31 Highlights). Only a free item (its Pick prompt on) moves, and only on this
+-- client; a position the server writes (a drop) becomes the new rest.
+local SMALL = { coal = true, parts = true, oil = true }
+local OUTLINES, SEEN = 8, 60
+type Loose = { base: CFrame, put: CFrame?, sparkle: ParticleEmitter, outline: Highlight?, phase: number }
+local loose: { [BasePart]: Loose } = {}
+
+local function looseItems(t: number)
+	local world = Workspace:FindFirstChild("Lantern")
+	local stop = world and world:FindFirstChild("Stop")
+	local folder = stop and stop:FindFirstChild("Items")
+	if folder == nil then
+		table.clear(loose)
+		return
+	end
+	local eye = Workspace.CurrentCamera.CFrame.Position
+	local near: { { body: BasePart, d: number } } = {}
+	for _, model in folder:GetChildren() do
+		local body = if model:IsA("Model") and SMALL[model:GetAttribute("Kind")] then model.PrimaryPart else nil
+		local pick = body and body:FindFirstChild("Pick") :: ProximityPrompt?
+		if body == nil or pick == nil then
+			continue
+		end
+		local e = loose[body]
+		if e == nil then
+			e = {
+				base = body.CFrame,
+				put = nil,
+				phase = (tonumber(model:GetAttribute("ItemId")) or 0) * 1.7,
+				sparkle = new("ParticleEmitter", {
+					Texture = "rbxasset://textures/particles/sparkles_main.dds",
+					Color = ColorSequence.new(UI.GOLD, UI.CREAM),
+					LightEmission = 1,
+					Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 0) }),
+					Lifetime = NumberRange.new(0.8, 1.4),
+					Speed = NumberRange.new(0.5, 1.5),
+					SpreadAngle = Vector2.new(180, 180),
+					Rate = if ClientState.still() then 0 else 3,
+					Parent = body,
+				}),
+			}
+			loose[body] = e
+		end
+		local entry = e :: Loose
+		local free = pick.Enabled
+		entry.sparkle.Enabled = free
+		if not free then
+			entry.put = nil
+		else
+			if entry.put == nil or body.CFrame ~= entry.put then
+				entry.base = body.CFrame -- first seen, or the server moved it
+			end
+			local bob = if ClientState.still() then 0 else 0.2 * math.sin(t * 2 + entry.phase)
+			local cf = entry.base
+				* CFrame.new(0, 0.7 + bob, 0)
+				* CFrame.Angles(0, (t * 0.6 + entry.phase) % (2 * math.pi), 0)
+			body.CFrame, entry.put = cf, cf
+			local d = (body.Position - eye).Magnitude
+			if d <= SEEN then
+				table.insert(near, { body = body, d = d })
+			end
+		end
+	end
+	table.sort(near, function(a, b)
+		return a.d < b.d
+	end)
+	local lit: { [BasePart]: boolean } = {}
+	for i = 1, math.min(OUTLINES, #near) do
+		lit[near[i].body] = true
+	end
+	for body, entry in loose do
+		if body.Parent == nil then
+			loose[body] = nil
+		elseif lit[body] and entry.outline == nil then
+			entry.outline = new("Highlight", {
+				FillColor = UI.GOLD,
+				FillTransparency = 0.7,
+				OutlineColor = UI.CREAM,
+				OutlineTransparency = 0.2,
+				DepthMode = Enum.HighlightDepthMode.AlwaysOnTop, -- seen through the grass blades
+				Parent = body.Parent,
+			})
+		elseif not lit[body] and entry.outline then
+			(entry.outline :: Highlight):Destroy()
+			entry.outline = nil
+		end
+	end
+end
+
 -- Every frame ---------------------------------------------------------------------------------------------------
 
 local bellRung = false
@@ -424,6 +536,7 @@ RunService.RenderStepped:Connect(function(dt: number)
 	local now = ClientState.now()
 	local t = os.clock()
 	applyLight(dt)
+	looseItems(t)
 	chimney(r.Speed or 0)
 	music(dt, r)
 

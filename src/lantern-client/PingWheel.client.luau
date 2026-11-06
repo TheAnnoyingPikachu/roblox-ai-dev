@@ -134,6 +134,7 @@ local pingButton = UiKit.button(gui, "PING", UI.LILAC, "medium", 150, function()
 		openWheel()
 	end
 end)
+UiKit.buttonIcon(pingButton, "ping", 32)
 pingButton.AnchorPoint = Vector2.new(0, 1)
 pingButton.Position = UDim2.new(0, 24, 1, -250)
 local function showButton()

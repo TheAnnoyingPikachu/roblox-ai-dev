@@ -28,6 +28,28 @@ local function optional(name: string): any
 end
 local LanternAssets = optional("LanternAssets")
 local LanternIcons = optional("LanternIcons")
+-- The kit's own icon names and the HUD's item, role and ping names, each drawn as one of the 20
+-- Lantern icons (LANTERN-015); a nil id shows the kit's two-letter glyph.
+local ICONS: { [string]: number? } = table.clone(LanternIcons)
+for alias, name in
+	{
+		coin = "ticket",
+		gift = "rewards",
+		cog = "settings",
+		notice = "lantern",
+		supply = "crate",
+		stoker = "stoke",
+		lamplighter = "lamp",
+		scout = "crate",
+		mender = "mend",
+		help = "crate",
+		back = "train",
+		wisps = "lamp",
+		thanks = "ping",
+	}
+do
+	ICONS[alias] = LanternIcons[name]
+end
 
 -- Theme (art bible 7: Garden token names, Lantern values) ---------------------------------------
 
@@ -399,7 +421,7 @@ end
 UiKit.configure({
 	tokens = UI,
 	fonts = { body = Enum.Font.FredokaOne, title = Enum.Font.LuckiestGuy },
-	icons = LanternIcons,
+	icons = ICONS,
 	sound = function(name: string, volume: number, pitch: number?)
 		ClientState.sound(name, volume, nil, pitch)
 	end,

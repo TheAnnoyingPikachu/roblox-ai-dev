@@ -99,6 +99,11 @@ function WispRules.dimPer(n: number): number
 	return LanternConfig.DIM[math.clamp(math.floor(n), 1, 4)]
 end
 
+-- Drift speed by crew size: a lone lamp has the whole circle to cover, so its wisps come slower.
+function WispRules.speed(n: number): number
+	return WAVES.speed[math.clamp(math.floor(n), 1, 4)]
+end
+
 -- Straight drift from `from` to `target`, plus a wobble of at most WAVES.wobble studs (so a wisp
 -- at its target is always inside WAVES.reach).
 function WispRules.pos(w: Wisp, now: number): Vec3
@@ -204,7 +209,7 @@ local function spawnWave(out: Night, input: StepInput, at: number): { Wisp }
 				MID.z + dist * math.sin(a * 2 * math.pi)
 			),
 			target = pickLantern(out, input.lanterns),
-			speed = WAVES.speed,
+			speed = WispRules.speed(input.n),
 			phase = phase * 2 * math.pi,
 			lit = 0,
 			state = "drift",

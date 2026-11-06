@@ -409,6 +409,18 @@ function UiKit.icon(parent: Instance, icon: string, size: number, props: { [stri
 	return holder
 end
 
+-- An icon at the left of a kit button's face; the label moves right to make room.
+function UiKit.buttonIcon(b: TextButton, icon: string, size: number?): Frame
+	local face = b:FindFirstChild("Face") :: Frame
+	local s = size or 36
+	local label = face:FindFirstChild("Label") :: TextLabel?
+	if label then
+		label.Position = UDim2.new(0.5, (s + 8) / 2, 0.5, 0)
+		label.Size = UDim2.new(1, -24 - s, 1, -8)
+	end
+	return UiKit.icon(face, icon, s, { AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(0, 8, 0.5, 0) })
+end
+
 function UiKit.iconButton(parent: Instance?, icon: string, label: string, colour: Color3, onClick: () -> ()): Button
 	local b = makeButton(parent, "", colour, 96, 96, 22, 18, onClick)
 	b.Name = label
@@ -1179,6 +1191,11 @@ local function shell(gui: Instance, title: string, accent: Color3, w: number, h:
 	closeButton.AnchorPoint = Vector2.new(1, 0)
 	closeButton.Position = UDim2.new(1, 14, 0, -24)
 	closeButton.ZIndex = 5
+	if cfg.icons.close then -- a game with a drawn close icon shows it instead of the X
+		local face = closeButton:FindFirstChild("Face") :: Frame
+		(face:FindFirstChild("Label") :: TextLabel).Visible = false
+		UiKit.icon(face, "close", 44, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5) })
+	end
 	-- Bumpers cycle the tabs.
 	(panel :: any).cycle = function(step: number)
 		local i = table.find(labels, panel.tab or "") or 1

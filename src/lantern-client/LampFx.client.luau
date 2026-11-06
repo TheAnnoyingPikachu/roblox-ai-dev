@@ -7,6 +7,7 @@
 -- and the Lampeater are drawn from their Fx spawn records with WispRules.pos and lampeaterPos, so
 -- clients match the server's own positions; they puff, dim and dive only on the server's Fx.
 
+local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -173,6 +174,17 @@ local function myRange(): number
 	return BEAM.range[math.clamp(ClientState.run().Lamps or 1, 1, 3)]
 end
 
+-- The seated avatar sits between the camera and the lamp: hidden for this player while on a turret
+-- (every frame, as the camera's own fade writes it too), shown again on leaving.
+local function fadeSelf(on: boolean)
+	local character = player.Character
+	for _, d in if character then character:GetDescendants() else {} do
+		if d:IsA("BasePart") or d:IsA("Decal") then
+			d.LocalTransparencyModifier = if on then 1 else 0
+		end
+	end
+end
+
 local function updateTurret(dt: number, humanoid: Humanoid?)
 	local seat = turretSeat(humanoid)
 	local was = onTurret
@@ -180,12 +192,14 @@ local function updateTurret(dt: number, humanoid: Humanoid?)
 	if not onTurret then
 		if was then
 			setLampVisible(myLamp, false)
+			fadeSelf(false)
 			camera.CameraType = Enum.CameraType.Custom
 			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 			UserInputService.MouseIconEnabled = true
 		end
 		return
 	end
+	fadeSelf(true)
 	local panelOpen = UiKit.current() ~= nil or ClientState.menuOpen or ClientState.wheelOpen
 	if not UserInputService.TouchEnabled or UserInputService.MouseEnabled then
 		UserInputService.MouseBehavior = if panelOpen then Enum.MouseBehavior.Default else Enum.MouseBehavior.LockCenter
@@ -213,8 +227,8 @@ local function updateTurret(dt: number, humanoid: Humanoid?)
 	setLampVisible(myLamp, true)
 	camera.CameraType = Enum.CameraType.Scriptable
 	local flat = Vector3.new(dir.X, 0, dir.Z).Unit
-	-- high enough over the lamp that the seated avatar's head stays below the beam
-	camera.CFrame = CFrame.lookAt(origin - flat * 9 + Vector3.new(0, 7, 0), origin + dir * 40)
+	-- over the lamp, looking along the beam (the seated avatar is hidden by fadeSelf)
+	camera.CFrame = CFrame.lookAt(origin - flat * 7 + Vector3.new(0, 4.5, 0), origin + dir * 40)
 	-- send: on a change over 0.5 degrees at most 10 a second, and every 0.3 s so the aim never goes stale
 	local v = Vector3.new(dirTrain.x, dirTrain.y, dirTrain.z)
 	local now = os.clock()
@@ -349,7 +363,7 @@ local function addWisps(list: { any })
 			born = tonumber(r.born) or ClientState.now(),
 			from = ClientState.vec(r.from),
 			target = ClientState.vec(r.target),
-			speed = tonumber(r.speed) or LanternConfig.WAVES.speed,
+			speed = tonumber(r.speed) or WispRules.speed(1),
 			phase = tonumber(r.phase) or 0,
 			lit = 0,
 			state = "drift",
@@ -362,9 +376,23 @@ local function addWisps(list: { any })
 	end
 end
 
--- The Lampeater (a soft majestic moth; announced 3 s ahead; never a lunge at the camera) -----------------
+-- The Lampeater (a soft majestic moth; announced 3 s ahead; never a lunge at the camera): drawn at
+-- MOTH_SCALE times the asset (a wingspan near 70 studs), it sweeps in across the moon from the warning
+-- to ENTER s after it rises, then follows lampeaterPos (the server's beam test). Slow flaps about
+-- the shoulders, wings raised in a dive, a soft amber glow.
 
-type Moth = { state: WispRules.Lampeater, model: Model, wingL: BasePart, wingR: BasePart, leaving: number? }
+local MOTH_SCALE = 1.7
+local HINGE, HALF_WING = 2 * MOTH_SCALE, 9 * MOTH_SCALE -- wing meshes are 18 long, hinged 2 out
+local ENTER = 2
+
+type Moth = {
+	state: WispRules.Lampeater,
+	model: Model,
+	wingL: BasePart,
+	wingR: BasePart,
+	leaving: number?,
+	enterFrom: number,
+}
 local moth: Moth? = nil
 local warned = false
 
@@ -393,9 +421,9 @@ local function mothModel(): (Model, BasePart, BasePart)
 			m.Parent = model
 			return m:FindFirstChildWhichIsA("BasePart", true) :: BasePart
 		end
-		return new("WedgePart", {
+		return new("Part", {
 			Name = name,
-			Size = Vector3.new(1.5, 12, 18),
+			Size = Vector3.new(18, 1, 12),
 			Color = Color3.fromRGB(120, 96, 190),
 			Material = Enum.Material.SmoothPlastic,
 			Parent = model,
@@ -404,26 +432,62 @@ local function mothModel(): (Model, BasePart, BasePart)
 	local l, r = wing("lampeater_wing_l"), wing("lampeater_wing_r")
 	for _, d in model:GetDescendants() do
 		if d:IsA("BasePart") then
-			d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch = true, false, false, false
+			d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch, d.CastShadow = true, false, false, false, false
 		end
 	end
 	model.PrimaryPart = core
+	model:ScaleTo(MOTH_SCALE)
+	new("PointLight", { Color = UI.GOLD, Range = 40, Brightness = 1.4, Shadows = false, Parent = core })
+	new("Highlight", { -- a soft amber rim so the silhouette reads against the night sky
+		FillColor = UI.GOLD,
+		FillTransparency = 0.88,
+		OutlineColor = UI.RING,
+		OutlineTransparency = 0.45,
+		DepthMode = Enum.HighlightDepthMode.Occluded,
+		Parent = model,
+	})
 	return model, l, r
+end
+
+-- The sweep in: from far beyond the train towards the moon, across the moon's face, onto the circle.
+local function entrance(m: Moth, now: number): (Vector3?, Vector3?)
+	local born = m.state.born
+	local u = (now - m.enterFrom) / math.max(0.1, born + ENTER - m.enterFrom)
+	if u >= 1 then
+		return nil, nil
+	end
+	u = 1 - (1 - math.max(0, u)) ^ 2 -- eases into the circle
+	local mid = ClientState.toWorld({ x = 0, y = 0, z = LanternConfig.TRAIN_LENGTH / 2 })
+	local moon = Lighting:GetMoonDirection()
+	local across = moon:Cross(Vector3.yAxis)
+	across = if across.Magnitude > 0.1 then across.Unit else Vector3.xAxis
+	local a = mid + moon * 420 - across * 180
+	local b = mid + moon * 200 + across * 40
+	local c = ClientState.toWorld(WispRules.lampeaterPos(m.state, born + ENTER))
+	local p = a * (1 - u) ^ 2 + b * 2 * u * (1 - u) + c * u * u
+	local tangent = (b - a) * 2 * (1 - u) + (c - b) * 2 * u
+	return p, if tangent.Magnitude > 0.01 then tangent.Unit else Vector3.zAxis
 end
 
 local function drawMoth(now: number, t: number)
 	local m = moth :: Moth
-	local p = ClientState.toWorld(WispRules.lampeaterPos(m.state, now))
+	local p, face = entrance(m, now)
+	if p == nil then
+		p = ClientState.toWorld(WispRules.lampeaterPos(m.state, now))
+		local ahead = ClientState.toWorld(WispRules.lampeaterPos(m.state, now + 0.2))
+		face = if (ahead - p).Magnitude > 0.01 then (ahead - p).Unit else Vector3.zAxis
+	end
 	if m.leaving then
 		p += Vector3.new(0, (t - m.leaving) * 20, 0) -- fed: spirals up to the moon
 	end
-	local ahead = ClientState.toWorld(WispRules.lampeaterPos(m.state, now + 0.2))
-	local face = if (ahead - p).Magnitude > 0.01 then (ahead - p).Unit else Vector3.zAxis
-	local cf = CFrame.lookAt(p, p + face)
+	local cf = CFrame.lookAt(p :: Vector3, p :: Vector3 + face :: Vector3)
 	m.model.PrimaryPart.CFrame = cf
-	local flap = if ClientState.still() then 0.2 else math.sin(t * 3) * 0.5
-	m.wingL.CFrame = cf * CFrame.new(-11, 0, 0) * CFrame.Angles(0, 0, flap)
-	m.wingR.CFrame = cf * CFrame.new(11, 0, 0) * CFrame.Angles(0, 0, -flap)
+	-- a slow beat (3.5 s), wings swept up while diving so they clear the roof
+	local dive = m.state.dive
+	local diving = dive ~= nil and now >= dive.at and now < dive.at + LanternConfig.LAMPEATER.dive
+	local flap = if ClientState.still() then 0.2 elseif diving then 0.9 else 0.15 + 0.45 * math.sin(t * 1.8)
+	m.wingL.CFrame = cf * CFrame.new(-HINGE, 0, 0) * CFrame.Angles(0, 0, -flap) * CFrame.new(-HALF_WING, 0, 0)
+	m.wingR.CFrame = cf * CFrame.new(HINGE, 0, 0) * CFrame.Angles(0, 0, flap) * CFrame.new(HALF_WING, 0, 0)
 end
 
 local function dropMoth()
@@ -515,6 +579,7 @@ ClientState.Fx.OnClientEvent:Connect(function(kind: string, data: any)
 			model = model,
 			wingL = l,
 			wingR = r,
+			enterFrom = ClientState.now(),
 		}
 	elseif kind == "dive" and moth then
 		moth.state.dive =
