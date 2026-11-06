@@ -46,10 +46,17 @@ Decision `docs/decisions/0018-lantern-express.md` (Proposed), GDD `docs/game-des
 
 ## Evidence (filled by LANTERN-013 and LANTERN-014)
 
-- **CI run:** (link). **Test counts:** `lune run tests/run` n/n. **Build stamp on staging:** (sha), seen in the corner label and the `[Build]` line.
-- **Pacing:** `python -I docs/game-design/game6-pacing.py 300` equals GDD section P.
-- **QA verdict:** `docs/qa/lantern-v01-review.md` (LANTERN-013: 0 blockers, 5 majors, 14 minors, fix first; fixes by LANTERN-016 in its "Fixes" section; the independent re-review follows).
-- **Timings** (GDD K, Studio and staging, with the stamp): train leaves, stop 1, first rescue, stop 2.
-- **Recordings and screenshots:** the train at cruise speed on a second client; a fog sprint; a night with beams; the Lampeater; the start menu; the album with odds; a phone at 844 × 390.
-- **Performance:** MicroProfiler server frame time with 6 players and 34 wisps; phone fps at a stop and at night.
-- **Nothing lost:** leave mid-leg and rejoin; run ends by coal and by lantern; a quest and a login slot across a rollover.
+- **CI run:** not run yet (the branch is not pushed; LANTERN-014 attaches the link). **Test counts:** `lune run tests/run` **736/736** at `f2bc949` (local, LANTERN-013 re-review, 2026-11-07); selene 0/0/0; stylua clean; all five places built and checked. **Build stamp on staging:** none yet. Local builds stamp `dev`. The Studio proofs of the fixes carry `0c6d137` and `c72d113` (LANTERN-016), and the GDD K timings carry `5710ecf` (LANTERN-012).
+- **Pacing:** `python -I docs/game-design/game6-pacing.py 300` equals GDD section P at `f2bc949` (casual Dawn 88 / 100 / 92 / 91 / 99% for crews 1 / 2 / 3 / 4 / 6).
+- **QA verdict:** `docs/qa/lantern-v01-review.md`. LANTERN-013 found 0 blockers, 5 majors and 14 minors (fix first). LANTERN-016 fixed them (its "Fixes" section). The independent re-review at `f2bc949` says **ship to staging**: M1 to M5 fixed, 5 new minors (r1 to r5) left for the next pass. Reviewer scripts: 176 + 25 checks pass against the pure modules and the kit `SaveStore` with the fake DataStore; 2 checks fail on purpose to show r2 and r4.
+- **Timings** (GDD K, Studio, build `5710ecf`): the train leaves 3.1 s after PLAY, stop 1 at 42.1 s, the first rescue loaded at 52.8 s, stop 2 at 165.3 s (`c31e5a4`). On staging: to do, with the stamp.
+- **Recordings and screenshots:** Studio screenshots in LANTERN-012, 015 and 016. On staging, to do: the train at cruise speed on a second client; a fog sprint; a night with beams; the Lampeater; the start menu; the album with odds; a phone at 844 × 390.
+- **Performance:** to do on staging: MicroProfiler server frame time with 6 players and 34 wisps; phone fps at a stop and at night.
+- **Nothing lost:** Computed by QA (pure modules and the fake DataStore):
+  - leave at every phase;
+  - a run ending by coal and by lantern after a load;
+  - a quest and a login slot across a rollover, paid once;
+  - a failed flush paid once;
+  - a newer save kept read-only;
+  - a paused save (a rejoin after a crash, an outage, a lost lock) storing its kept changes once at the claim.
+  On staging with real DataStores, to do: leave mid-leg and rejoin; crash a server and rejoin within 2 minutes.
