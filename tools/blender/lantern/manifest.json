@@ -93,5 +93,267 @@
         104
       ]
     }
+  },
+  "stop_village": {
+    "fbx": "build/blender/lantern/stop_village.fbx",
+    "png": "build/blender/lantern/stop_village.png",
+    "preview": "build/blender/lantern/previews/stop_village.png",
+    "size_studs": [
+      120.0,
+      16.56,
+      160.0
+    ],
+    "tris": 24836,
+    "parts": {
+      "stop_village": 23384,
+      "stop_village_glow": 1452
+    },
+    "target_size_studs": [
+      120,
+      16.6,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Village: the hero house_cottage with three neighbours, the well, lanterns strung over the lane. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_village_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_farm": {
+    "fbx": "build/blender/lantern/stop_farm.fbx",
+    "png": "build/blender/lantern/stop_farm.png",
+    "preview": "build/blender/lantern/previews/stop_farm.png",
+    "size_studs": [
+      120.0,
+      24.05,
+      160.0
+    ],
+    "tris": 21480,
+    "parts": {
+      "stop_farm": 20896,
+      "stop_farm_glow": 584
+    },
+    "target_size_studs": [
+      120,
+      24.1,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Farm: the barn with a lantern cupola, the silo, haystacks, the pumpkin field, the farmhouse. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_farm_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_windmill": {
+    "fbx": "build/blender/lantern/stop_windmill.fbx",
+    "png": "build/blender/lantern/stop_windmill.png",
+    "preview": "build/blender/lantern/previews/stop_windmill.png",
+    "size_studs": [
+      120.0,
+      40.18,
+      160.0
+    ],
+    "tris": 21010,
+    "parts": {
+      "stop_windmill": 20310,
+      "stop_windmill_glow": 700
+    },
+    "target_size_studs": [
+      120,
+      40.2,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Windmill: the tower mill and its static sails (lowest tip 15 up), the miller's cottage, the granary on staddle stones, wheat. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_windmill_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_orchard": {
+    "fbx": "build/blender/lantern/stop_orchard.fbx",
+    "png": "build/blender/lantern/stop_orchard.png",
+    "preview": "build/blender/lantern/previews/stop_orchard.png",
+    "size_studs": [
+      120.0,
+      14.58,
+      160.0
+    ],
+    "tris": 15984,
+    "parts": {
+      "stop_orchard": 14760,
+      "stop_orchard_glow": 1224
+    },
+    "target_size_studs": [
+      120,
+      14.6,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Orchard: twenty apple trees hung with paper lanterns, skeps, apple crates, the apple store. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_orchard_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_inn": {
+    "fbx": "build/blender/lantern/stop_inn.fbx",
+    "png": "build/blender/lantern/stop_inn.png",
+    "preview": "build/blender/lantern/previews/stop_inn.png",
+    "size_studs": [
+      120.0,
+      25.89,
+      160.0
+    ],
+    "tris": 15654,
+    "parts": {
+      "stop_inn": 14582,
+      "stop_inn_glow": 1072
+    },
+    "target_size_studs": [
+      120,
+      25.9,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Inn: the two-storey tea room (a teapot sign: tea, not drink), the tea garden, the stable. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_inn_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_mill": {
+    "fbx": "build/blender/lantern/stop_mill.fbx",
+    "png": "build/blender/lantern/stop_mill.png",
+    "preview": "build/blender/lantern/previews/stop_mill.png",
+    "size_studs": [
+      120.0,
+      20.94,
+      160.0
+    ],
+    "tris": 18626,
+    "parts": {
+      "stop_mill": 17794,
+      "stop_mill_glow": 832
+    },
+    "target_size_studs": [
+      120,
+      20.9,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Mill: the mill house and its water wheel (static) in the stream, the mill pond, the miller's cottage, the store. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_mill_glow": [
+        255,
+        196,
+        104
+      ]
+    }
+  },
+  "stop_lighthouse": {
+    "fbx": "build/blender/lantern/stop_lighthouse.fbx",
+    "png": "build/blender/lantern/stop_lighthouse.png",
+    "preview": "build/blender/lantern/previews/stop_lighthouse.png",
+    "size_studs": [
+      120.0,
+      42.2,
+      160.0
+    ],
+    "tris": 13352,
+    "parts": {
+      "stop_lighthouse": 12716,
+      "stop_lighthouse_glow": 592,
+      "stop_lighthouse_beacon_glow": 44
+    },
+    "target_size_studs": [
+      120,
+      42.2,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Lighthouse: the banded lighthouse (beacon_glow: its lantern glass, Neon Lamp Glow; code may add a PointLight, range 30), the keeper's cottage, the net shed, the sandy cove. Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_lighthouse_glow": [
+        255,
+        196,
+        104
+      ],
+      "stop_lighthouse_beacon_glow": [
+        255,
+        206,
+        110
+      ]
+    }
+  },
+  "stop_boathouse": {
+    "fbx": "build/blender/lantern/stop_boathouse.fbx",
+    "png": "build/blender/lantern/stop_boathouse.png",
+    "preview": "build/blender/lantern/previews/stop_boathouse.png",
+    "size_studs": [
+      120.0,
+      14.85,
+      160.0
+    ],
+    "tris": 14772,
+    "parts": {
+      "stop_boathouse": 14092,
+      "stop_boathouse_glow": 680
+    },
+    "target_size_studs": [
+      120,
+      14.9,
+      160
+    ],
+    "tris_budget": 25000,
+    "priority": "P1",
+    "replaces": "stop fallback (coloured blocks from Tile.blocks)",
+    "script": "tools/blender/lantern/assets/tiles.py",
+    "notes": "Boathouse: the boathouse over the inlet, the jetty and its boats, the fisher's cottage. The water is a block (keep out). Stop tile, 120 x 160 ground plate (the bounding box), front (-Z) on the track: the platform's track edge is the front face. Ground top 0.2 above the bounding box bottom (the plate stands proud of the terrain), platform top 2.0, deck depth 0 to 10, gravel ramp 10 to 15 down the whole length. Blocks (collide), sites and street lamps: LAYOUT in tools/blender/lantern/assets/tiles.py, the proposal for LanternConfig.TILES, in the stop frame (x across = Blender -x, depth from the platform edge). Mesh CanCollide false. Glow mesh: lit windows, street lamps and the platform lamps (Neon); code adds a PointLight (range 18) at each street lamp and one per building's window cluster (range 12, brightness 1.2) within the 24-light budget.",
+    "glow": {
+      "stop_boathouse_glow": [
+        255,
+        196,
+        104
+      ]
+    }
   }
 }
