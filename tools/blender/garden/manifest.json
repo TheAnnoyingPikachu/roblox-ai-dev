@@ -483,16 +483,16 @@
       3.5,
       3.2
     ],
-    "tris": 1358,
+    "tris": 5580,
     "parts": {
-      "creature_frog": 1358
+      "creature_frog": 5580
     },
     "target_size_studs": [
       3.2,
       3.5,
       3.2
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Toadstool Frog mesh (src/relay/Models.luau MESHES.frog)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -533,16 +533,16 @@
       3.8,
       3.6
     ],
-    "tris": 2284,
+    "tris": 5716,
     "parts": {
-      "creature_pup": 2284
+      "creature_pup": 5716
     },
     "target_size_studs": [
       3.0,
       3.8,
       3.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Bumble Pup mesh (src/relay/Models.luau MESHES.pup)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -583,16 +583,16 @@
       4.2,
       3.0
     ],
-    "tris": 2006,
+    "tris": 5732,
     "parts": {
-      "creature_cat": 2006
+      "creature_cat": 5732
     },
     "target_size_studs": [
       3.2,
       4.2,
       3.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Berry Cat mesh (src/relay/Models.luau MESHES.cat)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -633,16 +633,16 @@
       4.5,
       3.8
     ],
-    "tris": 2158,
+    "tris": 5480,
     "parts": {
-      "creature_owl": 2158
+      "creature_owl": 5480
     },
     "target_size_studs": [
       4.2,
       4.5,
       3.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Pumpkin Owl mesh (src/relay/Models.luau MESHES.owl)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -683,16 +683,16 @@
       4.5,
       4.2
     ],
-    "tris": 2246,
+    "tris": 5634,
     "parts": {
-      "creature_fox": 2246
+      "creature_fox": 5634
     },
     "target_size_studs": [
       3.6,
       4.5,
       4.2
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Cactus Fox mesh (src/relay/Models.luau MESHES.fox)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -733,16 +733,16 @@
       3.5,
       3.8
     ],
-    "tris": 1990,
+    "tris": 5922,
     "parts": {
-      "creature_turtle": 1990
+      "creature_turtle": 5922
     },
     "target_size_studs": [
       3.8,
       3.5,
       3.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Lotus Turtle mesh (src/relay/Models.luau MESHES.turtle)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -783,16 +783,16 @@
       5.2,
       4.6
     ],
-    "tris": 2112,
+    "tris": 5956,
     "parts": {
-      "creature_lion": 2112
+      "creature_lion": 5956
     },
     "target_size_studs": [
       4.6,
       5.2,
       4.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Sunflower Lion mesh (src/relay/Models.luau MESHES.lion)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -833,9 +833,9 @@
       5.5,
       4.8
     ],
-    "tris": 5972,
+    "tris": 5904,
     "parts": {
-      "creature_dragon": 5972
+      "creature_dragon": 5904
     },
     "target_size_studs": [
       6.0,
