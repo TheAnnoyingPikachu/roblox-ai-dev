@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_progress",
   "task_id": "LANTERN-012",
   "owner": "A09",
   "verifier": "A15",
@@ -31,11 +31,15 @@
   ],
   "files": [
     "src/lantern/**",
-    "src/lantern-client/**"
+    "src/lantern-client/**",
+    "src/relay/Models.luau",
+    "lantern.project.json",
+    "docs/decisions/0018-lantern-express.md",
+    "docs/architecture/lantern.md"
   ],
   "tests": [
     "TrainRules.spec.luau",
     "LanternProgress.spec.luau"
   ],
-  "notes": "Close every Studio window from finished runs (Stop-Process) before the next; one Studio at a time on this machine (studio lessons, machine limits)."
+  "notes": "Close every Studio window from finished runs (Stop-Process) before the next; one Studio at a time on this machine (studio lessons, machine limits). Files beyond src/lantern and src/lantern-client (A09, integration): src/relay/Models.luau (Lantern `_glow` meshes load as Neon, so server and client templates both glow; Relay, Night and Garden untouched), lantern.project.json (Lighting.Technology = Future: scripts cannot set it), docs/decisions/0018-lantern-express.md (amendment: the `shoo` Fx and the carry refusal codes, rule 8) and docs/architecture/lantern.md (synced to the code)."
 }

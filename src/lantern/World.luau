@@ -379,13 +379,8 @@ local function ground(parent: Instance)
 end
 
 -- Art bible section 3: the dusk values (Depot and stops). The client tweens night and dawn.
+-- Technology = Future is set in lantern.project.json (scripts cannot set it).
 local function lighting()
-	local ok = pcall(function()
-		(Lighting :: any).Technology = Enum.Technology.Future
-	end)
-	if not ok then
-		warn("[World] Lighting.Technology is not scriptable here; set Future in the place settings")
-	end
 	Lighting.GlobalShadows = true
 	Lighting.ShadowSoftness = 0.4
 	Lighting.EnvironmentDiffuseScale = 0.5

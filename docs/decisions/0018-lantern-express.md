@@ -149,3 +149,11 @@ No combat, no stealing, no trading, no gifting, no text input, no paid anything;
 - LANTERN-005 moves the UI kit into `src/kit-roblox/modules/UiKit.luau` with an injected theme and adds the `newer` option to `SaveStore`, both noted in decision 0011; Garden keeps its own `UiKit.luau` until a Garden release moves it.
 - `src/relay/Models.luau` reads `LanternAssets` the way it reads `GardenAssets` (three lines); asset names must not collide with Night or Garden names (a spec checks).
 - Any later change to these values, remotes or the schema needs an amendment here or a new record (rule 8); schema v2 keeps every v1 field (studio lessons).
+
+## Amendment 1 (2026-11-06, LANTERN-012, integration)
+
+Section 3 as built; no value, schema or client-to-server contract changes.
+
+- **`Fx shoo {target}`** (server to all, display only): a Lampeater dive that the beams light for 0.8 s is shooed (`WispRules` event `shoo`) instead of dimming the lantern; clients play a sparkle on the moth.
+- **Carry refusal codes `gone`, `taken`, `hands`, `big`** (`CarryRules.canPick`/`canHelp`: the item went first, someone else carries it, the hands hold a big item, small items are held when picking a big one) join `full` and the rest. They come from the server's `Pick up` and `Help carry` prompts, which have no reply channel, so players see them as `Fx notice` words; no `Request` action returns them.
+- **Shapes the clients read:** the `Carry` attribute is JSON `{ small = { kinds }, big = kind?, help = itemId? }` (`help` when the player holds the other end of a critter crate); the `Stop` model (`Workspace.Lantern.Stop`) carries its stop frame as the `Site` CFrame attribute (architecture lantern 4.4: origin on the deck's track edge 4 studs out, +Z into the stop), which the client reads for the fog wall.

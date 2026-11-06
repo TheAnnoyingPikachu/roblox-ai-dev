@@ -87,19 +87,23 @@ function ClientState.still(): boolean
 	return GuiService.ReducedMotionEnabled
 end
 
--- Sounds: only registered licensed ids (docs/assets/register.md). nil plays nothing; LANTERN-011
--- registers the whistle, chuff, bell, music and the rest of GDD M.
+-- Sounds: only registered licensed ids (docs/assets/register.md). nil plays nothing.
 ClientState.SFX = {
 	tick = "rbxassetid://9117060347", -- ProSoundEffects beep, pitched up (UI)
 	chime = "rbxassetid://9125585534", -- ProSoundEffects gong: rescue chimes, rising with rarity
 	whoosh = "rbxassetid://9114373663", -- ProSoundEffects pass-by whoosh: the fog front
 	puff = "rbxassetid://9125442175", -- ProSoundEffects cloth whoosh: a wisp puffs
-	whistle = nil :: string?,
-	bell = nil :: string?,
+	whistle = "rbxassetid://9119628070", -- ProSoundEffects steam train whistle
+	bell = "rbxassetid://9113420681", -- ProSoundEffects bell rings: the fog bell
 	chuff = nil :: string?,
-	glug = nil :: string?,
-	music = nil :: string?,
+	glug = "rbxassetid://9117644357", -- ProSoundEffects water jug glugs: the oil can
 } :: { [string]: string? }
+-- Music by run phase (TrainFx crossfades): APM tracks, registered.
+ClientState.MUSIC = {
+	menu = "rbxassetid://9045487289", -- APM Songbird: the start menu, hub and Depot
+	day = "rbxassetid://9040510587", -- APM Open Road: rides and stops
+	night = "rbxassetid://9040115499", -- APM Transparencies 3: nights and the Lampeater
+} :: { [string]: string }
 
 function ClientState.sound(name: string, volume: number, at: Vector3?, pitch: number?): Sound?
 	local id = ClientState.SFX[name]
@@ -379,21 +383,13 @@ function ClientState.dirToWorld(d: LanternConfig.Vec3): Vector3
 	return v3(TrackRules.fromFrame({ x = 0, y = 0, z = 0 }, f, d))
 end
 
--- shortcut: the platform edge is assumed 14 studs out from the track centre (half the 8-stud train
--- plus the 10-deep platform); replace with the server's stop-site CFrame once LANTERN-006 shares it.
-ClientState.STOP_EDGE = 14
--- The stop frame of the current stop as a CFrame whose +Z is the depth into the stop (x along it).
+-- The stop frame of the current stop: the server's `Site` attribute on Workspace.Lantern.Stop
+-- (architecture 4.4: the deck's track edge, +Z the depth into the stop, x along it), nil without one.
 function ClientState.stopFrame(): CFrame?
-	local r = ClientState.run()
-	local t = LanternConfig.TRACKS[ClientState.trackName(r)]
-	local d = t and t.stops[r.Stop or 0]
-	if d == nil then
-		return nil
-	end
-	local p, f = TrackRules.at(path(ClientState.trackName(r)), d)
-	local out = v3(TrackRules.right(f)) * (LanternConfig.OUTER[r.Line] or -1)
-	local origin = v3(p) + out * ClientState.STOP_EDGE
-	return CFrame.lookAt(origin, origin - out)
+	local world = Workspace:FindFirstChild("Lantern")
+	local stop = world and world:FindFirstChild("Stop")
+	local site = stop and stop:GetAttribute("Site")
+	return if typeof(site) == "CFrame" then site else nil
 end
 
 -- The UiKit theme ----------------------------------------------------------------------------------

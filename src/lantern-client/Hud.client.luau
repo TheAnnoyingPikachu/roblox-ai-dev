@@ -191,17 +191,19 @@ local function drawCarry()
 			c:Destroy()
 		end
 	end
+	-- The server's shape (architecture lantern 5): { small = { kinds }, big = kind?, help = itemId? };
+	-- a helper holds the other end of a critter crate.
 	local data = ClientState.json(player:GetAttribute("Carry")) or {}
+	local big = data.big ~= nil or data.help ~= nil
 	local list: { string } = {}
-	if data.big ~= nil then
-		list = { kindOf(data.big) }
+	if big then
+		list = { kindOf(data.big or "critter") }
 	else
 		for _, e in data.small or {} do
 			table.insert(list, kindOf(e))
 		end
 	end
 	carry.Visible = #list > 0
-	local big = data.big ~= nil
 	for i = 1, if big then 1 else 3 do
 		local slot = UiKit.chip(carry, if big then 200 else 72, 72)
 		slot.Name = "Slot"

@@ -9,6 +9,7 @@ local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
@@ -329,6 +330,34 @@ local function chimney(speed: number)
 	e.Rate = if speed > 0.5 then 2 + speed * 0.5 else 0.6
 end
 
+-- Music by phase: the menu track in the start menu, hub, Depot and run end; day on rides and stops;
+-- night for nights and the Lampeater. A crossfade at the music setting (Calm night plays it softer).
+local tracks: { [string]: Sound } = {}
+for name, id in ClientState.MUSIC do
+	local s = Instance.new("Sound")
+	s.Name = `Music_{name}`
+	s.SoundId = id
+	s.Looped = true
+	s.Volume = 0
+	s.Parent = SoundService
+	tracks[name] = s
+end
+local function music(dt: number, r: ClientState.Run)
+	local calm = ClientState.menuOpen or r.Phase == "hub" or r.Phase == "depot" or r.Phase == "ended"
+	local want = if calm then "menu" elseif r.Phase == "night" then "night" else "day"
+	local level = 0.5 * ClientState.settings.music * (if ClientState.settings.calm then 0.6 else 1)
+	for name, s in tracks do
+		local goal = if name == want then level else 0
+		if goal > 0 and not s.IsPlaying then
+			s:Play()
+		end
+		s.Volume += (goal - s.Volume) * math.min(1, dt * 1.5)
+		if goal == 0 and s.IsPlaying and s.Volume < 0.01 then
+			s:Stop()
+		end
+	end
+end
+
 -- Every frame ---------------------------------------------------------------------------------------------------
 
 local bellRung = false
@@ -339,6 +368,7 @@ RunService.RenderStepped:Connect(function(dt: number)
 	local t = os.clock()
 	applyLight(dt)
 	chimney(r.Speed or 0)
+	music(dt, r)
 
 	-- the fog wall
 	local front: number? = nil

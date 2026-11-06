@@ -375,7 +375,7 @@ Decision 0018 section 3, as built. Times in payloads are `GetServerTimeNow` seco
 | `dim` | all | `{ id (nil for a Lampeater dive), lantern }` (the lantern after the tick) |
 | `lampeater` | all | `{ born, seed }` |
 | `dive` | all | `{ at, target }` |
-| `shoo` | all | `{ target }` (not in 0018's list; the LANTERN-007 client plays it) |
+| `shoo` | all | `{ target }` (0018 amendment 1) |
 | `fed` | all | `{}` |
 | `ping` | all | `{ userId, id, pos }` |
 | `buy` | all | `{ userId, id, level }` (level nil for coal and oil) |
@@ -384,18 +384,18 @@ Decision 0018 section 3, as built. Times in payloads are `GetServerTimeNow` seco
 | `announce` | all | `{ name (display name), species, rarity }` |
 | `notice` | the player | `{ text }` (prompt refusals, the join toast, rollover payouts, a slipped load) |
 
-`Request` refusal codes are 0018's list plus the carry codes of `TrainRules.pick`/`help`/`drop` (`gone`, `taken`, `hands`, `big`), which reach players as `notice` words. `LanternRun` attributes are `TrainRules.status` with `Crew` (JSON list of `{ userId, seat, active, badge }`) and `Votes` (JSON tallies). Player attributes: `Profile` (JSON of the whole save), `ProfileOnline`, `Tickets`, `Level`, `XP`, `LastReward`, `Carry` (JSON `{ small = { kinds }, big = kind?, help = itemId? }`), `Seat` (kind or ""), `Badge`, `Follower`, `Lamp`. `ReplicatedStorage.LanternModels` holds the client-drawn templates (`shadow_wisp`, `lampeater_*`, `critter_<id>`) once their ids exist.
+Refusal codes are 0018's list plus the carry codes of `TrainRules.pick`/`help` (`gone`, `taken`, `hands`, `big`; 0018 amendment 1), which come from the prompts and reach players as `notice` words. `LanternRun` attributes are `TrainRules.status` with `Crew` (JSON list of `{ userId, seat, active, badge }`) and `Votes` (JSON tallies). Player attributes: `Profile` (JSON of the whole save), `ProfileOnline`, `Tickets`, `Level`, `XP`, `LastReward`, `Carry` (JSON `{ small = { kinds }, big = kind?, help = itemId? }`), `Seat` (kind or ""), `Badge`, `Follower`, `Lamp`. `ReplicatedStorage.LanternModels` holds the client-drawn templates (`shadow_wisp`, `lampeater_*`, `critter_<id>`) once their ids exist.
 
 ## 6. Client (`src/lantern-client`)
 
 | File | Holds |
 |---|---|
-| `ClientState.luau` | The Lantern theme tokens (passed to `UiKit.configure`), the run status reader (`LanternRun` attributes as a table plus a changed signal), the profile reader, `request(action, arg)` with the refusal-code texts, sounds (`SFX` ids nil until registered), rarity colours (GDD C7) |
+| `ClientState.luau` | The Lantern theme tokens (passed to `UiKit.configure`), the run status reader (`LanternRun` attributes as a table plus a changed signal), the profile reader, `request(action, arg)` with the refusal-code texts, sounds (`SFX` and `MUSIC`, registered ids only), rarity colours (GDD C7), `model(name)` from `ReplicatedStorage.LanternModels`, the train frame from `D` and the stop frame from the `Stop` model's `Site` attribute |
 | `Menu.client.luau` | `UiKit.startMenu` and the panels: ALBUM (GRID, WHERE with `LootRules.odds`, FOLLOWER), LOCKER (LIVERY, LAMP, BADGE), REWARDS (WEEKLY, MONTHLY, QUESTS, with `claimLogin` and `claimQuest`), BOARD (two weekly lists), SETTINGS (music, sound effects, Calm night, How to play) |
 | `Hud.client.luau` | The HUD of GDD H2: lantern meter, phase chip and bell chip, coal bar with tonight's need, Parts and oil, coin pill and level ring, carry slots and DROP, seat buttons (SIT, STOKE, MEND), crew list with badges, seats and pings; the Depot panel (upgrade cards, branch or weekly vote); the run end card; toasts and announcements |
 | `PingWheel.client.luau` | Hold `Q`, the left bumper or the ping button; six slices; sends `ping <id>` or `ping <id>:<itemId>` for the item under the cursor or the centre of the screen; draws markers from `Fx ping` (8 s, 3 per player) |
 | `LampFx.client.luau` | Turret control: while `Seat` is a turret, the camera sits behind the lamp head; the mouse ray, a touch drag or the right stick gives the world direction, converted into the train frame with the replicated engine CFrame and sent on `Aim` at 10 Hz when it changed by more than 0.5°; the local beam draws at once; other turrets' beams follow their replicated heads. Draws wisps from `Fx wisps` with `WispRules.pos` and `GetServerTimeNow`, the Lampeater with `WispRules.lampeaterPos`; puff, dim, dive and fed effects |
-| `TrainFx.client.luau` | The seated camera (a gentle sway), chuff rate from `Speed`, smoke, whistle and bell; the fog wall at stops from `BellAt` (a moving wall of particle emitters and a translucent gradient, the same front formula as `TrainRules.fogFront`); the caught overlay; lighting by phase (dusk on the last ride, night, dawn); item glow and bob; rescued critters in the passenger windows; followers (hop behind their owner at the Depot, ride on the seat arm during runs); the client half of the seated rule (jumping disabled while seated on a moving train) |
+| `TrainFx.client.luau` | The music loop (menu track in the start menu, hub, Depot and run end; day on rides and stops; night for nights and the Lampeater; a crossfade at the music setting), the seated camera (a gentle sway), chuff rate from `Speed`, smoke, whistle and bell; the fog wall at stops from `BellAt` (a moving wall of particle emitters and a translucent gradient, the same front formula as `TrainRules.fogFront`); the caught overlay; lighting by phase (dusk on the last ride, night, dawn); item glow and bob; rescued critters in the passenger windows; followers (hop behind their owner at the Depot, ride on the seat arm during runs); the client half of the seated rule (jumping disabled while seated on a moving train) |
 | `CLAUDE.md` | The short context for threads |
 
 Rules that must stay true: the client never decides an outcome; every widget comes from `UiKit`; every animation is skipped under `GuiService.ReducedMotionEnabled`; no image other than `LanternIcons` ids and `ViewportFrame`s; text at least 12 px on an 844 × 390 screen; the fog drawn by the client never decides a catch.

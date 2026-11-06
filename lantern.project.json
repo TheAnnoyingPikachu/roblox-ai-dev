@@ -67,6 +67,11 @@
           "Transparency": 1
         }
       }
+    },
+    "Lighting": {
+      "$properties": {
+        "Technology": "Future"
+      }
     }
   }
 }

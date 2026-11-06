@@ -34,7 +34,7 @@ Pure rules: `TrainRules` (the run), `CarryRules`, `WispRules`, `LootRules`, `Tra
 - No remote carries an amount, position, time or hit. `Aim` is a direction only (Vector3, finite, length
   0.5 to 1.5, sender in a turret seat, burst 4 at 12 a second, clamped); hits use server wisp positions.
 - The server ignores `Fx.OnServerEvent`. Fx kinds and payloads are architecture lantern 5 (0018 section 3
-  plus `shoo`, pending a 0018 amendment).
+  and amendment 1: `shoo`, the carry refusal codes).
 - The stop frame is the art's LAYOUT frame (`LanternConfig.TILES` copies `tools/blender/lantern/assets/tiles.py`):
   `Site * Vector3.new(x, y, depth)`, origin on the deck's track edge 4 studs out, +Z into the stop; the deck
   (depth 10 or less) is never caught. A tile mesh that arrives mirrored is fixed in `Stops.build`'s yaw.

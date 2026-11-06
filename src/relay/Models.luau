@@ -240,6 +240,13 @@ local function loadNight(name: string): Model?
 				if texture and not tinted(d.Name) then
 					d.TextureID = texture
 				end
+				if LanternAssets[name] and string.match(d.Name, "_glow$") then
+					-- Lantern glass (art bible 3): Neon in Ember for fire, Lamp Glow for the rest.
+					d.Material = Enum.Material.Neon
+					d.Color = if string.match(d.Name, "_fire_glow$")
+						then Color3.fromRGB(255, 128, 48)
+						else Color3.fromRGB(255, 206, 110)
+				end
 				d.Parent = model
 			end
 		end
