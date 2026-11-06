@@ -768,7 +768,11 @@ local function nameOf(c: GardenConfig.Creature): string
 	return table.concat(words, " ")
 end
 
+-- Only a named pet (GDD V5) gets a tag (owner, 2026-11-07: no name bar on unnamed creatures).
 local function tag(target: BasePart, c: GardenConfig.Creature, height: number)
+	if c.n == nil or c.n == "" then
+		return
+	end
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Tag"
 	-- In studs, so it shrinks with distance and stays inside the 10-stud pad pitch (QA m1).
@@ -777,15 +781,11 @@ local function tag(target: BasePart, c: GardenConfig.Creature, height: number)
 	gui.MaxDistance = 45
 	gui.LightInfluence = 0
 	gui.Parent = target
-	-- A named pet (GDD V5): the name on line 1, species and rarity on line 2.
-	local named = c.n ~= nil and c.n ~= ""
-	textLabel(gui, if named then c.n else nameOf(c), WHITE, UDim2.fromScale(1, 0.58), UDim2.fromScale(0, 0))
+	-- The name on line 1, species and rarity on line 2.
+	textLabel(gui, c.n :: string, WHITE, UDim2.fromScale(1, 0.58), UDim2.fromScale(0, 0))
 	local rarity = GardenConfig.RARITIES[GardenConfig.rarityIndex(c.s)]
 	local colour = if rarity then Color3.fromRGB(rarity.colour[1], rarity.colour[2], rarity.colour[3]) else WHITE
-	local second = if rarity then rarity.name else ""
-	if named then
-		second = `{nameOf(c)} · {second}`
-	end
+	local second = `{nameOf(c)} · {if rarity then rarity.name else ""}`
 	local line = textLabel(gui, second, colour, UDim2.fromScale(1, 0.42), UDim2.fromScale(0, 0.58))
 	if rarity and rarity.id == "secret" then
 		-- Midnight text on a dark garden needs a pale stroke (GDD U1).

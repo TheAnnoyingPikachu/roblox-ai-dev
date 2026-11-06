@@ -1,0 +1,38 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "low",
+  "status": "accepted",
+  "task_id": "GARDEN-060",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Owner, 2026-11-07: fix the HUD icons, make the weekly and monthly login trackers pop, and show no name bar on unnamed creatures.",
+  "inputs": [
+    "docs/game-design/game4-gdd.md sections X1, X3.5 and V5"
+  ],
+  "dependencies": [
+    "GARDEN-059"
+  ],
+  "acceptance_criteria": [
+    "Strip icons show their image with no fallback glyph behind it once loaded, and no strip label spills past its button",
+    "The weekly and monthly tabs open with a coloured banner (egg, title, sign-ins to the egg, a day bar with a marker per reward) and state-styled cards (claimable green with a pulsing outline, a gold shine on the egg card, BONUS on the rewards after the egg, faded once claimed)",
+    "Pad and follower creatures without a name get no tag; named ones keep name, species and rarity",
+    "lune run tests/run, selene, stylua, rojo build with check-place, validate-tasks and check-scope pass"
+  ],
+  "verification": "Studio play test of the built place: strip icons, both REWARDS tabs",
+  "output_artifacts": [],
+  "files": [
+    "studio/tasks/GARDEN-060.json",
+    "src/garden-client/UiKit.luau",
+    "src/garden-client/Hud.client.luau",
+    "src/garden-client/Menu.client.luau",
+    "src/garden-client/FollowerFx.client.luau",
+    "src/garden/Plots.luau"
+  ],
+  "tests": [],
+  "notes": "Cause of the icon blobs: UiKit.icon hid its two-letter glyph on IsLoaded's changed signal, which never fires, so every loaded icon kept a white glyph behind it; it now polls IsLoaded for 30 s. The paw button is labelled PETS so every label fits inside 96 px at the 12 px floor on a phone.",
+  "evidence": [
+    "Studio, local build of garden.project.json (build stamp dev): all 17 icon glyphs were visible with IsLoaded true before the fix; after it, the strip shows clean icons. REWARDS WEEKLY and MONTHLY show the new banner and cards. lune 578/578; selene 0/0; stylua clean.",
+    "Not checked live: the name-tag change (the dev profile has no creatures; the change is an early return in both tag builders), and phone size."
+  ]
+}

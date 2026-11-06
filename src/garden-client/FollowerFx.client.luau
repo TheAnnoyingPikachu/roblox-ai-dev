@@ -44,7 +44,11 @@ local function rootOf(p: Player): BasePart?
 	return c and c:FindFirstChild("HumanoidRootPart") :: BasePart?
 end
 
+-- Only a named pet gets a tag (owner, 2026-11-07: no name bar on unnamed creatures).
 local function tag(main: BasePart, c: any, height: number)
+	if c.n == nil or c.n == "" then
+		return
+	end
 	local colour = ClientState.rarityColour(c.s)
 	local bb = new("BillboardGui", {
 		Name = "Tag",
