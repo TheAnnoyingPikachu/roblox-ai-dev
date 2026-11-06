@@ -163,7 +163,7 @@ local paused = UiKit.chip(hud, 300, 40)
 paused.Name = "SavingPaused"
 paused.AnchorPoint = Vector2.new(1, 0)
 paused.Position = UDim2.new(1, -16, 0, 108)
-UiKit.chipText(paused, "Saving paused · rewards kept", {
+UiKit.chipText(paused, "Saving paused", {
 	TextColor3 = UI.CORAL,
 	TextXAlignment = Enum.TextXAlignment.Center,
 	TextSize = 17,
@@ -360,7 +360,7 @@ local function bind(name: string, pad: Enum.KeyCode, key: Enum.KeyCode?, targets
 			end
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, pad, key)
+	end, false, table.unpack(if key then { pad, key } else { pad })) -- a nil hotkey is an error
 	for _, p in targets do
 		local glyph = new("ImageLabel", {
 			Name = "Glyph",
