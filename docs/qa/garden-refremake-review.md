@@ -71,3 +71,12 @@ Setup: a local build of `garden.project.json` at `e1c59e7` (corner label and log
 - Charm looks (Frosted, Blooming), Stormy flash.
 - Two clients, phone, and night or weather lighting.
 - A staging build with a CI stamp.
+
+## Fixes (Director, 2026-11-06)
+
+- M1: `CreatureFx.forget` destroys a creature's Highlight and extras when its model is destroyed or leaves Workspace (both the `Destroying` handler and the sweep), so `ClientState.highlights` counts back down. Waiting for a Studio re-check.
+- M2: the 26 creature rows in `docs/assets/register.md` now list the new ids (runs 42281587048, 42281598118) and the retired HD ids. The old Blender hedgehog row is marked retired. The hedgehog AI mesh row was added earlier (08df7ab).
+- m1: architecture section 6.2 now gives Golden 0.9, Celestial 0.82 to 0.94 with a 0.1 rim, light 0.8, budget 26 and `forget`.
+- m2: the Reference log rows say uploaded and signed off. The hedgehog row says its remake is not shipped.
+- m3: left as is. `GardenAssets.luau` is generated from the manifest, so it can't carry a comment. The reason the model id is empty is documented in `Models.MESHES.hedgehog` and in the pipeline doc's "Shipped AI meshes" section.
+- m4: to check on staging after publish.

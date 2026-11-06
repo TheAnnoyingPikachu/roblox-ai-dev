@@ -283,6 +283,22 @@ local function applyLook(view: View): Instance?
 	return view.look
 end
 
+-- Forgets a creature and destroys its looks: a server-removed model is only unparented on the
+-- client, so its Highlight never fires Destroying and the shared budget would leak (QA M1).
+local function forget(inst: Instance)
+	local view = views[inst]
+	if view == nil then
+		return
+	end
+	views[inst] = nil
+	for _, extra in view.extras do
+		extra:Destroy()
+	end
+	if view.look then
+		view.look:Destroy()
+	end
+end
+
 local function track(inst: Instance)
 	if views[inst] or not (inst:IsA("BasePart") or inst:IsA("Model")) then
 		return
@@ -320,7 +336,7 @@ local function track(inst: Instance)
 	view.look = applyLook(view)
 	views[inst] = view
 	inst.Destroying:Once(function()
-		views[inst] = nil
+		forget(inst)
 	end)
 	-- The server may write C after the model replicates: rebuild the looks when it changes.
 	inst:GetAttributeChangedSignal("C"):Connect(function()
@@ -363,7 +379,7 @@ task.spawn(function()
 		end
 		for inst in views do
 			if not inst:IsDescendantOf(Workspace) then
-				views[inst] = nil
+				forget(inst)
 			end
 		end
 		task.wait(0.5)
