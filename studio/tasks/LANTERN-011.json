@@ -1,0 +1,50 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-011",
+  "owner": "A14",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Upload and wire the Lantern assets: build the manifest, upload the 45 models in two runs, generate LanternAssets.luau and its spec, draw and upload the 20 icons, pick and register the music and SFX, and add every register row.",
+  "inputs": [
+    "docs/architecture/lantern.md §9",
+    "docs/game-design/game6-gdd.md §M",
+    "tools/blender/garden/README.md (upload)",
+    "docs/assets/register.md",
+    "docs/production/studio-lessons.md (Art pipeline: uploads)"
+  ],
+  "dependencies": [
+    "LANTERN-008",
+    "LANTERN-009",
+    "LANTERN-010"
+  ],
+  "acceptance_criteria": [
+    "src/shared/LanternAssets.luau generated with every name of architecture section 9; LanternAssets.spec: names exist, none collides with NightAssets or GardenAssets, sizes within bounds",
+    "Every model, icon and sound has a docs/assets/register.md row before use; sounds only from licensed partners",
+    "src/shared/LanternIcons.luau holds the 20 icon ids (nil until uploaded); the client shows glyphs until then",
+    "docs/assets/lantern-blender-plan.md lists every asset with its status",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass"
+  ],
+  "verification": "CI; A15 checks the register rows against the uploaded ids",
+  "output_artifacts": [
+    "src/shared/LanternAssets.luau",
+    "src/shared/LanternIcons.luau",
+    "docs/assets/register.md",
+    "docs/assets/lantern-blender-plan.md"
+  ],
+  "files": [
+    "tools/blender/lantern/manifest.json",
+    "tools/blender/lantern/uploaded.json",
+    "src/shared/LanternAssets.luau",
+    "src/shared/LanternIcons.luau",
+    "tools/icons/lantern/**",
+    "docs/assets/register.md",
+    "docs/assets/lantern-blender-plan.md",
+    ".github/workflows/upload-assets.yml"
+  ],
+  "tests": [
+    "LanternAssets.spec.luau"
+  ],
+  "notes": "Uploads are owned by SHANNON's account through the upload workflow (no new credentials). 26 assets fit one run with a short poll, so run it twice; the decal image id is resolved at runtime as for Garden. Change upload-assets.yml only if it needs a lantern asset list."
+}

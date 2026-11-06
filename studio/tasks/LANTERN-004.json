@@ -1,0 +1,49 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "LANTERN-004",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Write the composing pure modules of Lantern Express with their specs: TrackRules (track geometry), DepotRules (run upgrades and votes), TrainRules (the run state machine with the seated rule) and LanternProgress (save schema v1, rewards, album, quests, login tracks).",
+  "inputs": [
+    "docs/architecture/lantern.md §2, §3.2, §3.6, §3.7, §3.8, §8, §11",
+    "docs/game-design/game6-gdd.md §B, §C, §F, §H, §I, §J, §K, §P",
+    "docs/decisions/0018-lantern-express.md §2, §4, §5",
+    "docs/game-design/game4-gdd.md §X3",
+    "src/shared/LoginRules.luau"
+  ],
+  "dependencies": [
+    "LANTERN-003"
+  ],
+  "acceptance_criteria": [
+    "Signatures exactly as architecture 3.2, 3.6, 3.7, 3.8",
+    "TrainRules: every case of architecture section 8 including the seated rule (while moving, after every tick each crew member is seated or in limbo) and the pacing check values (stop 1 at 43 s, first rescue reachable at 49 s, stop 2 by 169 s, ride 40 s, night 180 s with 7 waves, 95 coal a leg) (TrainRules.spec)",
+    "LanternProgress: every sanitise rule of decision 0018 section 4; share values; load pays each item once with milestones once; dayTick pays a completed unclaimed quest once; the LoginRules spec cases on Lantern's slots; the Ember Kit enters the album (LanternProgress.spec)",
+    "DepotRules: prices and caps, tally ties and empty votes, leftover (DepotRules.spec); TrackRules: wrap, unit forward, sample spacing, frame round-trip, radius (TrackRules.spec)",
+    "No function writes two players' profiles; every random outcome is an input to LanternProgress, never rolled inside it",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; MetaRules.spec and LoginRules.spec unchanged and green"
+  ],
+  "verification": "CI; A15 reviews TrainRules and LanternProgress against GDD J line by line",
+  "output_artifacts": [
+    "src/shared/TrackRules.luau",
+    "src/shared/DepotRules.luau",
+    "src/shared/TrainRules.luau",
+    "src/shared/LanternProgress.luau"
+  ],
+  "files": [
+    "src/shared/TrackRules.luau",
+    "src/shared/DepotRules.luau",
+    "src/shared/TrainRules.luau",
+    "src/shared/LanternProgress.luau"
+  ],
+  "tests": [
+    "TrackRules.spec.luau",
+    "DepotRules.spec.luau",
+    "TrainRules.spec.luau",
+    "LanternProgress.spec.luau",
+    "LanternConfig.spec.luau"
+  ],
+  "notes": "LanternProgress requires LoginRules only for monthOf and periodOf (pure calendar maths); Garden's modules stay byte-identical. LanternConfig.spec is listed so its TrackRules-based length and radius checks run here."
+}

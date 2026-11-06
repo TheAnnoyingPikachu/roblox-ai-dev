@@ -1,0 +1,33 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-009",
+  "owner": "A12",
+  "verifier": "A15",
+  "task_type": "asset",
+  "objective": "Model the eight stop tiles (village, farm, windmill, orchard, inn, mill, lighthouse, boathouse) around the building boxes and sites of LanternConfig.TILES.",
+  "inputs": [
+    "docs/architecture/lantern.md §9",
+    "docs/game-design/game6-gdd.md §D, §M",
+    "src/shared/LanternConfig.luau (TILES)",
+    "docs/game-design/game6-art-bible.md (from the art director)"
+  ],
+  "dependencies": [
+    "LANTERN-003"
+  ],
+  "acceptance_criteria": [
+    "Each tile's bounding box is exactly 120 x 160 (its ground plate), height within 40 (48 for the lighthouse and windmill), 15,000 tris; buildings stand on Tile.blocks and leave every site clear",
+    "The inn shows tea, not drink (questionnaire answer, decision 0018 section 6); nothing reads as a jump scare",
+    "Contact sheet reviewed by the art director before upload"
+  ],
+  "verification": "The art director reviews the contact sheet; A15 overlays the sites on a top-down render",
+  "output_artifacts": [
+    "tools/blender/lantern/assets/tiles.py"
+  ],
+  "files": [
+    "tools/blender/lantern/assets/tiles.py"
+  ],
+  "tests": [],
+  "notes": "Depends on LANTERN-003 for the TILES contract. The village house is the style test's; reuse it."
+}

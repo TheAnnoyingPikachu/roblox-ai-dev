@@ -1,0 +1,47 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "LANTERN-006",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Build the Lantern Express server: run lifecycle, the train with seats and the seated rule, stops from the tile kit with prompts, carrying, the fog, nights with the Aim remote and server hit tests, rewards to each player's own save, and the weekly boards, on part fallbacks.",
+  "inputs": [
+    "docs/architecture/lantern.md §4, §5, §9 (loading), §11",
+    "docs/decisions/0018-lantern-express.md §1 to §4",
+    "docs/game-design/game6-gdd.md §C, §D, §E, §F, §I, §J",
+    "src/kit/CLAUDE.md",
+    "src/garden/CLAUDE.md (patterns)"
+  ],
+  "dependencies": [
+    "LANTERN-002",
+    "LANTERN-004",
+    "LANTERN-005"
+  ],
+  "acceptance_criteria": [
+    "Files as architecture 4.1; Router actions, prompts, the Aim remote, Fx and LanternRun attributes exactly as decision 0018 section 3; the server ignores Fx.OnServerEvent",
+    "The seated rule: two Studio clients, jumping while the train moves re-seats within 0.5 s and the train never stops for it; a menu player who sits is stood up",
+    "A full run in Studio solo and with 2 to 3 test players reaches Dawn Station on part fallbacks; ending by coal and by lantern returns everyone to the hub with every load paid",
+    "Every reward is a saves.apply on one player's own save with captured inputs; leaving mid-leg and rejoining keeps every load (Studio with DataStores on, notes with the build stamp)",
+    "Aim: NaN, a non-Vector3, length 2, a sender outside a turret and a 100 Hz stream are refused or dropped; the hit test uses only server wisp positions",
+    "src/relay/Models.luau reads LanternAssets in three places and Relay, Night and Garden keep their behaviour; the server warns when Players.MaxPlayers is above 6",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; rojo build lantern.project.json and check-place pass"
+  ],
+  "verification": "CI, Studio notes with the build stamp (rule 13), and the LANTERN-013 QA review",
+  "output_artifacts": [
+    "src/lantern/CLAUDE.md"
+  ],
+  "files": [
+    "src/lantern/**",
+    "src/relay/Models.luau",
+    "src/shared/LanternAssets.luau"
+  ],
+  "tests": [
+    "TrainRules.spec.luau",
+    "LanternProgress.spec.luau",
+    "CarryRules.spec.luau",
+    "WispRules.spec.luau"
+  ],
+  "notes": "src/shared/LanternAssets.luau: write `return {}` with the Asset type only if LANTERN-011 has not landed; the generated file replaces it. Shares no file with LANTERN-007. Delete src/lantern/.gitkeep with the first script."
+}

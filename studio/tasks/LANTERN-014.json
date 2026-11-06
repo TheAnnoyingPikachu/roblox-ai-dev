@@ -1,0 +1,36 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "LANTERN-014",
+  "owner": "A14",
+  "verifier": "A01",
+  "task_type": "release",
+  "objective": "Publish Lantern Express v0.1 to lantern-staging from a v* tag after SHANNON's setup steps, verify the published build, and put the LANTERN-V01 checkpoint to SHANNON as one card with the evidence.",
+  "inputs": [
+    "docs/checkpoints/LANTERN-V01.md",
+    "studio/gates.md",
+    "docs/production/game6-plan.md §5",
+    "docs/decisions/0018-lantern-express.md §1, §6"
+  ],
+  "dependencies": [
+    "LANTERN-011",
+    "LANTERN-013"
+  ],
+  "acceptance_criteria": [
+    "SHANNON's setup items of the checkpoint are done and recorded (experience, Max Players 6, private server price, the lantern-staging environment)",
+    "publish.yml to lantern-staging: the post-publish verification passes and the release manifest records the commit, the stamp, the artifact hash and the test counts",
+    "The checkpoint card goes to SHANNON once, with the CI run, test counts, build stamp, the QA verdict and the screenshots; the answers are recorded in docs/checkpoints/LANTERN-V01.md",
+    "No production publish, no spending, no public audience setting in this task (rule 7)"
+  ],
+  "verification": "SHANNON's answers and the staging playtest notes (gate 4)",
+  "output_artifacts": [
+    "docs/checkpoints/LANTERN-V01.md"
+  ],
+  "files": [
+    "docs/checkpoints/LANTERN-V01.md",
+    "release/manifests/**"
+  ],
+  "tests": [],
+  "notes": "Production, the all-ages audience setting and any Robux fee wait for a later release task after SHANNON's approval."
+}

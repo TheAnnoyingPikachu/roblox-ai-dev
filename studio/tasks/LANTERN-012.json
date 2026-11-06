@@ -1,0 +1,41 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "LANTERN-012",
+  "owner": "A09",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Integrate server, client and art in Studio and fix what only shows together: the GDD K timings, two-client checks (help-carry, join mid-ride and at a stop, pings, votes), train smoothness, phone performance, and the feel list of GDD L.",
+  "inputs": [
+    "docs/game-design/game6-gdd.md §K, §L, §Q",
+    "docs/architecture/lantern.md §4, §6",
+    "docs/decisions/0018-lantern-express.md §2",
+    "docs/production/game6-plan.md §5"
+  ],
+  "dependencies": [
+    "LANTERN-006",
+    "LANTERN-007"
+  ],
+  "acceptance_criteria": [
+    "Timed solo from PLAY in Studio: the train leaves within 10 s, stop 1 within 45 s, the first rescue within 60 s, stop 2 within 180 s (notes with the build stamp)",
+    "Two clients: help-carry, a join mid-ride lands in a seat, a join at a stop lands on the platform, pings and votes show on both; a screen recording of the train at cruise speed on the second client shows no jitter (else the decision 0018 fallback is raised at the checkpoint)",
+    "MicroProfiler: server frame time under 8 ms with 6 players, 34 wisps and a built stop; Device Emulator 844 x 390 at 30 fps or better at a stop and at night",
+    "Every GDD L line checked off in the notes",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; rojo build lantern.project.json and check-place pass"
+  ],
+  "verification": "Studio notes with the build stamp (rule 13); LANTERN-013 re-runs the checks",
+  "output_artifacts": [
+    "src/lantern/CLAUDE.md",
+    "src/lantern-client/CLAUDE.md"
+  ],
+  "files": [
+    "src/lantern/**",
+    "src/lantern-client/**"
+  ],
+  "tests": [
+    "TrainRules.spec.luau",
+    "LanternProgress.spec.luau"
+  ],
+  "notes": "Close every Studio window from finished runs (Stop-Process) before the next; one Studio at a time on this machine (studio lessons, machine limits)."
+}

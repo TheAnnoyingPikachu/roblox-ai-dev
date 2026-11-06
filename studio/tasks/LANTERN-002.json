@@ -1,0 +1,39 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "low",
+  "status": "planned",
+  "task_id": "LANTERN-002",
+  "owner": "A14",
+  "verifier": "A04",
+  "task_type": "infrastructure",
+  "objective": "Scaffold the Lantern Express place: lantern.project.json, the empty game folders, the CI build and place check, and the lantern-staging publish target.",
+  "inputs": [
+    "docs/architecture/lantern.md §1, §10",
+    "docs/decisions/0018-lantern-express.md §1",
+    "docs/architecture/garden.md §7"
+  ],
+  "dependencies": [
+    "LANTERN-001"
+  ],
+  "acceptance_criteria": [
+    "lantern.project.json matches architecture section 10; rojo build lantern.project.json --output build/lantern.rbxl succeeds; if Rojo refuses the Workspace StreamingEnabled property the notes say so",
+    "ci.yml builds build/lantern.rbxl, adds it to the sha256 line and runs node tools/check-place.mjs lantern.project.json build/lantern.rbxl --sha \"$GITHUB_SHA\"",
+    "publish.yml offers lantern-staging and maps lantern-* to lantern.project.json; no production option for Lantern",
+    "docs/architecture/README.md has the Lantern Express row with its project, folders and pure modules",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; node --test tools/place-check/place-check.test.mjs passes"
+  ],
+  "verification": "CI run on the PR; A04 reads the workflow diff",
+  "output_artifacts": [
+    "lantern.project.json"
+  ],
+  "files": [
+    "lantern.project.json",
+    "src/lantern/.gitkeep",
+    "src/lantern-client/.gitkeep",
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    "docs/architecture/README.md"
+  ],
+  "tests": [],
+  "notes": "The lantern-staging GitHub environment and the experience are created by SHANNON at the checkpoint (LANTERN-V01 items 2 and 3); this task only adds the option. Workflow files change here and nowhere else in the milestone."
+}

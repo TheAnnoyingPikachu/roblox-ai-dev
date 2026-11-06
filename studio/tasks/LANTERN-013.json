@@ -1,0 +1,37 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "planned",
+  "task_id": "LANTERN-013",
+  "owner": "A15",
+  "verifier": "A01",
+  "task_type": "test",
+  "objective": "Independent QA and security review of Lantern Express v0.1 against decision 0018 and the GDD, attacking the aim remote, carrying, the fog, the seated rule, the nothing-lost rules and the saves, with the evidence for the checkpoint.",
+  "inputs": [
+    "docs/decisions/0018-lantern-express.md",
+    "docs/game-design/game6-gdd.md §G, §J, §Q",
+    "docs/architecture/lantern.md §3, §4, §8",
+    "docs/qa/garden-v05-review.md (format)",
+    "docs/checkpoints/LANTERN-V01.md"
+  ],
+  "dependencies": [
+    "LANTERN-012"
+  ],
+  "acceptance_criteria": [
+    "docs/qa/lantern-review.md in the garden-v05-review.md format: scope, tool runs, severity table, verdict, findings labelled Computed, Read or Director",
+    "Every cell of the GDD J table tried, not read (Computed with the fake store, or Studio with the build stamp): leave mid-leg, end by coal, end by lantern, a quest completed and unclaimed across a day rollover, a login slot across a week rollover",
+    "Exploits tried: aims outside the cone, NaN and 100 Hz aim streams, picks from 20 studs, carrying a crate carried by another, a teleporting carrier, standing on a moving train, a menu player sitting in a seat, a client sending every action with bad args",
+    "LanternConfig equals decision 0018 section 5 by script; 100,000 seeded critter rolls match the H4 odds; no Moon Hare outside leg 3 far crates",
+    "Re-review of every fix before the verdict; the checkpoint doc's evidence section filled"
+  ],
+  "verification": "A01 reads the review; CI run link and test-results.json attached",
+  "output_artifacts": [
+    "docs/qa/lantern-review.md"
+  ],
+  "files": [
+    "docs/qa/lantern-review.md",
+    "docs/checkpoints/LANTERN-V01.md"
+  ],
+  "tests": [],
+  "notes": "The reviewer must not have written LANTERN-003 to 012 (CLAUDE.md rule 2). Studio facts count only with the build stamp (rule 13)."
+}

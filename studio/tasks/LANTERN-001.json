@@ -1,0 +1,55 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "low",
+  "status": "in_review",
+  "task_id": "LANTERN-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "design",
+  "objective": "Design and architecture for Lantern Express v0.1 (concept A): the GDD with a pacing script and its results, decision 0018 (Proposed), the architecture with exact signatures, assets and tests, the production plan with task files, and the LANTERN-V01 checkpoint list.",
+  "inputs": [
+    "docs/game-design/game6-concepts.md §1, §3 A",
+    "docs/game-design/game6-market-research.md",
+    "docs/production/studio-lessons.md",
+    "docs/game-design/game4-gdd.md §G, §H, §X3",
+    "docs/architecture/garden.md §1, §2, §6.4, §9",
+    "docs/decisions/0002-monetisation-after-core.md",
+    "docs/decisions/0011-shared-kit-and-pipeline-trust.md",
+    "src/kit/CLAUDE.md",
+    "src/shared/MetaRules.luau",
+    "src/shared/LoginRules.luau"
+  ],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "docs/game-design/game6-gdd.md has product (16+ trial, Mild label, sessions), the core loop with exact numbers, the Depot, the Critter Album with odds, roles, pings, joining, the failure-state table, the first 3 minutes, meta, child safety, monetisation off, acceptance and kill criteria, and facts, assumptions and hypotheses labelled",
+    "python -I docs/game-design/game6-pacing.py 300 prints the numbers in GDD section P",
+    "docs/decisions/0018-lantern-express.md (Proposed) has the place structure with reasons, the seated rule, the remote contract, save schema v1 (one player's save only), the economy values and the questionnaire answers",
+    "docs/architecture/lantern.md has file ownership, pure-module signatures, server, client, kit changes, tests per module, the asset list with sizes and pivots, lantern.project.json and the CI change",
+    "docs/production/game6-plan.md and studio/tasks/LANTERN-002..014.json give the build order with exact files and tests; node tools/validate-tasks.mjs passes",
+    "docs/checkpoints/LANTERN-V01.md lists every decision for SHANNON with a recommendation and what happens if rejected"
+  ],
+  "verification": "The Director reads the docs; SHANNON answers the checkpoint; CI green on the docs PR",
+  "output_artifacts": [
+    "docs/game-design/game6-gdd.md",
+    "docs/game-design/game6-pacing.py",
+    "docs/decisions/0018-lantern-express.md",
+    "docs/architecture/lantern.md",
+    "docs/production/game6-plan.md",
+    "docs/checkpoints/LANTERN-V01.md"
+  ],
+  "evidence": [
+    "python -I docs/game-design/game6-pacing.py 300 (2026-11-06): output in GDD section P",
+    "node tools/validate-tasks.mjs: passes with LANTERN-001..014"
+  ],
+  "files": [
+    "docs/game-design/game6-gdd.md",
+    "docs/game-design/game6-pacing.py",
+    "docs/decisions/0018-lantern-express.md",
+    "docs/architecture/lantern.md",
+    "docs/architecture/README.md",
+    "docs/production/game6-plan.md",
+    "docs/checkpoints/LANTERN-V01.md"
+  ],
+  "tests": [],
+  "notes": "Docs and task files only: no game code, no art files (the art director works in parallel on the art bible and the style test in another worktree, with its own task id outside LANTERN-001..014), no publish, no spending. Concept chosen by the Director on 2026-11-06."
+}

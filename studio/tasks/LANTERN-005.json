@@ -1,0 +1,41 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-005",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Make the UI kit a shared kit module and add a newer-save guard to SaveStore: src/kit-roblox/modules/UiKit.luau generalised from Garden's UiKit with an injected theme, and the SaveStore option `newer` that loads a newer record read-only.",
+  "inputs": [
+    "docs/architecture/lantern.md §7",
+    "docs/architecture/garden.md §6.4",
+    "src/garden-client/UiKit.luau",
+    "src/kit/CLAUDE.md",
+    "docs/production/studio-lessons.md (Engineering: one UI kit; schema)"
+  ],
+  "dependencies": [
+    "LANTERN-001"
+  ],
+  "acceptance_criteria": [
+    "UiKit.luau has every widget of garden 6.4 except eggDisc, with UiKit.configure{ tokens, fonts, icons, sound, short, rarity, previews } and no require of any Garden module or ClientState; the same numbers, Reduced Motion and 12 px rules",
+    "SaveStore with `newer` returning true loads the record offline, sanitised in memory, and never claims the lock or writes (SaveStore.spec new cases); without the option every existing SaveStore.spec case passes unchanged",
+    "src/kit/CLAUDE.md lists UiKit and the `newer` option; decision 0011 has a dated note for both",
+    "Every file under src/garden-client and src/garden is byte-identical (Garden keeps its own UiKit until a Garden release moves it)",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; a Studio smoke test (a panel, a button, a toast in an empty place with a test theme) noted with the build stamp"
+  ],
+  "verification": "CI; A15 reads the diff against src/garden-client/UiKit.luau",
+  "output_artifacts": [
+    "src/kit-roblox/modules/UiKit.luau"
+  ],
+  "files": [
+    "src/kit-roblox/modules/UiKit.luau",
+    "src/kit/SaveStore.luau",
+    "src/kit/CLAUDE.md",
+    "docs/decisions/0011-shared-kit-and-pipeline-trust.md"
+  ],
+  "tests": [
+    "SaveStore.spec.luau"
+  ],
+  "notes": "A kit change touches every game that uses the kit (none in production uses SaveStore's new option or UiKit yet); keep both backwards compatible."
+}

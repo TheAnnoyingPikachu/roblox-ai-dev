@@ -1,0 +1,41 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-007",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Build the Lantern Express client on the shared UiKit: start menu and panels (album with odds, locker, rewards, board, settings), the HUD and Depot panel, the ping wheel, lamp turret control with the aim sent as a direction, wisp and Lampeater drawing, the fog wall, the train camera and lighting, followers.",
+  "inputs": [
+    "docs/architecture/lantern.md §6, §7",
+    "docs/decisions/0018-lantern-express.md §3",
+    "docs/game-design/game6-gdd.md §E2, §H2, §I2, §K, §L",
+    "docs/architecture/garden.md §6.4"
+  ],
+  "dependencies": [
+    "LANTERN-002",
+    "LANTERN-004",
+    "LANTERN-005"
+  ],
+  "acceptance_criteria": [
+    "Files as architecture section 6; every widget from UiKit; no client file decides an outcome (QA script_grep: only the 0018 actions are sent, and only directions on Aim)",
+    "Turret aim: mouse, touch drag and right stick; the direction is converted into the train frame and sent at most 10 times a second; the local beam draws at once; other players' beams follow their turret heads",
+    "Wisps and the Lampeater are drawn from Fx spawn records with WispRules.pos and lampeaterPos and puff on the server's Fx; the fog wall follows TrainRules.fogFront's formula from BellAt",
+    "Every GDD L line is visible in a Studio recording; no text under 12 px at 844 x 390 (Device Emulator screenshot); Reduced Motion skips animations",
+    "The album WHERE tab shows LootRules.odds summing to 100% for every tile",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; rojo build lantern.project.json and check-place pass"
+  ],
+  "verification": "CI, Studio notes with the build stamp, and the LANTERN-013 QA review",
+  "output_artifacts": [
+    "src/lantern-client/CLAUDE.md"
+  ],
+  "files": [
+    "src/lantern-client/**"
+  ],
+  "tests": [
+    "WispRules.spec.luau",
+    "LootRules.spec.luau"
+  ],
+  "notes": "Shares no file with LANTERN-006. Sounds play only from registered ids (nil until LANTERN-011). Delete src/lantern-client/.gitkeep with the first script."
+}

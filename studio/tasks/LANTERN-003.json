@@ -1,0 +1,46 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "planned",
+  "task_id": "LANTERN-003",
+  "owner": "A10",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Write the leaf pure modules of Lantern Express with their specs: LanternConfig (every GDD value, tiles, tracks, cars), LootRules (stops and critter rolls), CarryRules (carrying, loading, the fog) and WispRules (nights and the Lampeater).",
+  "inputs": [
+    "docs/architecture/lantern.md §2, §3.1, §3.3, §3.4, §3.5, §8",
+    "docs/game-design/game6-gdd.md §C, §D, §E, §H4, §J",
+    "docs/decisions/0018-lantern-express.md §5"
+  ],
+  "dependencies": [
+    "LANTERN-001"
+  ],
+  "acceptance_criteria": [
+    "Signatures exactly as architecture 3.1, 3.3, 3.4, 3.5; every value equals GDD section C, F, H and decision 0018 section 5",
+    "LanternConfig.TILES has 8 tiles with 24 small and 8 big sites and building boxes; LanternConfig.TRACKS has the two 5,700-stud loops (stops at 700, 1,400, 2,100; radius >= 600 at night) and the two Dawn tracks; CARS total 78 studs with 12 seats (LanternConfig.spec)",
+    "LootRules: counts per GDD C6, deterministic builds, stop 1 crate on the 22-stud site, odds sums of 10,000 for every line, leg, tile and band, 100,000-roll frequencies within 0.5 points, Moon Hare only on leg 3 far crates (LootRules.spec)",
+    "CarryRules: one spec case per cell of the GDD J table, speeds 16 / 15 / 13 / 9 / 13, full bunker keeps coal carried, close loses every free and carried item (CarryRules.spec)",
+    "WispRules: wave sizes per GDD C6, the 7-degree cone edges, clampAim refusals, exposure across beams, puff times 0.6 / 0.45 / 0.35, aims sent faster never puff faster, Lampeater timing, shoo and fed (WispRules.spec)",
+    "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; Purity.spec covers the four modules"
+  ],
+  "verification": "CI; A15 reviews the specs against the GDD tables",
+  "output_artifacts": [
+    "src/shared/LanternConfig.luau",
+    "src/shared/LootRules.luau",
+    "src/shared/CarryRules.luau",
+    "src/shared/WispRules.luau"
+  ],
+  "files": [
+    "src/shared/LanternConfig.luau",
+    "src/shared/LootRules.luau",
+    "src/shared/CarryRules.luau",
+    "src/shared/WispRules.luau"
+  ],
+  "tests": [
+    "LanternConfig.spec.luau",
+    "LootRules.spec.luau",
+    "CarryRules.spec.luau",
+    "WispRules.spec.luau"
+  ],
+  "notes": "LanternConfig.TILES is the contract LANTERN-009 models the tiles around: land it before the tile art starts. The track control points are authored here (architecture 3.1); TrackRules (LANTERN-004) measures them, so LanternConfig.spec's length and radius checks join LANTERN-004's run if TrackRules is not merged yet (a stub test is fine)."
+}
