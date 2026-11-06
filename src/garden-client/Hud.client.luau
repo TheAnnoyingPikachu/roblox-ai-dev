@@ -1,17 +1,16 @@
 --!strict
--- Egg Garden HUD (GDD H2, F, G1; docs/architecture/garden.md section 6): coins and income (short
--- format), level and XP bar, Index count, weather chip with the next two windows, restock and
--- next-ripe timers, quick buttons with the gold dots, HOME and LIKE, the "While you were away" card,
--- hatch announcement banners, first-session prompts with a guide beam, and per-viewer bed prompt
--- visibility; v0.4: 7 weathers, the weekend event line, the INDEX milestone dot and the TRADE button
--- for a friend within 15 studs. Sends only Request("home"), Request("like", userId) and
--- Request("tradePropose", userId); the server checks all three.
+-- Egg Garden HUD (GDD H2, F, G1, X1.4; docs/architecture/garden.md 6, 6.4) on the UI kit: the coin
+-- pill with the +N float, the level ring and XP bar with the Index count, the weather chip with its
+-- next two windows, the weekend event, restock and next-ripe chips, the left icon strip with badges
+-- (REWARDS: login slots + quests + a milestone; DASH: prize eggs; CREATURES: a trade invite; INDEX:
+-- a milestone), LIKE and TRADE, the "While you were away" card, hatch announcement banners,
+-- first-session prompts with a guide beam, and per-viewer bed prompt visibility. Sends only
+-- Request("home"), Request("like", userId) and Request("tradePropose", userId); the server checks all
+-- three.
 
 local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -20,16 +19,16 @@ local GardenProgress = require(Shared:WaitForChild("GardenProgress"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local MetaRules = require(Shared:WaitForChild("MetaRules"))
 local ClientState = require(script.Parent:WaitForChild("ClientState"))
+local UiKit = require(script.Parent:WaitForChild("UiKit"))
 local remotes = ReplicatedStorage:WaitForChild("GardenRemotes")
 local request = remotes:WaitForChild("Request") :: RemoteFunction
 local fx = remotes:WaitForChild("Fx") :: RemoteEvent
 
 local player = Players.LocalPlayer :: Player
 local UI = ClientState.UI
-local new, corner, stroke, text, button =
-	ClientState.new, ClientState.corner, ClientState.stroke, ClientState.text, ClientState.button
-local short, commas = ClientState.short, ClientState.commas
-local touchOnly = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+local ACCENT = ClientState.ACCENT
+local new, text = ClientState.new, UiKit.text
+local commas = ClientState.commas
 
 local function ask(action: string, arg: string?): boolean
 	local ok, result = pcall(request.InvokeServer, request, action, arg)
@@ -41,215 +40,179 @@ local function root(): BasePart?
 	return c and c:FindFirstChild("HumanoidRootPart") :: BasePart?
 end
 
+-- Below the Roblox top bar, so the coin pill never sits under its buttons.
 local gui = new("ScreenGui", {
 	Name = "GardenHud",
 	ResetOnSpawn = false,
-	IgnoreGuiInset = true,
+	IgnoreGuiInset = false,
 	DisplayOrder = 4,
 	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 })
+UiKit.scaleRoot(gui)
 local hud = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, Parent = gui })
 
-local function chip(props: { [string]: any }): Frame
-	props.BackgroundColor3 = props.BackgroundColor3 or UI.CREAM
-	props.BackgroundTransparency = props.BackgroundTransparency or 0.05
-	return new("Frame", props, { corner(16), stroke(UI.WHITE, 3) })
-end
+-- Top bar: coins, level ring, XP and the Index count (top left) -------------------------------------
 
--- Coins (top centre) ------------------------------------------------------------------------------
-
-local coinBox = chip({
-	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.new(0.5, 0, 0, 12),
-	Size = UDim2.fromOffset(280, 74),
-	Parent = hud,
-})
-ClientState.autoScale(coinBox)
-local coinIcon = new("Frame", {
-	Position = UDim2.fromOffset(12, 13),
-	Size = UDim2.fromOffset(48, 48),
-	BackgroundColor3 = UI.GOLD,
-	Parent = coinBox,
-}, { new("UICorner", { CornerRadius = UDim.new(1, 0) }), stroke(Color3.fromRGB(230, 150, 30), 3) })
-text({
-	Size = UDim2.fromScale(1, 1),
-	Text = "C",
-	TextColor3 = Color3.fromRGB(200, 120, 20),
-	Parent = coinIcon,
-})
-local coinText = text({
-	Position = UDim2.fromOffset(70, 4),
-	Size = UDim2.new(1, -80, 0, 42),
-	Text = "0",
+local coinPill = UiKit.coinPill(hud)
+local ring = UiKit.levelRing(hud)
+local indexText = text(hud, "", 16, UI.LEAF, {
+	Position = UDim2.fromOffset(396, 70),
+	Size = UDim2.fromOffset(200, 20),
 	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = coinBox,
-})
-local incomeText = text({
-	Position = UDim2.fromOffset(70, 46),
-	Size = UDim2.new(1, -80, 0, 22),
-	Text = "+0 / s",
-	TextColor3 = UI.LEAF,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = coinBox,
+	Outline = UI.WHITE,
+	OutlineThickness = 1,
 })
 
--- Level, XP, Index (top left) ---------------------------------------------------------------------
+-- Weather, event, restock and ripe chips (top right) ----------------------------------------------
 
-local levelBox = chip({ Position = UDim2.fromOffset(12, 12), Size = UDim2.fromOffset(230, 74), Parent = hud })
-ClientState.autoScale(levelBox)
-local levelBadge = text({
-	Position = UDim2.fromOffset(10, 10),
-	Size = UDim2.fromOffset(54, 54),
-	BackgroundTransparency = 0,
-	BackgroundColor3 = UI.PINK,
-	TextColor3 = UI.WHITE,
-	Text = "1",
-	Parent = levelBox,
-})
-corner(27).Parent = levelBadge
-local xpBack = new("Frame", {
-	Position = UDim2.fromOffset(74, 14),
-	Size = UDim2.fromOffset(144, 14),
-	BackgroundColor3 = Color3.fromRGB(245, 225, 232),
-	Parent = levelBox,
-}, { corner(7) })
-local xpFill = new(
-	"Frame",
-	{ Size = UDim2.fromScale(0, 1), BackgroundColor3 = UI.PINK, Parent = xpBack },
-	{ corner(7) }
-)
-local xpText = text({
-	Position = UDim2.fromOffset(74, 30),
-	Size = UDim2.fromOffset(144, 16),
-	Text = "",
-	TextColor3 = UI.MUTED,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = levelBox,
-})
-local indexText = text({
-	Position = UDim2.fromOffset(74, 48),
-	Size = UDim2.fromOffset(144, 18),
-	Text = "",
-	TextColor3 = UI.LEAF,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = levelBox,
-})
-
--- Weather, restock and ripe timers (top right) ----------------------------------------------------
-
-local timers = chip({
+local chips = new("Frame", {
 	AnchorPoint = Vector2.new(1, 0),
-	Position = UDim2.new(1, -12, 0, 12),
-	Size = UDim2.fromOffset(250, 152),
-	Parent = hud,
-})
-ClientState.autoScale(timers)
-local weatherBar = new("Frame", {
-	Position = UDim2.fromOffset(8, 8),
-	Size = UDim2.new(1, -16, 0, 40),
-	BackgroundColor3 = UI.SKY,
-	Parent = timers,
-}, { corner(12) })
-local weatherText = text({
-	Position = UDim2.fromOffset(10, 2),
-	Size = UDim2.new(1, -20, 0, 22),
-	Text = "Clear",
-	TextColor3 = UI.WHITE,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = weatherBar,
-})
-new("UIStroke", { Color = UI.INK, Thickness = 1, Transparency = 0.6, Parent = weatherText })
-local weatherLeftText = text({
-	Position = UDim2.fromOffset(10, 23),
-	Size = UDim2.new(1, -20, 0, 15),
-	Text = "",
-	TextColor3 = UI.WHITE,
-	Font = Enum.Font.GothamBold,
-	TextXAlignment = Enum.TextXAlignment.Left,
-	Parent = weatherBar,
-})
-local function timerLine(y: number, colour: Color3): TextLabel
-	return text({
-		Position = UDim2.fromOffset(14, y),
-		Size = UDim2.new(1, -28, 0, 20),
-		Text = "",
-		TextColor3 = colour,
-		Font = Enum.Font.GothamBold,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = timers,
-	})
-end
-local forecastText = timerLine(52, UI.MUTED)
-local eventText = timerLine(76, UI.LILAC) -- "This weekend: Thunder" (V2.3)
-local restockText = timerLine(100, UI.CORAL)
-local ripeText = timerLine(124, UI.LEAF)
-
--- Quick buttons (left middle, clear of the thumbstick and jump button) ---------------------------
-
-local quick = new("Frame", {
-	AnchorPoint = Vector2.new(0, 0.5),
-	Position = UDim2.new(0, 12, 0.5, 0),
-	Size = UDim2.fromOffset(if touchOnly then 120 else 136, if GardenConfig.ADMINS[player.UserId] then 438 else 384),
+	Position = UDim2.new(1, -24, 0, 20),
+	Size = UDim2.fromOffset(330, 320),
 	BackgroundTransparency = 1,
 	Parent = hud,
-}, { new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }) })
-ClientState.autoScale(quick)
-local rewardsDot: Frame
-local dashDot: Frame
-local indexDot: Frame
-local quickButtons: { [string]: TextButton } = {}
-local function goldDot(parent: Instance): Frame
-	return new("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(1, -4, 0, 4),
-		Size = UDim2.fromOffset(16, 16),
-		BackgroundColor3 = UI.GOLD,
-		Visible = false,
-		Parent = parent,
-	}, { corner(8), stroke(UI.WHITE, 2) })
+}, {
+	new("UIListLayout", {
+		Padding = UDim.new(0, 8),
+		HorizontalAlignment = Enum.HorizontalAlignment.Right,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}),
+})
+local weatherChip = UiKit.chip(chips, 330, 64)
+weatherChip.LayoutOrder = 1
+local weatherDisc = new("Frame", {
+	AnchorPoint = Vector2.new(0, 0.5),
+	Position = UDim2.new(0, 10, 0.5, 0),
+	Size = UDim2.fromOffset(44, 44),
+	BackgroundColor3 = UI.SKY,
+	Parent = weatherChip,
+}, { new("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+local weatherText = UiKit.chipText(weatherChip, "Clear", {
+	Position = UDim2.fromOffset(64, 4),
+	Size = UDim2.new(1, -74, 0, 32),
+	TextSize = 26,
+})
+local weatherLeftText = UiKit.chipText(weatherChip, "", {
+	Position = UDim2.fromOffset(64, 36),
+	Size = UDim2.new(1, -74, 0, 22),
+	TextSize = 16,
+	TextColor3 = UI.INK_SOFT,
+})
+local function line(order: number, colour: Color3?): TextLabel
+	local chip = UiKit.chip(chips, 330, 40)
+	chip.LayoutOrder = order
+	return UiKit.chipText(chip, "", { TextColor3 = colour })
 end
-local QUICK = {
-	{ "MENU", "Menu", UI.LILAC },
-	{ "EGGS", "Eggs", UI.GOLD },
-	{ "CREATURES", "Creatures", UI.SKY },
-	{ "INDEX", "Index", UI.LEAF },
-	{ "REWARDS", "Rewards", UI.CORAL },
-	{ "DASH", "Dash", UI.AQUA },
-	{ "HOME", "Home", UI.PINK },
+local forecastText = line(2)
+local eventText = line(3, UI.LILAC) -- "This weekend: Thunder" (V2.3)
+local restockText = line(4, UI.CORAL)
+local ripeText = line(5, UI.LEAF)
+
+-- The left strip --------------------------------------------------------------------------------------
+
+local touch = UiKit.touch()
+local items: { UiKit.StripItem } = {
+	{
+		icon = "egg",
+		label = "EGGS",
+		colour = ACCENT.Eggs,
+		main = true,
+		onClick = function()
+			ClientState.open("Eggs")
+		end,
+	},
+	{
+		icon = "paw",
+		label = "CREATURES",
+		colour = ACCENT.Creatures,
+		main = true,
+		onClick = function()
+			ClientState.open("Creatures")
+		end,
+	},
+	{
+		icon = "book",
+		label = "INDEX",
+		colour = ACCENT.Index,
+		onClick = function()
+			ClientState.open("Index")
+		end,
+	},
+	{
+		icon = "gift",
+		label = "REWARDS",
+		colour = ACCENT.Rewards,
+		main = true,
+		onClick = function()
+			ClientState.open("Rewards")
+		end,
+	},
+	{
+		icon = "flag",
+		label = "DASH",
+		colour = ACCENT.Dash,
+		onClick = function()
+			ClientState.open("Dash")
+		end,
+	},
 }
-if GardenConfig.ADMINS[player.UserId] then
-	table.insert(QUICK, { "ADMIN", "Admin", UI.CORAL })
+if GardenConfig.WHEEL then
+	table.insert(items, {
+		icon = "petal",
+		label = "PATCH",
+		colour = ACCENT.Patch,
+		onClick = function()
+			ClientState.open("Patch")
+		end,
+	})
 end
-for i, item in QUICK do
-	local b = button({
-		Size = UDim2.new(1, 0, 0, 46),
-		Text = item[1],
-		BackgroundColor3 = item[3],
-		TextColor3 = if item[3] == UI.GOLD then UI.INK else UI.WHITE,
-		LayoutOrder = i,
-		Parent = quick,
-	}, function()
-		if item[2] == "Menu" then
-			ClientState.setMenu(true)
-		elseif item[2] == "Home" then
-			if not ask("home") then
-				ClientState.toast("Could not go home right now", UI.CORAL)
-			end
-		else
-			ClientState.open(item[2])
+table.insert(items, {
+	icon = "hanger",
+	label = "LOCKER",
+	colour = ACCENT.Locker,
+	onClick = function()
+		ClientState.open("Locker")
+	end,
+})
+table.insert(items, {
+	icon = "home",
+	label = "HOME",
+	colour = UI.MINT,
+	main = true,
+	onClick = function()
+		if not ask("home") then
+			ClientState.toast("Could not go home right now", UI.CORAL, "home")
 		end
-	end)
-	quickButtons[item[2]] = b
-	if item[2] == "Rewards" then
-		rewardsDot = goldDot(b)
-	elseif item[2] == "Dash" then
-		dashDot = goldDot(b)
-	elseif item[2] == "Index" then
-		indexDot = goldDot(b)
+	end,
+})
+if GardenConfig.ADMINS[player.UserId] then
+	table.insert(items, {
+		icon = "lock",
+		label = "ADMIN",
+		colour = ACCENT.Admin,
+		onClick = function()
+			ClientState.open("Admin")
+		end,
+	})
+end
+table.insert(items, {
+	icon = "cog",
+	label = "MENU",
+	colour = UI.LILAC,
+	onClick = function()
+		ClientState.setMenu(true)
+	end,
+})
+local strip = UiKit.strip(hud, items, touch)
+
+local function badge(name: string, count: number?)
+	local b = strip[name]
+	if b and b:GetAttribute("Badge") ~= count then
+		UiKit.setBadge(b, count)
 	end
 end
 
--- A milestone can be claimed (V4): the INDEX gold dot.
+-- A milestone can be claimed (V4).
 local function milestoneReady(p: any): boolean
 	for _, m in GardenConfig.MILESTONES do
 		if #p.index >= m.at and p.milestones[tostring(m.at)] ~= true then
@@ -259,51 +222,56 @@ local function milestoneReady(p: any): boolean
 	return false
 end
 
--- In a race only HOME stays (it leaves the round), and the race timer takes the coin bar's place.
+-- An incoming trade invite (V1): the CREATURES dot.
+local function inviteDot()
+	local t = ClientState.tradeState
+	local invited = t ~= nil and t.state == "proposed" and type(t.b) == "table" and t.b.user == player.UserId
+	badge("CREATURES", if invited then 0 else nil)
+end
+ClientState.TradeChanged:Connect(inviteDot)
+
+-- In a race only HOME stays (it leaves the round), and the race timer takes the coin pill's place.
 ClientState.RacingChanged:Connect(function(racing: boolean)
-	coinBox.Visible = not racing
-	for name, b in quickButtons do
-		b.Visible = name == "Home" or not racing
+	for _, name in { "CoinPill", "LevelRing" } do
+		local f = hud:FindFirstChild(name)
+		if f then
+			(f :: GuiObject).Visible = not racing
+		end
+	end
+	for name, b in strip do
+		b.Visible = name == "HOME" or not racing
+	end
+	local sheet = hud:FindFirstChild("MoreSheet")
+	if sheet and racing then
+		(sheet :: GuiObject).Visible = false
 	end
 end)
+
+-- LIKE and TRADE, side by side at the bottom centre --------------------------------------------------
 
 -- LIKE: shown inside another player's garden while their gate allows it.
-local likeButton = button({
-	AnchorPoint = Vector2.new(0.5, 1),
-	Position = UDim2.new(0.5, 0, 1, if touchOnly then -150 else -90),
-	Size = UDim2.fromOffset(220, 54),
-	Text = "LIKE GARDEN",
-	BackgroundColor3 = UI.PINK,
-	Visible = false,
-	Parent = hud,
-}, function() end)
-ClientState.autoScale(likeButton)
 local likeTarget: Player? = nil
-likeButton.Activated:Connect(function()
+local likeButton = UiKit.button(hud, "LIKE GARDEN", UI.PINK, "large", 340, function()
 	local target = likeTarget
 	if target and ask("like", tostring(target.UserId)) then
-		ClientState.toast(`You liked {target.DisplayName}'s garden!`, UI.PINK)
+		ClientState.toast(`You liked {target.DisplayName}'s garden!`, UI.PINK, "heart")
 	end
 end)
+likeButton.AnchorPoint = Vector2.new(1, 1)
+likeButton.Position = UDim2.new(0.5, -8, 1, -30)
+likeButton.Visible = false
 
 -- TRADE: the nearest Roblox friend within TRADE.range, while no trade is live and the setting is on (V1).
-local tradeButton = button({
-	AnchorPoint = Vector2.new(0.5, 1),
-	Position = UDim2.new(0.5, 0, 1, if touchOnly then -210 else -150),
-	Size = UDim2.fromOffset(220, 54),
-	Text = "TRADE",
-	BackgroundColor3 = UI.AQUA,
-	Visible = false,
-	Parent = hud,
-}, function() end)
-ClientState.autoScale(tradeButton)
 local tradeTarget: Player? = nil
-tradeButton.Activated:Connect(function()
+local tradeButton = UiKit.button(hud, "TRADE", UI.AQUA, "large", 340, function()
 	local target = tradeTarget
 	if target and not ask("tradePropose", tostring(target.UserId)) then
-		ClientState.toast("Could not ask for a trade right now", UI.CORAL)
+		ClientState.toast("Could not ask for a trade right now", UI.CORAL, "swap")
 	end
 end)
+tradeButton.AnchorPoint = Vector2.new(0, 1)
+tradeButton.Position = UDim2.new(0.5, 8, 1, -30)
+tradeButton.Visible = false
 
 -- Profile-driven text -------------------------------------------------------------------------------
 
@@ -314,29 +282,34 @@ local lastCoins: number? = nil
 local function refresh()
 	profile = ClientState.profile()
 	local coins = tonumber(player:GetAttribute("Coins")) or profile.coins
-	coinText.Text = short(coins)
+	local income = tonumber(player:GetAttribute("Income")) or GardenRules.income(profile)
+	coinPill.set(coins, income)
 	if lastCoins and coins > lastCoins then
-		ClientState.pop(coinText)
+		coinPill.gain(coins - lastCoins)
 	end
 	lastCoins = coins
-	local income = tonumber(player:GetAttribute("Income")) or GardenRules.income(profile)
-	incomeText.Text = `+{short(income)} / s`
 	local level = GardenRules.level(profile)
 	local from, to = MetaRules.xpForLevel(level), MetaRules.xpForLevel(level + 1)
-	levelBadge.Text = tostring(level)
 	local maxed = level >= MetaRules.MAX_LEVEL
-	xpFill.Size = UDim2.fromScale(if maxed then 1 else (profile.xp - from) / math.max(1, to - from), 1)
-	xpText.Text = if maxed then "MAX LEVEL" else `{commas(profile.xp - from)} / {commas(to - from)} XP`
+	ring.set(
+		level,
+		if maxed then 1 else (profile.xp - from) / math.max(1, to - from),
+		if maxed then "MAX LEVEL" else `{commas(profile.xp - from)} / {commas(to - from)} XP`
+	)
 	indexText.Text = `Index {#profile.index} / {GardenConfig.INDEX_SIZE}`
-	rewardsDot.Visible = ClientState.rewardsReady(profile)
-	dashDot.Visible = ClientState.prizeReady(profile)
-	indexDot.Visible = milestoneReady(profile)
+	local loaded = type(player:GetAttribute("Profile")) == "string"
+	local milestone = loaded and milestoneReady(profile)
+	local rewards = if loaded then ClientState.rewardsCount(profile) + (if milestone then 1 else 0) else 0
+	local prizes = if loaded then ClientState.prizeCount(profile) else 0
+	badge("REWARDS", if rewards > 0 then rewards else nil)
+	badge("DASH", if prizes > 0 then prizes else nil)
+	badge("INDEX", if milestone then 0 else nil)
 	if lastLevel and level > lastLevel then
-		ClientState.toast(`LEVEL UP! Level {level}`, UI.GOLD)
+		ClientState.toast(`LEVEL UP! Level {level}`, UI.GOLD, "chart")
 		ClientState.sound(ClientState.SFX.fanfare, 0.45)
 		for _, egg in GardenConfig.EGGS do
 			if egg.price and egg.level == level then
-				ClientState.toast(`New egg at the cart: {egg.name}`, UI.LEAF)
+				ClientState.toast(`New egg at the cart: {egg.name}`, UI.LEAF, "egg")
 			end
 		end
 	end
@@ -352,7 +325,7 @@ local function refreshTimers()
 	local status = ClientState.status()
 	local now = ClientState.now()
 	local w = status.weather
-	weatherBar.BackgroundColor3 = ClientState.WEATHER_COLOURS[w] or UI.SKY
+	weatherDisc.BackgroundColor3 = ClientState.WEATHER_COLOURS[w] or UI.SKY
 	weatherText.Text = ClientState.weatherName(w)
 	local window = GardenConfig.WEATHER_WINDOW
 	local nextStart = (math.floor(now / window) + 1) * window
@@ -364,7 +337,8 @@ local function refreshTimers()
 		`Next: {ClientState.weatherName(f1)} in {ClientState.clock(nextStart - now)}, then {ClientState.weatherName(f2)}`
 	local event = ClientState.weatherName(status.event.weather)
 	eventText.Text = if status.event.active then `{event} weekend!` else `This weekend: {event}`
-	eventText.TextColor3 = ClientState.WEATHER_COLOURS[status.event.weather] or UI.LILAC
+	-- The weather's colour pulled toward INK: pale ones (Snowfall) vanish on a glass chip otherwise.
+	eventText.TextColor3 = (ClientState.WEATHER_COLOURS[status.event.weather] or UI.LILAC):Lerp(UI.INK, 0.45)
 	restockText.Text = `Egg restock in {ClientState.clock(ClientState.left(status.stockLeft))}`
 	local soonest: number? = nil
 	local ripe = 0
@@ -393,58 +367,30 @@ local function welcome()
 		return
 	end
 	welcomeShown = true
-	local shade = new("Frame", {
-		Size = UDim2.fromScale(1, 1),
-		BackgroundColor3 = Color3.fromRGB(60, 40, 60),
-		BackgroundTransparency = 0.5,
-		ZIndex = 40,
-		Parent = gui,
+	local card = UiKit.modal(gui, "WELCOME BACK!", UI.GOLD, 600, 360)
+	text(card.body, "While you were away your creatures earned", 22, UI.INK_SOFT, {
+		Size = UDim2.new(1, 0, 0, 30),
+		LayoutOrder = 1,
 	})
-	local card = new("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.5),
-		Size = UDim2.fromOffset(440, 250),
-		BackgroundColor3 = UI.CREAM,
-		Parent = shade,
-	}, { corner(24), stroke(UI.GOLD, 4) })
-	ClientState.autoScale(card)
-	text({
-		Position = UDim2.fromOffset(20, 16),
-		Size = UDim2.new(1, -40, 0, 40),
-		Text = "WELCOME BACK!",
-		TextColor3 = UI.PINK,
-		Parent = card,
+	local amount = text(card.body, `{commas(offline)} coins`, 56, UI.GOLD, {
+		Size = UDim2.new(1, 0, 0, 66),
+		LayoutOrder = 2,
+		Outline = UI.INK,
+		OutlineThickness = 2.5,
 	})
-	text({
-		Position = UDim2.fromOffset(20, 60),
-		Size = UDim2.new(1, -40, 0, 26),
-		Text = "While you were away your creatures earned",
-		Font = Enum.Font.GothamBold,
-		TextColor3 = UI.MUTED,
-		Parent = card,
+	local holder = new("Frame", {
+		Size = UDim2.new(1, 0, 0, 76),
+		BackgroundTransparency = 1,
+		LayoutOrder = 3,
+		Parent = card.body,
 	})
-	local amount = text({
-		Position = UDim2.fromOffset(20, 92),
-		Size = UDim2.new(1, -40, 0, 56),
-		Text = `{commas(offline)} coins`,
-		TextColor3 = Color3.fromRGB(230, 150, 30),
-		Parent = card,
-	})
-	new("UIStroke", { Color = UI.WHITE, Thickness = 3, Parent = amount })
-	local ok = button({
-		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -18),
-		Size = UDim2.fromOffset(200, 54),
-		Text = "COLLECT",
-		BackgroundColor3 = UI.LEAF,
-		Parent = card,
-	}, function()
+	local ok = UiKit.button(holder, "COLLECT", UI.LEAF, "large", 260, function()
 		ClientState.sound(ClientState.SFX.tick, 0.4, nil, 1.8)
-		shade:Destroy()
+		card.close()
 	end)
-	if UserInputService:GetLastInputType().Name:find("Gamepad") then
-		GuiService.SelectedObject = ok
-	end
+	ok.AnchorPoint = Vector2.new(0.5, 0)
+	ok.Position = UDim2.new(0.5, 0, 0, 4)
+	UiKit.selectFirst(card.frame)
 	ClientState.pop(amount)
 	ClientState.sound(ClientState.SFX.chime, 0.35, nil, 1.6)
 end
@@ -452,21 +398,17 @@ player:GetAttributeChangedSignal("OfflineCoins"):Connect(welcome)
 
 -- Announcements and visitor toasts (Fx) -------------------------------------------------------------
 
-local banner = text({
-	AnchorPoint = Vector2.new(0.5, 0),
-	Position = UDim2.new(0.5, 0, 0, 100),
-	Size = UDim2.fromOffset(560, 48),
-	BackgroundTransparency = 0,
-	BackgroundColor3 = UI.LILAC,
-	TextColor3 = UI.WHITE,
-	Text = "",
-	Visible = false,
-	Parent = hud,
+local banner = UiKit.row(hud, 56, 0)
+banner.AnchorPoint = Vector2.new(0.5, 0)
+banner.Position = UDim2.new(0.5, 0, 0, 180)
+banner.Size = UDim2.fromOffset(640, 56)
+banner.Visible = false
+local bannerText = text(banner, "", 26, UI.WHITE, {
+	Position = UDim2.fromOffset(16, 0),
+	Size = UDim2.new(1, -32, 1, 0),
+	Outline = UI.INK,
+	OutlineThickness = 2,
 })
-corner(16).Parent = banner
-stroke(UI.WHITE, 3).Parent = banner
-new("UIPadding", { PaddingLeft = UDim.new(0, 14), PaddingRight = UDim.new(0, 14), Parent = banner })
-ClientState.autoScale(banner)
 local bannerToken = 0
 
 local function eggName(id: string): string
@@ -502,13 +444,14 @@ fx.OnClientEvent:Connect(function(kind: string, data: any)
 			table.insert(words, string.upper(m.name))
 		end
 		table.insert(words, if sp then sp.name else tostring(data.s))
-		banner.Text = `{tostring(data.name)} hatched a {table.concat(words, " ")}!`
+		bannerText.Text = `{tostring(data.name)} hatched a {table.concat(words, " ")}!`
 		local celestial = data.m == "celestial"
 		banner.BackgroundColor3 = if celestial
 			then ClientState.CELESTIAL
 			else ClientState.rarityColour(tostring(data.s))
-		banner.TextColor3 = if celestial then UI.INK else UI.WHITE
+		bannerText.TextColor3 = if celestial then UI.INK else UI.WHITE
 		banner.Visible = true
+		ClientState.pop(banner)
 		bannerToken += 1
 		local token = bannerToken
 		task.delay(5, function()
@@ -518,9 +461,9 @@ fx.OnClientEvent:Connect(function(kind: string, data: any)
 		end)
 	elseif kind == "water" and data.owner == player.UserId and data.by ~= player.UserId then
 		local bed = profile.beds[tonumber(data.bed) or 0]
-		ClientState.toast(`{displayName(data.by)} watered your {eggName(if bed then bed.egg else "")}!`, UI.SKY)
+		ClientState.toast(`{displayName(data.by)} watered your {eggName(if bed then bed.egg else "")}!`, UI.SKY, "egg")
 	elseif kind == "like" and data.owner == player.UserId then
-		ClientState.toast(`{displayName(data.by)} liked your garden!`, UI.PINK)
+		ClientState.toast(`{displayName(data.by)} liked your garden!`, UI.PINK, "heart")
 	elseif kind == "collect" and data.owner == player.UserId then
 		onCollect()
 	end
@@ -617,7 +560,7 @@ local function updateLike()
 		local liked = profile.liked.day == today and table.find(profile.liked.ids, owner.UserId) ~= nil
 		likeTarget = if liked then nil else owner
 		likeButton.Text = if liked then "LIKED TODAY" else `LIKE {string.upper(owner.DisplayName)}'S GARDEN`
-		likeButton.BackgroundColor3 = if liked then UI.GREY else UI.PINK
+		UiKit.setEnabled(likeButton, not liked)
 		likeButton.Visible = true
 	else
 		likeButton.Visible = false
@@ -626,20 +569,17 @@ end
 
 -- First session (H2): one prompt at a time with a beam to its target --------------------------------
 
-local tutorial = new("Frame", {
-	AnchorPoint = Vector2.new(0.5, 1),
-	Position = UDim2.new(0.5, 0, 1, if touchOnly then -220 else -160),
-	Size = UDim2.fromOffset(460, 56),
-	BackgroundColor3 = UI.GOLD,
-	Visible = false,
-	Parent = hud,
-}, { corner(20), stroke(UI.WHITE, 4) })
-ClientState.autoScale(tutorial)
-local tutorialText = text({
-	Position = UDim2.fromOffset(16, 6),
-	Size = UDim2.new(1, -32, 1, -12),
-	Text = "",
-	Parent = tutorial,
+local tutorial = UiKit.row(hud, 64, 0)
+tutorial.AnchorPoint = Vector2.new(0.5, 0)
+tutorial.Position = UDim2.new(0.5, 0, 0, 104)
+tutorial.Size = UDim2.fromOffset(560, 64)
+tutorial.BackgroundColor3 = UI.GOLD
+tutorial.Visible = false
+local tutorialText = text(tutorial, "", 28, UI.WHITE, {
+	Position = UDim2.fromOffset(16, 0),
+	Size = UDim2.new(1, -32, 1, 0),
+	Outline = UI.INK,
+	OutlineThickness = 2,
 })
 
 local cartMarker = new("Part", {
@@ -675,7 +615,7 @@ local marker = new("BillboardGui", {
 	Enabled = false,
 	Parent = Workspace.Terrain,
 })
-local markerText = text({
+local markerText = ClientState.text({
 	Size = UDim2.fromScale(1, 1),
 	BackgroundTransparency = 0,
 	BackgroundColor3 = UI.PINK,
@@ -683,8 +623,8 @@ local markerText = text({
 	Text = "HERE",
 	Parent = marker,
 })
-corner(14).Parent = markerText
-stroke(UI.WHITE, 3).Parent = markerText
+ClientState.corner(14).Parent = markerText
+ClientState.stroke(UI.WHITE, 3).Parent = markerText
 
 local function plotPart(path: { string }): BasePart?
 	local plot = player:GetAttribute("Plot")
@@ -806,6 +746,8 @@ ClientState.MenuChanged:Connect(function(open: boolean)
 	hud.Visible = not open
 	if not open then
 		welcome()
+	elseif GuiService.SelectedObject and GuiService.SelectedObject:IsDescendantOf(hud) then
+		GuiService.SelectedObject = nil
 	end
 end)
 
@@ -831,10 +773,6 @@ task.spawn(function()
 		task.wait(0.25)
 	end
 end)
-
-TweenService:Create(coinIcon, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-	Rotation = 8,
-}):Play()
 
 gui.Parent = player:WaitForChild("PlayerGui")
 refresh()

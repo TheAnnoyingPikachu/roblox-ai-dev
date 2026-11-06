@@ -15,6 +15,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local GardenProgress = require(Shared:WaitForChild("GardenProgress"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
+local LoginRules = require(Shared:WaitForChild("LoginRules"))
 local MetaRules = require(Shared:WaitForChild("MetaRules"))
 
 local ClientState = {}
@@ -60,7 +61,7 @@ ClientState.SettingsChanged = settingsChanged.Event
 local revealing = Instance.new("BindableEvent")
 ClientState.Revealing = revealing.Event -- (key: string, hidden: boolean) from HatchFx to CreatureFx
 local toasted = Instance.new("BindableEvent")
-ClientState.Toasted = toasted.Event -- (text: string, colour: Color3?) rendered by Menu
+ClientState.Toasted = toasted.Event -- (text: string, colour: Color3?, icon: string?) rendered by Menu (UiKit.toast)
 local menuChanged = Instance.new("BindableEvent")
 ClientState.MenuChanged = menuChanged.Event -- (open: boolean)
 local openRequested = Instance.new("BindableEvent")
@@ -103,8 +104,8 @@ function ClientState.setTrade(payload: any)
 	tradeChanged:Fire(payload)
 end
 
-function ClientState.toast(message: string, colour: Color3?)
-	toasted:Fire(message, colour)
+function ClientState.toast(message: string, colour: Color3?, icon: string?)
+	toasted:Fire(message, colour, icon)
 end
 
 function ClientState.setMenu(open: boolean)
@@ -258,6 +259,13 @@ function ClientState.plotModel(n: number): Model?
 	return plots and plots:FindFirstChild(`Plot{n}`)
 end
 
+-- The camera pose at the end of the PLAY fly; mirrors Plots.gateLook (architecture 4.7): 12 studs
+-- outside the gate along the plot's facing, 6 up, looking at the plot centre at eye height.
+function ClientState.gateLook(n: number): CFrame
+	local frame = ClientState.plotFrame(n)
+	return CFrame.lookAt(frame:PointToWorldSpace(Vector3.new(0, 6, -42)), frame:PointToWorldSpace(Vector3.new(0, 5, 0)))
+end
+
 function ClientState.ownerOf(n: number): Player?
 	local model = ClientState.plotModel(n)
 	local owner = model and model:GetAttribute("Owner")
@@ -358,36 +366,39 @@ ClientState.EGG_COLOURS = {
 	star = { Color3.fromRGB(255, 252, 235), Color3.fromRGB(255, 205, 90) },
 	celestial = { Color3.fromRGB(255, 246, 205), Color3.fromRGB(170, 150, 255) },
 	aurora = { Color3.fromRGB(60, 130, 150), Color3.fromRGB(80, 50, 140) },
+	weekly = { Color3.fromRGB(255, 225, 236), Color3.fromRGB(255, 150, 190) }, -- blossom pink (GDD X3.3)
+	monthly = { Color3.fromRGB(70, 175, 175), Color3.fromRGB(25, 90, 110) }, -- deep teal
 } :: { [string]: { Color3 } }
 
 -- The pale white-gold of everything Celestial (GDD S5).
 ClientState.CELESTIAL = Color3.fromRGB(255, 236, 170)
 
--- True when a prize egg can be planted now (the DASH gold dot, GDD T8).
-function ClientState.prizeReady(p: any): boolean
-	for egg in p.prizeEggs do
-		if GardenRules.canPlantPrize(p, egg) then
-			return true
+-- Prize eggs held at or under the player's level (the DASH badge, GDD T8 and X1.4).
+function ClientState.prizeCount(p: any): number
+	local n = 0
+	local level = GardenRules.level(p)
+	for id, count in p.prizeEggs do
+		local egg = GardenConfig.egg(id)
+		if egg and egg.level <= level then
+			n += count
 		end
 	end
-	return false
+	return n
 end
 
--- True when a daily, weekly or quest reward can be claimed now (the gold dot).
-function ClientState.rewardsReady(p: any): boolean
+-- Login slots claimable now plus finished, unclaimed quests (the REWARDS badge, X1.4, X3.5).
+function ClientState.rewardsCount(p: any): number
 	local day = MetaRules.dayOf(ClientState.now())
-	if MetaRules.nextDaily(p, day) ~= nil or MetaRules.canClaimWeekly(GardenProgress.CONFIG, p, day) then
-		return true
-	end
+	local n = LoginRules.claimable(p, day)
 	if p.quests.day ~= day then
-		return false
+		return n
 	end
 	for _, q in GardenProgress.questsFor(day) do
 		if not p.quests.claimed[q.id] and (p.quests.progress[q.stat] or 0) >= q.goal then
-			return true
+			n += 1
 		end
 	end
-	return false
+	return n
 end
 
 ClientState.WEATHER_COLOURS = {
@@ -559,8 +570,34 @@ ClientState.UI = {
 	AQUA = Color3.fromRGB(70, 190, 205),
 	GREY = Color3.fromRGB(205, 198, 200),
 	WHITE = Color3.new(1, 1, 1),
+	-- v0.5 (GDD X1.1)
+	SHADOW = Color3.fromRGB(60, 45, 70), -- drawn at transparency 0.78
+	INK_SOFT = Color3.fromRGB(120, 100, 120),
+	BADGE = Color3.fromRGB(255, 120, 110), -- = CORAL
+	RING = Color3.fromRGB(255, 236, 170),
+	GLASS = 0.35, -- white at this transparency: HUD chips over the world
 }
 local UI = ClientState.UI
+
+-- The 3D bottom edge of a button: the colour darkened 25% toward INK (X1.1).
+function ClientState.edge(colour: Color3): Color3
+	return colour:Lerp(UI.INK, 0.25)
+end
+
+-- Header ribbon and strip colour per panel (X1.1).
+ClientState.ACCENT = {
+	Eggs = UI.GOLD,
+	Creatures = UI.SKY,
+	Index = UI.LEAF,
+	Locker = UI.LILAC,
+	Rewards = UI.CORAL,
+	Stats = UI.SKY,
+	Dash = UI.AQUA,
+	Settings = UI.LILAC,
+	Trade = UI.PINK,
+	Admin = UI.CORAL,
+	Patch = UI.PINK,
+} :: { [string]: Color3 }
 
 function ClientState.new(className: string, props: { [string]: any }, children: { Instance }?): any
 	local inst = Instance.new(className)
@@ -595,27 +632,17 @@ function ClientState.text(props: { [string]: any }): TextLabel
 	return new("TextLabel", props)
 end
 
--- Chunky rounded button with a soft press bounce; works with mouse, touch and gamepad selection.
+-- A UiKit 3D button for the files not yet on the kit (architecture 6.4); required lazily because
+-- UiKit requires this module.
 function ClientState.button(props: { [string]: any }, onClick: () -> ()): TextButton
-	props.Font = props.Font or Enum.Font.FredokaOne
-	props.TextColor3 = props.TextColor3 or UI.WHITE
-	props.TextScaled = true
-	props.AutoButtonColor = true
-	props.BackgroundColor3 = props.BackgroundColor3 or UI.PINK
-	local b = new("TextButton", props, {
-		ClientState.corner(12),
-		new("UIPadding", {
-			PaddingLeft = UDim.new(0, 8),
-			PaddingRight = UDim.new(0, 8),
-			PaddingTop = UDim.new(0, 4),
-			PaddingBottom = UDim.new(0, 4),
-		}),
-		ClientState.stroke(UI.WHITE, 2),
-	})
-	b.Activated:Connect(function()
-		ClientState.sound(ClientState.SFX.tick, 0.15, nil, 2.2)
-		onClick()
-	end)
+	local UiKit = require(script.Parent:WaitForChild("UiKit")) :: any
+	local b = UiKit.button(nil, props.Text or "", props.BackgroundColor3 or UI.PINK, "medium", 160, onClick)
+	for _, key in { "AnchorPoint", "Position", "Size", "LayoutOrder", "Visible", "Name" } do
+		if props[key] ~= nil then
+			b[key] = props[key]
+		end
+	end
+	b.Parent = props.Parent
 	return b
 end
 
