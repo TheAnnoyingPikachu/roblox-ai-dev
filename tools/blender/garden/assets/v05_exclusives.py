@@ -67,56 +67,36 @@ def swap(ob, m):
 
 
 def creature_puffin():
-    """HD standard: one fused body; white face and belly are paint marks placed after settle."""
-    orange = k.flat((255, 130, 45))
-    head, R = Vector((0, -0.05, 2.1)), 0.82
+    """Remade from the Roblox AI reference (assets/garden/refs/puffin_*.jpg): a knitted-toy black
+    puffin, a huge round head over a small body, a white face mask round both eyes, a white belly,
+    a big orange bill with pale stripes, a tuft on top, and a grey pebble hugged to the chest under
+    the left flipper (the "Pebble Puffin")."""
+    fur = k.paint("pf_body", [(0, (10, 10, 14)), (0.5, (22, 22, 28)), (1, (40, 40, 48))], 0, 3.0, rest=True)
+    white = (244, 242, 246)
+    head, R = Vector((0, 0, 1.98)), 1.02
     body = k.fuse(
         [
             (head, R, (1.1, 0.98, 0.95)),
-            ((0, 0.1, 1.25), 0.82, (1.02, 0.98, 0.95)),
-            ((0, 0.1, 0.85), 0.7, (1.1, 1.0, 0.6)),  # round seat
-            *k.pair((0.8, 0.2, 1.3), 0.32, (0.42, 0.9, 1.25), (0, 16, 0)),  # wings
-            ((0, 0.9, 0.82), 0.24, (0.9, 1.0, 0.45), (-25, 0, 0)),  # tail
+            ((0, 0.05, 0.7), 0.7, (1.02, 0.98, 0.98)),  # small bell-shaped body
+            ((-0.66, 0.05, 0.78), 0.34, (0.32, 0.62, 1.1), (0, -12, 0)),  # right flipper at the side
+            ((0.45, -0.4, 0.88), 0.34, (0.35, 0.95, 0.6), (0, 0, -42)),  # left flipper, round the pebble
+            ("capsule", (0, 0.05, 2.85), (0.04, 0.12, 3.05), 0.05),  # tuft
         ],
-        k.flat((50, 50, 66)),
-        tris=2700,
+        fur,
+        tris=2900,
     )
-    # Tall puffin beak, flat at the sides, a triangle from the side, as its own fused shape.
-    beak = k.fuse(
-        [((0, -0.84, 1.93), 0.34, (0.58, 0.6, 1.0)), ((0, -1.04, 1.85), 0.25, (0.58, 0.9, 0.85)), ((0, -1.25, 1.76), 0.12, (0.65, 1.0, 0.9))],
-        k.flat((255, 140, 50)),
-        tris=450,
-        name="beak",
-    )
-    pebble = k.sphere(1.0, (0, 0.05, 0.26), m=k.flat((170, 170, 185)), scale=(1.2, 1.05, 0.28), seg=36, rings=8, name="pebble")
-    parts = [pebble, body, beak]
-    for s in (-1, 1):
-        parts.append(k.sphere(0.22, (s * 0.34, -0.55, 0.55), m=orange, scale=(0.95, 1.45, 0.42), seg=20, rings=8, name="foot"))
-        parts.append(k.lens(body, (s * 0.21, 0, 1.79), (0, -1, 0), 0.075, k.flat((255, 196, 70)), thick=0.5, sink=0.4, seg=12, name="rosette"))
-    # Sea pinks (thrift) growing from the pebble: round pink heads on stems.
-    thrift = []
-    for base, top, r in (((-0.95, 0.15, 0.4), (-1.0, 0.05, 1.0), 0.17), ((-0.8, 0.45, 0.4), (-0.86, 0.5, 0.82), 0.14)):
-        parts.append(k.capsule(base, top, 0.035, 0.03, k.flat((100, 175, 90)), n=8, name="stem"))
-        thrift.append(k.sphere(r, top, m=k.flat((250, 130, 185)), seg=20, rings=8, name="thrift"))
-    parts += thrift
-    parts += k.face(body, head, R, skin=WHITE, nose=None, mouth_kind=None, eye_phi=8, spread=36)
-    k.texel(beak, k.FACE_TEXEL)
-
-    m = settle(parts, SIZE["creature_puffin"])
-    ink = (32, 32, 46)
-    swap(body, k.paint("pf_body", [(0, ink), (1, (70, 72, 96))], 0.5, 3.0, marks=[
-        mark(m, WHITE, (0, -1.25, 1.0), 1.0),  # belly
-        mark(m, (238, 238, 244), (0, -1.3, 1.95), 1.02),  # face, a touch greyer than the belly
-        # Collar: a shell round a point behind the neck, so it crosses only the white front.
-        mark(m, (46, 47, 64), (0, 0.6, 2.1), 1.53, r_in=1.44, below=1.85),
-    ]))
-    pink = k.paint("pf_thrift", [(0, (235, 105, 165)), (1, (255, 165, 205))], 0.7, 1.2, dots=[((255, 215, 235), 28, 0.14)])
-    for ob in thrift:
-        swap(ob, pink)
-    slate, yellow = (125, 140, 172), (255, 215, 70)
-    y0, y1 = (m @ Vector((0, -0.84, 0))).y, (m @ Vector((0, -1.37, 0))).y
-    swap(beak, k.paint("pf_beak", [(0, (245, 90, 40)), (0.5, (255, 140, 50)), (0.56, yellow), (0.7, yellow), (0.76, slate), (1, slate)], y1, y0, axis="Y"))
-    swap(pebble, k.paint("pf_pebble", [(0, (140, 140, 158)), (1, (205, 205, 218))], 0, 0.6, dots=[((182, 182, 198), 6, 0.18)]))
+    for side in (-1, 1):  # white mask round each eye, black between them
+        k.zone(fur, white, head + k.outward(side * 36, -14) * R * 0.95, (0.44, 0.42, 0.54), soft=0.06)
+    k.zone(fur, white, (0, -0.62, 0.66), (0.44, 0.45, 0.56), soft=0.06)  # belly
+    parts = [body]
+    p, n = k.land(body, head, k.outward(0, -14))
+    upper = k.sphere(0.42, p + n * 0.12, rot=(-10, 0, 0), m=k.flat((246, 120, 56)), scale=(1.15, 0.8, 0.42), seg=28, rings=14, name="bill")
+    lower = k.sphere(0.34, p + n * 0.07 - Vector((0, 0, 0.13)), rot=(-10, 0, 0), m=k.flat((224, 98, 44)), scale=(1.05, 0.75, 0.32), seg=24, rings=12, name="bill_lo")
+    stripes = [k.lens(upper, p + n * 0.12, (s * 0.2, -0.5, 1), 0.24, k.flat((252, 222, 196)), scale=(0.1, 1), thick=0.25, sink=0.5, seg=12, up=(0, -1, 0), name="stripe") for s in (-1, 1)]
+    parts += k.texel([upper, lower, *stripes], k.FACE_TEXEL)
+    parts.append(k.sphere(0.24, (0.18, -0.72, 0.9), rot=(0, 0, 20), m=k.flat((150, 152, 160)), scale=(1.0, 0.6, 1.15), seg=24, rings=12, name="pebble"))
+    parts += k.face(body, head, R, skin=white, nose=None, mouth_kind=None, eye_r=0.22, eye_wide=0.9, spread=34, eye_phi=-6, sheen=True, blush_theta=48, blush_phi=-24)
+    settle(parts, SIZE["creature_puffin"])
     return parts
 
 
@@ -600,7 +580,7 @@ def egg_monthly():
 NOTES = "One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are."
 EGG_NOTES = "One mesh for Plots.egg through Models.nightPart (architecture section 9); never on the cart. Gold is baked bright."
 SPECIES = (
-    ("creature_puffin", creature_puffin, [2.6, 3.0, 2.6], "Pebble Puffin (uncommon)"),
+    ("creature_puffin", creature_puffin, [2.2, 3.0, 2.35], "Pebble Puffin (uncommon)"),
     ("creature_otter", creature_otter, [4.0, 2.6, 5.8], "River Otter (rare)"),  # lies on its back: 9.3's 3.6 tall would be 7 long
     ("creature_capybara", creature_capybara, [3.2, 4.2, 4.6], "Spa Capybara (epic)"),
     ("creature_redpanda", creature_redpanda, [4.2, 5.0, 4.0], "Maple Red Panda (legendary)"),

@@ -23,7 +23,7 @@ Steps:
    - The face is what sells it: large glossy black eyes with two highlights, pink blush ovals, a tiny nose and mouth.
    - Shapes are soft plush: no hard creases.
    - Keep the HD kit standard (tools/blender/garden/README.md): the 6,000-tri limit applies.
-4. **Compare.** Render the Blender model at the same angles and put each render beside its reference (`compare.py`). The Director signs off a creature only when the two read as the same character.
+4. **Compare.** Render the Blender model at the same angles and put each render beside its reference (`tools/blender/garden/refcompare.py`, which renders from the exact Studio cameras). The Director signs off a creature only when the two read as the same character.
 5. **Upload.** Upload as usual with `upload-assets.yml`.
 
 Why not ship the generated meshes directly? Generated meshes vary run to run, can't be adjusted by hand (rarity variants, colours, size), and carry an unknown topology. The Blender remake keeps one style across all 26 creatures. If a remake can't match its reference, the fallback is to ship the generated mesh. That is a Director call, recorded in the table below.
@@ -44,6 +44,14 @@ Why not ship the generated meshes directly? Generated meshes vary run to run, ca
 |---|---|---|---|
 | bunny (Sprout Bunny) | 127619955912104 | front, side, back | Remade 2026-11-06 (`creature_bunny`, 5,820 tris), not uploaded; awaiting Director sign-off |
 | fox (Cactus Fox) | 134610036961315 | front, 3/4, side, back | Remade 2026-11-06 (`creature_fox`, 5,692 tris; now orange, was green), not uploaded; awaiting Director sign-off |
+| frog (Toadstool Frog) | mesh 98421910616889 | front, 3/4, side, back | Remade 2026-11-06 (`creature_frog`, 5,652 tris; eye bumps gone, a much bigger cap), not uploaded; awaiting Director sign-off |
+| duck (Puddle Duckling) | mesh 131856143120623 | front, 3/4, side, back | Remade 2026-11-06 (`creature_duck`, 5,704 tris; the puddle and lily-pad hat replaced by the reference's raindrop), not uploaded; awaiting Director sign-off |
+| pup (Bumble Pup) | mesh 139385013071918 | front, 3/4, side, back | Remade 2026-11-06 (`creature_pup`, 5,918 tris; black floppy ears, black rump), not uploaded; awaiting Director sign-off |
+| lamb (Clover Lamb) | mesh 122675872503273 | front, 3/4, side, back | Remade 2026-11-06 (`creature_lamb`, 5,688 tris; peach face, one clover), not uploaded; awaiting Director sign-off |
+| puffin (Pebble Puffin) | mesh 120449235697125 | front, 3/4, side, back | Remade 2026-11-06 (`creature_puffin`, 5,796 tris; now hugs its pebble, thrift and base gone), not uploaded; awaiting Director sign-off |
+| cat (Berry Cat) | mesh 130248145290438 | front, 3/4, side, back | Remade 2026-11-06 (`creature_cat`, 5,848 tris; now lavender with a berry cluster, was a red strawberry cat), not uploaded; awaiting Director sign-off |
+
+The frog to cat references came out turned 45 degrees towards +X, so their 3/4 shot is the true front (`TURN` in `tools/blender/garden/refcompare.py`).
 
 Note: the generated fox came out with a pink flower, but no cactus. The remake adds a small cactus beside the flower so it stays a "Cactus Fox".
 

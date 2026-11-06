@@ -454,18 +454,18 @@
     "png": "build/blender/garden/creature_duck.png",
     "preview": "build/blender/garden/previews/creature_duck.png",
     "size_studs": [
-      2.8,
+      2.4,
       3.0,
-      2.8
+      2.6
     ],
-    "tris": 5752,
+    "tris": 5704,
     "parts": {
-      "creature_duck": 5752
+      "creature_duck": 5704
     },
     "target_size_studs": [
-      2.8,
+      2.4,
       3.0,
-      2.8
+      2.6
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -479,18 +479,18 @@
     "png": "build/blender/garden/creature_frog.png",
     "preview": "build/blender/garden/previews/creature_frog.png",
     "size_studs": [
-      3.2,
+      3.8,
       3.5,
-      3.2
+      3.7
     ],
-    "tris": 5580,
+    "tris": 5652,
     "parts": {
-      "creature_frog": 5580
+      "creature_frog": 5652
     },
     "target_size_studs": [
-      3.2,
+      3.8,
       3.5,
-      3.2
+      3.7
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -506,16 +506,16 @@
     "size_studs": [
       3.2,
       3.8,
-      3.4
+      2.3
     ],
-    "tris": 5844,
+    "tris": 5688,
     "parts": {
-      "creature_lamb": 5844
+      "creature_lamb": 5688
     },
     "target_size_studs": [
       3.2,
       3.8,
-      3.4
+      2.3
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -529,18 +529,18 @@
     "png": "build/blender/garden/creature_pup.png",
     "preview": "build/blender/garden/previews/creature_pup.png",
     "size_studs": [
-      3.0,
+      3.3,
       3.8,
-      3.6
+      3.4
     ],
-    "tris": 5716,
+    "tris": 5918,
     "parts": {
-      "creature_pup": 5716
+      "creature_pup": 5918
     },
     "target_size_studs": [
-      3.0,
+      3.3,
       3.8,
-      3.6
+      3.4
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -579,18 +579,18 @@
     "png": "build/blender/garden/creature_cat.png",
     "preview": "build/blender/garden/previews/creature_cat.png",
     "size_studs": [
-      3.2,
+      3.4,
       4.2,
-      3.0
+      2.6
     ],
-    "tris": 5732,
+    "tris": 5848,
     "parts": {
-      "creature_cat": 5732
+      "creature_cat": 5848
     },
     "target_size_studs": [
-      3.2,
+      3.4,
       4.2,
-      3.0
+      2.6
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -899,23 +899,48 @@
     "notes": "Stardust Axolotl (secret). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
     "glow": {}
   },
+  "creature_moth": {
+    "fbx": "build/blender/garden/creature_moth.fbx",
+    "png": "build/blender/garden/creature_moth.png",
+    "preview": "build/blender/garden/previews/creature_moth.png",
+    "size_studs": [
+      4.8,
+      3.2,
+      3.4
+    ],
+    "tris": 5692,
+    "parts": {
+      "creature_moth": 5692
+    },
+    "target_size_studs": [
+      4.8,
+      3.2,
+      3.4
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/v04.py",
+    "notes": "Lantern Moth (rare, V2.4). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are. The lantern is baked bright, no Neon.",
+    "glow": {}
+  },
   "creature_puffin": {
     "fbx": "build/blender/garden/creature_puffin.fbx",
     "png": "build/blender/garden/creature_puffin.png",
     "preview": "build/blender/garden/previews/creature_puffin.png",
     "size_studs": [
-      2.6,
+      2.2,
       3.0,
-      2.6
+      2.35
     ],
-    "tris": 5974,
+    "tris": 5796,
     "parts": {
-      "creature_puffin": 5974
+      "creature_puffin": 5796
     },
     "target_size_studs": [
-      2.6,
+      2.2,
       3.0,
-      2.6
+      2.35
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1431,56 +1456,6 @@
     "notes": "Upright, stem at the top, round scales. Client-only clone from NightModels; no collision.",
     "glow": {}
   },
-  "wheel_tree": {
-    "fbx": "build/blender/garden/wheel_tree.fbx",
-    "png": "build/blender/garden/wheel_tree.png",
-    "preview": "build/blender/garden/previews/wheel_tree.png",
-    "size_studs": [
-      23.67,
-      19.96,
-      24.0
-    ],
-    "tris": 1432,
-    "parts": {
-      "wheel_tree": 1432
-    },
-    "target_size_studs": [
-      24,
-      20,
-      24
-    ],
-    "tris_budget": 3000,
-    "priority": "P3",
-    "replaces": "Props.sakura canopy fallback in WheelWorld",
-    "script": "tools/blender/garden/assets/wheel.py",
-    "notes": "Trunk (radius about 2 at the canopy) at the bounding box centre in x and z; canopy underside about 13, top 20. Decor: WheelWorld's own trunk Cylinder collides.",
-    "glow": {}
-  },
-  "creature_moth": {
-    "fbx": "build/blender/garden/creature_moth.fbx",
-    "png": "build/blender/garden/creature_moth.png",
-    "preview": "build/blender/garden/previews/creature_moth.png",
-    "size_studs": [
-      4.8,
-      3.2,
-      3.4
-    ],
-    "tris": 5692,
-    "parts": {
-      "creature_moth": 5692
-    },
-    "target_size_studs": [
-      4.8,
-      3.2,
-      3.4
-    ],
-    "tris_budget": 6000,
-    "priority": "P1",
-    "replaces": "none (new species)",
-    "script": "tools/blender/garden/assets/v04.py",
-    "notes": "Lantern Moth (rare, V2.4). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are. The lantern is baked bright, no Neon.",
-    "glow": {}
-  },
   "fence_starlit_post": {
     "fbx": "build/blender/garden/fence_starlit_post.fbx",
     "png": "build/blender/garden/fence_starlit_post.png",
@@ -1556,5 +1531,30 @@
     "notes": "A decal, not a model: use the texture id on a Decal on the pad top face over pad colour (120, 190, 90); the flat quad FBX only carries it through the upload. 1024 baked, downscale to 256 at upload if required.",
     "glow": {},
     "decal_only": true
+  },
+  "wheel_tree": {
+    "fbx": "build/blender/garden/wheel_tree.fbx",
+    "png": "build/blender/garden/wheel_tree.png",
+    "preview": "build/blender/garden/previews/wheel_tree.png",
+    "size_studs": [
+      23.67,
+      19.96,
+      24.0
+    ],
+    "tris": 1432,
+    "parts": {
+      "wheel_tree": 1432
+    },
+    "target_size_studs": [
+      24,
+      20,
+      24
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "Props.sakura canopy fallback in WheelWorld",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Trunk (radius about 2 at the canopy) at the bounding box centre in x and z; canopy underside about 13, top 20. Decor: WheelWorld's own trunk Cylinder collides.",
+    "glow": {}
   }
 }

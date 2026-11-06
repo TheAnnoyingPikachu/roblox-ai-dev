@@ -36,7 +36,7 @@ Render the lineup alone with `--python tools/blender/garden/lineup.py`.
   bands), egg-shell helpers (`shell`, `stick`, `ridge`), toy parts (`flower`, `star`, `leaf`,
   `mushroom`, `facet`) and the creature standard below.
 - `build.py`: runner, manifest, contact sheet. `lineup.py`: the lineup render. `compare.py`: the
-  before/after creature sheet.
+  before/after creature sheet. `refcompare.py`: the reference-vs-remake sheet (below).
 - `assets/eggs.py`, `assets/dash.py`: `ASSETS = [dict(name, build, budget, size, priority, order,
   replaces, notes, glow)]`. `build()` returns a list of objects, or a dict of part name to objects.
 
@@ -127,9 +127,13 @@ creature from its `assets/garden/refs/<id>_*.jpg` shots; these override the defa
   snout, so use the plain face (nose and mouth on the head), not `snout_face`.
 - **Paint the body with `rest=True`:** `face` then paints the blush as a soft zone (the plush look)
   instead of a lens, and every marking is a `k.zone`. `skin` is the colour under the blush.
-- **Workflow:** build, render the exported FBX at the reference angles, put it beside the cropped
-  reference shot (same subject height), compare, repeat. Set the `ASSETS` size to the model's own
-  proportions (the `fit scale` log within 0.95 to 1.05), keeping the height.
+- **Workflow:** build, then `... --python tools/blender/garden/refcompare.py -- frog duck` and open
+  `build/blender/garden/refcompare/<id>_vs_ref.png`: each Studio shot over a render from the same
+  camera (70 degree field of view, same offsets, scaled to the reference height), so a part that
+  looks smaller in the remake is smaller. Repeat until they read as the same character. Set the
+  `ASSETS` size to the model's own proportions (an even `fit scale` on all three axes), keeping
+  the height. The frog to cat references came out turned 45 degrees towards +X, so their "34"
+  shot is the true front; `TURN` in refcompare.py records each reference's turn.
 
 ### Budget, texture, export
 

@@ -135,28 +135,28 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_duck = {
-		size = { 2.8, 3, 2.8 },
+		size = { 2.4, 3, 2.6 },
 		parts = { "creature_duck" },
 		model = 132550240344733,
 		decal = 90334982289566,
 		texture = nil,
 	},
 	creature_frog = {
-		size = { 3.2, 3.5, 3.2 },
+		size = { 3.8, 3.5, 3.7 },
 		parts = { "creature_frog" },
 		model = 85779194244500,
 		decal = 115154845071518,
 		texture = nil,
 	},
 	creature_lamb = {
-		size = { 3.2, 3.8, 3.4 },
+		size = { 3.2, 3.8, 2.3 },
 		parts = { "creature_lamb" },
 		model = 104724352549139,
 		decal = 119021247543469,
 		texture = nil,
 	},
 	creature_pup = {
-		size = { 3, 3.8, 3.6 },
+		size = { 3.3, 3.8, 3.4 },
 		parts = { "creature_pup" },
 		model = 128788432800472,
 		decal = 125611528662930,
@@ -170,7 +170,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_cat = {
-		size = { 3.2, 4.2, 3 },
+		size = { 3.4, 4.2, 2.6 },
 		parts = { "creature_cat" },
 		model = 102770309903015,
 		decal = 74337708537758,
@@ -260,8 +260,15 @@ local GardenAssets: { [string]: Asset } = {
 		decal = 77805312963916,
 		texture = nil,
 	},
+	creature_moth = {
+		size = { 4.8, 3.2, 3.4 },
+		parts = { "creature_moth" },
+		model = 104348304093549,
+		decal = 111011763104396,
+		texture = nil,
+	},
 	creature_puffin = {
-		size = { 2.6, 3, 2.6 },
+		size = { 2.2, 3, 2.35 },
 		parts = { "creature_puffin" },
 		model = 93559379637968,
 		decal = 81203756082890,
@@ -407,20 +414,6 @@ local GardenAssets: { [string]: Asset } = {
 		decal = 122016992060691,
 		texture = nil,
 	},
-	wheel_tree = {
-		size = { 23.67, 19.96, 24 },
-		parts = { "wheel_tree" },
-		model = 121150205623910,
-		decal = 77607558508827,
-		texture = nil,
-	},
-	creature_moth = {
-		size = { 4.8, 3.2, 3.4 },
-		parts = { "creature_moth" },
-		model = 104348304093549,
-		decal = 111011763104396,
-		texture = nil,
-	},
 	fence_starlit_post = {
 		size = { 1, 3.94, 1 },
 		parts = { "fence_starlit_post" },
@@ -441,6 +434,13 @@ local GardenAssets: { [string]: Asset } = {
 		model = nil,
 		decal = 88634157811969,
 		texture = 139876020185844,
+	},
+	wheel_tree = {
+		size = { 23.67, 19.96, 24 },
+		parts = { "wheel_tree" },
+		model = 121150205623910,
+		decal = 77607558508827,
+		texture = nil,
 	},
 }
 

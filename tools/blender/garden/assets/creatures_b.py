@@ -278,38 +278,34 @@ def ears_in(body, ears, axis_tilt, m, r, lean=(0, -1, 0)):
 
 
 def creature_duck():
-    yellow = k.paint("du_body", [(0, (246, 192, 70)), (1, (255, 236, 135))], 0.2, 2.7)
-    orange, orange_lo = k.flat((255, 150, 60)), k.flat((225, 110, 45))
-    ripple = (228, 246, 255)
-    water = k.paint("du_water", [(0, (120, 190, 245)), (1, (170, 222, 255))], -1.4, 1.4, axis="Y",
-                    marks=[(ripple, (0, 0, 0.1), 0.98, 1.05), (ripple, (0, 0, 0.1), 1.2, 1.25)])
-    pad, lotus, sunny = k.flat((100, 196, 105)), k.flat((255, 150, 178), emit=0.3), k.flat(k.SUNNY)
-    head, R = Vector((0, -0.12, 1.92)), 0.74
+    """Remade from the Roblox AI reference (assets/garden/refs/duck_*.jpg): a round butter-yellow
+    fluffy duckling, a huge head over a round body, a wide smiling orange bill, big dark-navy eyes,
+    small wing stubs held forward, a tail tuft, and a blue raindrop on its head (the "Puddle
+    Duckling")."""
+    yellow = k.paint("du_body", [(0, (226, 176, 92)), (0.45, (248, 214, 132)), (1, (255, 234, 166))], 0, 2.8, rest=True, grain=(0.06, 14))
+    orange, orange_lo = k.flat((246, 132, 52)), k.flat((222, 104, 40))
+    head, R = Vector((0, -0.05, 1.8)), 0.92
     body = k.fuse(
         [
-            (head, R, (1.08, 0.98, 0.96)),
-            ((0, 0.12, 0.84), 0.8, (1.0, 1.12, 0.84)),  # round body
-            ((0, 1.08, 1.12), 0.34, (0.8, 1.0, 0.42), (35, 0, 0)),  # tail tuft, tipped up
-            *k.pair((0.8, 0.22, 0.95), 0.36, (0.4, 1.05, 0.72), (15, -12, 0)),  # wings
+            (head, R, (1.1, 0.98, 0.95)),
+            *k.pair((0.5, -0.3, 1.5), 0.45, (1.0, 0.85, 0.8)),  # full cheeks
+            ((0, 0.1, 0.72), 0.82, (1.1, 1.05, 0.85)),  # round body
+            ((0, 0.92, 0.72), 0.3, (0.85, 0.9, 0.6), (35, 0, 0)),  # tail tuft, tipped up
+            *k.pair((0.86, -0.2, 0.86), 0.3, (0.6, 0.85, 0.9), (0, 0, 30)),  # wing stubs, held forward
         ],
         yellow,
-        tris=2800,
+        tris=3200,
     )
-    puddle = k.lathe([(0, 0), (1.33, 0), (1.4, 0.035), (1.37, 0.075), (1.28, 0.095), (0.9, 0.1), (0, 0.1)], m=water, n=40, name="puddle")
-    parts = [body, *k.texel([puddle], 0.5)]
-    for s in (-1, 1):
-        parts.append(k.sphere(0.25, (s * 0.36, -0.52, 0.17), m=orange, scale=(1.0, 1.4, 0.42), seg=20, rings=10, name="foot"))
-    bill_c = Vector((0, -0.86, 1.66))
-    bill = k.sphere(0.3, bill_c, rot=(-8, 0, 0), m=orange, scale=(1.2, 1.0, 0.42), seg=24, rings=12, name="bill")
-    parts.append(bill)
-    parts += k.texel([k.lens(bill, bill_c, k.outward(s * 22, 55), 0.035, orange_lo, thick=0.5, sink=0.5, seg=12, name="nostril") for s in (-1, 1)], k.FACE_TEXEL)
-    # Lily pad hat, notch to the front right, a lotus open on it.
-    hat = [disc(0.62, lambda a: 1 - 0.85 * max(0.0, 1 - abs(math.atan2(math.sin(a), math.cos(a))) / 0.3), pad, n=40, cup=0.08, thick=0.07, name="pad")]
-    bloom = disc(0.27, petals(6, 0.45), lotus, heart=sunny, n=36, cup=0.55, thick=0.2, dome=0.3, name="lotus")
-    bloom.data.transform(Matrix.Translation((-0.2, 0.18, 0.04)))
-    hat.append(bloom)
-    parts += onto(hat, body, head, (0.12, 0.05, 1), up=(0, 1, 0), spin=-60, sink=0.05)
-    parts += k.face(body, head, R, skin=(255, 226, 118), nose=None, mouth_kind=None, eye_phi=8, spread=36)
+    parts = [body]
+    p, n = k.land(body, head, k.outward(0, -18))
+    upper = k.sphere(0.36, p + n * 0.04, rot=(-12, 0, 0), m=orange, scale=(1.25, 0.6, 0.36), seg=28, rings=14, name="bill")
+    lower = k.sphere(0.3, p + n * 0.02 - Vector((0, 0, 0.1)), rot=(-12, 0, 0), m=orange_lo, scale=(1.15, 0.55, 0.3), seg=24, rings=12, name="bill_lo")
+    parts += k.texel([upper, lower], k.FACE_TEXEL)
+    # The raindrop on the right of the head (+X), a soft point upwards.
+    p, n = k.land(body, head, k.outward(48, 40))
+    root = p - n * 0.04
+    parts.append(k.capsule(root, root + (n + Vector((0, 0, 1.2))).normalized() * 0.26, 0.12, 0.015, k.flat((118, 186, 240)), n=16, name="drop"))
+    parts += k.face(body, head, R, skin=(248, 226, 160), iris=(26, 30, 70), nose=None, mouth_kind=None, eye_r=0.24, eye_wide=0.9, spread=32, eye_phi=-2, sheen=True, blush_theta=48, blush_phi=-18)
     return parts
 
 
@@ -317,35 +313,44 @@ def creature_duck():
 
 
 def creature_lamb():
-    fleece = k.paint("la_fleece", [(0, (232, 224, 216)), (1, (255, 252, 246))], 0.8, 3.6)
-    skin_rgb = (206, 196, 216)
-    skin = k.paint("la_skin", [(0, (172, 160, 188)), (1, skin_rgb)], 0.2, 3.0)
-    hoof, pink, green = k.flat((118, 102, 130)), k.flat((255, 172, 198)), k.flat((96, 192, 92))
-    head, R = Vector((0, -1.0, 2.38)), 0.8
-    ear = (0.92, -0.85, 2.45)
-    legs = []
-    for x, y in ((0.5, -0.45), (0.5, 0.85)):
-        for s in (-1, 1):
-            legs += [("capsule", (s * x, y, 0.22), (s * x, y, 1.2), 0.21), ((s * x, y, 0.17), 0.22, (1, 1.05, 0.8))]
-    face_body = k.fuse([(head, R, (1.12, 0.95, 0.95)), *k.pair(ear, 0.42, (1.0, 0.45, 0.45), (0, 20, 0)), *legs], skin, tris=1500)
-    split(face_body, hoof, (0, 0, 0.28), (0, 0, -1))
-    puffs = [((0, 0.3, 1.7), 0.95, (1.05, 1.2, 0.88))]
-    for i in range(8):
-        a = math.radians(45 * i)
-        puffs.append(((1.0 * math.cos(a), 0.3 + 1.05 * math.sin(a), 1.7), 0.5))
-        b = a + math.radians(22.5)
-        puffs.append(((0.7 * math.cos(b), 0.3 + 0.8 * math.sin(b), 2.3), 0.48))
-    for i in range(6):
-        a = math.radians(60 * i)
-        puffs.append(((0.85 * math.cos(a), 0.3 + 0.95 * math.sin(a), 1.15), 0.45))
-    puffs += [((0, 0.3, 2.6), 0.55), ((0, 1.45, 2.0), 0.36)]
-    puffs += [((0, -0.95, 3.18), 0.42), *k.pair((0.42, -0.8, 3.05), 0.36), ((0, -0.5, 3.3), 0.42), ((0, -1.32, 2.95), 0.3)]  # cap and fringe
-    coat = k.fuse(puffs, fleece, tris=2250, soft=0.25, name="fleece")
+    """Remade from the Roblox AI reference (assets/garden/refs/lamb_*.jpg): a big cloud of white
+    fleece round a peach face, peach ears out to the sides, a small fleece body on peach stubs,
+    and a four-leaf clover on the left of its head (the "Clover Lamb")."""
+    skin_rgb = (248, 216, 200)
+    skin = k.paint("la_skin", [(0, (232, 170, 156)), (0.5, (244, 200, 184)), (1, skin_rgb)], 0, 2.6, rest=True)
+    fleece = k.paint("la_fleece", [(0, (222, 214, 208)), (0.5, (244, 238, 232)), (1, (255, 251, 244))], 0.2, 3.4, rest=True)
+    green = k.flat((76, 176, 76))
+    head, R = Vector((0, -0.08, 2.2)), 0.84
+    ear = (1.08, -0.05, 2.12)
+    face_body = k.fuse(
+        [
+            (head, R, (1.08, 0.92, 0.95)),
+            *k.pair(ear, 0.38, (1.0, 0.5, 0.42), (0, 15, -10)),  # ears out to the sides, drooping
+            *k.pair((0.84, -0.12, 0.66), 0.18, (0.9, 0.9, 1.6), (0, -14, 0)),  # arm stubs, outside the fleece
+            *k.pair((0.28, -0.18, 0.1), 0.18, (1.0, 1.25, 0.6)),  # feet
+        ],
+        skin,
+        tris=1700,
+    )
+    k.zone(skin, (240, 170, 170), (1.25, -0.1, 2.06), (0.3, 0.4, 0.3), soft=0.4)  # pinker ear tips
+    k.zone(skin, (240, 170, 170), (-1.25, -0.1, 2.06), (0.3, 0.4, 0.3), soft=0.4)
+    # Fleece: a hood of puffs round the head, leaving the face open, and a cloud body.
+    puffs = [((0, 0.15, 2.28), 0.86, (1.0, 0.95, 1.0)), ((0, 0.05, 0.66), 0.62, (1.3, 1.1, 1.0))]
+    for i in range(32):
+        z = 1 - 2 * (i + 0.5) / 32
+        a = i * 2.39996
+        d = Vector((math.sqrt(1 - z * z) * math.cos(a), math.sqrt(1 - z * z) * math.sin(a), z))
+        if d.dot(Vector((0, -1, 0.05)).normalized()) < 0.45:
+            puffs.append((head + d * Vector((0.92, 0.84, 0.86)), 0.34))
+    for i in range(14):
+        z = 0.7 - 1.3 * (i + 0.5) / 14
+        a = i * 2.39996
+        d = Vector((math.sqrt(1 - z * z) * math.cos(a), math.sqrt(1 - z * z) * math.sin(a), z))
+        puffs.append((Vector((0, 0.05, 0.66)) + d * Vector((0.72, 0.58, 0.46)), 0.28))
+    coat = k.fuse(puffs, fleece, tris=2600, soft=0.4, name="fleece")
     parts = [face_body, *k.texel([coat], 0.6)]
-    parts += ears_in(face_body, (ear[0] + 0.14, ear[1], ear[2] - 0.04), 70, pink, 0.28)
-    for centre, d in (((0, 0.3, 1.7), k.outward(75, 30)), ((0, 0.3, 1.7), k.outward(-110, 40)), ((0, -0.8, 3.1), k.outward(-30, 55)), ((0, 0.3, 1.7), k.outward(170, 35))):
-        parts += onto([disc(0.3, clover, green, n=48, cup=0.25, thick=0.12)], coat, centre, d, spin=20, sink=0.02)
-    parts += k.face(face_body, head, R, skin=skin_rgb, nose=(240, 130, 160))
+    parts += onto([disc(0.48, clover, green, n=48, cup=0.25, thick=0.14)], coat, head, k.outward(40, 48), spin=20, sink=0.03)
+    parts += k.face(face_body, head, R, skin=skin_rgb, nose=(230, 140, 120), eye_r=0.29, eye_wide=0.9, spread=30, eye_phi=-14, nose_phi=-21, nose_r=0.06, mouth_phi=-27, mouth_w=0.11, sheen=True, blush_theta=44, blush_phi=-28)
     return parts
 
 
@@ -750,8 +755,8 @@ ASSETS = [
     dict(name=name, build=fit(size)(build), budget=k.CREATURE_BUDGET, finalize=k.HD, size=size, priority=1, order=20 + i, replaces="none (new species)", notes=f"{label}. {NOTES}", glow={})
     for i, (name, build, size, label) in enumerate(
         (
-            ("creature_duck", creature_duck, [2.8, 3.0, 2.8], "Puddle Duckling (common)"),
-            ("creature_lamb", creature_lamb, [3.2, 3.8, 3.4], "Clover Lamb (uncommon)"),
+            ("creature_duck", creature_duck, [2.4, 3.0, 2.6], "Puddle Duckling (common)"),
+            ("creature_lamb", creature_lamb, [3.2, 3.8, 2.3], "Clover Lamb (uncommon)"),
             ("creature_hedgehog", creature_hedgehog, [3.0, 2.8, 3.4], "Acorn Hedgehog (rare)"),
             ("creature_deer", creature_deer, [3.6, 5.0, 3.0], "Blossom Fawn (epic)"),
             ("creature_panda", creature_panda, [4.4, 4.5, 4.0], "Bamboo Panda (epic)"),
