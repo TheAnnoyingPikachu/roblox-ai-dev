@@ -153,3 +153,48 @@ Engineer: A11 (did not write this review). Code at `87d4111`, Clover image id an
 Tool runs at `466710d` (local): `lune run tests/run` **555/555 passed** (551 plus 4 new cases), 0 failed, 0 load errors, `test-results.json` deleted; `selene src tests` 0 errors, 0 warnings; `stylua --check` clean on LF copies of the 15 changed `.luau` files; `node tools/validate-tasks.mjs` 69 valid; `node tools/check-scope.mjs origin/main` all changed files in scope; `rojo build garden.project.json` and `node tools/check-place.mjs` match.
 
 Not done: a two-client trade with DataStores on and a forced flush failure (needs the staging place); the `Profiles.load` offline branches (M1, m6) against a live DataStore; the 150 s give-up `warn` of `markUntil` (Read); a hand walk on a phone or gamepad.
+
+## Re-review (GARDEN-033)
+
+Reviewer: A15 (did not write GARDEN-033). Date: 2026-11-06. Worktree `rad-v04-qa2` (detached) at `d161676` (`87d4111` code, `466710d` image id and register rows, `d161676` docs); line numbers refer to `d161676`. Same method as above: the connected code read again, the reviewer script re-run against the new pure modules, no Studio play session. The Engineer's `[H33]` harness and Studio notes at build `466710d` are quoted as **Engineer**.
+
+**Verdict: ship** (to staging, for the two checkpoints). B1 and the three majors are fixed where they live, every minor is closed or closed conservatively, and the fixes add no blocker or major. Two new minors (n1, n2) are narrow and can follow in the next pass; neither needs a fix before staging.
+
+### Tool runs (local, at `d161676`)
+
+| Command | Result |
+|---|---|
+| `lune run tests/run` | **555/555 passed**, 0 failed, 0 load errors. `test-results.json` deleted |
+| Reviewer script: the 230 checks, E3 to E6, and 8 new checks (the other three void combinations, `confirms`, the finish-day wheel spin, `isNewer`) | **238 passed, 0 failed**. E3 now leaves both profiles unchanged (was: two Golden Lions and no Dragon) |
+| `selene src tests` | 0 errors, 0 warnings, 0 parse errors |
+| `stylua --check` on LF copies of the 15 changed `.luau` blobs | Clean |
+| `rojo build garden.project.json` and `node tools/check-place.mjs` | Match |
+| `node tools/validate-tasks.mjs`; `node tools/check-scope.mjs origin/main` | 69 valid (re-run after this section's GARDEN-032 edit); all changed files in scope |
+
+### Each finding
+
+| Id | Re-review | Evidence |
+|---|---|---|
+| B1 | **Fixed** | `TradeRules.confirms(theirs)` (the copy exists and is not void) is used by the heal (`Trades.luau:658`). Computed: A void only, B void only and both void leave both profiles as they were; neither void still heals to one commit. Both cancel paths, including the second-append failure, void both copies through `markUntil` (5 tries over about 150 s, then a `warn` with the id, `:129-140`). The residual (both copies left unvoided, then a release before the heals) is Computed (E4 unchanged) and now documented in GDD V1.4 and architecture 4.5; see n2 for its time window |
+| M1 | **Fixed; the 2-minute rule is acceptable** | `ledgerRead` returns nil when the read failed and `{}` when the key is absent (`:150-153`); any failed read, own or counterpart, returns false before an apply (`:620-635`); `Profiles.load` then goes offline, clears the queue and shows the offline notice (`Profiles.luau:332-338`); a heal that throws is treated the same. The unreleased lock (a rejoin within 120 s plays offline with the busy notice) is the right side to err on: releasing it would be a write during the outage that caused the failure, and an offline visit loses nothing that was saved. One note, not a defect: the comment "the queued login dropped" is not always true, because the 1 Hz step can flush the login op while the heal's reads yield (`lastWrite = 0`). That op touches no creature, so M1's guarantee holds |
+| M2 | **Fixed**, see n1 | Refused while either player has a live trade or the same creatures are held (`:529`); both `gotId`s are in `Trades.locked` from the first check to the applies (`:543`, `:565`), so release, store, place, favourite, name and a pick are refused; `undoable` re-runs on both current profiles after the two marks (`:477-486`); on failure `undoAt` is stripped from both copies and the creatures stay held until the strips finish. **What releases the lock if the server errors mid-undo:** `pcall(undoMarked)` (`:544`) releases both keys at once on an error; the strip thread is bounded (about 150 s per key) and releases them when it ends; nothing else holds them |
+| M3 | **Fixed** | Target `side = 4`, `behind = 1`, both from the follower's edge (`ClientState.luau:416`); hop step up to 9 studs per 0.35 s (25.7 studs/s) outruns a 16 studs/s walk (`:447`); your own follower gets `LocalTransparencyModifier` 0.6 while it is on the camera-to-head segment (`FollowerFx.client.luau:36-41`, `:213-231`). Engineer: a Huge follower was in the camera line on 0 of 138 walking frames. A faded follower's mutation `Highlight` still draws (LTM does not reach it); cosmetic |
+| m1 | Fixed | Pad tags sized in studs, `UDim2.fromScale(6, 1.6)` (`Plots.luau:742`), inside the 10-stud pitch. Engineer: no overlap at 20 and 40 studs |
+| m2 | Fixed | `pad_clover` is `decal_only` in the manifest and `v04.py`, and `GardenAssets` has no model id for it; `loadNight` builds under `pcall`, skips the fit at height 0 and always clears `nightLoading` (`Models.luau:215-251`) |
+| m3 | Fixed | Clover decal on the pad pillar's up face (`Plots.luau:928-940`); the Starlit fence is built from the two models once both are `nightReady` (never yielding) and rebuilt from parts to models when they arrive (`:361-371`, `:957`). Engineer: 143 meshes and 19 lights per plot. Phone cost not checked, as before |
+| m4 | Rows fixed; status kept (acceptable) | 11 register rows with the `GardenAssets` ids (Computed). GARDEN-031 and GARDEN-044 stay `planned` until their owners add upload evidence. That is correct under rule 2, but the checkpoint cannot accept the art without it, so keep it on the checkpoint list |
+| m5 | Fixed; idempotence holds | `n = spinsToday(profile, finish day) + 1` (`Wheel.luau:106`). `award` still guards on `(today, n)`, so the in-memory apply and the `UpdateAsync` re-run agree, a re-apply is a no-op and a capped day cannot reach a 4th spin (Computed). `wheelSpin` goes out only when the in-memory apply took, else `wheelOver` carries tier `none` (`:113-120`). Eligibility stays fixed at the start, so a capped player's round stays practice |
+| m6 | Fixed; never writes | A newer record returns nil from the load's `UpdateAsync` (no write, no lock, `Profiles.luau:295-298`) and the session stays offline, so `apply` never queues, `bank` returns early, `step` skips both the flush and the board, and `finish` does not flush. Decision 0015's rollback line is corrected |
+| m7 | Fixed conservatively (acceptable) | A failed lookup counts as "not friends" for 30 s, then is asked again (`GardenServer.server.luau:152-160`); a real "no" stays cached. After the reset, the non-waiting gate check allows one tick while its background lookup runs, as it did for any unknown pair before v0.4 |
+| m8 | Fixed | `commitGuarded` (`Trades.luau:368-388`): an error before the applies voids both copies and cancels "failed"; once `applying` is set it re-runs both idempotent applies and marks the trade done; the pair is always dropped |
+
+### New findings
+
+| Id | Severity | Where | Scenario | Suggested fix |
+|---|---|---|---|---|
+| n1 | Minor | `src/garden/Trades.luau:488-494`, `:544-552` | **Read.** The undo has nothing like commit's `applying` recovery. An error between the two `tradeUndo` applies (none is known: `Profiles.apply` pcalls the change, so only `publish` could throw) releases the held keys with one side undone and the other not, while both ledger copies carry `undoAt`. The heal repairs the second side at its next load, unless that player releases or trades the creature first | Set a flag before the two applies and, in the error branch, re-run both (`TradeRules.undo` is idempotent on `undone`) before releasing the keys, as `commitGuarded` does |
+| n2 | Minor | `src/garden/Trades.luau:129-140`, `:658`; GDD V1.4 residual | **Read.** The documented residual says "every mark lost", but with `markUntil` the marks can also be *still retrying* for up to 150 s. Suppose a player leaves mid-commit, both first void attempts fail, and the player rejoins another server inside that window. The heal then reads two unvoided copies and completes a trade the other player saw cancelled. This needs ledger writes failing for over 6 s while profile loads and ledger reads succeed | Either word the residual as "lost or not yet landed", or have the heal treat a record younger than the retry window (`now - L.at < 180`) that is missing from `trades` as a failed read (offline), which defers it to a later load |
+
+### Not checked (unchanged)
+
+The two-client trade with DataStores on, a forced flush failure, the `Profiles.load` offline branches (M1, m6) against a live DataStore, the clover decal on the pillar's face and the Starlit fence's 143 meshes on a phone, and the W11 steps. The checkpoint evidence blocks are still to be filled.
