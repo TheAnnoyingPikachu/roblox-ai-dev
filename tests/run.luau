@@ -92,6 +92,18 @@ local SPECS = {
 	["SaveStore.spec.luau"] = function()
 		require("./SaveStore.spec")
 	end,
+	["LanternConfig.spec.luau"] = function()
+		require("./LanternConfig.spec")
+	end,
+	["LootRules.spec.luau"] = function()
+		require("./LootRules.spec")
+	end,
+	["CarryRules.spec.luau"] = function()
+		require("./CarryRules.spec")
+	end,
+	["WispRules.spec.luau"] = function()
+		require("./WispRules.spec")
+	end,
 	["Purity.spec.luau"] = function()
 		require("./Purity.spec")
 	end,
