@@ -20,12 +20,14 @@ verified (GARDEN-006); v0.2 (Celestial Egg, Splash Dash) built in GARDEN-009, St
 | `World.luau` | Hatchling Valley, cart, boards, lighting |
 | `Dash.luau` | Splash Dash: the one live `Round`, entrants, carrying out `DashRules` events, prizes, collision group |
 | `DashWorld.luau` | Splash Island decks, start barrier, arches, ready pad and its prompt and label |
+| `Trades.luau` | v0.4 safe trading: live pairs, `GardenTrades<suffix>` ledger, commit, undo and heal; `Trades.deps` is the test seam GardenServer fills |
 | `../garden-client/*` | Menu (panels), Hud, HatchFx (reveal), CreatureFx; display only |
 
 Pure rules: `GardenConfig` (data and types), `WorldRules` (weather, stock), `GardenRules` (beds, pads,
 pen, income), `HatchRules` (rolls, odds), `GardenProgress` (MetaRules config, sanitise, lock, login,
-offline), `DashRules` (round, sample checks, obstacle poses). Specs: `GardenConfig GardenRules HatchRules
-WorldRules GardenProgress MetaRules DashRules`.
+offline), `DashRules` (round, sample checks, obstacle poses), `TradeRules` (trade state machine, `give`,
+`undo`, `heal`). Specs: `GardenConfig GardenRules HatchRules WorldRules GardenProgress MetaRules DashRules
+TradeRules`.
 
 ## Must stay true
 
@@ -39,6 +41,13 @@ WorldRules GardenProgress MetaRules DashRules`.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.
 - New economy values, remotes or schema fields need a decision record (0008, 0012, 0013).
 - `adminGrant` is refused in the router unless `GardenConfig.ADMINS[player.UserId]`; hidden buttons are not the check.
+- A trade commits in this order only: both `GardenTrades` ledger keys, `TradeRules.canCommit` again, then the two
+  `Profiles.apply(…, "trade", give)` with no yield between them; undo marks both ledgers before its two applies;
+  `Trades.heal` runs in `Profiles.load` after login and resolves every counterpart lookup before its one apply.
+- `name` is the only request that yields (TextService filter) and it never yields inside `Profiles.apply`; a
+  filter error writes nothing. Pet names never go into `announce`, the board or a notice to another player.
+- `release`, `store`, `place`, `favourite` and `name` are refused on a creature picked in a live trade (`Trades.locked`).
+- Trades calls from gardening paths go through `guarded`, like Dash.
 
 Fast check: `lune run tests/run Garden Hatch WorldRules MetaRules` then
 `rojo build garden.project.json -o build/garden.rbxl && node tools/check-place.mjs garden.project.json build/garden.rbxl`.

@@ -769,7 +769,10 @@ Trades.step(now: number) -- 1 Hz: TradeRules.tick; distance and presence checks 
 Trades.leave(player: Player) -- PlayerRemoving: cancel "left"
 Trades.heal(player: Player, profile: Profile) -- from Profiles.load after login; reads the ledger (GetAsync, 3 tries; on failure skips, a later load tries again) and applies TradeRules.heal through Profiles.apply(player, "tradeHeal", ...)
 Trades.close() -- BindToClose: cancel every live trade; a commit already past its ledger writes finishes its applies (they do not yield)
+Trades.deps: Deps -- test seam, filled by GardenServer: get, isOnline, apply, withRetries, storeSuffix (Profiles), playerOf, rootPos, isFriend (the waiting form), send (fxTo), notice, ledger? (a store stand-in; harness only)
 ```
+
+**Implementation notes (GARDEN-029):** Trades reads only `UserId` and `DisplayName` from a player and keys its tables by the player object, so a Studio harness drives two mock players through `Trades.deps` with in-memory profiles and a fake ledger store (the full sequence, write order included, was checked this way: the `[H2]` log in the task evidence). The `trade` Fx on an undo is a hand-built payload with `state = "undone"` (TradeRules has no such state). The undo's notice to the counterpart names the species, never the pet name. A declined or cancelled trade sets `declined[by]` on the *other* player's `State.Live`, so that player cannot re-propose to `by` for 60 s. The heal strips `undoAt` from a record whose counterpart copy lacks it (the undo marks a then b, so a half-marked undo is never applied one-sided). `Profiles.get` returns nil until the heal has run (`session.ready`), which is how "before the player can act" is enforced; only a saving session heals.
 
 **Commit sequence** (one spawned thread per trade, state `committing`; both clients show the spinner):
 
@@ -789,10 +792,10 @@ Trades.close() -- BindToClose: cancel every live trade; a commit already past it
 
 The one `Request` that yields before its apply. In `onRequest`, action `name`:
 
-1. `local idText, raw = string.match(arg, "^(%d+):(.+)$")`; `id = tonumber(idText)`; `name = GardenRules.validName(raw)`; refuse when nil, when `GardenRules.canName(profile, id)` is false, when `Trades.locked(player, id)`, when `os.clock() - live.nameAt < NAME.cooldown` (10 s), or when `live.renames[id]` is at `NAME.perDay` (3) for `today` (server memory; reset on a new day or rejoin).
+1. `local idText, raw = string.match(arg, "^(%d+):(.+)$")`; `id = tonumber(idText)`; `name = GardenRules.validName(raw)`; refuse when nil, when `GardenRules.find(profile, id)` is nil (owned is the whole "canName" check), when `Trades.locked(player, id)`, when `os.clock() - live.nameAt < NAME.cooldown` (10 s), or when `live.renames[id]` is at `NAME.perDay` (3) for `today` (server memory; reset on a new day or rejoin).
 2. `live.nameAt = os.clock()`; `renames[id]` += 1 now (a failed filter still spends one: it protects the filter budget).
 3. `local ok, result = pcall(function() return TextService:FilterStringAsync(name, player.UserId):GetNonChatStringForBroadcastAsync() end)`; not ok, not a string, or empty → `notice` "That name could not be checked. Try again in a moment." and `return false`.
-4. After the yield: `profile = Profiles.get(player)`; if nil or `not GardenRules.canName(profile, id)` → false. Then `Profiles.apply(player, "name", function(p) return (GardenRules.setName(p, id, result)) end)`; `return true`. The filtered string is captured, so the re-apply writes the same text.
+4. After the yield: `profile = Profiles.get(player)`; if nil, the creature is gone or it is now picked in a trade → false. Then `Profiles.apply(player, "name", function(p) return (GardenRules.setName(p, id, result)) end)`; `return true`. The filtered string is captured, so the re-apply writes the same text.
 
 `Plots.refresh` reads `n` into the pad tag and sets attribute `N` on the creature; the server never puts a name into `Fx("announce")`, the board or a notice to other players.
 

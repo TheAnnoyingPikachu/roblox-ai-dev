@@ -16,6 +16,9 @@ export type Live = {
 	friends: { [number]: boolean }, -- IsFriendsWith cache by owner UserId
 	boardIncome: number, -- last floor(income) written to GardenIncome
 	boardAt: number, -- os.time() of that write
+	nameAt: number, -- os.clock() of the last naming (10 s cooldown, V5)
+	renames: { [number]: { day: number, count: number } }, -- creature id -> renames today (filter budget)
+	declined: { [number]: number }, -- UserId -> os.time() that player last declined or cancelled a trade with us
 }
 
 local State = {

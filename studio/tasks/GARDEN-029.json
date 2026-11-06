@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-029",
   "owner": "A09",
   "verifier": "A15",
@@ -40,5 +40,5 @@
     "TradeRules.spec.luau",
     "GardenProgress.spec.luau"
   ],
-  "notes": "The commit's two applies must share one synchronous step: no await, no yield, no pcall around a yielding call between them. Capture today and the ledger record in the closures so the UpdateAsync re-apply is deterministic. The friend check for trading must be the waiting form (isFriend with wait = true) in both directions. Never put a pet name in Fx announce, a notice to a third player or the board. Max Players stays 6."
+  "notes": "The commit's two applies must share one synchronous step: no await, no yield, no pcall around a yielding call between them. Capture today and the ledger record in the closures so the UpdateAsync re-apply is deterministic. The friend check for trading must be the waiting form (isFriend with wait = true) in both directions. Never put a pet name in Fx announce, a notice to a third player or the board. Max Players stays 6. Evidence (2026-11-06, branch garden/v04-server, build stamp `dev` local, DataStores OFF in Studio so every session ran offline): lune run tests/run 523/523; selene 0; stylua --check clean on LF copies; validate-tasks 62 valid; check-scope 48 files in scope; rojo build + check-place match. Studio (owner account 96807256, one client): name 'Sprinkles' filtered and stored (n), 10 s rename cooldown refused then accepted, bad characters refused, Follower attribute 1 -> 2 -> 1 on favourite/unfavourite, claimMilestone 20 paid 5,000 (LastReward +5K coins#1) and refused twice/early/99, Secret axolotl tag 'Pebble / Huge Rainbow Stardust Axolotl · Secret' with C=stormy N=Pebble, 36 Forest hatches in forced Thunder gave 2 Stormy (announced with c) and 1 Lantern Moth, hatch Fx carries c, clover pads rendered (green Grass). Trades (two mock players through Trades.deps, in-memory profiles, fake ledger store, [H2] log): favourite pick refused, unfair notice naming the loser on pick and on TRADE, emote gap, cancel during the hold with the 60 s decline gap, walked-apart cancel from step, a failing second ledger write -> cancelled 'failed' with A's record voided and zero applies, a full trade with write order ledger A -> ledger B -> apply A -> apply B, both records and tradesToday, undo (fav on the got creature does not block) with order mark A -> mark B -> apply -> apply, undo twice refused, heal on a fresh profile re-applied give then undo, heal with the counterpart's undoAt missing applied the give and withheld the undo. Not covered: a real two-client run with DataStores on (needs a published place), the v2 save load (GARDEN-028 spec covers sanitize), a forced flush failure."
 }
