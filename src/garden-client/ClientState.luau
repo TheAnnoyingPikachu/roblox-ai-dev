@@ -19,7 +19,15 @@ local MetaRules = require(Shared:WaitForChild("MetaRules"))
 
 local ClientState = {}
 
-export type Settings = { music: boolean, sfx: boolean, fastHatch: boolean, announcements: boolean }
+export type Settings = {
+	music: boolean,
+	sfx: boolean,
+	fastHatch: boolean,
+	announcements: boolean,
+	followers: boolean,
+	trades: boolean,
+}
+export type EventStatus = { weather: string, startsAt: number, endsAt: number, active: boolean }
 export type DashStatus = {
 	phase: string, -- idle | countdown | starting | racing
 	ready: { number },
@@ -35,9 +43,17 @@ export type Status = {
 	stockLeft: number,
 	stockWindow: number,
 	dash: DashStatus,
+	event: EventStatus,
 }
 
-ClientState.settings = { music = true, sfx = true, fastHatch = false, announcements = true } :: Settings
+ClientState.settings = {
+	music = true,
+	sfx = true,
+	fastHatch = false,
+	announcements = true,
+	followers = true,
+	trades = true,
+} :: Settings
 
 local settingsChanged = Instance.new("BindableEvent")
 ClientState.SettingsChanged = settingsChanged.Event
@@ -51,6 +67,15 @@ local openRequested = Instance.new("BindableEvent")
 ClientState.OpenRequested = openRequested.Event -- (panel: string) HUD buttons ask Menu to open a panel
 local racingChanged = Instance.new("BindableEvent")
 ClientState.RacingChanged = racingChanged.Event -- (racing: boolean) from DashFx to Hud and Menu
+local tradeChanged = Instance.new("BindableEvent")
+ClientState.TradeChanged = tradeChanged.Event -- (payload: table?) the last `trade` Fx, from TradeFx to Hud
+-- The last `trade` payload while a trade is live (nil after done or cancelled closes the panel).
+ClientState.tradeState = nil :: any
+-- Highlights on screen across CreatureFx, BedFx and the reveal; Roblox draws about 31 at once.
+ClientState.HIGHLIGHT_BUDGET = 26
+ClientState.highlights = 0
+-- Owners with a hatch reveal running (FollowerFx hides their follower meanwhile).
+ClientState.revealing = {} :: { [number]: number }
 
 ClientState.menuOpen = true
 ClientState.racing = false -- this client is in a running Splash Dash round
@@ -68,7 +93,14 @@ end
 function ClientState.reveal(owner: any, id: number, hidden: boolean)
 	local key = `{owner}:{id}`
 	ClientState.hidden[key] = if hidden then true else nil
+	local n = tonumber(owner) or 0
+	ClientState.revealing[n] = math.max(0, (ClientState.revealing[n] or 0) + (if hidden then 1 else -1))
 	revealing:Fire(key, hidden)
+end
+
+function ClientState.setTrade(payload: any)
+	ClientState.tradeState = payload
+	tradeChanged:Fire(payload)
 end
 
 function ClientState.toast(message: string, colour: Color3?)
@@ -113,8 +145,24 @@ local function dashOf(d: any): DashStatus
 		racers = if type(dash.racers) == "table" then dash.racers else {},
 	}
 end
-local cached: Status =
-	{ weather = "clear", weatherLeft = 0, forecast = {}, stockLeft = 0, stockWindow = 0, dash = dashOf(nil) }
+local function eventOf(e: any): EventStatus
+	local ev = if type(e) == "table" then e else {}
+	return {
+		weather = if type(ev.weather) == "string" then ev.weather else "clear",
+		startsAt = tonumber(ev.startsAt) or 0,
+		endsAt = tonumber(ev.endsAt) or 0,
+		active = ev.active == true,
+	}
+end
+local cached: Status = {
+	weather = "clear",
+	weatherLeft = 0,
+	forecast = {},
+	stockLeft = 0,
+	stockWindow = 0,
+	dash = dashOf(nil),
+	event = eventOf(nil),
+}
 local cachedAt = os.clock()
 
 function ClientState.status(): Status
@@ -131,6 +179,7 @@ function ClientState.status(): Status
 				stockLeft = tonumber(d.stockLeft) or 0,
 				stockWindow = tonumber(d.stockWindow) or 0,
 				dash = dashOf(d.dash),
+				event = eventOf(d.event),
 			}
 		end
 	end
@@ -252,10 +301,18 @@ function ClientState.rarityName(species: string): string
 	return if r then r.name else ""
 end
 
--- "Big Golden Berry Cat" (Normal size and mutation are left out).
-function ClientState.creatureName(s: string, m: string, z: string): string
+-- "Frosted Big Golden Berry Cat" (Normal size, mutation and no charm are left out), or
+-- "Sprinkles the Berry Cat" when the creature has a pet name (GDD V5).
+function ClientState.creatureName(s: string, m: string, z: string, c: string?, n: string?): string
 	local sp, mu, sz = GardenConfig.species(s), GardenConfig.mutation(m), GardenConfig.size(z)
+	if n and n ~= "" then
+		return `{n} the {if sp then sp.name else s}`
+	end
 	local parts = {}
+	local ch = if c then GardenConfig.charm(c) else nil
+	if ch then
+		table.insert(parts, ch.name)
+	end
 	if sz and z ~= "normal" then
 		table.insert(parts, sz.name)
 	end
@@ -264,6 +321,22 @@ function ClientState.creatureName(s: string, m: string, z: string): string
 	end
 	table.insert(parts, if sp then sp.name else s)
 	return table.concat(parts, " ")
+end
+
+function ClientState.charmName(id: string?): string
+	local c = if id then GardenConfig.charm(id) else nil
+	return if c then c.name else ""
+end
+
+ClientState.CHARM_COLOURS = {
+	frosted = Color3.fromRGB(170, 220, 255),
+	blooming = Color3.fromRGB(255, 150, 190),
+	stormy = Color3.fromRGB(110, 100, 160),
+} :: { [string]: Color3 }
+
+-- The player's milestone title (GDD V4), nil for none.
+function ClientState.title(p: any): string?
+	return if p then GardenProgress.title(p) else nil
 end
 
 function ClientState.weatherName(id: string): string
@@ -322,7 +395,61 @@ ClientState.WEATHER_COLOURS = {
 	sunbeam = Color3.fromRGB(255, 205, 90),
 	moonfall = Color3.fromRGB(130, 120, 230),
 	shower = Color3.fromRGB(255, 130, 200),
+	snowfall = Color3.fromRGB(190, 225, 255),
+	petals = Color3.fromRGB(255, 170, 205),
+	thunder = Color3.fromRGB(110, 100, 160),
 } :: { [string]: Color3 }
+
+-- Followers (GDD V3) --------------------------------------------------------------------------------
+
+export type FollowerState = {
+	pos: Vector3,
+	yaw: number,
+	scale: number,
+	half: number, -- half the follower's footprint: the gaps are measured from its edge
+	hopFrom: Vector3?,
+	hopTo: Vector3?,
+	hopAt: number,
+}
+ClientState.FOLLOWER = { behind = 4, side = 2, far = 6, snap = 60, hop = 0.35, cryGap = 6 }
+
+-- Where the follower stands: `side` studs beside and `behind` studs behind the owner's root,
+-- counted from the follower's edge so a Huge one stands clear of the camera line (Studio check).
+function ClientState.followerOffset(half: number): Vector3
+	local F = ClientState.FOLLOWER
+	return Vector3.new(F.side + half, -2.5, F.behind + half)
+end
+
+-- One frame of follower pacing: the target sits behind and beside the owner's root; farther than
+-- `far` it hops there (parabola, chained while far), nearer it idles with a bob, past `snap` it
+-- teleports. Returns the CFrame to draw and true on the frame a hop starts.
+function ClientState.followerStep(f: FollowerState, ownerRoot: CFrame, t: number): (CFrame, boolean)
+	local F = ClientState.FOLLOWER
+	local target = ownerRoot:PointToWorldSpace(ClientState.followerOffset(f.half))
+	local started = false
+	if (target - f.pos).Magnitude > F.snap then
+		f.pos, f.hopFrom, f.hopTo = target, nil, nil
+	end
+	if f.hopTo then
+		local k = math.clamp((t - f.hopAt) / F.hop, 0, 1)
+		local flat = (f.hopFrom :: Vector3):Lerp(f.hopTo :: Vector3, k)
+		local pos = flat + Vector3.new(0, math.sin(k * math.pi) * 1.5 * f.scale, 0)
+		if k >= 1 then
+			f.pos, f.hopFrom, f.hopTo = f.hopTo :: Vector3, nil, nil
+		else
+			return CFrame.new(pos) * CFrame.Angles(0, f.yaw, 0), false
+		end
+	end
+	local gap = target - f.pos
+	if gap.Magnitude > F.far then
+		local step = gap.Unit * math.min(gap.Magnitude, F.far * 0.9)
+		f.hopFrom, f.hopTo, f.hopAt = f.pos, f.pos + step, t
+		f.yaw = math.atan2(-step.X, -step.Z)
+		started = true
+	end
+	local bob = math.sin(t * 2 + f.pos.X) * 0.12
+	return CFrame.new(f.pos + Vector3.new(0, bob, 0)) * CFrame.Angles(0, f.yaw, 0), started
+end
 
 -- Sounds ------------------------------------------------------------------------------------------
 
@@ -363,6 +490,18 @@ function ClientState.cry(species: string, volume: number, at: Vector3?)
 	if cry then
 		ClientState.sound(`rbxassetid://{cry.id}`, volume, at, cry.pitch)
 	end
+end
+
+-- An idle or hop cry (6.1, V3): at most one per 2 s across the garden; false when it stayed quiet.
+local lastIdleCry = -math.huge
+function ClientState.idleCry(species: string, at: Vector3): boolean
+	local now = os.clock()
+	if now - lastIdleCry < 2 then
+		return false
+	end
+	lastIdleCry = now
+	ClientState.cry(species, 0.2, at)
+	return true
 end
 
 -- One-shot particle burst at a point (default sparkle texture).

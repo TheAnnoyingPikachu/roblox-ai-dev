@@ -144,17 +144,27 @@ local cardDetail = text({
 })
 local cardRate = text({
 	Position = UDim2.fromOffset(20, 124),
-	Size = UDim2.new(1, -40, 0, 30),
+	Size = UDim2.new(0.6, -20, 0, 30),
 	Text = "",
 	TextColor3 = UI.LEAF,
+	TextXAlignment = Enum.TextXAlignment.Left,
 	Parent = card,
 })
+-- The charm ("STORMY!" in its colour, V2.1); the pet name slot is cardName, empty of a name at a hatch (V5).
+local cardCharm = text({
+	Position = UDim2.new(0.6, 0, 0, 124),
+	Size = UDim2.new(0.4, -20, 0, 30),
+	Text = "",
+	TextXAlignment = Enum.TextXAlignment.Right,
+	Parent = card,
+})
+new("UIStroke", { Color = UI.WHITE, Thickness = 2, Parent = cardCharm })
 local cardToken = 0
 card.Activated:Connect(function()
 	card.Visible = false
 end)
 
-local function showCard(s: string, m: string, z: string)
+local function showCard(s: string, m: string, z: string, c: string)
 	local colour = ClientState.rarityColour(s)
 	local mu, sz = GardenConfig.mutation(m), GardenConfig.size(z)
 	local celestial = m == "celestial"
@@ -162,11 +172,15 @@ local function showCard(s: string, m: string, z: string)
 	cardStroke.Color = if celestial then UI.GOLD else colour
 	cardRarity.Text = `{if celestial then "CELESTIAL " else ""}{string.upper(ClientState.rarityName(s))}`
 	cardRarity.TextColor3 = colour
-	cardName.Text = ClientState.creatureName(s, m, z)
+	cardName.Text = ClientState.creatureName(s, m, z, c)
 	cardName.TextColor3 = colour
 	cardDetail.Text = `Mutation: {if mu then mu.name else m}  -  Size: {if sz then sz.name else z}`
-	cardRate.Text =
-		`+{ClientState.short(GardenRules.rate({ id = 0, s = s, m = m, z = z, placed = 0, fav = false }))} coins/s`
+	local charm = GardenConfig.charm(c)
+	cardCharm.Text = if charm then `{string.upper(charm.name)}!` else ""
+	cardCharm.TextColor3 = ClientState.CHARM_COLOURS[c] or UI.INK
+	cardRate.Text = `+{ClientState.short(
+		GardenRules.rate({ id = 0, s = s, m = m, z = z, c = c, placed = 0, fav = false, fa = 0, n = "" })
+	)} coins/s`
 	card.Visible = true
 	ClientState.pop(cardName)
 	cardToken += 1
@@ -372,9 +386,23 @@ local function pillar(centre: Vector3)
 	task.delay(1.25, p.Destroy, p)
 end
 
+-- Crack sound per egg (V7) from the registered clips, pitched: the licensed per-egg cracks are not
+-- registered yet (docs/assets/register.md), so each egg has its own pitch of the soft crack meanwhile.
+local CRACK: { [string]: { any } } = {
+	starter = { "puff", 1.3 },
+	meadow = { "puff", 1.3 },
+	forest = { "puff", 0.85 }, -- twig snap
+	sunset = { "chime", 2.2 }, -- warm chime
+	moon = { "chime", 0.7 }, -- low bell
+	star = { "chime", 2.6 }, -- bright chime
+	celestial = { "chime", 1.8 }, -- the top rarity chime
+	aurora = { "chime", 1.4 }, -- shimmer
+}
+
 local function reveal(data: any)
 	local id = tonumber(data.id)
 	local s, m, z = tostring(data.s), tostring(data.m), tostring(data.z)
+	local c = if type(data.c) == "string" then data.c else "none"
 	if id == nil or GardenConfig.species(s) == nil then
 		return
 	end
@@ -386,7 +414,7 @@ local function reveal(data: any)
 	if at == nil then
 		ClientState.reveal(data.owner, id, false)
 		if mine then
-			showCard(s, m, z)
+			showCard(s, m, z, c)
 		end
 		return
 	end
@@ -442,7 +470,8 @@ local function reveal(data: any)
 			task.delay(0.55, half.Destroy, half)
 		end
 	end
-	ClientState.sound(SFX.puff, if mine then 0.5 else 0.2, centre, 1.3)
+	local crack = CRACK[egg] or CRACK.meadow
+	ClientState.sound((SFX :: any)[crack[1]], if mine then 0.5 else 0.2, centre, crack[2])
 	ClientState.cry(s, if mine then 0.5 else 0.25, centre)
 	burst(centre, colour, 20 + rarity * 12, 8 + rarity * 2, 0.6 + rarity * 0.1)
 	if rarity >= 5 then
@@ -462,7 +491,7 @@ local function reveal(data: any)
 		else
 			ClientState.sound(SFX.chime, 0.35, nil, 1 + 0.12 * rarity)
 		end
-		showCard(s, m, z)
+		showCard(s, m, z, c)
 	end
 	ClientState.reveal(data.owner, id, false)
 end
@@ -660,6 +689,27 @@ local LOOKS = {
 		rays = 0.05,
 		clouds = 0.8,
 	},
+	snowfall = {
+		clock = 15.5,
+		ambient = Color3.fromRGB(150, 160, 180),
+		tint = Color3.fromRGB(225, 238, 255),
+		rays = 0.03,
+		clouds = 0.85,
+	},
+	petals = {
+		clock = 16.5,
+		ambient = Color3.fromRGB(165, 140, 145),
+		tint = Color3.fromRGB(255, 232, 240),
+		rays = 0.18,
+		clouds = 0.45,
+	},
+	thunder = {
+		clock = 17.5,
+		ambient = Color3.fromRGB(70, 70, 95),
+		tint = Color3.fromRGB(200, 200, 225),
+		rays = 0,
+		clouds = 0.95,
+	},
 }
 
 -- A sky emitter above the plaza for weather particles (sparkles, rain, fireflies).
@@ -697,6 +747,27 @@ local rain = skyEmitter({
 	Speed = NumberRange.new(45, 55),
 	EmissionDirection = Enum.NormalId.Bottom,
 	Orientation = Enum.ParticleOrientation.VelocityParallel,
+})
+local snow = skyEmitter({
+	Color = ColorSequence.new(Color3.fromRGB(245, 250, 255)),
+	Size = NumberSequence.new(0.3, 0.2),
+	Transparency = NumberSequence.new(0.1, 0.5),
+	Lifetime = NumberRange.new(9, 13),
+	Speed = NumberRange.new(5, 8),
+	EmissionDirection = Enum.NormalId.Bottom,
+	Acceleration = Vector3.new(0.6, 0, 0.3),
+	LightEmission = 0.4,
+})
+local petalStorm = skyEmitter({
+	Color = ColorSequence.new(Color3.fromRGB(255, 160, 200), Color3.fromRGB(255, 220, 235)),
+	Size = NumberSequence.new(0.45),
+	Squash = NumberSequence.new(-0.6),
+	Lifetime = NumberRange.new(7, 10),
+	Speed = NumberRange.new(6, 10),
+	EmissionDirection = Enum.NormalId.Bottom,
+	RotSpeed = NumberRange.new(-180, 180),
+	Rotation = NumberRange.new(0, 360),
+	Acceleration = Vector3.new(6, 0, 2),
 })
 local ground = new("Part", {
 	Name = "WeatherGround",
@@ -771,6 +842,32 @@ local function nightLights(): { PointLight }
 end
 local lampBase: { [PointLight]: number } = {}
 
+-- Thunder: a distant flash every 6 to 12 s (skipped with Reduce Motion) and a soft rumble at 0.3.
+local thunderToken = 0
+local function thunderLoop(token: number)
+	while token == thunderToken do
+		task.wait(6 + math.random() * 6)
+		if token ~= thunderToken then
+			return
+		end
+		if not GuiService.ReducedMotionEnabled then
+			tint.Brightness = 0.25
+			task.delay(0.08, function()
+				tint.Brightness = 0.1
+				task.delay(0.06, function()
+					tint.Brightness = 0.22
+					task.delay(0.1, function()
+						tint.Brightness = 0
+					end)
+				end)
+			end)
+		end
+		task.delay(0.6 + math.random(), function()
+			ClientState.sound(SFX.thud, 0.3, nil, 0.35)
+		end)
+	end
+end
+
 local currentWeather: string? = nil
 local function applyWeather()
 	local w = ClientState.status().weather
@@ -796,7 +893,14 @@ local function applyWeather()
 	goldDust.Rate = if w == "sunbeam" then 30 else 0
 	rain.Rate = if w == "shower" then 400 else 0
 	fireflies.Rate = if w == "moonfall" then 25 else 0
+	snow.Rate = if w == "snowfall" then 160 else 0
+	petalStorm.Rate = if w == "petals" then 90 else 0
 	rainbow.Transparency = NumberSequence.new(if w == "shower" then 0.35 else 1)
+	thunderToken += 1
+	tint.Brightness = 0
+	if w == "thunder" then
+		task.spawn(thunderLoop, thunderToken)
+	end
 	for _, l in nightLights() do
 		lampBase[l] = lampBase[l] or l.Brightness
 		l.Enabled = true
@@ -809,9 +913,12 @@ local function applyWeather()
 				weather = entry
 			end
 		end
-		-- Stinger and an honest note of what changed (the published table, nothing more).
-		ClientState.sound(SFX.sting, 0.4, nil, if w == "moonfall" then 0.85 else 1)
+		-- Stinger and an honest note of what changed (the published table, nothing more). The rare
+		-- weathers reuse the registered stinger at their own pitch until their clips are registered.
+		local pitch = ({ moonfall = 0.85, snowfall = 1.4, petals = 1.2, thunder = 0.6 } :: { [string]: number })[w]
+		ClientState.sound(SFX.sting, 0.4, nil, pitch or 1)
 		if weather then
+			local charm = GardenConfig.charmFor(w)
 			local best, bestBp = "", 0
 			for _, o in weather.mutation do
 				if o.id ~= "normal" and o.bp > bestBp then
@@ -820,7 +927,9 @@ local function applyWeather()
 			end
 			local mu = GardenConfig.mutation(best)
 			ClientState.toast(
-				`{weather.name}! {if mu then mu.name else best} chance is {HatchRules.percent(bestBp)}% for 5 minutes`,
+				if charm
+					then `{weather.name}! {charm.name} chance is {HatchRules.percent(charm.bp)}% for 5 minutes`
+					else `{weather.name}! {if mu then mu.name else best} chance is {HatchRules.percent(bestBp)}% for 5 minutes`,
 				ClientState.WEATHER_COLOURS[w]
 			)
 		end

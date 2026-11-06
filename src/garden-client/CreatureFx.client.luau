@@ -14,9 +14,9 @@ local ClientState = require(script.Parent:WaitForChild("ClientState"))
 local camera = Workspace.CurrentCamera
 local fxFolder = Workspace:WaitForChild("GardenClientFx", 30) or Workspace
 
--- Roblox renders about 31 Highlights at once; the reveal needs a few, the rest fall back.
-local HIGHLIGHT_BUDGET = 26
-local highlights = 0
+-- Followers (FollowerFx) live here; their looks are applied like any creature's, their movement is not.
+local followers = Workspace:FindFirstChild("GardenFollowers")
+	or ClientState.new("Folder", { Name = "GardenFollowers", Parent = Workspace })
 
 type View = {
 	inst: Instance,
@@ -29,6 +29,10 @@ type View = {
 	look: Instance?,
 	extras: { Instance }, -- emitters, lights and the halo, switched off during a reveal
 	mutation: string,
+	charm: string,
+	flicker: PointLight?, -- Stormy: flashes every few seconds in the frame loop
+	flashAt: number,
+	follower: boolean, -- moved by FollowerFx, not here
 	hidden: boolean,
 	nextCry: number, -- os.clock of this creature's next idle cry (6.1)
 }
@@ -79,22 +83,44 @@ local RAINBOW = ColorSequence.new({
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 110, 255)),
 })
 
--- A soft ring above the creature, drawn in UI so it needs no asset and always faces the camera.
-local function halo(view: View, main: BasePart): BillboardGui
+-- A billboard above the creature's head, drawn in UI so it needs no asset and always faces the camera.
+-- `lift` studs above the top; charms use 3.4 so they sit over the pad tag (Plots: top + 1.3, 46 px).
+local function overhead(
+	view: View,
+	main: BasePart,
+	w: number,
+	h: number,
+	children: { Instance },
+	lift: number?
+): BillboardGui
 	local size = if view.inst:IsA("Model") then view.inst:GetExtentsSize() else main.Size
 	return ClientState.new("BillboardGui", {
-		Size = UDim2.fromScale(math.max(size.X * 0.7, 2), 0.9),
-		StudsOffsetWorldSpace = Vector3.new(0, size.Y * 0.5 + 1, 0),
+		Size = UDim2.fromScale(w, h),
+		StudsOffsetWorldSpace = Vector3.new(0, size.Y * 0.5 + (lift or 1), 0),
 		LightInfluence = 0,
 		MaxDistance = 160,
 		Adornee = main,
 		Parent = main,
-	}, {
+	}, children)
+end
+
+-- A soft ring above the creature (Celestial).
+local function halo(view: View, main: BasePart): BillboardGui
+	local size = if view.inst:IsA("Model") then view.inst:GetExtentsSize() else main.Size
+	return overhead(view, main, math.max(size.X * 0.7, 2), 0.9, {
 		ClientState.new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1 }, {
 			ClientState.new("UICorner", { CornerRadius = UDim.new(1, 0) }),
 			ClientState.stroke(ClientState.CELESTIAL, 4),
 		}),
 	})
+end
+
+local function blob(pos: UDim2, size: UDim2, colour: Color3): Frame
+	return ClientState.new(
+		"Frame",
+		{ AnchorPoint = Vector2.new(0.5, 0.5), Position = pos, Size = size, BackgroundColor3 = colour },
+		{ ClientState.new("UICorner", { CornerRadius = UDim.new(1, 0) }) }
+	)
 end
 
 -- The part extras attach to: the PrimaryPart, else the largest part by volume (6.2).
@@ -112,8 +138,8 @@ end
 
 -- A Highlight over the whole creature while `need` are free under the budget, else a SelectionBox.
 local function adorn(view: View, fill: Color3, fillT: number, outline: Color3, outlineT: number, need: number): Instance
-	if highlights + need <= HIGHLIGHT_BUDGET then
-		highlights += 1
+	if ClientState.highlights + need <= ClientState.HIGHLIGHT_BUDGET then
+		ClientState.highlights += 1
 		local h = ClientState.new("Highlight", {
 			FillColor = fill,
 			FillTransparency = fillT,
@@ -124,7 +150,7 @@ local function adorn(view: View, fill: Color3, fillT: number, outline: Color3, o
 			Parent = view.inst,
 		})
 		h.Destroying:Once(function()
-			highlights -= 1
+			ClientState.highlights -= 1
 		end)
 		return h
 	end
@@ -142,14 +168,16 @@ end
 
 -- Mutation looks (GDD U8, architecture 6.2), layered on the texture: no mutation changes TextureID,
 -- Color or Material. Returns the Highlight or SelectionBox that the frame loop tints, if any.
-local function applyLook(view: View): Instance?
+local function mutationLook(view: View, main: BasePart): Instance?
 	local m = view.mutation
-	local main = mainOf(view)
-	if main == nil or m == "normal" then
+	if m == "normal" then
 		return nil
 	end
 	if m == "golden" then
-		view.extras = { ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main }) }
+		table.insert(
+			view.extras,
+			ClientState.new("Sparkles", { SparkleColor = Color3.fromRGB(255, 220, 120), Parent = main })
+		)
 		-- Golden is the common mutation: it takes a Highlight only while 8 stay free for the rarer looks.
 		return adorn(view, Color3.fromRGB(255, 200, 60), 0.5, Color3.fromRGB(255, 230, 140), 0.3, 8)
 	end
@@ -163,17 +191,86 @@ local function applyLook(view: View): Instance?
 		stars.Size = NumberSequence.new(0.5, 0)
 		stars.Lifetime = NumberRange.new(2.2, 3.6)
 		stars.Speed = NumberRange.new(0.3, 0.8)
-		view.extras = {
-			stars,
-			halo(view, main),
-			ClientState.new("PointLight", { Color = fill, Range = 14, Brightness = 1.4, Parent = main }),
-		}
+		table.insert(view.extras, stars)
+		table.insert(view.extras, halo(view, main))
+		table.insert(
+			view.extras,
+			ClientState.new("PointLight", { Color = fill, Range = 14, Brightness = 1.4, Parent = main })
+		)
 		return adorn(view, fill, 0.45, fill, 0.2, 1)
 	end
-	view.extras = {
-		emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4),
-	}
+	table.insert(
+		view.extras,
+		emitter(main, if m == "moonlit" then ColorSequence.new(Color3.fromRGB(200, 210, 255)) else RAINBOW, 4)
+	)
 	return adorn(view, fill, 0.6, fill, 0.3, 1)
+end
+
+-- Charm looks (GDD V2.1), layered after the mutation: Frosted frost motes and a pale rim (only when
+-- no mutation Highlight is there: one adornment per creature), Blooming petals and a flower on the
+-- head, Stormy a dark cloud, sparks and a flickering light. Never a repaint.
+local function charmLook(view: View, main: BasePart)
+	local c = view.charm
+	local colour = ClientState.CHARM_COLOURS[c]
+	if colour == nil then
+		return
+	end
+	if c == "frosted" then
+		local motes = emitter(main, ColorSequence.new(colour, ClientState.UI.WHITE), 3)
+		motes.Speed = NumberRange.new(0.2, 0.5)
+		motes.Lifetime = NumberRange.new(1.8, 2.8)
+		motes.Acceleration = Vector3.new(0.3, -0.3, 0)
+		table.insert(view.extras, motes)
+		if view.look == nil then
+			view.look = adorn(view, colour, 0.75, colour, 0.35, 1)
+		end
+	elseif c == "blooming" then
+		local petals = emitter(main, ColorSequence.new(colour, Color3.fromRGB(255, 225, 235)), 4)
+		petals.Acceleration = Vector3.new(0.8, -1, 0.3)
+		petals.Lifetime = NumberRange.new(1.5, 2.5)
+		table.insert(view.extras, petals)
+		table.insert(
+			view.extras,
+			overhead(view, main, 0.9, 0.9, {
+				blob(UDim2.fromScale(0.5, 0.22), UDim2.fromScale(0.4, 0.4), colour),
+				blob(UDim2.fromScale(0.5, 0.78), UDim2.fromScale(0.4, 0.4), colour),
+				blob(UDim2.fromScale(0.22, 0.5), UDim2.fromScale(0.4, 0.4), colour),
+				blob(UDim2.fromScale(0.78, 0.5), UDim2.fromScale(0.4, 0.4), colour),
+				blob(UDim2.fromScale(0.5, 0.5), UDim2.fromScale(0.36, 0.36), ClientState.UI.GOLD),
+			}, 3.4)
+		)
+	elseif c == "stormy" then
+		local sparks = emitter(main, ColorSequence.new(Color3.fromRGB(255, 245, 160), colour), 3)
+		sparks.Size = NumberSequence.new(0.18, 0)
+		sparks.Lifetime = NumberRange.new(0.25, 0.5)
+		sparks.Speed = NumberRange.new(3, 6)
+		table.insert(view.extras, sparks)
+		table.insert(
+			view.extras,
+			overhead(view, main, 1.6, 0.7, {
+				blob(UDim2.fromScale(0.3, 0.6), UDim2.fromScale(0.45, 0.7), colour),
+				blob(UDim2.fromScale(0.55, 0.45), UDim2.fromScale(0.55, 0.9), colour),
+				blob(UDim2.fromScale(0.78, 0.62), UDim2.fromScale(0.4, 0.65), colour),
+			}, 3.4)
+		)
+		local light = ClientState.new(
+			"PointLight",
+			{ Color = Color3.fromRGB(230, 230, 255), Range = 8, Brightness = 0, Parent = main }
+		)
+		table.insert(view.extras, light)
+		view.flicker = light
+	end
+end
+
+-- Mutation look then charm look; returns the adornment the frame loop tints, if any.
+local function applyLook(view: View): Instance?
+	local main = mainOf(view)
+	if main == nil then
+		return nil
+	end
+	view.look = mutationLook(view, main)
+	charmLook(view, main)
+	return view.look
 end
 
 local function track(inst: Instance)
@@ -186,10 +283,12 @@ local function track(inst: Instance)
 		return -- a Model whose MeshPart has not replicated yet: the sweep below retries
 	end
 	local base = pivot(inst)
+	local follower = inst.Parent == followers
 	local plot = inst.Parent and inst.Parent.Parent
+	local owner = if follower then inst:GetAttribute("Owner") else plot and plot:GetAttribute("Owner")
 	local view: View = {
 		inst = inst,
-		key = `{plot and plot:GetAttribute("Owner") or 0}:{id}`,
+		key = `{owner or 0}:{id}`,
 		parts = parts,
 		base = base,
 		written = base,
@@ -198,6 +297,10 @@ local function track(inst: Instance)
 		look = nil,
 		extras = {},
 		mutation = tostring(inst:GetAttribute("M") or "normal"),
+		charm = tostring(inst:GetAttribute("C") or "none"),
+		flicker = nil,
+		flashAt = os.clock() + 2 + math.random() * 5,
+		follower = follower,
 		hidden = false,
 		nextCry = os.clock() + 12 + math.random() * 18, -- a full delay, so a refresh is never a chorus
 	}
@@ -205,6 +308,19 @@ local function track(inst: Instance)
 	views[inst] = view
 	inst.Destroying:Once(function()
 		views[inst] = nil
+	end)
+	-- The server may write C after the model replicates: rebuild the looks when it changes.
+	inst:GetAttributeChangedSignal("C"):Connect(function()
+		view.charm = tostring(inst:GetAttribute("C") or "none")
+		for _, extra in view.extras do
+			extra:Destroy()
+		end
+		view.extras = {}
+		if view.look then
+			view.look:Destroy()
+		end
+		view.look, view.flicker = nil, nil
+		view.look = applyLook(view)
 	end)
 end
 
@@ -216,6 +332,9 @@ task.spawn(function()
 			task.defer(track, inst) -- after the Model's MeshPart has replicated too
 		end
 	end)
+end)
+followers.ChildAdded:Connect(function(inst)
+	task.defer(track, inst)
 end)
 
 -- Backup sweep of Workspace.Garden.Plots.Plot<n>.Creatures (twice a second; cheap at 120 max).
@@ -284,7 +403,15 @@ RunService.RenderStepped:Connect(function()
 				end
 			end
 		end
-		if (view.base.Position - eye).Magnitude > 160 then
+		-- Stormy: a 0.12 s flash every 3 to 8 s (the light is an extra, so a reveal switches it off too).
+		local flicker = view.flicker
+		if flicker and not hidden then
+			if t >= view.flashAt + 0.12 then
+				view.flashAt = t + 3 + math.random() * 5
+			end
+			flicker.Brightness = if t >= view.flashAt then 2.5 else 0
+		end
+		if view.follower or (view.base.Position - eye).Magnitude > 160 then
 			continue
 		end
 		local bob = math.sin(t * 2 + view.phase) * 0.18
@@ -301,25 +428,20 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- Idle cries (GDD U7, architecture 6.1): each creature within 60 studs every 12 to 30 s, at most one
--- cry per 2 s across the garden, none while hidden for a reveal; out of range it just redraws.
-local lastCry = -math.huge
+-- cry per 2 s across the garden (ClientState.idleCry), none while hidden for a reveal and none for
+-- followers (FollowerFx cries on a hop); out of range it just redraws.
 task.spawn(function()
 	while true do
 		task.wait(1)
 		local now = os.clock()
 		local eye = camera.CFrame.Position
 		for inst, view in views do
-			if now < view.nextCry then
+			if now < view.nextCry or view.follower then
 				continue
 			end
 			view.nextCry = now + 12 + math.random() * 18
-			if
-				now - lastCry >= 2
-				and not ClientState.hidden[view.key]
-				and (view.base.Position - eye).Magnitude <= 60
-			then
-				lastCry = now
-				ClientState.cry(tostring(inst:GetAttribute("S")), 0.2, view.base.Position)
+			if not ClientState.hidden[view.key] and (view.base.Position - eye).Magnitude <= 60 then
+				ClientState.idleCry(tostring(inst:GetAttribute("S")), view.base.Position)
 			end
 		end
 	end
