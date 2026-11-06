@@ -177,7 +177,9 @@ end
 
 -- Sends one request; a refusal shows its text. Returns the server's answer.
 function ClientState.request(action: string, arg: string?): (boolean, string?)
-	local ok, result, code = pcall(requestFn.InvokeServer, requestFn, action, arg)
+	-- A trailing nil still counts as an argument on the server (Payload refuses it): send none.
+	local args = if arg == nil then { action } else { action, arg }
+	local ok, result, code = pcall(requestFn.InvokeServer, requestFn, table.unpack(args))
 	if not ok then
 		ClientState.toast("Could not reach the server", "notice", UI.CORAL)
 		return false, "error"

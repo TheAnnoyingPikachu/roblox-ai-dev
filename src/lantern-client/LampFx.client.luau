@@ -196,6 +196,15 @@ local function updateTurret(dt: number, humanoid: Humanoid?)
 			turn(s.Position.X * math.rad(140) * dt, s.Position.Y * math.rad(140) * dt)
 		end
 	end
+	-- keys (arrows or WASD; a seated character does not walk): 90 degrees a second, for trackpads
+	if not panelOpen then
+		local function key(a: Enum.KeyCode, b: Enum.KeyCode): number
+			return if UserInputService:IsKeyDown(a) or UserInputService:IsKeyDown(b) then 1 else 0
+		end
+		local kx = key(Enum.KeyCode.Right, Enum.KeyCode.D) - key(Enum.KeyCode.Left, Enum.KeyCode.A)
+		local ky = key(Enum.KeyCode.Up, Enum.KeyCode.W) - key(Enum.KeyCode.Down, Enum.KeyCode.S)
+		turn(kx * math.rad(90) * dt, ky * math.rad(90) * dt)
+	end
 	local head = headNear(seat :: Seat)
 	local origin = if head then head.Position else (seat :: Seat).Position + Vector3.new(0, 2.5, 0)
 	local dirTrain = aimTrain()
@@ -204,7 +213,8 @@ local function updateTurret(dt: number, humanoid: Humanoid?)
 	setLampVisible(myLamp, true)
 	camera.CameraType = Enum.CameraType.Scriptable
 	local flat = Vector3.new(dir.X, 0, dir.Z).Unit
-	camera.CFrame = CFrame.lookAt(origin - flat * 9 + Vector3.new(0, 4, 0), origin + dir * 40)
+	-- high enough over the lamp that the seated avatar's head stays below the beam
+	camera.CFrame = CFrame.lookAt(origin - flat * 9 + Vector3.new(0, 7, 0), origin + dir * 40)
 	-- send: on a change over 0.5 degrees at most 10 a second, and every 0.3 s so the aim never goes stale
 	local v = Vector3.new(dirTrain.x, dirTrain.y, dirTrain.z)
 	local now = os.clock()

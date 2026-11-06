@@ -242,8 +242,10 @@ local seats = new("Frame", {
 })
 local openDepot: () -> ()
 local stokeUntil = 0
+local stoked = false
 local stoke = UiKit.button(seats, "STOKE", UI.GOLD, "large", 220, function()
 	if ClientState.request("stoke") then
+		stoked = true -- the "Tap to stoke!" hint has done its job
 		stokeUntil = os.clock() + LanternConfig.STOKE.cooldown
 		ClientState.sound("chuff", 0.6)
 	end
@@ -262,6 +264,11 @@ end)
 local depotButton = UiKit.button(seats, "DEPOT", UI.GOLD, "medium", 200, function()
 	openDepot()
 end)
+-- While moving: a lamp turret at night, back to the Stoker seat from a turret (a solo crew must
+-- reach a lamp at night; the server re-seats, it never stops the train).
+local swap = UiKit.button(seats, "LAMP", UI.LILAC, "medium", 200, function()
+	ClientState.request("sit", if player:GetAttribute("Seat") == "turret" then "stoker" else "turret")
+end)
 local pulse = new("UIScale", { Parent = stoke })
 local stokeTween = TweenService:Create(
 	pulse,
@@ -275,7 +282,6 @@ local stokeHint = UiKit.text(stoke, "Tap to stoke!", 20, UI.CREAM, {
 	Outline = UI.INK,
 	OutlineThickness = 1.5,
 })
-local stoked = false
 
 -- Left: the crew list ------------------------------------------------------------------------------------
 
@@ -431,6 +437,8 @@ local function refresh()
 	stand.Visible = crew and seated and not moving and (r.Phase == "stop" or r.Phase == "depot" or r.Phase == "hub")
 	depotButton.Visible = crew and (r.Phase == "depot" or r.Phase == "hub") and UiKit.current() == nil
 	depotButton.Text = if r.Phase == "hub" then "VOTE" else "DEPOT"
+	swap.Visible = crew and seated and moving and (seat == "turret" or r.Phase == "night")
+	swap.Text = if seat == "turret" then "STOKER" else "LAMP"
 
 	coins.set(player:GetAttribute("Tickets") or 0)
 	local level = player:GetAttribute("Level") or 1

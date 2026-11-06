@@ -161,16 +161,15 @@ end
 local function buildWall(frame: CFrame)
 	local model = new("Model", { Name = "LanternFogWall" })
 	local width = STOP.width + 8
-	-- three soft layers, each thinner towards the top so the bank has no hard edge
-	for i, t in { 0.55, 0.7, 0.82 } do
+	-- three soft layers, each thinner towards the top so the bank has no hard edge; faint, so the
+	-- smoke reads as mist and not as a lit screen (Studio integration)
+	for i, t in { 0.78, 0.86, 0.94 } do
 		local p = slab(model, `Bank{i}`, Vector3.new(width, 22 - (i - 1) * 6, 6), t)
 		p:SetAttribute("Back", (i - 1) * 5)
 	end
-	local fill = slab(model, "Behind", Vector3.new(width, 24, 1), 0.55)
+	local fill = slab(model, "Behind", Vector3.new(width, 24, 1), 0.8)
 	fill:SetAttribute("Fill", true)
-	local edge = slab(model, "Edge", Vector3.new(width, 22, 1), 0.85)
-	edge.Color = UI.CREAM
-	edge.Material = Enum.Material.Neon
+	local edge = slab(model, "Edge", Vector3.new(width, 22, 1), 1) -- carries the sparkles only
 	edge:SetAttribute("Back", -2)
 	emitter(model:FindFirstChild("Bank1") :: Part, "rbxasset://textures/particles/smoke_main.dds", UI.FOG, 22, 70, 0.3)
 	emitter(
@@ -330,6 +329,50 @@ local function chimney(speed: number)
 	e.Rate = if speed > 0.5 then 2 + speed * 0.5 else 0.6
 end
 
+-- Rescued critters ride in the passenger car's windows until the run ends (GDD K 0:49; the window
+-- slots of train_car_passenger: x +-3.8, z +-1.78 and +-5.34, sill 4.68 above the rail).
+local WINDOWS =
+	{ { 1, -5.34 }, { -1, -5.34 }, { 1, -1.78 }, { -1, -1.78 }, { 1, 1.78 }, { -1, 1.78 }, { 1, 5.34 }, { -1, 5.34 } }
+local riders: { Model } = {}
+local function ride(species: string)
+	local train = Workspace:FindFirstChild("Lantern") and (Workspace :: any).Lantern:FindFirstChild("Train")
+	local coach = train and train:FindFirstChild("train_car_passenger")
+	local base = coach and coach:FindFirstChild("Base") :: BasePart?
+	local slot = WINDOWS[#riders + 1]
+	if base == nil or slot == nil then
+		return
+	end
+	local m = ClientState.critterModel(species)
+	local _, size = m:GetBoundingBox()
+	if size.Y > 2.4 then
+		m:ScaleTo(m:GetScale() * 2.4 / size.Y)
+	end
+	local box, fit = m:GetBoundingBox()
+	-- the base's centre is 1.8 above the rail; the critter sits on the sill looking out
+	local at = base.CFrame
+		* CFrame.new(slot[1] * 3.3, 4.68 - 1.8 + fit.Y / 2, slot[2])
+		* CFrame.Angles(0, -slot[1] * math.pi / 2, 0)
+	m:PivotTo(at * box:ToObjectSpace(m:GetPivot()))
+	for _, p in m:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.Massless = false, false, false, false, true
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0, weld.Part1 = base, p
+			weld.Parent = p
+		end
+	end
+	m.Parent = Workspace
+	table.insert(riders, m)
+end
+ClientState.RunChanged:Connect(function(name: string)
+	if name == "Phase" and ClientState.run().Phase == "hub" then
+		for _, m in riders do
+			m:Destroy()
+		end
+		riders = {}
+	end
+end)
+
 -- Music by phase: the menu track in the start menu, hub, Depot and run end; day on rides and stops;
 -- night for nights and the Lampeater. A crossfade at the music setting (Calm night plays it softer).
 local tracks: { [string]: Sound } = {}
@@ -431,6 +474,8 @@ ClientState.Fx.OnClientEvent:Connect(function(kind: string, data: any)
 	end
 	if kind == "depart" then
 		ClientState.sound("whistle", 0.6)
+	elseif kind == "rescue" and type(data.species) == "string" then
+		ride(data.species)
 	elseif kind == "caught" and tonumber(data.userId) == player.UserId then
 		setCaught(true)
 		task.delay(STOP.limbo + 2, setCaught, false) -- in case `back` is missed

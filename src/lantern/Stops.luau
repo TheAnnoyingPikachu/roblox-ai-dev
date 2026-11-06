@@ -260,6 +260,75 @@ local function dress(model: Model, tile: LanternConfig.Tile, at: CFrame): { Base
 	return dressing
 end
 
+-- The tile mesh's plate is flat and dark (Studio integration): grass terrain edge to edge from the
+-- ramp's foot to the back edge, a ground lane down the middle, water blocks left open. Terrain renders
+-- its surface 2 studs above a filled block's top (4-stud voxels centred on multiples of 4), so the
+-- blocks below end 2 under the wanted surface. It stays after the stop: a grass patch by the track.
+local GRASS_TOP = 0.15 -- above the plate (no z-fighting); items still stand clear of the blades
+local function grass(tile: LanternConfig.Tile, at: CFrame)
+	local terrain = workspace.Terrain
+	local ramp = LanternConfig.TILE_DECK.ramp
+	local depth = STOP.depth - ramp
+	local function fill(x: number, z: number, size: Vector3, material: Enum.Material)
+		terrain:FillBlock(at * CFrame.new(x, GRASS_TOP - 2 - size.Y / 2, z), size, material)
+	end
+	fill(0, ramp + depth / 2, Vector3.new(STOP.width, 4, depth), Enum.Material.Grass)
+	fill(0, ramp + depth / 2, Vector3.new(10, 4, depth), Enum.Material.Ground)
+	for _, b in tile.blocks do
+		if kindOf(b.name or "") == "water" then
+			terrain:FillBlock(
+				at * CFrame.new(b.at.x, b.at.y, b.at.z),
+				v(b.size) + Vector3.new(2, 12, 2),
+				Enum.Material.Air
+			)
+		end
+	end
+end
+
+-- Seeded decor along the side and back borders, at least 9 studs from every site, block and lamp and
+-- clear of the lane; ghosted, so it never blocks a site or the way back.
+local DECOR = { "decor_pine", "decor_pine", "decor_birch", "decor_birch", "decor_rock" }
+local function scatter(model: Model, tile: LanternConfig.Tile, at: CFrame, seed: number)
+	local rng = Random.new(seed)
+	local spots = {}
+	for z = 24, 144, 12 do
+		table.insert(spots, Vector3.new(-55, 0, z))
+		table.insert(spots, Vector3.new(55, 0, z))
+	end
+	for x = -48, 48, 12 do
+		table.insert(spots, Vector3.new(x, 0, 154))
+	end
+	local function clear(p: Vector3): boolean
+		if math.abs(p.X) < 12 then
+			return false -- the lane
+		end
+		for _, list in { tile.small, tile.big, tile.lamps } do
+			for _, s in list do
+				if (Vector3.new(s.x, 0, s.z) - p).Magnitude < 9 then
+					return false
+				end
+			end
+		end
+		for _, b in tile.blocks do
+			if math.abs(b.at.x - p.X) < b.size.x / 2 + 6 and math.abs(b.at.z - p.Z) < b.size.z / 2 + 6 then
+				return false
+			end
+		end
+		return true
+	end
+	for _, spot in spots do
+		local p = spot + Vector3.new(rng:NextNumber(-3, 3), 0, rng:NextNumber(-3, 3))
+		if rng:NextNumber() < 0.7 and clear(p) then
+			local name = DECOR[rng:NextInteger(1, #DECOR)]
+			local scale = rng:NextNumber(0.8, 1.1)
+			local decor = Models.night(name, model, (at * CFrame.new(p)).Position, rng:NextNumber(0, 360), scale)
+			if decor then
+				Models.ghost(decor)
+			end
+		end
+	end
+end
+
 -- Builds the stop for `stop` (LootRules) at the site `at` (World.site). `onPrompt(player, itemId,
 -- "pick" | "help")` handles the prompts.
 function Stops.build(stop: LootRules.Stop, at: CFrame, parent: Instance, onPrompt: (Player, number, string) -> ())
@@ -303,6 +372,7 @@ function Stops.build(stop: LootRules.Stop, at: CFrame, parent: Instance, onPromp
 	end
 	local tile = LanternConfig.tile(stop.tile) :: LanternConfig.Tile
 	local dressing = dress(model, tile, at)
+	grass(tile, at)
 	local items = Instance.new("Folder")
 	items.Name = "Items"
 	items.Parent = model
@@ -336,6 +406,9 @@ function Stops.build(stop: LootRules.Stop, at: CFrame, parent: Instance, onPromp
 			end
 		elseif mesh then
 			mesh:Destroy()
+		end
+		if folder == model then
+			scatter(model, tile, at, string.byte(stop.tile) * 100 + stop.leg * 10 + stop.index)
 		end
 	end)
 end

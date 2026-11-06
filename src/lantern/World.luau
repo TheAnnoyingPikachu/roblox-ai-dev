@@ -381,6 +381,10 @@ end
 -- Art bible section 3: the dusk values (Depot and stops). The client tweens night and dawn.
 -- Technology = Future is set in lantern.project.json (scripts cannot set it).
 local function lighting()
+	local terrain = workspace.Terrain -- the stop tiles' grass (Stops) in the art bible's tints
+	terrain.Decoration = true
+	terrain:SetMaterialColor(Enum.Material.Grass, PAL.grass)
+	terrain:SetMaterialColor(Enum.Material.Ground, PAL.path)
 	Lighting.GlobalShadows = true
 	Lighting.ShadowSoftness = 0.4
 	Lighting.EnvironmentDiffuseScale = 0.5
