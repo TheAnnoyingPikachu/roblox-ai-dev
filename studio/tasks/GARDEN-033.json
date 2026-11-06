@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "in_progress",
+  "status": "in_review",
   "task_id": "GARDEN-033",
   "owner": "A11",
   "verifier": "A15",
@@ -62,5 +62,11 @@
     "WheelRules.spec.luau",
     "GardenAssets.spec.luau"
   ],
-  "notes": "Over the ten-file guide because the 12 findings touch trading, saves, the wheel, the follower, plots, the asset pipeline and four documents; they are one review and one fix pass, like GARDEN-012. Studio harnesses that need Trades.deps stay scratch scripts (Trades needs Roblox services); their output is recorded in the review."
+  "notes": "Over the ten-file guide because the 12 findings touch trading, saves, the wheel, the follower, plots, the asset pipeline and four documents; they are one review and one fix pass, like GARDEN-012. Studio harnesses that need Trades.deps stay scratch scripts (Trades needs Roblox services); their output is recorded in the review.",
+  "evidence": [
+    "Code 87d4111, Clover image id and register rows 466710d (branch garden/v04, local, not pushed). lune run tests/run 555/555 passed, 0 failed, 0 load errors (551 + 4 new: TradeRules one copy void, GardenProgress isNewer, WheelRules spin after 00:00 UTC, GardenAssets decal-only); selene 0/0; stylua --check clean on LF copies of 15 .luau files; validate-tasks 69 valid; check-scope all files in scope; rojo build garden.project.json + check-place match.",
+    "Studio, scratch place = garden.project.json + a Studio-only harness Script, build stamp 466710d ([Build] 466710d in the server log; local build, DataStores off): [H33] 16/16 through Trades.deps (B1 one copy void either way heals nothing, void retry lands after a failed mark; M1 failed own or counterpart read returns false with no apply, absent returns true; M2 undo refused while trading, both gotIds locked during the marks, re-check failure strips undoAt from both copies and changes nobody, clean undo works; m8 faults before and after the applies).",
+    "Studio, same build: Huge lion follower rests 8.6 studs to the side and 5.6 behind, edge at least 1.25 studs off the walk line and in the camera-to-head line on 0 of 138 frames of a straight walk, LTM 0.6 when forced into the camera line; pad tags in studs, no overlap at about 20 and 40 studs; Clover decal on the 6 owned pads and a Starlit fence of 143 meshes with 19 lights (pad and fence set by a Studio-only scratch Profiles.apply, adminGrant grants no cosmetics); no zero-scale error in three plays.",
+    "Not done: two-client trade with DataStores on and a forced flush failure (staging), the Profiles.load offline branches against a live DataStore (Read), the markUntil give-up warn (Read), hand walk on phone or gamepad. Details: docs/qa/garden-v04-review.md, Fixes (GARDEN-033)."
+  ]
 }
