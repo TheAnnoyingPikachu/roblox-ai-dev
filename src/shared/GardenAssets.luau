@@ -305,8 +305,8 @@ local GardenAssets: { [string]: Asset } = {
 	creature_snowleopard = {
 		size = { 4.6, 5.8, 4.6 },
 		parts = { "creature_snowleopard" },
-		model = 100006974097787,
-		decal = 118576842176914,
+		model = 113991084601632,
+		decal = 87884971615429,
 		texture = nil,
 	},
 	egg_weekly = {
