@@ -94,8 +94,8 @@ describe("LanternConfig numbers (GDD C, F, H)", function()
 		expect(`{C.CREW.max} {C.CREW.active} {C.CREW.activeMove} {C.CREW.aimTurn} {C.WEEKLY_SALT}`).toBe(
 			"6 180 10 1 6006"
 		)
-		local k = C.CARRY_CHECK -- G4 (QA M2)
-		expect(`{k.every} {k.slack} {k.mult}`).toBe("0.5 4 1.5")
+		local k = C.CARRY_CHECK -- G4 (QA M2, r3)
+		expect(`{k.mult} {k.lag} {k.slack}`).toBe("1.25 2 4")
 	end)
 
 	it("sums every odds row to 10,000 in RARITIES order", function()

@@ -14,9 +14,9 @@ type Item = LootRules.Item
 type Vec3 = LanternConfig.Vec3
 export type Carry = { small: { number }, big: number? } -- item ids; the first carrier's hands
 export type Carries = { [number]: Carry } -- by UserId
--- One carrier's G4 samples (stop or world frame, only x and z count): the last tick's position, when
--- the root last moved, the start of the current check window and the last position that passed.
-export type Pace = { last: Vec3, movedAt: number, from: Vec3, fromAt: number, valid: Vec3 }
+-- One carrier's G4 samples (stop or world frame, only x and z count): the last sample and its time,
+-- the studs the carrier may still cover (`budget`) and the last position that passed.
+export type Pace = { last: Vec3, at: number, budget: number, valid: Vec3 }
 
 local MAX_SMALL = 3
 local SPREAD = { 0, 1, -1 }
@@ -200,32 +200,22 @@ local function flat(a: Vec3, b: Vec3): number
 end
 
 -- The G4 speed check for one carrier, run every server tick before that tick's loads (QA M2). `p` is
--- nil for the first sample, taken where the item was picked up. A move passes when it stays within
--- mult x `speed` + slack studs since the last tick the root moved (that time capped at `every`, so a
--- replication stall that catches up is not a teleport) and, every `every` seconds, over the whole
--- window (slow drift). Returns the new pace, whether the move passed (false: drop the load at
--- `pace.valid`, the last position that passed) and whether the carrier may load this tick: never on
--- the pick-up sample, so a carrier must be checked once before a load (the load waits a tick).
+-- nil for the first sample, taken where the item was picked up. Distance over time (QA r3): the
+-- carrier earns mult x `speed` studs a second, banked up to `lag` seconds of carrying plus `slack`
+-- (starting at `slack`), and every move spends it. So an honest carrier whose position the server
+-- saw frozen for up to `lag` + slack / speed seconds catches up, while anything faster than mult x
+-- speed runs the bank dry within seconds. Returns the new pace, whether the move passed (false: drop
+-- the load at `pace.valid`, the last position that passed) and whether the carrier may load this
+-- tick: never on the pick-up sample, so a carrier must be checked once before a load.
 function CarryRules.pace(p: Pace?, pos: Vec3, speed: number, now: number): (Pace, boolean, boolean)
-	if p == nil then
-		return { last = pos, movedAt = now, from = pos, fromAt = now, valid = pos }, true, false
-	end
 	local check = LanternConfig.CARRY_CHECK
-	local step = flat(pos, p.last)
-	local ok = step <= check.mult * speed * math.min(now - p.movedAt, check.every) + check.slack
-	local from, fromAt = p.from, p.fromAt
-	if now - fromAt >= check.every - 1e-9 then
-		ok = ok and flat(pos, from) <= check.mult * speed * (now - fromAt) + check.slack
-		from, fromAt = pos, now
+	if p == nil then
+		return { last = pos, at = now, budget = check.slack, valid = pos }, true, false
 	end
-	local out = {
-		last = pos,
-		movedAt = if step > 0.01 then now else p.movedAt,
-		from = from,
-		fromAt = fromAt,
-		valid = if ok then pos else p.valid,
-	}
-	return out, ok, ok
+	local bank = math.min(speed * check.lag + check.slack, p.budget + check.mult * speed * math.max(0, now - p.at))
+	local left = bank - flat(pos, p.last)
+	local ok = left >= 0
+	return { last = pos, at = now, budget = math.max(0, left), valid = if ok then pos else p.valid }, ok, ok
 end
 
 function CarryRules.speed(stop: Stop, carries: Carries, userId: number): number

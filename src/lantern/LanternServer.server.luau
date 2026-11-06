@@ -237,6 +237,24 @@ local function toHub()
 	end
 end
 
+-- The G4 check (QA M2) of `player`'s carry up to where the root is now: a fail drops the load at the
+-- last spot that passed. Returns (passed, may load).
+local function carryCheck(player: Player, root: BasePart, t: number): (boolean, boolean)
+	local userId = player.UserId
+	local speed = CarryRules.speed(run.loot :: any, run.carries, userId)
+	local passed, valid, canLoad = Carry.check(userId, root.Position, speed, t)
+	local at = if passed then nil else Stops.toStop(valid)
+	if at then
+		local out, ok = TrainRules.drop(run, userId, at)
+		if ok then
+			run = out
+			Carry.forget(userId)
+			notice(player, "Whoops, your load slipped! Pick it up again")
+		end
+	end
+	return passed, canLoad
+end
+
 local function onPrompt(player: Player, itemId: number, action: string)
 	guarded("prompt", function()
 		local userId = player.UserId
@@ -247,6 +265,11 @@ local function onPrompt(player: Player, itemId: number, action: string)
 		local root, at = rootOf(player), Stops.itemPos(itemId)
 		if root == nil or at == nil or (root.Position - at).Magnitude > LanternConfig.REACH + REACH_SLACK then
 			notice(player, REFUSALS.far)
+			return
+		end
+		-- QA r2: full hands are checked up to this pick first (a teleport to an item, or next to the
+		-- train, with a load); a fail drops the load and refuses the pick.
+		if action == "pick" and run.carries[userId] and not carryCheck(player, root, now()) then
 			return
 		end
 		local out, ok, code = (if action == "help" then TrainRules.help else TrainRules.pick)(run, userId, itemId)
@@ -307,12 +330,14 @@ local function handle(e: TrainRules.Event, before: Run, beams: { any }, owners: 
 		Stops.clear()
 		fxAll("depart", {})
 	elseif kind == "wisp" then
+		-- QA r1: a puff is not activity (turning the aim is), and only an active shooter is credited:
+		-- an idle player's untouched lamp keeps shining for the crew but earns them nothing.
 		for userId, count in Night.fx(e.payload, run, before.night, beams, owners, t) do
 			local shooter = Players:GetPlayerByUserId(userId)
-			if shooter then
+			local m = run.crew[userId]
+			if shooter and m and t - m.active <= LanternConfig.CREW.active then
 				Rewards.count(shooter, "puffs", count)
 			end
-			run = TrainRules.touch(run, userId, t) -- a puff is activity (QA M3)
 		end
 	elseif kind == "fed" then
 		fxAll("fed", {})
@@ -423,18 +448,8 @@ local function carryChecks(t: number): { [number]: boolean }
 		local player = Players:GetPlayerByUserId(userId)
 		local root = rootOf(player)
 		if player and root and not root.Anchored then
-			local speed = CarryRules.speed(run.loot :: any, run.carries, userId)
-			local passed, valid, canLoad = Carry.check(userId, root.Position, speed, t)
+			local passed, canLoad = carryCheck(player, root, t)
 			ready[userId] = passed and canLoad
-			local at = if passed then nil else Stops.toStop(valid)
-			if at then
-				local out, ok = TrainRules.drop(run, userId, at)
-				if ok then
-					run = out
-					Carry.forget(userId)
-					notice(player, "Too fast: your load slipped")
-				end
-			end
 		end
 	end
 	return ready
@@ -678,6 +693,10 @@ local actions: { [string]: Router.Action } = {
 				return false, "phase"
 			end
 			Train.stand(player, side())
+			local root = rootOf(player)
+			if root and run.carries[player.UserId] then -- an item picked off the deck (QA r3)
+				Carry.start(player.UserId, root.Position, now())
+			end
 			return runRequest(player, run, true)
 		end,
 	},

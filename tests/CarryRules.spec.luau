@@ -225,33 +225,72 @@ describe("CarryRules.pace", function()
 		expect(`{ok} {ready} {out.valid.z}`).toBe("false false 150")
 	end)
 
-	it("standing still first does not open a window for a jump: 15.25 studs at most after 0.5 s", function()
-		local p = CarryRules.pace(nil, at(150), SMALL, 0)
-		for i = 1, 10 do
-			p = CarryRules.pace(p, at(150), SMALL, 0.1 * i)
+	-- Stands at z 150 for `seconds` (a full bank after 2 s), carrying at `speed`.
+	local function stand(speed: number, seconds: number): any
+		local p = CarryRules.pace(nil, at(150), speed, 0)
+		for i = 1, math.round(seconds * 10) do
+			p = CarryRules.pace(p, at(150), speed, 0.1 * i)
 		end
-		expect(select(2, CarryRules.pace(p, at(130), SMALL, 1.1))).toBe(false)
-		expect(select(2, CarryRules.pace(p, at(136), SMALL, 1.1))).toBe(true)
+		return p
+	end
+
+	it("standing still banks at most lag x speed + slack: 34 studs for small items, however long", function()
+		local p = stand(SMALL, 10)
+		expect(select(2, CarryRules.pace(p, at(150 - 35), SMALL, 10.1))).toBe(false)
+		expect(select(2, CarryRules.pace(p, at(150 - 33), SMALL, 10.1))).toBe(true)
 	end)
 
-	it("passes an honest carry at every speed, and a replication stall that catches up", function()
+	it("passes an honest carry at every speed, and a freeze of up to 2 s that catches up (QA r3)", function()
+		local rows = {}
 		for _, speed in { 16, 15, 13, 9 } do
 			local p = CarryRules.pace(nil, at(150), speed, 0)
 			local _, ok, ready = walk(p, 150, speed, 0, 100)
-			expect(`{speed} {ok} {ready}`).toBe(`{speed} true true`)
+			local row = { `{speed} {ok} {ready}` }
+			for _, frozen in { 0.4, 1, 1.5, 2 } do
+				-- Walks 0.5 s, the server sees the root frozen for `frozen` s, then where it really is.
+				local q = walk(CarryRules.pace(nil, at(150), speed, 0), 150, speed, 0, 5)
+				local n = math.round(frozen * 10)
+				for i = 1, n do
+					q = CarryRules.pace(q, q.last, speed, 0.5 + 0.1 * i)
+				end
+				local t = 0.5 + 0.1 * (n + 1)
+				local caught, passed = CarryRules.pace(q, at(150 - speed * t), speed, t)
+				local _, after = walk(caught, 150 - speed * t, speed, t, 20)
+				table.insert(row, `{frozen}:{passed and after}`)
+			end
+			table.insert(rows, table.concat(row, " "))
 		end
-		local p = walk(CarryRules.pace(nil, at(150), SMALL, 0), 150, SMALL, 0, 5) -- at z 142.5, t 0.5
-		for i = 1, 4 do -- the server sees the root frozen for 0.4 s
-			p = CarryRules.pace(p, at(142.5), SMALL, 0.5 + 0.1 * i)
-		end
-		expect(select(2, CarryRules.pace(p, at(142.5 - 7.5), SMALL, 1.0))).toBe(true) -- 0.5 s of walking at once
+		expect(table.concat(rows, " | ")).toBe(
+			"16 true true 0.4:true 1:true 1.5:true 2:true | 15 true true 0.4:true 1:true 1.5:true 2:true"
+				.. " | 13 true true 0.4:true 1:true 1.5:true 2:true | 9 true true 0.4:true 1:true 1.5:true 2:true"
+		)
 	end)
 
-	it("catches a steady drift at three times the carry speed over the 0.5 s window", function()
+	it("catches a steady drift at three times the carry speed; 1.2 times passes for good", function()
 		local p = CarryRules.pace(nil, at(150), CRATE, 0)
 		local _, ok = walk(p, 150, CRATE, 0, 10, 3 * CRATE)
 		expect(ok).toBe(false)
-		local _, honest = walk(CarryRules.pace(nil, at(150), CRATE, 0), 150, CRATE, 0, 10, 1.4 * CRATE)
+		local _, honest = walk(CarryRules.pace(nil, at(150), CRATE, 0), 150, CRATE, 0, 100, 1.2 * CRATE)
 		expect(honest).toBe(true)
+	end)
+
+	it("catches 21 studs/s with a crate, alone (9) or helped (13), before the train, even with a full bank", function()
+		local LOAD_BOX = 6
+		local rows = {}
+		for _, speed in { CRATE, 13 } do
+			local p, ok = walk(stand(speed, 3), 150, speed, 3, 100, 21)
+			table.insert(rows, `{speed} {ok} {p.valid.z > LOAD_BOX} {math.floor(p.valid.z)}`)
+		end
+		-- Dropped after 44 and 124 studs from the deepest crate site, 105 and 26 studs from the train.
+		expect(table.concat(rows, " | ")).toBe("9 false true 105 | 13 false true 26")
+	end)
+
+	it("a pick with full hands is checked from the last sample first (QA r2)", function()
+		-- Carrying a small item near the train (z 20), the carrier teleports to an item at z 120, picks
+		-- it and is back before the next tick: that tick alone sees no move.
+		local p = walk(CarryRules.pace(nil, at(20), SMALL, 0), 20, SMALL, 0, 5)
+		expect(select(2, CarryRules.pace(p, p.last, SMALL, 0.6))).toBe(true)
+		local out, ok = CarryRules.pace(p, at(120), SMALL, 0.55) -- the server checks at the pick
+		expect(`{ok} {out.valid.z == p.last.z}`).toBe("false true")
 	end)
 end)

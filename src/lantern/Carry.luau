@@ -89,12 +89,11 @@ local function vec(p: Vector3): { x: number, y: number, z: number }
 	return { x = p.X, y = p.Y, z = p.Z }
 end
 
--- The first G4 sample, where the item was picked up (QA M2): a teleport straight after the pick-up
--- is checked against it. A carrier who already holds something keeps their samples.
+-- A fresh G4 sample where an item is picked up (QA M2), at every pick even with full hands (QA r2:
+-- a teleport to a far item and back is checked from the pick spot), and after the server's own
+-- stand move (QA r3).
 function Carry.start(userId: number, pos: Vector3, now: number)
-	if paces[userId] == nil then
-		paces[userId] = (CarryRules.pace(nil, vec(pos), 0, now))
-	end
+	paces[userId] = (CarryRules.pace(nil, vec(pos), 0, now))
 end
 
 -- G4 (QA M2), every tick before the tick's loads: whether `userId` (carrying at `speed`) moved

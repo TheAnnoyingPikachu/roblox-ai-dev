@@ -93,9 +93,11 @@ LanternConfig.MOVE = { walk = 16, small = 15, big = 13, critterSolo = 9, critter
 LanternConfig.REACH = 8
 LanternConfig.HELP_BREAK = 14
 LanternConfig.LOAD_BOX = 6
--- G4 carry check (QA M2): a carrier moves at most mult x carry speed + slack studs between server ticks
--- (time since the root last moved, capped at `every`) and over every `every` seconds.
-LanternConfig.CARRY_CHECK = { every = 0.5, slack = 4, mult = 1.5 }
+-- G4 carry check (QA M2, r3; CarryRules.pace): a carrier earns mult x carry speed studs a second,
+-- banked up to `lag` seconds of carrying + slack, and spends it moving. An honest carrier the server
+-- saw frozen for up to lag + slack / speed seconds (2.25 to 2.4 s) catches up; 21 studs/s with a
+-- crate (9 alone, 13 helped) runs dry before the train.
+LanternConfig.CARRY_CHECK = { mult = 1.25, lag = 2, slack = 4 }
 LanternConfig.NEAR = 70 -- a big site under 70 studs deep uses the near odds
 LanternConfig.ITEMS = {
 	coal = { big = false, tickets = 1, coal = 5 },
