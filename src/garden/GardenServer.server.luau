@@ -63,8 +63,8 @@ local REQUEST_ARGS: { [string]: boolean } = {
 	like = true,
 	setGate = true,
 	home = false,
-	claimDaily = false,
-	claimWeekly = false,
+	play = false, -- v0.5 (0017): the start menu's PLAY, home without leaving a Dash round
+	claimLogin = true, -- "week" or "month"; claimDaily and claimWeekly are gone (GDD X5)
 	claimQuest = true,
 	buyCosmetic = true,
 	equipCosmetic = true,
@@ -336,10 +336,17 @@ local function onRequest(player: Player, action: any, arg: any): boolean
 		return Dash.toggle(player)
 	elseif action == "wheelStart" then
 		return Wheel.start(player)
-	elseif action == "home" then
-		-- A racer leaves the round, in the start hold too. Ready stays: GDD T3 lets a player ready up
-		-- and keep gardening; NOT READY is the way out of the queue.
+	elseif action == "claimLogin" then
+		if arg ~= "week" and arg ~= "month" then
+			return false
+		end
+	elseif action == "home" or action == "play" then
+		-- A racer leaves the round on home, in the start hold too; play refuses a racer (garden.md 4.7).
+		-- Ready stays: GDD T3 lets a player ready up and keep gardening; NOT READY leaves the queue.
 		if Dash.isRacing(player) then
+			if action == "play" then
+				return false
+			end
 			guarded("dash leave", function()
 				Dash.leave(player)
 			end)
@@ -550,9 +557,18 @@ local boardAt = -math.huge
 
 local function slowTick()
 	local now = os.time()
+	local today = MetaRules.dayOf(now)
 	for player, live in State.live do
 		local profile = Profiles.get(player)
 		if profile then
+			-- UTC day rollover while online (garden.md 4.7): the tick is idempotent, so checking the
+			-- profile's own last counted day also covers a load that finished across midnight.
+			if profile.login.weekLast ~= today or profile.login.monthLast ~= today then
+				Profiles.apply(player, "loginTick", function(p)
+					return GardenProgress.loginTick(p, today)
+				end)
+				profile = Profiles.get(player) :: GardenConfig.Profile
+			end
 			for i = 1, GardenConfig.PEN.max do
 				Plots.setPending(live.plot, i, live.pads[i] or 0)
 			end
@@ -650,17 +666,16 @@ local function onPlayer(player: Player)
 		declined = {},
 	}
 	player:SetAttribute("Plot", plot)
+	-- The plaza SpawnLocation places every character (garden.md 4.7); only a racer is moved back.
 	player.CharacterAdded:Connect(function(character)
 		guarded("dash track", function()
 			Dash.track(character)
 		end)
 		character:WaitForChild("HumanoidRootPart", 10)
-		local live = State.live[player]
-		if live then
-			local ok, placed = pcall(Dash.place, player)
-			if not (ok and placed) then
-				toGate(player, live.plot)
-			end
+		if State.live[player] then
+			guarded("dash place", function()
+				return Dash.place(player)
+			end)
 		end
 	end)
 	if player.Character then -- spawned while waiting for a plot
@@ -671,8 +686,7 @@ local function onPlayer(player: Player)
 	Profiles.load(player)
 	local profile = Profiles.get(player)
 	if profile and State.live[player] then
-		Plots.refresh(plot, profile)
-		toGate(player, plot)
+		Plots.refresh(plot, profile) -- no move at join: the client's PLAY sends `play`
 	end
 end
 

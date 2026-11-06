@@ -1,7 +1,8 @@
 # Egg Garden: read this first
 
 Cozy hatch-and-collect garden for up to 6 players (each owns a plot). Status: v0.1 built, QA fixes
-verified (GARDEN-006); v0.2 (Celestial Egg, Splash Dash) built in GARDEN-009, Studio tests open.
+verified (GARDEN-006); v0.2 (Celestial Egg, Splash Dash) built in GARDEN-009, Studio tests open; v0.5
+server (spawn, valley, login tracks; decision 0017) built in GARDEN-052.
 
 - Project `garden.project.json`; publish target `garden-staging` (Max Players 6, set in place settings).
 - Long docs, open only the section you need: `docs/architecture/garden.md` (§3 signatures, §4 server,
@@ -17,7 +18,7 @@ verified (GARDEN-006); v0.2 (Celestial Egg, Splash Dash) built in GARDEN-009, St
 | `Remotes.luau` | `GardenRemotes` (`Request`, `Fx`), `GardenStatus`, `notice` |
 | `State.luau` | `State.live[player]`: plot, pads, rate limit, gate timers |
 | `Plots.luau` | 6 plot shells, `refresh(plot, profile)` rebuilds beds, pads, creatures |
-| `World.luau` | Hatchling Valley, cart, boards, lighting |
+| `World.luau` | Hatchling Valley, cart, boards, lighting; v0.5 spawn, large sakura, hill bands, pond, lanterns (GDD X2) |
 | `Dash.luau` | Splash Dash: the one live `Round`, entrants, carrying out `DashRules` events, prizes, collision group |
 | `DashWorld.luau` | Splash Island decks, start barrier, arches, ready pad and its prompt and label |
 | `Wheel.luau` | Petal Catch: one round per player, catches from the 5 Hz root samples, the roll and the prize (`docs/architecture/garden-wheel.md`) |
@@ -41,6 +42,12 @@ WorldRules GardenProgress MetaRules DashRules WheelRules TradeRules`.
 - A wheel outcome comes only from `WheelRules` on server samples; `Wheel.leave` grants nothing; a spin is one
   `Profiles.apply` with `WheelRules.award`. Wheel calls go through `guarded` like Dash.
 - Router checks: loaded session and plot, string action, arg nil or string <= 32, shared 0.35 s limit.
+- v0.5 spawn (garden.md 4.7): every character spawns on `Workspace.Garden.Spawn` on the plaza; nobody is moved
+  at join. Only `play` (refused while racing) and `home` move a character to `Plots.gate`; `CharacterAdded`
+  only re-places a racer (`Dash.place`).
+- Login tracks: `GardenProgress.login` ticks them at load; `slowTick` re-ticks a profile whose `weekLast` or
+  `monthLast` is not today (UTC rollover while online). `claimLogin week|month` is the only login claim;
+  `claimDaily` and `claimWeekly` are unknown actions (decision 0017).
 - Stores `GardenProfile<suffix>`, `GardenIncome<suffix>`; `PRODUCTION_UNIVERSE_ID` stays nil without SHANNON.
 - `Models.luau`/`Props.luau` are mapped in from `src/relay`; never add files with those names here.
 - New economy values, remotes or schema fields need a decision record (0008, 0012, 0013).

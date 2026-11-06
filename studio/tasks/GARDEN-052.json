@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-052",
   "owner": "A09",
   "verifier": "A15",
@@ -41,5 +41,12 @@
     "LoginRules.spec.luau",
     "GardenProgress.spec.luau"
   ],
-  "notes": "The join-time toGate (GardenServer onPlayer and the CharacterAdded fallback) is removed, not kept beside the SpawnLocation; Dash.place stays. Petal emitters are client-side (GARDEN-053), not World parts. Mesh names are fixed by architecture 9.3; code must run with every id nil (part fallbacks) because art lands in GARDEN-054 and 055."
+  "notes": "The join-time toGate (GardenServer onPlayer and the CharacterAdded fallback) is removed, not kept beside the SpawnLocation; Dash.place stays. Petal emitters are client-side (GARDEN-053), not World parts. Mesh names are fixed by architecture 9.3; code must run with every id nil (part fallbacks) because art lands in GARDEN-054 and 055.",
+  "evidence": [
+    "Local run 2026-11-06 on garden/v05-server (base 8a2b300): lune run tests/run 571/571 pass; selene src tests 0 errors 0 warnings; stylua --check clean on LF copies; node tools/validate-tasks.mjs and node tools/check-scope.mjs origin/main pass; rojo build garden.project.json + node tools/check-place.mjs: build/garden.rbxl matches.",
+    "Studio playtest, build stamp `dev` (local build, no CI stamp), one client, Studio API access off (profile offline): the character spawned on Workspace.Garden.Spawn at (19.9, 4.0, 25.7) facing (-0.6, 0, -0.8), the Great Egg Tree, and was not moved at join or by PLAY (this branch's client does not send `play` yet); Request `play` -> true moved it to plot 1's gate (0, 3.35, -64); `play` again within 0.35 s false; `play x` false; `home` true. `claimDaily`, `claimWeekly`, `claimLogin day`, `claimLogin` with no arg: false. `claimLogin week` true once (+100 coins, LastReward `100 coins#1`), then false.",
+    "Rollover (scratch edit: slowTick today + DayShift): +1 day moved weekDays and monthDays 1 -> 2 once (unchanged 3 s later), a second `claimLogin week` paid 150; +3 days (Monday) reset the week (key 2966 -> 2967, day 1, claimed 0) and kept the month (3 days), `claimLogin month` paid 200 once. A Weekly Egg put in prizeEggs by a scratch edit was planted at level 1 (`plantPrize weekly` true, bed 2, egg_weekly model, ready +3600 s; a second plant false). Plots.gateLook(1) = (0, 6, -57) looking at (0, 5, -100).",
+    "Valley: Workspace.Garden Parts 3,947 at build (4,036 with a loaded plot), budget 7,500; 12 large sakura (Blender a/b/c, 4 each) with trunk colliders, 8 of 16 small sakura kept, 20 hill_a/b/c meshes (bands 2 and 3), 14 terrain hills (band 1), pond with water, 8 lily pads and cattails, 24 lantern models, the spawn_pad model, 900 flowers, 24 flower boxes, 4 more benches. Moonfall (scratch ForceWeather) turns on 38/38 valley PointLights (8 lamps, 6 hanging eggs, 24 lanterns), 0 otherwise. Screenshots: plaza with the spawn pad, rim sakura, horizon hill bands with snow caps, pond, Moonfall. Console: no script errors or warnings (only the engine's 'Asset content representation is being generated' texture lines).",
+    "Deviations: spawn at (21, 0.3, 28), 5 studs from X2's (18, 0.3, 32) inside its 6-stud allowance, because the design spot is 7 studs from the 157.5 degree lamp post, not the assumed 12; the place file's Workspace.SpawnLocation is reused (moved to Workspace.Garden.Spawn) so no character can spawn before the script runs; the rollover tick checks each profile's weekLast/monthLast against today instead of a lastDay variable (same idempotent tick, also covers a load that ends across midnight); the large-sakura fallback is the generated `sakura` mesh scaled to height, then Props.sakura (lead's instruction; 4.7 said Props.sakura x1.6); the river had no water since v0.1 (terrain Water does not replace Sand), so the channel is now carved to Air before the water fill, as the pond is; Plots gains EGG_LOOKS weekly/monthly, FALLBACK colours for the six exclusives, and Lantern/Sakura fence and Lily pad looks for the login cosmetics. Not tested: two clients, `play` refused while racing (code path only)."
+  ]
 }

@@ -1,8 +1,10 @@
 --!strict
 -- "Hatchling Valley" (GDD I1, I4 Clear lighting baseline): plaza and Great Egg Tree, the egg cart,
 -- forecast and Top Gardens boards, the Wild Meadow gate, paths, flower meadows, the river with
--- bridges, blossom trees, windmill, barn and far scenery. Built once from parts, Roblox materials,
--- terrain and the registered meshes in Models. No game rules live here; the plots are in Plots.
+-- bridges, blossom trees, windmill, barn and far scenery; v0.5 (GDD X2, garden.md 4.7) adds the
+-- spawn pad, 12 large sakura, three hill bands, the pond, path lanterns and flower boxes. Built once
+-- from parts, Roblox materials, terrain and the registered meshes in Models (each Blender model has
+-- a part fallback while its id is nil). No game rules live here; the plots are in Plots.
 -- Weather looks are client-side (HatchFx); the server only switches the lamps on for Moonfall.
 
 local Lighting = game:GetService("Lighting")
@@ -10,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local GardenAssets = require(Shared:WaitForChild("GardenAssets"))
 local GardenConfig = require(Shared:WaitForChild("GardenConfig"))
 local GardenRules = require(Shared:WaitForChild("GardenRules"))
 local HatchRules = require(Shared:WaitForChild("HatchRules"))
@@ -23,6 +26,15 @@ local World = {}
 local CART = Vector3.new(0, 0, 30)
 local PLAZA = 45
 local RIVER = 165
+-- GDD X2 says (18, 0.3, 32); moved 5 studs (inside its 6-stud allowance) to clear the 157.5 degree
+-- lamp post by 12 studs, as the X2 assumption intended (it was 7 at the design spot).
+local SPAWN = Vector3.new(21, 0.3, 28)
+local POND = Vector3.new(-50, 0, -92)
+local WINDMILL = Vector3.new(0, 0, -215)
+local BARN = Vector3.new(190, 0, 60)
+local PATCH = GardenConfig.WHEEL -- the Petal Patch square (WheelWorld)
+local BARK = Color3.fromRGB(78, 52, 46)
+local BUDGET = 7500 -- parts under Workspace.Garden (GDD X2)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(60, 45, 40)
 local WOOD = Color3.fromRGB(165, 115, 75)
@@ -95,11 +107,11 @@ local function wedge(parent: Instance, size: Vector3, cframe: CFrame, colour: Co
 end
 
 -- A light that is off until Moonfall (GDD I4).
-local function lamp(p: BasePart, colour: Color3, range: number)
+local function lamp(p: Instance, colour: Color3, range: number, brightness: number?)
 	local l = Instance.new("PointLight")
 	l.Color = colour
 	l.Range = range
-	l.Brightness = 1.4
+	l.Brightness = brightness or 1.4
 	l.Shadows = false
 	l.Enabled = false
 	l.Parent = p
@@ -188,17 +200,60 @@ local function ground()
 		local angle = i / segments * math.pi * 2
 		local at = CFrame.lookAt(polar(angle, RIVER), Vector3.zero)
 		terrain:FillBlock(at * CFrame.new(0, -2.5, 0), Vector3.new(14, 5, 22), Enum.Material.Sand)
+		-- Water does not replace solid voxels: carve the channel first, or the river is dry sand.
+		terrain:FillBlock(at, Vector3.new(13, 8, 14), Enum.Material.Air)
 		terrain:FillBlock(at * CFrame.new(0, -3, 0), Vector3.new(13, 5, 14), Enum.Material.Water)
 		terrain:FillBlock(at * CFrame.new(0, 2, 0), Vector3.new(13, 4, 16), Enum.Material.Air)
 	end
-	-- Rolling hills and rock outcrops beyond 260 studs.
+	-- Hills band 1 (GDD X2 #5): 14 walkable terrain hills at radius 300 to 360, 60 to 90 tall, pushed
+	-- out where their foot would bury the windmill or the barn; a rock outcrop on every fourth.
 	local rng = Random.new(4004)
-	for i = 1, 28 do
-		local angle = i / 28 * math.pi * 2 + rng:NextNumber(-0.08, 0.08)
-		local at = polar(angle, rng:NextNumber(280, 400)) - Vector3.new(0, rng:NextNumber(15, 35), 0)
-		terrain:FillBall(at, rng:NextNumber(45, 75), Enum.Material.Grass)
+	for i = 1, 14 do
+		local radius, depth = rng:NextNumber(70, 110), rng:NextNumber(20, 40)
+		local foot = math.sqrt(radius ^ 2 - depth ^ 2) -- the hill's radius at ground level
+		local at = polar((i - 0.5) / 14 * math.pi * 2 + rng:NextNumber(-0.08, 0.08), rng:NextNumber(300, 360))
+		for _, keep in { WINDMILL, BARN } do
+			local short = foot + 15 - (at - keep).Magnitude
+			if short > 0 then
+				at += at.Unit * short
+			end
+		end
+		terrain:FillBall(at - Vector3.new(0, depth, 0), radius, Enum.Material.Grass)
 		if i % 4 == 0 then
-			terrain:FillBall(at + Vector3.new(0, 30, 0), rng:NextNumber(10, 16), Enum.Material.Rock)
+			terrain:FillBall(at + Vector3.new(0, radius - depth - 4, 0), rng:NextNumber(10, 16), Enum.Material.Rock)
+		end
+	end
+end
+
+-- The pond (GDD X2 #8): terrain water in a 22 x 14 oval of three cylinders (voxels are 4 studs) with
+-- a sand rim, carved to air before the water as the river; 8 lily pads, 3 with a flower, two cattails.
+local function pond()
+	local terrain = Workspace.Terrain
+	for _, fill in
+		{ { Enum.Material.Sand, 9, -2.5, 5 }, { Enum.Material.Air, 7, 0.5, 7 }, { Enum.Material.Water, 7, -1.75, 2.5 } }
+	do
+		for _, dx in { -4, 0, 4 } do
+			terrain:FillCylinder(CFrame.new(POND + Vector3.new(dx, fill[3], 0)), fill[4], fill[2], fill[1])
+		end
+	end
+	local pondFolder = Instance.new("Folder")
+	pondFolder.Name = "Pond"
+	pondFolder.Parent = folder
+	local rng = Random.new(92)
+	for i = 1, 8 do
+		local angle, r = rng:NextNumber(0, math.pi * 2), math.sqrt(rng:NextNumber(0.05, 0.75))
+		local at = POND + Vector3.new(math.cos(angle) * r * 9, -0.1, math.sin(angle) * r * 5)
+		decor(pillar(pondFolder, at, 0.2, 1.25, LEAF, Enum.Material.SmoothPlastic))
+		if i <= 3 then
+			decor(ball(pondFolder, Vector3.one * 0.9, at + Vector3.new(0, 0.5, 0), FLOWERS[1]))
+		end
+	end
+	for _, x in { -11.5, 11 } do
+		for _ = 1, 3 do
+			local at = POND + Vector3.new(x + rng:NextNumber(-1, 1), 0, rng:NextNumber(-2.5, 2.5))
+			local h = rng:NextNumber(2.5, 4)
+			decor(pillar(pondFolder, at, h, 0.1, Color3.fromRGB(90, 140, 70)))
+			decor(pillar(pondFolder, at + Vector3.new(0, h - 1, 0), 0.9, 0.25, DARK_WOOD, Enum.Material.Fabric))
 		end
 	end
 end
@@ -239,9 +294,12 @@ local function plaza()
 			decor(ball(folder, Vector3.new(0.5, 0.5, 0.5), at, PASTELS[(i + k) % #PASTELS + 1], Enum.Material.Neon))
 		end
 	end
-	-- Benches around the tree, facing it.
-	for i = 0, 5 do
-		local at = CFrame.lookAt(polar(math.rad(30 + i * 60), 27), Vector3.zero)
+	-- Benches around the tree, facing it: six at radius 27 and v0.5's four at 14 (GDD X2 #11).
+	for i = 0, 9 do
+		local at = CFrame.lookAt(
+			if i < 6 then polar(math.rad(30 + i * 60), 27) else polar(math.rad(45 + (i - 6) * 90), 14),
+			Vector3.zero
+		)
 		part(folder, Vector3.new(5, 0.4, 1.6), at * CFrame.new(0, 1.4, 0), WOOD, Enum.Material.WoodPlanks)
 		part(folder, Vector3.new(5, 1.4, 0.3), at * CFrame.new(0, 2.3, 0.75), WOOD, Enum.Material.WoodPlanks)
 		for _, x in { -2, 2 } do
@@ -523,7 +581,15 @@ local function blocked(pos: Vector3, margin: number): boolean
 			return true
 		end
 	end
-	return (pos - Vector3.new(-58, 0, 9)).Magnitude < 14 + margin or (pos - Vector3.new(-44, 0, 12)).Magnitude < 8
+	if
+		math.abs(pos.X - PATCH.centre.x) < PATCH.size / 2 + margin
+		and math.abs(pos.Z - PATCH.centre.z) < PATCH.size / 2 + margin
+	then
+		return true
+	end
+	return (pos - Vector3.new(-58, 0, 9)).Magnitude < 14 + margin
+		or (pos - Vector3.new(-44, 0, 12)).Magnitude < 8 + margin
+		or (pos - POND).Magnitude < 14 + margin
 end
 
 local function paths()
@@ -558,7 +624,7 @@ local function meadows()
 	local meadow = Instance.new("Folder")
 	meadow.Name = "Meadows"
 	meadow.Parent = folder
-	while clusters < 45 and flowers < 520 and attempts < 2000 do
+	while clusters < 70 and flowers < 900 and attempts < 3000 do -- GDD X2 #10: 900 flowers, 70 clusters
 		attempts += 1
 		local centre = polar(rng:NextNumber(0, math.pi * 2), rng:NextNumber(50, 150))
 		if blocked(centre, 4) then
@@ -566,9 +632,9 @@ local function meadows()
 		end
 		clusters += 1
 		local colour = FLOWERS[rng:NextInteger(1, #FLOWERS)]
-		for _ = 1, rng:NextInteger(7, 12) do
+		for _ = 1, rng:NextInteger(11, 16) do
 			local at = centre + Vector3.new(rng:NextNumber(-4, 4), 0, rng:NextNumber(-4, 4))
-			if not blocked(at, 1) then
+			if flowers < 900 and not blocked(at, 1) then
 				local h = rng:NextNumber(0.8, 1.7)
 				decor(pillar(meadow, at, h, 0.1, Color3.fromRGB(80, 160, 70), Enum.Material.SmoothPlastic))
 				local s = rng:NextNumber(0.7, 1.2)
@@ -592,9 +658,81 @@ local function meadows()
 	meadow:SetAttribute("Flowers", flowers)
 end
 
-local function blossomTrees()
+-- 24 flower boxes just outside the plaza ring (GDD X2 #10), spread over the 7.5 degree spots that
+-- keep 15 degrees from the plot paths and clear the meadow path and the Petal Patch.
+local function flowerBoxes()
+	local spots = {}
+	for k = 0, 47 do
+		local deg = k * 7.5
+		if deg % 60 >= 15 and deg % 60 <= 45 and not blocked(polar(math.rad(deg), PLAZA + 3.5), 2) then
+			table.insert(spots, deg)
+		end
+	end
+	for i = 1, math.min(24, #spots) do
+		local cf = CFrame.lookAt(polar(math.rad(spots[(i - 1) * #spots // 24 + 1]), PLAZA + 3.5), Vector3.zero)
+		part(folder, Vector3.new(3, 0.9, 1.3), cf * CFrame.new(0, 0.45, 0), WOOD, Enum.Material.WoodPlanks)
+		for k, x in { -0.7, 0.7 } do
+			decor(
+				ball(folder, Vector3.new(1.2, 1, 1.2), cf * CFrame.new(x, 1.1, 0), FLOWERS[(i + k * 2) % #FLOWERS + 1])
+			)
+		end
+	end
+end
+
+-- 12 large sakura (GDD X2 #2, #3): angle, radius, variant, height. Plaza trees are 34 tall, rim 40 to 45.
+local LARGE_SAKURA = {
+	{ 30, 58, "a", 34 },
+	{ 90, 58, "b", 34 },
+	{ 150, 58, "a", 34 },
+	{ 210, 58, "c", 34 },
+	{ 20, 150, "b", 42 },
+	{ 50, 150, "c", 45 },
+	{ 100, 150, "a", 40 },
+	{ 140, 150, "b", 42 },
+	{ 200, 150, "c", 45 },
+	{ 240, 150, "a", 40 },
+	{ 290, 150, "b", 42 },
+	{ 340, 150, "c", 45 },
+}
+
+-- The Blender tree when it has an id (canopy passes through; an invisible 2.5-radius trunk collides),
+-- else the generated sakura mesh scaled up, else the part tree. Returns the trunk positions.
+local function largeSakura(): { Vector3 }
+	local trunks = {}
+	for i, t in LARGE_SAKURA do
+		local at = polar(math.rad(t[1]), t[2])
+		local name = `sakura_large_{t[3]}`
+		local asset = GardenAssets[name]
+		local tree = Models.night(name, folder, at, i * 47, if asset then t[4] / asset.size[2] else 1)
+		if tree then
+			Models.ghost(tree)
+		else
+			local mesh = Models.spawn("sakura", folder, at, t[4] / 16.3, i * 47)
+			if mesh then
+				decor(mesh)
+			else
+				Props.sakura(folder, at, Random.new(100 + i))
+			end
+		end
+		local trunk = pillar(folder, at, t[4] * 0.4, 2.5, BARK, Enum.Material.Wood)
+		trunk.Name = "Trunk"
+		trunk.Transparency = 1
+		trunk.CanQuery = false
+		table.insert(trunks, at)
+	end
+	return trunks
+end
+
+local function blossomTrees(large: { Vector3 })
 	for i = 0, 15 do
 		local at = polar(math.rad(11.25 + i * 22.5), 145)
+		local crowded = false -- GDD X2 #3: a small tree within 25 studs of a large one is dropped
+		for _, trunk in large do
+			crowded = crowded or (trunk - at).Magnitude < 25
+		end
+		if crowded then
+			continue
+		end
 		local tree = Models.spawn("sakura", folder, at, 1.5, i * 37)
 		if tree then
 			local petals = Instance.new("ParticleEmitter")
@@ -749,6 +887,112 @@ local function treeLine()
 	end
 end
 
+-- Hills bands 2 and 3 (GDD X2 #6, #7): hill_a/b/c silhouettes, 12 at 30 degree steps (scale 1)
+-- and 8 at 45 degree steps from 20 (scale 2.5), feet sunk below the terrain's edge; a sunk grass
+-- ball (plus a snow cap far out) while a mesh has no id.
+local function hills()
+	local rng = Random.new(5005)
+	for band = 2, 3 do
+		local far = band == 3
+		for i = 0, if far then 7 else 11 do
+			local at = polar(
+				math.rad(if far then 20 + i * 45 else i * 30),
+				if far then rng:NextNumber(820, 950) else rng:NextNumber(480, 560)
+			) - Vector3.new(0, if far then 20 else 6, 0)
+			local scale = if far then 2.5 else 1
+			local yaw = rng:NextNumber(0, 360)
+			local hill = Models.night(`hill_{string.char(97 + i % 3)}`, folder, at, yaw, scale)
+			if hill then
+				for _, p in hill:GetDescendants() do
+					if p:IsA("BasePart") then
+						decor(p)
+					end
+				end
+			else
+				local cf = CFrame.new(at) * CFrame.Angles(0, math.rad(yaw), 0)
+				decor(
+					ball(
+						folder,
+						Vector3.new(220, 320, 120) * scale,
+						cf,
+						Color3.fromRGB(105, 160, 95),
+						Enum.Material.Grass
+					)
+				)
+				if far then
+					decor(
+						ball(
+							folder,
+							Vector3.new(90, 70, 50) * scale,
+							cf * CFrame.new(0, 135 * scale, 0),
+							WHITE,
+							Enum.Material.Snow
+						)
+					)
+				end
+			end
+		end
+	end
+end
+
+-- 24 path lanterns (GDD X2 #9): 4 per plot path, 1.5 studs off its edge every 6 studs from radius 48,
+-- alternating sides; each light joins `lamps`, so World.forecast lights them at Moonfall.
+local function lanterns()
+	for n = 0, 5 do
+		local theta = math.rad(n * 60)
+		local across = Vector3.new(math.cos(theta), 0, math.sin(theta))
+		for k = 0, 3 do
+			local at = polar(theta, 48 + k * 6) + across * (if k % 2 == 0 then 6.5 else -6.5)
+			local model = Models.night("lantern", folder, at, n * 60)
+			local holder: Instance
+			if model then
+				local shade = Instance.new("Attachment")
+				shade.Parent = model:FindFirstChildWhichIsA("MeshPart")
+				shade.WorldPosition = at + Vector3.new(0, 3.6, 0)
+				holder = shade
+			else
+				pillar(folder, at, 3.1, 0.25, DARK_WOOD, Enum.Material.Wood)
+				holder = part(folder, Vector3.new(1, 1, 1), at + Vector3.new(0, 3.6, 0), WARM, Enum.Material.Neon)
+			end
+			lamp(holder, WARM, 10, 0.8)
+		end
+	end
+end
+
+-- The spawn (garden.md 4.7): an invisible SpawnLocation on the plaza facing the Great Egg Tree. The
+-- place file's SpawnLocation is reused, so a character that loads before this script runs still
+-- spawns on the plaza; never yields. The `spawn_pad` model (or its part stand-in) is padDecor.
+local function spawnLocation(root: Instance): SpawnLocation
+	local spawn = Workspace:FindFirstChildOfClass("SpawnLocation") or Instance.new("SpawnLocation")
+	spawn.Name = "Spawn"
+	spawn.Anchored = true
+	spawn.Neutral = true
+	spawn.Duration = 0
+	spawn.Size = Vector3.new(10, 1, 10)
+	spawn.Transparency = 1
+	spawn.CanCollide = false
+	spawn.CFrame = CFrame.lookAt(SPAWN, Vector3.new(0, SPAWN.Y, 0))
+	spawn.Parent = root
+	return spawn
+end
+
+local function padDecor()
+	if Models.night("spawn_pad", folder, SPAWN, 0) then
+		return
+	end
+	pillar(folder, SPAWN, 0.6, 5, Color3.fromRGB(205, 195, 180), Enum.Material.Cobblestone)
+	for k = 0, 3 do
+		local at = SPAWN + Vector3.new(4.3 * math.cos(k * math.pi / 2 + 0.8), 0, 4.3 * math.sin(k * math.pi / 2 + 0.8))
+		part(
+			folder,
+			Vector3.new(0.7, 1.4, 0.7),
+			at + Vector3.new(0, 0.7, 0),
+			PASTELS[k + 1],
+			Enum.Material.SmoothPlastic
+		)
+	end
+end
+
 -- Updaters -------------------------------------------------------------------------------------
 
 local function clock(seconds: number): string
@@ -813,31 +1057,38 @@ function World.forecast(status: { [string]: any })
 	end
 end
 
--- Builds the valley and the plots once (I4 budget: under 6,000 parts with the plots).
+-- Builds the valley and the plots once (GDD X2 budget: under 7,500 parts with the plots).
 function World.build(): {
 	cart: GardenRules.Vec3,
 	board: (rows: { { name: string, income: number } }) -> (),
 	forecast: (status: { [string]: any }) -> (),
+	spawn: SpawnLocation,
 }
 	local root = Instance.new("Folder")
 	root.Name = "Garden"
 	root.Parent = Workspace
+	local spawn = spawnLocation(root) -- first, before anything yields
 	lighting()
 	ground()
+	pond()
 	plaza()
 	cart()
 	boards()
 	meadowGate()
 	paths()
 	meadows()
+	flowerBoxes()
 	bridges()
 	windmill()
 	barn()
 	treeLine()
 	folder.Parent = root
 	Plots.build(root)
-	eggTree() -- yields while the meshes load
-	blossomTrees()
+	eggTree() -- the rest yields while the meshes and models load
+	blossomTrees(largeSakura())
+	hills()
+	lanterns()
+	padDecor()
 	local parts = 0
 	for _, d in root:GetDescendants() do
 		if d:IsA("BasePart") then
@@ -845,8 +1096,8 @@ function World.build(): {
 		end
 	end
 	root:SetAttribute("Parts", parts)
-	if parts > 6000 then
-		warn(`[World] {parts} parts, over the 6,000 budget`)
+	if parts > BUDGET then
+		warn(`[World] {parts} parts, over the {BUDGET} budget`)
 	end
 	print(`[World] Hatchling Valley built: {parts} parts`)
 	World.board({})
@@ -854,6 +1105,7 @@ function World.build(): {
 		cart = { x = CART.X, y = CART.Y, z = CART.Z },
 		board = World.board,
 		forecast = World.forecast,
+		spawn = spawn,
 	}
 end
 

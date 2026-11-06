@@ -351,8 +351,9 @@ function Profiles.load(player: Player)
 end
 
 -- Request actions (decision 0008). Each decides on the profile it is given and returns
--- (next, accepted, coins paid or nil); the same function re-runs on the stored record.
-type Handler = (Profile, number, number, string?) -> (Profile, boolean, number?)
+-- (next, accepted, coins paid or the LastReward text or nil); the same function re-runs on the
+-- stored record.
+type Handler = (Profile, number, number, string?) -> (Profile, boolean, (number | string)?)
 
 local function idOf(arg: string?): number?
 	return if arg then tonumber(arg) else nil
@@ -414,11 +415,11 @@ local ACTIONS: { [string]: Handler } = {
 		end
 		return GardenProgress.setGate(p, arg)
 	end,
-	claimDaily = function(p, _, today)
-		return GardenProgress.claimDaily(p, today)
-	end,
-	claimWeekly = function(p, _, today)
-		return GardenProgress.claimWeekly(p, today)
+	claimLogin = function(p, _, today, arg) -- the router allows only "week" and "month"
+		if arg == nil then
+			return p, false
+		end
+		return GardenProgress.claimLogin(p, arg, today)
 	end,
 	claimQuest = function(p, _, today, arg)
 		if arg == nil then
@@ -463,10 +464,14 @@ function Profiles.request(player: Player, action: string, arg: string?): boolean
 	if not ok then
 		return false
 	end
-	if paid and paid > 0 then
+	local reward = if type(paid) == "string"
+		then paid
+		elseif paid and paid > 0 then `+{GardenRules.short(paid)} coins`
+		else nil
+	if reward then
 		-- The #n suffix makes two equal rewards in a row still change the attribute (the client strips it).
 		rewardCount += 1
-		player:SetAttribute("LastReward", `+{GardenRules.short(paid)} coins#{rewardCount}`)
+		player:SetAttribute("LastReward", `{reward}#{rewardCount}`)
 	end
 	apply(player, action, function(p)
 		return (handler(p, now, today, arg))

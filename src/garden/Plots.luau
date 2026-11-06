@@ -106,6 +106,18 @@ local EGG_LOOKS: { [string]: EggLook } = {
 		spots = Color3.fromRGB(225, 235, 255),
 		glow = true,
 	},
+	weekly = { -- v0.5 login eggs (architecture 9.3)
+		colour = Color3.fromRGB(255, 190, 215),
+		material = Enum.Material.SmoothPlastic,
+		spots = WHITE,
+		glow = false,
+	},
+	monthly = {
+		colour = Color3.fromRGB(30, 110, 120),
+		material = Enum.Material.SmoothPlastic,
+		spots = Color3.fromRGB(255, 215, 110),
+		glow = true,
+	},
 }
 
 -- Fence styles (GDD H4).
@@ -161,6 +173,20 @@ local FENCES: { [string]: FenceStyle } = {
 		wall = false,
 		round = true,
 	},
+	lantern = { -- v0.5 login cosmetics (GDD X3.1, X3.2): the cosmetic rows' colours
+		colours = { Color3.fromRGB(120, 80, 50) },
+		rail = Color3.fromRGB(255, 200, 90),
+		material = Enum.Material.Wood,
+		wall = false,
+		round = false,
+	},
+	sakura = {
+		colours = { Color3.fromRGB(255, 200, 220) },
+		rail = Color3.fromRGB(150, 90, 70),
+		material = Enum.Material.Wood,
+		wall = false,
+		round = true,
+	},
 	rainbow = {
 		colours = {
 			Color3.fromRGB(255, 90, 90),
@@ -200,6 +226,12 @@ local FALLBACK: { [string]: Color3 } = {
 	whale = Color3.fromRGB(120, 180, 230),
 	kirin = Color3.fromRGB(190, 220, 255),
 	axolotl = Color3.fromRGB(255, 170, 200),
+	puffin = Color3.fromRGB(60, 60, 75), -- v0.5 exclusives (architecture 9.3)
+	otter = Color3.fromRGB(140, 95, 60),
+	capybara = Color3.fromRGB(200, 160, 110),
+	redpanda = Color3.fromRGB(200, 90, 50),
+	peacock = Color3.fromRGB(200, 240, 235),
+	snowleopard = Color3.fromRGB(215, 220, 225),
 }
 
 type BedView = {
@@ -225,6 +257,7 @@ type PadView = {
 	pending: number,
 }
 local CLOVER = Color3.fromRGB(120, 190, 90)
+local LILY = Color3.fromRGB(70, 160, 90) -- v0.5 Lily Pads (login cosmetic)
 local CLOVER_IMAGE = GardenAssets.pad_clover and GardenAssets.pad_clover.texture
 type CreatureView = { key: string, model: Instance? }
 type PlotView = {
@@ -924,6 +957,7 @@ local function refreshPads(view: PlotView, profile: Profile)
 			pv.part.Color = if locked
 				then Color3.fromRGB(160, 160, 165)
 				elseif skin == "clover" then CLOVER
+				elseif skin == "lily" then LILY
 				else PASTELS[(i - 1) % #PASTELS + 1]
 			local clover = skin == "clover" and not locked
 			pv.part.Material = if clover then Enum.Material.Grass else Enum.Material.SmoothPlastic
@@ -1126,6 +1160,13 @@ function Plots.gate(plot: number): CFrame
 	local view = views[plot]
 	local at = (view.frame * CFrame.new(0, 3, -HALF - 5)).Position
 	return CFrame.lookAt(at, view.frame.Position + Vector3.new(0, 3, 0))
+end
+
+-- The camera end pose of the start menu's PLAY fly (garden.md 4.7): 12 studs outside the gate, 6 up,
+-- looking at the plot centre at eye height.
+function Plots.gateLook(plot: number): CFrame
+	local frame = views[plot].frame
+	return CFrame.lookAt((frame * CFrame.new(0, 6, -HALF - 12)).Position, frame.Position + Vector3.new(0, 5, 0))
 end
 
 function Plots.contains(plot: number, pos: Vec3): boolean
