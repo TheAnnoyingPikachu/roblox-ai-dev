@@ -33,9 +33,10 @@ Render the lineup alone with `--python tools/blender/garden/lineup.py`.
 ## Layout
 
 - `kit.py`: imports the Night kit and adds the bright preview, `paint` (gradients, polka dots,
-  bands), egg-shell helpers (`shell`, `stick`, `ridge`) and toy parts (`flower`, `star`, `leaf`,
-  `mushroom`, `facet`).
-- `build.py`: runner, manifest, contact sheet. `lineup.py`: the lineup render.
+  bands), egg-shell helpers (`shell`, `stick`, `ridge`), toy parts (`flower`, `star`, `leaf`,
+  `mushroom`, `facet`) and the creature standard below.
+- `build.py`: runner, manifest, contact sheet. `lineup.py`: the lineup render. `compare.py`: the
+  before/after creature sheet.
 - `assets/eggs.py`, `assets/dash.py`: `ASSETS = [dict(name, build, budget, size, priority, order,
   replaces, notes, glow)]`. `build()` returns a list of objects, or a dict of part name to objects.
 
@@ -63,6 +64,86 @@ A count of exactly `budget * 0.97` means it fired: trim the model instead.
   a single MeshPart and destroys the rest, and the v0.2 cart spaces eggs 2.8 apart. `fit` in
   `assets/eggs.py` enforces the size. Their glowing pieces are baked bright, not Neon.
 
+## Creature standard (HD pass)
+
+Every `creature_*` is remade to this so all 26 look like one family. The reference builds are
+`creature_bunny` and `creature_dragon` in `assets/creatures_a.py`: read them first, copy their shape.
+Helper docstrings in `kit.py` have the details.
+
+### Helpers
+
+| Use | For |
+|---|---|
+| `k.fuse(elements, skin, tris=2600..3400)` | Head, body, snout, arms, feet, ears and fused tail as **one** smooth metaball shape. Elements: `(loc, r, scale, rot)` ellipsoids (r = visible radius) and `("capsule", a, b, r)`; `k.pair(...)` mirrors one through x = 0. Never stack separate spheres for the body: hard intersections and hidden insides are what made v0.5 look cheap. |
+| `k.face(body, head_centre, R, skin=...)` | Eyes, blush, nose and mouth, cast onto the real surface so nothing floats. R = the head's radius. Marks the face for 2x texels. |
+| `k.lens(target, centre, direction, r, mat, scale, thick, sink, up)` | Anything set into a surface: inner ears, nostrils, belly patches and plates, spots. |
+| `k.mouth(target, centre, direction, half_width, mat, kind)` | A mouth on a snout (`face(..., mouth_kind=None)`). |
+| `k.capsule(a, b, ra, rb, mat)` | Separate horns, stems, limbs: rounded ends; small `rb` is a soft point. |
+| `k.blob(r, loc, mat)` | Separate round pieces in another colour (tail puffs, buds). |
+| `k.leaf(..., n=8, steps=10)` | Petals, wings, leaves. |
+| `k.texel(parts, 0.5)` | Big plain parts (wings, petals, shells) get half the texels so the face gets more. |
+
+Banned on creatures: `k.cyl` cones, spheres under 20 segments, `tube`/`leaf` with `n` under 8
+(except hair-thin veins), separate googly eyes.
+
+### Shape and face rules (R = head radius)
+
+- **Proportions:** head at least as wide as the body, about half the height without ears and
+  horns. Chubby, round seat, body narrower than the head.
+- **Eyes:** the `face` defaults: a dark glossy dome (`EYE_INK`), 0.24 R half height, 0.8 as wide,
+  34 degrees each side of the front, 6 below the head's middle (wide apart and low: big forehead).
+  **No white of the eye.** Big catchlight at the viewer's upper left, small one lower right, the
+  same on both eyes (one light for the family): never mirror them. Only `iris` may change colour,
+  and only to another very dark tone.
+- **Snouted species** (dragon, fox, lion, pup, deer, kirin, otter...): eyes just above the snout
+  line, `eye_phi=6..10, spread=36`; `nose=None, mouth_kind=None`, then nostrils as `k.lens` and the
+  mouth as `k.mouth(body, snout_centre, k.outward(0, -32), ...)` on the snout.
+- **Mouth:** `"w"` for small-muzzle animals, `"smile"` on snouts, `"o"` only for a surprised species.
+- **Blush:** always: ovals at 54 degrees round, 25 below, the skin mixed 55% to `BLUSH_PINK`.
+- **Nose:** small (0.075 R), pink on pale fur, `NOSE` plum on dark fur.
+- **Ears:** fuse elements tilted 10 to 20 degrees outwards. Long ears `scale (0.4, 0.2, 1.0)`,
+  round ears a ball about 0.3 R, pointed ears `(0.5, 0.25, 1.0)`. Inner ear: `k.lens` on the ear's
+  front, `scale=(0.34, 1)`, `thick=0.2, sink=0.6, up=` the ear's axis.
+- **Paws:** fused flat beans, `k.pair((x, y, 0.2), 0.3, (0.9, 1.45, 0.62))`, resting on z = 0;
+  arms are small stubs at the sides (r 0.17 to 0.26). No toes, fingers or claws.
+- **Tails:** a fused capsule chain with short segments (about 4 per stud, or a thin tip turns into
+  beads), or a separate `k.blob` puff in a second colour.
+- **Colour:** one `k.paint` gradient for the skin, darker at the bottom; pastel palette as before.
+  Markings that must sit in an exact place are geometry (`k.lens`), not `paint` marks: `fit`
+  scales the model after the paint coordinates are fixed.
+
+### Budget, texture, export
+
+- **Triangles:** `k.CREATURE_BUDGET` = 6,000; aim 4,500 to 6,000 (fuse 2,600 to 3,400, face about
+  600, props the rest). Stay under it: `finalize` silently decimates anything over. At 120
+  creatures that is at most 720k triangles before Roblox's automatic MeshPart LOD, which drops
+  distant ones; do not go higher.
+- **Bake:** `finalize=k.HD` in the `ASSETS` entry: 192-sample AO blurred 0.8 texels, AO floor 0.35
+  (`col * (0.35 + 0.65 ao)`), a baked top light (crown lighter, belly and feet darker), 6 px gaps
+  between UV islands, 10 px bake margin, texel weights (face 2x). Night keeps its defaults.
+- **Texture:** one 1024 PNG. Roblox scales uploaded images down to 1024, so a 2048 bake gains
+  nothing in game; the face gets more texels from the weights instead. Bunny: face 205 px per stud
+  (old 127), dragon 82 (old 74); at 10 studs a 1080p screen shows about 77 px per stud. Below
+  that, mark more plain parts 0.5.
+- **Export:** `export_assets.py` keeps creature and egg textures full RGB (500 to 750 KB); the
+  palette dithered the soft AO into grain.
+
+### Checklist before committing a creature
+
+1. `ASSETS` entry: `budget=k.CREATURE_BUDGET, finalize=k.HD`; same name and target size; front -Y,
+   one mesh (`fit` and `finalize` keep origin and size).
+2. Build it alone: `... --python tools/blender/garden/build.py -- creature_<id>`. One Blender at a
+   time on a shared machine (memory). The log must show tris under 6,000 and a `fit scale` within
+   about 0.9 to 1.2 on every axis: a bigger stretch squashes the round shapes, so move the shapes.
+3. `... --python tools/blender/garden/compare.py -- creature_<id>` and open
+   `build/blender/garden/hd_compare.png` (old close up, new close up, new back, old and new at 20
+   studs as a player sees them). At 20 studs: both eyes and both catchlights read, blush and mouth
+   visible. Close up: nothing floats or pokes through, no facets on the silhouette, no beads on
+   tails, no dark seams. The back is as finished as the front.
+4. `python tools/blender/garden/export_assets.py creature_<id>`.
+5. Commit the assets file, `manifest.json` (only your entries should change) and
+   `assets/garden/creature_<id>.fbx` and `.png`.
+
 ## Glow meshes
 
 `dash_arch_glow` is the only glow mesh: it stays untextured and code sets it to Neon, tinted per
@@ -73,8 +154,9 @@ NightAssets shape, so it does not carry that colour.
 
 ## Export, upload, wire
 
-1. `python tools/blender/garden/export_assets.py` copies each FBX and a 256-colour PNG into
-   `assets/garden/` (committed). Needs Pillow.
+1. `python tools/blender/garden/export_assets.py` copies each FBX and PNG into `assets/garden/`
+   (committed): full RGB for `creature_*` and `egg_*`, a 256-colour palette for the rest. Needs
+   Pillow.
 2. After merge, the Director runs the **Upload Blender assets** workflow with `game: garden`. It
    publishes `tools/blender/garden/uploaded.json` and `src/shared/GardenAssets.luau` as the artifact.
 3. Commit both (or run `node tools/blender/write-assets-module.mjs garden`), fill the ids in

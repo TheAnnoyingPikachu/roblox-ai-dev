@@ -433,16 +433,16 @@
       4.0,
       2.4
     ],
-    "tris": 2048,
+    "tris": 5628,
     "parts": {
-      "creature_bunny": 2048
+      "creature_bunny": 5628
     },
     "target_size_studs": [
       2.6,
       4.0,
       2.4
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Sprout Bunny mesh (src/relay/Models.luau MESHES.bunny)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -454,20 +454,20 @@
     "png": "build/blender/garden/creature_duck.png",
     "preview": "build/blender/garden/previews/creature_duck.png",
     "size_studs": [
-      2.76,
-      3.21,
-      2.76
+      2.8,
+      3.0,
+      2.8
     ],
-    "tris": 1892,
+    "tris": 5752,
     "parts": {
-      "creature_duck": 1892
+      "creature_duck": 5752
     },
     "target_size_studs": [
       2.8,
       3.0,
       2.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -483,16 +483,16 @@
       3.5,
       3.2
     ],
-    "tris": 1358,
+    "tris": 5580,
     "parts": {
-      "creature_frog": 1358
+      "creature_frog": 5580
     },
     "target_size_studs": [
       3.2,
       3.5,
       3.2
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Toadstool Frog mesh (src/relay/Models.luau MESHES.frog)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -504,20 +504,20 @@
     "png": "build/blender/garden/creature_lamb.png",
     "preview": "build/blender/garden/previews/creature_lamb.png",
     "size_studs": [
-      3.15,
-      3.64,
-      3.6
+      3.2,
+      3.8,
+      3.4
     ],
-    "tris": 2354,
+    "tris": 5844,
     "parts": {
-      "creature_lamb": 2354
+      "creature_lamb": 5844
     },
     "target_size_studs": [
       3.2,
       3.8,
       3.4
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -533,16 +533,16 @@
       3.8,
       3.6
     ],
-    "tris": 2284,
+    "tris": 5716,
     "parts": {
-      "creature_pup": 2284
+      "creature_pup": 5716
     },
     "target_size_studs": [
       3.0,
       3.8,
       3.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Bumble Pup mesh (src/relay/Models.luau MESHES.pup)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -554,20 +554,20 @@
     "png": "build/blender/garden/creature_hedgehog.png",
     "preview": "build/blender/garden/previews/creature_hedgehog.png",
     "size_studs": [
-      2.73,
-      2.72,
-      3.61
+      3.0,
+      2.8,
+      3.4
     ],
-    "tris": 2156,
+    "tris": 5846,
     "parts": {
-      "creature_hedgehog": 2156
+      "creature_hedgehog": 5846
     },
     "target_size_studs": [
       3.0,
       2.8,
       3.4
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -583,16 +583,16 @@
       4.2,
       3.0
     ],
-    "tris": 2006,
+    "tris": 5732,
     "parts": {
-      "creature_cat": 2006
+      "creature_cat": 5732
     },
     "target_size_studs": [
       3.2,
       4.2,
       3.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Berry Cat mesh (src/relay/Models.luau MESHES.cat)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -604,20 +604,20 @@
     "png": "build/blender/garden/creature_deer.png",
     "preview": "build/blender/garden/previews/creature_deer.png",
     "size_studs": [
-      3.44,
-      5.15,
-      3.33
+      3.6,
+      5.0,
+      3.0
     ],
-    "tris": 2442,
+    "tris": 5770,
     "parts": {
-      "creature_deer": 2442
+      "creature_deer": 5770
     },
     "target_size_studs": [
       3.6,
       5.0,
       3.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -633,16 +633,16 @@
       4.5,
       3.8
     ],
-    "tris": 2158,
+    "tris": 5480,
     "parts": {
-      "creature_owl": 2158
+      "creature_owl": 5480
     },
     "target_size_studs": [
       4.2,
       4.5,
       3.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Pumpkin Owl mesh (src/relay/Models.luau MESHES.owl)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -654,20 +654,20 @@
     "png": "build/blender/garden/creature_panda.png",
     "preview": "build/blender/garden/previews/creature_panda.png",
     "size_studs": [
-      4.14,
-      4.52,
-      4.45
+      4.4,
+      4.5,
+      4.0
     ],
-    "tris": 2044,
+    "tris": 5754,
     "parts": {
-      "creature_panda": 2044
+      "creature_panda": 5754
     },
     "target_size_studs": [
       4.4,
       4.5,
       4.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -683,16 +683,16 @@
       4.5,
       4.2
     ],
-    "tris": 2246,
+    "tris": 5634,
     "parts": {
-      "creature_fox": 2246
+      "creature_fox": 5634
     },
     "target_size_studs": [
       3.6,
       4.5,
       4.2
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Cactus Fox mesh (src/relay/Models.luau MESHES.fox)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -704,20 +704,20 @@
     "png": "build/blender/garden/creature_unicorn.png",
     "preview": "build/blender/garden/previews/creature_unicorn.png",
     "size_studs": [
-      2.26,
-      5.82,
-      3.91
+      4.0,
+      5.5,
+      4.8
     ],
-    "tris": 2410,
+    "tris": 5846,
     "parts": {
-      "creature_unicorn": 2410
+      "creature_unicorn": 5846
     },
     "target_size_studs": [
       4.0,
       5.5,
       4.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -733,16 +733,16 @@
       3.5,
       3.8
     ],
-    "tris": 1990,
+    "tris": 5922,
     "parts": {
-      "creature_turtle": 1990
+      "creature_turtle": 5922
     },
     "target_size_studs": [
       3.8,
       3.5,
       3.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Lotus Turtle mesh (src/relay/Models.luau MESHES.turtle)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -754,20 +754,20 @@
     "png": "build/blender/garden/creature_phoenix.png",
     "preview": "build/blender/garden/previews/creature_phoenix.png",
     "size_studs": [
-      4.3,
-      5.46,
-      4.09
+      4.6,
+      5.5,
+      4.2
     ],
-    "tris": 1770,
+    "tris": 5682,
     "parts": {
-      "creature_phoenix": 1770
+      "creature_phoenix": 5682
     },
     "target_size_studs": [
       4.6,
       5.5,
       4.2
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -783,16 +783,16 @@
       5.2,
       4.6
     ],
-    "tris": 2112,
+    "tris": 5956,
     "parts": {
-      "creature_lion": 2112
+      "creature_lion": 5956
     },
     "target_size_studs": [
       4.6,
       5.2,
       4.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Sunflower Lion mesh (src/relay/Models.luau MESHES.lion)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -804,20 +804,20 @@
     "png": "build/blender/garden/creature_whale.png",
     "preview": "build/blender/garden/previews/creature_whale.png",
     "size_studs": [
-      5.65,
-      4.34,
-      5.37
+      6.0,
+      4.5,
+      5.0
     ],
-    "tris": 2246,
+    "tris": 5666,
     "parts": {
-      "creature_whale": 2246
+      "creature_whale": 5666
     },
     "target_size_studs": [
       6.0,
       4.5,
       5.0
     ],
-    "tris_budget": 3000,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -833,16 +833,16 @@
       5.5,
       4.8
     ],
-    "tris": 2210,
+    "tris": 5904,
     "parts": {
-      "creature_dragon": 2210
+      "creature_dragon": 5904
     },
     "target_size_studs": [
       6.0,
       5.5,
       4.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "Roblox-generated Moonblossom Dragon mesh (src/relay/Models.luau MESHES.dragon)",
     "script": "tools/blender/garden/assets/creatures_a.py",
@@ -854,20 +854,20 @@
     "png": "build/blender/garden/creature_kirin.png",
     "preview": "build/blender/garden/previews/creature_kirin.png",
     "size_studs": [
-      3.75,
-      6.25,
-      4.74
+      4.6,
+      6.0,
+      5.2
     ],
-    "tris": 2780,
+    "tris": 5822,
     "parts": {
-      "creature_kirin": 2780
+      "creature_kirin": 5822
     },
     "target_size_studs": [
       4.6,
       6.0,
       5.2
     ],
-    "tris_budget": 3000,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -879,20 +879,20 @@
     "png": "build/blender/garden/creature_axolotl.png",
     "preview": "build/blender/garden/previews/creature_axolotl.png",
     "size_studs": [
-      3.56,
-      2.92,
-      5.53
+      3.4,
+      3.0,
+      5.0
     ],
-    "tris": 2464,
+    "tris": 5484,
     "parts": {
-      "creature_axolotl": 2464
+      "creature_axolotl": 5484
     },
     "target_size_studs": [
       3.4,
       3.0,
       5.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/creatures_b.py",
@@ -904,20 +904,20 @@
     "png": "build/blender/garden/creature_puffin.png",
     "preview": "build/blender/garden/previews/creature_puffin.png",
     "size_studs": [
-      2.38,
-      2.94,
-      3.12
+      2.6,
+      3.0,
+      2.6
     ],
-    "tris": 1556,
+    "tris": 5974,
     "parts": {
-      "creature_puffin": 1556
+      "creature_puffin": 5974
     },
     "target_size_studs": [
       2.6,
       3.0,
       2.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -930,19 +930,19 @@
     "preview": "build/blender/garden/previews/creature_otter.png",
     "size_studs": [
       4.0,
-      2.57,
-      5.95
+      2.62,
+      5.8
     ],
-    "tris": 1894,
+    "tris": 5476,
     "parts": {
-      "creature_otter": 1894
+      "creature_otter": 5476
     },
     "target_size_studs": [
       4.0,
       2.6,
       5.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -954,20 +954,20 @@
     "png": "build/blender/garden/creature_capybara.png",
     "preview": "build/blender/garden/previews/creature_capybara.png",
     "size_studs": [
-      2.83,
-      4.16,
-      5.56
+      3.2,
+      4.2,
+      4.6
     ],
-    "tris": 1612,
+    "tris": 5654,
     "parts": {
-      "creature_capybara": 1612
+      "creature_capybara": 5654
     },
     "target_size_studs": [
       3.2,
       4.2,
       4.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -979,20 +979,20 @@
     "png": "build/blender/garden/creature_redpanda.png",
     "preview": "build/blender/garden/previews/creature_redpanda.png",
     "size_studs": [
-      3.68,
+      4.2,
       5.0,
-      3.61
+      4.0
     ],
-    "tris": 2424,
+    "tris": 5960,
     "parts": {
-      "creature_redpanda": 2424
+      "creature_redpanda": 5960
     },
     "target_size_studs": [
       4.2,
       5.0,
       4.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -1004,20 +1004,20 @@
     "png": "build/blender/garden/creature_peacock.png",
     "preview": "build/blender/garden/previews/creature_peacock.png",
     "size_studs": [
-      4.66,
-      5.47,
-      3.21
+      5.0,
+      5.6,
+      4.0
     ],
-    "tris": 1702,
+    "tris": 5978,
     "parts": {
-      "creature_peacock": 1702
+      "creature_peacock": 5978
     },
     "target_size_studs": [
       5.0,
       5.6,
       4.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -1029,20 +1029,20 @@
     "png": "build/blender/garden/creature_snowleopard.png",
     "preview": "build/blender/garden/previews/creature_snowleopard.png",
     "size_studs": [
-      4.65,
-      5.82,
-      4.37
+      4.6,
+      5.8,
+      4.6
     ],
-    "tris": 2328,
+    "tris": 5430,
     "parts": {
-      "creature_snowleopard": 2328
+      "creature_snowleopard": 5430
     },
     "target_size_studs": [
       4.6,
       5.8,
       4.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -1461,20 +1461,20 @@
     "png": "build/blender/garden/creature_moth.png",
     "preview": "build/blender/garden/previews/creature_moth.png",
     "size_studs": [
-      4.1,
-      3.19,
-      1.82
+      4.8,
+      3.2,
+      3.4
     ],
-    "tris": 2425,
+    "tris": 5692,
     "parts": {
-      "creature_moth": 2425
+      "creature_moth": 5692
     },
     "target_size_studs": [
       4.8,
       3.2,
       3.4
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/v04.py",

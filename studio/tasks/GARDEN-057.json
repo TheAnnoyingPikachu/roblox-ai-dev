@@ -1,0 +1,49 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-057",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "art",
+  "objective": "Remake all 26 creature models to a higher standard after SHANNON asked for better creature models (2026-11-06): full-colour textures, cleaner baked shading, smooth bodies and limbs, one shared cute face.",
+  "inputs": [
+    "tools/blender/garden/README.md (Creature standard (HD pass))",
+    "docs/architecture/garden.md 9.1"
+  ],
+  "dependencies": [
+    "GARDEN-023",
+    "GARDEN-031",
+    "GARDEN-054"
+  ],
+  "acceptance_criteria": [
+    "Every creature_<id> under 6000 tris without silent decimation, one mesh, front -Y, origin base centre, manifest sizes on target",
+    "Creature and egg textures exported as full RGB, not a 256-colour palette",
+    "Night's assets build byte-identical with the changed night kit (optional parameters only)",
+    "All 26 uploaded, ids in uploaded.json, GardenAssets.luau and docs/assets/register.md",
+    "Director review of every contact sheet; Studio check of the new models"
+  ],
+  "verification": "Contact sheets reviewed by the Director; GardenAssets.spec; Studio run",
+  "output_artifacts": [
+    "assets/garden/creature_*.fbx",
+    "assets/garden/creature_*.png"
+  ],
+  "files": [
+    "tools/blender/garden/**",
+    "tools/blender/night/kit.py",
+    "tools/blender/upload-assets.mjs",
+    "assets/garden/**",
+    "src/shared/GardenAssets.luau",
+    "src/shared/GardenIcons.luau",
+    "docs/assets/register.md",
+    "studio/tasks/GARDEN-057.json"
+  ],
+  "tests": [
+    "GardenAssets.spec.luau"
+  ],
+  "evidence": [
+    "Phase 1 590fff1 (pipeline: full RGB textures, 192-sample blurred AO, top light, face texel density x2, kit helpers fuse/face/eye/capsule/blob; Night wall_segment rebuilt byte-identical); artists A 9eb2cba (8), B 3ff8903 (10), C da269ba (7); contact sheets reviewed by the Director 2026-11-06",
+    "Uploads: run 42144633890 (25 creatures; cancelled at the 60-minute job limit by the per-decal poll, which was then shortened) and 42164982789 (creature_snowleopard)"
+  ],
+  "notes": "Texture ids stay null in uploaded.json; the game resolves each decal's image at runtime, as for earlier Garden models."
+}

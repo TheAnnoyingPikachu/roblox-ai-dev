@@ -78,10 +78,11 @@ async function create(assetType, file, contentType, displayName, description) {
 }
 
 // The decal's content is a small model whose Texture points at the image asset.
-// The decal's XML is served only once Roblox has processed it, so this polls for up to two minutes.
+// The decal's XML is served only once Roblox has processed it; a short poll, because from CI it
+// usually is not ready in time, and the game resolves the decal's image at runtime anyway.
 async function imageOf(decalId) {
 	let lastError = "no id in the decal";
-	for (let attempt = 0; attempt < 12; attempt++) {
+	for (let attempt = 0; attempt < 3; attempt++) {
 		try {
 			const { location } = await (await call(`${API}/asset-delivery-api/v1/assetId/${decalId}`)).json();
 			const text = Buffer.from(await (await fetch(location)).arrayBuffer()).toString("latin1");
@@ -90,7 +91,7 @@ async function imageOf(decalId) {
 		} catch (err) {
 			lastError = err.message;
 		}
-		await new Promise((r) => setTimeout(r, 10000));
+		await new Promise((r) => setTimeout(r, 5000));
 	}
 	console.warn(`  image id for decal ${decalId} not resolved (${lastError}); fill it by hand (Studio: game:GetObjects("rbxassetid://${decalId}")[1].Texture)`);
 	return null;
