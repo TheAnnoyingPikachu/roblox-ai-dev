@@ -1,7 +1,7 @@
 {
   "project_id": "GARDEN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "GARDEN-056",
   "owner": "A15",
   "verifier": "A04",
@@ -37,5 +37,13 @@
     "docs/checkpoints/GARDEN-V05.md"
   ],
   "tests": [],
-  "notes": "Reviewer must not have written GARDEN-051 to 055 (CLAUDE.md rule 2). Attack hardest: the claim re-apply inside UpdateAsync (the stored record must show claimed advanced exactly once), the rollover tick racing a join at midnight UTC, and the removed join-time gate move (nobody may end up inside the Great Egg Tree). Studio facts count only with the build stamp (rule 13)."
+  "notes": "Reviewer must not have written GARDEN-051 to 055 (CLAUDE.md rule 2). Attack hardest: the claim re-apply inside UpdateAsync (the stored record must show claimed advanced exactly once), the rollover tick racing a join at midnight UTC, and the removed join-time gate move (nobody may end up inside the Great Egg Tree). Studio facts count only with the build stamp (rule 13).",
+  "evidence": [
+    "Review docs/qa/garden-v05-review.md (A15, 2026-11-06) of the combined release at garden/v05 7560da3 (v0.4, Petal Catch, v0.5, creature HD), delta garden/v04...garden/v05: verdict FIX FIRST, 0 blockers, 3 majors, 10 minors. The owner's hard rules hold (trading code unchanged, same six trade actions from buttons only, no claim pays a slot twice or past the earned ones, old saves kept, no purchase, countdown or loss sound added).",
+    "M1 major src/shared/LoginRules.luau:72-77: an earned, unclaimed Weekly or Monthly Egg (and every unclaimed slot) is gone at the UTC rollover (Computed J1; Sunday 16:00 Los Angeles); recommend paying earned slots inside the tick at the rollover, for SHANNON under checkpoint item 1.",
+    "M2 major src/garden-client/UiKit.luau:148 (+ :342, :644, :692, :741-748, Hud.client.luau:58-64, Menu.client.luau:1494): at 844 x 390 the 0.5 scale floor puts 18 px text at 9 pt and 16 px at 8 pt (card names, pills, chips, XP, Index, reward cards); Director (c) on PC. M3 major src/garden/Plots.luau:771-778: stud-sized pad tags grow without limit up close (Director b).",
+    "Minors: m1 chip contrast 1.5 to 2.5:1 (Director a); m2 textures resolved at runtime from decals, grey for the server's life if never resolved (Director d); m3 Rainbow Highlight fill 0.6 (Director e); m4 egg cards are discs (Director f); m5 a claim re-run on a record that has it pays the next earned slot (docs say unchanged); m6 tick not monotonic under clock skew; m7 PLAY flies before play is accepted; m8 petal emitters register Model and MeshPart; m9 HD tri budget 6,000 not in 9.1/9.3; m10 GARDEN-055 scope and 054/055 status.",
+    "Local tool runs at 7560da3: lune run tests/run 571/571 (test-results.json deleted); reviewer script 171 checks pass (0017 values, 4,900,070 seeded sold-egg rolls with 0 exclusives, monthOf and weekOf against DateTime 1970-2100, counting, claims, flush re-apply, exclusive eggs, login cosmetics, literal v0.2/v0.3/v0.4 saves kept field for field); pacing script output equals GDD X4; selene 0/0; stylua --check clean on 26 LF blobs; rojo build + check-place match (stamp dev); GardenAssets and GardenIcons regenerate byte-identical; validate-tasks 77 valid; check-scope origin/main all 223 in scope.",
+    "Not done: any Studio play session by the reviewer, two clients, a forced flush failure, a phone or gamepad, Reduced Motion live. The checkpoint evidence block (docs/checkpoints/GARDEN-V05.md) stays pending until M1 to M3 are fixed."
+  ]
 }
