@@ -1,0 +1,39 @@
+{
+  "task_id": "GAMESIX-001",
+  "project_id": "GAMESIX-001",
+  "owner": "A06",
+  "verifier": "A01",
+  "task_type": "research",
+  "objective": "Research the 2025-2026 Roblox market (top and fastest-growing games, mechanics, discovery, child-safe monetisation, saturation) and propose five scored concepts for game 6 with a recommendation.",
+  "inputs": [
+    "SHANNON's request in the project thread, 2026-11-06",
+    "docs/game-design/game3-concepts.md (scorecard)",
+    "docs/game-design/game4-concepts.md (scorecard, child-safety gate)",
+    "docs/game-design/game4-gdd.md §A, §B, §G, §H",
+    "docs/game-design/game5-gdd.md §A, §B"
+  ],
+  "dependencies": [],
+  "acceptance_criteria": [
+    "docs/game-design/game6-market-research.md cites every fact with a link and a source grade, and labels low-quality pages",
+    "The research doc has a top-15 table (genre, launch, peak CCU, team, core hook), growth patterns, discovery and monetisation notes, a saturation map and a studio-fit section",
+    "docs/game-design/game6-concepts.md has five concepts, each with pitch, 30-second loop, 10-minute and 10-day hooks, social hook, shareable moment, why now, studio fit, risks and a score on the game 3/4 rubric",
+    "Every concept passes the child-safety gate: no stealing, paid randomness, trading or free text",
+    "Facts, assumptions and hypotheses are labelled separately (CLAUDE.md rule 10)"
+  ],
+  "verification": "SHANNON picks a concept or returns the docs with changes; CI green on the docs PR",
+  "output_artifacts": [
+    "docs/game-design/game6-market-research.md",
+    "docs/game-design/game6-concepts.md"
+  ],
+  "files": [
+    "docs/game-design/game6-market-research.md",
+    "docs/game-design/game6-concepts.md"
+  ],
+  "tests": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "evidence": [
+    "Web research 2026-11-06: Roblox Creator Docs, DevForum, newsroom, Q2 and Q3 2026 earnings, GameAnalytics, RoWatcher; links in the research doc"
+  ],
+  "notes": "Docs only: no game code, no publish, no spending. Recommendation: concept A (Lantern Express), fallback C. Checkpoint items in game6-concepts.md section 5."
+}
