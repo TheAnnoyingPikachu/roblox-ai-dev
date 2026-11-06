@@ -1,0 +1,66 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "high",
+  "status": "in_progress",
+  "task_id": "LANTERN-016",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Fix the Lantern Express v0.1 QA review (docs/qa/lantern-v01-review.md): M1 to M5 and every minor, or the conservative choice recorded.",
+  "inputs": [
+    "docs/qa/lantern-v01-review.md",
+    "docs/production/studio-lessons.md"
+  ],
+  "dependencies": [
+    "LANTERN-013"
+  ],
+  "acceptance_criteria": [
+    "Every major fixed with a test where the code is pure and a Studio or harness proof where it is not",
+    "Every minor fixed or listed with the conservative choice in the review's Fixes section",
+    "Nothing a player earned is ever lost, including a session that starts offline after a crash",
+    "All gates pass"
+  ],
+  "verification": "Independent QA re-review; CI",
+  "output_artifacts": [
+    "docs/qa/lantern-v01-review.md"
+  ],
+  "files": [
+    "src/lantern/**",
+    "src/lantern-client/**",
+    "src/shared/LanternConfig.luau",
+    "src/shared/TrainRules.luau",
+    "src/shared/CarryRules.luau",
+    "src/shared/WispRules.luau",
+    "src/shared/LootRules.luau",
+    "src/shared/DepotRules.luau",
+    "src/shared/LanternProgress.luau",
+    "src/kit/SaveStore.luau",
+    "src/kit-roblox/modules/UiKit.luau",
+    "tests/TrainRules.spec.luau",
+    "tests/CarryRules.spec.luau",
+    "tests/WispRules.spec.luau",
+    "tests/LanternProgress.spec.luau",
+    "tests/LanternConfig.spec.luau",
+    "tests/SaveStore.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0018-lantern-express.md",
+    "docs/architecture/lantern.md",
+    "docs/game-design/game6-gdd.md",
+    "docs/game-design/game6-art-bible.md",
+    "docs/game-design/game6-pacing.py",
+    "docs/checkpoints/LANTERN-V01.md",
+    "docs/qa/lantern-v01-review.md",
+    "lantern.project.json",
+    "studio/tasks/LANTERN-016.json"
+  ],
+  "tests": [
+    "TrainRules.spec.luau",
+    "CarryRules.spec.luau",
+    "WispRules.spec.luau",
+    "LanternProgress.spec.luau",
+    "LanternConfig.spec.luau",
+    "SaveStore.spec.luau"
+  ],
+  "evidence": [],
+  "notes": "Created by the Director after the LANTERN-013 review (f45af50)."
+}
