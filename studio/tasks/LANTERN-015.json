@@ -1,0 +1,63 @@
+{
+  "project_id": "LANTERN-001",
+  "risk_level": "medium",
+  "status": "in_progress",
+  "task_id": "LANTERN-015",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Look and feel pass after the first integration run: dusk lighting that reads as dusk, HUD icons, a clear turret view, visible small items, solo night balance, a Lampeater that feels like a finale, and the stop site centred on the train.",
+  "inputs": [
+    "studio/tasks/LANTERN-012.json evidence",
+    "docs/game-design/game6-art-bible.md",
+    "docs/game-design/game6-gdd.md"
+  ],
+  "dependencies": [
+    "LANTERN-012"
+  ],
+  "acceptance_criteria": [
+    "Day stops read as dusk (teal-violet sky with a warm peach horizon, readable ground, warm lantern pools) and nights stay readable; screenshots judged against the art bible",
+    "20 Pillow-drawn icon decals uploaded and used by the HUD and panels through LanternIcons (glyph fallback kept)",
+    "At a lamp turret the player's own avatar never blocks the aim view",
+    "Small items are visible at 30 studs in grass (glow, outline or bob) without breaking the Mild look",
+    "A solo player with fair play reaches the Depot on leg 1 most nights; numbers pinned in TrainRules or WispRules specs and the pacing script",
+    "The Lampeater reads as a finale (size, entrance, wing flaps) and is reachable in a normal run",
+    "The stop site is centred on the middle of the train",
+    "All gates pass"
+  ],
+  "verification": "Director review of new screenshots; Studio solo runs with numbers; CI",
+  "output_artifacts": [
+    "src/lantern-client/**",
+    "src/lantern/**",
+    "src/shared/**",
+    "tools/icons/lantern/**"
+  ],
+  "files": [
+    "src/lantern/**",
+    "src/lantern-client/**",
+    "src/shared/LanternConfig.luau",
+    "src/shared/TrainRules.luau",
+    "src/shared/WispRules.luau",
+    "src/shared/LanternIcons.luau",
+    "src/kit-roblox/modules/UiKit.luau",
+    "tests/LanternConfig.spec.luau",
+    "tests/TrainRules.spec.luau",
+    "tests/WispRules.spec.luau",
+    "tools/icons/lantern/**",
+    "assets/lantern/icons/**",
+    "tools/blender/upload-assets.mjs",
+    "tools/blender/write-assets-module.mjs",
+    "lantern.project.json",
+    "docs/game-design/game6-gdd.md",
+    "docs/game-design/game6-pacing.py",
+    "docs/assets/register.md",
+    "studio/tasks/LANTERN-015.json"
+  ],
+  "tests": [
+    "TrainRules.spec.luau",
+    "WispRules.spec.luau",
+    "LanternConfig.spec.luau"
+  ],
+  "evidence": [],
+  "notes": "Created by the Director after reviewing the LANTERN-012 screenshots on 2026-11-07."
+}
