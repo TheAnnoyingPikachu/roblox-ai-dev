@@ -25,10 +25,11 @@ end
 local ids = 0
 -- `onWait` runs inside every injected wait: it stands in for other Roblox threads that run while
 -- this one yields (a rejoin, a PlayerRemoving finish).
-local function make(store: any?, onWait: ((seconds: number) -> ())?)
+local function make(store: any?, onWait: ((seconds: number) -> ())?, newer: ((record: any) -> boolean)?)
 	local clock = FakeDataStore.clock()
 	local saves = SaveStore.new({
 		store = store,
+		newer = newer,
 		defaults = function()
 			return { coins = 0, lastSeen = 0 }
 		end,
@@ -133,6 +134,58 @@ describe("SaveStore.load", function()
 		local saves = make(nil)
 		expect(saves:load("k", 0).status).toBe("offline")
 		expect(saves:isOnline("k")).toBe(false)
+	end)
+end)
+
+-- The `newer` option (LANTERN-005): a record from a newer schema loads read-only.
+local function isNewer(record: any): boolean
+	return type(record) == "table" and type(record.schemaVersion) == "number" and record.schemaVersion > 1
+end
+
+describe("SaveStore newer", function()
+	it("loads a newer record sanitised in memory, offline, and never locks or writes it", function()
+		local store = FakeDataStore.new({ k = { schemaVersion = 2, coins = 40.9, future = "keep" } })
+		local saves = make(store, nil, isNewer)
+		local s = saves:load("k", 100)
+		expect(s.status).toBe("offline")
+		expect(s.profile.coins).toBe(40)
+		expect(store:read("k").lock).toBeNil()
+		saves:apply("k", add(5))
+		expect(saves:get("k").coins).toBe(45)
+		expect(saves:due("k", 200)).toBe(false)
+		saves:step(200)
+		expect(saves:flush("k", 300)).toBe(false)
+		saves:finish("k", 400)
+		expect(store.writes).toBe(0)
+		local stored = store:read("k")
+		expect(stored.coins).toBe(40.9)
+		expect(stored.future).toBe("keep")
+		expect(stored.lock).toBeNil()
+	end)
+
+	it("a newer record locked by another server still loads read-only, not busy", function()
+		local store =
+			FakeDataStore.new({ k = { schemaVersion = 3, coins = 7, lock = { session = "later-build", at = 90 } } })
+		local saves = make(store, nil, isNewer)
+		local s = saves:load("k", 100)
+		expect(s.status).toBe("offline")
+		expect(s.profile.coins).toBe(7)
+		saves:finish("k", 110)
+		expect(store.writes).toBe(0)
+		expect(store:read("k").lock.session).toBe("later-build")
+	end)
+
+	it("a current or missing record with the option loads, locks and writes as before", function()
+		local store = FakeDataStore.new({ k = { schemaVersion = 1, coins = 3 } })
+		local saves = make(store, nil, isNewer)
+		local s = saves:load("k", 0)
+		expect(s.status).toBe("online")
+		expect(SaveLock.holds(store:read("k"), s.id)).toBe(true)
+		local fresh = saves:load("new", 0)
+		expect(fresh.status).toBe("online")
+		saves:apply("k", add(2))
+		saves:finish("k", 10)
+		expect(store:read("k").coins).toBe(5)
 	end)
 end)
 

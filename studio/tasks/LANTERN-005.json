@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "medium",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "LANTERN-005",
   "owner": "A11",
   "verifier": "A15",
@@ -21,7 +21,7 @@
     "UiKit.luau has every widget of garden 6.4 except eggDisc, with UiKit.configure{ tokens, fonts, icons, sound, short, rarity, previews } and no require of any Garden module or ClientState; the same numbers, Reduced Motion and 12 px rules",
     "SaveStore with `newer` returning true loads the record offline, sanitised in memory, and never claims the lock or writes (SaveStore.spec new cases); without the option every existing SaveStore.spec case passes unchanged",
     "src/kit/CLAUDE.md lists UiKit and the `newer` option; decision 0011 has a dated note for both",
-    "Every file under src/garden-client and src/garden is byte-identical (Garden keeps its own UiKit until a Garden release moves it)",
+    "Egg Garden uses the kit too (the lead's instruction for LANTERN-005, one copy of the kit): src/garden-client/UiKit.luau becomes a shim that configures the kit with Garden's theme and adds eggDisc, so every other file under src/garden-client and src/garden is byte-identical and Garden looks and behaves the same (Studio check of the start menu and a panel)",
     "lune run tests/run, selene, stylua --check, validate-tasks and check-scope pass; a Studio smoke test (a panel, a button, a toast in an empty place with a test theme) noted with the build stamp"
   ],
   "verification": "CI; A15 reads the diff against src/garden-client/UiKit.luau",
@@ -30,12 +30,18 @@
   ],
   "files": [
     "src/kit-roblox/modules/UiKit.luau",
+    "src/kit-roblox/modules/Saves.luau",
     "src/kit/SaveStore.luau",
     "src/kit/CLAUDE.md",
-    "docs/decisions/0011-shared-kit-and-pipeline-trust.md"
+    "docs/decisions/0011-shared-kit-and-pipeline-trust.md",
+    "src/garden-client/UiKit.luau"
   ],
   "tests": [
     "SaveStore.spec.luau"
   ],
-  "notes": "A kit change touches every game that uses the kit (none in production uses SaveStore's new option or UiKit yet); keep both backwards compatible."
+  "notes": "A kit change touches every game that uses the kit (none in production uses SaveStore's new option or UiKit yet); keep both backwards compatible. Scope change (2026-11-06, lead's instruction): Garden moves onto the kit now instead of at a later Garden release; src/garden-client/UiKit.luau (the Garden shim) and src/kit-roblox/modules/Saves.luau (passes `newer` through to SaveStore, without which the option never reaches a game) are added to files. Config additions beyond architecture lantern 7: `species` (showcase card names), `accent` (side buttons), `menu` (logo words, tagline, haze, PLAY colour, the Garden egg disc as `decorate`); `previews` is a ReplicatedStorage folder name, not a Folder, because the server fills it after join. docs/architecture/lantern.md 1 and garden.md 6.4 still say Garden keeps its own file: the architect should update them.",
+  "evidence": [
+    "Local run 2026-11-06 on game6/client: lune run tests/run 717/717 pass (SaveStore.spec +3 `newer` cases: a newer record loads sanitised in memory, offline, with no lock, flush, autosave or final write and its unknown field kept; a newer record locked by another server loads read-only, not busy; a current or missing record with the option loads, locks and writes as before; every earlier SaveStore case unchanged and green); selene src tests 0 errors 0 warnings; stylua --check clean on an LF copy of src and tests; validate-tasks and check-scope origin/main pass; rojo build lantern and garden + check-place match",
+    "Studio 2026-11-06, garden.rbxl built from this branch, build stamp `build 0f3d4ce` (corner label; [Build] 0f3d4ce in the log): the start menu draws as before through the kit (EGG GARDEN logo with the egg disc, tagline, PLAY pulse, the three-card showcase with species viewports, the side column with the REWARDS dot, two toasts); REWARDS opens the panel with its ribbon, close X, WEEKLY / MONTHLY / QUESTS tabs, the CLAIM button and the seven reward cards with egg discs; PLAY flies to the plot and the HUD shows the coin pill (+0 / s), the level ring, the strip and the glass chips; no script errors or warnings in the log"
+  ]
 }

@@ -62,3 +62,8 @@ Status: Proposed for SHANNON (CLAUDE.md rule 8); SHANNON approved the six pipeli
 - A change to a kit module affects every game that uses it: backwards-compatible API, tests first,
   note here.
 - Place files now carry two small extra scripts and the kit modules (a few KB).
+
+## Notes
+
+- **2026-11-06 (LANTERN-005), `UiKit` joins the kit.** `src/kit-roblox/modules/UiKit.luau` is Egg Garden's UI kit (architecture garden 6.4) with every Garden dependency injected through `UiKit.configure{ tokens, fonts, icons, sound, short, rarity, species, previews, accent, menu }`. Same widgets, numbers, Reduced Motion and 12 px rules. `eggDisc` stays in Garden. Garden now uses the kit too: `src/garden-client/UiKit.luau` configures it with the Garden theme and adds `eggDisc`, so every Garden caller is unchanged (one copy of the kit, as the studio lessons ask). Additive optional tokens (`CHIP`, `CHIP_TEXT`, `CHIP_LINE`, `RING_FILL`, `ROW_LINE`, `BAR_BACK`, `SILHOUETTE`) default to Garden's old literals; `coinPill.set` takes the income as optional. The older `Ui.luau` stays for the games that use it.
+- **2026-11-06 (LANTERN-005), `SaveStore` option `newer`.** `newer: ((record) -> boolean)?`: when it returns true for the stored record at load, the session runs offline on that record sanitised in memory and never claims the lock or writes (no flush, no autosave, no final write), so a save written by a later build survives a rollback. Without the option nothing changes (every earlier `SaveStore.spec` case passes unchanged); `Saves.start` passes it through. Backwards compatible.
