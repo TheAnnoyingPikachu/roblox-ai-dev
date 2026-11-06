@@ -56,7 +56,7 @@ def main():
         try:
             kit.reset()
             groups = asset["build"]()
-            stats = kit.finalize(name, groups, asset["budget"])
+            stats = kit.finalize(name, groups, asset["budget"], **asset.get("finalize", {}))
         except Exception:
             traceback.print_exc()
             failed.append(name)

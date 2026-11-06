@@ -117,24 +117,34 @@ def fit(target):
 
 
 def creature_bunny():
-    fur = k.paint("bu_fur", [(0, (238, 220, 188)), (1, (255, 246, 226))], 0, 3.2)
-    pink, ink, white = k.flat(PINK), k.flat(INK), k.flat(WHITE)
+    """HD standard (tools/blender/garden/README.md "Creature standard"): one fused body, the kit
+    face, smooth separate props."""
+    fur = k.paint("bu_fur", [(0, (234, 214, 182)), (1, (255, 248, 230))], 0, 3.6)
+    pink, white = k.flat((255, 176, 200)), k.flat(WHITE)
     green, green_hi = k.flat((110, 200, 95)), k.flat((150, 225, 110))
-    head = ((0, -0.15, 2.2), 1.0, (1.05, 0.95, 0.95))
-    parts = [ball(1.0, (0, 0.1, 1.05), fur, scale=(1.05, 1.0, 0.95), name="body"), ball(head[1], head[0], fur, scale=head[2], name="head")]
+    head, R = Vector((0, -0.05, 2.2)), 1.0
+    ear = (0.4, 0.02, 3.2)
+    tilt = 18
+    body = k.fuse(
+        [
+            (head, R, (1.2, 0.95, 0.9)),
+            ((0, 0.1, 1.05), 0.86, (1.12, 1.0, 0.95)),  # chest
+            ((0, 0.05, 0.62), 0.8, (1.22, 1.05, 0.7)),  # round seat
+            *k.pair(ear, 0.62, (0.4, 0.2, 1.0), (0, tilt, 0)),
+            *k.pair((0.48, -0.42, 0.2), 0.3, (0.9, 1.45, 0.62)),  # feet: flat beans
+            *k.pair((0.66, -0.4, 1.0), 0.17, (0.85, 0.9, 1.3)),  # arms: small stubs at the sides
+        ],
+        fur,
+        tris=3400,
+    )
+    parts = [body, k.blob(0.3, (0, 0.95, 0.72), white, name="tail")]
     for side in (-1, 1):
-        rot = (0, side * 14, 0)
-        parts.append(ball(0.68, (side * 0.42, -0.05, 3.4), fur, scale=(0.42, 0.22, 1.0), rot=rot, seg=12, rings=7, name="ear"))
-        parts.append(small(0.68, (side * 0.42, -0.19, 3.4), pink, scale=(0.25, 0.1, 0.74), rot=rot, name="ear_in"))
-    parts.append(k.tube([(0, -0.1, 3.0), (0.03, -0.12, 3.32), (0.08, -0.15, 3.58)], [0.08, 0.06, 0.05], m=green, n=6, name="stem"))
-    parts += xf(k.leaf(0.62, 0.22, green_hi, droop=0.3, n=5, steps=4), (0.08, -0.15, 3.52), yaw=20, pitch=25)
-    parts += xf(k.leaf(0.5, 0.19, green, droop=0.3, n=5, steps=4), (0.08, -0.15, 3.52), yaw=200, pitch=30)
-    parts.append(k.puff(0.32, (0, 1.05, 1.0), white, name="tail"))
-    parts += paws(fur, 0.5, -0.7, 0.3, 0.3, back_r=0.4, scale=(1, 1.5, 0.75))
-    parts += eyes(head, white, ink, r=0.27, spread=0.42, up=0.08)
-    parts.append(small(0.09, on(head, (0, -1, -0.12)), pink, scale=(1.3, 1, 0.8), name="nose"))
-    parts.append(smile(head, ink, w=0.16, down=-0.3, curve=0.06, r=0.03))
-    parts += cheeks(head, pink)
+        axis = (side * math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt)))
+        parts.append(k.lens(body, (side * ear[0], ear[1], ear[2] + 0.05), (0, -1, 0), 0.42, pink, scale=(0.34, 1), thick=0.2, sink=0.6, up=axis, name="ear_in"))
+    parts.append(k.capsule((0, -0.1, 2.95), (0.05, -0.16, 3.55), 0.07, 0.05, green, n=10, name="stem"))
+    parts += xf(k.leaf(0.62, 0.22, green_hi, droop=0.3, n=10, steps=8), (0.06, -0.16, 3.52), yaw=20, pitch=25)
+    parts += xf(k.leaf(0.5, 0.19, green, droop=0.3, n=10, steps=8), (0.06, -0.16, 3.52), yaw=200, pitch=30)
+    parts += k.face(body, head, R, skin=(252, 240, 218), nose=(240, 130, 160))
     return parts
 
 
@@ -353,51 +363,74 @@ def creature_lion():
 
 
 def creature_dragon():
-    lilac = k.paint("dr_skin", [(0, (192, 166, 238)), (1, (222, 202, 255))], 0, 4.8)
-    belly, petal, vein = k.flat((246, 236, 255)), k.flat((255, 252, 255)), k.flat((196, 164, 238))
-    horn, moon, ink, white, pink = k.flat((255, 240, 210)), k.flat((255, 240, 170)), k.flat(INK), k.flat(WHITE), k.flat((255, 180, 205))
-    body = ((0, 0.3, 1.5), 1.3, (1.0, 1.25, 1.0))
-    head = ((0, -0.9, 3.3), 1.4, (1.05, 1.0, 0.95))
-    parts = [ball(body[1], body[0], lilac, scale=body[2], name="body"), ball(head[1], head[0], lilac, scale=head[2], name="head")]
-    snout = ((0, -2.1, 2.95), 0.6, (1.3, 0.8, 0.7))
-    parts.append(ball(snout[1], snout[0], lilac, scale=snout[2], seg=12, rings=7, name="snout"))
+    """HD standard: body, head, snout, arms, feet and the curled tail are one fused shape."""
+    lilac = k.paint("dr_skin", [(0, (184, 156, 234)), (1, (222, 204, 255))], 0, 5.0)
+    belly, petal, vein = k.flat((246, 236, 255)), k.flat((255, 250, 255)), k.flat((200, 170, 240))
+    horn, moon, ink = k.flat((255, 240, 210)), k.flat((255, 236, 160)), k.flat(k.INKY)
+    head, R = Vector((0, -0.85, 3.35)), 1.4
+    snout = Vector((0, -2.0, 2.95))
+    tail = []
+    for i in range(25):  # short capsules, or the thin tip turns into beads
+        t = i / 24
+        a = math.radians(-100 + 300 * t)
+        rr = 0.65 - 0.35 * t
+        tail.append((Vector((0.3, 1.8, 1.4)) + Vector((0, rr * math.cos(a), rr * math.sin(a))), 0.3 - 0.19 * t))
+    body = k.fuse(
+        [
+            (head, R, (1.08, 0.98, 0.94)),
+            ((0, 0.3, 1.5), 1.25, (1.0, 1.18, 1.0)),
+            (snout, 0.6, (1.3, 0.85, 0.72)),
+            *k.pair((0.7, -0.8, 0.3), 0.42, (0.95, 1.3, 0.7)),  # front feet
+            *k.pair((0.8, 0.95, 0.32), 0.45, (0.95, 1.3, 0.7)),  # back feet
+            *k.pair((0.85, -0.85, 1.5), 0.26, (0.8, 0.9, 1.25)),  # arms
+            *[("capsule", a, b, (ra + rb) / 2) for (a, ra), (b, rb) in zip(tail, tail[1:])],
+        ],
+        lilac,
+        tris=3000,
+    )
+    parts = [body]
     for side in (-1, 1):
-        parts.append(small(0.07, on(snout, (side * 0.4, -1, 0.3)), ink, name="nostril"))
-        parts.append(k.cyl(0.24, 0.65, (side * 0.62, -0.75, 4.55), rot=(-15, side * 25, 0), m=horn, n=8, r2=0, name="horn"))
-        for length, width, pitch, yaw in ((2.4, 0.9, 35, 10), (2.1, 0.8, 8, 18), (1.8, 0.7, -18, 24)):
-            wing = k.leaf(length, width, petal, droop=0.1, n=5, steps=4)
-            rib = k.tube([(length * s, 0, length * 0.1 * math.sin(s * math.pi * 0.8) + width * 0.3 * math.sin(s * math.pi) ** 0.7) for s in (0.1, 0.4, 0.7, 0.92)], [0.045, 0.04, 0.03, 0.02], m=vein, n=3, name="vein")
-            parts += xf([wing, rib], (0.5, 0.55, 2.5), yaw=yaw, pitch=pitch, roll=90, mirror=side < 0)
-    parts.append(smile(snout, ink, w=0.6, down=-0.4, curve=0.2, r=0.035))
-    # Crescent moon on the forehead: a tapered arc, horns up.
-    f = Vector((0, -1, 0.5)).normalized()
-    pts, radii = [], []
-    for i in range(9):
-        t = i / 8 * 2 - 1
-        a = math.radians(125 * t)
-        pts.append(on(head, f + Vector((0.3 * math.sin(a), 0, -0.3 * math.cos(a))), -0.02))
-        radii.append(0.02 + 0.075 * (1 - t * t) ** 0.6)
-    parts.append(k.tube(pts, radii, m=moon, n=5, name="crescent"))
-    for z in (0.95, 1.45, 1.95):
-        parts.append(ball(0.6, on(body, (0, -1, (z - body[0][2]) / (body[1] * body[2][2])), 0.1), belly, scale=(1.2, 0.3, 0.45), seg=8, rings=4, name="plate"))
-    centre = Vector((0.3, 2.0, 1.4))
+        parts.append(k.capsule((side * 0.55, -0.7, 4.35), (side * 0.8, -0.5, 5.1), 0.22, 0.06, horn, n=12, name="horn"))
+        parts.append(k.lens(body, snout, k.outward(side * 20, 14), 0.065, ink, thick=0.5, sink=0.5, seg=12, name="nostril"))
+        for length, width, pitch, yaw in ((2.8, 1.0, 35, 10), (2.45, 0.88, 8, 18), (2.1, 0.77, -18, 24)):
+            wing = k.leaf(length, width, petal, droop=0.1, n=8, steps=10)
+            rib = k.tube([(length * s, 0, length * 0.1 * math.sin(s * math.pi * 0.8) + width * 0.3 * math.sin(s * math.pi) ** 0.7) for s in (0.1, 0.4, 0.7, 0.92)], [0.045, 0.04, 0.03, 0.02], m=vein, n=4, name="vein")
+            parts += k.texel(xf([wing, rib], (0.5, 0.55, 2.5), yaw=yaw, pitch=pitch, roll=90, mirror=side < 0), 0.5)
+    parts.append(k.mouth(body, snout, k.outward(0, -32), 0.32, ink, "smile"))
+    # Crescent moon on the forehead: a tapered arc on the surface, horns up.
+    f = Vector((0, -1, 0.55)).normalized()
     pts, radii = [], []
     for i in range(11):
-        t = i / 10
-        a = math.radians(-100 + 300 * t)
-        rr = 0.75 - 0.4 * t
-        pts.append(centre + Vector((0, rr * math.cos(a), rr * math.sin(a))))
-        radii.append(0.3 - 0.2 * t)
-    parts.append(k.tube(pts, radii, m=lilac, n=6, name="tail"))
-    parts += paws(lilac, 0.65, -0.8, 1.1, 0.4, seg=8, rings=5)
-    parts += eyes(head, white, ink, r=0.3, spread=0.4, up=0.1)
-    parts += cheeks(head, pink, r=0.22)
+        t = i / 10 * 2 - 1
+        a = math.radians(125 * t)
+        p, n = k.land(body, head, f + Vector((0.3 * math.sin(a), 0, -0.3 * math.cos(a))))
+        r = 0.02 + 0.075 * (1 - t * t) ** 0.6
+        pts.append(p + n * r * 0.3)
+        radii.append(r)
+    parts.append(k.tube(pts, radii, m=moon, n=6, name="crescent"))
+    k.texel([p for p in parts if p.name.startswith(("nostril", "mouth", "crescent"))], k.FACE_TEXEL)
+    for z in (0.95, 1.45, 1.95):
+        parts.append(k.lens(body, (0, 0.3, z), (0, -1, 0), 0.55, belly, scale=(1.0, 0.4), thick=0.5, sink=0.6, name="plate"))
+    # With a snout, the eyes sit just above its top line, not low on the head.
+    parts += k.face(body, head, R, skin=(215, 195, 250), nose=None, mouth_kind=None, eye_phi=8, spread=36)
     return parts
 
 
 NOTES = "One mesh (Plots.luau creature through Models.nightPart). Scale to the manifest height. Chibi toy: head near half the height, baked eyes and markings."
+HD = {"bunny", "dragon"}  # rebuilt to the README "Creature standard"
 ASSETS = [
-    dict(name=f"creature_{id}", build=fit(size)(build), budget=2500, size=size, priority=1, order=order, replaces=f"Roblox-generated {label} mesh (src/relay/Models.luau MESHES.{id})", notes=NOTES, glow={})
+    dict(
+        name=f"creature_{id}",
+        build=fit(size)(build),
+        budget=k.CREATURE_BUDGET if id in HD else 2500,
+        finalize=k.HD if id in HD else {},
+        size=size,
+        priority=1,
+        order=order,
+        replaces=f"Roblox-generated {label} mesh (src/relay/Models.luau MESHES.{id})",
+        notes=NOTES,
+        glow={},
+    )
     for order, (id, label, build, size) in enumerate(
         (
             ("bunny", "Sprout Bunny", creature_bunny, [2.6, 4.0, 2.4]),
