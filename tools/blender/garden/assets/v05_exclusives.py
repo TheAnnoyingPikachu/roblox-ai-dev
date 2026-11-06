@@ -10,7 +10,7 @@ import kit as k
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from creatures_a import xf  # noqa: E402
+from creatures_a import spline, xf  # noqa: E402
 from creatures_b import WHITE, blob  # noqa: E402
 from eggs import fit  # noqa: E402
 
@@ -25,7 +25,8 @@ def settle(parts, size):
     lo, hi = k._ground_dims(parts)
     d = hi - lo
     s = (size[0] / d.x, size[2] / d.y, size[1] / d.z)
-    print(f"[v05] fit scale x {s[0]:.2f} y {s[1]:.2f} z {s[2]:.2f}", flush=True)
+    tris = sum(k._tris(ob) for ob in parts)  # over k.CREATURE_BUDGET, finalize silently decimates
+    print(f"[v05] fit scale x {s[0]:.2f} y {s[1]:.2f} z {s[2]:.2f}, {tris} tris", flush=True)
     m = Matrix.Translation((-(lo.x + hi.x) / 2 * s[0], -(lo.y + hi.y) / 2 * s[1], -lo.z * s[2])) @ Matrix.Diagonal((*s, 1))
     for ob in parts:
         ob.data.transform(m)
@@ -103,83 +104,48 @@ def creature_puffin():
 # River Otter (rare, weekly) ------------------------------------------------------------------
 
 
-def scallop(r, m, ribs=7, thick=0.05, name="shell"):
-    """Ribbed scallop shell with a wavy rim, hinge at the origin, opening along local +Y, domed
-    towards +Z; solid, so it shows from behind too (Roblox culls back faces)."""
-
-    def fn(u, v):
-        a = math.radians(-72 + 144 * u)
-        rib = math.cos(2 * math.pi * ribs * u)
-        rr = r * v * (1 + 0.035 * rib * v)
-        z = r * (0.24 * math.sin(math.pi * v) ** 0.8 * math.cos(a) ** 0.5 + 0.035 * rib * v)
-        return (rr * math.sin(a), rr * math.cos(a), z)
-
-    return k.surface(ribs * 4, 4, fn, m=m, thickness=thick, name=name)
-
-
 def creature_otter():
-    """HD standard: floating on its back in a pool, head raised, a scallop held on its chest."""
-    # The face tilts up (it lies on its back) and the shell is held up over the chest, so a
-    # player looking down from the front sees the face, the shell above it and the feet behind.
-    head, R = Vector((0, -1.75, 1.3)), 0.84
-    snout = Vector((0, -2.44, 1.52))
-    paw = Vector((0.5, -0.68, 1.98))
+    """Remade from the Roblox AI reference (assets/garden/refs/otter_*.jpg): a chocolate-brown
+    otter sitting up, a cream muzzle, cheeks and belly, a black button nose, small dark eyes, small
+    round ears, a flat paddle tail on the ground, and a blue spiral shell hugged in both paws."""
+    fur = k.paint("ot_fur", [(0, (78, 42, 24)), (0.5, (110, 62, 36)), (1, (134, 82, 50))], 0, 3.4, rest=True, grain=(0.06, 30))
+    cream = (238, 222, 192)
+    head, R = Vector((0, -0.1, 2.45)), 0.85
+    muzzle = Vector((0, -0.78, 2.2))
+    paw = Vector((0.5, -0.92, 1.2))
+    tail = spline([(0.3, 0.75, 0.2), (0.6, 1.12, 0.1), (0.85, 1.38, 0.07)], [0.3, 0.26, 0.16], 8)
     body = k.fuse(
         [
-            (head, R, (1.12, 0.95, 0.94)),
-            (snout, 0.35, (1.3, 0.8, 0.72), (-28, 0, 0)),
-            ((0, -0.8, 1.0), 0.85, (1.0, 1.0, 0.82)),  # chest
-            ((0, 0.4, 0.72), 0.95, (1.0, 1.62, 0.74)),  # long body, back in the water
-            *k.pair((0.8, -1.45, 1.87), 0.2, (1.0, 0.75, 1.0)),  # small round ears
-            *[("capsule", (s * 0.72, -1.0, 1.3), (s * paw.x, paw.y, paw.z - 0.06), 0.18) for s in (-1, 1)],  # arms up to the shell
-            *k.pair(paw, 0.21, (0.85, 0.9, 1.0)),  # paws gripping the shell's sides
-            *k.pair((0.5, 1.75, 1.1), 0.3, (0.9, 0.6, 1.2), (-35, 0, 0)),  # hind feet up out of the water
-            ((0, 2.15, 0.42), 0.38, (1.0, 1.4, 0.55)),  # flat tail
-            ((0, 2.65, 0.34), 0.28, (1.0, 1.4, 0.5)),
-            ((0, 3.0, 0.3), 0.17, (1.0, 1.3, 0.55)),
+            (head, R, (1.3, 1.02, 0.95)),
+            *k.pair((0.3, -0.66, 2.16), 0.38, (1.0, 0.85, 0.82)),  # puffy muzzle cheeks
+            ((0, 0.08, 1.3), 0.86, (1.14, 1.0, 1.12)),  # pear body
+            ((0, 0.1, 0.5), 0.9, (1.32, 1.12, 0.6)),  # round seat
+            *k.pair((0.9, -0.02, 2.86), 0.19, (1.0, 0.6, 0.9)),  # small round ears
+            ("capsule", (0.8, -0.2, 1.75), (paw.x, paw.y, paw.z), 0.21),  # arms round the shell
+            ("capsule", (-0.8, -0.2, 1.75), (-paw.x, paw.y, paw.z), 0.21),
+            *k.pair(tuple(paw), 0.2, (1.0, 1.0, 0.9)),
+            *k.pair((0.55, -0.74, 0.15), 0.25, (1.0, 1.4, 0.6)),  # hind feet
+            *[e for (a, ra), (b, rb) in zip(tail, tail[1:]) for e in [(tuple((a + b) / 2), (ra + rb) / 2, (1.0, 1.0, 0.4), (0, 0, -35))]],  # flat paddle tail
         ],
-        k.flat((150, 105, 75)),
-        tris=3000,
+        fur,
+        tris=2900,
     )
-    pool = k.lathe([(0, 0), (1.95, 0), (2.0, 0.06), (1.94, 0.13), (1.6, 0.15), (0, 0.15)], m=k.flat((150, 205, 245)), n=48, scale=(1, 1.3, 1), name="pool")
-    f, up = Vector((0, -0.87, 0.5)), Vector((0, 0.5, 0.87))  # shell faces the viewer, top leaning back
-    shell = scallop(0.8, k.flat((255, 190, 175)))
-    shell.data.transform(Matrix.Translation((0, -0.78, 1.62)) @ Matrix((up.cross(f), up, f)).transposed().to_4x4())
-    p, n = k.land(body, (0.3, -0.15, 0), (0, 0, 1))
-    pearl = k.sphere(0.13, p + n * 0.11, m=k.flat((250, 245, 255)), seg=20, rings=10, name="pearl")
-    dark, ink = k.flat((70, 45, 40)), k.flat(k.INKY)
-    parts = [pool, body, shell, pearl]
-    parts.append(k.lens(body, snout, k.outward(0, 30), 0.14, dark, scale=(1.3, 0.85), thick=0.55, sink=0.4, seg=16, name="nose"))
-    parts.append(k.mouth(body, snout, k.outward(0, -30), 0.2, ink, "w"))
-    for s in (-1, 1):
-        for dz in (0.06, -0.06):
-            p, n = k.land(body, snout, k.outward(s * 62, dz * 80))
-            parts.append(k.tube([p - n * 0.02, p + n * 0.25 + Vector((s * 0.2, 0, dz)), p + n * 0.42 + Vector((s * 0.38, 0.06, dz * 2.5))], [0.02, 0.016, 0.006], m=dark, n=4, name="whisker"))
-    k.texel(parts[4:], k.FACE_TEXEL)
-    parts += k.face(body, head, R, skin=(225, 200, 170), nose=None, mouth_kind=None, eye_phi=24, spread=36)
-
-    m = settle(parts, SIZE["creature_otter"])
-    fur = (150, 104, 74)
-    swap(body, k.paint("ot_fur", [(0, (100, 66, 48)), (0.6, fur), (1, (175, 125, 88))], 0, 2.2, marks=[
-        mark(m, (232, 208, 176), (0, -0.55, 2.2), 1.0),  # belly
-        mark(m, (232, 208, 176), (0, 0.35, 2.0), 0.88),
-        mark(m, (222, 196, 162), head + Vector((0, -0.1, 0)), 0.98),  # pale sea-otter head
-        mark(m, fur, (0.8, -1.45, 1.87), 0.27),  # ears stay brown
-        mark(m, fur, (-0.8, -1.45, 1.87), 0.27),
-        mark(m, (245, 228, 205), snout + Vector((0, -0.25, 0)), 0.42),  # muzzle
-        mark(m, (95, 62, 46), paw, 0.26),  # dark paws
-        mark(m, (95, 62, 46), (-paw.x, paw.y, paw.z), 0.26),
-        mark(m, (120, 80, 58), (0.5, 1.95, 1.3), 0.32),  # darker soles on the raised feet
-        mark(m, (120, 80, 58), (-0.5, 1.95, 1.3), 0.32),
-    ]))
-    ripple = (205, 235, 255)
-    c = (0.6, -1.0, 0.15)
-    swap(pool, k.paint("ot_water", [(0, (110, 180, 235)), (1, (160, 215, 250))], 0, 0.2, marks=[
-        mark(m, ripple, c, 1.45, r_in=1.38), mark(m, ripple, c, 1.9, r_in=1.84), mark(m, ripple, (-1.0, 1.4, 0.15), 0.62, r_in=0.56),
-        mark(m, ripple, (-1.0, 1.4, 0.15), 0.95, r_in=0.9),
-    ]))
-    lo, hi = (m @ Vector((0, 0, 1.6))).z, (m @ Vector((0, 0, 2.35))).z
-    swap(shell, k.paint("ot_shell", [(0, (245, 120, 140)), (1, (255, 215, 200))], lo, hi))
+    k.zone(fur, cream, muzzle + Vector((0, 0.05, 0.02)), (0.84, 0.5, 0.44), soft=0.15)  # muzzle and cheeks
+    k.zone(fur, cream, (0, -0.76, 1.05), (0.66, 0.45, 0.82), soft=0.15)  # belly
+    k.zone(fur, (150, 108, 82), tail[-1][0], (0.5, 0.5, 0.4), soft=0.4)  # paler tail tip
+    parts = [body]
+    # The blue spiral shell, held upright on the belly: concentric grooves painted round its middle.
+    c, d = Vector((0, -1.0, 1.25)), Vector((0, -1, 0.25)).normalized()
+    shell = k.rest(k.lathe([(0, -0.12), (0.42, -0.12), (0.55, -0.05), (0.57, 0.05), (0.5, 0.13), (0.3, 0.2), (0, 0.22)], m=None, n=32, name="shell"))
+    shell.data.materials.append(k.paint("ot_shell", [(0, (22, 96, 204)), (1, (48, 136, 234))], -0.12, 0.22, rest=True,
+                                        marks=[((26, 84, 184), (0, 0, 0.22), r - 0.025, r) for r in (0.1, 0.24, 0.38, 0.5)]))
+    shell.data.transform(Matrix.Translation(c) @ Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4())
+    parts.append(shell)
+    face = [k.lens(body, muzzle, k.outward(0, 30), 0.18, k.flat((26, 22, 26)), scale=(1.35, 0.95), thick=0.8, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, muzzle, k.outward(0, -14), 0.16, k.flat(k.INKY), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=(120, 82, 62), nose=None, mouth_kind=None, eye_r=0.18, eye_wide=0.9, spread=33, eye_phi=6, sheen=True, blush_theta=50, blush_phi=-22, blush_r=0.13)
+    settle(parts, SIZE["creature_otter"])
     return parts
 
 
@@ -187,58 +153,52 @@ def creature_otter():
 
 
 def creature_capybara():
-    """HD standard: a round loaf with a big blunt head, closed happy eyes (its identity, so the
-    face is built here without k.face's open eyes), a towel draped on its head, a yuzu on top."""
-    tan = (204, 148, 88)
-    fur = k.paint("ca_fur", [(0, (146, 96, 56)), (0.55, tan), (1, (222, 170, 108))], 0.2, 3.3)
-    dark, ink = k.flat((92, 62, 48)), k.flat(k.EYE_INK)
-    head, R = Vector((0, -0.95, 2.25)), 1.2
-    snout = Vector((0, -2.08, 1.95))
-    ear = (0.84, -0.4, 2.95)
+    """Remade from the Roblox AI reference (assets/garden/refs/capybara_*.jpg): a golden-tan
+    capybara loaf, the head melting into the body, a long blunt darker muzzle, small dark eyes,
+    pink cheeks, small round ears, a mandarin with a leaf and a sprig of lilac on its head, and a
+    rolled white towel tucked under its left arm (the "Spa Capybara")."""
+    tan = (210, 146, 80)
+    fur = k.paint("ca_fur", [(0, (166, 104, 52)), (0.45, tan), (1, (226, 170, 104))], 0, 2.6, rest=True, grain=(0.06, 30))
+    head, R = Vector((0, -0.38, 1.85)), 0.85
+    snout = Vector((0, -1.1, 1.6))
+    ear = (0.66, -0.05, 2.5)
     body = k.fuse(
         [
-            (head, R, (1.18, 1.08, 0.88)),
-            (snout, 0.72, (1.12, 0.95, 0.82)),  # long, deep, blunt capybara muzzle
-            ((0, 0.5, 1.4), 1.25, (1.18, 1.3, 0.95)),  # barrel body
-            *k.pair(ear, 0.24, (1.0, 0.55, 0.85), (0, 20, 0)),  # small round ears
-            *[("capsule", (s * 0.72, y, 0.3), (s * 0.72, y + 0.05, 0.9), 0.3) for s in (-1, 1) for y in (-0.55, 1.3)],  # stubby legs
-            *[e for y in (-0.6, 1.25) for e in k.pair((0.74, y, 0.2), 0.32, (0.9, 1.4, 0.62))],  # feet: flat beans
+            (head, R, (1.1, 1.12, 0.9)),
+            (snout, 0.44, (0.95, 1.0, 1.08)),  # long blunt muzzle
+            ((0, 0.25, 0.9), 0.95, (1.12, 1.15, 0.95)),  # loaf body
+            ((0, 0.25, 0.42), 0.95, (1.16, 1.18, 0.5)),  # flat round seat
+            *k.pair(ear, 0.2, (1.0, 0.55, 0.9), (0, 20, 0)),  # small round ears
         ],
         fur,
-        tris=3200,
+        tris=2800,
     )
+    k.zone(fur, (140, 86, 56), snout + Vector((0, -0.24, -0.04)), (0.38, 0.34, 0.5), soft=0.12)  # darker muzzle
+    k.zone(fur, (232, 190, 132), (0, -0.85, 0.75), (0.6, 0.4, 0.55), soft=0.4)  # paler chest
     parts = [body]
     for s in (-1, 1):
         axis = (s * math.sin(math.radians(20)), 0, math.cos(math.radians(20)))
-        parts.append(k.lens(body, (s * ear[0], ear[1], ear[2]), (0, -1, 0), 0.2, k.flat((150, 95, 80)), scale=(0.6, 0.8), thick=0.2, sink=0.6, up=axis, name="ear_in"))
-    # Face: happy closed eyes (k.mouth's U turned over), blush, the dark nose pad and a "w" mouth.
-    k.texel(body, k.FACE_TEXEL, k.land(body, head, k.outward(0, -12))[0], R * 1.2)
-    face = []
-    for s in (-1, 1):
-        face.append(k.mouth(body, head, k.outward(s * 33, 15), R * 0.16, ink, "smile", r=R * 0.036, up=(0, 0, -1)))
-        face.append(k.lens(body, head, k.outward(s * 52, -12), R * 0.17, k.flat(k.mix(tan, k.BLUSH_PINK, 0.55)), scale=(1.5, 0.9), thick=0.18, sink=0.5, name="blush"))
-    face.append(k.lens(body, snout, k.outward(0, 28), 0.2, dark, scale=(1.5, 0.75), thick=0.5, sink=0.4, seg=16, name="nose"))
-    face.append(k.mouth(body, snout, k.outward(0, -22), 0.2, k.flat(k.INKY), "w"))
+        parts.append(k.lens(body, (s * ear[0], ear[1], ear[2]), (0, -1, 0), 0.14, k.flat((150, 96, 74)), scale=(0.7, 0.8), thick=0.2, sink=0.6, up=axis, name="ear_in"))
+    ink = k.flat((60, 36, 30))
+    face = [k.lens(body, snout, k.outward(s * 18, 8), 0.05, ink, scale=(0.8, 1.3), thick=0.5, sink=0.5, seg=12, name="nostril") for s in (-1, 1)]
+    face.append(k.mouth(body, snout, k.outward(0, -26), 0.14, ink, "w"))
     parts += k.texel(face, k.FACE_TEXEL)
-
-    # Towel draped over the crown: a grid cast down onto the head, given thickness.
-    def drape(u, v):  # solidify centres the 0.16 thickness: bottom 0.02 under the fur
-        p, n = k.land(body, (1.16 * u - 0.58, -1.41 + 0.86 * v, 0), (0, 0, 1))
-        return tuple(p + n * 0.06)
-
-    towel = k.surface(12, 10, drape, m=k.flat(WHITE), thickness=0.16, name="towel")
-    top = Vector(k.land(body, (0, -0.98, 0), (0, 0, 1))[0]) + Vector((0, 0, 0.14))
-    yuzu = k.blob(0.34, top + Vector((0, 0, 0.31)), k.flat((255, 210, 60)), scale=(1, 1, 0.92), name="yuzu")
-    stem = k.capsule(top + Vector((0, 0, 0.6)), top + Vector((0.03, 0.02, 0.72)), 0.04, 0.03, dark, n=8, name="stem")
-    green = k.flat((105, 185, 85))
-    leaves = xf(k.leaf(0.48, 0.18, green, droop=0.25, n=8, steps=8), top + Vector((0.03, 0.02, 0.68)), yaw=-30, pitch=12)
-    leaves += xf(k.leaf(0.36, 0.14, k.flat((140, 210, 100)), droop=0.25, n=8, steps=8), top + Vector((0.03, 0.02, 0.68)), yaw=160, pitch=18)
-    parts += [towel, yuzu, stem, *leaves]
-
+    # Rolled towel under the left arm (+X), its end pointing forwards and out.
+    towel = k.capsule((0.8, 0.2, 1.0), (1.12, -0.82, 1.02), 0.25, 0.25, k.flat((248, 248, 244)), n=20, name="towel")
+    swirl = k.lens(towel, (1.12, -0.82, 1.02), (0.3, -0.95, 0), 0.15, k.flat((214, 216, 214)), thick=0.2, sink=0.6, seg=12, name="towel_end")
+    parts += [towel, swirl]
+    # Mandarin on top, with a stem, a leaf and a lilac sprig behind it.
+    p, n = k.land(body, head, (0, 0.25, 1))
+    top = p + Vector((0, 0, 0.3))
+    orange = k.rest(k.blob(0.36, top, None, scale=(1, 1, 0.88), name="mandarin"))
+    orange.data.materials.append(k.paint("ca_mandarin", [(0, (228, 108, 40)), (1, (248, 150, 70))], top.z - 0.3, top.z + 0.3, rest=True, grain=(0.08, 40)))
+    stem = k.capsule(top + Vector((0, 0, 0.28)), top + Vector((0.02, 0.02, 0.38)), 0.035, 0.03, k.flat((92, 70, 48)), n=8, name="stem")
+    leaves = xf(k.leaf(0.36, 0.14, k.flat((105, 175, 85)), droop=0.25, n=8, steps=8), top + Vector((0.02, 0.02, 0.36)), yaw=-30, pitch=12)
+    lilac = [k.flat((196, 160, 226)), k.flat((222, 186, 236))]
+    sprig = [ob for i, yaw in enumerate((60, 90, 120, 75, 105)) for ob in xf(k.leaf(0.54 - 0.08 * (i // 3), 0.15, lilac[i % 2], droop=-0.1, n=8, steps=8), top + Vector((0, 0.24, -0.05)), yaw=yaw, pitch=58 - 14 * (i // 3))]
+    parts += [orange, stem, *leaves, *sprig]
+    parts += k.face(body, head, R, skin=(220, 166, 104), nose=None, mouth_kind=None, eye_r=0.15, eye_wide=0.9, spread=40, eye_phi=10, sheen=True, blush_theta=52, blush_phi=-12, blush_r=0.16)
     settle(parts, SIZE["creature_capybara"])
-    swap(towel, k.paint("ca_towel", [(0, (255, 255, 252)), (1, (250, 252, 255))], -1, 1, axis="X", bands=((130, 195, 240), 0.42)))
-    lo, hi = k._ground_dims([yuzu])
-    swap(yuzu, k.paint("ca_yuzu", [(0, (245, 180, 40)), (1, (255, 232, 100))], lo.z, hi.z, grain=(0.08, 40)))
     return parts
 
 
@@ -581,8 +541,8 @@ NOTES = "One mesh, stands on the origin facing -Y; scale to the manifest height 
 EGG_NOTES = "One mesh for Plots.egg through Models.nightPart (architecture section 9); never on the cart. Gold is baked bright."
 SPECIES = (
     ("creature_puffin", creature_puffin, [2.2, 3.0, 2.35], "Pebble Puffin (uncommon)"),
-    ("creature_otter", creature_otter, [4.0, 2.6, 5.8], "River Otter (rare)"),  # lies on its back: 9.3's 3.6 tall would be 7 long
-    ("creature_capybara", creature_capybara, [3.2, 4.2, 4.6], "Spa Capybara (epic)"),
+    ("creature_otter", creature_otter, [1.89, 2.6, 2.19], "River Otter (rare)"),
+    ("creature_capybara", creature_capybara, [3.03, 4.2, 3.56], "Spa Capybara (epic)"),
     ("creature_redpanda", creature_redpanda, [4.2, 5.0, 4.0], "Maple Red Panda (legendary)"),
     ("creature_peacock", creature_peacock, [5.0, 5.6, 4.0], "Jewel Peacock (mythic)"),
     ("creature_snowleopard", creature_snowleopard, [4.6, 5.8, 4.6], "Frost Leopard (divine)"),

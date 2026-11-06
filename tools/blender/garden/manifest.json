@@ -554,18 +554,18 @@
     "png": "build/blender/garden/creature_hedgehog.png",
     "preview": "build/blender/garden/previews/creature_hedgehog.png",
     "size_studs": [
-      3.0,
+      2.57,
       2.8,
-      3.4
+      2.45
     ],
-    "tris": 5846,
+    "tris": 5978,
     "parts": {
-      "creature_hedgehog": 5846
+      "creature_hedgehog": 5978
     },
     "target_size_studs": [
-      3.0,
+      2.57,
       2.8,
-      3.4
+      2.45
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -629,18 +629,18 @@
     "png": "build/blender/garden/creature_owl.png",
     "preview": "build/blender/garden/previews/creature_owl.png",
     "size_studs": [
-      4.2,
+      3.99,
       4.5,
-      3.8
+      2.9
     ],
-    "tris": 5480,
+    "tris": 5956,
     "parts": {
-      "creature_owl": 5480
+      "creature_owl": 5956
     },
     "target_size_studs": [
-      4.2,
+      3.99,
       4.5,
-      3.8
+      2.9
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -729,18 +729,18 @@
     "png": "build/blender/garden/creature_turtle.png",
     "preview": "build/blender/garden/previews/creature_turtle.png",
     "size_studs": [
-      3.8,
+      2.83,
       3.5,
-      3.8
+      3.16
     ],
-    "tris": 5922,
+    "tris": 5648,
     "parts": {
-      "creature_turtle": 5922
+      "creature_turtle": 5648
     },
     "target_size_studs": [
-      3.8,
+      2.83,
       3.5,
-      3.8
+      3.16
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -904,18 +904,18 @@
     "png": "build/blender/garden/creature_moth.png",
     "preview": "build/blender/garden/previews/creature_moth.png",
     "size_studs": [
-      4.8,
+      3.9,
       3.2,
-      3.4
+      1.62
     ],
-    "tris": 5692,
+    "tris": 5878,
     "parts": {
-      "creature_moth": 5692
+      "creature_moth": 5878
     },
     "target_size_studs": [
-      4.8,
+      3.9,
       3.2,
-      3.4
+      1.6
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -954,18 +954,18 @@
     "png": "build/blender/garden/creature_otter.png",
     "preview": "build/blender/garden/previews/creature_otter.png",
     "size_studs": [
-      4.0,
-      2.62,
-      5.8
+      1.89,
+      2.6,
+      2.19
     ],
-    "tris": 5476,
+    "tris": 4476,
     "parts": {
-      "creature_otter": 5476
+      "creature_otter": 4476
     },
     "target_size_studs": [
-      4.0,
+      1.89,
       2.6,
-      5.8
+      2.19
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -979,18 +979,18 @@
     "png": "build/blender/garden/creature_capybara.png",
     "preview": "build/blender/garden/previews/creature_capybara.png",
     "size_studs": [
-      3.2,
+      3.03,
       4.2,
-      4.6
+      3.56
     ],
-    "tris": 5654,
+    "tris": 5996,
     "parts": {
-      "creature_capybara": 5654
+      "creature_capybara": 5996
     },
     "target_size_studs": [
-      3.2,
+      3.03,
       4.2,
-      4.6
+      3.56
     ],
     "tris_budget": 6000,
     "priority": "P1",

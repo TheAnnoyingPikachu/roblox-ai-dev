@@ -163,7 +163,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_hedgehog = {
-		size = { 3, 2.8, 3.4 },
+		size = { 2.57, 2.8, 2.45 },
 		parts = { "creature_hedgehog" },
 		model = 91865811495849,
 		decal = 109034652029292,
@@ -184,7 +184,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_owl = {
-		size = { 4.2, 4.5, 3.8 },
+		size = { 3.99, 4.5, 2.9 },
 		parts = { "creature_owl" },
 		model = 71278636971750,
 		decal = 118427790256616,
@@ -212,7 +212,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_turtle = {
-		size = { 3.8, 3.5, 3.8 },
+		size = { 2.83, 3.5, 3.16 },
 		parts = { "creature_turtle" },
 		model = 107439862403502,
 		decal = 89156506319145,
@@ -261,7 +261,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_moth = {
-		size = { 4.8, 3.2, 3.4 },
+		size = { 3.9, 3.2, 1.62 },
 		parts = { "creature_moth" },
 		model = 104348304093549,
 		decal = 111011763104396,
@@ -275,14 +275,14 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_otter = {
-		size = { 4, 2.62, 5.8 },
+		size = { 1.89, 2.6, 2.19 },
 		parts = { "creature_otter" },
 		model = 91312254648802,
 		decal = 87793769698620,
 		texture = nil,
 	},
 	creature_capybara = {
-		size = { 3.2, 4.2, 4.6 },
+		size = { 3.03, 4.2, 3.56 },
 		parts = { "creature_capybara" },
 		model = 81286773736349,
 		decal = 71628690266116,

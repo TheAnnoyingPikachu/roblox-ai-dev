@@ -358,56 +358,64 @@ def creature_lamb():
 
 
 def creature_hedgehog():
-    cream_rgb = (255, 238, 214)
-    cream = k.paint("hh_cream", [(0, (240, 214, 186)), (1, cream_rgb)], 0, 2.2)
-    quill = k.paint("hh_quill", [(0, (140, 92, 64)), (1, (196, 140, 96))], 0.6, 2.6)
-    cap = k.paint("hh_cap", [(0, (150, 98, 58)), (1, (190, 132, 78))], 0, 0.5, dots=[((118, 76, 44), 9, 0.22)])
-    stalk, leaf, pink, nose = k.flat((120, 80, 52)), k.flat((120, 200, 95)), k.flat((255, 170, 195)), k.flat((90, 58, 70))
-    c, radii = Vector((0, 0.22, 1.16)), Vector((1.21, 1.19, 1.06))
-    beret_d = k.outward(18, 58)
-    spikes = []  # a dense coat of soft quills, staggered rows over the back and crown
-    for phi, thetas in ((-8, (75, 100, 125, 150, 175)), (12, (62, 86, 110, 134, 158, 180)), (32, (52, 76, 100, 124, 148, 172)),
-                        (52, (40, 68, 96, 124, 152, 180)), (70, (20, 60, 100, 140, 180)), (86, (0,))):
-        for theta in thetas:
-            for s in ((1, -1) if theta % 180 else (1,)):
-                d = k.outward(s * theta, phi)
-                if d.angle(beret_d) < math.radians(34):
-                    continue
-                n = Vector((d.x / radii.x, d.y / radii.y, d.z / radii.z)).normalized()
-                p = c + Vector((d.x * radii.x, d.y * radii.y, d.z * radii.z)) * 0.97
-                spikes.append(toward(p + n * 0.04, n, 0.26, (0.62, 0.62, 1.3)))
-    head, R = Vector((0, -0.55, 1.07)), 0.8
-    snout = Vector((0, -1.3, 0.95))
-    ear = (0.62, -0.68, 1.78)
+    """Remade from the Roblox AI reference (assets/garden/refs/hedgehog_*.jpg): a cream bean of a
+    hedgehog with a round ball of shaggy brown quills over its back, round ears with pink insides,
+    small dark eyes, a black button nose on a tiny snout, pink cheeks, little arms with brown
+    paws, and a big ribbed acorn cap worn on its head (the "Acorn Hedgehog")."""
+    cream_rgb = (234, 222, 200)
+    cream = k.paint("hh_cream", [(0, (204, 188, 166)), (0.45, (228, 216, 196)), (1, cream_rgb)], 0, 3.0, rest=True)
+    quill = k.paint("hh_quill", [(0, (116, 80, 56)), (0.5, (156, 114, 82)), (1, (184, 144, 108))], 0.2, 3.0, grain=(0.28, 12), dots=[((232, 214, 194), 16, 0.09), ((74, 54, 44), 13, 0.07)], rest=True)
+    cap = k.paint("hh_cap", [(0, (132, 78, 40)), (1, (200, 136, 80))], 2.6, 3.5, rays=((110, 62, 32), 16, 2.6, 0.12), rest=True)
+    head, R = Vector((0, -0.2, 1.95)), 0.9
+    snout = Vector((0, -1.12, 1.7))
+    ear = (0.8, -0.25, 2.55)
     body = k.fuse(
         [
-            (c, 1.08, (1.12, 1.1, 0.98)),
-            ((0, -0.5, 1.02), 0.82, (1.05, 0.9, 0.92)),  # face
-            (snout, 0.32, (0.88, 1.3, 0.78)),
-            *k.pair(ear, 0.26, (1.0, 0.55, 1.0)),
-            *k.pair((0.5, -0.75, 0.15), 0.26, (0.9, 1.4, 0.6)),  # feet
-            *k.pair((0.55, 0.95, 0.15), 0.26, (0.9, 1.4, 0.6)),
-            *k.pair((0.86, -0.82, 0.75), 0.18, (0.85, 0.9, 1.2)),  # arms
-            *spikes,
+            (head, R, (1.18, 1.0, 0.95)),
+            *k.pair((0.48, -0.5, 1.68), 0.42, (1.0, 0.85, 0.8)),  # full cheeks
+            (snout, 0.22, (1.1, 1.0, 0.9)),  # tiny snout
+            ((0, 0.05, 0.85), 0.92, (1.12, 1.1, 0.95)),  # bean body
+            *k.pair(ear, 0.3, (1.0, 0.5, 1.0), (0, 18, 0)),  # round ears
+            ("capsule", (0.62, -0.45, 1.3), (0.5, -0.86, 0.9), 0.17),  # little arms, paws forward
+            ("capsule", (-0.62, -0.45, 1.3), (-0.5, -0.86, 0.9), 0.17),
+            *k.pair((0.5, -0.9, 0.86), 0.17, (1.0, 1.1, 0.9)),
+            ((0, 0.05, 0.4), 0.95, (1.18, 1.12, 0.5)),  # flat round seat
         ],
         cream,
-        tris=3400,
-        soft=0.25,
+        tris=2100,
     )
-    split(body, quill, (0, -0.5, 1.3), (0, 0.55, 0.85))  # quill coat over the back and crown
-    split(body, cream, (0, 0, 0.45), (0, 0, -1))  # cream underneath
-    parts = [body]
-    for s in (-1, 1):  # round ears: a round inner ear
-        parts.append(k.lens(body, (s * ear[0], ear[1], ear[2]), (s * 0.3, -1, 0.1), 0.16, pink, scale=(0.75, 0.95), thick=0.2, sink=0.6, name="ear_in"))
-    parts.append(k.lens(body, snout, k.outward(0, 10), 0.13, nose, scale=(1.25, 0.9), thick=0.55, sink=0.4, seg=16, name="nose"))
-    parts.append(k.mouth(body, snout, k.outward(0, -38), 0.17, k.flat(INK), "smile"))
-    k.texel(parts[-2:], k.FACE_TEXEL)
-    # Acorn cap worn as a beret, tipped to the right, a stalk and an oak leaf.
-    beret = [k.lathe([(0, 0.14), (0.35, 0.1), (0.58, 0.0), (0.66, 0.06), (0.67, 0.14), (0.6, 0.25), (0.46, 0.33), (0.26, 0.39), (0, 0.41)], m=cap, n=32, name="beret")]
-    beret.append(k.capsule((0, 0, 0.36), (0.08, 0.04, 0.6), 0.07, 0.05, stalk, n=12, name="stalk"))
-    beret += xf(k.leaf(0.42, 0.16, leaf, droop=0.25, n=8, steps=8), (0.04, 0.02, 0.42), yaw=-30, pitch=20)
-    parts += onto(beret, body, c, beret_d, up=(0, 1, 0), sink=0.12)
-    parts += k.face(body, head, R, skin=cream_rgb, nose=None, mouth_kind=None, eye_phi=8, spread=36)
+    for side in (-1, 1):
+        k.zone(cream, (150, 104, 84), (side * 0.5, -0.94, 0.86), (0.2, 0.2, 0.2), soft=0.25)  # brown paws
+    # The quill coat: a ball over the back and crown, shaggy with short fused spikes.
+    c = Vector((0, 0.38, 1.42))
+    radii = Vector((1.5, 1.22, 1.44))
+    spikes = []
+    for phi in range(-40, 90, 16):
+        ring = max(1, round(10 * math.cos(math.radians(phi))))
+        for i in range(ring):
+            theta = 70 + 220 * i / max(1, ring - 1) + (phi % 28) * 0.5
+            d = k.outward(theta, phi)
+            if d.y < -0.3 and phi < 60:
+                continue
+            n = Vector((d.x / radii.x, d.y / radii.y, d.z / radii.z)).normalized()
+            p = c + Vector((d.x * radii.x, d.y * radii.y, d.z * radii.z)) * 0.95
+            spikes.append(toward(p, n + Vector((0, 0.5, -0.25)), 0.26, (0.95, 0.7, 1.1)))
+    coat = k.fuse([(c, 1.0, tuple(radii)), *spikes], quill, tris=1650, soft=0.45, name="quills")
+    parts = [body, coat]
+    k.texel([coat], 0.6)
+    for s in (-1, 1):
+        axis = (s * math.sin(math.radians(18)), 0, math.cos(math.radians(18)))
+        parts.append(k.lens(body, (s * ear[0], ear[1], ear[2]), (s * 0.25, -1, 0), 0.2, k.flat((236, 168, 160)), scale=(0.8, 0.9), thick=0.2, sink=0.6, up=axis, name="ear_in"))
+    face = [k.lens(body, snout, (0, -1, 0.15), 0.15, k.flat((40, 34, 40)), scale=(1.3, 1.0), thick=0.8, sink=0.4, seg=16, name="nose"),
+            k.mouth(body, snout, k.outward(0, -40), 0.09, k.flat(INK), "w")]
+    parts += k.texel(face, k.FACE_TEXEL)
+    # Acorn cap: a ribbed dome over the crown, a stalk and a little leaf.
+    top = Vector((0, -0.14, 2.42))
+    parts.append(k.rest(k.lathe([(0, 0.0), (0.66, 0.0), (0.88, 0.08), (0.94, 0.26), (0.9, 0.5), (0.74, 0.74), (0.48, 0.9), (0.2, 0.97), (0, 0.98)], loc=top, rot=(-14, 0, 0), m=cap, n=32, name="cap")))
+    stalk = k.flat((120, 70, 40))
+    parts.append(k.capsule(top + Vector((0, 0.18, 0.86)), top + Vector((0.02, 0.2, 1.02)), 0.07, 0.06, stalk, n=12, name="stalk"))
+    parts += xf(k.leaf(0.36, 0.14, k.flat((120, 196, 92)), droop=0.2, n=8, steps=8), top + Vector((0.04, 0.2, 0.98)), yaw=-40, pitch=30)
+    parts += k.face(body, head, R, skin=cream_rgb, nose=None, mouth_kind=None, eye_r=0.16, eye_wide=0.9, spread=31, eye_phi=-4, sheen=True, blush_theta=44, blush_phi=-26)
     return parts
 
 
@@ -757,7 +765,7 @@ ASSETS = [
         (
             ("creature_duck", creature_duck, [2.4, 3.0, 2.6], "Puddle Duckling (common)"),
             ("creature_lamb", creature_lamb, [3.2, 3.8, 2.3], "Clover Lamb (uncommon)"),
-            ("creature_hedgehog", creature_hedgehog, [3.0, 2.8, 3.4], "Acorn Hedgehog (rare)"),
+            ("creature_hedgehog", creature_hedgehog, [2.57, 2.8, 2.45], "Acorn Hedgehog (rare)"),
             ("creature_deer", creature_deer, [3.6, 5.0, 3.0], "Blossom Fawn (epic)"),
             ("creature_panda", creature_panda, [4.4, 4.5, 4.0], "Bamboo Panda (epic)"),
             ("creature_unicorn", creature_unicorn, [4.0, 5.5, 4.8], "Daisy Unicorn (legendary)"),

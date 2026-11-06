@@ -67,7 +67,7 @@ def paint(name, stops, lo=0.0, hi=3.0, axis="Z", dots=(), bands=None, rough=0.4,
     hard polka `dots` [(rgb, scale, size), ...] and `bands` (rgb, period in studs).
     rest=True reads every coordinate from the `rest` attribute that `fuse` stores (positions at
     build time) instead of object space, so the paint stays put when `fit` rescales the model,
-    and `zone` can add markings to it. Only for fused bodies.
+    and `zone` can add markings to it. Fused bodies have it; give a prop one with `rest(ob)`.
     grain (amount, scale[, "noise"|"wave"]) shades the colour by a fine texture (linen, bark).
     splat [(rgb, scale, threshold, z0, z1[, "noise"|"wave"|"swirl"]), ...]: hard patches of a texture
     above the threshold between two object heights (moss, filigree, snow).
@@ -546,10 +546,17 @@ def fuse(elements, m, tris=3200, soft=0.3, res=0.04, name="body"):
         _select([ob])
         bpy.ops.object.modifier_apply(modifier=mod.name)
     print(f"[fuse] {name}: {have} -> {_tris(ob)} tris", flush=True)
-    co = [0.0] * (3 * len(ob.data.vertices))
-    ob.data.vertices.foreach_get("co", co)
-    ob.data.attributes.new("rest", "FLOAT_VECTOR", "POINT").data.foreach_set("vector", co)  # for paint(rest=True)
-    return ob
+    return rest(ob)
+
+
+def rest(objs):
+    """Stores each mesh's build-time positions as its `rest` attribute (fuse does this for every
+    body), so a paint(..., rest=True) on a separate prop also stays put when fit rescales it."""
+    for ob in objs if isinstance(objs, (list, tuple)) else [objs]:
+        co = [0.0] * (3 * len(ob.data.vertices))
+        ob.data.vertices.foreach_get("co", co)
+        ob.data.attributes.new("rest", "FLOAT_VECTOR", "POINT").data.foreach_set("vector", co)
+    return objs
 
 
 def land(target, centre, d):

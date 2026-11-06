@@ -50,8 +50,14 @@ Why not ship the generated meshes directly? Generated meshes vary run to run, ca
 | lamb (Clover Lamb) | mesh 122675872503273 | front, 3/4, side, back | Remade 2026-11-06 (`creature_lamb`, 5,688 tris; peach face, one clover), not uploaded; awaiting Director sign-off |
 | puffin (Pebble Puffin) | mesh 120449235697125 | front, 3/4, side, back | Remade 2026-11-06 (`creature_puffin`, 5,796 tris; now hugs its pebble, thrift and base gone), not uploaded; awaiting Director sign-off |
 | cat (Berry Cat) | mesh 130248145290438 | front, 3/4, side, back | Remade 2026-11-06 (`creature_cat`, 5,848 tris; now lavender with a berry cluster, was a red strawberry cat), not uploaded; awaiting Director sign-off |
+| owl (Pumpkin Owl) | mesh 119820589314097 | front, 3/4, side, back | Remade 2026-11-06 (`creature_owl`, 5,956 tris; boxy pumpkin owl with white eye masks, spotted cream belly, curly stem), not uploaded; awaiting Director sign-off |
+| hedgehog (Acorn Hedgehog) | mesh 100166956137262 | front, 3/4, side, back | Remade 2026-11-06 (`creature_hedgehog`, 5,978 tris; cream bean under a shaggy quill ball, big ribbed acorn cap), not uploaded; awaiting Director sign-off |
+| otter (River Otter) | mesh 88831462996221 | front, 3/4, side, back | Remade 2026-11-06 (`creature_otter`, 4,476 tris; now sits up hugging a blue spiral shell, was floating on its back in a pool), not uploaded; awaiting Director sign-off |
+| moth (Lantern Moth) | mesh 114037612386173 | front, 3/4, side, back | Remade 2026-11-06 (`creature_moth`, 5,878 tris; now cream with orange spotted wings and a lantern in each hand, was violet wings and one lantern), not uploaded; awaiting Director sign-off |
+| turtle (Lotus Turtle) | mesh 119583747233159 | front, 3/4, side, back | Remade 2026-11-06 (`creature_turtle`, 5,648 tris; now stands up, mint with a peach plastron and a pink spiky lotus-bud shell, was a lotus flower shell), not uploaded; awaiting Director sign-off |
+| capybara (Spa Capybara) | mesh 90805125810496 | front, 3/4, side, back | Remade 2026-11-06 (`creature_capybara`, 5,996 tris; mandarin and lilac on its head, rolled towel under its arm, was a towel on its head), not uploaded; awaiting Director sign-off |
 
-The frog to cat references came out turned 45 degrees towards +X, so their 3/4 shot is the true front (`TURN` in `tools/blender/garden/refcompare.py`).
+The frog to cat and owl to capybara references came out turned 45 degrees towards +X, so their 3/4 shot is the true front (`TURN` in `tools/blender/garden/refcompare.py`).
 
 Note: the generated fox came out with a pink flower, but no cactus. The remake adds a small cactus beside the flower so it stays a "Cactus Fox".
 

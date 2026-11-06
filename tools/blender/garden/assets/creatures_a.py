@@ -287,49 +287,51 @@ def creature_cat():
 
 
 def creature_owl():
-    """A pumpkin owl: eight lobes fused round a core make the ribbed pumpkin, a smooth front
-    carries a heart-shaped face mask (one fused piece, wider than the eyes, so it never reads as
-    the whites of googly eyes) and the belly."""
-    orange = k.paint("ow_body", [(0, (226, 110, 40)), (0.5, (250, 148, 60)), (1, (255, 180, 96))], 0, 3.6)
-    peach, beak = (255, 210, 158), k.flat((240, 150, 50))
-    brown, green = k.flat((120, 80, 50)), k.flat((120, 200, 95))
-    c, R = Vector((0, 0, 1.55)), 1.6
-    centre = Vector((0, 0, 2.1))  # the face's middle
-    lobes = [((c.x + 0.78 * math.sin(math.radians(a)), c.y - 0.78 * math.cos(math.radians(a)), c.z), 1.2, (0.6, 0.78, 1.25), (0, 0, a)) for a in (22.5 + 45 * i for i in range(8))]
+    """Remade from the Roblox AI reference (assets/garden/refs/owl_*.jpg): a boxy pumpkin-orange
+    owl, head and body one shape with faint pumpkin ribs, big white eye masks round black eyes, a
+    small yellow beak, pointed ear tufts, a cream belly with brown spots, brown feathered wings at
+    the sides, brown bumps on the back and a curly green pumpkin stem with a round leaf on top
+    (the "Pumpkin Owl")."""
+    fur = k.paint("ow_body", [(0, (214, 104, 34)), (0.45, (240, 136, 52)), (1, (250, 160, 74))], 0, 3.6, rays=((228, 120, 44), 9, 2.2, 0.04), rest=True)
+    white, cream = (250, 248, 244), (240, 222, 178)
+    brown = k.paint("ow_wing", [(0, (98, 54, 34)), (1, (146, 88, 54))], 0.2, 1.8, bands=((118, 68, 42), 0.18))
+    spot = k.flat((150, 92, 60))
+    head, R = Vector((0, 0, 2.4)), 1.0
+    tilt = 24
+    ear = Vector((1.02, 0.0, 3.0))
+    axis = Vector((math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt))))
     body = k.fuse(
         [
-            (c, 1.5, (1.05, 1.0, 0.95)),
-            *lobes,
-            ((0, -0.85, 1.7), 1.2, (1.12, 0.6, 1.08)),  # smooth front for the face and belly
-            *k.pair((1.7, 0.05, 1.45), 0.82, (0.32, 0.7, 1.0), (0, -15, 0)),  # wings
-            *k.pair((0.84, -0.12, 3.0), 0.5, (0.5, 0.25, 1.0), (0, 24, 0)),  # ear tufts
+            (head, R, (1.42, 1.1, 0.98)),
+            ((0, 0.05, 1.3), 1.1, (1.34, 1.12, 1.0)),  # body: one boxy block with the head
+            ((0, 0.05, 0.5), 1.0, (1.3, 1.1, 0.55)),  # flat round seat
+            *k.pair(ear, 0.5, (0.85, 0.42, 0.8), (0, tilt, 0)),  # pointed ear tufts: a wide base...
+            *k.pair(ear + axis * 0.4, 0.26, (0.7, 0.4, 1.0), (0, tilt, 0)),  # ...to a soft point
         ],
-        orange,
-        tris=2800,
+        fur,
+        tris=2600,
     )
-    # Two big overlapping lobes make one heart mask, peach not white, the eyes in its outer
-    # halves; the belly below. Set 0.2 into the skin and turned to it, so their rims bury.
-    lobes = []
-    for side in (-1, 1):
-        p, n = k.land(body, centre, k.outward(side * 16, -5))
-        lobes.append((p - n * 0.2, 0.84, (1.0, 0.42, 1.0), (0, 0, side * 16)))
-    p, n = k.land(body, (0, 0, 0.82), (0, -1, 0))
-    lobes.append((p - n * 0.12, 0.72, (1.05, 0.42, 0.88)))
-    mask = k.fuse(lobes, k.flat(peach), tris=700, soft=0.25, name="mask")
-    parts = [body, mask]
-    for side in (-1, 1):
-        parts.append(k.sphere(0.26, (side * 0.52, -1.3, 0.12), m=beak, scale=(0.9, 1.45, 0.62), seg=20, rings=10, name="foot"))
-    parts.append(k.tube([(0, 0.05, 2.9), (0.02, 0.05, 3.4), (0.12, 0.02, 3.72), (0.3, -0.04, 3.92)], [0.2, 0.18, 0.16, 0.15], m=brown, n=12, name="stem"))
-    parts += xf(petal(0.75, 0.28, green, droop=0.25, tip=1.0, base=0.5, n=10, steps=10), (0.05, 0.05, 3.55), yaw=150, pitch=12)
-    # Face by hand: the eyes sit on the mask, the beak between them.
-    k.texel([body, mask], k.FACE_TEXEL, centre + Vector((0, -R, -0.1)), R * 0.95)
-    face = []
-    for side in (-1, 1):
-        face += k.eye(mask, centre, k.outward(side * 28, -2), R * 0.22)
-        face.append(k.lens(body, centre, k.outward(side * 50, -24), R * 0.14, k.flat(k.mix((250, 150, 62), k.BLUSH_PINK, 0.55)), scale=(1.5, 0.9), thick=0.18, sink=0.5, name="blush"))
-    p, n = k.land(mask, centre, k.outward(0, -12))
-    face.append(k.capsule(p - n * 0.12, p + n * 0.2 - Vector((0, 0, 0.2)), 0.14, 0.04, beak, n=12, name="beak"))
-    parts += k.texel(face, k.FACE_TEXEL)
+    for side in (-1, 1):  # white eye masks, a rounded square round each eye, nearly meeting
+        k.zone(fur, white, head + k.outward(side * 27, -4) * 1.18 + Vector((0, 0, 0.04)), (0.64, 0.5, 0.56), soft=0.07)
+    k.zone(fur, cream, (0, -1.1, 0.92), (0.82, 0.6, 0.72), soft=0.06)  # cream belly
+    parts = [body]
+    wings = k.fuse([*k.pair((1.44, -0.12, 1.02), 0.74, (0.36, 0.78, 1.0), (0, -10, 14))], brown, tris=800, name="wings")
+    parts.append(wings)
+    k.texel([wings], 0.6)
+    for x, z, r in ((0, 1.3, 0.08), (-0.32, 1.0, 0.075), (0.3, 0.98, 0.075), (0.02, 0.72, 0.08), (-0.4, 0.55, 0.07), (0.38, 0.58, 0.07)):
+        parts.append(k.lens(body, (x, 0, z), (0, -1, 0), r, spot, thick=0.6, sink=0.4, seg=12, name="spot"))
+    for theta, z, r in ((150, 0.55, 0.17), (172, 0.85, 0.12), (198, 0.5, 0.15), (130, 0.95, 0.1), (222, 0.9, 0.11), (180, 0.3, 0.12), (120, 0.4, 0.1)):
+        parts.append(k.lens(body, (0, 0.05, z), k.outward(theta, 0), r, spot, thick=0.9, sink=0.3, seg=12, name="back_spot"))
+    p, n = k.land(body, head, (0, 0, 1))
+    stem = spline([tuple(p - n * 0.1), (0.0, 0.0, 3.5), (0.08, -0.06, 3.72), (0.28, -0.12, 3.74)], [0.13, 0.11, 0.1, 0.09], 10)
+    parts.append(k.tube([q for q, _ in stem], [r for _, r in stem], m=k.flat((70, 150, 62)), n=12, name="stem"))
+    leaf = k.flat((84, 172, 76))
+    for yaw in (30, 150, 270):  # a round three-lobed leaf at the curl
+        parts += xf(petal(0.36, 0.26, leaf, droop=0.05, tip=0.4, base=0.6, n=8, steps=8), (0.28, -0.12, 3.76), yaw=yaw, pitch=15)
+    p, n = k.land(body, head, k.outward(0, -16))
+    beak = k.capsule(p - n * 0.06, p + n * 0.16 - Vector((0, 0, 0.18)), 0.13, 0.035, k.flat((246, 196, 60)), n=12, name="beak")
+    parts += k.texel([beak], k.FACE_TEXEL)
+    parts += k.face(body, head, R, skin=white, nose=None, mouth_kind=None, eye_r=0.27, eye_wide=0.92, spread=27, eye_phi=-4, sheen=True, blush_theta=56, blush_phi=-32, blush_r=0.11)
     return parts
 
 
@@ -401,42 +403,46 @@ def creature_fox():
 
 
 def creature_turtle():
-    """A lotus turtle: low round body, big head, the shell a lotus whose petals blush pinker
-    towards their tips."""
-    teal = k.paint("tu_skin", [(0, (96, 190, 182)), (1, (150, 228, 214))], 0, 2.4)
-    lotus = k.paint("tu_petal", [(0, (255, 236, 242)), (0.55, (255, 186, 212)), (1, (255, 132, 178))], 1.6, 3.2)
-    pod, dot = k.flat((236, 222, 120)), k.flat((196, 176, 80))
-    head, R = Vector((0, -1.15, 1.5)), 1.0
+    """Remade from the Roblox AI reference (assets/garden/refs/turtle_*.jpg): a mint-green turtle
+    standing up, a huge round head, big dark-red eyes, a small smile, a peach plastron with scute
+    lines, green stubby arms and feet, and a pink spiky shell on its back, veined like a lotus bud,
+    with a cream rim (the "Lotus Turtle")."""
+    skin = k.paint("tu_skin", [(0, (64, 156, 120)), (0.45, (98, 190, 150)), (1, (128, 210, 170))], 0, 3.1, rest=True)
+    plate, line = (236, 152, 84), (196, 112, 56)
+    head, R = Vector((0, -0.05, 2.22)), 0.9
     body = k.fuse(
         [
-            (head, R, (1.15, 0.95, 0.95)),
-            ((0, 0.25, 0.85), 1.15, (1.42, 1.1, 0.8)),
-            ((0, 0.3, 0.95), 1.2, (1.4, 1.12, 0.36)),  # the shell's rim, a soft ledge over the legs
-            ((0, -0.5, 1.05), 0.6),  # neck
-            *k.pair((1.34, -0.5, 0.2), 0.36, (0.95, 1.3, 0.6)),  # front legs
-            *k.pair((1.34, 0.85, 0.2), 0.36, (0.95, 1.3, 0.6)),  # back legs
-            ("capsule", (0, 1.3, 0.5), (0, 1.72, 0.38), 0.14),  # tail
+            (head, R, (1.12, 1.0, 0.95)),
+            *k.pair((0.46, -0.4, 1.9), 0.42, (1.0, 0.85, 0.8)),  # full cheeks
+            ((0, 0.04, 0.92), 0.78, (1.24, 1.08, 1.08)),  # round pot belly
+            ((0, 0.1, 0.42), 0.72, (1.2, 1.05, 0.6)),  # seat
+            ("capsule", (0.74, -0.12, 1.3), (0.92, -0.32, 0.8), 0.2),  # stubby arms
+            ("capsule", (-0.74, -0.12, 1.3), (-0.92, -0.32, 0.8), 0.2),
+            *k.pair((0.94, -0.36, 0.76), 0.2, (0.95, 1.0, 1.1)),
+            *k.pair((0.38, -0.36, 0.12), 0.22, (1.0, 1.35, 0.6)),  # feet
+            ("capsule", (0, 0.7, 0.4), (0, 1.0, 0.25), 0.1),  # little tail
         ],
-        teal,
-        tris=2700,
+        skin,
+        tris=2500,
     )
+    k.zone(skin, plate, (0, -0.76, 0.9), (0.84, 0.44, 0.8), soft=0.06)  # peach plastron
+    for z in (0.66, 1.08):  # scute lines across it, and one down the middle
+        k.zone(skin, line, (0, -0.8, z), (0.62, 0.3, 0.025), soft=0.3)
+    k.zone(skin, line, (0, -0.8, 0.87), (0.025, 0.3, 0.42), soft=0.3)
+    k.zone(skin, (226, 150, 120), (0, -0.7, 0.42), (0.4, 0.3, 0.2), soft=0.5)  # warmer low belly
     parts = [body]
-    top = Vector((0, 0.25, 1.7))
-    petals = []
-    for i in range(8):
-        yaw = i * 45 + 22.5
-        a = math.radians(yaw)
-        petals += xf(petal(1.65, 0.62, lotus, droop=-0.12, tip=1.0, base=0.45, n=8, steps=10), top + Vector((0.35 * math.cos(a), 0.35 * math.sin(a), 0)), yaw=yaw, pitch=32)
-    for i in range(5):
-        yaw = i * 72 + 90
-        a = math.radians(yaw)
-        petals += xf(petal(1.5, 0.55, lotus, droop=-0.12, tip=1.0, base=0.45, n=8, steps=10), top + Vector((0.15 * math.cos(a), 0.15 * math.sin(a), 0.05)), yaw=yaw, pitch=70)
-    parts += k.texel(petals, 0.5)
-    heart = k.lathe([(0.42, 0), (0.44, 0.22), (0.38, 0.4), (0.24, 0.5), (0, 0.53)], loc=top + Vector((0, 0, 0.1)), m=pod, n=24, name="pod")
-    parts.append(heart)
-    for d in [(0, 0, 1)] + [k.outward(a, 55) for a in range(0, 360, 72)]:
-        parts.append(k.lens(heart, top + Vector((0, 0, 0.3)), d, 0.05, dot, thick=0.4, sink=0.6, seg=8, name="seed"))
-    parts += k.face(body, head, R, skin=(120, 205, 195), mouth_kind="smile")
+    # Pink spiky shell on the back over a cream rim.
+    pink = k.paint("tu_shell", [(0, (252, 168, 176)), (0.5, (240, 116, 134)), (1, (224, 92, 112))], 0.35, 1.5, axis="Y", rest=True)
+    c = Vector((0, 0.8, 1.0))
+    spikes = []
+    for theta, phi in ((180, 0), (180, 42), (180, -38), (140, 18), (220, 18), (140, -22), (220, -22), (120, 50), (240, 50), (105, -5), (255, -5)):
+        d = k.outward(theta, phi)
+        e = Vector((0, 0, 1)).rotation_difference(d).to_euler("XYZ")  # the spike's long axis along d
+        spikes.append((c + Vector((d.x * 1.14, d.y * 0.91, d.z * 1.08)), 0.13, (0.7, 0.7, 1.4), tuple(math.degrees(t) for t in e)))
+    shell = k.fuse([(c, 1.14, (1.0, 0.8, 0.95)), *spikes], pink, tris=1300, soft=0.3, name="shell")
+    rim = k.sphere(1.1, (0, 0.32, 0.98), m=k.flat((236, 216, 184)), scale=(1.0, 0.14, 0.96), seg=32, rings=12, name="rim")
+    parts += k.texel([shell, rim], 0.6)
+    parts += k.face(body, head, R, skin=(112, 202, 162), iris=(74, 14, 24), nose=None, mouth_kind="smile", eye_r=0.27, eye_wide=0.88, spread=30, eye_phi=-8, mouth_phi=-24, mouth_w=0.11, sheen=True, blush_theta=46, blush_phi=-26)
     return parts
 
 
@@ -563,9 +569,9 @@ ASSETS = [
             ("frog", "Toadstool Frog", creature_frog, [3.8, 3.5, 3.7]),
             ("pup", "Bumble Pup", creature_pup, [3.3, 3.8, 3.4]),
             ("cat", "Berry Cat", creature_cat, [3.4, 4.2, 2.6]),
-            ("owl", "Pumpkin Owl", creature_owl, [4.2, 4.5, 3.8]),
+            ("owl", "Pumpkin Owl", creature_owl, [3.99, 4.5, 2.9]),
             ("fox", "Cactus Fox", creature_fox, [3.6, 4.5, 2.9]),
-            ("turtle", "Lotus Turtle", creature_turtle, [3.8, 3.5, 3.8]),
+            ("turtle", "Lotus Turtle", creature_turtle, [2.83, 3.5, 3.16]),
             ("lion", "Sunflower Lion", creature_lion, [4.6, 5.2, 4.6]),
             ("dragon", "Moonblossom Dragon", creature_dragon, [6.0, 5.5, 4.8]),
         ),
