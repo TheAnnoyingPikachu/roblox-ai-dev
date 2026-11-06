@@ -26,9 +26,9 @@ OUT = os.path.join(ROOT, "build", "blender", "garden", "refcompare")
 W, H, FOV = 1452, 793, 70
 # Camera offsets from the reference's base centre, Roblox (x, y, z): the pipeline doc's four shots.
 VIEWS = {"front": (0, 3, -7), "34": (5, 3.5, -5), "side": (6.5, 3, 0), "back": (0, 3, 7)}
-# Degrees the generated mesh is turned from -Z towards +X (measured from the shots): the frog to
-# cat batch came out facing the "34" camera.
-TURN = {"frog": 45, "duck": 45, "pup": 45, "lamb": 45, "puffin": 45, "cat": 45}
+# Degrees the generated mesh is turned from -Z towards +X (measured from the shots): the frog to cat and owl to
+# capybara batches came out facing the "34" camera.
+TURN = {"frog": 45, "duck": 45, "pup": 45, "lamb": 45, "puffin": 45, "cat": 45, "owl": 45, "hedgehog": 45, "otter": 45, "moth": 45, "turtle": 45, "capybara": 45}
 TILE, PAD = 420, 16
 
 
