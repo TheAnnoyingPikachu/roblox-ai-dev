@@ -84,10 +84,10 @@ Every tile has 24 small sites (up to 3 items each, depth 15 to 150 studs) and 8 
 |---|---|---|
 | Waves | first 8 s into the night, then every 25 s | 7 at Boiler I, 6 at II and III |
 | Wisps a wave | (4 / 6 / 8 on legs 1 / 2 / 3) × min(n, 4) + (n − 4 if n > 4) | +1 on the Lake Line; table C6 |
-| Wisp approach | spawn 60 to 75 studs from the train, 4 to 20 high, spread over 3 s; drift at 8 studs/s to a lantern point with a 2-stud wobble | in the train's own frame, so a moving train does not change the aim |
+| Wisp approach | spawn 60 to 75 studs from the train, 4 to 20 high, spread over 3 s; drift at 6 / 7 / 8 studs/s (crew 1 / 2 / 3+) to a lantern point with a 2-stud wobble | in the train's own frame, so a moving train does not change the aim; one or two lamps turn all round, so their wisps come slower (LANTERN-015) |
 | Beam | 7° half-angle cone, range 80 / 90 / 100 studs | Lamps I / II / III |
 | Puff | 0.6 / 0.45 / 0.35 s of beam on a wisp | Lamps I / II / III; the exposure adds up from every beam on it |
-| A wisp that reaches a lantern | dims the lantern by 6 / 4.5 / 3.5 / 3 | by crew size 1 / 2 / 3 / 4+ (12 / (min(n, 4) + 1), rounded to 0.5) |
+| A wisp that reaches a lantern | dims the lantern by 4.5 / 3.5 / 3.5 / 3 | by crew size 1 / 2 / 3 / 4+ (LANTERN-015: was 6 / 4.5 / 3.5 / 3; both unassisted solo Studio runs lost the lantern by wave 5) |
 | Lampeater | leg 3 only, from 50 s into the night (after two waves) to Dawn Station | circles the train 45 studs out, 25 up |
 | Lampeater dive | every 8 s, 3 s long, at one lantern point | shooed by 0.8 s of beam during the dive; otherwise −10 lantern |
 | Feeding the Lampeater | 15 + 8 × (n − 1) beam-seconds on it in total | it purrs and flies to the moon: +50 Tickets each; at Dawn it flies away anyway |
@@ -107,8 +107,8 @@ Every tile has 24 small sites (up to 3 items each, depth 15 to 150 studs) and 8 
 
 | Crew | Coal sacks | Parts bags | Oil cans | Supply crates | Critter crates | Wisps a wave, legs 1 / 2 / 3 | Dim a wisp | Lampeater beam-seconds |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 9 | 3 | 2 | 1 | 2 | 4 / 6 / 8 | 6 | 15 |
-| 2 | 12 | 4 | 3 | 2 | 2 | 8 / 12 / 16 | 4.5 | 23 |
+| 1 | 9 | 3 | 2 | 1 | 2 | 4 / 6 / 8 | 4.5 | 15 |
+| 2 | 12 | 4 | 3 | 2 | 2 | 8 / 12 / 16 | 3.5 | 23 |
 | 3 | 15 | 5 | 3 | 2 | 3 | 12 / 18 / 24 | 3.5 | 31 |
 | 4 | 18 | 6 | 4 | 3 | 3 | 16 / 24 / 32 | 3 | 39 |
 | 5 | 21 | 7 | 4 | 3 | 4 | 17 / 25 / 33 | 3 | 47 |
@@ -158,7 +158,7 @@ Leaving stop 3, the light turns to dusk over the 700-stud ride; the night stretc
 
 ### E4. The Lampeater (leg 3 finale)
 
-At 47 s into the third night a warning ("Something big is coming...", a shadow across the moon, the music drops to a low drone) comes 3 s before the Lampeater rises from the fog: a giant soft-winged moth (40 studs wingspan) with lantern-glass eyes that circles the train, hungry for light. Every 8 s it dives at a lantern; enough beam during the dive shoos it. Beam on it at any time feeds it. When it has had its fill (C4) it purrs, glows and flies up to the moon, and the crew gets +50 Tickets each; if Dawn comes first it flies away at sunrise. The Lampeater never touches a player and never takes anything; it can only dim the lantern. The clip moment: the moth swooping low over the roof with four beams on it.
+At 47 s into the third night a warning ("Something big is coming...", a shadow across the moon, the music drops to a low drone) comes 3 s before the Lampeater rises from the fog: a giant soft-winged moth (about 70 studs wingspan, a soft amber glow) with lantern-glass eyes that sweeps in across the moon, then circles the train with slow wing beats, hungry for light. Every 8 s it dives at a lantern; enough beam during the dive shoos it. Beam on it at any time feeds it. When it has had its fill (C4) it purrs, glows and flies up to the moon, and the crew gets +50 Tickets each; if Dawn comes first it flies away at sunrise. The Lampeater never touches a player and never takes anything; it can only dim the lantern. The clip moment: the moth swooping low over the roof with four beams on it.
 
 ## F. The Depot
 
@@ -177,7 +177,7 @@ Every leg ends at Lamplight Depot (the hub; the two lines are loops that return 
 - **Line of the Week vote** (at the hub, before leg 1): FREE RUN or LINE OF THE WEEK, the same way; a tie takes FREE RUN.
 - The rescued critters of this run ride in the passenger car windows (up to 8 shown); followers walk beside their owners on the platform.
 
-What the pacing check says a casual crew buys (P): a solo player about 2 upgrades a run (42 Parts a leg), a crew of 4 all 6 (144 Parts a leg).
+What the pacing check says a casual crew buys (P): a solo player about 2 upgrades a run (42 Parts a leg), a crew of 4 about 5 of the 6 (144 Parts a leg).
 
 ## G. Player interaction and child safety
 
@@ -240,7 +240,7 @@ Display names only (crew list, Depot board, announcements, the weekly board). No
 ### H3. Progression
 
 - **XP:** each item you load 2 (small) or 5 (big); each critter rescued by the crew 20; a new album species 50; each wisp you puff 2; each stoke 1; each mend 3; each stop left aboard (not caught) 5; each Depot reached 40; Dawn Station 150.
-- **Levels:** the shared curve `floor(sqrt(xp / 40)) + 1`, cap 50. Pacing (P): level 6 after the first run, 9 after three, 17 after ten.
+- **Levels:** the shared curve `floor(sqrt(xp / 40)) + 1`, cap 50. Pacing (P): level 5 after the first run, 9 after three, 16 after ten.
 - **Tickets** (the `coins` field): shares of loads, Depot and Dawn payouts, quests, login slots, milestones, leftover Parts. Spent only on cosmetics in the Locker.
 - **Load shares:** each active crew member receives ceil(v × (1 + 0.1 × (n − 1)) / n) Tickets for a load worth v (C3, C7; small items v = 1, supply crate 8). The 10% a crew member is the co-op bonus; a crew's stops hold more loot (C6), so a player in a crew of 4 earns about 10% more a run than alone (P).
 
@@ -276,7 +276,7 @@ Rescuing a critter adds it to **every active crew member's** album (count +1; "N
 
 **Species within a rarity:** equal shares among the species of that rarity that live on this line and this tile; if none lives on the tile, equal shares among that rarity's species on the line. The ALBUM's "Where" tab shows, for the stop tile the train is at (or any tile picked from a list), the exact species odds per crate band computed by `LootRules.odds`, summing to 100%.
 
-**Album milestones** (paid automatically at the load that reaches them): 4 species, 200 Tickets; 8 species, the Mossback livery; 12 species, the Moonlit lamp colour and 1,000 Tickets. Pacing (P): a solo player fills the 12 in a median of 10 runs (90%: 24); 9% of solo runs find a Moon Hare.
+**Album milestones** (paid automatically at the load that reaches them): 4 species, 200 Tickets; 8 species, the Mossback livery; 12 species, the Moonlit lamp colour and 1,000 Tickets. Pacing (P): a solo player fills the 12 in a median of 11 runs (90%: 27); 10% of solo runs find a Moon Hare.
 
 ### H5. Rewards: daily quests and login tracks
 
@@ -463,26 +463,30 @@ Off for v0.1 (decision 0002): no Robux prompts, no game passes, no developer pro
 
 **Later (v0.2 and on, not designed here):** permanent train cars (Greenhouse grows coal, Kitchen, Observatory), the Snow Line biome, fortnightly event lines (Q9), follower names from a word list, Roblox badges, a harder line if the feel gate finds runs too easy (P), cosmetic monetisation after a policy review.
 
-## P. Pacing results (`docs/game-design/game6-pacing.py`, 2026-11-06)
+## P. Pacing results (`docs/game-design/game6-pacing.py`, 2026-11-06; nights reworked by LANTERN-015)
 
-`python -I docs/game-design/game6-pacing.py 300` (seeded, stdlib only). The model: players take the best trip available (coal until tonight's need plus 6 is met, then critter crates, supply crates, small items), skip a trip the fog would catch unless they misjudge (12% casual, 30% new), carry critters in pairs when a partner is free, and buy coal, then Boiler, Lamps and Bunker at Depots. A turret puffs `11 / (acquire + puff)` wisps a wave (casual 1.4 s to swing onto the next wisp, new 2.0 s). Stoking, mending and the help-carry walk to a crate are not modelled.
+`python -I docs/game-design/game6-pacing.py 300` (seeded, stdlib only). The model: players take the best trip available (coal until tonight's need plus 6 is met, then critter crates, supply crates, small items), skip a trip the fog would catch unless they misjudge (12% casual, 30% new), carry critters in pairs when a partner is free, and buy coal, then Boiler, Lamps and Bunker at Depots. At night each lamp takes its share of a wave in spawn order: it notices a wisp 1 s after it spawns (new players 1.6 s), swings onto it at 120 degrees a second (new 70; a lone lamp turns all round, four lamps a quarter each), holds the beam for the puff time and lands it with chance `hit` (casual 0.5, new 0.35); a wisp one lamp misses gets one more try from the next lamp when it is free in time. Stoking, mending and the help-carry walk to a crate are not modelled.
+
+**Assumption (LANTERN-015):** `hit` is not measured from people yet. Two Studio bots that notice in 1 s and swing at 120 degrees a second puffed 86% (old numbers) and 93% (new numbers, seeing only what is on screen) of a solo night's wisps; the LANTERN-012 runs aimed by keyboard puffed about 12% and lost the lantern by wave 5. The old model (every reachable wisp puffed) said every casual crew reached Dawn, which the integration runs contradicted.
 
 - **First minutes (solo):** the train leaves 3 s after PLAY; stop 1 opens at 43 s; the first critter is rescued at 49 s; the fog bell at 1:53; stop 2 opens by 2:49.
 - **Fog:** crosses 160 studs in 13.1 s; a stop lasts at most 83.1 s. Leaving at the bell, a lone critter carrier gets home from 118 studs or nearer; every other load from anywhere.
 - **Rides:** 40 / 36 / 33 s by Boiler level; the night 180 / 157 / 138 s with 7 / 6 / 6 waves. A leg burns 95 coal; a crew that loads no coal runs dry 2,700 studs into the first night.
+- **Lamps on leg 1 (Lamps I), crews 1 / 2 / 4 / 6:** casual puff 51% / 75% / 75% / 75%, new 37% / 56% / 58% / 58% (a lone lamp has nobody to cover its misses).
 
-| Crew | Run (min, median) | Leg incl. Depot (min) | Reach Dawn, casual / new | Ends, new players: coal / lanterns | Tickets a player a run | XP a run | Critters rescued | Caught a run (casual) | Upgrades bought | Parts a leg |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 28.0 | 9.3 (8.7 to 10.0) | 100% / 77% | 0% / 23% | 709 | 1,051 | 17.3 | 1.0 | 1.7 | 42 |
-| 2 | 27.4 | 9.3 (7.9 to 10.0) | 100% / 91% | 0% / 9% | 721 | 1,033 | 18.0 | 1.4 | 4.0 | 93 |
-| 3 | 26.4 | 8.9 (7.5 to 9.9) | 100% / 94% | 0% / 6% | 746 | 1,177 | 27.0 | 0.1 | 4.0 | 105 |
-| 4 | 25.6 | 8.7 (7.2 to 9.6) | 100% / 84% | 0% / 16% | 779 | 1,159 | 27.0 | 0.0 | 6.0 | 144 |
-| 6 | 24.7 | 8.3 (7.1 to 9.2) | 100% / 70% | 0% / 30% | 868 | 1,272 | 36.0 | 0.0 | 6.0 | 192 |
+| Crew | Run (min, median) | Leg incl. Depot (min) | Night 1 won, casual / new | Meet the Lampeater, casual / new | Reach Dawn, casual / new | Tickets a player a run (casual) | XP a run (casual) | Critters rescued (casual) | Caught a run (casual) | Upgrades bought (casual) | Parts a leg |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 28.0 | 9.3 (8.7 to 10.0) | 100% / 100% | 94% / 22% | 88% / 3% | 697 | 989 | 17.0 | 1.1 | 1.7 | 42 |
+| 2 | 27.4 | 9.3 (7.9 to 10.0) | 100% / 100% | 100% / 18% | 100% / 9% | 718 | 1,005 | 18.0 | 1.1 | 4.0 | 93 |
+| 3 | 26.4 | 8.9 (7.5 to 9.9) | 100% / 92% | 92% / 0% | 92% / 0% | 745 | 1,149 | 26.3 | 0.1 | 3.9 | 105 |
+| 4 | 25.6 | 8.7 (7.4 to 9.6) | 100% / 66% | 65% / 0% | 65% / 0% | 768 | 1,129 | 23.9 | 0.0 | 5.0 | 144 |
+| 6 | 24.6 | 8.3 (7.1 to 9.2) | 100% / 72% | 87% / 0% | 87% / 0% | 866 | 1,254 | 34.5 | 0.0 | 5.6 | 192 |
 
-- **Album:** 12 species in a median of 10 runs solo (90%: 24), 10 in a pair (90%: 25), 6 in a crew of 4 (90%: 15); a Moon Hare in 9% of solo runs.
-- **Levels (solo casual, 1,053 XP a run):** level 6 after 1 run, 9 after 3, 17 after 10, 29 after 30, 50 after 100.
+- **The solo retune (LANTERN-015):** with the old numbers (drift 8, dim 6) the same model gives a casual solo the first night 99% of the time but Dawn only 7% (the later nights' 6 and 8 wisps a wave, one lamp, no cover); the new drift 6 and dim 4.5 give 100% and 91% (sweep of 150 runs). Crews of 3 or more keep drift 8 and dim 3.5 / 3: their numbers did not change.
+- **Album:** 12 species in a median of 11 runs solo (90%: 27), 8 in a pair (90%: 21), 8 in a crew of 4 (90%: 21); a Moon Hare in 10% of solo runs.
+- **Levels (solo casual, 989 XP a run):** level 5 after 1 run, 9 after 3, 16 after 10, 28 after 30, 50 after 100.
 - **Login tracks:** a full week 550 Tickets and the livery; a full month 1,400 Tickets, the Ember Kit and the Aurora Beam.
-- **Reading:** legs and runs sit in the 8 to 10 and 25 to 30 minute bands (a crew of 6 clears stops faster: 24.7 minutes). Casual crews always reach Dawn; new players fail in 6% to 30% of runs, all at night and mostly in the third (lanterns), never on coal. Losing is the new player's lesson and costs nothing earned. Whether casual runs are too easy for 16-year-olds is the feel gate's question (checkpoint item); the levers are `PER_TURRET` and the Lampeater's dive rate.
+- **Reading:** legs and runs sit in the 8 to 10 and 25 to 30 minute bands (a crew of 6 clears stops faster: 24.6 minutes). A fair solo player (hit 0.5) wins the first night every time and meets the Lampeater in 94% of runs; a crew of 4 to 6 still loses a third (4) or an eighth (6) of its runs, all at night. New players lose most runs at night from the second leg on, and crews of 3 or more never reach the Lampeater: losing costs nothing earned, but whether that is too harsh is the feel gate's question (checkpoint item, with a crew playtest to measure `hit`); the levers are `DIM`, `WAVES.speed`, `perTurret` and the Lampeater's dive rate.
 
 ## Q. Acceptance criteria (v0.1)
 
@@ -520,7 +524,7 @@ Off for v0.1 (decision 0002): no Robux prompts, no game passes, no developer pro
 - **Assumption:** the maturity questionnaire's answers in decision 0018 give the Mild label; to confirm in Creator Hub at the checkpoint.
 - **Hypothesis:** the fog sprint and the lamp turrets are exciting enough without combat for players aged 16 and up (the concept's riskiest assumption; the feel gate tests it).
 - **Hypothesis:** shared rescues (every crew member gets the critter) make strangers in a public server feel like a crew without any chat.
-- **Hypothesis:** casual crews finding the run easy is right for the audience, and the challenge for older players comes from greed at the bell and the weekly board.
+- **Hypothesis:** a fair crew reaching Dawn in most runs (P, LANTERN-015: 65% to 100% by crew size) is right for the audience, and the challenge for older players comes from greed at the bell and the weekly board.
 - **Hypothesis:** the album, quests, login tracks and the weekly line bring players back on days 2 to 7 and 8 to 28 (M31).
 
 ## T. Open questions (for the checkpoint, not now)

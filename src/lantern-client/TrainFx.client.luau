@@ -471,7 +471,7 @@ local function looseItems(t: number)
 					Texture = "rbxasset://textures/particles/sparkles_main.dds",
 					Color = ColorSequence.new(UI.GOLD, UI.CREAM),
 					LightEmission = 1,
-					Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 0) }),
+					Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(1, 0) }),
 					Lifetime = NumberRange.new(0.8, 1.4),
 					Speed = NumberRange.new(0.5, 1.5),
 					SpreadAngle = Vector2.new(180, 180),
@@ -514,9 +514,9 @@ local function looseItems(t: number)
 		elseif lit[body] and entry.outline == nil then
 			entry.outline = new("Highlight", {
 				FillColor = UI.GOLD,
-				FillTransparency = 0.7,
+				FillTransparency = 0.55,
 				OutlineColor = UI.CREAM,
-				OutlineTransparency = 0.2,
+				OutlineTransparency = 0,
 				DepthMode = Enum.HighlightDepthMode.AlwaysOnTop, -- seen through the grass blades
 				Parent = body.Parent,
 			})

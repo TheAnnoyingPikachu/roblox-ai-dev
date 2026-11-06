@@ -2,9 +2,14 @@
 
 From the GDD's numbers: how long the first minutes, a stop, a leg and a run take for 1 to 6 players;
 how often a crew reaches Dawn Station, runs out of coal or loses its lanterns; what a run pays
-(Tickets, XP, Parts); how many runs the Critter Album takes. Two player profiles: CASUAL (swings
-onto a wisp in 1.4 s, misjudges the fog on 12% of risky trips) and NEW (2.0 s, 30%). LANTERN-003 and
-LANTERN-004 copy the check values into Lune specs, so a config change that moves them fails CI.
+(Tickets, XP, Parts); how many runs the Critter Album takes. Two player profiles: CASUAL (misjudges
+the fog on 12% of risky trips) and NEW (30%). At night each lamp works through its share of a wave:
+it notices a wisp `react` s after it spawns, swings onto it at `swing` degrees a second (a lone lamp
+covers the whole circle, four lamps a quarter each) and holds the beam for the puff time; a wisp it
+cannot finish before it reaches its lantern gets through. LANTERN-015 calibrated the casual lamp to
+the Studio bot (a lamp that notices in 1 s and swings 120 degrees a second; see the task's
+evidence). LANTERN-003 and LANTERN-004 copy the check values into Lune specs, so a config change
+that moves them fails CI.
 
 Usage: python -I docs/game-design/game6-pacing.py [runs_per_case]   (default 300; seeded; stdlib only)
 """
@@ -28,10 +33,12 @@ PICK, LOAD, UNSEAT = 0.5, 0.3, 1.0
 GRACE = 3                       # s after everyone is seated before the train leaves
 DEPOT_MEAN, DAWN_ARRIVAL = 45, 10
 LANTERN_MAX, DEPOT_LANTERN, DIVE_DIM = 100, 40, 10
-WISP_DIM = {1: 6, 2: 4.5, 3: 3.5, 4: 3}  # lantern lost per wisp that gets through, by turrets manned
+WISP_DIM = {1: 4.5, 2: 3.5, 3: 3.5, 4: 3}  # lantern lost per wisp that gets through, by min(n, 4) (LANTERN-015)
+WISP_SPEED = {1: 6, 2: 7, 3: 8, 4: 8}  # studs/s a wisp drifts, by min(n, 4) (LANTERN-015)
+SPAWN, SPREAD = (60, 75), 3     # studs from the train a wisp starts; s a wave's spawns spread over
 OIL_POUR, OIL_AUTO, OIL_AUTO_BELOW, OIL_STORE = 12, 8, 25, 6
 PUFF = [0.6, 0.45, 0.35]        # s of beam that puffs a wisp, by Lamps level
-WAVE_FIRST, WAVE_GAP, WAVE_WINDOW = 8, 25, 11
+WAVE_FIRST, WAVE_GAP = 8, 25
 PER_TURRET = [4, 6, 8]          # wisps per manned turret per wave on legs 1 / 2 / 3
 LAKE_EXTRA = 1
 LAMPEATER_AT, DIVE_EVERY = 50, 8
@@ -57,7 +64,14 @@ SPECIES = {  # id: (rarity, lines)
 }
 BIG_SITES = [22, 40, 58, 78, 96, 114, 132, 150]   # depth of the 8 big sites in every tile
 NEAR = 70
-PROFILES = {"casual": dict(acquire=1.4, greed=0.12, aim=0.7), "new": dict(acquire=2.0, greed=0.30, aim=0.5)}
+# react: s to notice a wisp; swing: degrees a second onto it; hit: chance an attempt holds a wobbling
+# wisp in the 7-degree cone long enough. Assumptions (LANTERN-015) between the Studio evidence: two
+# bots that notice in 1 s and swing 120 degrees a second puffed 86% (old numbers) and 93% (new) of a
+# solo night's wisps; the LANTERN-012 runs aimed by keyboard puffed about 12% and lost by wave 5.
+PROFILES = {
+    "casual": dict(react=1.0, swing=120, hit=0.5, greed=0.12, aim=0.7),  # a fair player
+    "new": dict(react=1.6, swing=70, hit=0.35, greed=0.30, aim=0.5),
+}
 
 
 def counts(n):
@@ -174,11 +188,38 @@ def stop(rng, n, coal_need, leg, line, first, prof):
     return end, loads, coal, oil, parts, caught
 
 
+def wave_puffs(rng, w, k, puff, prof):
+    """Wisps k lamps puff in a wave of w: each lamp takes every k-th wisp in spawn order, notices it
+    `react` s after it spawns, swings onto it (up to 180 / k degrees: a lone lamp turns all round)
+    and holds the beam `puff` s, landing it with chance `hit`. A wisp a lamp misses gets one more
+    try from the next lamp if that lamp is free in time (crews cover for each other); a wisp nobody
+    finishes before it reaches its lantern gets through."""
+    free = [0.0] * k
+    missed = []
+    got = 0
+    for i in range(w):
+        lamp, born = i % k, SPREAD * i / w
+        arrive = born + rng.uniform(*SPAWN) / WISP_SPEED[k]
+        start = max(free[lamp], born + prof["react"]) + rng.uniform(0, 180 / k) / prof["swing"]
+        if start + puff <= arrive:
+            free[lamp] = start + puff
+            if rng.random() < prof["hit"]:
+                got += 1
+                continue
+        missed.append((lamp, arrive))
+    for lamp, arrive in missed if k > 1 else []:
+        other = (lamp + 1) % k
+        start = free[other] + rng.uniform(0, 180 / k) / prof["swing"]
+        if start + puff <= arrive:
+            free[other] = start + puff
+            got += rng.random() < prof["hit"]
+    return got
+
+
 def night(rng, n, leg, lake, lamps, speed, oil, lantern, prof):
     """(lantern, oil, puffs, fed, seconds) after one night."""
     secs = NIGHT / speed
     k = min(n, 4)
-    cap = WAVE_WINDOW / (prof["acquire"] + PUFF[lamps])  # wisps one turret puffs in a wave
     waves = [WAVE_FIRST + WAVE_GAP * i for i in range(20) if WAVE_FIRST + WAVE_GAP * i < secs]
     if leg == 2:
         waves = [w for w in waves if w < LAMPEATER_AT]
@@ -191,7 +232,7 @@ def night(rng, n, leg, lake, lamps, speed, oil, lantern, prof):
 
     for _ in waves:
         w = wisps(n, leg, lake)
-        got = min(w, round(sum(min(w / k, cap + rng.uniform(-1, 1)) for _ in range(k))))
+        got = wave_puffs(rng, w, k, PUFF[lamps], prof)
         puffs += got
         lantern, oil = pour(lantern - (w - got) * WISP_DIM[k], oil)
     fed = False
@@ -217,7 +258,7 @@ def run(rng, n, prof):
     lv = dict(boiler=0, bunker=0, lamps=0)
     coal, oil, lantern, pool = BUNKER[0], 0, LANTERN_MAX, 0
     tickets = xp = caught = 0
-    album, leg_times, parts_by_leg = [], [], []
+    album, leg_times, parts_by_leg, nights = [], [], [], []
     end = "dawn"
     for leg in range(3):
         lake = leg > 0 and rng.random() < 0.5  # leg 1 is always the Forest Line
@@ -249,6 +290,7 @@ def run(rng, n, prof):
             leg_times.append(t)
             break
         lantern, oil, puffs, fed, secs = night(rng, n, leg, lake, lv["lamps"], v, oil, lantern, prof)
+        nights.append(lantern > 0)
         t += secs
         xp += puffs * XP["puff"] / n
         if lantern <= 0:
@@ -274,7 +316,7 @@ def run(rng, n, prof):
         leg_times.append(t)
     tickets += math.ceil(pool / n)
     return dict(t=sum(leg_times), end=end, tickets=tickets, xp=xp, album=album, caught=caught,
-                leg_times=leg_times, upgrades=sum(lv.values()), parts=parts_by_leg)
+                leg_times=leg_times, upgrades=sum(lv.values()), parts=parts_by_leg, nights=nights)
 
 
 def level(xp):
@@ -312,15 +354,18 @@ def main():
     for n in range(1, 7):
         print(f"  crew {n}: {' / '.join(str(wisps(n, l, False)) for l in range(3))}")
     for name, prof in PROFILES.items():
-        print(f"  a {name} turret puffs {WAVE_WINDOW / (prof['acquire'] + PUFF[0]):.1f} a wave with Lamps I")
+        r = random.Random(1)
+        rates = [sum(wave_puffs(r, wisps(n, 0, False), min(n, 4), PUFF[0], prof) for _ in range(400)) / (400 * wisps(n, 0, False)) for n in (1, 2, 4, 6)]
+        print(f"  {name} lamps puff on leg 1 (Lamps I), crews 1 / 2 / 4 / 6: {' / '.join(f'{x:.0%}' for x in rates)}")
     for name, prof in PROFILES.items():
         print(f"\n== Runs, {name} players ({cases} seeded runs a crew size) ==")
-        print("  crew | run min | leg min (incl. Depot) | Dawn | out of coal / lanterns | Tickets | XP | critters | caught | upgrades | Parts a leg")
+        print("  crew | run min | leg min (incl. Depot) | night 1 won | Lampeater met | Dawn | out of coal / lanterns | Tickets | XP | critters | caught | upgrades | Parts a leg")
         for n in (1, 2, 3, 4, 6):
             rs = [run(rng, n, prof) for _ in range(cases)]
             dawn = [r for r in rs if r["end"] == "dawn"]
             legs = [lt / 60 for r in dawn for lt in r["leg_times"]] or [0]
             print(f"   {n}   | {med(r['t'] / 60 for r in dawn):5.1f} | {med(legs):4.1f} ({min(legs):.1f} to {max(legs):.1f}) | "
+                  f"{sum(r['nights'][:1] == [True] for r in rs) / cases:4.0%} | {sum(len(r['nights']) >= 3 for r in rs) / cases:4.0%} | "
                   f"{len(dawn) / cases:4.0%} | {sum(r['end'] == 'coal' for r in rs) / cases:3.0%} / {sum(r['end'] == 'lantern' for r in rs) / cases:3.0%} | "
                   f"{med(r['tickets'] for r in rs):4} | {med(r['xp'] for r in rs):5.0f} | {sum(len(r['album']) for r in rs) / cases:4.1f} | "
                   f"{sum(r['caught'] for r in rs) / cases:3.1f} | {sum(r['upgrades'] for r in rs) / cases:3.1f} | "

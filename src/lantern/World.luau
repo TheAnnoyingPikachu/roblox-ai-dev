@@ -367,11 +367,13 @@ end
 local function ground(parent: Instance)
 	for _, x in { -1024, 1024 } do
 		for _, z in { -1024 + 640, 1024 + 640 } do
+			-- a shade lighter than the terrain's moss: the Grass material renders darker on a part,
+			-- and the plain filled wide dusk shots as a dark slab (LANTERN-015)
 			local g = Props.part(
 				parent,
 				Vector3.new(2048, 2, 2048),
 				Vector3.new(x, World.GROUND_Y - 1, z),
-				PAL.grass,
+				C3(98, 136, 112),
 				Enum.Material.Grass
 			)
 			g.Name = "Ground"
@@ -391,23 +393,25 @@ local function lighting()
 	Lighting.ShadowSoftness = 0.4
 	Lighting.EnvironmentDiffuseScale = 0.5
 	Lighting.EnvironmentSpecularScale = 0.4
-	Lighting.ClockTime = 18.4
-	Lighting.Brightness = 1.6
-	Lighting.Ambient = C3(44, 38, 74)
-	Lighting.OutdoorAmbient = C3(110, 100, 150)
-	Lighting.ColorShift_Top = C3(255, 190, 150)
+	-- the client's DUSK look (TrainFx, LANTERN-015), so the first frame already reads as dusk
+	Lighting.ClockTime = 17.35
+	Lighting.Brightness = 2.4
+	Lighting.Ambient = C3(84, 74, 116)
+	Lighting.OutdoorAmbient = C3(165, 145, 190)
+	Lighting.ColorShift_Top = C3(255, 170, 120)
+	Lighting.ExposureCompensation = 0.35
 	for _, child in Lighting:GetChildren() do
 		if child:IsA("Atmosphere") or child:IsA("Sky") or child:IsA("PostEffect") then
 			child:Destroy()
 		end
 	end
 	local atmosphere = Instance.new("Atmosphere")
-	atmosphere.Color = PAL.fog
-	atmosphere.Decay = C3(96, 84, 150)
-	atmosphere.Density = 0.42
-	atmosphere.Offset = 0.25
-	atmosphere.Glare = 0.3
-	atmosphere.Haze = 1.8
+	atmosphere.Color = C3(246, 168, 140)
+	atmosphere.Decay = C3(86, 104, 168)
+	atmosphere.Density = 0.3
+	atmosphere.Offset = 0.1
+	atmosphere.Glare = 0.5
+	atmosphere.Haze = 2.6
 	atmosphere.Parent = Lighting
 	local sky = Instance.new("Sky")
 	sky.MoonAngularSize = 14
@@ -419,9 +423,9 @@ local function lighting()
 	bloom.Threshold = 0.92
 	bloom.Parent = Lighting
 	local grade = Instance.new("ColorCorrectionEffect")
-	grade.Saturation = 0.08
+	grade.Saturation = 0.12
 	grade.Contrast = 0.05
-	grade.TintColor = C3(255, 246, 240)
+	grade.TintColor = C3(250, 240, 255)
 	grade.Parent = Lighting
 end
 
