@@ -80,3 +80,27 @@ Setup: a local build of `garden.project.json` at `e1c59e7` (corner label and log
 - m2: the Reference log rows say uploaded and signed off. The hedgehog row says its remake is not shipped.
 - m3: left as is. `GardenAssets.luau` is generated from the manifest, so it can't carry a comment. The reason the model id is empty is documented in `Models.MESHES.hedgehog` and in the pipeline doc's "Shipped AI meshes" section.
 - m4: to check on staging after publish.
+
+## Re-check (A15, 2026-11-06, at `31645fe`)
+
+**Verdict: ship.** M1 is fixed and confirmed in Studio. M2 and m1 are fixed. m2 is fixed except for three rows (n1 below), which do not block.
+
+Tool runs at `31645fe`: lune 578/578 (test-results.json deleted); selene and stylua (LF copy) clean on `CreatureFx.client.luau`; validate-tasks 79 valid; check-scope origin/main all 333 in scope; rojo build + check-place match.
+
+M1, Studio: a fresh local build of `31645fe` (`[Build] dev`), in my own instance (`garden-qa2.rbxl`), closed without saving. A client scratch LocalScript compared `ClientState.highlights` with a live count of Highlight instances every 0.25 s. A scratch server Script called the game's `Plots.refresh` on plots 2 and 3 five times, 3 s apart. Each round shifted the mutations (Golden, Celestial, Moonlit, Rainbow) across all 26 species so every creature was rebuilt, and odd rounds also planted two Aurora eggs.
+
+- **Rounds 3 to 5.** The counter was 26 and there were 26 live Highlights, so the budget was full and none had leaked. No SelectionBox appeared. 21 creatures had a Highlight; the 5 without were Golden creatures held back by the 8-slot reserve. The two Aurora eggs got none: the budget was really full of creature Highlights, which is the designed behaviour.
+- **Clearing.** I cleared both plots, then refilled plot 2 with Celestial whale, Golden hedgehog, Moonlit fox and two Aurora eggs. The counter was 10 with 10 live. Each new creature got its Highlight (0.94, 0.90, 0.90), and both Aurora eggs got theirs at 0.88.
+- **Clearing plot 2 again.** The counter was 5 with 5 live (the remaining display gardens).
+
+Before the fix, one rebuild left the counter at 26 with 5 live.
+
+M2: all 52 new ids from `GardenAssets` are in the register. The `creature_bunny` row and the others carry the new ids, and the old Blender `creature_hedgehog` row says "Retired 2026-11-06".
+
+m1: architecture 6.2 now matches the code (Golden 0.9, Celestial 0.82 to 0.94 with a 0.1 rim, light 0.8, budget 26, `forget`).
+
+m2: 23 rows updated.
+
+- **n1 (minor, docs only).** The lion, phoenix and axolotl rows in the pipeline Reference log still say "Not uploaded; awaiting Director sign-off". Their sentences start with a capital "Not", so the replacement missed them. All three are uploaded and in game.
+
+m3 and m4: the Director's reasons are accepted. m4 is to be checked on staging.
