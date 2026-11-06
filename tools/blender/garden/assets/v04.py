@@ -1,17 +1,21 @@
 """Egg Garden v0.4 art (GARDEN-031, docs/architecture/garden.md 9.2): the Lantern Moth, the Starlit
-fence post and rail, and the Clover Pads decal. The moth follows the creatures_b style (chibi, one
+fence post and rail, and the Clover Pads decal. The moth follows the README "Creature standard" (one
 mesh, stands on the origin facing -Y); its lantern is baked bright, no Neon."""
 
 import importlib.util
 import math
 import os
+import sys
 
 import kit as k
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 _spec = importlib.util.spec_from_file_location("creatures_b", os.path.join(os.path.dirname(os.path.abspath(__file__)), "creatures_b.py"))
 cb = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cb)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from creatures_a import xf  # noqa: E402
+from v05_exclusives import mark, paddle, settle, swap  # noqa: E402
 
 NAVY = (40, 45, 100)
 STARLIGHT = (235, 230, 255)
@@ -21,54 +25,79 @@ STARLIGHT = (235, 230, 255)
 
 
 def creature_moth():
-    fluff = k.paint("mo_fluff", [(0, (240, 222, 190)), (1, (255, 246, 228))], 0.6, 3.0)
-    wing = k.paint("mo_wing", [(0, (150, 110, 215)), (1, (222, 200, 255))], 0.8, 3.4)
-    spot = k.flat((95, 60, 150))
-    spot_ring = k.flat((255, 225, 150))
-    brown = k.flat((120, 85, 70))
-    tan = k.flat((200, 160, 120))
-    lamp = k.flat((255, 222, 110), emit=1.3)
-    lamp_rim = k.flat((200, 90, 60))
+    """HD standard (README "Creature standard"): one fused fluffy body with a scalloped ruff, the
+    kit face, feather-plume antennae, four quill-free wings with eye-spots painted after settle
+    on both faces, and a glowing paper lantern held in both hands (baked bright)."""
+    head, R = Vector((0, -0.2, 1.95)), 0.8
+    hand = Vector((0.13, -1.0, 1.2))
+    ruff = [(Vector((0.72 * math.cos(a), 0.05 + 0.66 * math.sin(a), 1.45)), 0.28) for a in (math.radians(22.5 + 45 * i) for i in range(8))]
+    body = k.fuse(
+        [
+            (head, R, (1.15, 0.95, 0.92)),
+            ((0, 0.25, 1.15), 0.72, (1.05, 1.0, 1.0)),  # thorax
+            ((0, 0.25, 0.55), 0.6, (1.1, 1.0, 0.6)),  # round seat the feet fuse to
+            ((0, 0.95, 0.85), 0.55, (0.95, 1.25, 0.85)),  # round abdomen behind
+            ((0, 1.45, 0.72), 0.3),
+            *ruff,  # fluffy scalloped collar
+            *k.pair((0.38, -0.2, 0.18), 0.22, (0.9, 1.4, 0.65)),  # feet
+            *[("capsule", (s * 0.55, -0.3, 1.25), (s * hand.x, hand.y, hand.z), 0.15) for s in (-1, 1)],  # arms to the lantern
+            *k.pair(hand, 0.15),
+        ],
+        k.flat((250, 238, 215)),
+        tris=2800,
+    )
+    parts = [body]
+    # Paper lantern on the ground in front, its bail in both hands.
+    ly = -1.05
+    lantern = k.lathe([(0.2, 0.08), (0.36, 0.13), (0.45, 0.28), (0.49, 0.5), (0.45, 0.72), (0.36, 0.86), (0.2, 0.92)], loc=(0, ly, 0), m=k.flat((255, 230, 140)), n=24, name="lantern")
+    rim = k.flat((205, 80, 60))
+    parts += [lantern,
+              k.lathe([(0, 0), (0.25, 0), (0.27, 0.05), (0.25, 0.11), (0, 0.11)], loc=(0, ly, 0), m=rim, n=24, name="cap"),
+              k.lathe([(0, 0.89), (0.23, 0.89), (0.25, 0.94), (0.23, 1.0), (0, 1.0)], loc=(0, ly, 0), m=rim, n=24, name="cap"),
+              k.tube([(-0.17, ly, 0.98), (-0.15, ly, 1.14), (0, ly, 1.24), (0.15, ly, 1.14), (0.17, ly, 0.98)], 0.028, m=k.flat((120, 70, 60)), n=6, name="bail")]
+    # Feather-plume antennae: a quill and a striped plume, leaning out and a little forward.
+    for s in (-1, 1):
+        root = Vector((s * 0.4, -0.42, 2.52))
+        plume = k.leaf(0.95, 0.19, k.flat((225, 190, 140)), droop=0.0, n=8, steps=10, name="plume")
+        plume.data.transform(Matrix.Translation((0.28, 0, 0)))  # a bare quill first, then the plume
+        quill = k.tube([(-0.12, -0.02, 0), (0.6, -0.02, 0), (1.25, -0.02, 0)], [0.032, 0.024, 0.008], m=k.flat((125, 85, 70)), n=6, name="quill")
+        parts += xf([plume, quill], root, yaw=-15, pitch=42, roll=90, mirror=s < 0)
+    # Wings: a big forewing swept up and back, a smaller hindwing below it, each side.
+    wings = {"fore": [], "hind": []}
+    for s in (-1, 1):
+        for kind, length, width, rise, sweep in (("fore", 2.4, 0.76, 26, 28), ("hind", 1.55, 0.56, -30, 40)):
+            e = math.radians(rise)
+            # columns: along the wing (rising e), across it, and its face towards -Y
+            frame = Matrix.Translation((0.4, 0.45, 1.6)) @ k.rot_z(sweep) @ Matrix(((math.cos(e), -math.sin(e), 0), (0, 0, -1), (math.sin(e), math.cos(e), 0))).to_4x4()
+            if s < 0:
+                frame = Matrix.Diagonal((-1, 1, 1, 1)) @ frame
+            w = paddle(length, width, k.flat((200, 170, 240)), thick=0.1, n=8, root=0.35, name="wing")
+            w.data.transform(frame)
+            wings[kind].append((w, frame, length, s))
+    parts += [w for kind in wings.values() for w, _, _, _ in kind]
+    parts += k.face(body, head, R, skin=(252, 242, 222), nose=None)
 
-    body = (0, 0.1, 1.45)
-    head = (0, -0.55, 2.3)
-    parts = [cb.blob(0.78, body, fluff, scale=(1, 1.1, 1), seg=14, rings=9, name="body")]
-    parts.append(cb.blob(0.66, head, fluff, scale=(1.08, 1, 1), seg=14, rings=9, name="head"))
-    # Fluffy collar between head and body.
-    for x, y, z, r in ((0.55, -0.35, 1.95, 0.32), (-0.55, -0.35, 1.95, 0.32), (0, -0.2, 2.0, 0.3), (0.5, 0.3, 2.0, 0.3), (-0.5, 0.3, 2.0, 0.3)):
-        parts.append(cb.blob(r, (x, y, z), fluff, seg=10, rings=6, name="collar"))
-    parts += cb.eyes(head, 0.66, theta=30, phi=6, r=0.24, scale=(1.08, 1, 1))
-    parts += cb.cheeks(head, 0.66, theta=52, phi=-12, r=0.15, scale=(1.08, 1, 1))
-    # Feathery antennae: a curving stalk with fronds along the inner side.
-    for s in (1, -1):
-        root = Vector((s * 0.3, -0.5, 2.9))
-        stalk = [root, root + Vector((s * 0.25, -0.1, 0.5)), root + Vector((s * 0.35, -0.15, 0.95))]
-        parts.append(k.tube(stalk, [0.06, 0.05, 0.03], m=brown, n=5, name="antenna"))
-        for t, r in ((0.3, 0.13), (0.55, 0.15), (0.8, 0.13), (1.0, 0.1)):
-            p = root + Vector((s * 0.35, -0.15, 0.95)) * t
-            parts.append(k.sphere(r, p + Vector((-s * 0.1, 0, 0.02)), m=tan, scale=(1.6, 0.5, 1), seg=6, rings=3, name="frond"))
-    # Wings: a big round forewing and a smaller hindwing, thin, swept up and back; one painted
-    # eye-spot on each forewing (three stacked discs), built upright at the origin then placed.
-    for s in (1, -1):
-        w = [
-            k.sphere(1.0, (0, 0, 0), m=wing, scale=(1.25, 0.2, 0.95), seg=12, rings=8, name="forewing"),
-            k.sphere(1.0, (s * -0.3, 0.02, -0.85), m=wing, scale=(0.95, 0.18, 0.62), seg=12, rings=7, name="hindwing"),
-            k.sphere(0.4, (s * 0.15, -0.19, 0.1), m=spot, scale=(1, 0.3, 1), seg=10, rings=5, name="spot"),
-            k.sphere(0.27, (s * 0.15, -0.25, 0.1), m=spot_ring, scale=(1, 0.3, 1), seg=10, rings=5, name="spot"),
-            k.sphere(0.13, (s * 0.18, -0.3, 0.14), m=k.flat(cb.DARK), scale=(1, 0.3, 1), seg=8, rings=4, name="spot"),
-        ]
-        parts += cb.placed(w, loc=(s * 1.35, 0.45, 2.25), rot=(-12, s * -28, s * 18))
-    # Paper lantern held under the body: bright barrel, dark rims, tiny feet gripping the ring.
-    ly = -0.7
-    parts.append(k.lathe([(0.16, 0.12), (0.42, 0.3), (0.5, 0.58), (0.42, 0.86), (0.16, 1.02)], loc=(0, ly, 0), m=lamp, n=12, name="lantern"))
-    parts.append(k.ring(0.18, 0.12, 0.04, lamp_rim, n=10, sides=4, centre=(0, ly), name="rim"))
-    parts.append(k.ring(0.18, 1.02, 0.04, lamp_rim, n=10, sides=4, centre=(0, ly), name="rim"))
-    parts.append(k.ring(0.12, 1.12, 0.03, lamp_rim, n=8, sides=4, centre=(0, ly), name="handle"))
-    for s in (1, -1):
-        parts.append(k.sphere(0.12, (s * 0.2, ly + 0.05, 1.12), m=brown, scale=(1, 1.3, 0.7), seg=6, rings=4, name="foot"))
-        parts.append(k.sphere(0.2, (s * 0.4, 0.25, 0.2), m=fluff, scale=(1, 1.4, 0.6), seg=8, rings=4, name="foot"))
-    for ob in parts:  # modelled at wing scale; 9.2 wants a height of about 3.2
-        ob.data.transform(k.Matrix.Scale(0.82, 4))
+    m = settle(parts, [4.8, 3.2, 3.4])
+    swap(body, k.paint("mo_fluff", [(0, (226, 204, 170)), (0.5, (246, 232, 206)), (1, (255, 250, 236))], 0.2, 2.8))
+    # Dusk gradient on each wing, from deep violet at the body to pale lilac-pink at the tip.
+    dusk = {"fore": [(0, (120, 78, 200)), (0.5, (170, 135, 235)), (1, (225, 195, 250))], "hind": [(0, (140, 85, 195)), (0.6, (205, 140, 225)), (1, (245, 185, 225))]}
+    for kind, items in wings.items():
+        for w, frame, length, s in items:
+            marks = []
+            if kind == "fore":
+                c = frame @ Vector((length * 0.64, 0.05, 0))
+                g = frame @ Vector((length * 0.64 - 0.08, 0.12, 0))
+                marks += [mark(m, (255, 214, 120), c, 0.4), mark(m, (90, 45, 140), c, 0.3), mark(m, (255, 236, 175), c, 0.18),
+                          mark(m, (55, 28, 85), c, 0.1), mark(m, (255, 255, 255), g, 0.04)]
+            else:
+                marks += [mark(m, (255, 225, 150), frame @ Vector((length * 0.68, 0, 0)), 0.2), mark(m, (90, 45, 140), frame @ Vector((length * 0.68, 0, 0)), 0.13)]
+            x0, x1 = (m @ (frame @ Vector((0, 0, 0)))).x, (m @ (frame @ Vector((length, 0, 0)))).x
+            swap(w, k.paint(f"mo_{kind}_{s}", dusk[kind], x0, x1, axis="X", marks=marks))
+    lo, hi = k._ground_dims([lantern])
+    swap(lantern, k.paint("mo_lamp", [(0, (255, 150, 55)), (0.5, (255, 192, 98)), (1, (255, 168, 68))], lo.z, hi.z, bands=((255, 178, 85), 0.09), emit=0.45))  # the glow adds 27%: brighter stops clip green to lime
+    for ob in parts:
+        if ob.name.startswith("plume"):
+            swap(ob, k.paint("mo_plume", [(0, (205, 160, 112)), (1, (238, 210, 165))], 2.4, 3.3, bands=((212, 172, 128), 0.06)))
     return parts
 
 
@@ -151,7 +180,7 @@ def pad_clover():
 
 
 ASSETS = [
-    dict(name="creature_moth", build=creature_moth, budget=2500, size=[4.8, 3.2, 3.4], priority=1, order=40, replaces="none (new species)",
+    dict(name="creature_moth", build=creature_moth, budget=k.CREATURE_BUDGET, finalize=k.HD, size=[4.8, 3.2, 3.4], priority=1, order=40, replaces="none (new species)",
          notes="Lantern Moth (rare, V2.4). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are. The lantern is baked bright, no Neon.", glow={}),
     dict(name="fence_starlit_post", build=fence_starlit_post, budget=1200, size=[1, 4, 1], priority=2, order=50, replaces="Plots.refresh fence post part when fence == starlit",
          notes="Stands on the origin, star finial facing -Y. Plots places the PointLights (one per 3 posts), not the model.", glow={}),

@@ -904,20 +904,20 @@
     "png": "build/blender/garden/creature_moth.png",
     "preview": "build/blender/garden/previews/creature_moth.png",
     "size_studs": [
-      4.1,
-      3.19,
-      1.82
+      4.8,
+      3.2,
+      3.4
     ],
-    "tris": 2425,
+    "tris": 5692,
     "parts": {
-      "creature_moth": 2425
+      "creature_moth": 5692
     },
     "target_size_studs": [
       4.8,
       3.2,
       3.4
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species)",
     "script": "tools/blender/garden/assets/v04.py",
@@ -929,20 +929,20 @@
     "png": "build/blender/garden/creature_puffin.png",
     "preview": "build/blender/garden/previews/creature_puffin.png",
     "size_studs": [
-      2.38,
-      2.94,
-      3.12
+      2.6,
+      3.0,
+      2.6
     ],
-    "tris": 1556,
+    "tris": 5974,
     "parts": {
-      "creature_puffin": 1556
+      "creature_puffin": 5974
     },
     "target_size_studs": [
       2.6,
       3.0,
       2.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -955,19 +955,19 @@
     "preview": "build/blender/garden/previews/creature_otter.png",
     "size_studs": [
       4.0,
-      2.57,
-      5.95
+      2.62,
+      5.8
     ],
-    "tris": 1894,
+    "tris": 5476,
     "parts": {
-      "creature_otter": 1894
+      "creature_otter": 5476
     },
     "target_size_studs": [
       4.0,
       2.6,
       5.8
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -979,20 +979,20 @@
     "png": "build/blender/garden/creature_capybara.png",
     "preview": "build/blender/garden/previews/creature_capybara.png",
     "size_studs": [
-      2.83,
-      4.16,
-      5.56
+      3.2,
+      4.2,
+      4.6
     ],
-    "tris": 1612,
+    "tris": 5654,
     "parts": {
-      "creature_capybara": 1612
+      "creature_capybara": 5654
     },
     "target_size_studs": [
       3.2,
       4.2,
       4.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -1004,20 +1004,20 @@
     "png": "build/blender/garden/creature_redpanda.png",
     "preview": "build/blender/garden/previews/creature_redpanda.png",
     "size_studs": [
-      3.68,
+      4.2,
       5.0,
-      3.61
+      4.0
     ],
-    "tris": 2424,
+    "tris": 5960,
     "parts": {
-      "creature_redpanda": 2424
+      "creature_redpanda": 5960
     },
     "target_size_studs": [
       4.2,
       5.0,
       4.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -1029,20 +1029,20 @@
     "png": "build/blender/garden/creature_peacock.png",
     "preview": "build/blender/garden/previews/creature_peacock.png",
     "size_studs": [
-      4.66,
-      5.47,
-      3.21
+      5.0,
+      5.6,
+      4.0
     ],
-    "tris": 1702,
+    "tris": 5978,
     "parts": {
-      "creature_peacock": 1702
+      "creature_peacock": 5978
     },
     "target_size_studs": [
       5.0,
       5.6,
       4.0
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
@@ -1054,20 +1054,20 @@
     "png": "build/blender/garden/creature_snowleopard.png",
     "preview": "build/blender/garden/previews/creature_snowleopard.png",
     "size_studs": [
-      4.65,
-      5.82,
-      4.37
+      4.6,
+      5.8,
+      4.6
     ],
-    "tris": 2328,
+    "tris": 5430,
     "parts": {
-      "creature_snowleopard": 2328
+      "creature_snowleopard": 5430
     },
     "target_size_studs": [
       4.6,
       5.8,
       4.6
     ],
-    "tris_budget": 2500,
+    "tris_budget": 6000,
     "priority": "P1",
     "replaces": "none (new species, login rewards)",
     "script": "tools/blender/garden/assets/v05_exclusives.py",
