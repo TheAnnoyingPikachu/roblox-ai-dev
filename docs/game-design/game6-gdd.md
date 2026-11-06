@@ -394,6 +394,8 @@ Friends reach the server with Roblox's own Join button or a private server (deci
 
 ## J. Failure states: nothing earned is ever lost
 
+**Save limit (QA t1):** if Roblox saves stay unavailable for a player's whole session, that session cannot be saved; the player is told "saving is paused" all session and the game never claims the run was saved.
+
 **The rule:** a thing is *earned* when a game rule writes it to a player's save. Tickets, XP, album entries, quest progress, login slots, cosmetics, milestones and bests are earned; they never decrease by any game rule, and the only way to spend Tickets is a Locker purchase the player makes. Coal, Parts, oil, the lantern and upgrades belong to the run (the HUD says "for this run") and end with it; leftover Parts are converted into Tickets for everyone aboard when the run ends. A player who leaves mid-run leaves the Parts to the crew (their shares grow), and a solo run left early ends with no end card and no conversion: Parts were never earned (LANTERN-016, QA m5).
 
 | Item or value | Carried | Dropped (DROP button) | Carrier caught by the fog | Carrier leaves the game | Left at the stop when the train leaves | Loaded on the train | Run ends (any reason) |

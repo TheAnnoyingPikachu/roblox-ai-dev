@@ -60,3 +60,10 @@ Decision `docs/decisions/0018-lantern-express.md` (Proposed), GDD `docs/game-des
   - a newer save kept read-only;
   - a paused save (a rejoin after a crash, an outage, a lost lock) storing its kept changes once at the claim.
   On staging with real DataStores, to do: leave mid-leg and rejoin; crash a server and rejoin within 2 minutes.
+
+## Known limits before a public launch (QA re-review of LANTERN-017, t1 to t3)
+
+- **Save outage through a whole leave:** a session whose saving is paused and stays paused until the player leaves (a Roblox DataStore outage lasting the whole session) is not saved. The player is told all session that saving is paused. This is the same limit as any final write during an outage. Accepted for private staging.
+- **t2:** a final write that reports failure after it actually landed is retried and can apply that session's changes twice (rewards doubled, nothing lost). Fix before public: change ids in SaveStore so a re-apply is a no-op.
+- **t3:** if a claim is still running 10 s after the player leaves, the final write is skipped. Fix before public: wait for the running claim within BindToClose limits.
+

@@ -95,9 +95,9 @@ end
 -- QA r5: while paused the HUD and menus keep the save as it was read and no reward is shown; after
 -- the claim one toast shows what the session added to the real save (Rewards.reveal).
 local PAUSED = {
-	busy = "Your save is still closing on another server. Saving is paused: everything you earn now is kept and shows up in a minute or two.",
-	offline = "Saving is paused: Roblox saves are not answering. Everything you earn now is kept and shows up when they are back.",
-	lost = "Saving is paused: another server has your save open. Everything you earn now is kept and shows up when it lets go.",
+	busy = "Your save is still closing on another server. Saving is paused for a moment: we keep what you earn and keep trying to save it.",
+	offline = "Saving is paused: Roblox saves are not answering. We keep what you earn and save it as soon as they answer.",
+	lost = "Saving is paused: another server has your save open. We keep what you earn and keep trying to save it.",
 }
 local OFF = "Saving is off on this server: progress here lasts this session only."
 local savingPaused: (Player, string) -> () -- set once the remotes exist (below)

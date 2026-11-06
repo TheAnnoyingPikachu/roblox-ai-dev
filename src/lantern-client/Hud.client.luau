@@ -813,7 +813,7 @@ local function runEnd(data: any)
 		m.body,
 		if saved
 			then "Everything you earned is saved."
-			elseif s.held then "Saving is paused: the rest of what you earned shows up when it is back on."
+			elseif s.held then "Saving is paused: we keep trying to save the rest of what you earned."
 			else "Saving is paused, so this run is not in your save yet.",
 		20,
 		if saved then UI.INK_SOFT else UI.CORAL,

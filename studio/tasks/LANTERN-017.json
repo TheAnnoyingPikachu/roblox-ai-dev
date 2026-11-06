@@ -67,7 +67,8 @@
     "Code 561418e (r4), 824cfce (r5), fb81d02 (r1, r2, r3); docs in the following commit",
     "lune run tests/run: 746/746 passed at fb81d02 (736 + 10 new); selene 0/0/0; stylua --check clean (LF copy); validate-tasks; check-scope origin/main; rojo build + check-place for default, garden, lantern, night, relay",
     "Studio play at build fb81d02 (unpublished, no DataStore): idle turret player inactive from T+202 into night 1; a session without a store still shows rewards (+5 XP per stop). The paused path and a Lamp Car turret need staging or two players",
-    "docs/qa/lantern-v01-review.md section 'Fixes (LANTERN-017)'"
+    "docs/qa/lantern-v01-review.md section 'Fixes (LANTERN-017)'",
+    "QA re-review of LANTERN-017 (ed99262): ship to staging. Director then fixed t1 (paused-save wording no longer promises the rewards will show up; the outage limit documented in GDD J, decision 0011 and the checkpoint) and recorded t2/t3 as must-fix before a public launch in docs/checkpoints/LANTERN-V01.md"
   ],
   "notes": "Created by the Director after the LANTERN-016 re-review (f0711bd). r4 design: a paused session's end stores its changes under a fresh lock (kept as it was) instead of a pending-changes key; kit changes are closures, not storable. r5: rewards held back until the claim, then one toast of what the session added to the real save. r1: an idle player's lamp keeps shining for the crew but earns them nothing; a puff is not activity."
 }
