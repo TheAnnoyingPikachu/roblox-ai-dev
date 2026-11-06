@@ -125,6 +125,13 @@ local MESHES: { [string]: Entry } = {
 		texture = "rbxassetid://120970690138379",
 		size = Vector3.new(6, 5.4, 4.7),
 	},
+	-- Option 3 (2026-11-06): the AI reference ships for the hedgehog, whose Blender remake lost the
+	-- shaggy quills; it has no uploaded creature_hedgehog model, so Plots falls back to this mesh.
+	hedgehog = {
+		mesh = "rbxassetid://100166956137262",
+		texture = "rbxassetid://110536781273370",
+		size = Vector3.new(2.4, 2.8, 2.63),
+	},
 }
 
 local cache: { [string]: MeshPart } = {}

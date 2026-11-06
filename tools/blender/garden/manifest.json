@@ -429,18 +429,18 @@
     "png": "build/blender/garden/creature_bunny.png",
     "preview": "build/blender/garden/previews/creature_bunny.png",
     "size_studs": [
-      2.6,
+      2.3,
       4.0,
-      2.4
+      1.8
     ],
-    "tris": 5628,
+    "tris": 5820,
     "parts": {
-      "creature_bunny": 5628
+      "creature_bunny": 5820
     },
     "target_size_studs": [
-      2.6,
+      2.3,
       4.0,
-      2.4
+      1.8
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -454,18 +454,18 @@
     "png": "build/blender/garden/creature_duck.png",
     "preview": "build/blender/garden/previews/creature_duck.png",
     "size_studs": [
-      2.8,
+      2.4,
       3.0,
-      2.8
+      2.6
     ],
-    "tris": 5752,
+    "tris": 5704,
     "parts": {
-      "creature_duck": 5752
+      "creature_duck": 5704
     },
     "target_size_studs": [
-      2.8,
+      2.4,
       3.0,
-      2.8
+      2.6
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -479,18 +479,18 @@
     "png": "build/blender/garden/creature_frog.png",
     "preview": "build/blender/garden/previews/creature_frog.png",
     "size_studs": [
-      3.2,
+      3.8,
       3.5,
-      3.2
+      3.7
     ],
-    "tris": 5580,
+    "tris": 5652,
     "parts": {
-      "creature_frog": 5580
+      "creature_frog": 5652
     },
     "target_size_studs": [
-      3.2,
+      3.8,
       3.5,
-      3.2
+      3.7
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -506,16 +506,16 @@
     "size_studs": [
       3.2,
       3.8,
-      3.4
+      2.3
     ],
-    "tris": 5844,
+    "tris": 5688,
     "parts": {
-      "creature_lamb": 5844
+      "creature_lamb": 5688
     },
     "target_size_studs": [
       3.2,
       3.8,
-      3.4
+      2.3
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -529,18 +529,18 @@
     "png": "build/blender/garden/creature_pup.png",
     "preview": "build/blender/garden/previews/creature_pup.png",
     "size_studs": [
-      3.0,
+      3.3,
       3.8,
-      3.6
+      3.4
     ],
-    "tris": 5716,
+    "tris": 5918,
     "parts": {
-      "creature_pup": 5716
+      "creature_pup": 5918
     },
     "target_size_studs": [
-      3.0,
+      3.3,
       3.8,
-      3.6
+      3.4
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -554,18 +554,18 @@
     "png": "build/blender/garden/creature_hedgehog.png",
     "preview": "build/blender/garden/previews/creature_hedgehog.png",
     "size_studs": [
-      3.0,
+      2.57,
       2.8,
-      3.4
+      2.45
     ],
-    "tris": 5846,
+    "tris": 5978,
     "parts": {
-      "creature_hedgehog": 5846
+      "creature_hedgehog": 5978
     },
     "target_size_studs": [
-      3.0,
+      2.57,
       2.8,
-      3.4
+      2.45
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -579,18 +579,18 @@
     "png": "build/blender/garden/creature_cat.png",
     "preview": "build/blender/garden/previews/creature_cat.png",
     "size_studs": [
-      3.2,
+      3.4,
       4.2,
-      3.0
+      2.6
     ],
-    "tris": 5732,
+    "tris": 5848,
     "parts": {
-      "creature_cat": 5732
+      "creature_cat": 5848
     },
     "target_size_studs": [
-      3.2,
+      3.4,
       4.2,
-      3.0
+      2.6
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -604,18 +604,18 @@
     "png": "build/blender/garden/creature_deer.png",
     "preview": "build/blender/garden/previews/creature_deer.png",
     "size_studs": [
-      3.6,
+      4.38,
       5.0,
-      3.0
+      3.4
     ],
-    "tris": 5770,
+    "tris": 5966,
     "parts": {
-      "creature_deer": 5770
+      "creature_deer": 5966
     },
     "target_size_studs": [
-      3.6,
+      4.38,
       5.0,
-      3.0
+      3.4
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -629,18 +629,18 @@
     "png": "build/blender/garden/creature_owl.png",
     "preview": "build/blender/garden/previews/creature_owl.png",
     "size_studs": [
-      4.2,
+      3.99,
       4.5,
-      3.8
+      2.9
     ],
-    "tris": 5480,
+    "tris": 5956,
     "parts": {
-      "creature_owl": 5480
+      "creature_owl": 5956
     },
     "target_size_studs": [
-      4.2,
+      3.99,
       4.5,
-      3.8
+      2.9
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -654,18 +654,18 @@
     "png": "build/blender/garden/creature_panda.png",
     "preview": "build/blender/garden/previews/creature_panda.png",
     "size_studs": [
-      4.4,
+      3.08,
       4.5,
-      4.0
+      2.78
     ],
-    "tris": 5754,
+    "tris": 5052,
     "parts": {
-      "creature_panda": 5754
+      "creature_panda": 5052
     },
     "target_size_studs": [
-      4.4,
+      3.08,
       4.5,
-      4.0
+      2.78
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -681,16 +681,16 @@
     "size_studs": [
       3.6,
       4.5,
-      4.2
+      2.9
     ],
-    "tris": 5634,
+    "tris": 5692,
     "parts": {
-      "creature_fox": 5634
+      "creature_fox": 5692
     },
     "target_size_studs": [
       3.6,
       4.5,
-      4.2
+      2.9
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -704,18 +704,18 @@
     "png": "build/blender/garden/creature_unicorn.png",
     "preview": "build/blender/garden/previews/creature_unicorn.png",
     "size_studs": [
-      4.0,
+      2.5,
       5.5,
-      4.8
+      4.14
     ],
-    "tris": 5846,
+    "tris": 5832,
     "parts": {
-      "creature_unicorn": 5846
+      "creature_unicorn": 5832
     },
     "target_size_studs": [
-      4.0,
+      2.5,
       5.5,
-      4.8
+      4.14
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -729,18 +729,18 @@
     "png": "build/blender/garden/creature_turtle.png",
     "preview": "build/blender/garden/previews/creature_turtle.png",
     "size_studs": [
-      3.8,
+      2.83,
       3.5,
-      3.8
+      3.16
     ],
-    "tris": 5922,
+    "tris": 5648,
     "parts": {
-      "creature_turtle": 5922
+      "creature_turtle": 5648
     },
     "target_size_studs": [
-      3.8,
+      2.83,
       3.5,
-      3.8
+      3.16
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -754,18 +754,18 @@
     "png": "build/blender/garden/creature_phoenix.png",
     "preview": "build/blender/garden/previews/creature_phoenix.png",
     "size_studs": [
-      4.6,
+      5.4,
       5.5,
-      4.2
+      4.33
     ],
-    "tris": 5682,
+    "tris": 5716,
     "parts": {
-      "creature_phoenix": 5682
+      "creature_phoenix": 5716
     },
     "target_size_studs": [
-      4.6,
+      5.4,
       5.5,
-      4.2
+      4.33
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -779,18 +779,18 @@
     "png": "build/blender/garden/creature_lion.png",
     "preview": "build/blender/garden/previews/creature_lion.png",
     "size_studs": [
-      4.6,
+      4.83,
       5.2,
-      4.6
+      3.76
     ],
-    "tris": 5956,
+    "tris": 5764,
     "parts": {
-      "creature_lion": 5956
+      "creature_lion": 5764
     },
     "target_size_studs": [
-      4.6,
+      4.83,
       5.2,
-      4.6
+      3.76
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -804,18 +804,18 @@
     "png": "build/blender/garden/creature_whale.png",
     "preview": "build/blender/garden/previews/creature_whale.png",
     "size_studs": [
-      6.0,
+      5.22,
       4.5,
-      5.0
+      6.77
     ],
-    "tris": 5666,
+    "tris": 4944,
     "parts": {
-      "creature_whale": 5666
+      "creature_whale": 4944
     },
     "target_size_studs": [
-      6.0,
+      5.22,
       4.5,
-      5.0
+      6.77
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -829,18 +829,18 @@
     "png": "build/blender/garden/creature_dragon.png",
     "preview": "build/blender/garden/previews/creature_dragon.png",
     "size_studs": [
-      6.0,
+      4.38,
       5.5,
-      4.8
+      3.83
     ],
-    "tris": 5904,
+    "tris": 5990,
     "parts": {
-      "creature_dragon": 5904
+      "creature_dragon": 5990
     },
     "target_size_studs": [
-      6.0,
+      4.38,
       5.5,
-      4.8
+      3.83
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -854,18 +854,18 @@
     "png": "build/blender/garden/creature_kirin.png",
     "preview": "build/blender/garden/previews/creature_kirin.png",
     "size_studs": [
-      4.6,
+      4.34,
       6.0,
-      5.2
+      3.8
     ],
-    "tris": 5822,
+    "tris": 5874,
     "parts": {
-      "creature_kirin": 5822
+      "creature_kirin": 5874
     },
     "target_size_studs": [
-      4.6,
+      4.34,
       6.0,
-      5.2
+      3.8
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -879,18 +879,18 @@
     "png": "build/blender/garden/creature_axolotl.png",
     "preview": "build/blender/garden/previews/creature_axolotl.png",
     "size_studs": [
-      3.4,
+      3.35,
       3.0,
-      5.0
+      2.02
     ],
-    "tris": 5484,
+    "tris": 5658,
     "parts": {
-      "creature_axolotl": 5484
+      "creature_axolotl": 5658
     },
     "target_size_studs": [
-      3.4,
+      3.35,
       3.0,
-      5.0
+      2.02
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -899,23 +899,48 @@
     "notes": "Stardust Axolotl (secret). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are.",
     "glow": {}
   },
+  "creature_moth": {
+    "fbx": "build/blender/garden/creature_moth.fbx",
+    "png": "build/blender/garden/creature_moth.png",
+    "preview": "build/blender/garden/previews/creature_moth.png",
+    "size_studs": [
+      3.9,
+      3.2,
+      1.62
+    ],
+    "tris": 5878,
+    "parts": {
+      "creature_moth": 5878
+    },
+    "target_size_studs": [
+      3.9,
+      3.2,
+      1.6
+    ],
+    "tris_budget": 6000,
+    "priority": "P1",
+    "replaces": "none (new species)",
+    "script": "tools/blender/garden/assets/v04.py",
+    "notes": "Lantern Moth (rare, V2.4). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are. The lantern is baked bright, no Neon.",
+    "glow": {}
+  },
   "creature_puffin": {
     "fbx": "build/blender/garden/creature_puffin.fbx",
     "png": "build/blender/garden/creature_puffin.png",
     "preview": "build/blender/garden/previews/creature_puffin.png",
     "size_studs": [
-      2.6,
+      2.2,
       3.0,
-      2.6
+      2.35
     ],
-    "tris": 5974,
+    "tris": 5796,
     "parts": {
-      "creature_puffin": 5974
+      "creature_puffin": 5796
     },
     "target_size_studs": [
-      2.6,
+      2.2,
       3.0,
-      2.6
+      2.35
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -929,18 +954,18 @@
     "png": "build/blender/garden/creature_otter.png",
     "preview": "build/blender/garden/previews/creature_otter.png",
     "size_studs": [
-      4.0,
-      2.62,
-      5.8
+      1.89,
+      2.6,
+      2.19
     ],
-    "tris": 5476,
+    "tris": 4476,
     "parts": {
-      "creature_otter": 5476
+      "creature_otter": 4476
     },
     "target_size_studs": [
-      4.0,
+      1.89,
       2.6,
-      5.8
+      2.19
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -954,18 +979,18 @@
     "png": "build/blender/garden/creature_capybara.png",
     "preview": "build/blender/garden/previews/creature_capybara.png",
     "size_studs": [
-      3.2,
+      3.03,
       4.2,
-      4.6
+      3.56
     ],
-    "tris": 5654,
+    "tris": 5996,
     "parts": {
-      "creature_capybara": 5654
+      "creature_capybara": 5996
     },
     "target_size_studs": [
-      3.2,
+      3.03,
       4.2,
-      4.6
+      3.56
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -979,18 +1004,18 @@
     "png": "build/blender/garden/creature_redpanda.png",
     "preview": "build/blender/garden/previews/creature_redpanda.png",
     "size_studs": [
-      4.2,
+      4.11,
       5.0,
-      4.0
+      5.01
     ],
-    "tris": 5960,
+    "tris": 5124,
     "parts": {
-      "creature_redpanda": 5960
+      "creature_redpanda": 5124
     },
     "target_size_studs": [
-      4.2,
+      4.11,
       5.0,
-      4.0
+      5.01
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1004,18 +1029,18 @@
     "png": "build/blender/garden/creature_peacock.png",
     "preview": "build/blender/garden/previews/creature_peacock.png",
     "size_studs": [
-      5.0,
+      3.41,
       5.6,
-      4.0
+      3.28
     ],
-    "tris": 5978,
+    "tris": 5794,
     "parts": {
-      "creature_peacock": 5978
+      "creature_peacock": 5794
     },
     "target_size_studs": [
-      5.0,
+      3.41,
       5.6,
-      4.0
+      3.28
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1029,18 +1054,18 @@
     "png": "build/blender/garden/creature_snowleopard.png",
     "preview": "build/blender/garden/previews/creature_snowleopard.png",
     "size_studs": [
-      4.6,
+      4.99,
       5.8,
-      4.6
+      3.94
     ],
-    "tris": 5430,
+    "tris": 4964,
     "parts": {
-      "creature_snowleopard": 5430
+      "creature_snowleopard": 4964
     },
     "target_size_studs": [
-      4.6,
+      4.99,
       5.8,
-      4.6
+      3.94
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -1431,56 +1456,6 @@
     "notes": "Upright, stem at the top, round scales. Client-only clone from NightModels; no collision.",
     "glow": {}
   },
-  "wheel_tree": {
-    "fbx": "build/blender/garden/wheel_tree.fbx",
-    "png": "build/blender/garden/wheel_tree.png",
-    "preview": "build/blender/garden/previews/wheel_tree.png",
-    "size_studs": [
-      23.67,
-      19.96,
-      24.0
-    ],
-    "tris": 1432,
-    "parts": {
-      "wheel_tree": 1432
-    },
-    "target_size_studs": [
-      24,
-      20,
-      24
-    ],
-    "tris_budget": 3000,
-    "priority": "P3",
-    "replaces": "Props.sakura canopy fallback in WheelWorld",
-    "script": "tools/blender/garden/assets/wheel.py",
-    "notes": "Trunk (radius about 2 at the canopy) at the bounding box centre in x and z; canopy underside about 13, top 20. Decor: WheelWorld's own trunk Cylinder collides.",
-    "glow": {}
-  },
-  "creature_moth": {
-    "fbx": "build/blender/garden/creature_moth.fbx",
-    "png": "build/blender/garden/creature_moth.png",
-    "preview": "build/blender/garden/previews/creature_moth.png",
-    "size_studs": [
-      4.8,
-      3.2,
-      3.4
-    ],
-    "tris": 5692,
-    "parts": {
-      "creature_moth": 5692
-    },
-    "target_size_studs": [
-      4.8,
-      3.2,
-      3.4
-    ],
-    "tris_budget": 6000,
-    "priority": "P1",
-    "replaces": "none (new species)",
-    "script": "tools/blender/garden/assets/v04.py",
-    "notes": "Lantern Moth (rare, V2.4). One mesh, stands on the origin facing -Y; scale to the manifest height as the eggs are. The lantern is baked bright, no Neon.",
-    "glow": {}
-  },
   "fence_starlit_post": {
     "fbx": "build/blender/garden/fence_starlit_post.fbx",
     "png": "build/blender/garden/fence_starlit_post.png",
@@ -1556,5 +1531,30 @@
     "notes": "A decal, not a model: use the texture id on a Decal on the pad top face over pad colour (120, 190, 90); the flat quad FBX only carries it through the upload. 1024 baked, downscale to 256 at upload if required.",
     "glow": {},
     "decal_only": true
+  },
+  "wheel_tree": {
+    "fbx": "build/blender/garden/wheel_tree.fbx",
+    "png": "build/blender/garden/wheel_tree.png",
+    "preview": "build/blender/garden/previews/wheel_tree.png",
+    "size_studs": [
+      23.67,
+      19.96,
+      24.0
+    ],
+    "tris": 1432,
+    "parts": {
+      "wheel_tree": 1432
+    },
+    "target_size_studs": [
+      24,
+      20,
+      24
+    ],
+    "tris_budget": 3000,
+    "priority": "P3",
+    "replaces": "Props.sakura canopy fallback in WheelWorld",
+    "script": "tools/blender/garden/assets/wheel.py",
+    "notes": "Trunk (radius about 2 at the canopy) at the bounding box centre in x and z; canopy underside about 13, top 20. Decor: WheelWorld's own trunk Cylinder collides.",
+    "glow": {}
   }
 }
