@@ -27,7 +27,8 @@
   ],
   "files": [
     "docs/game-design/game6-market-research.md",
-    "docs/game-design/game6-concepts.md"
+    "docs/game-design/game6-concepts.md",
+    "docs/production/studio-lessons.md"
   ],
   "tests": [],
   "risk_level": "low",
