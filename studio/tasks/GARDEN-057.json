@@ -5,7 +5,7 @@
   "task_id": "GARDEN-057",
   "owner": "A11",
   "verifier": "A15",
-  "task_type": "art",
+  "task_type": "asset",
   "objective": "Remake all 26 creature models to a higher standard after SHANNON asked for better creature models (2026-11-06): full-colour textures, cleaner baked shading, smooth bodies and limbs, one shared cute face.",
   "inputs": [
     "tools/blender/garden/README.md (Creature standard (HD pass))",
