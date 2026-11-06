@@ -328,7 +328,7 @@ local GardenAssets: { [string]: Asset } = {
 		parts = { "pad_clover" },
 		model = nil,
 		decal = 88634157811969,
-		texture = nil,
+		texture = 139876020185844,
 	},
 }
 
