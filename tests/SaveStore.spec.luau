@@ -109,7 +109,7 @@ describe("SaveStore.load", function()
 		expect(saves:get("k").coins).toBe(7)
 	end)
 
-	it("a second server cannot claim a fresh lock and writes nothing", function()
+	it("a second server cannot claim a fresh lock and writes nothing while it plays", function()
 		local store = FakeDataStore.new()
 		local first = make(store)
 		first:load("k", 0)
@@ -121,8 +121,15 @@ describe("SaveStore.load", function()
 		expect(s.status).toBe("busy")
 		expect(store.writes).toBe(writes)
 		second:apply("k", add(1000))
+		expect(second:flush("k", 28)).toBe(false)
+		expect(store.writes).toBe(writes)
+		-- LANTERN-017 (QA r4): its end stores the change under the first server's lock, which the
+		-- first server still holds and builds on.
 		second:finish("k", 30)
-		expect(store:read("k").coins).toBe(10)
+		expect(`{store:read("k").coins} {SaveLock.holds(store:read("k"), first:session("k").id)}`).toBe("1010 true")
+		first:apply("k", add(1))
+		first:finish("k", 40)
+		expect(`{store:read("k").coins} {store:read("k").lock}`).toBe("1011 nil")
 	end)
 
 	it("a stale lock (crashed server) is taken over", function()
@@ -213,7 +220,7 @@ describe("SaveStore.reclaim", function()
 		expect(store:read("k").coins).toBe(53)
 	end)
 
-	it("finish on a busy session claims a lock that went stale meanwhile, else writes nothing", function()
+	it("finish on a busy session claims a lock that went stale meanwhile, else stores under it", function()
 		local store = crashed()
 		local saves = make(store)
 		saves:load("k", 100)
@@ -225,7 +232,120 @@ describe("SaveStore.reclaim", function()
 		other:load("k", 100)
 		other:apply("k", add(7))
 		other:finish("k", 120)
-		expect(`{fresh.writes} {fresh:read("k").coins} {fresh:read("k").lock.session}`).toBe("0 500 crashed")
+		local rec = fresh:read("k")
+		expect(`{fresh.writes} {rec.coins} {rec.lock.session} {rec.lock.at}`).toBe("1 507 crashed 90")
+	end)
+end)
+
+-- LANTERN-017 (QA r4): a paused session that ends (leave or shutdown) stores its changes whatever
+-- the lock; the review's scenario is a crash at 90, a rejoin at 120 (busy), +50 and a leave at 180.
+describe("SaveStore paused session ends", function()
+	local function crashed(keys: { string }): any
+		local data = {}
+		for _, key in keys do
+			data[key] = { coins = 500, lock = { session = "crashed", at = 90 } }
+		end
+		return FakeDataStore.new(data)
+	end
+	local function isNewerRecord(record: any): boolean
+		return type(record) == "table" and record.schemaVersion == 2
+	end
+
+	it("ends before the crashed lock expires: stored under that lock, kept as it was", function()
+		local store = crashed({ "k" })
+		local saves = make(store)
+		expect(saves:load("k", 120).status).toBe("busy")
+		saves:apply("k", add(50))
+		saves:finish("k", 180) -- the crashed lock is 90 s old
+		local rec = store:read("k")
+		expect(`{rec.coins} {rec.lastSeen} {rec.lock.session} {rec.lock.at} {store.writes}`).toBe(
+			"550 180 crashed 90 1"
+		)
+		expect(saves:session("k")).toBeNil()
+		-- The next session claims it once the lock is stale and finds the 50.
+		local later = make(store)
+		expect(later:load("k", 200).status).toBe("busy")
+		expect(later:reclaim("k", 210)).toBe(true)
+		expect(later:get("k").coins).toBe(550)
+	end)
+
+	it("ends after it expires: claimed and released in one write", function()
+		local store = crashed({ "k" })
+		local saves = make(store)
+		saves:load("k", 120)
+		saves:apply("k", add(50))
+		saves:finish("k", 215)
+		local rec = store:read("k")
+		expect(`{rec.coins} {rec.lock} {store.writes}`).toBe("550 nil 1")
+	end)
+
+	it("server shutdown inside the window stores every paused session", function()
+		local store = crashed({ "a", "b" })
+		local saves = make(store)
+		saves:load("a", 120)
+		saves:load("b", 125)
+		saves:apply("a", add(50))
+		saves:apply("b", add(7))
+		saves:finishAll(130)
+		expect(`{store:read("a").coins} {store:read("b").coins} {store:read("b").lock.session}`).toBe("550 507 crashed")
+		expect(`{saves:session("a")} {saves:session("b")}`).toBe("nil nil")
+	end)
+
+	it("two paused sessions (two servers) both end inside the window: both stored once", function()
+		local store = crashed({ "k" })
+		local b, c = make(store), make(store)
+		b:load("k", 120)
+		b:apply("k", add(50))
+		b:finish("k", 150)
+		c:load("k", 160)
+		c:apply("k", add(25))
+		c:finish("k", 170)
+		expect(`{store:read("k").coins} {store:read("k").lock.session}`).toBe("575 crashed")
+		local d = make(store)
+		d:load("k", 210)
+		d:apply("k", add(1))
+		d:finish("k", 220)
+		expect(`{store:read("k").coins} {store:read("k").lock}`).toBe("576 nil")
+	end)
+
+	it("stored changes are never re-run: not by a second finish, the holder's next write or the next claim", function()
+		local store = FakeDataStore.new({ k = { coins = 500 } })
+		local holder = make(store) -- a live server still finishing the player's last session
+		holder:load("k", 0)
+		holder:apply("k", add(10))
+		local paused = make(store)
+		paused:load("k", 20)
+		paused:apply("k", add(50))
+		paused:finish("k", 30) -- leave
+		paused:finish("k", 31) -- and BindToClose
+		paused:finishAll(32)
+		expect(`{store:read("k").coins} {store.writes}`).toBe("550 2")
+		holder:flush("k", 40)
+		expect(`{store:read("k").coins} {holder:get("k").coins}`).toBe("560 560")
+		holder:finish("k", 50)
+		local next = make(store)
+		local s = next:load("k", 60)
+		next:finish("k", 70)
+		expect(`{s.profile.coins} {store:read("k").coins} {store:read("k").lock}`).toBe("560 560 nil")
+	end)
+
+	it("a final write that fails is retried within the budget; a newer record is never written", function()
+		local store = crashed({ "k" })
+		local saves = make(store, nil, isNewerRecord)
+		saves:load("k", 120)
+		saves:apply("k", add(50))
+		store:failNext(2)
+		saves:finish("k", 180)
+		expect(store:read("k").coins).toBe(550)
+		local newer = crashed({ "k" })
+		local other = make(newer, nil, isNewerRecord)
+		other:load("k", 120)
+		other:apply("k", add(50))
+		local rec = newer:read("k")
+		rec.schemaVersion = 2 -- a later build wrote it meanwhile
+		newer:write("k", rec)
+		other:finish("k", 180)
+		expect(`{newer:read("k").coins} {newer.writes}`).toBe("500 0")
 	end)
 end)
 
@@ -368,9 +488,9 @@ describe("SaveStore writes", function()
 		expect(saves:isOnline("k")).toBe(false)
 		expect(lost[1]).toBe("k")
 		saves:apply("k", add(1))
-		saves:finish("k", 9)
-		expect(store:read("k").coins).toBe(50)
-		expect(store:read("k").lock.session).toBe("other")
+		saves:finish("k", 9) -- LANTERN-017 (QA r4): stored under the other lock, kept as it was
+		expect(store:read("k").coins).toBe(52) -- 50 + both kept changes
+		expect(`{store:read("k").lock.session} {store:read("k").lock.at}`).toBe("other 5")
 	end)
 
 	it("a change that throws or returns nil is ignored", function()

@@ -9,15 +9,21 @@
 --   * The load claims a session lock; a second server cannot claim a fresh lock (status "busy").
 --   * A session that could not claim its record (busy, a failed load, a lost lock; not a newer
 --     record) keeps every change queued (`retry`). `reclaim` claims the lock once it is free or
---     stale and stores the stored record with every queued change re-run, then goes online;
---     `finish` tries once more, so nothing earned that session is lost (LANTERN-016, QA M4).
+--     stale and stores the stored record with every queued change re-run, then goes online
+--     (LANTERN-016, QA M4).
+--   * When such a session ends (`finish`, `finishAll`) its changes are stored whatever the lock: a
+--     free or stale lock is claimed and released in one write; a fresh lock of another session (a
+--     crashed server's, for up to `lockStale` s) is kept exactly as it was and the changes are
+--     re-run on the stored record under it, like the writes of any other writer. The holder's next
+--     write and the next claim re-read that record, so they keep the changes and never re-run them
+--     (LANTERN-017, QA r4).
 --   * Every change runs on the in-memory profile at once and is queued. A flush re-reads the stored
 --     record, sanitises it, re-runs the queued changes in order and stores the result in one
 --     UpdateAsync, so a stale copy can never overwrite newer progress.
 --   * At most one write per `coalesce` seconds while changes are queued, plus an `autosave` write.
 --   * A failed flush puts its changes back at the front of the queue.
 --   * A write that finds the lock gone or taken writes nothing and the session goes offline (its
---     changes stay queued for `reclaim`).
+--     changes stay queued for `reclaim`, or for the end of the session as above).
 --   * `finish` writes once more and releases the lock.
 --   * With the `newer` option, a stored record it calls newer (written by a later build, before a
 --     rollback) loads read-only: sanitised in memory, offline, never locked or written, so its
@@ -284,7 +290,15 @@ end
 -- queued change re-run in order and the snapshot, stamped with this session's lock, in one
 -- UpdateAsync. On success that becomes the profile (changes queued meanwhile re-run on it) and the
 -- session is online. A fresh lock of another session or a newer record writes nothing.
-local function reclaimSession(self: any, session: Session<any>, now: number): boolean
+-- `final` (the session ends, QA r4): retried until `deadline`; a free or stale lock is released in
+-- the same write and a fresh one is kept exactly as it was, so only a newer record writes nothing.
+local function reclaimSession(
+	self: any,
+	session: Session<any>,
+	now: number,
+	final: boolean?,
+	deadline: number?
+): boolean
 	local o = self.o
 	if not session.retry or session.writing or o.store == nil then
 		return false
@@ -293,10 +307,10 @@ local function reclaimSession(self: any, session: Session<any>, now: number): bo
 	local ops = session.queue
 	session.queue = {}
 	local busy = false
-	local ok, stored = pcall(function()
+	local function claim()
 		return o.store:UpdateAsync(session.key, function(old: any)
-			busy = (o.newer ~= nil and old ~= nil and o.newer(old))
-				or not SaveLock.canClaim(old, session.id, now, self.lockStale)
+			local free = SaveLock.canClaim(old, session.id, now, self.lockStale)
+			busy = (o.newer ~= nil and old ~= nil and o.newer(old)) or not (free or final)
 			if busy then
 				return nil
 			end
@@ -307,9 +321,19 @@ local function reclaimSession(self: any, session: Session<any>, now: number): bo
 			if o.snapshot then
 				p = o.snapshot(p, now)
 			end
-			return SaveLock.stamp(p :: any, session.id, now)
+			if not final then
+				return SaveLock.stamp(p :: any, session.id, now)
+			end
+			local held = if free then nil else SaveLock.of(old)
+			return SaveLock.stamp(p :: any, held and held.session, if held then held.at else now)
 		end)
-	end)
+	end
+	local ok, stored
+	if final then
+		ok, stored = withRetries(self, `final claim {session.key}`, claim, deadline)
+	else
+		ok, stored = pcall(claim)
+	end
 	session.writing = false
 	if ok and not busy and stored ~= nil then
 		local p = o.sanitize(stored, now)
@@ -374,9 +398,11 @@ function SaveStore.finish(self: any, key: string, now: number, budget: number?)
 	while session.writing and o.clock() - started < self.inflightWait do
 		o.wait(0.1)
 	end
-	reclaimSession(self, session, now) -- a lock that went stale meanwhile still saves this session
 	if session.status == "online" then
-		flushSession(self, session, now, true, started + limit)
+		flushSession(self, session, now, true, started + limit) -- a lost lock sets `retry`
+	end
+	if session.retry then -- stored whatever the lock (QA r4)
+		reclaimSession(self, session, now, true, started + limit)
 	end
 	if self.sessions[key] == session then
 		self.sessions[key] = nil
