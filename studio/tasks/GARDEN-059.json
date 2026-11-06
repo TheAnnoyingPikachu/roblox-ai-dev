@@ -1,0 +1,53 @@
+{
+  "project_id": "GARDEN-001",
+  "risk_level": "medium",
+  "status": "in_review",
+  "task_id": "GARDEN-059",
+  "owner": "A11",
+  "verifier": "A15",
+  "task_type": "implementation",
+  "objective": "Remake all 26 Egg Garden creatures from Roblox Studio AI references (owner, 2026-11-06: the Blender creatures 'look silly', the original generated ones were best; option 3, a Blender remake for each and the AI mesh where a remake falls short), and stop mutation looks hiding creature detail: no SelectionBox boxes, faint Highlight fills so Celestial is no longer solid gold.",
+  "inputs": [
+    "docs/production/ai-reference-pipeline.md",
+    "assets/garden/refs/generated.json",
+    "tools/blender/garden/README.md"
+  ],
+  "dependencies": [
+    "GARDEN-057",
+    "GARDEN-058"
+  ],
+  "acceptance_criteria": [
+    "Each of the 26 creatures has reference shots in assets/garden/refs and a reference-vs-remake sheet that the Director judged the same character; 25 ship as Blender remakes and the hedgehog ships its AI mesh through Models.MESHES with a register row",
+    "Every remake is at most 6,000 triangles with no finalize decimation, front -Y, and its GardenAssets size matches the manifest",
+    "CreatureFx never creates a SelectionBox; every mutation and charm Highlight fill is at 0.82 or more transparent, and the Aurora egg's is 0.88",
+    "The 25 new models are uploaded, and all 26 creatures load and face forward in a Studio play test",
+    "lune run tests/run, selene, stylua, rojo build with check-place, validate-tasks and check-scope pass"
+  ],
+  "verification": "A15 loads every creature in a Studio play test of the built place and checks the mutation looks; CI run",
+  "output_artifacts": [
+    "docs/production/ai-reference-pipeline.md",
+    "assets/garden/refs/"
+  ],
+  "files": [
+    "studio/tasks/GARDEN-059.json",
+    "assets/garden/refs/",
+    "assets/garden/creature_*",
+    "docs/production/ai-reference-pipeline.md",
+    "docs/architecture/garden.md",
+    "docs/assets/register.md",
+    "docs/qa/garden-refremake-review.md",
+    "src/garden-client/BedFx.client.luau",
+    "src/garden-client/CreatureFx.client.luau",
+    "src/relay/Models.luau",
+    "src/shared/GardenAssets.luau",
+    "tools/blender/garden/"
+  ],
+  "tests": [
+    "GardenAssets.spec.luau"
+  ],
+  "notes": "Over the ten-file guide because the remake covers 26 models; one task, matching the GARDEN-057 HD pass. References were generated in a throwaway Studio place (refgen.rbxl); their ids are in generated.json, so the place itself is not kept.",
+  "evidence": [
+    "Commits d43eba5 to 9ab56ca on garden/refremake. Remakes are in four batches of six after bunny and fox (refcompare sheets in build/blender/garden/refcompare, not committed); lune 578/578.",
+    "Uploads: runs 42281587048 and 42281598118 (25 creatures; creature_hedgehog not uploaded)."
+  ]
+}
