@@ -167,6 +167,16 @@ function WispRules.clampAim(dir: any): Vec3?
 	return v(x * scale, math.sin(pitch), z * scale)
 end
 
+-- True when the aim `to` turned more than CREW.aimTurn degrees from `from` (nil: the first aim). Only
+-- a turned aim counts as activity (QA M3); the client's keep-alive re-send of the same aim does not.
+function WispRules.turned(from: Vec3?, to: Vec3): boolean
+	if from == nil then
+		return true
+	end
+	local dot = (from.x * to.x + from.y * to.y + from.z * to.z) / math.max(len(from) * len(to), 1e-9)
+	return math.deg(math.acos(math.clamp(dot, -1, 1))) > LanternConfig.CREW.aimTurn
+end
+
 local function copy(night: Night): Night
 	local out = table.clone(night)
 	out.wisps = {}

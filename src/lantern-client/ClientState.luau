@@ -174,6 +174,7 @@ ClientState.CODES = {
 	locked = "Not unlocked yet",
 	tickets = "Not enough Tickets",
 	refused = "Not right now",
+	carrying = "Bring it to the train first", -- SIT while carrying (QA M1)
 } :: { [string]: string }
 
 -- Signals between the client scripts.

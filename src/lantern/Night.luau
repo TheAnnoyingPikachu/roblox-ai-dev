@@ -25,7 +25,8 @@ type Aim = { dir: Vec3, at: number, userId: number }
 local BATCH = 40 -- wisp records per Fx message (architecture 5)
 local limiter = RateLimit.new({ burst = 4, perSecond = 12 })
 local aims: { [string]: Aim } = {} -- by turret seat id
-local lastAim: { [number]: number } = {} -- UserId -> os.clock() of the last accepted aim
+local lastAim: { [number]: number } = {} -- UserId -> os.clock() of the last aim that turned (activity)
+local turnedTo: { [number]: Vec3 } = {} -- UserId -> the aim that last counted as activity
 local fxAll: (string, any) -> () = function(_kind: string, _payload: any) end
 
 local function finite(x: number): boolean
@@ -50,8 +51,12 @@ local function onAim(player: Player, dir: any)
 	end
 	local clamped = WispRules.clampAim({ x = dir.X, y = dir.Y, z = dir.Z })
 	if clamped then
-		aims[seat.Name] = { dir = clamped, at = os.clock(), userId = player.UserId }
-		lastAim[player.UserId] = os.clock()
+		aims[seat.Name] = { dir = clamped, at = os.clock(), userId = player.UserId } -- keeps the beam fresh
+		-- QA M3: only a real turn is activity; the client re-sends a still aim every 0.3 s for the beam.
+		if WispRules.turned(turnedTo[player.UserId], clamped) then
+			turnedTo[player.UserId] = clamped
+			lastAim[player.UserId] = os.clock()
+		end
 	end
 end
 
@@ -87,7 +92,7 @@ function Night.aim(seatId: string): Vec3?
 	return if aim then aim.dir else nil
 end
 
--- True when `userId` sent an accepted aim within `seconds` (activity, GDD I3).
+-- True when `userId` turned their aim within `seconds` (activity, GDD I3).
 function Night.aimedWithin(userId: number, seconds: number): boolean
 	return os.clock() - (lastAim[userId] or -math.huge) <= seconds
 end
@@ -101,7 +106,7 @@ end
 
 function Night.forget(userId: number)
 	limiter:reset(userId)
-	lastAim[userId] = nil
+	lastAim[userId], turnedTo[userId] = nil, nil
 	for seatId, aim in aims do
 		if aim.userId == userId then
 			aims[seatId] = nil

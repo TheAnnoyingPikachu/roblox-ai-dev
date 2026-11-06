@@ -66,7 +66,7 @@ describe("LanternConfig numbers (GDD C, F, H)", function()
 			"8 25 4 6 8 1 60 75 4 20"
 		)
 		expect(`{w.spread} {list(w.speed)} {w.wobble} {w.reach}`).toBe("3 6 7 8 8 2 3")
-		expect(list(LanternConfig.DIM)).toBe("4.5 3.5 3.5 3")
+		expect(list(LanternConfig.DIM)).toBe("4.5 3.5 3.5 2.75")
 		local b = LanternConfig.BEAM
 		expect(`{b.halfAngle} {list(b.range)} {list(b.puff)} {b.pitchMin} {b.pitchMax} {b.stale}`).toBe(
 			"7 80 90 100 0.6 0.45 0.35 -15 75 0.5"
@@ -75,8 +75,8 @@ describe("LanternConfig numbers (GDD C, F, H)", function()
 		expect(`{l.at} {l.warn} {l.radius} {l.height} {l.every} {l.dive} {l.shoo} {l.dim} {l.needBase} {l.needPer}`).toBe(
 			"50 3 45 25 8 3 0.8 10 15 8"
 		)
-		-- LANTERN-015 (solo night balance): drift 6 / 7 / 8 / 8 studs/s and dim 4.5 / 3.5 / 3.5 / 3 by
-		-- min(n, 4), as GDD C4 and C6 and the pacing script; a crew of 4 to 6 keeps 8 and 3.
+		-- LANTERN-015 (solo night balance): drift 6 / 7 / 8 / 8 studs/s and dim 4.5 / 3.5 / 3.5 by
+		-- min(n, 4), as GDD C4 and C6 and the pacing script; LANTERN-016 (QA m12): dim 2.75 for 4+.
 	end)
 
 	it("pins the Depot and reward values of F, H3 and 0018 section 5", function()
@@ -91,7 +91,11 @@ describe("LanternConfig numbers (GDD C, F, H)", function()
 		expect(`{x.small} {x.big} {x.rescue} {x.new} {x.puff} {x.stoke} {x.mend} {x.stop} {x.depot} {x.dawn}`).toBe(
 			"2 5 20 50 2 1 3 5 40 150"
 		)
-		expect(`{C.CREW.max} {C.CREW.active} {C.CREW.activeMove} {C.WEEKLY_SALT}`).toBe("6 180 10 6006")
+		expect(`{C.CREW.max} {C.CREW.active} {C.CREW.activeMove} {C.CREW.aimTurn} {C.WEEKLY_SALT}`).toBe(
+			"6 180 10 1 6006"
+		)
+		local k = C.CARRY_CHECK -- G4 (QA M2)
+		expect(`{k.every} {k.slack} {k.mult}`).toBe("0.5 4 1.5")
 	end)
 
 	it("sums every odds row to 10,000 in RARITIES order", function()

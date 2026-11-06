@@ -191,3 +191,67 @@ describe("CarryRules: hands, help-carry and speed", function()
 		expect(`{s2.items[9].state} {s2.items[9].helper} {c1[A].big}`).toBe(`carried {B} 9`)
 	end)
 end)
+
+-- LANTERN-016 (QA M2): the G4 check runs every tick before that tick's loads, starting where the item
+-- was picked up; a carrier is checked once before any load.
+describe("CarryRules.pace", function()
+	local SMALL, CRATE = 15, 9 -- carry speeds (studs/s)
+	local function at(z: number, x: number?): { x: number, y: number, z: number }
+		return { x = x or 0, y = 0, z = z }
+	end
+	-- Moves from z at `move` studs/s for `ticks` ticks, carrying at `speed`; returns the pace and the
+	-- last (passed, may load).
+	local function walk(p: any, from: number, speed: number, t0: number, ticks: number, move: number?)
+		local ok, ready = true, false
+		for i = 1, ticks do
+			p, ok, ready = CarryRules.pace(p, at(from - (move or speed) * 0.1 * i), speed, t0 + 0.1 * i)
+			if not ok then
+				break
+			end
+		end
+		return p, ok, ready
+	end
+
+	it("never loads on the pick-up sample; a checked step may load (the load waits a tick)", function()
+		local p, ok, ready = CarryRules.pace(nil, at(4), SMALL, 10)
+		expect(`{ok} {ready}`).toBe("true false")
+		p, ok, ready = CarryRules.pace(p, at(4), SMALL, 10.1)
+		expect(`{ok} {ready}`).toBe("true true")
+	end)
+
+	it("a teleport from a far crate into the load box fails at once and drops at the pick-up spot", function()
+		local p = CarryRules.pace(nil, at(150), CRATE, 0)
+		local out, ok, ready = CarryRules.pace(p, at(-2), CRATE, 0.1)
+		expect(`{ok} {ready} {out.valid.z}`).toBe("false false 150")
+	end)
+
+	it("standing still first does not open a window for a jump: 15.25 studs at most after 0.5 s", function()
+		local p = CarryRules.pace(nil, at(150), SMALL, 0)
+		for i = 1, 10 do
+			p = CarryRules.pace(p, at(150), SMALL, 0.1 * i)
+		end
+		expect(select(2, CarryRules.pace(p, at(130), SMALL, 1.1))).toBe(false)
+		expect(select(2, CarryRules.pace(p, at(136), SMALL, 1.1))).toBe(true)
+	end)
+
+	it("passes an honest carry at every speed, and a replication stall that catches up", function()
+		for _, speed in { 16, 15, 13, 9 } do
+			local p = CarryRules.pace(nil, at(150), speed, 0)
+			local _, ok, ready = walk(p, 150, speed, 0, 100)
+			expect(`{speed} {ok} {ready}`).toBe(`{speed} true true`)
+		end
+		local p = walk(CarryRules.pace(nil, at(150), SMALL, 0), 150, SMALL, 0, 5) -- at z 142.5, t 0.5
+		for i = 1, 4 do -- the server sees the root frozen for 0.4 s
+			p = CarryRules.pace(p, at(142.5), SMALL, 0.5 + 0.1 * i)
+		end
+		expect(select(2, CarryRules.pace(p, at(142.5 - 7.5), SMALL, 1.0))).toBe(true) -- 0.5 s of walking at once
+	end)
+
+	it("catches a steady drift at three times the carry speed over the 0.5 s window", function()
+		local p = CarryRules.pace(nil, at(150), CRATE, 0)
+		local _, ok = walk(p, 150, CRATE, 0, 10, 3 * CRATE)
+		expect(ok).toBe(false)
+		local _, honest = walk(CarryRules.pace(nil, at(150), CRATE, 0), 150, CRATE, 0, 10, 1.4 * CRATE)
+		expect(honest).toBe(true)
+	end)
+end)

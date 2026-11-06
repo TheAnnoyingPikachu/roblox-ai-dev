@@ -756,6 +756,19 @@ local function carryCheck(run: Run, userId: number): string?
 	return nil
 end
 
+-- The `sit` request (QA M1): a carrier walks the load to the train (the fog sprint), never sits it
+-- aboard ("carrying": "Bring it to the train first"). A helper may sit: they let go and the first
+-- carrier keeps the crate. The server checks the fog, the reach and a free seat itself.
+function TrainRules.canSit(run: Run, userId: number): (boolean, string?)
+	local c = run.carries[userId]
+	if run.crew[userId] == nil then
+		return false, "refused"
+	elseif c and (c.big ~= nil or #c.small > 0) then
+		return false, "carrying"
+	end
+	return true, nil
+end
+
 function TrainRules.pick(run: Run, userId: number, itemId: number): (Run, boolean, string?)
 	local refusal = carryCheck(run, userId)
 	if refusal then

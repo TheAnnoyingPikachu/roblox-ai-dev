@@ -93,6 +93,9 @@ LanternConfig.MOVE = { walk = 16, small = 15, big = 13, critterSolo = 9, critter
 LanternConfig.REACH = 8
 LanternConfig.HELP_BREAK = 14
 LanternConfig.LOAD_BOX = 6
+-- G4 carry check (QA M2): a carrier moves at most mult x carry speed + slack studs between server ticks
+-- (time since the root last moved, capped at `every`) and over every `every` seconds.
+LanternConfig.CARRY_CHECK = { every = 0.5, slack = 4, mult = 1.5 }
 LanternConfig.NEAR = 70 -- a big site under 70 studs deep uses the near odds
 LanternConfig.ITEMS = {
 	coal = { big = false, tickets = 1, coal = 5 },
@@ -126,7 +129,9 @@ LanternConfig.WAVES = {
 	wobble = 2,
 	reach = 3,
 }
-LanternConfig.DIM = { 4.5, 3.5, 3.5, 3 } -- by min(n, 4); a solo lamp puffing 1 wisp in 4 sees the Depot (LANTERN-015)
+-- By min(n, 4); a solo lamp puffing 1 wisp in 4 sees the Depot (LANTERN-015); 2.75 for 4+ so a crew of
+-- 4 is no harder than 3 (LANTERN-016, QA m12: casual Dawn 88 / 100 / 92 / 91 / 99% for 1 / 2 / 3 / 4 / 6).
+LanternConfig.DIM = { 4.5, 3.5, 3.5, 2.75 }
 LanternConfig.BEAM = {
 	halfAngle = 7,
 	range = { 80, 90, 100 },
@@ -911,7 +916,9 @@ LanternConfig.PINGS = {
 	{ id = "wisps", text = "Wisps there!" },
 	{ id = "thanks", text = "Thanks!" },
 }
-LanternConfig.CREW = { max = 6, active = 180, activeMove = 10 }
+-- active: GDD I3's idle window (s); activeMove: studs a standing member moves to count; aimTurn: degrees a
+-- turret aim must turn to count (QA M3: the client's unchanged keep-alive re-send is not activity).
+LanternConfig.CREW = { max = 6, active = 180, activeMove = 10, aimTurn = 1 }
 LanternConfig.WEEKLY_SALT = 6006
 
 local function find<T>(list: { T }, id: string): T?

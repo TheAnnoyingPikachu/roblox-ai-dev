@@ -6,8 +6,8 @@
 -- yield between reading and writing it). Every reward is one saves.apply on one player's own save
 -- (Rewards). Heartbeat moves the anchored train between ticks.
 
-local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
+local PhysicsService = game:GetService("PhysicsService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -36,11 +36,13 @@ local Rewards = require(script.Parent:WaitForChild("Rewards"))
 type Run = TrainRules.Run
 
 local TICK = 0.1 -- the run loop (10 Hz)
-local SLOW = 60 -- day rollover and weekly boards
+local SLOW = 60 -- weekly boards
 local SIT_REACH = 40
 local PING_RANGE = 60
 local PING_GAP = 2
 local REACH_SLACK = 2 -- prompts: server distance may lag the client's by a frame or two
+local RECLAIM = 15 -- s between tries to claim a save this session could not claim (QA M4)
+local CREW_GROUP = "LanternPlayers" -- characters never collide with each other (QA m10)
 local PLACEMENT = { hub = "seat", ride = "seat", night = "seat", stop = "platform", depot = "depot", ended = "hub" }
 local PING_IDS: { [string]: boolean } = {}
 for _, p in LanternConfig.PINGS do
@@ -87,44 +89,30 @@ local function publish(player: Player, profile: LanternProgress.Profile)
 	player:SetAttribute("Lamp", profile.lamp)
 end
 
--- A record from a later build must never be rewritten as v1 (decision 0018 section 4): the kit's
--- `newer` option (LANTERN-005) loads it read-only. Where Saves.start does not pass that option on
--- yet, this guard aborts the load's UpdateAsync instead (no write, the session goes offline) and
--- readOnly() shows the record sanitised in memory. shortcut: delete the guard once every branch
--- has the LANTERN-005 kit.
-local kitNewer = false
-local function sanitize(record: any, t: number): LanternProgress.Profile
-	if not kitNewer and LanternProgress.isNewer(record) then
-		error("newer save: this session stays read-only")
-	end
-	return LanternProgress.sanitize(record, t)
-end
+-- QA M4: a session that could not claim its save (a crashed server's lock, a DataStore outage, a lost
+-- lock) plays on and keeps every change; the reclaim loop below claims the save later and stores
+-- them. The player is told at once; the client shows "Saving paused" while ProfileOnline is false.
+local PAUSED = {
+	busy = "Your save is still closing on another server. Saving is paused: everything you earn now is kept and saves in a moment.",
+	offline = "Saving is paused: Roblox saves are not answering. Everything you earn now is kept and saves when they are back.",
+	lost = "Saving is paused: another server has your save open. Everything you earn now is kept and saves when it lets go.",
+}
+local OFF = "Saving is off on this server: progress here lasts this session only."
+local savingPaused: (Player, string) -> () -- set once the remotes exist (below)
 
+-- A record from a later build is never rewritten as v1 (decision 0018 section 4): the kit's `newer`
+-- option loads it read-only.
 local saves = Saves.start({
 	name = "LanternProfile",
 	defaults = LanternProgress.defaults,
-	sanitize = sanitize,
+	sanitize = LanternProgress.sanitize,
 	snapshot = LanternProgress.snapshot,
 	newer = LanternProgress.isNewer,
 	onChanged = publish,
-} :: any)
-kitNewer = saves.store.o.newer ~= nil -- the SaveStore kept the option: the kit handles newer saves
-
-local function readOnly(player: Player)
-	if kitNewer or saves.isOnline(player) then
-		return
-	end
-	local key = `player_{player.UserId}`
-	local ok, record = pcall(function()
-		return DataStoreService:GetDataStore(`LanternProfile{Saves.suffix(nil)}`):GetAsync(key)
-	end)
-	local session = saves.store:session(key)
-	if ok and session and LanternProgress.isNewer(record) then
-		session.profile = LanternProgress.sanitize(record, os.time())
-		warn(`[LanternServer] {player.UserId}: newer save, read-only this session`)
-		publish(player, session.profile)
-	end
-end
+	onStatus = function(player: Player, status: string)
+		savingPaused(player, status)
+	end,
+})
 
 -- World and run -------------------------------------------------------------------------------
 
@@ -157,6 +145,7 @@ local lastTick = now()
 local remotes: Remotes.Handle
 local pingAt: { [number]: number } = {}
 local anchors: { [number]: Vector3 } = {} -- activity: where each standing member last counted as moving
+-- (cleared when the server moves or seats a character: a server move is never activity, QA M3)
 local painted = ""
 
 local runFolder = Instance.new("Folder")
@@ -200,6 +189,7 @@ local function place(player: Player, placement: string)
 		return
 	end
 	local n = table.find(run.order, player.UserId) or 1
+	anchors[player.UserId] = nil
 	if placement == "seat" then
 		local m = run.crew[player.UserId]
 		Train.seat(player, m and m.seat)
@@ -213,6 +203,7 @@ end
 -- Caught by the fog: hidden under the stop and anchored until "back" seats them.
 local function hide(player: Player)
 	local root = rootOf(player)
+	anchors[player.UserId] = nil
 	if root then
 		root.Anchored = true
 		local p = root.Position;
@@ -230,6 +221,7 @@ local function toHub()
 		if player and root then
 			root.Anchored = false
 			Carry.forget(userId)
+			anchors[userId] = nil
 			if Train.seatOf(player) then
 				Train.stand(player, World.HUB_SIDE, World.hubSpot(i))
 			else
@@ -256,79 +248,90 @@ local function onPrompt(player: Player, itemId: number, action: string)
 			notice(player, REFUSALS[code or "refused"] or REFUSALS.refused)
 			return
 		end
+		if action == "pick" then
+			Carry.start(userId, root.Position, now()) -- G4 checks the carry from here (QA M2)
+		end
 		commit(TrainRules.touch(out, userId, now()))
 	end)
 end
 
--- Carries out the events of one tick (architecture 4.2). `before` is the run before the tick.
+-- Carries out one event of a tick (architecture 4.2). `before` is the run before the tick.
+local function handle(e: TrainRules.Event, before: Run, beams: { any }, owners: { number }, t: number)
+	local player = if e.userId then Players:GetPlayerByUserId(e.userId) else nil
+	local kind = e.kind
+	if kind == "seat" then
+		if player then
+			Train.seat(player, e.payload)
+		end
+	elseif kind == "unseat" then
+		if player then
+			Train.stand(player, side())
+		end
+	elseif kind == "approach" then
+		Stops.build(run.loot :: any, World.site(run.line, run.stop), folder, onPrompt)
+	elseif kind == "arrive" then
+		fxAll("arrive", {
+			phase = "stop",
+			leg = run.leg,
+			stop = run.stop,
+			tile = run.loot and run.loot.tile or "",
+			line = run.line,
+		})
+	elseif kind == "bell" then
+		fxAll("bell", { at = run.bellAt })
+	elseif kind == "caught" then
+		if player then
+			hide(player)
+			Carry.forget(player.UserId)
+			Rewards.count(player, "caught", 1)
+		end
+		fxAll("caught", { userId = e.userId })
+	elseif kind == "back" then
+		if player then
+			Train.seat(player, e.payload)
+		end
+		fxAll("back", { userId = e.userId })
+	elseif kind == "load" then
+		Rewards.load(run, e, t)
+	elseif kind == "stopLeft" then
+		if player then
+			Rewards.award(player, "stop")
+		end
+	elseif kind == "depart" then
+		Stops.clear()
+		fxAll("depart", {})
+	elseif kind == "wisp" then
+		for userId, count in Night.fx(e.payload, run, before.night, beams, owners, t) do
+			local shooter = Players:GetPlayerByUserId(userId)
+			if shooter then
+				Rewards.count(shooter, "puffs", count)
+			end
+			run = TrainRules.touch(run, userId, t) -- a puff is activity (QA M3)
+		end
+	elseif kind == "fed" then
+		fxAll("fed", {})
+	elseif kind == "depot" then
+		Rewards.awardAll(run, "depot")
+		fxAll("arrive", { phase = "depot", leg = run.leg, stop = 0, tile = "", line = run.line })
+	elseif kind == "dawn" then
+		Rewards.awardAll(run, "dawn")
+		if e.payload and e.payload.fed then
+			Rewards.awardAll(run, "fed")
+		end
+	elseif kind == "end" then
+		Rewards.runEnd(run, e)
+	elseif kind == "hub" then
+		toHub()
+	end
+	-- "night" and "coalLow" need nothing here: the HUD reads Phase, Coal and CoalNeed.
+end
+
+-- Each event on its own guard (QA m1): a fault in one handler never drops a later "load" or "end".
 local function dispatch(events: { TrainRules.Event }, before: Run, beams: { any }, owners: { number }, t: number)
 	for _, e in events do
-		local player = if e.userId then Players:GetPlayerByUserId(e.userId) else nil
-		local kind = e.kind
-		if kind == "seat" then
-			if player then
-				Train.seat(player, e.payload)
-			end
-		elseif kind == "unseat" then
-			if player then
-				Train.stand(player, side())
-			end
-		elseif kind == "approach" then
-			Stops.build(run.loot :: any, World.site(run.line, run.stop), folder, onPrompt)
-		elseif kind == "arrive" then
-			fxAll("arrive", {
-				phase = "stop",
-				leg = run.leg,
-				stop = run.stop,
-				tile = run.loot and run.loot.tile or "",
-				line = run.line,
-			})
-		elseif kind == "bell" then
-			fxAll("bell", { at = run.bellAt })
-		elseif kind == "caught" then
-			if player then
-				hide(player)
-				Carry.forget(player.UserId)
-				Rewards.count(player, "caught", 1)
-			end
-			fxAll("caught", { userId = e.userId })
-		elseif kind == "back" then
-			if player then
-				Train.seat(player, e.payload)
-			end
-			fxAll("back", { userId = e.userId })
-		elseif kind == "load" then
-			Rewards.load(run, e, t)
-		elseif kind == "stopLeft" then
-			if player then
-				Rewards.award(player, "stop")
-			end
-		elseif kind == "depart" then
-			Stops.clear()
-			fxAll("depart", {})
-		elseif kind == "wisp" then
-			for userId, count in Night.fx(e.payload, run, before.night, beams, owners, t) do
-				local shooter = Players:GetPlayerByUserId(userId)
-				if shooter then
-					Rewards.count(shooter, "puffs", count)
-				end
-			end
-		elseif kind == "fed" then
-			fxAll("fed", {})
-		elseif kind == "depot" then
-			Rewards.awardAll(run, "depot")
-			fxAll("arrive", { phase = "depot", leg = run.leg, stop = 0, tile = "", line = run.line })
-		elseif kind == "dawn" then
-			Rewards.awardAll(run, "dawn")
-			if e.payload and e.payload.fed then
-				Rewards.awardAll(run, "fed")
-			end
-		elseif kind == "end" then
-			Rewards.runEnd(run, e)
-		elseif kind == "hub" then
-			toHub()
-		end
-		-- "night" and "coalLow" need nothing here: the HUD reads Phase, Coal and CoalNeed.
+		guarded(e.kind, function()
+			handle(e, before, beams, owners, t)
+		end)
 	end
 end
 
@@ -340,7 +343,9 @@ local function activity(t: number)
 		local root = rootOf(player)
 		if player and root then
 			local anchor = anchors[userId]
-			if anchor == nil or Train.seatOf(player) then
+			if Train.seatOf(player) then
+				anchors[userId] = nil -- standing up is a server move: anchor where they first stand
+			elseif anchor == nil then
 				anchors[userId] = root.Position
 			elseif (root.Position - anchor).Magnitude >= LanternConfig.CREW.activeMove then
 				anchors[userId] = root.Position
@@ -353,7 +358,8 @@ local function activity(t: number)
 	end
 end
 
-local function sample(t: number, dt: number): (TrainRules.Input, { number })
+-- `ready`: the carriers whose G4 check passed this tick (only they may load, QA M2).
+local function sample(t: number, dt: number, ready: { [number]: boolean }): (TrainRules.Input, { number })
 	local seats = Train.seats()
 	local depth, loadBox = {}, {}
 	for _, userId in run.order do
@@ -363,7 +369,7 @@ local function sample(t: number, dt: number): (TrainRules.Input, { number })
 				depth[userId] = Stops.depth(root.Position)
 			end
 			if run.carries[userId] then
-				loadBox[userId] = Carry.inLoadBox(root.Position)
+				loadBox[userId] = ready[userId] == true and Carry.inLoadBox(root.Position)
 			end
 		end
 	end
@@ -384,8 +390,10 @@ local function sample(t: number, dt: number): (TrainRules.Input, { number })
 		owners
 end
 
--- Help-carry break (14 studs, or the helper sat down) and the G4 speed check.
-local function carryChecks(t: number)
+-- Help-carry break (14 studs, or the helper sat down) and the G4 speed check, before the tick's loads
+-- (QA M2). Returns the carriers that passed and may load this tick.
+local function carryChecks(t: number): { [number]: boolean }
+	local ready = {}
 	for _, userId in run.order do
 		if run.carries[userId] == nil then
 			Carry.forget(userId) -- a new carry starts its speed samples where it is picked up
@@ -393,7 +401,7 @@ local function carryChecks(t: number)
 	end
 	local loot = run.loot
 	if run.phase ~= "stop" or loot == nil then
-		return
+		return ready
 	end
 	for _, item in loot.items do
 		if item.state == "carried" and item.helper then
@@ -410,8 +418,9 @@ local function carryChecks(t: number)
 		local root = rootOf(player)
 		if player and root and not root.Anchored then
 			local speed = CarryRules.speed(run.loot :: any, run.carries, userId)
-			local fast, valid = Carry.tooFast(userId, root.Position, speed, t)
-			local at = if fast then Stops.toStop(valid) else nil
+			local passed, valid, canLoad = Carry.check(userId, root.Position, speed, t)
+			ready[userId] = passed and canLoad
+			local at = if passed then nil else Stops.toStop(valid)
 			if at then
 				local out, ok = TrainRules.drop(run, userId, at)
 				if ok then
@@ -422,6 +431,7 @@ local function carryChecks(t: number)
 			end
 		end
 	end
+	return ready
 end
 
 local lastStatus: { [string]: any } = {}
@@ -499,17 +509,51 @@ local function paint()
 	end
 end
 
+-- A reward text (toast and LastReward); never "saved" while saving is paused (QA M4).
+local function tell(player: Player, text: string)
+	if text == "" then
+		return
+	end
+	if not saves.isOnline(player) then
+		text = (string.gsub(text, "saved for you", "kept for you"))
+	end
+	player:SetAttribute("LastReward", text)
+	notice(player, text)
+end
+
+-- UTC day rollover while online (architecture 11.12): quests and login slots earned yesterday are
+-- paid with the "(saved for you)" toast, on the first tick of the day before any other reward.
+local lastDay = today()
+local function rollover()
+	local day = today()
+	if day == lastDay then
+		return
+	end
+	lastDay = day
+	for _, player in Players:GetPlayers() do
+		local profile = saves.get(player)
+		if profile then
+			local _, text = LanternProgress.join(profile, day)
+			saves.apply(player, function(p)
+				return (LanternProgress.join(p, day))
+			end)
+			tell(player, text)
+		end
+	end
+end
+
 local function tick()
 	local t = now()
 	local dt = math.clamp(t - lastTick, 0, 1)
+	guarded("rollover", rollover) -- before any reward of a new day (QA m4)
 	activity(t)
-	local input, owners = sample(t, dt)
+	local ready = carryChecks(t) -- G4 before the tick's loads (QA M2)
+	local input, owners = sample(t, dt, ready)
 	local before = run
 	local events
 	run, events = TrainRules.tick(run, input)
 	lastTick = t
 	dispatch(events, before, input.beams, owners, t)
-	carryChecks(t)
 	sync()
 	Night.heads()
 	writeStatus(t)
@@ -600,7 +644,10 @@ local actions: { [string]: Router.Action } = {
 		args = { Payload.enum({ "any", "turret", "stoker", "mender", "passenger" }) },
 		handler = function(player: Player, kind: string)
 			local root = rootOf(player)
-			if run.crew[player.UserId] == nil or root == nil or inFog(player) then
+			local free, code = TrainRules.canSit(run, player.UserId) -- a carrier walks it home (QA M1)
+			if not free then
+				return false, code
+			elseif root == nil or inFog(player) then
 				return false, "refused"
 			elseif not moving() and Train.distance(root.Position) > SIT_REACH then
 				return false, "far"
@@ -726,9 +773,8 @@ local actions: { [string]: Router.Action } = {
 				local out, paid = LanternProgress.claimLogin(p, track, day, slot)
 				return out, paid
 			end, "locked")
-			if accepted and ok and text ~= "" then
-				player:SetAttribute("LastReward", text)
-				notice(player, text)
+			if accepted and ok then
+				tell(player, text)
 			end
 			return accepted, code
 		end,
@@ -786,6 +832,53 @@ remotes = Remotes.create("LanternRemotes", router)
 Night.start(remotes.folder, remotes.fxAll)
 Rewards.start(saves, remotes)
 
+local function saveKey(player: Player): string
+	return `player_{player.UserId}` -- the kit Saves key
+end
+
+savingPaused = function(player: Player, status: string)
+	if status == "online" then
+		return
+	end
+	player:SetAttribute("ProfileOnline", false)
+	local session = saves.store:session(saveKey(player))
+	notice(player, if session and session.retry then PAUSED[status] or PAUSED.offline else OFF)
+end
+
+-- QA M4: every RECLAIM seconds, each paused session tries to claim its save; on success the stored
+-- save plus every change of this session is written and becomes the profile.
+task.spawn(function()
+	while true do
+		task.wait(RECLAIM)
+		for _, player in Players:GetPlayers() do
+			local session = saves.store:session(saveKey(player))
+			if session and session.retry then
+				task.spawn(function()
+					if saves.store:reclaim(saveKey(player), os.time()) and player.Parent then
+						player:SetAttribute("ProfileOnline", true)
+						publish(player, saves.get(player))
+						notice(player, "Saving is back on: everything from this session is saved.")
+					end
+				end)
+			end
+		end
+	end
+end)
+
+PhysicsService:RegisterCollisionGroup(CREW_GROUP)
+PhysicsService:CollisionGroupSetCollidable(CREW_GROUP, CREW_GROUP, false)
+local function noShove(character: Model)
+	local function set(d: Instance)
+		if d:IsA("BasePart") then
+			d.CollisionGroup = CREW_GROUP
+		end
+	end
+	for _, d in character:GetDescendants() do
+		set(d)
+	end
+	character.DescendantAdded:Connect(set)
+end
+
 -- A player who is not in the crew (the start menu) never rides: stood up at once (0018 2.3).
 Train.onOccupant(function(seat: Seat)
 	local occupant = seat.Occupant
@@ -798,6 +891,7 @@ end)
 -- Players ------------------------------------------------------------------------------------
 
 local function onCharacter(player: Player, character: Model)
+	noShove(character)
 	task.defer(function()
 		if character:WaitForChild("HumanoidRootPart", 5) and run.crew[player.UserId] then
 			place(player, PLACEMENT[run.phase])
@@ -813,7 +907,6 @@ local function onPlayer(player: Player)
 	if player.Parent == nil then
 		return
 	end
-	readOnly(player)
 	local profile = saves.get(player)
 	if profile then
 		local day = today()
@@ -821,10 +914,7 @@ local function onPlayer(player: Player)
 		saves.apply(player, function(p)
 			return (LanternProgress.join(p, day))
 		end)
-		if text ~= "" then
-			player:SetAttribute("LastReward", text)
-			notice(player, text)
-		end
+		tell(player, text)
 	end
 end
 
@@ -842,30 +932,6 @@ local function onLeave(player: Player)
 		pingAt[userId], anchors[userId] = nil, nil
 		sync()
 	end)
-end
-
--- UTC day rollover while online (architecture 11.12): quests and login slots earned yesterday are
--- paid with the "(saved for you)" toast.
-local lastDay = today()
-local function rollover()
-	local day = today()
-	if day == lastDay then
-		return
-	end
-	lastDay = day
-	for _, player in Players:GetPlayers() do
-		local profile = saves.get(player)
-		if profile then
-			local _, text = LanternProgress.join(profile, day)
-			saves.apply(player, function(p)
-				return (LanternProgress.join(p, day))
-			end)
-			if text ~= "" then
-				player:SetAttribute("LastReward", text)
-				notice(player, text)
-			end
-		end
-	end
 end
 
 if Players.MaxPlayers > LanternConfig.CREW.max then
@@ -889,7 +955,6 @@ RunService.Heartbeat:Connect(function(dt: number)
 	end
 	if os.clock() - slowAt >= SLOW then
 		slowAt = os.clock()
-		guarded("rollover", rollover)
 		task.spawn(function()
 			guarded("boards", Rewards.refreshBoards)
 		end)

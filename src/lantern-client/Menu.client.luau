@@ -215,7 +215,7 @@ end
 
 local function albumFollower(body: ScrollingFrame)
 	local p = ClientState.profile()
-	line(body, "Your follower hops behind you at the Depot and rides with you.", 18, UI.INK_SOFT, 1)
+	line(body, "Your follower hops behind you at the Depot.", 18, UI.INK_SOFT, 1)
 	itemRow(body, 2, "No follower", "", if p.follower == "" then "CHOSEN" else "CHOOSE", UI.AQUA, function()
 		ClientState.request("follower", "none")
 	end, p.follower ~= "")
@@ -718,14 +718,3 @@ player:GetAttributeChangedSignal("Profile"):Connect(function()
 	end
 end)
 UiKit.selectFirst(menu.frame)
-
--- Saving offline: say so once, kindly (the kit's newer-save guard or a DataStore outage).
-task.delay(3, function()
-	if player:GetAttribute("ProfileOnline") == false then
-		ClientState.toast(
-			"Saving is offline on this server: progress here lasts this session only.",
-			"notice",
-			UI.CORAL
-		)
-	end
-end)

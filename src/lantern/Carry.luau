@@ -1,20 +1,23 @@
 --!strict
 -- The look of carrying (docs/architecture/lantern.md 4.1): small items welded to the back in three
 -- slots, the supply crate welded in front, the critter crate held by server-owned AlignPosition and
--- AlignOrientation in front of its carrier or at the two carriers' midpoint. Also the G4 speed
--- check and the load box test. CarryRules decides who carries what; this file only shows it.
+-- AlignOrientation in front of its carrier or at the two carriers' midpoint. Also each carrier's G4
+-- samples (CarryRules.pace decides) and the load box test. CarryRules decides who carries what; this
+-- file only shows it.
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local CarryRules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("CarryRules"))
 local Train = require(script.Parent:WaitForChild("Train"))
 
 local Carry = {}
 
 local SLOTS = { CFrame.new(0, 0.2, 1.1), CFrame.new(0, 1.5, 1.1), CFrame.new(0, -1.1, 1.1) } -- on the back
 local FRONT = CFrame.new(0, 0, -2.4)
-local CHECK_EVERY, SLACK = 0.5, 4 -- G4: 1.5 x carry speed + 4 studs over 0.5 s
 
 type Hold = { body: BasePart, by: BasePart, helper: BasePart?, align: AlignPosition, orient: AlignOrientation }
 local holds: { [BasePart]: Hold } = {}
-local samples: { [number]: { pos: Vector3, at: number, valid: Vector3 } } = {}
+local paces: { [number]: CarryRules.Pace } = {}
 
 -- Undoes any carry on `body` and anchors it where it is.
 function Carry.release(body: BasePart)
@@ -82,27 +85,30 @@ function Carry.step()
 	end
 end
 
--- G4: true when `userId` (carrying at `speed`) moved faster than allowed over the last 0.5 s; the
--- second result is the last position that passed (drop the load there).
-function Carry.tooFast(userId: number, pos: Vector3, speed: number, now: number): (boolean, Vector3)
-	local s = samples[userId]
-	if s == nil then
-		samples[userId] = { pos = pos, at = now, valid = pos }
-		return false, pos
+local function vec(p: Vector3): { x: number, y: number, z: number }
+	return { x = p.X, y = p.Y, z = p.Z }
+end
+
+-- The first G4 sample, where the item was picked up (QA M2): a teleport straight after the pick-up
+-- is checked against it. A carrier who already holds something keeps their samples.
+function Carry.start(userId: number, pos: Vector3, now: number)
+	if paces[userId] == nil then
+		paces[userId] = (CarryRules.pace(nil, vec(pos), 0, now))
 	end
-	if now - s.at < CHECK_EVERY then
-		return false, s.valid
-	end
-	local moved = Vector3.new(pos.X - s.pos.X, 0, pos.Z - s.pos.Z).Magnitude
-	local limit = 1.5 * speed * (now - s.at) + SLACK
-	local valid = s.valid
-	samples[userId] = { pos = pos, at = now, valid = if moved > limit then valid else pos }
-	return moved > limit, valid
+end
+
+-- G4 (QA M2), every tick before the tick's loads: whether `userId` (carrying at `speed`) moved
+-- within the limit, the last position that passed (drop the load there) and whether they may load
+-- this tick (never on their first sample).
+function Carry.check(userId: number, pos: Vector3, speed: number, now: number): (boolean, Vector3, boolean)
+	local pace, ok, ready = CarryRules.pace(paces[userId], vec(pos), speed, now)
+	paces[userId] = pace
+	return ok, Vector3.new(pace.valid.x, pace.valid.y, pace.valid.z), ready
 end
 
 -- Forget a carrier's samples (not carrying, left, caught).
 function Carry.forget(userId: number)
-	samples[userId] = nil
+	paces[userId] = nil
 end
 
 function Carry.inLoadBox(pos: Vector3): boolean

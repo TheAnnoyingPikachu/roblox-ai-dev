@@ -493,7 +493,11 @@ local function looseItems(t: number)
 			local bob = if ClientState.still() then 0 else 0.2 * math.sin(t * 2 + entry.phase)
 			local cf = entry.base
 				* CFrame.new(0, 0.7 + bob, 0)
-				* CFrame.Angles(0, (t * 0.6 + entry.phase) % (2 * math.pi), 0)
+				* CFrame.Angles(
+					0,
+					if ClientState.still() then entry.phase else (t * 0.6 + entry.phase) % (2 * math.pi),
+					0
+				)
 			body.CFrame, entry.put = cf, cf
 			local d = (body.Position - eye).Magnitude
 			if d <= SEEN then
@@ -527,6 +531,58 @@ local function looseItems(t: number)
 	end
 end
 
+-- Followers (GDD H9, QA m6): each player's chosen critter hops behind them at the hub and the Depot (code
+-- hop, no rig); riding on the seat during runs is v0.2 (GDD O). Client-only, anchored, no collision or
+-- queries, so it never blocks a camera (the Garden lesson).
+type Follower = { id: string, model: Model, at: Vector3, lift: number, offset: CFrame }
+local followers: { [Player]: Follower } = {}
+local function updateFollowers(t: number, dt: number, phase: string?)
+	local here = phase == "hub" or phase == "depot" or phase == "ended"
+	for p, f in followers do
+		if p.Parent == nil then
+			f.model:Destroy()
+			followers[p] = nil
+		end
+	end
+	for _, p in Players:GetPlayers() do
+		local id = p:GetAttribute("Follower")
+		local character = p.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local f = followers[p]
+		if f and not (here and id == f.id and root and humanoid and humanoid.SeatPart == nil) then
+			f.model:Destroy()
+			followers[p], f = nil, nil
+		end
+		if root == nil or humanoid == nil or humanoid.SeatPart ~= nil or not here then
+			continue
+		end
+		if f == nil and type(id) == "string" and LanternConfig.critter(id) then
+			local m = ClientState.critterModel(id)
+			local _, size = m:GetBoundingBox()
+			m:ScaleTo(m:GetScale() * 2 / math.max(size.Y, 0.1)) -- 2 studs tall
+			for _, d in m:GetDescendants() do
+				if d:IsA("BasePart") then
+					d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch, d.CastShadow = true, false, false, false, false
+				end
+			end
+			local box, fit = m:GetBoundingBox()
+			m.Parent = Workspace
+			f = { id = id, model = m, at = root.Position, lift = fit.Y / 2, offset = box:ToObjectSpace(m:GetPivot()) }
+			followers[p] = f
+		end
+		if f then
+			local behind = root.CFrame * Vector3.new(2.5, 0, 3.5)
+			local target = Vector3.new(behind.X, root.Position.Y - humanoid.HipHeight - root.Size.Y / 2, behind.Z)
+			f.at = if (target - f.at).Magnitude > 30 then target else f.at:Lerp(target, math.min(1, dt * 5))
+			local hop = if ClientState.still() then 0 else math.abs(math.sin(t * 6)) * 0.6
+			local owner = Vector3.new(root.Position.X, f.at.Y, root.Position.Z)
+			local face = if (owner - f.at).Magnitude > 0.1 then owner else f.at + root.CFrame.LookVector
+			f.model:PivotTo(CFrame.lookAt(f.at, face) * CFrame.new(0, f.lift + hop, 0) * f.offset)
+		end
+	end
+end
+
 -- Every frame ---------------------------------------------------------------------------------------------------
 
 local bellRung = false
@@ -537,6 +593,7 @@ RunService.RenderStepped:Connect(function(dt: number)
 	local t = os.clock()
 	applyLight(dt)
 	looseItems(t)
+	updateFollowers(t, dt, r.Phase)
 	chimney(r.Speed or 0)
 	music(dt, r)
 

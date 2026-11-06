@@ -103,9 +103,23 @@ describe("WispRules sizes and paths", function()
 			end
 			table.insert(rows, `{table.concat(legs, "/")}:{WispRules.dimPer(n)}`)
 		end
-		expect(table.concat(rows, " ")).toBe("4/6/8:4.5 8/12/16:3.5 12/18/24:3.5 16/24/32:3 17/25/33:3 18/26/34:3")
+		expect(table.concat(rows, " ")).toBe(
+			"4/6/8:4.5 8/12/16:3.5 12/18/24:3.5 16/24/32:2.75 17/25/33:2.75 18/26/34:2.75"
+		)
 		expect(WispRules.waveSize(4, 2, "lake")).toBe(25)
 		expect(WispRules.waveSize(1, 1, "lake")).toBe(5)
+	end)
+
+	it("counts an aim as turned only past 1 degree, so the keep-alive re-send is not activity (QA M3)", function()
+		local fwd = { x = 0, y = 0, z = -1 }
+		local function yaw(deg: number): { x: number, y: number, z: number }
+			return { x = math.sin(math.rad(deg)), y = 0, z = -math.cos(math.rad(deg)) }
+		end
+		expect(WispRules.turned(nil, fwd)).toBe(true)
+		expect(WispRules.turned(fwd, fwd)).toBe(false)
+		expect(WispRules.turned(fwd, yaw(0.9))).toBe(false)
+		expect(WispRules.turned(fwd, yaw(1.5))).toBe(true)
+		expect(WispRules.turned(fwd, { x = 0, y = 0, z = -2 })).toBe(false) -- length does not matter
 	end)
 
 	it("drifts deterministically and reaches its target at distance / speed", function()

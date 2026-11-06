@@ -685,6 +685,24 @@ describe("TrainRules: requests", function()
 		expect(select(3, TrainRules.mend(run, A, 10))).toBe("seat")
 	end)
 
+	it("refuses SIT to a carrier, who walks the load to the train; a helper may sit (QA M1)", function()
+		local w = world({ A, B })
+		untilEvent(w, "arrive")
+		local crate = critterOn22(w.run)
+		w.run = TrainRules.pick(w.run, A, crate)
+		w.depth[A] = 30 -- 30 studs out with the crate: SIT used to seat A in the cab, loading it next tick
+		local ok, code = TrainRules.canSit(w.run, A)
+		expect(`{ok} {code}`).toBe("false carrying")
+		w.run = TrainRules.help(w.run, B, crate)
+		expect(TrainRules.canSit(w.run, B)).toBe(true) -- the helper lets go; A keeps the crate
+		expect(select(2, TrainRules.canSit(w.run, 99))).toBe("refused")
+		step(w) -- the server refused the sit: A stands at depth 30, outside the load box
+		expect(`{count(w, "load")} {w.run.carries[A] ~= nil}`).toBe("0 true")
+		w.depth[A], w.loadBox[A] = nil, true -- walked it home
+		untilEvent(w, "load")
+		expect(TrainRules.canSit(w.run, A)).toBe(true)
+	end)
+
 	it("refuses carrying outside a stop and Depot buying outside the Depot", function()
 		local run = TrainRules.join(TrainRules.new(1, 0), A, 0)
 		expect(select(3, TrainRules.pick(run, A, 1))).toBe("phase")

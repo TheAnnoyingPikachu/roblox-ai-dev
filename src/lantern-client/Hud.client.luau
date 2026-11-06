@@ -5,9 +5,12 @@
 -- pings, the Depot panel (upgrades, branch and weekly votes), the rescue reveal, the run end card and
 -- every toast. Display and requests only: the server decides every outcome.
 
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local DepotRules = require(Shared:WaitForChild("DepotRules"))
@@ -154,6 +157,23 @@ end
 gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(fit)
 fit()
 
+-- QA M4: while the server cannot save (ProfileOnline false), say so for as long as it lasts; the
+-- server's notice says why, and that everything earned is kept until it can.
+local paused = UiKit.chip(hud, 300, 40)
+paused.Name = "SavingPaused"
+paused.AnchorPoint = Vector2.new(1, 0)
+paused.Position = UDim2.new(1, -16, 0, 108)
+UiKit.chipText(paused, "Saving paused · rewards kept", {
+	TextColor3 = UI.CORAL,
+	TextXAlignment = Enum.TextXAlignment.Center,
+	TextSize = 17,
+})
+local function showPaused()
+	paused.Visible = player:GetAttribute("ProfileOnline") == false
+end
+player:GetAttributeChangedSignal("ProfileOnline"):Connect(showPaused)
+showPaused()
+
 -- Bottom centre: carry slots and DROP ----------------------------------------------------------------
 
 local carry = new("Frame", {
@@ -182,9 +202,10 @@ local function kindOf(entry: any): string
 	end
 	return "item"
 end
-local dropButton = UiKit.button(carry, "DROP", UI.CORAL, "small", 110, function()
+local function onDrop()
 	ClientState.request("drop")
-end)
+end
+local dropButton = UiKit.button(carry, "DROP", UI.CORAL, "small", 110, onDrop)
 dropButton.LayoutOrder = 10
 
 local function drawCarry()
@@ -222,7 +243,28 @@ local function drawCarry()
 		end
 	end
 end
-player:GetAttributeChangedSignal("Carry"):Connect(drawCarry)
+-- QA m3: "Help carry" means nothing to a player whose hands are full (their own crate included):
+-- hidden on this client only, by distance (the server owns Enabled); the server checks every press.
+local hiddenHelp: { [ProximityPrompt]: number } = {}
+local function handsFull(): boolean
+	local data = ClientState.json(player:GetAttribute("Carry")) or {}
+	return data.big ~= nil or data.help ~= nil or #(data.small or {}) > 0
+end
+ProximityPromptService.PromptShown:Connect(function(prompt: ProximityPrompt)
+	if prompt.Name == "Help" and handsFull() then
+		hiddenHelp[prompt] = hiddenHelp[prompt] or prompt.MaxActivationDistance
+		prompt.MaxActivationDistance = 0
+	end
+end)
+player:GetAttributeChangedSignal("Carry"):Connect(function()
+	drawCarry()
+	if not handsFull() then
+		for prompt, distance in hiddenHelp do
+			prompt.MaxActivationDistance = distance
+		end
+		hiddenHelp = {}
+	end
+end)
 drawCarry()
 
 -- Right side: seat buttons ------------------------------------------------------------------------------
@@ -245,32 +287,37 @@ local seats = new("Frame", {
 local openDepot: () -> ()
 local stokeUntil = 0
 local stoked = false
-local stoke = UiKit.button(seats, "STOKE", UI.GOLD, "large", 220, function()
+local function onStoke()
 	if ClientState.request("stoke") then
 		stoked = true -- the "Tap to stoke!" hint has done its job
 		stokeUntil = os.clock() + LanternConfig.STOKE.cooldown
 		ClientState.sound("chuff", 0.6)
 	end
-end)
-local mend = UiKit.button(seats, "MEND", UI.LEAF, "large", 220, function()
+end
+local function onMend()
 	if ClientState.request("mend") then
 		ClientState.sound("glug", 0.6)
 	end
-end)
-local sit = UiKit.button(seats, "SIT", UI.AQUA, "medium", 200, function()
+end
+local function onSit()
 	ClientState.request("sit", "any")
-end)
-local stand = UiKit.button(seats, "STAND", UI.INK_SOFT, "medium", 200, function()
+end
+local function onStand()
 	ClientState.request("stand")
-end)
+end
+-- While moving: a lamp turret at night, back to the Stoker seat from a turret (a solo crew must
+-- reach a lamp at night; the server re-seats, it never stops the train).
+local function onSwap()
+	ClientState.request("sit", if player:GetAttribute("Seat") == "turret" then "stoker" else "turret")
+end
+local stoke = UiKit.button(seats, "STOKE", UI.GOLD, "large", 220, onStoke)
+local mend = UiKit.button(seats, "MEND", UI.LEAF, "large", 220, onMend)
+local sit = UiKit.button(seats, "SIT", UI.AQUA, "medium", 200, onSit)
+local stand = UiKit.button(seats, "STAND", UI.INK_SOFT, "medium", 200, onStand)
 local depotButton = UiKit.button(seats, "DEPOT", UI.GOLD, "medium", 200, function()
 	openDepot()
 end)
--- While moving: a lamp turret at night, back to the Stoker seat from a turret (a solo crew must
--- reach a lamp at night; the server re-seats, it never stops the train).
-local swap = UiKit.button(seats, "LAMP", UI.LILAC, "medium", 200, function()
-	ClientState.request("sit", if player:GetAttribute("Seat") == "turret" then "stoker" else "turret")
-end)
+local swap = UiKit.button(seats, "LAMP", UI.LILAC, "medium", 200, onSwap)
 UiKit.buttonIcon(stoke, "stoke", 44)
 UiKit.buttonIcon(mend, "mend", 44)
 UiKit.buttonIcon(sit, "train")
@@ -289,6 +336,83 @@ local stokeHint = UiKit.text(stoke, "Tap to stoke!", 20, UI.CREAM, {
 	Outline = UI.INK,
 	OutlineThickness = 1.5,
 })
+
+-- Gamepad buttons (QA m8) and two keys for the turret, where the PC mouse is locked to the centre (QA
+-- m7: F swaps seat, R stokes or mends). A bind presses the first of its buttons that shows and is
+-- enabled; each button shows its gamepad glyph or key.
+local GAMEPAD = {
+	[Enum.UserInputType.Gamepad1] = true,
+	[Enum.UserInputType.Gamepad2] = true,
+	[Enum.UserInputType.Gamepad3] = true,
+	[Enum.UserInputType.Gamepad4] = true,
+}
+local badges: { { glyph: ImageLabel, key: TextLabel? } } = {}
+local function bind(name: string, pad: Enum.KeyCode, key: Enum.KeyCode?, targets: { { any } })
+	ContextActionService:BindAction(name, function(_, state: Enum.UserInputState)
+		if state ~= Enum.UserInputState.Begin or not hud.Visible then
+			return Enum.ContextActionResult.Pass
+		end
+		for _, p in targets do
+			local b = p[1] :: TextButton
+			if b.Visible and b:GetAttribute("Disabled") ~= true then
+				p[2]()
+				return Enum.ContextActionResult.Sink
+			end
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, pad, key)
+	for _, p in targets do
+		local glyph = new("ImageLabel", {
+			Name = "Glyph",
+			Image = UserInputService:GetImageForKeyCode(pad),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromOffset(4, 4),
+			Size = UDim2.fromOffset(36, 36),
+			BackgroundTransparency = 1,
+			ZIndex = 8,
+			Parent = p[1],
+		})
+		local letter = if key
+			then UiKit.text(p[1], key.Name, 18, UI.INK, {
+				Name = "Key",
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromOffset(4, 4),
+				Size = UDim2.fromOffset(30, 30),
+				BackgroundTransparency = 0,
+				BackgroundColor3 = UI.CREAM,
+				ZIndex = 8,
+			})
+			else nil
+		table.insert(badges, { glyph = glyph, key = letter })
+	end
+end
+bind("LanternSeat", Enum.KeyCode.ButtonY, nil, { { sit, onSit }, { stand, onStand } })
+bind("LanternDrop", Enum.KeyCode.ButtonB, nil, { { dropButton, onDrop } })
+bind("LanternWork", Enum.KeyCode.ButtonR1, Enum.KeyCode.R, { { stoke, onStoke }, { mend, onMend } })
+bind("LanternSwap", Enum.KeyCode.DPadUp, Enum.KeyCode.F, { { swap, onSwap } })
+bind("LanternDepot", Enum.KeyCode.DPadDown, nil, {
+	{
+		depotButton,
+		function()
+			openDepot() -- assigned further down
+		end,
+	},
+})
+local function showBadges()
+	local last = UserInputService:GetLastInputType()
+	local pad = GAMEPAD[last] == true
+	local keys = last == Enum.UserInputType.Keyboard
+		or last == Enum.UserInputType.MouseMovement
+		or string.find(last.Name, "MouseButton") ~= nil
+	for _, b in badges do
+		b.glyph.Visible = pad
+		if b.key then
+			b.key.Visible = keys
+		end
+	end
+end
+UserInputService.LastInputTypeChanged:Connect(showBadges)
+showBadges()
 
 -- Left: the crew list ------------------------------------------------------------------------------------
 
@@ -682,7 +806,15 @@ local function runEnd(data: any)
 		UI.INK_SOFT,
 		{ LayoutOrder = 3, TextWrapped = true, Size = UDim2.new(1, 0, 0, 60) }
 	)
-	UiKit.text(m.body, "Everything you earned is saved.", 20, UI.INK_SOFT, { LayoutOrder = 4 })
+	-- QA M4: never "saved" while the server cannot save
+	local saved = player:GetAttribute("ProfileOnline") ~= false
+	UiKit.text(
+		m.body,
+		if saved then "Everything you earned is saved." else "Saving is paused, so this run is not in your save yet.",
+		20,
+		if saved then UI.INK_SOFT else UI.CORAL,
+		{ LayoutOrder = 4, TextWrapped = true, Size = UDim2.new(1, 0, 0, 50) }
+	)
 	task.delay(LanternConfig.END_CARD, m.close)
 end
 
@@ -720,6 +852,8 @@ ClientState.Fx.OnClientEvent:Connect(function(kind: string, data: any)
 			then `{u.name} {ROMAN[tonumber(data.level) or 1] or ""}`
 			else (KIND_TEXT[data.id] or tostring(data.id))
 		toast(`{if who then who.DisplayName else "Crew"}: {what}`, "parts", UI.GOLD)
+	elseif kind == "arrive" and data.phase == "depot" then -- QA m2: the Depot is not a stop
+		toast("Depot: spend Parts, vote the next line", "depot", UI.GOLD)
 	elseif kind == "arrive" then
 		toast(`Scavenge! {tileName(ClientState.run())}`, "critter", UI.MINT)
 	elseif kind == "runEnd" then

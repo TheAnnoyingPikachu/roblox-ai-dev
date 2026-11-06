@@ -7,12 +7,17 @@
 -- Guarantees (each one has a test in tests/SaveStore.spec.luau):
 --   * A failed or refused load never writes. The session runs on defaults, offline, and says why.
 --   * The load claims a session lock; a second server cannot claim a fresh lock (status "busy").
+--   * A session that could not claim its record (busy, a failed load, a lost lock; not a newer
+--     record) keeps every change queued (`retry`). `reclaim` claims the lock once it is free or
+--     stale and stores the stored record with every queued change re-run, then goes online;
+--     `finish` tries once more, so nothing earned that session is lost (LANTERN-016, QA M4).
 --   * Every change runs on the in-memory profile at once and is queued. A flush re-reads the stored
 --     record, sanitises it, re-runs the queued changes in order and stores the result in one
 --     UpdateAsync, so a stale copy can never overwrite newer progress.
 --   * At most one write per `coalesce` seconds while changes are queued, plus an `autosave` write.
 --   * A failed flush puts its changes back at the front of the queue.
---   * A write that finds the lock gone or taken writes nothing and the session goes offline.
+--   * A write that finds the lock gone or taken writes nothing and the session goes offline (its
+--     changes stay queued for `reclaim`).
 --   * `finish` writes once more and releases the lock.
 --   * With the `newer` option, a stored record it calls newer (written by a later build, before a
 --     rollback) loads read-only: sanitised in memory, offline, never locked or written, so its
@@ -56,6 +61,7 @@ export type Session<P> = {
 	writing: boolean,
 	lastWrite: number,
 	closing: boolean,
+	retry: boolean?, -- not online, but may claim the record later: changes stay queued for `reclaim`
 }
 
 type Self<P> = {
@@ -167,6 +173,7 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 		elseif busy then
 			session.status = "busy"
 		end
+		session.retry = session.status ~= "online" and not (ok and newer ~= nil)
 	end
 	self.sessions[key] = session
 	return session
@@ -199,7 +206,7 @@ function SaveStore.apply(self: any, key: string, change: Change<any>): boolean
 		return false
 	end
 	session.profile = result
-	if session.status == "online" then
+	if session.status == "online" or session.retry then
 		table.insert(session.queue, change)
 	end
 	return true
@@ -214,10 +221,13 @@ function SaveStore.due(self: any, key: string, now: number): boolean
 	return (#session.queue > 0 and since >= self.coalesce) or since >= self.autosave
 end
 
-local function goOffline(self: any, session: Session<any>)
-	log(self, `{session.key} lost the session lock; saving is off for this session`)
+local function goOffline(self: any, session: Session<any>, ops: { Change<any> })
+	log(self, `{session.key} lost the session lock; saving is paused until it can claim it again`)
 	session.status = "offline"
-	session.queue = {}
+	session.retry = true
+	for i, op in ops do
+		table.insert(session.queue, i, op)
+	end
 	if self.onLost and not session.closing then
 		self.onLost(session.key)
 	end
@@ -254,7 +264,7 @@ local function flushSession(self: any, session: Session<any>, now: number, final
 	end, deadline)
 	session.writing = false
 	if lost then
-		goOffline(self, session)
+		goOffline(self, session, ops)
 		return false
 	elseif ok and stored ~= nil then
 		local p = o.sanitize(stored, now)
@@ -268,6 +278,59 @@ local function flushSession(self: any, session: Session<any>, now: number, final
 		table.insert(session.queue, i, op)
 	end
 	return false
+end
+
+-- One try at claiming the record for a `retry` session: the stored record (sanitised) with every
+-- queued change re-run in order and the snapshot, stamped with this session's lock, in one
+-- UpdateAsync. On success that becomes the profile (changes queued meanwhile re-run on it) and the
+-- session is online. A fresh lock of another session or a newer record writes nothing.
+local function reclaimSession(self: any, session: Session<any>, now: number): boolean
+	local o = self.o
+	if not session.retry or session.writing or o.store == nil then
+		return false
+	end
+	session.writing = true
+	local ops = session.queue
+	session.queue = {}
+	local busy = false
+	local ok, stored = pcall(function()
+		return o.store:UpdateAsync(session.key, function(old: any)
+			busy = (o.newer ~= nil and old ~= nil and o.newer(old))
+				or not SaveLock.canClaim(old, session.id, now, self.lockStale)
+			if busy then
+				return nil
+			end
+			local p = o.sanitize(old, now)
+			for _, op in ops do
+				p = op(p)
+			end
+			if o.snapshot then
+				p = o.snapshot(p, now)
+			end
+			return SaveLock.stamp(p :: any, session.id, now)
+		end)
+	end)
+	session.writing = false
+	if ok and not busy and stored ~= nil then
+		local p = o.sanitize(stored, now)
+		for _, op in session.queue do
+			p = op(p)
+		end
+		session.profile, session.status, session.retry, session.lastWrite = p, "online", false, now
+		log(self, `{session.key} claimed its record; {#ops} queued changes stored`)
+		return true
+	end
+	for i, op in ops do
+		table.insert(session.queue, i, op)
+	end
+	return false
+end
+
+-- Tries once to claim the record of a session that could not (see the top). True when it is online
+-- now. Call it every few seconds while `session(key).retry` is true.
+function SaveStore.reclaim(self: any, key: string, now: number): boolean
+	local session = self.sessions[key]
+	return session ~= nil and not session.closing and reclaimSession(self, session, now)
 end
 
 function SaveStore.flush(self: any, key: string, now: number, final: boolean?, deadline: number?): boolean
@@ -308,10 +371,11 @@ function SaveStore.finish(self: any, key: string, now: number, budget: number?)
 		return
 	end
 	session.closing = true
+	while session.writing and o.clock() - started < self.inflightWait do
+		o.wait(0.1)
+	end
+	reclaimSession(self, session, now) -- a lock that went stale meanwhile still saves this session
 	if session.status == "online" then
-		while session.writing and o.clock() - started < self.inflightWait do
-			o.wait(0.1)
-		end
 		flushSession(self, session, now, true, started + limit)
 	end
 	if self.sessions[key] == session then
