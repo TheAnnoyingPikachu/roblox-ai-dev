@@ -39,7 +39,7 @@ Rojo project `lantern.project.json` (section 10):
 | LANTERN-003 | `src/shared/{LanternConfig,LootRules,CarryRules,WispRules}.luau`, their specs, `tests/run.luau` |
 | LANTERN-004 | `src/shared/{TrackRules,DepotRules,TrainRules,LanternProgress}.luau`, their specs, `tests/run.luau` |
 | LANTERN-005 | `src/kit-roblox/modules/UiKit.luau`, `src/kit/SaveStore.luau` (the `newer` option), `tests/SaveStore.spec.luau`, `src/kit/CLAUDE.md`, `docs/decisions/0011-shared-kit-and-pipeline-trust.md` (a note) |
-| LANTERN-006 | `src/lantern/**`, `src/relay/Models.luau` (three lines), `src/shared/LanternAssets.luau` (the empty stub, if LANTERN-011 has not landed) |
+| LANTERN-006 | `src/lantern/**`, `src/relay/Models.luau` (three places), `src/shared/LanternConfig.luau` (TILES from the art's LAYOUT), `tests/LanternConfig.spec.luau`, this file |
 | LANTERN-007 | `src/lantern-client/**` |
 | LANTERN-008, 009, 010 | `tools/blender/lantern/assets/{train,items,depot}.py`, `tiles.py`, `{critters,night}.py` respectively |
 | LANTERN-011 | `tools/blender/lantern/{manifest,uploaded}.json`, `src/shared/LanternAssets.luau`, `tests/LanternAssets.spec.luau`, `src/shared/LanternIcons.luau`, `tools/icons/lantern/**`, `docs/assets/register.md`, `docs/assets/lantern-blender-plan.md` |
@@ -51,9 +51,9 @@ LANTERN-003 lands first (leaf modules); LANTERN-004 codes against 3.3 to 3.5 and
 
 - As `docs/architecture/garden.md` section 2: `--!strict`, no Roblox globals, requires by string (`require("./TrainRules")`), functions return new tables and never mutate inputs, `floor(x + 1e-9)` for every floor of a product.
 - **Times:** run times are `GetServerTimeNow()` floats passed in as `now` (sub-second timers: fog, puffs, dives). Save times are integer `os.time()`; days are `MetaRules.dayOf(os.time())` passed in as `today`.
-- **Vectors:** `Vec3 = { x: number, y: number, z: number }`. Three frames: **world**; the **stop frame** (x across the platform, −60 to 60; y up; z depth from the platform edge into the stop, 0 to 160; the server maps it to world with the stop site's CFrame); the **train frame** (origin at the engine's track point, −z forward along the track, y up, x right; built from `TrackRules.at(track, d)`). Every night value (wisps, beams, lantern points, turret origins, the Lampeater) is in the train frame.
+- **Vectors:** `Vec3 = { x: number, y: number, z: number }`. Three frames: **world**; the **stop frame** (the art's `LAYOUT` frame, `tools/blender/lantern/assets/tiles.py`: x across the tile, −60 to 60; y up from the tile's plate; z depth from the platform deck's track edge into the stop, 0 to 160, with the deck at 0 to 10 and its ramp at 10 to 15; the server maps it to world as `Site * Vector3.new(x, y, z)`, section 4.4); the **train frame** (origin at the engine's track point at y 0, −z forward along the track, y up, x right; built from `TrackRules.at(track, d)`, which the client rebuilds from the replicated `D`). Every night value (wisps, beams, lantern points, turret origins, the Lampeater) is in the train frame.
 - **Ids:** species `mossmouse puddlefrog wickmole burrbun lanternbeetle fogpup acornowlet teapotcat reedfox mistfawn bellturtle moonhare emberkit`; rarities `common uncommon rare epic legendary`; lines `forest lake`; tracks `forest lake forestDawn lakeDawn`; tiles `village farm windmill orchard inn mill lighthouse boathouse`; items `coal parts oil supply critter`; seats `stoker turret mender passenger`; upgrades `boiler bunker lamps coal oil`; roles `stoker lamplighter scout mender`; pings `coal critter help back wisps thanks`; phases `hub ride stop night depot ended`; run ends `dawn coal lantern empty`.
-- **Dependency graph** (no cycles): `LanternConfig` (types and data; requires only `MetaRules` for the `Cosmetic`/`Quest` types); `TrackRules` (none); `LootRules → Rng, LanternConfig`; `CarryRules → LanternConfig, LootRules` (types); `WispRules → Rng, LanternConfig`; `DepotRules → LanternConfig`; `TrainRules → LanternConfig, TrackRules, LootRules, CarryRules, WispRules, DepotRules`; `LanternProgress → MetaRules, LoginRules, LanternConfig, LootRules` (types).
+- **Dependency graph** (no cycles): `LanternConfig` (types and data; requires only `MetaRules` for the `Cosmetic`/`Quest` types); `TrackRules` (none); `LootRules → Rng, LanternConfig`; `CarryRules → LanternConfig, LootRules` (types); `WispRules → Rng, LanternConfig`; `DepotRules → LanternConfig`; `TrainRules → LanternConfig, Rng, MetaRules, LootRules, CarryRules, WispRules, DepotRules`; `LanternProgress → MetaRules, LoginRules, LanternConfig, LootRules` (types).
 
 ## 3. Pure modules: exact signatures
 
@@ -88,6 +88,8 @@ LanternConfig.REACH = 8; LanternConfig.HELP_BREAK = 14; LanternConfig.LOAD_BOX =
 LanternConfig.ITEMS = { coal = { big = false, tickets = 1, coal = 5 }, parts = { big = false, tickets = 1, parts = 3 },
   oil = { big = false, tickets = 1, oil = 1 }, supply = { big = true, tickets = 8, parts = 10 }, critter = { big = true } }
 LanternConfig.CRITTER_TICKETS = { common = 10, uncommon = 15, rare = 25, epic = 50, legendary = 100 }
+LanternConfig.RARITY_COLOURS = { common = { 120, 170, 110 }, ... } -- GDD C7, RGB lists
+LanternConfig.APPROACH = 200 -- studs before a stop where its tile is built
 -- Nights (GDD C4)
 LanternConfig.WAVES = { first = 8, gap = 25, perTurret = { 4, 6, 8 }, lake = 1, spawnMin = 60, spawnMax = 75,
   heightMin = 4, heightMax = 20, spread = 3, speed = 8, wobble = 2, reach = 3 }
@@ -100,9 +102,14 @@ LanternConfig.ODDS = { near = { 7000, 2500, 500, 0, 0 },
   far = { forest = { 4600, 3400, 1500, 500, 0 }, lake = { 4000, 3400, 1800, 800, 0 } },
   farLeg3 = { forest = { 4300, 3400, 1500, 500, 300 }, lake = { 3700, 3400, 1800, 800, 300 } } }
 LanternConfig.CRITTERS: { Critter }   -- the 13 rows of GDD H4, in that order
-LanternConfig.TILES: { Tile }         -- 8 tiles; each 24 small sites (depth 15..150), 8 big sites at depths 22, 40, 58, 78, 96, 114, 132, 150, building boxes
+LanternConfig.TILES: { Tile }         -- 8 tiles copied from the art's LAYOUT (tiles.py, LANTERN-009): named blocks, 24 small sites (depth 18..150), 8 big sites at depths 22..150, street lamps
+LanternConfig.BIG_DEPTHS = { 22, 40, 58, 78, 96, 114, 132, 150 }; LanternConfig.LINE_TILES = { forest = { ... }, lake = { ... } }
+LanternConfig.TILE_DECK = { depth = 10, height = 1.8, length = 108, ramp = 15 } -- every tile's platform deck and ramp
+export type Box = { name: string?, at: Vec3, size: Vec3 }; Tile gains `lamps: { Vec3 }` (code hangs a PointLight 7.5 up)
 LanternConfig.TRACKS: { [string]: Track } -- forest, lake (closed loops, 5,700 ± 20 studs; stops 700, 1,400, 2,100; nightFrom 2,100); forestDawn, lakeDawn (open: the loop to 5,300 then the 400-stud spur; finish 5,700)
+LanternConfig.OUTER = { forest = -1, lake = 1 } -- the platform side, as a multiple of TrackRules.right (the loop's outside)
 LanternConfig.CARS: { Car }           -- engine (22 long, offset 0), cargo (16, 24), lamp (16, 42), passenger (18, 60): 78 studs; 12 seats, 4 turrets
+LanternConfig.TRAIN_LENGTH = 78; LanternConfig.SEAT_COUNTS = { stoker = 1, turret = 4, mender = 1, passenger = 6 }
 LanternConfig.UPGRADES: { Upgrade }   -- boiler {30, 60}, bunker {25, 50}, lamps {30, 60}
 LanternConfig.COAL_BUY = { coal = 30, parts = 12 }; LanternConfig.OIL_BUY = { cans = 2, parts = 10 }
 LanternConfig.TICKETS = { depot = 30, dawn = 150, fed = 50, coop = 0.1 }
@@ -120,7 +127,7 @@ LanternConfig.CREW = { max = 6, active = 180, activeMove = 10 }; LanternConfig.W
 LanternConfig.critter(id: string): Critter?; LanternConfig.tile(id: string): Tile?; LanternConfig.cosmetic(id: string): MetaRules.Cosmetic?
 ```
 
-The tracks are authored as control points: each loop about 1,100 × 650 studs, the Forest loop east of the hub (x > 0), the Lake loop west, both passing the hub platform at d = 0 heading −z. Curve radius at least 150 studs on day rides and **at least 600 studs from `nightFrom` to the end** (so every car stays within 5 studs of the engine's train frame at night, and wisp and beam maths in the train frame holds for the rear turret). The 6 stop sites are at the loops' stop distances; the platform is on the loop's outer side; the stop frame's +z points away from the track (`TrackRules.right` on the outer side).
+The tracks are authored as control points: each loop measures about 1,570 × 1,620 studs around a 5,700-stud track (radius 600 at night does not fit 1,100 × 650: a quarter turn alone spans 600 × 600), the Forest loop east of the hub (x > 0), the Lake loop west, both passing the hub platform at d = 0 heading −z. Curve radius at least 150 studs on day rides (measured 197) and **at least 600 studs from `nightFrom` to the end** (measured 632) (so every car stays within 5 studs of the engine's train frame at night, and wisp and beam maths in the train frame holds for the rear turret). The 6 stop sites are at the loops' stop distances; the platform is on the loop's outer side (`OUTER`); the stop frame's +z points away from the track (section 4.4).
 
 ### 3.2 `TrackRules` (track geometry)
 
@@ -228,8 +235,11 @@ export type Input = {
   lanterns: { LanternConfig.Vec3 },             -- lantern points in the train frame (from the car poses)
 }
 export type Event = { kind: string, userId: number?, items: { LootRules.Item }?, n: number?, reason: string?, payload: any? }
--- kinds: "approach" (the stop to build: 200 studs out) "arrive" "bell" "caught" "back" "load" "seat" (server must seat userId) "unseat" (stand userId up) "depart" "night" "wisp" (payload: a WispRules event)
---        "depot" "dawn" "fed" "coalLow" "end" (reason) "hub" "stopLeft" (userId stayed aboard: stop XP)
+-- kinds and fields: "approach" (n: activeCount; run.loot is the stop to build, 200 studs out) "arrive" (n: stop) "bell"
+--   "caught" (userId) "back" (userId, payload: seat kind) "load" (userId: carrier, items, n: activeCount) "seat" (userId,
+--   payload: seat kind; the server seats them) "unseat" (userId; stand up) "depart" (payload: track) "night"
+--   "wisp" (payload: a WispRules event) "depot" (n: leg) "dawn" (payload: { fed }) "fed" "coalLow" (reason: "low" | "night")
+--   "end" (reason; payload: { parts = each member's leftover Parts share, critters, dist }) "hub" "stopLeft" (userId: stop XP)
 TrainRules.new(seed: number, now: number): Run -- phase hub, full bunker, lantern 100, levels 1/1/1
 TrainRules.join(run: Run, userId: number, now: number): (Run, "seat" | "platform" | "depot" | "hub")
 TrainRules.leave(run: Run, userId: number, at: LanternConfig.Vec3?): (Run, { Event }) -- drops carries, removes votes; the last member out ends the run ("empty")
@@ -243,7 +253,8 @@ TrainRules.tick(run: Run, input: Input): (Run, { Event })
   -- stop: "arrive" + "unseat" all, bell at calm, catches from `depth` vs fogFront ("caught", limbo 10 s, "back"),
   --   loads from `loadBox` ("load" with items and n), departs when all seated 3 s after minStay or when the fog reaches 0 (CarryRules.close, "seat" for the rest)
   -- depot: "depot" (+40 lantern), departs as DEPOT, takes the branch vote; leg 3 runs on <line>Dawn and ends "dawn" at finish
-  -- ended: "end" once, then "hub" after END_CARD s with a fresh run state (same server)
+  -- ended: "end" once, then "hub" after END_CARD s: the returned run is a fresh one (new seed) that keeps the crew,
+  --   standing, in its order; the server keeps it and never calls new() for it
 TrainRules.stoke(run: Run, userId: number, now: number): (Run, boolean, string?)
 TrainRules.mend(run: Run, userId: number, now: number): (Run, boolean, string?)
 TrainRules.buy(run: Run, userId: number, id: string): (Run, boolean, string?)
@@ -302,50 +313,78 @@ Every function that takes `today` runs `dayTick` first, so a completed quest is 
 
 | File | Holds |
 |---|---|
-| `LanternServer.server.luau` | Boot: `Saves.start{ name = "LanternProfile", defaults, sanitize, snapshot, newer = LanternProgress.isNewer, onChanged }`; the `Router` (0018 table) and `Remotes.create("LanternRemotes", router)`; the `Aim` remote; `ReplicatedStorage.LanternRun`; `Players` join and leave; the 10 Hz loop; the Heartbeat drive; the day-rollover check (every 60 s: `dayTick`, `loginTick` for online players); the Max Players warning |
-| `Train.luau` | Builds the four cars (`Models.night` or part fallback), seats (`Seat` parts with a `Kind` attribute), turret heads, the load box; `drive(path, d)`; `seat(player, kind)`; `stand(player)`; `seats()` (UserId → kind); `frame()` (the train frame); `beamOrigins()`, `lanternPoints()` (train frame, from the car poses); `aimHead(seatId, dir)`; `paint(livery)` |
-| `World.luau` | Builds Lamplight Depot, Dawn Station, the four tracks' rails (`rail_32` along `TrackRules` samples), the six platforms, seeded decor, the Depot boards (SurfaceGuis), the base `Atmosphere` and `Lighting` |
-| `Stops.luau` | `build(stop, site)`: the tile model, the collision boxes from `Tile.blocks`, the ground collider, every item with its prompts; `depth(character)` in the stop frame; `itemModel(id)`; `clear()` |
-| `Carry.luau` | The look of carrying: small items welded to the back (three slots), the supply crate welded in front, the critter crate held by a server-owned `AlignPosition` and `AlignOrientation` at the carriers' midpoint; `WalkSpeed` from `CarryRules.speed`; the speed check (G4); `inLoadBox(character)` |
-| `Night.luau` | The `Aim` intake (0018 checks, `RateLimit` burst 4 at 12 a second, `WispRules.clampAim`), the fresh beams for the tick, turret heads at 10 Hz, `Fx` batches for wisp spawns, puffs, dims and the Lampeater |
-| `Rewards.luau` | Pays loads, Depot, Dawn, fed, leftover Parts and stop XP to each crew member's own save (`saves.apply` with a change that captures its inputs); counts puffs, stokes and mends; run-end bests; the weekly boards; announcements; `LastReward` |
+| `LanternServer.server.luau` | Boot: `Saves.start{ name = "LanternProfile", defaults, sanitize, snapshot, newer = LanternProgress.isNewer, onChanged }` (4.6); `ReplicatedStorage.LanternModels` filled for the client; the `Router` (0018 table) and `Remotes.create("LanternRemotes", router)`; `ReplicatedStorage.LanternRun`; `Players` join and leave; the 10 Hz loop and its event dispatch; carry checks (help break, G4 speed); the Heartbeat drive; the day-rollover and board refresh (every 60 s); the Max Players warning |
+| `Train.luau` | Builds the four cars, named by their assets (`train_engine`, `train_car_cargo`, `train_car_lamp`, `train_car_passenger`): part fallbacks, the mesh welded on when it loads; seats (`Seat` parts with `Kind` and `Car` attributes); turret heads (`lamp_turret_head` parts with a `Seat` attribute); one load box per car; `drive(track, d)`; `frame()` (the train frame); `seat(player, kind, strict?)`; `stand(player, side, at?)`; `clearSeat(seat, side)`; `seats()` (UserId → kind); `seatOf(player)`; `turrets()`, `lanternPoints()` (train frame, from the car poses); `aimHead(seatId, dir)`; `door(side, along?)`; `inLoadBox(pos)`; `distance(pos)`; `paint(colours)`; `onOccupant(fn)` |
+| `World.luau` | The four track paths and `World.at(track, d)` (a Dawn track before 0 reads its loop); `World.site(line, stop)`; rails (`rail_32` or parts every 32 studs); the platforms (hub, Dawn, the stop pieces under the train's rear); Lamplight Depot; Dawn Station; seeded decor; the weekly boards (SurfaceGuis); the base `Lighting`, `Atmosphere`, `Sky` and post effects of the art bible (dusk; the client tweens the phases) |
+| `Stops.luau` | `build(stop, site, parent, onPrompt)`: the tile (`stop_<tile>` mesh, else part fallbacks from `Tile.blocks` dressed by block name, the deck, the ramp and the street lamps with their PointLights), the ground collider, invisible edges, every item model (`ItemId`, `Kind`, `Big`, `Rarity` attributes; `Pick` and `Help` prompts); `sync(loot, carries, rootOf)`; `depth(pos)`; `toStop(pos)`; `itemPos(id)`; `platform(n)`; `clear()` |
+| `Carry.luau` | The look of carrying: small items welded to the back (three slots), the supply crate welded in front, the critter crate on a server-owned `AlignPosition` and `AlignOrientation` in front of its carrier or at the carriers' midpoint; the G4 speed check (`tooFast`); `inLoadBox(pos)` |
+| `Night.luau` | The `Aim` intake (0018 checks, `RateLimit` burst 4 at 12 a second, `WispRules.clampAim`), the fresh beams for the tick and their owners, turret heads at 10 Hz, the `Fx` of every wisp event and the puff credit |
+| `Rewards.luau` | Pays loads, Depot, Dawn, fed, leftover Parts and stop XP to each crew member's own save (`saves.apply` with a change that captures its inputs); counts puffs, stokes, mends and catches; run-end bests and the weekly boards; the end card tallies; announcements; `LastReward`; `ReplicatedStorage.LanternBoards` |
 | `CLAUDE.md` | The short context for threads (as `src/garden/CLAUDE.md`) |
 
 ### 4.2 Run lifecycle on the server
 
-- `run = TrainRules.new(seed, now)` at start and after every `hub` event. Seed: `Rng.seed(os.time(), jobHash)`; when the weekly vote wins at departure, `Rng.seed(MetaRules.weekOf(today), LanternConfig.WEEKLY_SALT)`.
-- **10 Hz loop:** build `Input` from the world (`Train.seats()`, `Stops.depth` for standing crew, `Carry.inLoadBox`, `Night.beams()`, `Train.lanternPoints()`), call `TrainRules.tick`, keep the returned run, and dispatch each event: `seat`/`unseat` to `Train`, `approach` to `Stops.build`, `caught` to a hide-and-anchor of the character (and `back` to `Train.seat`), `load` to `Rewards.load` and `Stops` (remove the models), `depart` to `Stops.clear` after `CarryRules.close`, `wisp` events to `Night`, `depot`/`dawn`/`fed`/`end` to `Rewards`; then write `TrainRules.status` to `LanternRun` (changed attributes only).
-- **Heartbeat drive:** `Train.drive(path, run.d + run.speed * (now - lastTick))` so the cars move smoothly between ticks.
-- **Requests** call the matching `TrainRules` or `LanternProgress` function; a request that changes the run replaces `run` in the same frame (no yield between reading and writing the run). Requests that touch the save use `saves.apply`.
-- **Prompts:** `Pick up` and `Help carry` are server ProximityPrompts on item models (`MaxActivationDistance` = `REACH`, `HoldDuration` 0.3); `Triggered` checks crew membership and the server distance, then `TrainRules.pick` / `help`.
-- **Join and leave:** `PlayerAdded` loads the save (`saves.load`), runs `LanternProgress.join` and shows its toast; `play` calls `TrainRules.join` and places the character by its answer. `PlayerRemoving` calls `TrainRules.leave` (items dropped) before `saves.finish`.
+- `run = TrainRules.new(seed, now)` once at start. Seed: `Rng.seed(os.time(), hash(JobId))`; when the weekly vote wins at the hub departure, TrainRules switches to `Rng.seed(MetaRules.weekOf(today), LanternConfig.WEEKLY_SALT)`. After a `hub` event the server **keeps the returned run** (a fresh run that carries the crew); it never calls `new()` again.
+- **10 Hz loop:** activity first (10 studs moved while standing, an aim in the last second: `TrainRules.touch`); build `Input` from the world (`Train.seats()` for crew members, `Stops.depth` for standing crew during a stop, `Carry.inLoadBox` for carriers, `Night.beams()`, `Train.lanternPoints()`), call `TrainRules.tick`, keep the returned run, and dispatch each event: `seat`/`unseat` to `Train`, `approach` to `Stops.build`, `arrive` (and `depot`) to `Fx arrive`, `caught` to a hide-and-anchor of the character (and `back` to `Train.seat`), `load` to `Rewards.load`, `stopLeft` to stop XP, `depart` to `Stops.clear`, `wisp` events to `Night.fx` (puff credit to `Rewards.count`), `depot`/`dawn`/`end` to `Rewards`, `hub` to the hub return; then the help break and the G4 speed check, `Stops.sync`, the turret heads, `TrainRules.status` to `LanternRun` (changed attributes only, `D` at 2 Hz), the player attributes and the conductor's livery.
+- **Heartbeat drive:** `Train.drive(run.track, min(run.target, run.d + run.speed * (now - lastTick)))` while the train moves, so the cars move smoothly between ticks.
+- **Requests** call the matching `TrainRules` or `LanternProgress` function; a request that changes the run replaces `run` in the same frame (no yield between reading and writing the run) and touches the member's activity. Profile requests try the pure function on the live profile first and then `saves.apply` the same change.
+- **Prompts:** `Pick up` and `Help carry` are server ProximityPrompts on item bodies (`MaxActivationDistance` = `REACH`, `HoldDuration` 0.3); `Triggered` checks crew membership and the server distance (`REACH` + 2), then `TrainRules.pick` / `help`; a refusal goes back as `Fx notice` with words (prompts have no reply channel).
+- **Join and leave:** `PlayerAdded` loads the save (`saves.load`), runs `LanternProgress.join` and shows its toast; `play` calls `TrainRules.join` and places the character by its answer (`seat`, `platform` on the stop's deck, `depot`/`hub` on the hub platform); a crew member's respawn is placed the same way. `PlayerRemoving` calls `TrainRules.leave` (items dropped where the player stood) before the kit's `saves.finish`.
 
 ### 4.3 Train, seats and the seated rule
 
-As decision 0018 section 2. Each car: an invisible base part (the collider and `RootPriority` 127), the mesh welded on as decor (`Massless`, `CanCollide` false), its `Seat` parts and lanterns. `AlignPosition` and `AlignOrientation` (`RigidityEnabled`, one attachment) on the base part, targets set every Heartbeat. `SetNetworkOwner(nil)` on every base part at build and on every `Seat.Occupant` change. Seats are server-assigned (`Seat:Sit(humanoid)` after pivoting the character beside the seat). The load box is a non-colliding, invisible part along the platform side of all four cars, 6 studs deep, used only for the server's position test.
+The rule is decision 0018 section 2; the train is built as 0018's **fallback**: anchored server cars moved by CFrame (LANTERN-006 brief). Each car is one assembly: an anchored base part (the floor collider, 2.3 above the rail top) with every other part, seat and turret head welded to it (`Massless`, no collision); `Train.drive` sets each base's CFrame every Heartbeat at `TrackRules.at(track, d − offset − length / 2)`, so seated characters (welded to their seat) ride along and no character physics runs on a moving car. Turret heads hang on a `Weld` whose `C0` turns them. Seats are server-assigned (`Seat:Sit(humanoid)` after pivoting the character beside the seat); touch-sitting works for crew members, and a non-crew sitter is stood up at once and stepped off the car. Standing up removes the `SeatWeld` and moves the character beside its car on the platform side; the server owns the character's physics for that move (0.4 s), because the client's seated pose overwrote a plain move in Studio. `Humanoid.SeatPart` can stay set after the weld is gone, so `Train.seatOf` also checks `Seat.Occupant`. The load boxes (one per car, 6 studs out each side) are invisible and used only for the server's position test. The train frame is `TrackRules.at(track, D)` at y 0 (the client rebuilds the same frame from `D`); lantern points and turret origins are converted into it from the car poses.
 
 ### 4.4 Stops and the fog
 
-A stop is built on `approach` (200 studs out, about 10 s before the train halts) at the stop site's CFrame (from `TrackRules.at` at the stop distance and `TrackRules.right` towards the outside of the loop). The tile mesh is decor (`CanCollide` false); collision comes from `Tile.blocks` parts and one ground collider, so code never reads the mesh. The fog has no server part: clients draw it from `BellAt` and the stop site (GDD L); the server compares each standing crew member's `Stops.depth` with `TrainRules.fogFront` in the tick. A caught character is anchored, made invisible and moved under the platform for the limbo, then seated.
+The stop frame is the art's `LAYOUT` frame (`tools/blender/lantern/assets/tiles.py`, copied into `LanternConfig.TILES`). `World.site(line, stop)` is level with the engine's front at the stop distance, on the platform deck's track edge **4 studs out** from the track centre on the loop's outer side, at the tile's plate top (rail top + 0.2), looking at the track: a stop frame point `(x, y, depth)` is `Site * Vector3.new(x, y, depth)`, +Z running into the stop. The tile's deck (depth 0 to 10, 1.8 high, 108 long; 4 to 14 studs from the track) is the platform; its ramp runs down to the plate at 15; the sites start at 18. The `Stop` model carries `Site`, `Tile`, `Line`, `Leg` and `Index` attributes.
+
+A stop is built on `approach` (200 studs out, about 10 s before the train halts). The tile mesh is decor placed by bounding box with the site's heading (the FBX arrives turned half round, so its x is the stop frame's x and its depth runs along +Z; a mirrored tile is fixed in this yaw, never in the art); collision comes from `Tile.blocks` parts, the deck, the ramp and one ground collider, so code never reads the mesh. Until the mesh exists, the blocks are dressed by name (houses with roof, plinth and lit windows; trees; water; low props). A platform piece under the train's rear (54 to 100 studs behind the stop distance) carries the deck on under the passenger car. The fog has no server part: clients draw it from `BellAt` and the stop site (GDD L); the server compares each standing crew member's `Stops.depth` with `TrainRules.fogFront` in the tick, and a member on the deck (depth 10 or less) is never caught (GDD C2: the crew on the platform is seated when the fog reaches it). A caught character is anchored and moved under the tile for the limbo, then seated.
 
 ### 4.5 Night on the server
 
-`Night.beams()` returns, for each turret seat with an occupant whose stored aim is younger than 0.5 s, `{ origin = turret origin in the train frame, dir = stored aim }`. The hit test runs inside `WispRules.step` (pure) on the server's own wisp positions. Spawns go to clients as one `Fx wisps` batch per wave (the spawn records); clients compute positions with `WispRules.pos`. The server never trusts a client's wisp position or time.
+`Night.beams()` returns, for each turret seat whose occupant sent the stored aim and whose aim is younger than 0.5 s, `{ origin = turret origin in the train frame, dir = stored aim }`, and the UserId behind each beam. The hit test runs inside `WispRules.step` (pure) on the server's own wisp positions. Spawns go to clients as `Fx wisps` batches of at most 40 spawn records; clients compute positions with `WispRules.pos`. The server never trusts a client's wisp position or time.
 
 ### 4.6 Rewards and saves
 
-- `Rewards.load(userIdOfCarrier, items, n)`: for every **active** crew member `m`, `saves.apply(m, function(p) return (LanternProgress.load(p, items, m == carrier, n, today)) end)` with `items`, `n` and `today` copied before the closure; then `Fx payout` and `new` to that player and `announce` for Rare and above.
-- Depot, Dawn, fed and leftover Parts: `LanternProgress.award` for every crew member aboard; run end: `LanternProgress.runEnd` and, for a weekly run that improved a value, an `UpdateAsync` on the weekly ordered store keeping the larger value.
-- Puffs: the server credits a puff to every player whose beam lit the wisp in the tick that puffed it (`count(p, "puffs", 1)`); stokes and mends to the actor.
+- `Rewards.load(run, event, now)`: for every **active** crew member `m` (`now − m.active ≤ CREW.active`), `saves.apply(m, function(p) return (LanternProgress.load(p, items, mine, n, today)) end)` with `items` (kind, species, rarity), `mine`, `n` and `today` copied before the closure; then `Fx payout` and `new` to that player, `load` and `rescue` to everyone and `announce` for Rare and above.
+- Depot, Dawn, fed (paid at Dawn), stop XP and leftover Parts: `LanternProgress.award` for every crew member aboard; run end: `LanternProgress.runEnd` and, for a weekly run that improved a value, an `UpdateAsync` on the weekly ordered store keeping the larger value; then each member's own `Fx runEnd`.
+- Puffs: the server credits a puff to every player whose beam lit the wisp in the tick that puffed it (`count(p, "puffs", k)`); stokes and mends to the actor; catches to the caught player.
 - Every change is a pure function of its captured inputs (kit rule); random outcomes were fixed when the stop was built.
+- **Newer saves:** the server passes `newer = LanternProgress.isNewer` to `Saves.start` (the kit's LANTERN-005 option: the record loads read-only). Where `Saves.start` does not pass that option on yet, the server's `sanitize` throws on a record with `schemaVersion` above 1, so the load's `UpdateAsync` writes nothing and the session goes offline, and the server reads the record (`GetAsync`) to show it sanitised in memory. Nothing is ever written over it.
 
 ### 4.7 Weekly boards
 
-Two ordered stores per week (0018 section 4). `Rewards` reads the top 10 of each every 60 s (`GetSortedAsync`, names through `GetNameFromUserIdAsync`, cached per session) and writes them to the Depot boards and to `ReplicatedStorage.LanternBoards` (a StringValue, JSON) for the BOARD panel. Read failures keep the last list.
+Two ordered stores per week (0018 section 4). `Rewards` reads the top 10 of each every 60 s (`GetSortedAsync`; display names through `UserService:GetUserInfosByUserIdsAsync`, cached per session: GDD G5 shows display names only) and writes them to the Depot boards and to `ReplicatedStorage.LanternBoards` (a StringValue, JSON `{ critters = { { name, value } }, dist = { ... } }`, both lists present from the start) for the BOARD panel. Read failures keep the last list.
 
 ## 5. `Fx` payloads and status
 
-Exactly as decision 0018 section 3. Times in payloads are `GetServerTimeNow` seconds. A `wisps` batch is at most 40 records; a `puff` batch lists the ids puffed in one tick.
+Decision 0018 section 3, as built. Times in payloads are `GetServerTimeNow` seconds; vectors in wisp and dive payloads are train-frame `{ x, y, z }` tables, `ping.pos` is a world `Vector3`.
+
+| Kind | To | Payload |
+|---|---|---|
+| `arrive` | all | `{ phase = "stop" or "depot", leg, stop (0 at the Depot), tile ("" at the Depot), line }` |
+| `bell` | all | `{ at }` |
+| `depart` | all | `{}` |
+| `load` | all | `{ by, kind, count }`, one per item kind in the load |
+| `rescue` | all | `{ by, species, rarity }` |
+| `new` | the player | `{ species }` |
+| `caught`, `back` | all | `{ userId }` |
+| `wisps` | all | `{ list = { { id, born, from, target, speed, phase } } }`, at most 40 records |
+| `puff` | all | `{ ids }` puffed in one tick |
+| `dim` | all | `{ id (nil for a Lampeater dive), lantern }` (the lantern after the tick) |
+| `lampeater` | all | `{ born, seed }` |
+| `dive` | all | `{ at, target }` |
+| `shoo` | all | `{ target }` (not in 0018's list; the LANTERN-007 client plays it) |
+| `fed` | all | `{}` |
+| `ping` | all | `{ userId, id, pos }` |
+| `buy` | all | `{ userId, id, level }` (level nil for coal and oil) |
+| `payout` | the player | `{ tickets, xp, text }` |
+| `runEnd` | each player | `{ reason, summary = { critters, dist, tickets, xp } }` (their own Tickets and XP this run) |
+| `announce` | all | `{ name (display name), species, rarity }` |
+| `notice` | the player | `{ text }` (prompt refusals, the join toast, rollover payouts, a slipped load) |
+
+`Request` refusal codes are 0018's list plus the carry codes of `TrainRules.pick`/`help`/`drop` (`gone`, `taken`, `hands`, `big`), which reach players as `notice` words. `LanternRun` attributes are `TrainRules.status` with `Crew` (JSON list of `{ userId, seat, active, badge }`) and `Votes` (JSON tallies). Player attributes: `Profile` (JSON of the whole save), `ProfileOnline`, `Tickets`, `Level`, `XP`, `LastReward`, `Carry` (JSON `{ small = { kinds }, big = kind?, help = itemId? }`), `Seat` (kind or ""), `Badge`, `Follower`, `Lamp`. `ReplicatedStorage.LanternModels` holds the client-drawn templates (`shadow_wisp`, `lampeater_*`, `critter_<id>`) once their ids exist.
 
 ## 6. Client (`src/lantern-client`)
 
@@ -370,7 +409,7 @@ Rules that must stay true: the client never decides an outcome; every widget com
 
 | Spec | Cases (beyond one per signature) |
 |---|---|
-| `LanternConfig.spec.luau` | every odds row sums to 10,000; every critter's lines and tiles exist; every tile has 24 small and 8 big sites at the C3 depths, inside 120 × 160, none inside a block; the loops measure 5,700 ± 20 with stops at 700, 1,400, 2,100; radius ≥ 150 on rides and ≥ 600 from `nightFrom` (`TrackRules.radius`); the Dawn tracks end at 5,700; the cars total 78 studs with 12 seats (1 stoker, 4 turrets, 1 mender, 6 passengers); ids unique; 8 quests with known stats; 14 cosmetics; 7 slots per login track; every grant cosmetic has its grant |
+| `LanternConfig.spec.luau` | every odds row sums to 10,000; every critter's lines and tiles exist; every tile has 24 small and 8 big sites at the C3 depths, inside 120 × 160, none inside a block, all past the deck and ramp and off the lamps, with pinned rows of the art's LAYOUT; the loops measure 5,700 ± 20 with stops at 700, 1,400, 2,100; radius ≥ 150 on rides and ≥ 600 from `nightFrom` (`TrackRules.radius`); the Dawn tracks end at 5,700; the cars total 78 studs with 12 seats (1 stoker, 4 turrets, 1 mender, 6 passengers); ids unique; 8 quests with known stats; 14 cosmetics; 7 slots per login track; every grant cosmetic has its grant |
 | `TrackRules.spec.luau` | a closed path wraps (`at(0) == at(length)`); forward is a unit vector; consecutive samples are `step` ± 2% apart; an open path clamps; `toFrame` and `fromFrame` round-trip; `radius` of a circle of radius 200 is 200 ± 2 |
 | `LootRules.spec.luau` | `counts` for n = 1 to 6 equals GDD C6; `build` is deterministic for the same arguments; stop 1 puts a critter crate on the 22-stud site; big sites hold one item, small sites at most 3; no tile repeats in a leg; `odds` sums to 10,000 for every line, leg, tile and band; over 100,000 seeded rolls each rarity is within 0.5 points of its row; `moonhare` only from leg 3 far crates; `mistfawn` never on the Lake Line, `bellturtle` never on the Forest Line; `emberkit` never rolled |
 | `CarryRules.spec.luau` | one case per cell of the GDD J table; 3 small or 1 big; no pick of a carried item; help only on a critter crate carried alone; `letGo` keeps the first carrier; speeds 16 / 15 / 13 / 9 / 13; a full bunker leaves coal carried; `catch` drops; `close` loses every free and carried item and empties carries |
