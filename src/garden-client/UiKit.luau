@@ -344,8 +344,16 @@ function UiKit.icon(parent: Instance, icon: string, size: number, props: { [stri
 			ScaleType = Enum.ScaleType.Fit,
 			Parent = holder,
 		})
+		-- IsLoaded fires no changed signal and a thumbnail loads after PreloadAsync returns, so the glyph
+		-- stayed drawn behind every loaded icon as a white blob (owner, 2026-11-07): poll for 30 s.
 		glyph.Visible = not image.IsLoaded
-		image:GetPropertyChangedSignal("IsLoaded"):Connect(function()
+		task.spawn(function()
+			for _ = 1, 60 do
+				if image.IsLoaded or image.Parent == nil then
+					break
+				end
+				task.wait(0.5)
+			end
 			glyph.Visible = not image.IsLoaded
 		end)
 	end
@@ -362,7 +370,9 @@ function UiKit.iconButton(parent: Instance?, icon: string, label: string, colour
 		Name = "Caption",
 		AnchorPoint = Vector2.new(0.5, 1),
 		Position = UDim2.new(0.5, 0, 1, -4),
-		Size = UDim2.new(1, 12, 0, 22), -- a little past the face: CREATURES needs 63 px at 12 px (QA M2)
+		-- Inside the face, so labels shrink rather than spill (owner, 2026-11-07); every label fits at
+		-- 12 px on a phone (REWARDS about 50 of 52 px), which is why the paw button says PETS.
+		Size = UDim2.new(1, -8, 0, 22),
 		Outline = UI.INK,
 		OutlineThickness = 1.5,
 	})
