@@ -3,6 +3,7 @@
 -- when a value drifts from the GDD tables or decision 0018 section 5.
 local T = require("./framework")
 local LanternConfig = require("../src/shared/LanternConfig")
+local TrackRules = require("../src/shared/TrackRules")
 
 local describe, it, expect = T.describe, T.it, T.expect
 
@@ -223,6 +224,47 @@ describe("LanternConfig critters, tiles and cars", function()
 		end
 		expect(`{LanternConfig.OUTER.forest} {LanternConfig.OUTER.lake}`).toBe("-1 1")
 	end)
+
+	it("measures 5,700 +- 20 studs a track, radius >= 150 by day and >= 600 from nightFrom (TrackRules)", function()
+		for _, id in { "forest", "lake", "forestDawn", "lakeDawn" } do
+			local track = LanternConfig.TRACKS[id]
+			local path = TrackRules.build(track.points, track.closed)
+			local day = TrackRules.radius(path, 0, track.nightFrom)
+			local night = TrackRules.radius(path, track.nightFrom, track.finish)
+			expect(`{id} {math.abs(path.length - 5700) <= 20} {day >= 150} {night >= 600}`).toBe(`{id} true true true`)
+			-- the whole 78-stud train stands on straight track at every stop (and at the Depot on a loop)
+			local halts = table.clone(track.stops)
+			if track.closed then
+				table.insert(halts, track.finish)
+			end
+			for _, d in halts do
+				expect(`{id} {d} {TrackRules.radius(path, d - LanternConfig.TRAIN_LENGTH, d)}`).toBe(`{id} {d} inf`)
+			end
+		end
+	end)
+
+	it(
+		"runs the Dawn tracks along their loop to 5,300, then 100+ studs away from the hub; the Lake mirrors the Forest",
+		function()
+			for _, line in { "forest", "lake" } do
+				local loop = TrackRules.build(LanternConfig.TRACKS[line].points, true)
+				local dawn = TrackRules.build(LanternConfig.TRACKS[line .. "Dawn"].points, false)
+				local worst = 0
+				for d = 10, 5290, 20 do
+					local a, b = TrackRules.at(loop, d), TrackRules.at(dawn, d)
+					worst = math.max(worst, math.sqrt((a.x - b.x) ^ 2 + (a.z - b.z) ^ 2))
+				end
+				expect(worst < 0.5).toBe(true)
+				local hub, station = TrackRules.at(loop, 0), TrackRules.at(dawn, 5700)
+				expect(math.sqrt((hub.x - station.x) ^ 2 + (hub.z - station.z) ^ 2) > 100).toBe(true)
+			end
+			local f, l = LanternConfig.TRACKS.forest.points, LanternConfig.TRACKS.lake.points
+			expect(#f).toBe(#l)
+			for i = 1, #f, 97 do
+				expect(math.abs(f[i].x - 10 + l[i].x - 10) < 1e-9 and f[i].z == l[i].z).toBe(true)
+			end
+		end
+	)
 end)
 
 describe("LanternConfig meta (H5 to H7)", function()

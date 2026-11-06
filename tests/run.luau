@@ -104,6 +104,18 @@ local SPECS = {
 	["WispRules.spec.luau"] = function()
 		require("./WispRules.spec")
 	end,
+	["TrackRules.spec.luau"] = function()
+		require("./TrackRules.spec")
+	end,
+	["DepotRules.spec.luau"] = function()
+		require("./DepotRules.spec")
+	end,
+	["TrainRules.spec.luau"] = function()
+		require("./TrainRules.spec")
+	end,
+	["LanternProgress.spec.luau"] = function()
+		require("./LanternProgress.spec")
+	end,
 	["Purity.spec.luau"] = function()
 		require("./Purity.spec")
 	end,

@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "high",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "LANTERN-004",
   "owner": "A10",
   "verifier": "A15",
@@ -44,6 +44,12 @@
     "TrainRules.spec.luau",
     "LanternProgress.spec.luau",
     "LanternConfig.spec.luau"
+  ],
+  "evidence": [
+    "Local run 2026-11-06 on game6/concept (after the LANTERN-003 commit): lune run tests/run 714/714 pass (+63: TrackRules.spec 6, DepotRules.spec 5, TrainRules.spec 27, LanternProgress.spec 23, LanternConfig.spec +2 track checks); MetaRules.spec and LoginRules.spec unchanged and green; selene src tests 0 errors 0 warnings; stylua --check clean on the changed files and an LF copy of tests/run.luau; node tools/validate-tasks.mjs and node tools/check-scope.mjs origin/main pass; rojo build of lantern, garden, night, relay and default projects with check-place: all match",
+    "python -I docs/game-design/game6-pacing.py 300 re-run 2026-11-06; TrainRules.spec pins its headline values on the real state machine at 10 Hz: train leaves 3 s after PLAY, stop 1 opens at 43.0 s, the 22-stud crate is loaded at 48.4 s (first rescue by 49 s), bell at 113 s, stop 2 at 166.1 s (by 169 s), fog 160 to 0 in 13.125 s and a stop at most 83.1 s, a lone critter carrier home from 118 studs but not 119, everyone else from 159, rides 40.0 / 36.2 / 33.5 s (700 / v + v / 4 to the 0.1 s tick), nights with 7 / 6 / 6 waves, 95 coal a leg (35 rides, 60 night), a crew loading no coal runs dry at 4,800 studs (2,700 into the first night) and coasts 100 studs; LanternProgress.spec pins level 6 / 9 / 17 / 29 / 50 at 1,053 XP a run and LanternConfig.spec the 550 and 1,400 Ticket login tracks",
+    "Nothing earned is lost, as specs: a caught member's crate drops, goes back to its stop at departure and no load event or critter count ever appears for it; the member is back seated 10 s later and gets no stop XP; a leaver's load drops where they stood; coal running out ends the run ('coal') with the end payload carrying the rescues and leftover Parts and every earlier load event final, then the hub returns after 12 s with the crew kept; LanternProgress never lowers Tickets, XP, album, milestones, owned cosmetics, stats or bests under any of its functions except a Locker purchase; dayTick and loginTick pay completed quests and earned slots once at the rollover",
+    "Deviations: a night lasts 3,600 / v + v / 4 s (185 s at Boiler I) because the train starts from a stop and brakes at the Depot; the GDD's 180 / 157 / 138 count cruise only, and the wave counts 7 / 6 / 6 hold because no wave starts once the train brakes for the Depot or Dawn. Stop 2 opens at 166 s, not 169: the GDD's fog departure has no 3 s grace (the pacing script adds one). TrainRules requires Rng and MetaRules (the weekly seed is set at the hub departure from now) and not TrackRules (no geometry is needed in the state machine). The Lampeater's +50 is paid at Dawn (GDD J): the 'dawn' event carries payload.fed; 'fed' is display only. coalLow 'night' fires once on arriving at stop 3 short of tonight's coal, 'low' when the bunker crosses 15. After 'end' the next tick returns a fresh hub run that keeps the crew (the server keeps the returned run). A caught member's items drop at stop-frame x = 0 at their depth (Input carries depth only). Extra refusal codes from CarryRules: gone, taken, hands, big; 'refused' for a non-member, a member in the fog, or DROP with nothing carried"
   ],
   "notes": "LanternProgress requires LoginRules only for monthOf and periodOf (pure calendar maths); Garden's modules stay byte-identical. LanternConfig.spec is listed so its TrackRules-based length and radius checks run here."
 }
