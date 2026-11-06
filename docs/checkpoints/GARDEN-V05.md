@@ -21,9 +21,12 @@ Decision `docs/decisions/0017-garden-v05-look-valley-login.md` (Proposed), GDD s
 
 ## Evidence (filled by GARDEN-056)
 
-- CI run, test counts, build stamp: pending.
-- Screenshots: start menu and EGGS panel v0.4 against v0.5; the orbit frame with the large sakura, hill bands and a snow cap; the pond; lanterns at Moonfall; `Workspace.Garden` `Parts` attribute: pending.
-- Recording: join on the spawn pad facing the tree, PLAY fly to the gate; a respawn landing on the pad: pending.
-- Login: WEEKLY tab with a claim and the toast; a day rollover while online counting the next day (clock moved in Studio); a Weekly Egg planted from the Dash panel and hatched; an exclusive species in the Index (108): pending.
-- A literal v3 save without `login` loaded with every field kept and `login` defaulted: pending.
-- Pacing: `python docs/game-design/game4-v05-pacing-check.py` output matching GDD X4: pending.
+Filled by A15 at `garden/v05` `6be8cb7` after the GARDEN-058 re-review (verdict **ship** to `garden-staging`; `docs/qa/garden-v05-review.md`). Every Studio fact below is from a local build, stamp `dev`, not a CI build (rule 13: re-check the items marked Studio on `garden-staging` with the CI stamp).
+
+- **CI run:** not yet run on this head. **Test counts (local):** `lune run tests/run` 577/577, 0 failed, 0 load errors; reviewer script 236 checks, 0 failed (decision 0017 values; 4,900,070 seeded sold-egg rolls with no exclusive species; the calendar against `DateTime` 1970 to 2100; counting, claims, flush re-apply, the rollover payout, two servers, a clock behind; 40 random 400-day histories with every earned slot paid exactly once). selene, stylua, `validate-tasks`, `check-scope` and `check-place` clean. **Build stamp:** `dev` (local builds only).
+- **Screenshots** (Engineer, Studio, stamp `dev`; described in GARDEN-052, 053 and 058, not attached here): plaza with the spawn pad, rim sakura, horizon hill bands with snow caps, the pond, Moonfall with 38 of 38 valley lights; `Workspace.Garden` `Parts` 3,947 at build, 4,036 with a plot (budget 7,500); start menu, HUD and every panel at 1736 x 793 and at 844 x 390 (kit scale 0.6, 0 labels under 12 px in the panels scanned). The side-by-side v0.4 against v0.5 frames: not made.
+- **Recording** of the spawn and PLAY fly, and a respawn on the pad: not made. Engineer and Director: spawned on the plaza pad facing the tree; PLAY moved the character to its gate.
+- **Login:** Engineer (Studio, stamp `dev`): `claimLogin week` paid once and then refused; a day rollover while online counted the next day once; Monday reset the week and kept the month; 5 sign-ins then clock +7 days paid "Weekly Egg! + 750 coins (saved for you)" once; a Weekly Egg planted at level 1 from DASH. Director: a weekly claim paid once, `claimDaily` refused. The hatch of a Weekly Egg in Studio and an exclusive species in the Index (108): Computed only (the real hatch path rolls only the egg's three species and adds the Index cell).
+- **Literal saves:** v0.2, v0.3, v0.4 and v3 records without `login` load with every field kept, only `login`, `pity.weekly` and `pity.monthly` added (Computed; reviewer script and `GardenProgress.spec`).
+- **Pacing:** `python -I docs/game-design/game4-v05-pacing-check.py` output equals GDD X4 (66.4 and 2,382.7 coins/s; 16.0 minutes a day; 88.9 against 904; worst 60% bound 56.4%).
+- **Open for the checkpoint:** the trade panel and the Admin catalogue at 844 x 390 (QA n1, n2), a real phone or the Device Emulator, two clients, a gamepad.
