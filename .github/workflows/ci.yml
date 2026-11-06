@@ -59,7 +59,8 @@ jobs:
           rojo build relay.project.json --output build/relay.rbxl
           rojo build night.project.json --output build/night.rbxl
           rojo build garden.project.json --output build/garden.rbxl
-          sha256sum build/place.rbxl build/relay.rbxl build/night.rbxl build/garden.rbxl | tee build/place.rbxl.sha256
+          rojo build lantern.project.json --output build/lantern.rbxl
+          sha256sum build/place.rbxl build/relay.rbxl build/night.rbxl build/garden.rbxl build/lantern.rbxl | tee build/place.rbxl.sha256
 
       - name: Check built places (every project node, its scripts and this commit's stamp)
         run: |
@@ -67,6 +68,7 @@ jobs:
           node tools/check-place.mjs relay.project.json build/relay.rbxl --sha "$GITHUB_SHA"
           node tools/check-place.mjs night.project.json build/night.rbxl --sha "$GITHUB_SHA"
           node tools/check-place.mjs garden.project.json build/garden.rbxl --sha "$GITHUB_SHA"
+          node tools/check-place.mjs lantern.project.json build/lantern.rbxl --sha "$GITHUB_SHA"
 
       - name: Tool tests (place check, post-publish verify, build stamp)
         run: node --test tools/place-check/place-check.test.mjs

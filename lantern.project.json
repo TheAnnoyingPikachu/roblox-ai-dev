@@ -1,0 +1,72 @@
+{
+  "name": "lantern-express",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "Kit": {
+        "$path": "src/kit"
+      },
+      "KitRoblox": {
+        "$path": "src/kit-roblox/modules"
+      },
+      "BuildInfo": {
+        "$path": "build-info/BuildInfo.txt"
+      }
+    },
+    "ServerScriptService": {
+      "Lantern": {
+        "$path": "src/lantern",
+        "Models": {
+          "$path": "src/relay/Models.luau"
+        },
+        "Props": {
+          "$path": "src/relay/Props.luau"
+        }
+      },
+      "BuildStamp": {
+        "$path": "src/kit-roblox/BuildStamp.server.luau"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "LanternClient": {
+          "$path": "src/lantern-client"
+        },
+        "BuildStamp": {
+          "$path": "src/kit-roblox/BuildStamp.client.luau"
+        }
+      },
+      "$properties": {
+        "CharacterWalkSpeed": 16,
+        "CharacterJumpPower": 50,
+        "CharacterUseJumpPower": true
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": false
+      },
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Neutral": true,
+          "Size": [
+            12,
+            1,
+            12
+          ],
+          "Position": [
+            0,
+            0.6,
+            30
+          ],
+          "Transparency": 1
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "project_id": "LANTERN-001",
   "risk_level": "low",
-  "status": "planned",
+  "status": "in_review",
   "task_id": "LANTERN-002",
   "owner": "A14",
   "verifier": "A04",
@@ -35,5 +35,10 @@
     "docs/architecture/README.md"
   ],
   "tests": [],
+  "evidence": [
+    "Local run 2026-11-06 on game6/concept (base 90118bd): rojo build lantern.project.json --output build/lantern.rbxl succeeds and node tools/check-place.mjs lantern.project.json build/lantern.rbxl matches (16 nodes, 42 scripts); Rojo accepts the Workspace StreamingEnabled property and the built file reads StreamingEnabled false, CharacterWalkSpeed 16 (read back with lune roblox.deserializePlace); default, relay, night and garden still build and match their projects",
+    "lune run tests/run 578/578 pass; selene src tests 0 errors 0 warnings; no .luau file changed (stylua --check not affected); node tools/validate-tasks.mjs 93 valid; node tools/check-scope.mjs origin/main in scope; node --test tools/place-check/place-check.test.mjs 7/7 pass",
+    "src/lantern and src/lantern-client hold only .gitkeep (architecture 1): they build as empty folders under ServerScriptService.Lantern (with Models and Props) and StarterPlayerScripts.LanternClient; the place boots with the kit's BuildStamp scripts until LANTERN-006 and 007 add the first game scripts"
+  ],
   "notes": "The lantern-staging GitHub environment and the experience are created by SHANNON at the checkpoint (LANTERN-V01 items 2 and 3); this task only adds the option. Workflow files change here and nowhere else in the milestone."
 }
