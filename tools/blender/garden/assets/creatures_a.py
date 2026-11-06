@@ -105,34 +105,44 @@ def fit(target):
 
 
 def creature_bunny():
-    """HD standard (tools/blender/garden/README.md "Creature standard"): one fused body, the kit
-    face, smooth separate props."""
-    fur = k.paint("bu_fur", [(0, (234, 214, 182)), (1, (255, 248, 230))], 0, 3.6)
-    pink, white = k.flat((255, 176, 200)), k.flat(WHITE)
-    green, green_hi = k.flat((110, 200, 95)), k.flat((150, 225, 110))
-    head, R = Vector((0, -0.05, 2.2)), 1.0
-    ear = (0.4, 0.02, 3.2)
-    tilt = 18
+    """Remade from the Roblox AI reference (assets/garden/refs/bunny_*.jpg): a wide mochi head
+    over half the height, a small pear body, tall paddle ears, a two-leaf sprout, a green
+    scalloped collar and green-tinted cream fur."""
+    fur = k.paint("bu_fur", [(0, (218, 210, 156)), (0.35, (238, 232, 188)), (1, (252, 246, 216))], 0, 3.0, rest=True)
+    pink, cream = k.flat((246, 178, 170)), k.flat((250, 248, 232))
+    greens = [k.flat((168, 222, 150)), k.flat((140, 206, 128))]
+    sprout = k.flat((120, 200, 96))
+    head, R = Vector((0, 0, 2.02)), 1.0
+    ear = (0.5, 0.08, 3.42)
+    tilt = 14
     body = k.fuse(
         [
-            (head, R, (1.2, 0.95, 0.9)),
-            ((0, 0.1, 1.05), 0.86, (1.12, 1.0, 0.95)),  # chest
-            ((0, 0.05, 0.62), 0.8, (1.22, 1.05, 0.7)),  # round seat
-            *k.pair(ear, 0.62, (0.4, 0.2, 1.0), (0, tilt, 0)),
-            *k.pair((0.48, -0.42, 0.2), 0.3, (0.9, 1.45, 0.62)),  # feet: flat beans
-            *k.pair((0.66, -0.4, 1.0), 0.17, (0.85, 0.9, 1.3)),  # arms: small stubs at the sides
+            (head, R, (1.08, 0.88, 0.9)),
+            *k.pair((0.56, -0.2, 1.74), 0.5, (1.0, 0.85, 0.8)),  # full cheeks: the head is widest low down
+            ((0, 0.02, 0.62), 0.6, (1.05, 0.98, 1.05)),  # pear body
+            ((0, 0.02, 1.02), 0.42),  # neck fill
+            *k.pair(ear, 0.7, (0.55, 0.38, 1.0), (0, tilt, 0)),  # tall paddle ears
+            *k.pair((0.6, -0.04, 0.78), 0.19, (0.85, 0.85, 1.35), (0, -24, 0)),  # stubby arms
+            *k.pair((0.27, -0.3, 0.12), 0.2, (0.95, 1.3, 0.6)),  # little feet
         ],
         fur,
-        tris=3400,
+        tris=3300,
     )
-    parts = [body, k.blob(0.3, (0, 0.95, 0.72), white, name="tail")]
+    for side in (-1, 1):  # green-tinted sleeves under the collar, as on the reference
+        k.zone(fur, (196, 228, 176), (side * 0.62, -0.04, 0.98), (0.32, 0.34, 0.3), soft=0.35)
+    parts = [body, k.blob(0.2, (0, 0.6, 0.5), cream, name="tail")]
     for side in (-1, 1):
         axis = (side * math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt)))
-        parts.append(k.lens(body, (side * ear[0], ear[1], ear[2] + 0.05), (0, -1, 0), 0.42, pink, scale=(0.34, 1), thick=0.2, sink=0.6, up=axis, name="ear_in"))
-    parts.append(k.capsule((0, -0.1, 2.95), (0.05, -0.16, 3.55), 0.07, 0.05, green, n=10, name="stem"))
-    parts += xf(k.leaf(0.62, 0.22, green_hi, droop=0.3, n=10, steps=8), (0.06, -0.16, 3.52), yaw=20, pitch=25)
-    parts += xf(k.leaf(0.5, 0.19, green, droop=0.3, n=10, steps=8), (0.06, -0.16, 3.52), yaw=200, pitch=30)
-    parts += k.face(body, head, R, skin=(252, 240, 218), nose=(240, 130, 160))
+        parts.append(k.lens(body, (side * ear[0], ear[1], ear[2] + 0.02), (0, -1, 0), 0.46, pink, scale=(0.42, 1), thick=0.2, sink=0.6, up=axis, name="ear_in"))
+    # Scalloped collar: round petals lying on the shoulders all round the neck.
+    for i in range(10):
+        yaw = i * 36 + 18
+        a = math.radians(yaw)
+        parts += xf(petal(0.5, 0.27, greens[i % 2], droop=0.1, tip=0.5, base=0.6, n=8, steps=8), (0.3 * math.cos(a), 0.02 + 0.27 * math.sin(a), 1.2), yaw=yaw, pitch=-50)
+    parts.append(k.capsule((0, -0.25, 2.8), (0, -0.3, 3.48), 0.045, 0.04, sprout, n=10, name="stem"))
+    for yaw in (0, 180):
+        parts += xf(petal(0.5, 0.27, greens[1], droop=0.15, tip=0.5, base=0.45, n=10, steps=10), (0, -0.3, 3.46), yaw=yaw, pitch=10, roll=90)
+    parts += k.face(body, head, R, skin=(244, 240, 214), nose=(236, 140, 150), eye_r=0.24, eye_wide=0.9, spread=29, eye_phi=-12, nose_phi=-15, mouth_phi=-21, mouth_w=0.12, nose_r=0.06, sheen=True, blush_theta=46, blush_phi=-24)
     return parts
 
 
@@ -313,59 +323,69 @@ def creature_owl():
 
 
 def creature_fox():
-    """A cactus fox: spine studs down the back and tail, a cactus flower on the head, and a bushy
-    tail that tapers to a pale brush tip (a second fused piece, not a ball)."""
-    green = k.paint("fx_fur", [(0, (92, 160, 98)), (1, (132, 200, 124))], 0, 4.5)
-    pale, cream, pink = k.flat((236, 250, 220)), k.flat((246, 250, 228)), k.flat((255, 170, 195))
-    head, R = Vector((0, -0.3, 2.5)), 1.05
-    snout = Vector((0, -1.3, 2.18))
-    tilt = 18
-    ear = Vector((0.64, -0.12, 3.45))
+    """Remade from the Roblox AI reference (assets/garden/refs/fox_*.jpg): sitting, a huge round
+    head with a white cheek ruff, big dark-tipped ears, a fat upright tail with a tufted white tip
+    on its left (+X), and a pink flower with a tiny cactus by the left ear (the "Cactus Fox").
+    Every marking is a painted zone on the one fused body."""
+    orange = (234, 96, 32)
+    white, cream, brown = (252, 246, 236), (246, 226, 186), (92, 50, 34)
+    fur = k.paint("fx_fur", [(0, (204, 82, 30)), (0.5, orange), (1, (244, 128, 56))], 0, 4.2, rest=True)
+    head, R = Vector((0, -0.05, 2.86)), 1.0
+    tilt = 25
+    ear = Vector((0.98, 0.02, 3.52))
     axis = Vector((math.sin(math.radians(tilt)), 0, math.cos(math.radians(tilt))))
-    tail = spline([(-0.25, 0.9, 0.5), (-0.78, 1.32, 0.72), (-1.22, 1.48, 1.28), (-1.4, 1.34, 1.98), (-1.28, 1.05, 2.6)], [0.24, 0.42, 0.5, 0.4, 0.06], 16)
-    cut = 11  # the brush tip starts here
+    tip_at = ear + axis * 0.95
+    tail = spline([(0.45, 0.7, 0.32), (0.95, 1.05, 0.7), (1.15, 1.12, 1.35), (1.0, 0.95, 1.95)], [0.32, 0.58, 0.62, 0.42], 12)
     body = k.fuse(
         [
-            (head, R, (1.15, 0.98, 0.92)),
-            (snout, 0.42, (1.0, 1.2, 0.7)),
-            *k.pair((0.98, -0.5, 2.15), 0.3, (0.8, 0.6, 0.6), (0, 0, 20)),  # cheek fluff
-            ((0, 0.1, 1.25), 0.85, (1.0, 1.1, 0.95)),  # chest
-            ((0, 0.25, 0.68), 0.85, (1.12, 1.2, 0.78)),  # round seat
-            *k.pair(ear, 0.56, (0.85, 0.32, 0.8), (0, tilt, 0)),  # big ears: a wide base...
-            *k.pair(ear + axis * 0.5, 0.34, (0.55, 0.3, 1.0), (0, tilt, 0)),  # ...tapering to the tip
-            *k.pair((0.5, -0.55, 0.2), 0.3, (0.9, 1.45, 0.62)),  # feet
-            *k.pair((0.72, -0.45, 1.25), 0.19, (0.85, 0.9, 1.3)),  # arms
-            *capsules(tail[: cut + 1]),
+            (head, R, (1.4, 0.98, 0.98)),
+            *k.pair((1.1, -0.26, 2.44), 0.26, (0.95, 0.7, 0.5), (0, 22, 0)),  # cheek ruff, out and down
+            ((0, 0.02, 1.38), 0.6, (1.0, 0.95, 1.05)),  # chest
+            ((0, 0.12, 0.62), 0.74, (1.05, 1.05, 0.82)),  # round seat
+            *k.pair((0.58, 0.08, 0.55), 0.44, (0.9, 1.2, 0.85)),  # haunches
+            *k.pair(ear, 0.64, (1.0, 0.38, 0.9), (0, tilt, 0)),  # big ears: a wide base...
+            *k.pair(ear + axis * 0.55, 0.4, (0.62, 0.32, 1.0), (0, tilt, 0)),  # ...tapering to a soft tip
+            ("capsule", (0.3, -0.42, 1.25), (0.3, -0.6, 0.3), 0.21),  # straight front legs
+            ("capsule", (-0.3, -0.42, 1.25), (-0.3, -0.6, 0.3), 0.21),
+            *k.pair((0.3, -0.66, 0.17), 0.22, (1.0, 1.2, 0.8)),  # front paws
+            *k.pair((0.74, -0.52, 0.2), 0.27, (0.95, 1.4, 0.75), (0, 0, 12)),  # big hind feet, forwards
+            *capsules(tail),
         ],
-        green,
-        tris=2650,
+        fur,
+        tris=3300,
     )
-    tip = k.fuse(capsules([(p, r + 0.03) for p, r in tail[cut - 1 :]]), cream, tris=380, name="tail_tip")
-    parts = [body, tip]
+    jag = dict(soft=0.08, jag=0.22)
+    k.zone(fur, white, (0, -0.3, 2.2), (2.0, 1.4, 0.34), **jag)  # white lower face and cheek ruff
+    k.zone(fur, cream, (0, -0.6, 1.48), (0.3, 0.4, 0.45), soft=0.15)  # chest bib
+    k.zone(fur, white, tail[-1][0] + Vector((0, 0, 0.1)), (0.75, 0.75, 0.62), **jag)  # tail tip
+    for side in (-1, 1):
+        k.zone(fur, brown, (side * tip_at.x, tip_at.y, tip_at.z), (0.5, 0.5, 0.46), soft=0.2)  # ear tips
+        k.zone(fur, brown, (side * 0.3, -0.66, 0.12), (0.3, 0.32, 0.22), soft=0.2)  # front paws
+        k.zone(fur, brown, (side * 0.74, -0.62, 0.18), (0.38, 0.42, 0.24), soft=0.2)  # hind feet
+    parts = [body]
     for side in (-1, 1):
         up = (side * axis.x, 0, axis.z)
-        mid = ear + axis * 0.18
-        parts.append(k.lens(body, (side * mid.x, mid.y, mid.z), (0, -1, 0), 0.38, pink, scale=(0.56, 1), thick=0.2, sink=0.6, up=up, seg=12, name="ear_in"))
-    parts.append(k.lens(body, (0, 0.1, 1.15), (0, -1, 0), 0.52, cream, scale=(0.95, 1.0), thick=0.2, sink=0.6, seg=12, name="chest"))
-    # Spine studs: down the middle of the head and back, then along the tail's top.
-    for d in (k.outward(0, 75), k.outward(180, 70), k.outward(180, 40)):
-        parts.append(k.lens(body, head, d, 0.09, pale, thick=0.7, sink=0.4, seg=12, name="stud"))
-    for a in (10, 35, 60):
-        parts.append(k.lens(body, (0, 0.1, 1.25), k.outward(180, a), 0.09, pale, thick=0.7, sink=0.4, seg=12, name="stud"))
-    for i in (3, 6, 9):
-        p, r = tail[i]
-        parts.append(k.lens(body, p, Vector((-0.4, 0.5, 0.75)), 0.08, pale, thick=0.7, sink=0.4, seg=12, name="stud"))
-    # The cactus flower on the right of the head.
-    p, n = k.land(body, head, k.outward(38, 46))
+        mid = ear + axis * 0.15
+        parts.append(k.lens(body, (side * mid.x, mid.y, mid.z), (0, -1, 0), 0.5, k.flat(cream), scale=(0.6, 1), thick=0.2, sink=0.6, up=up, seg=16, name="ear_in"))
+    # The pink flower by the left ear, a tiny cactus just behind it.
+    d = k.outward(60, 36)
+    p, n = k.land(body, head, d)
     x, y, z = k._frame(n)
     place = Matrix.Translation(p + n * 0.02) @ Matrix((x, y, z)).transposed().to_4x4()
     for i in range(5):
-        for ob in xf(petal(0.34, 0.17, pink, droop=0.2, tip=0.6, base=0.4, n=8, steps=8), yaw=72 * i + 18, pitch=18):
+        for ob in xf(petal(0.36, 0.19, k.flat((252, 160, 196)), droop=0.2, tip=0.5, base=0.4, n=8, steps=8), yaw=72 * i + 18, pitch=14):
             ob.data.transform(place)
             parts.append(ob)
-    parts.append(k.lens(body, head, k.outward(38, 46), 0.11, k.flat(k.SUNNY), thick=0.9, sink=0.1, seg=12, name="bloom_heart"))
-    parts += snout_face(body, snout, (246, 250, 228), k.NOSE, mouth_w=0.2, muzzle_r=0.38, muzzle_scale=(1.05, 0.85))
-    parts += k.face(body, head, R, skin=(120, 190, 118), nose=None, mouth_kind=None, eye_phi=8, spread=36)
+    parts.append(k.lens(body, head, d, 0.1, k.flat(k.SUNNY), thick=0.9, sink=0.1, seg=12, name="bloom_heart"))
+    cactus = k.flat((96, 176, 92))
+    p, n = k.land(body, head, k.outward(80, 44))
+    root = p - n * 0.05
+    top = root + (n * 0.4 + Vector((0, 0, 1))).normalized() * 0.38
+    parts.append(k.capsule(root, top, 0.11, 0.1, cactus, n=12, name="cactus"))
+    elbow = root + (top - root) * 0.45
+    side_dir = n.cross(Vector((0, 0, 1))).normalized()
+    parts.append(k.capsule(elbow, elbow + side_dir * 0.16 + Vector((0, 0, 0.12)), 0.07, 0.065, cactus, n=10, name="cactus_arm"))
+    parts += k.face(body, head, R, skin=white, nose=(48, 34, 42), eye_r=0.27, eye_wide=0.92, spread=31, eye_phi=-24, nose_phi=-24, nose_r=0.1, mouth_phi=-32, mouth_w=0.1, sheen=True, blush_theta=44, blush_phi=-34)
     return parts
 
 
@@ -528,12 +548,12 @@ ASSETS = [
     )
     for order, (id, label, build, size) in enumerate(
         (
-            ("bunny", "Sprout Bunny", creature_bunny, [2.6, 4.0, 2.4]),
+            ("bunny", "Sprout Bunny", creature_bunny, [2.3, 4.0, 1.8]),
             ("frog", "Toadstool Frog", creature_frog, [3.2, 3.5, 3.2]),
             ("pup", "Bumble Pup", creature_pup, [3.0, 3.8, 3.6]),
             ("cat", "Berry Cat", creature_cat, [3.2, 4.2, 3.0]),
             ("owl", "Pumpkin Owl", creature_owl, [4.2, 4.5, 3.8]),
-            ("fox", "Cactus Fox", creature_fox, [3.6, 4.5, 4.2]),
+            ("fox", "Cactus Fox", creature_fox, [3.6, 4.5, 2.9]),
             ("turtle", "Lotus Turtle", creature_turtle, [3.8, 3.5, 3.8]),
             ("lion", "Sunflower Lion", creature_lion, [4.6, 5.2, 4.6]),
             ("dragon", "Moonblossom Dragon", creature_dragon, [6.0, 5.5, 4.8]),

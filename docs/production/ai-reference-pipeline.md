@@ -42,7 +42,9 @@ Why not ship the generated meshes directly? Generated meshes vary run to run, ca
 
 | Creature | Generated asset id | Shots | Remake status |
 |---|---|---|---|
-| bunny (Sprout Bunny) | 127619955912104 | front, side, back | test |
-| fox (Cactus Fox) | 134610036961315 | front, 3/4, side, back | test |
+| bunny (Sprout Bunny) | 127619955912104 | front, side, back | Remade 2026-11-06 (`creature_bunny`, 5,820 tris), not uploaded; awaiting Director sign-off |
+| fox (Cactus Fox) | 134610036961315 | front, 3/4, side, back | Remade 2026-11-06 (`creature_fox`, 5,692 tris; now orange, was green), not uploaded; awaiting Director sign-off |
 
-Note: the generated fox came out with a pink flower, but no cactus. The remake adds a small cactus or succulent sprig next to the flower so it stays a "Cactus Fox".
+Note: the generated fox came out with a pink flower, but no cactus. The remake adds a small cactus beside the flower so it stays a "Cactus Fox".
+
+The remakes use the new kit helpers (`k.zone` fur markings, the soft painted blush, `sheen` eyes). The values to copy for the other creatures are in the "Reference remakes" section of `tools/blender/garden/README.md`.

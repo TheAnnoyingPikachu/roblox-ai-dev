@@ -128,7 +128,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_bunny = {
-		size = { 2.6, 4, 2.4 },
+		size = { 2.3, 4, 1.8 },
 		parts = { "creature_bunny" },
 		model = 127855365541226,
 		decal = 107135539068835,
@@ -198,7 +198,7 @@ local GardenAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	creature_fox = {
-		size = { 3.6, 4.5, 4.2 },
+		size = { 3.6, 4.5, 2.9 },
 		parts = { "creature_fox" },
 		model = 96406632938581,
 		decal = 70831885573088,

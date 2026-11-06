@@ -429,18 +429,18 @@
     "png": "build/blender/garden/creature_bunny.png",
     "preview": "build/blender/garden/previews/creature_bunny.png",
     "size_studs": [
-      2.6,
+      2.3,
       4.0,
-      2.4
+      1.8
     ],
-    "tris": 5628,
+    "tris": 5820,
     "parts": {
-      "creature_bunny": 5628
+      "creature_bunny": 5820
     },
     "target_size_studs": [
-      2.6,
+      2.3,
       4.0,
-      2.4
+      1.8
     ],
     "tris_budget": 6000,
     "priority": "P1",
@@ -681,16 +681,16 @@
     "size_studs": [
       3.6,
       4.5,
-      4.2
+      2.9
     ],
-    "tris": 5634,
+    "tris": 5692,
     "parts": {
-      "creature_fox": 5634
+      "creature_fox": 5692
     },
     "target_size_studs": [
       3.6,
       4.5,
-      4.2
+      2.9
     ],
     "tris_budget": 6000,
     "priority": "P1",
