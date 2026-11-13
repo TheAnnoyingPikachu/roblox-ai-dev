@@ -9,6 +9,12 @@ Hatch animals from eggs. Every animal has four stats: speed, strength, swim and 
 one to work at the mini-game station that matches its best stat to earn coins, then buy better
 eggs. A cheetah belongs on the Speed Track. A dolphin belongs in the Swim Pool.
 
+## Vision (decision 0021)
+
+Three pillars on the same four stats: a **ranch** you raise animals on (your home base),
+lots of short **silly reflex microgames** (our own designs), and **turn-based creature battles**.
+Servers hold 6 players; each gets a home ranch around the shared hub.
+
 ## Core loop (hypothesis)
 
 1. Buy an egg with coins and hatch it. The odds are shown on the egg.
@@ -22,6 +28,9 @@ eggs. A cheetah belongs on the Speed Track. A dolphin belongs in the Swim Pool.
 - `StationConfig`: 4 stats, 6 rarities, 16 species each with a basic version and 3 super-rare
   variants (decision 0020, bestiary in `game7-animals.md`), 3 eggs, 4 stations.
 - `StationRules`: `hatch`, `versionStats`, `rarity`, `rate`, `bestStation`, `income`, tested in `StationRules.spec.luau`.
+
+- World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and six home
+  ranches. The server gives each player a ranch and spawns them at its gate.
 
 ## Next (not started)
 

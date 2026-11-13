@@ -1,8 +1,9 @@
 --!strict
--- Animal Stations hub (STATION-003): the central plaza with the hatchery fountain and the egg market,
--- four station zones on the diagonals (Speed Track NW, Strength Gym NE, Swim Pool SW, Puzzle Library
--- SE), paths with lamps, trees, flowers and the hill ring. Built once from parts, Roblox materials
--- and terrain. Display only: no game rules live here. Work slots are tagged for the server to use.
+-- Animal Stations world (STATION-003, STATION-004): the central plaza with the hatchery fountain
+-- and the egg market, four station zones on the diagonals (Speed Track NW, Strength Gym NE, Swim
+-- Pool SW, Puzzle Library SE), six home ranches (one per player) on the north, east and west roads,
+-- paths with lamps, trees, flowers and the hill ring. Built once from parts, Roblox materials and
+-- terrain. Display only: no game rules live here. Slots, spots and nests are tagged for the server.
 
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
@@ -19,6 +20,13 @@ World.PLAZA = 48 -- plaza radius
 World.STATION_DIST = 130 -- plaza centre to each station centre
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.SLOTS = 8 -- work slots per station (placeholder count; the rules decide later)
+World.RANCHES = 6 -- one home ranch per player; the server is capped at 6 players to match
+World.RANCH_DIST = 285 -- plaza centre to each ranch centre
+World.RANCH_HALF = 38 -- half the fenced ranch square
+World.RANCH_SPOTS = 8 -- places in the paddock where owned animals will idle
+-- Ranches sit in pairs either side of the north, east and west roads (south is the welcome walk).
+local RANCH_ANGLE = { -108, -72, -18, 18, 162, 198 }
+local FORK = 225 -- where a cardinal road splits to its two ranches
 
 local M = Enum.Material
 local WHITE = Color3.new(1, 1, 1)
@@ -250,8 +258,9 @@ end
 
 local function terrain()
 	local t = Workspace.Terrain
+	t:Clear() -- a rebuild must not keep the old hills
 	-- voxels snap up: a block whose top is at y = -2 gives a surface at y = 0 (checked in Studio)
-	t:FillBlock(CFrame.new(0, -8, 0), Vector3.new(1100, 12, 1100), M.Grass)
+	t:FillBlock(CFrame.new(0, -8, 0), Vector3.new(1500, 12, 1500), M.Grass)
 	local clouds = t:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	clouds.Cover, clouds.Density, clouds.Color = 0.45, 0.6, WHITE
 	clouds.Parent = t
@@ -259,7 +268,7 @@ local function terrain()
 	local rng = Random.new(11)
 	for i = 0, 35 do
 		local a = i / 36 * math.pi * 2 + rng:NextNumber(-0.05, 0.05)
-		local r = rng:NextNumber(340, 400)
+		local r = rng:NextNumber(540, 600)
 		local size = rng:NextNumber(70, 120)
 		t:FillBall(Vector3.new(math.cos(a) * r, -size * 0.45, math.sin(a) * r), size, M.Grass)
 	end
@@ -404,25 +413,43 @@ end
 
 -- Paths ----------------------------------------------------------------------------------------------
 
+-- Every road as a ground segment {a, b}; scenery keeps clear of these.
+local function roadSegments(): { { Vector3 } }
+	local segs = {}
+	for _, angle in STATION_ANGLE do
+		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
+		table.insert(segs, { d * (World.PLAZA - 2), d * (World.STATION_DIST - 40) })
+	end
+	table.insert(segs, { Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) }) -- south lawn walk
+	for _, angle in { -90, 0, 180 } do
+		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
+		table.insert(segs, { d * (World.PLAZA - 2), d * FORK })
+	end
+	for i = 1, World.RANCHES do
+		local cardinal = if i <= 2 then -90 elseif i <= 4 then 0 else 180
+		local fork = Vector3.new(math.cos(rad(cardinal)), 0, math.sin(rad(cardinal))) * FORK
+		local d = Vector3.new(math.cos(rad(RANCH_ANGLE[i])), 0, math.sin(rad(RANCH_ANGLE[i])))
+		table.insert(segs, { fork, d * (World.RANCH_DIST - World.RANCH_HALF - 2) })
+	end
+	return segs
+end
+local ROADS = roadSegments()
+
 local function paths(root: Instance)
 	local f = folder(root, "Paths")
-	local function road(dir: Vector3, from: number, to: number)
-		local a, b = dir * from, dir * to
+	for _, seg in ROADS do
+		local a, b = seg[1], seg[2]
 		strip(f, a + Vector3.new(0, 0.3, 0), b + Vector3.new(0, 0.3, 0), 18, 0.6, STONE_DARK, M.Cobblestone)
 		strip(f, a + Vector3.new(0, 0.35, 0), b + Vector3.new(0, 0.35, 0), 15, 0.6, PATH, M.Cobblestone)
+		local dir = (b - a).Unit
 		local side = Vector3.new(-dir.Z, 0, dir.X)
-		local n = math.floor((to - from) / 22)
-		for i = 1, n do
-			local p = dir * (from + i * 22 - 8)
+		for i = 1, math.floor(((b - a).Magnitude - 6) / 22) do -- stop short so no lamp lands inside a gate
+			local p = a + dir * (i * 22 - 8)
 			lamp(f, p + side * 11)
 			lamp(f, p - side * 11)
 		end
+		disc(f, b + Vector3.new(0, 0.32, 0), 18, 0.6, PATH, M.Cobblestone) -- round off joins and forks
 	end
-	for _, angle in STATION_ANGLE do
-		local a = rad(angle)
-		road(Vector3.new(math.cos(a), 0, math.sin(a)), World.PLAZA - 2, World.STATION_DIST - 40)
-	end
-	road(Vector3.new(0, 0, 1), World.PLAZA - 2, 90) -- south lawn walk from the spawn
 end
 
 -- Stations -------------------------------------------------------------------------------------------
@@ -853,27 +880,232 @@ local BUILDERS: { [string]: (Instance, StationConfig.Station, Random) -> () } = 
 	library = library,
 }
 
+-- Ranches -------------------------------------------------------------------------------------------
+
+local RED = Color3.fromRGB(196, 64, 54)
+local HAY = Color3.fromRGB(232, 196, 110)
+local DIRT = Color3.fromRGB(168, 128, 86)
+local ROOF = Color3.fromRGB(84, 72, 76)
+
+-- Local frame of ranch `i`: origin at its centre, -Z (look) points back at the plaza.
+function World.ranchFrame(i: number): CFrame
+	local a = rad(RANCH_ANGLE[i])
+	return CFrame.lookAt(Vector3.new(math.cos(a), 0, math.sin(a)) * World.RANCH_DIST, Vector3.zero)
+end
+
+-- Where the owner spawns: just inside the gate, facing the barn.
+function World.ranchSpawn(i: number): CFrame
+	return World.ranchFrame(i) * CFrame.new(0, 3, -World.RANCH_HALF + 8) * CFrame.Angles(0, math.pi, 0)
+end
+
+-- White post-and-rail fence between two local points (y = 0) of `cf`.
+local function fence(f: Instance, cf: CFrame, a: Vector3, b: Vector3)
+	local n = math.max(1, math.round((b - a).Magnitude / 6))
+	for k = 0, n do
+		local p = (cf * CFrame.new(a:Lerp(b, k / n))).Position
+		part(f, Vector3.new(0.9, 4.6, 0.9), CFrame.new(p + Vector3.new(0, 2.3, 0)) * cf.Rotation, WHITE, M.Wood)
+	end
+	local wa, wb = (cf * CFrame.new(a)).Position, (cf * CFrame.new(b)).Position
+	for _, y in { 1.8, 3.7 } do
+		bar(f, wa + Vector3.new(0, y, 0), wb + Vector3.new(0, y, 0), 0.22, WHITE, M.Wood)
+	end
+end
+
+-- Red barn with white trim, X-braced doors, a hayloft and a gabled roof whose gable faces the gate.
+local function barn(f: Instance, b: CFrame)
+	local W, D, H = 24, 16, 11
+	local top = H + 1
+	part(f, Vector3.new(W + 2, 1, D + 2), b * CFrame.new(0, 0.5, 0), STONE_DARK, M.Concrete)
+	part(f, Vector3.new(W, H, 1), b * CFrame.new(0, H / 2 + 1, D / 2 - 0.5), RED, M.WoodPlanks)
+	for _, side in { -1, 1 } do
+		part(f, Vector3.new(1, H, D), b * CFrame.new(side * (W / 2 - 0.5), H / 2 + 1, 0), RED, M.WoodPlanks)
+		part(f, Vector3.new(7, H, 1), b * CFrame.new(side * 8.5, H / 2 + 1, -D / 2 + 0.5), RED, M.WoodPlanks)
+		for _, z in { -D / 2, D / 2 } do -- corner boards
+			part(f, Vector3.new(1.4, H, 1.4), b * CFrame.new(side * W / 2, H / 2 + 1, z), WHITE, M.Wood)
+		end
+	end
+	part(f, Vector3.new(10, H - 9, 1), b * CFrame.new(0, 10 + (H - 9) / 2, -D / 2 + 0.5), RED, M.WoodPlanks)
+	-- closed double doors: white frame, centre post and an X brace on each leaf
+	local door = b * CFrame.new(0, 5.5, -D / 2 - 0.1)
+	part(f, Vector3.new(10, 9, 0.6), door, RED:Lerp(INK, 0.15), M.WoodPlanks)
+	for _, dx in { -5, 0, 5 } do
+		part(f, Vector3.new(0.6, 9, 0.5), door * CFrame.new(dx, 0, -0.4), WHITE, M.Wood)
+	end
+	for _, dy in { -4.5, 4.5 } do
+		part(f, Vector3.new(10.6, 0.6, 0.5), door * CFrame.new(0, dy, -0.4), WHITE, M.Wood)
+	end
+	for _, dx in { -2.5, 2.5 } do
+		for _, sign in { -1, 1 } do
+			local a = (door * CFrame.new(dx - 2.2, -4.2 * sign, -0.45)).Position
+			local c = (door * CFrame.new(dx + 2.2, 4.2 * sign, -0.45)).Position
+			bar(f, a, c, 0.26, WHITE, M.Wood)
+		end
+	end
+	-- roof: ridge runs front to back, so build it in a frame turned 90 degrees
+	local rb = b * CFrame.Angles(0, math.pi / 2, 0)
+	local rh, half = 8, W / 2 + 1.5
+	for _, side in { -1, 1 } do
+		local turn = CFrame.Angles(0, if side == 1 then math.pi else 0, 0)
+		local w = Instance.new("WedgePart")
+		w.Anchored, w.Size = true, Vector3.new(D + 3, rh, half)
+		w.CFrame = rb * CFrame.new(0, top + rh / 2, side * half / 2) * turn
+		w.Color, w.Material = ROOF, M.Slate
+		w.Parent = f
+		for _, x in { D / 2 - 0.5, -(D / 2 - 0.5) } do -- red gable ends under the roof
+			local g = Instance.new("WedgePart")
+			g.Anchored, g.Size = true, Vector3.new(1, rh - 0.6, W / 2)
+			g.CFrame = rb * CFrame.new(x, top + (rh - 0.6) / 2, side * W / 4) * turn
+			g.Color, g.Material = RED, M.WoodPlanks
+			g.Parent = f
+		end
+	end
+	-- hayloft window on the front gable, hay peeking out
+	local loft = b * CFrame.new(0, top + 2.4, -D / 2 - 0.2)
+	part(f, Vector3.new(4.2, 3.6, 0.4), loft, INK, M.SmoothPlastic)
+	for _, dy in { -2, 2 } do
+		part(f, Vector3.new(5, 0.5, 0.5), loft * CFrame.new(0, dy, -0.1), WHITE, M.Wood)
+	end
+	for _, dx in { -2.3, 2.3 } do
+		part(f, Vector3.new(0.5, 4.4, 0.5), loft * CFrame.new(dx, 0, -0.1), WHITE, M.Wood)
+	end
+	ball(f, (loft * CFrame.new(0, -1, 0)).Position, 2.6, HAY, M.Fabric)
+end
+
+local function silo(f: Instance, base: Vector3)
+	pillar(f, base, 20, 4.5, Color3.fromRGB(205, 210, 215), M.Metal)
+	ball(f, base + Vector3.new(0, 20, 0), 9, RED, M.SmoothPlastic)
+	for _, y in { 6, 13 } do
+		disc(f, base + Vector3.new(0, y + 0.3, 0), 9.3, 0.6, RED, M.SmoothPlastic)
+	end
+end
+
+-- One home ranch: fenced yard, gate with the owner sign, barn and silo, a paddock of animal spots,
+-- an egg nest, a trough, hay bales, a mailbox, flowers and trees. Spots and nest are tagged.
+local function ranch(root: Instance, i: number, rng: Random)
+	local f = folder(root, `Ranch{i}`)
+	f:SetAttribute("Index", i)
+	f:SetAttribute("Owner", 0)
+	local cf = World.ranchFrame(i)
+	local H = World.RANCH_HALF
+	local function at(x: number, y: number, z: number): CFrame
+		return cf * CFrame.new(x, y, z)
+	end
+	-- ground: lawn, a greener paddock on the left, dirt tracks to the barn and the nest
+	part(f, Vector3.new(H * 2, 0.4, H * 2), at(0, 0.2, 0), Color3.fromRGB(120, 176, 84), M.Grass)
+	part(f, Vector3.new(30, 0.5, 46), at(-20, 0.25, -12), Color3.fromRGB(104, 168, 72), M.LeafyGrass)
+	part(f, Vector3.new(9, 0.5, H + 14), at(0, 0.3, -H / 2 + 7), DIRT, M.Ground)
+	part(f, Vector3.new(14, 0.5, 14), at(20, 0.3, -14), DIRT, M.Ground)
+	-- fence with a gate gap facing the plaza
+	fence(f, cf, Vector3.new(-H, 0, -H), Vector3.new(-8, 0, -H))
+	fence(f, cf, Vector3.new(8, 0, -H), Vector3.new(H, 0, -H))
+	fence(f, cf, Vector3.new(H, 0, -H), Vector3.new(H, 0, H))
+	fence(f, cf, Vector3.new(H, 0, H), Vector3.new(-H, 0, H))
+	fence(f, cf, Vector3.new(-H, 0, H), Vector3.new(-H, 0, -H))
+	-- gate arch with the owner sign (World.setRanchOwner changes the text); the road brings the lamps
+	for _, dx in { -8, 8 } do
+		part(f, Vector3.new(1.6, 13, 1.6), at(dx, 6.5, -H), WOOD_DARK, M.Wood)
+		ball(f, at(dx, 13.4, -H).Position, 1.8, HAY, M.SmoothPlastic)
+	end
+	part(f, Vector3.new(18, 1, 1.4), at(0, 12.6, -H), WOOD_DARK, M.Wood)
+	local sign = part(f, Vector3.new(14, 3.2, 0.6), at(0, 10.2, -H), WOOD, M.WoodPlanks)
+	sign.Name = "OwnerSign"
+	label(sign, "Free Ranch", WHITE)
+	barn(f, at(0, 0, 22))
+	silo(f, at(19, 0, 26).Position)
+	-- paddock: straw spots where owned animals will idle, tagged "RanchSpot"
+	local spots = folder(f, "Spots")
+	local n = 0
+	for _, z in { -28, -18, -8, 2 } do
+		for _, x in { -27, -14 } do
+			n += 1
+			local pad = disc(spots, at(x, 0, z).Position + Vector3.new(0, 0.55, 0), 4.6, 0.3, HAY, M.Fabric)
+			pad.Name = `Spot{n}`
+			pad:SetAttribute("Ranch", i)
+			pad:SetAttribute("Index", n)
+			CollectionService:AddTag(pad, "RanchSpot")
+		end
+	end
+	-- water trough and hay bales by the paddock
+	part(f, Vector3.new(3.4, 2.2, 9), at(-33, 1.1, 12), WOOD, M.Wood)
+	part(f, Vector3.new(2.6, 0.3, 8.2), at(-33, 2.1, 12), Color3.fromRGB(90, 170, 230), M.Glass).Transparency = 0.25
+	for k, o in { Vector3.new(-17, 1.5, 12), Vector3.new(-12.6, 1.5, 12.4), Vector3.new(-14.8, 4.5, 12.2) } do
+		part(f, Vector3.new(4.2, 3, 3), at(o.X, o.Y, o.Z) * CFrame.Angles(0, rad(k * 7), 0), HAY, M.Fabric)
+	end
+	-- egg nest: the ranch's own hatching spot, tagged "RanchNest"
+	local nestAt = at(20, 0, -14).Position
+	local nest = disc(f, nestAt + Vector3.new(0, 0.9, 0), 7, 0.8, HAY, M.Fabric)
+	nest.Name = "Nest"
+	nest:SetAttribute("Ranch", i)
+	CollectionService:AddTag(nest, "RanchNest")
+	for k = 0, 11 do
+		local a = k / 12 * math.pi * 2
+		ball(f, nestAt + Vector3.new(math.cos(a) * 3.4, 1.2, math.sin(a) * 3.4), 2, HAY:Lerp(WOOD, 0.2), M.Fabric)
+	end
+	local e = egg(f, nestAt + Vector3.new(0, 0.9, 0), 3.4, EGG_LOOK.meadow.body, EGG_LOOK.meadow.spot, rng)
+	glow(e, WARM, 10, 0.6)
+	signboard(f, at(20, 0, -22.5), 9, "Egg Nest", Color3.fromRGB(110, 170, 90), 3.2)
+	-- mailbox by the gate, flowers along the front fence, trees outside the corners
+	local box = at(12.5, 0, -H - 3.5)
+	pillar(f, box.Position, 3.4, 0.25, WOOD_DARK, M.Wood)
+	part(f, Vector3.new(1.4, 1.3, 2.2), box * CFrame.new(0, 4, 0), RED, M.SmoothPlastic)
+	part(f, Vector3.new(0.15, 1, 0.5), box * CFrame.new(0.8, 4.5, 0.6), Color3.fromRGB(255, 220, 80), M.SmoothPlastic)
+	for _, x in { -28, -18, 18, 28 } do
+		flowers(f, at(x, 0, -H - 2.5).Position, rng, 6, 2.5)
+	end
+	for _, p in { Vector3.new(-48, 0, 30), Vector3.new(48, 0, 30), Vector3.new(-50, 0, -4), Vector3.new(50, 0, -6) } do
+		tree(f, at(p.X, 0, p.Z).Position, rng, rng:NextNumber(1.1, 1.5))
+	end
+end
+
+local function ranches(root: Instance, rng: Random)
+	local f = folder(root, "Ranches")
+	for i = 1, World.RANCHES do
+		ranch(f, i, rng)
+	end
+end
+
+-- Show who owns ranch `i` (nil frees it). Display only; the server keeps the real assignment.
+function World.setRanchOwner(i: number, player: Player?)
+	local hub = Workspace:FindFirstChild("Hub")
+	local all = hub and hub:FindFirstChild("Ranches")
+	local model = all and all:FindFirstChild(`Ranch{i}`)
+	if model == nil then
+		return
+	end
+	model:SetAttribute("Owner", if player then player.UserId else 0)
+	local text = if player then `{player.DisplayName}'s Ranch` else "Free Ranch"
+	for _, d in (model:FindFirstChild("OwnerSign") :: Instance):GetDescendants() do
+		if d:IsA("TextLabel") then
+			d.Text = text
+		end
+	end
+end
+
 -- Scenery --------------------------------------------------------------------------------------------
 
--- True when `p` is clear of the plaza, the paths and every station zone.
+-- True when `p` is clear of the plaza, every road, station zone and ranch.
 local function open(p: Vector3, margin: number): boolean
 	local flat = Vector3.new(p.X, 0, p.Z)
 	if flat.Magnitude < World.PLAZA + margin + 6 then
 		return false
 	end
-	for id, angle in STATION_ANGLE do
+	for id in STATION_ANGLE do
 		if (flat - stationPos(id)).Magnitude < 58 + margin then
 			return false
 		end
-		local a = rad(angle)
-		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
-		local along = flat:Dot(dir)
-		if along > 0 and along < World.STATION_DIST and (flat - dir * along).Magnitude < 14 + margin then
+	end
+	for i = 1, World.RANCHES do
+		local l = World.ranchFrame(i):PointToObjectSpace(flat)
+		if math.max(math.abs(l.X), math.abs(l.Z)) < World.RANCH_HALF + 8 + margin then
 			return false
 		end
 	end
-	if math.abs(flat.X) < 14 + margin and flat.Z > 0 and flat.Z < 95 then
-		return false -- south lawn walk
+	for _, seg in ROADS do
+		local a, b = seg[1], seg[2]
+		local t = math.clamp((flat - a):Dot(b - a) / (b - a):Dot(b - a), 0, 1)
+		if (flat - a:Lerp(b, t)).Magnitude < 14 + margin then
+			return false
+		end
 	end
 	return true
 end
@@ -898,7 +1130,7 @@ local function scenery(root: Instance, rng: Random)
 	end
 	for i = 0, 89 do
 		local a = i / 90 * math.pi * 2 + rng:NextNumber(-0.03, 0.03)
-		local r = rng:NextNumber(250, 320)
+		local r = rng:NextNumber(355, 410)
 		tree(f, Vector3.new(math.cos(a) * r, 0, math.sin(a) * r), rng, rng:NextNumber(1.3, 1.9))
 	end
 	local beds = 0
@@ -947,6 +1179,7 @@ function World.build(): Folder
 	for _, st in StationConfig.STATIONS do
 		BUILDERS[st.id](stations, st, rng)
 	end
+	ranches(root, rng)
 	scenery(root, rng)
 	root.Parent = Workspace
 	-- Rojo does not apply Position on the project's SpawnLocation, so place it here: south lawn,
