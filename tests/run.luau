@@ -86,6 +86,9 @@ local SPECS = {
 	["BattleRules.spec.luau"] = function()
 		require("./BattleRules.spec")
 	end,
+	["StationProgress.spec.luau"] = function()
+		require("./StationProgress.spec")
+	end,
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,

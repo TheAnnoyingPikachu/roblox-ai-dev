@@ -1156,6 +1156,11 @@ end
 
 -- Build --------------------------------------------------------------------------------------------
 
+-- The built world (World.build first).
+function World.root(): Folder
+	return Workspace:WaitForChild("Hub") :: Folder
+end
+
 function World.build(): Folder
 	local old = Workspace:FindFirstChild("Hub")
 	if old then

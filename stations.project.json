@@ -17,6 +17,7 @@
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
+        "StationsClient": { "$path": "src/stations-client" },
         "BuildStamp": { "$path": "src/kit-roblox/BuildStamp.client.luau" }
       }
     },
