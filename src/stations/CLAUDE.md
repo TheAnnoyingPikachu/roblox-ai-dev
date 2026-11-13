@@ -1,31 +1,33 @@
 # Animal Stations (game 7): read this first
 
-Egg animal collector: hatch animals with four stats, train them at stations, and send a team of three
-through endless levels (0023). Vision (0021): ranch + silly microgames + turn-based battles. Status: rules (STATION-001/002),
-the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005), training and levels (STATION-006), roles and team battles (STATION-007), saves, egg buying, team and training requests with a first HUD (STATION-008); no battle screen, animal models or ranch upgrades yet.
+Egg animal collector, at framework stage: hatch animals, level their six stats at your ranch, and
+send a team of three plus a Titan through endless waves. The ranch is the player's base (a tycoon
+later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
-- Docs: decisions 0019 to 0028 (0028: Health stat and Healing Spring, Mana power attacks, hilltop ranches; 0026: stats are speed, strength, stamina, mana; 0027: three roles, Titans in a fourth slot, African beta pool) (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
+- Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
+  (roster and looks), decisions 0019 to 0029 (0029 is the latest and replaces parts of the rest).
+- Not built: a battle screen (so coins cannot be earned in play), animal models, the ranch tycoon.
 
 ## Files
 
 | File | Owns |
 |---|---|
-| `StationsServer.server.luau` | entry: builds the world, ranch assignment and spawn, kit Saves (`StationsProfile`), kit Router + `StationsRemotes` (profile, buy, team, train, stop), stall prompts |
-| `../stations-client/Hud.client.luau` | coins, toasts, Animals panel; display only |
-| `World.luau` | the world: plaza, Hatchery fountain, egg market, roads, the four stations, three ranches, scenery, lighting, spawn |
+| `StationsServer.server.luau` | entry: builds the world, ranch assignment and spawn, teleport prompts, kit Saves (`StationsProfile`), kit Router + `StationsRemotes` (profile, buy, team, train, stop), stall prompts |
+| `../stations-client/Hud.client.luau` | coins and player level, toasts, Animals panel (team button, one train button per stat); display only |
+| `World.luau` | the hub (plaza, Hatchery fountain, egg stalls, south walk, teleport pad, scenery) and three ranch islands (barn, paddock, nest, training pads, teleport pad), lighting, spawn |
 
-Pure rules: `StationConfig` (stats, species, variants, eggs, stations, matchups), `StationRules` (hatch, train, matchups) `LevelRules` (enemy teams, rewards) and `BattleRules` (roles, team battle for levels and PvP). `StationProgress` (saved profile and every change to it). Specs: `StationRules`, `LevelRules`, `BattleRules`, `StationProgress`.
+Pure rules in `src/shared`: `StationConfig` (stats, stat levels, roles, groups, species, variants,
+eggs, stations), `StationRules` (hatch, stat levels, roles, matchups), `BattleRules` (team battle),
+`LevelRules` (waves, rewards), `StationProgress` (saved profile and every change to it). Each has a spec.
 
 ## Must stay true
 
 - The server decides prices, hatches and times; profile changes are pure `StationProgress` functions that capture their inputs (SaveStore runs them twice).
-- A role comes from the species (`StationRules.role`), never from stats. Titans are never in `Profile.team`; they use `Profile.titan`.
-- World is display only. Work slots are tagged `StationSlot` with `Station` and `Index` attributes for the server to use.
-- Terrain fill tops at y = -2 so the surface lands at y = 0 (voxels snap up); flat parts sit on y = 0.
-- The SpawnLocation is placed in code (`World.SPAWN`); Rojo ignores `Position` in the project file.
+- "Level" has three meanings: wave (`LevelRules`, `Profile.best`), stat level (0 to `MAX_LEVEL`, `Owned.trained`) and player level (`StationProgress.playerLevel`, from `Profile.xp`).
+- A role and a group come from the species, never from stats. The Titan is never in `Profile.team`; it uses `Profile.titan`.
+- `sanitize` repairs an animal's missing stats from its species; it only drops unknown species and duplicate ids. Keep it that way when stats change.
+- World is display only. Tags for the server: `TrainPad` (`Ranch`, `Station`), `RanchSpot` (`Ranch`, `Index`), `RanchNest` (`Ranch`), `Teleport` prompts (`To` = "hub" or "ranch"). A ranch's `Owner` attribute is the UserId or 0.
+- Ranches are detached islands (`World.RANCH_DIST`), reached only by teleport. Terrain lands on 4-stud steps: the island cylinder tops at 18 so the surface is `World.RANCH_Y` = 22 (measured); the hub block tops at -2 for a surface at 0.
+- The SpawnLocation is placed in code (`World.SPAWN`, the hub fallback); Rojo ignores `Position` in the project file. Owners are moved to their ranch after spawning.
 - Max Players must be 3 (= `World.RANCHES`). A place file cannot carry it: set it in Game Settings when publishing.
-- Ranch spots are tagged `RanchSpot` (`Ranch`, `Index`) and nests `RanchNest` (`Ranch`); a ranch's `Owner` attribute is the UserId or 0.
-- One ranch ends each of the north, east and west roads (`RANCH_ANGLE`); scenery keeps clear of `ROADS` and ranch squares.
-- Ranch hilltops: terrain lands on 4-stud steps, so `World.RANCH_Y` is 22 with the cylinder top at 18 (measured). Ramps are parts (wedge + road), not terrain.
-- Station layout: track NW, gym NE, pool SW, library SE, spring S at `World.STATION_DIST`; local -Z faces the plaza.

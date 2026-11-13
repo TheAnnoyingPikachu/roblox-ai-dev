@@ -1,75 +1,56 @@
-# Animal Stations (game 7): design spec (foundation draft)
+# Animal Stations (game 7): design framework
 
-Status: foundation only. Facts are in decisions 0019 to 0023. Everything else here is a **hypothesis**
-to settle in later tasks.
+Status: framework. The settled facts are in decisions 0019 to 0029; a later decision replaces an
+earlier one, and 0029 is the current summary. Every number is a draft.
 
 ## Pitch
 
-Hatch animals from eggs. Every animal has four stats: speed, strength, stamina and mana. Train
-them at the stations, build a team of three, and push through endless levels for coins to buy
-better eggs.
+Hatch animals from eggs, train them at your ranch, and send a team through endless waves of
+harder and harder enemies. Your ranch is your base and a long tycoon. The hub is where you meet
+vendors.
 
-## Roles, Titans and roster (decision 0027)
+## The pieces
 
-Three roles in a rock paper scissors loop, set by species: Attack beats Utility, Utility beats
-Defense, Defense beats Attack. Titans are a separate legendary category in the team's fourth
-slot. The roster is an African beta pool: Hyena, Jackal, Cheetah, Lion (Attack); Warthog,
-Tortoise, Rhino, Gorilla (Defense); Meerkat, Flamingo, Giraffe, Mandrill (Utility); Elephant,
-Hippo, Crocodile (Titans). This replaces the role and matchup parts of the sections below.
+- **Animals:** a small African beta pool of 8 species (`game7-animals.md`). Each has a role
+  (Attack, Defence, Utility), a group (pack or solitary) and three super-rare variants. The
+  Elephant is the Titan: legendary only, from the Legendary Egg at player level 15.
+- **Stats:** Speed, Strength, Stamina, Mana, Health, Defence. Each has a level from 0 to 70;
+  training raises it and a maxed stat is doubled.
+- **Team:** three animals in any mix, plus one Titan in its own fourth slot.
+- **Battles:** automatic and decided by the server. Attack beats Utility, Utility beats Defence,
+  Defence beats Attack (a slight edge). Pack and solitary animals get group bonuses. Mana sets
+  how often power attacks happen.
+- **Waves:** an endless line of enemy teams that keep growing, with a variant boss every tenth.
+  Clearing a wave pays coins.
+- **Player level:** from XP. Hatching gives XP now; waves will too.
+- **Places:** the hub (plaza, egg stalls) and one ranch island per player, joined only by
+  teleport pads. Animals train at the ranch. A server holds 3 players.
 
-## Health, power attacks, hilltop ranches (decision 0028)
+## Words
 
-Five trainable stats: Speed, Strength, Stamina, Mana, Health. Health is HP (trained at the
-Healing Spring, the fifth station). Mana fills a meter that triggers power attacks (x 2). Each
-ranch sits on its own hill far from the hub.
+"Level" means three things, so use: **wave** (the endless levels), **stat level** (0 to 70) and
+**player level**.
 
-## Next direction (decision 0025, not built)
+## Built
 
-PvP on hold. Roles become Attack, Defense, Utility, with a **Titan** as a legendary fourth team
-slot. The ranch becomes a long tycoon: upgrade areas bought with gold and **samples** dropped by
-harder and harder enemies.
+- Pure, tested rules in `src/shared`: `StationConfig`, `StationRules` (hatch, stat levels,
+  roles), `BattleRules` (team battle), `LevelRules` (waves, rewards), `StationProgress` (the
+  saved profile: coins, XP, animals, team, Titan, training).
+- Server: saves, egg buying at the stalls, team and training requests, ranch assignment and
+  teleports. Client: coins and level, and the Animals panel.
+- World: the hub and three ranch islands as simple placeholders.
 
-## Modes and roles (decision 0024)
+## Not built yet
 
-One battle system, three modes: **endless wave grinding** (levels), **rock paper scissors PvP**,
-and **training**. Each type is a role: Speed = Attack, Strength = Tank, Stamina = Defense,
-Mana = Utility (healer). Stats were renamed in 0026 (swim to stamina, smarts to mana); every
-animal has magical attacks.
+- A battle screen. Until then coins, wave progress and most XP cannot be earned in play.
+- Animal models; animals standing on the training pads or in the paddock.
+- The ranch tycoon: universal upgrades and expansion, paid with gold and samples from harder
+  enemies. More hub vendors.
+- Magical attacks, microgames, PvP (on hold; it will be the three-role loop), teams of 3 players.
+- The standard features: start menu, logins, quests, cosmetics, leaderboard, music.
 
-## Pivot (decision 0023)
+## Open questions
 
-Train a team of three animals to clear **endless levels**. Stations no longer pay coins: they
-**train** the station's stat. Coins come from clearing levels and buy eggs. Lobbies hold 3
-players; teams of 3 players come later.
-
-## Vision (decision 0021)
-
-Three pillars on the same four stats: a **ranch** you raise animals on (your home base),
-lots of short **silly reflex microgames** (our own designs), and **turn-based creature battles**.
-Servers hold 3 players (0023); each gets a home ranch around the shared hub.
-Battle matchups (decision 0022) are a rock paper scissors loop with a slight edge (x1.25):
-Speed beats Mana, Mana beats Strength, Strength beats Stamina, Stamina beats Speed.
-
-## Core loop (hypothesis)
-
-1. Buy an egg with coins and hatch it. The odds are shown on the egg.
-2. Pick a team of three and put spare animals on stations to train (`StationRules.train`).
-3. Fight the next level (`LevelRules.battle`); clearing it pays coins (`LevelRules.reward`).
-4. Optional: play a station's microgame for a training boost (not designed yet).
-5. Buy better eggs, train, and push further.
-
-## Built so far
-
-- `StationConfig`: 4 stats, 3 roles + Titans, 15 African species (12 with a basic version and 3
-  super-rare variants, 3 Titans; bestiary in `game7-animals.md`), 3 eggs, 4 stations.
-- `StationRules`: `hatch`, `versionStats`, `rarity`, `stat`, `train`, `bestStat`, `role`, `matchup`; `LevelRules`: `enemies`, `fight`, `reward`; `BattleRules`: `fighter`, `battle` (roles), tested in `StationRules`, `LevelRules` and `BattleRules` specs.
-- `StationProgress`: the saved profile (coins, animals, team, training), egg buying, tested in its spec. Server requests and a first HUD use it (0025).
-
-- World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and three home
-  ranches. The server gives each player a ranch and spawns them at its gate.
-
-## Next (not started)
-
-Save profile and remotes (kit), the server loop, a hub world with the four stations, stat cards
-and assignment UI, animal models, playable mini-games, and the user's standard features (start
-menu, logins, quests, cosmetics, leaderboard, music).
+- What Speed, Strength and Stamina each do on their own (attack comes from the best of the four
+  non-Health, non-Defence stats today).
+- How waves give XP, gold and samples.

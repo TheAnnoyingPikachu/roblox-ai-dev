@@ -1,9 +1,11 @@
 --!strict
--- Animal Stations world (STATION-003, STATION-004): the central plaza with the hatchery fountain
--- and the egg market, the station zones (Healing Spring S, and on the diagonals Speed Track NW, Strength Gym NE, Swim
--- Pool SW, Magic Library SE), three home ranches (one per player), each on its own hill far out along the north, east and west roads,
--- paths with lamps, trees, flowers and the hill ring. Built once from parts, Roblox materials and
--- terrain. Display only: no game rules live here. Slots, spots and nests are tagged for the server.
+-- Animal Stations world (framework, decision 0029): the hub, a central plaza with the hatchery
+-- fountain and the vendors' egg stalls, and three home ranches (one per player). Each ranch is a
+-- large separate island far from the hub, reached only by the teleport pads. A ranch is the
+-- player's base, where animals live and train: a barn, a paddock, an egg nest and one training
+-- pad per stat, with room to grow. Built once from parts, Roblox materials and terrain. Display
+-- only: no game rules live here. Spots, nests, training pads and teleport prompts are tagged
+-- for the server.
 
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
@@ -17,17 +19,14 @@ local part, pillar, label = Props.part, Props.pillar, Props.label
 local World = {}
 
 World.PLAZA = 48 -- plaza radius
-World.STATION_DIST = 130 -- plaza centre to each station centre
 World.SPAWN = Vector3.new(0, 0.6, 76)
-World.SLOTS = 8 -- work slots per station (placeholder count; the rules decide later)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
-World.RANCH_DIST = 400 -- plaza centre to each ranch centre: far out, so the hub has room to grow
-World.RANCH_Y = 22 -- each ranch sits on its own hilltop this high
-local HILL = 75 -- hilltop radius
-local RAMP = 90 -- length of the road ramp up each hill
-World.RANCH_HALF = 38 -- half the fenced ranch square
+World.RANCH_DIST = 1200 -- hub centre to each ranch centre: detached, reached only by teleport
+World.RANCH_Y = 22 -- the island surface (a terrain cylinder topped at 18 lands there; measured)
+local ISLAND = 115 -- island radius
+World.RANCH_HALF = 60 -- half the fenced ranch square: room for the ranch to grow
 World.RANCH_SPOTS = 8 -- places in the paddock where owned animals will idle
--- One ranch at the end of each of the north, east and west roads (south is the welcome walk).
+-- The ranch islands lie north, east and west of the hub.
 local RANCH_ANGLE = { -90, 0, 180 }
 
 local M = Enum.Material
@@ -50,28 +49,24 @@ local FLOWERS = {
 }
 local WARM = Color3.fromRGB(255, 210, 150)
 
--- Station look: stat colour, position on the diagonal, display title.
+-- Each stat's colour (its training pad at the ranch).
 local STAT_COLOUR: { [string]: Color3 } = {
 	speed = Color3.fromRGB(255, 160, 40),
 	health = Color3.fromRGB(70, 200, 120),
+	defence = Color3.fromRGB(105, 125, 165),
 	strength = Color3.fromRGB(235, 70, 70),
 	stamina = Color3.fromRGB(50, 150, 255),
 	mana = Color3.fromRGB(160, 90, 240),
 }
-local STATION_ANGLE: { [string]: number } = { track = -135, gym = -45, pool = 135, library = 45, spring = 90 }
 local EGG_LOOK: { [string]: { body: Color3, spot: Color3 } } = {
 	meadow = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) },
 	wild = { body = Color3.fromRGB(150, 210, 120), spot = Color3.fromRGB(110, 80, 50) },
 	safari = { body = Color3.fromRGB(245, 200, 110), spot = Color3.fromRGB(70, 50, 35) },
+	legendary = { body = Color3.fromRGB(255, 205, 70), spot = Color3.fromRGB(150, 80, 220) },
 }
 
 local function rad(d: number): number
 	return math.rad(d)
-end
-
-local function stationPos(id: string): Vector3
-	local a = rad(STATION_ANGLE[id])
-	return Vector3.new(math.cos(a), 0, math.sin(a)) * World.STATION_DIST
 end
 
 -- A flat disc lying on the ground, centre at `pos` (y = top surface).
@@ -218,16 +213,6 @@ local function egg(parent: Instance, base: Vector3, h: number, body: Color3, spo
 	return e
 end
 
--- A work slot: a coloured pad an animal will stand on, tagged "StationSlot".
-local function slot(parent: Instance, pos: Vector3, colour: Color3, station: string, index: number)
-	disc(parent, pos + Vector3.new(0, 0.15, 0), 4.8, 0.5, WHITE, M.SmoothPlastic)
-	local pad = disc(parent, pos + Vector3.new(0, 0.3, 0), 4.2, 0.5, colour, M.SmoothPlastic)
-	pad.Name = `Slot{index}`
-	pad:SetAttribute("Station", station)
-	pad:SetAttribute("Index", index)
-	CollectionService:AddTag(pad, "StationSlot")
-end
-
 -- Lighting and sky ---------------------------------------------------------------------------------
 
 local function effect(className: string, props: { [string]: any })
@@ -267,12 +252,11 @@ local function terrain()
 	local clouds = t:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	clouds.Cover, clouds.Density, clouds.Color = 0.45, 0.6, WHITE
 	clouds.Parent = t
-	-- one flat-topped hill per ranch, with a lower terrace round it
+	-- one flat island per ranch, far from the hub
 	for _, angle in RANCH_ANGLE do
 		local c = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle))) * World.RANCH_DIST
 		local top = World.RANCH_Y - 4 -- measured in Studio: a cylinder top at 18 gives a surface at 22
-		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top - 10) / 2, 0)), top + 10, HILL, M.Grass)
-		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top / 2 - 10) / 2, 0)), top / 2 + 10, HILL + 14, M.Grass)
+		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top - 10) / 2, 0)), top + 10, ISLAND, M.Grass)
 	end
 	-- rolling hill ring that closes the hub in
 	local rng = Random.new(11)
@@ -292,22 +276,6 @@ local function plaza(root: Instance, rng: Random)
 	disc(f, Vector3.new(0, 0.4, 0), R * 2 + 4, 0.6, STONE_DARK, M.Pavement)
 	disc(f, Vector3.new(0, 0.5, 0), R * 2, 0.6, STONE, M.Pavement)
 	disc(f, Vector3.new(0, 0.55, 0), 62, 0.6, Color3.fromRGB(236, 226, 205), M.Pavement)
-	-- coloured inlay ring: one quarter per stat, pointing at its station
-	for id, angle in STATION_ANGLE do
-		local st = StationConfig.station(id) :: StationConfig.Station
-		for k = -3, 3 do
-			local a = rad(angle + k * 7)
-			local p = Vector3.new(math.cos(a), 0, math.sin(a)) * 36
-			part(
-				f,
-				Vector3.new(3.6, 0.2, 4.4),
-				CFrame.lookAt(p + Vector3.new(0, 0.6, 0), Vector3.new(0, 0.6, 0)),
-				STAT_COLOUR[st.stat],
-				M.SmoothPlastic
-			)
-		end
-	end
-
 	-- Hatchery fountain: basin, water, pedestal and the great egg
 	local h = folder(f, "Hatchery")
 	disc(h, Vector3.new(0, 1.2, 0), 30, 1, STONE_DARK, M.Marble)
@@ -346,10 +314,11 @@ local function plaza(root: Instance, rng: Random)
 		ball(h, p + Vector3.new(0, 2.6, 0), 1.6, STONE, M.Marble)
 	end
 
-	-- Egg market on the north arc: one stand per egg, cheapest on the left as you look north.
+	-- Egg market (the hub's vendors) on the north arc, facing the south walk players arrive on:
+	-- one stall per egg, cheapest on the left as you look north.
 	local mk = folder(f, "EggMarket")
 	for i, e in StationConfig.EGGS do
-		local a = rad(-90 + (i - 2) * 32)
+		local a = rad(-90 + (i - (#StationConfig.EGGS + 1) / 2) * 36)
 		local p = Vector3.new(math.cos(a), 0, math.sin(a)) * 34
 		local cf = CFrame.lookAt(p + Vector3.new(0, 0.5, 0), Vector3.new(0, 0.5, 0))
 		local stand = folder(mk, e.id)
@@ -390,22 +359,20 @@ local function plaza(root: Instance, rng: Random)
 			look.body:Lerp(INK, 0.55),
 			M.SmoothPlastic
 		)
-		label(board, `{e.name}  {e.price} coins`, WHITE)
+		label(
+			board,
+			if e.unlock then `{e.name}  Lv {e.unlock}+  {e.price} coins` else `{e.name}  {e.price} coins`,
+			WHITE
+		)
 		local spot = part(stand, Vector3.new(0.6, 0.6, 0.6), cf * CFrame.new(0, 10.6, 1), WARM, M.Neon)
 		glow(spot, WARM, 12, 1)
 	end
 
-	-- benches and planters around the rim, skipping the market and the four path mouths
+	-- benches and planters around the rim, clear of the market arc (north) and the south walk
 	for i = 0, 15 do
 		local deg = i * 22.5 + 11.25
-		local onPath = false
-		for _, pa in STATION_ANGLE do
-			local d = math.abs(((deg - pa + 180) % 360) - 180)
-			onPath = onPath or d < 14
-		end
-		local nearMarket = math.abs(((deg + 90 + 180) % 360) - 180) < 50
-		local south = math.abs(((deg - 90 + 180) % 360) - 180) < 14
-		if not onPath and not nearMarket and not south then
+		local fromNorth = math.abs(((deg + 90 + 180) % 360) - 180)
+		if fromNorth > 75 and fromNorth < 166 then
 			local a = rad(deg)
 			local p = Vector3.new(math.cos(a), 0, math.sin(a)) * (R - 4)
 			bench(f, CFrame.lookAt(p + Vector3.new(0, 0.5, 0), Vector3.new(0, 0.5, 0)))
@@ -423,25 +390,30 @@ end
 
 -- Paths ----------------------------------------------------------------------------------------------
 
--- Every road as a segment {a, b}; scenery keeps clear of these. A ranch road runs flat, climbs
--- a ramp to the hilltop, then runs flat to the gate.
-local function roadSegments(): { { Vector3 } }
-	local segs = {}
-	for _, angle in STATION_ANGLE do
-		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
-		table.insert(segs, { d * (World.PLAZA - 2), d * (World.STATION_DIST - 40) })
-	end
-	for _, angle in RANCH_ANGLE do
-		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
-		local up = Vector3.new(0, World.RANCH_Y, 0)
-		local top = World.RANCH_DIST - HILL + 3
-		table.insert(segs, { d * (World.PLAZA - 2), d * (top - RAMP) })
-		table.insert(segs, { d * (top - RAMP), d * top + up })
-		table.insert(segs, { d * top + up, d * (World.RANCH_DIST - World.RANCH_HALF - 2) + up })
-	end
-	return segs
+-- Every road as a segment {a, b}; scenery keeps clear of these. Only the south walk, from the
+-- hub's teleport pad to the plaza: the ranches are reached by teleport, not by road.
+local ROADS: { { Vector3 } } = { { Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) } }
+
+-- Where a player arrives in the hub: on the south walk, facing the plaza.
+function World.hubSpawn(): CFrame
+	return CFrame.lookAt(Vector3.new(0, 3, 80), Vector3.new(0, 3, 0))
 end
-local ROADS = roadSegments()
+
+-- A glowing teleport pad with a prompt. `to` is "hub" or "ranch"; the server connects every
+-- prompt tagged "Teleport" and decides where the player goes.
+local function teleporter(parent: Instance, pos: Vector3, to: string, action: string)
+	local pad = disc(parent, pos + Vector3.new(0, 0.7, 0), 8, 0.5, Color3.fromRGB(120, 220, 255), M.Neon)
+	pad.Name = "Teleport"
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.ActionText = action
+	prompt.ObjectText = "Teleport"
+	prompt.HoldDuration = 0.5
+	prompt.MaxActivationDistance = 12
+	prompt.RequiresLineOfSight = false
+	prompt:SetAttribute("To", to)
+	prompt.Parent = pad
+	CollectionService:AddTag(prompt, "Teleport")
+end
 
 local function paths(root: Instance)
 	local f = folder(root, "Paths")
@@ -451,488 +423,17 @@ local function paths(root: Instance)
 		strip(f, a + Vector3.new(0, 0.35, 0), b + Vector3.new(0, 0.35, 0), 15, 0.6, PATH, M.Cobblestone)
 		local dir = (b - a).Unit
 		local side = Vector3.new(-dir.Z, 0, dir.X).Unit
-		if a.Y ~= b.Y then
-			-- a ramp: an earth wedge under the road (thick end uphill), and no lamps on the slope
-			local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
-			local mid = Vector3.new((a.X + b.X) / 2, (a.Y + b.Y) / 2, (a.Z + b.Z) / 2)
-			local w = Instance.new("WedgePart")
-			w.Anchored, w.Size = true, Vector3.new(30, math.abs(b.Y - a.Y), flat.Magnitude)
-			w.CFrame = CFrame.lookAt(mid, mid - flat)
-			w.Color, w.Material = Color3.fromRGB(150, 120, 84), M.Ground
-			w.Parent = f
-			continue
-		end
-		for i = 1, math.floor(((b - a).Magnitude - 6) / 22) do -- stop short so no lamp lands inside a gate
+		for i = 1, math.floor(((b - a).Magnitude - 6) / 22) do -- stop short of the road's end
 			local p = a + dir * (i * 22 - 8)
 			lamp(f, p + side * 11)
 			lamp(f, p - side * 11)
 		end
-		disc(f, b + Vector3.new(0, 0.32, 0), 18, 0.6, PATH, M.Cobblestone) -- round off joins and forks
+		disc(f, b + Vector3.new(0, 0.32, 0), 18, 0.6, PATH, M.Cobblestone) -- round off the end
 	end
+	-- the hub's teleport pad at the end of the south walk
+	teleporter(f, Vector3.new(0, 0, 90), "ranch", "Go to your ranch")
+	signboard(f, CFrame.new(0, 0, 100), 14, "To your ranch", Color3.fromRGB(60, 130, 170), 5)
 end
-
--- Stations -------------------------------------------------------------------------------------------
-
--- Local frame of a station: origin at its centre, -Z (look) points back at the plaza.
-local function frame(id: string): CFrame
-	local p = stationPos(id)
-	return CFrame.lookAt(p, Vector3.zero)
-end
-
--- Shared shell of every station: ground pad, entrance arch with the name, info board, work slots.
-local function shell(root: Instance, st: StationConfig.Station): (Folder, CFrame, Color3)
-	local f = folder(root, st.id)
-	local cf = frame(st.id)
-	local col = STAT_COLOUR[st.stat]
-	-- entrance arch at the near edge
-	local gate = cf * CFrame.new(0, 0, -40)
-	for _, dx in { -10, 10 } do
-		local base = (gate * CFrame.new(dx, 0, 0)).Position
-		part(
-			f,
-			Vector3.new(3, 14, 3),
-			CFrame.new(base + Vector3.new(0, 7, 0)) * gate.Rotation,
-			col:Lerp(WHITE, 0.15),
-			M.SmoothPlastic
-		)
-		part(
-			f,
-			Vector3.new(3.8, 1, 3.8),
-			CFrame.new(base + Vector3.new(0, 14.5, 0)) * gate.Rotation,
-			WHITE,
-			M.SmoothPlastic
-		)
-		ball(f, base + Vector3.new(0, 15.8, 0), 2.2, col, M.Neon)
-	end
-	local sign = part(f, Vector3.new(23, 4.2, 1), gate * CFrame.new(0, 12.4, 0), col, M.SmoothPlastic)
-	part(f, Vector3.new(24, 0.6, 1.4), gate * CFrame.new(0, 14.8, 0), WHITE, M.SmoothPlastic)
-	part(f, Vector3.new(24, 0.6, 1.4), gate * CFrame.new(0, 10, 0), WHITE, M.SmoothPlastic)
-	label(sign, string.upper(st.name), WHITE)
-	-- info board beside the arch
-	signboard(
-		f,
-		cf * CFrame.new(23, 0, -36) * CFrame.Angles(0, rad(180), 0),
-		21,
-		`Trains {string.upper(st.stat)}`,
-		col:Lerp(INK, 0.35),
-		6
-	)
-	return f, cf, col
-end
-
-local function slotsAlong(
-	f: Instance,
-	cf: CFrame,
-	col: Color3,
-	st: StationConfig.Station,
-	first: Vector3,
-	step: Vector3
-)
-	local sf = folder(f, "Slots")
-	for i = 1, World.SLOTS do
-		slot(sf, (cf * CFrame.new(first + step * (i - 1))).Position, col, st.id, i)
-	end
-end
-
-local function track(root: Instance, st: StationConfig.Station, rng: Random)
-	local f, cf, col = shell(root, st)
-	-- oval running track from short segments
-	local A, B, N = 30, 19, 56
-	local function at(t: number, grow: number): Vector3
-		return (cf * CFrame.new(math.cos(t) * (A + grow), 0, math.sin(t) * (B + grow) + 4)).Position
-	end
-	for i = 0, N - 1 do
-		local t0, t1 = i / N * math.pi * 2, (i + 1) / N * math.pi * 2
-		strip(
-			f,
-			at(t0, 0) + Vector3.new(0, 0.4, 0),
-			at(t1, 0) + Vector3.new(0, 0.4, 0) + (at(t1, 0) - at(t0, 0)) * 0.08,
-			9,
-			0.6,
-			Color3.fromRGB(205, 92, 62),
-			M.Ground
-		)
-		for _, g in { -4.6, 0, 4.6 } do
-			strip(
-				f,
-				at(t0, g) + Vector3.new(0, 0.48, 0),
-				at(t1, g) + Vector3.new(0, 0.48, 0),
-				0.35,
-				0.6,
-				WHITE,
-				M.SmoothPlastic
-			)
-		end
-	end
-	-- inner field and the start line
-	local field = part(f, Vector3.new(1, 1, 1), cf * CFrame.new(0, 0.15, 4), Color3.fromRGB(120, 200, 95), M.Grass)
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Cylinder
-	mesh.Scale = Vector3.new(0.3, (B - 4.6) * 2, (A - 4.6) * 2)
-	mesh.Parent = field
-	field.CFrame = cf * CFrame.new(0, 0.2, 4) * CFrame.Angles(0, rad(90), rad(90))
-	for k = 0, 7 do
-		for r = 0, 1 do
-			local c = if (k + r) % 2 == 0 then WHITE else INK
-			part(
-				f,
-				Vector3.new(1.1, 0.62, 1.1),
-				cf * CFrame.new(A - 4 + k * 1.12, 0.45, 4 + r * 1.12 - 0.56),
-				c,
-				M.SmoothPlastic
-			)
-		end
-	end
-	-- finish arch over the start line
-	for _, dz in { -6, 6 } do
-		pillar(f, (cf * CFrame.new(A, 0, 4 + dz)).Position, 11, 0.5, WHITE, M.Metal)
-	end
-	local banner =
-		part(f, Vector3.new(13, 2.6, 1), cf * CFrame.new(A, 10, 4) * CFrame.Angles(0, rad(90), 0), col, M.SmoothPlastic)
-	label(banner, "FINISH", WHITE)
-	-- bleachers along the far straight
-	for row = 0, 3 do
-		part(f, Vector3.new(36, 1, 3), cf * CFrame.new(0, 0.5 + row * 1.2, 4 + B + 9 + row * 3), STONE, M.Concrete)
-		for s = 0, 11 do
-			local c = if s % 2 == 0 then col else WHITE
-			part(
-				f,
-				Vector3.new(2.4, 0.4, 1.6),
-				cf * CFrame.new(-16.5 + s * 3, 1.2 + row * 1.2, 4 + B + 9 + row * 3),
-				c,
-				M.SmoothPlastic
-			)
-		end
-	end
-	-- pennant flags around the track
-	for i = 0, 9 do
-		local t = i / 10 * math.pi * 2
-		local p = at(t, 9)
-		pillar(f, p, 8, 0.15, WHITE, M.Metal)
-		local mid = (cf * CFrame.new(0, 0, 4)).Position
-		local face = CFrame.lookAt(p + Vector3.new(0, 7, 0), Vector3.new(mid.X, 7, mid.Z))
-		part(
-			f,
-			Vector3.new(2.4, 1.6, 0.15),
-			face * CFrame.new(1.2, 0, 0),
-			if i % 2 == 0 then col else Color3.fromRGB(255, 230, 90),
-			M.SmoothPlastic
-		)
-	end
-	-- starting blocks: the work slots, in the inner field facing the near straight
-	slotsAlong(f, cf, col, st, Vector3.new(-17.5, 0.5, -2), Vector3.new(5, 0, 0))
-	tree(f, (cf * CFrame.new(-30, 0, -26)).Position, rng, 0.9)
-	tree(f, (cf * CFrame.new(30, 0, -26)).Position, rng, 0.9)
-end
-
-local function gym(root: Instance, st: StationConfig.Station, rng: Random)
-	local f, cf, col = shell(root, st)
-	local RUBBER = Color3.fromRGB(60, 60, 68)
-	-- raised floor with mat tiles
-	part(f, Vector3.new(56, 1.6, 44), cf * CFrame.new(0, 0.8, 6), Color3.fromRGB(200, 200, 205), M.Concrete)
-	for x = 0, 5 do
-		for z = 0, 3 do
-			local c = if (x + z) % 2 == 0 then RUBBER else RUBBER:Lerp(col, 0.25)
-			part(f, Vector3.new(8.6, 0.2, 9.6), cf * CFrame.new(-21.5 + x * 8.6, 1.7, -8.5 + z * 9.6 + 6), c, M.Rubber)
-		end
-	end
-	-- pavilion: pillars and a roof over the back half
-	for _, x in { -26, -9, 9, 26 } do
-		part(f, Vector3.new(2, 16, 2), cf * CFrame.new(x, 9.6, 26), WHITE, M.SmoothPlastic)
-		part(f, Vector3.new(2, 16, 2), cf * CFrame.new(x, 9.6, 8), WHITE, M.SmoothPlastic)
-	end
-	part(f, Vector3.new(58, 1.2, 22), cf * CFrame.new(0, 18, 17), WHITE, M.SmoothPlastic)
-	part(f, Vector3.new(58.4, 1.6, 0.8), cf * CFrame.new(0, 17.4, 6), col, M.SmoothPlastic)
-	part(f, Vector3.new(58.4, 1.6, 0.8), cf * CFrame.new(0, 17.4, 28), col, M.SmoothPlastic)
-	local roofSign = part(f, Vector3.new(20, 3.4, 0.8), cf * CFrame.new(0, 20.4, 6.2), col, M.SmoothPlastic)
-	label(roofSign, "LIFT!", WHITE)
-	-- barbell racks under the roof
-	for _, x in { -18, 0, 18 } do
-		local base = cf * CFrame.new(x, 1.8, 22)
-		for _, dx in { -3.5, 3.5 } do
-			part(f, Vector3.new(0.6, 6, 0.6), base * CFrame.new(dx, 3, 0), INK, M.Metal)
-		end
-		local a, b = (base * CFrame.new(-5.5, 5.2, 0)).Position, (base * CFrame.new(5.5, 5.2, 0)).Position
-		bar(f, a, b, 0.2, Color3.fromRGB(190, 190, 200), M.Metal)
-		for _, d in { -4.6, 4.6 } do
-			local p = (base * CFrame.new(d, 5.2, 0)).Position
-			bar(f, p - cf.RightVector * 0.4, p + cf.RightVector * 0.4, 1.6, col, M.SmoothPlastic)
-		end
-	end
-	-- dumbbell rack and tyre stack at the sides
-	part(f, Vector3.new(1.4, 2.4, 10), cf * CFrame.new(-25, 3, -6), INK, M.Metal)
-	for i = 0, 4 do
-		local p = (cf * CFrame.new(-25, 4.6, -10 + i * 2)).Position
-		bar(f, p - cf.RightVector * 1, p + cf.RightVector * 1, 0.15, Color3.fromRGB(190, 190, 200), M.Metal)
-		bar(f, p - cf.RightVector * 1.1, p - cf.RightVector * 0.7, 0.55, RUBBER, M.Rubber)
-		bar(f, p + cf.RightVector * 0.7, p + cf.RightVector * 1.1, 0.55, RUBBER, M.Rubber)
-	end
-	for i = 0, 2 do
-		disc(f, (cf * CFrame.new(25, 2.6 + i * 1.6, -6)).Position, 5, 1.5, Color3.fromRGB(35, 35, 38), M.Rubber)
-	end
-	-- giant kettlebell statue by the entrance
-	local kb = (cf * CFrame.new(-18, 0, -34)).Position
-	part(f, Vector3.new(6, 1.2, 6), kb + Vector3.new(0, 0.6, 0), STONE, M.Marble)
-	ball(f, kb + Vector3.new(0, 4.4, 0), 6.6, INK, M.Metal)
-	local handle = part(f, Vector3.new(4.6, 0.9, 0.9), kb + Vector3.new(0, 8.6, 0), INK, M.Metal)
-	handle.CFrame = CFrame.new(kb + Vector3.new(0, 8.6, 0)) * cf.Rotation
-	for _, dx in { -2, 2 } do
-		part(
-			f,
-			Vector3.new(0.9, 2.4, 0.9),
-			CFrame.new(kb + Vector3.new(0, 7.6, 0)) * cf.Rotation * CFrame.new(dx, 0, 0),
-			INK,
-			M.Metal
-		)
-	end
-	-- lifting pads: the work slots in two rows on the open half of the floor
-	local sf = folder(f, "Slots")
-	for i = 1, World.SLOTS do
-		local row, k = (i - 1) // 4, (i - 1) % 4
-		slot(sf, (cf * CFrame.new(-15 + k * 10, 1.8, -10 + row * 9)).Position, col, st.id, i)
-	end
-	tree(f, (cf * CFrame.new(34, 0, -30)).Position, rng, 1)
-	tree(f, (cf * CFrame.new(-34, 0, 20)).Position, rng, 1)
-end
-
-local function pool(root: Instance, st: StationConfig.Station, rng: Random)
-	local f, cf, col = shell(root, st)
-	local TILE = Color3.fromRGB(240, 248, 255)
-	local W, L = 30, 46 -- pool water size (x, z)
-	-- deck, rim and basin
-	part(f, Vector3.new(W + 20, 1, L + 16), cf * CFrame.new(0, 0.5, 6), Color3.fromRGB(235, 225, 205), M.Pavement)
-	for _, side in { -1, 1 } do
-		part(f, Vector3.new(2, 1.4, L + 4), cf * CFrame.new(side * (W / 2 + 1), 1.2, 6), TILE, M.Marble)
-		part(f, Vector3.new(W + 4, 1.4, 2), cf * CFrame.new(0, 1.2, 6 + side * (L / 2 + 1)), TILE, M.Marble)
-	end
-	part(f, Vector3.new(W, 0.4, L), cf * CFrame.new(0, 1, 6), Color3.fromRGB(120, 210, 240), M.SmoothPlastic)
-	local water = part(f, Vector3.new(W, 0.6, L), cf * CFrame.new(0, 1.3, 6), Color3.fromRGB(40, 160, 245), M.Glass)
-	water.Transparency, water.Reflectance = 0.3, 0.2
-	water.Name = "Water"
-	-- lane ropes with red and white floats
-	for lane = 1, 3 do
-		local x = -W / 2 + lane * W / 4
-		for k = 0, 22 do
-			local c = if k % 2 == 0 then Color3.fromRGB(235, 60, 60) else WHITE
-			ball(f, (cf * CFrame.new(x, 1.6, 6 - L / 2 + 1 + k * 2)).Position, 0.9, c, M.SmoothPlastic)
-		end
-	end
-	-- diving board and ladder at the far end
-	part(f, Vector3.new(3, 3, 3), cf * CFrame.new(-8, 2, 6 + L / 2 + 4), TILE, M.Marble)
-	part(
-		f,
-		Vector3.new(2.4, 0.4, 9),
-		cf * CFrame.new(-8, 3.7, 6 + L / 2 - 0.5),
-		Color3.fromRGB(80, 170, 255),
-		M.SmoothPlastic
-	)
-	for _, dx in { -1, 1 } do
-		bar(
-			f,
-			(cf * CFrame.new(8 + dx, 1, 6 + L / 2)).Position,
-			(cf * CFrame.new(8 + dx, 4.5, 6 + L / 2 + 0.8)).Position,
-			0.15,
-			WHITE,
-			M.Metal
-		)
-	end
-	-- loungers and umbrellas on the side deck
-	for i = 0, 3 do
-		local side = if i < 2 then -1 else 1
-		local z = -6 + (i % 2) * 18
-		local base = cf * CFrame.new(side * (W / 2 + 6), 1, z)
-		part(f, Vector3.new(2.6, 0.5, 6), base * CFrame.new(0, 0.9, 0), WHITE, M.SmoothPlastic)
-		part(
-			f,
-			Vector3.new(2.6, 0.5, 2.6),
-			base * CFrame.new(0, 1.6, 2.6) * CFrame.Angles(rad(-35), 0, 0),
-			WHITE,
-			M.SmoothPlastic
-		)
-		local pole = (base * CFrame.new(side * 2.6, 0, -2)).Position
-		pillar(f, pole, 8, 0.15, WHITE, M.Metal)
-		disc(
-			f,
-			pole + Vector3.new(0, 8.4, 0),
-			7,
-			0.5,
-			if i % 2 == 0 then col else Color3.fromRGB(255, 225, 100),
-			M.Fabric
-		)
-		ball(f, pole + Vector3.new(0, 8.6, 0), 0.8, WHITE)
-	end
-	-- life ring on a post
-	local ringPost = cf * CFrame.new(W / 2 + 6, 1, 26)
-	pillar(f, ringPost.Position, 5, 0.2, WHITE, M.Metal)
-	local ring = part(
-		f,
-		Vector3.new(0.8, 3, 3),
-		ringPost * CFrame.new(0, 4, -0.5) * CFrame.Angles(0, rad(90), 0),
-		Color3.fromRGB(235, 70, 60),
-		M.SmoothPlastic
-	)
-	ring.Shape = Enum.PartType.Cylinder
-	-- starting blocks: the work slots along the near edge
-	slotsAlong(f, cf, col, st, Vector3.new(-17.5, 1, 6 - L / 2 - 5.5), Vector3.new(5, 0, 0))
-	tree(f, (cf * CFrame.new(-W / 2 - 14, 0, 36)).Position, rng, 1)
-	tree(f, (cf * CFrame.new(W / 2 + 14, 0, 38)).Position, rng, 1)
-end
-
-local function library(root: Instance, st: StationConfig.Station, rng: Random)
-	local f, cf, col = shell(root, st)
-	local WALL = Color3.fromRGB(236, 228, 214)
-	local ROOF = col:Lerp(INK, 0.3)
-	local W, D, H = 40, 26, 15
-	local c = cf * CFrame.new(0, 0, 16) -- building centre (front faces the plaza)
-	-- floor, back and side walls, front columns
-	part(f, Vector3.new(W + 4, 1.2, D + 4), c * CFrame.new(0, 0.6, 0), Color3.fromRGB(150, 105, 70), M.WoodPlanks)
-	part(f, Vector3.new(W, H, 1.6), c * CFrame.new(0, H / 2 + 1.2, D / 2), WALL, M.Plaster)
-	for _, side in { -1, 1 } do
-		part(f, Vector3.new(1.6, H, D), c * CFrame.new(side * W / 2, H / 2 + 1.2, 0), WALL, M.Plaster)
-		-- round window on each side wall
-		local win = part(
-			f,
-			Vector3.new(1.8, 5, 5),
-			c * CFrame.new(side * W / 2, H / 2 + 3, 0),
-			Color3.fromRGB(190, 225, 255),
-			M.Glass
-		)
-		win.Shape = Enum.PartType.Cylinder
-	end
-	for k = 0, 4 do
-		local x = -W / 2 + 2 + k * (W - 4) / 4
-		pillar(f, (c * CFrame.new(x, 1.2, -D / 2 + 1)).Position, H, 1, WHITE, M.Marble)
-	end
-	part(f, Vector3.new(W + 2, 1.6, 2), c * CFrame.new(0, H + 2, -D / 2 + 1), WHITE, M.Marble)
-	-- gabled roof from two wedges, purple tiles
-	local half = D / 2 + 2
-	for _, side in { -1, 1 } do
-		local w = Instance.new("WedgePart")
-		w.Anchored = true
-		w.Size = Vector3.new(W + 4, 7, half)
-		w.CFrame = c
-			* CFrame.new(0, H + 2.8 + 3.5, side * half / 2)
-			* CFrame.Angles(0, if side == 1 then math.pi else 0, 0)
-		w.Color, w.Material = ROOF, M.Slate
-		w.Parent = f
-	end
-	local pediment = part(f, Vector3.new(16, 3, 0.6), c * CFrame.new(0, H + 4.4, -D / 2 - 1.4), col, M.SmoothPlastic)
-	label(pediment, "LIBRARY", WHITE)
-	-- bookshelves along the back wall
-	for k = 0, 3 do
-		local sx = -15 + k * 10
-		part(f, Vector3.new(8, 11, 2.4), c * CFrame.new(sx, 6.7, D / 2 - 2), WOOD_DARK, M.Wood)
-		for shelf = 0, 3 do
-			local y = 2.6 + shelf * 2.6
-			local x = sx - 3.4
-			while x < sx + 3.2 do
-				local bw = rng:NextNumber(0.5, 0.9)
-				local bh = rng:NextNumber(1.6, 2.2)
-				part(
-					f,
-					Vector3.new(bw, bh, 1.6),
-					c * CFrame.new(x + bw / 2, y + bh / 2, D / 2 - 2.6),
-					FLOWERS[rng:NextInteger(1, #FLOWERS)]:Lerp(INK, 0.25),
-					M.SmoothPlastic
-				)
-				x += bw + 0.08
-			end
-		end
-	end
-	-- chalkboard on the left wall
-	local board =
-		part(f, Vector3.new(0.4, 6, 12), c * CFrame.new(-W / 2 + 1.2, 7.5, 0), Color3.fromRGB(40, 70, 55), M.Slate)
-	label(board, "2 + 2 = ?", WHITE)
-	-- puzzle cubes and a book stack outside the front
-	local cubeCols = {
-		Color3.fromRGB(235, 70, 70),
-		Color3.fromRGB(255, 200, 40),
-		Color3.fromRGB(60, 160, 255),
-		Color3.fromRGB(80, 200, 100),
-		WHITE,
-		Color3.fromRGB(255, 140, 40),
-	}
-	for n, pos in { Vector3.new(-26, 0, -22), Vector3.new(24, 0, -24) } do
-		local base = cf * CFrame.new(pos) * CFrame.Angles(0, rad(20 * n), 0)
-		for x = -1, 1 do
-			for y = 0, 2 do
-				for z = -1, 1 do
-					part(
-						f,
-						Vector3.new(1.9, 1.9, 1.9),
-						base * CFrame.new(x * 2, 1 + y * 2, z * 2),
-						cubeCols[(x + y * 2 + z * 3 + 9) % 6 + 1],
-						M.SmoothPlastic
-					)
-				end
-			end
-		end
-	end
-	for i = 0, 4 do
-		part(
-			f,
-			Vector3.new(5 - i * 0.4, 1.2, 3.6 - i * 0.2),
-			cf * CFrame.new(26, 0.6 + i * 1.2, 4) * CFrame.Angles(0, rad(i * 13), 0),
-			FLOWERS[i + 1]:Lerp(INK, 0.2),
-			M.SmoothPlastic
-		)
-	end
-	-- study desks: the work slots in two rows inside, each with a desk and a lamp
-	local sf = folder(f, "Slots")
-	for i = 1, World.SLOTS do
-		local row, colIdx = (i - 1) // 4, (i - 1) % 4
-		local p = c * CFrame.new(-13.5 + colIdx * 9, 1.2, -6 + row * 8)
-		slot(sf, p.Position, col, st.id, i)
-		part(f, Vector3.new(5, 0.4, 2.4), p * CFrame.new(0, 3, 3.6), WOOD, M.Wood)
-		for _, dx in { -2.2, 2.2 } do
-			part(f, Vector3.new(0.4, 3, 2), p * CFrame.new(dx, 1.5, 3.6), WOOD_DARK, M.Wood)
-		end
-		local lampHead = part(f, Vector3.new(0.8, 0.8, 0.8), p * CFrame.new(1.6, 4.2, 4), WARM, M.Neon)
-		glow(lampHead, WARM, 8, 0.6)
-	end
-end
-
--- Healing Spring (trains Health): a round stone pool of glowing green water with a spout rock,
--- boulders and reeds; the work slots ring the pool.
-local function spring(root: Instance, st: StationConfig.Station, rng: Random)
-	local f, cf, col = shell(root, st)
-	local c = (cf * CFrame.new(0, 0, 6)).Position
-	disc(f, c + Vector3.new(0, 0.5, 0), 58, 1, Color3.fromRGB(196, 206, 188), M.Pavement)
-	disc(f, c + Vector3.new(0, 1.6, 0), 30, 1.2, STONE_DARK, M.Cobblestone)
-	disc(f, c + Vector3.new(0, 1.7, 0), 26, 0.6, Color3.fromRGB(150, 230, 190), M.SmoothPlastic)
-	local water = disc(f, c + Vector3.new(0, 1.9, 0), 26, 0.4, col, M.Glass)
-	water.Transparency, water.Reflectance = 0.35, 0.2
-	water.Name = "Water"
-	glow(water, col, 30, 0.8)
-	-- spout rock in the middle with a glowing orb
-	ball(f, c + Vector3.new(0, 2.5, 0), 7, STONE, M.Slate)
-	ball(f, c + Vector3.new(1.5, 5, -1), 4.5, STONE, M.Slate)
-	local orb = ball(f, c + Vector3.new(0.6, 8.2, -0.4), 2.6, col:Lerp(WHITE, 0.4), M.Neon)
-	glow(orb, col, 24, 1.2)
-	-- boulders and reeds around the rim
-	for k = 0, 7 do
-		local a = k / 8 * math.pi * 2 + 0.4
-		local p = c + Vector3.new(math.cos(a) * 16.5, 0, math.sin(a) * 16.5)
-		ball(f, p + Vector3.new(0, 1.4, 0), rng:NextNumber(2.5, 4.5), STONE_DARK, M.Slate)
-		for _ = 1, 3 do
-			local r = p + Vector3.new(rng:NextNumber(-2, 2), 1, rng:NextNumber(-2, 2))
-			pillar(f, r, rng:NextNumber(3, 5), 0.15, Color3.fromRGB(90, 160, 80))
-		end
-	end
-	local sf = folder(f, "Slots")
-	for i = 1, World.SLOTS do
-		local a = (i - 0.5) / World.SLOTS * math.pi * 2
-		slot(sf, c + Vector3.new(math.cos(a) * 23, 1, math.sin(a) * 23), col, st.id, i)
-	end
-end
-
-local BUILDERS: { [string]: (Instance, StationConfig.Station, Random) -> () } = {
-	spring = spring,
-	track = track,
-	gym = gym,
-	pool = pool,
-	library = library,
-}
 
 -- Ranches -------------------------------------------------------------------------------------------
 
@@ -941,7 +442,7 @@ local HAY = Color3.fromRGB(232, 196, 110)
 local DIRT = Color3.fromRGB(168, 128, 86)
 local ROOF = Color3.fromRGB(84, 72, 76)
 
--- Local frame of ranch `i`: origin at its centre, -Z (look) points back at the plaza.
+-- Local frame of ranch `i`: origin at its centre on the island, -Z (look) points back at the hub.
 function World.ranchFrame(i: number): CFrame
 	local a = rad(RANCH_ANGLE[i])
 	local up = Vector3.new(0, World.RANCH_Y, 0)
@@ -1080,6 +581,22 @@ local function ranch(root: Instance, i: number, rng: Random)
 			CollectionService:AddTag(pad, "RanchSpot")
 		end
 	end
+	-- teleport pad to the hub, just inside the gate
+	teleporter(f, at(-14, 0, -H + 10).Position, "hub", "Go to the hub")
+	signboard(f, at(-14, 0, -H + 3), 10, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
+	-- training pads, one per stat, in the stat's colour: animals train at the ranch (decision
+	-- 0029). Tagged "TrainPad" with the station id; simple placeholders for the tycoon buildings.
+	local pads = folder(f, "TrainPads")
+	for k, st in StationConfig.STATIONS do
+		local column, row = (k - 1) % 3, (k - 1) // 3
+		local centre = at(13 + column * 9, 0, -2 + row * 9).Position
+		local pad = disc(pads, centre + Vector3.new(0, 0.6, 0), 6, 0.4, STAT_COLOUR[st.stat], M.SmoothPlastic)
+		pad.Name = st.id
+		pad:SetAttribute("Ranch", i)
+		pad:SetAttribute("Station", st.id)
+		CollectionService:AddTag(pad, "TrainPad")
+	end
+	signboard(f, at(22, 0, 12.5), 14, "Training", Color3.fromRGB(90, 110, 150), 3.2)
 	-- water trough and hay bales by the paddock
 	part(f, Vector3.new(3.4, 2.2, 9), at(-33, 1.1, 12), WOOD, M.Wood)
 	part(f, Vector3.new(2.6, 0.3, 8.2), at(-33, 2.1, 12), Color3.fromRGB(90, 170, 230), M.Glass).Transparency = 0.25
@@ -1107,7 +624,14 @@ local function ranch(root: Instance, i: number, rng: Random)
 	for _, x in { -28, -18, 18, 28 } do
 		flowers(f, at(x, 0, -H - 2.5).Position, rng, 6, 2.5)
 	end
-	for _, p in { Vector3.new(-48, 0, 30), Vector3.new(48, 0, 30), Vector3.new(-50, 0, -4), Vector3.new(50, 0, -6) } do
+	for _, p in
+		{
+			Vector3.new(-H - 12, 0, 30),
+			Vector3.new(H + 12, 0, 30),
+			Vector3.new(-H - 14, 0, -4),
+			Vector3.new(H + 14, 0, -6),
+		}
+	do
 		tree(f, at(p.X, 0, p.Z).Position, rng, rng:NextNumber(1.1, 1.5))
 	end
 end
@@ -1138,22 +662,11 @@ end
 
 -- Scenery --------------------------------------------------------------------------------------------
 
--- True when `p` is clear of the plaza, every road, station zone and ranch.
+-- True when `p` is clear of the plaza and every road.
 local function open(p: Vector3, margin: number): boolean
 	local flat = Vector3.new(p.X, 0, p.Z)
 	if flat.Magnitude < World.PLAZA + margin + 6 then
 		return false
-	end
-	for id in STATION_ANGLE do
-		if (flat - stationPos(id)).Magnitude < 58 + margin then
-			return false
-		end
-	end
-	for i = 1, World.RANCHES do
-		local c = World.ranchFrame(i).Position
-		if (flat - Vector3.new(c.X, 0, c.Z)).Magnitude < HILL + 20 + margin then
-			return false -- the whole hill and its terrace
-		end
 	end
 	for _, seg in ROADS do
 		local a, b = seg[1] * Vector3.new(1, 0, 1), seg[2] * Vector3.new(1, 0, 1)
@@ -1207,15 +720,8 @@ local function scenery(root: Instance, rng: Random)
 			beds += 1
 		end
 	end
-	-- south lawn: welcome sign at the spawn walk
-	signboard(
-		f,
-		CFrame.new(0, 0, 62) * CFrame.Angles(0, 0, 0),
-		22,
-		"Welcome to Animal Stations!",
-		Color3.fromRGB(90, 160, 80),
-		7
-	)
+	-- south walk: welcome sign over the way into the plaza (clear of the walk's lamps)
+	signboard(f, CFrame.new(0, 0, 70), 22, "Welcome to Animal Stations!", Color3.fromRGB(90, 160, 80), 7)
 end
 
 -- Build --------------------------------------------------------------------------------------------
@@ -1237,10 +743,6 @@ function World.build(): Folder
 	root.Name = "Hub"
 	plaza(root, rng)
 	paths(root)
-	local stations = folder(root, "Stations")
-	for _, st in StationConfig.STATIONS do
-		BUILDERS[st.id](stations, st, rng)
-	end
 	ranches(root, rng)
 	scenery(root, rng)
 	root.Parent = Workspace

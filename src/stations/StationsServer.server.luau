@@ -1,8 +1,9 @@
 --!strict
 -- Animal Stations server entry: builds the world, gives each player a home ranch (lowest free of
--- World.RANCHES, owners spawn at its gate), loads saves (kit Saves), sells eggs at the market
--- stalls, and routes team and training requests (kit Router). The client only names an action;
--- prices, hatches and timings are decided here.
+-- World.RANCHES, owners spawn at its gate), teleports players between their ranch and the hub,
+-- loads saves (kit Saves), sells eggs at the hub's stalls, and routes team and training requests
+-- (kit Router). The client only names an action; prices, hatches and timings are decided here.
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 
 local World = require(script.Parent:WaitForChild("World"))
@@ -51,6 +52,20 @@ local function join(player: Player)
 	if player.Character then
 		task.spawn(spawned, player.Character)
 	end
+end
+
+-- Teleport pads: the hub pad sends a player to their own ranch, a ranch pad to the hub. The
+-- ranches are far away, so the area is asked for first; the move still happens if that fails.
+for _, prompt in CollectionService:GetTagged("Teleport") do
+	(prompt :: ProximityPrompt).Triggered:Connect(function(player)
+		local i = ranchOf(player)
+		local to = if prompt:GetAttribute("To") == "hub" then World.hubSpawn() elseif i then World.ranchSpawn(i) else nil
+		local character = player.Character
+		if to and character then
+			pcall(player.RequestStreamAroundAsync, player, to.Position)
+			character:PivotTo(to)
+		end
+	end)
 end
 
 -- Saves, eggs, team and training (decision 0025) ---------------------------------------------------
@@ -184,7 +199,7 @@ for _, egg in StationConfig.EGGS do
 	end
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText = `Buy {egg.name}`
-	prompt.ObjectText = `{egg.price} coins`
+	prompt.ObjectText = if egg.unlock then `Level {egg.unlock}+  -  {egg.price} coins` else `{egg.price} coins`
 	prompt.HoldDuration = 0.3
 	prompt.MaxActivationDistance = 14
 	prompt.RequiresLineOfSight = false

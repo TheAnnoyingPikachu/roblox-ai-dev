@@ -60,14 +60,14 @@ end)
 
 describe("LevelRules.fight", function()
 	it("lets three commons clear the first levels but walls them later", function()
-		local starters = { owned("jackal"), owned("warthog"), owned("meerkat") }
+		local starters = { owned("jackal"), owned("tortoise"), owned("meerkat") }
 		local r = reach(starters, 200)
 		expect(r >= 3).toBeTruthy()
 		expect(r < 60).toBeTruthy()
 	end)
 
 	it("makes training and variants push further", function()
-		local starters = { owned("jackal"), owned("warthog"), owned("meerkat") }
+		local starters = { owned("jackal"), owned("tortoise"), owned("meerkat") }
 		local trained = {}
 		for _, a in starters do
 			local t = StationRules.bestStat(a)
@@ -77,7 +77,7 @@ describe("LevelRules.fight", function()
 				end
 			end
 		end
-		local rares = { owned("lion", "sun_lion"), owned("gorilla", "lava_gorilla"), owned("mandrill") }
+		local rares = { owned("lion", "sun_lion"), owned("rhino", "crystal_rhino"), owned("flamingo") }
 		local base, better, best = reach(starters, 400), reach(trained, 400), reach(rares, 400)
 		expect(better > base).toBeTruthy()
 		expect(best > better).toBeTruthy()
@@ -90,7 +90,7 @@ describe("LevelRules.fight", function()
 				expect(StationRules.role(e) ~= "titan").toBeTruthy()
 			end
 		end
-		local team = { owned("jackal"), owned("warthog"), owned("meerkat") }
+		local team = { owned("jackal"), owned("tortoise"), owned("meerkat") }
 		local without = reach(team, 400)
 		table.insert(team, owned("elephant"))
 		expect(reach(team, 400) > without).toBeTruthy()

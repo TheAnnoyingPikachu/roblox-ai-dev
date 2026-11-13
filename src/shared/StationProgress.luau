@@ -1,8 +1,8 @@
 --!strict
--- Pure Animal Stations saved profile (decision 0025): defaults, sanitize, buying and hatching eggs,
--- the team, and training at stations (settled from timestamps, offline time capped). Every change
--- takes its inputs (the hatched animal, `now`) as arguments, so SaveStore can run it twice.
--- No Roblox APIs; the server owns the Rng and the clock.
+-- Pure Animal Stations saved profile (decisions 0025, 0027, 0029): defaults, sanitize, the player
+-- level, buying and hatching eggs, the team and its Titan slot, and training at stations (settled
+-- from timestamps, offline time capped). Every change takes its inputs (the hatched animal, `now`)
+-- as arguments, so SaveStore can run it twice. No Roblox APIs; the server owns the Rng and the clock.
 
 local LevelRules = require("./LevelRules")
 local StationConfig = require("./StationConfig")
@@ -21,7 +21,8 @@ export type Profile = {
 	animals: { Animal },
 	team: { number }, -- animal ids, at most TEAM_SIZE, never a Titan or one that is training
 	titan: number?, -- the fourth slot: one Titan's id (decision 0027)
-	best: number, -- highest level cleared
+	best: number, -- highest wave (endless level) cleared
+	xp: number, -- player XP; the player level comes from it (playerLevel)
 }
 
 StationProgress.VERSION = 1
@@ -31,6 +32,8 @@ StationProgress.MAX_ANIMALS = 100
 StationProgress.TEAM_SIZE = LevelRules.TEAM_SIZE
 StationProgress.TRAIN_MAX = 4 -- animals training at once
 StationProgress.OFFLINE_MAX = 8 * 3600 -- training seconds counted per settle while away
+StationProgress.MAX_XP = 1e12
+StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)^2
 
 local MAX_TIME = 1e12
 
@@ -42,7 +45,19 @@ function StationProgress.defaults(_now: number): Profile
 		animals = {},
 		team = {},
 		best = 0,
+		xp = 0,
 	}
+end
+
+-- Total XP needed to be player level `level` (level 1 needs none, level 15 needs 4,900).
+function StationProgress.xpFor(level: number): number
+	return StationProgress.XP_STEP * (level - 1) ^ 2
+end
+
+-- The player's level. XP comes from hatching eggs (and from clearing waves once battles are
+-- playable). Not the same as a stat level or a wave.
+function StationProgress.playerLevel(p: Profile): number
+	return math.floor(math.sqrt(p.xp / StationProgress.XP_STEP)) + 1
 end
 
 local function int(x: any, lo: number, hi: number, fallback: number): number
@@ -52,17 +67,13 @@ local function int(x: any, lo: number, hi: number, fallback: number): number
 	return math.clamp(math.floor(x), lo, hi)
 end
 
-local function cleanStats(x: any, hi: number): Stats?
-	if type(x) ~= "table" then
-		return nil
-	end
+-- A stored number for every stat, clamped. A missing or bad one takes the fallback, so a save
+-- written before a stat existed keeps its animals instead of losing them.
+local function cleanStats(x: any, lo: number, hi: number, fallback: Stats): Stats
 	local out = {} :: any
 	for _, stat in StationConfig.STATS do
-		local n = x[stat]
-		if type(n) ~= "number" or n ~= n then
-			return nil
-		end
-		out[stat] = math.clamp(n, 0, hi)
+		local n = if type(x) == "table" then x[stat] else nil
+		out[stat] = if type(n) == "number" and n == n then math.clamp(n, lo, hi) else (fallback :: any)[stat]
 	end
 	return out :: Stats
 end
@@ -71,8 +82,8 @@ function StationProgress.isTitan(a: Animal): boolean
 	return StationRules.role(a :: any) == StationConfig.TITAN
 end
 
--- A stored record in any shape becomes a valid profile: bad animals dropped, numbers clamped,
--- the team and training rebuilt to the rules.
+-- A stored record in any shape becomes a valid profile: unknown animals dropped, missing stats
+-- filled from the animal's version, numbers clamped, the team and training rebuilt to the rules.
 function StationProgress.sanitize(record: any, now: number?): Profile
 	local p = StationProgress.defaults(now or 0)
 	if type(record) ~= "table" then
@@ -80,6 +91,7 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	end
 	p.coins = int(record.coins, 0, StationProgress.MAX_COINS, p.coins)
 	p.best = int(record.best, 0, 1e9, 0)
+	p.xp = int(record.xp, 0, StationProgress.MAX_XP, 0)
 	local ids: { [number]: Animal } = {}
 	local maxId = 0
 	local training = 0
@@ -93,15 +105,18 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			end
 			local v = if type(a.v) == "string" and StationConfig.variant(a.s, a.v) then a.v else nil
 			local id = int(a.id, 1, 1e12, 0)
-			local stats = cleanStats(a.stats, StationConfig.STAT_MAX)
-			if id == 0 or ids[id] or stats == nil then
+			if id == 0 or ids[id] then
 				continue
 			end
+			local version = StationRules.versionStats(a.s, v) :: Stats
+			local stats = cleanStats(a.stats, StationConfig.STAT_MIN, StationConfig.STAT_MAX, version)
 			for _, stat in StationConfig.STATS do
-				(stats :: any)[stat] = math.max(StationConfig.STAT_MIN, math.floor((stats :: any)[stat]))
+				(stats :: any)[stat] = math.floor((stats :: any)[stat])
 			end
-			local trained = cleanStats(a.trained, StationConfig.STAT_MAX)
-			local animal: Animal = { id = id, s = a.s, v = v, stats = stats :: Stats, trained = trained }
+			local trained = if type(a.trained) == "table"
+				then cleanStats(a.trained, 0, StationConfig.MAX_LEVEL, StationRules.ZERO)
+				else nil
+			local animal: Animal = { id = id, s = a.s, v = v, stats = stats, trained = trained }
 			if type(a.at) == "string" and StationConfig.station(a.at) and training < StationProgress.TRAIN_MAX then
 				animal.at = a.at
 				animal.since = int(a.since, 0, MAX_TIME, now or 0)
@@ -148,6 +163,8 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
 		return false, "egg"
+	elseif egg.unlock and StationProgress.playerLevel(p) < egg.unlock then
+		return false, "locked"
 	elseif #p.animals >= StationProgress.MAX_ANIMALS then
 		return false, "full"
 	elseif p.coins < egg.price then
@@ -156,8 +173,9 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 	return true, nil
 end
 
--- Pay for `eggId` and add `hatched` (rolled by the server with StationRules.hatch). Joins the team
--- while it has room. Returns the new animal's id.
+-- Pay for `eggId`, add `hatched` (rolled by the server with StationRules.hatch) and earn the egg's
+-- XP. The animal joins the team while it has room (a Titan takes the Titan slot if it is empty).
+-- Returns the new animal's id.
 function StationProgress.buy(
 	p: Profile,
 	eggId: string,
@@ -169,6 +187,7 @@ function StationProgress.buy(
 	end
 	local egg = StationConfig.egg(eggId) :: StationConfig.Egg
 	p.coins -= egg.price
+	p.xp = math.min(p.xp + egg.xp, StationProgress.MAX_XP)
 	local id = p.nextId
 	p.nextId += 1
 	local animal: Animal = { id = id, s = hatched.s, v = hatched.v, stats = table.clone(hatched.stats) }
@@ -181,7 +200,8 @@ function StationProgress.buy(
 	return p, true, nil, id
 end
 
--- Add training time to every training animal up to `now` (at most OFFLINE_MAX per settle).
+-- Add training time to every training animal up to `now` (at most OFFLINE_MAX per settle). An
+-- animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
 function StationProgress.settle(p: Profile, now: number): Profile
 	for i, a in p.animals do
 		if a.at and a.since then
@@ -190,6 +210,10 @@ function StationProgress.settle(p: Profile, now: number): Profile
 			local copy = table.clone(a)
 			copy.trained = t.trained
 			copy.since = math.max(a.since, now)
+			local st = StationConfig.station(a.at) :: StationConfig.Station
+			if StationRules.level(copy :: any, st.stat) >= StationConfig.MAX_LEVEL then
+				copy.at, copy.since = nil, nil
+			end
 			p.animals[i] = copy
 		end
 	end
@@ -229,10 +253,13 @@ end
 -- Start animal `id` training at `stationId` (it leaves the team), or move it to another station.
 function StationProgress.train(p: Profile, id: number, stationId: string, now: number): (Profile, boolean, string?)
 	local i, a = StationProgress.find(p, id)
+	local st = StationConfig.station(stationId)
 	if i == nil or a == nil then
 		return p, false, "animal"
-	elseif StationConfig.station(stationId) == nil then
+	elseif st == nil then
 		return p, false, "station"
+	elseif StationRules.level(a :: any, st.stat) >= StationConfig.MAX_LEVEL then
+		return p, false, "maxed"
 	end
 	if a.at == nil then
 		local n = 0
@@ -257,7 +284,7 @@ function StationProgress.train(p: Profile, id: number, stationId: string, now: n
 	return p, true, nil
 end
 
--- Stop animal `id` training, keeping the points it earned.
+-- Stop animal `id` training, keeping the levels and progress it earned.
 function StationProgress.stop(p: Profile, id: number, now: number): (Profile, boolean, string?)
 	local i, a = StationProgress.find(p, id)
 	if i == nil or a == nil then
@@ -290,7 +317,7 @@ function StationProgress.fighters(p: Profile): { Animal }
 	return out
 end
 
--- Written on every save: training is settled so the stored stats are current.
+-- Written on every save: training is settled so the stored levels are current.
 function StationProgress.snapshot(p: Profile, now: number): Profile
 	return StationProgress.settle(p, now)
 end
