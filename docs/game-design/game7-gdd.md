@@ -58,6 +58,9 @@ vendors.
   teleports. Client: coins and level, and the Animals panel.
 - World: the hub with its wave arena canyon and three ranch islands, as simple placeholders.
   SHANNON has said the world is right for now.
+- The ranch tycoon (decision 0034): three upgrades bought at pads on the ranch with coins and
+  samples. Ranch House: animals training at once (2 to 6). Barn: animals you can keep (10 to 80).
+  Training Grounds: training speed (100% to 200%). Every level changes how the ranch looks.
 - The first animal models (decision 0033): the Rhino and the mythic Lava Rhino, jointed and
   animated (idle, walk, horn attack, magic attack). They pace each ranch's paddock as a showcase.
 
@@ -65,8 +68,8 @@ vendors.
 
 - Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
 - The other animals' models; owned animals standing on the training pads or in the paddock.
-- The ranch tycoon: universal upgrades, expansion and training enhancements, paid with gold and
-  samples from harder enemies. More hub vendors. Gear. The egg overhaul.
+- Samples dropping from harder waves (the higher upgrade levels need them), more ranch upgrades
+  and expanding the plot. More hub vendors. Gear. The egg overhaul.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
 - Magical attacks, microgames, teams of 3 players.
 - Fights between players. They will work differently from wave fights and stats will not affect

@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-017",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The ranch is an upgradeable tycoon: three upgrades (Ranch House, Barn, Training Grounds) bought with coins and samples at pads on the ranch improve training places, storage and training speed, and every level changes how the ranch looks, built in detail to SHANNON's reference image.",
+  "inputs": [
+    "docs/decisions/0034-animal-stations-ranch-tycoon.md"
+  ],
+  "dependencies": [
+    "STATION-016"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0034-animal-stations-ranch-tycoon.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A new ranch has 2 training places, room for 10 animals and normal training speed; each upgrade level costs more and gives more than the one before",
+    "An upgrade is refused without the coins or samples, and at its top level; buying Training Grounds counts earlier training time at the old speed",
+    "A stored profile keeps its upgrades and samples through sanitize and is never cut down to the Barn's room",
+    "In Studio play the owner buys every level at the pads and the ranch is rebuilt each time with no script errors"
+  ],
+  "verification": "2026-11-13: lune 655/655 (8 new upgrade tests), stylua and selene clean. Studio play (stations.rbxl, synced from source): took test funds, bought all 14 levels through the pads' prompts, the ranch rebuilt after each (412 parts new, 1,983 fully upgraded), the HUD showed coins, samples and the upgrade toast, no script errors. A full rebuild measured 19 ms on the server. Not checked: an online server, phones.",
+  "output_artifacts": [
+    "src/stations/Ranch.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Balance change: a new ranch starts with 2 training places (was 4) and room for 10 animals (was 100). No published saves exist. Coins and samples cannot be earned in play until wave fights are built; a Studio-only pad gives test funds."
+}

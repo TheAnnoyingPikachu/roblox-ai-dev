@@ -41,9 +41,11 @@ end
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
 	locked = `Reach level {lockedAt} to unlock that egg`,
-	full = "Your ranch is full",
+	full = "Your barn is full: upgrade the Barn at your ranch",
+	samples = "Not enough samples",
+	top = "That is already at its top level",
 	team_full = "Your team is full (3)",
-	train_full = `Only {StationProgress.TRAIN_MAX} animals can train at once`,
+	train_full = "Every training place is taken: upgrade the Ranch House",
 	training = "Stop its training first",
 	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
 	loading = "Still loading your ranch...",
@@ -55,14 +57,15 @@ local profile: any = nil
 local tickers: { () -> () } = {} -- refresh the live text of every stat being trained
 
 -- Coins and player level, top left
-local coinBox = Ui.panel(screen, { size = UDim2.fromOffset(220, 76), name = "Coins" })
+local coinBox = Ui.panel(screen, { size = UDim2.fromOffset(220, 100), name = "Coins" })
 coinBox.Position = UDim2.fromOffset(12, 12)
 local coins = Ui.label(coinBox, "Coins: ...", { size = 24 })
+local samples = Ui.label(coinBox, "Samples: ...", { size = 16 })
 local levelText = Ui.label(coinBox, "Level ...", { size = 16, muted = true })
 
 -- Animals button and panel
 local toggle = Ui.panel(screen, { size = UDim2.fromOffset(220, 64), name = "AnimalsButton" })
-toggle.Position = UDim2.fromOffset(12, 96)
+toggle.Position = UDim2.fromOffset(12, 120)
 local panel = Ui.panel(screen, { size = UDim2.fromOffset(640, 440), anchor = "center", name = "Animals" })
 panel.Visible = false
 local title = Ui.label(panel, "Your animals", { size = 24 })
@@ -108,7 +111,7 @@ local function live(a: any): any
 	if a.at == nil or a.since == nil then
 		return a
 	end
-	return StationRules.train(a, a.at, math.max(0, Workspace:GetServerTimeNow() - a.since))
+	return StationRules.train(a, a.at, StationProgress.trainingSeconds(profile, Workspace:GetServerTimeNow() - a.since))
 end
 
 -- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
@@ -121,7 +124,10 @@ local function statText(a: any, stat: string, training: boolean): string
 		return `{head}\n{value}  MAX`
 	elseif training then
 		local progress = if a.trained then a.trained[stat] - level else 0
-		local left = (1 - progress) * StationRules.levelSeconds(level + 1)
+		local left = (1 - progress)
+			* StationRules.levelSeconds(level + 1)
+			* 100
+			/ StationProgress.value(profile, "grounds")
 		return `{head}\n{value}   {Format.ago(left)}`
 	end
 	return `{head}\n{value}`
@@ -227,7 +233,8 @@ local function refresh()
 	if profile == nil then
 		return
 	end
-	coins.Text = `Coins: {profile.coins}`
+	coins.Text = `Coins: {Format.commas(profile.coins)}`
+	samples.Text = `Samples: {Format.commas(profile.samples)}`
 	local level = StationProgress.playerLevel(profile)
 	local from, to = StationProgress.xpFor(level), StationProgress.xpFor(level + 1)
 	levelText.Text = `Level {level}   ({profile.xp - from}/{to - from} XP)`
@@ -265,6 +272,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			end
 		end
 		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
+	elseif kind == "upgraded" then
+		local u = StationConfig.upgrade(payload)
+		if u and profile then
+			Ui.toast(screen, `{u.name} upgraded: {StationProgress.value(profile, u.id)} {u.gives}`, 4)
+		end
 	elseif kind == "refused" then
 		Ui.toast(screen, REFUSED[payload] or `Can't do that ({payload})`)
 	end

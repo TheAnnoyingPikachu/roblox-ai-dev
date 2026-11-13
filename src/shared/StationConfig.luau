@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0033): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0034): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
@@ -273,6 +273,53 @@ StationConfig.STATIONS = {
 	{ id = "guard", name = "Guard Yard", stat = "defence" },
 } :: { Station }
 
+-- Ranch upgrades (decision 0034): the ranch is a tycoon. Each upgrade is bought one level at a
+-- time with coins and, higher up, samples (dropped by harder waves; not earnable until waves are
+-- built). `base` is what a new ranch has, `value` what that level gives. Every level also changes
+-- how the ranch looks (src/stations/Ranch.luau). Draft numbers: meant to be slow to afford.
+export type UpgradeLevel = { coins: number, samples: number, value: number }
+export type Upgrade = { id: string, name: string, gives: string, base: number, levels: { UpgradeLevel } }
+StationConfig.UPGRADES = {
+	{
+		id = "house",
+		name = "Ranch House",
+		gives = "animals training at once",
+		base = 2,
+		levels = {
+			{ coins = 1000, samples = 0, value = 3 },
+			{ coins = 8000, samples = 0, value = 4 },
+			{ coins = 60000, samples = 15, value = 5 },
+			{ coins = 400000, samples = 60, value = 6 },
+		},
+	},
+	{
+		id = "barn",
+		name = "Barn",
+		gives = "animals you can keep",
+		base = 10,
+		levels = {
+			{ coins = 500, samples = 0, value = 20 },
+			{ coins = 3000, samples = 0, value = 30 },
+			{ coins = 15000, samples = 10, value = 45 },
+			{ coins = 75000, samples = 40, value = 60 },
+			{ coins = 400000, samples = 150, value = 80 },
+		},
+	},
+	{
+		id = "grounds",
+		name = "Training Grounds",
+		gives = "% training speed",
+		base = 100,
+		levels = {
+			{ coins = 750, samples = 0, value = 115 },
+			{ coins = 4000, samples = 0, value = 130 },
+			{ coins = 20000, samples = 10, value = 150 },
+			{ coins = 100000, samples = 40, value = 175 },
+			{ coins = 500000, samples = 150, value = 200 },
+		},
+	},
+} :: { Upgrade }
+
 local function find<T>(list: { T }, id: string): T?
 	for _, x in list do
 		if (x :: any).id == id then
@@ -307,6 +354,10 @@ end
 
 function StationConfig.station(id: string): Station?
 	return find(StationConfig.STATIONS, id)
+end
+
+function StationConfig.upgrade(id: string): Upgrade?
+	return find(StationConfig.UPGRADES, id)
 end
 
 return StationConfig

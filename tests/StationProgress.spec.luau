@@ -168,9 +168,10 @@ describe("StationProgress.buy", function()
 		_, ok, code = StationProgress.buy(p, "safari", hatched("lion"))
 		expect(code).toBe("coins")
 		p.coins = 1e9
-		for _ = 1, StationProgress.MAX_ANIMALS do
+		for _ = 1, StationProgress.value(p, "barn") do
 			p = StationProgress.buy(p, "meadow", hatched("jackal"))
 		end
+		expect(#p.animals).toBe(10) -- a new ranch's barn
 		_, ok, code = StationProgress.buy(p, "meadow", hatched("jackal"))
 		expect(code).toBe("full")
 	end)
@@ -276,19 +277,15 @@ describe("StationProgress team and training", function()
 		expect(p.xp).toBe(before + level * StationConfig.XP_STAT_LEVEL)
 	end)
 
-	it("lets four animals train at once and refuses an unknown station", function()
+	it("lets two animals train at once on a new ranch and refuses an unknown station", function()
 		local p = three()
-		p.coins = 1e6
-		for _, sp in { "tortoise", "meerkat", "jackal" } do
-			p = StationProgress.buy(p, "meadow", hatched(sp))
-		end
 		local ok, code
-		for id = 1, 5 do
+		for id = 1, 3 do
 			p, ok, code = StationProgress.train(p, id, "pool", 0)
 		end
 		expect(ok).toBe(false)
 		expect(code).toBe("train_full")
-		-- moving one that is already training is not a fifth
+		-- moving one that is already training is not a third
 		p, ok = StationProgress.train(p, 1, "guard", 60)
 		expect(ok).toBe(true)
 		expect(animal(p, 1).at).toBe("guard")
@@ -340,5 +337,142 @@ describe("StationProgress team and training", function()
 		local q = StationProgress.sanitize({ animals = { { id = 1, s = "elephant" } }, team = { 1 }, titan = 1 }, 0)
 		expect(#q.team).toBe(0)
 		expect(q.titan).toBe(1)
+	end)
+end)
+
+describe("StationProgress ranch upgrades", function()
+	local function rich(): StationProgress.Profile
+		local p = fresh()
+		p.coins, p.samples = 1e9, 1e6
+		return p
+	end
+
+	it("starts a ranch with 2 training places, room for 10 animals and normal training speed", function()
+		local p = fresh()
+		expect(StationProgress.value(p, "house")).toBe(2)
+		expect(StationProgress.value(p, "barn")).toBe(10)
+		expect(StationProgress.value(p, "grounds")).toBe(100)
+		expect(p.samples).toBe(0)
+	end)
+
+	it("makes every level of every upgrade cost more and give more than the one before", function()
+		for _, u in StationConfig.UPGRADES do
+			local coins, samples, value = 0, 0, u.base
+			for _, level in u.levels do
+				expect(level.coins > coins).toBeTruthy()
+				expect(level.samples >= samples).toBeTruthy()
+				expect(level.value > value).toBeTruthy()
+				coins, samples, value = level.coins, level.samples, level.value
+			end
+			expect(u.levels[#u.levels].samples > 0).toBeTruthy() -- the top needs samples
+		end
+	end)
+
+	it("charges coins and samples for the next level and gives its value", function()
+		local p = rich()
+		local ok
+		for level, cost in (StationConfig.upgrade("barn") :: StationConfig.Upgrade).levels do
+			local coins, samples = p.coins, p.samples
+			p, ok = StationProgress.upgrade(p, "barn", 0)
+			expect(ok).toBe(true)
+			expect(p.upgrades.barn).toBe(level)
+			expect(p.coins).toBe(coins - cost.coins)
+			expect(p.samples).toBe(samples - cost.samples)
+			expect(StationProgress.value(p, "barn")).toBe(cost.value)
+		end
+	end)
+
+	it("refuses an unknown upgrade, too few coins, too few samples and a finished upgrade", function()
+		local p = fresh()
+		local _, ok, code = StationProgress.upgrade(p, "moon", 0)
+		expect(ok).toBe(false)
+		expect(code).toBe("upgrade")
+		_, ok, code = StationProgress.upgrade(p, "barn", 0) -- 300 coins, needs 500
+		expect(code).toBe("coins")
+		expect(p.upgrades.barn).toBeNil()
+		p.coins = 1e9
+		p = StationProgress.upgrade(p, "barn", 0)
+		p = StationProgress.upgrade(p, "barn", 0)
+		local coins = p.coins
+		_, ok, code = StationProgress.upgrade(p, "barn", 0) -- level 3 needs samples
+		expect(code).toBe("samples")
+		expect(p.coins).toBe(coins)
+		p.samples = 1e6
+		for _ = 3, 5 do
+			p = StationProgress.upgrade(p, "barn", 0)
+		end
+		_, ok, code = StationProgress.upgrade(p, "barn", 0)
+		expect(code).toBe("top")
+	end)
+
+	it("lets a bigger Barn hold more animals and a bigger Ranch House train more at once", function()
+		local p = rich()
+		for _ = 1, 10 do
+			p = StationProgress.buy(p, "meadow", hatched("jackal"))
+		end
+		expect((select(2, StationProgress.canBuy(p, "meadow")))).toBe("full")
+		p = StationProgress.upgrade(p, "barn", 0)
+		expect((StationProgress.canBuy(p, "meadow"))).toBe(true)
+		local ok, code
+		for id = 1, 3 do
+			p, ok, code = StationProgress.train(p, id, "gym", 0)
+		end
+		expect(code).toBe("train_full")
+		p = StationProgress.upgrade(p, "house", 0)
+		p, ok = StationProgress.train(p, 3, "gym", 0)
+		expect(ok).toBe(true)
+	end)
+
+	it("trains faster with better Training Grounds, and counts time before the upgrade at the old speed", function()
+		local p = rich()
+		p = StationProgress.buy(p, "meadow", hatched("jackal"))
+		p = StationProgress.train(p, 1, "track", 0)
+		p = StationProgress.upgrade(p, "grounds", 1000) -- 1,000 seconds at 100%
+		expect(StationProgress.value(p, "grounds")).toBe(115)
+		p = StationProgress.settle(p, 2000) -- then 1,000 seconds at 115%
+		local same = StationRules.train(hatched("jackal"), "track", 1000 + 1150)
+		local trained = animal(p, 1).trained :: StationConfig.Stats
+		expect(math.abs(trained.speed - (same.trained :: StationConfig.Stats).speed) < 1e-9).toBeTruthy()
+		expect(StationProgress.trainingSeconds(p, 200)).toBe(230)
+		expect(StationProgress.trainingSeconds(p, -5)).toBe(0)
+	end)
+
+	it(
+		"keeps upgrades and samples through sanitize, clamps junk, and never drops animals over the Barn's room",
+		function()
+			local animals = {}
+			for id = 1, 14 do
+				table.insert(animals, { id = id, s = "jackal" })
+			end
+			local p = StationProgress.sanitize(
+				{ samples = 12.7, upgrades = { barn = 99, house = "x", grounds = 2 }, animals = animals },
+				0
+			)
+			expect(p.samples).toBe(12)
+			expect(p.upgrades.barn).toBe(5)
+			expect(p.upgrades.house).toBe(0)
+			expect(p.upgrades.grounds).toBe(2)
+			local q = StationProgress.sanitize({ animals = animals, upgrades = 7, samples = -3 }, 0)
+			expect(#q.animals).toBe(14) -- over a new barn's 10: kept, only buying more is refused
+			expect(q.samples).toBe(0)
+			expect(q.upgrades.barn).toBe(0)
+			expect((select(2, StationProgress.canBuy(q, "meadow")))).toBe("full")
+		end
+	)
+
+	it("keeps only as many animals training as the Ranch House has places when a save is read", function()
+		local animals = {}
+		for id = 1, 5 do
+			table.insert(animals, { id = id, s = "jackal", at = "gym", since = 0 })
+		end
+		local function training(p: StationProgress.Profile): number
+			local n = 0
+			for _, a in p.animals do
+				n += if a.at then 1 else 0
+			end
+			return n
+		end
+		expect(training(StationProgress.sanitize({ animals = animals }, 0))).toBe(2)
+		expect(training(StationProgress.sanitize({ animals = animals, upgrades = { house = 2 } }, 0))).toBe(4)
 	end)
 end)

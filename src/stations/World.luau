@@ -2,11 +2,11 @@
 -- Animal Stations world (framework, decision 0029): the hub, a central plaza with the hatchery
 -- fountain and the vendors' egg stalls, and three home ranches (one per player). Each ranch is a
 -- large separate island far from the hub, reached only by the teleport pads. A ranch is the
--- player's base, where animals live and train: a barn, a paddock, an egg nest and one training
--- pad per stat, with room to grow. Mountains ring every area to hide the void; a canyon through
+-- player's base, where animals live and train: its plot is built here, and what stands on it
+-- by Ranch.luau from its owner's upgrades. Mountains ring every area to hide the void; a canyon through
 -- the hub's mountains is the wave arena. Built once from parts, Roblox materials and terrain.
--- Display only: no game rules live here. Spots, nests, training pads, teleport prompts and the
--- arena's stand and spawn are tagged for the server.
+-- Display only: no game rules live here. Teleport prompts and the arena's stand and spawn are
+-- tagged for the server.
 
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
@@ -29,7 +29,6 @@ World.RANCH_DIST = 1200 -- hub centre to each ranch centre: detached, reached on
 World.RANCH_Y = 22 -- the island surface (a terrain cylinder topped at 18 lands there; measured)
 local ISLAND = 115 -- island radius
 World.RANCH_HALF = 60 -- half the fenced ranch square: room for the ranch to grow
-World.RANCH_SPOTS = 8 -- places in the paddock where owned animals will idle
 -- The ranch islands lie north, east and west of the hub.
 local RANCH_ANGLE = { -90, 0, 180 }
 
@@ -53,15 +52,6 @@ local FLOWERS = {
 }
 local WARM = Color3.fromRGB(255, 210, 150)
 
--- Each stat's colour (its training pad at the ranch).
-local STAT_COLOUR: { [string]: Color3 } = {
-	speed = Color3.fromRGB(255, 160, 40),
-	health = Color3.fromRGB(70, 200, 120),
-	defence = Color3.fromRGB(105, 125, 165),
-	strength = Color3.fromRGB(235, 70, 70),
-	stamina = Color3.fromRGB(50, 150, 255),
-	mana = Color3.fromRGB(160, 90, 240),
-}
 local EGG_LOOK: { [string]: { body: Color3, spot: Color3 } } = {
 	meadow = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) },
 	wild = { body = Color3.fromRGB(150, 210, 120), spot = Color3.fromRGB(110, 80, 50) },
@@ -536,7 +526,6 @@ end
 
 local RED = Color3.fromRGB(196, 64, 54)
 local HAY = Color3.fromRGB(232, 196, 110)
-local DIRT = Color3.fromRGB(168, 128, 86)
 local ROOF = Color3.fromRGB(84, 72, 76)
 
 -- Local frame of ranch `i`: origin at its centre on the island, -Z (look) points back at the hub.
@@ -551,16 +540,17 @@ function World.ranchSpawn(i: number): CFrame
 	return World.ranchFrame(i) * CFrame.new(0, 3, -World.RANCH_HALF + 8) * CFrame.Angles(0, math.pi, 0)
 end
 
--- White post-and-rail fence between two local points (y = 0) of `cf`.
+-- Wooden post-and-rail fence between two local points (y = 0) of `cf`.
 local function fence(f: Instance, cf: CFrame, a: Vector3, b: Vector3)
 	local n = math.max(1, math.round((b - a).Magnitude / 6))
 	for k = 0, n do
 		local p = (cf * CFrame.new(a:Lerp(b, k / n))).Position
-		part(f, Vector3.new(0.9, 4.6, 0.9), CFrame.new(p + Vector3.new(0, 2.3, 0)) * cf.Rotation, WHITE, M.Wood)
+		part(f, Vector3.new(0.9, 4.6, 0.9), CFrame.new(p + Vector3.new(0, 2.3, 0)) * cf.Rotation, WOOD_DARK, M.Wood)
+		part(f, Vector3.new(1.25, 0.35, 1.25), CFrame.new(p + Vector3.new(0, 4.75, 0)) * cf.Rotation, WOOD, M.Wood)
 	end
 	local wa, wb = (cf * CFrame.new(a)).Position, (cf * CFrame.new(b)).Position
 	for _, y in { 1.8, 3.7 } do
-		bar(f, wa + Vector3.new(0, y, 0), wb + Vector3.new(0, y, 0), 0.22, WHITE, M.Wood)
+		bar(f, wa + Vector3.new(0, y, 0), wb + Vector3.new(0, y, 0), 0.22, WOOD, M.Wood)
 	end
 end
 
@@ -632,8 +622,9 @@ local function silo(f: Instance, base: Vector3)
 	end
 end
 
--- One home ranch: fenced yard, gate with the owner sign, barn and silo, a paddock of animal spots,
--- an egg nest, a trough, hay bales, a mailbox, flowers and trees. Spots and nest are tagged.
+-- One home ranch plot, the part that never changes: lawn, fence, the stone gate with the owner
+-- sign, the teleport pad, a mailbox, flowers, trees and the mountains. What stands on the plot
+-- depends on its owner's upgrades and is built by Ranch.luau.
 local function ranch(root: Instance, i: number, rng: Random)
 	local f = folder(root, `Ranch{i}`)
 	f:SetAttribute("Index", i)
@@ -643,76 +634,31 @@ local function ranch(root: Instance, i: number, rng: Random)
 	local function at(x: number, y: number, z: number): CFrame
 		return cf * CFrame.new(x, y, z)
 	end
-	-- ground: lawn, a greener paddock on the left, dirt tracks to the barn and the nest
 	part(f, Vector3.new(H * 2, 0.4, H * 2), at(0, 0.2, 0), Color3.fromRGB(120, 176, 84), M.Grass)
-	part(f, Vector3.new(30, 0.5, 46), at(-20, 0.25, -12), Color3.fromRGB(104, 168, 72), M.LeafyGrass)
-	part(f, Vector3.new(9, 0.5, H + 14), at(0, 0.3, -H / 2 + 7), DIRT, M.Ground)
-	part(f, Vector3.new(14, 0.5, 14), at(20, 0.3, -14), DIRT, M.Ground)
 	-- fence with a gate gap facing the plaza
 	fence(f, cf, Vector3.new(-H, 0, -H), Vector3.new(-8, 0, -H))
 	fence(f, cf, Vector3.new(8, 0, -H), Vector3.new(H, 0, -H))
 	fence(f, cf, Vector3.new(H, 0, -H), Vector3.new(H, 0, H))
 	fence(f, cf, Vector3.new(H, 0, H), Vector3.new(-H, 0, H))
 	fence(f, cf, Vector3.new(-H, 0, H), Vector3.new(-H, 0, -H))
-	-- gate arch with the owner sign (World.setRanchOwner changes the text); the road brings the lamps
+	-- gate: stone pillars with lanterns, a wooden arch with the owner sign (World.setRanchOwner
+	-- changes the text)
 	for _, dx in { -8, 8 } do
-		part(f, Vector3.new(1.6, 13, 1.6), at(dx, 6.5, -H), WOOD_DARK, M.Wood)
-		ball(f, at(dx, 13.4, -H).Position, 1.8, HAY, M.SmoothPlastic)
+		part(f, Vector3.new(3.4, 6, 3.4), at(dx, 3, -H), STONE_DARK, M.Cobblestone)
+		part(f, Vector3.new(4, 0.7, 4), at(dx, 6.3, -H), STONE, M.Slate)
+		part(f, Vector3.new(1.6, 7, 1.6), at(dx, 10, -H), WOOD_DARK, M.Wood)
+		local lantern = part(f, Vector3.new(1.3, 1.7, 1.3), at(dx, 5, -H - 2.3), WARM, M.Neon)
+		part(f, Vector3.new(1.7, 0.35, 1.7), at(dx, 6, -H - 2.3), INK, M.Metal)
+		part(f, Vector3.new(0.3, 0.3, 1.2), at(dx, 6.1, -H - 1.6), INK, M.Metal)
+		glow(lantern, WARM, 16, 1.2)
 	end
 	part(f, Vector3.new(18, 1, 1.4), at(0, 12.6, -H), WOOD_DARK, M.Wood)
 	local sign = part(f, Vector3.new(14, 3.2, 0.6), at(0, 10.2, -H), WOOD, M.WoodPlanks)
 	sign.Name = "OwnerSign"
 	label(sign, "Free Ranch", WHITE)
-	barn(f, at(0, 0, 22))
-	silo(f, at(19, 0, 26).Position)
-	-- paddock: straw spots where owned animals will idle, tagged "RanchSpot"
-	local spots = folder(f, "Spots")
-	local n = 0
-	for _, z in { -28, -18, -8, 2 } do
-		for _, x in { -27, -14 } do
-			n += 1
-			local pad = disc(spots, at(x, 0, z).Position + Vector3.new(0, 0.55, 0), 4.6, 0.3, HAY, M.Fabric)
-			pad.Name = `Spot{n}`
-			pad:SetAttribute("Ranch", i)
-			pad:SetAttribute("Index", n)
-			CollectionService:AddTag(pad, "RanchSpot")
-		end
-	end
 	-- teleport pad to the hub, just inside the gate
-	teleporter(f, at(-14, 0, -H + 10).Position, "hub", "Go to the hub")
-	signboard(f, at(-14, 0, -H + 3), 10, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
-	-- training pads, one per stat, in the stat's colour: animals train at the ranch (decision
-	-- 0029). Tagged "TrainPad" with the station id; simple placeholders for the tycoon buildings.
-	local pads = folder(f, "TrainPads")
-	for k, st in StationConfig.STATIONS do
-		local column, row = (k - 1) % 3, (k - 1) // 3
-		local centre = at(13 + column * 9, 0, -2 + row * 9).Position
-		local pad = disc(pads, centre + Vector3.new(0, 0.6, 0), 6, 0.4, STAT_COLOUR[st.stat], M.SmoothPlastic)
-		pad.Name = st.id
-		pad:SetAttribute("Ranch", i)
-		pad:SetAttribute("Station", st.id)
-		CollectionService:AddTag(pad, "TrainPad")
-	end
-	signboard(f, at(22, 0, 12.5), 14, "Training", Color3.fromRGB(90, 110, 150), 3.2)
-	-- water trough and hay bales by the paddock
-	part(f, Vector3.new(3.4, 2.2, 9), at(-33, 1.1, 12), WOOD, M.Wood)
-	part(f, Vector3.new(2.6, 0.3, 8.2), at(-33, 2.1, 12), Color3.fromRGB(90, 170, 230), M.Glass).Transparency = 0.25
-	for k, o in { Vector3.new(-17, 1.5, 12), Vector3.new(-12.6, 1.5, 12.4), Vector3.new(-14.8, 4.5, 12.2) } do
-		part(f, Vector3.new(4.2, 3, 3), at(o.X, o.Y, o.Z) * CFrame.Angles(0, rad(k * 7), 0), HAY, M.Fabric)
-	end
-	-- egg nest: the ranch's own hatching spot, tagged "RanchNest"
-	local nestAt = at(20, 0, -14).Position
-	local nest = disc(f, nestAt + Vector3.new(0, 0.9, 0), 7, 0.8, HAY, M.Fabric)
-	nest.Name = "Nest"
-	nest:SetAttribute("Ranch", i)
-	CollectionService:AddTag(nest, "RanchNest")
-	for k = 0, 11 do
-		local a = k / 12 * math.pi * 2
-		ball(f, nestAt + Vector3.new(math.cos(a) * 3.4, 1.2, math.sin(a) * 3.4), 2, HAY:Lerp(WOOD, 0.2), M.Fabric)
-	end
-	local e = egg(f, nestAt + Vector3.new(0, 0.9, 0), 3.4, EGG_LOOK.meadow.body, EGG_LOOK.meadow.spot, rng)
-	glow(e, WARM, 10, 0.6)
-	signboard(f, at(20, 0, -22.5), 9, "Egg Nest", Color3.fromRGB(110, 170, 90), 3.2)
+	teleporter(f, at(16, 0, -H + 6).Position, "hub", "Go to the hub")
+	signboard(f, at(27, 0, -H + 3), 10, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
 	-- mailbox by the gate, flowers along the front fence, trees outside the corners
 	local box = at(12.5, 0, -H - 3.5)
 	pillar(f, box.Position, 3.4, 0.25, WOOD_DARK, M.Wood)
@@ -854,5 +800,21 @@ function World.build(): Folder
 	end
 	return root
 end
+
+-- Builders shared with Ranch.luau, which builds what stands on each ranch plot.
+World.kit = {
+	disc = disc,
+	ball = ball,
+	bar = bar,
+	glow = glow,
+	signboard = signboard,
+	lamp = lamp,
+	tree = tree,
+	flowers = flowers,
+	egg = egg,
+	fence = fence,
+	barn = barn,
+	silo = silo,
+}
 
 return World

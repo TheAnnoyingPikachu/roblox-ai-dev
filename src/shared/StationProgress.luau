@@ -1,7 +1,7 @@
 --!strict
--- Pure Animal Stations saved profile (decisions 0025, 0027, 0029): defaults, sanitize, the player
--- level, buying and hatching eggs, the team and its Titan slot, and training (settled from
--- timestamps in real time, also while the player is away). Every change takes its inputs (the hatched animal, `now`)
+-- Pure Animal Stations saved profile (decisions 0025, 0027, 0029, 0034): defaults, sanitize, the
+-- player level, buying and hatching eggs, the team and its Titan slot, training (settled from
+-- timestamps in real time, also while the player is away) and the ranch upgrades. Every change takes its inputs (the hatched animal, `now`)
 -- as arguments, so SaveStore can run it twice. No Roblox APIs; the server owns the Rng and the clock.
 
 local LevelRules = require("./LevelRules")
@@ -23,14 +23,16 @@ export type Profile = {
 	titan: number?, -- the fourth slot: one Titan's id (decision 0027)
 	best: number, -- highest wave (endless level) cleared
 	xp: number, -- player XP; the player level comes from it (playerLevel)
+	samples: number, -- dropped by harder waves; with coins they pay for ranch upgrades
+	upgrades: { [string]: number }, -- level of each ranch upgrade (StationConfig.UPGRADES), 0 = not bought
 }
 
 StationProgress.VERSION = 1
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
-StationProgress.MAX_ANIMALS = 100
+StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
+StationProgress.MAX_SAMPLES = 1e9
 StationProgress.TEAM_SIZE = LevelRules.TEAM_SIZE
-StationProgress.TRAIN_MAX = 4 -- animals training at once
 StationProgress.MAX_XP = 1e12
 StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)^2
 
@@ -45,7 +47,17 @@ function StationProgress.defaults(_now: number): Profile
 		team = {},
 		best = 0,
 		xp = 0,
+		samples = 0,
+		upgrades = {},
 	}
+end
+
+-- What ranch upgrade `id` gives `p` now: animals training at once ("house"), animals kept
+-- ("barn"), training speed in percent ("grounds").
+function StationProgress.value(p: Profile, id: string): number
+	local u = StationConfig.upgrade(id) :: StationConfig.Upgrade
+	local level = p.upgrades[id] or 0
+	return if level > 0 then u.levels[level].value else u.base
 end
 
 -- Total XP needed to be player level `level` (level 1 needs none, level 15 needs 4,900).
@@ -91,6 +103,12 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	p.coins = int(record.coins, 0, StationProgress.MAX_COINS, p.coins)
 	p.best = int(record.best, 0, 1e9, 0)
 	p.xp = int(record.xp, 0, StationProgress.MAX_XP, 0)
+	p.samples = int(record.samples, 0, StationProgress.MAX_SAMPLES, 0)
+	for _, u in StationConfig.UPGRADES do
+		local stored = if type(record.upgrades) == "table" then record.upgrades[u.id] else nil
+		p.upgrades[u.id] = int(stored, 0, #u.levels, 0)
+	end
+	local slots = StationProgress.value(p, "house")
 	local ids: { [number]: Animal } = {}
 	local maxId = 0
 	local training = 0
@@ -116,7 +134,7 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 				then cleanStats(a.trained, 0, StationConfig.MAX_LEVEL, StationRules.ZERO)
 				else nil
 			local animal: Animal = { id = id, s = a.s, v = v, stats = stats, trained = trained }
-			if type(a.at) == "string" and StationConfig.station(a.at) and training < StationProgress.TRAIN_MAX then
+			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots then
 				animal.at = a.at
 				animal.since = int(a.since, 0, MAX_TIME, now or 0)
 				training += 1
@@ -164,7 +182,7 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 		return false, "egg"
 	elseif egg.unlock and StationProgress.playerLevel(p) < egg.unlock then
 		return false, "locked"
-	elseif #p.animals >= StationProgress.MAX_ANIMALS then
+	elseif #p.animals >= math.min(StationProgress.value(p, "barn"), StationProgress.MAX_ANIMALS) then
 		return false, "full"
 	elseif p.coins < egg.price then
 		return false, "coins"
@@ -205,13 +223,18 @@ function StationProgress.buy(
 	return p, true, nil, id
 end
 
+-- Training seconds earned in `seconds` of real time: the Training Grounds make it go faster.
+function StationProgress.trainingSeconds(p: Profile, seconds: number): number
+	return math.max(0, seconds) * StationProgress.value(p, "grounds") / 100
+end
+
 -- Add training time to every training animal up to `now`. Every stat level gained gives the
 -- player XP. An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
 function StationProgress.settle(p: Profile, now: number): Profile
 	for i, a in p.animals do
 		if a.at and a.since then
 			local st = StationConfig.station(a.at) :: StationConfig.Station
-			local t = StationRules.train(a :: any, a.at, math.max(0, now - a.since))
+			local t = StationRules.train(a :: any, a.at, StationProgress.trainingSeconds(p, now - a.since))
 			local copy = table.clone(a)
 			copy.trained = t.trained
 			copy.since = math.max(a.since, now)
@@ -272,7 +295,7 @@ function StationProgress.train(p: Profile, id: number, stationId: string, now: n
 		for _, x in p.animals do
 			n += if x.at then 1 else 0
 		end
-		if n >= StationProgress.TRAIN_MAX then
+		if n >= StationProgress.value(p, "house") then
 			return p, false, "train_full"
 		end
 	end
@@ -302,6 +325,40 @@ function StationProgress.stop(p: Profile, id: number, now: number): (Profile, bo
 	local copy = table.clone(p.animals[i])
 	copy.at, copy.since = nil, nil
 	p.animals[i] = copy
+	return p, true, nil
+end
+
+-- Whether `p` can buy the next level of ranch upgrade `id` now; the code says why not.
+function StationProgress.canUpgrade(p: Profile, id: string): (boolean, string?)
+	local u = StationConfig.upgrade(id)
+	if u == nil then
+		return false, "upgrade"
+	end
+	local cost = u.levels[(p.upgrades[id] or 0) + 1]
+	if cost == nil then
+		return false, "top"
+	elseif p.coins < cost.coins then
+		return false, "coins"
+	elseif p.samples < cost.samples then
+		return false, "samples"
+	end
+	return true, nil
+end
+
+-- Buy the next level of ranch upgrade `id`. Training is settled first, so time already spent
+-- counts at the old speed.
+function StationProgress.upgrade(p: Profile, id: string, now: number): (Profile, boolean, string?)
+	local ok, code = StationProgress.canUpgrade(p, id)
+	if not ok then
+		return p, false, code
+	end
+	p = StationProgress.settle(p, now)
+	local level = (p.upgrades[id] or 0) + 1
+	local cost = (StationConfig.upgrade(id) :: StationConfig.Upgrade).levels[level]
+	p.coins -= cost.coins
+	p.samples -= cost.samples
+	p.upgrades = table.clone(p.upgrades)
+	p.upgrades[id] = level
 	return p, true, nil
 end
 

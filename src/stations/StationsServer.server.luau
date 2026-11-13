@@ -1,16 +1,35 @@
 --!strict
 -- Animal Stations server entry: builds the world, gives each player a home ranch (lowest free of
 -- World.RANCHES, owners spawn at its gate), teleports players between their ranch and the hub,
--- loads saves (kit Saves), sells eggs at the hub's stalls, and routes team and training requests
+-- loads saves (kit Saves), sells eggs at the hub's stalls, sells ranch upgrades at their pads and
+-- shows each ranch as its owner has built it (Ranch.luau), and routes team and training requests
 -- (kit Router). The client only names an action; prices, hatches and timings are decided here.
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Creatures = require(script.Parent:WaitForChild("Creatures"))
+local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 
 World.build()
+
+-- What stands on each ranch follows its owner's upgrades (a free ranch shows a new one).
+local shown: { [number]: string } = {}
+local function show(i: number, upgrades: { [string]: number })
+	local key = ""
+	for _, track in { "house", "barn", "grounds" } do
+		key ..= `{upgrades[track] or 0},`
+	end
+	if shown[i] ~= key then
+		shown[i] = key
+		Ranch.render(i, upgrades)
+	end
+end
+for i = 1, World.RANCHES do
+	show(i, {})
+end
 
 -- Max Players is a place setting a place file cannot carry: set it to 3 when publishing.
 if Players.MaxPlayers > World.RANCHES then
@@ -187,6 +206,10 @@ saves = Saves.start({
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
 		remotes.fx(player, "profile", profile)
+		local i = ranchOf(player)
+		if i then
+			show(i, profile.upgrades)
+		end
 	end,
 })
 
@@ -228,8 +251,57 @@ Players.PlayerRemoving:Connect(function(player)
 	if i then
 		owners[i] = nil
 		World.setRanchOwner(i, nil)
+		show(i, {})
 	end
 end)
+
+-- Ranch upgrade pads (built by Ranch.luau, and again after every upgrade): only the owner buys.
+local function hookUpgrade(prompt: Instance)
+	(prompt :: ProximityPrompt).Triggered:Connect(function(player)
+		local track = prompt:GetAttribute("Track")
+		if owners[prompt:GetAttribute("Ranch") :: number] ~= player or type(track) ~= "string" then
+			return
+		end
+		local now = os.time()
+		local ok, code = apply(player, function(p)
+			return StationProgress.upgrade(p, track, now)
+		end)
+		remotes.fx(player, if ok then "upgraded" else "refused", if ok then track else code)
+	end)
+end
+CollectionService:GetInstanceAddedSignal("Upgrade"):Connect(hookUpgrade)
+for _, prompt in CollectionService:GetTagged("Upgrade") do
+	hookUpgrade(prompt)
+end
+
+-- Studio only: coins and samples cannot be earned until wave fights are built, so a pad by each
+-- gate hands out test funds. It never exists on a live server.
+if RunService:IsStudio() then
+	for i = 1, World.RANCHES do
+		local pad = Instance.new("Part")
+		pad.Name = "TestFunds"
+		pad.Anchored, pad.Shape = true, Enum.PartType.Ball
+		pad.Size = Vector3.new(3, 3, 3)
+		pad.CFrame = World.ranchFrame(i) * CFrame.new(-13, 2, -55)
+		pad.Color, pad.Material = Color3.fromRGB(200, 90, 255), Enum.Material.Neon
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.ActionText = "Take test funds"
+		prompt.ObjectText = "Studio only"
+		prompt.HoldDuration = 0.3
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = pad
+		prompt.Triggered:Connect(function(player)
+			if owners[i] == player and saves.get(player) then
+				saves.apply(player, function(q)
+					q.coins = math.min(q.coins + 1e6, StationProgress.MAX_COINS)
+					q.samples = math.min(q.samples + 500, StationProgress.MAX_SAMPLES)
+					return q
+				end)
+			end
+		end)
+		pad.Parent = World.root():FindFirstChild(`Ranch{i}`, true)
+	end
+end
 
 -- Creature showcase (STATION-016): until owned animals stand at the ranch, each paddock shows the
 -- Rhino and the Lava Rhino pacing a lane: walk up, turn, magic attack back down the lane, walk
@@ -268,10 +340,10 @@ end
 for i = 1, World.RANCHES do
 	local parent = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
 	local cf = World.ranchFrame(i)
-	-- lanes down the paddock, far enough apart to turn; its grass is 0.5 above the ranch frame
-	for name, x in { creature_rhino = -25, creature_rhino_lava = -10 } do
+	-- lanes down the roaming area, far enough apart to turn; its grass is 0.5 above the ranch frame
+	for name, x in { creature_rhino = -41, creature_rhino_lava = -21 } do
 		task.spawn(function()
-			local from, to = cf * Vector3.new(x, 0.5, -38), cf * Vector3.new(x, 0.5, 2)
+			local from, to = cf * Vector3.new(x, 0.5, -42), cf * Vector3.new(x, 0.5, -7)
 			local a = CFrame.lookAt(from, to)
 			local model = Creatures.spawn(name, a, parent)
 			if model then
