@@ -146,6 +146,47 @@ describe("StationRules.rate", function()
 	end)
 end)
 
+describe("StationRules battle matchups", function()
+	it("makes the four stats one loop: each beats one, loses to one, is neutral to one", function()
+		for _, a in StationConfig.STATS do
+			local wins, losses, even = 0, 0, 0
+			for _, d in StationConfig.STATS do
+				if a ~= d then
+					local m = StationRules.matchup(a :: any, d :: any)
+					wins += if m > 1 then 1 else 0
+					losses += if m < 1 then 1 else 0
+					even += if m == 1 then 1 else 0
+				end
+			end
+			expect(wins).toBe(1)
+			expect(losses).toBe(1)
+			expect(even).toBe(1)
+			expect(StationRules.matchup(a :: any, a :: any)).toBe(1)
+		end
+		-- the loop visits all four stats before coming back
+		local seen, at = {}, "speed"
+		for _ = 1, 4 do
+			expect(seen[at]).toBeNil()
+			seen[at] = true
+			at = (StationConfig.BEATS :: any)[at]
+		end
+		expect(at).toBe("speed")
+	end)
+
+	it("keeps the advantage slight and symmetric", function()
+		expect(StationConfig.ADVANTAGE > 1 and StationConfig.ADVANTAGE <= 1.5).toBeTruthy()
+		expect(StationRules.matchup("speed", "smarts") * StationRules.matchup("smarts", "speed")).toBe(1)
+	end)
+
+	it("battles as the best stat: a cheetah is speed, an owl is smarts, and the cheetah has the edge", function()
+		expect(StationRules.battleType(owned("cheetah"))).toBe("speed")
+		expect(StationRules.battleType(owned("owl"))).toBe("smarts")
+		expect(StationRules.matchup("speed", "smarts")).toBe(StationConfig.ADVANTAGE)
+		expect(StationRules.battleType(owned("dolphin"))).toBe("swim")
+		expect(StationRules.matchup("speed", "swim") < 1).toBeTruthy()
+	end)
+end)
+
 describe("StationRules.hatch", function()
 	it("picks species by cumulative basis points at the boundaries", function()
 		local odds = (StationConfig.egg("meadow") :: StationConfig.Egg).odds

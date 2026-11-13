@@ -27,5 +27,5 @@ The game has three pillars, all driven by the same four stats:
 
 ## Not decided yet
 
-Microgame list and controls, battle rules (turns, moves, type matchups), whether players can
+Microgame list and controls, battle rules (turns, moves; matchups are decision 0022), whether players can
 visit each other's ranches or battle each other, and how ranches are upgraded.

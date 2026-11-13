@@ -1,0 +1,29 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-005",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Battle matchups: the four stats as a rock paper scissors loop with a slight damage edge, plus the battle type of an animal, as pure tested rules.",
+  "inputs": ["docs/decisions/0022-animal-stations-battle-matchups.md"],
+  "dependencies": ["STATION-004"],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "tests/StationRules.spec.luau",
+    "docs/decisions/0021-animal-stations-vision-ranches.md",
+    "docs/decisions/0022-animal-stations-battle-matchups.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": ["StationRules.spec.luau"],
+  "acceptance_criteria": [
+    "Each stat beats exactly one, loses to exactly one and is neutral to one, in a single loop of four",
+    "The advantage is slight (above 1, at most 1.5) and symmetric",
+    "An animal battles as its highest stat"
+  ],
+  "verification": "lune run tests/run.luau passes, including the three new matchup tests in StationRules.spec.luau; selene and stylua clean",
+  "output_artifacts": ["src/shared/StationConfig.luau", "src/shared/StationRules.luau"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Rules only; battles themselves (turns, moves, HP) are not designed yet."
+}

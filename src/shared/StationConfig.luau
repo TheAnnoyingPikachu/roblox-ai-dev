@@ -276,6 +276,13 @@ StationConfig.EGGS = {
 	},
 } :: { Egg }
 
+-- Battle matchups (decision 0022): rock paper scissors in a loop of four. Each stat beats one
+-- and loses to one; the stat opposite it is neutral. An animal battles as its best stat.
+-- Speed rushes Smarts before it can plan, Smarts outwits Strength, Strength muscles through
+-- Swim's current, Swim's water slows Speed.
+StationConfig.BEATS = { speed = "smarts", smarts = "strength", strength = "swim", swim = "speed" } :: { [Stat]: Stat }
+StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
+
 -- coinsPerSec: what an animal with stat 100 earns there. Other stats earn on a curve (StationRules.rate).
 StationConfig.STATIONS = {
 	{ id = "track", name = "Speed Track", stat = "speed", coinsPerSec = 50 },

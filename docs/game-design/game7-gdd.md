@@ -14,6 +14,8 @@ eggs. A cheetah belongs on the Speed Track. A dolphin belongs in the Swim Pool.
 Three pillars on the same four stats: a **ranch** you raise animals on (your home base),
 lots of short **silly reflex microgames** (our own designs), and **turn-based creature battles**.
 Servers hold 6 players; each gets a home ranch around the shared hub.
+Battle matchups (decision 0022) are a rock paper scissors loop with a slight edge (x1.25):
+Speed beats Smarts, Smarts beats Strength, Strength beats Swim, Swim beats Speed.
 
 ## Core loop (hypothesis)
 
@@ -27,7 +29,7 @@ Servers hold 6 players; each gets a home ranch around the shared hub.
 
 - `StationConfig`: 4 stats, 6 rarities, 16 species each with a basic version and 3 super-rare
   variants (decision 0020, bestiary in `game7-animals.md`), 3 eggs, 4 stations.
-- `StationRules`: `hatch`, `versionStats`, `rarity`, `rate`, `bestStation`, `income`, tested in `StationRules.spec.luau`.
+- `StationRules`: `hatch`, `versionStats`, `rarity`, `rate`, `bestStation`, `income`, `battleType`, `matchup`, tested in `StationRules.spec.luau`.
 
 - World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and six home
   ranches. The server gives each player a ranch and spawns them at its gate.

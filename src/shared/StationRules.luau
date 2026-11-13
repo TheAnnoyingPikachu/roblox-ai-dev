@@ -93,6 +93,28 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	return { s = species, v = variantId, stats = stats :: Stats }, rng
 end
 
+-- The stat an animal battles as: its highest stat (ties go to the first in StationConfig.STATS).
+function StationRules.battleType(animal: Owned): StationConfig.Stat
+	local best, top = StationConfig.STATS[1], -1
+	for _, stat in StationConfig.STATS do
+		local x = (animal.stats :: any)[stat] :: number
+		if x > top then
+			best, top = stat, x
+		end
+	end
+	return best
+end
+
+-- Damage multiplier for an attacker of type `a` hitting a defender of type `d`.
+function StationRules.matchup(a: StationConfig.Stat, d: StationConfig.Stat): number
+	if StationConfig.BEATS[a] == d then
+		return StationConfig.ADVANTAGE
+	elseif StationConfig.BEATS[d] == a then
+		return 1 / StationConfig.ADVANTAGE
+	end
+	return 1
+end
+
 -- Display rarity: the variant's tier, or the species' basic rarity.
 function StationRules.rarity(animal: Owned): string
 	if animal.v then
