@@ -19,8 +19,9 @@ eggs. A cheetah belongs on the Speed Track. A dolphin belongs in the Swim Pool.
 
 ## Built so far
 
-- `StationConfig`: 4 stats, 5 rarities, 11 animals, 2 eggs, 4 stations.
-- `StationRules`: `hatch`, `rate`, `bestStation`, `income`, tested in `StationRules.spec.luau`.
+- `StationConfig`: 4 stats, 6 rarities, 16 species each with a basic version and 3 super-rare
+  variants (decision 0020, bestiary in `game7-animals.md`), 3 eggs, 4 stations.
+- `StationRules`: `hatch`, `versionStats`, `rarity`, `rate`, `bestStation`, `income`, tested in `StationRules.spec.luau`.
 
 ## Next (not started)
 
