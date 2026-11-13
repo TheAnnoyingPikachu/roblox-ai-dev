@@ -1,37 +1,43 @@
 # Animal Stations (game 7): design spec (foundation draft)
 
-Status: foundation only. Facts are in decision 0019. Everything else here is a **hypothesis**
+Status: foundation only. Facts are in decisions 0019 to 0023. Everything else here is a **hypothesis**
 to settle in later tasks.
 
 ## Pitch
 
-Hatch animals from eggs. Every animal has four stats: speed, strength, swim and smarts. Put each
-one to work at the mini-game station that matches its best stat to earn coins, then buy better
-eggs. A cheetah belongs on the Speed Track. A dolphin belongs in the Swim Pool.
+Hatch animals from eggs. Every animal has four stats: speed, strength, swim and smarts. Train
+them at the stations, build a team of three, and push through endless levels for coins to buy
+better eggs.
+
+## Pivot (decision 0023)
+
+Train a team of three animals to clear **endless levels**. Stations no longer pay coins: they
+**train** the station's stat. Coins come from clearing levels and buy eggs. Lobbies hold 3
+players; teams of 3 players come later.
 
 ## Vision (decision 0021)
 
 Three pillars on the same four stats: a **ranch** you raise animals on (your home base),
 lots of short **silly reflex microgames** (our own designs), and **turn-based creature battles**.
-Servers hold 6 players; each gets a home ranch around the shared hub.
+Servers hold 3 players (0023); each gets a home ranch around the shared hub.
 Battle matchups (decision 0022) are a rock paper scissors loop with a slight edge (x1.25):
 Speed beats Smarts, Smarts beats Strength, Strength beats Swim, Swim beats Speed.
 
 ## Core loop (hypothesis)
 
 1. Buy an egg with coins and hatch it. The odds are shown on the egg.
-2. Look at the new animal's stat card and assign it to a station.
-3. Stations earn coins every second from the animals working there (`StationRules.rate`).
-4. Optional: play the station's mini-game yourself with an animal for a short burst bonus.
-5. Buy better eggs for animals with higher stats.
+2. Pick a team of three and put spare animals on stations to train (`StationRules.train`).
+3. Fight the next level (`LevelRules.battle`); clearing it pays coins (`LevelRules.reward`).
+4. Optional: play a station's microgame for a training boost (not designed yet).
+5. Buy better eggs, train, and push further.
 
 ## Built so far
 
 - `StationConfig`: 4 stats, 6 rarities, 16 species each with a basic version and 3 super-rare
   variants (decision 0020, bestiary in `game7-animals.md`), 3 eggs, 4 stations.
-- `StationRules`: `hatch`, `versionStats`, `rarity`, `rate`, `bestStation`, `income`, `battleType`, `matchup`, tested in `StationRules.spec.luau`.
+- `StationRules`: `hatch`, `versionStats`, `rarity`, `stat`, `train`, `battleType`, `matchup`; `LevelRules`: `enemies`, `fighter`, `battle`, `reward`, tested in `StationRules.spec.luau` and `LevelRules.spec.luau`.
 
-- World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and six home
+- World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and three home
   ranches. The server gives each player a ranch and spawns them at its gate.
 
 ## Next (not started)

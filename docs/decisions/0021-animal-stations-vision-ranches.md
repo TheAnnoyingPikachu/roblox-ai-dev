@@ -1,6 +1,6 @@
 # 0021: Animal Stations vision (ranch, microgames, battles) and home ranches
 
-Status: proposed (for SHANNON at the first Animal Stations checkpoint)
+Status: proposed (for SHANNON at the first Animal Stations checkpoint). Lobby size changed to 3 and idle earning replaced by training in 0023.
 Date: 2026-11-13. Builds on 0019 and 0020.
 
 ## Vision (from SHANNON)

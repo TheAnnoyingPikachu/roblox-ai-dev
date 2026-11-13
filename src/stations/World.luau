@@ -1,7 +1,7 @@
 --!strict
 -- Animal Stations world (STATION-003, STATION-004): the central plaza with the hatchery fountain
 -- and the egg market, four station zones on the diagonals (Speed Track NW, Strength Gym NE, Swim
--- Pool SW, Puzzle Library SE), six home ranches (one per player) on the north, east and west roads,
+-- Pool SW, Puzzle Library SE), three home ranches (one per player) on the north, east and west roads,
 -- paths with lamps, trees, flowers and the hill ring. Built once from parts, Roblox materials and
 -- terrain. Display only: no game rules live here. Slots, spots and nests are tagged for the server.
 
@@ -20,13 +20,12 @@ World.PLAZA = 48 -- plaza radius
 World.STATION_DIST = 130 -- plaza centre to each station centre
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.SLOTS = 8 -- work slots per station (placeholder count; the rules decide later)
-World.RANCHES = 6 -- one home ranch per player; the server is capped at 6 players to match
-World.RANCH_DIST = 285 -- plaza centre to each ranch centre
+World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
+World.RANCH_DIST = 250 -- plaza centre to each ranch centre
 World.RANCH_HALF = 38 -- half the fenced ranch square
 World.RANCH_SPOTS = 8 -- places in the paddock where owned animals will idle
--- Ranches sit in pairs either side of the north, east and west roads (south is the welcome walk).
-local RANCH_ANGLE = { -108, -72, -18, 18, 162, 198 }
-local FORK = 225 -- where a cardinal road splits to its two ranches
+-- One ranch at the end of each of the north, east and west roads (south is the welcome walk).
+local RANCH_ANGLE = { -90, 0, 180 }
 
 local M = Enum.Material
 local WHITE = Color3.new(1, 1, 1)
@@ -421,15 +420,9 @@ local function roadSegments(): { { Vector3 } }
 		table.insert(segs, { d * (World.PLAZA - 2), d * (World.STATION_DIST - 40) })
 	end
 	table.insert(segs, { Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) }) -- south lawn walk
-	for _, angle in { -90, 0, 180 } do
+	for _, angle in RANCH_ANGLE do
 		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
-		table.insert(segs, { d * (World.PLAZA - 2), d * FORK })
-	end
-	for i = 1, World.RANCHES do
-		local cardinal = if i <= 2 then -90 elseif i <= 4 then 0 else 180
-		local fork = Vector3.new(math.cos(rad(cardinal)), 0, math.sin(rad(cardinal))) * FORK
-		local d = Vector3.new(math.cos(rad(RANCH_ANGLE[i])), 0, math.sin(rad(RANCH_ANGLE[i])))
-		table.insert(segs, { fork, d * (World.RANCH_DIST - World.RANCH_HALF - 2) })
+		table.insert(segs, { d * (World.PLAZA - 2), d * (World.RANCH_DIST - World.RANCH_HALF - 2) })
 	end
 	return segs
 end
@@ -492,9 +485,9 @@ local function shell(root: Instance, st: StationConfig.Station): (Folder, CFrame
 	-- info board beside the arch
 	signboard(
 		f,
-		cf * CFrame.new(20, 0, -36) * CFrame.Angles(0, rad(180), 0),
-		16,
-		`Best stat: {string.upper(st.stat)}`,
+		cf * CFrame.new(23, 0, -36) * CFrame.Angles(0, rad(180), 0),
+		21,
+		`Trains {string.upper(st.stat)}`,
 		col:Lerp(INK, 0.35),
 		6
 	)

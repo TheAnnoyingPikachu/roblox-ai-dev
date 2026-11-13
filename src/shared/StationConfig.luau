@@ -1,5 +1,6 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019, 0020): stats, species, variants, eggs, stations.
+-- Game 7 "Animal Stations" data (decisions 0019, 0020, 0022, 0023): stats, species, variants,
+-- eggs, training stations, battle matchups.
 -- Every species has a basic version (common to rare, easy to get) and three variants (epic,
 -- legendary, mythic, super rare). Looks for art: docs/game-design/game7-animals.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
@@ -13,7 +14,7 @@ export type Species = { id: string, name: string, rarity: string, stats: Stats, 
 export type Tier = { tier: string, ppm: number, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
 export type Egg = { id: string, name: string, price: number, odds: { Odds } }
-export type Station = { id: string, name: string, stat: Stat, coinsPerSec: number }
+export type Station = { id: string, name: string, stat: Stat }
 
 StationConfig.STATS = { "speed", "strength", "swim", "smarts" } :: { Stat }
 StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400
@@ -283,13 +284,17 @@ StationConfig.EGGS = {
 StationConfig.BEATS = { speed = "smarts", smarts = "strength", strength = "swim", swim = "speed" } :: { [Stat]: Stat }
 StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
 
--- coinsPerSec: what an animal with stat 100 earns there. Other stats earn on a curve (StationRules.rate).
+-- Training stations (decision 0023): an animal left on a station slowly trains that station's stat.
 StationConfig.STATIONS = {
-	{ id = "track", name = "Speed Track", stat = "speed", coinsPerSec = 50 },
-	{ id = "gym", name = "Strength Gym", stat = "strength", coinsPerSec = 50 },
-	{ id = "pool", name = "Swim Pool", stat = "swim", coinsPerSec = 50 },
-	{ id = "library", name = "Puzzle Library", stat = "smarts", coinsPerSec = 50 },
+	{ id = "track", name = "Speed Track", stat = "speed" },
+	{ id = "gym", name = "Strength Gym", stat = "strength" },
+	{ id = "pool", name = "Swim Pool", stat = "swim" },
+	{ id = "library", name = "Puzzle Library", stat = "smarts" },
 } :: { Station }
+StationConfig.TRAIN_SECONDS = 60 -- seconds on a station for +1 to its stat
+-- Training can add at most POTENTIAL x the hatched stat, so a trained animal tops out at double
+-- and a variant's higher stats stay a higher ceiling.
+StationConfig.POTENTIAL = 1
 
 local function find<T>(list: { T }, id: string): T?
 	for _, x in list do

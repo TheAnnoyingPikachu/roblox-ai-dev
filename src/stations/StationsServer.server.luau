@@ -8,7 +8,7 @@ local World = require(script.Parent:WaitForChild("World"))
 
 World.build()
 
--- Max Players is a place setting a place file cannot carry: set it to 6 when publishing.
+-- Max Players is a place setting a place file cannot carry: set it to 3 when publishing.
 if Players.MaxPlayers > World.RANCHES then
 	warn(`[StationsServer] Max Players {Players.MaxPlayers} is above the {World.RANCHES} ranches`)
 end
@@ -40,7 +40,7 @@ local function join(player: Player)
 			break
 		end
 	end
-	-- no free ranch (only when Max Players is above 6): the player stays at the hub spawn
+	-- no free ranch (only when Max Players is above 3): the player stays at the hub spawn
 	local function spawned(character: Model)
 		character:WaitForChild("HumanoidRootPart")
 		task.wait() -- the SpawnLocation places the character after CharacterAdded; move it after that

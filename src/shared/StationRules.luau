@@ -1,7 +1,7 @@
 --!strict
--- Pure Animal Stations rules (decisions 0019, 0020): hatch an animal (species, then a rare variant
--- roll, then stats), and what it earns at each station. The server owns the Rng state; the client
--- never sends stats or amounts.
+-- Pure Animal Stations rules (decisions 0019, 0020, 0022, 0023): hatch an animal (species, then a
+-- rare variant roll, then stats), train it at a station, and its battle type and matchups. The
+-- server owns the Rng state and the clock; the client never sends stats or times.
 
 local Rng = require("./Rng")
 local StationConfig = require("./StationConfig")
@@ -9,11 +9,11 @@ local StationConfig = require("./StationConfig")
 local StationRules = {}
 
 type Stats = StationConfig.Stats
-export type Owned = { s: string, v: string?, stats: Stats } -- one hatched animal; v nil = basic
+-- One hatched animal: v nil = basic; stats rolled at hatch; trained = points added at stations.
+export type Owned = { s: string, v: string?, stats: Stats, trained: Stats? }
 
--- Stat curve: earnings grow faster than the stat, so a specialist clearly beats an all-rounder.
-StationRules.CURVE = 1.5
 StationRules.PPM = 1_000_000
+StationRules.ZERO = { speed = 0, strength = 0, swim = 0, smarts = 0 } :: Stats
 
 -- First id whose cumulative basis points reach r (r in 1..10000).
 function StationRules.pick(odds: { StationConfig.Odds }, r: number): string
@@ -93,11 +93,11 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	return { s = species, v = variantId, stats = stats :: Stats }, rng
 end
 
--- The stat an animal battles as: its highest stat (ties go to the first in StationConfig.STATS).
+-- The stat an animal battles as: its highest current stat (ties go to the first in STATS).
 function StationRules.battleType(animal: Owned): StationConfig.Stat
 	local best, top = StationConfig.STATS[1], -1
 	for _, stat in StationConfig.STATS do
-		local x = (animal.stats :: any)[stat] :: number
+		local x = StationRules.stat(animal, stat)
 		if x > top then
 			best, top = stat, x
 		end
@@ -127,35 +127,28 @@ function StationRules.rarity(animal: Owned): string
 	return if sp then sp.rarity else "common"
 end
 
--- Coins per second for `animal` working at `stationId`; 0 for an unknown station.
-function StationRules.rate(animal: Owned, stationId: string): number
+-- An animal's stat right now: hatched plus trained, floored. Not capped here: training stops at
+-- STAT_MAX, and level enemies must keep growing past it.
+function StationRules.stat(animal: Owned, stat: StationConfig.Stat): number
+	return math.floor((animal.stats :: any)[stat] + (if animal.trained then (animal.trained :: any)[stat] else 0))
+end
+
+-- `animal` after `seconds` on `stationId`: a copy with that station's stat trained, never past
+-- POTENTIAL x the hatched stat or a total of STAT_MAX. Unknown station or no time: unchanged.
+-- shortcut: no cap on offline seconds; the server clamps the time it passes in.
+function StationRules.train(animal: Owned, stationId: string, seconds: number): Owned
 	local st = StationConfig.station(stationId)
-	if st == nil then
-		return 0
+	if st == nil or seconds <= 0 then
+		return animal
 	end
-	local stat = (animal.stats :: any)[st.stat] :: number
-	return st.coinsPerSec * (stat / 100) ^ StationRules.CURVE
-end
-
--- The station where `animal` earns most (ties go to the first station in the list).
-function StationRules.bestStation(animal: Owned): (string, number)
-	local bestId, bestRate = StationConfig.STATIONS[1].id, -1
-	for _, st in StationConfig.STATIONS do
-		local r = StationRules.rate(animal, st.id)
-		if r > bestRate then
-			bestId, bestRate = st.id, r
-		end
-	end
-	return bestId, bestRate
-end
-
--- Total coins per second for a list of { animal, station } assignments.
-function StationRules.income(assignments: { { animal: Owned, station: string } }): number
-	local total = 0
-	for _, a in assignments do
-		total += StationRules.rate(a.animal, a.station)
-	end
-	return total
+	local trained = if animal.trained then table.clone(animal.trained) else table.clone(StationRules.ZERO)
+	local hatched = (animal.stats :: any)[st.stat]
+	local cap = math.min(hatched * StationConfig.POTENTIAL, StationConfig.STAT_MAX - hatched)
+	local now = (trained :: any)[st.stat] + seconds / StationConfig.TRAIN_SECONDS;
+	(trained :: any)[st.stat] = math.min(now, cap)
+	local out = table.clone(animal)
+	out.trained = trained
+	return out
 end
 
 return StationRules

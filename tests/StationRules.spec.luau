@@ -99,50 +99,50 @@ describe("StationRules.versionStats", function()
 		expect(StationRules.versionStats("bunny", "kitsune")).toBeNil()
 	end)
 
-	it("makes every variant out-earn its basic version at the basic's best station", function()
+	it("makes every variant stronger than its basic version in the basic's best stat", function()
 		for _, sp in StationConfig.SPECIES do
 			local basic = owned(sp.id)
-			local best, rate = StationRules.bestStation(basic)
+			local t = StationRules.battleType(basic)
 			for _, va in sp.variants do
-				expect(StationRules.rate(owned(sp.id, va.id), best) > rate).toBeTruthy()
+				expect(StationRules.stat(owned(sp.id, va.id), t) > StationRules.stat(basic, t)).toBeTruthy()
 			end
 		end
 	end)
 end)
 
-describe("StationRules.rate", function()
-	it("pays a stat-100 animal the station's full rate and scales on the curve", function()
-		local full = { s = "x", stats = { speed = 100, strength = 25, swim = 1, smarts = 1 } }
-		expect(StationRules.rate(full, "track")).toBe(50)
-		expect(StationRules.rate(full, "gym")).toBe(50 * 0.25 ^ 1.5)
-	end)
-
-	it("returns 0 for an unknown station", function()
-		expect(StationRules.rate(owned("bunny"), "moon")).toBe(0)
-	end)
-
-	it("sends each basic specialist to its matching station", function()
-		local want = { speed = "track", strength = "gym", swim = "pool", smarts = "library" }
-		for _, sp in StationConfig.SPECIES do
-			local top, topStat = -1, ""
-			for _, stat in StationConfig.STATS do
-				if (sp.stats :: any)[stat] > top then
-					top, topStat = (sp.stats :: any)[stat], stat
-				end
-			end
-			expect((StationRules.bestStation(owned(sp.id)))).toBe((want :: any)[topStat])
-		end
-	end)
-
-	it("makes a cheetah on the track earn over 5x a cheetah in the gym", function()
+describe("StationRules.train", function()
+	it("adds one point of the station's stat per TRAIN_SECONDS and leaves the original alone", function()
 		local c = owned("cheetah")
-		expect(StationRules.rate(c, "track") > 5 * StationRules.rate(c, "gym")).toBeTruthy()
+		local t = StationRules.train(c, "gym", StationConfig.TRAIN_SECONDS * 5)
+		expect(StationRules.stat(t, "strength")).toBe(35)
+		expect(StationRules.stat(t, "speed")).toBe(90)
+		expect(StationRules.stat(c, "strength")).toBe(30)
 	end)
 
-	it("sums assignments into income", function()
-		local c, b = owned("cheetah"), owned("bunny")
-		local total = StationRules.income({ { animal = c, station = "track" }, { animal = b, station = "track" } })
-		expect(total).toBe(StationRules.rate(c, "track") + StationRules.rate(b, "track"))
+	it("keeps part points between sessions", function()
+		local c = owned("cheetah")
+		local half = StationConfig.TRAIN_SECONDS / 2
+		local t = StationRules.train(StationRules.train(c, "track", half), "track", half)
+		expect(StationRules.stat(t, "speed")).toBe(91)
+	end)
+
+	it("stops at POTENTIAL x the hatched stat and never passes STAT_MAX", function()
+		local c = StationRules.train(owned("cheetah"), "track", 1e9)
+		expect(StationRules.stat(c, "speed")).toBe(90 * (1 + StationConfig.POTENTIAL))
+		local m = StationRules.train(owned("cheetah", "lightning_cheetah"), "track", 1e9)
+		expect(StationRules.stat(m, "speed")).toBe(StationConfig.STAT_MAX)
+	end)
+
+	it("ignores an unknown station or no time", function()
+		local c = owned("cheetah")
+		expect(StationRules.train(c, "moon", 600)).toBe(c)
+		expect(StationRules.train(c, "track", 0)).toBe(c)
+		expect(StationRules.train(c, "track", -60)).toBe(c)
+	end)
+
+	it("can change an animal's battle type by training another stat past its best", function()
+		local b = StationRules.train(owned("bear"), "pool", StationConfig.TRAIN_SECONDS * 31)
+		expect(StationRules.battleType(b)).toBe("swim")
 	end)
 end)
 

@@ -80,6 +80,9 @@ local SPECS = {
 	["StationRules.spec.luau"] = function()
 		require("./StationRules.spec")
 	end,
+	["LevelRules.spec.luau"] = function()
+		require("./LevelRules.spec")
+	end,
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,
