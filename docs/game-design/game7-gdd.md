@@ -58,11 +58,13 @@ vendors.
   teleports. Client: coins and level, and the Animals panel.
 - World: the hub with its wave arena canyon and three ranch islands, as simple placeholders.
   SHANNON has said the world is right for now.
+- The first animal models (decision 0033): the Rhino and the mythic Lava Rhino, jointed and
+  animated (idle, walk, horn attack, magic attack). They pace each ranch's paddock as a showcase.
 
 ## Not built yet
 
 - Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
-- Animal models; animals standing on the training pads or in the paddock.
+- The other animals' models; owned animals standing on the training pads or in the paddock.
 - The ranch tycoon: universal upgrades, expansion and training enhancements, paid with gold and
   samples from harder enemies. More hub vendors. Gear. The egg overhaul.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").

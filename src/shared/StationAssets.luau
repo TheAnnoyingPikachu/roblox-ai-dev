@@ -49,9 +49,9 @@ local StationAssets: { [string]: Asset } = {
 			creature_rhino_leg_br = { -1.437, 3.495, -3.817 },
 			creature_rhino_tail = { 0.003, 4.895, -5.717 },
 		},
-		model = nil,
-		decal = nil,
-		texture = nil,
+		model = 76840541365035,
+		decal = 121698041405933,
+		texture = 133392548986108,
 	},
 	creature_rhino_lava = {
 		size = { 7.5, 12.55, 18.48 },
@@ -68,9 +68,9 @@ local StationAssets: { [string]: Asset } = {
 			"creature_rhino_lava_tail_glow",
 		},
 		glow = {
-			creature_rhino_lava_body_glow = { 255, 128, 30 },
-			creature_rhino_lava_head_glow = { 255, 128, 30 },
-			creature_rhino_lava_tail_glow = { 255, 128, 30 },
+			creature_rhino_lava_body_glow = { 255, 84, 12 },
+			creature_rhino_lava_head_glow = { 255, 84, 12 },
+			creature_rhino_lava_tail_glow = { 255, 84, 12 },
 		},
 		centres = {
 			creature_rhino_lava_body = { 0, 7.323, -1.741 },
@@ -92,9 +92,9 @@ local StationAssets: { [string]: Asset } = {
 			creature_rhino_lava_leg_br = { -1.861, 4.543, -4.767 },
 			creature_rhino_lava_tail = { 0.011, 6.363, -7.237 },
 		},
-		model = nil,
-		decal = nil,
-		texture = nil,
+		model = 103288532892750,
+		decal = 124762936971480,
+		texture = 94181598243034,
 	},
 }
 

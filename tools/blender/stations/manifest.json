@@ -120,18 +120,18 @@
     "glow": {
       "creature_rhino_lava_body_glow": [
         255,
-        128,
-        30
+        84,
+        12
       ],
       "creature_rhino_lava_head_glow": [
         255,
-        128,
-        30
+        84,
+        12
       ],
       "creature_rhino_lava_tail_glow": [
         255,
-        128,
-        30
+        84,
+        12
       ]
     },
     "centres": {

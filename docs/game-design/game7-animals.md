@@ -1,6 +1,6 @@
 # Animal Stations: the beta pool (bestiary and art brief)
 
-Status: small beta pool, draft (decisions 0029 to 0032). Names, stats and odds are in
+Status: small beta pool, draft (decisions 0029 to 0033). Names, stats and odds are in
 `src/shared/StationConfig.luau` (the source of truth). This page adds the **look** of every
 version for the art pipeline.
 
@@ -67,6 +67,17 @@ version for the art pipeline.
 | Constellation Lion | | mythic | twist strength | Night-sky body with star lines tracing its shape, a mane of drifting stardust. |
 | **Elephant** | **Titan** | legendary | 30 / 160 / 180 / 60 / 200 / 120 | Huge grey elephant with gold-capped tusks and painted ear patterns; the ground shakes. |
 
+## The look (decision 0033)
+
+Animals are **dangerous-looking beasts, not cute toys**: real proportions (a small head on a big
+body), a heavy brow over small slanted eyes, a grim mouth, big horns, claws, dark skin, scars.
+**Big animals are big**, and a rare version is bigger and cooler than its basic one: extra horns,
+spikes, glowing parts. The looks in the tables below were written before this rule; read them
+with it in mind.
+
+Built so far (`tools/blender/stations/assets/creatures.py`): the Rhino (about 14 studs long, horn
+tip 8 studs up) and the mythic Lava Rhino (1.3 times that: 18 studs long, 12.5 high).
+
 ## Solitary animals
 
 | Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look |
@@ -79,10 +90,10 @@ version for the art pipeline.
 | Shadow Cheetah | | epic | twist mana | Black coat with faint violet spots and glowing violet eyes. |
 | Golden Cheetah | | legendary | twist strength | Metallic gold coat with darker gold spots. |
 | Lightning Cheetah | | mythic | twist speed | Electric-blue spots, crackling arcs along the body, fading afterimages. |
-| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | Grey rhino with a big front horn and armour-like skin folds. |
+| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide with dark creases, high shoulders with bone studs, a scimitar front horn, amber eyes under a heavy brow, claw scars. **Built.** |
 | Stone Rhino | | epic | twist defence | Carved from sandstone with painted patterns. |
 | Crystal Rhino | | legendary | twist mana | Clear crystal horn and crystal plates along the back. |
-| Thunder Rhino | | mythic | twist speed | Storm-cloud hide, a lightning-bolt horn, rumbles when it charges. |
+| Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns and eyes, rock spikes down the spine and on the shoulders, two more horns over the brow, a burning tail, embers. **Built.** |
 
 ## Eggs
 

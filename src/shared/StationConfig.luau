@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0032): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0033): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
@@ -165,7 +165,7 @@ StationConfig.SPECIES = {
 		variants = {
 			v("stone_rhino", "Stone Rhino", "epic", "defence"),
 			v("crystal_rhino", "Crystal Rhino", "legendary", "mana"),
-			v("thunder_rhino", "Thunder Rhino", "mythic", "speed"),
+			v("lava_rhino", "Lava Rhino", "mythic", "strength"),
 		},
 	},
 	{

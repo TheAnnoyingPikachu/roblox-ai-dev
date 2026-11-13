@@ -6,8 +6,8 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
 - Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
-  (roster and looks), decisions 0019 to 0032 (0029 to 0032 are the latest and replace parts of the rest).
-- Not built: wave battles in the arena (so coins cannot be earned in play), animal models, the ranch tycoon.
+  (roster and looks), decisions 0019 to 0033 (0029 to 0033 are the latest and replace parts of the rest).
+- Not built: wave battles in the arena (so coins cannot be earned in play), most animal models, the ranch tycoon.
 
 ## Files
 
@@ -15,6 +15,8 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 |---|---|
 | `StationsServer.server.luau` | entry: builds the world, ranch assignment and spawn, teleport prompts, kit Saves (`StationsProfile`), kit Router + `StationsRemotes` (profile, buy, team, train, stop), stall prompts |
 | `../stations-client/Hud.client.luau` | coins and player level, toasts, Animals panel (team button, one train button per stat); display only |
+| `Creatures.luau` | animal models: loads a `StationAssets` model once, rigs it with Motor6Ds from the manifest joints, `spawn`, `play` (sets `Anim` and `AnimAt`), `speed` |
+| `../stations-client/Creatures.client.luau` | animates every model tagged `Creature` (idle, walk, attack, magic) and plays the magic attack's effects; display only |
 | `World.luau` | the hub (plaza, Hatchery fountain, egg stalls, south walk, teleport pad, north road, scenery), the wave arena canyon, three ranch islands (barn, paddock, nest, training pads, teleport pad), the mountains and invisible walls round every area, lighting, spawn |
 
 Pure rules in `src/shared`: `StationConfig` (stats, stat levels, roles, groups, species, variants,
@@ -35,4 +37,7 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 - Every area is closed: mountains (rock domes) with an invisible `Barrier` wall in front. The hub's wall is at `World.HUB_RADIUS` and opens only into the arena canyon; keep new hub content inside it.
 - A hatched animal's `stats` are exactly its version's numbers; what varies is `trained`, the stat levels (base 1 to `BASE_MAX` on hatch, jackpot `MAX_LEVEL`).
 - The SpawnLocation is placed in code (`World.SPAWN`, the hub fallback); Rojo ignores `Position` in the project file. Owners are moved to their ranch after spawning.
+- Animals look dangerous, not cute, and big animals are big (decision 0033). Their models are built in Blender (`tools/blender/stations`), uploaded only by the Upload Blender assets workflow, and listed in the generated `src/shared/StationAssets.luau` (never edit it by hand; a spec keeps it in step with the manifest).
+- A model's size is its built size. Its `Scale` attribute is its leg length over the length the client's poses were written for; poses, effects and walk speed all use it. Move a walking creature at `Creatures.speed` or its feet slide.
+- Animation runs on each client from the model's attributes; the server never poses a joint. The ranch showcase at the end of the server script is a stand-in until owned animals live there.
 - Max Players must be 3 (= `World.RANCHES`). A place file cannot carry it: set it in Game Settings when publishing.

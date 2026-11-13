@@ -5,7 +5,9 @@
 -- (kit Router). The client only names an action; prices, hatches and timings are decided here.
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 
+local Creatures = require(script.Parent:WaitForChild("Creatures"))
 local World = require(script.Parent:WaitForChild("World"))
 
 World.build()
@@ -228,3 +230,53 @@ Players.PlayerRemoving:Connect(function(player)
 		World.setRanchOwner(i, nil)
 	end
 end)
+
+-- Creature showcase (STATION-016): until owned animals stand at the ranch, each paddock shows the
+-- Rhino and the Lava Rhino pacing a lane: walk up, turn, magic attack back down the lane, walk
+-- back, turn, horn attack.
+-- shortcut: the server tweens the Root, which replicates at network rate, move creatures on the
+-- client when wave fights place them.
+local QUARTER = CFrame.Angles(0, math.pi / 2, 0)
+
+local function pace(model: Model, a: CFrame, b: CFrame)
+	local root = model.PrimaryPart :: BasePart
+	local function go(to: CFrame, seconds: number)
+		Creatures.play(model, "walk")
+		local tween = TweenService:Create(root, TweenInfo.new(seconds, Enum.EasingStyle.Linear), { CFrame = to })
+		tween:Play()
+		tween.Completed:Wait()
+	end
+	local function turn(from: CFrame) -- two quarter turns: a half turn in one tween has no fixed axis
+		go(from * QUARTER, 1)
+		go(from * QUARTER * QUARTER, 1)
+	end
+	local function act(anim: string)
+		Creatures.play(model, anim)
+		task.wait(Creatures.LENGTH[anim] + 1.2)
+	end
+	local seconds = (b.Position - a.Position).Magnitude / Creatures.speed(model)
+	while model.Parent do
+		go(b, seconds)
+		turn(b)
+		act("magic")
+		go(a * QUARTER * QUARTER, seconds)
+		turn(a * QUARTER * QUARTER)
+		act("attack")
+	end
+end
+
+for i = 1, World.RANCHES do
+	local parent = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
+	local cf = World.ranchFrame(i)
+	-- lanes down the paddock, far enough apart to turn; its grass is 0.5 above the ranch frame
+	for name, x in { creature_rhino = -25, creature_rhino_lava = -10 } do
+		task.spawn(function()
+			local from, to = cf * Vector3.new(x, 0.5, -38), cf * Vector3.new(x, 0.5, 2)
+			local a = CFrame.lookAt(from, to)
+			local model = Creatures.spawn(name, a, parent)
+			if model then
+				pace(model, a, a.Rotation + to)
+			end
+		end)
+	end
+end

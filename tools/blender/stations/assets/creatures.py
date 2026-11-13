@@ -19,7 +19,7 @@ import random
 import kit as k
 from mathutils import Matrix, Vector
 
-LAVA = (255, 128, 30)
+LAVA = (255, 84, 12)
 
 # Where each piece turns (Blender coordinates, as built, before `scale`). Every piece hangs off
 # the body.
