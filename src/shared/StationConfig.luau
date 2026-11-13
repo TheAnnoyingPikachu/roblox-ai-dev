@@ -282,6 +282,9 @@ StationConfig.EGGS = {
 -- Speed rushes Smarts before it can plan, Smarts outwits Strength, Strength muscles through
 -- Swim's current, Swim's water slows Speed.
 StationConfig.BEATS = { speed = "smarts", smarts = "strength", strength = "swim", swim = "speed" } :: { [Stat]: Stat }
+-- Battle role of each type (decision 0024); BattleRules gives each role its job.
+StationConfig.ROLES =
+	{ speed = "attack", strength = "tank", swim = "defense", smarts = "utility" } :: { [Stat]: string }
 StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
 
 -- Training stations (decision 0023): an animal left on a station slowly trains that station's stat.

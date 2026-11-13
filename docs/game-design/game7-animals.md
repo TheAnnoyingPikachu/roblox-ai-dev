@@ -29,7 +29,7 @@ source of truth). This page adds the **look** of every version for the art pipel
 - Rarity colours for nameplates and auras: common grey, uncommon green, rare blue, epic purple,
   legendary gold, mythic rainbow shimmer.
 
-## Speed animals (Speed Track)
+## Speed animals (Speed Track) — role: Attack
 
 | Version | Rarity | Stats (spd/str/swm/smt) | Look |
 |---|---|---|---|
@@ -50,7 +50,7 @@ source of truth). This page adds the **look** of every version for the art pipel
 | Golden Cheetah | legendary | twist strength | Polished metallic gold coat with darker gold spots and a glint sweep. |
 | Lightning Cheetah | mythic | twist speed | Electric-blue spots, crackling arcs along the body, leaves fading afterimages. |
 
-## Strength animals (Strength Gym)
+## Strength animals (Strength Gym) — role: Tank
 
 | Version | Rarity | Stats (spd/str/swm/smt) | Look |
 |---|---|---|---|
@@ -71,7 +71,7 @@ source of truth). This page adds the **look** of every version for the art pipel
 | Lava Gorilla | legendary | twist strength | Obsidian body with molten orange veins and drifting embers. |
 | Galaxy Gorilla | mythic | twist smarts | Fur is a starfield with nebula colours; two tiny moons orbit its head. |
 
-## Swim animals (Swim Pool)
+## Swim animals (Swim Pool) — role: Defense
 
 | Version | Rarity | Stats (spd/str/swm/smt) | Look |
 |---|---|---|---|
@@ -92,7 +92,7 @@ source of truth). This page adds the **look** of every version for the art pipel
 | Midnight Dolphin | legendary | twist strength | Deep navy body covered in glowing bioluminescent dots. |
 | Crystal Dolphin | mythic | twist speed | See-through crystal body that splits light into rainbows. |
 
-## Smarts animals (Puzzle Library)
+## Smarts animals (Puzzle Library) — role: Utility
 
 | Version | Rarity | Stats (spd/str/swm/smt) | Look |
 |---|---|---|---|

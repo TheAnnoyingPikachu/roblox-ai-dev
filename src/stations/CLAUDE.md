@@ -2,10 +2,10 @@
 
 Egg animal collector: hatch animals with four stats, train them at stations, and send a team of three
 through endless levels (0023). Vision (0021): ranch + silly microgames + turn-based battles. Status: rules (STATION-001/002),
-the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005), training and levels (STATION-006) only; no saves, remotes or client yet.
+the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005), training and levels (STATION-006), roles and team battles (STATION-007) only; no saves, remotes or client yet.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
-- Docs: decisions 0019 to 0023; `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
+- Docs: decisions 0019 to 0024; `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
 
 ## Files
 
@@ -14,7 +14,7 @@ the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005),
 | `StationsServer.server.luau` | entry: builds the world, gives each player a ranch (lowest free of 3), spawns owners at their gate |
 | `World.luau` | the world: plaza, Hatchery fountain, egg market, roads, the four stations, three ranches, scenery, lighting, spawn |
 
-Pure rules: `StationConfig` (stats, species, variants, eggs, stations, matchups), `StationRules` (hatch, train, matchups) and `LevelRules` (enemy teams, battles, rewards). Specs: `StationRules`, `LevelRules`.
+Pure rules: `StationConfig` (stats, species, variants, eggs, stations, matchups), `StationRules` (hatch, train, matchups) `LevelRules` (enemy teams, rewards) and `BattleRules` (roles, team battle for levels and PvP). Specs: `StationRules`, `LevelRules`, `BattleRules`.
 
 ## Must stay true
 

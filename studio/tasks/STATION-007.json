@@ -1,0 +1,35 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-007",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Roles and team battles: each type is a role (attack, tank, defense, utility) and BattleRules runs a deterministic team-against-team battle shared by the endless levels and future PvP.",
+  "inputs": ["docs/decisions/0024-animal-stations-roles-team-battles.md"],
+  "dependencies": ["STATION-006"],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/run.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0023-animal-stations-training-levels.md",
+    "docs/decisions/0024-animal-stations-roles-team-battles.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": ["BattleRules.spec.luau", "LevelRules.spec.luau"],
+  "acceptance_criteria": [
+    "Each type maps to a different role and the role changes the fighter (attack damage, tank HP)",
+    "Tanks draw hits, Defense cuts team damage, Utility heals; battles always end",
+    "A Tank, Attack, Defense team beats three of any one role with equal stats, and three Attackers beat Tank, Attack, Utility",
+    "Training and variants still push teams further through the levels"
+  ],
+  "verification": "lune run tests/run.luau 614/614 with the new BattleRules spec; selene and stylua clean; level reach starters 4, trained 16, rares 19, legendary 39, trained mythic 59",
+  "output_artifacts": ["src/shared/BattleRules.luau"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Rules only; PvP matchmaking and battle UI not started."
+}

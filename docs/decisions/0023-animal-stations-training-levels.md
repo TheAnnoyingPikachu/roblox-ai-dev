@@ -14,9 +14,9 @@ Date: 2026-11-13. Replaces the idle coin earning of 0019; changes 0021 to lobbie
   time for that level. Enemy stats are basic stats × 0.6 × 1.04^(level − 1), with no cap, so the
   levels never end. Enemies are commons from level 1, uncommons from 5 and rares from 15. Every
   10th level has a variant boss last: epic, legendary from 30, mythic from 60.
-- **Battles** are an automatic, deterministic fight: front animal against front animal, the
-  faster strikes first (ties go to the player). HP = 20 + half the stat total, attack =
-  4 + best stat ÷ 4, × the 0022 matchup (1.25 or ÷ 1.25).
+- **Battles** are automatic and deterministic. HP = 20 + half the stat total, attack =
+  4 + best stat ÷ 4, × the 0022 matchup (1.25 or ÷ 1.25). Replaced by the team battle with roles
+  in 0024.
 - **Coins** come from clearing levels: 40 × 1.08^(level − 1) the first time, 25% of that for a
   replay. Coins buy eggs (prices unchanged for now).
 - **Lobbies of 3:** a server holds 3 players, each with a home ranch at the end of the north,

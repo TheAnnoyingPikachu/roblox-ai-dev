@@ -23,7 +23,7 @@ end
 -- The highest level `team` clears in a row from level 1 (stops at `limit`).
 local function reach(team: { StationRules.Owned }, limit: number): number
 	for level = 1, limit do
-		if not LevelRules.battle(team, LevelRules.enemies(level)) then
+		if not LevelRules.fight(team, level) then
 			return level - 1
 		end
 	end
@@ -48,7 +48,6 @@ describe("LevelRules.enemies", function()
 		expect(LevelRules.scale(2) > LevelRules.scale(1)).toBeTruthy()
 		expect(teamTotal(LevelRules.enemies(200)) > teamTotal(LevelRules.enemies(100))).toBeTruthy()
 		expect(LevelRules.enemies(300)[1].stats.speed > StationConfig.STAT_MAX).toBeTruthy()
-		expect(LevelRules.fighter(LevelRules.enemies(300)[1]).spd > StationConfig.STAT_MAX).toBeTruthy()
 	end)
 
 	it("puts a variant boss last on every 10th level, rarer as levels rise", function()
@@ -59,23 +58,7 @@ describe("LevelRules.enemies", function()
 	end)
 end)
 
-describe("LevelRules.battle", function()
-	it("loses with no team and wins a mirror match (ties strike first for the player)", function()
-		expect((LevelRules.battle({}, LevelRules.enemies(1)))).toBe(false)
-		local team = { owned("bunny"), owned("pig"), owned("duck") }
-		expect((LevelRules.battle(team, { owned("bunny"), owned("pig"), owned("duck") }))).toBe(true)
-	end)
-
-	it("lets the type advantage decide an even fight", function()
-		-- same stat total and speed; one is Speed type, the other Smarts type
-		local fast = { s = "x", stats = { speed = 50, strength = 20, swim = 20, smarts = 30 } }
-		local wise = { s = "y", stats = { speed = 50, strength = 20, swim = 20, smarts = 30 } }
-		wise.stats.smarts, wise.stats.speed = 50, 30
-		-- Speed beats Smarts: the Speed animal wins from either side
-		expect((LevelRules.battle({ fast }, { wise }))).toBe(true)
-		expect((LevelRules.battle({ wise }, { fast }))).toBe(false)
-	end)
-
+describe("LevelRules.fight", function()
 	it("lets three commons clear the first levels but walls them later", function()
 		local starters = { owned("bunny"), owned("pig"), owned("duck") }
 		local r = reach(starters, 200)
@@ -99,11 +82,6 @@ describe("LevelRules.battle", function()
 		expect(better > base).toBeTruthy()
 		expect(best > better).toBeTruthy()
 		expect(best < 400).toBeTruthy()
-	end)
-
-	it("always ends", function()
-		local _, turns = LevelRules.battle({ owned("mouse") }, LevelRules.enemies(500))
-		expect(turns < LevelRules.MAX_TURNS).toBeTruthy()
 	end)
 end)
 

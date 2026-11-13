@@ -9,6 +9,12 @@ Hatch animals from eggs. Every animal has four stats: speed, strength, swim and 
 them at the stations, build a team of three, and push through endless levels for coins to buy
 better eggs.
 
+## Modes and roles (decision 0024)
+
+One battle system, three modes: **endless wave grinding** (levels), **rock paper scissors PvP**,
+and **training**. Each type is a role: Speed = Attack, Strength = Tank, Swim = Defense,
+Smarts = Utility (healer).
+
 ## Pivot (decision 0023)
 
 Train a team of three animals to clear **endless levels**. Stations no longer pay coins: they
@@ -35,7 +41,7 @@ Speed beats Smarts, Smarts beats Strength, Strength beats Swim, Swim beats Speed
 
 - `StationConfig`: 4 stats, 6 rarities, 16 species each with a basic version and 3 super-rare
   variants (decision 0020, bestiary in `game7-animals.md`), 3 eggs, 4 stations.
-- `StationRules`: `hatch`, `versionStats`, `rarity`, `stat`, `train`, `battleType`, `matchup`; `LevelRules`: `enemies`, `fighter`, `battle`, `reward`, tested in `StationRules.spec.luau` and `LevelRules.spec.luau`.
+- `StationRules`: `hatch`, `versionStats`, `rarity`, `stat`, `train`, `battleType`, `matchup`; `LevelRules`: `enemies`, `fight`, `reward`; `BattleRules`: `fighter`, `battle` (roles), tested in `StationRules`, `LevelRules` and `BattleRules` specs.
 
 - World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and three home
   ranches. The server gives each player a ranch and spawns them at its gate.
