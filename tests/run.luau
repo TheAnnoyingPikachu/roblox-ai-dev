@@ -89,6 +89,9 @@ local SPECS = {
 	["StationProgress.spec.luau"] = function()
 		require("./StationProgress.spec")
 	end,
+	["StationAssets.spec.luau"] = function()
+		require("./StationAssets.spec")
+	end,
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,

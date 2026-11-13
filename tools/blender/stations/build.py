@@ -1,0 +1,111 @@
+"""Builds the Animal Stations creatures headless.
+
+blender --background --factory-startup --python tools/blender/stations/build.py -- [--draft] [asset ...]
+
+With no names, builds every asset in assets/*.py. Writes build/blender/stations/<asset>.fbx/.png,
+previews/<asset>[_side|_front|_back].png and tools/blender/stations/manifest.json. --draft skips
+the bake and export and only renders the previews (seconds instead of minutes), for shaping.
+
+Besides the Garden fields the manifest records the rig, in Roblox axes (x right, y up, z back)
+from the point on the ground under the model's middle: `centres` (each mesh's bounding-box
+centre, which is where its MeshPart sits) and `joints` (where each piece turns on the body).
+"""
+
+import importlib.util
+import json
+import os
+import sys
+import time
+import traceback
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.dont_write_bytecode = True
+sys.path.insert(0, HERE)
+
+import bpy  # noqa: E402
+import kit  # noqa: E402
+from mathutils import Vector  # noqa: E402
+
+MANIFEST = os.path.join(HERE, "manifest.json")
+
+
+def specs():
+    found = []
+    folder = os.path.join(HERE, "assets")
+    for file in sorted(os.listdir(folder)):
+        if not file.endswith(".py") or file.startswith("_"):
+            continue
+        spec = importlib.util.spec_from_file_location(file[:-3], os.path.join(folder, file))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for asset in module.ASSETS:
+            asset["script"] = f"tools/blender/stations/assets/{file}"
+            found.append(asset)
+    return found
+
+
+def roblox(v):
+    return [round(v.x, 3), round(v.z, 3), round(-v.y, 3)]
+
+
+def main():
+    args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+    draft = "--draft" in args
+    wanted = [a for a in args if not a.startswith("--")]
+    manifest = {}
+    if os.path.exists(MANIFEST):
+        with open(MANIFEST, encoding="utf-8") as f:
+            manifest = json.load(f)
+    failed = []
+    for asset in specs():
+        name = asset["name"]
+        if wanted and name not in wanted:
+            continue
+        started = time.time()
+        print(f"[stations] building {name}", flush=True)
+        try:
+            kit.reset()
+            groups = asset["build"]()
+            glow = asset.get("glow", {})
+            if glow:
+                kit.GLOW_RGB = next(iter(glow.values()))
+            every = [ob for objs in groups.values() for ob in objs]
+            lo, hi = kit._ground_dims(every)
+            if draft:
+                kit.preview(name, every, lo, hi)
+                print(f"[stations] {name}: draft previews, {sum(kit._tris(o) for o in every)} tris, {time.time() - started:.0f}s", flush=True)
+                continue
+            # finalize moves the model so the ground under its middle is the origin
+            offset = Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))
+            stats = kit.finalize(name, groups, asset["budget"], **asset.get("finalize", {}))
+            if stats["tris"] > asset["budget"]:
+                raise ValueError(f"{name}: {stats['tris']} tris is over the budget {asset['budget']} (decimation would move the joints)")
+            centres = {}
+            for part in groups:
+                plo, phi = kit._ground_dims([bpy.data.objects[f"{name}_{part}"]])
+                centres[f"{name}_{part}"] = roblox((plo + phi) / 2)
+        except Exception:
+            traceback.print_exc()
+            failed.append(name)
+            continue
+        manifest[name] = {
+            **stats,
+            "tris_budget": asset["budget"],
+            "script": asset["script"],
+            "notes": asset.get("notes", ""),
+            # Neon colour (sRGB) per glow mesh; the game sets those meshes to Neon in it.
+            "glow": {f"{name}_{part}": list(rgb) for part, rgb in glow.items()},
+            "centres": centres,
+            "joints": {f"{name}_{part}": roblox(Vector(j) + offset) for part, j in asset["joints"].items()},
+        }
+        print(f"[stations] {name}: {stats['tris']} tris, {time.time() - started:.0f}s", flush=True)
+    if not draft:
+        with open(MANIFEST, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(manifest, f, indent=2)
+            f.write("\n")
+    if failed:
+        print(f"[stations] FAILED: {', '.join(failed)}")
+        sys.exit(1)
+
+
+main()

@@ -1,5 +1,5 @@
-# Uploads one game's Blender models to Roblox: Hundred Demon Night (night), Neon Spire (spire) or
-# Egg Garden (garden).
+# Uploads one game's Blender models to Roblox: Hundred Demon Night (night), Neon Spire (spire),
+# Egg Garden (garden) or Animal Stations (stations).
 # Manual only.
 #
 # Files come from the repo, not from Blender: assets/<game>/<name>.fbx and <name>.png are built
@@ -13,8 +13,8 @@
 #     secret    ROBLOX_API_KEY          (Open Cloud key of that user: Assets API read + write;
 #                                        add legacy-asset:manage so decal image ids resolve here)
 #
-# Output: tools/blender/<game>/uploaded.json and src/shared/NightAssets.luau, SpireAssets.luau or
-# GardenAssets.luau as the run artifact.
+# Output: tools/blender/<game>/uploaded.json and src/shared/NightAssets.luau, SpireAssets.luau,
+# GardenAssets.luau or StationAssets.luau as the run artifact.
 # Commit both (with register.md rows) in a PR to switch the game to the new models.
 name: Upload Blender assets
 
@@ -28,6 +28,7 @@ on:
           - night
           - spire
           - garden
+          - stations
         default: night
       assets:
         description: "Comma-separated asset names (empty = all in the manifest)"
@@ -94,5 +95,5 @@ jobs:
           name: ${{ inputs.game }}-assets-${{ github.run_id }}
           path: |
             tools/blender/${{ inputs.game }}/uploaded.json
-            src/shared/${{ inputs.game == 'spire' && 'SpireAssets' || inputs.game == 'garden' && 'GardenAssets' || 'NightAssets' }}.luau
+            src/shared/${{ inputs.game == 'spire' && 'SpireAssets' || inputs.game == 'garden' && 'GardenAssets' || inputs.game == 'stations' && 'StationAssets' || 'NightAssets' }}.luau
           if-no-files-found: warn

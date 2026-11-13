@@ -1,6 +1,7 @@
 // Uploads one game's committed Blender models (assets/<game>/<name>.fbx) and textures (<name>.png)
 // with the Roblox Open Cloud Assets API, then writes tools/blender/<game>/uploaded.json.
-// <game> is night (Hundred Demon Night), spire (Neon Spire) or garden (Egg Garden).
+// <game> is night (Hundred Demon Night), spire (Neon Spire), garden (Egg Garden) or stations
+// (Animal Stations).
 //
 //   ROBLOX_API_KEY=... ROBLOX_CREATOR_USER_ID=... node tools/blender/upload-assets.mjs <game> [name ...]
 //
@@ -19,6 +20,7 @@ const GAMES = {
 	night: { label: "Hundred Demon Night", prefix: "HDN", untextured: ["slash_arc", "demon_wing", "blade_inferno", "blade_lightning", "blade_void", "blade_galaxy", "blade_gold", "blade_shadow"] },
 	spire: { label: "Neon Spire", prefix: "NSP", untextured: [] },
 	garden: { label: "Egg Garden", prefix: "EGG", untextured: ["egg_shell_fragment"] },
+	stations: { label: "Animal Stations", prefix: "AST", untextured: [] },
 };
 const game = process.argv[2];
 if (!GAMES[game]) {
