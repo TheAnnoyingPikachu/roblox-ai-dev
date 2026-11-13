@@ -24,7 +24,7 @@ sys.path.insert(0, HERE)
 
 import bpy  # noqa: E402
 import kit  # noqa: E402
-from mathutils import Vector  # noqa: E402
+from mathutils import Matrix, Vector  # noqa: E402
 
 MANIFEST = os.path.join(HERE, "manifest.json")
 
@@ -70,6 +70,9 @@ def main():
             if glow:
                 kit.GLOW_RGB = next(iter(glow.values()))
             every = [ob for objs in groups.values() for ob in objs]
+            scale = asset.get("scale", 1)  # shapes are written at a handy size: this is the real one
+            for ob in every:
+                ob.data.transform(Matrix.Scale(scale, 4))
             lo, hi = kit._ground_dims(every)
             if draft:
                 kit.preview(name, every, lo, hi)
@@ -96,7 +99,7 @@ def main():
             # Neon colour (sRGB) per glow mesh; the game sets those meshes to Neon in it.
             "glow": {f"{name}_{part}": list(rgb) for part, rgb in glow.items()},
             "centres": centres,
-            "joints": {f"{name}_{part}": roblox(Vector(j) + offset) for part, j in asset["joints"].items()},
+            "joints": {f"{name}_{part}": roblox(Vector(j) * scale + offset) for part, j in asset["joints"].items()},
         }
         print(f"[stations] {name}: {stats['tris']} tris, {time.time() - started:.0f}s", flush=True)
     if not draft:

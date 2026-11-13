@@ -4,91 +4,91 @@
     "png": "build/blender/stations/creature_rhino.png",
     "preview": "build/blender/stations/previews/creature_rhino.png",
     "size_studs": [
-      2.24,
-      3.47,
-      5.99
+      5.03,
+      8.39,
+      13.91
     ],
-    "tris": 9236,
+    "tris": 11128,
     "parts": {
-      "creature_rhino_body": 1900,
-      "creature_rhino_head": 4172,
-      "creature_rhino_leg_fl": 602,
-      "creature_rhino_leg_fr": 602,
-      "creature_rhino_leg_bl": 608,
-      "creature_rhino_leg_br": 608,
+      "creature_rhino_body": 3044,
+      "creature_rhino_head": 3980,
+      "creature_rhino_leg_fl": 842,
+      "creature_rhino_leg_fr": 842,
+      "creature_rhino_leg_bl": 838,
+      "creature_rhino_leg_br": 838,
       "creature_rhino_tail": 744
     },
-    "tris_budget": 10000,
+    "tris_budget": 13000,
     "script": "tools/blender/stations/assets/creatures.py",
     "notes": "Jointed: body, head, four legs, tail (Creatures.luau rigs them with Motor6Ds).",
     "glow": {},
     "centres": {
       "creature_rhino_body": [
-        -0.001,
-        1.961,
-        -0.703
+        0.001,
+        4.824,
+        -1.489
       ],
       "creature_rhino_head": [
-        -0.001,
-        2.394,
-        1.409
+        0.005,
+        5.493,
+        3.619
       ],
       "creature_rhino_leg_fl": [
-        0.579,
-        0.977,
-        0.404
+        1.441,
+        2.401,
+        0.84
       ],
       "creature_rhino_leg_fr": [
-        -0.581,
-        0.976,
-        0.404
+        -1.438,
+        2.404,
+        0.84
       ],
       "creature_rhino_leg_bl": [
-        0.601,
-        0.977,
-        -1.438
+        1.44,
+        2.402,
+        -3.456
       ],
       "creature_rhino_leg_br": [
-        -0.599,
-        0.976,
-        -1.438
+        -1.44,
+        2.396,
+        -3.458
       ],
       "creature_rhino_tail": [
-        -0.0,
-        1.661,
-        -2.684
+        0.003,
+        3.475,
+        -6.278
       ]
     },
     "joints": {
       "creature_rhino_head": [
-        -0.0,
-        2.13,
-        0.724
+        0.003,
+        4.795,
+        1.883
       ],
       "creature_rhino_leg_fl": [
-        0.58,
-        1.46,
-        0.274
+        1.443,
+        3.495,
+        0.483
       ],
       "creature_rhino_leg_fr": [
-        -0.58,
-        1.46,
-        0.274
+        -1.437,
+        3.495,
+        0.483
       ],
       "creature_rhino_leg_bl": [
-        0.6,
-        1.46,
-        -1.556
+        1.443,
+        3.495,
+        -3.817
       ],
       "creature_rhino_leg_br": [
-        -0.6,
-        1.46,
-        -1.556
+        -1.437,
+        3.495,
+        -3.817
       ],
       "creature_rhino_tail": [
-        -0.0,
-        2.19,
-        -2.426
+        0.003,
+        4.895,
+        -5.717
       ]
     }
   },
@@ -97,114 +97,125 @@
     "png": "build/blender/stations/creature_rhino_lava.png",
     "preview": "build/blender/stations/previews/creature_rhino_lava.png",
     "size_studs": [
-      2.25,
-      3.47,
-      5.99
+      7.5,
+      12.55,
+      18.48
     ],
-    "tris": 10076,
+    "tris": 11866,
     "parts": {
-      "creature_rhino_lava_body": 1900,
-      "creature_rhino_lava_head": 3504,
-      "creature_rhino_lava_leg_fl": 602,
-      "creature_rhino_lava_leg_fr": 602,
-      "creature_rhino_lava_leg_bl": 608,
-      "creature_rhino_lava_leg_br": 608,
-      "creature_rhino_lava_tail": 744,
-      "creature_rhino_lava_body_glow": 624,
-      "creature_rhino_lava_head_glow": 884
+      "creature_rhino_lava_body": 2848,
+      "creature_rhino_lava_head": 3184,
+      "creature_rhino_lava_leg_fl": 842,
+      "creature_rhino_lava_leg_fr": 842,
+      "creature_rhino_lava_leg_bl": 838,
+      "creature_rhino_lava_leg_br": 838,
+      "creature_rhino_lava_tail": 216,
+      "creature_rhino_lava_body_glow": 864,
+      "creature_rhino_lava_head_glow": 1108,
+      "creature_rhino_lava_tail_glow": 286
     },
-    "tris_budget": 12500,
+    "tris_budget": 17000,
     "script": "tools/blender/stations/assets/creatures.py",
-    "notes": "The mythic Lava Rhino: the rhino's shapes with rock skin; horns and cracks are Neon `_glow` meshes.",
+    "notes": "The mythic Lava Rhino, 1.3 times the Rhino: obsidian skin and spikes; horns, eyes, cracks and tail flame are Neon `_glow` meshes.",
     "glow": {
       "creature_rhino_lava_body_glow": [
         255,
-        140,
-        40
+        128,
+        30
       ],
       "creature_rhino_lava_head_glow": [
         255,
-        140,
-        40
+        128,
+        30
+      ],
+      "creature_rhino_lava_tail_glow": [
+        255,
+        128,
+        30
       ]
     },
     "centres": {
       "creature_rhino_lava_body": [
-        -0.007,
-        1.961,
-        -0.703
+        0.0,
+        7.323,
+        -1.741
       ],
       "creature_rhino_lava_head": [
-        -0.007,
-        2.393,
-        1.409
+        0.013,
+        6.516,
+        4.9
       ],
       "creature_rhino_lava_leg_fl": [
-        0.573,
-        0.977,
-        0.404
+        1.881,
+        3.121,
+        1.286
       ],
       "creature_rhino_lava_leg_fr": [
-        -0.587,
-        0.976,
-        0.404
+        -1.862,
+        3.125,
+        1.286
       ],
       "creature_rhino_lava_leg_bl": [
-        0.595,
-        0.977,
-        -1.438
+        1.879,
+        3.123,
+        -4.298
       ],
       "creature_rhino_lava_leg_br": [
-        -0.605,
-        0.976,
-        -1.438
+        -1.865,
+        3.115,
+        -4.3
       ],
       "creature_rhino_lava_tail": [
-        -0.006,
-        1.661,
-        -2.684
+        0.011,
+        5.09,
+        -7.9
       ],
       "creature_rhino_lava_body_glow": [
-        0.001,
-        2.42,
-        -0.683
+        -0.017,
+        7.682,
+        -1.93
       ],
       "creature_rhino_lava_head_glow": [
-        -0.004,
-        2.67,
-        1.723
+        0.041,
+        8.754,
+        5.632
+      ],
+      "creature_rhino_lava_tail_glow": [
+        0.011,
+        2.42,
+        -8.537
       ]
     },
     "joints": {
       "creature_rhino_lava_head": [
-        -0.006,
-        2.13,
-        0.724
+        0.011,
+        6.233,
+        2.643
       ],
       "creature_rhino_lava_leg_fl": [
-        0.574,
-        1.46,
-        0.274
+        1.883,
+        4.543,
+        0.823
       ],
       "creature_rhino_lava_leg_fr": [
-        -0.586,
-        1.46,
-        0.274
+        -1.861,
+        4.543,
+        0.823
       ],
       "creature_rhino_lava_leg_bl": [
-        0.594,
-        1.46,
-        -1.556
+        1.883,
+        4.543,
+        -4.767
       ],
       "creature_rhino_lava_leg_br": [
-        -0.606,
-        1.46,
-        -1.556
+        -1.861,
+        4.543,
+        -4.767
       ],
       "creature_rhino_lava_tail": [
-        -0.006,
-        2.19,
-        -2.426
+        0.011,
+        6.363,
+        -7.237
       ]
     }
   }
