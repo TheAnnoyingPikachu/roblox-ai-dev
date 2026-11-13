@@ -5,7 +5,7 @@ through endless levels (0023). Vision (0021): ranch + silly microgames + turn-ba
 the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005), training and levels (STATION-006), roles and team battles (STATION-007), saves, egg buying, team and training requests with a first HUD (STATION-008); no battle screen, animal models or ranch upgrades yet.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
-- Docs: decisions 0019 to 0025 (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
+- Docs: decisions 0019 to 0026 (0026: stats are speed, strength, stamina, mana) (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
 
 ## Files
 

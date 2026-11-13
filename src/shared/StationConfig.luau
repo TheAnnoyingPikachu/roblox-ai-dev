@@ -7,8 +7,8 @@
 
 local StationConfig = {}
 
-export type Stat = "speed" | "strength" | "swim" | "smarts"
-export type Stats = { speed: number, strength: number, swim: number, smarts: number }
+export type Stat = "speed" | "strength" | "stamina" | "mana"
+export type Stats = { speed: number, strength: number, stamina: number, mana: number }
 export type Variant = { id: string, name: string, tier: string, twist: Stat }
 export type Species = { id: string, name: string, rarity: string, stats: Stats, variants: { Variant } }
 export type Tier = { tier: string, ppm: number, mult: number, twist: number }
@@ -16,7 +16,7 @@ export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds
 export type Egg = { id: string, name: string, price: number, odds: { Odds } }
 export type Station = { id: string, name: string, stat: Stat }
 
-StationConfig.STATS = { "speed", "strength", "swim", "smarts" } :: { Stat }
+StationConfig.STATS = { "speed", "strength", "stamina", "mana" } :: { Stat }
 StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400
 -- A hatched animal's stats are its version's stats x (100 +/- VARIANCE)%, so two cheetahs differ a little.
 StationConfig.VARIANCE = 10
@@ -36,8 +36,8 @@ local function v(id: string, name: string, tier: string, twist: Stat): Variant
 	return { id = id, name = name, tier = tier, twist = twist }
 end
 
-local function s(speed: number, strength: number, swim: number, smarts: number): Stats
-	return { speed = speed, strength = strength, swim = swim, smarts = smarts }
+local function s(speed: number, strength: number, stamina: number, mana: number): Stats
+	return { speed = speed, strength = strength, stamina = stamina, mana = mana }
 end
 
 -- Four species per stat: two common, one uncommon, one rare. Variants in order epic, legendary, mythic.
@@ -49,8 +49,8 @@ StationConfig.SPECIES = {
 		rarity = "common",
 		stats = s(40, 10, 8, 18),
 		variants = {
-			v("clover_bunny", "Clover Bunny", "epic", "smarts"),
-			v("moon_bunny", "Moon Bunny", "legendary", "swim"),
+			v("clover_bunny", "Clover Bunny", "epic", "mana"),
+			v("moon_bunny", "Moon Bunny", "legendary", "stamina"),
 			v("comet_bunny", "Comet Bunny", "mythic", "speed"),
 		},
 	},
@@ -60,9 +60,9 @@ StationConfig.SPECIES = {
 		rarity = "common",
 		stats = s(45, 15, 12, 30),
 		variants = {
-			v("arctic_fox", "Arctic Fox", "epic", "swim"),
+			v("arctic_fox", "Arctic Fox", "epic", "stamina"),
 			v("ember_fox", "Ember Fox", "legendary", "strength"),
-			v("kitsune", "Kitsune", "mythic", "smarts"),
+			v("kitsune", "Kitsune", "mythic", "mana"),
 		},
 	},
 	{
@@ -71,9 +71,9 @@ StationConfig.SPECIES = {
 		rarity = "uncommon",
 		stats = s(65, 40, 20, 20),
 		variants = {
-			v("painted_pony", "Painted Pony", "epic", "smarts"),
+			v("painted_pony", "Painted Pony", "epic", "mana"),
 			v("pegasus", "Pegasus", "legendary", "strength"),
-			v("starlight_unicorn", "Starlight Unicorn", "mythic", "smarts"),
+			v("starlight_unicorn", "Starlight Unicorn", "mythic", "mana"),
 		},
 	},
 	{
@@ -82,7 +82,7 @@ StationConfig.SPECIES = {
 		rarity = "rare",
 		stats = s(90, 30, 10, 25),
 		variants = {
-			v("shadow_cheetah", "Shadow Cheetah", "epic", "smarts"),
+			v("shadow_cheetah", "Shadow Cheetah", "epic", "mana"),
 			v("golden_cheetah", "Golden Cheetah", "legendary", "strength"),
 			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
 		},
@@ -94,8 +94,8 @@ StationConfig.SPECIES = {
 		rarity = "common",
 		stats = s(10, 40, 12, 20),
 		variants = {
-			v("truffle_pig", "Truffle Pig", "epic", "smarts"),
-			v("royal_pig", "Royal Pig", "legendary", "smarts"),
+			v("truffle_pig", "Truffle Pig", "epic", "mana"),
+			v("royal_pig", "Royal Pig", "legendary", "mana"),
 			v("flying_pig", "Flying Pig", "mythic", "speed"),
 		},
 	},
@@ -106,7 +106,7 @@ StationConfig.SPECIES = {
 		stats = s(25, 45, 5, 15),
 		variants = {
 			v("mountain_goat", "Mountain Goat", "epic", "speed"),
-			v("crystal_goat", "Crystal Goat", "legendary", "smarts"),
+			v("crystal_goat", "Crystal Goat", "legendary", "mana"),
 			v("thunder_ram", "Thunder Ram", "mythic", "strength"),
 		},
 	},
@@ -116,9 +116,9 @@ StationConfig.SPECIES = {
 		rarity = "uncommon",
 		stats = s(25, 65, 35, 20),
 		variants = {
-			v("panda_bear", "Panda Bear", "epic", "smarts"),
-			v("polar_bear", "Polar Bear", "legendary", "swim"),
-			v("aurora_bear", "Aurora Bear", "mythic", "smarts"),
+			v("panda_bear", "Panda Bear", "epic", "mana"),
+			v("polar_bear", "Polar Bear", "legendary", "stamina"),
+			v("aurora_bear", "Aurora Bear", "mythic", "mana"),
 		},
 	},
 	{
@@ -127,20 +127,20 @@ StationConfig.SPECIES = {
 		rarity = "rare",
 		stats = s(25, 90, 10, 45),
 		variants = {
-			v("silverback", "Silverback", "epic", "smarts"),
+			v("silverback", "Silverback", "epic", "mana"),
 			v("lava_gorilla", "Lava Gorilla", "legendary", "strength"),
-			v("galaxy_gorilla", "Galaxy Gorilla", "mythic", "smarts"),
+			v("galaxy_gorilla", "Galaxy Gorilla", "mythic", "mana"),
 		},
 	},
-	-- swim
+	-- stamina
 	{
 		id = "duck",
 		name = "Duck",
 		rarity = "common",
 		stats = s(12, 8, 42, 15),
 		variants = {
-			v("rubber_duck", "Rubber Duck", "epic", "swim"),
-			v("golden_duck", "Golden Duck", "legendary", "smarts"),
+			v("rubber_duck", "Rubber Duck", "epic", "stamina"),
+			v("golden_duck", "Golden Duck", "legendary", "mana"),
 			v("storm_duck", "Storm Duck", "mythic", "speed"),
 		},
 	},
@@ -151,7 +151,7 @@ StationConfig.SPECIES = {
 		stats = s(30, 8, 45, 12),
 		variants = {
 			v("dart_frog", "Dart Frog", "epic", "speed"),
-			v("frog_prince", "Frog Prince", "legendary", "smarts"),
+			v("frog_prince", "Frog Prince", "legendary", "mana"),
 			v("jade_frog", "Jade Frog", "mythic", "strength"),
 		},
 	},
@@ -161,8 +161,8 @@ StationConfig.SPECIES = {
 		rarity = "uncommon",
 		stats = s(25, 20, 65, 35),
 		variants = {
-			v("sea_otter", "Sea Otter", "epic", "smarts"),
-			v("pearl_otter", "Pearl Otter", "legendary", "smarts"),
+			v("sea_otter", "Sea Otter", "epic", "mana"),
+			v("pearl_otter", "Pearl Otter", "legendary", "mana"),
 			v("tidal_otter", "Tidal Otter", "mythic", "strength"),
 		},
 	},
@@ -172,12 +172,12 @@ StationConfig.SPECIES = {
 		rarity = "rare",
 		stats = s(35, 30, 90, 60),
 		variants = {
-			v("pink_dolphin", "Pink River Dolphin", "epic", "smarts"),
+			v("pink_dolphin", "Pink River Dolphin", "epic", "mana"),
 			v("midnight_dolphin", "Midnight Dolphin", "legendary", "strength"),
 			v("crystal_dolphin", "Crystal Dolphin", "mythic", "speed"),
 		},
 	},
-	-- smarts
+	-- mana
 	{
 		id = "mouse",
 		name = "Mouse",
@@ -185,7 +185,7 @@ StationConfig.SPECIES = {
 		stats = s(22, 5, 8, 42),
 		variants = {
 			v("clockwork_mouse", "Clockwork Mouse", "epic", "speed"),
-			v("wizard_mouse", "Wizard Mouse", "legendary", "smarts"),
+			v("wizard_mouse", "Wizard Mouse", "legendary", "mana"),
 			v("astro_mouse", "Astro Mouse", "mythic", "speed"),
 		},
 	},
@@ -206,7 +206,7 @@ StationConfig.SPECIES = {
 		rarity = "uncommon",
 		stats = s(30, 10, 10, 65),
 		variants = {
-			v("pirate_parrot", "Pirate Parrot", "epic", "swim"),
+			v("pirate_parrot", "Pirate Parrot", "epic", "stamina"),
 			v("rainbow_macaw", "Rainbow Macaw", "legendary", "speed"),
 			v("phoenix_parrot", "Phoenix Parrot", "mythic", "strength"),
 		},
@@ -217,7 +217,7 @@ StationConfig.SPECIES = {
 		rarity = "rare",
 		stats = s(35, 15, 5, 90),
 		variants = {
-			v("snowy_owl", "Snowy Owl", "epic", "swim"),
+			v("snowy_owl", "Snowy Owl", "epic", "stamina"),
 			v("arcane_owl", "Arcane Owl", "legendary", "speed"),
 			v("celestial_owl", "Celestial Owl", "mythic", "strength"),
 		},
@@ -279,20 +279,20 @@ StationConfig.EGGS = {
 
 -- Battle matchups (decision 0022): rock paper scissors in a loop of four. Each stat beats one
 -- and loses to one; the stat opposite it is neutral. An animal battles as its best stat.
--- Speed rushes Smarts before it can plan, Smarts outwits Strength, Strength muscles through
--- Swim's current, Swim's water slows Speed.
-StationConfig.BEATS = { speed = "smarts", smarts = "strength", strength = "swim", swim = "speed" } :: { [Stat]: Stat }
+-- Speed strikes before Mana can cast, Mana's magic gets past Strength, Strength breaks through
+-- Stamina, Stamina outlasts Speed.
+StationConfig.BEATS = { speed = "mana", mana = "strength", strength = "stamina", stamina = "speed" } :: { [Stat]: Stat }
 -- Battle role of each type (decision 0024); BattleRules gives each role its job.
 StationConfig.ROLES =
-	{ speed = "attack", strength = "tank", swim = "defense", smarts = "utility" } :: { [Stat]: string }
+	{ speed = "attack", strength = "tank", stamina = "defense", mana = "utility" } :: { [Stat]: string }
 StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
 
 -- Training stations (decision 0023): an animal left on a station slowly trains that station's stat.
 StationConfig.STATIONS = {
 	{ id = "track", name = "Speed Track", stat = "speed" },
 	{ id = "gym", name = "Strength Gym", stat = "strength" },
-	{ id = "pool", name = "Swim Pool", stat = "swim" },
-	{ id = "library", name = "Puzzle Library", stat = "smarts" },
+	{ id = "pool", name = "Swim Pool", stat = "stamina" },
+	{ id = "library", name = "Magic Library", stat = "mana" },
 } :: { Station }
 StationConfig.TRAIN_SECONDS = 60 -- seconds on a station for +1 to its stat
 -- Training can add at most POTENTIAL x the hatched stat, so a trained animal tops out at double

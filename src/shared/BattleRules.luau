@@ -1,8 +1,8 @@
 --!strict
 -- Pure Animal Stations battles (decisions 0022, 0024): team against team, used by the endless
 -- levels and by PvP. Every animal has a role from its battle type: Attack (speed) hits hard,
--- Tank (strength) has extra HP and draws every hit, Defense (swim) cuts the damage its team takes,
--- Utility (smarts) heals the most hurt teammate. Deterministic: same teams, same result.
+-- Tank (strength) has extra HP and draws every hit, Defense (stamina) cuts the damage its team takes,
+-- Utility (mana) heals the most hurt teammate. Deterministic: same teams, same result.
 
 local StationConfig = require("./StationConfig")
 local StationRules = require("./StationRules")

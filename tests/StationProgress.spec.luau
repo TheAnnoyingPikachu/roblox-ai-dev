@@ -38,17 +38,17 @@ describe("StationProgress profile", function()
 			coins = 1e20,
 			nextId = 2,
 			animals = {
-				{ id = 1, s = "fox", stats = { speed = 45, strength = 15, swim = 12, smarts = 30 } },
-				{ id = 1, s = "pig", stats = { speed = 1, strength = 1, swim = 1, smarts = 1 } }, -- duplicate id
-				{ id = 2, s = "dragon", stats = { speed = 1, strength = 1, swim = 1, smarts = 1 } }, -- no species
-				{ id = 3, s = "owl", v = "kitsune", stats = { speed = 9e9, strength = 1, swim = 1, smarts = 1 } },
+				{ id = 1, s = "fox", stats = { speed = 45, strength = 15, stamina = 12, mana = 30 } },
+				{ id = 1, s = "pig", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- duplicate id
+				{ id = 2, s = "dragon", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- no species
+				{ id = 3, s = "owl", v = "kitsune", stats = { speed = 9e9, strength = 1, stamina = 1, mana = 1 } },
 				{ id = 4, s = "duck" }, -- no stats
 				{
 					id = 5,
 					s = "goat",
 					at = "gym",
 					since = 50,
-					stats = { speed = 25, strength = 45, swim = 5, smarts = 15 },
+					stats = { speed = 25, strength = 45, stamina = 5, mana = 15 },
 				},
 			},
 			team = { 1, 1, 9, 3, 5, "x" },

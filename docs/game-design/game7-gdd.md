@@ -5,7 +5,7 @@ to settle in later tasks.
 
 ## Pitch
 
-Hatch animals from eggs. Every animal has four stats: speed, strength, swim and smarts. Train
+Hatch animals from eggs. Every animal has four stats: speed, strength, stamina and mana. Train
 them at the stations, build a team of three, and push through endless levels for coins to buy
 better eggs.
 
@@ -18,8 +18,9 @@ harder and harder enemies.
 ## Modes and roles (decision 0024)
 
 One battle system, three modes: **endless wave grinding** (levels), **rock paper scissors PvP**,
-and **training**. Each type is a role: Speed = Attack, Strength = Tank, Swim = Defense,
-Smarts = Utility (healer).
+and **training**. Each type is a role: Speed = Attack, Strength = Tank, Stamina = Defense,
+Mana = Utility (healer). Stats were renamed in 0026 (swim to stamina, smarts to mana); every
+animal has magical attacks.
 
 ## Pivot (decision 0023)
 
@@ -33,7 +34,7 @@ Three pillars on the same four stats: a **ranch** you raise animals on (your hom
 lots of short **silly reflex microgames** (our own designs), and **turn-based creature battles**.
 Servers hold 3 players (0023); each gets a home ranch around the shared hub.
 Battle matchups (decision 0022) are a rock paper scissors loop with a slight edge (x1.25):
-Speed beats Smarts, Smarts beats Strength, Strength beats Swim, Swim beats Speed.
+Speed beats Mana, Mana beats Strength, Strength beats Stamina, Stamina beats Speed.
 
 ## Core loop (hypothesis)
 

@@ -114,7 +114,7 @@ local function row(a: any, order: number)
 	end
 	local role = ROLE_NAME[StationConfig.ROLES[t]] or t
 	text(frame, `{nameOf(a)}  -  {rarity}  -  {role}`, 20, 6, RARITY_COLOUR[rarity] or Color3.new(1, 1, 1))
-	text(frame, `SPD {stat("speed")}   STR {stat("strength")}   SWM {stat("swim")}   SMT {stat("smarts")}`, 16, 36)
+	text(frame, `SPD {stat("speed")}   STR {stat("strength")}   STA {stat("stamina")}   MANA {stat("mana")}`, 16, 36)
 	local station = a.at and StationConfig.station(a.at)
 	local inTeam = table.find(profile.team, a.id) ~= nil
 	text(frame, if inTeam then "In your team" elseif station then `Training at {station.name}` else "Resting", 16, 62)

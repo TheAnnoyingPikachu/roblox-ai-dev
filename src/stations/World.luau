@@ -1,7 +1,7 @@
 --!strict
 -- Animal Stations world (STATION-003, STATION-004): the central plaza with the hatchery fountain
 -- and the egg market, four station zones on the diagonals (Speed Track NW, Strength Gym NE, Swim
--- Pool SW, Puzzle Library SE), three home ranches (one per player) on the north, east and west roads,
+-- Pool SW, Magic Library SE), three home ranches (one per player) on the north, east and west roads,
 -- paths with lamps, trees, flowers and the hill ring. Built once from parts, Roblox materials and
 -- terrain. Display only: no game rules live here. Slots, spots and nests are tagged for the server.
 
@@ -51,8 +51,8 @@ local WARM = Color3.fromRGB(255, 210, 150)
 local STAT_COLOUR: { [string]: Color3 } = {
 	speed = Color3.fromRGB(255, 160, 40),
 	strength = Color3.fromRGB(235, 70, 70),
-	swim = Color3.fromRGB(50, 150, 255),
-	smarts = Color3.fromRGB(160, 90, 240),
+	stamina = Color3.fromRGB(50, 150, 255),
+	mana = Color3.fromRGB(160, 90, 240),
 }
 local STATION_ANGLE: { [string]: number } = { track = -135, gym = -45, pool = 135, library = 45 }
 local EGG_LOOK: { [string]: { body: Color3, spot: Color3 } } = {

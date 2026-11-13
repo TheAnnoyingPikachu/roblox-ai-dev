@@ -13,7 +13,7 @@ type Stats = StationConfig.Stats
 export type Owned = { s: string, v: string?, stats: Stats, trained: Stats? }
 
 StationRules.PPM = 1_000_000
-StationRules.ZERO = { speed = 0, strength = 0, swim = 0, smarts = 0 } :: Stats
+StationRules.ZERO = { speed = 0, strength = 0, stamina = 0, mana = 0 } :: Stats
 
 -- First id whose cumulative basis points reach r (r in 1..10000).
 function StationRules.pick(odds: { StationConfig.Odds }, r: number): string
