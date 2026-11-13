@@ -1,7 +1,7 @@
 --!strict
 -- Pure Animal Stations saved profile (decisions 0025, 0027, 0029): defaults, sanitize, the player
--- level, buying and hatching eggs, the team and its Titan slot, and training at stations (settled
--- from timestamps, offline time capped). Every change takes its inputs (the hatched animal, `now`)
+-- level, buying and hatching eggs, the team and its Titan slot, and training (settled from
+-- timestamps in real time, also while the player is away). Every change takes its inputs (the hatched animal, `now`)
 -- as arguments, so SaveStore can run it twice. No Roblox APIs; the server owns the Rng and the clock.
 
 local LevelRules = require("./LevelRules")
@@ -31,7 +31,6 @@ StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100
 StationProgress.TEAM_SIZE = LevelRules.TEAM_SIZE
 StationProgress.TRAIN_MAX = 4 -- animals training at once
-StationProgress.OFFLINE_MAX = 8 * 3600 -- training seconds counted per settle while away
 StationProgress.MAX_XP = 1e12
 StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)^2
 
@@ -54,8 +53,8 @@ function StationProgress.xpFor(level: number): number
 	return StationProgress.XP_STEP * (level - 1) ^ 2
 end
 
--- The player's level. XP comes from hatching eggs (and from clearing waves once battles are
--- playable). Not the same as a stat level or a wave.
+-- The player's level. XP comes from everything the player does: so far hatching eggs and every
+-- stat level a creature gains. Not the same as a stat level or a wave.
 function StationProgress.playerLevel(p: Profile): number
 	return math.floor(math.sqrt(p.xp / StationProgress.XP_STEP)) + 1
 end
@@ -206,17 +205,18 @@ function StationProgress.buy(
 	return p, true, nil, id
 end
 
--- Add training time to every training animal up to `now` (at most OFFLINE_MAX per settle). An
--- animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
+-- Add training time to every training animal up to `now`. Every stat level gained gives the
+-- player XP. An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
 function StationProgress.settle(p: Profile, now: number): Profile
 	for i, a in p.animals do
 		if a.at and a.since then
-			local seconds = math.clamp(now - a.since, 0, StationProgress.OFFLINE_MAX)
-			local t = StationRules.train(a :: any, a.at, seconds)
+			local st = StationConfig.station(a.at) :: StationConfig.Station
+			local t = StationRules.train(a :: any, a.at, math.max(0, now - a.since))
 			local copy = table.clone(a)
 			copy.trained = t.trained
 			copy.since = math.max(a.since, now)
-			local st = StationConfig.station(a.at) :: StationConfig.Station
+			local gained = StationRules.level(copy :: any, st.stat) - StationRules.level(a :: any, st.stat)
+			p.xp = math.min(p.xp + gained * StationConfig.XP_STAT_LEVEL, StationProgress.MAX_XP)
 			if StationRules.level(copy :: any, st.stat) >= StationConfig.MAX_LEVEL then
 				copy.at, copy.since = nil, nil
 			end

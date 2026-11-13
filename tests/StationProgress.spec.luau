@@ -20,9 +20,13 @@ local function full(x: number): StationConfig.Stats
 	return { speed = x, strength = x, stamina = x, mana = x, health = x, defence = x }
 end
 
--- Seconds on a station to take a stat from level 0 to level n.
+-- Seconds of training to take a stat from level 0 to level n.
 local function secondsTo(n: number): number
-	return StationConfig.LEVEL_SECONDS * n * (n + 1) / 2
+	local total = 0
+	for level = 1, n do
+		total += StationRules.levelSeconds(level)
+	end
+	return total
 end
 
 local function animal(p: StationProgress.Profile, id: number): StationProgress.Animal
@@ -255,16 +259,21 @@ describe("StationProgress team and training", function()
 		local once = StationRules.train(hatched("jackal"), "track", 150)
 		local got = (animal(p, 1).trained :: StationConfig.Stats).speed
 		expect(math.abs(got - (once.trained :: StationConfig.Stats).speed) < 1e-9).toBeTruthy()
-		expect(StationRules.level(animal(p, 1) :: any, "speed")).toBe(2)
+		expect(StationRules.level(animal(p, 1) :: any, "speed")).toBe(1) -- level 1 takes 120 s
 	end)
 
-	it("counts at most 8 hours of training per settle while away", function()
+	it("keeps training in real time while the player is away, and pays XP for every stat level gained", function()
 		local p = StationProgress.train(three(), 2, "gym", 0)
-		p = StationProgress.snapshot(p, 10 * StationProgress.OFFLINE_MAX)
-		local capped = StationRules.train(hatched("tortoise"), "gym", StationProgress.OFFLINE_MAX)
+		local before = p.xp
+		local away = 3 * 24 * 3600 -- three days
+		p = StationProgress.snapshot(p, away)
 		local level = StationRules.level(animal(p, 2) :: any, "strength")
-		expect(level).toBe(StationRules.level(capped, "strength"))
-		expect(level > 0 and level < StationConfig.MAX_LEVEL).toBeTruthy()
+		expect(level).toBe(StationRules.level(StationRules.train(hatched("tortoise"), "gym", away), "strength"))
+		expect(level > 40 and level < StationConfig.MAX_LEVEL).toBeTruthy()
+		expect(p.xp).toBe(before + level * StationConfig.XP_STAT_LEVEL)
+		-- no level gained, no XP
+		p = StationProgress.snapshot(p, away + 60)
+		expect(p.xp).toBe(before + level * StationConfig.XP_STAT_LEVEL)
 	end)
 
 	it("lets four animals train at once and refuses an unknown station", function()
@@ -289,14 +298,14 @@ describe("StationProgress team and training", function()
 
 	it("finishes training at level 70: the animal is freed and that stat cannot be trained again", function()
 		local p = StationProgress.train(three(), 1, "track", 0)
-		for k = 1, 4 do -- 8 hours count per settle; level 70 needs about 21
-			p = StationProgress.snapshot(p, k * StationProgress.OFFLINE_MAX)
-		end
+		p = StationProgress.snapshot(p, secondsTo(StationConfig.MAX_LEVEL) - 1)
+		expect(animal(p, 1).at).toBe("track") -- one second short of level 70
+		p = StationProgress.snapshot(p, secondsTo(StationConfig.MAX_LEVEL))
 		local a = animal(p, 1)
 		expect(StationRules.level(a :: any, "speed")).toBe(StationConfig.MAX_LEVEL)
 		expect(a.at).toBeNil()
 		expect(a.since).toBeNil()
-		local now = 5 * StationProgress.OFFLINE_MAX
+		local now = secondsTo(StationConfig.MAX_LEVEL) + 60
 		local _, ok, code = StationProgress.train(p, 1, "track", now)
 		expect(ok).toBe(false)
 		expect(code).toBe("maxed")

@@ -1,20 +1,21 @@
 # Animal Stations: the beta pool (bestiary and art brief)
 
-Status: small beta pool, draft (decisions 0029 to 0031). Names, stats and odds are in
+Status: small beta pool, draft (decisions 0029 to 0032). Names, stats and odds are in
 `src/shared/StationConfig.luau` (the source of truth). This page adds the **look** of every
 version for the art pipeline.
 
 ## Stats, roles and groups
 
-- Training raises six stats: **Speed, Strength, Stamina, Mana, Health and Defence**, each from
-  level 0 to 70 (a maxed stat is doubled). Health is HP, Defence cuts incoming damage, Mana sets
-  how often an animal uses its power attack. Every animal has magical attacks, so even the basic
-  versions should hint at a power (a spark, a glow, dust).
-- Every animal has a **role**, set by its species: **Attack**, **Defence** or **Utility**.
-  Attack beats Utility, Utility beats Defence, Defence beats Attack.
+- Training raises six stats: **Speed, Strength, Stamina, Mana, Health and Defence**, each up
+  to level 70 (a maxed stat is doubled). In a wave fight Speed is how fast an attack happens,
+  Stamina the delay between attacks, Strength the damage, Mana how fast the power attack
+  charges, Health the HP and Defence cuts incoming damage. Every animal has magical attacks, so
+  even the basic versions should hint at a power (a spark, a glow, dust).
+- Every animal has a **role**, set by its species: **Attack** animals hit harder, **Defence**
+  animals draw the enemies' hits and take less damage, **Utility** animals heal.
 - Every animal has a **group**. **Pack** animals get stronger for each other pack animal on the
   team. **Solitary** animals get stronger when no teammate shares their role.
-- The **Titan** is its own category outside the role loop: legendary only, huge, and it fills
+- The **Titan** is its own category: legendary only, huge, and it fills
   the team's fourth slot. A team is three animals plus one Titan. It is a rare hatch from the
   egg that unlocks at player level 15.
 
@@ -29,8 +30,8 @@ version for the art pipeline.
 | Legendary | 1 in 2,000 | basic × 2 | +40 to one stat |
 | Mythic | 1 in 20,000 | basic × 3 | +60 to one stat |
 
-- On hatch every stat gets a **base level** from 1 to 15 (higher numbers are rarer), and 1
-  hatch in 100,000 has one stat at level 70 straight away. The Titan has no variants.
+- On hatch every stat gets a **base level** from 1 to 15 (higher numbers are rarer: a 15 is 1
+  in 90), and 1 hatch in 10,000 has one stat at level 70 straight away. The Titan has no variants.
 
 ## Art rules for every animal
 
@@ -78,7 +79,7 @@ version for the art pipeline.
 | Shadow Cheetah | | epic | twist mana | Black coat with faint violet spots and glowing violet eyes. |
 | Golden Cheetah | | legendary | twist strength | Metallic gold coat with darker gold spots. |
 | Lightning Cheetah | | mythic | twist speed | Electric-blue spots, crackling arcs along the body, fading afterimages. |
-| Rhino | Defence | uncommon | 25 / 60 / 65 / 10 / 75 / 60 | Grey rhino with a big front horn and armour-like skin folds. |
+| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | Grey rhino with a big front horn and armour-like skin folds. |
 | Stone Rhino | | epic | twist defence | Carved from sandstone with painted patterns. |
 | Crystal Rhino | | legendary | twist mana | Clear crystal horn and crystal plates along the back. |
 | Thunder Rhino | | mythic | twist speed | Storm-cloud hide, a lightning-bolt horn, rumbles when it charges. |

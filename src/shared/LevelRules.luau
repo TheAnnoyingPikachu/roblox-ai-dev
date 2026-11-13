@@ -1,7 +1,7 @@
 --!strict
--- Pure Animal Stations level rules (decision 0023): an endless line of levels, each an enemy team
--- of three that grows stronger, fought by the player's team of three (BattleRules). Clearing a
--- level pays coins. Draft numbers; balance comes later.
+-- Pure Animal Stations wave rules (decisions 0023, 0032): an endless line of waves ("levels" in
+-- this file), each an enemy team of three that grows stronger, fought by the player's team
+-- (BattleRules). Clearing one pays coins. Draft numbers; balance comes later.
 
 local BattleRules = require("./BattleRules")
 local Rng = require("./Rng")
@@ -14,7 +14,7 @@ type Owned = StationRules.Owned
 
 LevelRules.TEAM_SIZE = 3
 LevelRules.SCALE_START = 0.6 -- level 1 enemies have 60% of their basic stats
-LevelRules.SCALE_GROWTH = 1.04 -- and 4% more every level after
+LevelRules.SCALE_GROWTH = 1.03 -- and 3% more every level after
 LevelRules.BOSS_EVERY = 10 -- every 10th level's last enemy is a variant
 LevelRules.REWARD_START = 40 -- coins for clearing level 1 the first time
 LevelRules.REWARD_GROWTH = 1.08
@@ -69,8 +69,8 @@ function LevelRules.enemies(level: number): { Owned }
 	return team
 end
 
--- Whether `team` clears `level`, and how many actions the battle took.
-function LevelRules.fight(team: { Owned }, level: number): (boolean, number)
+-- Whether `team` clears `level`, how many attacks the fight took and how many seconds.
+function LevelRules.fight(team: { Owned }, level: number): (boolean, number, number)
 	return BattleRules.battle(team, LevelRules.enemies(level))
 end
 

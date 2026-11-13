@@ -1,7 +1,7 @@
 # Animal Stations (game 7): design framework
 
-Status: framework. The settled facts are in decisions 0019 to 0030; a later decision replaces an
-earlier one, and 0029 to 0031 are the current summary. Every number is a draft.
+Status: framework. The settled facts are in decisions 0019 to 0032; a later decision replaces an
+earlier one, and 0029 to 0032 are the current summary. Every number is a draft.
 
 ## Pitch
 
@@ -15,19 +15,34 @@ vendors.
   (Attack, Defence, Utility), a group (pack or solitary) and three super-rare variants. The
   Elephant is the Titan: legendary only, a rare hatch from the egg that unlocks at player level
   15 (there is no legendary-only egg). The eggs are placeholders: an overhaul is planned.
-- **Stats:** Speed, Strength, Stamina, Mana, Health, Defence. Each has a level up to 70;
-  training raises it and a maxed stat is doubled. On hatch every stat starts at a level from 1
-  to 15, higher numbers being rarer, with a 1 in 100,000 jackpot of one stat at 70.
+- **Stats:** six, each with one job in a wave fight:
+
+| Stat | Job |
+|---|---|
+| Speed | attack speed: how fast an attack happens |
+| Stamina | the delay between attacks |
+| Strength | damage |
+| Mana | how much each attack charges the power attack |
+| Health | HP |
+| Defence | cuts incoming damage |
+
+- **Stat levels:** every stat has a level up to 70, and a maxed stat is doubled. Species still
+  matter: a stat's value is the species' number grown by its level. On hatch every stat starts
+  at a level from 1 to 15 (a 15 is 1 in 90), with a 1 in 10,000 jackpot of one stat at 70.
+- **Training:** in real time at the ranch, also while you are away. Every level takes a little
+  longer than the last: two minutes for level 1, about a day for level 61 and two days for
+  level 70 (about three weeks for one stat). Training enhancements will shorten this.
 - **Team:** three animals in any mix, plus one Titan in its own fourth slot.
-- **Battles:** automatic and decided by the server. Attack beats Utility, Utility beats Defence,
-  Defence beats Attack (a slight edge). Pack and solitary animals get group bonuses. Mana sets
-  how often power attacks happen.
-- **Waves:** an endless line of enemy teams that keep growing, with a variant boss every tenth.
-  Clearing a wave pays coins.
-- **Player level:** from XP. Hatching gives XP now; waves will too.
+- **Wave fights:** on a clock and decided by the server. Attack animals hit harder, Defence
+  animals draw the enemies' hits and take less, Utility animals heal. Pack and solitary animals
+  get group bonuses.
+- **Waves:** an endless line of enemy teams that grow 3% a wave, with a variant boss every
+  tenth. Clearing a wave pays coins.
+- **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
+  waves, daily, weekly and monthly login tracks and gear levels when they exist.
 - **Places:** the hub (plaza, egg stalls) and one ranch island per player, joined only by
-  teleport pads. Animals train at the ranch. Mountains ring every area to hide the void. A
-  canyon through the hub's mountains is the wave arena. A server holds 3 players.
+  teleport pads. Mountains ring every area. A canyon through the hub's mountains is the wave
+  arena. A server holds 3 players.
 
 ## Words
 
@@ -37,23 +52,21 @@ vendors.
 ## Built
 
 - Pure, tested rules in `src/shared`: `StationConfig`, `StationRules` (hatch, stat levels,
-  roles), `BattleRules` (team battle), `LevelRules` (waves, rewards), `StationProgress` (the
-  saved profile: coins, XP, animals, team, Titan, training).
+  training time), `BattleRules` (wave fights), `LevelRules` (waves, rewards), `StationProgress`
+  (the saved profile: coins, XP, animals, team, Titan, training).
 - Server: saves, egg buying at the stalls, team and training requests, ranch assignment and
   teleports. Client: coins and level, and the Animals panel.
 - World: the hub with its wave arena canyon and three ranch islands, as simple placeholders.
+  SHANNON has said the world is right for now.
 
 ## Not built yet
 
-- Wave battles in the arena. Until then coins, wave progress and most XP cannot be earned in play.
+- Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
 - Animal models; animals standing on the training pads or in the paddock.
-- The ranch tycoon: universal upgrades and expansion, paid with gold and samples from harder
-  enemies. More hub vendors.
-- Magical attacks, microgames, PvP (on hold; it will be the three-role loop), teams of 3 players.
-- The standard features: start menu, logins, quests, cosmetics, leaderboard, music.
-
-## Open questions
-
-- What Speed, Strength and Stamina each do on their own (attack comes from the best of the four
-  non-Health, non-Defence stats today).
-- How waves give XP, gold and samples.
+- The ranch tycoon: universal upgrades, expansion and training enhancements, paid with gold and
+  samples from harder enemies. More hub vendors. Gear. The egg overhaul.
+- Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
+- Magical attacks, microgames, teams of 3 players.
+- Fights between players. They will work differently from wave fights and stats will not affect
+  them. Nothing is built with them in mind.
+- The standard features: start menu, quests, cosmetics, leaderboard, music.

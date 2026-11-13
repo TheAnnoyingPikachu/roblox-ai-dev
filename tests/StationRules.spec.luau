@@ -18,9 +18,13 @@ local function total(stats: StationConfig.Stats): number
 	return n
 end
 
--- Seconds on a station to take a stat from level 0 to level n.
+-- Seconds of training to take a stat from level 0 to level n.
 local function secondsTo(n: number): number
-	return StationConfig.LEVEL_SECONDS * n * (n + 1) / 2
+	local total = 0
+	for level = 1, n do
+		total += StationRules.levelSeconds(level)
+	end
+	return total
 end
 
 describe("StationConfig", function()
@@ -190,12 +194,13 @@ describe("StationRules.versionStats", function()
 		expect(StationRules.versionStats("jackal", "sun_lion")).toBeNil()
 	end)
 
-	it("makes every variant stronger than its basic version in the basic's attack stat", function()
+	it("makes every variant stronger than its basic version in every stat", function()
 		for _, sp in StationConfig.SPECIES do
 			local basic = owned(sp.id)
-			local t = StationRules.bestStat(basic)
 			for _, va in sp.variants do
-				expect(StationRules.stat(owned(sp.id, va.id), t) > StationRules.stat(basic, t)).toBeTruthy()
+				for _, stat in StationConfig.STATS do
+					expect(StationRules.stat(owned(sp.id, va.id), stat) > StationRules.stat(basic, stat)).toBeTruthy()
+				end
 			end
 		end
 	end)
@@ -212,7 +217,31 @@ describe("StationRules stat levels", function()
 		expect(StationRules.stat(t, "strength")).toBe(38) -- 35 x (1 + 7/70) = 38.5
 		expect(StationRules.stat(t, "speed")).toBe(70)
 		expect(StationRules.level(c, "strength")).toBe(0)
-		expect(StationRules.levelSeconds(70) > StationRules.levelSeconds(1)).toBeTruthy()
+	end)
+
+	it("makes every level take a little longer, with each level above 60 taking 24 to 48 hours", function()
+		local hour = 3600
+		expect(StationRules.levelSeconds(1)).toBe(120)
+		for n = 2, StationConfig.MAX_LEVEL do
+			local now, before = StationRules.levelSeconds(n), StationRules.levelSeconds(n - 1)
+			expect(now > before).toBeTruthy()
+			expect(now < before * 1.15).toBeTruthy() -- a little longer, never a jump
+			expect(now == math.floor(now)).toBeTruthy() -- whole seconds
+		end
+		expect(StationRules.levelSeconds(60) < 24 * hour).toBeTruthy()
+		expect(StationRules.levelSeconds(61)).toBe(24 * hour)
+		expect(StationRules.levelSeconds(70)).toBe(48 * hour)
+		for n = 61, 70 do
+			local t = StationRules.levelSeconds(n)
+			expect(t >= 24 * hour and t <= 48 * hour).toBeTruthy()
+		end
+		-- slower than the old 30 x n seconds at every level
+		for n = 1, 70 do
+			expect(StationRules.levelSeconds(n) > 30 * n).toBeTruthy()
+		end
+		-- one stat from 0 to 70 is about three weeks; the first 20 levels a couple of hours
+		expect(secondsTo(70) > 20 * 24 * hour and secondsTo(70) < 26 * 24 * hour).toBeTruthy()
+		expect(secondsTo(20) > 2 * hour and secondsTo(20) < 3 * hour).toBeTruthy()
 	end)
 
 	it("keeps part of a level between sessions", function()
@@ -243,13 +272,6 @@ describe("StationRules stat levels", function()
 		expect(StationRules.stat(c, "strength")).toBe(42)
 	end)
 
-	it("never uses Health or Defence as the attack stat", function()
-		local t = owned("tortoise") -- health 55 and defence 50 are its highest numbers
-		expect(StationRules.bestStat(t)).toBe("stamina")
-		local trained = StationRules.train(StationRules.train(t, "spring", 1e9), "guard", 1e9)
-		expect(StationRules.bestStat(trained)).toBe("stamina")
-	end)
-
 	it("ignores an unknown station or no time", function()
 		local c = owned("cheetah")
 		expect(StationRules.train(c, "moon", 600)).toBe(c)
@@ -258,7 +280,7 @@ describe("StationRules stat levels", function()
 	end)
 end)
 
-describe("StationRules roles and matchups", function()
+describe("StationRules roles", function()
 	it("takes the role from the species, whatever is trained", function()
 		expect(StationRules.role(owned("lion"))).toBe("attack")
 		expect(StationRules.role(owned("rhino"))).toBe("defense")
@@ -266,36 +288,6 @@ describe("StationRules roles and matchups", function()
 		expect(StationRules.role(owned("elephant"))).toBe("titan")
 		local trained = StationRules.train(owned("lion"), "library", 1e9)
 		expect(StationRules.role(trained)).toBe("attack")
-	end)
-
-	it("makes the three roles one loop: each beats one and loses to one", function()
-		for _, a in StationConfig.ROLES do
-			local wins, losses = 0, 0
-			for _, d in StationConfig.ROLES do
-				local m = StationRules.matchup(a, d)
-				wins += if m > 1 then 1 else 0
-				losses += if m < 1 then 1 else 0
-			end
-			expect(wins).toBe(1)
-			expect(losses).toBe(1)
-			expect(StationRules.matchup(a, a)).toBe(1)
-		end
-		local seen, at = {}, "attack"
-		for _ = 1, 3 do
-			expect(seen[at]).toBeNil()
-			seen[at] = true
-			at = StationConfig.BEATS[at]
-		end
-		expect(at).toBe("attack")
-	end)
-
-	it("keeps the advantage slight and symmetric, and the Titan outside the loop", function()
-		expect(StationConfig.ADVANTAGE > 1 and StationConfig.ADVANTAGE <= 1.5).toBeTruthy()
-		expect(StationRules.matchup("attack", "utility") * StationRules.matchup("utility", "attack")).toBe(1)
-		for _, r in StationConfig.ROLES do
-			expect(StationRules.matchup("titan", r)).toBe(1)
-			expect(StationRules.matchup(r, "titan")).toBe(1)
-		end
 	end)
 end)
 
@@ -338,20 +330,21 @@ describe("StationRules.hatch", function()
 
 	it("rolls a base level from 1 to 15, each higher number less likely than the one before", function()
 		expect(StationConfig.BASE_MAX).toBe(15)
-		expect(StationRules.BASE_ROLL).toBe(120)
+		expect(StationRules.BASE_ROLL).toBe(630)
 		expect(StationRules.baseLevel(1)).toBe(1)
-		expect(StationRules.baseLevel(15)).toBe(1)
-		expect(StationRules.baseLevel(16)).toBe(2)
-		expect(StationRules.baseLevel(119)).toBe(14)
-		expect(StationRules.baseLevel(120)).toBe(15)
+		expect(StationRules.baseLevel(77)).toBe(1)
+		expect(StationRules.baseLevel(78)).toBe(2)
+		expect(StationRules.baseLevel(623)).toBe(14)
+		expect(StationRules.baseLevel(624)).toBe(15)
+		expect(StationRules.baseLevel(630)).toBe(15)
 		local share = table.create(15, 0)
 		for r = 1, StationRules.BASE_ROLL do
 			share[StationRules.baseLevel(r)] += 1
 		end
 		for level = 2, 15 do
-			expect(share[level] < share[level - 1]).toBeTruthy()
-			expect(share[level] > 0).toBeTruthy()
+			expect(share[level - 1] - share[level]).toBe(StationConfig.BASE_STEP) -- the same step down each time
 		end
+		expect(share[15] * 90).toBe(StationRules.BASE_ROLL) -- a 15 is exactly 1 in 90
 	end)
 
 	it("hatches mostly basics and rare variants, with the version's stats and base levels of 1 to 15", function()
@@ -393,8 +386,7 @@ describe("StationRules.hatch", function()
 	end)
 
 	it("has a tiny jackpot that hatches exactly one stat at level 70", function()
-		local mythic = (StationConfig.tier("mythic") :: StationConfig.Tier).ppm
-		expect(StationConfig.JACKPOT_PPM > 0 and StationConfig.JACKPOT_PPM < mythic).toBeTruthy()
+		expect(StationConfig.JACKPOT_PPM * 10000).toBe(StationRules.PPM) -- 1 in 10,000
 		-- force the jackpot on, then off, to check both paths; put the real chance back after
 		local real = StationConfig.JACKPOT_PPM
 		local good = true

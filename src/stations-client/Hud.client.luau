@@ -12,6 +12,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
+local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 local remotes = ReplicatedStorage:WaitForChild("StationsRemotes")
 local request = remotes:WaitForChild("Request") :: RemoteFunction
@@ -107,12 +108,11 @@ local function live(a: any): any
 	if a.at == nil or a.since == nil then
 		return a
 	end
-	local elapsed = math.clamp(Workspace:GetServerTimeNow() - a.since, 0, StationProgress.OFFLINE_MAX)
-	return StationRules.train(a, a.at, elapsed)
+	return StationRules.train(a, a.at, math.max(0, Workspace:GetServerTimeNow() - a.since))
 end
 
 -- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
--- over "46"), with the progress to the next level while training, or MAX.
+-- over "46"), with the time left to the next level while training ("46  12m"), or MAX.
 local function statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
 	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
@@ -121,7 +121,8 @@ local function statText(a: any, stat: string, training: boolean): string
 		return `{head}\n{value}  MAX`
 	elseif training then
 		local progress = if a.trained then a.trained[stat] - level else 0
-		return `{head}\n{value}   {math.floor(progress * 100)}%`
+		local left = (1 - progress) * StationRules.levelSeconds(level + 1)
+		return `{head}\n{value}   {Format.ago(left)}`
 	end
 	return `{head}\n{value}`
 end

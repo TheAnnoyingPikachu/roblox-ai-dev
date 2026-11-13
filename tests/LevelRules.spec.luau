@@ -70,18 +70,17 @@ describe("LevelRules.fight", function()
 		local starters = { owned("jackal"), owned("tortoise"), owned("meerkat") }
 		local trained = {}
 		for _, a in starters do
-			local t = StationRules.bestStat(a)
 			for _, st in StationConfig.STATIONS do
-				if st.stat == t then
-					table.insert(trained, StationRules.train(a, st.id, 1e9))
-				end
+				a = StationRules.train(a, st.id, 1e12) -- every stat to level 70
 			end
+			table.insert(trained, a)
 		end
-		local rares = { owned("lion", "sun_lion"), owned("rhino", "crystal_rhino"), owned("flamingo") }
-		local base, better, best = reach(starters, 400), reach(trained, 400), reach(rares, 400)
+		local variants =
+			{ owned("lion", "sun_lion"), owned("rhino", "crystal_rhino"), owned("flamingo", "pearl_flamingo") }
+		local base, better, best = reach(starters, 400), reach(trained, 400), reach(variants, 400)
 		expect(better > base).toBeTruthy()
-		expect(best > better).toBeTruthy()
-		expect(best < 400).toBeTruthy()
+		expect(best > base).toBeTruthy()
+		expect(better < 400 and best < 400).toBeTruthy()
 	end)
 
 	it("never sends a Titan as a level enemy, and a Titan carries a team further", function()

@@ -1,11 +1,17 @@
 --!strict
--- Pure Animal Stations battles (decisions 0024, 0027 to 0029): team against team, used by the
--- endless levels and later by PvP. Every animal has a role from its species: Attack hits hard,
--- Defense draws every hit and takes less damage, Utility heals the most hurt teammate. The Titan
--- (the team's fourth slot) has no special job: it is simply huge and neutral in every matchup.
--- HP comes from Health, Defence cuts incoming damage, and Mana fills a power meter every turn (a
--- full meter makes that turn a power attack). Pack and solitary animals get group bonuses.
--- Deterministic: same teams, same result.
+-- Pure Animal Stations wave fights (decisions 0027 to 0032): the player's team against a wave
+-- of enemies, on a clock. This is for the waves only: fights between players will work
+-- differently and are not designed. Each stat has one job:
+--   Health    HP
+--   Defence   cuts incoming damage
+--   Strength  damage per attack
+--   Speed     attack speed: a shorter swing
+--   Stamina   a shorter rest between attacks
+--   Mana      energy per attack towards the power attack
+-- Roles come from the species: Attack hits harder, Defence draws every hit and takes less,
+-- Utility also heals the most hurt teammate with every attack. The Titan (the team's fourth
+-- slot) has no special job. Pack and solitary animals get group bonuses.
+-- Deterministic: same teams, same result, so the server can decide and replay any fight.
 
 local StationConfig = require("./StationConfig")
 local StationRules = require("./StationRules")
@@ -18,51 +24,64 @@ export type Fighter = {
 	group: string?,
 	hp: number,
 	maxHp: number,
-	atk: number,
+	dmg: number,
 	def: number,
-	spd: number,
-	mana: number,
-	energy: number,
+	swing: number, -- seconds an attack takes
+	rest: number, -- seconds of rest before the next attack
+	gain: number, -- energy per attack
+	energy: number, -- the power meter
+	next: number, -- when its next attack lands
 	side: number,
 	slot: number,
 }
 
-BattleRules.ATTACK_BONUS = 1.3 -- Attack: damage x this
-BattleRules.GUARD = 0.8 -- Defense: enemies must target it while it stands, and it takes damage x this
-BattleRules.HEAL = 0.5 -- Utility: after attacking, heals the most hurt teammate by atk x this
 BattleRules.HP_BASE, BattleRules.HP_PER_HEALTH = 20, 1.5
+BattleRules.DMG_BASE, BattleRules.DMG_PER_STRENGTH = 4, 0.25
 BattleRules.DEF_HALF = 100 -- incoming damage x DEF_HALF / (DEF_HALF + Defence): 100 Defence halves it
--- Power attacks: each turn the meter gains POWER_GAIN + Mana; at POWER_COST the turn's damage and
--- heal are x POWER and the cost is spent. More Mana, more often (at most every turn).
+-- An attack takes SWING seconds, then the animal rests REST seconds. Speed shortens the swing and
+-- Stamina the rest, each by TEMPO_HALF / (TEMPO_HALF + stat): 100 of the stat halves its time.
+BattleRules.SWING, BattleRules.REST, BattleRules.TEMPO_HALF = 1.5, 1.5, 100
+-- Power attacks: every attack adds POWER_GAIN + Mana energy; at POWER_COST that attack's damage
+-- and heal are x POWER and the cost is spent.
 BattleRules.POWER_GAIN, BattleRules.POWER_COST, BattleRules.POWER = 10, 200, 2
-BattleRules.MAX_TURNS = 1000 -- a battle this long is a loss for side 1 (heals could stall it)
+BattleRules.ATTACK_BONUS = 1.3 -- Attack: damage x this
+BattleRules.GUARD = 0.8 -- Defence: enemies must target it while it stands, and it takes damage x this
+BattleRules.HEAL_PCT = 8 -- Utility: each attack also heals the most hurt teammate by this % of the healer's own max HP
+BattleRules.MAX_SECONDS = 300 -- a fight this long is a loss for side 1 (heals could stall it)
+BattleRules.MAX_ACTIONS = 5000 -- backstop for absurd stats; also a loss for side 1
 
--- One animal's battle numbers before group bonuses: HP from Health, attack from its best attack
--- stat, Defence, Speed for the order, Mana for how often it power attacks.
+-- One animal's battle numbers before group bonuses. Each stat feeds exactly one of them.
 function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 	local sp = StationConfig.species(animal.s)
 	local role = StationRules.role(animal)
-	local hp = BattleRules.HP_BASE + math.floor(StationRules.stat(animal, "health") * BattleRules.HP_PER_HEALTH)
-	local atk = 4 + math.floor(StationRules.stat(animal, StationRules.bestStat(animal)) / 4)
-	if role == "attack" then
-		atk = math.floor(atk * BattleRules.ATTACK_BONUS)
+	local function stat(name: StationConfig.Stat): number
+		return StationRules.stat(animal, name)
 	end
+	local hp = BattleRules.HP_BASE + math.floor(stat("health") * BattleRules.HP_PER_HEALTH)
+	local dmg = BattleRules.DMG_BASE + math.floor(stat("strength") * BattleRules.DMG_PER_STRENGTH)
+	if role == "attack" then
+		dmg = math.floor(dmg * BattleRules.ATTACK_BONUS)
+	end
+	local half = BattleRules.TEMPO_HALF
+	local swing = BattleRules.SWING * half / (half + stat("speed"))
 	return {
 		role = role,
 		group = if sp then sp.group else nil,
 		hp = hp,
 		maxHp = hp,
-		atk = atk,
-		def = StationRules.stat(animal, "defence"),
-		spd = StationRules.stat(animal, "speed"),
-		mana = StationRules.stat(animal, "mana"),
+		dmg = dmg,
+		def = stat("defence"),
+		swing = swing,
+		rest = BattleRules.REST * half / (half + stat("stamina")),
+		gain = BattleRules.POWER_GAIN + stat("mana"),
 		energy = 0,
+		next = swing, -- the first attack lands after one swing, so the faster animal strikes first
 		side = side,
 		slot = slot,
 	}
 end
 
--- A whole team ready to fight, with the group bonuses on attack and HP: a pack animal gains
+-- A whole team ready to fight, with the group bonuses on damage and HP: a pack animal gains
 -- PACK_PCT % for each other pack animal, a solitary animal SOLITARY_PCT % when no teammate
 -- shares its role.
 function BattleRules.lineup(team: { Owned }, side: number): { Fighter }
@@ -86,7 +105,7 @@ function BattleRules.lineup(team: { Owned }, side: number): { Fighter }
 				end
 			end
 		end
-		f.atk = math.floor(f.atk * (100 + pct) / 100)
+		f.dmg = math.floor(f.dmg * (100 + pct) / 100)
 		f.maxHp = math.floor(f.maxHp * (100 + pct) / 100)
 		f.hp = f.maxHp
 	end
@@ -102,7 +121,7 @@ local function alive(team: { Fighter }): boolean
 	return false
 end
 
--- The enemy to hit: the first standing Defense animal, else the first standing animal.
+-- The enemy to hit: the first standing Defence animal, else the first standing animal.
 local function target(foes: { Fighter }): Fighter?
 	local first: Fighter? = nil
 	for _, f in foes do
@@ -116,60 +135,57 @@ local function target(foes: { Fighter }): Fighter?
 	return first
 end
 
--- Fight team 1 against team 2. Each round every standing animal acts once, fastest first (ties:
--- side 1, then slot order). Returns whether side 1 won and how many actions happened.
--- In PvP the caller decides which player is side 1, since side 1 wins speed ties.
-function BattleRules.battle(one: { Owned }, two: { Owned }): (boolean, number)
+-- Fight the player's team (side 1) against a wave (side 2) on a clock: whoever's attack is due
+-- next acts (ties go to side 1, then the lower slot). Returns whether the team won, how many
+-- attacks happened and how many seconds the fight took.
+function BattleRules.battle(one: { Owned }, two: { Owned }): (boolean, number, number)
 	local sides = { BattleRules.lineup(one, 1), BattleRules.lineup(two, 2) }
-	local order = table.clone(sides[1])
+	local all = table.clone(sides[1])
 	for _, f in sides[2] do
-		table.insert(order, f)
+		table.insert(all, f)
 	end
-	table.sort(order, function(a: Fighter, b: Fighter): boolean
-		if a.spd ~= b.spd then
-			return a.spd > b.spd
-		elseif a.side ~= b.side then
-			return a.side < b.side
-		end
-		return a.slot < b.slot
-	end)
-	local turns = 0
-	while alive(sides[1]) and alive(sides[2]) and turns < BattleRules.MAX_TURNS do
-		for _, f in order do
-			if f.hp > 0 then
-				local mine, foes = sides[f.side], sides[3 - f.side]
-				local d = target(foes)
-				if d == nil then
-					break
-				end
-				local power = 1
-				f.energy += BattleRules.POWER_GAIN + f.mana
-				if f.energy >= BattleRules.POWER_COST then
-					f.energy -= BattleRules.POWER_COST
-					power = BattleRules.POWER
-				end
-				local hit = f.atk * power * StationRules.matchup(f.role, d.role)
-				if d.role == "defense" then
-					hit *= BattleRules.GUARD
-				end
-				-- Defence last, as one division, so exact results stay exact
-				d.hp -= math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
-				turns += 1
-				if f.role == "utility" then
-					local hurt: Fighter? = nil
-					for _, m in mine do
-						if m.hp > 0 and (hurt == nil or m.hp / m.maxHp < hurt.hp / hurt.maxHp) then
-							hurt = m
-						end
-					end
-					if hurt then
-						hurt.hp = math.min(hurt.maxHp, hurt.hp + math.floor(f.atk * power * BattleRules.HEAL))
-					end
-				end
+	local actions, now = 0, 0
+	while alive(sides[1]) and alive(sides[2]) and actions < BattleRules.MAX_ACTIONS do
+		local f: Fighter? = nil
+		for _, c in all do -- `all` is in side then slot order, so a strict < breaks ties that way
+			if c.hp > 0 and (f == nil or c.next < f.next) then
+				f = c
 			end
 		end
+		local me = f :: Fighter
+		if me.next > BattleRules.MAX_SECONDS then
+			break
+		end
+		now = me.next
+		local d = target(sides[3 - me.side]) :: Fighter
+		local power = 1
+		me.energy += me.gain
+		if me.energy >= BattleRules.POWER_COST then
+			me.energy -= BattleRules.POWER_COST
+			power = BattleRules.POWER
+		end
+		local hit = me.dmg * power
+		if d.role == "defense" then
+			hit *= BattleRules.GUARD
+		end
+		-- Defence last, as one division, so exact results stay exact
+		d.hp -= math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
+		if me.role == "utility" then
+			local hurt: Fighter? = nil
+			for _, m in sides[me.side] do
+				if m.hp > 0 and (hurt == nil or m.hp / m.maxHp < hurt.hp / hurt.maxHp) then
+					hurt = m
+				end
+			end
+			if hurt then
+				local heal = math.floor(me.maxHp * BattleRules.HEAL_PCT * power / 100)
+				hurt.hp = math.min(hurt.maxHp, hurt.hp + heal)
+			end
+		end
+		actions += 1
+		me.next = now + me.rest + me.swing
 	end
-	return alive(sides[1]) and not alive(sides[2]), turns
+	return alive(sides[1]) and not alive(sides[2]), actions, now
 end
 
 return BattleRules

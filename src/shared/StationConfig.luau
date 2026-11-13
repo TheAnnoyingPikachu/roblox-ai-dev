@@ -1,6 +1,6 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0031): stats and stat levels, roles, groups,
--- the small African beta pool with its variants, the Titan, eggs, training stations and matchups.
+-- Game 7 "Animal Stations" data (decisions 0019 to 0032): stats and stat levels, roles, groups,
+-- the small African beta pool with its variants, the Titan, eggs and training stations.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
@@ -32,33 +32,42 @@ export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds
 export type Egg = { id: string, name: string, price: number, xp: number, unlock: number?, odds: { Odds } }
 export type Station = { id: string, name: string, stat: Stat }
 
--- Health is HP in battle, Defence cuts incoming damage, Mana fills the power-attack meter
--- (decisions 0028, 0029).
+-- Each stat has one job in a wave fight (decision 0032, BattleRules): Speed is attack speed,
+-- Strength damage, Stamina the rest between attacks, Mana the charge towards the power attack,
+-- Health HP and Defence cuts incoming damage.
 StationConfig.STATS = { "speed", "strength", "stamina", "mana", "health", "defence" } :: { Stat }
 StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400 -- limits of a version's (level 0) stat
 
 -- Stat levels (decision 0029): training raises a stat's level, 0 to MAX_LEVEL. A stat's value is
--- its hatched value x (1 + LEVEL_GROWTH x level / MAX_LEVEL), so a maxed stat is doubled.
--- Level n takes LEVEL_SECONDS x n seconds on the station (level 1 half a minute, level 70 35 minutes).
+-- its species value x (1 + LEVEL_GROWTH x level / MAX_LEVEL), so a maxed stat is doubled.
 StationConfig.MAX_LEVEL = 70
 StationConfig.LEVEL_GROWTH = 1
-StationConfig.LEVEL_SECONDS = 30
--- Base stats (decision 0030): on hatch every stat starts at a level from 1 to BASE_MAX, each
--- higher number a little less likely (weight BASE_MAX + 1 - level, so a 1 is 15 times as likely
--- as a 15). JACKPOT_PPM is the tiny chance that one stat hatches at MAX_LEVEL instead.
+-- Training time (decision 0032): every level takes a little longer than the one before. Level 1
+-- takes LEVEL_FIRST seconds; the time grows steadily to one day at LEVEL_DAY and on to LEVEL_LAST
+-- at MAX_LEVEL, so each level above 60 takes about 24 to 48 hours of real time (about 23 days
+-- for one stat from 0 to 70). Training enhancements will shorten this later.
+StationConfig.LEVEL_FIRST = 120
+StationConfig.LEVEL_DAY = 61
+StationConfig.LEVEL_LAST = 48 * 3600
+-- Base stats (decisions 0030, 0032): on hatch every stat starts at a level from 1 to BASE_MAX,
+-- each higher number a little less likely. A BASE_MAX has weight BASE_TOP and every level below
+-- it BASE_STEP more, out of 630: a 15 is 7 in 630 = 1 in 90, a 1 is 77 in 630 (about 1 in 8).
+-- JACKPOT_PPM is the chance that one stat hatches at MAX_LEVEL instead.
 StationConfig.BASE_MAX = 15
-StationConfig.JACKPOT_PPM = 10 -- 1 in 100,000 hatches
+StationConfig.BASE_TOP, StationConfig.BASE_STEP = 7, 5
+StationConfig.JACKPOT_PPM = 100 -- 1 in 10,000 hatches
+-- Player XP comes from everything the player does (decision 0032). Built so far: hatching (each
+-- egg's `xp`) and every stat level a creature gains in training. Waves, the login tracks and
+-- gear will add theirs when they exist.
+StationConfig.XP_STAT_LEVEL = 5
 
 StationConfig.BASIC_RARITIES = { "common", "uncommon", "rare" }
 StationConfig.RARITIES = { "common", "uncommon", "rare", "epic", "legendary", "mythic" }
 
--- Roles (decision 0027). The three team roles form a rock paper scissors loop; the Titan stands
--- outside it (neutral to everyone) and fills the team's fourth slot. BattleRules gives each its job.
+-- Roles (decision 0027): three team roles, each with its own job in a wave fight (BattleRules),
+-- and the Titan, which fills the team's fourth slot.
 StationConfig.ROLES = { "attack", "defense", "utility" }
 StationConfig.TITAN = "titan"
--- Attack breaks through Utility, Utility's magic gets past Defense, Defense blocks Attack.
-StationConfig.BEATS = { attack = "utility", utility = "defense", defense = "attack" } :: { [string]: string }
-StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
 
 -- Groups (decision 0029): a pack animal gains PACK_PCT % attack and HP for each other pack
 -- animal on its team; a solitary animal gains SOLITARY_PCT % when no teammate shares its role.
@@ -152,7 +161,7 @@ StationConfig.SPECIES = {
 		role = "defense",
 		group = "solitary",
 		rarity = "uncommon",
-		stats = s(25, 60, 65, 10, 75, 60),
+		stats = s(25, 50, 60, 10, 70, 55),
 		variants = {
 			v("stone_rhino", "Stone Rhino", "epic", "defence"),
 			v("crystal_rhino", "Crystal Rhino", "legendary", "mana"),

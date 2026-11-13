@@ -1,6 +1,6 @@
 --!strict
--- Pure Animal Stations rules (decisions 0019 to 0030): hatch an animal (species, then a
--- rare variant roll, then a base level for each stat), level its stats, and its role and matchups.
+-- Pure Animal Stations rules (decisions 0019 to 0032): hatch an animal (species, then a
+-- rare variant roll, then a base level for each stat), level its stats, and its role.
 -- The server owns the Rng state and the clock; the client never sends stats or times.
 
 local Rng = require("./Rng")
@@ -14,10 +14,16 @@ type Stats = StationConfig.Stats
 export type Owned = { s: string, v: string?, stats: Stats, trained: Stats? }
 
 StationRules.PPM = 1_000_000
-StationRules.BASE_ROLL = StationConfig.BASE_MAX * (StationConfig.BASE_MAX + 1) / 2 -- size of the base level roll
+-- The share of the base level roll that gives `level`: BASE_TOP at BASE_MAX, BASE_STEP more for
+-- every level below it.
+local function baseWeight(level: number): number
+	return StationConfig.BASE_TOP + StationConfig.BASE_STEP * (StationConfig.BASE_MAX - level)
+end
+StationRules.BASE_ROLL = 0 -- size of the base level roll (630)
+for level = 1, StationConfig.BASE_MAX do
+	StationRules.BASE_ROLL += baseWeight(level)
+end
 StationRules.ZERO = { speed = 0, strength = 0, stamina = 0, mana = 0, health = 0, defence = 0 } :: Stats
--- The stats an attack can come from. Health is only HP and Defence only cuts damage.
-StationRules.ATTACK_STATS = { "speed", "strength", "stamina", "mana" } :: { StationConfig.Stat }
 
 -- First id whose cumulative basis points reach r (r in 1..10000).
 function StationRules.pick(odds: { StationConfig.Odds }, r: number): string
@@ -47,7 +53,7 @@ end
 function StationRules.baseLevel(r: number): number
 	local total = 0
 	for level = 1, StationConfig.BASE_MAX do
-		total += StationConfig.BASE_MAX + 1 - level
+		total += baseWeight(level)
 		if r <= total then
 			return level
 		end
@@ -115,33 +121,10 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	return { s = species, v = variantId, stats = stats, trained = levels :: Stats }, rng
 end
 
--- An animal's attack stat: its highest current stat among ATTACK_STATS (ties go to the first).
-function StationRules.bestStat(animal: Owned): StationConfig.Stat
-	local best, top = StationRules.ATTACK_STATS[1], -1
-	for _, stat in StationRules.ATTACK_STATS do
-		local x = StationRules.stat(animal, stat)
-		if x > top then
-			best, top = stat, x
-		end
-	end
-	return best
-end
-
 -- An animal's role, from its species: "attack", "defense", "utility" or "titan".
 function StationRules.role(animal: Owned): string
 	local sp = StationConfig.species(animal.s)
 	return if sp then sp.role else "attack"
-end
-
--- Damage multiplier for an attacker of role `a` hitting a defender of role `d`. Titans are
--- outside the loop: always 1.
-function StationRules.matchup(a: string, d: string): number
-	if StationConfig.BEATS[a] == d then
-		return StationConfig.ADVANTAGE
-	elseif StationConfig.BEATS[d] == a then
-		return 1 / StationConfig.ADVANTAGE
-	end
-	return 1
 end
 
 -- Display rarity: the variant's tier, or the species' basic rarity.
@@ -170,14 +153,22 @@ function StationRules.stat(animal: Owned, stat: StationConfig.Stat): number
 	return math.floor((animal.stats :: any)[stat] * grown / max)
 end
 
--- Seconds on a station to go from level n - 1 to level n.
+-- Seconds of training to go from level n - 1 to level n: LEVEL_FIRST for level 1, growing by the
+-- same factor each level to one day at LEVEL_DAY, then by a smaller factor to LEVEL_LAST at
+-- MAX_LEVEL. Whole seconds, so sums of levels are exact.
 function StationRules.levelSeconds(n: number): number
-	return StationConfig.LEVEL_SECONDS * n
+	local c, day = StationConfig, 24 * 3600
+	local seconds
+	if n <= c.LEVEL_DAY then
+		seconds = c.LEVEL_FIRST * (day / c.LEVEL_FIRST) ^ ((n - 1) / (c.LEVEL_DAY - 1))
+	else
+		seconds = day * (c.LEVEL_LAST / day) ^ ((n - c.LEVEL_DAY) / (c.MAX_LEVEL - c.LEVEL_DAY))
+	end
+	return math.floor(seconds + 0.5)
 end
 
 -- `animal` after `seconds` on `stationId`: a copy with that station's stat levelled, never past
 -- MAX_LEVEL. Unknown station or no time: unchanged.
--- shortcut: no cap on offline seconds; the caller clamps the time it passes in.
 function StationRules.train(animal: Owned, stationId: string, seconds: number): Owned
 	local st = StationConfig.station(stationId)
 	if st == nil or seconds <= 0 then
