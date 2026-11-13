@@ -13,7 +13,7 @@ type Stats = StationConfig.Stats
 export type Owned = { s: string, v: string?, stats: Stats, trained: Stats? }
 
 StationRules.PPM = 1_000_000
-StationRules.ZERO = { speed = 0, strength = 0, stamina = 0, mana = 0 } :: Stats
+StationRules.ZERO = { speed = 0, strength = 0, stamina = 0, mana = 0, health = 0 } :: Stats
 
 -- First id whose cumulative basis points reach r (r in 1..10000).
 function StationRules.pick(odds: { StationConfig.Odds }, r: number): string
@@ -93,11 +93,12 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	return { s = species, v = variantId, stats = stats :: Stats }, rng
 end
 
--- An animal's highest current stat (ties go to the first in STATS): its attack stat.
+-- An animal's attack stat: its highest current stat other than Health, which is only HP (ties
+-- go to the first in STATS).
 function StationRules.bestStat(animal: Owned): StationConfig.Stat
 	local best, top = StationConfig.STATS[1], -1
 	for _, stat in StationConfig.STATS do
-		local x = StationRules.stat(animal, stat)
+		local x = if stat == "health" then -1 else StationRules.stat(animal, stat)
 		if x > top then
 			best, top = stat, x
 		end

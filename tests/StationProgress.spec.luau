@@ -38,14 +38,14 @@ describe("StationProgress profile", function()
 			coins = 1e20,
 			nextId = 2,
 			animals = {
-				{ id = 1, s = "hyena", stats = { speed = 45, strength = 15, stamina = 12, mana = 30 } },
-				{ id = 1, s = "warthog", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- duplicate id
-				{ id = 2, s = "dragon", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- no species
+				{ id = 1, s = "hyena", stats = { speed = 45, strength = 15, stamina = 12, mana = 30, health = 40 } },
+				{ id = 1, s = "warthog", stats = { speed = 1, strength = 1, stamina = 1, mana = 1, health = 40 } }, -- duplicate id
+				{ id = 2, s = "dragon", stats = { speed = 1, strength = 1, stamina = 1, mana = 1, health = 40 } }, -- no species
 				{
 					id = 3,
 					s = "mandrill",
 					v = "sun_lion",
-					stats = { speed = 9e9, strength = 1, stamina = 1, mana = 1 },
+					stats = { speed = 9e9, strength = 1, stamina = 1, mana = 1, health = 40 },
 				},
 				{ id = 4, s = "meerkat" }, -- no stats
 				{
@@ -53,7 +53,7 @@ describe("StationProgress profile", function()
 					s = "warthog",
 					at = "gym",
 					since = 50,
-					stats = { speed = 25, strength = 45, stamina = 5, mana = 15 },
+					stats = { speed = 25, strength = 45, stamina = 5, mana = 15, health = 40 },
 				},
 			},
 			team = { 1, 1, 9, 3, 5, "x" },
@@ -210,7 +210,13 @@ describe("StationProgress team and training", function()
 		p = StationProgress.train(p, 4, "gym", 0)
 		expect(p.titan).toBeNil()
 		local q = StationProgress.sanitize({
-			animals = { { id = 1, s = "elephant", stats = { speed = 30, strength = 160, stamina = 180, mana = 60 } } },
+			animals = {
+				{
+					id = 1,
+					s = "elephant",
+					stats = { speed = 30, strength = 160, stamina = 180, mana = 60, health = 40 },
+				},
+			},
 			team = { 1 },
 			titan = 1,
 		}, 0)

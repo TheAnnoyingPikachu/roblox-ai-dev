@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0027): stats, roles, the African beta pool of
+-- Game 7 "Animal Stations" data (decisions 0019 to 0028): stats, roles, the African beta pool of
 -- species with their variants, Titans, eggs, training stations and battle matchups.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
@@ -7,8 +7,8 @@
 
 local StationConfig = {}
 
-export type Stat = "speed" | "strength" | "stamina" | "mana"
-export type Stats = { speed: number, strength: number, stamina: number, mana: number }
+export type Stat = "speed" | "strength" | "stamina" | "mana" | "health"
+export type Stats = { speed: number, strength: number, stamina: number, mana: number, health: number }
 export type Variant = { id: string, name: string, tier: string, twist: Stat }
 export type Species = {
 	id: string,
@@ -23,7 +23,8 @@ export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds
 export type Egg = { id: string, name: string, price: number, odds: { Odds } }
 export type Station = { id: string, name: string, stat: Stat }
 
-StationConfig.STATS = { "speed", "strength", "stamina", "mana" } :: { Stat }
+-- Health is HP in battle; Mana fills the power-attack meter (decision 0028).
+StationConfig.STATS = { "speed", "strength", "stamina", "mana", "health" } :: { Stat }
 StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400
 -- A hatched animal's stats are its version's stats x (100 +/- VARIANCE)%, so two cheetahs differ a little.
 StationConfig.VARIANCE = 10
@@ -51,8 +52,8 @@ local function v(id: string, name: string, tier: string, twist: Stat): Variant
 	return { id = id, name = name, tier = tier, twist = twist }
 end
 
-local function s(speed: number, strength: number, stamina: number, mana: number): Stats
-	return { speed = speed, strength = strength, stamina = stamina, mana = mana }
+local function s(speed: number, strength: number, stamina: number, mana: number, health: number): Stats
+	return { speed = speed, strength = strength, stamina = stamina, mana = mana, health = health }
 end
 
 local function sp(id: string, name: string, role: string, rarity: string, stats: Stats, variants: { Variant }): Species
@@ -63,72 +64,72 @@ end
 -- epic, legendary, mythic. Then the Titans: legendary, no variants, far bigger stats.
 StationConfig.SPECIES = {
 	-- attack: fast and strong
-	sp("hyena", "Hyena", "attack", "common", s(30, 40, 20, 12), {
+	sp("hyena", "Hyena", "attack", "common", s(30, 40, 20, 12, 38), {
 		v("ember_hyena", "Ember Hyena", "epic", "strength"),
 		v("bone_hyena", "Bonechief Hyena", "legendary", "stamina"),
 		v("eclipse_hyena", "Eclipse Hyena", "mythic", "mana"),
 	}),
-	sp("jackal", "Jackal", "attack", "common", s(42, 22, 15, 18), {
+	sp("jackal", "Jackal", "attack", "common", s(42, 22, 15, 18, 30), {
 		v("dune_jackal", "Dune Jackal", "epic", "stamina"),
 		v("golden_jackal", "Golden Jackal", "legendary", "strength"),
 		v("pharaoh_jackal", "Pharaoh Jackal", "mythic", "mana"),
 	}),
-	sp("cheetah", "Cheetah", "attack", "uncommon", s(70, 35, 20, 20), {
+	sp("cheetah", "Cheetah", "attack", "uncommon", s(70, 35, 20, 20, 45), {
 		v("shadow_cheetah", "Shadow Cheetah", "epic", "mana"),
 		v("golden_cheetah", "Golden Cheetah", "legendary", "strength"),
 		v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
 	}),
-	sp("lion", "Lion", "attack", "rare", s(55, 90, 40, 25), {
+	sp("lion", "Lion", "attack", "rare", s(55, 90, 40, 25, 70), {
 		v("white_lion", "White Lion", "epic", "stamina"),
 		v("sun_lion", "Sun Lion", "legendary", "mana"),
 		v("star_lion", "Constellation Lion", "mythic", "strength"),
 	}),
 	-- defense: high stamina
-	sp("warthog", "Warthog", "defense", "common", s(22, 35, 40, 8), {
+	sp("warthog", "Warthog", "defense", "common", s(22, 35, 40, 8, 45), {
 		v("mud_warthog", "Mudslinger Warthog", "epic", "strength"),
 		v("iron_warthog", "Ironhide Warthog", "legendary", "stamina"),
 		v("magma_warthog", "Magma Warthog", "mythic", "strength"),
 	}),
-	sp("tortoise", "Tortoise", "defense", "common", s(5, 25, 48, 20), {
+	sp("tortoise", "Tortoise", "defense", "common", s(5, 25, 48, 20, 55), {
 		v("moss_tortoise", "Mossback Tortoise", "epic", "mana"),
 		v("gem_tortoise", "Gemshell Tortoise", "legendary", "stamina"),
 		v("island_tortoise", "Island Tortoise", "mythic", "mana"),
 	}),
-	sp("rhino", "Rhino", "defense", "uncommon", s(25, 60, 65, 10), {
+	sp("rhino", "Rhino", "defense", "uncommon", s(25, 60, 65, 10, 75), {
 		v("stone_rhino", "Stone Rhino", "epic", "stamina"),
 		v("crystal_rhino", "Crystal Rhino", "legendary", "mana"),
 		v("thunder_rhino", "Thunder Rhino", "mythic", "speed"),
 	}),
-	sp("gorilla", "Gorilla", "defense", "rare", s(25, 80, 90, 40), {
+	sp("gorilla", "Gorilla", "defense", "rare", s(25, 80, 90, 40, 95), {
 		v("silverback", "Silverback", "epic", "mana"),
 		v("lava_gorilla", "Lava Gorilla", "legendary", "strength"),
 		v("galaxy_gorilla", "Galaxy Gorilla", "mythic", "mana"),
 	}),
 	-- utility: high mana
-	sp("meerkat", "Meerkat", "utility", "common", s(30, 8, 15, 42), {
+	sp("meerkat", "Meerkat", "utility", "common", s(30, 8, 15, 42, 25), {
 		v("scout_meerkat", "Scout Meerkat", "epic", "speed"),
 		v("sandmage_meerkat", "Sandmage Meerkat", "legendary", "mana"),
 		v("mirage_meerkat", "Mirage Meerkat", "mythic", "speed"),
 	}),
-	sp("flamingo", "Flamingo", "utility", "common", s(20, 8, 22, 45), {
+	sp("flamingo", "Flamingo", "utility", "common", s(20, 8, 22, 45, 28), {
 		v("sunset_flamingo", "Sunset Flamingo", "epic", "stamina"),
 		v("pearl_flamingo", "Pearl Flamingo", "legendary", "mana"),
 		v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "strength"),
 	}),
-	sp("giraffe", "Giraffe", "utility", "uncommon", s(30, 25, 35, 65), {
+	sp("giraffe", "Giraffe", "utility", "uncommon", s(30, 25, 35, 65, 50), {
 		v("painted_giraffe", "Painted Giraffe", "epic", "speed"),
 		v("cloud_giraffe", "Cloudtop Giraffe", "legendary", "stamina"),
 		v("star_giraffe", "Stargazer Giraffe", "mythic", "mana"),
 	}),
-	sp("mandrill", "Mandrill", "utility", "rare", s(35, 30, 40, 90), {
+	sp("mandrill", "Mandrill", "utility", "rare", s(35, 30, 40, 90, 60), {
 		v("masked_mandrill", "Masked Mandrill", "epic", "strength"),
 		v("storm_mandrill", "Stormcaller Mandrill", "legendary", "speed"),
 		v("spirit_mandrill", "Spirit Mandrill", "mythic", "mana"),
 	}),
 	-- titans
-	sp("elephant", "Elephant", "titan", "legendary", s(30, 160, 180, 60), {}),
-	sp("hippo", "Hippo", "titan", "legendary", s(35, 180, 150, 40), {}),
-	sp("crocodile", "Crocodile", "titan", "legendary", s(50, 170, 130, 50), {}),
+	sp("elephant", "Elephant", "titan", "legendary", s(30, 160, 180, 60, 200), {}),
+	sp("hippo", "Hippo", "titan", "legendary", s(35, 180, 150, 40, 190), {}),
+	sp("crocodile", "Crocodile", "titan", "legendary", s(50, 170, 130, 50, 160), {}),
 } :: { Species }
 
 -- Eggs roll a species (basic odds); the variant roll (TIERS) happens on top, the same for every egg.
@@ -187,6 +188,7 @@ StationConfig.STATIONS = {
 	{ id = "gym", name = "Strength Gym", stat = "strength" },
 	{ id = "pool", name = "Swim Pool", stat = "stamina" },
 	{ id = "library", name = "Magic Library", stat = "mana" },
+	{ id = "spring", name = "Healing Spring", stat = "health" },
 } :: { Station }
 StationConfig.TRAIN_SECONDS = 60 -- seconds on a station for +1 to its stat
 -- Training can add at most POTENTIAL x the hatched stat, so a trained animal tops out at double

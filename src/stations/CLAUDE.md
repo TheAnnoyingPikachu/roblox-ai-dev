@@ -5,7 +5,7 @@ through endless levels (0023). Vision (0021): ranch + silly microgames + turn-ba
 the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005), training and levels (STATION-006), roles and team battles (STATION-007), saves, egg buying, team and training requests with a first HUD (STATION-008); no battle screen, animal models or ranch upgrades yet.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
-- Docs: decisions 0019 to 0027 (0026: stats are speed, strength, stamina, mana; 0027: three roles, Titans in a fourth slot, African beta pool) (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
+- Docs: decisions 0019 to 0028 (0028: Health stat and Healing Spring, Mana power attacks, hilltop ranches; 0026: stats are speed, strength, stamina, mana; 0027: three roles, Titans in a fourth slot, African beta pool) (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
 
 ## Files
 
@@ -27,4 +27,5 @@ Pure rules: `StationConfig` (stats, species, variants, eggs, stations, matchups)
 - Max Players must be 3 (= `World.RANCHES`). A place file cannot carry it: set it in Game Settings when publishing.
 - Ranch spots are tagged `RanchSpot` (`Ranch`, `Index`) and nests `RanchNest` (`Ranch`); a ranch's `Owner` attribute is the UserId or 0.
 - One ranch ends each of the north, east and west roads (`RANCH_ANGLE`); scenery keeps clear of `ROADS` and ranch squares.
-- Station layout: track NW, gym NE, pool SW, library SE at `World.STATION_DIST`; local -Z faces the plaza.
+- Ranch hilltops: terrain lands on 4-stud steps, so `World.RANCH_Y` is 22 with the cylinder top at 18 (measured). Ramps are parts (wedge + road), not terrain.
+- Station layout: track NW, gym NE, pool SW, library SE, spring S at `World.STATION_DIST`; local -Z faces the plaza.

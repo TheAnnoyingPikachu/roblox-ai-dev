@@ -13,7 +13,7 @@ end
 -- An animal of `role` with every stat 40, so only the role differs between them.
 local SPECIES = { attack = "lion", defense = "gorilla", utility = "mandrill" }
 local function role(r: string): StationRules.Owned
-	return { s = SPECIES[r], stats = { speed = 40, strength = 40, stamina = 40, mana = 40 } }
+	return { s = SPECIES[r], stats = { speed = 40, strength = 40, stamina = 40, mana = 40, health = 40 } }
 end
 
 describe("BattleRules roles", function()
@@ -22,6 +22,32 @@ describe("BattleRules roles", function()
 		expect(BattleRules.fighter(owned("gorilla"), 1, 1).role).toBe("defense")
 		expect(BattleRules.fighter(owned("mandrill"), 1, 1).role).toBe("utility")
 		expect(BattleRules.fighter(owned("elephant"), 1, 4).role).toBe("titan")
+	end)
+
+	it("takes HP from Health alone", function()
+		local a = role("attack")
+		local base = BattleRules.fighter(a, 1, 1).maxHp
+		local healthy = StationRules.train(a, "spring", 10 * StationConfig.TRAIN_SECONDS)
+		local strong = StationRules.train(a, "gym", 10 * StationConfig.TRAIN_SECONDS)
+		expect(BattleRules.fighter(healthy, 1, 1).maxHp).toBe(base + 15)
+		expect(BattleRules.fighter(strong, 1, 1).maxHp).toBe(base)
+	end)
+
+	it("makes more Mana mean more frequent power attacks", function()
+		-- one attacker against a huge punch bag: count the actions needed to finish it
+		local function bag(): StationRules.Owned
+			return { s = "lion", stats = { speed = 1, strength = 1, stamina = 1, mana = 1, health = 4000 } }
+		end
+		local function hitter(mana: number): StationRules.Owned
+			return { s = "lion", stats = { speed = 99, strength = 40, stamina = 1, mana = mana, health = 4000 } }
+		end
+		local _, low = BattleRules.battle({ hitter(0) }, { bag() })
+		local _, mid = BattleRules.battle({ hitter(40) }, { bag() })
+		local _, high = BattleRules.battle({ hitter(90) }, { bag() })
+		expect(mid < low).toBeTruthy()
+		expect(high < mid).toBeTruthy()
+		-- the meter: gain 10 + Mana per turn, a power attack at 200
+		expect(BattleRules.POWER_COST / (BattleRules.POWER_GAIN + 90) < 3).toBeTruthy()
 	end)
 
 	it("makes Attack hit harder than the same stats in another role", function()

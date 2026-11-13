@@ -17,6 +17,12 @@ slot. The roster is an African beta pool: Hyena, Jackal, Cheetah, Lion (Attack);
 Tortoise, Rhino, Gorilla (Defense); Meerkat, Flamingo, Giraffe, Mandrill (Utility); Elephant,
 Hippo, Crocodile (Titans). This replaces the role and matchup parts of the sections below.
 
+## Health, power attacks, hilltop ranches (decision 0028)
+
+Five trainable stats: Speed, Strength, Stamina, Mana, Health. Health is HP (trained at the
+Healing Spring, the fifth station). Mana fills a meter that triggers power attacks (x 2). Each
+ranch sits on its own hill far from the hub.
+
 ## Next direction (decision 0025, not built)
 
 PvP on hold. Roles become Attack, Defense, Utility, with a **Titan** as a legendary fourth team

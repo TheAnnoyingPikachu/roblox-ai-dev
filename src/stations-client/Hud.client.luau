@@ -24,6 +24,8 @@ local RARITY_COLOUR: { [string]: Color3 } = {
 	mythic = Color3.fromRGB(255, 120, 200),
 }
 local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defense", utility = "Utility", titan = "TITAN" }
+local STAT_SHORT: { [string]: string } =
+	{ speed = "SPD", strength = "STR", stamina = "STA", mana = "MANA", health = "HP" }
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
 	full = "Your ranch is full",
@@ -79,19 +81,10 @@ local function nameOf(a: any): string
 	return if va then va.name elseif sp then sp.name else a.s
 end
 
-local function stationFor(stat: string): StationConfig.Station
-	for _, st in StationConfig.STATIONS do
-		if st.stat == stat then
-			return st
-		end
-	end
-	return StationConfig.STATIONS[1]
-end
-
 local function text(parent: Instance, value: string, size: number, y: number, colour: Color3?): TextLabel
 	local l = Ui.label(parent, value, { size = size, muted = colour == nil })
 	l.Position = UDim2.fromOffset(10, y)
-	l.Size = UDim2.new(1, -160, 0, 0)
+	l.Size = UDim2.new(1, -210, 0, 0)
 	if colour then
 		l.TextColor3 = colour
 	end
@@ -108,21 +101,33 @@ local function row(a: any, order: number)
 	c.CornerRadius = UDim.new(0, 8)
 	c.Parent = frame
 	local rarity = StationRules.rarity(a)
-	local t = StationRules.bestStat(a)
 	local function stat(s: string): number
 		return StationRules.stat(a, s :: any)
 	end
 	local role = ROLE_NAME[StationRules.role(a)] or "?"
 	text(frame, `{nameOf(a)}  -  {rarity}  -  {role}`, 20, 6, RARITY_COLOUR[rarity] or Color3.new(1, 1, 1))
-	text(frame, `SPD {stat("speed")}   STR {stat("strength")}   STA {stat("stamina")}   MANA {stat("mana")}`, 16, 36)
+	text(
+		frame,
+		`SPD {stat("speed")}   STR {stat("strength")}   STA {stat("stamina")}   MANA {stat("mana")}   HP {stat("health")}`,
+		16,
+		36
+	)
 	local station = a.at and StationConfig.station(a.at)
 	local inTeam = table.find(profile.team, a.id) ~= nil or profile.titan == a.id
-	text(frame, if inTeam then "In your team" elseif station then `Training at {station.name}` else "Resting", 16, 62)
+	text(
+		frame,
+		if inTeam
+			then "In your team   (train: tap a stat)"
+			elseif station then `Training at {station.name}`
+			else "Resting   (train: tap a stat)",
+		16,
+		62
+	)
 	local buttons = Instance.new("Frame")
 	buttons.BackgroundTransparency = 1
 	buttons.AnchorPoint = Vector2.new(1, 0.5)
 	buttons.Position = UDim2.new(1, -8, 0.5, 0)
-	buttons.Size = UDim2.fromOffset(140, 92)
+	buttons.Size = UDim2.fromOffset(190, 92)
 	buttons.Parent = frame
 	local bl = Instance.new("UIListLayout")
 	bl.Padding = UDim.new(0, 4)
@@ -135,10 +140,22 @@ local function row(a: any, order: number)
 		Ui.button(buttons, if inTeam then "Leave team" else "Join team", function()
 			send("team", a.id)
 		end)
-		local st = stationFor(t)
-		Ui.button(buttons, `Train {string.upper(st.stat)}`, function()
-			send("train", a.id, st.id)
-		end)
+		-- one small train button per stat
+		local trainRow = Instance.new("Frame")
+		trainRow.BackgroundTransparency = 1
+		trainRow.Size = UDim2.new(1, 0, 0, 44)
+		trainRow.Parent = buttons
+		local tl = Instance.new("UIListLayout")
+		tl.FillDirection = Enum.FillDirection.Horizontal
+		tl.Padding = UDim.new(0, 3)
+		tl.Parent = trainRow
+		for _, st in StationConfig.STATIONS do
+			local b = Ui.button(trainRow, STAT_SHORT[st.stat], function()
+				send("train", a.id, st.id)
+			end)
+			b.Size = UDim2.new(1 / #StationConfig.STATIONS, -3, 1, 0)
+			b.TextSize = 11
+		end
 	end
 	frame.Parent = list
 end

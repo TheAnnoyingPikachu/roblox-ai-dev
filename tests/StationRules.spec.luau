@@ -43,7 +43,7 @@ describe("StationConfig", function()
 	it("makes Titans legendary, without variants, and bigger than any basic animal", function()
 		local biggest, titans = 0, 0
 		for _, sp in StationConfig.SPECIES do
-			local total = sp.stats.speed + sp.stats.strength + sp.stats.stamina + sp.stats.mana
+			local total = sp.stats.speed + sp.stats.strength + sp.stats.stamina + sp.stats.mana + sp.stats.health
 			if sp.role ~= StationConfig.TITAN then
 				biggest = math.max(biggest, total)
 			end
@@ -53,7 +53,7 @@ describe("StationConfig", function()
 				titans += 1
 				expect(sp.rarity).toBe("legendary")
 				expect(#sp.variants).toBe(0)
-				local total = sp.stats.speed + sp.stats.strength + sp.stats.stamina + sp.stats.mana
+				local total = sp.stats.speed + sp.stats.strength + sp.stats.stamina + sp.stats.mana + sp.stats.health
 				expect(total > biggest).toBeTruthy()
 				for _, stat in StationConfig.STATS do
 					expect((sp.stats :: any)[stat] <= StationConfig.STAT_MAX).toBeTruthy()
@@ -179,6 +179,13 @@ describe("StationRules.train", function()
 		expect(StationRules.stat(c, "speed")).toBe(70 * (1 + StationConfig.POTENTIAL))
 		local m = StationRules.train(owned("cheetah", "lightning_cheetah"), "track", 1e9)
 		expect(StationRules.stat(m, "speed")).toBe(StationConfig.STAT_MAX)
+	end)
+
+	it("trains Health at the Healing Spring, and Health is never the attack stat", function()
+		local g = owned("gorilla") -- health 95 is its highest number
+		expect(StationRules.bestStat(g)).toBe("stamina")
+		local t = StationRules.train(g, "spring", StationConfig.TRAIN_SECONDS * 5)
+		expect(StationRules.stat(t, "health")).toBe(100)
 	end)
 
 	it("ignores an unknown station or no time", function()

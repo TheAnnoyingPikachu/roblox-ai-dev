@@ -1,7 +1,7 @@
 --!strict
 -- Animal Stations world (STATION-003, STATION-004): the central plaza with the hatchery fountain
--- and the egg market, four station zones on the diagonals (Speed Track NW, Strength Gym NE, Swim
--- Pool SW, Magic Library SE), three home ranches (one per player) on the north, east and west roads,
+-- and the egg market, the station zones (Healing Spring S, and on the diagonals Speed Track NW, Strength Gym NE, Swim
+-- Pool SW, Magic Library SE), three home ranches (one per player), each on its own hill far out along the north, east and west roads,
 -- paths with lamps, trees, flowers and the hill ring. Built once from parts, Roblox materials and
 -- terrain. Display only: no game rules live here. Slots, spots and nests are tagged for the server.
 
@@ -21,7 +21,10 @@ World.STATION_DIST = 130 -- plaza centre to each station centre
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.SLOTS = 8 -- work slots per station (placeholder count; the rules decide later)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
-World.RANCH_DIST = 250 -- plaza centre to each ranch centre
+World.RANCH_DIST = 400 -- plaza centre to each ranch centre: far out, so the hub has room to grow
+World.RANCH_Y = 22 -- each ranch sits on its own hilltop this high
+local HILL = 75 -- hilltop radius
+local RAMP = 90 -- length of the road ramp up each hill
 World.RANCH_HALF = 38 -- half the fenced ranch square
 World.RANCH_SPOTS = 8 -- places in the paddock where owned animals will idle
 -- One ranch at the end of each of the north, east and west roads (south is the welcome walk).
@@ -50,11 +53,12 @@ local WARM = Color3.fromRGB(255, 210, 150)
 -- Station look: stat colour, position on the diagonal, display title.
 local STAT_COLOUR: { [string]: Color3 } = {
 	speed = Color3.fromRGB(255, 160, 40),
+	health = Color3.fromRGB(70, 200, 120),
 	strength = Color3.fromRGB(235, 70, 70),
 	stamina = Color3.fromRGB(50, 150, 255),
 	mana = Color3.fromRGB(160, 90, 240),
 }
-local STATION_ANGLE: { [string]: number } = { track = -135, gym = -45, pool = 135, library = 45 }
+local STATION_ANGLE: { [string]: number } = { track = -135, gym = -45, pool = 135, library = 45, spring = 90 }
 local EGG_LOOK: { [string]: { body: Color3, spot: Color3 } } = {
 	meadow = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) },
 	wild = { body = Color3.fromRGB(150, 210, 120), spot = Color3.fromRGB(110, 80, 50) },
@@ -263,6 +267,13 @@ local function terrain()
 	local clouds = t:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	clouds.Cover, clouds.Density, clouds.Color = 0.45, 0.6, WHITE
 	clouds.Parent = t
+	-- one flat-topped hill per ranch, with a lower terrace round it
+	for _, angle in RANCH_ANGLE do
+		local c = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle))) * World.RANCH_DIST
+		local top = World.RANCH_Y - 4 -- measured in Studio: a cylinder top at 18 gives a surface at 22
+		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top - 10) / 2, 0)), top + 10, HILL, M.Grass)
+		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top / 2 - 10) / 2, 0)), top / 2 + 10, HILL + 14, M.Grass)
+	end
 	-- rolling hill ring that closes the hub in
 	local rng = Random.new(11)
 	for i = 0, 35 do
@@ -412,17 +423,21 @@ end
 
 -- Paths ----------------------------------------------------------------------------------------------
 
--- Every road as a ground segment {a, b}; scenery keeps clear of these.
+-- Every road as a segment {a, b}; scenery keeps clear of these. A ranch road runs flat, climbs
+-- a ramp to the hilltop, then runs flat to the gate.
 local function roadSegments(): { { Vector3 } }
 	local segs = {}
 	for _, angle in STATION_ANGLE do
 		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
 		table.insert(segs, { d * (World.PLAZA - 2), d * (World.STATION_DIST - 40) })
 	end
-	table.insert(segs, { Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) }) -- south lawn walk
 	for _, angle in RANCH_ANGLE do
 		local d = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle)))
-		table.insert(segs, { d * (World.PLAZA - 2), d * (World.RANCH_DIST - World.RANCH_HALF - 2) })
+		local up = Vector3.new(0, World.RANCH_Y, 0)
+		local top = World.RANCH_DIST - HILL + 3
+		table.insert(segs, { d * (World.PLAZA - 2), d * (top - RAMP) })
+		table.insert(segs, { d * (top - RAMP), d * top + up })
+		table.insert(segs, { d * top + up, d * (World.RANCH_DIST - World.RANCH_HALF - 2) + up })
 	end
 	return segs
 end
@@ -435,7 +450,18 @@ local function paths(root: Instance)
 		strip(f, a + Vector3.new(0, 0.3, 0), b + Vector3.new(0, 0.3, 0), 18, 0.6, STONE_DARK, M.Cobblestone)
 		strip(f, a + Vector3.new(0, 0.35, 0), b + Vector3.new(0, 0.35, 0), 15, 0.6, PATH, M.Cobblestone)
 		local dir = (b - a).Unit
-		local side = Vector3.new(-dir.Z, 0, dir.X)
+		local side = Vector3.new(-dir.Z, 0, dir.X).Unit
+		if a.Y ~= b.Y then
+			-- a ramp: an earth wedge under the road (thick end uphill), and no lamps on the slope
+			local flat = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
+			local mid = Vector3.new((a.X + b.X) / 2, (a.Y + b.Y) / 2, (a.Z + b.Z) / 2)
+			local w = Instance.new("WedgePart")
+			w.Anchored, w.Size = true, Vector3.new(30, math.abs(b.Y - a.Y), flat.Magnitude)
+			w.CFrame = CFrame.lookAt(mid, mid - flat)
+			w.Color, w.Material = Color3.fromRGB(150, 120, 84), M.Ground
+			w.Parent = f
+			continue
+		end
 		for i = 1, math.floor(((b - a).Magnitude - 6) / 22) do -- stop short so no lamp lands inside a gate
 			local p = a + dir * (i * 22 - 8)
 			lamp(f, p + side * 11)
@@ -866,7 +892,42 @@ local function library(root: Instance, st: StationConfig.Station, rng: Random)
 	end
 end
 
+-- Healing Spring (trains Health): a round stone pool of glowing green water with a spout rock,
+-- boulders and reeds; the work slots ring the pool.
+local function spring(root: Instance, st: StationConfig.Station, rng: Random)
+	local f, cf, col = shell(root, st)
+	local c = (cf * CFrame.new(0, 0, 6)).Position
+	disc(f, c + Vector3.new(0, 0.5, 0), 58, 1, Color3.fromRGB(196, 206, 188), M.Pavement)
+	disc(f, c + Vector3.new(0, 1.6, 0), 30, 1.2, STONE_DARK, M.Cobblestone)
+	disc(f, c + Vector3.new(0, 1.7, 0), 26, 0.6, Color3.fromRGB(150, 230, 190), M.SmoothPlastic)
+	local water = disc(f, c + Vector3.new(0, 1.9, 0), 26, 0.4, col, M.Glass)
+	water.Transparency, water.Reflectance = 0.35, 0.2
+	water.Name = "Water"
+	glow(water, col, 30, 0.8)
+	-- spout rock in the middle with a glowing orb
+	ball(f, c + Vector3.new(0, 2.5, 0), 7, STONE, M.Slate)
+	ball(f, c + Vector3.new(1.5, 5, -1), 4.5, STONE, M.Slate)
+	local orb = ball(f, c + Vector3.new(0.6, 8.2, -0.4), 2.6, col:Lerp(WHITE, 0.4), M.Neon)
+	glow(orb, col, 24, 1.2)
+	-- boulders and reeds around the rim
+	for k = 0, 7 do
+		local a = k / 8 * math.pi * 2 + 0.4
+		local p = c + Vector3.new(math.cos(a) * 16.5, 0, math.sin(a) * 16.5)
+		ball(f, p + Vector3.new(0, 1.4, 0), rng:NextNumber(2.5, 4.5), STONE_DARK, M.Slate)
+		for _ = 1, 3 do
+			local r = p + Vector3.new(rng:NextNumber(-2, 2), 1, rng:NextNumber(-2, 2))
+			pillar(f, r, rng:NextNumber(3, 5), 0.15, Color3.fromRGB(90, 160, 80))
+		end
+	end
+	local sf = folder(f, "Slots")
+	for i = 1, World.SLOTS do
+		local a = (i - 0.5) / World.SLOTS * math.pi * 2
+		slot(sf, c + Vector3.new(math.cos(a) * 23, 1, math.sin(a) * 23), col, st.id, i)
+	end
+end
+
 local BUILDERS: { [string]: (Instance, StationConfig.Station, Random) -> () } = {
+	spring = spring,
 	track = track,
 	gym = gym,
 	pool = pool,
@@ -883,7 +944,8 @@ local ROOF = Color3.fromRGB(84, 72, 76)
 -- Local frame of ranch `i`: origin at its centre, -Z (look) points back at the plaza.
 function World.ranchFrame(i: number): CFrame
 	local a = rad(RANCH_ANGLE[i])
-	return CFrame.lookAt(Vector3.new(math.cos(a), 0, math.sin(a)) * World.RANCH_DIST, Vector3.zero)
+	local up = Vector3.new(0, World.RANCH_Y, 0)
+	return CFrame.lookAt(Vector3.new(math.cos(a), 0, math.sin(a)) * World.RANCH_DIST + up, up)
 end
 
 -- Where the owner spawns: just inside the gate, facing the barn.
@@ -1088,13 +1150,13 @@ local function open(p: Vector3, margin: number): boolean
 		end
 	end
 	for i = 1, World.RANCHES do
-		local l = World.ranchFrame(i):PointToObjectSpace(flat)
-		if math.max(math.abs(l.X), math.abs(l.Z)) < World.RANCH_HALF + 8 + margin then
-			return false
+		local c = World.ranchFrame(i).Position
+		if (flat - Vector3.new(c.X, 0, c.Z)).Magnitude < HILL + 20 + margin then
+			return false -- the whole hill and its terrace
 		end
 	end
 	for _, seg in ROADS do
-		local a, b = seg[1], seg[2]
+		local a, b = seg[1] * Vector3.new(1, 0, 1), seg[2] * Vector3.new(1, 0, 1)
 		local t = math.clamp((flat - a):Dot(b - a) / (b - a):Dot(b - a), 0, 1)
 		if (flat - a:Lerp(b, t)).Magnitude < 14 + margin then
 			return false
@@ -1123,8 +1185,10 @@ local function scenery(root: Instance, rng: Random)
 	end
 	for i = 0, 89 do
 		local a = i / 90 * math.pi * 2 + rng:NextNumber(-0.03, 0.03)
-		local r = rng:NextNumber(355, 410)
-		tree(f, Vector3.new(math.cos(a) * r, 0, math.sin(a) * r), rng, rng:NextNumber(1.3, 1.9))
+		local p = Vector3.new(math.cos(a), 0, math.sin(a)) * rng:NextNumber(355, 410)
+		if open(p, 4) then
+			tree(f, p, rng, rng:NextNumber(1.3, 1.9))
+		end
 	end
 	local beds = 0
 	tries = 0
