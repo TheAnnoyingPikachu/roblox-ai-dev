@@ -1,0 +1,35 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-018",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A bigger ranch plot with the same buildings spread out, a walkable mountain pass with a road from the hub to every ranch (as well as the teleport), mountains with peaks, snow, ledges, foothills and pines that close each area in, and sign text that fits its board.",
+  "inputs": [
+    "docs/decisions/0035-animal-stations-bigger-ranch-mountain-passes.md"
+  ],
+  "dependencies": [
+    "STATION-017"
+  ],
+  "files": [
+    "src/stations/**",
+    "src/relay/Props.luau",
+    "docs/decisions/0035-animal-stations-bigger-ranch-mountain-passes.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The ranch plot is 150 studs across and nothing on it overlaps",
+    "From the hub plaza a player can walk a road to each ranch gate: no invisible wall crosses it, both sides of the pass are walled, the ground is unbroken",
+    "Every area is still closed by mountains and invisible walls except at the arena canyon and the three passes",
+    "Sign text sits inside its board, clear of the posts"
+  ],
+  "verification": "2026-11-13: lune 655/655, stylua and selene clean. Studio play (stations.rbxl, synced from source): world builds with no script errors; rays along each of the three roads from the plaza to the ranch gate hit no Barrier, rays across each pass hit a wall 31 studs either side, and rays dropped every 10 studs along the south pass found ground everywhere with no step over 2.5 studs (the 22-stud climb is a ramp). Screenshots checked: the plot from above and at ground level, the pass from both ends, the mountains, the court and area signs. Not checked: a player walking a pass end to end, an online server, phones.",
+  "output_artifacts": [
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "World-only change: no rules or saved data touched, so no new headless tests. Props.label gained an optional inset; without it the label is exactly as before, so the other games' signs are unchanged. The ranches moved (900 studs out; south, east, west)."
+}

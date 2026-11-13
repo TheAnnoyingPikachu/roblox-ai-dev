@@ -6,7 +6,7 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
 - Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
-  (roster and looks), decisions 0019 to 0034 (0029 to 0034 are the latest and replace parts of the rest).
+  (roster and looks), decisions 0019 to 0035 (0029 to 0035 are the latest and replace parts of the rest).
 - Not built: wave battles in the arena (so coins and samples cannot be earned in play), most animal models. In Studio only, a purple ball by each gate gives test funds.
 
 ## Files
@@ -35,9 +35,11 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 - `sanitize` repairs an animal's missing stats from its species; it only drops unknown species and duplicate ids. Keep it that way when stats change.
 - World and Ranch are display only. Tags for the server: `TrainPad` (`Ranch`, `Station`), `RanchSpot` (`Ranch`, `Index`), `RanchNest` (`Ranch`), `Upgrade` prompts (`Ranch`, `Track`), `Teleport` prompts (`To` = "hub" or "ranch"), `WaveStand` and `WaveSpawn` in the arena. The first four are built by Ranch.luau and replaced on every upgrade: reach them through CollectionService signals, never keep a reference.
 - Ranch upgrades (decision 0034) are data in `StationConfig.UPGRADES`; `StationProgress.value` is the only place their effect is read. A save is never cut down to fit an upgrade level.
+- Ranch.luau's layout numbers are written for a 120-stud plot and stretched by `World.RANCH_HALF / 60`; paths and the scenery outside the fence use real plot coordinates. Anything else placed on a ranch (the showcase lanes, the Studio test pad) must follow the plot's size the same way.
+- A mountain's close-up detail (foothills, pines, ledges) is built only on the side given as `toward`. Sign text uses `Props.label`'s inset so posts never cover it.
 - Ranch.luau builds from three numbers and a fixed seed, so the same levels always give the same ranch, and a higher level only adds to the scattered scenery. Keep creatures and anything else that must survive an upgrade out of the plot's `Built` folder. A ranch's `Owner` attribute is the UserId or 0.
-- Ranches are detached islands (`World.RANCH_DIST`), reached only by teleport. Terrain lands on 4-stud steps: the island cylinder tops at 18 so the surface is `World.RANCH_Y` = 22 (measured); the hub block tops at -2 for a surface at 0.
-- Every area is closed: mountains (rock domes) with an invisible `Barrier` wall in front. The hub's wall is at `World.HUB_RADIUS` and opens only into the arena canyon; keep new hub content inside it.
+- Ranches lie behind the hub's mountains (`World.RANCH_DIST`), south, east and west; the north is the wave arena. Each is reached by teleport or on foot up its pass (`pass` in World.luau: a road, a ramp of parts, mountains and walls down both sides). Terrain lands on 4-stud steps: the island cylinder tops at 18 so the surface is `World.RANCH_Y` = 22 (measured); the hub block tops at -2 for a surface at 0.
+- Every area is closed: mountains (rock domes) with an invisible `Barrier` wall in front. The hub's wall is at `World.HUB_RADIUS` and opens only into the arena canyon and the three passes; keep new hub content inside it.
 - A hatched animal's `stats` are exactly its version's numbers; what varies is `trained`, the stat levels (base 1 to `BASE_MAX` on hatch, jackpot `MAX_LEVEL`).
 - The SpawnLocation is placed in code (`World.SPAWN`, the hub fallback); Rojo ignores `Position` in the project file. Owners are moved to their ranch after spawning.
 - Animals look dangerous, not cute, and big animals are big (decision 0033). Their models are built in Blender (`tools/blender/stations`), uploaded only by the Upload Blender assets workflow, and listed in the generated `src/shared/StationAssets.luau` (never edit it by hand; a spec keeps it in step with the manifest).

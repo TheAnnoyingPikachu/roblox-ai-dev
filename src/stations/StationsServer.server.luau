@@ -282,7 +282,7 @@ if RunService:IsStudio() then
 		pad.Name = "TestFunds"
 		pad.Anchored, pad.Shape = true, Enum.PartType.Ball
 		pad.Size = Vector3.new(3, 3, 3)
-		pad.CFrame = World.ranchFrame(i) * CFrame.new(-13, 2, -55)
+		pad.CFrame = World.ranchFrame(i) * CFrame.new(-13, 2, -World.RANCH_HALF + 4)
 		pad.Color, pad.Material = Color3.fromRGB(200, 90, 255), Enum.Material.Neon
 		local prompt = Instance.new("ProximityPrompt")
 		prompt.ActionText = "Take test funds"
@@ -343,7 +343,8 @@ for i = 1, World.RANCHES do
 	-- lanes down the roaming area, far enough apart to turn; its grass is 0.5 above the ranch frame
 	for name, x in { creature_rhino = -41, creature_rhino_lava = -21 } do
 		task.spawn(function()
-			local from, to = cf * Vector3.new(x, 0.5, -42), cf * Vector3.new(x, 0.5, -7)
+			local g = World.RANCH_HALF / 60 -- Ranch.luau's layout is stretched by this
+			local from, to = cf * Vector3.new(x * g, 0.5, -42 * g), cf * Vector3.new(x * g, 0.5, -7 * g)
 			local a = CFrame.lookAt(from, to)
 			local model = Creatures.spawn(name, a, parent)
 			if model then

@@ -1,7 +1,7 @@
 --!strict
 -- Animal Stations world (framework, decision 0029): the hub, a central plaza with the hatchery
 -- fountain and the vendors' egg stalls, and three home ranches (one per player). Each ranch is a
--- large separate island far from the hub, reached only by the teleport pads. A ranch is the
+-- large separate area behind the hub's mountains, reached by teleport pad or up its own pass. A ranch is the
 -- player's base, where animals live and train: its plot is built here, and what stands on it
 -- by Ranch.luau from its owner's upgrades. Mountains ring every area to hide the void; a canyon through
 -- the hub's mountains is the wave arena. Built once from parts, Roblox materials and terrain.
@@ -25,12 +25,15 @@ World.HUB_RADIUS = 300 -- the walkable hub: an invisible wall stands here, the m
 local ARENA_HALF, ARENA_NEAR, ARENA_FAR = 60, 330, 640
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
-World.RANCH_DIST = 1200 -- hub centre to each ranch centre: detached, reached only by teleport
+World.RANCH_DIST = 900 -- hub centre to each ranch centre: behind the hub's mountains, up a pass
 World.RANCH_Y = 22 -- the island surface (a terrain cylinder topped at 18 lands there; measured)
-local ISLAND = 115 -- island radius
-World.RANCH_HALF = 60 -- half the fenced ranch square: room for the ranch to grow
--- The ranch islands lie north, east and west of the hub.
-local RANCH_ANGLE = { -90, 0, 180 }
+local ISLAND = 175 -- island radius
+World.RANCH_HALF = 75 -- half the fenced ranch square
+local RING = 134 -- where the feet of a ranch's mountains start, from its centre
+local PASS_HALF = 34 -- half the width of the pass from the hub up to each ranch
+local PASS_RAMP, PASS_TOP = 560, 725 -- along a pass from the hub: where it starts to climb, where it is up
+-- The ranches lie south, east and west of the hub; the wave arena is to the north.
+local RANCH_ANGLE = { 90, 0, 180 }
 
 local M = Enum.Material
 local WHITE = Color3.new(1, 1, 1)
@@ -51,6 +54,8 @@ local FLOWERS = {
 	Color3.fromRGB(140, 200, 255),
 }
 local WARM = Color3.fromRGB(255, 210, 150)
+local GRASS = Color3.fromRGB(112, 170, 80) -- terrain grass, and the parts that continue it
+local PINE = { Color3.fromRGB(50, 124, 82), Color3.fromRGB(62, 140, 92) }
 
 local EGG_LOOK: { [string]: { body: Color3, spot: Color3 } } = {
 	meadow = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) },
@@ -146,7 +151,7 @@ local function signboard(parent: Instance, cf: CFrame, width: number, text: stri
 	local board = part(parent, Vector3.new(width, 3.4, 0.6), cf * CFrame.new(0, h, 0), colour, M.SmoothPlastic)
 	part(parent, Vector3.new(width + 0.6, 0.4, 0.8), cf * CFrame.new(0, h + 1.9, 0), WOOD_DARK, M.Wood)
 	part(parent, Vector3.new(width + 0.6, 0.4, 0.8), cf * CFrame.new(0, h - 1.9, 0), WOOD_DARK, M.Wood)
-	label(board, text, WHITE)
+	label(board, text, WHITE, 1.4) -- clear of the posts
 end
 
 -- Lamp post with a warm glowing head.
@@ -207,6 +212,47 @@ local function egg(parent: Instance, base: Vector3, h: number, body: Color3, spo
 	return e
 end
 
+-- A sharp four-sided point standing on `base`: four corner wedges, tall corners together.
+local function pyramid(parent: Instance, base: CFrame, width: number, height: number, colour: Color3)
+	for k = 0, 3 do
+		local w = Instance.new("CornerWedgePart")
+		w.Anchored, w.Size = true, Vector3.new(width / 2, height, width / 2)
+		-- a corner wedge's tall corner is at +x, -z
+		w.CFrame = base * CFrame.Angles(0, k * math.pi / 2, 0) * CFrame.new(-width / 4, height / 2, width / 4)
+		w.Color, w.Material = colour, M.SmoothPlastic
+		w.Parent = parent
+	end
+end
+
+-- A pine: a trunk and three tiers, `s` times the usual size (about 12 studs tall at 1).
+local function pine(parent: Instance, base: Vector3, s: number, rng: Random)
+	pillar(parent, base, 3 * s, 0.55 * s, BARK, M.Wood)
+	local green = PINE[rng:NextInteger(1, #PINE)]
+	local spin = CFrame.Angles(0, rng:NextNumber(0, 1.5), 0)
+	for k = 0, 2 do
+		local tier = CFrame.new(base + Vector3.new(0, (2 + 2.5 * k) * s, 0)) * spin
+		pyramid(parent, tier, (7 - 1.7 * k) * s, 4.6 * s, green:Lerp(WHITE, 0.05 * k))
+	end
+end
+
+local function bush(parent: Instance, at: Vector3, s: number, rng: Random)
+	local green = LEAVES[rng:NextInteger(1, #LEAVES)]
+	for _ = 1, 3 do
+		local off = Vector3.new(rng:NextNumber(-1, 1), 0.8 + rng:NextNumber(0, 0.5), rng:NextNumber(-1, 1)) * s
+		ball(parent, at + off, rng:NextNumber(2, 2.8) * s, green:Lerp(WHITE, rng:NextNumber(0, 0.08)), M.SmoothPlastic)
+	end
+end
+
+-- A boulder: two tilted blocks, about `s` studs across.
+local function rock(parent: Instance, at: Vector3, s: number, rng: Random)
+	for k = 1, 2 do
+		local size = Vector3.new(rng:NextNumber(0.9, 1.4), rng:NextNumber(0.6, 0.9), rng:NextNumber(0.8, 1.2)) * s / k
+		local turn = CFrame.Angles(rng:NextNumber(-0.3, 0.3), rng:NextNumber(0, 3), rng:NextNumber(-0.3, 0.3))
+		local where = at + Vector3.new((k - 1) * s * 0.8, size.Y * 0.35, (k - 1) * s * 0.3)
+		part(parent, size, CFrame.new(where) * turn, STONE_DARK:Lerp(INK, rng:NextNumber(0.25, 0.5)), M.Slate)
+	end
+end
+
 -- Lighting and sky ---------------------------------------------------------------------------------
 
 local function effect(className: string, props: { [string]: any })
@@ -241,6 +287,7 @@ end
 local function terrain()
 	local t = Workspace.Terrain
 	t:Clear() -- a rebuild must not keep the old hills
+	t:SetMaterialColor(M.Grass, GRASS)
 	-- voxels snap up: a block whose top is at y = -2 gives a surface at y = 0 (checked in Studio)
 	t:FillBlock(CFrame.new(0, -8, 0), Vector3.new(1500, 12, 1500), M.Grass)
 	local clouds = t:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
@@ -348,7 +395,8 @@ local function plaza(root: Instance, rng: Random)
 		label(
 			board,
 			if e.unlock then `{e.name}  Lv {e.unlock}+  {e.price} coins` else `{e.name}  {e.price} coins`,
-			WHITE
+			WHITE,
+			0.4
 		)
 		local spot = part(stand, Vector3.new(0.6, 0.6, 0.6), cf * CFrame.new(0, 10.6, 1), WARM, M.Neon)
 		glow(spot, WARM, 12, 1)
@@ -376,12 +424,15 @@ end
 
 -- Paths ----------------------------------------------------------------------------------------------
 
--- Every road as a segment {a, b}; scenery keeps clear of these. The south walk comes in from the
--- hub's teleport pad and the north road leads to the wave arena. The ranches are reached by
--- teleport, not by road.
+-- Every road in the hub as a segment {a, b}; scenery keeps clear of these. The south walk comes
+-- in past the hub's teleport pad, the north road leads to the wave arena, and three roads run
+-- out to the passes that climb to the ranches (south, east, west).
 local ROADS: { { Vector3 } } = {
 	{ Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) },
 	{ Vector3.new(0, 0, -(World.PLAZA - 2)), Vector3.new(0, 0, -ARENA_NEAR) },
+	{ Vector3.new(0, 0, 90), Vector3.new(0, 0, World.HUB_RADIUS) },
+	{ Vector3.new(World.PLAZA - 2, 0, 0), Vector3.new(World.HUB_RADIUS, 0, 0) },
+	{ Vector3.new(-(World.PLAZA - 2), 0, 0), Vector3.new(-World.HUB_RADIUS, 0, 0) },
 }
 
 -- Where a player arrives in the hub: on the south walk, facing the plaza.
@@ -413,28 +464,73 @@ local function paths(root: Instance)
 		strip(f, a + Vector3.new(0, 0.35, 0), b + Vector3.new(0, 0.35, 0), 15, 0.6, PATH, M.Cobblestone)
 		local dir = (b - a).Unit
 		local side = Vector3.new(-dir.Z, 0, dir.X).Unit
-		for i = 1, math.floor(((b - a).Magnitude - 6) / 22) do -- stop short of the road's end
-			local p = a + dir * (i * 22 - 8)
+		local gap = if (b - a).Magnitude > 150 then 44 else 22 -- fewer lamps on the long roads
+		for i = 1, math.floor(((b - a).Magnitude - 6) / gap) do -- stop short of the road's end
+			local p = a + dir * (i * gap - 8)
 			lamp(f, p + side * 11)
 			lamp(f, p - side * 11)
 		end
 		disc(f, b + Vector3.new(0, 0.32, 0), 18, 0.6, PATH, M.Cobblestone) -- round off the end
 	end
-	-- the hub's teleport pad at the end of the south walk
-	teleporter(f, Vector3.new(0, 0, 90), "ranch", "Go to your ranch")
-	signboard(f, CFrame.new(0, 0, 100), 14, "To your ranch", Color3.fromRGB(60, 130, 170), 5)
+	-- the hub's teleport pad, beside the south road
+	teleporter(f, Vector3.new(19, 0, 84), "ranch", "Go to your ranch")
+	signboard(f, CFrame.new(19, 0, 92), 13, "To your ranch", Color3.fromRGB(60, 130, 170), 5)
 end
 
 -- Mountains and the wave arena ---------------------------------------------------------------------
 
 local ROCK = Color3.fromRGB(128, 124, 138)
+local SNOW = Color3.fromRGB(240, 244, 250)
+local FOOTHILL = Color3.fromRGB(100, 156, 82)
 
--- A mountain: a huge rock dome. `pos` is the centre of its foot circle on the ground and `foot`
--- that circle's radius; the ball's centre is sunk a quarter of its radius.
-local function mountain(parent: Instance, pos: Vector3, foot: number, rng: Random)
+-- A mountain: a huge rock dome with two higher peaks capped with snow. `pos` is
+-- the centre of its foot circle on the ground and `foot` that circle's radius. With `toward`
+-- (the place it is seen from) it also gets what shows up close on that side: grassy foothills
+-- with pines, and lumps and ledges of rock on the slope.
+local function mountain(parent: Instance, pos: Vector3, foot: number, rng: Random, toward: Vector3?)
 	local r = foot / math.sqrt(1 - 0.25 ^ 2)
-	local m = ball(parent, pos - Vector3.new(0, r * 0.25, 0), r * 2, ROCK:Lerp(INK, rng:NextNumber(0, 0.18)), M.Slate)
+	local stone = ROCK:Lerp(INK, rng:NextNumber(0, 0.18))
+	local core = pos - Vector3.new(0, r * 0.25, 0)
+	local m = ball(parent, core, r * 2, stone, M.Slate)
 	m.Name = "Mountain"
+	local spin = rng:NextNumber(0, math.pi * 2)
+	for k = 1, 2 do
+		local a = spin + k * 2.4
+		local pr = r * (if k == 1 then 0.62 else 0.48)
+		local lift = r * (if k == 1 then 0.5 else 0.42)
+		local centre = pos + Vector3.new(math.cos(a) * r * 0.28, lift, math.sin(a) * r * 0.28)
+		ball(parent, centre, pr * 2, stone:Lerp(WHITE, 0.06 * k), M.Slate)
+		ball(parent, centre + Vector3.new(0, pr * 0.3, 0), pr * (if k == 1 then 1.7 else 1.6), SNOW, M.Snow)
+	end
+	if toward == nil then
+		return
+	end
+	local inward = (toward - pos) * Vector3.new(1, 0, 1)
+	local base = math.atan2(inward.Z, inward.X)
+	for k = -2, 2 do -- foothills, each with a pine near its top
+		local a = base + k * 0.42 + rng:NextNumber(-0.12, 0.12)
+		local mr = foot * rng:NextNumber(0.2, 0.3)
+		local at = pos + Vector3.new(math.cos(a), 0, math.sin(a)) * (foot - mr * 0.45) - Vector3.new(0, mr * 0.5, 0)
+		ball(parent, at, mr * 2, FOOTHILL:Lerp(INK, rng:NextNumber(0, 0.12)), M.Grass)
+		local dx, dz = rng:NextNumber(-0.3, 0.3) * mr, rng:NextNumber(-0.3, 0.3) * mr
+		local top = math.sqrt(mr * mr - dx * dx - dz * dz)
+		pine(parent, at + Vector3.new(dx, top - 0.5, dz), mr / 20, rng)
+	end
+	local function onSlope(a: number, e: number): Vector3 -- a direction out of the dome, e radians up from level
+		return Vector3.new(math.cos(a) * math.cos(e), math.sin(e), math.sin(a) * math.cos(e))
+	end
+	for _ = 1, 3 do -- shoulders: lumps of rock that break up the round slope
+		local out = onSlope(base + rng:NextNumber(-1.2, 1.2), rng:NextNumber(0.45, 0.85))
+		local sr = r * rng:NextNumber(0.3, 0.42)
+		ball(parent, core + out * r * 0.78, sr * 2, stone:Lerp(INK, rng:NextNumber(0, 0.12)), M.Slate)
+	end
+	for _ = 1, 7 do -- ledges: flat shelves of darker rock lying along the slope
+		local out = onSlope(base + rng:NextNumber(-1.1, 1.1), math.asin(0.25) + rng:NextNumber(0.08, 0.55))
+		local size = r * rng:NextNumber(0.07, 0.13)
+		local lie = CFrame.lookAt(core + out * (r - size * 0.2), core + out * (r + 1))
+			* CFrame.Angles(math.pi / 2 + rng:NextNumber(-0.25, 0.25), rng:NextNumber(0, 3), 0)
+		part(parent, Vector3.new(size * 2.4, size * 0.5, size * 1.5), lie, stone:Lerp(INK, 0.3), M.Slate)
+	end
 end
 
 -- An invisible wall from a to b (ground points), so nobody climbs the mountains to the void.
@@ -446,55 +542,156 @@ local function barrier(parent: Instance, a: Vector3, b: Vector3)
 	w.Transparency, w.CastShadow, w.Name = 1, false, "Barrier"
 end
 
--- A closed ring of mountains round `centre` whose feet start `inner` studs out, with an
--- invisible wall just inside them. Used for the ranch islands.
-local function mountainRing(parent: Instance, centre: Vector3, inner: number, rng: Random)
+-- True when a mountain `dist` out at angle `a` (foot radius `foot`) would stand in a pass that
+-- leaves along angle `way`.
+local function inPass(a: number, dist: number, foot: number, way: number): boolean
+	return math.cos(a - way) > 0 and math.abs(math.sin(a - way)) * dist < PASS_HALF + foot
+end
+
+-- A ring of mountains round `centre` whose feet start `inner` studs out, a taller row behind
+-- them, and an invisible wall in front. Both rows and the wall leave the pass open: it leaves
+-- along `way` (a unit vector). Used for the ranches.
+local function mountainRing(parent: Instance, centre: Vector3, inner: number, rng: Random, way: Vector3)
+	local facing = math.atan2(way.Z, way.X)
 	for k = 0, 11 do
-		local a = k / 12 * math.pi * 2
+		local a = facing + k / 12 * math.pi * 2
 		local foot = rng:NextNumber(105, 140)
-		mountain(parent, centre + Vector3.new(math.cos(a), 0, math.sin(a)) * (inner + foot), foot, rng)
+		if not inPass(a, inner + foot, foot, facing) then
+			mountain(parent, centre + Vector3.new(math.cos(a), 0, math.sin(a)) * (inner + foot), foot, rng, centre)
+		end
+		local behind, tall = a + math.pi / 12, rng:NextNumber(150, 190)
+		if not inPass(behind, inner + 90 + tall, tall, facing) then
+			local at = centre + Vector3.new(math.cos(behind), 0, math.sin(behind)) * (inner + 90 + tall)
+			mountain(parent, at, tall, rng, nil)
+		end
+	end
+	local wall = inner - 16
+	local gap = math.asin((PASS_HALF - 2) / wall)
+	local function rim(k: number): Vector3
+		local a = facing + gap + k * (math.pi * 2 - 2 * gap) / 24
+		return centre + Vector3.new(math.cos(a), 0, math.sin(a)) * wall
 	end
 	for k = 0, 23 do
-		local a0, a1 = k / 24 * math.pi * 2, (k + 1) / 24 * math.pi * 2
-		barrier(
-			parent,
-			centre + Vector3.new(math.cos(a0), 0, math.sin(a0)) * (inner - 2),
-			centre + Vector3.new(math.cos(a1), 0, math.sin(a1)) * (inner - 2)
-		)
+		barrier(parent, rim(k), rim(k + 1))
+	end
+end
+
+-- The pass from the hub up to ranch `i`: a road through its own canyon, level from the hub's
+-- wall, then climbing to the ranch. Mountains and invisible walls line both sides, so a ranch
+-- can be walked (and one day ridden) to as well as teleported to.
+local function pass(root: Instance, i: number, rng: Random)
+	local f = folder(root, `Pass{i}`)
+	local a = rad(RANCH_ANGLE[i])
+	local dir, side = Vector3.new(math.cos(a), 0, math.sin(a)), Vector3.new(-math.sin(a), 0, math.cos(a))
+	local gate = World.RANCH_DIST - World.RANCH_HALF
+	local function height(s: number): number
+		return World.RANCH_Y * math.clamp((s - PASS_RAMP) / (PASS_TOP - PASS_RAMP), 0, 1)
+	end
+	-- a point `s` studs along the pass from the hub's middle, `across` to one side, `up` above the ground
+	local function at(s: number, across: number, up: number?): Vector3
+		return dir * s + side * across + Vector3.new(0, height(s) + (up or 0), 0)
+	end
+	-- the ground of the climb and of the top, wide enough to run under the mountains' feet
+	strip(f, at(PASS_RAMP, 0, 0.1), at(PASS_TOP, 0, 0.1), 150, 4, GRASS, M.Grass)
+	strip(f, at(PASS_TOP - 1, 0, 0.1), at(PASS_TOP + 70, 0, 0.1), 150, 4, GRASS, M.Grass)
+	-- the road, as far as the ranch's own path
+	for _, seg in { { World.HUB_RADIUS, PASS_RAMP }, { PASS_RAMP, PASS_TOP }, { PASS_TOP, gate - 22 } } do
+		strip(f, at(seg[1], 0, 0.4), at(seg[2], 0, 0.4), 18, 0.6, STONE_DARK, M.Cobblestone)
+		strip(f, at(seg[1], 0, 0.45), at(seg[2], 0, 0.45), 15, 0.6, PATH, M.Cobblestone)
+	end
+	signboard(
+		f,
+		CFrame.lookAt(at(World.HUB_RADIUS + 8, 0), at(0, 0)),
+		22,
+		"Ranch Pass",
+		Color3.fromRGB(110, 150, 90),
+		10
+	)
+	-- lamps down one side then the other, and pines, bushes and boulders along the edges
+	for k = 0, math.floor((gate - 40 - World.HUB_RADIUS) / 50) do
+		lamp(f, at(World.HUB_RADIUS + 30 + k * 50, if k % 2 == 0 then 12 else -12, 0.1))
+	end
+	for s = World.HUB_RADIUS + 10, gate - 30, 13 do
+		local where =
+			at(s + rng:NextNumber(-4, 4), rng:NextNumber(15, 30) * (if rng:NextNumber() < 0.5 then -1 else 1), 0.1)
+		local kind = rng:NextInteger(1, 3)
+		if kind == 1 then
+			pine(f, where, rng:NextNumber(0.9, 1.5), rng)
+		elseif kind == 2 then
+			bush(f, where, rng:NextNumber(0.9, 1.4), rng)
+		else
+			rock(f, where, rng:NextNumber(2, 4.5), rng)
+		end
+	end
+	-- mountains down both sides: big ones along the canyon, a smaller pair where it meets the ranch
+	for k, s in { 430, 540, 650, 735 } do
+		for _, sx in { -1, 1 } do
+			local foot = if k == 4 then rng:NextNumber(86, 92) else rng:NextNumber(140, 165)
+			mountain(f, at(s, sx * (PASS_HALF + foot * 0.94)), foot, rng, at(s, 0))
+		end
+	end
+	local w = PASS_HALF - 2
+	local from = math.sqrt(World.HUB_RADIUS ^ 2 - w ^ 2)
+	local to = World.RANCH_DIST - math.sqrt((RING - 16) ^ 2 - w ^ 2)
+	for _, sx in { -1, 1 } do
+		barrier(f, dir * from + side * sx * w, dir * to + side * sx * w)
 	end
 end
 
 -- The hub's mountains: a ring that is open to the north, where two rows of mountains make a
--- canyon closed at its far end. The canyon is the wave arena: the player's team stands at the
--- near end ("WaveStand") and the endless waves will come from the far end ("WaveSpawn").
+-- canyon closed at its far end, and to the three passes. The canyon is the wave arena: the
+-- player's team stands at the near end ("WaveStand") and the endless waves will come from the far
+-- end ("WaveSpawn").
 local function mountains(root: Instance, rng: Random)
 	local f = folder(root, "Mountains")
-	local GAP, N = 32, 22 -- degrees left open either side of north; mountains in the ring
+	local GAP, N = 32, 26 -- degrees left open either side of north; mountains in the ring
 	for i = 0, N - 1 do
 		local a = rad(-90 + GAP + i * (360 - 2 * GAP) / (N - 1))
 		local foot = rng:NextNumber(165, 220)
-		mountain(f, Vector3.new(math.cos(a), 0, math.sin(a)) * (World.HUB_RADIUS + 60 + foot), foot, rng)
+		local dist = World.HUB_RADIUS + 60 + foot
+		local blocked = false
+		for _, way in RANCH_ANGLE do
+			blocked = blocked or inPass(a, dist, foot, rad(way))
+		end
+		if not blocked then
+			mountain(f, Vector3.new(math.cos(a), 0, math.sin(a)) * dist, foot, rng, Vector3.zero)
+		end
 	end
 	for k = 0, 2 do
 		for _, side in { -1, 1 } do
-			mountain(f, Vector3.new(side * (ARENA_HALF + 158), 0, -(ARENA_NEAR + 60 + k * 150)), 150, rng)
+			local z = -(ARENA_NEAR + 60 + k * 150)
+			mountain(f, Vector3.new(side * (ARENA_HALF + 158), 0, z), 150, rng, Vector3.new(0, 0, z))
 		end
 	end
-	mountain(f, Vector3.new(0, 0, -(ARENA_FAR + 260)), 230, rng)
-	-- invisible wall: round the hub, then up both sides of the canyon and across its end
+	mountain(f, Vector3.new(0, 0, -(ARENA_FAR + 260)), 230, rng, Vector3.new(0, 0, -ARENA_FAR))
+	-- invisible wall round the hub, open at the canyon's mouth and at each pass; then up both
+	-- sides of the canyon and across its end
 	local half = ARENA_HALF + 10
 	local mouth = math.deg(math.asin(half / World.HUB_RADIUS)) -- half-angle of the canyon mouth
-	local STEPS = 36
-	local function rim(k: number): Vector3
-		local a = rad(-90 + mouth + k * (360 - 2 * mouth) / STEPS)
-		return Vector3.new(math.cos(a), 0, math.sin(a)) * World.HUB_RADIUS
+	local openings = { { -90, mouth } }
+	for _, way in RANCH_ANGLE do
+		table.insert(openings, { way, math.deg(math.asin((PASS_HALF - 2) / World.HUB_RADIUS)) })
 	end
-	for k = 0, STEPS - 1 do
-		barrier(f, rim(k), rim(k + 1))
+	table.sort(openings, function(x, y)
+		return x[1] < y[1]
+	end)
+	local function rim(degrees: number): Vector3
+		return Vector3.new(math.cos(rad(degrees)), 0, math.sin(rad(degrees))) * World.HUB_RADIUS
+	end
+	for k, o in openings do
+		local nxt = openings[k % #openings + 1]
+		local from, to = o[1] + o[2], nxt[1] - nxt[2]
+		if to < from then
+			to += 360
+		end
+		local steps = math.ceil((to - from) / 9)
+		for step = 0, steps - 1 do
+			barrier(f, rim(from + (to - from) * step / steps), rim(from + (to - from) * (step + 1) / steps))
+		end
 	end
 	local far = -(ARENA_FAR + 12)
-	barrier(f, rim(0), Vector3.new(half, 0, far))
-	barrier(f, rim(STEPS), Vector3.new(-half, 0, far))
+	barrier(f, rim(-90 + mouth), Vector3.new(half, 0, far))
+	barrier(f, rim(-90 - mouth), Vector3.new(-half, 0, far))
 	barrier(f, Vector3.new(-half, 0, far), Vector3.new(half, 0, far))
 
 	local arena = folder(root, "WaveArena")
@@ -655,10 +852,10 @@ local function ranch(root: Instance, i: number, rng: Random)
 	part(f, Vector3.new(18, 1, 1.4), at(0, 12.6, -H), WOOD_DARK, M.Wood)
 	local sign = part(f, Vector3.new(14, 3.2, 0.6), at(0, 10.2, -H), WOOD, M.WoodPlanks)
 	sign.Name = "OwnerSign"
-	label(sign, "Free Ranch", WHITE)
+	label(sign, "Free Ranch", WHITE, 0.6)
 	-- teleport pad to the hub, just inside the gate
 	teleporter(f, at(16, 0, -H + 6).Position, "hub", "Go to the hub")
-	signboard(f, at(27, 0, -H + 3), 10, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
+	signboard(f, at(27, 0, -H + 3), 11, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
 	-- mailbox by the gate, flowers along the front fence, trees outside the corners
 	local box = at(12.5, 0, -H - 3.5)
 	pillar(f, box.Position, 3.4, 0.25, WOOD_DARK, M.Wood)
@@ -678,7 +875,7 @@ local function ranch(root: Instance, i: number, rng: Random)
 		tree(f, at(p.X, 0, p.Z).Position, rng, rng:NextNumber(1.1, 1.5))
 	end
 	-- mountains all round the island hide the void
-	mountainRing(f, cf.Position, 100, rng)
+	mountainRing(f, cf.Position, RING, rng, cf.LookVector)
 end
 
 local function ranches(root: Instance, rng: Random)
@@ -766,7 +963,7 @@ local function scenery(root: Instance, rng: Random)
 		end
 	end
 	-- south walk: welcome sign over the way into the plaza (clear of the walk's lamps)
-	signboard(f, CFrame.new(0, 0, 70), 22, "Welcome to Animal Stations!", Color3.fromRGB(90, 160, 80), 7)
+	signboard(f, CFrame.new(0, 0, 70), 26, "Welcome to Animal Stations!", Color3.fromRGB(90, 160, 80), 7)
 end
 
 -- Build --------------------------------------------------------------------------------------------
@@ -790,6 +987,9 @@ function World.build(): Folder
 	paths(root)
 	mountains(root, rng)
 	ranches(root, rng)
+	for i = 1, World.RANCHES do
+		pass(root, i, rng)
+	end
 	scenery(root, rng)
 	root.Parent = Workspace
 	-- Rojo does not apply Position on the project's SpawnLocation, so place it here: south lawn,
@@ -815,6 +1015,9 @@ World.kit = {
 	fence = fence,
 	barn = barn,
 	silo = silo,
+	pine = pine,
+	bush = bush,
+	rock = rock,
 }
 
 return World

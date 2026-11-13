@@ -40,9 +40,10 @@ vendors.
   tenth. Clearing a wave pays coins.
 - **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
   waves, daily, weekly and monthly login tracks and gear levels when they exist.
-- **Places:** the hub (plaza, egg stalls) and one ranch island per player, joined only by
-  teleport pads. Mountains ring every area. A canyon through the hub's mountains is the wave
-  arena. A server holds 3 players.
+- **Places:** the hub (plaza, egg stalls) and one ranch per player behind the hub's mountains,
+  south, east and west (decision 0035). A ranch is reached by teleport pad or on foot up its own
+  mountain pass, ready for riding animals later. Mountains ring every area. A canyon through the
+  hub's mountains to the north is the wave arena. A server holds 3 players.
 
 ## Words
 

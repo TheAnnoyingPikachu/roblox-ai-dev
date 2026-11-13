@@ -9,7 +9,9 @@
 -- Each upgrade has a pad showing its next level and price, with a prompt tagged "Upgrade"
 -- (attributes Ranch, Track). Also tagged for the server: TrainPad (Ranch, Station), RanchSpot
 -- (Ranch, Index), RanchNest (Ranch). Display only: no game rules live here.
--- Plot coordinates: x across, z from the gate (-60) to the back fence (60), y up from the lawn.
+-- Layout coordinates: x across, z from the gate (-60) to the back fence (60), y up from the
+-- lawn. They are stretched by G onto the real plot (World.RANCH_HALF), so a bigger plot spreads
+-- everything out while buildings keep their size.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -22,8 +24,12 @@ local World = require(script.Parent:WaitForChild("World"))
 local part, pillar = Props.part, Props.pillar
 local kit = World.kit
 local disc, ball, bar, glow = kit.disc, kit.ball, kit.bar, kit.glow
+local pine, bush, rock = kit.pine, kit.bush, kit.rock
 
 local Ranch = {}
+
+local H = World.RANCH_HALF
+local G = H / 60 -- real studs per layout stud
 
 local M = Enum.Material
 local V = Vector3.new
@@ -50,8 +56,6 @@ local HEDGE = Color3.fromRGB(70, 140, 72)
 local BLADE = Color3.fromRGB(86, 150, 62)
 local SHUTTER = Color3.fromRGB(66, 122, 112)
 local BANNER = Color3.fromRGB(226, 78, 64)
-local LEAF = { Color3.fromRGB(96, 180, 80), Color3.fromRGB(120, 196, 90), Color3.fromRGB(80, 160, 90) }
-local PINE = { Color3.fromRGB(50, 124, 82), Color3.fromRGB(62, 140, 92) }
 local BLOOM = { Color3.fromRGB(255, 140, 185), Color3.fromRGB(255, 225, 100), Color3.fromRGB(185, 150, 255) }
 local MEADOW = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) }
 local STAT_COLOUR: { [string]: Color3 } = {
@@ -76,7 +80,7 @@ local HARD = {
 	{ -9, 9, 17, 34 }, -- the plaza
 	{ -58, 58, 7.5, 14.5 }, -- the cross path
 	{ -57, 57, 12, 30.5 }, -- the courts
-	{ -26, 26, 38, 60 }, -- the house
+	{ -26, 26, 35, 60 }, -- the house
 	{ -49.5, -28.5, 35.5, 56.5 }, -- the pond
 	{ 28.5, 50, 39, 54 }, -- the pavilion
 	{ 27, 58, -58, 0 }, -- the barn and its silos
@@ -143,18 +147,6 @@ local function fade(from: number, to: number): NumberSequence
 	return NumberSequence.new({ NumberSequenceKeypoint.new(0, from), NumberSequenceKeypoint.new(1, to) })
 end
 
--- A sharp four-sided point standing on `base`: four corner wedges, tall corners together.
-local function pyramid(f: Instance, base: CFrame, width: number, height: number, colour: Color3, mat: Enum.Material)
-	for k = 0, 3 do
-		local w = Instance.new("CornerWedgePart")
-		w.Anchored, w.Size = true, V(width / 2, height, width / 2)
-		-- a corner wedge's tall corner is at +x, -z
-		w.CFrame = base * CFrame.Angles(0, k * math.pi / 2, 0) * CFrame.new(-width / 4, height / 2, width / 4)
-		w.Color, w.Material = colour, mat
-		w.Parent = f
-	end
-end
-
 -- A gabled roof over a w x d box; `top` is the middle of the box's top. The ridge runs along x
 -- and the eaves hang over the front and back. `gable` fills the two ends.
 local function roof(f: Instance, top: CFrame, w: number, d: number, rise: number, gable: Color3?)
@@ -178,33 +170,6 @@ local function roof(f: Instance, top: CFrame, w: number, d: number, rise: number
 end
 
 -- Small things ---------------------------------------------------------------------------------------
-
-local function pine(f: Instance, base: Vector3, s: number, rng: Random)
-	pillar(f, base, 3 * s, 0.55 * s, BARK, M.Wood)
-	local green = PINE[rng:NextInteger(1, #PINE)]
-	local spin = CFrame.Angles(0, rng:NextNumber(0, 1.5), 0)
-	for k = 0, 2 do
-		local tier = CFrame.new(base + V(0, (2 + 2.5 * k) * s, 0)) * spin
-		pyramid(f, tier, (7 - 1.7 * k) * s, 4.6 * s, green:Lerp(WHITE, 0.05 * k), M.SmoothPlastic)
-	end
-end
-
-local function bush(f: Instance, at: Vector3, s: number, rng: Random)
-	local green = LEAF[rng:NextInteger(1, #LEAF)]
-	for _ = 1, 3 do
-		local off = V(rng:NextNumber(-1, 1), 0.8 + rng:NextNumber(0, 0.5), rng:NextNumber(-1, 1)) * s
-		ball(f, at + off, rng:NextNumber(2, 2.8) * s, green:Lerp(WHITE, rng:NextNumber(0, 0.08)), M.SmoothPlastic)
-	end
-end
-
-local function rock(f: Instance, at: Vector3, s: number, rng: Random)
-	for k = 1, 2 do
-		local size = V(rng:NextNumber(0.9, 1.4), rng:NextNumber(0.6, 0.9), rng:NextNumber(0.8, 1.2)) * s / k
-		local turn = CFrame.Angles(rng:NextNumber(-0.3, 0.3), rng:NextNumber(0, 3), rng:NextNumber(-0.3, 0.3))
-		local where = at + V((k - 1) * s * 0.8, size.Y * 0.35, (k - 1) * s * 0.3)
-		part(f, size, CFrame.new(where) * turn, STONE:Lerp(INK, rng:NextNumber(0, 0.3)), M.Slate)
-	end
-end
 
 local function tuft(f: Instance, at: Vector3, rng: Random)
 	for _ = 1, 3 do
@@ -266,17 +231,16 @@ local function pond(f: Instance, centre: Vector3, d: number, rng: Random)
 	end
 end
 
--- A paved strip: grout with stone slabs on it, each a little different.
-local function paved(f: Instance, at: (number, number, number) -> CFrame, r: { number }, rng: Random)
-	local x0, x1, z0, z1 = r[1], r[2], r[3], r[4]
-	local w, l = x1 - x0, z1 - z0
-	part(f, V(w, 0.4, l), at((x0 + x1) / 2, 0.25, (z0 + z1) / 2), STONE, M.Slate)
+-- A paved strip `w` wide and `l` long round `where` (its middle on the ground): grout with stone
+-- slabs on it, each a little different.
+local function paved(f: Instance, where: CFrame, w: number, l: number, rng: Random)
+	part(f, V(w, 0.4, l), where * CFrame.new(0, 0.25, 0), STONE, M.Slate)
 	local nx, nz = math.max(1, math.round(w / 4.4)), math.max(1, math.round(l / 4.4))
 	local sx, sz = w / nx, l / nz
 	for ix = 1, nx do
 		for iz = 1, nz do
-			local where = at(x0 + (ix - 0.5) * sx, 0.42, z0 + (iz - 0.5) * sz)
-			part(f, V(sx - 0.3, 0.3, sz - 0.3), where, PATH:Lerp(STONE, rng:NextNumber(0, 0.4)), M.Slate)
+			local slab = where * CFrame.new(-w / 2 + (ix - 0.5) * sx, 0.42, -l / 2 + (iz - 0.5) * sz)
+			part(f, V(sx - 0.3, 0.3, sz - 0.3), slab, PATH:Lerp(STONE, rng:NextNumber(0, 0.4)), M.Slate)
 		end
 	end
 end
@@ -463,7 +427,8 @@ end
 -- and a gold star at 5. A dirt track runs from the path to its doors.
 local function barn(f: Instance, at: (number, number, number) -> CFrame, level: number)
 	local where = at(38, 0, -28) * CFrame.Angles(0, rad(90), 0) -- its doors face the path
-	part(f, V(25, 0.5, 6), at(17, 0.27, -28), DIRT, M.Ground)
+	local door = 38 * G - 9.4 -- how far the track runs from the path, in real studs
+	part(f, V(door - 4.5, 0.5, 6), at((door + 4.5) / 2 / G, 0.27, -28), DIRT, M.Ground)
 	if level == 0 then
 		for _, sx in { -5, 5 } do
 			part(f, V(0.8, 8, 0.8), where * CFrame.new(sx, 4, 3.5), WOOD_DARK, M.Wood)
@@ -496,23 +461,18 @@ local function barn(f: Instance, at: (number, number, number) -> CFrame, level: 
 			glow(star, GOLD, 18, 1.2)
 		end
 	end
+	local stack = at(31, 0, -47.3) -- hay by the front fence
 	for k, o in
-		{
-			V(25, 1.5, -47),
-			V(29.5, 1.5, -47.6),
-			V(27.2, 4.5, -47.2),
-			V(34, 1.5, -47.4),
-			V(38.4, 1.5, -47),
-			V(36.2, 4.5, -47.3),
-		}
+		{ V(-6.2, 1.5, 0.3), V(-1.7, 1.5, -0.3), V(-4, 4.5, 0.1), V(2.8, 1.5, -0.1), V(7.2, 1.5, 0.3), V(5, 4.5, 0) }
 	do
 		if k <= level + 1 then
-			hay(f, at(o.X, o.Y, o.Z) * CFrame.Angles(0, rad(k * 5), 0))
+			hay(f, stack * CFrame.new(o) * CFrame.Angles(0, rad(k * 5), 0))
 		end
 	end
-	for k, o in { V(27, 0, -11), V(29.6, 0, -10.2), V(28, 0, -8), V(31.8, 0, -10.8) } do
+	local store = at(29, 0, -10) -- barrels behind the barn
+	for k, o in { V(-2, 0, -1), V(0.6, 0, -0.2), V(-1, 0, 2), V(2.8, 0, -0.8) } do
 		if k <= level then
-			barrel(f, at(o.X, 0, o.Z).Position)
+			barrel(f, (store * CFrame.new(o)).Position)
 		end
 	end
 	if level >= 3 then -- a hay cart
@@ -677,7 +637,7 @@ local function court(f: Instance, i: number, c: CFrame, st: StationConfig.Statio
 				part(f, V(0.25, 0.12, size - 2.6), c * CFrame.new(s * (size / 2 - 1.4), 0.76, 0), WHITE, M.Neon)
 			end
 		end
-		kit.signboard(f, c * CFrame.new(0, 0, size / 2 + 1.6), 11, st.name, colour:Lerp(INK, 0.25), 6 + level * 0.5)
+		kit.signboard(f, c * CFrame.new(0, 0, size / 2 + 1.6), 13, st.name, colour:Lerp(INK, 0.25), 6 + level * 0.5)
 	end
 	pad.Name = st.id
 	pad:SetAttribute("Ranch", i)
@@ -780,7 +740,7 @@ local function pavilion(f: Instance, b: CFrame)
 		local light = part(f, V(0.8, 1, 0.8), b * CFrame.new(x, 6.4, -4.9), WARM, M.Neon)
 		glow(light, WARM, 12, 1)
 	end
-	kit.signboard(f, b * CFrame.new(0, 0, -6.2), 10, "Rest Area", Color3.fromRGB(150, 110, 80), 5)
+	kit.signboard(f, b * CFrame.new(0, 0, -6.2), 11, "Rest Area", Color3.fromRGB(150, 110, 80), 5)
 end
 
 -- A pad that sells the next level of `track`: green while there is one, gold at the top.
@@ -828,52 +788,60 @@ function Ranch.render(i: number, levels: { [string]: number })
 	local rng = Random.new(40 + i)
 	local houseLevel, barnLevel, grounds = levels.house or 0, levels.barn or 0, levels.grounds or 0
 	local total = houseLevel + barnLevel + grounds
+	-- layout coordinates to the world: a CFrame, a point on the ground, a CFrame turned round
 	local function at(x: number, y: number, z: number): CFrame
-		return cf * CFrame.new(x, y, z)
+		return cf * CFrame.new(x * G, y, z * G)
 	end
 	local function spot(x: number, z: number): Vector3
-		return (cf * CFrame.new(x, 0, z)).Position
+		return (cf * CFrame.new(x * G, 0, z * G)).Position
 	end
 	local function turned(x: number, z: number, degrees: number): CFrame
-		return cf * CFrame.new(x, 0, z) * CFrame.Angles(0, rad(degrees), 0)
+		return cf * CFrame.new(x * G, 0, z * G) * CFrame.Angles(0, rad(degrees), 0)
 	end
 
 	-- round the outside of the fence, the same at every level: pines, bushes and rocks, clear of
-	-- the way in and of World's own trees
+	-- the way in and of World's own trees (real plot coordinates)
 	local wild = Random.new(900 + i)
-	for k = 1, 46 do
-		local a, r = wild:NextNumber(0, math.pi * 2), wild:NextNumber(67, 90)
+	for k = 1, 60 do
+		local a, r = wild:NextNumber(0, math.pi * 2), wild:NextNumber(H + 7, H + 34)
 		local x, z = math.cos(a) * r, math.sin(a) * r
-		local near = math.abs(x) < 36 and z < 0 -- the gate, the mailbox and the flower beds
-		if math.max(math.abs(x), math.abs(z)) > 65 and not near and math.abs(math.abs(x) - 73) > 7 then
+		local near = math.abs(x) < 40 and z < 0 -- the gate, the mailbox and the flower beds
+		if math.max(math.abs(x), math.abs(z)) > H + 5 and not near and math.abs(math.abs(x) - (H + 13)) > 7 then
+			local where = (cf * CFrame.new(x, 0, z)).Position
 			if k % 3 == 0 then
-				pine(f, spot(x, z), wild:NextNumber(1, 1.5), wild)
+				pine(f, where, wild:NextNumber(1, 1.5), wild)
 			elseif k % 3 == 1 then
-				bush(f, spot(x, z), wild:NextNumber(0.9, 1.4), wild)
+				bush(f, where, wild:NextNumber(0.9, 1.4), wild)
 			else
-				rock(f, spot(x, z), wild:NextNumber(2, 4), wild)
+				rock(f, where, wild:NextNumber(2, 4), wild)
 			end
 		end
 	end
 
 	-- paths: from outside the gate to a plaza before the house, and across in front of the
-	-- courts. Dirt at first, then paved.
+	-- courts. Dirt at first, then paved. Real plot coordinates, so a path keeps its width.
+	local plaza, cross = 25.5 * G, 11 * G
+	local function way(x0: number, x1: number, z0: number, z1: number)
+		local where = cf * CFrame.new((x0 + x1) / 2, 0, (z0 + z1) / 2)
+		if total >= PAVED then
+			paved(f, where, x1 - x0, z1 - z0, rng)
+		else
+			part(f, V(x1 - x0, 0.5, z1 - z0), where * CFrame.new(0, 0.3, 0), DIRT, M.Ground)
+		end
+	end
+	way(-4.5, 4.5, -H - 22, plaza - 7.4)
+	way(-H + 4, -4.5, cross - 2.5, cross + 2.5)
+	way(4.5, H - 4, cross - 2.5, cross + 2.5)
 	if total >= PAVED then
-		paved(f, at, { -4.5, 4.5, -82, -60 }, rng)
-		paved(f, at, { -4.5, 4.5, -60, 18 }, rng)
-		paved(f, at, { -56, -4.5, 8.5, 13.5 }, rng)
-		paved(f, at, { 4.5, 56, 8.5, 13.5 }, rng)
 		disc(f, spot(0, 25.5) + V(0, 0.45, 0), 15.6, 0.4, STONE, M.Slate)
 		disc(f, spot(0, 25.5) + V(0, 0.57, 0), 14.4, 0.3, PATH, M.Cobblestone)
 		disc(f, spot(0, 25.5) + V(0, 0.6, 0), 9, 0.1, PATH:Lerp(STONE, 0.4), M.Slate)
 	else
-		part(f, V(9, 0.5, 100), at(0, 0.3, -32), DIRT, M.Ground)
-		part(f, V(104, 0.5, 4), at(0, 0.28, 11), DIRT, M.Ground)
 		disc(f, spot(0, 25.5) + V(0, 0.55, 0), 15, 0.5, DIRT, M.Ground)
 	end
 
 	-- the roaming area, left of the path: a fenced paddock with a way in from the path
-	part(f, V(48, 0.5, 59), at(-32, 0.25, -24.5), PADDOCK, M.LeafyGrass)
+	part(f, V(48 * G, 0.5, 59 * G), at(-32, 0.25, -24.5), PADDOCK, M.LeafyGrass)
 	for _, run in
 		{
 			{ V(-56, 0, -54), V(-8, 0, -54) },
@@ -884,13 +852,14 @@ function Ranch.render(i: number, levels: { [string]: number })
 			{ V(16, 0, 6), V(58, 0, 6) }, -- and one along the back of the barn yard
 		}
 	do
-		kit.fence(f, cf, run[1], run[2])
+		kit.fence(f, cf, run[1] * G, run[2] * G)
 	end
-	kit.signboard(f, turned(-8, -25, 90), 10, "Roaming Area", Color3.fromRGB(70, 150, 80), 7.5)
+	kit.signboard(f, turned(-8, -25, 90), 12.4, "Roaming Area", Color3.fromRGB(70, 150, 80), 7.5)
 	part(f, V(3.4, 2.2, 9), at(-53, 1.1, -3), WOOD, M.Wood) -- water trough
 	part(f, V(2.6, 0.3, 8.2), at(-53, 2.1, -3), WATER, M.Glass)
-	for k, o in { V(-52.5, 1.5, -50), V(-48.4, 1.5, -50.6), V(-50.6, 4.5, -50.2) } do
-		hay(f, at(o.X, o.Y, o.Z) * CFrame.Angles(0, rad(k * 7), 0))
+	local stack = at(-50.5, 0, -50.2)
+	for k, o in { V(-2, 1.5, 0.2), V(2.1, 1.5, -0.4), V(0, 4.5, 0) } do
+		hay(f, stack * CFrame.new(o) * CFrame.Angles(0, rad(k * 7), 0))
 	end
 	local shelter = at(-52, 0, -27) -- an open shelter against the side fence
 	for _, z in { -4, 4 } do
@@ -944,21 +913,21 @@ function Ranch.render(i: number, levels: { [string]: number })
 	upgradePad(f, i, spot(PAD.grounds.X, PAD.grounds.Z), "grounds", grounds)
 
 	-- growing things: more with every level, and what is there stays where it is
-	for _, p in scatter(i, 34 + 6 * total, HARD, 0.8) do
-		tuft(f, cf * p, rng)
+	for _, p in scatter(i, 44 + 8 * total, HARD, 0.8) do
+		tuft(f, spot(p.X, p.Z), rng)
 	end
-	for k, p in scatter(100 + i, 2 + total // 2, TAKEN, 3) do
+	for k, p in scatter(100 + i, 3 + total // 2, TAKEN, 3) do
 		if k % 2 == 0 then
-			pine(f, cf * p, rng:NextNumber(0.9, 1.25), rng)
+			pine(f, spot(p.X, p.Z), rng:NextNumber(0.9, 1.25), rng)
 		else
-			kit.tree(f, cf * p, rng, rng:NextNumber(0.75, 1))
+			kit.tree(f, spot(p.X, p.Z), rng, rng:NextNumber(0.75, 1))
 		end
 	end
-	for _, p in scatter(200 + i, 3 + total, TAKEN, 1.5) do
-		bush(f, cf * p, rng:NextNumber(0.8, 1.2), rng)
+	for _, p in scatter(200 + i, 4 + total, TAKEN, 1.5) do
+		bush(f, spot(p.X, p.Z), rng:NextNumber(0.8, 1.2), rng)
 	end
-	for _, p in scatter(300 + i, 2 + total // 2, TAKEN, 1.5) do
-		rock(f, cf * p, rng:NextNumber(1.6, 3), rng)
+	for _, p in scatter(300 + i, 3 + total // 2, TAKEN, 1.5) do
+		rock(f, spot(p.X, p.Z), rng:NextNumber(1.6, 3), rng)
 	end
 	for _, p in { V(-55, 0, 56), V(55, 0, 56), V(-55, 0, 33) } do -- always a few big trees at the back
 		pine(f, spot(p.X, p.Z), 1.3, rng)
@@ -973,7 +942,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	end
 	if total >= FLOWERS then
 		for _, p in scatter(400 + i, 3 + total, TAKEN, 1) do
-			kit.flowers(f, cf * p, rng, 8, 2.2)
+			kit.flowers(f, spot(p.X, p.Z), rng, 8, 2.2)
 		end
 		for _, x in { 34, 44, 54 } do
 			kit.flowers(f, spot(x, 3), rng, 8, 2)
@@ -998,7 +967,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	if total >= FLAGS then
 		for _, sx in { -1, 1 } do
 			pillar(f, spot(sx * 12, -57), 15, 0.22, WHITE, M.Metal)
-			part(f, V(4.4, 2.6, 0.2), at(sx * 12 + 2.4, 13.4, -57), BANNER, M.SmoothPlastic)
+			part(f, V(4.4, 2.6, 0.2), turned(sx * 12, -57, 0) * CFrame.new(2.4, 13.4, 0), BANNER, M.SmoothPlastic)
 		end
 		local emblem = ball(f, spot(0, -60) + V(0, 15.4, 0), 2.6, GOLD, M.Neon)
 		glow(emblem, GOLD, 16, 1)
