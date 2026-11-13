@@ -11,6 +11,8 @@ local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Debris = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -269,6 +271,71 @@ local function refresh()
 	end
 end
 
+-- Hatching -------------------------------------------------------------------------------------------
+
+-- An egg of these colours standing on `at` rocks harder and harder, then bursts: a flash, sparks
+-- and bits of shell. Takes HATCH seconds; the server brings the animal out of the nest after it.
+local HATCH = 1.4
+local function hatchEffect(at: Vector3, body: Color3, spot: Color3)
+	local h = 3
+	local shell = Instance.new("Part")
+	shell.Anchored, shell.CanCollide, shell.CanQuery = true, false, false
+	shell.Size, shell.Color, shell.Material = Vector3.new(h * 0.75, h, h * 0.75), body, Enum.Material.SmoothPlastic
+	local mesh = Instance.new("SpecialMesh")
+	mesh.MeshType = Enum.MeshType.Sphere
+	mesh.Parent = shell
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = spot, 10, 0.5, false
+	light.Parent = shell
+	shell.Parent = Workspace
+	local foot = CFrame.new(at)
+	local started = os.clock()
+	while os.clock() - started < HATCH do -- rock about the foot, faster and wider
+		local t = (os.clock() - started) / HATCH
+		local lean = math.sin(t * t * 60) * math.rad(4 + 22 * t)
+		shell.CFrame = foot * CFrame.Angles(0, 0, lean) * CFrame.new(0, h / 2 + math.abs(lean) * 0.6, 0)
+		light.Brightness = 0.5 + 4 * t
+		RunService.RenderStepped:Wait()
+	end
+	shell:Destroy()
+	local mid = at + Vector3.new(0, h / 2, 0)
+	local flash = Instance.new("Part")
+	flash.Shape, flash.Anchored, flash.CanCollide, flash.CanQuery = Enum.PartType.Ball, true, false, false
+	flash.Size, flash.Position, flash.Color, flash.Material =
+		Vector3.one * h, mid, Color3.new(1, 1, 0.9), Enum.Material.Neon
+	flash.Parent = Workspace
+	local sparks = Instance.new("ParticleEmitter")
+	sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	sparks.Color = ColorSequence.new(spot, body)
+	sparks.LightEmission = 0.8
+	sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.8), NumberSequenceKeypoint.new(1, 0) })
+	sparks.Lifetime = NumberRange.new(0.6, 1.2)
+	sparks.Speed = NumberRange.new(10, 22)
+	sparks.SpreadAngle = Vector2.new(180, 180)
+	sparks.Acceleration = Vector3.new(0, -30, 0)
+	sparks.Rate = 0
+	sparks.Parent = flash
+	sparks:Emit(50)
+	local out = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(flash, out, { Size = Vector3.one * h * 3.2, Transparency = 1 }):Play()
+	for k = 1, 12 do -- bits of shell fly out and fall
+		local bit = Instance.new("WedgePart")
+		bit.Anchored, bit.CanCollide, bit.CanQuery = true, false, false
+		bit.Size = Vector3.new(0.2, 0.7, 0.9)
+		bit.Color, bit.Material = if k % 3 == 0 then spot else body, Enum.Material.SmoothPlastic
+		bit.CFrame = CFrame.new(mid) * CFrame.Angles(k, k * 2, k * 3)
+		bit.Parent = Workspace
+		local a = k / 12 * math.pi * 2
+		local land = at + Vector3.new(math.cos(a) * 6, 0.2, math.sin(a) * 6)
+		TweenService:Create(bit, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			CFrame = CFrame.new(land) * CFrame.Angles(k * 3, k, k * 2),
+			Transparency = 1,
+		}):Play()
+		Debris:AddItem(bit, 0.8)
+	end
+	Debris:AddItem(flash, 1.3)
+end
+
 -- Ranch menu and egg vendor ------------------------------------------------------------------------
 
 -- A plain list in the middle of the screen with a heading and a Close button.
@@ -392,7 +459,15 @@ local function drawShop()
 	note.LayoutOrder = 0
 	for k, egg in StationConfig.EGGS do
 		local needs = if egg.unlock and level < egg.unlock then `  (from level {egg.unlock})` else ""
-		local entry = `{egg.name}: {Format.commas(egg.price)} coins, opens in {Format.ago(egg.hatch)}{needs}`
+		local inside = {}
+		for _, o in egg.odds do
+			table.insert(inside, (StationConfig.species(o.id) :: StationConfig.Species).name)
+		end
+		local entry =
+			`{egg.name}: {Format.commas(egg.price)} coins, opens in {Format.ago(egg.hatch)}{needs}\nHatches: {table.concat(
+				inside,
+				", "
+			)}`
 		Ui.label(shopRows, entry).LayoutOrder = k * 2
 		Ui.button(shopRows, `Buy {egg.name}`, function()
 			send("buy", egg.id)
@@ -494,6 +569,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			if StationRules.level(payload, stat) >= StationConfig.MAX_LEVEL then
 				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.MAX_LEVEL}!`
 			end
+		end
+		if payload.at then
+			hatchEffect(payload.at, payload.body, payload.spot) -- then the animal steps out
 		end
 		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
 	elseif kind == "bought" then

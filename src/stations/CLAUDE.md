@@ -6,8 +6,8 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
 - Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
-  (roster and looks), decisions 0019 to 0036 (0029 to 0036 are the latest and replace parts of the rest).
-- Not built: wave battles in the arena (so coins and samples cannot be earned in play), most animal models. In Studio only, the ranch menu has a test funds button. Gear is not designed: the gear vendor only has a message.
+  (roster and looks), decisions 0019 to 0037 (0029 to 0037 are the latest and replace parts of the rest).
+- Not built: wave battles in the arena (so coins and samples cannot be earned in play), what waves pay. In Studio only, the ranch menu has a test funds button. Gear is not designed: the gear vendor only has a message.
 
 ## Files
 
@@ -45,5 +45,5 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 - The SpawnLocation is placed in code (`World.SPAWN`, the hub fallback); Rojo ignores `Position` in the project file. Owners are moved to their ranch after spawning.
 - Animals look dangerous, not cute, and big animals are big (decision 0033). Their models are built in Blender (`tools/blender/stations`), uploaded only by the Upload Blender assets workflow, and listed in the generated `src/shared/StationAssets.luau` (never edit it by hand; a spec keeps it in step with the manifest).
 - A model's size is its built size. Its `Scale` attribute is its leg length over the length the client's poses were written for; poses, effects and walk speed all use it. Move a walking creature at `Creatures.speed` or its feet slide.
-- Animation runs on each client from the model's attributes; the server never poses a joint. The ranch showcase at the end of the server script is a stand-in until owned animals live there.
+- Animation runs on each client from the model's attributes; the server never poses a joint. The herd at the end of the server script shows the owner's first eight animals wandering the roaming area; `Creatures.asset` names the model for a species or variant.
 - Max Players must be 3 (= `World.RANCHES`). A place file cannot carry it: set it in Game Settings when publishing.

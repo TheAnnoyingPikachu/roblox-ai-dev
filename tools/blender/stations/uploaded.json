@@ -8,5 +8,75 @@
     "model": 103288532892750,
     "decal": 124762936971480,
     "texture": 94181598243034
+  },
+  "creature_jackal": {
+    "model": 126796159830306,
+    "decal": 94111495992936,
+    "texture": 92340314696990
+  },
+  "creature_jackal_pharaoh": {
+    "model": 82574589587706,
+    "decal": 122998351099246,
+    "texture": 116528824217284
+  },
+  "creature_cheetah": {
+    "model": 71145036331250,
+    "decal": 99987879723805,
+    "texture": 116622437436712
+  },
+  "creature_cheetah_lightning": {
+    "model": 74921129990147,
+    "decal": 95795974885943,
+    "texture": 140088446131089
+  },
+  "creature_lion": {
+    "model": 96631333073951,
+    "decal": 79965920754607,
+    "texture": 98958378979109
+  },
+  "creature_lion_sun": {
+    "model": 98955561745401,
+    "decal": 128348669161992,
+    "texture": 131578033588743
+  },
+  "creature_meerkat": {
+    "model": 96988536912015,
+    "decal": 103569982618360,
+    "texture": 134705021317393
+  },
+  "creature_meerkat_storm": {
+    "model": 134662156841930,
+    "decal": 109249984327956,
+    "texture": 120641028155451
+  },
+  "creature_tortoise": {
+    "model": 90089098787500,
+    "decal": 113145899686805,
+    "texture": 92810608932817
+  },
+  "creature_tortoise_gemshell": {
+    "model": 93978770831848,
+    "decal": 82910619354383,
+    "texture": 103635688064733
+  },
+  "creature_flamingo": {
+    "model": 136324436270285,
+    "decal": 72758422452583,
+    "texture": 126655039240179
+  },
+  "creature_flamingo_phoenix": {
+    "model": 80206577963432,
+    "decal": 110307725151451,
+    "texture": 88059213635831
+  },
+  "creature_elephant": {
+    "model": 135819780744859,
+    "decal": 96273762718040,
+    "texture": 116759262068844
+  },
+  "creature_elephant_frost": {
+    "model": 73471345466348,
+    "decal": 75426479120166,
+    "texture": 137464478157038
   }
 }

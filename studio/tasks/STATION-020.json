@@ -37,7 +37,7 @@
     "In Studio play every model loads, stands on its feet and plays the shared animations with no script errors",
     "Each egg type has its own model, and opening a finished egg plays a hatching animation"
   ],
-  "verification": "pending: models built and rules tested; uploads and the Studio check are recorded when done",
+  "verification": "2026-11-13: build.py built the 14 new models (5,608 to 10,050 triangles, all under budget); upload-assets run 43526412320 succeeded; lune 659/659, stylua and selene clean. Studio play (stations.rbxl, synced from source): all 16 models loaded with their textures, each standing with its feet on the ground (measured 0.00 studs), basics idle and variants walking in a line-up; the three sold egg types showed their own models in the hatchery; opening a finished Meadow egg played the hatching animation (rocking egg and shell bits seen) and three hatched animals (Tortoise, Jackal, Tortoise) stepped out and walked the roaming area. No script errors. Not checked: each model's attack and magic poses one by one, the Golden egg's model in the game (it needs player level 15), an online server, phones.",
   "output_artifacts": [
     "tools/blender/stations/assets/animals.py",
     "src/shared/StationAssets.luau"

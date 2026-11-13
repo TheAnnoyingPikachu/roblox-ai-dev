@@ -1,6 +1,6 @@
 # Animal Stations: the beta pool (bestiary and art brief)
 
-Status: small beta pool, draft (decisions 0029 to 0033). Names, stats and odds are in
+Status: small beta pool, draft (decisions 0029 to 0037). Every animal below has a model in the game. Names, stats and odds are in
 `src/shared/StationConfig.luau` (the source of truth). This page adds the **look** of every
 version for the art pipeline.
 
@@ -21,17 +21,18 @@ version for the art pipeline.
 
 ## How versions work
 
-- Every non-Titan species has a **basic** version: common, uncommon or rare.
-- On top of that, every hatch from any egg rolls for a **variant** of that species:
+- Every animal has a **basic** version. A normal animal is never above epic (today: common,
+  uncommon or rare); the Titan is legendary.
+- Every animal has **one variant**, always legendary or mythic. Any hatch of that animal, from
+  any egg, can be it:
 
-| Tier | Chance per hatch | Stats | Twist |
+| Variant rarity | Chance per hatch | Stats | Twist |
 |---|---|---|---|
-| Epic | 1 in 200 | basic × 1.5 | +25 to one stat |
 | Legendary | 1 in 2,000 | basic × 2 | +40 to one stat |
 | Mythic | 1 in 20,000 | basic × 3 | +60 to one stat |
 
 - On hatch every stat gets a **base level** from 1 to 15 (higher numbers are rarer: a 15 is 1
-  in 90), and 1 hatch in 10,000 has one stat at level 70 straight away. The Titan has no variants.
+  in 90), and 1 hatch in 10,000 has one stat at level 70 straight away.
 
 ## Art rules for every animal
 
@@ -45,55 +46,38 @@ version for the art pipeline.
 - Rarity colours for nameplates and auras: common grey, uncommon green, rare blue, epic purple,
   legendary gold, mythic rainbow shimmer.
 
+## The look (decisions 0033, 0037)
+
+Animals are **dangerous-looking beasts, not cute toys**: real proportions, a heavy brow over small
+slanted eyes, a grim mouth, fangs, horns and claws, dark skin. **Big animals are big**, and a
+variant is bigger than its basic animal, with a new skin and glowing parts. Sizes are in studs (a
+player is about 5 tall).
+
 ## Pack animals
 
-| Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look |
-|---|---|---|---|---|
-| Jackal | Attack | common | 42 / 22 / 15 / 18 / 30 / 10 | Slim tan jackal with a dark back and big pointed ears. |
-| Dune Jackal | | epic | twist stamina | Pale gold coat, a desert scarf, kicks up small sand swirls. |
-| Golden Jackal | | legendary | twist strength | Polished gold fur with a glint sweep and amber eyes. |
-| Pharaoh Jackal | | mythic | twist mana | Black and gold, a striped headdress, glowing blue glyphs floating around it. |
-| Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Small sandy meerkat standing upright, dark eye patches, always alert. |
-| Scout Meerkat | | epic | twist speed | Tiny binoculars and a scout neckerchief. |
-| Sandmage Meerkat | | legendary | twist mana | Little robe and staff, a ribbon of sand spiralling around it. |
-| Mirage Meerkat | | mythic | twist speed | Shimmering heat-haze body with two flickering mirror copies beside it. |
-| Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Bright pink flamingo standing on one leg. |
-| Sunset Flamingo | | epic | twist stamina | Feathers fade from orange to purple like a sunset. |
-| Pearl Flamingo | | legendary | twist mana | Pearly white sheen with a pearl-drop crest. |
-| Phoenix Flamingo | | mythic | twist strength | Feathers of fire, an ember trail, a flare when it spreads its wings. |
-| Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Tawny lion with a big fluffy mane and a proud chest. |
-| White Lion | | epic | twist health | Snow-white coat and mane, pale blue eyes. |
-| Sun Lion | | legendary | twist mana | The mane is a ring of golden sun rays that slowly turns; warm glow. |
-| Constellation Lion | | mythic | twist strength | Night-sky body with star lines tracing its shape, a mane of drifting stardust. |
-| **Elephant** | **Titan** | legendary | 30 / 160 / 180 / 60 / 200 / 120 | Huge grey elephant with gold-capped tusks and painted ear patterns; the ground shakes. |
-
-## The look (decision 0033)
-
-Animals are **dangerous-looking beasts, not cute toys**: real proportions (a small head on a big
-body), a heavy brow over small slanted eyes, a grim mouth, big horns, claws, dark skin, scars.
-**Big animals are big**, and a rare version is bigger and cooler than its basic one: extra horns,
-spikes, glowing parts. The looks in the tables below were written before this rule; read them
-with it in mind.
-
-Built so far (`tools/blender/stations/assets/creatures.py`): the Rhino (about 14 studs long, horn
-tip 8 studs up) and the mythic Lava Rhino (1.3 times that: 18 studs long, 12.5 high).
+| Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look | Size (tall x long) |
+|---|---|---|---|---|---|
+| Jackal | Attack | common | 42 / 22 / 15 / 18 / 30 / 10 | Lean sandy hunter, big pointed ears, long muzzle, dark saddle, bushy tail. | 4 x 7 |
+| Pharaoh Jackal | | legendary | twist mana | Black coat, gold collar and anklets, turquoise glowing eyes and brow gem. | 5 x 9 |
+| Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Small and quick, tan with dark bands across the back and dark eye patches. | 2 x 5 |
+| Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing bands across the back, a charged tail tip. | 3 x 6 |
+| Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |
+| Phoenix Flamingo | | mythic | twist mana | Fire-red, with a crest, wing tips and tail of flame. | 11 x 8 |
+| Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Heavy tawny cat with a big dark mane and a tufted tail. | 7 x 13 |
+| Sun Lion | | mythic | twist strength | Pale gold, a mane and tail of flame, burning eyes. | 11 x 16 |
+| Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | War elephant: wide ears, heavy brow, long trunk and tusks. | 15 x 25 |
+| Frost Mammoth | | mythic | twist health | Pale and shaggy, huge glowing ice tusks, ice spikes down its back. | 20 x 30 |
 
 ## Solitary animals
 
-| Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look |
-|---|---|---|---|---|
-| Tortoise | Defence | common | 5 / 25 / 48 / 20 / 55 / 50 | Olive tortoise with a domed patterned shell and a kind face. |
-| Mossback Tortoise | | epic | twist mana | Shell covered in moss, tiny flowers and a mushroom or two. |
-| Gemshell Tortoise | | legendary | twist defence | Shell plates are cut gems in different colours that catch the light. |
-| Island Tortoise | | mythic | twist health | Carries a tiny island on its back: a palm tree, a waterfall, a little cloud. |
-| Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Golden-tan cheetah with black spots and tear marks. |
-| Shadow Cheetah | | epic | twist mana | Black coat with faint violet spots and glowing violet eyes. |
-| Golden Cheetah | | legendary | twist strength | Metallic gold coat with darker gold spots. |
-| Lightning Cheetah | | mythic | twist speed | Electric-blue spots, crackling arcs along the body, fading afterimages. |
-| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide with dark creases, high shoulders with bone studs, a scimitar front horn, amber eyes under a heavy brow, claw scars. **Built.** |
-| Stone Rhino | | epic | twist defence | Carved from sandstone with painted patterns. |
-| Crystal Rhino | | legendary | twist mana | Clear crystal horn and crystal plates along the back. |
-| Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns and eyes, rock spikes down the spine and on the shoulders, two more horns over the brow, a burning tail, embers. **Built.** |
+| Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look | Size (tall x long) |
+|---|---|---|---|---|---|
+| Tortoise | Defence | common | 5 / 25 / 48 / 20 / 55 / 50 | War tortoise: high plated shell with a spiked rim, thick clawed legs, hooked beak. | 4 x 9 |
+| Gemshell Tortoise | | legendary | twist defence | Dark shell with a glowing crystal on every plate. | 7 x 12 |
+| Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Slender golden sprinter with black spots and tear marks, very long tail. | 5 x 9 |
+| Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric spots, glowing bolts down both flanks. | 6 x 12 |
+| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide, high shoulders with bone studs, scimitar horn, claw scars. | 8 x 14 |
+| Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns, rock spikes, burning tail. | 13 x 18 |
 
 ## Eggs
 

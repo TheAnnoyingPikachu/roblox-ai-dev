@@ -32,6 +32,8 @@ for i = 1, World.RANCHES do
 end
 -- and the eggs waiting in its hatchery
 local held: { [number]: string } = {}
+local hatchedAt: { [number]: Vector3 } = {} -- animal id -> the nest it has just hatched in
+local syncHerd: (i: number, animals: { any }) -> ()
 local function showEggs(i: number, eggs: { { egg: string, since: number? } })
 	local key = ""
 	for _, e in eggs do
@@ -226,10 +228,25 @@ local router = Router.new({
 				if not ok or born == nil then
 					return false, code
 				end
+				local nth = 0 -- which nest it sat in
+				for j = 1, k do
+					nth += if p.eggs[j].since then 1 else 0
+				end
+				local i, look = ranchOf(player), Ranch.look(p.eggs[k].egg)
+				local at = if i then Ranch.nest(i, nth) else nil
+				hatchedAt[born.id] = at
 				saves.apply(player, function(q)
 					return (StationProgress.crack(q, k, now))
 				end)
-				remotes.fx(player, "hatched", { s = born.s, v = born.v, stats = born.stats, trained = born.trained })
+				remotes.fx(player, "hatched", {
+					s = born.s,
+					v = born.v,
+					stats = born.stats,
+					trained = born.trained,
+					at = at,
+					body = look.body,
+					spot = look.spot,
+				})
 				return true, nil
 			end,
 		},
@@ -280,6 +297,9 @@ saves = Saves.start({
 		if i then
 			show(i, profile.upgrades)
 			showEggs(i, profile.eggs)
+			if syncHerd then -- not yet while this script is still starting
+				syncHerd(i, profile.animals)
+			end
 		end
 	end,
 })
@@ -300,56 +320,91 @@ Players.PlayerRemoving:Connect(function(player)
 		World.setRanchOwner(i, nil)
 		show(i, {})
 		showEggs(i, {})
+		syncHerd(i, {})
 	end
 end)
 
--- Creature showcase (STATION-016): until owned animals stand at the ranch, each paddock shows the
--- Rhino and the Lava Rhino pacing a lane: walk up, turn, magic attack back down the lane, walk
--- back, turn, horn attack.
--- shortcut: the server tweens the Root, which replicates at network rate, move creatures on the
--- client when wave fights place them.
-local QUARTER = CFrame.Angles(0, math.pi / 2, 0)
+-- The herd (decision 0037): a ranch owner's animals walk its roaming area, the first HERD_MAX of
+-- them. Each wanders on its own: it walks to a spot, stands a while, and now and then shows an
+-- attack. One that has just hatched steps out of its nest first.
+-- shortcut: the server tweens each Root, which replicates at network rate, move them on the
+-- client if it looks rough online.
+local HERD_MAX = 8
+local herds: { [number]: { [number]: Model | boolean } } = {} -- false while its model loads
+local dice = Random.new()
 
-local function pace(model: Model, a: CFrame, b: CFrame)
+local function somewhere(i: number): Vector3 -- a spot in the roaming area (Ranch.luau's layout)
+	local g = World.RANCH_HALF / 60
+	return World.ranchFrame(i) * Vector3.new(dice:NextNumber(-50, -14) * g, 0.5, dice:NextNumber(-48, -1) * g)
+end
+
+local function wander(model: Model, i: number)
 	local root = model.PrimaryPart :: BasePart
-	local function go(to: CFrame, seconds: number)
-		Creatures.play(model, "walk")
-		local tween = TweenService:Create(root, TweenInfo.new(seconds, Enum.EasingStyle.Linear), { CFrame = to })
-		tween:Play()
-		tween.Completed:Wait()
-	end
-	local function turn(from: CFrame) -- two quarter turns: a half turn in one tween has no fixed axis
-		go(from * QUARTER, 1)
-		go(from * QUARTER * QUARTER, 1)
-	end
-	local function act(anim: string)
-		Creatures.play(model, anim)
-		task.wait(Creatures.LENGTH[anim] + 1.2)
-	end
-	local seconds = (b.Position - a.Position).Magnitude / Creatures.speed(model)
 	while model.Parent do
-		go(b, seconds)
-		turn(b)
-		act("magic")
-		go(a * QUARTER * QUARTER, seconds)
-		turn(a * QUARTER * QUARTER)
-		act("attack")
+		local from, to = root.Position, somewhere(i)
+		local facing = CFrame.lookAt(from, Vector3.new(to.X, from.Y, to.Z))
+		Creatures.play(model, "walk")
+		local turn = TweenService:Create(root, TweenInfo.new(0.6), { CFrame = facing })
+		turn:Play()
+		turn.Completed:Wait()
+		local seconds = (to - from).Magnitude / Creatures.speed(model)
+		local walk = TweenService:Create(
+			root,
+			TweenInfo.new(seconds, Enum.EasingStyle.Linear),
+			{ CFrame = facing.Rotation + to }
+		)
+		walk:Play()
+		walk.Completed:Wait()
+		local roll = dice:NextNumber()
+		local anim = if roll < 0.2 then "magic" elseif roll < 0.45 then "attack" else "idle"
+		Creatures.play(model, anim)
+		task.wait((Creatures.LENGTH[anim] or 0) + dice:NextNumber(2, 6))
 	end
 end
 
-for i = 1, World.RANCHES do
-	local parent = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
-	local cf = World.ranchFrame(i)
-	-- lanes down the roaming area, far enough apart to turn; its grass is 0.5 above the ranch frame
-	for name, x in { creature_rhino = -41, creature_rhino_lava = -21 } do
-		task.spawn(function()
-			local g = World.RANCH_HALF / 60 -- Ranch.luau's layout is stretched by this
-			local from, to = cf * Vector3.new(x * g, 0.5, -42 * g), cf * Vector3.new(x * g, 0.5, -7 * g)
-			local a = CFrame.lookAt(from, to)
-			local model = Creatures.spawn(name, a, parent)
-			if model then
-				pace(model, a, a.Rotation + to)
+function syncHerd(i: number, animals: { StationProgress.Animal })
+	local herd = herds[i] or {}
+	herds[i] = herd
+	local wanted: { [number]: StationProgress.Animal } = {}
+	for k, a in animals do
+		if k <= HERD_MAX then
+			wanted[a.id] = a
+		end
+	end
+	for id, model in herd do
+		if wanted[id] == nil then
+			if typeof(model) == "Instance" then
+				model:Destroy()
 			end
-		end)
+			herd[id] = nil
+		end
+	end
+	local plot = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
+	for id, a in wanted do
+		if herd[id] == nil then
+			herd[id] = false
+			task.spawn(function()
+				local nest = hatchedAt[id]
+				hatchedAt[id] = nil
+				if nest then
+					task.wait(1.4) -- the hatching animation plays first
+				end
+				local at = if nest then CFrame.new(nest) else CFrame.new(somewhere(i))
+				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot)
+				if model and herd[id] == false then
+					herd[id] = model
+					wander(model, i)
+				elseif model then
+					model:Destroy() -- sold or gone while it loaded
+				end
+			end)
+		end
+	end
+end
+
+for i, owner in owners do -- anyone whose profile loaded before this point
+	local p = saves.get(owner)
+	if p then
+		syncHerd(i, p.animals)
 	end
 end

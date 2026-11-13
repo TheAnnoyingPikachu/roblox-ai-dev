@@ -146,7 +146,7 @@ local function build(name: string): Model?
 		local embers = Instance.new("ParticleEmitter")
 		embers.Name = "Embers"
 		embers.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-		embers.Color = ColorSequence.new(colour, Color3.fromRGB(255, 70, 20))
+		embers.Color = ColorSequence.new(colour, colour:Lerp(Color3.new(1, 1, 1), 0.5))
 		embers.LightEmission = 1
 		embers.Size =
 			NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3 * unit), NumberSequenceKeypoint.new(1, 0) })
@@ -185,6 +185,13 @@ end
 
 -- A creature standing at `at` (its feet there, facing along the CFrame's look vector), at the
 -- size it was built. Nil when the asset is not uploaded yet or did not load.
+-- The asset that shows species `s`, or its variant `v`: a variant "<word>_<species>" is the asset
+-- "creature_<species>_<word>" (StationRules.spec keeps the ids in that form).
+function Creatures.asset(s: string, v: string?): string
+	local word = if v then string.match(v, "^(%l+)_") else nil
+	return if word then `creature_{s}_{word}` else `creature_{s}`
+end
+
 function Creatures.spawn(name: string, at: CFrame, parent: Instance): Model?
 	local source = template(name)
 	if source == nil then

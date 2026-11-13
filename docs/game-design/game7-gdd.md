@@ -12,8 +12,9 @@ vendors.
 ## The pieces
 
 - **Animals:** a small African beta pool of 8 species (`game7-animals.md`). Each has a role
-  (Attack, Defence, Utility), a group (pack or solitary) and three super-rare variants. The
-  Elephant is the Titan: legendary only, a rare hatch from the egg that unlocks at player level
+  (Attack, Defence, Utility), a group (pack or solitary) and one rare variant, always legendary
+  or mythic (decision 0037); a normal animal is never above epic. The Elephant is the Titan:
+  legendary, a rare hatch from the egg that unlocks at player level
   15 (there is no legendary-only egg). The eggs are placeholders: an overhaul is planned.
 - **Stats:** six, each with one job in a wave fight:
 
@@ -65,13 +66,15 @@ vendors.
 - Eggs (decision 0036): bought from the egg vendor on the ranch into the egg storage; the player
   chooses which to hatch, six at once; they take 1 minute to 4 hours; a finished egg is opened by
   hand at the hatchery. A gear vendor's stall stands ready for gear.
-- The first animal models (decision 0033): the Rhino and the mythic Lava Rhino, jointed and
-  animated (idle, walk, horn attack, magic attack). They pace each ranch's paddock as a showcase.
+- A model for every animal and its variant (decisions 0033, 0037): sixteen jointed models that
+  share the same moves (idle, walk, attack, magic attack). A player's animals walk the roaming
+  area of their ranch. Each egg type has its own model, and opening one plays a hatching
+  animation before the animal steps out of its nest.
 
 ## Not built yet
 
 - Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
-- The other animals' models; owned animals standing on the training pads or in the paddock.
+- Animals standing at the training court they train at.
 - Samples dropping from harder waves (the higher upgrade levels need them), more ranch upgrades
   and expanding the plot. More hub vendors. Gear. The egg overhaul.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
