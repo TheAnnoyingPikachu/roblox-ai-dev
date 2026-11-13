@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0030): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0031): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs, training stations and matchups.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
@@ -197,7 +197,9 @@ StationConfig.SPECIES = {
 } :: { Species }
 
 -- Eggs roll a species (basic odds); the variant roll (TIERS) happens on top, the same for every egg.
--- The Titan only comes from the Legendary Egg, which unlocks at player level 15.
+-- There is no legendary-only egg: the Titan (the one legendary species) is a rare hatch from the
+-- Golden Egg, which unlocks at player level 15 and drops other animals too (decision 0031).
+-- Placeholder eggs: an egg overhaul is planned.
 StationConfig.EGGS = {
 	{
 		id = "meadow",
@@ -237,13 +239,17 @@ StationConfig.EGGS = {
 		},
 	},
 	{
-		id = "legendary",
-		name = "Legendary Egg",
+		id = "golden",
+		name = "Golden Egg",
 		price = 50000,
 		xp = 500,
 		unlock = 15,
 		odds = {
-			{ id = "elephant", bp = 10000 },
+			{ id = "lion", bp = 5000 },
+			{ id = "cheetah", bp = 1500 },
+			{ id = "rhino", bp = 1500 },
+			{ id = "flamingo", bp = 1500 },
+			{ id = "elephant", bp = 500 },
 		},
 	},
 } :: { Egg }

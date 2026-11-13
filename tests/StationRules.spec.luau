@@ -87,27 +87,39 @@ describe("StationConfig", function()
 		expect(titans).toBe(1)
 	end)
 
-	it("only hatches the Titan from the Legendary Egg, which unlocks at player level 15", function()
-		for _, egg in StationConfig.EGGS do
-			local titan, other = false, false
-			for _, o in egg.odds do
-				local sp = StationConfig.species(o.id) :: StationConfig.Species
-				if sp.role == StationConfig.TITAN then
-					titan = true
-				else
-					other = true
+	it(
+		"has no legendary-only egg: the Titan is a rare hatch from the one egg that unlocks at player level 15",
+		function()
+			local locked = 0
+			for _, egg in StationConfig.EGGS do
+				local titan, other = false, false
+				for _, o in egg.odds do
+					local sp = StationConfig.species(o.id) :: StationConfig.Species
+					if sp.role == StationConfig.TITAN then
+						titan = true
+					else
+						other = true
+					end
 				end
+				expect(other).toBe(true) -- every egg drops ordinary animals
+				if egg.unlock then
+					locked += 1
+					expect(egg.unlock).toBe(15)
+					expect(titan).toBe(true)
+					local share = 0
+					for _, o in egg.odds do
+						local sp = StationConfig.species(o.id) :: StationConfig.Species
+						share += if sp.role == StationConfig.TITAN then o.bp else 0
+					end
+					expect(share <= 1000).toBeTruthy() -- the legendary stays a rare drop
+				else
+					expect(titan).toBe(false)
+				end
+				expect(egg.xp > 0).toBeTruthy()
 			end
-			if egg.id == "legendary" then
-				expect(titan and not other).toBeTruthy()
-				expect(egg.unlock).toBe(15)
-			else
-				expect(titan).toBe(false)
-				expect(egg.unlock).toBeNil()
-			end
-			expect(egg.xp > 0).toBeTruthy()
+			expect(locked).toBe(1)
 		end
-	end)
+	)
 
 	it("gives every non-Titan exactly one variant per tier, with unique ids and a real twist stat", function()
 		local ids = {}
@@ -408,15 +420,23 @@ describe("StationRules.hatch", function()
 		expect(good).toBe(true)
 	end)
 
-	it("always hatches the plain Elephant from the Legendary Egg, even when a variant is rolled", function()
+	it("drops the Titan from the Golden Egg about 1 time in 20, always as the plain Elephant", function()
 		local rng = Rng.seed(9)
-		for _ = 1, 3000 do -- about 17 of these roll a variant tier
+		local titans, variants = 0, 0
+		for _ = 1, 40000 do -- about 11 Titans here also roll a variant tier, which they do not have
 			local a
-			a, rng = StationRules.hatch("legendary", rng)
+			a, rng = StationRules.hatch("golden", rng)
 			local animal = a :: StationRules.Owned
-			expect(animal.s).toBe("elephant")
-			expect(animal.v).toBeNil()
+			if StationRules.role(animal) == StationConfig.TITAN then
+				titans += 1
+				expect(animal.s).toBe("elephant")
+				expect(animal.v).toBeNil()
+			elseif animal.v then
+				variants += 1
+			end
 		end
+		expect(titans >= 1700 and titans <= 2300).toBeTruthy() -- 5% of 40,000 = 2,000
+		expect(variants > 0).toBeTruthy()
 	end)
 
 	it("reports the variant tier as the rarity, else the species rarity", function()

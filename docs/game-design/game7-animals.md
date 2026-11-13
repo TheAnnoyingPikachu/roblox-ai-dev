@@ -1,6 +1,6 @@
 # Animal Stations: the beta pool (bestiary and art brief)
 
-Status: small beta pool, draft (decisions 0029, 0030). Names, stats and odds are in
+Status: small beta pool, draft (decisions 0029 to 0031). Names, stats and odds are in
 `src/shared/StationConfig.luau` (the source of truth). This page adds the **look** of every
 version for the art pipeline.
 
@@ -15,7 +15,8 @@ version for the art pipeline.
 - Every animal has a **group**. **Pack** animals get stronger for each other pack animal on the
   team. **Solitary** animals get stronger when no teammate shares their role.
 - The **Titan** is its own category outside the role loop: legendary only, huge, and it fills
-  the team's fourth slot. A team is three animals plus one Titan.
+  the team's fourth slot. A team is three animals plus one Titan. It is a rare hatch from the
+  egg that unlocks at player level 15.
 
 ## How versions work
 
@@ -89,9 +90,10 @@ version for the art pipeline.
 | Meadow Egg | 100 | Jackal, Tortoise or Meerkat |
 | Wild Egg | 1,500 | commons 54%, uncommons 46% |
 | Safari Egg | 15,000 | uncommons 80%, the Lion 20% |
-| Legendary Egg | 50,000, from player level 15 | the Titan Elephant |
+| Golden Egg | 50,000, from player level 15 | the Lion 50%, uncommons 45%, the Titan Elephant 5% |
 
-Variant chances are the same in every egg.
+Variant chances are the same in every egg. There is no legendary-only egg (decision 0031). These
+eggs are placeholders: an egg overhaul is planned.
 
 ## Parked for later
 

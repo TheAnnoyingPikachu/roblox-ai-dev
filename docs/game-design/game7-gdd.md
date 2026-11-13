@@ -1,7 +1,7 @@
 # Animal Stations (game 7): design framework
 
 Status: framework. The settled facts are in decisions 0019 to 0030; a later decision replaces an
-earlier one, and 0029 and 0030 are the current summary. Every number is a draft.
+earlier one, and 0029 to 0031 are the current summary. Every number is a draft.
 
 ## Pitch
 
@@ -13,7 +13,8 @@ vendors.
 
 - **Animals:** a small African beta pool of 8 species (`game7-animals.md`). Each has a role
   (Attack, Defence, Utility), a group (pack or solitary) and three super-rare variants. The
-  Elephant is the Titan: legendary only, from the Legendary Egg at player level 15.
+  Elephant is the Titan: legendary only, a rare hatch from the egg that unlocks at player level
+  15 (there is no legendary-only egg). The eggs are placeholders: an overhaul is planned.
 - **Stats:** Speed, Strength, Stamina, Mana, Health, Defence. Each has a level up to 70;
   training raises it and a maxed stat is doubled. On hatch every stat starts at a level from 1
   to 15, higher numbers being rarer, with a 1 in 100,000 jackpot of one stat at 70.

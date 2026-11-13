@@ -171,23 +171,23 @@ describe("StationProgress.buy", function()
 		expect(code).toBe("full")
 	end)
 
-	it("keeps the Legendary Egg locked until player level 15, whatever the coins", function()
+	it("keeps the Golden Egg locked until player level 15, whatever the coins", function()
 		local p = fresh()
 		p.coins = 1e9
 		p.xp = StationProgress.xpFor(15) - 1
-		local ok, code = StationProgress.canBuy(p, "legendary")
+		local ok, code = StationProgress.canBuy(p, "golden")
 		expect(ok).toBe(false)
 		expect(code).toBe("locked")
-		local _, bought = StationProgress.buy(p, "legendary", hatched("elephant"))
+		local _, bought = StationProgress.buy(p, "golden", hatched("elephant"))
 		expect(bought).toBe(false)
 		expect(#p.animals).toBe(0)
 		expect(p.coins).toBe(1e9)
 		p.xp = StationProgress.xpFor(15)
-		expect((StationProgress.canBuy(p, "legendary"))).toBe(true)
-		p, bought = StationProgress.buy(p, "legendary", hatched("elephant"))
+		expect((StationProgress.canBuy(p, "golden"))).toBe(true)
+		p, bought = StationProgress.buy(p, "golden", hatched("elephant"))
 		expect(bought).toBe(true)
 		expect(p.titan).toBe(1)
-		expect(p.coins).toBe(1e9 - (StationConfig.egg("legendary") :: StationConfig.Egg).price)
+		expect(p.coins).toBe(1e9 - (StationConfig.egg("golden") :: StationConfig.Egg).price)
 	end)
 
 	it("works with a real seeded hatch", function()
@@ -309,13 +309,13 @@ describe("StationProgress team and training", function()
 		p.coins = 1e9
 		p.xp = StationProgress.xpFor(15)
 		local ok
-		p = StationProgress.buy(p, "legendary", hatched("elephant")) -- id 4
+		p = StationProgress.buy(p, "golden", hatched("elephant")) -- id 4
 		expect(p.titan).toBe(4)
 		expect(#p.team).toBe(3)
 		local fighters = StationProgress.fighters(p)
 		expect(#fighters).toBe(4)
 		expect(fighters[4].id).toBe(4) -- the Titan fights last in the line
-		p = StationProgress.buy(p, "legendary", hatched("elephant")) -- id 5: the slot is taken
+		p = StationProgress.buy(p, "golden", hatched("elephant")) -- id 5: the slot is taken
 		expect(p.titan).toBe(4)
 		p, ok = StationProgress.toggleTeam(p, 5) -- swaps the Titan
 		expect(ok).toBe(true)
