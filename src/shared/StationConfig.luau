@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0029): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0030): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs, training stations and matchups.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
@@ -35,9 +35,7 @@ export type Station = { id: string, name: string, stat: Stat }
 -- Health is HP in battle, Defence cuts incoming damage, Mana fills the power-attack meter
 -- (decisions 0028, 0029).
 StationConfig.STATS = { "speed", "strength", "stamina", "mana", "health", "defence" } :: { Stat }
-StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400 -- limits of a hatched (untrained) stat
--- A hatched animal's stats are its version's stats x (100 +/- VARIANCE)%, so two cheetahs differ a little.
-StationConfig.VARIANCE = 10
+StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400 -- limits of a version's (level 0) stat
 
 -- Stat levels (decision 0029): training raises a stat's level, 0 to MAX_LEVEL. A stat's value is
 -- its hatched value x (1 + LEVEL_GROWTH x level / MAX_LEVEL), so a maxed stat is doubled.
@@ -45,6 +43,11 @@ StationConfig.VARIANCE = 10
 StationConfig.MAX_LEVEL = 70
 StationConfig.LEVEL_GROWTH = 1
 StationConfig.LEVEL_SECONDS = 30
+-- Base stats (decision 0030): on hatch every stat starts at a level from 1 to BASE_MAX, each
+-- higher number a little less likely (weight BASE_MAX + 1 - level, so a 1 is 15 times as likely
+-- as a 15). JACKPOT_PPM is the tiny chance that one stat hatches at MAX_LEVEL instead.
+StationConfig.BASE_MAX = 15
+StationConfig.JACKPOT_PPM = 10 -- 1 in 100,000 hatches
 
 StationConfig.BASIC_RARITIES = { "common", "uncommon", "rare" }
 StationConfig.RARITIES = { "common", "uncommon", "rare", "epic", "legendary", "mythic" }

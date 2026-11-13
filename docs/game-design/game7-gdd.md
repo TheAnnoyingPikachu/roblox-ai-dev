@@ -1,7 +1,7 @@
 # Animal Stations (game 7): design framework
 
-Status: framework. The settled facts are in decisions 0019 to 0029; a later decision replaces an
-earlier one, and 0029 is the current summary. Every number is a draft.
+Status: framework. The settled facts are in decisions 0019 to 0030; a later decision replaces an
+earlier one, and 0029 and 0030 are the current summary. Every number is a draft.
 
 ## Pitch
 
@@ -14,8 +14,9 @@ vendors.
 - **Animals:** a small African beta pool of 8 species (`game7-animals.md`). Each has a role
   (Attack, Defence, Utility), a group (pack or solitary) and three super-rare variants. The
   Elephant is the Titan: legendary only, from the Legendary Egg at player level 15.
-- **Stats:** Speed, Strength, Stamina, Mana, Health, Defence. Each has a level from 0 to 70;
-  training raises it and a maxed stat is doubled.
+- **Stats:** Speed, Strength, Stamina, Mana, Health, Defence. Each has a level up to 70;
+  training raises it and a maxed stat is doubled. On hatch every stat starts at a level from 1
+  to 15, higher numbers being rarer, with a 1 in 100,000 jackpot of one stat at 70.
 - **Team:** three animals in any mix, plus one Titan in its own fourth slot.
 - **Battles:** automatic and decided by the server. Attack beats Utility, Utility beats Defence,
   Defence beats Attack (a slight edge). Pack and solitary animals get group bonuses. Mana sets
@@ -24,7 +25,8 @@ vendors.
   Clearing a wave pays coins.
 - **Player level:** from XP. Hatching gives XP now; waves will too.
 - **Places:** the hub (plaza, egg stalls) and one ranch island per player, joined only by
-  teleport pads. Animals train at the ranch. A server holds 3 players.
+  teleport pads. Animals train at the ranch. Mountains ring every area to hide the void. A
+  canyon through the hub's mountains is the wave arena. A server holds 3 players.
 
 ## Words
 
@@ -38,11 +40,11 @@ vendors.
   saved profile: coins, XP, animals, team, Titan, training).
 - Server: saves, egg buying at the stalls, team and training requests, ranch assignment and
   teleports. Client: coins and level, and the Animals panel.
-- World: the hub and three ranch islands as simple placeholders.
+- World: the hub with its wave arena canyon and three ranch islands, as simple placeholders.
 
 ## Not built yet
 
-- A battle screen. Until then coins, wave progress and most XP cannot be earned in play.
+- Wave battles in the arena. Until then coins, wave progress and most XP cannot be earned in play.
 - Animal models; animals standing on the training pads or in the paddock.
 - The ranch tycoon: universal upgrades and expansion, paid with gold and samples from harder
   enemies. More hub vendors.

@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-013",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Base stat levels rolled on hatch (1 to 15, higher numbers rarer, a 1 in 100,000 jackpot of one stat at 70), mountains with invisible walls round the hub and every ranch island, and a canyon north of the plaza as the wave arena.",
+  "inputs": [
+    "docs/decisions/0030-animal-stations-base-stats-mountains-wave-arena.md"
+  ],
+  "dependencies": [
+    "STATION-012"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/StationProgress.luau",
+    "tests/StationRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0030-animal-stations-base-stats-mountains-wave-arena.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every stat hatches at a level from 1 to 15 and each higher level has a smaller share of the roll",
+    "The jackpot puts exactly one stat at level 70 and is rarer than a mythic variant",
+    "Bought animals keep the base levels rolled at hatch",
+    "In Studio play: from the hub centre and from a ranch every direction ends at a wall, and the only way through the hub's ring is the canyon, which is closed at its far end",
+    "The arena has one WaveStand and one WaveSpawn"
+  ],
+  "verification": "lune run tests/run.luau 643/643; selene and stylua clean; place builds and check-place passes; Studio play 2026-11-13: 65 mountains, 111 barriers, raycasts every 3 degrees from the hub centre and a ranch found no open direction, north axis open to the canyon end, hatched animals showed base levels 1 to 13, no script errors",
+  "output_artifacts": [
+    "src/shared/StationRules.luau",
+    "src/stations/World.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Removes the per-hatch stat variance. The terrain hill ring is replaced by part mountains. Nothing is fought in the arena yet."
+}

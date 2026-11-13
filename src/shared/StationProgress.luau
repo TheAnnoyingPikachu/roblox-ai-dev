@@ -190,7 +190,13 @@ function StationProgress.buy(
 	p.xp = math.min(p.xp + egg.xp, StationProgress.MAX_XP)
 	local id = p.nextId
 	p.nextId += 1
-	local animal: Animal = { id = id, s = hatched.s, v = hatched.v, stats = table.clone(hatched.stats) }
+	local animal: Animal = {
+		id = id,
+		s = hatched.s,
+		v = hatched.v,
+		stats = table.clone(hatched.stats),
+		trained = if hatched.trained then table.clone(hatched.trained) else nil, -- the base levels
+	}
 	table.insert(p.animals, animal)
 	if StationProgress.isTitan(animal) then
 		p.titan = p.titan or id

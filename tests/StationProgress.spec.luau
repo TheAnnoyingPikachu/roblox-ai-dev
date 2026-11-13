@@ -195,6 +195,12 @@ describe("StationProgress.buy", function()
 		local p, ok = StationProgress.buy(fresh(), "meadow", a)
 		expect(ok).toBe(true)
 		expect(p.animals[1].s).toBe(a.s)
+		-- the base levels rolled at hatch come along, as a copy
+		for _, stat in StationConfig.STATS do
+			expect(StationRules.level(p.animals[1] :: any, stat)).toBe(StationRules.level(a, stat))
+			expect(StationRules.level(a, stat) >= 1).toBeTruthy()
+		end
+		expect(p.animals[1].trained ~= a.trained).toBeTruthy()
 	end)
 end)
 

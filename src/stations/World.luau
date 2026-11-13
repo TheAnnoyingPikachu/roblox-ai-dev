@@ -3,9 +3,10 @@
 -- fountain and the vendors' egg stalls, and three home ranches (one per player). Each ranch is a
 -- large separate island far from the hub, reached only by the teleport pads. A ranch is the
 -- player's base, where animals live and train: a barn, a paddock, an egg nest and one training
--- pad per stat, with room to grow. Built once from parts, Roblox materials and terrain. Display
--- only: no game rules live here. Spots, nests, training pads and teleport prompts are tagged
--- for the server.
+-- pad per stat, with room to grow. Mountains ring every area to hide the void; a canyon through
+-- the hub's mountains is the wave arena. Built once from parts, Roblox materials and terrain.
+-- Display only: no game rules live here. Spots, nests, training pads, teleport prompts and the
+-- arena's stand and spawn are tagged for the server.
 
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
@@ -19,6 +20,9 @@ local part, pillar, label = Props.part, Props.pillar, Props.label
 local World = {}
 
 World.PLAZA = 48 -- plaza radius
+World.HUB_RADIUS = 300 -- the walkable hub: an invisible wall stands here, the mountains behind it
+-- The wave arena: a canyon through the mountains north of the plaza (half width, near and far end).
+local ARENA_HALF, ARENA_NEAR, ARENA_FAR = 60, 330, 640
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
 World.RANCH_DIST = 1200 -- hub centre to each ranch centre: detached, reached only by teleport
@@ -258,14 +262,6 @@ local function terrain()
 		local top = World.RANCH_Y - 4 -- measured in Studio: a cylinder top at 18 gives a surface at 22
 		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top - 10) / 2, 0)), top + 10, ISLAND, M.Grass)
 	end
-	-- rolling hill ring that closes the hub in
-	local rng = Random.new(11)
-	for i = 0, 35 do
-		local a = i / 36 * math.pi * 2 + rng:NextNumber(-0.05, 0.05)
-		local r = rng:NextNumber(540, 600)
-		local size = rng:NextNumber(70, 120)
-		t:FillBall(Vector3.new(math.cos(a) * r, -size * 0.45, math.sin(a) * r), size, M.Grass)
-	end
 end
 
 -- Plaza ----------------------------------------------------------------------------------------------
@@ -390,9 +386,13 @@ end
 
 -- Paths ----------------------------------------------------------------------------------------------
 
--- Every road as a segment {a, b}; scenery keeps clear of these. Only the south walk, from the
--- hub's teleport pad to the plaza: the ranches are reached by teleport, not by road.
-local ROADS: { { Vector3 } } = { { Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) } }
+-- Every road as a segment {a, b}; scenery keeps clear of these. The south walk comes in from the
+-- hub's teleport pad and the north road leads to the wave arena. The ranches are reached by
+-- teleport, not by road.
+local ROADS: { { Vector3 } } = {
+	{ Vector3.new(0, 0, World.PLAZA - 2), Vector3.new(0, 0, 90) },
+	{ Vector3.new(0, 0, -(World.PLAZA - 2)), Vector3.new(0, 0, -ARENA_NEAR) },
+}
 
 -- Where a player arrives in the hub: on the south walk, facing the plaza.
 function World.hubSpawn(): CFrame
@@ -433,6 +433,103 @@ local function paths(root: Instance)
 	-- the hub's teleport pad at the end of the south walk
 	teleporter(f, Vector3.new(0, 0, 90), "ranch", "Go to your ranch")
 	signboard(f, CFrame.new(0, 0, 100), 14, "To your ranch", Color3.fromRGB(60, 130, 170), 5)
+end
+
+-- Mountains and the wave arena ---------------------------------------------------------------------
+
+local ROCK = Color3.fromRGB(128, 124, 138)
+
+-- A mountain: a huge rock dome. `pos` is the centre of its foot circle on the ground and `foot`
+-- that circle's radius; the ball's centre is sunk a quarter of its radius.
+local function mountain(parent: Instance, pos: Vector3, foot: number, rng: Random)
+	local r = foot / math.sqrt(1 - 0.25 ^ 2)
+	local m = ball(parent, pos - Vector3.new(0, r * 0.25, 0), r * 2, ROCK:Lerp(INK, rng:NextNumber(0, 0.18)), M.Slate)
+	m.Name = "Mountain"
+end
+
+-- An invisible wall from a to b (ground points), so nobody climbs the mountains to the void.
+local function barrier(parent: Instance, a: Vector3, b: Vector3)
+	local along = b - a
+	local mid = (a + b) / 2 + Vector3.new(0, 200, 0)
+	local facing = CFrame.lookAt(mid, mid + Vector3.new(-along.Z, 0, along.X))
+	local w = part(parent, Vector3.new(along.Magnitude + 2, 400, 2), facing, WHITE)
+	w.Transparency, w.CastShadow, w.Name = 1, false, "Barrier"
+end
+
+-- A closed ring of mountains round `centre` whose feet start `inner` studs out, with an
+-- invisible wall just inside them. Used for the ranch islands.
+local function mountainRing(parent: Instance, centre: Vector3, inner: number, rng: Random)
+	for k = 0, 11 do
+		local a = k / 12 * math.pi * 2
+		local foot = rng:NextNumber(105, 140)
+		mountain(parent, centre + Vector3.new(math.cos(a), 0, math.sin(a)) * (inner + foot), foot, rng)
+	end
+	for k = 0, 23 do
+		local a0, a1 = k / 24 * math.pi * 2, (k + 1) / 24 * math.pi * 2
+		barrier(
+			parent,
+			centre + Vector3.new(math.cos(a0), 0, math.sin(a0)) * (inner - 2),
+			centre + Vector3.new(math.cos(a1), 0, math.sin(a1)) * (inner - 2)
+		)
+	end
+end
+
+-- The hub's mountains: a ring that is open to the north, where two rows of mountains make a
+-- canyon closed at its far end. The canyon is the wave arena: the player's team stands at the
+-- near end ("WaveStand") and the endless waves will come from the far end ("WaveSpawn").
+local function mountains(root: Instance, rng: Random)
+	local f = folder(root, "Mountains")
+	local GAP, N = 32, 22 -- degrees left open either side of north; mountains in the ring
+	for i = 0, N - 1 do
+		local a = rad(-90 + GAP + i * (360 - 2 * GAP) / (N - 1))
+		local foot = rng:NextNumber(165, 220)
+		mountain(f, Vector3.new(math.cos(a), 0, math.sin(a)) * (World.HUB_RADIUS + 60 + foot), foot, rng)
+	end
+	for k = 0, 2 do
+		for _, side in { -1, 1 } do
+			mountain(f, Vector3.new(side * (ARENA_HALF + 158), 0, -(ARENA_NEAR + 60 + k * 150)), 150, rng)
+		end
+	end
+	mountain(f, Vector3.new(0, 0, -(ARENA_FAR + 260)), 230, rng)
+	-- invisible wall: round the hub, then up both sides of the canyon and across its end
+	local half = ARENA_HALF + 10
+	local mouth = math.deg(math.asin(half / World.HUB_RADIUS)) -- half-angle of the canyon mouth
+	local STEPS = 36
+	local function rim(k: number): Vector3
+		local a = rad(-90 + mouth + k * (360 - 2 * mouth) / STEPS)
+		return Vector3.new(math.cos(a), 0, math.sin(a)) * World.HUB_RADIUS
+	end
+	for k = 0, STEPS - 1 do
+		barrier(f, rim(k), rim(k + 1))
+	end
+	local far = -(ARENA_FAR + 12)
+	barrier(f, rim(0), Vector3.new(half, 0, far))
+	barrier(f, rim(STEPS), Vector3.new(-half, 0, far))
+	barrier(f, Vector3.new(-half, 0, far), Vector3.new(half, 0, far))
+
+	local arena = folder(root, "WaveArena")
+	local length = ARENA_FAR - ARENA_NEAR
+	part(
+		arena,
+		Vector3.new(ARENA_HALF * 2, 0.4, length),
+		CFrame.new(0, 0.2, -(ARENA_NEAR + length / 2)),
+		Color3.fromRGB(190, 160, 120),
+		M.Ground
+	)
+	local stand =
+		disc(arena, Vector3.new(0, 0.7, -(ARENA_NEAR + 40)), 30, 0.4, Color3.fromRGB(120, 220, 255), M.SmoothPlastic)
+	stand.Name = "Stand"
+	CollectionService:AddTag(stand, "WaveStand")
+	local spawn = part(
+		arena,
+		Vector3.new(ARENA_HALF * 2 - 10, 0.4, 8),
+		CFrame.new(0, 0.5, -(ARENA_FAR - 20)),
+		Color3.fromRGB(220, 70, 70),
+		M.Neon
+	)
+	spawn.Name = "Spawn"
+	CollectionService:AddTag(spawn, "WaveSpawn")
+	signboard(arena, CFrame.new(0, 0, -(ARENA_NEAR - 12)), 24, "Endless Waves", Color3.fromRGB(190, 70, 70), 8)
 end
 
 -- Ranches -------------------------------------------------------------------------------------------
@@ -634,6 +731,8 @@ local function ranch(root: Instance, i: number, rng: Random)
 	do
 		tree(f, at(p.X, 0, p.Z).Position, rng, rng:NextNumber(1.1, 1.5))
 	end
+	-- mountains all round the island hide the void
+	mountainRing(f, cf.Position, 100, rng)
 end
 
 local function ranches(root: Instance, rng: Random)
@@ -680,7 +779,7 @@ end
 
 local function scenery(root: Instance, rng: Random)
 	local f = folder(root, "Scenery")
-	-- groves of 4 to 8 trees between the zones, then a denser forest ring in front of the hills
+	-- groves of 4 to 8 trees between the zones, then a forest ring in front of the mountains
 	local groves, tries = 0, 0
 	while groves < 16 and tries < 2000 do
 		tries += 1
@@ -698,7 +797,7 @@ local function scenery(root: Instance, rng: Random)
 	end
 	for i = 0, 89 do
 		local a = i / 90 * math.pi * 2 + rng:NextNumber(-0.03, 0.03)
-		local p = Vector3.new(math.cos(a), 0, math.sin(a)) * rng:NextNumber(355, 410)
+		local p = Vector3.new(math.cos(a), 0, math.sin(a)) * rng:NextNumber(255, 295)
 		if open(p, 4) then
 			tree(f, p, rng, rng:NextNumber(1.3, 1.9))
 		end
@@ -743,6 +842,7 @@ function World.build(): Folder
 	root.Name = "Hub"
 	plaza(root, rng)
 	paths(root)
+	mountains(root, rng)
 	ranches(root, rng)
 	scenery(root, rng)
 	root.Parent = Workspace

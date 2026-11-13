@@ -1,6 +1,6 @@
 # Animal Stations: the beta pool (bestiary and art brief)
 
-Status: small beta pool, draft (decision 0029). Names, stats and odds are in
+Status: small beta pool, draft (decisions 0029, 0030). Names, stats and odds are in
 `src/shared/StationConfig.luau` (the source of truth). This page adds the **look** of every
 version for the art pipeline.
 
@@ -28,7 +28,8 @@ version for the art pipeline.
 | Legendary | 1 in 2,000 | basic × 2 | +40 to one stat |
 | Mythic | 1 in 20,000 | basic × 3 | +60 to one stat |
 
-- Stats then vary ±10% per animal. The Titan has no variants.
+- On hatch every stat gets a **base level** from 1 to 15 (higher numbers are rarer), and 1
+  hatch in 100,000 has one stat at level 70 straight away. The Titan has no variants.
 
 ## Art rules for every animal
 

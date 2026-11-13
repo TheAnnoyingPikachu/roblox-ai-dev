@@ -66,7 +66,11 @@ local panel = Ui.panel(screen, { size = UDim2.fromOffset(640, 440), anchor = "ce
 panel.Visible = false
 local title = Ui.label(panel, "Your animals", { size = 24 })
 title.LayoutOrder = 1
-local hint = Ui.label(panel, "Tap a stat to train it at your ranch. Tap it again to stop.", { size = 14, muted = true })
+local hint = Ui.label(
+	panel,
+	"Each stat shows its level and battle value. Tap one to train it at your ranch; tap again to stop.",
+	{ size = 14, muted = true }
+)
 hint.LayoutOrder = 2
 local list = Instance.new("ScrollingFrame")
 list.LayoutOrder = 3
@@ -107,16 +111,19 @@ local function live(a: any): any
 	return StationRules.train(a, a.at, elapsed)
 end
 
--- Two lines for a stat button: "SPD 46" and "Lv 7", "Lv 7  40%" while training, or "MAX".
+-- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
+-- over "46"), with the progress to the next level while training, or MAX.
 local function statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
-	local head = `{STAT_SHORT[stat]} {StationRules.stat(a, stat :: any)}`
+	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
+	local value = StationRules.stat(a, stat :: any)
 	if level >= StationConfig.MAX_LEVEL then
-		return `{head}\nMAX`
+		return `{head}\n{value}  MAX`
 	elseif training then
-		return `{head}\nLv {level}  {math.floor((a.trained[stat] - level) * 100)}%`
+		local progress = if a.trained then a.trained[stat] - level else 0
+		return `{head}\n{value}   {math.floor(progress * 100)}%`
 	end
-	return `{head}\nLv {level}`
+	return `{head}\n{value}`
 end
 
 local RIGHT = 344 -- width of a row's button block: the stat grid, a gap and the team button
@@ -250,7 +257,13 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		profile = payload
 		refresh()
 	elseif kind == "hatched" then
-		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)})`, 4)
+		local lucky = ""
+		for _, stat in StationConfig.STATS do
+			if StationRules.level(payload, stat) >= StationConfig.MAX_LEVEL then
+				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.MAX_LEVEL}!`
+			end
+		end
+		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
 	elseif kind == "refused" then
 		Ui.toast(screen, REFUSED[payload] or `Can't do that ({payload})`)
 	end

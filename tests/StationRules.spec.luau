@@ -319,11 +319,33 @@ describe("StationRules.hatch", function()
 		expect(a1.s).toBe(a2.s)
 		expect(a1.v).toBe(a2.v)
 		expect(a1.stats.speed).toBe(a2.stats.speed)
+		for _, stat in StationConfig.STATS do
+			expect(StationRules.level(a1, stat)).toBe(StationRules.level(a2, stat))
+		end
 	end)
 
-	it("hatches mostly basics, rare variants, with every stat within the variance", function()
+	it("rolls a base level from 1 to 15, each higher number less likely than the one before", function()
+		expect(StationConfig.BASE_MAX).toBe(15)
+		expect(StationRules.BASE_ROLL).toBe(120)
+		expect(StationRules.baseLevel(1)).toBe(1)
+		expect(StationRules.baseLevel(15)).toBe(1)
+		expect(StationRules.baseLevel(16)).toBe(2)
+		expect(StationRules.baseLevel(119)).toBe(14)
+		expect(StationRules.baseLevel(120)).toBe(15)
+		local share = table.create(15, 0)
+		for r = 1, StationRules.BASE_ROLL do
+			share[StationRules.baseLevel(r)] += 1
+		end
+		for level = 2, 15 do
+			expect(share[level] < share[level - 1]).toBeTruthy()
+			expect(share[level] > 0).toBeTruthy()
+		end
+	end)
+
+	it("hatches mostly basics and rare variants, with the version's stats and base levels of 1 to 15", function()
 		local rng = Rng.seed(42)
 		local seen, variants = {}, 0
+		local tally = table.create(StationConfig.BASE_MAX, 0)
 		local N = 20000
 		for _ = 1, N do
 			local a
@@ -335,18 +357,55 @@ describe("StationRules.hatch", function()
 				expect(StationConfig.variant(animal.s, animal.v) ~= nil).toBeTruthy()
 			end
 			local base = StationRules.versionStats(animal.s, animal.v) :: StationConfig.Stats
+			local maxed = 0
 			for _, stat in StationConfig.STATS do
-				local x, b = (animal.stats :: any)[stat], (base :: any)[stat]
-				local lo = math.max(StationConfig.STAT_MIN, math.floor(b * (100 - StationConfig.VARIANCE) / 100))
-				local hi = math.floor(b * (100 + StationConfig.VARIANCE) / 100)
-				expect(x >= lo and x <= hi).toBeTruthy()
+				expect((animal.stats :: any)[stat]).toBe((base :: any)[stat])
+				local level = StationRules.level(animal, stat)
+				if level == StationConfig.MAX_LEVEL then
+					maxed += 1 -- the jackpot (about 1 in 100,000 hatches)
+				else
+					expect(level >= 1 and level <= StationConfig.BASE_MAX).toBeTruthy()
+					tally[level] += 1
+				end
 			end
+			expect(maxed <= 1).toBeTruthy()
 		end
 		for _, o in (StationConfig.egg("meadow") :: StationConfig.Egg).odds do
 			expect(seen[o.id]).toBe(true)
 		end
 		-- expected 5550 ppm = 111 in 20000; allow wide seeded noise
 		expect(variants >= 60 and variants <= 170).toBeTruthy()
+		-- 120,000 base levels: low numbers are common, a 15 is rare but happens
+		expect(tally[1] > tally[5] and tally[5] > tally[10] and tally[10] > tally[15]).toBeTruthy()
+		expect(tally[15] > 0).toBeTruthy()
+	end)
+
+	it("has a tiny jackpot that hatches exactly one stat at level 70", function()
+		local mythic = (StationConfig.tier("mythic") :: StationConfig.Tier).ppm
+		expect(StationConfig.JACKPOT_PPM > 0 and StationConfig.JACKPOT_PPM < mythic).toBeTruthy()
+		-- force the jackpot on, then off, to check both paths; put the real chance back after
+		local real = StationConfig.JACKPOT_PPM
+		local good = true
+		local rng = Rng.seed(5)
+		for _, forced in { StationRules.PPM, 0 } do
+			StationConfig.JACKPOT_PPM = forced
+			for _ = 1, 500 do
+				local a
+				a, rng = StationRules.hatch("wild", rng)
+				local maxed = 0
+				for _, stat in StationConfig.STATS do
+					local level = StationRules.level(a :: StationRules.Owned, stat)
+					if level == StationConfig.MAX_LEVEL then
+						maxed += 1
+					elseif level < 1 or level > StationConfig.BASE_MAX then
+						good = false
+					end
+				end
+				good = good and maxed == (if forced == 0 then 0 else 1)
+			end
+		end
+		StationConfig.JACKPOT_PPM = real
+		expect(good).toBe(true)
 	end)
 
 	it("always hatches the plain Elephant from the Legendary Egg, even when a variant is rolled", function()

@@ -127,7 +127,7 @@ local function buy(player: Player, eggId: string): (boolean, string?)
 	saves.apply(player, function(q)
 		return (StationProgress.buy(q, eggId, hatched))
 	end)
-	remotes.fx(player, "hatched", { s = hatched.s, v = hatched.v, stats = hatched.stats })
+	remotes.fx(player, "hatched", { s = hatched.s, v = hatched.v, stats = hatched.stats, trained = hatched.trained })
 	return true, nil
 end
 

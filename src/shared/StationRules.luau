@@ -1,6 +1,6 @@
 --!strict
--- Pure Animal Stations rules (decisions 0019 to 0029): hatch an animal (species, then a
--- rare variant roll, then stats), level its stats at the stations, and its role and matchups.
+-- Pure Animal Stations rules (decisions 0019 to 0030): hatch an animal (species, then a
+-- rare variant roll, then a base level for each stat), level its stats, and its role and matchups.
 -- The server owns the Rng state and the clock; the client never sends stats or times.
 
 local Rng = require("./Rng")
@@ -9,11 +9,12 @@ local StationConfig = require("./StationConfig")
 local StationRules = {}
 
 type Stats = StationConfig.Stats
--- One hatched animal: v nil = basic; stats rolled at hatch; trained = each stat's level, 0 to
--- MAX_LEVEL, with the progress to the next level as the fraction.
+-- One hatched animal: v nil = basic; stats = its version's numbers; trained = each stat's level
+-- (rolled at hatch, then trained up to MAX_LEVEL) with the progress to the next as the fraction.
 export type Owned = { s: string, v: string?, stats: Stats, trained: Stats? }
 
 StationRules.PPM = 1_000_000
+StationRules.BASE_ROLL = StationConfig.BASE_MAX * (StationConfig.BASE_MAX + 1) / 2 -- size of the base level roll
 StationRules.ZERO = { speed = 0, strength = 0, stamina = 0, mana = 0, health = 0, defence = 0 } :: Stats
 -- The stats an attack can come from. Health is only HP and Defence only cuts damage.
 StationRules.ATTACK_STATS = { "speed", "strength", "stamina", "mana" } :: { StationConfig.Stat }
@@ -42,8 +43,20 @@ function StationRules.pickTier(r: number): string?
 	return nil
 end
 
--- The version's stats before the per-hatch variance: basic stats, or basic x mult + twist for a
--- variant. Nil for an unknown species or a variant of another species. Used for stat cards too.
+-- The base level for r in 1..BASE_ROLL: 1 is the most likely and each higher number less so.
+function StationRules.baseLevel(r: number): number
+	local total = 0
+	for level = 1, StationConfig.BASE_MAX do
+		total += StationConfig.BASE_MAX + 1 - level
+		if r <= total then
+			return level
+		end
+	end
+	return StationConfig.BASE_MAX
+end
+
+-- A version's stats at level 0: basic stats, or basic x mult + twist for a variant. Nil for an
+-- unknown species or a variant of another species.
 function StationRules.versionStats(speciesId: string, variantId: string?): Stats?
 	local sp = StationConfig.species(speciesId)
 	if sp == nil then
@@ -66,7 +79,7 @@ function StationRules.versionStats(speciesId: string, variantId: string?): Stats
 end
 
 -- Hatch one animal from `eggId`. Nil for an unknown egg (the server refuses the request).
--- Draws: species, variant tier, then one per stat.
+-- Draws: species, variant tier, a base level per stat, the jackpot (and its stat when it hits).
 function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
@@ -85,15 +98,21 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 			end
 		end
 	end
-	local base = StationRules.versionStats(species, variantId) :: Stats
-	local stats = {} :: any
+	local levels = {} :: any
 	for _, stat in StationConfig.STATS do
-		local pct
-		pct, rng = Rng.int(rng, 100 - StationConfig.VARIANCE, 100 + StationConfig.VARIANCE)
-		local x = math.floor((base :: any)[stat] * pct / 100)
-		stats[stat] = math.clamp(x, StationConfig.STAT_MIN, StationConfig.STAT_MAX)
+		local roll
+		roll, rng = Rng.int(rng, 1, StationRules.BASE_ROLL)
+		levels[stat] = StationRules.baseLevel(roll)
 	end
-	return { s = species, v = variantId, stats = stats :: Stats }, rng
+	local jackpot
+	jackpot, rng = Rng.int(rng, 1, StationRules.PPM)
+	if jackpot <= StationConfig.JACKPOT_PPM then
+		local which
+		which, rng = Rng.int(rng, 1, #StationConfig.STATS)
+		levels[StationConfig.STATS[which]] = StationConfig.MAX_LEVEL
+	end
+	local stats = StationRules.versionStats(species, variantId) :: Stats
+	return { s = species, v = variantId, stats = stats, trained = levels :: Stats }, rng
 end
 
 -- An animal's attack stat: its highest current stat among ATTACK_STATS (ties go to the first).
