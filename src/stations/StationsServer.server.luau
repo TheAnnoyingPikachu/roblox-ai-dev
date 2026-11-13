@@ -52,6 +52,11 @@ end
 
 local owners: { [number]: Player } = {}
 
+-- The admin menu (decision 0038) is for the game's owner, and for anyone running it in Studio.
+local function isAdmin(player: Player): boolean
+	return RunService:IsStudio() or (game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId)
+end
+
 local function ranchOf(player: Player): number?
 	for i, p in owners do
 		if p == player then
@@ -69,6 +74,7 @@ local function toRanch(player: Player)
 end
 
 local function join(player: Player)
+	player:SetAttribute("Admin", isAdmin(player))
 	for i = 1, World.RANCHES do
 		if owners[i] == nil then
 			owners[i] = player
@@ -166,6 +172,54 @@ local function buy(player: Player, eggId: string): (boolean, string?)
 	return true, nil
 end
 
+-- Admin menu: stand any animal's model in front of the admin to look at it. Display only:
+-- nothing is added to a profile. LOOKS lists every animal and then its variant, in the order the
+-- client's menu shows them.
+local StationAssets = require(Shared:WaitForChild("StationAssets"))
+local LOOKS: { string } = {}
+for _, sp in StationConfig.SPECIES do
+	table.insert(LOOKS, Creatures.asset(sp.id))
+	for _, va in sp.variants do
+		table.insert(LOOKS, Creatures.asset(sp.id, va.id))
+	end
+end
+
+local function looks(player: Player): Instance
+	local name = `AdminShow{player.UserId}`
+	local f = workspace:FindFirstChild(name)
+	if f == nil then
+		f = Instance.new("Folder")
+		f.Name = name
+		f.Parent = workspace
+	end
+	return f :: Instance
+end
+
+-- Stand `names` in a row in front of `player`, side by side, facing back at them.
+local function standBefore(player: Player, names: { string })
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if root == nil then
+		return
+	end
+	local flat = root.CFrame.LookVector * Vector3.new(1, 0, 1)
+	flat = if flat.Magnitude < 0.01 then Vector3.new(0, 0, -1) else flat.Unit
+	local feet = root.Position - Vector3.new(0, 3, 0)
+	local facing = CFrame.lookAt(feet, feet + flat)
+	local total, deepest = 0, 0
+	for _, name in names do
+		total += StationAssets[name].size[1] + 5
+		deepest = math.max(deepest, StationAssets[name].size[3])
+	end
+	local x = -total / 2
+	local folder = looks(player)
+	for _, name in names do
+		local wide = StationAssets[name].size[1] + 5
+		local spot = facing * Vector3.new(x + wide / 2, 0, -(12 + deepest / 2))
+		x += wide
+		task.spawn(Creatures.spawn, name, CFrame.lookAt(spot, spot - flat), folder)
+	end
+end
+
 local router = Router.new({
 	ready = function(player)
 		return saves ~= nil and saves.isLoaded(player)
@@ -250,6 +304,36 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- the admin menu: `look` stands the k-th animal (0 = all of them) before the admin
+		look = {
+			args = { Payload.int({ min = 0, max = 100 }) },
+			handler = function(player, k: number)
+				if not isAdmin(player) or (k ~= 0 and LOOKS[k] == nil) then
+					return false, "admin"
+				end
+				standBefore(player, if k == 0 then LOOKS else { LOOKS[k] })
+				return true, nil
+			end,
+		},
+		look_anim = {
+			args = { Payload.enum({ "idle", "walk", "attack", "magic" }) },
+			handler = function(player, anim: string)
+				if not isAdmin(player) then
+					return false, "admin"
+				end
+				for _, model in looks(player):GetChildren() do
+					Creatures.play(model :: Model, anim)
+				end
+				return true, nil
+			end,
+		},
+		look_clear = {
+			args = {},
+			handler = function(player)
+				looks(player):ClearAllChildren()
+				return true, nil
+			end,
+		},
 		upgrade = {
 			args = { Payload.enum(ids(StationConfig.UPGRADES)) },
 			handler = function(player, id: string)
@@ -314,6 +398,7 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	looks(player):Destroy()
 	local i = ranchOf(player)
 	if i then
 		owners[i] = nil

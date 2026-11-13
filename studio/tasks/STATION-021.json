@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-021",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "An admin menu for the game's owner (and anyone in Studio) to spawn any animal's model, or all of them in a row, play each animation on them and clear them.",
+  "inputs": [
+    "docs/decisions/0038-animal-stations-admin-menu.md"
+  ],
+  "dependencies": [
+    "STATION-020"
+  ],
+  "files": [
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0038-animal-stations-admin-menu.md"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Admin button shows only for a player the server marks as admin",
+    "Every admin request is refused on the server for a player who is not an admin",
+    "Spawning all stands sixteen models in a row in front of the admin, and the animation buttons play on them",
+    "Nothing the menu does changes a saved profile"
+  ],
+  "verification": "2026-11-13: lune 659/659, stylua and selene clean. Studio play (stations.rbxl, synced from source): the player was marked admin and the Admin button showed; its list has a spawn button for each of the 16 animals plus one for all; 'spawn all' stood 16 models in a row in front of the player; 'walk' set every one walking; an index that does not exist was refused by the server. No script errors. Not checked: a live server, where only the owning account is admin (Studio makes everyone admin), so a non-admin being refused was not seen in play.",
+  "output_artifacts": [
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Display only, no rules or saved data: no headless test. The admin check is on the server (the owning user's id, or Studio)."
+}

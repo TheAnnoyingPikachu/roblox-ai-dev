@@ -50,6 +50,7 @@ local REFUSED: { [string]: string } = {
 	locked = `Reach level {lockedAt} to unlock that egg`,
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
+	admin = "Admins only",
 	eggs_full = "Your egg storage is full",
 	nests_full = "All six hatching places are taken",
 	not_ready = "That egg is not ready yet",
@@ -369,6 +370,44 @@ local store, storeRows = sheet("EggStorage", "Egg storage")
 local function only(frame: Frame) -- one list at a time
 	menu.Visible, shop.Visible, store.Visible = frame == menu, frame == shop, frame == store
 end
+
+-- Admin menu (decision 0038): only for players the server marks as admin (the game's owner, or
+-- anyone in Studio). Stands animal models in front of you to look at; nothing is saved.
+local admin, adminRows = sheet("Admin", "Admin: look at the animals")
+local adminToggle = Ui.panel(screen, { size = UDim2.fromOffset(220, 64), name = "AdminButton" })
+adminToggle.Position = UDim2.fromOffset(12, 192)
+Ui.button(adminToggle, "Admin", function()
+	admin.Visible = not admin.Visible
+end)
+do
+	local n = 0
+	local function add(text: string, action: string, value: any?)
+		n += 1
+		Ui.button(adminRows, text, function()
+			send(action, value)
+		end).LayoutOrder = n
+	end
+	add("Spawn every animal in a row", "look", 0)
+	add("Clear them", "look_clear")
+	for _, anim in { "idle", "walk", "attack", "magic" } do
+		add(`All play: {anim}`, "look_anim", anim)
+	end
+	local k = 0 -- the server lists them in this order too
+	for _, sp in StationConfig.SPECIES do
+		k += 1
+		add(`Spawn {sp.name}`, "look", k)
+		for _, va in sp.variants do
+			k += 1
+			add(`Spawn {va.name} ({va.tier})`, "look", k)
+		end
+	end
+end
+local function showAdmin()
+	adminToggle.Visible = Players.LocalPlayer:GetAttribute("Admin") == true
+	admin.Visible = admin.Visible and adminToggle.Visible
+end
+Players.LocalPlayer:GetAttributeChangedSignal("Admin"):Connect(showAdmin)
+showAdmin()
 local eggLines: { { label: TextLabel, egg: any } } = {} -- the menu's egg lines, for their countdowns
 
 local function clear(rows: Instance)
