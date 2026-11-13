@@ -9,6 +9,14 @@ Hatch animals from eggs. Every animal has four stats: speed, strength, stamina a
 them at the stations, build a team of three, and push through endless levels for coins to buy
 better eggs.
 
+## Roles, Titans and roster (decision 0027)
+
+Three roles in a rock paper scissors loop, set by species: Attack beats Utility, Utility beats
+Defense, Defense beats Attack. Titans are a separate legendary category in the team's fourth
+slot. The roster is an African beta pool: Hyena, Jackal, Cheetah, Lion (Attack); Warthog,
+Tortoise, Rhino, Gorilla (Defense); Meerkat, Flamingo, Giraffe, Mandrill (Utility); Elephant,
+Hippo, Crocodile (Titans). This replaces the role and matchup parts of the sections below.
+
 ## Next direction (decision 0025, not built)
 
 PvP on hold. Roles become Attack, Defense, Utility, with a **Titan** as a legendary fourth team
@@ -46,9 +54,9 @@ Speed beats Mana, Mana beats Strength, Strength beats Stamina, Stamina beats Spe
 
 ## Built so far
 
-- `StationConfig`: 4 stats, 6 rarities, 16 species each with a basic version and 3 super-rare
-  variants (decision 0020, bestiary in `game7-animals.md`), 3 eggs, 4 stations.
-- `StationRules`: `hatch`, `versionStats`, `rarity`, `stat`, `train`, `battleType`, `matchup`; `LevelRules`: `enemies`, `fight`, `reward`; `BattleRules`: `fighter`, `battle` (roles), tested in `StationRules`, `LevelRules` and `BattleRules` specs.
+- `StationConfig`: 4 stats, 3 roles + Titans, 15 African species (12 with a basic version and 3
+  super-rare variants, 3 Titans; bestiary in `game7-animals.md`), 3 eggs, 4 stations.
+- `StationRules`: `hatch`, `versionStats`, `rarity`, `stat`, `train`, `bestStat`, `role`, `matchup`; `LevelRules`: `enemies`, `fight`, `reward`; `BattleRules`: `fighter`, `battle` (roles), tested in `StationRules`, `LevelRules` and `BattleRules` specs.
 - `StationProgress`: the saved profile (coins, animals, team, training), egg buying, tested in its spec. Server requests and a first HUD use it (0025).
 
 - World (`src/stations/World.luau`): shared hub plaza, egg market, four stations, and three home

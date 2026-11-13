@@ -1,8 +1,8 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019, 0020, 0022, 0023): stats, species, variants,
--- eggs, training stations, battle matchups.
--- Every species has a basic version (common to rare, easy to get) and three variants (epic,
--- legendary, mythic, super rare). Looks for art: docs/game-design/game7-animals.md.
+-- Game 7 "Animal Stations" data (decisions 0019 to 0027): stats, roles, the African beta pool of
+-- species with their variants, Titans, eggs, training stations and battle matchups.
+-- Every non-Titan species has a basic version (common to rare) and three super-rare variants
+-- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
 local StationConfig = {}
@@ -10,7 +10,14 @@ local StationConfig = {}
 export type Stat = "speed" | "strength" | "stamina" | "mana"
 export type Stats = { speed: number, strength: number, stamina: number, mana: number }
 export type Variant = { id: string, name: string, tier: string, twist: Stat }
-export type Species = { id: string, name: string, rarity: string, stats: Stats, variants: { Variant } }
+export type Species = {
+	id: string,
+	name: string,
+	role: string, -- "attack" | "defense" | "utility" | "titan"
+	rarity: string,
+	stats: Stats,
+	variants: { Variant },
+}
 export type Tier = { tier: string, ppm: number, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
 export type Egg = { id: string, name: string, price: number, odds: { Odds } }
@@ -24,8 +31,16 @@ StationConfig.VARIANCE = 10
 StationConfig.BASIC_RARITIES = { "common", "uncommon", "rare" }
 StationConfig.RARITIES = { "common", "uncommon", "rare", "epic", "legendary", "mythic" }
 
+-- Roles (decision 0027). The three team roles form a rock paper scissors loop; Titans stand
+-- outside it (neutral to everyone) and fill the team's fourth slot. BattleRules gives each its job.
+StationConfig.ROLES = { "attack", "defense", "utility" }
+StationConfig.TITAN = "titan"
+-- Attack breaks through Utility, Utility's magic gets past Defense, Defense blocks Attack.
+StationConfig.BEATS = { attack = "utility", utility = "defense", defense = "attack" } :: { [string]: string }
+StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
+
 -- Variant chance on every hatch, from any egg, in parts per million (shown as "1 in N").
--- A variant's stats are the basic stats x mult, plus `twist` on its twist stat (a second job).
+-- A variant's stats are the basic stats x mult, plus `twist` on its twist stat.
 StationConfig.TIERS = {
 	{ tier = "mythic", ppm = 50, mult = 3.0, twist = 60 }, -- 1 in 20,000
 	{ tier = "legendary", ppm = 500, mult = 2.0, twist = 40 }, -- 1 in 2,000
@@ -40,205 +55,96 @@ local function s(speed: number, strength: number, stamina: number, mana: number)
 	return { speed = speed, strength = strength, stamina = stamina, mana = mana }
 end
 
--- Four species per stat: two common, one uncommon, one rare. Variants in order epic, legendary, mythic.
+local function sp(id: string, name: string, role: string, rarity: string, stats: Stats, variants: { Variant }): Species
+	return { id = id, name = name, role = role, rarity = rarity, stats = stats, variants = variants }
+end
+
+-- African beta pool. Four species per role (two common, one uncommon, one rare), variants in order
+-- epic, legendary, mythic. Then the Titans: legendary, no variants, far bigger stats.
 StationConfig.SPECIES = {
-	-- speed
-	{
-		id = "bunny",
-		name = "Bunny",
-		rarity = "common",
-		stats = s(40, 10, 8, 18),
-		variants = {
-			v("clover_bunny", "Clover Bunny", "epic", "mana"),
-			v("moon_bunny", "Moon Bunny", "legendary", "stamina"),
-			v("comet_bunny", "Comet Bunny", "mythic", "speed"),
-		},
-	},
-	{
-		id = "fox",
-		name = "Fox",
-		rarity = "common",
-		stats = s(45, 15, 12, 30),
-		variants = {
-			v("arctic_fox", "Arctic Fox", "epic", "stamina"),
-			v("ember_fox", "Ember Fox", "legendary", "strength"),
-			v("kitsune", "Kitsune", "mythic", "mana"),
-		},
-	},
-	{
-		id = "horse",
-		name = "Horse",
-		rarity = "uncommon",
-		stats = s(65, 40, 20, 20),
-		variants = {
-			v("painted_pony", "Painted Pony", "epic", "mana"),
-			v("pegasus", "Pegasus", "legendary", "strength"),
-			v("starlight_unicorn", "Starlight Unicorn", "mythic", "mana"),
-		},
-	},
-	{
-		id = "cheetah",
-		name = "Cheetah",
-		rarity = "rare",
-		stats = s(90, 30, 10, 25),
-		variants = {
-			v("shadow_cheetah", "Shadow Cheetah", "epic", "mana"),
-			v("golden_cheetah", "Golden Cheetah", "legendary", "strength"),
-			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
-		},
-	},
-	-- strength
-	{
-		id = "pig",
-		name = "Pig",
-		rarity = "common",
-		stats = s(10, 40, 12, 20),
-		variants = {
-			v("truffle_pig", "Truffle Pig", "epic", "mana"),
-			v("royal_pig", "Royal Pig", "legendary", "mana"),
-			v("flying_pig", "Flying Pig", "mythic", "speed"),
-		},
-	},
-	{
-		id = "goat",
-		name = "Goat",
-		rarity = "common",
-		stats = s(25, 45, 5, 15),
-		variants = {
-			v("mountain_goat", "Mountain Goat", "epic", "speed"),
-			v("crystal_goat", "Crystal Goat", "legendary", "mana"),
-			v("thunder_ram", "Thunder Ram", "mythic", "strength"),
-		},
-	},
-	{
-		id = "bear",
-		name = "Bear",
-		rarity = "uncommon",
-		stats = s(25, 65, 35, 20),
-		variants = {
-			v("panda_bear", "Panda Bear", "epic", "mana"),
-			v("polar_bear", "Polar Bear", "legendary", "stamina"),
-			v("aurora_bear", "Aurora Bear", "mythic", "mana"),
-		},
-	},
-	{
-		id = "gorilla",
-		name = "Gorilla",
-		rarity = "rare",
-		stats = s(25, 90, 10, 45),
-		variants = {
-			v("silverback", "Silverback", "epic", "mana"),
-			v("lava_gorilla", "Lava Gorilla", "legendary", "strength"),
-			v("galaxy_gorilla", "Galaxy Gorilla", "mythic", "mana"),
-		},
-	},
-	-- stamina
-	{
-		id = "duck",
-		name = "Duck",
-		rarity = "common",
-		stats = s(12, 8, 42, 15),
-		variants = {
-			v("rubber_duck", "Rubber Duck", "epic", "stamina"),
-			v("golden_duck", "Golden Duck", "legendary", "mana"),
-			v("storm_duck", "Storm Duck", "mythic", "speed"),
-		},
-	},
-	{
-		id = "frog",
-		name = "Frog",
-		rarity = "common",
-		stats = s(30, 8, 45, 12),
-		variants = {
-			v("dart_frog", "Dart Frog", "epic", "speed"),
-			v("frog_prince", "Frog Prince", "legendary", "mana"),
-			v("jade_frog", "Jade Frog", "mythic", "strength"),
-		},
-	},
-	{
-		id = "otter",
-		name = "Otter",
-		rarity = "uncommon",
-		stats = s(25, 20, 65, 35),
-		variants = {
-			v("sea_otter", "Sea Otter", "epic", "mana"),
-			v("pearl_otter", "Pearl Otter", "legendary", "mana"),
-			v("tidal_otter", "Tidal Otter", "mythic", "strength"),
-		},
-	},
-	{
-		id = "dolphin",
-		name = "Dolphin",
-		rarity = "rare",
-		stats = s(35, 30, 90, 60),
-		variants = {
-			v("pink_dolphin", "Pink River Dolphin", "epic", "mana"),
-			v("midnight_dolphin", "Midnight Dolphin", "legendary", "strength"),
-			v("crystal_dolphin", "Crystal Dolphin", "mythic", "speed"),
-		},
-	},
-	-- mana
-	{
-		id = "mouse",
-		name = "Mouse",
-		rarity = "common",
-		stats = s(22, 5, 8, 42),
-		variants = {
-			v("clockwork_mouse", "Clockwork Mouse", "epic", "speed"),
-			v("wizard_mouse", "Wizard Mouse", "legendary", "mana"),
-			v("astro_mouse", "Astro Mouse", "mythic", "speed"),
-		},
-	},
-	{
-		id = "raccoon",
-		name = "Raccoon",
-		rarity = "common",
-		stats = s(20, 20, 15, 45),
-		variants = {
-			v("treasure_raccoon", "Treasure Raccoon", "epic", "strength"),
-			v("ninja_raccoon", "Ninja Raccoon", "legendary", "speed"),
-			v("moonleaf_tanuki", "Moonleaf Tanuki", "mythic", "strength"),
-		},
-	},
-	{
-		id = "parrot",
-		name = "Parrot",
-		rarity = "uncommon",
-		stats = s(30, 10, 10, 65),
-		variants = {
-			v("pirate_parrot", "Pirate Parrot", "epic", "stamina"),
-			v("rainbow_macaw", "Rainbow Macaw", "legendary", "speed"),
-			v("phoenix_parrot", "Phoenix Parrot", "mythic", "strength"),
-		},
-	},
-	{
-		id = "owl",
-		name = "Owl",
-		rarity = "rare",
-		stats = s(35, 15, 5, 90),
-		variants = {
-			v("snowy_owl", "Snowy Owl", "epic", "stamina"),
-			v("arcane_owl", "Arcane Owl", "legendary", "speed"),
-			v("celestial_owl", "Celestial Owl", "mythic", "strength"),
-		},
-	},
+	-- attack: fast and strong
+	sp("hyena", "Hyena", "attack", "common", s(30, 40, 20, 12), {
+		v("ember_hyena", "Ember Hyena", "epic", "strength"),
+		v("bone_hyena", "Bonechief Hyena", "legendary", "stamina"),
+		v("eclipse_hyena", "Eclipse Hyena", "mythic", "mana"),
+	}),
+	sp("jackal", "Jackal", "attack", "common", s(42, 22, 15, 18), {
+		v("dune_jackal", "Dune Jackal", "epic", "stamina"),
+		v("golden_jackal", "Golden Jackal", "legendary", "strength"),
+		v("pharaoh_jackal", "Pharaoh Jackal", "mythic", "mana"),
+	}),
+	sp("cheetah", "Cheetah", "attack", "uncommon", s(70, 35, 20, 20), {
+		v("shadow_cheetah", "Shadow Cheetah", "epic", "mana"),
+		v("golden_cheetah", "Golden Cheetah", "legendary", "strength"),
+		v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
+	}),
+	sp("lion", "Lion", "attack", "rare", s(55, 90, 40, 25), {
+		v("white_lion", "White Lion", "epic", "stamina"),
+		v("sun_lion", "Sun Lion", "legendary", "mana"),
+		v("star_lion", "Constellation Lion", "mythic", "strength"),
+	}),
+	-- defense: high stamina
+	sp("warthog", "Warthog", "defense", "common", s(22, 35, 40, 8), {
+		v("mud_warthog", "Mudslinger Warthog", "epic", "strength"),
+		v("iron_warthog", "Ironhide Warthog", "legendary", "stamina"),
+		v("magma_warthog", "Magma Warthog", "mythic", "strength"),
+	}),
+	sp("tortoise", "Tortoise", "defense", "common", s(5, 25, 48, 20), {
+		v("moss_tortoise", "Mossback Tortoise", "epic", "mana"),
+		v("gem_tortoise", "Gemshell Tortoise", "legendary", "stamina"),
+		v("island_tortoise", "Island Tortoise", "mythic", "mana"),
+	}),
+	sp("rhino", "Rhino", "defense", "uncommon", s(25, 60, 65, 10), {
+		v("stone_rhino", "Stone Rhino", "epic", "stamina"),
+		v("crystal_rhino", "Crystal Rhino", "legendary", "mana"),
+		v("thunder_rhino", "Thunder Rhino", "mythic", "speed"),
+	}),
+	sp("gorilla", "Gorilla", "defense", "rare", s(25, 80, 90, 40), {
+		v("silverback", "Silverback", "epic", "mana"),
+		v("lava_gorilla", "Lava Gorilla", "legendary", "strength"),
+		v("galaxy_gorilla", "Galaxy Gorilla", "mythic", "mana"),
+	}),
+	-- utility: high mana
+	sp("meerkat", "Meerkat", "utility", "common", s(30, 8, 15, 42), {
+		v("scout_meerkat", "Scout Meerkat", "epic", "speed"),
+		v("sandmage_meerkat", "Sandmage Meerkat", "legendary", "mana"),
+		v("mirage_meerkat", "Mirage Meerkat", "mythic", "speed"),
+	}),
+	sp("flamingo", "Flamingo", "utility", "common", s(20, 8, 22, 45), {
+		v("sunset_flamingo", "Sunset Flamingo", "epic", "stamina"),
+		v("pearl_flamingo", "Pearl Flamingo", "legendary", "mana"),
+		v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "strength"),
+	}),
+	sp("giraffe", "Giraffe", "utility", "uncommon", s(30, 25, 35, 65), {
+		v("painted_giraffe", "Painted Giraffe", "epic", "speed"),
+		v("cloud_giraffe", "Cloudtop Giraffe", "legendary", "stamina"),
+		v("star_giraffe", "Stargazer Giraffe", "mythic", "mana"),
+	}),
+	sp("mandrill", "Mandrill", "utility", "rare", s(35, 30, 40, 90), {
+		v("masked_mandrill", "Masked Mandrill", "epic", "strength"),
+		v("storm_mandrill", "Stormcaller Mandrill", "legendary", "speed"),
+		v("spirit_mandrill", "Spirit Mandrill", "mythic", "mana"),
+	}),
+	-- titans
+	sp("elephant", "Elephant", "titan", "legendary", s(30, 160, 180, 60), {}),
+	sp("hippo", "Hippo", "titan", "legendary", s(35, 180, 150, 40), {}),
+	sp("crocodile", "Crocodile", "titan", "legendary", s(50, 170, 130, 50), {}),
 } :: { Species }
 
 -- Eggs roll a species (basic odds); the variant roll (TIERS) happens on top, the same for every egg.
+-- Titans: a 4% chance from the Safari Egg (draft; how Titans are earned is not settled).
 StationConfig.EGGS = {
 	{
 		id = "meadow",
 		name = "Meadow Egg",
 		price = 100,
 		odds = {
-			{ id = "bunny", bp = 1400 },
-			{ id = "fox", bp = 1100 },
-			{ id = "pig", bp = 1400 },
-			{ id = "goat", bp = 1100 },
-			{ id = "duck", bp = 1400 },
-			{ id = "frog", bp = 1100 },
-			{ id = "mouse", bp = 1400 },
-			{ id = "raccoon", bp = 1100 },
+			{ id = "hyena", bp = 1700 },
+			{ id = "jackal", bp = 1700 },
+			{ id = "warthog", bp = 1700 },
+			{ id = "tortoise", bp = 1600 },
+			{ id = "meerkat", bp = 1700 },
+			{ id = "flamingo", bp = 1600 },
 		},
 	},
 	{
@@ -246,18 +152,15 @@ StationConfig.EGGS = {
 		name = "Wild Egg",
 		price = 1500,
 		odds = {
-			{ id = "bunny", bp = 650 },
-			{ id = "fox", bp = 650 },
-			{ id = "pig", bp = 650 },
-			{ id = "goat", bp = 650 },
-			{ id = "duck", bp = 650 },
-			{ id = "frog", bp = 650 },
-			{ id = "mouse", bp = 650 },
-			{ id = "raccoon", bp = 650 },
-			{ id = "horse", bp = 1200 },
-			{ id = "bear", bp = 1200 },
-			{ id = "otter", bp = 1200 },
-			{ id = "parrot", bp = 1200 },
+			{ id = "hyena", bp = 900 },
+			{ id = "jackal", bp = 900 },
+			{ id = "warthog", bp = 900 },
+			{ id = "tortoise", bp = 900 },
+			{ id = "meerkat", bp = 900 },
+			{ id = "flamingo", bp = 900 },
+			{ id = "cheetah", bp = 1600 },
+			{ id = "rhino", bp = 1500 },
+			{ id = "giraffe", bp = 1500 },
 		},
 	},
 	{
@@ -265,27 +168,18 @@ StationConfig.EGGS = {
 		name = "Safari Egg",
 		price = 15000,
 		odds = {
-			{ id = "horse", bp = 1500 },
-			{ id = "bear", bp = 1500 },
-			{ id = "otter", bp = 1500 },
-			{ id = "parrot", bp = 1500 },
-			{ id = "cheetah", bp = 1000 },
-			{ id = "gorilla", bp = 1000 },
-			{ id = "dolphin", bp = 1000 },
-			{ id = "owl", bp = 1000 },
+			{ id = "cheetah", bp = 1900 },
+			{ id = "rhino", bp = 1900 },
+			{ id = "giraffe", bp = 1900 },
+			{ id = "lion", bp = 1300 },
+			{ id = "gorilla", bp = 1300 },
+			{ id = "mandrill", bp = 1300 },
+			{ id = "elephant", bp = 134 },
+			{ id = "hippo", bp = 133 },
+			{ id = "crocodile", bp = 133 },
 		},
 	},
 } :: { Egg }
-
--- Battle matchups (decision 0022): rock paper scissors in a loop of four. Each stat beats one
--- and loses to one; the stat opposite it is neutral. An animal battles as its best stat.
--- Speed strikes before Mana can cast, Mana's magic gets past Strength, Strength breaks through
--- Stamina, Stamina outlasts Speed.
-StationConfig.BEATS = { speed = "mana", mana = "strength", strength = "stamina", stamina = "speed" } :: { [Stat]: Stat }
--- Battle role of each type (decision 0024); BattleRules gives each role its job.
-StationConfig.ROLES =
-	{ speed = "attack", strength = "tank", stamina = "defense", mana = "utility" } :: { [Stat]: string }
-StationConfig.ADVANTAGE = 1.25 -- damage x this with the advantage, / this against it (slight, not decisive)
 
 -- Training stations (decision 0023): an animal left on a station slowly trains that station's stat.
 StationConfig.STATIONS = {
@@ -314,8 +208,8 @@ end
 
 -- The variant `variantId` of `speciesId`, or nil when either is unknown or they don't match.
 function StationConfig.variant(speciesId: string, variantId: string): Variant?
-	local sp = StationConfig.species(speciesId)
-	return if sp then find(sp.variants, variantId) else nil
+	local species = StationConfig.species(speciesId)
+	return if species then find(species.variants, variantId) else nil
 end
 
 function StationConfig.tier(tier: string): Tier?

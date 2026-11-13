@@ -1,6 +1,6 @@
 --!strict
--- Pure Animal Stations rules (decisions 0019, 0020, 0022, 0023): hatch an animal (species, then a
--- rare variant roll, then stats), train it at a station, and its battle type and matchups. The
+-- Pure Animal Stations rules (decisions 0019 to 0027): hatch an animal (species, then a
+-- rare variant roll, then stats), train it at a station, and its role and matchups. The
 -- server owns the Rng state and the clock; the client never sends stats or times.
 
 local Rng = require("./Rng")
@@ -93,8 +93,8 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	return { s = species, v = variantId, stats = stats :: Stats }, rng
 end
 
--- The stat an animal battles as: its highest current stat (ties go to the first in STATS).
-function StationRules.battleType(animal: Owned): StationConfig.Stat
+-- An animal's highest current stat (ties go to the first in STATS): its attack stat.
+function StationRules.bestStat(animal: Owned): StationConfig.Stat
 	local best, top = StationConfig.STATS[1], -1
 	for _, stat in StationConfig.STATS do
 		local x = StationRules.stat(animal, stat)
@@ -105,8 +105,15 @@ function StationRules.battleType(animal: Owned): StationConfig.Stat
 	return best
 end
 
--- Damage multiplier for an attacker of type `a` hitting a defender of type `d`.
-function StationRules.matchup(a: StationConfig.Stat, d: StationConfig.Stat): number
+-- An animal's role, from its species: "attack", "defense", "utility" or "titan".
+function StationRules.role(animal: Owned): string
+	local sp = StationConfig.species(animal.s)
+	return if sp then sp.role else "attack"
+end
+
+-- Damage multiplier for an attacker of role `a` hitting a defender of role `d`. Titans are
+-- outside the loop: always 1.
+function StationRules.matchup(a: string, d: string): number
 	if StationConfig.BEATS[a] == d then
 		return StationConfig.ADVANTAGE
 	elseif StationConfig.BEATS[d] == a then

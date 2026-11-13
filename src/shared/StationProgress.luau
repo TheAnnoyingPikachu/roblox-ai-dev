@@ -19,7 +19,8 @@ export type Profile = {
 	coins: number,
 	nextId: number,
 	animals: { Animal },
-	team: { number }, -- animal ids, at most TEAM_SIZE, never one that is training
+	team: { number }, -- animal ids, at most TEAM_SIZE, never a Titan or one that is training
+	titan: number?, -- the fourth slot: one Titan's id (decision 0027)
 	best: number, -- highest level cleared
 }
 
@@ -64,6 +65,10 @@ local function cleanStats(x: any, hi: number): Stats?
 		out[stat] = math.clamp(n, 0, hi)
 	end
 	return out :: Stats
+end
+
+function StationProgress.isTitan(a: Animal): boolean
+	return StationRules.role(a :: any) == StationConfig.TITAN
 end
 
 -- A stored record in any shape becomes a valid profile: bad animals dropped, numbers clamped,
@@ -111,10 +116,20 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	if type(record.team) == "table" then
 		for _, id in record.team do
 			local a = if type(id) == "number" then ids[id] else nil
-			if a and a.at == nil and not table.find(p.team, id) and #p.team < StationProgress.TEAM_SIZE then
+			if
+				a
+				and a.at == nil
+				and not StationProgress.isTitan(a)
+				and not table.find(p.team, id)
+				and #p.team < StationProgress.TEAM_SIZE
+			then
 				table.insert(p.team, id)
 			end
 		end
+	end
+	local t = if type(record.titan) == "number" then ids[record.titan] else nil
+	if t and t.at == nil and StationProgress.isTitan(t) then
+		p.titan = t.id
 	end
 	return p
 end
@@ -156,8 +171,11 @@ function StationProgress.buy(
 	p.coins -= egg.price
 	local id = p.nextId
 	p.nextId += 1
-	table.insert(p.animals, { id = id, s = hatched.s, v = hatched.v, stats = table.clone(hatched.stats) })
-	if #p.team < StationProgress.TEAM_SIZE then
+	local animal: Animal = { id = id, s = hatched.s, v = hatched.v, stats = table.clone(hatched.stats) }
+	table.insert(p.animals, animal)
+	if StationProgress.isTitan(animal) then
+		p.titan = p.titan or id
+	elseif #p.team < StationProgress.TEAM_SIZE then
 		table.insert(p.team, id)
 	end
 	return p, true, nil, id
@@ -178,11 +196,22 @@ function StationProgress.settle(p: Profile, now: number): Profile
 	return p
 end
 
--- Put animal `id` in or out of the team. A training animal cannot join.
+-- Put animal `id` in or out of the team. A Titan goes in the Titan slot (replacing the one
+-- there). A training animal cannot join.
 function StationProgress.toggleTeam(p: Profile, id: number): (Profile, boolean, string?)
 	local _, a = StationProgress.find(p, id)
 	if a == nil then
 		return p, false, "animal"
+	end
+	if StationProgress.isTitan(a) then
+		if p.titan == id then
+			p.titan = nil
+		elseif a.at then
+			return p, false, "training"
+		else
+			p.titan = id
+		end
+		return p, true, nil
 	end
 	local at = table.find(p.team, id)
 	if at then
@@ -222,6 +251,9 @@ function StationProgress.train(p: Profile, id: number, stationId: string, now: n
 	if t then
 		table.remove(p.team, t)
 	end
+	if p.titan == id then
+		p.titan = nil
+	end
 	return p, true, nil
 end
 
@@ -238,6 +270,24 @@ function StationProgress.stop(p: Profile, id: number, now: number): (Profile, bo
 	copy.at, copy.since = nil, nil
 	p.animals[i] = copy
 	return p, true, nil
+end
+
+-- The animals that fight: the team in order, then the Titan.
+function StationProgress.fighters(p: Profile): { Animal }
+	local out = {}
+	for _, id in p.team do
+		local _, a = StationProgress.find(p, id)
+		if a then
+			table.insert(out, a)
+		end
+	end
+	if p.titan then
+		local _, a = StationProgress.find(p, p.titan)
+		if a then
+			table.insert(out, a)
+		end
+	end
+	return out
 end
 
 -- Written on every save: training is settled so the stored stats are current.

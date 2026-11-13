@@ -33,7 +33,8 @@ end
 function LevelRules.enemies(level: number): { Owned }
 	local pool = {}
 	for _, sp in StationConfig.SPECIES do
-		if level >= UNLOCK[sp.rarity] then
+		local from = UNLOCK[sp.rarity] -- nil for Titans: they are never level enemies (yet)
+		if from and level >= from then
 			table.insert(pool, sp)
 		end
 	end

@@ -5,7 +5,7 @@ through endless levels (0023). Vision (0021): ranch + silly microgames + turn-ba
 the hub world (STATION-003), home ranches (STATION-004), matchups (STATION-005), training and levels (STATION-006), roles and team battles (STATION-007), saves, egg buying, team and training requests with a first HUD (STATION-008); no battle screen, animal models or ranch upgrades yet.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
-- Docs: decisions 0019 to 0026 (0026: stats are speed, strength, stamina, mana) (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
+- Docs: decisions 0019 to 0027 (0026: stats are speed, strength, stamina, mana; 0027: three roles, Titans in a fourth slot, African beta pool) (0025 also records the next direction: Titan fourth slot, tycoon ranch with samples); `docs/game-design/game7-gdd.md`; bestiary and art brief `docs/game-design/game7-animals.md`.
 
 ## Files
 
@@ -20,6 +20,7 @@ Pure rules: `StationConfig` (stats, species, variants, eggs, stations, matchups)
 ## Must stay true
 
 - The server decides prices, hatches and times; profile changes are pure `StationProgress` functions that capture their inputs (SaveStore runs them twice).
+- A role comes from the species (`StationRules.role`), never from stats. Titans are never in `Profile.team`; they use `Profile.titan`.
 - World is display only. Work slots are tagged `StationSlot` with `Station` and `Index` attributes for the server to use.
 - Terrain fill tops at y = -2 so the surface lands at y = 0 (voxels snap up); flat parts sit on y = 0.
 - The SpawnLocation is placed in code (`World.SPAWN`); Rojo ignores `Position` in the project file.

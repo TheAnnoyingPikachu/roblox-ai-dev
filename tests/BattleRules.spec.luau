@@ -10,74 +10,66 @@ local function owned(id: string, variant: string?): StationRules.Owned
 	return { s = id, v = variant, stats = StationRules.versionStats(id, variant) :: StationConfig.Stats }
 end
 
--- A made-up animal whose best stat is `best` (60) with 20 in the rest, so every role has the same
--- stat total and only the role differs.
-local function role(best: StationConfig.Stat, speed: number?): StationRules.Owned
-	local st = { speed = 20, strength = 20, stamina = 20, mana = 20 } :: any
-	st[best] = 60
-	if speed and best ~= "speed" then
-		st.speed = speed
-	end
-	return { s = "x", stats = st :: StationConfig.Stats }
+-- An animal of `role` with every stat 40, so only the role differs between them.
+local SPECIES = { attack = "lion", defense = "gorilla", utility = "mandrill" }
+local function role(r: string): StationRules.Owned
+	return { s = SPECIES[r], stats = { speed = 40, strength = 40, stamina = 40, mana = 40 } }
 end
 
 describe("BattleRules roles", function()
-	it("gives each type its role: speed attack, strength tank, stamina defense, mana utility", function()
-		expect(BattleRules.fighter(owned("cheetah"), 1, 1).role).toBe("attack")
-		expect(BattleRules.fighter(owned("gorilla"), 1, 1).role).toBe("tank")
-		expect(BattleRules.fighter(owned("dolphin"), 1, 1).role).toBe("defense")
-		expect(BattleRules.fighter(owned("owl"), 1, 1).role).toBe("utility")
-		local seen = {}
-		for _, r in StationConfig.ROLES do
-			expect(seen[r]).toBeNil()
-			seen[r] = true
-		end
+	it("takes the role from the species", function()
+		expect(BattleRules.fighter(owned("lion"), 1, 1).role).toBe("attack")
+		expect(BattleRules.fighter(owned("gorilla"), 1, 1).role).toBe("defense")
+		expect(BattleRules.fighter(owned("mandrill"), 1, 1).role).toBe("utility")
+		expect(BattleRules.fighter(owned("elephant"), 1, 4).role).toBe("titan")
 	end)
 
-	it("makes Attack hit harder and Tank tougher than the same stats in another role", function()
-		local atk = BattleRules.fighter(role("speed"), 1, 1)
-		local tank = BattleRules.fighter(role("strength"), 1, 1)
-		local util = BattleRules.fighter(role("mana"), 1, 1)
+	it("makes Attack hit harder than the same stats in another role", function()
+		local atk = BattleRules.fighter(role("attack"), 1, 1)
+		local util = BattleRules.fighter(role("utility"), 1, 1)
 		expect(atk.atk > util.atk).toBeTruthy()
-		expect(tank.maxHp > util.maxHp).toBeTruthy()
+		expect(atk.maxHp).toBe(util.maxHp)
 	end)
 end)
 
 describe("BattleRules.battle", function()
 	it("loses with no team, and side 1 wins a mirror match on speed ties", function()
-		expect((BattleRules.battle({}, { owned("bunny") }))).toBe(false)
-		local team = { owned("bunny"), owned("pig"), owned("duck") }
-		expect((BattleRules.battle(team, { owned("bunny"), owned("pig"), owned("duck") }))).toBe(true)
+		expect((BattleRules.battle({}, { owned("jackal") }))).toBe(false)
+		local team = { owned("jackal"), owned("warthog"), owned("meerkat") }
+		expect((BattleRules.battle(team, { owned("jackal"), owned("warthog"), owned("meerkat") }))).toBe(true)
 	end)
 
-	it("lets the type advantage decide a fight between equal animals", function()
-		-- equal totals and speed; Defense (stamina) beats Attack (speed)
-		local d, a = role("stamina", 60), role("speed")
-		expect((BattleRules.battle({ d }, { a }))).toBe(true)
-		expect((BattleRules.battle({ a }, { d }))).toBe(false)
-	end)
-
-	it("makes a Tank, Attack, Defense team beat three of any one role with the same stats", function()
-		local mixed = { role("strength", 40), role("speed"), role("stamina", 40) }
-		for _, same in { "speed", "strength", "stamina", "mana" } do
-			local mono = {}
-			for _ = 1, 3 do
-				table.insert(mono, role(same :: any, 40))
-			end
-			-- mixed plays second so speed ties never help it
-			expect((BattleRules.battle(mono, mixed))).toBe(false)
+	it("is rock paper scissors between equal animals, from either side", function()
+		for _, a in StationConfig.ROLES do
+			local d = StationConfig.BEATS[a]
+			expect((BattleRules.battle({ role(a) }, { role(d) }))).toBe(true)
+			expect((BattleRules.battle({ role(d) }, { role(a) }))).toBe(false)
 		end
 	end)
 
-	it("always ends, even when healers face each other", function()
-		local _, turns = BattleRules.battle({ role("mana") }, { role("mana") })
-		expect(turns <= BattleRules.MAX_TURNS).toBeTruthy()
-		local _, t2 = BattleRules.battle({ owned("mouse") }, { owned("owl"), owned("owl"), owned("owl") })
-		expect(t2 < BattleRules.MAX_TURNS).toBeTruthy()
+	it("makes one of each role beat three of any one role with the same stats", function()
+		local mixed = { role("attack"), role("defense"), role("utility") }
+		for _, same in StationConfig.ROLES do
+			-- mixed plays second, so speed ties never help it
+			expect((BattleRules.battle({ role(same), role(same), role(same) }, mixed))).toBe(false)
+		end
 	end)
 
-	it("has no unbeatable team shape: three Attackers beat Tank, Attack, Utility", function()
-		local attackers = { role("speed"), role("speed"), role("speed") }
-		expect((BattleRules.battle(attackers, { role("strength", 40), role("speed"), role("mana", 40) }))).toBe(true)
+	it("lets a Titan in the fourth slot turn a lost fight", function()
+		local team = { owned("jackal"), owned("warthog"), owned("meerkat") }
+		local foes = { owned("cheetah"), owned("rhino"), owned("giraffe") }
+		expect((BattleRules.battle(team, foes))).toBe(false)
+		table.insert(team, owned("elephant"))
+		expect((BattleRules.battle(team, foes))).toBe(true)
+	end)
+
+	it("always ends, even when healers face each other", function()
+		local _, turns = BattleRules.battle({ role("utility") }, { role("utility") })
+		expect(turns <= BattleRules.MAX_TURNS).toBeTruthy()
+		local _, t2 = BattleRules.battle(
+			{ owned("meerkat") },
+			{ owned("mandrill"), owned("mandrill"), owned("mandrill") }
+		)
+		expect(t2 < BattleRules.MAX_TURNS).toBeTruthy()
 	end)
 end)

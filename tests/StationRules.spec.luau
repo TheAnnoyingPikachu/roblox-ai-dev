@@ -22,28 +22,61 @@ describe("StationConfig", function()
 		end
 	end)
 
-	it("keeps basic versions common to rare with stats in 1..100", function()
+	it("has four species per team role, basic versions common to rare with stats in 1..100", function()
+		local count = {}
 		for _, sp in StationConfig.SPECIES do
-			expect(table.find(StationConfig.BASIC_RARITIES, sp.rarity) ~= nil).toBeTruthy()
-			for _, stat in StationConfig.STATS do
-				local x = (sp.stats :: any)[stat]
-				expect(x >= 1 and x <= 100).toBeTruthy()
+			if sp.role ~= StationConfig.TITAN then
+				expect(table.find(StationConfig.ROLES, sp.role) ~= nil).toBeTruthy()
+				count[sp.role] = (count[sp.role] or 0) + 1
+				expect(table.find(StationConfig.BASIC_RARITIES, sp.rarity) ~= nil).toBeTruthy()
+				for _, stat in StationConfig.STATS do
+					local x = (sp.stats :: any)[stat]
+					expect(x >= 1 and x <= 100).toBeTruthy()
+				end
 			end
+		end
+		for _, role in StationConfig.ROLES do
+			expect(count[role]).toBe(4)
 		end
 	end)
 
-	it("gives every species exactly one variant per tier, with unique ids and a real twist stat", function()
+	it("makes Titans legendary, without variants, and bigger than any basic animal", function()
+		local biggest, titans = 0, 0
+		for _, sp in StationConfig.SPECIES do
+			local total = sp.stats.speed + sp.stats.strength + sp.stats.stamina + sp.stats.mana
+			if sp.role ~= StationConfig.TITAN then
+				biggest = math.max(biggest, total)
+			end
+		end
+		for _, sp in StationConfig.SPECIES do
+			if sp.role == StationConfig.TITAN then
+				titans += 1
+				expect(sp.rarity).toBe("legendary")
+				expect(#sp.variants).toBe(0)
+				local total = sp.stats.speed + sp.stats.strength + sp.stats.stamina + sp.stats.mana
+				expect(total > biggest).toBeTruthy()
+				for _, stat in StationConfig.STATS do
+					expect((sp.stats :: any)[stat] <= StationConfig.STAT_MAX).toBeTruthy()
+				end
+			end
+		end
+		expect(titans >= 1).toBeTruthy()
+	end)
+
+	it("gives every non-Titan exactly one variant per tier, with unique ids and a real twist stat", function()
 		local ids = {}
 		for _, sp in StationConfig.SPECIES do
 			expect(ids[sp.id]).toBeNil()
 			ids[sp.id] = true
-			expect(#sp.variants).toBe(#StationConfig.TIERS)
-			for _, t in StationConfig.TIERS do
-				local n = 0
-				for _, va in sp.variants do
-					n += if va.tier == t.tier then 1 else 0
+			if sp.role ~= StationConfig.TITAN then
+				expect(#sp.variants).toBe(#StationConfig.TIERS)
+				for _, t in StationConfig.TIERS do
+					local n = 0
+					for _, va in sp.variants do
+						n += if va.tier == t.tier then 1 else 0
+					end
+					expect(n).toBe(1)
 				end
-				expect(n).toBe(1)
 			end
 			for _, va in sp.variants do
 				expect(ids[va.id]).toBeNil()
@@ -80,29 +113,44 @@ describe("StationConfig", function()
 		end
 	end)
 
+	it("keeps Titans rare: only in the dearest egg, under 5% together", function()
+		for _, egg in StationConfig.EGGS do
+			local bp = 0
+			for _, o in egg.odds do
+				local sp = StationConfig.species(o.id) :: StationConfig.Species
+				bp += if sp.role == StationConfig.TITAN then o.bp else 0
+			end
+			if egg.id == "safari" then
+				expect(bp > 0 and bp <= 500).toBeTruthy()
+			else
+				expect(bp).toBe(0)
+			end
+		end
+	end)
+
 	it("only finds a variant under its own species", function()
 		expect(StationConfig.variant("cheetah", "golden_cheetah") ~= nil).toBeTruthy()
-		expect(StationConfig.variant("bunny", "golden_cheetah")).toBeNil()
+		expect(StationConfig.variant("hyena", "golden_cheetah")).toBeNil()
 	end)
 end)
 
 describe("StationRules.versionStats", function()
 	it("multiplies a variant's stats by its tier and adds the twist", function()
 		local st = StationRules.versionStats("cheetah", "golden_cheetah") :: StationConfig.Stats -- legendary x2, +40 strength
-		expect(st.speed).toBe(180)
-		expect(st.strength).toBe(100)
-		expect(st.stamina).toBe(20)
+		expect(st.speed).toBe(140)
+		expect(st.strength).toBe(110)
+		expect(st.stamina).toBe(40)
 	end)
 
 	it("refuses unknown species and mismatched variants", function()
 		expect(StationRules.versionStats("dragon", nil)).toBeNil()
-		expect(StationRules.versionStats("bunny", "kitsune")).toBeNil()
+		expect(StationRules.versionStats("hyena", "sun_lion")).toBeNil()
 	end)
 
 	it("makes every variant stronger than its basic version in the basic's best stat", function()
 		for _, sp in StationConfig.SPECIES do
 			local basic = owned(sp.id)
-			local t = StationRules.battleType(basic)
+			local t = StationRules.bestStat(basic)
 			for _, va in sp.variants do
 				expect(StationRules.stat(owned(sp.id, va.id), t) > StationRules.stat(basic, t)).toBeTruthy()
 			end
@@ -114,21 +162,21 @@ describe("StationRules.train", function()
 	it("adds one point of the station's stat per TRAIN_SECONDS and leaves the original alone", function()
 		local c = owned("cheetah")
 		local t = StationRules.train(c, "gym", StationConfig.TRAIN_SECONDS * 5)
-		expect(StationRules.stat(t, "strength")).toBe(35)
-		expect(StationRules.stat(t, "speed")).toBe(90)
-		expect(StationRules.stat(c, "strength")).toBe(30)
+		expect(StationRules.stat(t, "strength")).toBe(40)
+		expect(StationRules.stat(t, "speed")).toBe(70)
+		expect(StationRules.stat(c, "strength")).toBe(35)
 	end)
 
 	it("keeps part points between sessions", function()
 		local c = owned("cheetah")
 		local half = StationConfig.TRAIN_SECONDS / 2
 		local t = StationRules.train(StationRules.train(c, "track", half), "track", half)
-		expect(StationRules.stat(t, "speed")).toBe(91)
+		expect(StationRules.stat(t, "speed")).toBe(71)
 	end)
 
 	it("stops at POTENTIAL x the hatched stat and never passes STAT_MAX", function()
 		local c = StationRules.train(owned("cheetah"), "track", 1e9)
-		expect(StationRules.stat(c, "speed")).toBe(90 * (1 + StationConfig.POTENTIAL))
+		expect(StationRules.stat(c, "speed")).toBe(70 * (1 + StationConfig.POTENTIAL))
 		local m = StationRules.train(owned("cheetah", "lightning_cheetah"), "track", 1e9)
 		expect(StationRules.stat(m, "speed")).toBe(StationConfig.STAT_MAX)
 	end)
@@ -139,61 +187,56 @@ describe("StationRules.train", function()
 		expect(StationRules.train(c, "track", 0)).toBe(c)
 		expect(StationRules.train(c, "track", -60)).toBe(c)
 	end)
-
-	it("can change an animal's battle type by training another stat past its best", function()
-		local b = StationRules.train(owned("bear"), "pool", StationConfig.TRAIN_SECONDS * 31)
-		expect(StationRules.battleType(b)).toBe("stamina")
-	end)
 end)
 
-describe("StationRules battle matchups", function()
-	it("makes the four stats one loop: each beats one, loses to one, is neutral to one", function()
-		for _, a in StationConfig.STATS do
-			local wins, losses, even = 0, 0, 0
-			for _, d in StationConfig.STATS do
-				if a ~= d then
-					local m = StationRules.matchup(a :: any, d :: any)
-					wins += if m > 1 then 1 else 0
-					losses += if m < 1 then 1 else 0
-					even += if m == 1 then 1 else 0
-				end
+describe("StationRules roles and matchups", function()
+	it("takes the role from the species, whatever is trained", function()
+		expect(StationRules.role(owned("lion"))).toBe("attack")
+		expect(StationRules.role(owned("gorilla"))).toBe("defense")
+		expect(StationRules.role(owned("mandrill"))).toBe("utility")
+		expect(StationRules.role(owned("elephant"))).toBe("titan")
+		local trained = StationRules.train(owned("lion"), "library", 1e9)
+		expect(StationRules.role(trained)).toBe("attack")
+	end)
+
+	it("makes the three roles one loop: each beats one and loses to one", function()
+		for _, a in StationConfig.ROLES do
+			local wins, losses = 0, 0
+			for _, d in StationConfig.ROLES do
+				local m = StationRules.matchup(a, d)
+				wins += if m > 1 then 1 else 0
+				losses += if m < 1 then 1 else 0
 			end
 			expect(wins).toBe(1)
 			expect(losses).toBe(1)
-			expect(even).toBe(1)
-			expect(StationRules.matchup(a :: any, a :: any)).toBe(1)
+			expect(StationRules.matchup(a, a)).toBe(1)
 		end
-		-- the loop visits all four stats before coming back
-		local seen, at = {}, "speed"
-		for _ = 1, 4 do
+		local seen, at = {}, "attack"
+		for _ = 1, 3 do
 			expect(seen[at]).toBeNil()
 			seen[at] = true
-			at = (StationConfig.BEATS :: any)[at]
+			at = StationConfig.BEATS[at]
 		end
-		expect(at).toBe("speed")
+		expect(at).toBe("attack")
 	end)
 
-	it("keeps the advantage slight and symmetric", function()
+	it("keeps the advantage slight and symmetric, and Titans outside the loop", function()
 		expect(StationConfig.ADVANTAGE > 1 and StationConfig.ADVANTAGE <= 1.5).toBeTruthy()
-		expect(StationRules.matchup("speed", "mana") * StationRules.matchup("mana", "speed")).toBe(1)
-	end)
-
-	it("battles as the best stat: a cheetah is speed, an owl is mana, and the cheetah has the edge", function()
-		expect(StationRules.battleType(owned("cheetah"))).toBe("speed")
-		expect(StationRules.battleType(owned("owl"))).toBe("mana")
-		expect(StationRules.matchup("speed", "mana")).toBe(StationConfig.ADVANTAGE)
-		expect(StationRules.battleType(owned("dolphin"))).toBe("stamina")
-		expect(StationRules.matchup("speed", "stamina") < 1).toBeTruthy()
+		expect(StationRules.matchup("attack", "utility") * StationRules.matchup("utility", "attack")).toBe(1)
+		for _, r in StationConfig.ROLES do
+			expect(StationRules.matchup("titan", r)).toBe(1)
+			expect(StationRules.matchup(r, "titan")).toBe(1)
+		end
 	end)
 end)
 
 describe("StationRules.hatch", function()
 	it("picks species by cumulative basis points at the boundaries", function()
 		local odds = (StationConfig.egg("meadow") :: StationConfig.Egg).odds
-		expect(StationRules.pick(odds, 1)).toBe("bunny")
-		expect(StationRules.pick(odds, 1400)).toBe("bunny")
-		expect(StationRules.pick(odds, 1401)).toBe("fox")
-		expect(StationRules.pick(odds, 10000)).toBe("raccoon")
+		expect(StationRules.pick(odds, 1)).toBe("hyena")
+		expect(StationRules.pick(odds, 1700)).toBe("hyena")
+		expect(StationRules.pick(odds, 1701)).toBe("jackal")
+		expect(StationRules.pick(odds, 10000)).toBe("flamingo")
 	end)
 
 	it("picks the variant tier rarest first, basic past 5550 ppm", function()
@@ -249,8 +292,25 @@ describe("StationRules.hatch", function()
 		expect(variants >= 60 and variants <= 170).toBeTruthy()
 	end)
 
+	it("hatches Titans from the Safari Egg, always as the basic version", function()
+		local rng = Rng.seed(9)
+		local titans = 0
+		for _ = 1, 5000 do
+			local a
+			a, rng = StationRules.hatch("safari", rng)
+			local animal = a :: StationRules.Owned
+			if StationRules.role(animal) == "titan" then
+				titans += 1
+				expect(animal.v).toBeNil()
+			end
+		end
+		-- expected 4% = 200 in 5000
+		expect(titans >= 130 and titans <= 280).toBeTruthy()
+	end)
+
 	it("reports the variant tier as the rarity, else the species rarity", function()
-		expect(StationRules.rarity(owned("cheetah"))).toBe("rare")
-		expect(StationRules.rarity(owned("bunny", "comet_bunny"))).toBe("mythic")
+		expect(StationRules.rarity(owned("lion"))).toBe("rare")
+		expect(StationRules.rarity(owned("cheetah", "lightning_cheetah"))).toBe("mythic")
+		expect(StationRules.rarity(owned("elephant"))).toBe("legendary")
 	end)
 end)

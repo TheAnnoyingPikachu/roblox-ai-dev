@@ -23,7 +23,7 @@ local RARITY_COLOUR: { [string]: Color3 } = {
 	legendary = Color3.fromRGB(255, 200, 60),
 	mythic = Color3.fromRGB(255, 120, 200),
 }
-local ROLE_NAME: { [string]: string } = { attack = "Attack", tank = "Tank", defense = "Defense", utility = "Utility" }
+local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defense", utility = "Utility", titan = "TITAN" }
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
 	full = "Your ranch is full",
@@ -108,15 +108,15 @@ local function row(a: any, order: number)
 	c.CornerRadius = UDim.new(0, 8)
 	c.Parent = frame
 	local rarity = StationRules.rarity(a)
-	local t = StationRules.battleType(a)
+	local t = StationRules.bestStat(a)
 	local function stat(s: string): number
 		return StationRules.stat(a, s :: any)
 	end
-	local role = ROLE_NAME[StationConfig.ROLES[t]] or t
+	local role = ROLE_NAME[StationRules.role(a)] or "?"
 	text(frame, `{nameOf(a)}  -  {rarity}  -  {role}`, 20, 6, RARITY_COLOUR[rarity] or Color3.new(1, 1, 1))
 	text(frame, `SPD {stat("speed")}   STR {stat("strength")}   STA {stat("stamina")}   MANA {stat("mana")}`, 16, 36)
 	local station = a.at and StationConfig.station(a.at)
-	local inTeam = table.find(profile.team, a.id) ~= nil
+	local inTeam = table.find(profile.team, a.id) ~= nil or profile.titan == a.id
 	text(frame, if inTeam then "In your team" elseif station then `Training at {station.name}` else "Resting", 16, 62)
 	local buttons = Instance.new("Frame")
 	buttons.BackgroundTransparency = 1
@@ -153,7 +153,9 @@ local function refresh()
 			child:Destroy()
 		end
 	end
-	title.Text = `Your animals ({#profile.animals})  -  team {#profile.team}/3`
+	title.Text = `Your animals ({#profile.animals})  -  team {#profile.team}/3  -  Titan {if profile.titan
+		then "ready"
+		else "none"}`
 	if #profile.animals == 0 then
 		local hint = Instance.new("Frame")
 		hint.BackgroundTransparency = 1

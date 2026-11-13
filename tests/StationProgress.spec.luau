@@ -38,14 +38,19 @@ describe("StationProgress profile", function()
 			coins = 1e20,
 			nextId = 2,
 			animals = {
-				{ id = 1, s = "fox", stats = { speed = 45, strength = 15, stamina = 12, mana = 30 } },
-				{ id = 1, s = "pig", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- duplicate id
+				{ id = 1, s = "hyena", stats = { speed = 45, strength = 15, stamina = 12, mana = 30 } },
+				{ id = 1, s = "warthog", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- duplicate id
 				{ id = 2, s = "dragon", stats = { speed = 1, strength = 1, stamina = 1, mana = 1 } }, -- no species
-				{ id = 3, s = "owl", v = "kitsune", stats = { speed = 9e9, strength = 1, stamina = 1, mana = 1 } },
-				{ id = 4, s = "duck" }, -- no stats
+				{
+					id = 3,
+					s = "mandrill",
+					v = "sun_lion",
+					stats = { speed = 9e9, strength = 1, stamina = 1, mana = 1 },
+				},
+				{ id = 4, s = "meerkat" }, -- no stats
 				{
 					id = 5,
-					s = "goat",
+					s = "warthog",
 					at = "gym",
 					since = 50,
 					stats = { speed = 25, strength = 45, stamina = 5, mana = 15 },
@@ -55,9 +60,9 @@ describe("StationProgress profile", function()
 		}, 100)
 		expect(p.coins).toBe(StationProgress.MAX_COINS)
 		expect(#p.animals).toBe(3)
-		local _, owl = StationProgress.find(p, 3)
-		expect((owl :: StationProgress.Animal).v).toBeNil() -- kitsune is not an owl variant
-		expect((owl :: StationProgress.Animal).stats.speed).toBe(StationConfig.STAT_MAX)
+		local _, mandrill = StationProgress.find(p, 3)
+		expect((mandrill :: StationProgress.Animal).v).toBeNil() -- sun_lion is not a mandrill variant
+		expect((mandrill :: StationProgress.Animal).stats.speed).toBe(StationConfig.STAT_MAX)
 		expect(p.nextId).toBe(6)
 		-- 1 and 3 in the team; 5 is training so it cannot be
 		expect(#p.team).toBe(2)
@@ -66,7 +71,7 @@ describe("StationProgress profile", function()
 
 	it("is stable: sanitising a sanitised profile changes nothing", function()
 		local p = fresh()
-		p = StationProgress.buy(p, "meadow", hatched("fox"))
+		p = StationProgress.buy(p, "meadow", hatched("hyena"))
 		p = StationProgress.train(p, 1, "track", 10)
 		local a = StationProgress.sanitize(p, 20)
 		local b = StationProgress.sanitize(a, 20)
@@ -80,7 +85,7 @@ describe("StationProgress.buy", function()
 	it("charges the price, adds the animal with a new id and fills the team to three", function()
 		local p = fresh()
 		local ok, id
-		for k, sp in { "bunny", "pig", "duck", "mouse" } do
+		for k, sp in { "jackal", "warthog", "meerkat", "flamingo" } do
 			p, ok, _, id = StationProgress.buy(p, "meadow", hatched(sp))
 			if k <= 3 then
 				expect(ok).toBe(true)
@@ -95,16 +100,16 @@ describe("StationProgress.buy", function()
 
 	it("refuses an unknown egg, too few coins and a full collection", function()
 		local p = fresh()
-		local _, ok, code = StationProgress.buy(p, "nope", hatched("fox"))
+		local _, ok, code = StationProgress.buy(p, "nope", hatched("hyena"))
 		expect(ok).toBe(false)
 		expect(code).toBe("egg")
-		_, ok, code = StationProgress.buy(p, "safari", hatched("owl"))
+		_, ok, code = StationProgress.buy(p, "safari", hatched("mandrill"))
 		expect(code).toBe("coins")
 		p.coins = 1e9
 		for _ = 1, StationProgress.MAX_ANIMALS do
-			p = StationProgress.buy(p, "meadow", hatched("fox"))
+			p = StationProgress.buy(p, "meadow", hatched("hyena"))
 		end
-		_, ok, code = StationProgress.buy(p, "meadow", hatched("fox"))
+		_, ok, code = StationProgress.buy(p, "meadow", hatched("hyena"))
 		expect(code).toBe("full")
 	end)
 
@@ -119,7 +124,7 @@ end)
 describe("StationProgress team and training", function()
 	local function three(): StationProgress.Profile
 		local p = fresh()
-		for _, sp in { "bunny", "pig", "duck" } do
+		for _, sp in { "jackal", "warthog", "meerkat" } do
 			p = StationProgress.buy(p, "meadow", hatched(sp))
 		end
 		return p
@@ -134,7 +139,7 @@ describe("StationProgress team and training", function()
 		p, ok = StationProgress.toggleTeam(p, 2)
 		expect(#p.team).toBe(3)
 		p.coins = 100
-		p = StationProgress.buy(p, "meadow", hatched("frog"))
+		p = StationProgress.buy(p, "meadow", hatched("tortoise"))
 		_, ok, code = StationProgress.toggleTeam(p, 4)
 		expect(code).toBe("team_full")
 		_, ok, code = StationProgress.toggleTeam(p, 99)
@@ -151,7 +156,7 @@ describe("StationProgress team and training", function()
 		expect(code).toBe("training")
 		p = StationProgress.stop(p, 1, 1000 + 10 * StationConfig.TRAIN_SECONDS)
 		local _, a = StationProgress.find(p, 1)
-		expect(StationRules.stat(a :: any, "speed")).toBe(50)
+		expect(StationRules.stat(a :: any, "speed")).toBe(52)
 		expect((a :: StationProgress.Animal).at).toBeNil()
 	end)
 
@@ -161,17 +166,17 @@ describe("StationProgress team and training", function()
 		p = StationProgress.snapshot(p, 5 * StationConfig.TRAIN_SECONDS)
 		p = StationProgress.snapshot(p, 6 * StationConfig.TRAIN_SECONDS)
 		local _, a = StationProgress.find(p, 1)
-		expect(StationRules.stat(a :: any, "speed")).toBe(46)
+		expect(StationRules.stat(a :: any, "speed")).toBe(48)
 	end)
 
 	it("caps offline training per settle and the number training at once", function()
 		local p = StationProgress.train(three(), 2, "gym", 0)
 		p = StationProgress.snapshot(p, 10 * StationProgress.OFFLINE_MAX)
 		local _, a = StationProgress.find(p, 2)
-		local expected = 40 + math.min(40, StationProgress.OFFLINE_MAX / StationConfig.TRAIN_SECONDS)
+		local expected = 35 + math.min(35, StationProgress.OFFLINE_MAX / StationConfig.TRAIN_SECONDS)
 		expect(StationRules.stat(a :: any, "strength")).toBe(expected)
 		p.coins = 1e6
-		for _, sp in { "goat", "frog", "fox" } do
+		for _, sp in { "warthog", "tortoise", "hyena" } do
 			p = StationProgress.buy(p, "meadow", hatched(sp))
 		end
 		local ok, code
@@ -182,5 +187,34 @@ describe("StationProgress team and training", function()
 		expect(code).toBe("train_full")
 		_, ok, code = StationProgress.train(p, 1, "moon", 0)
 		expect(code).toBe("station")
+	end)
+
+	it("keeps a Titan in its own fourth slot, outside the team of three", function()
+		local p = three()
+		p.coins = 1e6
+		local ok
+		p = StationProgress.buy(p, "safari", hatched("elephant")) -- id 4
+		expect(p.titan).toBe(4)
+		expect(#p.team).toBe(3)
+		expect(#StationProgress.fighters(p)).toBe(4)
+		p = StationProgress.buy(p, "safari", hatched("hippo")) -- id 5: the slot is taken
+		expect(p.titan).toBe(4)
+		p, ok = StationProgress.toggleTeam(p, 5) -- swaps the Titan
+		expect(ok).toBe(true)
+		expect(p.titan).toBe(5)
+		p = StationProgress.toggleTeam(p, 5)
+		expect(p.titan).toBeNil()
+		expect(#StationProgress.fighters(p)).toBe(3)
+		-- training takes a Titan out of its slot; sanitize never lets one into the team of three
+		p = StationProgress.toggleTeam(p, 4)
+		p = StationProgress.train(p, 4, "gym", 0)
+		expect(p.titan).toBeNil()
+		local q = StationProgress.sanitize({
+			animals = { { id = 1, s = "elephant", stats = { speed = 30, strength = 160, stamina = 180, mana = 60 } } },
+			team = { 1 },
+			titan = 1,
+		}, 0)
+		expect(#q.team).toBe(0)
+		expect(q.titan).toBe(1)
 	end)
 end)

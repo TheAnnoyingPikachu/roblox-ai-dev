@@ -1,8 +1,9 @@
 --!strict
--- Pure Animal Stations battles (decisions 0022, 0024): team against team, used by the endless
--- levels and by PvP. Every animal has a role from its battle type: Attack (speed) hits hard,
--- Tank (strength) has extra HP and draws every hit, Defense (stamina) cuts the damage its team takes,
--- Utility (mana) heals the most hurt teammate. Deterministic: same teams, same result.
+-- Pure Animal Stations battles (decisions 0024, 0027): team against team, used by the endless
+-- levels and later by PvP. Every animal has a role from its species: Attack hits hard, Defense
+-- draws every hit and takes less damage, Utility heals the most hurt teammate. A Titan (the
+-- team's fourth slot) has no special job: it is simply huge and neutral in every matchup.
+-- Deterministic: same teams, same result.
 
 local StationConfig = require("./StationConfig")
 local StationRules = require("./StationRules")
@@ -12,7 +13,6 @@ local BattleRules = {}
 type Owned = StationRules.Owned
 export type Fighter = {
 	role: string,
-	type: StationConfig.Stat,
 	hp: number,
 	maxHp: number,
 	atk: number,
@@ -22,31 +22,25 @@ export type Fighter = {
 }
 
 BattleRules.ATTACK_BONUS = 1.3 -- Attack: damage x this
-BattleRules.TANK_HP = 1.5 -- Tank: HP x this, and enemies must target it while it stands
-BattleRules.GUARD = 0.8 -- Defense: while one stands, its team takes damage x this (does not stack)
+BattleRules.GUARD = 0.8 -- Defense: enemies must target it while it stands, and it takes damage x this
 BattleRules.HEAL = 0.5 -- Utility: after attacking, heals the most hurt teammate by atk x this
 BattleRules.MAX_TURNS = 1000 -- a battle this long is a loss for side 1 (heals could stall it)
 
 -- An animal's battle numbers: HP from all four stats, attack from its best stat, speed decides
--- the order, role from its type.
+-- the order.
 function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 	local total = 0
 	for _, stat in StationConfig.STATS do
 		total += StationRules.stat(animal, stat)
 	end
-	local t = StationRules.battleType(animal)
-	local role = StationConfig.ROLES[t]
+	local role = StationRules.role(animal)
 	local hp = 20 + math.floor(total / 2)
-	if role == "tank" then
-		hp = math.floor(hp * BattleRules.TANK_HP)
-	end
-	local atk = 4 + math.floor(StationRules.stat(animal, t) / 4)
+	local atk = 4 + math.floor(StationRules.stat(animal, StationRules.bestStat(animal)) / 4)
 	if role == "attack" then
 		atk = math.floor(atk * BattleRules.ATTACK_BONUS)
 	end
 	return {
 		role = role,
-		type = t,
 		hp = hp,
 		maxHp = hp,
 		atk = atk,
@@ -65,21 +59,12 @@ local function alive(team: { Fighter }): boolean
 	return false
 end
 
-local function hasRole(team: { Fighter }, role: string): boolean
-	for _, f in team do
-		if f.hp > 0 and f.role == role then
-			return true
-		end
-	end
-	return false
-end
-
--- The enemy `f` hits: the first standing Tank, else the first standing animal.
+-- The enemy to hit: the first standing Defense animal, else the first standing animal.
 local function target(foes: { Fighter }): Fighter?
 	local first: Fighter? = nil
 	for _, f in foes do
 		if f.hp > 0 then
-			if f.role == "tank" then
+			if f.role == "defense" then
 				return f
 			end
 			first = first or f
@@ -119,8 +104,8 @@ function BattleRules.battle(one: { Owned }, two: { Owned }): (boolean, number)
 				if d == nil then
 					break
 				end
-				local guard = if hasRole(foes, "defense") then BattleRules.GUARD else 1
-				d.hp -= math.max(1, math.floor(f.atk * StationRules.matchup(f.type, d.type) * guard))
+				local guard = if d.role == "defense" then BattleRules.GUARD else 1
+				d.hp -= math.max(1, math.floor(f.atk * StationRules.matchup(f.role, d.role) * guard))
 				turns += 1
 				if f.role == "utility" then
 					local hurt: Fighter? = nil
