@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0034): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0036): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations.
 -- Every non-Titan species has a basic version (common to rare) and three super-rare variants
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
@@ -28,8 +28,10 @@ export type Species = {
 }
 export type Tier = { tier: string, ppm: number, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
--- unlock: the player level needed to buy it (nil = from the start); xp: player XP per hatch
-export type Egg = { id: string, name: string, price: number, xp: number, unlock: number?, odds: { Odds } }
+-- unlock: the player level needed to buy it (nil = from the start); xp: player XP for buying it;
+-- hatch: seconds it sits in the ranch's hatchery before it opens (decision 0036, draft numbers)
+export type Egg =
+	{ id: string, name: string, price: number, xp: number, hatch: number, unlock: number?, odds: { Odds } }
 export type Station = { id: string, name: string, stat: Stat }
 
 -- Each stat has one job in a wave fight (decision 0032, BattleRules): Speed is attack speed,
@@ -215,6 +217,7 @@ StationConfig.EGGS = {
 		name = "Meadow Egg",
 		price = 100,
 		xp = 10,
+		hatch = 60,
 		odds = {
 			{ id = "jackal", bp = 3400 },
 			{ id = "tortoise", bp = 3300 },
@@ -226,6 +229,7 @@ StationConfig.EGGS = {
 		name = "Wild Egg",
 		price = 1500,
 		xp = 40,
+		hatch = 600,
 		odds = {
 			{ id = "jackal", bp = 1800 },
 			{ id = "tortoise", bp = 1800 },
@@ -240,6 +244,7 @@ StationConfig.EGGS = {
 		name = "Safari Egg",
 		price = 15000,
 		xp = 150,
+		hatch = 3600,
 		odds = {
 			{ id = "cheetah", bp = 2700 },
 			{ id = "rhino", bp = 2700 },
@@ -252,6 +257,7 @@ StationConfig.EGGS = {
 		name = "Golden Egg",
 		price = 50000,
 		xp = 500,
+		hatch = 14400,
 		unlock = 15,
 		odds = {
 			{ id = "lion", bp = 5000 },

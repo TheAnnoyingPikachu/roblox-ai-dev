@@ -1,7 +1,8 @@
 --!strict
--- Pure Animal Stations saved profile (decisions 0025, 0027, 0029, 0034): defaults, sanitize, the
--- player level, buying and hatching eggs, the team and its Titan slot, training (settled from
--- timestamps in real time, also while the player is away) and the ranch upgrades. Every change takes its inputs (the hatched animal, `now`)
+-- Pure Animal Stations saved profile (decisions 0025, 0027, 0029, 0034, 0036): defaults, sanitize,
+-- the player level, buying eggs into the egg storage, hatching and opening them, the team
+-- and its Titan slot, training (settled from timestamps in real time, also while the player is
+-- away) and the ranch upgrades. Every change takes its inputs (the hatched animal, `now`)
 -- as arguments, so SaveStore can run it twice. No Roblox APIs; the server owns the Rng and the clock.
 
 local LevelRules = require("./LevelRules")
@@ -14,6 +15,10 @@ type Stats = StationConfig.Stats
 -- One owned animal: the hatched Owned fields plus an id, and where it trains (at = station id)
 -- since when (os.time).
 export type Animal = { id: number, s: string, v: string?, stats: Stats, trained: Stats?, at: string?, since: number? }
+-- A bought egg: which egg, since when it has been hatching (os.time; nil while it waits in the
+-- egg storage), and the animal the server rolled for it when it was bought. The animal is never
+-- sent to the client (`public`).
+export type HeldEgg = { egg: string, since: number?, animal: StationRules.Owned }
 export type Profile = {
 	version: number,
 	coins: number,
@@ -25,6 +30,7 @@ export type Profile = {
 	xp: number, -- player XP; the player level comes from it (playerLevel)
 	samples: number, -- dropped by harder waves; with coins they pay for ranch upgrades
 	upgrades: { [string]: number }, -- level of each ranch upgrade (StationConfig.UPGRADES), 0 = not bought
+	eggs: { HeldEgg }, -- bought eggs, oldest first: at most MAX_EGGS hatching, the rest in the egg storage
 }
 
 StationProgress.VERSION = 1
@@ -32,6 +38,8 @@ StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
 StationProgress.MAX_SAMPLES = 1e9
+StationProgress.MAX_EGGS = 6 -- eggs hatching at once
+StationProgress.MAX_STORED = 24 -- eggs the egg storage holds besides
 StationProgress.TEAM_SIZE = LevelRules.TEAM_SIZE
 StationProgress.MAX_XP = 1e12
 StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)^2
@@ -49,6 +57,7 @@ function StationProgress.defaults(_now: number): Profile
 		xp = 0,
 		samples = 0,
 		upgrades = {},
+		eggs = {},
 	}
 end
 
@@ -89,6 +98,24 @@ local function cleanStats(x: any, lo: number, hi: number, fallback: Stats): Stat
 	return out :: Stats
 end
 
+-- The fields of a stored animal that are its own (species, variant, stats, stat levels), cleaned;
+-- nil when the species is unknown.
+local function owned(a: any): StationRules.Owned?
+	if type(a) ~= "table" or type(a.s) ~= "string" or StationConfig.species(a.s) == nil then
+		return nil
+	end
+	local v = if type(a.v) == "string" and StationConfig.variant(a.s, a.v) then a.v else nil
+	local version = StationRules.versionStats(a.s, v) :: Stats
+	local stats = cleanStats(a.stats, StationConfig.STAT_MIN, StationConfig.STAT_MAX, version)
+	for _, stat in StationConfig.STATS do
+		(stats :: any)[stat] = math.floor((stats :: any)[stat])
+	end
+	local trained = if type(a.trained) == "table"
+		then cleanStats(a.trained, 0, StationConfig.MAX_LEVEL, StationRules.ZERO)
+		else nil
+	return { s = a.s, v = v, stats = stats, trained = trained }
+end
+
 function StationProgress.isTitan(a: Animal): boolean
 	return StationRules.role(a :: any) == StationConfig.TITAN
 end
@@ -117,23 +144,12 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			if #p.animals >= StationProgress.MAX_ANIMALS then
 				break
 			end
-			if type(a) ~= "table" or type(a.s) ~= "string" or StationConfig.species(a.s) == nil then
+			local own = owned(a)
+			local id = if own then int(a.id, 1, 1e12, 0) else 0
+			if own == nil or id == 0 or ids[id] then
 				continue
 			end
-			local v = if type(a.v) == "string" and StationConfig.variant(a.s, a.v) then a.v else nil
-			local id = int(a.id, 1, 1e12, 0)
-			if id == 0 or ids[id] then
-				continue
-			end
-			local version = StationRules.versionStats(a.s, v) :: Stats
-			local stats = cleanStats(a.stats, StationConfig.STAT_MIN, StationConfig.STAT_MAX, version)
-			for _, stat in StationConfig.STATS do
-				(stats :: any)[stat] = math.floor((stats :: any)[stat])
-			end
-			local trained = if type(a.trained) == "table"
-				then cleanStats(a.trained, 0, StationConfig.MAX_LEVEL, StationRules.ZERO)
-				else nil
-			local animal: Animal = { id = id, s = a.s, v = v, stats = stats, trained = trained }
+			local animal: Animal = { id = id, s = own.s, v = own.v, stats = own.stats, trained = own.trained }
 			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots then
 				animal.at = a.at
 				animal.since = int(a.since, 0, MAX_TIME, now or 0)
@@ -145,6 +161,17 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 		end
 	end
 	p.nextId = math.max(int(record.nextId, 1, 1e12, 1), maxId + 1)
+	if type(record.eggs) == "table" then
+		for _, e in record.eggs do
+			local animal = if type(e) == "table" then owned(e.animal) else nil
+			local room = #p.eggs < StationProgress.MAX_EGGS + StationProgress.MAX_STORED
+			if animal and type(e.egg) == "string" and StationConfig.egg(e.egg) and room then
+				local started = type(e.since) == "number" and StationProgress.hatching(p) < StationProgress.MAX_EGGS
+				local since = if started then int(e.since, 0, MAX_TIME, now or 0) else nil
+				table.insert(p.eggs, { egg = e.egg, since = since, animal = animal })
+			end
+		end
+	end
 	if type(record.team) == "table" then
 		for _, id in record.team do
 			local a = if type(id) == "number" then ids[id] else nil
@@ -175,6 +202,15 @@ function StationProgress.find(p: Profile, id: number): (number?, Animal?)
 	return nil, nil
 end
 
+-- How many of `p`'s eggs are hatching (the others wait in the egg storage).
+function StationProgress.hatching(p: Profile): number
+	local n = 0
+	for _, e in p.eggs do
+		n += if e.since then 1 else 0
+	end
+	return n
+end
+
 -- Whether `p` can buy `eggId` now; the code says why not.
 function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 	local egg = StationConfig.egg(eggId)
@@ -182,45 +218,92 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 		return false, "egg"
 	elseif egg.unlock and StationProgress.playerLevel(p) < egg.unlock then
 		return false, "locked"
-	elseif #p.animals >= math.min(StationProgress.value(p, "barn"), StationProgress.MAX_ANIMALS) then
-		return false, "full"
+	elseif #p.eggs >= StationProgress.MAX_EGGS + StationProgress.MAX_STORED then
+		return false, "eggs_full"
 	elseif p.coins < egg.price then
 		return false, "coins"
 	end
 	return true, nil
 end
 
--- Pay for `eggId`, add `hatched` (rolled by the server with StationRules.hatch) and earn the egg's
--- XP. The animal joins the team while it has room (a Titan takes the Titan slot if it is empty).
--- Returns the new animal's id.
-function StationProgress.buy(
-	p: Profile,
-	eggId: string,
-	hatched: StationRules.Owned
-): (Profile, boolean, string?, number?)
+-- Pay for `eggId`, earn its XP and put it in the egg storage with the animal the server rolled
+-- for it (StationRules.hatch). The player chooses when it hatches (`start`) and opens it when it
+-- is done (`crack`).
+function StationProgress.buy(p: Profile, eggId: string, hatched: StationRules.Owned): (Profile, boolean, string?)
 	local ok, code = StationProgress.canBuy(p, eggId)
 	if not ok then
-		return p, false, code, nil
+		return p, false, code
 	end
 	local egg = StationConfig.egg(eggId) :: StationConfig.Egg
 	p.coins -= egg.price
 	p.xp = math.min(p.xp + egg.xp, StationProgress.MAX_XP)
-	local id = p.nextId
-	p.nextId += 1
-	local animal: Animal = {
-		id = id,
+	local animal: StationRules.Owned = {
 		s = hatched.s,
 		v = hatched.v,
 		stats = table.clone(hatched.stats),
 		trained = if hatched.trained then table.clone(hatched.trained) else nil, -- the base levels
 	}
+	p.eggs = table.clone(p.eggs)
+	table.insert(p.eggs, { egg = eggId, animal = animal })
+	return p, true, nil
+end
+
+-- Start hatching the `k`th egg at `now`: it must be in the storage, and one of the six hatching
+-- places must be free.
+function StationProgress.start(p: Profile, k: number, now: number): (Profile, boolean, string?)
+	local e = p.eggs[k]
+	if e == nil then
+		return p, false, "egg"
+	elseif e.since then
+		return p, false, "hatching"
+	elseif StationProgress.hatching(p) >= StationProgress.MAX_EGGS then
+		return p, false, "nests_full"
+	end
+	p.eggs = table.clone(p.eggs)
+	p.eggs[k] = { egg = e.egg, since = now, animal = e.animal }
+	return p, true, nil
+end
+
+-- True when egg `e` is hatching and has waited its hatch time: it can be opened.
+function StationProgress.due(e: { egg: string, since: number? }, now: number): boolean
+	local egg = StationConfig.egg(e.egg)
+	return egg ~= nil and e.since ~= nil and now >= e.since + egg.hatch
+end
+
+-- Open the `k`th egg: it must have finished hatching and the Barn must have room. Its animal
+-- joins the collection with a new id, and the team while that has room (a Titan takes the Titan
+-- slot if it is empty). Returns the animal.
+function StationProgress.crack(p: Profile, k: number, now: number): (Profile, boolean, string?, Animal?)
+	local e = p.eggs[k]
+	if e == nil then
+		return p, false, "egg", nil
+	elseif not StationProgress.due(e, now) then
+		return p, false, "not_ready", nil
+	elseif #p.animals >= math.min(StationProgress.value(p, "barn"), StationProgress.MAX_ANIMALS) then
+		return p, false, "full", nil
+	end
+	local animal: Animal =
+		{ id = p.nextId, s = e.animal.s, v = e.animal.v, stats = e.animal.stats, trained = e.animal.trained }
+	p.nextId += 1
 	table.insert(p.animals, animal)
 	if StationProgress.isTitan(animal) then
-		p.titan = p.titan or id
+		p.titan = p.titan or animal.id
 	elseif #p.team < StationProgress.TEAM_SIZE then
-		table.insert(p.team, id)
+		table.insert(p.team, animal.id)
 	end
-	return p, true, nil, id
+	p.eggs = table.clone(p.eggs)
+	table.remove(p.eggs, k)
+	return p, true, nil, animal
+end
+
+-- The profile as the client may see it: the held eggs without the animals inside them.
+function StationProgress.public(p: Profile): any
+	local copy = table.clone(p) :: any
+	copy.eggs = {}
+	for k, e in p.eggs do
+		copy.eggs[k] = { egg = e.egg, since = e.since }
+	end
+	return copy
 end
 
 -- Training seconds earned in `seconds` of real time: the Training Grounds make it go faster.

@@ -1,9 +1,9 @@
 --!strict
 -- Animal Stations server entry: builds the world, gives each player a home ranch (lowest free of
 -- World.RANCHES, owners spawn at its gate), teleports players between their ranch and the hub,
--- loads saves (kit Saves), sells eggs at the hub's stalls, sells ranch upgrades at their pads and
--- shows each ranch as its owner has built it (Ranch.luau), and routes team and training requests
--- (kit Router). The client only names an action; prices, hatches and timings are decided here.
+-- loads saves (kit Saves), shows each ranch as its owner has built it and the eggs in its hatchery
+-- (Ranch.luau), and routes every request (kit Router): buying eggs, starting one hatching and
+-- opening it, ranch upgrades, the team and training. The client only names an action; prices, hatches and timings are decided here.
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -29,6 +29,18 @@ local function show(i: number, upgrades: { [string]: number })
 end
 for i = 1, World.RANCHES do
 	show(i, {})
+end
+-- and the eggs waiting in its hatchery
+local held: { [number]: string } = {}
+local function showEggs(i: number, eggs: { { egg: string, since: number? } })
+	local key = ""
+	for _, e in eggs do
+		key ..= e.egg .. (if e.since then "+," else ",")
+	end
+	if held[i] ~= key then
+		held[i] = key
+		Ranch.eggs(i, eggs)
+	end
 end
 
 -- Max Players is a place setting a place file cannot carry: set it to 3 when publishing.
@@ -148,7 +160,7 @@ local function buy(player: Player, eggId: string): (boolean, string?)
 	saves.apply(player, function(q)
 		return (StationProgress.buy(q, eggId, hatched))
 	end)
-	remotes.fx(player, "hatched", { s = hatched.s, v = hatched.v, stats = hatched.stats, trained = hatched.trained })
+	remotes.fx(player, "bought", eggId) -- it waits in the egg storage until the player hatches it
 	return true, nil
 end
 
@@ -160,7 +172,8 @@ local router = Router.new({
 		profile = {
 			args = {},
 			handler = function(player)
-				remotes.fx(player, "profile", saves.get(player))
+				local p = saves.get(player)
+				remotes.fx(player, "profile", if p then StationProgress.public(p) else nil)
 				return true
 			end,
 		},
@@ -191,6 +204,63 @@ local router = Router.new({
 				end)
 			end,
 		},
+		-- start hatching the egg at this place in the player's list, or open it when it is done
+		hatch = {
+			args = { Payload.int({ min = 1, max = 100 }) },
+			handler = function(player, k: number)
+				local now = os.time()
+				return apply(player, function(p)
+					return StationProgress.start(p, k, now)
+				end)
+			end,
+		},
+		open = {
+			args = { Payload.int({ min = 1, max = 100 }) },
+			handler = function(player, k: number)
+				local p = saves.get(player)
+				if p == nil then
+					return false, "loading"
+				end
+				local now = os.time()
+				local _, ok, code, born = StationProgress.crack(StationProgress.sanitize(p, now), k, now) -- on a copy
+				if not ok or born == nil then
+					return false, code
+				end
+				saves.apply(player, function(q)
+					return (StationProgress.crack(q, k, now))
+				end)
+				remotes.fx(player, "hatched", { s = born.s, v = born.v, stats = born.stats, trained = born.trained })
+				return true, nil
+			end,
+		},
+		upgrade = {
+			args = { Payload.enum(ids(StationConfig.UPGRADES)) },
+			handler = function(player, id: string)
+				local now = os.time()
+				local ok, code = apply(player, function(p)
+					return StationProgress.upgrade(p, id, now)
+				end)
+				if ok then
+					remotes.fx(player, "upgraded", id)
+				end
+				return ok, code
+			end,
+		},
+		-- Studio only: coins and samples cannot be earned until wave fights are built, so the
+		-- ranch menu has a test funds button. The action does not exist on a live server.
+		funds = if RunService:IsStudio()
+			then {
+				args = {},
+				handler = function(player)
+					saves.apply(player, function(q)
+						q.coins = math.min(q.coins + 1e6, StationProgress.MAX_COINS)
+						q.samples = math.min(q.samples + 500, StationProgress.MAX_SAMPLES)
+						return q
+					end)
+					return true
+				end,
+			}
+			else nil,
 	},
 	onError = function(action, err)
 		warn(`[StationsServer] {action}: {err}`)
@@ -205,37 +275,14 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
-		remotes.fx(player, "profile", profile)
+		remotes.fx(player, "profile", StationProgress.public(profile))
 		local i = ranchOf(player)
 		if i then
 			show(i, profile.upgrades)
+			showEggs(i, profile.eggs)
 		end
 	end,
 })
-
--- Egg stalls: a prompt on each counter buys that egg (the server decides price and result).
-local market = World.root():FindFirstChild("EggMarket", true)
-for _, egg in StationConfig.EGGS do
-	local stand = market and market:FindFirstChild(egg.id)
-	local counter = stand and stand:FindFirstChildWhichIsA("BasePart")
-	if counter == nil then
-		warn(`[StationsServer] no stall for {egg.id}`)
-		continue
-	end
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = `Buy {egg.name}`
-	prompt.ObjectText = if egg.unlock then `Level {egg.unlock}+  -  {egg.price} coins` else `{egg.price} coins`
-	prompt.HoldDuration = 0.3
-	prompt.MaxActivationDistance = 14
-	prompt.RequiresLineOfSight = false
-	prompt.Parent = counter
-	prompt.Triggered:Connect(function(player)
-		local ok, code = buy(player, egg.id)
-		if not ok then
-			remotes.fx(player, "refused", code)
-		end
-	end)
-end
 
 Players.PlayerAdded:Connect(function(player)
 	join(player)
@@ -252,56 +299,9 @@ Players.PlayerRemoving:Connect(function(player)
 		owners[i] = nil
 		World.setRanchOwner(i, nil)
 		show(i, {})
+		showEggs(i, {})
 	end
 end)
-
--- Ranch upgrade pads (built by Ranch.luau, and again after every upgrade): only the owner buys.
-local function hookUpgrade(prompt: Instance)
-	(prompt :: ProximityPrompt).Triggered:Connect(function(player)
-		local track = prompt:GetAttribute("Track")
-		if owners[prompt:GetAttribute("Ranch") :: number] ~= player or type(track) ~= "string" then
-			return
-		end
-		local now = os.time()
-		local ok, code = apply(player, function(p)
-			return StationProgress.upgrade(p, track, now)
-		end)
-		remotes.fx(player, if ok then "upgraded" else "refused", if ok then track else code)
-	end)
-end
-CollectionService:GetInstanceAddedSignal("Upgrade"):Connect(hookUpgrade)
-for _, prompt in CollectionService:GetTagged("Upgrade") do
-	hookUpgrade(prompt)
-end
-
--- Studio only: coins and samples cannot be earned until wave fights are built, so a pad by each
--- gate hands out test funds. It never exists on a live server.
-if RunService:IsStudio() then
-	for i = 1, World.RANCHES do
-		local pad = Instance.new("Part")
-		pad.Name = "TestFunds"
-		pad.Anchored, pad.Shape = true, Enum.PartType.Ball
-		pad.Size = Vector3.new(3, 3, 3)
-		pad.CFrame = World.ranchFrame(i) * CFrame.new(-13, 2, -World.RANCH_HALF + 4)
-		pad.Color, pad.Material = Color3.fromRGB(200, 90, 255), Enum.Material.Neon
-		local prompt = Instance.new("ProximityPrompt")
-		prompt.ActionText = "Take test funds"
-		prompt.ObjectText = "Studio only"
-		prompt.HoldDuration = 0.3
-		prompt.RequiresLineOfSight = false
-		prompt.Parent = pad
-		prompt.Triggered:Connect(function(player)
-			if owners[i] == player and saves.get(player) then
-				saves.apply(player, function(q)
-					q.coins = math.min(q.coins + 1e6, StationProgress.MAX_COINS)
-					q.samples = math.min(q.samples + 500, StationProgress.MAX_SAMPLES)
-					return q
-				end)
-			end
-		end)
-		pad.Parent = World.root():FindFirstChild(`Ranch{i}`, true)
-	end
-end
 
 -- Creature showcase (STATION-016): until owned animals stand at the ranch, each paddock shows the
 -- Rhino and the Lava Rhino pacing a lane: walk up, turn, magic attack back down the lane, walk

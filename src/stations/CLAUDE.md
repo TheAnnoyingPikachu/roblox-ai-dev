@@ -6,19 +6,19 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
 - Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
-  (roster and looks), decisions 0019 to 0035 (0029 to 0035 are the latest and replace parts of the rest).
-- Not built: wave battles in the arena (so coins and samples cannot be earned in play), most animal models. In Studio only, a purple ball by each gate gives test funds.
+  (roster and looks), decisions 0019 to 0036 (0029 to 0036 are the latest and replace parts of the rest).
+- Not built: wave battles in the arena (so coins and samples cannot be earned in play), most animal models. In Studio only, the ranch menu has a test funds button. Gear is not designed: the gear vendor only has a message.
 
 ## Files
 
 | File | Owns |
 |---|---|
-| `StationsServer.server.luau` | entry: builds the world, ranch assignment and spawn, teleport prompts, kit Saves (`StationsProfile`), kit Router + `StationsRemotes` (profile, buy, team, train, stop), stall prompts |
-| `../stations-client/Hud.client.luau` | coins and player level, toasts, Animals panel (team button, one train button per stat); display only |
-| `Ranch.luau` | everything that stands on a ranch plot, built from its owner's upgrade levels and built again after each upgrade: house, barn and yard, six training courts, paths, upgrade pads, scenery |
+| `StationsServer.server.luau` | entry: builds the world, ranch assignment and spawn, teleport prompts, kit Saves (`StationsProfile`), kit Router + `StationsRemotes` (profile, buy, hatch, open, upgrade, team, train, stop; funds in Studio only) |
+| `../stations-client/Hud.client.luau` | coins and player level, toasts, Animals panel (team button, one train button per stat), and three plain lists opened by prompts in the world: the ranch menu (house door), the egg vendor, the egg storage; display only |
+| `Ranch.luau` | everything that stands on a ranch plot, built from its owner's upgrade levels and built again after each upgrade: house, barn and yard, six training courts, the hatchery and egg storage (`Ranch.eggs` shows the eggs), the egg and gear vendors' stalls, paths, scenery |
 | `Creatures.luau` | animal models: loads a `StationAssets` model once, rigs it with Motor6Ds from the manifest joints, `spawn`, `play` (sets `Anim` and `AnimAt`), `speed` |
 | `../stations-client/Creatures.client.luau` | animates every model tagged `Creature` (idle, walk, attack, magic) and plays the magic attack's effects; display only |
-| `World.luau` | the hub (plaza, Hatchery fountain, egg stalls, south walk, teleport pad, north road, scenery), the wave arena canyon, three ranch islands (the plot only: lawn, fence, gate, teleport pad), the mountains and invisible walls round every area, lighting, spawn |
+| `World.luau` | the hub (plaza, Hatchery fountain, south walk, teleport pad, north road, scenery), the wave arena canyon, three ranch islands (the plot only: lawn, fence, gate, teleport pad), the mountains and invisible walls round every area, lighting, spawn |
 
 Pure rules in `src/shared`: `StationConfig` (stats, stat levels, roles, groups, species, variants,
 eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave fights on a clock),
@@ -33,7 +33,8 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 - Training runs in real time, also while the player is away, with no cap; level times come from `StationRules.levelSeconds` (whole seconds).
 - A role and a group come from the species, never from stats. The Titan is never in `Profile.team`; it uses `Profile.titan`.
 - `sanitize` repairs an animal's missing stats from its species; it only drops unknown species and duplicate ids. Keep it that way when stats change.
-- World and Ranch are display only. Tags for the server: `TrainPad` (`Ranch`, `Station`), `RanchSpot` (`Ranch`, `Index`), `RanchNest` (`Ranch`), `Upgrade` prompts (`Ranch`, `Track`), `Teleport` prompts (`To` = "hub" or "ranch"), `WaveStand` and `WaveSpawn` in the arena. The first four are built by Ranch.luau and replaced on every upgrade: reach them through CollectionService signals, never keep a reference.
+- World and Ranch are display only. Tags for the server: `TrainPad` (`Ranch`, `Station`), `RanchSpot` (`Ranch`, `Index`), `RanchNest` (`Ranch`), prompts `RanchMenu`, `EggStorage`, `Egg` (`Index`, `Due`) and `Vendor` (`Kind`), all with `Ranch`, `Teleport` prompts (`To` = "hub" or "ranch"), `WaveStand` and `WaveSpawn` in the arena. Everything on a ranch is built by Ranch.luau and replaced when the ranch or its eggs change: reach them through CollectionService signals, never keep a reference.
+- Eggs (decision 0036): the animal is rolled at purchase and kept in the save; the client only ever gets `StationProgress.public`. Nothing starts hatching or opens by itself: `start` and `crack` are asked for by the player. Prompts act on the client (`ProximityPromptService.PromptTriggered` in the HUD), which checks the ranch is the player's own; a prompt must stay enabled on the server or its trigger is dropped.
 - Ranch upgrades (decision 0034) are data in `StationConfig.UPGRADES`; `StationProgress.value` is the only place their effect is read. A save is never cut down to fit an upgrade level.
 - Ranch.luau's layout numbers are written for a 120-stud plot and stretched by `World.RANCH_HALF / 60`; paths and the scenery outside the fence use real plot coordinates. Anything else placed on a ranch (the showcase lanes, the Studio test pad) must follow the plot's size the same way.
 - A mountain's close-up detail (foothills, pines, ledges) is built only on the side given as `toward`. Sign text uses `Props.label`'s inset so posts never cover it.

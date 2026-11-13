@@ -1,11 +1,16 @@
 --!strict
--- Animal Stations HUD (decisions 0025, 0029): coins and player level, hatch and refusal toasts,
--- and the Animals panel. Each animal shows its role and group, a team button, and one button per
+-- Animal Stations HUD (decisions 0025, 0029, 0036): coins and player level, hatch and refusal
+-- toasts, the Animals panel, and two plain lists opened in the world: the ranch menu (at the Ranch
+-- House door: upgrades and eggs) and the egg vendor's (at a ranch's egg stall). Each animal shows its role and group, a team button, and one button per
 -- stat with the stat's value and level: tap a stat to train it there, tap it again to stop.
 -- Display only: every button names an action; the server decides everything and sends the new
 -- profile. Training progress between profiles is a local preview with the same pure rules.
 
+local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -43,6 +48,10 @@ local REFUSED: { [string]: string } = {
 	locked = `Reach level {lockedAt} to unlock that egg`,
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
+	eggs_full = "Your egg storage is full",
+	nests_full = "All six hatching places are taken",
+	not_ready = "That egg is not ready yet",
+	hatching = "That egg is already hatching",
 	top = "That is already at its top level",
 	team_full = "Your team is full (3)",
 	train_full = "Every training place is taken: upgrade the Ranch House",
@@ -252,7 +261,7 @@ local function refresh()
 		local empty = Instance.new("Frame")
 		empty.BackgroundTransparency = 1
 		empty.Size = UDim2.new(1, -12, 0, 60)
-		Ui.label(empty, "No animals yet. Buy an egg at the market stalls in the plaza!", { muted = true })
+		Ui.label(empty, "No animals yet. Buy an egg from the egg vendor on your ranch!", { muted = true })
 		empty.Parent = list
 	end
 	for i, a in profile.animals do
@@ -260,10 +269,225 @@ local function refresh()
 	end
 end
 
+-- Ranch menu and egg vendor ------------------------------------------------------------------------
+
+-- A plain list in the middle of the screen with a heading and a Close button.
+local function sheet(name: string, heading: string): (Frame, ScrollingFrame)
+	local frame = Ui.panel(screen, { size = UDim2.fromOffset(470, 500), anchor = "center", name = name })
+	frame.Visible = false
+	Ui.label(frame, heading, { size = 24 }).LayoutOrder = 1
+	local rows = Instance.new("ScrollingFrame")
+	rows.LayoutOrder = 2
+	rows.Size = UDim2.new(1, 0, 1, -96)
+	rows.BackgroundTransparency = 1
+	rows.BorderSizePixel = 0
+	rows.ScrollBarThickness = 8
+	rows.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	rows.CanvasSize = UDim2.new()
+	rows.Parent = frame
+	local order = Instance.new("UIListLayout")
+	order.Padding = UDim.new(0, 6)
+	order.SortOrder = Enum.SortOrder.LayoutOrder
+	order.Parent = rows
+	Ui.button(frame, "Close", function()
+		frame.Visible = false
+	end, { danger = true }).LayoutOrder = 3
+	return frame, rows
+end
+
+local menu, menuRows = sheet("RanchMenu", "Your ranch")
+local shop, shopRows = sheet("EggShop", "Egg vendor")
+local store, storeRows = sheet("EggStorage", "Egg storage")
+
+local function only(frame: Frame) -- one list at a time
+	menu.Visible, shop.Visible, store.Visible = frame == menu, frame == shop, frame == store
+end
+local eggLines: { { label: TextLabel, egg: any } } = {} -- the menu's egg lines, for their countdowns
+
+local function clear(rows: Instance)
+	for _, child in rows:GetChildren() do
+		if not child:IsA("UIListLayout") then
+			child:Destroy()
+		end
+	end
+end
+
+local function eggText(e: any): string
+	local egg = StationConfig.egg(e.egg) :: StationConfig.Egg
+	if e.since == nil then
+		return `{egg.name}: in the egg storage`
+	end
+	local left = e.since + egg.hatch - Workspace:GetServerTimeNow()
+	return if left > 0 then `{egg.name}: opens in {Format.ago(left)}` else `{egg.name}: ready! Open it at the hatchery`
+end
+
+-- The ranch menu: each upgrade with what it gives and a button for its next level, then the eggs.
+local function drawMenu()
+	if profile == nil then
+		return
+	end
+	clear(menuRows)
+	eggLines = {}
+	local n = 0
+	local function place(thing: GuiObject)
+		n += 1
+		thing.LayoutOrder = n
+	end
+	for _, u in StationConfig.UPGRADES do
+		local level = profile.upgrades[u.id] or 0
+		place(
+			Ui.label(
+				menuRows,
+				`{u.name}, level {level} of {#u.levels}: {StationProgress.value(profile, u.id)} {u.gives}`
+			)
+		)
+		local cost = u.levels[level + 1]
+		if cost then
+			local price = `{Format.commas(cost.coins)} coins`
+			if cost.samples > 0 then
+				price ..= ` + {cost.samples} samples`
+			end
+			place(Ui.button(menuRows, `Upgrade to {cost.value} for {price}`, function()
+				send("upgrade", u.id)
+			end))
+		end
+	end
+	local hatching = 0
+	for _, e in profile.eggs do
+		hatching += if e.since then 1 else 0
+	end
+	place(
+		Ui.label(
+			menuRows,
+			`Eggs: {hatching} of {StationProgress.MAX_EGGS} hatching, {#profile.eggs - hatching} in the egg storage`,
+			{ size = 20 }
+		)
+	)
+	for k, e in profile.eggs do
+		if k <= 12 then
+			local entry = Ui.label(menuRows, eggText(e), { size = 16, muted = e.since == nil })
+			place(entry)
+			table.insert(eggLines, { label = entry, egg = e })
+		end
+	end
+	if RunService:IsStudio() then -- coins and samples cannot be earned in play yet
+		place(Ui.button(menuRows, "Test funds (Studio only)", function()
+			send("funds")
+		end))
+	end
+end
+
+-- The egg vendor's list: every egg with its price and hatch time.
+local function drawShop()
+	if profile == nil then
+		return
+	end
+	clear(shopRows)
+	local level = StationProgress.playerLevel(profile)
+	local note = Ui.label(
+		shopRows,
+		"Eggs go to your egg storage. Choose one there to hatch (six at a time), then open it when it is done.",
+		{ size = 14, muted = true }
+	)
+	note.LayoutOrder = 0
+	for k, egg in StationConfig.EGGS do
+		local needs = if egg.unlock and level < egg.unlock then `  (from level {egg.unlock})` else ""
+		local entry = `{egg.name}: {Format.commas(egg.price)} coins, opens in {Format.ago(egg.hatch)}{needs}`
+		Ui.label(shopRows, entry).LayoutOrder = k * 2
+		Ui.button(shopRows, `Buy {egg.name}`, function()
+			send("buy", egg.id)
+		end).LayoutOrder = k * 2 + 1
+	end
+end
+
+-- The egg storage's list: every stored egg with a button to start hatching it.
+local function drawStore()
+	if profile == nil then
+		return
+	end
+	clear(storeRows)
+	local hatching, stored = 0, 0
+	for k, e in profile.eggs do
+		if e.since then
+			hatching += 1
+		else
+			stored += 1
+			local egg = StationConfig.egg(e.egg) :: StationConfig.Egg
+			Ui.button(storeRows, `Hatch {egg.name} (takes {Format.ago(egg.hatch)})`, function()
+				send("hatch", k)
+			end).LayoutOrder =
+				k
+		end
+	end
+	local head = if stored == 0
+		then "No eggs in storage. Buy some from the egg vendor."
+		else `{hatching} of {StationProgress.MAX_EGGS} hatching places are in use. Choose an egg to hatch:`
+	Ui.label(storeRows, head, { size = 16, muted = true }).LayoutOrder = 0
+end
+
+-- The prompts in the world: the Ranch House door, the egg storage and a finished egg (the owner
+-- only), and the vendors' stalls.
+ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
+	if who ~= Players.LocalPlayer then
+		return
+	end
+	local mine = prompt:GetAttribute("Ranch") == who:GetAttribute("Ranch")
+	local owners = CollectionService:HasTag(prompt, "RanchMenu")
+		or CollectionService:HasTag(prompt, "EggStorage")
+		or CollectionService:HasTag(prompt, "Egg")
+	if owners and not mine then
+		Ui.toast(screen, "This is not your ranch")
+	elseif CollectionService:HasTag(prompt, "RanchMenu") then
+		drawMenu()
+		only(menu)
+	elseif CollectionService:HasTag(prompt, "EggStorage") then
+		drawStore()
+		only(store)
+	elseif CollectionService:HasTag(prompt, "Egg") then
+		send("open", prompt:GetAttribute("Index"))
+	elseif CollectionService:HasTag(prompt, "Vendor") then
+		if prompt:GetAttribute("Kind") == "eggs" then
+			drawShop()
+			only(shop)
+		else
+			Ui.toast(screen, "The gear vendor is still unpacking. Gear is coming soon!")
+		end
+	end
+end)
+
+task.spawn(function() -- once a second: the menu's countdowns, and a finished egg can be opened
+	while true do
+		task.wait(1)
+		if menu.Visible then
+			for _, entry in eggLines do
+				entry.label.Text = eggText(entry.egg)
+			end
+		end
+		for _, prompt in CollectionService:GetTagged("Egg") do
+			local due = prompt:GetAttribute("Due")
+			local ready = type(due) == "number" and Workspace:GetServerTimeNow() >= due;
+			(prompt :: ProximityPrompt).ActionText = if ready then "Open" else "Hatching"
+			local sparkle = prompt.Parent and prompt.Parent:FindFirstChildOfClass("ParticleEmitter")
+			if sparkle then
+				sparkle.Enabled = ready
+			end
+		end
+	end
+end)
+
 fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	if kind == "profile" then
 		profile = payload
 		refresh()
+		if menu.Visible then
+			drawMenu()
+		end
+		if shop.Visible then
+			drawShop()
+		end
+		if store.Visible then
+			drawStore()
+		end
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
@@ -272,6 +496,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			end
 		end
 		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
+	elseif kind == "bought" then
+		local egg = StationConfig.egg(payload)
+		if egg then
+			Ui.toast(screen, `{egg.name} bought. It is in your egg storage.`, 3)
+		end
 	elseif kind == "upgraded" then
 		local u = StationConfig.upgrade(payload)
 		if u and profile then

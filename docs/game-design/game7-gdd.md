@@ -40,7 +40,7 @@ vendors.
   tenth. Clearing a wave pays coins.
 - **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
   waves, daily, weekly and monthly login tracks and gear levels when they exist.
-- **Places:** the hub (plaza, egg stalls) and one ranch per player behind the hub's mountains,
+- **Places:** the hub (plaza) and one ranch per player behind the hub's mountains,
   south, east and west (decision 0035). A ranch is reached by teleport pad or on foot up its own
   mountain pass, ready for riding animals later. Mountains ring every area. A canyon through the
   hub's mountains to the north is the wave arena. A server holds 3 players.
@@ -59,9 +59,12 @@ vendors.
   teleports. Client: coins and level, and the Animals panel.
 - World: the hub with its wave arena canyon and three ranch islands, as simple placeholders.
   SHANNON has said the world is right for now.
-- The ranch tycoon (decision 0034): three upgrades bought at pads on the ranch with coins and
+- The ranch tycoon (decision 0034): three upgrades bought in the ranch menu (opened at the Ranch House door) with coins and
   samples. Ranch House: animals training at once (2 to 6). Barn: animals you can keep (10 to 80).
   Training Grounds: training speed (100% to 200%). Every level changes how the ranch looks.
+- Eggs (decision 0036): bought from the egg vendor on the ranch into the egg storage; the player
+  chooses which to hatch, six at once; they take 1 minute to 4 hours; a finished egg is opened by
+  hand at the hatchery. A gear vendor's stall stands ready for gear.
 - The first animal models (decision 0033): the Rhino and the mythic Lava Rhino, jointed and
   animated (idle, walk, horn attack, magic attack). They pace each ranch's paddock as a showcase.
 

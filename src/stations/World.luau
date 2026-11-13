@@ -1,6 +1,6 @@
 --!strict
 -- Animal Stations world (framework, decision 0029): the hub, a central plaza with the hatchery
--- fountain and the vendors' egg stalls, and three home ranches (one per player). Each ranch is a
+-- fountain, and three home ranches (one per player). Each ranch is a
 -- large separate area behind the hub's mountains, reached by teleport pad or up its own pass. A ranch is the
 -- player's base, where animals live and train: its plot is built here, and what stands on it
 -- by Ranch.luau from its owner's upgrades. Mountains ring every area to hide the void; a canyon through
@@ -10,10 +10,8 @@
 
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local StationConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationConfig"))
 local Props = require(script.Parent:WaitForChild("Props"))
 local part, pillar, label = Props.part, Props.pillar, Props.label
 
@@ -345,61 +343,6 @@ local function plaza(root: Instance, rng: Random)
 		local a = rad(i * 90 + 45)
 		local p = Vector3.new(math.cos(a), 0, math.sin(a)) * 9.5
 		ball(h, p + Vector3.new(0, 2.6, 0), 1.6, STONE, M.Marble)
-	end
-
-	-- Egg market (the hub's vendors) on the north arc, facing the south walk players arrive on:
-	-- one stall per egg, cheapest on the left as you look north.
-	local mk = folder(f, "EggMarket")
-	for i, e in StationConfig.EGGS do
-		local a = rad(-90 + (i - (#StationConfig.EGGS + 1) / 2) * 36)
-		local p = Vector3.new(math.cos(a), 0, math.sin(a)) * 34
-		local cf = CFrame.lookAt(p + Vector3.new(0, 0.5, 0), Vector3.new(0, 0.5, 0))
-		local stand = folder(mk, e.id)
-		-- base and posts
-		part(stand, Vector3.new(12, 1, 10), cf * CFrame.new(0, 0.5, 0), WOOD, M.WoodPlanks)
-		for _, c in
-			{
-				Vector3.new(-5.4, 0, -4.4),
-				Vector3.new(5.4, 0, -4.4),
-				Vector3.new(-5.4, 0, 4.4),
-				Vector3.new(5.4, 0, 4.4),
-			}
-		do
-			pillar(stand, (cf * CFrame.new(c + Vector3.new(0, 1, 0))).Position, 10, 0.35, WOOD_DARK, M.Wood)
-		end
-		-- striped awning in the egg's colours
-		local look = EGG_LOOK[e.id]
-		for s = 0, 5 do
-			local col = if s % 2 == 0 then look.body else look.spot
-			part(
-				stand,
-				Vector3.new(2.2, 0.4, 11.6),
-				cf * CFrame.new(-5.5 + s * 2.2, 11.4, 0) * CFrame.Angles(rad(-10), 0, 0),
-				col,
-				M.Fabric
-			)
-		end
-		-- counter, cushion and the egg
-		part(stand, Vector3.new(10, 3, 2), cf * CFrame.new(0, 2.5, -3.6), WOOD_DARK, M.Wood)
-		part(stand, Vector3.new(10.4, 0.4, 2.4), cf * CFrame.new(0, 4.1, -3.6), WOOD, M.Wood)
-		disc(stand, (cf * CFrame.new(0, 2.2, 1)).Position, 5, 1.2, Color3.fromRGB(200, 60, 90), M.Fabric)
-		egg(stand, (cf * CFrame.new(0, 2.2, 1)).Position, 6, look.body, look.spot, rng)
-		-- name and price board above the counter, facing the plaza
-		local board = part(
-			stand,
-			Vector3.new(10, 2.6, 0.4),
-			cf * CFrame.new(0, 9, -4.8),
-			look.body:Lerp(INK, 0.55),
-			M.SmoothPlastic
-		)
-		label(
-			board,
-			if e.unlock then `{e.name}  Lv {e.unlock}+  {e.price} coins` else `{e.name}  {e.price} coins`,
-			WHITE,
-			0.4
-		)
-		local spot = part(stand, Vector3.new(0.6, 0.6, 0.6), cf * CFrame.new(0, 10.6, 1), WARM, M.Neon)
-		glow(spot, WARM, 12, 1)
 	end
 
 	-- benches and planters around the rim, clear of the market arc (north) and the south walk
@@ -1018,6 +961,7 @@ World.kit = {
 	pine = pine,
 	bush = bush,
 	rock = rock,
+	eggLook = EGG_LOOK,
 }
 
 return World

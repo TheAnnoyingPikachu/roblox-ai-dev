@@ -6,9 +6,13 @@
 --   the six training courts (a row across the middle) each have a look per level;
 --   the sum of all levels (0 to 14) brings the rest: paved paths, lantern posts, flowers, a pond,
 --   benches, a rest pavilion, a well, a fountain, flags, and more trees, bushes and rocks.
--- Each upgrade has a pad showing its next level and price, with a prompt tagged "Upgrade"
--- (attributes Ranch, Track). Also tagged for the server: TrainPad (Ranch, Station), RanchSpot
--- (Ranch, Index), RanchNest (Ranch). Display only: no game rules live here.
+-- Upgrades are bought in the ranch menu, opened at the house door (a prompt tagged "RanchMenu").
+-- Bought eggs wait on the egg storage rack (a prompt tagged "EggStorage" lets the owner choose
+-- one to hatch) and hatch in the hatchery's six nests, where a finished egg is opened by its own
+-- prompt (Ranch.eggs shows them all). Two vendors' stalls stand by the path (prompts tagged
+-- "Vendor", attribute Kind = "eggs" or "gear"). Also tagged:
+-- TrainPad (Ranch, Station), RanchSpot (Ranch, Index), RanchNest (Ranch). Display only: no game
+-- rules live here.
 -- Layout coordinates: x across, z from the gate (-60) to the back fence (60), y up from the
 -- lawn. They are stretched by G onto the real plot (World.RANCH_HALF), so a bigger plot spreads
 -- everything out while buildings keep their size.
@@ -16,7 +20,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local StationConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationConfig"))
 local Props = require(script.Parent:WaitForChild("Props"))
 local World = require(script.Parent:WaitForChild("World"))
@@ -49,7 +52,6 @@ local WARM = Color3.fromRGB(255, 214, 140)
 local WATER = Color3.fromRGB(80, 170, 235)
 local GLASS = Color3.fromRGB(130, 165, 190)
 local COURT = Color3.fromRGB(44, 46, 60)
-local GO = Color3.fromRGB(90, 220, 110)
 local GOLD = Color3.fromRGB(255, 200, 70)
 local PADDOCK = Color3.fromRGB(104, 168, 72)
 local HEDGE = Color3.fromRGB(70, 140, 72)
@@ -57,7 +59,6 @@ local BLADE = Color3.fromRGB(86, 150, 62)
 local SHUTTER = Color3.fromRGB(66, 122, 112)
 local BANNER = Color3.fromRGB(226, 78, 64)
 local BLOOM = { Color3.fromRGB(255, 140, 185), Color3.fromRGB(255, 225, 100), Color3.fromRGB(185, 150, 255) }
-local MEADOW = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) }
 local STAT_COLOUR: { [string]: Color3 } = {
 	speed = Color3.fromRGB(60, 150, 255),
 	strength = Color3.fromRGB(235, 70, 70),
@@ -69,10 +70,9 @@ local STAT_COLOUR: { [string]: Color3 } = {
 
 -- Where each upgrade's pad stands, the Barn's size per level, and when the extras arrive (the
 -- sum of all upgrade levels, 0 to 14).
-local PAD = { house = V(8, 0, 32.5), barn = V(24.5, 0, -35), grounds = V(9, 0, 3) }
 local BARN_SCALE = { 0.62, 0.74, 0.86, 0.98, 1.1 }
-local PAVED, LANTERNS, FLOWERS, POND, BENCHES, MORE_LANTERNS, PAVILION, WELL, FOUNTAIN, FLAGS =
-	1, 2, 3, 4, 5, 6, 7, 8, 10, 12
+local PAVED, LANTERNS, FLOWERS, POND, BENCHES, WINDMILL, MORE_LANTERNS, PAVILION, WELL, FOUNTAIN, FLAGS =
+	1, 2, 3, 4, 5, 5, 6, 7, 8, 10, 12
 -- Ground that is taken (x0, x1, z0, z1): scattered trees, bushes and rocks keep off all of it,
 -- grass only off the hard part.
 local HARD = {
@@ -83,6 +83,7 @@ local HARD = {
 	{ -26, 26, 35, 60 }, -- the house
 	{ -49.5, -28.5, 35.5, 56.5 }, -- the pond
 	{ 28.5, 50, 39, 54 }, -- the pavilion
+	{ 47, 59, 38, 50 }, -- the windmill
 	{ 27, 58, -58, 0 }, -- the barn and its silos
 	{ 7, 27, -58, 2 }, -- the yard: spots, nest, pads
 }
@@ -112,26 +113,6 @@ local function scatter(seed: number, n: number, list: { { number } }, margin: nu
 		end
 	end
 	return out
-end
-
--- Text floating `height` studs over `p`.
-local function billboard(p: BasePart, text: string, height: number)
-	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromScale(17, 5.4)
-	gui.StudsOffset = V(0, height, 0)
-	gui.MaxDistance = 120
-	gui.LightInfluence = 0
-	local t = Instance.new("TextLabel")
-	t.Size = UDim2.fromScale(1, 1)
-	t.BackgroundTransparency = 1
-	t.Text = text
-	t.TextScaled = true
-	t.Font = Enum.Font.FredokaOne
-	t.TextColor3 = WHITE
-	t.TextStrokeColor3 = INK
-	t.TextStrokeTransparency = 0
-	t.Parent = gui
-	gui.Parent = p
 end
 
 local function emitter(p: Instance, props: { [string]: any }): ParticleEmitter
@@ -281,7 +262,7 @@ end
 -- shutters and a door lantern (1), a chimney with smoke, a dormer and hedges (2), side wings, a
 -- gold paw emblem and more windows (3), a third dormer and a flag (4). `b`: its middle on the
 -- ground, facing -z.
-local function house(f: Instance, b: CFrame, level: number)
+local function house(f: Instance, b: CFrame, level: number): Part
 	local w, d, h = 14 + 5 * level, 10 + 2 * level, 7 + level
 	local rise = 4 + level
 	local lit = level >= 1
@@ -303,7 +284,7 @@ local function house(f: Instance, b: CFrame, level: number)
 	end
 	local front = b * CFrame.new(0, 0, -d / 2)
 	part(f, V(4.2, 6.6, 0.4), front * CFrame.new(0, 4.3, -0.05), WHITE, M.Wood)
-	part(f, V(3.4, 6, 0.5), front * CFrame.new(0, 4, -0.15), WOOD_DARK, M.WoodPlanks)
+	local door = part(f, V(3.4, 6, 0.5), front * CFrame.new(0, 4, -0.15), WOOD_DARK, M.WoodPlanks)
 	part(f, V(0.4, 0.4, 0.3), front * CFrame.new(1.1, 3.8, -0.5), GOLD, M.Metal)
 	for _, sx in { -1, 1 } do
 		for k, x in if level == 0 then { 4.6 } elseif level >= 3 then { 6.2, 11.6 } else { 6.2 } do
@@ -408,6 +389,7 @@ local function house(f: Instance, b: CFrame, level: number)
 		ball(f, foot + V(0, 18.2, 0), 0.8, GOLD, M.Metal)
 		part(f, V(5, 3, 0.2), front * CFrame.new(-(w / 2 + 2) + 2.7, 16.2, -7), BANNER, M.SmoothPlastic)
 	end
+	return door
 end
 
 -- The Barn and its yard -----------------------------------------------------------------------------
@@ -469,7 +451,7 @@ local function barn(f: Instance, at: (number, number, number) -> CFrame, level: 
 			hay(f, stack * CFrame.new(o) * CFrame.Angles(0, rad(k * 5), 0))
 		end
 	end
-	local store = at(29, 0, -10) -- barrels behind the barn
+	local store = at(33, 0, -11) -- barrels behind the barn
 	for k, o in { V(-2, 0, -1), V(0.6, 0, -0.2), V(-1, 0, 2), V(2.8, 0, -0.8) } do
 		if k <= level then
 			barrel(f, (store * CFrame.new(o)).Position)
@@ -743,33 +725,188 @@ local function pavilion(f: Instance, b: CFrame)
 	kit.signboard(f, b * CFrame.new(0, 0, -6.2), 11, "Rest Area", Color3.fromRGB(150, 110, 80), 5)
 end
 
--- A pad that sells the next level of `track`: green while there is one, gold at the top.
-local function upgradePad(f: Instance, i: number, at: Vector3, track: string, level: number)
-	local u = StationConfig.upgrade(track) :: StationConfig.Upgrade
-	local nextLevel = u.levels[level + 1]
-	local value = if level > 0 then u.levels[level].value else u.base
-	disc(f, at + V(0, 0.65, 0), 8.4, 0.4, INK, M.Metal)
-	local pad = disc(f, at + V(0, 0.85, 0), 7, 0.3, if nextLevel then GO else GOLD, M.Neon)
-	pad.Name = `Upgrade_{track}`
-	if nextLevel == nil then
-		billboard(pad, `{u.name}\nTop level\n{value} {u.gives}`, 5.5)
+-- A prompt on `p` for the client to act on: the tag says what it opens.
+local function prompt(p: BasePart, tag: string, action: string, object: string, i: number): ProximityPrompt
+	local pr = Instance.new("ProximityPrompt")
+	pr.ActionText, pr.ObjectText = action, object
+	pr.HoldDuration = 0.2
+	pr.MaxActivationDistance = 12
+	pr.RequiresLineOfSight = false
+	pr:SetAttribute("Ranch", i)
+	pr.Parent = p
+	CollectionService:AddTag(pr, tag)
+	return pr
+end
+
+-- A vendor's stall facing -z: a counter under a striped awning, a name board and a keeper behind
+-- the counter. Returns the middle of the counter top, to stand the wares on.
+local function stall(f: Instance, b: CFrame, stripe: Color3, name: string, kind: string, i: number): CFrame
+	part(f, V(11, 0.5, 8), b * CFrame.new(0, 0.5, 0), WOOD, M.WoodPlanks)
+	local counter = part(f, V(10, 3, 1.8), b * CFrame.new(0, 2.25, -2.6), WOOD_DARK, M.Wood)
+	part(f, V(10.6, 0.4, 2.4), b * CFrame.new(0, 3.95, -2.6), WOOD, M.WoodPlanks)
+	for _, sx in { -1, 1 } do
+		for _, sz in { -1, 1 } do
+			part(f, V(0.7, 9, 0.7), b * CFrame.new(sx * 5, 5.2, sz * 3.4), WOOD_DARK, M.Wood)
+		end
+	end
+	for k = 0, 5 do -- the awning, sloping down to the front
+		local strip = b * CFrame.new(-4.9 + k * 1.96, 9.7, -0.6) * CFrame.Angles(rad(-10), 0, 0)
+		part(f, V(1.95, 0.4, 9.4), strip, if k % 2 == 0 then stripe else WHITE, M.SmoothPlastic)
+	end
+	local board = part(f, V(9, 2.2, 0.4), b * CFrame.new(0, 11.6, -3.4), stripe:Lerp(INK, 0.4), M.SmoothPlastic)
+	Props.label(board, name, WHITE, 0.4)
+	part(f, V(2, 2.6, 1.2), b * CFrame.new(0, 3.8, 0.4), stripe:Lerp(WHITE, 0.2), M.SmoothPlastic) -- the keeper
+	ball(f, (b * CFrame.new(0, 6, 0.4)).Position, 1.9, Color3.fromRGB(255, 214, 170), M.SmoothPlastic)
+	part(f, V(2.6, 0.3, 2.6), b * CFrame.new(0, 6.9, 0.4), WOOD_DARK, M.SmoothPlastic)
+	part(f, V(1.6, 0.9, 1.6), b * CFrame.new(0, 7.4, 0.4), WOOD_DARK, M.SmoothPlastic)
+	prompt(counter, "Vendor", "Talk", name, i):SetAttribute("Kind", kind)
+	return b * CFrame.new(0, 4.15, -2.6)
+end
+
+-- Where the six eggs sit in the hatchery, from its middle.
+local NESTS = { V(-5, 0, -2.4), V(0, 0, -2.4), V(5, 0, -2.4), V(-5, 0, 2.4), V(0, 0, 2.4), V(5, 0, 2.4) }
+
+local function hatcheryFrame(i: number): CFrame
+	return World.ranchFrame(i) * CFrame.new(21 * G, 0, -3 * G)
+end
+
+-- The hatchery: six straw nests on a stone floor under an open roof. Bought eggs wait here until
+-- they open (Ranch.eggs shows them). The floor is tagged "RanchNest".
+local function hatchery(f: Instance, i: number)
+	local b = hatcheryFrame(i)
+	local floor = part(f, V(17, 0.6, 11), b * CFrame.new(0, 0.5, 0), STONE, M.Cobblestone)
+	floor.Name = "Nest"
+	floor:SetAttribute("Ranch", i)
+	CollectionService:AddTag(floor, "RanchNest")
+	for _, n in NESTS do
+		local c = (b * CFrame.new(n)).Position
+		disc(f, c + V(0, 1.3, 0), 3.6, 0.5, HAY, M.Fabric)
+		for k = 0, 7 do
+			local a = k / 8 * math.pi * 2
+			ball(f, c + V(math.cos(a) * 1.7, 1.3, math.sin(a) * 1.7), 1, HAY:Lerp(WOOD, 0.25), M.Fabric)
+		end
+	end
+	for _, sx in { -1, 1 } do
+		for _, sz in { -1, 1 } do
+			part(f, V(0.8, 8, 0.8), b * CFrame.new(sx * 8, 4.8, sz * 5), WOOD_DARK, M.Wood)
+		end
+		local light = part(f, V(0.8, 1, 0.8), b * CFrame.new(sx * 4, 7.6, 0), WARM, M.Neon)
+		glow(light, WARM, 14, 1)
+	end
+	roof(f, b * CFrame.new(0, 8.8, 0), 17, 11, 3.4, nil)
+	local board = part(f, V(8, 1.9, 0.4), b * CFrame.new(0, 7.7, -5.4), Color3.fromRGB(96, 150, 84), M.SmoothPlastic)
+	Props.label(board, "Hatchery", WHITE, 0.4)
+end
+
+-- A windmill: a stone tower with a wooden cap and four sails that turn on a motor.
+local function windmill(f: Instance, b: CFrame)
+	pillar(f, b.Position, 15, 3.4, STONE, M.Cobblestone)
+	pillar(f, b.Position + V(0, 15, 0), 1, 3.8, WOOD_DARK, M.Wood)
+	ball(f, b.Position + V(0, 16, 0), 7.4, ROOF, M.Slate)
+	part(f, V(2.2, 4, 0.4), b * CFrame.new(0, 2.4, -3.3), WOOD_DARK, M.WoodPlanks)
+	part(f, V(1.6, 1.6, 0.4), b * CFrame.new(0, 9, -3.3), WARM, M.Neon)
+	local axle = part(f, V(1.2, 1.2, 2.6), b * CFrame.new(0, 14.4, -3.8), INK, M.Metal)
+	local hub = part(f, V(1.7, 1.7, 0.8), b * CFrame.new(0, 14.4, -5.4), WOOD_DARK, M.Wood)
+	hub.Anchored, hub.CanCollide = false, false
+	for k = 0, 3 do
+		local arm = hub.CFrame * CFrame.Angles(0, 0, k * math.pi / 2)
+		for _, piece in
+			{
+				part(f, V(0.35, 11, 0.4), arm * CFrame.new(0, 5.6, 0), WOOD_DARK, M.Wood),
+				part(f, V(2, 8.4, 0.2), arm * CFrame.new(0.9, 6.6, 0), Color3.fromRGB(246, 240, 224), M.SmoothPlastic),
+			}
+		do
+			piece.Anchored, piece.CanCollide, piece.Massless = false, false, true
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0, weld.Part1 = hub, piece
+			weld.Parent = piece
+		end
+	end
+	-- a hinge turns about its attachments' x axis: point that along the axle
+	local a0, a1 = Instance.new("Attachment"), Instance.new("Attachment")
+	a0.CFrame = CFrame.new(0, 0, -1.6) * CFrame.Angles(0, rad(-90), 0)
+	a1.CFrame = CFrame.Angles(0, rad(-90), 0)
+	a0.Parent, a1.Parent = axle, hub
+	local hinge = Instance.new("HingeConstraint")
+	hinge.Attachment0, hinge.Attachment1 = a0, a1
+	hinge.ActuatorType = Enum.ActuatorType.Motor
+	hinge.AngularVelocity, hinge.MotorMaxTorque = 0.8, math.huge
+	hinge.Parent = axle
+end
+
+-- The egg storage: a rack beside the hatchery, facing it. The first twelve stored eggs show on it.
+local function rackFrame(i: number): CFrame
+	return hatcheryFrame(i) * CFrame.new(11.8, 0, 0) * CFrame.Angles(0, rad(90), 0)
+end
+
+local function rackSpot(k: number): CFrame -- from the rack's frame: three shelves of four
+	return CFrame.new(-3.75 + ((k - 1) % 4) * 2.5, 1.5 + ((k - 1) // 4) * 2.3, 0)
+end
+
+local function eggRack(f: Instance, i: number)
+	local b = rackFrame(i)
+	part(f, V(10.6, 7.6, 0.4), b * CFrame.new(0, 4.2, 1), WOOD_DARK, M.WoodPlanks)
+	for _, y in { 1.2, 3.5, 5.8, 8 } do
+		part(f, V(10.6, 0.4, 2.4), b * CFrame.new(0, y, 0), WOOD, M.WoodPlanks)
+	end
+	for _, x in { -5.3, 5.3 } do
+		part(f, V(0.5, 8.2, 2.4), b * CFrame.new(x, 4.1, 0), WOOD_DARK, M.Wood)
+	end
+	local board = part(f, V(8, 1.6, 0.3), b * CFrame.new(0, 9.2, 0), Color3.fromRGB(150, 110, 80), M.SmoothPlastic)
+	Props.label(board, "Egg Storage", WHITE, 0.3)
+	local shelf = part(f, V(10, 0.4, 2), b * CFrame.new(0, 3.5, 0), WOOD, M.WoodPlanks) -- carries the prompt
+	prompt(shelf, "EggStorage", "Choose an egg to hatch", "Egg storage", i)
+end
+
+-- Show ranch `i`'s eggs: `eggs` is the profile's list, oldest first. Hatching eggs sit in the
+-- hatchery's nests, each with a prompt tagged "Egg" (attributes Ranch, Index = its place in the
+-- list, Due = when it can be opened); the client changes the prompt's words and turns the sparkles
+-- on when the egg is ready (the prompt itself stays on: the server would refuse one it thinks is off). Stored eggs sit on the rack.
+function Ranch.eggs(i: number, eggs: { { egg: string, since: number? } })
+	local plot = World.root():FindFirstChild(`Ranch{i}`, true)
+	if plot == nil then
 		return
 	end
-	local price = `{Format.commas(nextLevel.coins)} coins`
-	if nextLevel.samples > 0 then
-		price ..= ` + {nextLevel.samples} samples`
+	local old = plot:FindFirstChild("Eggs")
+	if old then
+		old:Destroy()
 	end
-	billboard(pad, `{u.name}: level {level + 1}\n{value} > {nextLevel.value} {u.gives}\n{price}`, 5.5)
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = "Upgrade"
-	prompt.ObjectText = u.name
-	prompt.HoldDuration = 0.6
-	prompt.MaxActivationDistance = 12
-	prompt.RequiresLineOfSight = false
-	prompt:SetAttribute("Ranch", i)
-	prompt:SetAttribute("Track", track)
-	prompt.Parent = pad
-	CollectionService:AddTag(prompt, "Upgrade")
+	local f = Instance.new("Folder")
+	f.Name = "Eggs"
+	local rng = Random.new(7)
+	local nest, shelf = 0, 0
+	for k, e in eggs do
+		local look, egg = kit.eggLook[e.egg], StationConfig.egg(e.egg)
+		if look and egg and e.since then
+			nest += 1
+			if NESTS[nest] then
+				local at = (hatcheryFrame(i) * CFrame.new(NESTS[nest])).Position + V(0, 1.3, 0)
+				local shell = kit.egg(f, at, 3, look.body, look.spot, rng)
+				glow(shell, WARM, 8, 0.5)
+				local open = prompt(shell, "Egg", "Hatching", egg.name, i)
+				open:SetAttribute("Index", k)
+				open:SetAttribute("Due", e.since + egg.hatch)
+				emitter(shell, {
+					Texture = "rbxasset://textures/particles/sparkles_main.dds",
+					Color = ColorSequence.new(GOLD),
+					LightEmission = 0.8,
+					Transparency = fade(0, 1),
+					Size = fade(0.5, 0),
+					Lifetime = NumberRange.new(0.8, 1.4),
+					Rate = 10,
+					Speed = NumberRange.new(2, 4),
+					SpreadAngle = Vector2.new(60, 60),
+					Enabled = false,
+				})
+			end
+		elseif look then
+			shelf += 1
+			if shelf <= 12 then
+				kit.egg(f, (rackFrame(i) * rackSpot(shelf)).Position, 1.7, look.body, look.spot, rng)
+			end
+		end
+	end
+	f.Parent = plot
 end
 
 -- Build ranch `i` for these upgrade levels (missing = 0), replacing what stood there.
@@ -879,7 +1016,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	barn(f, at, barnLevel)
 	local n = 0
 	for _, z in { -43, -37, -19, -13 } do
-		for _, x in { 11, 17 } do
+		for _, x in { 17.5, 23.5 } do
 			n += 1
 			local straw = disc(f, spot(x, z) + V(0, 0.55, 0), 4.6, 0.3, HAY, M.Fabric)
 			straw.Name = `Spot{n}`
@@ -888,17 +1025,27 @@ function Ranch.render(i: number, levels: { [string]: number })
 			CollectionService:AddTag(straw, "RanchSpot")
 		end
 	end
-	local nestAt = spot(21, -3)
-	local nest = disc(f, nestAt + V(0, 0.9, 0), 7, 0.8, HAY, M.Fabric)
-	nest.Name = "Nest"
-	nest:SetAttribute("Ranch", i)
-	CollectionService:AddTag(nest, "RanchNest")
-	for k = 0, 11 do
-		local a = k / 12 * math.pi * 2
-		ball(f, nestAt + V(math.cos(a) * 3.4, 1.2, math.sin(a) * 3.4), 2, HAY:Lerp(WOOD, 0.2), M.Fabric)
-		rock(f, nestAt + V(math.cos(a + 0.2) * 5, 0, math.sin(a + 0.2) * 5), 1.1, rng)
+	hatchery(f, i)
+	eggRack(f, i)
+	-- the vendors, by the path: eggs (one of each on the counter) and gear
+	local wares = stall(f, turned(10, -44, 90), Color3.fromRGB(240, 170, 60), "Egg Vendor", "eggs", i)
+	for k, e in StationConfig.EGGS do
+		local look = kit.eggLook[e.id]
+		kit.egg(f, (wares * CFrame.new(-4.8 + k * 1.9, 0, 0)).Position, 1.9, look.body, look.spot, rng)
 	end
-	glow(kit.egg(f, nestAt + V(0, 0.9, 0), 3.4, MEADOW.body, MEADOW.spot, rng), WARM, 10, 0.6)
+	wares = stall(f, turned(10, -16, 90), Color3.fromRGB(90, 130, 200), "Gear Vendor", "gear", i)
+	local steel = Color3.fromRGB(190, 196, 206)
+	part(
+		f,
+		V(1.7, 2.1, 0.3),
+		wares * CFrame.new(-3, 1.1, 0) * CFrame.Angles(rad(-14), 0, 0),
+		Color3.fromRGB(200, 70, 60),
+		M.Metal
+	)
+	ball(f, (wares * CFrame.new(-0.4, 0.7, 0)).Position, 1.5, steel, M.Metal)
+	part(f, V(0.3, 0.7, 1.2), wares * CFrame.new(-0.4, 1.5, 0), Color3.fromRGB(200, 70, 60), M.SmoothPlastic)
+	part(f, V(0.3, 3, 0.12), wares * CFrame.new(2.4, 1.5, 0) * CFrame.Angles(0, 0, rad(18)), steel, M.Metal)
+	part(f, V(1.1, 0.25, 0.3), wares * CFrame.new(2.75, 0.5, 0) * CFrame.Angles(0, 0, rad(18)), WOOD_DARK, M.Wood)
 
 	-- the training courts: a row across the middle, three each side of the path
 	for k, st in StationConfig.STATIONS do
@@ -906,11 +1053,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 		court(f, i, at(side * (17 + 16 * ((k - 1) % 3)), 0, 20), st, grounds)
 	end
 
-	house(f, at(0, 0, 49), houseLevel)
-
-	upgradePad(f, i, spot(PAD.house.X, PAD.house.Z), "house", houseLevel)
-	upgradePad(f, i, spot(PAD.barn.X, PAD.barn.Z), "barn", barnLevel)
-	upgradePad(f, i, spot(PAD.grounds.X, PAD.grounds.Z), "grounds", grounds)
+	prompt(house(f, at(0, 0, 49), houseLevel), "RanchMenu", "Open", "Ranch menu", i)
 
 	-- growing things: more with every level, and what is there stays where it is
 	for _, p in scatter(i, 44 + 8 * total, HARD, 0.8) do
@@ -929,7 +1072,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	for _, p in scatter(300 + i, 3 + total // 2, TAKEN, 1.5) do
 		rock(f, spot(p.X, p.Z), rng:NextNumber(1.6, 3), rng)
 	end
-	for _, p in { V(-55, 0, 56), V(55, 0, 56), V(-55, 0, 33) } do -- always a few big trees at the back
+	for _, p in { V(-55, 0, 56), V(-55, 0, 33) } do -- always two big trees at the back
 		pine(f, spot(p.X, p.Z), 1.3, rng)
 	end
 
@@ -954,6 +1097,9 @@ function Ranch.render(i: number, levels: { [string]: number })
 	if total >= BENCHES then
 		bench(f, turned(-7.4, 31, 125))
 		bench(f, turned(-9.4, 20.5, 60))
+	end
+	if total >= WINDMILL then
+		windmill(f, at(53, 0, 44))
 	end
 	if total >= PAVILION then
 		pavilion(f, at(39, 0, 46))
