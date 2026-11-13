@@ -72,7 +72,7 @@ describe("StationConfig", function()
 		end
 	end)
 
-	it("has one Titan: legendary only, no variants, bigger than any basic animal", function()
+	it("has one Titan: legendary, with a mythic variant, bigger than any basic animal", function()
 		local biggest, titans = 0, 0
 		for _, sp in StationConfig.SPECIES do
 			if sp.role ~= StationConfig.TITAN then
@@ -84,7 +84,7 @@ describe("StationConfig", function()
 				titans += 1
 				expect(sp.id).toBe("elephant")
 				expect(sp.rarity).toBe("legendary")
-				expect(#sp.variants).toBe(0)
+				expect(sp.variants[1].tier).toBe("mythic")
 				expect(total(sp.stats) > biggest).toBeTruthy()
 			end
 		end
@@ -125,32 +125,31 @@ describe("StationConfig", function()
 		end
 	)
 
-	it("gives every non-Titan exactly one variant per tier, with unique ids and a real twist stat", function()
+	it("gives every animal exactly one variant, legendary or mythic, named <word>_<species>", function()
 		local ids = {}
 		for _, sp in StationConfig.SPECIES do
 			expect(ids[sp.id]).toBeNil()
 			ids[sp.id] = true
+			expect(#sp.variants).toBe(1)
+			-- a basic animal is never above epic, unless it is the Titan (legendary)
 			if sp.role ~= StationConfig.TITAN then
-				expect(#sp.variants).toBe(#StationConfig.TIERS)
-				for _, t in StationConfig.TIERS do
-					local n = 0
-					for _, va in sp.variants do
-						n += if va.tier == t.tier then 1 else 0
-					end
-					expect(n).toBe(1)
-				end
+				expect(table.find(StationConfig.BASIC_RARITIES, sp.rarity) ~= nil).toBeTruthy()
 			end
 			for _, va in sp.variants do
 				expect(ids[va.id]).toBeNil()
 				ids[va.id] = true
+				expect(va.tier == "legendary" or va.tier == "mythic").toBeTruthy()
+				expect(StationConfig.tier(va.tier) ~= nil).toBeTruthy()
 				expect(table.find(StationConfig.STATS, va.twist) ~= nil).toBeTruthy()
+				expect(string.match(va.id, "^%l+_" .. sp.id .. "$") ~= nil).toBeTruthy() -- the model's name comes from it
 			end
 		end
 	end)
 
-	it("makes variants super rare (1 in 200 or rarer) and every variant tier rarer than basic", function()
+	it("makes variants super rare (1 in 2,000 or rarer) and every variant tier legendary or higher", function()
 		for _, t in StationConfig.TIERS do
-			expect(t.ppm <= 5000).toBeTruthy()
+			expect(t.ppm <= 500).toBeTruthy()
+			expect(t.tier == "legendary" or t.tier == "mythic").toBeTruthy()
 			expect(table.find(StationConfig.BASIC_RARITIES, t.tier)).toBeNil()
 			expect(table.find(StationConfig.RARITIES, t.tier) ~= nil).toBeTruthy()
 		end
@@ -176,17 +175,17 @@ describe("StationConfig", function()
 	end)
 
 	it("only finds a variant under its own species", function()
-		expect(StationConfig.variant("cheetah", "golden_cheetah") ~= nil).toBeTruthy()
-		expect(StationConfig.variant("jackal", "golden_cheetah")).toBeNil()
+		expect(StationConfig.variant("cheetah", "lightning_cheetah") ~= nil).toBeTruthy()
+		expect(StationConfig.variant("jackal", "lightning_cheetah")).toBeNil()
 	end)
 end)
 
 describe("StationRules.versionStats", function()
 	it("multiplies a variant's stats by its tier and adds the twist", function()
-		local st = StationRules.versionStats("cheetah", "golden_cheetah") :: StationConfig.Stats -- legendary x2, +40 strength
-		expect(st.speed).toBe(140)
-		expect(st.strength).toBe(110)
-		expect(st.defence).toBe(30)
+		local st = StationRules.versionStats("jackal", "pharaoh_jackal") :: StationConfig.Stats -- legendary x2, +40 mana
+		expect(st.speed).toBe(84)
+		expect(st.mana).toBe(76)
+		expect(st.defence).toBe(20)
 	end)
 
 	it("refuses unknown species and mismatched variants", function()
@@ -300,14 +299,12 @@ describe("StationRules.hatch", function()
 		expect(StationRules.pick(odds, 10000)).toBe("meerkat")
 	end)
 
-	it("picks the variant tier rarest first, basic past 5550 ppm", function()
+	it("picks the variant tier rarest first, basic past 550 ppm", function()
 		expect(StationRules.pickTier(1)).toBe("mythic")
 		expect(StationRules.pickTier(50)).toBe("mythic")
 		expect(StationRules.pickTier(51)).toBe("legendary")
 		expect(StationRules.pickTier(550)).toBe("legendary")
-		expect(StationRules.pickTier(551)).toBe("epic")
-		expect(StationRules.pickTier(5550)).toBe("epic")
-		expect(StationRules.pickTier(5551)).toBeNil()
+		expect(StationRules.pickTier(551)).toBeNil()
 		expect(StationRules.pickTier(1_000_000)).toBeNil()
 	end)
 
@@ -378,8 +375,8 @@ describe("StationRules.hatch", function()
 		for _, o in (StationConfig.egg("meadow") :: StationConfig.Egg).odds do
 			expect(seen[o.id]).toBe(true)
 		end
-		-- expected 5550 ppm = 111 in 20000; allow wide seeded noise
-		expect(variants >= 60 and variants <= 170).toBeTruthy()
+		-- the Meadow Egg's animals have legendary variants: 500 ppm = 10 in 20000; allow wide seeded noise
+		expect(variants >= 2 and variants <= 25).toBeTruthy()
 		-- 120,000 base levels: low numbers are common, a 15 is rare but happens
 		expect(tally[1] > tally[5] and tally[5] > tally[10] and tally[10] > tally[15]).toBeTruthy()
 		expect(tally[15] > 0).toBeTruthy()

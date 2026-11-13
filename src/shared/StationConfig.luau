@@ -1,7 +1,7 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0036): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0037): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations.
--- Every non-Titan species has a basic version (common to rare) and three super-rare variants
+-- Every species has a basic version (never above epic; the Titan is legendary) and one rare variant
 -- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
@@ -82,7 +82,6 @@ StationConfig.SOLITARY_PCT = 25
 StationConfig.TIERS = {
 	{ tier = "mythic", ppm = 50, mult = 3.0, twist = 60 }, -- 1 in 20,000
 	{ tier = "legendary", ppm = 500, mult = 2.0, twist = 40 }, -- 1 in 2,000
-	{ tier = "epic", ppm = 5000, mult = 1.5, twist = 25 }, -- 1 in 200
 } :: { Tier }
 
 local function v(id: string, name: string, tier: string, twist: Stat): Variant
@@ -103,7 +102,8 @@ end
 
 -- Small African beta pool: one common and one uncommon per role, a rare lion, and the Titan.
 -- Pack: jackal (dog), lion (cat), meerkat, flamingo (bird), elephant. Solitary: tortoise, cheetah, rhino.
--- Variants in order epic, legendary, mythic. The Titan is legendary only and has no variants.
+-- One variant each (decision 0037): legendary for the commons, mythic for the rest. A variant is
+-- always legendary or higher. Its model is the asset "creature_<species>_<first word of its id>".
 StationConfig.SPECIES = {
 	{
 		id = "jackal",
@@ -112,11 +112,7 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "common",
 		stats = s(42, 22, 15, 18, 30, 10),
-		variants = {
-			v("dune_jackal", "Dune Jackal", "epic", "stamina"),
-			v("golden_jackal", "Golden Jackal", "legendary", "strength"),
-			v("pharaoh_jackal", "Pharaoh Jackal", "mythic", "mana"),
-		},
+		variants = { v("pharaoh_jackal", "Pharaoh Jackal", "legendary", "mana") },
 	},
 	{
 		id = "tortoise",
@@ -125,11 +121,7 @@ StationConfig.SPECIES = {
 		group = "solitary",
 		rarity = "common",
 		stats = s(5, 25, 48, 20, 55, 50),
-		variants = {
-			v("moss_tortoise", "Mossback Tortoise", "epic", "mana"),
-			v("gem_tortoise", "Gemshell Tortoise", "legendary", "defence"),
-			v("island_tortoise", "Island Tortoise", "mythic", "health"),
-		},
+		variants = { v("gemshell_tortoise", "Gemshell Tortoise", "legendary", "defence") },
 	},
 	{
 		id = "meerkat",
@@ -138,11 +130,7 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "common",
 		stats = s(30, 8, 15, 42, 25, 8),
-		variants = {
-			v("scout_meerkat", "Scout Meerkat", "epic", "speed"),
-			v("sandmage_meerkat", "Sandmage Meerkat", "legendary", "mana"),
-			v("mirage_meerkat", "Mirage Meerkat", "mythic", "speed"),
-		},
+		variants = { v("storm_meerkat", "Storm Meerkat", "legendary", "mana") },
 	},
 	{
 		id = "cheetah",
@@ -151,11 +139,7 @@ StationConfig.SPECIES = {
 		group = "solitary",
 		rarity = "uncommon",
 		stats = s(70, 35, 20, 20, 45, 15),
-		variants = {
-			v("shadow_cheetah", "Shadow Cheetah", "epic", "mana"),
-			v("golden_cheetah", "Golden Cheetah", "legendary", "strength"),
-			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
-		},
+		variants = { v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed") },
 	},
 	{
 		id = "rhino",
@@ -164,11 +148,7 @@ StationConfig.SPECIES = {
 		group = "solitary",
 		rarity = "uncommon",
 		stats = s(25, 50, 60, 10, 70, 55),
-		variants = {
-			v("stone_rhino", "Stone Rhino", "epic", "defence"),
-			v("crystal_rhino", "Crystal Rhino", "legendary", "mana"),
-			v("lava_rhino", "Lava Rhino", "mythic", "strength"),
-		},
+		variants = { v("lava_rhino", "Lava Rhino", "mythic", "strength") },
 	},
 	{
 		id = "flamingo",
@@ -177,11 +157,7 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "uncommon",
 		stats = s(30, 10, 30, 65, 50, 15),
-		variants = {
-			v("sunset_flamingo", "Sunset Flamingo", "epic", "stamina"),
-			v("pearl_flamingo", "Pearl Flamingo", "legendary", "mana"),
-			v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "strength"),
-		},
+		variants = { v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "mana") },
 	},
 	{
 		id = "lion",
@@ -190,11 +166,7 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "rare",
 		stats = s(55, 90, 40, 25, 70, 30),
-		variants = {
-			v("white_lion", "White Lion", "epic", "health"),
-			v("sun_lion", "Sun Lion", "legendary", "mana"),
-			v("star_lion", "Constellation Lion", "mythic", "strength"),
-		},
+		variants = { v("sun_lion", "Sun Lion", "mythic", "strength") },
 	},
 	{
 		id = "elephant",
@@ -203,7 +175,7 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "legendary",
 		stats = s(30, 160, 180, 60, 200, 120),
-		variants = {},
+		variants = { v("frost_elephant", "Frost Mammoth", "mythic", "health") },
 	},
 } :: { Species }
 

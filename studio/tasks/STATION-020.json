@@ -1,0 +1,48 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-020",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A model with the shared animations for every animal and one rare variant each (always legendary or mythic; normal animals never above epic; the Titan legendary), a model for each egg, a hatching animation, and the owner's animals walking the roaming area.",
+  "inputs": [
+    "docs/decisions/0037-animal-stations-animal-models-variants-eggs.md"
+  ],
+  "dependencies": [
+    "STATION-019"
+  ],
+  "files": [
+    "tools/blender/stations/**",
+    "assets/stations/**",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "tests/StationRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/assets/register.md",
+    "docs/decisions/0037-animal-stations-animal-models-variants-eggs.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "LevelRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every animal has exactly one variant, legendary or mythic, named <word>_<species>; no normal animal is above epic; the Titan is legendary",
+    "build.py builds a jointed model for all eight animals and their eight variants under budget, and StationAssets.luau matches the manifest",
+    "In Studio play every model loads, stands on its feet and plays the shared animations with no script errors",
+    "Each egg type has its own model, and opening a finished egg plays a hatching animation"
+  ],
+  "verification": "pending: models built and rules tested; uploads and the Studio check are recorded when done",
+  "output_artifacts": [
+    "tools/blender/stations/assets/animals.py",
+    "src/shared/StationAssets.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Wave enemies and bosses are deliberately untouched (SHANNON). Old variant ids no longer exist; no published saves hold any."
+}

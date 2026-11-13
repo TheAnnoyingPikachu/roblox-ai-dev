@@ -50,11 +50,16 @@ describe("LevelRules.enemies", function()
 		expect(LevelRules.enemies(300)[1].stats.speed > StationConfig.STAT_MAX).toBeTruthy()
 	end)
 
-	it("puts a variant boss last on every 10th level, rarer as levels rise", function()
-		expect(LevelRules.enemies(9)[3].v).toBeNil()
-		expect(StationRules.rarity(LevelRules.enemies(10)[3])).toBe("epic")
-		expect(StationRules.rarity(LevelRules.enemies(30)[3])).toBe("legendary")
-		expect(StationRules.rarity(LevelRules.enemies(60)[3])).toBe("mythic")
+	it("only ever sends a variant as the last enemy of a 10th level", function()
+		-- which levels get one is left as it was for now (decision 0037: enemies and bosses come later)
+		for level = 1, 120 do
+			for i, e in LevelRules.enemies(level) do
+				if e.v then
+					expect(i).toBe(LevelRules.TEAM_SIZE)
+					expect(level % LevelRules.BOSS_EVERY).toBe(0)
+				end
+			end
+		end
 	end)
 end)
 
@@ -76,7 +81,7 @@ describe("LevelRules.fight", function()
 			table.insert(trained, a)
 		end
 		local variants =
-			{ owned("lion", "sun_lion"), owned("rhino", "crystal_rhino"), owned("flamingo", "pearl_flamingo") }
+			{ owned("lion", "sun_lion"), owned("rhino", "lava_rhino"), owned("flamingo", "phoenix_flamingo") }
 		local base, better, best = reach(starters, 400), reach(trained, 400), reach(variants, 400)
 		expect(better > base).toBeTruthy()
 		expect(best > base).toBeTruthy()
