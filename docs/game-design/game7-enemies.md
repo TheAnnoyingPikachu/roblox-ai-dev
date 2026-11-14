@@ -1,6 +1,6 @@
 # Animal Stations: the Hexbound (enemy bestiary and art brief)
 
-Status: draft (decisions 0040, 0041). Names, roles and numbers are in `src/shared/StationConfig.luau`
+Status: draft (decisions 0040 to 0042). All five models are in the game. Names, roles and numbers are in `src/shared/StationConfig.luau`
 (`FOES`, the source of truth). This page adds the look.
 
 The Hexbound are the enemies of the endless waves: **evil magic knights, archers, mages, ogres and dragons**.
@@ -52,11 +52,14 @@ Stats are before the wave's scaling (60% at wave 1, then +3% a wave).
   hexfire), a long tail with a bone spade, two scalloped bat wings veined with hexfire. The Whelp is
   small and pale, the Drake larger, the Dragon the largest and darkest.
 
-## Animation plan (not built)
+## Animation (built, decision 0042)
 
-The animals' rig names are reused. Knight and ogre are bipeds: `leg_fl`/`leg_fr` are the arms,
-`leg_bl`/`leg_br` the legs, `tail` the cape, cloak or loincloth. The archer needs a bow draw and
-shot, the mage a staff raise and cast (the orb and runes flare). They need a biped pose set: a heavy
-stomping walk with the arms swinging against the legs, a sword chop and a club smash, and a magic
-attack (the hexfire runes flare). The dragon uses the four-legged poses and adds `wing_l` and
-`wing_r`: a slow flap, a rear-up for the breath, hexfire breath as the magic attack.
+The animals' rig names are reused. Knight, archer, mage and ogre are bipeds: `leg_fl`/`leg_fr` are
+the arms, `leg_bl`/`leg_br` the legs, `tail` the cape, cloak or loincloth. They have a heavy walk,
+a sword or club chop (knight, ogre), a bow shot (archer), a spell cast (mage), a power attack with
+both arms thrown up, a hit reaction and a fall onto the back. The dragon uses the four-legged poses
+and beats its two wings (`wing_l`, `wing_r`). Every Hexbound has an evil aura: a green pool of
+light, rising smoke and sparks, one light.
+
+Not built: a real bow or spell effect (an archer does not shoot a visible arrow), a roar, a death
+effect beyond the fall and the fade.

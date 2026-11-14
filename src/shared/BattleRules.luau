@@ -137,8 +137,23 @@ end
 
 -- Fight the player's team (side 1) against a wave (side 2) on a clock: whoever's attack is due
 -- next acts (ties go to side 1, then the lower slot). Returns whether the team won, how many
--- attacks happened and how many seconds the fight took.
-function BattleRules.battle(one: { Owned }, two: { Owned }): (boolean, number, number)
+-- attacks happened and how many seconds the fight took. `log`, when given, is filled with one
+-- entry per attack, in order, so the fight can be shown: when it landed (`t`), who hit (`side`,
+-- `slot`), whom (`tside`, `tslot`), the damage dealt (`dmg`) and the target's HP after it (`hp`),
+-- whether it was a power attack (`power`) and, for a healer, who it healed and to what HP
+-- (`heal` = { slot, hp }, on the healer's own side). It never changes the result.
+export type Hit = {
+	t: number,
+	side: number,
+	slot: number,
+	tside: number,
+	tslot: number,
+	dmg: number,
+	hp: number,
+	power: boolean,
+	heal: { slot: number, hp: number }?,
+}
+function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?): (boolean, number, number)
 	local sides = { BattleRules.lineup(one, 1), BattleRules.lineup(two, 2) }
 	local all = table.clone(sides[1])
 	for _, f in sides[2] do
@@ -169,7 +184,22 @@ function BattleRules.battle(one: { Owned }, two: { Owned }): (boolean, number, n
 			hit *= BattleRules.GUARD
 		end
 		-- Defence last, as one division, so exact results stay exact
-		d.hp -= math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
+		local dealt = math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
+		d.hp -= dealt
+		local entry: Hit? = nil
+		if log then
+			entry = {
+				t = now,
+				side = me.side,
+				slot = me.slot,
+				tside = d.side,
+				tslot = d.slot,
+				dmg = dealt,
+				hp = d.hp,
+				power = power > 1,
+			}
+			table.insert(log, entry :: Hit)
+		end
 		if me.role == "utility" then
 			local hurt: Fighter? = nil
 			for _, m in sides[me.side] do
@@ -180,6 +210,9 @@ function BattleRules.battle(one: { Owned }, two: { Owned }): (boolean, number, n
 			if hurt then
 				local heal = math.floor(me.maxHp * BattleRules.HEAL_PCT * power / 100)
 				hurt.hp = math.min(hurt.maxHp, hurt.hp + heal)
+				if entry then
+					entry.heal = { slot = hurt.slot, hp = hurt.hp }
+				end
 			end
 		end
 		actions += 1

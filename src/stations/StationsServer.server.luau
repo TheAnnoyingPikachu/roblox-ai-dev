@@ -172,30 +172,29 @@ local function buy(player: Player, eggId: string): (boolean, string?)
 	return true, nil
 end
 
--- Admin menu: stand any animal's model in front of the admin to look at it. Display only:
--- nothing is added to a profile. LOOKS lists every animal and then its variant, in the order the
--- client's menu shows them.
+-- Admin menu: stand any animal's or Hexbound foe's model in front of the admin to look at it, and
+-- play a test wave in the arena. Display only: nothing is added to a profile. LOOKS lists every
+-- animal, then its variant, then every foe, in the order the client's menu shows them.
 local StationAssets = require(Shared:WaitForChild("StationAssets"))
-local LOOKS: { string } = {}
-local LOOK_OF: { [string]: { s: string, v: string? } } = {}
+local WaveShow = require(script.Parent:WaitForChild("WaveShow"))
+type Look = { s: string?, v: string?, foe: string?, asset: string }
+local LOOKS: { Look } = {}
 for _, sp in StationConfig.SPECIES do
-	table.insert(LOOKS, Creatures.asset(sp.id))
-	LOOK_OF[Creatures.asset(sp.id)] = { s = sp.id }
+	table.insert(LOOKS, { s = sp.id, asset = Creatures.asset(sp.id) })
 	for _, va in sp.variants do
-		table.insert(LOOKS, Creatures.asset(sp.id, va.id))
-		LOOK_OF[Creatures.asset(sp.id, va.id)] = { s = sp.id, v = va.id }
+		table.insert(LOOKS, { s = sp.id, v = va.id, asset = Creatures.asset(sp.id, va.id) })
 	end
 end
+for _, f in StationConfig.FOES do
+	table.insert(LOOKS, { foe = f.id, asset = f.model })
+end
 
--- What a model tells the client for the card shown under the cursor: its species, its variant
--- and its six stats (an owned animal's own, with its training; otherwise the version's).
-local function describe(model: Model, s: string, v: string?, animal: StationProgress.Animal?)
-	model:SetAttribute("Species", s)
-	model:SetAttribute("Variant", v)
-	local plain = StationRules.versionStats(s, v) :: StationConfig.Stats
-	for _, stat in StationConfig.STATS do
-		model:SetAttribute(stat, if animal then StationRules.stat(animal :: any, stat) else (plain :: any)[stat])
+local function lookSize(look: Look): Vector3
+	if look.foe then
+		return Creatures.foeSize(look.foe)
 	end
+	local size = StationAssets[look.asset].size
+	return Vector3.new(size[1], size[2], size[3])
 end
 
 local function looks(player: Player): Instance
@@ -209,8 +208,8 @@ local function looks(player: Player): Instance
 	return f :: Instance
 end
 
--- Stand `names` in a row in front of `player`, side by side, facing back at them.
-local function standBefore(player: Player, names: { string })
+-- Stand `list` in a row in front of `player`, side by side, facing back at them.
+local function standBefore(player: Player, list: { Look })
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if root == nil then
 		return
@@ -220,20 +219,29 @@ local function standBefore(player: Player, names: { string })
 	local feet = root.Position - Vector3.new(0, 3, 0)
 	local facing = CFrame.lookAt(feet, feet + flat)
 	local total, deepest = 0, 0
-	for _, name in names do
-		total += StationAssets[name].size[1] + 5
-		deepest = math.max(deepest, StationAssets[name].size[3])
+	for _, look in list do
+		local size = lookSize(look)
+		total += size.X + 5
+		deepest = math.max(deepest, size.Z)
 	end
 	local x = -total / 2
 	local folder = looks(player)
-	for _, name in names do
-		local wide = StationAssets[name].size[1] + 5
-		local spot = facing * Vector3.new(x + wide / 2, 0, -(12 + deepest / 2))
-		x += wide
+	for _, look in list do
+		local size = lookSize(look)
+		local spot = facing * Vector3.new(x + (size.X + 5) / 2, 0, -(12 + deepest / 2))
+		x += size.X + 5
 		task.spawn(function()
-			local model = Creatures.spawn(name, CFrame.lookAt(spot, spot - flat), folder)
-			if model then
-				describe(model, LOOK_OF[name].s, LOOK_OF[name].v, nil)
+			local at = CFrame.lookAt(spot, spot - flat)
+			if look.foe then
+				local model = Creatures.spawnFoe(look.foe, at, folder)
+				if model then
+					Creatures.describeFoe(model, look.foe, (StationConfig.foe(look.foe) :: StationConfig.Foe).stats)
+				end
+			else
+				local model = Creatures.spawn(look.asset, at, folder)
+				if model then
+					Creatures.describe(model, look.s :: string, look.v, nil)
+				end
 			end
 		end)
 	end
@@ -323,7 +331,7 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
-		-- the admin menu: `look` stands the k-th animal (0 = all of them) before the admin
+		-- the admin menu: `look` stands the k-th animal or foe (0 = all of them) before the admin
 		look = {
 			args = { Payload.int({ min = 0, max = 100 }) },
 			handler = function(player, k: number)
@@ -335,7 +343,7 @@ local router = Router.new({
 			end,
 		},
 		look_anim = {
-			args = { Payload.enum({ "idle", "walk", "attack", "magic" }) },
+			args = { Payload.enum({ "idle", "walk", "attack", "magic", "hit", "die" }) },
 			handler = function(player, anim: string)
 				if not isAdmin(player) then
 					return false, "admin"
@@ -349,8 +357,34 @@ local router = Router.new({
 		look_clear = {
 			args = {},
 			handler = function(player)
+				if not isAdmin(player) then
+					return false, "admin"
+				end
 				looks(player):ClearAllChildren()
+				WaveShow.clear(player)
 				return true, nil
+			end,
+		},
+		-- a test wave in the arena: `team` is "mine" (the admin's own team), "starters" or "mythics"
+		testwave = {
+			args = { Payload.int({ min = 1, max = 200 }), Payload.enum({ "mine", "starters", "mythics" }) },
+			handler = function(player, wave: number, which: string)
+				if not isAdmin(player) then
+					return false, "admin"
+				end
+				local team = {}
+				if which == "mine" then
+					local p = saves.get(player)
+					for _, a in if p then StationProgress.fighters(StationProgress.sanitize(p, os.time())) else {} do
+						table.insert(team, a)
+					end
+				end
+				if #team == 0 then
+					team = WaveShow.team(if which == "mythics" then "mythics" else "starters")
+				end
+				return WaveShow.run(player, wave, team :: any, function(result)
+					remotes.fx(player, "waveshow", result)
+				end)
 			end,
 		},
 		upgrade = {
@@ -418,6 +452,7 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
 	looks(player):Destroy()
+	WaveShow.clear(player)
 	local i = ranchOf(player)
 	if i then
 		owners[i] = nil
@@ -487,7 +522,7 @@ function syncHerd(i: number, animals: { StationProgress.Animal })
 	for id, a in wanted do
 		local standing = herd[id]
 		if typeof(standing) == "Instance" then
-			describe(standing, a.s, a.v, a) -- training may have moved its stats
+			Creatures.describe(standing, a.s, a.v, a :: any) -- training may have moved its stats
 		end
 		if herd[id] == nil then
 			herd[id] = false
@@ -501,7 +536,7 @@ function syncHerd(i: number, animals: { StationProgress.Animal })
 				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot)
 				if model and herd[id] == false then
 					herd[id] = model
-					describe(model, a.s, a.v, a)
+					Creatures.describe(model, a.s, a.v, a :: any)
 					wander(model, i)
 				elseif model then
 					model:Destroy() -- sold or gone while it loaded

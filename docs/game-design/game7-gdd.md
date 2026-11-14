@@ -54,6 +54,9 @@ vendors.
 
 ## Built
 
+- The Hexbound enemies in game (decision 0042): five models with their own animations and an evil
+  aura each, shown by the admin's test wave in the arena (a replay of a fight, with health bars).
+
 - Pure, tested rules in `src/shared`: `StationConfig`, `StationRules` (hatch, stat levels,
   training time), `BattleRules` (wave fights), `LevelRules` (waves, rewards), `StationProgress`
   (the saved profile: coins, XP, animals, team, Titan, training).
@@ -74,8 +77,8 @@ vendors.
 
 ## Not built yet
 
-- The enemy models in game: the knight, archer, mage, ogre and dragon exist only as Blender previews (the look-test
-  of decision 0040), with no rig, biped animations or hit and death reactions.
+- Anything but the admin's test wave using the enemies: the Hexbound models, auras and animations
+  are in game (decision 0042), but the real wave fight is not wired to players yet.
 - Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
 - Animals standing at the training court they train at.
 - Samples dropping from harder waves (the higher upgrade levels need them), more ranch upgrades

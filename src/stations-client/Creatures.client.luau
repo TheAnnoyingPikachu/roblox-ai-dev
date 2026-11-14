@@ -1,6 +1,6 @@
 --!strict
 -- Animates every creature model (tag "Creature", built by stations/Creatures.luau). The server
--- sets each model's Anim ("idle", "walk", "attack", "magic") and AnimAt (server time) attributes
+-- sets each model's Anim ("idle", "walk", "attack", "magic", "hit", "die") and AnimAt (server time) attributes
 -- and moves its Root; this script poses the Motor6Ds every frame and plays the magic attack's
 -- effects. Display only: nothing here decides anything.
 --
@@ -17,7 +17,7 @@ local Workspace = game:GetService("Workspace")
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
 
-local JOINTS = { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" }
+local JOINTS = { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "wing_l", "wing_r" }
 local TAU = math.pi * 2
 local MAGIC_IMPACT = 0.92 -- seconds into "magic" when the front feet land
 
@@ -111,6 +111,172 @@ local MAGIC: Clip = {
 	},
 }
 
+-- Two-legged Hexbound (the knight, archer, mage and ogre have a "Biped" attribute): their front
+-- "legs" are arms hung from the shoulders and their back "legs" are legs, so an arm swings forward
+-- and up with a positive pitch, and 180 points it straight up. The cape or cloak is the "tail".
+
+-- A sword or club chop (knight, ogre): the weapon arm goes up overhead, then comes down hard.
+local BIPED_ATTACK: Clip = {
+	length = 0.95,
+	keys = {
+		{ 0.00, {} },
+		{
+			0.30,
+			{
+				body = { 6, 0, 0, 0, 0.05, 0.2 },
+				leg_fr = { 165 },
+				leg_fl = { 25 },
+				head = { -8 },
+				leg_bl = { -8 },
+				leg_br = { 8 },
+				tail = { -10 },
+			},
+		},
+		{
+			0.46,
+			{
+				body = { -14, 0, 0, 0, -0.12, -0.9 },
+				leg_fr = { 15 },
+				leg_fl = { 50 },
+				head = { 10 },
+				leg_bl = { 16 },
+				leg_br = { -12 },
+				tail = { 14 },
+			},
+		},
+		{ 0.70, { body = { -5, 0, 0, 0, 0, -0.4 }, leg_fr = { 20 }, leg_fl = { 30 } } },
+		{ 0.95, {} },
+	},
+}
+
+-- A bow shot (archer): both arms out to aim, then the drawing hand snaps back and the body recoils.
+local ARCHER_ATTACK: Clip = {
+	length = 0.95,
+	keys = {
+		{ 0.00, {} },
+		{ 0.30, { leg_fl = { 90 }, leg_fr = { 72 }, body = { 0, 0, 0, 0, 0, -0.1 }, head = { -4 }, tail = { -6 } } },
+		{ 0.46, { leg_fl = { 92 }, leg_fr = { 22 }, body = { 7, 0, 0, 0, 0.03, 0.4 }, head = { 4 }, tail = { 12 } } },
+		{ 0.70, { leg_fl = { 60 }, leg_fr = { 18 }, body = { 2 } } },
+		{ 0.95, {} },
+	},
+}
+
+-- A spell cast (mage): the orb hand rises, the staff thrusts out and the body leans into it.
+local MAGE_ATTACK: Clip = {
+	length = 0.95,
+	keys = {
+		{ 0.00, {} },
+		{
+			0.30,
+			{ leg_fl = { 112 }, leg_fr = { 50 }, body = { 8, 0, 0, 0, 0.06, 0.2 }, head = { -12 }, tail = { -8 } },
+		},
+		{
+			0.46,
+			{ leg_fl = { 82 }, leg_fr = { 20 }, body = { -8, 0, 0, 0, -0.05, -0.5 }, head = { 8 }, tail = { 14 } },
+		},
+		{ 0.70, { leg_fl = { 50 }, leg_fr = { 20 }, body = { -3 } } },
+		{ 0.95, {} },
+	},
+}
+
+-- The power attack for all of them: both arms thrown overhead while the power gathers, then a
+-- stomp and slam as the ground erupts.
+local BIPED_MAGIC: Clip = {
+	length = 1.6,
+	keys = {
+		{ 0.00, {} },
+		{
+			0.40,
+			{
+				leg_fl = { 150 },
+				leg_fr = { 150 },
+				body = { 10, 0, 0, 0, 0.1, 0.15 },
+				head = { -18 },
+				leg_bl = { -6 },
+				leg_br = { 6 },
+				tail = { -14 },
+			},
+		},
+		{
+			0.78,
+			{
+				leg_fl = { 172 },
+				leg_fr = { 166 },
+				body = { 14, 0, 0, 0, 0.14, 0.2 },
+				head = { -22 },
+				leg_bl = { -8 },
+				leg_br = { 8 },
+				tail = { -20 },
+			},
+		},
+		{
+			MAGIC_IMPACT,
+			{
+				leg_fl = { 35 },
+				leg_fr = { 30 },
+				body = { -16, 0, 0, 0, -0.18, -0.7 },
+				head = { 14 },
+				leg_bl = { 14 },
+				leg_br = { -8 },
+				tail = { 22 },
+			},
+		},
+		{ 1.12, { body = { -4, 0, 0, 0, 0.02, -0.2 }, head = { 6 } } },
+		{ 1.60, {} },
+	},
+}
+
+-- Struck: the body jerks back and the head snaps up.
+local HIT: Clip = {
+	length = 0.4,
+	keys = {
+		{ 0.00, {} },
+		{ 0.10, { body = { 9, 0, 0, 0, 0, 0.5 }, head = { -16 }, leg_fl = { 12 }, leg_fr = { 12 }, tail = { 12 } } },
+		{ 0.40, {} },
+	},
+}
+
+-- Defeat: an animal rolls onto its side, a Hexbound biped falls on its back, a dragon slumps.
+-- The y of the body is a fraction of its height off the ground (see `rest` on a rig), not studs.
+local DIE_QUAD: Clip = {
+	length = 1.2,
+	keys = {
+		{ 0.00, {} },
+		{ 0.50, { body = { 8, 0, 40, 0, -0.25, 0 }, head = { 20 } } },
+		{
+			1.20,
+			{
+				body = { 0, 0, 86, 0, -0.58, 0 },
+				head = { 26 },
+				leg_fl = { 30 },
+				leg_fr = { 24 },
+				leg_bl = { -20 },
+				leg_br = { -24 },
+				tail = { 14 },
+			},
+		},
+	},
+}
+local DIE_BIPED: Clip = {
+	length = 1.2,
+	keys = {
+		{ 0.00, {} },
+		{ 0.45, { body = { 20, 0, 0, 0, -0.2, 0.3 }, head = { -20 }, leg_fl = { 40 }, leg_fr = { 30 } } },
+		{
+			1.20,
+			{
+				body = { 86, 0, 0, 0, -0.7, 0 },
+				head = { -30 },
+				leg_fl = { 70 },
+				leg_fr = { 20 },
+				leg_bl = { 12 },
+				leg_br = { -10 },
+				tail = { 30 },
+			},
+		},
+	},
+}
+
 local function ease(u: number): number
 	return u * u * (3 - 2 * u)
 end
@@ -165,6 +331,46 @@ local function walk(t: number, rate: number): Pose
 		head = { 3 * math.sin(2 * phase + 0.6), 3 * math.sin(phase), 0 },
 		tail = { 0, 16 * math.sin(phase), 0 },
 	}
+end
+
+-- A Hexbound biped stands heavier and walks with its arms swinging against its legs.
+local function idleBiped(t: number): Pose
+	return {
+		body = { 0, 0, 0, 0, 0.02 * math.sin(t * TAU / 3.4), 0 },
+		head = { 2 * math.sin(t * TAU / 3.4 + 0.8), 4 * math.sin(t * TAU / 6), 0 },
+		leg_fl = { 3 * math.sin(t * TAU / 3.4) },
+		leg_fr = { -3 * math.sin(t * TAU / 3.4) },
+		tail = { 5 * math.sin(t * TAU / 2.6), 0, 0 },
+	}
+end
+
+local function walkBiped(t: number, rate: number): Pose
+	local phase = t * rate * TAU
+	local a = 26 * math.sin(phase)
+	return {
+		leg_bl = { a },
+		leg_br = { -a },
+		leg_fl = { -a * 0.7 },
+		leg_fr = { a * 0.7 },
+		body = { -3, 3 * math.sin(phase), 2 * math.sin(phase), 0, 0.09 * math.abs(math.sin(phase)), 0 },
+		head = { 2 * math.sin(2 * phase + 0.6), -3 * math.sin(phase), 0 },
+		tail = { 10 * math.sin(phase + 1), 0, 0 },
+	}
+end
+
+-- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow
+-- beat at rest, a wider one when it moves, a hard one when it attacks, still when it is down.
+local function wings(time: number, anim: string?): Pose
+	local amp, rate = 10, 0.5
+	if anim == "walk" then
+		amp, rate = 16, 0.9
+	elseif anim == "attack" or anim == "magic" then
+		amp, rate = 38, 1.8
+	elseif anim == "die" then
+		amp = 0
+	end
+	local f = amp * math.sin(time * rate * TAU) + (if anim == "die" then 28 else 0)
+	return { wing_l = { 0, 0, -f }, wing_r = { 0, 0, f } }
 end
 
 -- Magic attack effects ---------------------------------------------------------------------------
@@ -300,6 +506,7 @@ type Rig = {
 	now: { [string]: { number } }, -- the pose on screen, eased towards the target each frame
 	magicAt: number, -- the AnimAt of the magic attack whose effects have started
 	impactAt: number, -- and of the one whose slam has played
+	rest: number, -- the body's height above the ground, studs; 0 until a fall needs it
 }
 
 local rigs: { [Model]: Rig } = {}
@@ -318,7 +525,7 @@ local function add(model: Instance)
 	for _, joint in JOINTS do
 		now[joint] = table.create(6, 0)
 	end
-	rigs[model] = { model = model, joints = joints, now = now, magicAt = 0, impactAt = 0 }
+	rigs[model] = { model = model, joints = joints, now = now, magicAt = 0, impactAt = 0, rest = 0 }
 	model.DescendantAdded:Connect(function(d) -- pieces can arrive after the model
 		if d:IsA("Motor6D") and rigs[model] then
 			rigs[model].joints[d.Name] = d
@@ -326,7 +533,99 @@ local function add(model: Instance)
 	end)
 end
 
+-- Fights (decision 0042): a creature with a "MaxHp" attribute shows a health bar over it, and every
+-- change in its "Hp" floats a number: red for damage, green for healing. The server sets both.
+local function floatNumber(model: Model, change: number)
+	local hit = model:FindFirstChild("Hit") :: BasePart?
+	if hit == nil then
+		return
+	end
+	local gui = Instance.new("BillboardGui")
+	gui.Size = UDim2.fromOffset(120, 40)
+	gui.Adornee = hit
+	gui.AlwaysOnTop = true
+	gui.LightInfluence = 0
+	gui.MaxDistance = 400
+	local x = (math.random() - 0.5) * hit.Size.X * 0.5
+	gui.StudsOffset = Vector3.new(x, hit.Size.Y / 2 + 1, 0)
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.fromScale(1, 1)
+	text.BackgroundTransparency = 1
+	text.Font = Enum.Font.FredokaOne
+	text.TextScaled = true
+	text.Text = if change < 0 then tostring(change) else `+{change}`
+	text.TextColor3 = if change < 0 then Color3.fromRGB(255, 90, 80) else Color3.fromRGB(110, 255, 140)
+	text.TextStrokeTransparency = 0
+	text.Parent = gui
+	gui.Parent = hit
+	TweenService:Create(gui, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		StudsOffset = gui.StudsOffset + Vector3.new(0, 4, 0),
+	}):Play()
+	TweenService:Create(text, TweenInfo.new(1.0), { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+	Debris:AddItem(gui, 1.1)
+end
+
+local function watchHealth(model: Model)
+	local hit = model:FindFirstChild("Hit") :: BasePart?
+	local maxHp = model:GetAttribute("MaxHp")
+	if hit == nil or type(maxHp) ~= "number" or hit:FindFirstChild("HealthBar") then
+		return
+	end
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "HealthBar"
+	gui.Size = UDim2.fromOffset(110, 12)
+	gui.Adornee = hit
+	gui.LightInfluence = 0
+	gui.MaxDistance = 400
+	gui.StudsOffset = Vector3.new(0, hit.Size.Y / 2 + 1.2, 0)
+	local back = Instance.new("Frame")
+	back.Size = UDim2.fromScale(1, 1)
+	back.BackgroundColor3 = Color3.fromRGB(30, 26, 36)
+	back.BorderSizePixel = 0
+	back.Parent = gui
+	local edge = Instance.new("UIStroke")
+	edge.Thickness = 2
+	edge.Color = if model:GetAttribute("Side") == 2 then Color3.fromRGB(150, 255, 70) else Color3.fromRGB(255, 200, 70)
+	edge.Parent = back
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.fromScale(1, 1)
+	fill.BackgroundColor3 = if model:GetAttribute("Side") == 2
+		then Color3.fromRGB(220, 70, 70)
+		else Color3.fromRGB(90, 210, 110)
+	fill.BorderSizePixel = 0
+	fill.Parent = back
+	gui.Parent = hit
+	local last = model:GetAttribute("Hp")
+	local function update()
+		local hp, full = model:GetAttribute("Hp"), model:GetAttribute("MaxHp")
+		if type(hp) ~= "number" or type(full) ~= "number" then
+			return
+		end
+		if type(last) == "number" and hp ~= last then
+			floatNumber(model, hp - last)
+		end
+		last = hp
+		TweenService
+			:Create(fill, TweenInfo.new(0.2), { Size = UDim2.fromScale(math.clamp(hp / math.max(1, full), 0, 1), 1) })
+			:Play()
+		gui.Enabled = hp > 0
+	end
+	model:GetAttributeChangedSignal("Hp"):Connect(update)
+	update()
+end
+
 CollectionService:GetInstanceAddedSignal("Creature"):Connect(add)
+CollectionService:GetInstanceAddedSignal("Creature"):Connect(function(model)
+	task.defer(function() -- its attributes and parts arrive just after the tag
+		for _ = 1, 20 do
+			if model:FindFirstChild("Hit") and model:GetAttribute("MaxHp") ~= nil then
+				watchHealth(model :: Model)
+				return
+			end
+			task.wait(0.1)
+		end
+	end)
+end)
 CollectionService:GetInstanceRemovedSignal("Creature"):Connect(function(model)
 	rigs[model :: Model] = nil
 end)
@@ -341,13 +640,38 @@ RunService.PreSimulation:Connect(function(dt: number)
 		local anim = model:GetAttribute("Anim") :: string?
 		local at = (model:GetAttribute("AnimAt") :: number?) or time
 		local t = math.max(0, time - at)
+		local biped = model:GetAttribute("Biped") == true
 		local target: Pose
-		if anim == "walk" then
-			target = walk(time, (model:GetAttribute("Stride") :: number?) or 1.5)
+		if anim == "die" then -- holds its last pose
+			target = sample(if biped then DIE_BIPED else DIE_QUAD, t)
+			local body = target.body
+			if body then
+				if rig.rest == 0 then
+					local asset = model:GetAttribute("Asset")
+					local mesh = model:FindFirstChild(`{asset}_body`) :: BasePart?
+					local root = model.PrimaryPart
+					rig.rest = if mesh and root then math.max(1, mesh.Position.Y - root.Position.Y) else 1
+				end
+				local fall = table.clone(body) -- the clip's y is a share of the body's height
+				fall[5] = body[5] * rig.rest / ((model:GetAttribute("Scale") :: number?) or 1)
+				target = table.clone(target)
+				target.body = fall
+			end
+		elseif anim == "hit" and t < HIT.length then
+			target = sample(HIT, t)
+		elseif anim == "walk" then
+			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
+			target = if biped then walkBiped(time, rate) else walk(time, rate)
 		elseif anim == "attack" and t < ATTACK.length then
-			target = sample(ATTACK, t)
+			local kind = model:GetAttribute("Asset")
+			local clip = if not biped
+				then ATTACK
+				elseif kind == "foe_archer" then ARCHER_ATTACK
+				elseif kind == "foe_mage" then MAGE_ATTACK
+				else BIPED_ATTACK
+			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
-			target = sample(MAGIC, t)
+			target = sample(if biped then BIPED_MAGIC else MAGIC, t)
 			if rig.magicAt ~= at then
 				rig.magicAt = at
 				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
@@ -357,7 +681,13 @@ RunService.PreSimulation:Connect(function(dt: number)
 				impact(model, magicColour(model))
 			end
 		else
-			target = idle(time)
+			target = if biped then idleBiped(time) else idle(time)
+		end
+		if model:GetAttribute("Winged") == true then
+			target = table.clone(target)
+			for joint, v in wings(time, anim) do
+				target[joint] = v
+			end
 		end
 		local scale = ((model:GetAttribute("Scale") :: number?) or 1)
 		local blend = math.min(1, dt * 22)

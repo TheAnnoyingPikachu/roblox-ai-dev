@@ -12,11 +12,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
+local StationConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationConfig"))
+local StationRules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationRules"))
 
 local Creatures = {}
 
 -- How long each one-shot animation lasts (seconds); the client holds the matching poses.
-Creatures.LENGTH = { attack = 0.95, magic = 1.6 }
+Creatures.LENGTH = { attack = 0.95, magic = 1.6, hit = 0.4, die = 1.2 }
 
 -- The client's poses are written for legs this long (studs). A creature's Scale attribute is its
 -- own leg length over this: poses, effects and the walk all grow with it.
@@ -41,6 +43,79 @@ local function textureOf(entry: StationAssets.Asset): string?
 		return if decal then decal.Texture else nil
 	end
 	return nil
+end
+
+local HEXFIRE = Color3.fromRGB(150, 255, 70)
+
+-- An evil aura for a Hexbound model (decision 0042): a pale green glow on the ground, dark smoke
+-- rising off the footprint, a few hexfire sparks and one soft light. Built into the model, so it
+-- costs the server nothing while it runs, and kept small: about 25 live particles and one light
+-- with no shadows for each enemy.
+local function aura(model: Model, root: BasePart, rootFrame: CFrame, size: { number }, unit: number)
+	local w, l = size[1] * 0.8, size[3] * 0.8
+	local base = Instance.new("Part")
+	base.Name = "Aura"
+	base.Size = Vector3.new(w, 0.2, l)
+	base.CFrame = rootFrame * CFrame.new(0, 0.15, 0)
+	base.Transparency = 1
+	base.CanCollide, base.CanQuery, base.CanTouch, base.CastShadow, base.Massless = false, false, false, false, true
+	local hold = Instance.new("WeldConstraint")
+	hold.Part0, hold.Part1 = root, base
+	hold.Parent = base
+	base.Parent = model
+
+	local haze = Instance.new("ParticleEmitter")
+	haze.Name = "Haze"
+	haze.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	haze.Color = ColorSequence.new(Color3.fromRGB(90, 170, 50), Color3.fromRGB(12, 34, 24))
+	haze.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.55),
+		NumberSequenceKeypoint.new(0.5, 0.72),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	haze.Size =
+		NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.0 * unit), NumberSequenceKeypoint.new(1, 3.0 * unit) })
+	haze.Lifetime = NumberRange.new(1.8, 3)
+	haze.Rate = 7
+	haze.Speed = NumberRange.new(0.8, 2.2)
+	haze.RotSpeed = NumberRange.new(-20, 20)
+	haze.LightEmission = 0.25
+	haze.Acceleration = Vector3.new(0, 1.2, 0)
+	haze.Shape = Enum.ParticleEmitterShape.Box
+	haze.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	haze.EmissionDirection = Enum.NormalId.Top
+	haze.Parent = base
+
+	local sparks = Instance.new("ParticleEmitter")
+	sparks.Name = "Sparks"
+	sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	sparks.Color = ColorSequence.new(HEXFIRE, Color3.fromRGB(220, 255, 170))
+	sparks.LightEmission = 1
+	sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3 * unit), NumberSequenceKeypoint.new(1, 0) })
+	sparks.Lifetime = NumberRange.new(1.2, 2.2)
+	sparks.Rate = 6
+	sparks.Speed = NumberRange.new(1.5 * unit, 3.5 * unit)
+	sparks.Shape = Enum.ParticleEmitterShape.Box
+	sparks.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	sparks.EmissionDirection = Enum.NormalId.Top
+	sparks.Parent = base
+
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = HEXFIRE, 8 * unit, 0.7, false
+	light.Parent = base
+
+	local d = math.max(w, l) * 1.1
+	local disc = Instance.new("Part")
+	disc.Name = "AuraDisc"
+	disc.Shape = Enum.PartType.Cylinder
+	disc.Size = Vector3.new(0.1, d, d)
+	disc.CFrame = rootFrame * CFrame.new(0, 0.12, 0) * CFrame.Angles(0, 0, math.pi / 2)
+	disc.Color, disc.Material, disc.Transparency = HEXFIRE, Enum.Material.Neon, 0.86
+	disc.CanCollide, disc.CanQuery, disc.CanTouch, disc.CastShadow, disc.Massless = false, false, false, false, true
+	local hold2 = Instance.new("WeldConstraint")
+	hold2.Part0, hold2.Part1 = root, disc
+	hold2.Parent = disc
+	disc.Parent = model
 end
 
 -- The rigged template for `name`, or nil when the asset is not uploaded or did not load.
@@ -145,9 +220,17 @@ local function build(name: string): Model?
 	hold.Parent = hit
 	hit.Parent = model
 	CollectionService:AddTag(hit, "CreatureHit")
-	local unit = entry.joints[`{name}_leg_fl`][2] / POSE_LEGS
+	-- the leg length the poses scale by: the front legs' joint on an animal, the hips' on a Hexbound
+	-- (their front "legs" are arms, hung from the shoulders)
+	local hexbound = string.sub(name, 1, 4) == "foe_"
+	local unit = entry.joints[if hexbound then `{name}_leg_bl` else `{name}_leg_fl`][2] / POSE_LEGS
 	model:SetAttribute("Scale", unit)
 	model:SetAttribute("Stride", STRIDE / math.sqrt(unit))
+	if hexbound then
+		model:SetAttribute("Hexbound", true)
+		model:SetAttribute(if name == "foe_dragon" then "Winged" else "Biped", true)
+		aura(model, root, rootFrame, entry.size, unit)
+	end
 
 	if next(entry.glow) then -- a glowing variant lights its surroundings and sheds embers
 		local _, rgb = next(entry.glow)
@@ -204,18 +287,78 @@ function Creatures.asset(s: string, v: string?): string
 	return if word then `creature_{s}_{word}` else `creature_{s}`
 end
 
-function Creatures.spawn(name: string, at: CFrame, parent: Instance): Model?
+-- How a Hexbound foe looks (decision 0042) is in its StationConfig entry: the model of its kind, a
+-- size and a tint. A tier of a kind is the same model bigger, smaller or tinted, not a new one.
+export type Look = { model: string, size: number?, tint: Color3? }
+local function lookOf(foeId: string): Look?
+	local f = StationConfig.foe(foeId)
+	if f == nil then
+		return nil
+	end
+	local t = f.tint
+	return { model = f.model, size = f.size, tint = if t then Color3.fromRGB(t[1], t[2], t[3]) else nil }
+end
+
+-- What the card under the cursor reads: an animal's species, variant and six stats (its own, with
+-- its training, or its version's), set as attributes so every player's client sees them.
+function Creatures.describe(model: Model, s: string, v: string?, animal: StationRules.Owned?)
+	model:SetAttribute("Species", s)
+	model:SetAttribute("Variant", v)
+	local plain = StationRules.versionStats(s, v) :: StationConfig.Stats
+	for _, stat in StationConfig.STATS do
+		model:SetAttribute(stat, if animal then StationRules.stat(animal, stat) else (plain :: any)[stat])
+	end
+end
+
+-- The same for a Hexbound foe: its id and the stats it has at this wave.
+function Creatures.describeFoe(model: Model, foeId: string, stats: StationConfig.Stats)
+	model:SetAttribute("FoeId", foeId)
+	for _, stat in StationConfig.STATS do
+		model:SetAttribute(stat, (stats :: any)[stat])
+	end
+end
+
+function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?): Model?
 	local source = template(name)
 	if source == nil then
 		return nil
 	end
 	local model = source:Clone()
 	model:PivotTo(at)
+	if look then
+		local size = look.size or 1
+		if size ~= 1 then
+			model:ScaleTo(model:GetScale() * size)
+			local scale = (model:GetAttribute("Scale") :: number) * size
+			model:SetAttribute("Scale", scale)
+			model:SetAttribute("Stride", STRIDE / math.sqrt(scale))
+		end
+		if look.tint then
+			for _, d in model:GetDescendants() do
+				if d:IsA("MeshPart") and d.Material ~= Enum.Material.Neon then
+					d.Color = look.tint
+				end
+			end
+		end
+	end
 	model:SetAttribute("Asset", name)
 	Creatures.play(model, "idle")
 	CollectionService:AddTag(model, "Creature")
 	model.Parent = parent
 	return model
+end
+
+-- A foe standing at `at`, in its own size and tint. Nil when its model is not uploaded.
+function Creatures.spawnFoe(foeId: string, at: CFrame, parent: Instance): Model?
+	local look = lookOf(foeId)
+	return if look then Creatures.spawn(look.model, at, parent, look) else nil
+end
+
+-- The size in studs a foe is once spawned (width, height, depth), for placing a line of them.
+function Creatures.foeSize(foeId: string): Vector3
+	local f = StationConfig.foe(foeId) :: StationConfig.Foe
+	local size = StationAssets[f.model].size
+	return Vector3.new(size[1], size[2], size[3]) * (f.size or 1)
 end
 
 return Creatures

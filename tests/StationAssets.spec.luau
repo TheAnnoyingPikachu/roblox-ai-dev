@@ -5,6 +5,7 @@ local fs = require("@lune/fs")
 local serde = require("@lune/serde")
 local T = require("./framework")
 local StationAssets = require("../src/shared/StationAssets")
+local StationConfig = require("../src/shared/StationConfig")
 
 local describe, it, expect = T.describe, T.it, T.expect
 
@@ -67,6 +68,24 @@ describe("StationAssets", function()
 			end
 			-- every piece but the body turns on a joint; a dragon's two wings are two more
 			expect(count(entry.joints)).toBe(if name == "foe_dragon" then 8 else 6)
+		end
+	end)
+
+	it("has a model for every Hexbound foe, of its kind, with a sane size and tint", function()
+		for _, f in StationConfig.FOES do
+			expect(f.model).toBe(`foe_{f.kind}`)
+			expect(StationAssets[f.model] == nil).toBe(false)
+			expect(StationAssets[f.model].model == nil).toBe(false) -- uploaded
+			expect(f.size == nil or (f.size >= 0.5 and f.size <= 2)).toBeTruthy()
+			if f.tint then
+				expect(#f.tint).toBe(3)
+				for _, c in f.tint do
+					expect(c >= 0 and c <= 255).toBeTruthy()
+				end
+			end
+		end
+		for _, kind in StationConfig.FOE_KINDS do
+			expect(StationAssets[`foe_{kind}`] == nil).toBe(false)
 		end
 	end)
 end)

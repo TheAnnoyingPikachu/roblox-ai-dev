@@ -221,3 +221,74 @@ describe("BattleRules.battle", function()
 		expect(actions).toBe(BattleRules.MAX_ACTIONS)
 	end)
 end)
+
+describe("BattleRules.battle log", function()
+	local function team(ids: { string }): { StationRules.Owned }
+		local out = {}
+		for _, id in ids do
+			table.insert(out, owned(id))
+		end
+		return out
+	end
+
+	it("changes nothing about the result, and has one entry per attack in time order", function()
+		for _, c in
+			{
+				{ { "jackal", "tortoise", "meerkat" }, { "cheetah", "rhino", "flamingo" } },
+				{ { "lion", "rhino", "meerkat", "elephant" }, { "jackal", "jackal", "jackal" } },
+				{ { "meerkat" }, { "meerkat" } },
+			}
+		do
+			local one, two = team(c[1]), team(c[2])
+			local won, actions, seconds = BattleRules.battle(one, two)
+			local log = {}
+			local won2, actions2, seconds2 = BattleRules.battle(one, two, log)
+			expect(won2).toBe(won)
+			expect(actions2).toBe(actions)
+			expect(seconds2).toBe(seconds)
+			expect(#log).toBe(actions)
+			for i = 2, #log do
+				expect(log[i].t >= log[i - 1].t).toBeTruthy()
+			end
+			expect(log[#log].t).toBe(seconds)
+		end
+	end)
+
+	it("says who hit whom for how much, and ends with every enemy down when the team wins", function()
+		local one, two = team({ "lion", "rhino", "flamingo" }), team({ "jackal", "tortoise", "meerkat" })
+		local log = {}
+		expect((BattleRules.battle(one, two, log))).toBe(true)
+		local hp = { {}, {} }
+		for side, t in { one, two } do
+			for slot, f in BattleRules.lineup(t, side) do
+				hp[side][slot] = f.maxHp
+			end
+		end
+		for _, e in log do
+			expect(e.side ~= e.tside).toBeTruthy()
+			expect(e.dmg >= 1).toBeTruthy()
+			expect(hp[e.side][e.slot] > 0).toBeTruthy() -- the dead do not attack
+			expect(hp[e.tside][e.tslot] > 0).toBeTruthy()
+			hp[e.tside][e.tslot] -= e.dmg
+			expect(hp[e.tside][e.tslot]).toBe(e.hp)
+			if e.heal then
+				hp[e.side][e.heal.slot] = e.heal.hp
+			end
+		end
+		for _, h in hp[2] do
+			expect(h <= 0).toBeTruthy()
+		end
+	end)
+
+	it("records a healer's heal and a power attack", function()
+		local log = {}
+		BattleRules.battle(team({ "meerkat", "rhino" }), team({ "rhino", "rhino" }), log)
+		local healed, powered = false, false
+		for _, e in log do
+			healed = healed or e.heal ~= nil
+			powered = powered or e.power
+		end
+		expect(healed).toBe(true)
+		expect(powered).toBe(true)
+	end)
+end)

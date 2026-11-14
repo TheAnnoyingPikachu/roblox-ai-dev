@@ -307,22 +307,37 @@ barText.TextSize = 13
 barText.TextColor3 = Color3.new(1, 1, 1)
 barText.Parent = bar
 
+local HEXFIRE = Color3.fromRGB(150, 255, 70)
+
 local function showCard(model: Model?)
 	local s = model and model:GetAttribute("Species")
 	local sp = if type(s) == "string" then StationConfig.species(s) else nil
-	if model == nil or sp == nil then
+	local f = model and model:GetAttribute("FoeId")
+	local foe = if type(f) == "string" then StationConfig.foe(f) else nil
+	if model == nil or (sp == nil and foe == nil) then
 		card.Visible = false
 		return
 	end
-	local v = model:GetAttribute("Variant")
-	local va = if type(v) == "string" then StationConfig.variant(sp.id, v) else nil
-	local rarity = if va then va.tier else sp.rarity
-	local colour = RARITY_COLOUR[rarity] or Color3.new(1, 1, 1)
-	cardName.Text = if va then va.name else sp.name
-	cardName.TextColor3 = colour
-	cardEdge.Color = colour
-	cardKind.Text = `{string.upper(rarity)}  -  {ROLE_NAME[sp.role] or "?"}  -  {GROUP_NAME[sp.group] or "?"}`
-	cardKind.TextColor3 = colour
+	if foe then -- an enemy: the Hexbound have no rarity, only their kind
+		cardName.Text = foe.name
+		cardName.TextColor3 = HEXFIRE
+		cardEdge.Color = HEXFIRE
+		cardKind.Text =
+			`HEXBOUND {string.upper(foe.kind)}  -  {ROLE_NAME[foe.role] or "?"}  -  {GROUP_NAME[foe.group] or "?"}`
+		cardKind.TextColor3 = HEXFIRE
+	else
+		local animal = sp :: StationConfig.Species
+		local v = model:GetAttribute("Variant")
+		local va = if type(v) == "string" then StationConfig.variant(animal.id, v) else nil
+		local rarity = if va then va.tier else animal.rarity
+		local colour = RARITY_COLOUR[rarity] or Color3.new(1, 1, 1)
+		cardName.Text = if va then va.name else animal.name
+		cardName.TextColor3 = colour
+		cardEdge.Color = colour
+		cardKind.Text =
+			`{string.upper(rarity)}  -  {ROLE_NAME[animal.role] or "?"}  -  {GROUP_NAME[animal.group] or "?"}`
+		cardKind.TextColor3 = colour
+	end
 	local parts = {}
 	for k, stat in StationConfig.STATS do
 		table.insert(parts, `{STAT_SHORT[stat]} {model:GetAttribute(stat) or "?"}{if k == 3 then "\n" else "   "}`)
@@ -331,7 +346,11 @@ local function showCard(model: Model?)
 	local health = model:GetAttribute("health")
 	local max = BattleRules.HP_BASE
 		+ math.floor((if type(health) == "number" then health else 0) * BattleRules.HP_PER_HEALTH)
-	local hp = model:GetAttribute("Hp") -- set once fights exist; full until then
+	local fightMax = model:GetAttribute("MaxHp") -- in a fight: with the team's bonuses
+	if type(fightMax) == "number" then
+		max = fightMax
+	end
+	local hp = model:GetAttribute("Hp") -- set while a fight is on; full otherwise
 	local now = if type(hp) == "number" then math.clamp(hp, 0, max) else max
 	fill.Size = UDim2.fromScale(now / math.max(1, max), 1)
 	barText.Text = `{now} / {max} HP`
@@ -471,10 +490,35 @@ do
 			send(action, value)
 		end).LayoutOrder = n
 	end
-	add("Spawn every animal in a row", "look", 0)
+	add("Spawn every animal and enemy in a row", "look", 0)
 	add("Clear them", "look_clear")
-	for _, anim in { "idle", "walk", "attack", "magic" } do
+	for _, anim in { "idle", "walk", "attack", "magic", "hit", "die" } do
 		add(`All play: {anim}`, "look_anim", anim)
+	end
+	for _, test in
+		{
+			{ 1, "starters", "Test wave 1 (starter team)" },
+			{ 6, "starters", "Test wave 6 (starter team, mages)" },
+			{ 10, "starters", "Test wave 10 (starter team, first dragon)" },
+			{ 10, "mythics", "Test wave 10 (best team)" },
+			{ 30, "mythics", "Test wave 30 (best team, a Drake)" },
+			{ 60, "mythics", "Test wave 60 (best team, the Dragon)" },
+			{ 12, "mine", "Test wave 12 (my own team)" },
+		}
+	do
+		n += 1
+		Ui.button(adminRows, test[3] :: string, function()
+			local ok, code = request:InvokeServer("testwave", test[1], test[2])
+			if not ok then
+				Ui.toast(
+					screen,
+					if code == "models" then "An enemy model is not uploaded yet" else REFUSED[code] or `Can't ({code})`
+				)
+			else
+				admin.Visible = false
+			end
+		end).LayoutOrder =
+			n
 	end
 	local k = 0 -- the server lists them in this order too
 	for _, sp in StationConfig.SPECIES do
@@ -484,6 +528,10 @@ do
 			k += 1
 			add(`Spawn {va.name} ({va.tier})`, "look", k)
 		end
+	end
+	for _, foe in StationConfig.FOES do
+		k += 1
+		add(`Spawn {foe.name} (Hexbound {foe.kind})`, "look", k)
 	end
 end
 local function showAdmin()
@@ -697,6 +745,13 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			hatchEffect(payload.at, payload.body, payload.spot) -- then the animal steps out
 		end
 		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
+	elseif kind == "waveshow" then
+		local took = string.format("%.0f", payload.seconds)
+		Ui.toast(
+			screen,
+			`Wave {payload.wave}: {if payload.won then "your team won" else "your team lost"} in {took}s ({payload.attacks} attacks) against {payload.foes}`,
+			7
+		)
 	elseif kind == "bought" then
 		local egg = StationConfig.egg(payload)
 		if egg then
