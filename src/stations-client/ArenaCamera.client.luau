@@ -15,7 +15,7 @@ local UiLayout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("
 local player = Players.LocalPlayer
 local STEP = "StationsArenaCamera"
 local FOV = 55
-local PITCH = math.rad(38) -- high enough to look over the arena walls and the gallows
+local PITCH = math.rad(31) -- high enough to look over the arena walls and the gallows
 local LOWER = 0.28 -- of the radius: aim low so the fight sits above the result panel
 local active = false
 local started = 0
@@ -29,7 +29,7 @@ local function aim(camera: Camera): CFrame?
 	end
 	local size = camera.ViewportSize
 	local away = UiLayout.fightDistance(radius, FOV, size.X / math.max(1, size.Y))
-	local yaw = math.rad(40) + math.sin((os.clock() - started) * 0.3) * math.rad(6) -- from the dais side
+	local yaw = math.rad(34) + math.sin((os.clock() - started) * 0.3) * math.rad(6) -- from the dais side
 	local dir = Vector3.new(math.sin(yaw) * math.cos(PITCH), math.sin(PITCH), math.cos(yaw) * math.cos(PITCH))
 	local look = focus - Vector3.new(0, radius * LOWER, 0)
 	return CFrame.lookAt(look + dir * away, look)
@@ -62,10 +62,13 @@ local function start()
 	current = camera.CFrame
 	RunService:BindToRenderStep(STEP, Enum.RenderPriority.Camera.Value + 1, function(dt)
 		local cam = Workspace.CurrentCamera
-		local want = if cam then aim(cam) else nil
-		if cam == nil or want == nil then
+		if cam == nil or typeof(player:GetAttribute("CamFocus")) ~= "Vector3" then
 			stop()
 			return
+		end
+		local want = aim(cam)
+		if want == nil then
+			return -- the radius has not arrived yet: attributes reach the client one at a time
 		end
 		cam.CameraType = Enum.CameraType.Scriptable -- keep it ours while the fight lasts
 		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * 2.5))

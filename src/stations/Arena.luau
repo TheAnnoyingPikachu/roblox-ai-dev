@@ -15,93 +15,18 @@ local part, pillar = Props.part, Props.pillar
 
 local Arena = {}
 
-local M = Enum.Material
-local STONE = Color3.fromRGB(78, 72, 96)
-local DARK = Color3.fromRGB(44, 38, 56)
-local ASH = Color3.fromRGB(28, 25, 34)
-local BRICK = Color3.fromRGB(64, 56, 72)
-local IRON = Color3.fromRGB(48, 50, 60)
-local BONE = Color3.fromRGB(224, 216, 192)
-local VIOLET = Color3.fromRGB(150, 90, 255)
-local CLOTH = Color3.fromRGB(150, 24, 40)
-local EYE = Color3.fromRGB(190, 120, 255)
+local Kit = require(script.Parent:WaitForChild("ArenaKit"))
+local M = Kit.M
+local STONE, DARK, BRICK, IRON, BONE, VIOLET, CLOTH, ASH, EYE =
+	Kit.STONE, Kit.DARK, Kit.BRICK, Kit.IRON, Kit.BONE, Kit.VIOLET, Kit.CLOTH, Kit.ASH, Kit.EYE
+local V, box, ball, wedge, glow, flat, flame, skull =
+	Kit.V, Kit.box, Kit.ball, Kit.wedge, Kit.glow, Kit.flat, Kit.flame, Kit.skull
+local demonHead, column = Kit.demonHead, Kit.column
+local Breach = require(script.Parent:WaitForChild("Breach"))
 
 Arena.DAIS_AT = 75 -- where the team stands: World.luau puts the stand there
 local DAIS_AT = Arena.DAIS_AT
 local PIT_FROM, PIT_TO, GATE_AT = 6, 196, 190 -- distances into the canyon from its mouth
-
-local V = Vector3.new
-
--- Decorations never block a player or a ray; only walls, towers and the floor do.
-local function soft(p: BasePart): BasePart
-	p.CanCollide, p.CanTouch, p.CanQuery = false, false, false
-	return p
-end
-
-local function box(parent: Instance, size: Vector3, at: CFrame | Vector3, colour: Color3, mat: Enum.Material?): Part
-	return soft(part(parent, size, at, colour, mat)) :: Part
-end
-
-local function ball(parent: Instance, at: Vector3, diameter: number, colour: Color3, mat: Enum.Material?): Part
-	local p = box(parent, V(diameter, diameter, diameter), at, colour, mat)
-	p.Shape = Enum.PartType.Ball
-	return p
-end
-
-local function wedge(parent: Instance, size: Vector3, cf: CFrame, colour: Color3, mat: Enum.Material?): WedgePart
-	local w = Instance.new("WedgePart")
-	w.Anchored = true
-	w.Size, w.CFrame, w.Color = size, cf, colour
-	w.Material = mat or M.Slate
-	soft(w)
-	w.Parent = parent
-	return w
-end
-
-local function glow(p: BasePart, colour: Color3, range: number, brightness: number)
-	local l = Instance.new("PointLight")
-	l.Color, l.Range, l.Brightness, l.Shadows = colour, range, brightness, false
-	l.Parent = p
-end
-
--- A flat disc lying on the floor (its top is a hair above it).
-local function flat(parent: Instance, at: Vector3, diameter: number, colour: Color3, mat: Enum.Material?, lift: number?)
-	local p = pillar(parent, V(at.X, 0.4 + (lift or 0.05), at.Z), 0.02, diameter / 2, colour, mat)
-	return soft(p)
-end
-
-local function flame(parent: BasePart, hot: Color3, cold: Color3, size: number)
-	local f = Instance.new("ParticleEmitter")
-	f.Texture = "rbxasset://textures/particles/fire_main.dds"
-	f.Color = ColorSequence.new(hot, cold)
-	f.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, size), NumberSequenceKeypoint.new(1, size * 0.12) })
-	f.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) })
-	f.Lifetime = NumberRange.new(0.7, 1.2)
-	f.Rate = 16
-	f.Speed = NumberRange.new(4, 7)
-	f.LightEmission = 1
-	f.EmissionDirection = Enum.NormalId.Top
-	f.Parent = parent
-end
-
--- A skull (looking along `dir`): bone dome, two dark sockets, a jaw.
-local function skull(parent: Instance, at: Vector3, dir: Vector3, s: number, eyes: Color3?)
-	local cf = CFrame.lookAt(at, at + dir)
-	ball(parent, at, 2 * s, BONE, M.Marble)
-	box(parent, V(1.3 * s, 0.7 * s, 1.1 * s), cf * CFrame.new(0, -0.95 * s, -0.45 * s), BONE, M.Marble)
-	for _, sx in { -1, 1 } do
-		local socket = ball(
-			parent,
-			(cf * CFrame.new(sx * 0.42 * s, 0.12 * s, -0.8 * s)).Position,
-			0.55 * s,
-			eyes or Color3.fromRGB(14, 8, 22),
-			if eyes then M.Neon else M.SmoothPlastic
-		)
-		if eyes then
-			glow(socket, eyes, 14, 1.5)
-		end
-	end
-end
 
 -- A stone demon-knight on a plinth, standing at `base` and facing `toward`.
 local function statue(parent: Instance, base: Vector3, toward: Vector3)
@@ -251,9 +176,8 @@ local function wallsOf(f: Folder, c: { half: number, zAt: (number) -> number, rn
 			local hot = if warm then Color3.fromRGB(255, 150, 60) else Color3.fromRGB(170, 90, 255)
 			local cold = if warm then Color3.fromRGB(255, 80, 30) else Color3.fromRGB(80, 30, 160)
 			local base = V(sx * (c.half - 1.4), 0.4, c.zAt(d))
-			part(f, V(4, 1.4, 4), base + V(0, 0.7, 0), STONE, M.Slate)
-			pillar(f, base + V(0, 1.4, 0), 6, 1.2, STONE, M.Slate)
-			local bowl = pillar(f, base + V(0, 7.4, 0), 1, 2.5, IRON, M.Metal)
+			column(f, base, 7.4, 1.3, STONE, true)
+			local bowl = pillar(f, base + V(0, 7.5, 0), 1, 2.5, IRON, M.Metal)
 			flame(bowl, hot, cold, 4)
 			glow(bowl, hot, 30, 1.2)
 		end
@@ -279,24 +203,55 @@ local function gallows(f: Folder, c: { half: number, zAt: (number) -> number }, 
 	glow(soul, EYE, 16, 1)
 end
 
+local function entranceTower(f: Folder, sx: number, z: number)
+	local cx = sx * 31
+	part(f, V(17, 2, 17), V(cx, 1, z), STONE, M.Slate) -- a stepped plinth
+	part(f, V(15, 2, 15), V(cx, 3, z), DARK, M.Slate)
+	part(f, V(12, 36, 12), V(cx, 22, z), BRICK, M.Brick)
+	for _, y in { 12, 24, 36 } do -- stone bands
+		box(f, V(13.6, 1.2, 13.6), V(cx, y, z), STONE, M.Slate)
+	end
+	for _, kx in { -1, 1 } do -- a carved column at every corner
+		for _, kz in { -1, 1 } do
+			column(f, V(cx + kx * 6.4, 4, z + kz * 6.4), 36, 1.25, STONE, true)
+		end
+	end
+	for _, y in { 17, 31 } do -- arrow slits glowing from within, on the face the hub sees
+		for _, dx in { -2.6, 2.6 } do
+			box(f, V(1.8, 5.6, 0.6), V(cx + dx, y, z + 6.2), DARK, M.Slate)
+			box(f, V(0.7, 4.6, 0.3), V(cx + dx, y, z + 6.5), VIOLET, M.Neon)
+		end
+	end
+	part(f, V(15, 2, 15), V(cx, 41, z), STONE, M.Slate) -- the platform and its stepped overhang
+	for k = -1, 1 do
+		for _, side in { -1, 1 } do
+			box(f, V(1.8, 2, 2.4), V(cx + k * 4.5, 39.6, z + side * 7), DARK, M.Slate)
+			box(f, V(2.4, 2, 1.8), V(cx + side * 7, 39.6, z + k * 4.5), DARK, M.Slate)
+		end
+	end
+	for k = -1, 1, 2 do
+		for j = -1, 1, 2 do
+			part(f, V(3, 3, 3), V(cx + k * 6, 43.5, z + j * 6), STONE, M.Slate)
+		end
+	end
+	local bowl = pillar(f, V(cx, 42, z), 1, 3, IRON, M.Metal)
+	flame(bowl, Color3.fromRGB(255, 140, 50), Color3.fromRGB(255, 60, 20), 6)
+	glow(bowl, Color3.fromRGB(255, 140, 50), 40, 1.5)
+	box(f, V(0.5, 24, 1.4), V(sx * 24.8, 24, z + 1), VIOLET, M.Neon)
+	box(f, V(4, 1.2, 3.4), V(cx, 27.6, z + 7.4), STONE, M.Slate) -- a gargoyle on a ledge
+	demonHead(f, V(cx, 30, z + 7.6), V(0, 0, 1), 1.5)
+end
+
 local function entrance(f: Folder, c: { half: number, zAt: (number) -> number })
 	local z = c.zAt(3)
 	for _, sx in { -1, 1 } do
-		part(f, V(15, 4, 15), V(sx * 31, 2, z), STONE, M.Slate)
-		part(f, V(12, 38, 12), V(sx * 31, 23, z), BRICK, M.Brick)
-		part(f, V(15, 2, 15), V(sx * 31, 43, z), STONE, M.Slate)
-		for k = -1, 1, 2 do
-			for j = -1, 1, 2 do
-				part(f, V(3, 3, 3), V(sx * 31 + k * 6, 45.5, z + j * 6), STONE, M.Slate)
-			end
-		end
-		local bowl = pillar(f, V(sx * 31, 44, z), 1, 3, IRON, M.Metal)
-		flame(bowl, Color3.fromRGB(255, 140, 50), Color3.fromRGB(255, 60, 20), 6)
-		glow(bowl, Color3.fromRGB(255, 140, 50), 40, 1.5)
-		box(f, V(0.5, 24, 1.4), V(sx * 24.8, 24, z + 1), VIOLET, M.Neon)
+		entranceTower(f, sx, z)
 	end
 	part(f, V(50, 9, 12), V(0, 34.5, z), STONE, M.Slate)
 	part(f, V(54, 2, 13), V(0, 39.5, z), DARK, M.Slate)
+	for _, y in { 31, 38 } do
+		box(f, V(51, 0.8, 12.8), V(0, y, z), IRON, M.Metal)
+	end
 	for x = -22, 22, 4.4 do -- the portcullis, raised
 		pillar(f, V(x, 22, z + 5.4), 12, 0.35, IRON, M.Metal)
 		box(
@@ -309,18 +264,10 @@ local function entrance(f: Folder, c: { half: number, zAt: (number) -> number })
 	end
 	box(f, V(48, 0.8, 0.8), V(0, 28, z + 5.4), IRON, M.Metal)
 	box(f, V(48, 0.8, 0.8), V(0, 25, z + 5.4), IRON, M.Metal)
-	skull(f, V(0, 46, z + 4), V(0, 0, 1), 5.5, EYE)
-	for _, sx in { -1, 1 } do -- its horns
-		for k = 0, 2 do
-			box(
-				f,
-				V(1.8 - k * 0.4, 6, 1.8 - k * 0.4),
-				CFrame.new(sx * (5.5 + k * 3.4), 50 + k * 4.6, z + 4) * CFrame.Angles(0, 0, sx * math.rad(-40 - k * 14)),
-				BONE,
-				M.Slate
-			)
-		end
-	end
+	-- the great demon head over the arch, on a carved plinth
+	part(f, V(26, 2, 12), V(0, 41.5, z), STONE, M.Slate)
+	part(f, V(18, 2, 10), V(0, 43.5, z), DARK, M.Slate)
+	demonHead(f, V(0, 51, z + 3), V(0, 0, 1), 6.5, EYE)
 end
 
 local function dais(f: Folder, c: { zAt: (number) -> number })
@@ -342,15 +289,14 @@ end
 local function gate(f: Folder, c: { half: number, zAt: (number) -> number })
 	local gz = c.zAt(GATE_AT)
 	for _, sx in { -1, 1 } do
-		part(f, V(11, 3, 11), V(sx * 26, 1.5, gz), STONE, M.Slate)
-		part(f, V(8, 34, 8), V(sx * 26, 17, gz), DARK, M.Slate)
-		box(f, V(1.2, 22, 0.3), V(sx * 26, 16, gz + 4.1), VIOLET, M.Neon)
-		part(f, V(10, 2, 10), V(sx * 26, 35, gz), STONE, M.Slate)
+		column(f, V(sx * 26, 0.4, gz), 35, 4.8, DARK) -- a great carved column
+		box(f, V(1.2, 22, 0.3), V(sx * 26, 16, gz + 5.2), VIOLET, M.Neon)
+		part(f, V(11, 2, 11), V(sx * 26, 36.2, gz), STONE, M.Slate)
 		for k = 0, 1 do -- horns sweeping out and up
 			box(
 				f,
 				V(1.6 - k * 0.4, 9, 1.6 - k * 0.4),
-				CFrame.new(sx * (28.4 + k * 3.4), 41 + k * 7, gz) * CFrame.Angles(0, 0, sx * math.rad(-26 - k * 22)),
+				CFrame.new(sx * (28.4 + k * 3.4), 42 + k * 7, gz) * CFrame.Angles(0, 0, sx * math.rad(-26 - k * 22)),
 				BONE,
 				M.Slate
 			)
@@ -358,13 +304,17 @@ local function gate(f: Folder, c: { half: number, zAt: (number) -> number })
 		for _, side in { -1, 1 } do -- chains hanging beside the portal
 			pillar(f, V(sx * 17.5 + side * 1.2, 20, gz + 4.6), 18, 0.2, IRON, M.Metal)
 		end
+		local eye = ball(f, V(sx * 26, 24, gz + 5.6), 1.8, EYE, M.Neon) -- an eye in each column
+		eye.Name = "GateEye"
 	end
 	part(f, V(60, 8, 9), V(0, 38, gz), STONE, M.Slate)
 	part(f, V(52, 2, 10), V(0, 43, gz), DARK, M.Slate)
-	for x = -24, 24, 12 do -- spires along the lintel
+	for _, x in { -24, -12, 12, 24 } do -- spires along the lintel
 		part(f, V(3, 5, 3), V(x, 46.5, gz), DARK, M.Slate)
 		box(f, V(1.6, 4, 1.6), CFrame.new(x, 50.5, gz) * CFrame.Angles(0, math.rad(45), 0), BONE, M.Slate)
 	end
+	part(f, V(14, 2, 8), V(0, 45, gz), STONE, M.Slate) -- a plinth for the crest
+	demonHead(f, V(0, 49.5, gz + 2), V(0, 0, 1), 4.5, VIOLET)
 	for x = -22, 22, 5.5 do -- fangs
 		box(f, V(2.2, 4.5, 1.8), V(x, 32.6, gz + 4), BONE, M.Marble)
 		box(f, V(1.2, 2.5, 1.2), V(x, 29.4, gz + 4), BONE, M.Marble)
@@ -373,10 +323,12 @@ local function gate(f: Folder, c: { half: number, zAt: (number) -> number })
 	brow.Name = "Brow"
 	local eye = ball(f, V(0, 38.4, gz + 5.2), 5.2, VIOLET, M.Neon)
 	glow(eye, VIOLET, 44, 2)
-	part(f, V(c.half * 2, 50, 3), V(0, 25, gz - 5), Color3.fromRGB(24, 20, 32), M.Slate) -- the wall behind
+	for _, sx in { -1, 1 } do -- the walls either side; the way behind the portal stays open to the breach
+		part(f, V(c.half - 30.8, 50, 3), V(sx * (c.half + 30.8) / 2, 25, gz - 5), Color3.fromRGB(26, 22, 36), M.Slate)
+	end
 	local portal = part(f, V(44, 30, 0.6), V(0, 15.4, gz + 1), Color3.fromRGB(130, 60, 230), M.ForceField)
 	portal.Name = "Portal"
-	portal.CanCollide, portal.CastShadow = false, false
+	portal.CastShadow = false
 	glow(portal, VIOLET, 50, 2.2)
 	for _, sx in { -1, 1 } do -- its frame
 		box(f, V(1.4, 31, 1.4), V(sx * 22.4, 15.5, gz + 1.2), VIOLET, M.Neon)
@@ -392,7 +344,7 @@ local function gate(f: Folder, c: { half: number, zAt: (number) -> number })
 	mist.Speed = NumberRange.new(2, 5)
 	mist.Shape = Enum.ParticleEmitterShape.Box
 	mist.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
-	mist.EmissionDirection = Enum.NormalId.Front
+	mist.EmissionDirection = Enum.NormalId.Back
 	mist.LightEmission = 0.6
 	mist.Parent = portal
 	CollectionService:AddTag(portal, "ArenaGate")
@@ -556,6 +508,7 @@ function Arena.build(arena: Folder, half: number, near: number)
 	end
 	litter(f, c)
 	weather(f, c)
+	Breach.build(f, half, near)
 end
 
 return Arena

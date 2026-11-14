@@ -1,7 +1,7 @@
 # 0046: Animal Stations: the full, menacing arena, and a Home button
 
 Status: proposed (for SHANNON at the first Animal Stations checkpoint)
-Date: 2026-11-14. Builds on 0045.
+Date: 2026-11-14. Builds on 0045. The Breach, heads and columns are added by decision 0047.
 
 ## Decision
 

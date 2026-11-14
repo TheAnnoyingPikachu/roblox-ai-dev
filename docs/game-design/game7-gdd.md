@@ -59,6 +59,8 @@ vendors.
 - The battle arena (decisions 0045, 0046): a walled stone pit about 190 studs long with a gatehouse,
   braziers, banners, statues, cages and bones, a dais for the team, the Hexbound's gate that the
   enemies walk out of, a violet dusk that fades in as you walk in, a fight camera and a wave title.
+- The Breach (decision 0047): behind the gate, a scorched road to a vast, half-broken portal ring the
+  Hexbound tore open, with detailed demon heads and carved columns on the arena's structures.
 - A Home button on the bottom bar teleports a player to their ranch.
 - A new UI (decision 0044): a bottom bar (Animals, Waves), card-style sheets with animal and
   enemy portraits, a player card with level, XP, coins and samples, laid out for phone, tablet and
