@@ -37,13 +37,13 @@
     "A slow-motion beat on the killing blow and a power-attack camera cut-in, and a skip button that leaves the fight through wave_done",
     "No script errors, effects cleaned up after a fight, and desktop frame time not noticeably worse with 3 vs 3 fighters"
   ],
-  "verification": "Not started: this task is planned. Its handoff file (docs/production/game7-fight-presentation-handoff.md) was written 2026-11-14 from the state at commit 7c2f2a8 (lune 677/677).",
+  "verification": "Slice 1 (impact, arrows and bolts, skip label) built and checked in Studio on 2026-11-14: lune 683/683, selene clean, admin test waves 3 and 6 with no script errors, effects cleaned up, wave 6 unchanged (won, 32s, 65 attacks). Slices 2 and 3 not started. Not measured: frame time before/after, phones, wave 10.",
   "output_artifacts": [
     "src/stations/WaveShow.luau",
     "src/stations-client/Creatures.client.luau",
     "src/stations-client/ArenaCamera.client.luau"
   ],
   "risk_level": "low",
-  "status": "planned",
-  "notes": "Planned, not started. Ship in slices (impact + ranged + skip; then per-species attacks and win pose; then slow-motion and cut-in) and split into further task files if a slice passes ten files. The handoff names what is not measured: phones, a Drake or Dragon in the new arena, two players."
+  "status": "in_progress",
+  "notes": "Slice 1 done (decision 0048). Next: slice 2 (per-species attacks, win pose, defeat reaction), slice 3 (slow-motion beat, power-attack cut-in). Split into further task files if a slice passes ten files. The handoff names what is not measured: phones, a Drake or Dragon in the new arena, two players."
 }

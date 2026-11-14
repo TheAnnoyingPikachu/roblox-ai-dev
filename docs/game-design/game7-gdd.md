@@ -54,6 +54,9 @@ vendors.
 
 ## Built
 
+- Fight presentation, slice 1 (decision 0048): hits throw sparks and a shock disc, freeze for a
+  blink, flinch harder on power hits and punch the camera; archers and mages fire a visible arrow or
+  bolt; the fight button reads "Skip the fight". Display only.
 - The Hexbound enemies in game (decision 0042): five models with their own animations and a dark
   glow each.
 - The battle arena (decisions 0045, 0046): a walled stone pit about 190 studs long with a gatehouse,

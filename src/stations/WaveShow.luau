@@ -6,6 +6,7 @@
 -- decides who wins and nothing is saved: coins, XP and progress are not touched.
 
 local CollectionService = game:GetService("CollectionService")
+local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -13,6 +14,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
+local FightFx = require(Shared:WaitForChild("FightFx"))
 local StationAssets = require(Shared:WaitForChild("StationAssets"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
@@ -124,6 +126,39 @@ local function fall(model: Model)
 			end
 		end
 	end)
+end
+
+-- An arrow (archer) or a spell bolt (mage) that flies from `from` to `to` in `seconds`. Show only:
+-- the rules have no range. It lives in the player's show folder, so `clear` removes it too.
+local function shoot(folder: Folder, kind: string, from: Vector3, to: Vector3, seconds: number)
+	local arrow = kind == "foe_archer"
+	local p = Instance.new("Part")
+	p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
+	p.Material = Enum.Material.Neon
+	if arrow then
+		p.Size, p.Color = Vector3.new(0.2, 0.2, 3), Color3.fromRGB(230, 200, 150)
+	else
+		p.Shape, p.Size, p.Color = Enum.PartType.Ball, Vector3.one * 1.4, Color3.fromRGB(170, 90, 255)
+	end
+	p.CFrame = CFrame.lookAt(from, to)
+	local a0, a1 = Instance.new("Attachment"), Instance.new("Attachment")
+	a0.Position, a1.Position = Vector3.new(0, 0.5 * p.Size.Y, 0), Vector3.new(0, -0.5 * p.Size.Y, 0)
+	a0.Parent, a1.Parent = p, p
+	local trail = Instance.new("Trail")
+	trail.Attachment0, trail.Attachment1, trail.Lifetime, trail.Color = a0, a1, 0.2, ColorSequence.new(p.Color)
+	trail.Transparency, trail.LightEmission = NumberSequence.new(0.2, 1), 1
+	trail.Parent = p
+	p.Parent = folder
+	local tween = TweenService:Create(
+		p,
+		TweenInfo.new(seconds, Enum.EasingStyle.Linear),
+		{ CFrame = CFrame.lookAt(to, to + (to - from)) }
+	)
+	tween.Completed:Once(function()
+		p:Destroy()
+	end)
+	tween:Play()
+	Debris:AddItem(p, seconds + 1) -- a tween that never completes must not leave it behind
 end
 
 -- A line of `sizes` (studs, x by z) across the arena, centred on x = 0: where each one's middle goes.
@@ -272,24 +307,49 @@ function WaveShow.run(
 	for _, e in log do
 		task.spawn(function()
 			local actor, target = slots[e.side][e.slot], slots[e.tside][e.tslot]
-			local lead = if e.power then 0.92 else 0.45
+			local kind = actor.model:GetAttribute("Asset") :: string
+			local from, to =
+				actor.model:FindFirstChild("Hit") :: BasePart?, target.model:FindFirstChild("Hit") :: BasePart?
+			local flight = if not e.power
+					and RANGED[kind]
+					and from
+					and to
+				then FightFx.flightTime((to.Position - from.Position).Magnitude)
+				else nil
+			local lead = FightFx.lead(e.power, flight)
 			task.wait(math.max(0, start + e.t - lead - os.clock()))
 			if not live() or actor.hp <= 0 then
 				return
 			end
 			Creatures.play(actor.model, if e.power then "magic" else "attack")
 			local root = actor.model.PrimaryPart :: BasePart
-			local lunges = not e.power and not RANGED[actor.model:GetAttribute("Asset") :: string]
+			local lunges = not e.power and not RANGED[kind]
 			if lunges then
 				local dir = if e.side == 1 then -1 else 1
 				TweenService:Create(root, TweenInfo.new(lead * 0.9, Enum.EasingStyle.Quad), {
 					CFrame = actor.home + Vector3.new(0, 0, dir * reach),
 				}):Play()
 			end
+			if flight and from and to then -- let go at the clip's release; it lands at e.t whatever the clock did
+				task.wait(math.max(0, start + e.t - flight - os.clock()))
+				if not live() then
+					return
+				end
+				shoot(folder, kind, from.Position, to.Position, math.max(0.05, start + e.t - os.clock()))
+			end
 			task.wait(math.max(0, start + e.t - os.clock()))
 			if not live() then
 				return
 			end
+			-- what the client needs to dress the hit: set before Hp and HitAt, they arrive in any order
+			local now = Workspace:GetServerTimeNow()
+			if not RANGED[kind] then -- a melee attacker freezes with its target; a shooter has nothing to hit
+				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0))
+				actor.model:SetAttribute("StopAt", now)
+			end
+			target.model:SetAttribute("HitPower", if e.power then 1 else 0)
+			target.model:SetAttribute("HitDmg", e.dmg)
+			target.model:SetAttribute("HitAt", now)
 			target.hp, target.version = e.hp, target.version + 1
 			target.model:SetAttribute("Hp", math.max(0, e.hp))
 			if e.hp <= 0 then

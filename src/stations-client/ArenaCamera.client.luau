@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
+local FightFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("FightFx"))
 local UiLayout = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("UiLayout"))
 
 local player = Players.LocalPlayer
@@ -73,6 +74,12 @@ local function start()
 		cam.CameraType = Enum.CameraType.Scriptable -- keep it ours while the fight lasts
 		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * 2.5))
 		cam.CFrame = current :: CFrame
+		-- a hit punches the view in for a moment (Creatures.client sets these on this player only)
+		local strength, at = player:GetAttribute("CamPunch"), player:GetAttribute("CamPunchAt")
+		local punch = if type(strength) == "number" and type(at) == "number"
+			then FightFx.punch(os.clock() - at, strength)
+			else 0
+		cam.FieldOfView = FOV - 4 * punch
 	end)
 end
 

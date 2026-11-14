@@ -658,6 +658,7 @@ fight = function(n: number): boolean
 	resultTitle.Text, resultSub.Text = `Wave {n}`, "The fight is on..."
 	Style.clear(drops)
 	buttons(false)
+	leave.Text = "Skip the fight" -- the pay is already settled: leaving shows the result at once
 	result.Visible = true
 	announce(n)
 	return true
@@ -1145,6 +1146,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			again.Text = `Try wave {wave} again`
 		end
 		buttons(true)
+		leave.Text = "Leave the arena"
 		result.Visible = true
 	elseif kind == "waveshow" then
 		local took = string.format("%.0f", payload.seconds)

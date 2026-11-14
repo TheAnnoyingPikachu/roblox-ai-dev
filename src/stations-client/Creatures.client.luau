@@ -10,9 +10,13 @@
 
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+
+local FightFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("FightFx"))
 
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
@@ -310,6 +314,19 @@ local function sample(clip: Clip, t: number): Pose
 	return {}
 end
 
+-- Every value of a pose stretched by `f`: a harder hit throws the body further.
+local function scaled(pose: Pose, f: number): Pose
+	local out: Pose = {}
+	for joint, v in pose do
+		local w = table.create(6, 0)
+		for k = 1, 6 do
+			w[k] = (v[k] or 0) * f
+		end
+		out[joint] = w
+	end
+	return out
+end
+
 local function idle(t: number): Pose
 	return {
 		body = { 0, 0, 0, 0, 0.03 * math.sin(t * TAU / 3.2), 0 },
@@ -507,9 +524,63 @@ type Rig = {
 	magicAt: number, -- the AnimAt of the magic attack whose effects have started
 	impactAt: number, -- and of the one whose slam has played
 	rest: number, -- the body's height above the ground, studs; 0 until a fall needs it
+	stopUntil: number, -- os.clock() until which the clip is held still (a hit-stop)
+	held: number, -- seconds the clip `heldFor` has been held so far
+	heldFor: number, -- the AnimAt of that clip
+	flinch: number, -- how far the next "hit" clip is stretched
+	spark: ParticleEmitter?, -- the hit sparks, made on the first hit
 }
 
 local rigs: { [Model]: Rig } = {}
+local player = Players.LocalPlayer
+
+-- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,
+-- a harder flinch, a short hold and a camera punch. A burst and one short-lived part: no lights.
+local function strike(rig: Rig)
+	local model = rig.model
+	local hit = model:FindFirstChild("Hit") :: BasePart?
+	if hit == nil then
+		return
+	end
+	local power = (model:GetAttribute("HitPower") :: number?) or 0
+	local dmg = (model:GetAttribute("HitDmg") :: number?) or 0
+	local s = ((model:GetAttribute("Scale") :: number?) or 1)
+	local hot = power > 0
+	local colour = if hot then Color3.fromRGB(255, 120, 70) else Color3.fromRGB(255, 220, 160)
+	rig.flinch = FightFx.flinch(power, dmg / math.max(1, (model:GetAttribute("MaxHp") :: number?) or 1))
+	rig.stopUntil = os.clock() + FightFx.hitStop(power)
+	local spark = rig.spark
+	if spark == nil then
+		spark = Instance.new("ParticleEmitter")
+		local e = spark :: ParticleEmitter
+		e.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		e.LightEmission, e.Rate, e.Lifetime = 1, 0, NumberRange.new(0.25, 0.5)
+		e.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5 * s), NumberSequenceKeypoint.new(1, 0) })
+		e.Speed, e.SpreadAngle, e.Acceleration =
+			NumberRange.new(14 * s, 26 * s), Vector2.new(180, 180), Vector3.new(0, -30, 0)
+		e.Parent = hit
+		rig.spark = e
+	end
+	local e = spark :: ParticleEmitter
+	e.Color = ColorSequence.new(colour)
+	e:Emit(if hot then 28 else 10)
+	local camera = Workspace.CurrentCamera
+	local face = if camera then camera.CFrame.Position else hit.Position + Vector3.new(0, 0, 10)
+	if (face - hit.Position).Magnitude > 0.1 then
+		local disc = fxPart(
+			Vector3.new(0.2, 1, 1) * s,
+			CFrame.lookAt(hit.Position, face) * CFrame.Angles(0, math.pi / 2, 0), -- a cylinder's axis is x: face the camera
+			colour,
+			Enum.Material.Neon
+		)
+		disc.Shape, disc.Transparency = Enum.PartType.Cylinder, 0.25
+		local r = (if hot then 9 else 5) * s
+		tween(disc, 0.35, { Size = Vector3.new(0.2, r, r), Transparency = 1 })
+		Debris:AddItem(disc, 0.45)
+	end
+	player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
+	player:SetAttribute("CamPunchAt", os.clock())
+end
 
 local function add(model: Instance)
 	if not model:IsA("Model") then
@@ -525,7 +596,28 @@ local function add(model: Instance)
 	for _, joint in JOINTS do
 		now[joint] = table.create(6, 0)
 	end
-	rigs[model] = { model = model, joints = joints, now = now, magicAt = 0, impactAt = 0, rest = 0 }
+	local rig: Rig = {
+		model = model,
+		joints = joints,
+		now = now,
+		magicAt = 0,
+		impactAt = 0,
+		rest = 0,
+		stopUntil = 0,
+		held = 0,
+		heldFor = 0,
+		flinch = 1,
+		spark = nil,
+	}
+	rigs[model] = rig
+	-- the server sets StopAt on a melee attacker and HitAt on whoever is struck; both arrive after
+	-- their power, damage and duration, but read those tolerantly: attributes come in any order
+	model:GetAttributeChangedSignal("StopAt"):Connect(function()
+		rig.stopUntil = os.clock() + ((model:GetAttribute("StopFor") :: number?) or FightFx.hitStop(0))
+	end)
+	model:GetAttributeChangedSignal("HitAt"):Connect(function()
+		strike(rig)
+	end)
 	model.DescendantAdded:Connect(function(d) -- pieces can arrive after the model
 		if d:IsA("Motor6D") and rigs[model] then
 			rigs[model].joints[d.Name] = d
@@ -639,7 +731,14 @@ RunService.PreSimulation:Connect(function(dt: number)
 	for model, rig in rigs do
 		local anim = model:GetAttribute("Anim") :: string?
 		local at = (model:GetAttribute("AnimAt") :: number?) or time
-		local t = math.max(0, time - at)
+		local clock = os.clock()
+		if clock < rig.stopUntil then -- a hit-stop: this clip waits, the server's timing does not
+			if rig.heldFor ~= at then
+				rig.heldFor, rig.held = at, 0
+			end
+			rig.held += dt
+		end
+		local t = math.max(0, time - at - (if rig.heldFor == at then rig.held else 0))
 		local biped = model:GetAttribute("Biped") == true
 		local target: Pose
 		if anim == "die" then -- holds its last pose
@@ -659,6 +758,9 @@ RunService.PreSimulation:Connect(function(dt: number)
 			end
 		elseif anim == "hit" and t < HIT.length then
 			target = sample(HIT, t)
+			if rig.flinch ~= 1 then
+				target = scaled(target, rig.flinch)
+			end
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
 			target = if biped then walkBiped(time, rate) else walk(time, rate)
