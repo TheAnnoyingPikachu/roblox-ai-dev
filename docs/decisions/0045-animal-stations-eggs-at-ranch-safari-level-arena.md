@@ -1,7 +1,7 @@
 # 0045: Animal Stations: eggs stay at the ranch, a level for the Safari Egg, the battle arena overhaul
 
 Status: proposed (for SHANNON at the first Animal Stations checkpoint)
-Date: 2026-11-14. Builds on 0036, 0043 and 0044.
+Date: 2026-11-14. Builds on 0036, 0043 and 0044. The arena part is built out by decision 0046.
 
 ## Decision
 

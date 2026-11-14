@@ -72,6 +72,7 @@ local REFUSED: { [string]: string } = {
 	no_team = "Put an animal on your team first",
 	busy = "The arena is busy: try again in a moment",
 	arena = "The arena is not ready",
+	ranch = "You have no ranch yet",
 }
 
 local player = Players.LocalPlayer
@@ -206,18 +207,19 @@ wallet.Parent = top
 local _, coinsText = Style.amount(wallet, "coins", "0")
 local _, samplesText = Style.amount(wallet, "samples", "0")
 
--- Bottom bar: Animals and Waves (the eggs stay at the ranch)
+-- Bottom bar: Animals, Waves and Home (the eggs stay at the ranch)
 nav.Name = "Nav"
 nav.BackgroundTransparency = 1
 nav.AnchorPoint, nav.Position, nav.Size = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -10), UDim2.new(1, -24, 0, 64)
 local navLimit = Instance.new("UISizeConstraint")
-navLimit.MaxSize = Vector2.new(300, 64)
+navLimit.MaxSize = Vector2.new(420, 64)
 navLimit.Parent = nav
 Style.list(nav, 8, true)
 nav.Parent = root
 
+local hideResult: () -> () = function() end -- set once the fight panel exists
 local function navButton(label: string, stripe: Color3, order: number, onClick: () -> ()): TextLabel
-	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 2, -4, 1, 0))
+	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 3, -6, 1, 0))
 	b.LayoutOrder, b.TextSize = order, 22
 	Style.stroke(b, C.edge, 2)
 	local line = Style.frame(b, UDim2.new(0.5, 0, 0, 5), stripe)
@@ -237,6 +239,15 @@ end)
 local openWaves: () -> () -- below, with the wave sheet
 navButton("Waves", C.bad, 2, function()
 	openWaves()
+end)
+navButton("Home", C.info, 3, function()
+	local ok, code = request:InvokeServer("home")
+	if not ok then
+		Ui.toast(screen, REFUSED[code] or `Can't do that ({code})`)
+	else
+		show(nil)
+		hideResult()
+	end
 end)
 
 -- Admin button, top right: only for players the server marks as admin (decision 0038)
@@ -628,6 +639,9 @@ local leave = Style.button(resultButtons, "Leave the arena", function()
 	result.Visible = false
 	send("wave_done")
 end, "ghost", UDim2.new(0.5, -4, 1, 0))
+hideResult = function()
+	result.Visible = false
+end
 local function buttons(showAgain: boolean)
 	again.Visible = showAgain
 	leave.Size = if showAgain then UDim2.new(0.5, -4, 1, 0) else UDim2.fromScale(1, 1)

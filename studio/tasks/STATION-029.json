@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-029",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The full, menacing battle arena: walls, a gatehouse, statues, cages, bones, cracks, a summoning circle, mist and a violet dusk, with the dais and gate moved deeper and the fight camera raised; and a Home button on the bottom bar.",
+  "inputs": [
+    "docs/decisions/0046-animal-stations-full-arena-and-home.md"
+  ],
+  "dependencies": [
+    "STATION-028"
+  ],
+  "files": [
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0045-animal-stations-eggs-at-ranch-safari-level-arena.md",
+    "docs/decisions/0046-animal-stations-full-arena-and-home.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": [
+    "UiLayout.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The arena builds about 900 parts with no script errors and the portal is still tagged ArenaGate",
+    "A wave is shown with the dais deeper in, the enemies walking out of the gate and the camera clear of the walls and the rock",
+    "The light fades to dusk inside the canyon and back out after leaving",
+    "The Home button teleports the player to their ranch, also from a fight, and gives the camera back"
+  ],
+  "verification": "2026-11-14: lune 677/677, stylua and selene clean. Studio play (stations.rbxl, synced from source): the arena built 910 parts; looked at from the gatehouse and in an admin test wave 10 (the starter team against two ogres and a whelp) with the camera at about 48 studs up, framing the dais, the enemies and the summoning circle; the first camera (behind the dais and then from the side, too near the mouth) went into the gatehouse and the mountain and was fixed by moving the dais and gate deeper; the light read 17.4 in the fight and 14.06 after Home; Home (by request and by a click on the bar's button) put the player at the ranch gate with the camera Custom and the wave's result toast shown. No script errors. Not checked: a real phone or tablet (parts and lights not measured there), a fight with a Drake or the Dragon, a very wide fight against the gallows and banners, two players.",
+  "output_artifacts": [
+    "src/stations/Arena.luau",
+    "src/stations-client/ArenaMood.client.luau",
+    "src/stations-client/ArenaCamera.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "About 900 decoration parts and about 25 lights and emitters in a world loaded whole; measure on a phone before publishing."
+}

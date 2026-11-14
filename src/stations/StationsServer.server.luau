@@ -421,6 +421,21 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- teleport the player to their own ranch (leaving a fight, if they are in one)
+		home = {
+			args = {},
+			handler = function(player)
+				local i = ranchOf(player)
+				if i == nil or player.Character == nil then
+					return false, "ranch"
+				end
+				WaveShow.clear(player)
+				local to = World.ranchSpawn(i)
+				pcall(player.RequestStreamAroundAsync, player, to.Position)
+				player.Character:PivotTo(to)
+				return true, nil
+			end,
+		},
 		-- a test wave in the arena: `team` is "mine" (the admin's own team), "starters" or "mythics"
 		testwave = {
 			args = { Payload.int({ min = 1, max = 200 }), Payload.enum({ "mine", "starters", "mythics" }) },
