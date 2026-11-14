@@ -1,5 +1,6 @@
 --!strict
 local T = require("./framework")
+local BattleRules = require("../src/shared/BattleRules")
 local StationConfig = require("../src/shared/StationConfig")
 local StationRules = require("../src/shared/StationRules")
 local LevelRules = require("../src/shared/LevelRules")
@@ -20,6 +21,10 @@ local function teamTotal(team: { StationRules.Owned }): number
 	return n
 end
 
+local function kindOf(e: StationRules.Owned): string
+	return (StationConfig.foe(e.s) :: StationConfig.Foe).kind
+end
+
 -- The highest level `team` clears in a row from level 1 (stops at `limit`).
 local function reach(team: { StationRules.Owned }, limit: number): number
 	for level = 1, limit do
@@ -31,35 +36,79 @@ local function reach(team: { StationRules.Owned }, limit: number): number
 end
 
 describe("LevelRules.enemies", function()
-	it("is the same team every time for the same level, of TEAM_SIZE real species", function()
+	it("is the same team every time for the same level, of TEAM_SIZE real foes", function()
 		local a, b = LevelRules.enemies(17), LevelRules.enemies(17)
 		expect(#a).toBe(LevelRules.TEAM_SIZE)
 		for k = 1, #a do
 			expect(a[k].s).toBe(b[k].s)
 			expect(a[k].stats.speed).toBe(b[k].stats.speed)
-			expect(StationConfig.species(a[k].s) ~= nil).toBeTruthy()
+			expect(StationConfig.foe(a[k].s) ~= nil).toBeTruthy()
+			expect(StationConfig.species(a[k].s)).toBeNil() -- a foe is never an animal
 		end
 	end)
 
-	it("only sends commons early and gets stronger every few levels without end", function()
-		for _, e in LevelRules.enemies(1) do
-			expect((StationConfig.species(e.s) :: StationConfig.Species).rarity).toBe("common")
+	it("sends only knights at first, ogres from wave 5, the warlord from 15, and gets stronger without end", function()
+		for level = 1, 4 do
+			for _, e in LevelRules.enemies(level) do
+				expect(kindOf(e)).toBe("knight")
+			end
 		end
+		local ogres, warlords = 0, 0
+		for level = 5, 14 do
+			for _, e in LevelRules.enemies(level) do
+				ogres += if kindOf(e) == "ogre" then 1 else 0
+				warlords += if e.s == "ogre_warlord" then 1 else 0
+			end
+		end
+		expect(ogres > 0).toBeTruthy()
+		expect(warlords).toBe(0)
+		for level = 15, 40 do
+			for _, e in LevelRules.enemies(level) do
+				warlords += if e.s == "ogre_warlord" then 1 else 0
+			end
+		end
+		expect(warlords > 0).toBeTruthy()
 		expect(LevelRules.scale(2) > LevelRules.scale(1)).toBeTruthy()
 		expect(teamTotal(LevelRules.enemies(200)) > teamTotal(LevelRules.enemies(100))).toBeTruthy()
 		expect(LevelRules.enemies(300)[1].stats.speed > StationConfig.STAT_MAX).toBeTruthy()
 	end)
 
-	it("only ever sends a variant as the last enemy of a 10th level", function()
-		-- which levels get one is left as it was for now (decision 0037: enemies and bosses come later)
+	it("ends every 10th wave with a dragon, a stronger one as the waves go on, and sends none otherwise", function()
+		expect(LevelRules.boss(9)).toBeNil()
+		for _, c in
+			{
+				{ 10, "hexfire_whelp" },
+				{ 20, "hexfire_whelp" },
+				{ 30, "hexfire_drake" },
+				{ 50, "hexfire_drake" },
+				{ 60, "hexfire_dragon" },
+				{ 120, "hexfire_dragon" },
+			}
+		do
+			expect((LevelRules.boss(c[1] :: number) :: StationConfig.Foe).id).toBe(c[2])
+			expect(LevelRules.enemies(c[1] :: number)[LevelRules.TEAM_SIZE].s).toBe(c[2])
+		end
 		for level = 1, 120 do
 			for i, e in LevelRules.enemies(level) do
-				if e.v then
+				if kindOf(e) == "dragon" then
 					expect(i).toBe(LevelRules.TEAM_SIZE)
 					expect(level % LevelRules.BOSS_EVERY).toBe(0)
 				end
 			end
 		end
+	end)
+
+	it("fights a foe by its role and group, like an animal", function()
+		local bulwark = StationConfig.foe("gloom_bulwark") :: StationConfig.Foe
+		local f = BattleRules.fighter({ s = bulwark.id, stats = bulwark.stats }, 2, 1)
+		expect(f.role).toBe("defense")
+		expect(f.group).toBe("solitary")
+		local squire = StationConfig.foe("gloom_squire") :: StationConfig.Foe
+		local banner = StationConfig.foe("gloom_banner") :: StationConfig.Foe
+		local pair =
+			BattleRules.lineup({ { s = squire.id, stats = squire.stats }, { s = banner.id, stats = banner.stats } }, 2)
+		local alone = BattleRules.fighter({ s = squire.id, stats = squire.stats }, 2, 1)
+		expect(pair[1].dmg > alone.dmg).toBeTruthy() -- two pack foes: the pack bonus
 	end)
 end)
 

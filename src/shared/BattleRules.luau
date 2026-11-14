@@ -8,7 +8,7 @@
 --   Speed     attack speed: a shorter swing
 --   Stamina   a shorter rest between attacks
 --   Mana      energy per attack towards the power attack
--- Roles come from the species: Attack hits harder, Defence draws every hit and takes less,
+-- Roles come from the species (or the foe): Attack hits harder, Defence draws every hit and takes less,
 -- Utility also heals the most hurt teammate with every attack. The Titan (the team's fourth
 -- slot) has no special job. Pack and solitary animals get group bonuses.
 -- Deterministic: same teams, same result, so the server can decide and replay any fight.
@@ -52,7 +52,7 @@ BattleRules.MAX_ACTIONS = 5000 -- backstop for absurd stats; also a loss for sid
 
 -- One animal's battle numbers before group bonuses. Each stat feeds exactly one of them.
 function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
-	local sp = StationConfig.species(animal.s)
+	local sp = StationConfig.species(animal.s) or StationConfig.foe(animal.s)
 	local role = StationRules.role(animal)
 	local function stat(name: StationConfig.Stat): number
 		return StationRules.stat(animal, name)

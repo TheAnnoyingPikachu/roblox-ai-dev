@@ -1,7 +1,8 @@
 --!strict
--- Pure Animal Stations wave rules (decisions 0023, 0032): an endless line of waves ("levels" in
--- this file), each an enemy team of three that grows stronger, fought by the player's team
--- (BattleRules). Clearing one pays coins. Draft numbers; balance comes later.
+-- Pure Animal Stations wave rules (decisions 0023, 0032, 0040): an endless line of waves ("levels"
+-- in this file), each an enemy team of three Hexbound (StationConfig.FOES: evil magic knights,
+-- ogres and dragons) that grows stronger, fought by the player's team (BattleRules). Clearing one
+-- pays coins. Draft numbers; balance comes later.
 
 local BattleRules = require("./BattleRules")
 local Rng = require("./Rng")
@@ -15,27 +16,35 @@ type Owned = StationRules.Owned
 LevelRules.TEAM_SIZE = 3
 LevelRules.SCALE_START = 0.6 -- level 1 enemies have 60% of their basic stats
 LevelRules.SCALE_GROWTH = 1.03 -- and 3% more every level after
-LevelRules.BOSS_EVERY = 10 -- every 10th level's last enemy is a variant
+LevelRules.BOSS_EVERY = 10 -- every 10th level's last enemy is a dragon
 LevelRules.REWARD_START = 40 -- coins for clearing level 1 the first time
 LevelRules.REWARD_GROWTH = 1.08
 LevelRules.REPLAY_PCT = 25 -- replaying a cleared level pays this % of its reward
-
--- Species unlock for enemies as levels rise: commons from 1, uncommons from 5, rares from 15.
-local UNLOCK = { common = 1, uncommon = 5, rare = 15 }
--- Boss variant tier by level.
-local BOSS_TIER = { { level = 60, tier = "mythic" }, { level = 30, tier = "legendary" }, { level = 1, tier = "epic" } }
 
 function LevelRules.scale(level: number): number
 	return LevelRules.SCALE_START * LevelRules.SCALE_GROWTH ^ (level - 1)
 end
 
--- The enemy team for `level`: always the same for the same level.
+-- The dragon that ends boss level `level`: the one with the highest `boss` threshold the level has
+-- reached. Nil before the first dragon.
+function LevelRules.boss(level: number): StationConfig.Foe?
+	local best: StationConfig.Foe? = nil
+	for _, f in StationConfig.FOES do
+		if f.boss and level >= f.boss and (best == nil or f.boss > (best.boss :: number)) then
+			best = f
+		end
+	end
+	return best
+end
+
+-- The enemy team for `level`: always the same for the same level. Three foes drawn from the line
+-- (knights at first, ogres from wave 5, the warlord from 15); on every 10th level the last one is
+-- a dragon instead.
 function LevelRules.enemies(level: number): { Owned }
-	local pool = {}
-	for _, sp in StationConfig.SPECIES do
-		local from = UNLOCK[sp.rarity] -- nil for Titans: they are never level enemies (yet)
-		if from and level >= from then
-			table.insert(pool, sp)
+	local pool: { StationConfig.Foe } = {}
+	for _, f in StationConfig.FOES do
+		if f.from and level >= f.from then
+			table.insert(pool, f)
 		end
 	end
 	local rng = Rng.seed(level, 23)
@@ -44,27 +53,16 @@ function LevelRules.enemies(level: number): { Owned }
 	for i = 1, LevelRules.TEAM_SIZE do
 		local n
 		n, rng = Rng.int(rng, 1, #pool)
-		local sp = pool[n]
-		local variantId: string? = nil
+		local foe = pool[n]
 		if i == LevelRules.TEAM_SIZE and level % LevelRules.BOSS_EVERY == 0 then
-			for _, b in BOSS_TIER do
-				if level >= b.level then
-					for _, va in sp.variants do
-						if va.tier == b.tier then
-							variantId = va.id
-						end
-					end
-					break
-				end
-			end
+			foe = LevelRules.boss(level) or foe
 		end
-		local base = StationRules.versionStats(sp.id, variantId) :: StationConfig.Stats
 		local stats = {} :: any
 		for _, stat in StationConfig.STATS do
 			-- enemies are not capped at STAT_MAX, so the levels never run out
-			stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((base :: any)[stat] * k))
+			stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((foe.stats :: any)[stat] * k))
 		end
-		table.insert(team, { s = sp.id, v = variantId, stats = stats :: StationConfig.Stats })
+		table.insert(team, { s = foe.id, stats = stats :: StationConfig.Stats })
 	end
 	return team
 end

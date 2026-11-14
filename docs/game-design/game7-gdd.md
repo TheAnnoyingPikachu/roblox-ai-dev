@@ -37,8 +37,9 @@ vendors.
 - **Wave fights:** on a clock and decided by the server. Attack animals hit harder, Defence
   animals draw the enemies' hits and take less, Utility animals heal. Pack and solitary animals
   get group bonuses.
-- **Waves:** an endless line of enemy teams that grow 3% a wave, with a variant boss every
-  tenth. Clearing a wave pays coins.
+- **Waves:** an endless line of enemy teams that grow 3% a wave, with a dragon boss every
+  tenth. The enemies are the Hexbound (decision 0040), evil magic knights, ogres and dragons,
+  not animals (`game7-enemies.md`). Clearing a wave pays coins.
 - **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
   waves, daily, weekly and monthly login tracks and gear levels when they exist.
 - **Places:** the hub (plaza) and one ranch per player behind the hub's mountains,
@@ -73,6 +74,8 @@ vendors.
 
 ## Not built yet
 
+- The enemy models in game: the knight, ogre and dragon exist only as Blender previews (the look-test
+  of decision 0040), with no rig, biped animations or hit and death reactions.
 - Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
 - Animals standing at the training court they train at.
 - Samples dropping from harder waves (the higher upgrade levels need them), more ranch upgrades

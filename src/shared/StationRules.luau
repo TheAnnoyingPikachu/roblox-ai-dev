@@ -121,9 +121,10 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	return { s = species, v = variantId, stats = stats, trained = levels :: Stats }, rng
 end
 
--- An animal's role, from its species: "attack", "defense", "utility" or "titan".
+-- An animal's role, from its species (or a foe's, from its entry): "attack", "defense", "utility"
+-- or "titan".
 function StationRules.role(animal: Owned): string
-	local sp = StationConfig.species(animal.s)
+	local sp = StationConfig.species(animal.s) or StationConfig.foe(animal.s)
 	return if sp then sp.role else "attack"
 end
 

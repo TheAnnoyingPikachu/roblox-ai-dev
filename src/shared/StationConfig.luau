@@ -1,8 +1,9 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0037): stats and stat levels, roles, groups,
--- the small African beta pool with its variants, the Titan, eggs and training stations.
--- Every species has a basic version (never above epic; the Titan is legendary) and one rare variant
--- (epic, legendary, mythic). Looks for art: docs/game-design/game7-animals.md.
+-- Game 7 "Animal Stations" data (decisions 0019 to 0040): stats and stat levels, roles, groups,
+-- the small African beta pool with its variants, the Titan, eggs and training stations, and the
+-- Hexbound, the enemies of the waves. Every species has a basic version (never above epic; the
+-- Titan is legendary) and one rare variant (legendary or mythic). Looks for art:
+-- docs/game-design/game7-animals.md and game7-enemies.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
 local StationConfig = {}
@@ -25,6 +26,18 @@ export type Species = {
 	rarity: string,
 	stats: Stats,
 	variants: { Variant },
+}
+-- An enemy of the waves (decision 0040): the same six stats, role and group as an animal, so
+-- BattleRules fights it the same way, but never hatched, owned, saved or found in an egg.
+export type Foe = {
+	id: string,
+	name: string,
+	kind: string, -- "knight" | "ogre" | "dragon": which model shows it
+	role: string, -- "attack" | "defense" | "utility"
+	group: string, -- "pack" | "solitary"
+	stats: Stats, -- before the wave's scaling
+	from: number?, -- the first wave it can appear in the normal line (nil: never)
+	boss: number?, -- the first wave it can be the dragon that ends a boss wave (nil: never)
 }
 export type Tier = { tier: string, ppm: number, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
@@ -179,6 +192,96 @@ StationConfig.SPECIES = {
 	},
 } :: { Species }
 
+-- The Hexbound (decision 0040): evil magic knights, ogres and dragons, the enemies of the endless
+-- waves. Knights are haunted armour and fight from the first wave, ogres join at wave 5 (their
+-- warlord at 15), and a dragon ends every 10th wave: the strongest one the wave allows. Draft
+-- numbers, set to the strength of the animals the waves used before, so the waves are as hard.
+-- Their model is the asset "foe_<kind>"; tiers within a kind differ by tint and size.
+StationConfig.FOE_KINDS = { "knight", "ogre", "dragon" }
+StationConfig.FOES = {
+	{
+		id = "gloom_squire",
+		name = "Gloom Squire",
+		kind = "knight",
+		role = "attack",
+		group = "pack",
+		stats = s(38, 24, 16, 14, 32, 14),
+		from = 1,
+	},
+	{
+		id = "gloom_bulwark",
+		name = "Gloom Bulwark",
+		kind = "knight",
+		role = "defense",
+		group = "solitary",
+		stats = s(8, 26, 48, 12, 58, 58),
+		from = 1,
+	},
+	{
+		id = "gloom_banner",
+		name = "Gloom Banner",
+		kind = "knight",
+		role = "utility",
+		group = "pack",
+		stats = s(28, 8, 16, 44, 28, 10),
+		from = 1,
+	},
+	{
+		id = "ogre_brute",
+		name = "Ogre Brute",
+		kind = "ogre",
+		role = "attack",
+		group = "solitary",
+		stats = s(24, 80, 28, 8, 76, 22),
+		from = 5,
+	},
+	{
+		id = "ogre_hexcaller",
+		name = "Ogre Hexcaller",
+		kind = "ogre",
+		role = "utility",
+		group = "pack",
+		stats = s(28, 12, 28, 60, 50, 12),
+		from = 5,
+	},
+	{
+		id = "ogre_warlord",
+		name = "Ogre Warlord",
+		kind = "ogre",
+		role = "attack",
+		group = "pack",
+		stats = s(46, 92, 40, 20, 84, 28),
+		from = 15,
+	},
+	{
+		id = "hexfire_whelp",
+		name = "Hexfire Whelp",
+		kind = "dragon",
+		role = "attack",
+		group = "solitary",
+		stats = s(46, 70, 36, 46, 108, 38),
+		boss = 10,
+	},
+	{
+		id = "hexfire_drake",
+		name = "Hexfire Drake",
+		kind = "dragon",
+		role = "attack",
+		group = "solitary",
+		stats = s(70, 130, 70, 80, 200, 90),
+		boss = 30,
+	},
+	{
+		id = "hexfire_dragon",
+		name = "Hexfire Dragon",
+		kind = "dragon",
+		role = "attack",
+		group = "solitary",
+		stats = s(100, 200, 100, 120, 320, 160),
+		boss = 60,
+	},
+} :: { Foe }
+
 -- Eggs roll a species (basic odds); the variant roll (TIERS) happens on top, the same for every egg.
 -- There is no legendary-only egg: the Titan (the one legendary species) is a rare hatch from the
 -- Golden Egg, which unlocks at player level 15 and drops other animals too (decision 0031).
@@ -309,6 +412,11 @@ end
 
 function StationConfig.species(id: string): Species?
 	return find(StationConfig.SPECIES, id)
+end
+
+-- The foe `id`, or nil. A foe is never a species: nothing that hatches or saves looks here.
+function StationConfig.foe(id: string): Foe?
+	return find(StationConfig.FOES, id)
 end
 
 -- The variant `variantId` of `speciesId`, or nil when either is unknown or they don't match.
