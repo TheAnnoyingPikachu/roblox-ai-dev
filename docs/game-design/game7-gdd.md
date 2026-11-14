@@ -56,7 +56,9 @@ vendors.
 
 - The Hexbound enemies in game (decision 0042): five models with their own animations and a dark
   glow each.
-- A new UI (decision 0044): a bottom bar (Animals, Eggs, Waves), card-style sheets with animal and
+- The battle arena (decision 0045): a stone pit with braziers and banners, a dais for the team, the
+  Hexbound's gate that the enemies walk out of, a fight camera and a wave title.
+- A new UI (decision 0044): a bottom bar (Animals, Waves), card-style sheets with animal and
   enemy portraits, a player card with level, XP, coins and samples, laid out for phone, tablet and
   desktop.
 - Real wave fights (decision 0043): the wave gate at the arena's entrance lists the waves open to

@@ -85,7 +85,7 @@ player is about 5 tall).
 |---|---|---|
 | Meadow Egg | 100 | Jackal, Tortoise or Meerkat |
 | Wild Egg | 1,500 | commons 54%, uncommons 46% |
-| Safari Egg | 15,000 | uncommons 80%, the Lion 20% |
+| Safari Egg | 15,000, from player level 10 | uncommons 80%, the Lion 20% |
 | Golden Egg | 50,000, from player level 15 | the Lion 50%, uncommons 45%, the Titan Elephant 5% |
 
 Variant chances are the same in every egg. There is no legendary-only egg (decision 0031). These

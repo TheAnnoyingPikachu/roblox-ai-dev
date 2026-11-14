@@ -38,3 +38,12 @@ describe("UiLayout.frameDistance", function()
 		expect(UiLayout.frameDistance({ 2, 2, 4 }, 20) > small).toBeTruthy()
 	end)
 end)
+
+describe("UiLayout.fightDistance", function()
+	it("stands back in proportion to the fight, and further on a narrow screen", function()
+		local wide = UiLayout.fightDistance(30, 55, 2.2)
+		expect(math.abs(UiLayout.fightDistance(60, 55, 2.2) / wide - 2) < 1e-9).toBeTruthy()
+		expect(UiLayout.fightDistance(30, 55, 0.46) > wide).toBeTruthy() -- a phone held upright
+		expect(math.abs(UiLayout.fightDistance(30, 55, 5) - UiLayout.fightDistance(30, 55, 3)) < 1e-9).toBeTruthy() -- height decides
+	end)
+end)

@@ -93,7 +93,7 @@ describe("StationConfig", function()
 	end)
 
 	it(
-		"has no legendary-only egg: the Titan is a rare hatch from the one egg that unlocks at player level 15",
+		"has no legendary-only egg: the Titan is a rare hatch from the Golden Egg (level 15); the Safari Egg unlocks at level 10",
 		function()
 			local locked = 0
 			for _, egg in StationConfig.EGGS do
@@ -107,7 +107,11 @@ describe("StationConfig", function()
 					end
 				end
 				expect(other).toBe(true) -- every egg drops ordinary animals
-				if egg.unlock then
+				if egg.id == "safari" then
+					locked += 1
+					expect(egg.unlock).toBe(10)
+					expect(titan).toBe(false)
+				elseif egg.unlock then
 					locked += 1
 					expect(egg.unlock).toBe(15)
 					expect(titan).toBe(true)
@@ -122,7 +126,7 @@ describe("StationConfig", function()
 				end
 				expect(egg.xp > 0).toBeTruthy()
 			end
-			expect(locked).toBe(1)
+			expect(locked).toBe(2)
 		end
 	)
 

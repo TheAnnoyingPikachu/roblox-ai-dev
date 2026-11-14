@@ -31,8 +31,7 @@ type Slot = {
 local WaveShow = {}
 
 local GROUND = 0.45 -- the arena floor's top is at 0.4
-local APPROACH = 50 -- studs the enemies walk in from
-local WALK_IN = 3 -- seconds they take
+local WALK_SPEED = 13 -- studs a second the enemies walk out of the gate at
 local RANGED = { foe_archer = true, foe_mage = true } -- these stand and shoot instead of lunging
 
 local counter = 0
@@ -85,6 +84,8 @@ end
 -- Stop the player's show and remove what it made. A result not yet reported is reported now.
 function WaveShow.clear(player: Player)
 	runs[player] = nil
+	player:SetAttribute("CamFocus", nil)
+	player:SetAttribute("CamRadius", nil)
 	if active == player then
 		active = nil
 	end
@@ -129,12 +130,12 @@ end
 local function across(sizes: { Vector3 }): ({ number }, number)
 	local total = 0
 	for _, s in sizes do
-		total += s.X + 12
+		total += s.X + 6
 	end
 	local out, x, deepest = {}, -total / 2, 0
 	for _, s in sizes do
-		table.insert(out, x + (s.X + 12) / 2)
-		x += s.X + 12
+		table.insert(out, x + (s.X + 6) / 2)
+		x += s.X + 6
 		deepest = math.max(deepest, s.Z)
 	end
 	return out, deepest
@@ -149,6 +150,7 @@ function WaveShow.run(
 	report: ({ [string]: any }) -> ()
 ): (boolean, string?)
 	local stand = CollectionService:GetTagged("WaveStand")[1] :: BasePart?
+	local gatePart = CollectionService:GetTagged("ArenaGate")[1] :: BasePart?
 	if stand == nil then
 		return false, "arena"
 	end
@@ -181,7 +183,7 @@ function WaveShow.run(
 	end
 	local ourX, ourDeep = across(ourSizes)
 	local theirX, theirDeep = across(theirSizes)
-	local gap = ourDeep / 2 + theirDeep / 2 + 26
+	local gap = ourDeep / 2 + theirDeep / 2 + 14
 	local z0 = stand.Position.Z
 
 	local slots: { { Slot } } = { {}, {} }
@@ -224,17 +226,40 @@ function WaveShow.run(
 		return false, "cancelled"
 	end
 
-	-- the admin watches from behind the team; the enemies walk in
+	-- the player watches from beside the dais; the camera is theirs to frame (stations-client/
+	-- ArenaCamera) from the focus and radius set here; the enemies walk out of the gate
 	if player.Character then
-		player.Character:PivotTo(CFrame.lookAt(Vector3.new(0, 5, z0 + 55), Vector3.new(0, 5, z0 - gap)))
+		local spot = Vector3.new(stand.Position.X - 40, 4, z0 + 16)
+		player.Character:PivotTo(CFrame.lookAt(spot, Vector3.new(0, 4, z0 - gap / 2)))
+	end
+	local lo, hi, tall = Vector3.new(math.huge, 0, math.huge), Vector3.new(-math.huge, 0, -math.huge), 0
+	for side = 1, 2 do
+		for i, slot in slots[side] do
+			local size = (if side == 1 then ourSizes else theirSizes)[i]
+			local at = slot.home.Position
+			lo = Vector3.new(math.min(lo.X, at.X - size.X / 2), 0, math.min(lo.Z, at.Z - size.Z / 2))
+			hi = Vector3.new(math.max(hi.X, at.X + size.X / 2), 0, math.max(hi.Z, at.Z + size.Z / 2))
+			tall = math.max(tall, size.Y)
+		end
+	end
+	local reach = math.clamp(gap * 0.3, 6, 20) -- attackers step this far forward
+	local span = hi - lo + Vector3.new(0, tall, reach)
+	player:SetAttribute("CamFocus", (lo + hi) / 2 + Vector3.new(0, tall * 0.4, 0))
+	player:SetAttribute("CamRadius", math.max(16, span.Magnitude / 2))
+	local gateZ = if gatePart then gatePart.Position.Z + 6 else z0 - gap - 50
+	local walkFor = 2
+	for _, slot in slots[2] do
+		local root = slot.model.PrimaryPart :: BasePart
+		local from = math.min(gateZ, slot.home.Z - 20)
+		walkFor = math.max(walkFor, (slot.home.Z - from) / WALK_SPEED)
+		root.CFrame = slot.home + Vector3.new(0, 0, from - slot.home.Z)
+		Creatures.play(slot.model, "walk")
 	end
 	for _, slot in slots[2] do
 		local root = slot.model.PrimaryPart :: BasePart
-		root.CFrame = slot.home + Vector3.new(0, 0, -APPROACH)
-		Creatures.play(slot.model, "walk")
-		TweenService:Create(root, TweenInfo.new(WALK_IN, Enum.EasingStyle.Linear), { CFrame = slot.home }):Play()
+		TweenService:Create(root, TweenInfo.new(walkFor, Enum.EasingStyle.Linear), { CFrame = slot.home }):Play()
 	end
-	task.wait(WALK_IN)
+	task.wait(walkFor)
 	if not live() then
 		return true, nil
 	end
@@ -257,7 +282,6 @@ function WaveShow.run(
 			local lunges = not e.power and not RANGED[actor.model:GetAttribute("Asset") :: string]
 			if lunges then
 				local dir = if e.side == 1 then -1 else 1
-				local reach = math.clamp(gap * 0.3, 6, 20)
 				TweenService:Create(root, TweenInfo.new(lead * 0.9, Enum.EasingStyle.Quad), {
 					CFrame = actor.home + Vector3.new(0, 0, dir * reach),
 				}):Play()

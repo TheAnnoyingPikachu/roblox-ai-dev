@@ -402,6 +402,7 @@ StationConfig.EGGS = {
 		price = 15000,
 		xp = 150,
 		hatch = 3600,
+		unlock = 10,
 		odds = {
 			{ id = "cheetah", bp = 2700 },
 			{ id = "rhino", bp = 2700 },

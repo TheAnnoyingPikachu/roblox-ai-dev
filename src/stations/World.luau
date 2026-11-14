@@ -581,6 +581,101 @@ local function pass(root: Instance, i: number, rng: Random)
 	end
 end
 
+-- The arena's dressing (decision 0045): a stone pit with violet trim, braziers and banners down both
+-- sides, the team's dais (the "WaveStand") and, at the far end of the fight, the Hexbound's gate:
+-- a dark stone arch with a violet portal (the part tagged "ArenaGate") they walk out of.
+local PIT_FROM, PIT_TO, GATE_AT = 8, 176, 140 -- distances into the canyon from its mouth
+local function dressArena(arena: Instance)
+	local function zAt(d: number): number
+		return -(ARENA_NEAR + d)
+	end
+	local stone = Color3.fromRGB(78, 72, 96)
+	local dark = Color3.fromRGB(44, 38, 56)
+	local violet = Color3.fromRGB(150, 90, 255)
+	local half = ARENA_HALF - 6
+	local length = PIT_TO - PIT_FROM
+	local mid = zAt(PIT_FROM + length / 2)
+	part(arena, Vector3.new(half * 2, 0.1, length), Vector3.new(0, 0.4, mid), stone, M.Slate)
+	for d = PIT_FROM + 6, PIT_TO - 6, 12 do -- paving lines
+		part(arena, Vector3.new(half * 2, 0.12, 0.5), Vector3.new(0, 0.4, zAt(d)), dark, M.Slate)
+	end
+	for _, sx in { -1, 1 } do -- violet trim along both sides, and across both ends
+		part(arena, Vector3.new(1, 0.2, length), Vector3.new(sx * half, 0.45, mid), violet, M.Neon)
+	end
+	for _, d in { PIT_FROM, PIT_TO } do
+		part(arena, Vector3.new(half * 2 + 1, 0.2, 1), Vector3.new(0, 0.45, zAt(d)), violet, M.Neon)
+	end
+	-- a glowing ring round the team's dais
+	local ring = disc(arena, Vector3.new(0, 0.62, zAt(40)), 38, 0.2, Color3.fromRGB(80, 170, 255), M.Neon)
+	ring.Transparency = 0.35
+
+	-- braziers and banners down both sides
+	for _, sx in { -1, 1 } do
+		for _, d in { 24, 56, 88, 120 } do
+			local warm = d < 80
+			local fire, spark =
+				if warm then Color3.fromRGB(255, 150, 60) else Color3.fromRGB(170, 90, 255),
+				if warm then Color3.fromRGB(255, 80, 30) else Color3.fromRGB(80, 30, 160)
+			local base = Vector3.new(sx * (half + 2), 0.4, zAt(d))
+			pillar(arena, base, 7, 1.4, stone, M.Slate)
+			local bowl = pillar(arena, base + Vector3.new(0, 7, 0), 1, 2.4, dark, M.Metal)
+			local flame = Instance.new("ParticleEmitter")
+			flame.Texture = "rbxasset://textures/particles/fire_main.dds"
+			flame.Color = ColorSequence.new(fire, spark)
+			flame.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 4), NumberSequenceKeypoint.new(1, 0.5) })
+			flame.Transparency =
+				NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) })
+			flame.Lifetime = NumberRange.new(0.7, 1.2)
+			flame.Rate = 16
+			flame.Speed = NumberRange.new(4, 7)
+			flame.LightEmission = 1
+			flame.EmissionDirection = Enum.NormalId.Top
+			flame.Parent = bowl
+			glow(bowl, fire, 30, 1.2)
+		end
+		for _, d in { 40, 104 } do
+			local base = Vector3.new(sx * (half + 3), 0.4, zAt(d))
+			pillar(arena, base, 18, 0.3, WOOD_DARK, M.Wood)
+			part(arena, Vector3.new(0.3, 9, 5), base + Vector3.new(0, 12.5, 0), Color3.fromRGB(176, 36, 52), M.Fabric)
+		end
+	end
+
+	-- the Hexbound's gate: two stone towers, a lintel with a glowing eye, a violet portal
+	local gz = zAt(GATE_AT)
+	for _, sx in { -1, 1 } do
+		part(arena, Vector3.new(10, 3, 10), Vector3.new(sx * 26, 1.5, gz), stone, M.Slate)
+		part(arena, Vector3.new(8, 34, 8), Vector3.new(sx * 26, 17, gz), dark, M.Slate)
+		part(arena, Vector3.new(1.2, 22, 0.3), Vector3.new(sx * 26, 16, gz + 4.1), violet, M.Neon)
+		Props.spire(arena, Vector3.new(sx * 26, 34, gz), 10)
+	end
+	part(arena, Vector3.new(60, 8, 9), Vector3.new(0, 38, gz), stone, M.Slate)
+	for x = -24, 24, 12 do
+		Props.spire(arena, Vector3.new(x, 42, gz), 7)
+	end
+	local eye = ball(arena, Vector3.new(0, 38, gz + 5), 5, violet, M.Neon)
+	glow(eye, violet, 40, 2)
+	part(arena, Vector3.new(half * 2, 46, 3), Vector3.new(0, 23, gz - 5), Color3.fromRGB(26, 22, 36), M.Slate) -- the wall behind
+	local portal =
+		part(arena, Vector3.new(44, 30, 0.6), Vector3.new(0, 15.4, gz + 1), Color3.fromRGB(130, 60, 230), M.ForceField)
+	portal.Name = "Portal"
+	portal.CanCollide, portal.CastShadow = false, false
+	glow(portal, violet, 46, 2)
+	local mist = Instance.new("ParticleEmitter")
+	mist.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	mist.Color = ColorSequence.new(Color3.fromRGB(150, 80, 240), Color3.fromRGB(30, 10, 60))
+	mist.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.55), NumberSequenceKeypoint.new(1, 1) })
+	mist.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 5), NumberSequenceKeypoint.new(1, 11) })
+	mist.Lifetime = NumberRange.new(2, 3.5)
+	mist.Rate = 26
+	mist.Speed = NumberRange.new(2, 5)
+	mist.Shape = Enum.ParticleEmitterShape.Box
+	mist.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
+	mist.EmissionDirection = Enum.NormalId.Front
+	mist.LightEmission = 0.6
+	mist.Parent = portal
+	CollectionService:AddTag(portal, "ArenaGate")
+end
+
 -- The hub's mountains: a ring that is open to the north, where two rows of mountains make a
 -- canyon closed at its far end, and to the three passes. The canyon is the wave arena: the
 -- player's team stands at the near end ("WaveStand") and the endless waves will come from the far
@@ -646,10 +741,10 @@ local function mountains(root: Instance, rng: Random)
 		Color3.fromRGB(190, 160, 120),
 		M.Ground
 	)
-	local stand =
-		disc(arena, Vector3.new(0, 0.7, -(ARENA_NEAR + 40)), 30, 0.4, Color3.fromRGB(120, 220, 255), M.SmoothPlastic)
+	local stand = disc(arena, Vector3.new(0, 0.7, -(ARENA_NEAR + 40)), 30, 0.4, Color3.fromRGB(58, 92, 150), M.Slate)
 	stand.Name = "Stand"
 	CollectionService:AddTag(stand, "WaveStand")
+	dressArena(arena)
 	local spawn = part(
 		arena,
 		Vector3.new(ARENA_HALF * 2 - 10, 0.4, 8),

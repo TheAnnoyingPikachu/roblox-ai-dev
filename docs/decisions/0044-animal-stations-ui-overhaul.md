@@ -8,9 +8,9 @@ Date: 2026-11-14. Builds on 0036, 0038 and 0043.
 From SHANNON: "lets start with the UI, make an appealing UI with simple navigation, animal portraits
 as you said, making sure the layout works on phones and tablets as well."
 
-- **Simple navigation.** A bottom bar with three big buttons (Animals, Eggs, Waves) opens the
-  three screens a player needs most, from anywhere. The Eggs button carries a red count of eggs
-  that have finished hatching. The places in the world keep their jobs: the Ranch House door opens
+- **Simple navigation.** A bottom bar with big buttons opens the screens a player needs most, from
+  anywhere: Animals and Waves (it first also had Eggs, taken off by decision 0045: eggs stay at the
+  ranch). The places in the world keep their jobs: the Ranch House door opens
   the upgrades (Your ranch), the egg vendor's stall opens its shop (buying), and the wave gate and
   the egg storage open their screens too. Every screen is the same kind of **sheet**: a title, a row
   of small facts, a close button (tap the dark backdrop to close too) and a scrolling body. One

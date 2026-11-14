@@ -51,13 +51,9 @@ local EGG_ART: { [string]: { body: Color3, spot: Color3 } } = {
 	golden = { body = Color3.fromRGB(255, 205, 70), spot = Color3.fromRGB(150, 80, 220) },
 }
 
-local lockedAt = 0
-for _, egg in StationConfig.EGGS do
-	lockedAt = math.max(lockedAt, egg.unlock or 0)
-end
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
-	locked = `Reach level {lockedAt} to unlock that egg`,
+	locked = "That egg unlocks at a higher player level",
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
 	admin = "Admins only",
@@ -210,18 +206,18 @@ wallet.Parent = top
 local _, coinsText = Style.amount(wallet, "coins", "0")
 local _, samplesText = Style.amount(wallet, "samples", "0")
 
--- Bottom bar: Animals, Eggs, Waves
+-- Bottom bar: Animals and Waves (the eggs stay at the ranch)
 nav.Name = "Nav"
 nav.BackgroundTransparency = 1
 nav.AnchorPoint, nav.Position, nav.Size = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -10), UDim2.new(1, -24, 0, 64)
 local navLimit = Instance.new("UISizeConstraint")
-navLimit.MaxSize = Vector2.new(420, 64)
+navLimit.MaxSize = Vector2.new(300, 64)
 navLimit.Parent = nav
 Style.list(nav, 8, true)
 nav.Parent = root
 
 local function navButton(label: string, stripe: Color3, order: number, onClick: () -> ()): TextLabel
-	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 3, -6, 1, 0))
+	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 2, -4, 1, 0))
 	b.LayoutOrder, b.TextSize = order, 22
 	Style.stroke(b, C.edge, 2)
 	local line = Style.frame(b, UDim2.new(0.5, 0, 0, 5), stripe)
@@ -238,11 +234,8 @@ end
 navButton("Animals", C.good, 1, function()
 	show("animals")
 end)
-local eggBadge = navButton("Eggs", C.accent, 2, function()
-	show("eggs")
-end)
 local openWaves: () -> () -- below, with the wave sheet
-navButton("Waves", C.bad, 3, function()
+navButton("Waves", C.bad, 2, function()
 	openWaves()
 end)
 
@@ -556,6 +549,10 @@ redraw.shop = function()
 		list.Position = UDim2.fromOffset(14, 156)
 		local can = not locked and profile.coins >= def.price
 		local b = Style.button(card, `Buy for {Format.commas(def.price)}`, function()
+			if locked then
+				Ui.toast(screen, `Reach level {def.unlock} to unlock the {def.name}`)
+				return
+			end
 			send("buy", def.id)
 		end, if can then "primary" else "off")
 		b.Position, b.Size = UDim2.fromOffset(14, 184), UDim2.new(1, -28, 0, 36)
@@ -587,6 +584,42 @@ resultButtons.BackgroundTransparency = 1
 resultButtons.Size = UDim2.new(1, 0, 0, 44)
 Style.list(resultButtons, 8, true)
 resultButtons.Parent = result
+-- A big title that fades as a fight begins: the wave, and who is in it.
+local banner = Style.text(root, "", 56, C.text, UDim2.new(1, 0, 0, 70))
+banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
+banner.TextXAlignment, banner.ZIndex = Enum.TextXAlignment.Center, 6
+local bannerStroke = Instance.new("UIStroke")
+bannerStroke.Thickness, bannerStroke.Transparency = 4, 1
+bannerStroke.Parent = banner
+local bannerSub = Style.text(root, "", 22, C.muted, UDim2.new(1, 0, 0, 30))
+bannerSub.AnchorPoint, bannerSub.Position, bannerSub.TextTransparency =
+	Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
+bannerSub.TextXAlignment, bannerSub.ZIndex = Enum.TextXAlignment.Center, 6
+bannerSub.Position += UDim2.fromOffset(0, 66)
+local announced = 0
+local function announce(n: number)
+	announced += 1
+	local mine = announced
+	local boss = n % LevelRules.BOSS_EVERY == 0
+	local names = {}
+	for _, e in LevelRules.enemies(n) do
+		table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
+	end
+	banner.Text = if boss then `BOSS WAVE {n}` else `WAVE {n}`
+	banner.TextColor3 = if boss then C.bad else C.text
+	bannerSub.Text = table.concat(names, "  -  ")
+	banner.TextTransparency, bannerStroke.Transparency, bannerSub.TextTransparency = 0, 0, 0
+	task.delay(2.4, function()
+		if announced ~= mine then
+			return
+		end
+		local fade = TweenInfo.new(0.8)
+		TweenService:Create(banner, fade, { TextTransparency = 1 }):Play()
+		TweenService:Create(bannerStroke, fade, { Transparency = 1 }):Play()
+		TweenService:Create(bannerSub, fade, { TextTransparency = 1 }):Play()
+	end)
+end
+
 local fight: (n: number) -> boolean
 local again = Style.button(resultButtons, "", function()
 	fight(wave)
@@ -612,6 +645,7 @@ fight = function(n: number): boolean
 	Style.clear(drops)
 	buttons(false)
 	result.Visible = true
+	announce(n)
 	return true
 end
 
@@ -992,25 +1026,6 @@ end)
 
 -- Refreshing ------------------------------------------------------------------------------------------
 
--- How many eggs have finished hatching: the badge on the Eggs button.
-local function readyEggs(): number
-	local n, now = 0, Workspace:GetServerTimeNow()
-	for _, e in profile.eggs do
-		n += if StationProgress.due(e, now) then 1 else 0
-	end
-	return n
-end
-
-local function badges()
-	if profile == nil then
-		return
-	end
-	local n = readyEggs()
-	local dot = eggBadge.Parent :: GuiObject
-	eggBadge.Text = tostring(n)
-	dot.Visible = n > 0
-end
-
 local function refresh()
 	if profile == nil then
 		return
@@ -1023,7 +1038,6 @@ local function refresh()
 	setXp((profile.xp - from) / math.max(1, to - from))
 	coinsText.Text = Format.short(profile.coins)
 	samplesText.Text = Format.short(profile.samples)
-	badges()
 	if openName and redraw[openName] then
 		redraw[openName]()
 	end
@@ -1058,7 +1072,7 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 	end
 end)
 
-task.spawn(function() -- once a second: countdowns, the Eggs badge, and a finished egg can be opened
+task.spawn(function() -- once a second: countdowns, and a finished egg can be opened
 	while true do
 		task.wait(1)
 		if openName == "animals" then
@@ -1070,7 +1084,6 @@ task.spawn(function() -- once a second: countdowns, the Eggs badge, and a finish
 				tick()
 			end
 		end
-		badges()
 		for _, prompt in CollectionService:GetTagged("Egg") do
 			local due = prompt:GetAttribute("Due")
 			local ready = type(due) == "number" and Workspace:GetServerTimeNow() >= due;

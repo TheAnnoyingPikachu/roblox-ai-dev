@@ -22,4 +22,13 @@ function UiLayout.frameDistance(size: { number }, fov: number): number
 	return radius * 0.72 / math.sin(math.rad(fov / 2))
 end
 
+-- How far a camera with vertical field of view `vfov` (degrees) on a screen `aspect` (width over
+-- height) must stand from the middle of a fight whose fighters all lie within `radius` studs of it,
+-- so that all of them show: the narrower of the two views decides.
+function UiLayout.fightDistance(radius: number, vfov: number, aspect: number): number
+	local v = math.rad(vfov)
+	local h = 2 * math.atan(math.tan(v / 2) * aspect)
+	return radius * 1.0 / math.sin(math.min(v, h) / 2)
+end
+
 return UiLayout
