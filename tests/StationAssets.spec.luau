@@ -57,7 +57,7 @@ describe("StationAssets", function()
 		end
 	end)
 
-	it("keeps every creature a jointed quadruped under 20,000 triangles a mesh", function()
+	it("keeps every creature a jointed body under 20,000 triangles a mesh", function()
 		for name, entry in manifest do
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do
 				expect(entry.parts[`{name}_{piece}`] == nil).toBe(false)
@@ -65,8 +65,8 @@ describe("StationAssets", function()
 			for _, tris in entry.parts do
 				expect(tris <= 20000).toBeTruthy()
 			end
-			-- every piece but the body turns on a joint
-			expect(count(entry.joints)).toBe(6)
+			-- every piece but the body turns on a joint; a dragon's two wings are two more
+			expect(count(entry.joints)).toBe(if name == "foe_dragon" then 8 else 6)
 		end
 	end)
 end)
