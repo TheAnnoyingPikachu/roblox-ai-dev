@@ -153,6 +153,162 @@ def knight():
     return g, KNIGHT_JOINTS
 
 
+# Archer ---------------------------------------------------------------------------------------------
+
+ARCHER_JOINTS = {
+    "head": (0, 0, 3.0),
+    "leg_fl": (0.62, 0, 2.78),
+    "leg_fr": (-0.62, 0, 2.78),
+    "leg_bl": (0.22, 0, 1.45),
+    "leg_br": (-0.22, 0, 1.45),
+    "tail": (0, 0.4, 2.85),
+}
+
+
+def archer():
+    """A hooded bowman: a lean tunic with crossed straps, a hood over a dark void with glowing
+    eyes, a long bow of dark wood in the left hand with a hexfire string, an arrow with a hexfire
+    head in the right, a quiver of glowing arrows on the back and a ragged cloak."""
+    cloth = k.flat((44, 32, 62))
+    cloth2 = k.flat((30, 22, 44))
+    leather = k.flat((70, 50, 42))
+    dark = k.flat((24, 22, 32))
+    wood = k.flat((70, 44, 34))
+    bone = k.flat(BONE)
+    glow = k.glow(HEX)
+    g = {n: [] for n in ("body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "body_glow", "head_glow", "leg_fl_glow", "leg_fr_glow")}
+
+    b = g["body"]
+    b.append(k.box((0.56, 0.36, 0.3), (0, 0, 1.5), m=leather, bevel=0.06, name="pelvis"))
+    b.append(k.lathe([(0.34, 0.0), (0.42, 0.25), (0.5, 0.6), (0.52, 0.85), (0.36, 1.05)], loc=(0, 0, 1.68), m=cloth, n=12, scale=(1.0, 0.7, 1.0), name="tunic"))
+    for s in (1, -1):  # crossed straps over the chest
+        b.append(k.box((0.09, 0.05, 1.0), (0, -0.36, 2.2), rot=(0, s * 33, 0), m=leather, name="strap"))
+    b.append(ring((0, 0, 1.72), (0, 0, 1), 0.46, 0.06, leather, "belt"))
+    b.append(k.cyl(0.3, 0.14, (0, 0, 2.86), m=dark, n=10, name="collar"))
+    b.append(ragged(0.62, 0.5, 5, 0.04, (0, -0.2, 1.56), cloth2, name="skirt"))
+    b.append(k.cyl(0.14, 0.9, (0.2, 0.36, 2.3), rot=(-14, 0, 12), m=leather, n=10, bevel=0.02, name="quiver"))
+    for i, dx in enumerate((-0.08, -0.03, 0.03, 0.08, 0.0)):  # five arrows, hexfire fletching
+        base = Vector((0.2 + dx, 0.34, 2.55))
+        tip = base + Vector((dx * 2 + 0.07, 0.1, 0.55 + 0.05 * i))
+        b.append(k.tube([base, tip], [0.022, 0.022], m=bone, n=5, name="arrow"))
+        g["body_glow"].append(k.box((0.07, 0.12, 0.07), tuple(tip), m=glow, name="fletch"))
+
+    hz = 3.12  # the hood floats over the collar with hexfire between
+    h = g["head"]
+    h.append(k.lathe([(0.3, 0.0), (0.38, 0.12), (0.4, 0.4), (0.3, 0.66), (0.12, 0.92), (0.0, 0.98)], loc=(0, 0, hz), m=cloth, n=12, scale=(1.0, 1.1, 1.0), name="hood"))
+    h.append(shard((0, 0.12, hz + 0.92), (0, 0.5, hz + 1.0), 0.06, cloth))  # the tip of the hood, bent back
+    h.append(k.cyl(0.25, 0.06, (0, -0.42, hz + 0.34), rot=(90, 0, 0), m=dark, n=12, name="void"))
+    for s in (1, -1):
+        g["head_glow"].append(k.box((0.1, 0.03, 0.04), (s * 0.1, -0.455, hz + 0.38), rot=(0, -s * 22, 0), m=glow, name="eye"))
+    g["head_glow"].append(k.cyl(0.14, 0.26, (0, 0, 3.0), m=glow, n=8, name="neck_core"))
+
+    for s, part in ((1, "leg_fl"), (-1, "leg_fr")):
+        a, X = g[part], s * 0.62
+        a.append(k.sphere(0.2, (X, 0, 2.8), m=leather, scale=(1.2, 1.0, 0.8), seg=10, rings=6, name="shoulder"))
+        a.append(k.cyl(0.09, 0.5, (X, 0, 2.45), m=cloth, n=8, name="arm"))
+        a.append(k.cyl(0.11, 0.46, (X, -0.02, 1.95), m=dark, n=8, bevel=0.01, name="bracer"))
+        a.append(k.box((0.15, 0.17, 0.2), (X, -0.04, 1.6), m=dark, bevel=0.03, name="hand"))
+        if s == 1:  # the bow: a recurve of dark wood, a straight hexfire string
+            a.append(k.horn([(X, 0.14, 3.1), (X, -0.04, 2.5), (X, -0.12, 1.72), (X, -0.04, 0.95), (X, 0.14, 0.35)], [0.035, 0.05, 0.075, 0.05, 0.035], wood, n=6, steps=12, name="bow"))
+            g[part + "_glow"].append(k.tube([(X, 0.14, 3.1), (X, 0.14, 0.35)], [0.018, 0.018], m=glow, n=4, name="string"))
+        else:  # an arrow in the right hand, a hexfire head
+            hand = Vector((X, -0.1, 1.58))
+            a.append(k.tube([hand + Vector((0, 0.3, 0.05)), hand + Vector((0, -0.75, -0.15))], [0.022, 0.022], m=bone, n=5, name="arrow"))
+            g[part + "_glow"].append(shard(hand + Vector((0, -0.7, -0.14)), hand + Vector((0, -1.05, -0.2)), 0.07, glow))
+            g[part + "_glow"].append(k.box((0.08, 0.16, 0.08), tuple(hand + Vector((0, 0.3, 0.05))), m=glow, name="fletch"))
+
+    for s, part in ((1, "leg_bl"), (-1, "leg_br")):
+        leg, X = g[part], s * 0.22
+        leg.append(k.cyl(0.12, 0.6, (X, 0, 1.15), m=cloth2, n=8, name="thigh"))
+        leg.append(k.sphere(0.13, (X, -0.04, 0.78), m=leather, seg=8, rings=6, name="knee"))
+        leg.append(k.cyl(0.11, 0.6, (X, 0, 0.42), r2=0.13, m=leather, n=8, name="boot"))
+        leg.append(k.box((0.2, 0.46, 0.14), (X, -0.1, 0.07), m=dark, bevel=0.04, name="sole"))
+
+    g["tail"].append(ragged(0.9, 1.7, 7, 0.04, (0, 0.38, 2.85), cloth2, rot=(8, 0, 0), flare=0.45, name="cloak"))
+    return g, ARCHER_JOINTS
+
+
+# Mage -----------------------------------------------------------------------------------------------
+
+MAGE_JOINTS = {
+    "head": (0, 0, 3.1),
+    "leg_fl": (0.62, 0, 2.9),
+    "leg_fr": (-0.62, 0, 2.9),
+    "leg_bl": (0.25, 0, 1.5),
+    "leg_br": (-0.25, 0, 1.5),
+    "tail": (0, 0.42, 2.95),
+}
+
+
+def diamond(h, w, loc, rot=(0, 0, 0), m=None, name="rune"):
+    return k.poly([(0, h), (w, 0), (0, -h), (-w, 0)], 0.04, loc=loc, rot=rot, m=m, name=name)
+
+
+def mage():
+    """A hooded, horned caster: a violet robe with a mantle, a split skirt, a hood over a dark
+    void with three glowing eyes, a tome at the hip, hexfire runes floating round the body, an
+    orb of hexfire above the left palm and a staff in the right hand topped with a crystal."""
+    robe = k.flat((58, 30, 92))
+    robe2 = k.flat((38, 20, 62))
+    dark = k.flat((24, 22, 32))
+    iron = k.flat((34, 32, 44))
+    wood = k.flat((64, 42, 34))
+    bone = k.flat(BONE)
+    glow = k.glow(HEX)
+    g = {n: [] for n in ("body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "body_glow", "head_glow", "leg_fl_glow", "leg_fr_glow")}
+
+    b = g["body"]
+    b.append(k.lathe([(0.46, 0.0), (0.52, 0.3), (0.5, 0.7), (0.4, 1.0), (0.3, 1.12)], loc=(0, 0, 1.55), m=robe, n=14, scale=(1.0, 0.85, 1.0), name="robe"))
+    b.append(k.lathe([(0.8, 0.0), (0.68, 0.2), (0.46, 0.36), (0.32, 0.4)], loc=(0, 0, 2.58), m=robe2, n=14, scale=(1.0, 0.85, 1.0), name="mantle"))
+    b.append(ring((0, 0, 1.62), (0, 0, 1), 0.5, 0.05, bone, "cord"))
+    b.append(k.sphere(0.1, (0, -0.44, 1.62), m=bone, scale=(1.0, 0.8, 1.1), seg=8, rings=6, name="knot"))
+    b.append(k.box((0.24, 0.1, 0.3), (0.5, -0.3, 1.4), rot=(0, 0, -15), m=wood, bevel=0.02, name="tome"))
+    b.append(k.box((0.06, 0.12, 0.08), (0.5, -0.3, 1.52), rot=(0, 0, -15), m=bone, name="clasp"))
+    g["body_glow"].append(diamond(0.18, 0.1, (0, -0.43, 2.2), m=glow, name="chest_rune"))
+    g["body_glow"].append(diamond(0.07, 0.045, (0.52, -0.37, 1.4), rot=(0, 0, -15), m=glow, name="tome_rune"))
+    for loc, rot in (((1.0, -0.15, 2.45), (0, 0, 20)), ((-0.9, 0.3, 2.0), (0, 0, -25)), ((0.15, 0.95, 2.8), (0, 80, 10))):  # runes floating round the body
+        g["body_glow"].append(diamond(0.14, 0.08, loc, rot=rot, m=glow, name="orbit_rune"))
+
+    hz = 3.12
+    h = g["head"]
+    h.append(k.lathe([(0.3, 0.0), (0.38, 0.12), (0.4, 0.38), (0.28, 0.7), (0.12, 1.05), (0.0, 1.25)], loc=(0, 0, hz), m=robe, n=12, scale=(1.0, 1.1, 1.0), name="hood"))
+    h.append(shard((0, 0.1, hz + 1.2), (0, 0.6, hz + 1.1), 0.07, robe))
+    h.append(k.cyl(0.25, 0.06, (0, -0.42, hz + 0.36), rot=(90, 0, 0), m=dark, n=12, name="void"))
+    for s in (1, -1):
+        g["head_glow"].append(k.box((0.1, 0.03, 0.04), (s * 0.1, -0.455, hz + 0.38), rot=(0, -s * 22, 0), m=glow, name="eye"))
+        h.append(k.horn([(s * 0.36, -0.05, hz + 0.35), (s * 0.58, -0.1, hz + 0.6), (s * 0.64, -0.2, hz + 0.9)], [0.08, 0.06, 0.0], bone, n=6, steps=8, name="horn"))
+    g["head_glow"].append(diamond(0.07, 0.05, (0, -0.335, hz + 0.62), m=glow, name="third_eye"))
+    g["head_glow"].append(k.cyl(0.14, 0.2, (0, 0, 3.05), m=glow, n=8, name="neck_core"))
+
+    for s, part in ((1, "leg_fl"), (-1, "leg_fr")):
+        a, X = g[part], s * 0.62
+        a.append(k.cyl(0.24, 1.0, (X, 0, 2.35), r2=0.14, m=robe, n=10, name="sleeve"))
+        if s == 1:  # an open palm with an orb of hexfire above it
+            a.append(k.box((0.2, 0.22, 0.05), (X, -0.12, 1.78), m=bone, bevel=0.015, name="palm"))
+            g[part + "_glow"].append(k.sphere(0.2, (X, -0.12, 2.1), seg=10, rings=8, m=glow, name="orb"))
+            g[part + "_glow"].append(ring((X, -0.12, 2.1), (0, 0, 1), 0.32, 0.025, glow, "orb_ring"))
+        else:  # a fist round a tall staff: a skull, three iron prongs and a crystal in a halo
+            a.append(k.box((0.15, 0.17, 0.2), (X, -0.08, 1.72), m=bone, bevel=0.03, name="fist"))
+            a.append(k.tube([(X, -0.1, 0.05), (X, -0.1, 4.2)], [0.065, 0.055], m=wood, n=8, name="staff"))
+            a.append(k.sphere(0.12, (X, -0.1, 4.08), m=bone, seg=8, rings=6, name="skull"))
+            for i in range(3):
+                ang = i * 2.094
+                tip = Vector((X + 0.36 * math.cos(ang), -0.1 + 0.36 * math.sin(ang), 4.78))
+                a.append(shard((X, -0.1, 4.15), tuple(tip), 0.06, iron))
+            g[part + "_glow"].append(k.sphere(0.2, (X, -0.1, 4.5), scale=(0.8, 0.8, 1.5), seg=6, rings=4, m=glow, name="crystal"))
+            g[part + "_glow"].append(ring((X, -0.1, 4.5), (0.4, 0, 1), 0.42, 0.03, glow, "halo"))
+
+    for s, part in ((1, "leg_bl"), (-1, "leg_br")):  # the robe's skirt in two halves, with pointed shoes
+        leg, X = g[part], s * 0.26
+        leg.append(k.cyl(0.36, 1.5, (X, 0, 0.8), r2=0.26, m=robe, n=12, name="skirt"))
+        leg.append(ring((X, 0, 0.12), (0, 0, 1), 0.36, 0.04, bone, "hem"))
+        leg.append(k.box((0.22, 0.5, 0.14), (X, -0.2, 0.07), m=dark, bevel=0.04, name="shoe"))
+        leg.append(shard((X, -0.4, 0.07), (X, -0.7, 0.16), 0.07, dark))
+
+    g["tail"].append(ragged(0.9, 2.0, 7, 0.05, (0, 0.42, 2.95), robe2, rot=(6, 0, 0), flare=0.5, name="train"))
+    return g, MAGE_JOINTS
+
+
 # Ogre -----------------------------------------------------------------------------------------------
 
 OGRE_JOINTS = {
@@ -346,6 +502,8 @@ def asset(name, maker, scale, glow, note, budget):
 
 
 ASSETS = [
+    asset("foe_archer", archer, 1.6, {"body_glow": HEX, "head_glow": HEX, "leg_fl_glow": HEX, "leg_fr_glow": HEX}, "Shade archers: a hooded bowman; eyes, bowstring, arrow head and quiver fletching are Neon.", 7000),
+    asset("foe_mage", mage, 1.6, {"body_glow": HEX, "head_glow": HEX, "leg_fl_glow": HEX, "leg_fr_glow": HEX}, "Hex mages: a hooded, horned caster; eyes, runes, the palm orb and the staff crystal are Neon.", 8000),
     asset("foe_knight", knight, 1.6, {"body_glow": HEX, "head_glow": HEX, "leg_fl_glow": HEX, "leg_fr_glow": HEX}, "Gloom knights: haunted armour with floating pieces; runes, eye slits, shield sigil and sword runes are Neon.", 9000),
     asset("foe_ogre", ogre, 2.5, {"body_glow": HEX, "head_glow": HEX, "leg_fr_glow": HEX}, "Ogres: a hunched brute with a spiked club; cracks, eyes, collar runes and club nails are Neon.", 10000),
     asset("foe_dragon", dragon, 1.6, {"body_glow": HEX, "head_glow": HEX, "wing_l_glow": HEX, "wing_r_glow": HEX}, "Hexfire dragons: the predator body with wings (wing_l, wing_r joints); eyes, wing veins and alternate spine spikes are Neon.", 14000),

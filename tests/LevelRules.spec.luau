@@ -47,31 +47,32 @@ describe("LevelRules.enemies", function()
 		end
 	end)
 
-	it("sends only knights at first, ogres from wave 5, the warlord from 15, and gets stronger without end", function()
-		for level = 1, 4 do
-			for _, e in LevelRules.enemies(level) do
-				expect(kindOf(e)).toBe("knight")
+	it(
+		"opens with knights, adds a new foe every few waves, never before its first wave, and gets stronger without end",
+		function()
+			for level = 1, 2 do
+				for _, e in LevelRules.enemies(level) do
+					expect(kindOf(e)).toBe("knight")
+				end
 			end
-		end
-		local ogres, warlords = 0, 0
-		for level = 5, 14 do
-			for _, e in LevelRules.enemies(level) do
-				ogres += if kindOf(e) == "ogre" then 1 else 0
-				warlords += if e.s == "ogre_warlord" then 1 else 0
+			local seen = {}
+			for level = 1, 80 do
+				for _, e in LevelRules.enemies(level) do
+					local foe = StationConfig.foe(e.s) :: StationConfig.Foe
+					seen[foe.id] = true
+					if foe.kind ~= "dragon" then
+						expect(foe.from ~= nil and level >= (foe.from :: number)).toBeTruthy()
+					end
+				end
 			end
-		end
-		expect(ogres > 0).toBeTruthy()
-		expect(warlords).toBe(0)
-		for level = 15, 40 do
-			for _, e in LevelRules.enemies(level) do
-				warlords += if e.s == "ogre_warlord" then 1 else 0
+			for _, f in StationConfig.FOES do
+				expect(seen[f.id]).toBe(true) -- every foe, the dragons too, turns up within 80 waves
 			end
+			expect(LevelRules.scale(2) > LevelRules.scale(1)).toBeTruthy()
+			expect(teamTotal(LevelRules.enemies(200)) > teamTotal(LevelRules.enemies(100))).toBeTruthy()
+			expect(LevelRules.enemies(300)[1].stats.speed > StationConfig.STAT_MAX).toBeTruthy()
 		end
-		expect(warlords > 0).toBeTruthy()
-		expect(LevelRules.scale(2) > LevelRules.scale(1)).toBeTruthy()
-		expect(teamTotal(LevelRules.enemies(200)) > teamTotal(LevelRules.enemies(100))).toBeTruthy()
-		expect(LevelRules.enemies(300)[1].stats.speed > StationConfig.STAT_MAX).toBeTruthy()
-	end)
+	)
 
 	it("ends every 10th wave with a dragon, a stronger one as the waves go on, and sends none otherwise", function()
 		expect(LevelRules.boss(9)).toBeNil()

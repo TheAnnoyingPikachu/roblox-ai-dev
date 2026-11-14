@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-024",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Five more Hexbound enemies, archers and mages: a Shade Archer and Crossbowman, a Hexcaster, a Hexweaver and a Hexwarden, introduced across the waves, plus a Blender look-test of the archer and mage.",
+  "inputs": [
+    "docs/decisions/0041-animal-stations-archers-and-mages.md"
+  ],
+  "dependencies": [
+    "STATION-023"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "tests/StationRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tools/blender/stations/assets/foes.py",
+    "docs/decisions/0040-animal-stations-the-hexbound-enemies.md",
+    "docs/decisions/0041-animal-stations-archers-and-mages.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-enemies.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "LevelRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The roster holds archers and mages with real roles, groups and stats, none of them an animal",
+    "No foe appears before its first wave, and every foe appears within the first 80 waves",
+    "The waves stay about as hard as before",
+    "tools/blender/stations/build.py --draft renders the archer and the mage"
+  ],
+  "verification": "2026-11-14: lune 662/662 (tests reworked to follow the roster instead of a fixed list), stylua and selene clean. Balance probe before the tests: fresh starters 9 (same), maxed starters 26 (28), fresh uncommons 17 (17), starters plus Titan 29 (29), maxed starters plus Titan 49 (49), maxed mythics plus mammoth: first stall at wave 70 (was 79) but 94 of the first 100 waves won, losses only on dragon boss waves and two odd draws. Blender: --draft rendered the archer (2,070 triangles) and mage (2,618); I looked at both four-view sheets and fixed floating shoes under the mage's robe. Not done: baking, upload, rig, animations, in game.",
+  "output_artifacts": [
+    "tools/blender/stations/assets/foes.py",
+    "src/shared/StationConfig.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The Ogre Hexcaller is renamed Ogre Shaman. Wave fights are not wired to the server yet, so nothing in play changes. A full build.py with no asset names would also build every foe into the manifest."
+}

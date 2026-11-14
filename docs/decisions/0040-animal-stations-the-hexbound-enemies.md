@@ -25,7 +25,7 @@ you could cut corners with the enemies".
 | Gloom Bulwark | knight | Defence | solitary | 1 |
 | Gloom Banner | knight | Utility | pack | 1 |
 | Ogre Brute | ogre | Attack | solitary | 5 |
-| Ogre Hexcaller | ogre | Utility | pack | 5 |
+| Ogre Shaman (was Hexcaller) | ogre | Utility | pack | 5 |
 | Ogre Warlord | ogre | Attack | pack | 15 |
 | Hexfire Whelp | dragon | Attack | solitary | boss, 10 |
 | Hexfire Drake | dragon | Attack | solitary | boss, 30 |

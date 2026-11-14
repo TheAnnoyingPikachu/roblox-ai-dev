@@ -437,36 +437,39 @@ describe("StationRules.hatch", function()
 end)
 
 describe("StationConfig foes (the Hexbound)", function()
-	it("are knights, ogres and dragons with real roles, groups and stats, and are not animals", function()
-		local ids = {}
-		for _, sp in StationConfig.SPECIES do
-			ids[sp.id] = true
-			for _, va in sp.variants do
-				ids[va.id] = true
+	it(
+		"are knights, archers, mages, ogres and dragons with real roles, groups and stats, and are not animals",
+		function()
+			local ids = {}
+			for _, sp in StationConfig.SPECIES do
+				ids[sp.id] = true
+				for _, va in sp.variants do
+					ids[va.id] = true
+				end
+			end
+			for _, f in StationConfig.FOES do
+				expect(ids[f.id]).toBeNil()
+				ids[f.id] = true
+				expect(table.find(StationConfig.FOE_KINDS, f.kind) ~= nil).toBeTruthy()
+				expect(table.find(StationConfig.ROLES, f.role) ~= nil).toBeTruthy()
+				expect(table.find(StationConfig.GROUPS, f.group) ~= nil).toBeTruthy()
+				for _, stat in StationConfig.STATS do
+					local x = (f.stats :: any)[stat]
+					expect(x >= StationConfig.STAT_MIN and x <= StationConfig.STAT_MAX).toBeTruthy()
+				end
+				expect(StationConfig.species(f.id)).toBeNil()
+				expect(StationConfig.foe(f.id)).toBe(f)
+				expect(StationRules.role({ s = f.id, stats = f.stats })).toBe(f.role)
+				if f.kind == "dragon" then
+					expect(f.from).toBeNil()
+					expect(f.boss ~= nil and f.boss % LevelRules.BOSS_EVERY == 0).toBeTruthy()
+				else
+					expect(f.boss).toBeNil()
+					expect(f.from ~= nil).toBeTruthy()
+				end
 			end
 		end
-		for _, f in StationConfig.FOES do
-			expect(ids[f.id]).toBeNil()
-			ids[f.id] = true
-			expect(table.find(StationConfig.FOE_KINDS, f.kind) ~= nil).toBeTruthy()
-			expect(table.find(StationConfig.ROLES, f.role) ~= nil).toBeTruthy()
-			expect(table.find(StationConfig.GROUPS, f.group) ~= nil).toBeTruthy()
-			for _, stat in StationConfig.STATS do
-				local x = (f.stats :: any)[stat]
-				expect(x >= StationConfig.STAT_MIN and x <= StationConfig.STAT_MAX).toBeTruthy()
-			end
-			expect(StationConfig.species(f.id)).toBeNil()
-			expect(StationConfig.foe(f.id)).toBe(f)
-			expect(StationRules.role({ s = f.id, stats = f.stats })).toBe(f.role)
-			if f.kind == "dragon" then
-				expect(f.from).toBeNil()
-				expect(f.boss ~= nil and f.boss % LevelRules.BOSS_EVERY == 0).toBeTruthy()
-			else
-				expect(f.boss).toBeNil()
-				expect(f.from ~= nil).toBeTruthy()
-			end
-		end
-	end)
+	)
 
 	it("open with all three roles from wave 1 and a dragon for the first boss wave", function()
 		local roles, first = {}, math.huge

@@ -1,5 +1,5 @@
 --!strict
--- Game 7 "Animal Stations" data (decisions 0019 to 0040): stats and stat levels, roles, groups,
+-- Game 7 "Animal Stations" data (decisions 0019 to 0041): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations, and the
 -- Hexbound, the enemies of the waves. Every species has a basic version (never above epic; the
 -- Titan is legendary) and one rare variant (legendary or mythic). Looks for art:
@@ -32,7 +32,7 @@ export type Species = {
 export type Foe = {
 	id: string,
 	name: string,
-	kind: string, -- "knight" | "ogre" | "dragon": which model shows it
+	kind: string, -- "knight" | "archer" | "mage" | "ogre" | "dragon": which model shows it
 	role: string, -- "attack" | "defense" | "utility"
 	group: string, -- "pack" | "solitary"
 	stats: Stats, -- before the wave's scaling
@@ -192,12 +192,15 @@ StationConfig.SPECIES = {
 	},
 } :: { Species }
 
--- The Hexbound (decision 0040): evil magic knights, ogres and dragons, the enemies of the endless
--- waves. Knights are haunted armour and fight from the first wave, ogres join at wave 5 (their
--- warlord at 15), and a dragon ends every 10th wave: the strongest one the wave allows. Draft
--- numbers, set to the strength of the animals the waves used before, so the waves are as hard.
--- Their model is the asset "foe_<kind>"; tiers within a kind differ by tint and size.
-StationConfig.FOE_KINDS = { "knight", "ogre", "dragon" }
+-- The Hexbound (decisions 0040, 0041): evil magic knights, archers, mages, ogres and dragons, the
+-- enemies of the endless waves. Knights are haunted armour and fight from the first wave; after that
+-- something new turns up every few waves: archers at 3, ogres at 5, mages from 6 (a healer at 8, a
+-- warden at 12), a crossbowman at 9 and the ogre warlord at 15. A dragon ends every 10th wave: the
+-- strongest one the wave allows. Archers are fast and fragile, mages hit hard through their Mana,
+-- heal or ward. Draft numbers, set to the strength of the animals the waves used before, so the
+-- waves are as hard. Their model is the asset "foe_<kind>"; tiers within a kind differ by tint
+-- and size.
+StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "dragon" }
 StationConfig.FOES = {
 	{
 		id = "gloom_squire",
@@ -227,6 +230,24 @@ StationConfig.FOES = {
 		from = 1,
 	},
 	{
+		id = "shade_archer",
+		name = "Shade Archer",
+		kind = "archer",
+		role = "attack",
+		group = "pack",
+		stats = s(46, 24, 14, 14, 26, 8),
+		from = 3,
+	},
+	{
+		id = "shade_crossbowman",
+		name = "Shade Crossbowman",
+		kind = "archer",
+		role = "attack",
+		group = "solitary",
+		stats = s(16, 70, 26, 14, 50, 16),
+		from = 9,
+	},
+	{
 		id = "ogre_brute",
 		name = "Ogre Brute",
 		kind = "ogre",
@@ -236,8 +257,8 @@ StationConfig.FOES = {
 		from = 5,
 	},
 	{
-		id = "ogre_hexcaller",
-		name = "Ogre Hexcaller",
+		id = "ogre_shaman",
+		name = "Ogre Shaman",
 		kind = "ogre",
 		role = "utility",
 		group = "pack",
@@ -252,6 +273,33 @@ StationConfig.FOES = {
 		group = "pack",
 		stats = s(46, 92, 40, 20, 84, 28),
 		from = 15,
+	},
+	{
+		id = "hexcaster",
+		name = "Hexcaster",
+		kind = "mage",
+		role = "attack",
+		group = "solitary",
+		stats = s(26, 56, 14, 72, 38, 8),
+		from = 6,
+	},
+	{
+		id = "hexweaver",
+		name = "Hexweaver",
+		kind = "mage",
+		role = "utility",
+		group = "pack",
+		stats = s(28, 10, 20, 58, 36, 10),
+		from = 8,
+	},
+	{
+		id = "hexwarden",
+		name = "Hexwarden",
+		kind = "mage",
+		role = "defense",
+		group = "solitary",
+		stats = s(10, 24, 46, 42, 62, 56),
+		from = 12,
 	},
 	{
 		id = "hexfire_whelp",
