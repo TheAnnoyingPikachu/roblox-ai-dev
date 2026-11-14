@@ -133,6 +133,18 @@ local function build(name: string): Model?
 	for _, p in parts do
 		p.Anchored = false
 	end
+	-- an unseen box round the whole animal, so the cursor can find it (its meshes take no rays)
+	local hit = Instance.new("Part")
+	hit.Name = "Hit"
+	hit.Size = vec(entry.size)
+	hit.CFrame = rootFrame * CFrame.new(0, entry.size[2] / 2, 0)
+	hit.Transparency = 1
+	hit.CanCollide, hit.CanTouch, hit.Massless = false, false, true
+	local hold = Instance.new("WeldConstraint")
+	hold.Part0, hold.Part1 = root, hit
+	hold.Parent = hit
+	hit.Parent = model
+	CollectionService:AddTag(hit, "CreatureHit")
 	local unit = entry.joints[`{name}_leg_fl`][2] / POSE_LEGS
 	model:SetAttribute("Scale", unit)
 	model:SetAttribute("Stride", STRIDE / math.sqrt(unit))

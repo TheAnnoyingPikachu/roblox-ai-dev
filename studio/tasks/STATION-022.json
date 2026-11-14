@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-022",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Hovering the cursor over an animal shows a small card with its name, rarity colour, role and group, six stats and a health bar.",
+  "inputs": [
+    "docs/decisions/0039-animal-stations-hover-card.md"
+  ],
+  "dependencies": [
+    "STATION-021"
+  ],
+  "files": [
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0039-animal-stations-hover-card.md"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every creature model carries its species, variant and six stats as attributes",
+    "With the cursor on an animal the card shows the right name, rarity colour, stats and a full health bar; off it, the card hides",
+    "An owned animal's card shows its trained stats"
+  ],
+  "verification": "2026-11-14: lune 659/659, stylua and selene clean. Studio play (stations.rbxl, synced from source): models spawned from the admin menu carried Species, Variant and the six stats (Sun Lion speed 165, health 210); with the cursor moved onto the Sun Lion the card showed 'Sun Lion', 'MYTHIC - Attack - Pack', its six stats and '335 / 335 HP' with a full bar and a mythic-coloured edge, 18 pixels from the cursor; off the animal it hid; a screenshot shows it on the Elephant in legendary gold. No script errors. Not checked: an owned animal's card after training, phones (hover needs a mouse).",
+  "output_artifacts": [
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Display only: no rules or saved data, so no headless test."
+}

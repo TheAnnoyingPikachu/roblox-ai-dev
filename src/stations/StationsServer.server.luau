@@ -177,10 +177,24 @@ end
 -- client's menu shows them.
 local StationAssets = require(Shared:WaitForChild("StationAssets"))
 local LOOKS: { string } = {}
+local LOOK_OF: { [string]: { s: string, v: string? } } = {}
 for _, sp in StationConfig.SPECIES do
 	table.insert(LOOKS, Creatures.asset(sp.id))
+	LOOK_OF[Creatures.asset(sp.id)] = { s = sp.id }
 	for _, va in sp.variants do
 		table.insert(LOOKS, Creatures.asset(sp.id, va.id))
+		LOOK_OF[Creatures.asset(sp.id, va.id)] = { s = sp.id, v = va.id }
+	end
+end
+
+-- What a model tells the client for the card shown under the cursor: its species, its variant
+-- and its six stats (an owned animal's own, with its training; otherwise the version's).
+local function describe(model: Model, s: string, v: string?, animal: StationProgress.Animal?)
+	model:SetAttribute("Species", s)
+	model:SetAttribute("Variant", v)
+	local plain = StationRules.versionStats(s, v) :: StationConfig.Stats
+	for _, stat in StationConfig.STATS do
+		model:SetAttribute(stat, if animal then StationRules.stat(animal :: any, stat) else (plain :: any)[stat])
 	end
 end
 
@@ -216,7 +230,12 @@ local function standBefore(player: Player, names: { string })
 		local wide = StationAssets[name].size[1] + 5
 		local spot = facing * Vector3.new(x + wide / 2, 0, -(12 + deepest / 2))
 		x += wide
-		task.spawn(Creatures.spawn, name, CFrame.lookAt(spot, spot - flat), folder)
+		task.spawn(function()
+			local model = Creatures.spawn(name, CFrame.lookAt(spot, spot - flat), folder)
+			if model then
+				describe(model, LOOK_OF[name].s, LOOK_OF[name].v, nil)
+			end
+		end)
 	end
 end
 
@@ -466,6 +485,10 @@ function syncHerd(i: number, animals: { StationProgress.Animal })
 	end
 	local plot = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
 	for id, a in wanted do
+		local standing = herd[id]
+		if typeof(standing) == "Instance" then
+			describe(standing, a.s, a.v, a) -- training may have moved its stats
+		end
 		if herd[id] == nil then
 			herd[id] = false
 			task.spawn(function()
@@ -478,6 +501,7 @@ function syncHerd(i: number, animals: { StationProgress.Animal })
 				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot)
 				if model and herd[id] == false then
 					herd[id] = model
+					describe(model, a.s, a.v, a)
 					wander(model, i)
 				elseif model then
 					model:Destroy() -- sold or gone while it loaded

@@ -11,6 +11,8 @@ local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
+local UserInputService = game:GetService("UserInputService")
 local Debris = game:GetService("Debris")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -271,6 +273,88 @@ local function refresh()
 		row(a, i)
 	end
 end
+
+-- The card under the cursor ----------------------------------------------------------------------
+
+-- Pointing at an animal shows a small card that follows the cursor: its name, its rarity in the
+-- rarity's colour, role and group, the six stats and a health bar. Every model carries what the
+-- card needs as attributes (the server's `describe`); the cursor finds a model by its unseen
+-- "CreatureHit" box.
+local BattleRules = require(Shared:WaitForChild("BattleRules"))
+local card = Ui.panel(screen, { size = UDim2.fromOffset(236, 132), name = "AnimalCard" })
+card.Visible = false
+card.ZIndex = 20
+local cardEdge = Instance.new("UIStroke")
+cardEdge.Thickness = 3
+cardEdge.Parent = card
+local cardName = Ui.label(card, "", { size = 20 })
+local cardKind = Ui.label(card, "", { size = 14 })
+local cardStats = Ui.label(card, "", { size = 14, muted = true })
+local bar = Instance.new("Frame")
+bar.Size = UDim2.new(1, 0, 0, 16)
+bar.BackgroundColor3 = Color3.fromRGB(40, 36, 46)
+bar.BorderSizePixel = 0
+bar.Parent = card
+local fill = Instance.new("Frame")
+fill.BackgroundColor3 = Color3.fromRGB(90, 210, 110)
+fill.BorderSizePixel = 0
+fill.Parent = bar
+local barText = Instance.new("TextLabel")
+barText.Size = UDim2.fromScale(1, 1)
+barText.BackgroundTransparency = 1
+barText.Font = Enum.Font.FredokaOne
+barText.TextSize = 13
+barText.TextColor3 = Color3.new(1, 1, 1)
+barText.Parent = bar
+
+local function showCard(model: Model?)
+	local s = model and model:GetAttribute("Species")
+	local sp = if type(s) == "string" then StationConfig.species(s) else nil
+	if model == nil or sp == nil then
+		card.Visible = false
+		return
+	end
+	local v = model:GetAttribute("Variant")
+	local va = if type(v) == "string" then StationConfig.variant(sp.id, v) else nil
+	local rarity = if va then va.tier else sp.rarity
+	local colour = RARITY_COLOUR[rarity] or Color3.new(1, 1, 1)
+	cardName.Text = if va then va.name else sp.name
+	cardName.TextColor3 = colour
+	cardEdge.Color = colour
+	cardKind.Text = `{string.upper(rarity)}  -  {ROLE_NAME[sp.role] or "?"}  -  {GROUP_NAME[sp.group] or "?"}`
+	cardKind.TextColor3 = colour
+	local parts = {}
+	for k, stat in StationConfig.STATS do
+		table.insert(parts, `{STAT_SHORT[stat]} {model:GetAttribute(stat) or "?"}{if k == 3 then "\n" else "   "}`)
+	end
+	cardStats.Text = table.concat(parts)
+	local health = model:GetAttribute("health")
+	local max = BattleRules.HP_BASE
+		+ math.floor((if type(health) == "number" then health else 0) * BattleRules.HP_PER_HEALTH)
+	local hp = model:GetAttribute("Hp") -- set once fights exist; full until then
+	local now = if type(hp) == "number" then math.clamp(hp, 0, max) else max
+	fill.Size = UDim2.fromScale(now / math.max(1, max), 1)
+	barText.Text = `{now} / {max} HP`
+	card.Visible = true
+end
+
+RunService.RenderStepped:Connect(function()
+	local camera = Workspace.CurrentCamera
+	if camera == nil or not UserInputService.MouseEnabled then
+		return
+	end
+	local at = UserInputService:GetMouseLocation()
+	local ray = camera:ViewportPointToRay(at.X, at.Y)
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Include
+	params.FilterDescendantsInstances = CollectionService:GetTagged("CreatureHit")
+	local found = Workspace:Raycast(ray.Origin, ray.Direction * 600, params)
+	showCard(if found then found.Instance.Parent :: Model else nil)
+	if card.Visible then
+		local inset = if screen.IgnoreGuiInset then Vector2.zero else GuiService:GetGuiInset()
+		card.Position = UDim2.fromOffset(at.X - inset.X + 18, at.Y - inset.Y + 14)
+	end
+end)
 
 -- Hatching -------------------------------------------------------------------------------------------
 

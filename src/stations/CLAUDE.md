@@ -6,7 +6,7 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
 - Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
-  (roster and looks), decisions 0019 to 0038 (0029 to 0038 are the latest and replace parts of the rest).
+  (roster and looks), decisions 0019 to 0039 (0029 to 0039 are the latest and replace parts of the rest).
 - Not built: wave battles in the arena (so coins and samples cannot be earned in play), what waves pay. In Studio only, the ranch menu has a test funds button. Gear is not designed: the gear vendor only has a message.
 
 ## Files
@@ -47,4 +47,5 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 - A model's size is its built size. Its `Scale` attribute is its leg length over the length the client's poses were written for; poses, effects and walk speed all use it. Move a walking creature at `Creatures.speed` or its feet slide.
 - Animation runs on each client from the model's attributes; the server never poses a joint. The herd at the end of the server script shows the owner's first eight animals wandering the roaming area; `Creatures.asset` names the model for a species or variant.
 - The admin menu (decision 0038) only shows models. `isAdmin` on the server (the owning user, or Studio) guards every `look` action; the hidden button is not the protection. Keep anything that changes a save out of it.
+- Every creature model must be passed to `describe` on the server (species, variant, six stats as attributes): the card under the cursor (decision 0039) reads only those, and finds the model by its unseen `Hit` box (tag `CreatureHit`). A model's `Hp` attribute, once fights set it, drives the health bar.
 - Max Players must be 3 (= `World.RANCHES`). A place file cannot carry it: set it in Game Settings when publishing.
