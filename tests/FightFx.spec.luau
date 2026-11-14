@@ -23,6 +23,42 @@ describe("FightFx.lead and flightTime", function()
 	end)
 end)
 
+describe("FightFx rhythm", function()
+	it("holds the killing blow for 0.2 s", function()
+		expect(FightFx.hitStop(0, true)).toBe(0.2)
+		expect(FightFx.hitStop(1, false)).toBe(0.1)
+	end)
+
+	it("slows clips to 0.3 after the killing blow and gives full speed back", function()
+		expect(FightFx.slow(-1)).toBe(1)
+		expect(FightFx.slow(0)).toBe(0.3)
+		expect(FightFx.slow(0.79)).toBe(0.3)
+		expect(FightFx.slow(FightFx.SLOW_SECONDS)).toBe(1)
+		local last = 0.3
+		for i = 0, 20 do -- it only ever speeds up, never past 1
+			local v = FightFx.slow(0.8 + (FightFx.SLOW_SECONDS - 0.8) * i / 20)
+			expect(v >= last and v <= 1).toBeTruthy()
+			last = v
+		end
+	end)
+
+	it("cuts the camera in and out over CUT_SECONDS", function()
+		expect(FightFx.cut(-0.1)).toBe(0)
+		expect(FightFx.cut(0)).toBe(0)
+		expect(FightFx.cut(0.5)).toBe(1)
+		expect(FightFx.cut(FightFx.CUT_SECONDS)).toBe(0)
+		expect(FightFx.cut(FightFx.CUT_SECONDS + 1)).toBe(0)
+		expect(FightFx.cut(0.1) > 0 and FightFx.cut(0.1) < 1).toBeTruthy()
+		expect(FightFx.cut(1.1) > 0 and FightFx.cut(1.1) < 1).toBeTruthy()
+	end)
+
+	it("lets the killing blow cut at once and others only every CUT_EVERY seconds", function()
+		expect(FightFx.canCut(0, true)).toBe(true)
+		expect(FightFx.canCut(1, false)).toBe(false)
+		expect(FightFx.canCut(FightFx.CUT_EVERY, false)).toBe(true)
+	end)
+end)
+
 describe("FightFx hit feel", function()
 	it("freezes a power hit longer than a normal one, never more than 0.1 s", function()
 		expect(FightFx.hitStop(0)).toBe(0.06)

@@ -54,6 +54,8 @@ vendors.
 
 ## Built
 
+- Fight presentation, rhythm (decision 0048): every animal has its own power attack, the killing blow
+  freezes and plays in slow motion, and the camera cuts in on power hits and the killing blow.
 - Fight presentation, slice 2 (decision 0048): every animal has its own attack (jackal snap, cheetah
   swipe, tortoise slam, meerkat jab, flamingo whip, lion pounce, elephant stomp, rhino charge), the
   survivors cheer when the fight ends, and a defeated animal is thrown back before it falls.

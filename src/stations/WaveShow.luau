@@ -343,12 +343,14 @@ function WaveShow.run(
 			end
 			-- what the client needs to dress the hit: set before Hp and HitAt, they arrive in any order
 			local now = Workspace:GetServerTimeNow()
+			local final = e == log[#log] and e.hp <= 0 -- the blow that ends the fight
 			if not RANGED[kind] then -- a melee attacker freezes with its target; a shooter has nothing to hit
-				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0))
+				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0, final))
 				actor.model:SetAttribute("StopAt", now)
 			end
 			target.model:SetAttribute("HitPower", if e.power then 1 else 0)
 			target.model:SetAttribute("HitDmg", e.dmg)
+			target.model:SetAttribute("HitFinal", if final then 1 else 0)
 			target.model:SetAttribute("HitAt", now)
 			target.hp, target.version = e.hp, target.version + 1
 			target.model:SetAttribute("Hp", math.max(0, e.hp))
@@ -373,7 +375,7 @@ function WaveShow.run(
 	end
 
 	-- the survivors of the winning side celebrate a beat after the last hit, until the show is cleared
-	task.delay(0.4 + seconds + 0.6, function()
+	task.delay(0.4 + seconds + 1.0, function()
 		if not live() then
 			return
 		end

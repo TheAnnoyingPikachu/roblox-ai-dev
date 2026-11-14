@@ -1,4 +1,4 @@
-# 0048: Animal Stations: fight presentation (slice 1: impact, shots, skip; slice 2: species, win pose)
+# 0048: Animal Stations: fight presentation (impact and shots, species attacks and win pose, rhythm)
 
 Status: proposed (for SHANNON at the first Animal Stations checkpoint)
 Date: 2026-11-14. Builds on 0043 (real fights) and 0045 (fight camera). Task STATION-031.
@@ -32,18 +32,32 @@ settled before the replay starts, and nothing below can delay or change them.
   so a variant uses its species' clip): jackal lunge and snap with a head shake, cheetah double paw swipe,
   tortoise shell slam, meerkat stand-and-jab, flamingo neck whip, lion pounce, elephant stomp and slam,
   rhino keeps the horn charge (also the fallback). Every clip is 0.95 s with contact near 0.44 s, so the
-  server's `LENGTH` and lead are unchanged. The power attack keeps the shared rear-and-slam, except the
-  tortoise, cheetah and flamingo, which have their own wind-ups (the slam stays at `MAGIC_IMPACT`).
-- **Win pose.** A beat after the last hit (`seconds + 0.6` after the replay starts) `WaveShow` sets
+  server's `LENGTH` and lead are unchanged. Every base animal has its own power attack (jackal howl and
+  drive, tortoise shell crash, meerkat overhead smash, cheetah coil and bound, flamingo neck spear, lion
+  crouch and long pounce, rhino back-up and charge, elephant trumpet and stomp); the slam stays at
+  `MAGIC_IMPACT` and the ground eruption is still the shared effect. A clip is looked up by the model's
+  asset first, then its species, then the shared one, so a variant can later add `creature_lion_sun` to
+  `MAGICS` (or `ATTACKS`) and win over its species'.
+- **The flamingo keeps both feet on the ground** (SHANNON's note): its attacks, power attack and win pose
+  have no leg motion, its flinch is stripped of leg joints (`PLANTED`), and its win is a neck sway.
+- **Win pose.** A beat after the last hit (`seconds + 1.0` after the replay starts, once the killing blow's slow motion has played) `WaveShow` sets
   `Anim = "win"` on the winning side's survivors; it holds until the show is cleared. Animals rear and
   pump their front paws; the Hexbound throw both arms up; a dragon beats its wings harder.
 - **Defeat.** A four-legged fall is now thrown back first (a knock-up key at 0.2 s) before the roll.
 - Nothing about a result changed: the pose is set after the log has played out.
 
-## Not done yet (slice 3)
+## Slice 3: fight rhythm
 
-A slow-motion beat on the killing blow and a power-attack cut-in.
-The power attack's charge glow and landing slam already existed and are unchanged.
+- **Killing blow.** `WaveShow` marks the last hit of the log (when it kills) with `HitFinal = 1`.
+  On each client it holds 0.2 s (`FightFx.hitStop`), bursts bigger, and slows every clip to 0.3 speed for
+  0.8 s, easing back to full speed by 1.5 s (`FightFx.slow`). This is display only: a clip reads a later
+  time than the server's clock (`rig.held`), the server's timing and the report never slow. The target's
+  fall plays slowly; the winners cheer 1.0 s after the fight's end.
+- **Camera cut-in.** A power hit or the killing blow cuts the camera 62% of the way towards its
+  target and back out over 1.3 s (`FightFx.cut`, `ArenaCamera`); other cuts wait 4 s between each
+  (`FightFx.canCut`), the killing blow always cuts. A boss is covered by this: its power attacks and the
+  killing blow cut in; there is no separate boss rule.
+- **Skip button:** slice 1.
 
 ## Checked
 
@@ -55,3 +69,5 @@ before number, phones, wave 10's big models.
 Slice 2 checked in Studio: all eight species' contact poses and win pose posed side by side in the air;
 the three custom power wind-ups ran without errors; a wave 2 fight with the starters showed the win pose
 on all three survivors. Not tuned in motion by eye beyond stills.
+
+Slice 3 and the power attacks checked in Studio (starters, wave 6): the camera cut in four times 4 s or more apart and on the killing blow (closest 10 studs from the fight's middle, a still showed a close shot of two fighters); the killing blow landed at 32.2 s, the win pose 1.05 s later; the flamingo's leg joints measured 0.0 degrees in attack, power, hit and win. Not seen by eye: the eight power attacks in motion at the slam (my showcase retriggers the ground effect), the slow motion at full speed, a dragon's killing blow.

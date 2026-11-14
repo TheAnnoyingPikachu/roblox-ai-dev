@@ -27,8 +27,12 @@ function FightFx.lead(power: boolean, flight: number?): number
 	return FightFx.LEAD
 end
 
--- Seconds a fighter's animation holds still on a hit: 0.06 for a normal one, 0.1 for a power one.
-function FightFx.hitStop(power: number): number
+-- Seconds a fighter's animation holds still on a hit: 0.06 for a normal one, 0.1 for a power one,
+-- 0.2 for the killing blow of the fight.
+function FightFx.hitStop(power: number, final: boolean?): number
+	if final then
+		return 0.2
+	end
 	return 0.06 + 0.04 * math.clamp(power, 0, 1)
 end
 
@@ -48,6 +52,42 @@ function FightFx.punch(age: number, strength: number): number
 		return 0
 	end
 	return strength * math.exp(-age * 9)
+end
+
+local function ease(u: number): number
+	return u * u * (3 - 2 * u)
+end
+
+FightFx.SLOW_SECONDS = 1.5
+FightFx.CUT_SECONDS = 1.3
+FightFx.CUT_EVERY = 4 -- seconds between camera cuts, except for the killing blow
+
+-- How fast clips play `age` seconds after the fight's killing blow: slow motion at 0.3 for 0.8 s,
+-- then back to full speed by SLOW_SECONDS. Display only: the server's clock never slows.
+function FightFx.slow(age: number): number
+	if age < 0 or age >= FightFx.SLOW_SECONDS then
+		return 1
+	elseif age < 0.8 then
+		return 0.3
+	end
+	return 0.3 + 0.7 * ease((age - 0.8) / (FightFx.SLOW_SECONDS - 0.8))
+end
+
+-- How far the camera is cut in towards a hit (0 to 1) `age` seconds after it: in quickly, held, out.
+function FightFx.cut(age: number): number
+	if age < 0 or age > FightFx.CUT_SECONDS then
+		return 0
+	elseif age < 0.18 then
+		return ease(age / 0.18)
+	elseif age < 0.9 then
+		return 1
+	end
+	return 1 - ease((age - 0.9) / (FightFx.CUT_SECONDS - 0.9))
+end
+
+-- Whether a hit may cut the camera in: the killing blow always, others once CUT_EVERY has passed.
+function FightFx.canCut(since: number, final: boolean): boolean
+	return final or since >= FightFx.CUT_EVERY
 end
 
 return FightFx

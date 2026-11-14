@@ -37,13 +37,13 @@
     "A slow-motion beat on the killing blow and a power-attack camera cut-in, and a skip button that leaves the fight through wave_done",
     "No script errors, effects cleaned up after a fight, and desktop frame time not noticeably worse with 3 vs 3 fighters"
   ],
-  "verification": "Slices 1 and 2 built and checked in Studio on 2026-11-14: lune 683/683, selene clean, admin test waves 2, 3 and 6 with no script errors, effects cleaned up, wave 6 unchanged (won, 32s, 65 attacks); all eight species' attack and win poses seen as stills. Slice 3 not started. Not measured: frame time before/after, phones, wave 10, motion tuning by eye.",
+  "verification": "All three slices built and checked in Studio on 2026-11-14: lune 687/687, selene and stylua clean, admin test waves 2, 3 and 6 with no script errors, effects cleaned up, wave 6 unchanged (won, 32s, 65 attacks), camera cut-ins and the killing blow measured on a wave 6 fight, flamingo legs measured planted. Not measured: frame time before/after, phones, wave 10 and bosses, two players. Not judged by eye: the clips in motion at full speed, the slow motion.",
   "output_artifacts": [
     "src/stations/WaveShow.luau",
     "src/stations-client/Creatures.client.luau",
     "src/stations-client/ArenaCamera.client.luau"
   ],
   "risk_level": "low",
-  "status": "in_progress",
-  "notes": "Slices 1 (impact, shots, skip) and 2 (per-species attacks, win pose, defeat knock-up) done (decision 0048). Next: slice 3 (slow-motion beat on the killing blow, power-attack cut-in). Split into a further task file if it passes ten files. The handoff names what is not measured: phones, a Drake or Dragon in the new arena, two players."
+  "status": "in_review",
+  "notes": "Slices 1 (impact, shots, skip), 2 (per-species attacks, win pose, defeat knock-up) and 3 (slow-motion killing blow, camera cut-ins), plus a power attack for every base animal, done (decision 0048). Open: per-variant attacks and power attacks (a variant adds its own clip under its asset name); phones, a Drake or Dragon in the arena, two players, frame time."
 }

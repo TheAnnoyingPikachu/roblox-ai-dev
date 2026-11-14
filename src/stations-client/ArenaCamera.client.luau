@@ -17,6 +17,7 @@ local player = Players.LocalPlayer
 local STEP = "StationsArenaCamera"
 local FOV = 55
 local PITCH = math.rad(31) -- high enough to look over the arena walls and the gallows
+local CUT_IN = 0.62 -- how far towards the target a cut-in takes the camera
 local LOWER = 0.28 -- of the radius: aim low so the fight sits above the result panel
 local active = false
 local started = 0
@@ -72,7 +73,16 @@ local function start()
 			return -- the radius has not arrived yet: attributes reach the client one at a time
 		end
 		cam.CameraType = Enum.CameraType.Scriptable -- keep it ours while the fight lasts
-		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * 2.5))
+		-- a power hit or the killing blow cuts in towards its target and back out (Creatures.client)
+		local cutAt, cutPos = player:GetAttribute("CamCutAt"), player:GetAttribute("CamCut")
+		local cut = if type(cutAt) == "number" and typeof(cutPos) == "Vector3"
+			then FightFx.cut(os.clock() - cutAt)
+			else 0
+		if cut > 0 then
+			local target = cutPos :: Vector3
+			want = want:Lerp(CFrame.lookAt(want.Position:Lerp(target, CUT_IN), target), cut)
+		end
+		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * (2.5 + 7 * cut)))
 		cam.CFrame = current :: CFrame
 		-- a hit punches the view in for a moment (Creatures.client sets these on this player only)
 		local strength, at = player:GetAttribute("CamPunch"), player:GetAttribute("CamPunchAt")

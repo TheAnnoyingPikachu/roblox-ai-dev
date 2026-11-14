@@ -428,34 +428,30 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 6, 0, 0, 0, -0.04, -0.7 }, head = { 18 }, leg_fl = { -30 }, leg_fr = { -30 }, tail = { 20 } }
 	),
 	-- coils low and bounds in
-	cheetah = powerClip(
-		{
-			body = { -9, 0, 0, 0, -0.2, 0.4 },
-			head = { -8 },
-			leg_fl = { 20 },
-			leg_fr = { 20 },
-			leg_bl = { -18 },
-			leg_br = { -18 },
-		},
-		{
-			body = { -12, 0, 0, 0, -0.3, 0.5 },
-			head = { -12 },
-			leg_fl = { 26 },
-			leg_fr = { 26 },
-			leg_bl = { -24 },
-			leg_br = { -24 },
-			tail = { -26 },
-		},
-		{
-			body = { 14, 0, 0, 0, 0.1, -1.6 },
-			head = { 16 },
-			leg_fl = { 50 },
-			leg_fr = { 50 },
-			leg_bl = { -34 },
-			leg_br = { -34 },
-			tail = { 24 },
-		}
-	),
+	cheetah = powerClip({
+		body = { -9, 0, 0, 0, -0.2, 0.4 },
+		head = { -8 },
+		leg_fl = { 20 },
+		leg_fr = { 20 },
+		leg_bl = { -18 },
+		leg_br = { -18 },
+	}, {
+		body = { -12, 0, 0, 0, -0.3, 0.5 },
+		head = { -12 },
+		leg_fl = { 26 },
+		leg_fr = { 26 },
+		leg_bl = { -24 },
+		leg_br = { -24 },
+		tail = { -26 },
+	}, {
+		body = { 14, 0, 0, 0, 0.1, -1.6 },
+		head = { 16 },
+		leg_fl = { 50 },
+		leg_fr = { 50 },
+		leg_bl = { -34 },
+		leg_br = { -34 },
+		tail = { 24 },
+	}),
 	-- the neck coils far back, then spears down; the feet stay planted
 	flamingo = powerClip(
 		{ body = { -6, 0, 0, 0, 0, 0.2 }, head = { -40, 10 } },
@@ -463,63 +459,55 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 12, 0, 0, 0, 0, -0.8 }, head = { 52 }, tail = { 20 } }
 	),
 	-- a crouch and a roar, then a long leaping pounce
-	lion = powerClip(
-		{
-			body = { -8, 0, 0, 0, -0.24, 0.3 },
-			head = { -6 },
-			leg_fl = { 20 },
-			leg_fr = { 20 },
-			leg_bl = { -16 },
-			leg_br = { -16 },
-		},
-		{
-			body = { -10, 0, 0, 0, -0.28, 0.4 },
-			head = { 30 },
-			leg_fl = { 24 },
-			leg_fr = { 24 },
-			leg_bl = { -20 },
-			leg_br = { -20 },
-			tail = { -24 },
-		},
-		{
-			body = { 20, 0, 0, 0, 0.36, -1.7 },
-			head = { 14 },
-			leg_fl = { 58 },
-			leg_fr = { 54 },
-			leg_bl = { -38 },
-			leg_br = { -38 },
-			tail = { 26 },
-		}
-	),
+	lion = powerClip({
+		body = { -8, 0, 0, 0, -0.24, 0.3 },
+		head = { -6 },
+		leg_fl = { 20 },
+		leg_fr = { 20 },
+		leg_bl = { -16 },
+		leg_br = { -16 },
+	}, {
+		body = { -10, 0, 0, 0, -0.28, 0.4 },
+		head = { 30 },
+		leg_fl = { 24 },
+		leg_fr = { 24 },
+		leg_bl = { -20 },
+		leg_br = { -20 },
+		tail = { -24 },
+	}, {
+		body = { 20, 0, 0, 0, 0.36, -1.7 },
+		head = { 14 },
+		leg_fl = { 58 },
+		leg_fr = { 54 },
+		leg_bl = { -38 },
+		leg_br = { -38 },
+		tail = { 26 },
+	}),
 	-- backs up, paws the ground, then charges and tosses its horn
-	rhino = powerClip(
-		{
-			body = { -4, 0, 0, 0, -0.06, 0.6 },
-			head = { -30 },
-			leg_fl = { 36 },
-			leg_fr = { -6 },
-			leg_bl = { -14 },
-			leg_br = { -14 },
-		},
-		{
-			body = { -6, 0, 0, 0, -0.1, 0.8 },
-			head = { -36 },
-			leg_fl = { -6 },
-			leg_fr = { 40 },
-			leg_bl = { -18 },
-			leg_br = { -18 },
-			tail = { -16 },
-		},
-		{
-			body = { 8, 0, 0, 0, 0.08, -2.0 },
-			head = { 34 },
-			leg_fl = { -26 },
-			leg_fr = { -26 },
-			leg_bl = { -22 },
-			leg_br = { -22 },
-			tail = { 22 },
-		}
-	),
+	rhino = powerClip({
+		body = { -4, 0, 0, 0, -0.06, 0.6 },
+		head = { -30 },
+		leg_fl = { 36 },
+		leg_fr = { -6 },
+		leg_bl = { -14 },
+		leg_br = { -14 },
+	}, {
+		body = { -6, 0, 0, 0, -0.1, 0.8 },
+		head = { -36 },
+		leg_fl = { -6 },
+		leg_fr = { 40 },
+		leg_bl = { -18 },
+		leg_br = { -18 },
+		tail = { -16 },
+	}, {
+		body = { 8, 0, 0, 0, 0.08, -2.0 },
+		head = { 34 },
+		leg_fl = { -26 },
+		leg_fr = { -26 },
+		leg_bl = { -22 },
+		leg_br = { -22 },
+		tail = { 22 },
+	}),
 	-- trunk raised in a trumpet and the body half reared, then a stomping slam
 	elephant = powerClip(
 		{ body = { 12, 0, 0, 0, 0.12, 0.2 }, head = { -34 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { -14 } },
@@ -672,6 +660,7 @@ local function winFlamingo(t: number): Pose
 	}
 end
 local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo }
+local PLANTED = { flamingo = true } -- species whose feet never leave the ground, not even when hit
 
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow
 -- beat at rest, a wider one when it moves, a hard one when it attacks, still when it is down.
@@ -836,6 +825,9 @@ local player = Players.LocalPlayer
 
 -- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,
 -- a harder flinch, a short hold and a camera punch. A burst and one short-lived part: no lights.
+local slowAt = -math.huge -- when the fight's killing blow landed (clips play slowly for a moment)
+local lastCut = -math.huge -- when the camera last cut in on a hit
+
 local function strike(rig: Rig)
 	local model = rig.model
 	local hit = model:FindFirstChild("Hit") :: BasePart?
@@ -845,10 +837,11 @@ local function strike(rig: Rig)
 	local power = (model:GetAttribute("HitPower") :: number?) or 0
 	local dmg = (model:GetAttribute("HitDmg") :: number?) or 0
 	local s = ((model:GetAttribute("Scale") :: number?) or 1)
-	local hot = power > 0
+	local final = model:GetAttribute("HitFinal") == 1
+	local hot = power > 0 or final
 	local colour = if hot then Color3.fromRGB(255, 120, 70) else Color3.fromRGB(255, 220, 160)
 	rig.flinch = FightFx.flinch(power, dmg / math.max(1, (model:GetAttribute("MaxHp") :: number?) or 1))
-	rig.stopUntil = os.clock() + FightFx.hitStop(power)
+	rig.stopUntil = os.clock() + FightFx.hitStop(power, final)
 	local spark = rig.spark
 	if spark == nil then
 		spark = Instance.new("ParticleEmitter")
@@ -863,7 +856,7 @@ local function strike(rig: Rig)
 	end
 	local e = spark :: ParticleEmitter
 	e.Color = ColorSequence.new(colour)
-	e:Emit(if hot then 28 else 10)
+	e:Emit(if final then 44 elseif hot then 28 else 10)
 	local camera = Workspace.CurrentCamera
 	local face = if camera then camera.CFrame.Position else hit.Position + Vector3.new(0, 0, 10)
 	if (face - hit.Position).Magnitude > 0.1 then
@@ -874,12 +867,21 @@ local function strike(rig: Rig)
 			Enum.Material.Neon
 		)
 		disc.Shape, disc.Transparency = Enum.PartType.Cylinder, 0.25
-		local r = (if hot then 9 else 5) * s
+		local r = (if final then 14 elseif hot then 9 else 5) * s
 		tween(disc, 0.35, { Size = Vector3.new(0.2, r, r), Transparency = 1 })
 		Debris:AddItem(disc, 0.45)
 	end
 	player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
 	player:SetAttribute("CamPunchAt", os.clock())
+	if final then
+		slowAt = os.clock()
+	end
+	-- a power hit or the killing blow cuts the camera in on its target (ArenaCamera reads these)
+	if hot and FightFx.canCut(os.clock() - lastCut, final) then
+		lastCut = os.clock()
+		player:SetAttribute("CamCut", hit.Position)
+		player:SetAttribute("CamCutAt", os.clock())
+	end
 end
 
 local function add(model: Instance)
@@ -1032,11 +1034,14 @@ RunService.PreSimulation:Connect(function(dt: number)
 		local anim = model:GetAttribute("Anim") :: string?
 		local at = (model:GetAttribute("AnimAt") :: number?) or time
 		local clock = os.clock()
-		if clock < rig.stopUntil then -- a hit-stop: this clip waits, the server's timing does not
+		-- a hit-stop freezes this clip, the killing blow's slow motion slows them all; the server's
+		-- timing does neither: a clip only reads a later time than the server's
+		local speed = if clock < rig.stopUntil then 0 else FightFx.slow(clock - slowAt)
+		if speed < 1 then
 			if rig.heldFor ~= at then
 				rig.heldFor, rig.held = at, 0
 			end
-			rig.held += dt
+			rig.held += dt * (1 - speed)
 		end
 		local t = math.max(0, time - at - (if rig.heldFor == at then rig.held else 0))
 		local biped = model:GetAttribute("Biped") == true
@@ -1060,6 +1065,12 @@ RunService.PreSimulation:Connect(function(dt: number)
 			target = sample(HIT, t)
 			if rig.flinch ~= 1 then
 				target = scaled(target, rig.flinch)
+			end
+			if PLANTED[speciesOf(model) or ""] then
+				target = table.clone(target)
+				for _, leg in { "leg_fl", "leg_fr", "leg_bl", "leg_br" } do
+					target[leg] = nil
+				end
 			end
 		elseif anim == "win" then
 			local own = WINS[speciesOf(model) or ""]
