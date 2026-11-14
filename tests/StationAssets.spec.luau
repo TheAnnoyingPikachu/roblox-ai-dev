@@ -6,6 +6,7 @@ local serde = require("@lune/serde")
 local T = require("./framework")
 local StationAssets = require("../src/shared/StationAssets")
 local StationConfig = require("../src/shared/StationConfig")
+local StationRules = require("../src/shared/StationRules")
 
 local describe, it, expect = T.describe, T.it, T.expect
 
@@ -86,6 +87,15 @@ describe("StationAssets", function()
 		end
 		for _, kind in StationConfig.FOE_KINDS do
 			expect(StationAssets[`foe_{kind}`] == nil).toBe(false)
+		end
+	end)
+
+	it("names the model of every animal and variant, and it is in the asset table", function()
+		for _, sp in StationConfig.SPECIES do
+			expect(StationAssets[StationRules.assetOf(sp.id, nil)] == nil).toBe(false)
+			for _, va in sp.variants do
+				expect(StationAssets[StationRules.assetOf(sp.id, va.id)] == nil).toBe(false)
+			end
 		end
 	end)
 end)

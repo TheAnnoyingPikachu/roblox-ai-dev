@@ -128,6 +128,13 @@ function StationRules.role(animal: Owned): string
 	return if sp then sp.role else "attack"
 end
 
+-- The uploaded model that shows animal `s`, or its variant `v`: a variant "<word>_<species>" is the
+-- asset "creature_<species>_<word>" (StationAssets.spec keeps every one in the table).
+function StationRules.assetOf(s: string, v: string?): string
+	local word = if v then string.match(v, "^(%l+)_") else nil
+	return if word then `creature_{s}_{word}` else `creature_{s}`
+end
+
 -- Display rarity: the variant's tier, or the species' basic rarity.
 function StationRules.rarity(animal: Owned): string
 	if animal.v then

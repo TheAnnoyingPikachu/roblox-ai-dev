@@ -56,6 +56,9 @@ vendors.
 
 - The Hexbound enemies in game (decision 0042): five models with their own animations and a dark
   glow each.
+- A new UI (decision 0044): a bottom bar (Animals, Eggs, Waves), card-style sheets with animal and
+  enemy portraits, a player card with level, XP, coins and samples, laid out for phone, tablet and
+  desktop.
 - Real wave fights (decision 0043): the wave gate at the arena's entrance lists the waves open to
   you; the server decides the fight with your team, pays coins, XP and samples, and the arena
   replays it with health bars and damage numbers. One fight at a time; a loss costs nothing.

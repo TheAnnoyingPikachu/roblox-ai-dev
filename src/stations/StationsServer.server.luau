@@ -14,6 +14,7 @@ local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 
 World.build()
+Creatures.publishPortraits()
 
 -- What stands on each ranch follows its owner's upgrades (a free ranch shows a new one).
 local shown: { [number]: string } = {}

@@ -92,6 +92,9 @@ local SPECS = {
 	["StationAssets.spec.luau"] = function()
 		require("./StationAssets.spec")
 	end,
+	["UiLayout.spec.luau"] = function()
+		require("./UiLayout.spec")
+	end,
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,

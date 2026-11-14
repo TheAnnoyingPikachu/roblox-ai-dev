@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-027",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A new Animal Stations UI: a bottom bar and card-style sheets with animal and enemy portraits, a player card, and one scaled layout for desktop, tablet and phone.",
+  "inputs": [
+    "docs/decisions/0044-animal-stations-ui-overhaul.md"
+  ],
+  "dependencies": [
+    "STATION-026"
+  ],
+  "files": [
+    "src/shared/UiLayout.luau",
+    "src/shared/StationRules.luau",
+    "tests/UiLayout.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "tests/run.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0044-animal-stations-ui-overhaul.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": [
+    "UiLayout.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The screen scale stays between 0.9 and 1.2 and leaves a phone at least 420 x 400 units of layout space",
+    "Every animal and variant names a model that is in the asset table",
+    "In Studio play every sheet (animals, eggs, ranch, egg vendor, waves) draws with portraits and works at desktop, tablet (1024 x 768), phone landscape (800 x 360) and phone portrait (390 x 844) sizes",
+    "A wave can be fought from the new Waves sheet, and the result panel shows what it paid"
+  ],
+  "verification": "2026-11-14: lune 675/675 (5 new tests), stylua and selene clean. Studio play (stations.rbxl, synced from source): all 21 portrait models published; Animals, Eggs, Ranch, Egg vendor and Waves sheets looked at in screenshots at full size; Animals at 800 x 360 and 390 x 844, Waves at 390 x 844 and Egg vendor at 1024 x 768 through the UiSize aid; the bottom bar and sheet close buttons clicked; a wave fought from the Waves sheet's button (won, +40 coins, +14 XP, result panel with Fight wave 2). A training stat turned green with a countdown and the status chip read Training STR. No script errors. Not checked: a real phone or tablet (touch, notch, text sharpness), the Eggs button's ready badge with a finished egg, the Ranch and Egg storage sheets opened by their prompts in the world (opened by the UiOpen aid), the Upgrade and Buy buttons clicked, more than 3 animals in the list, a second player.",
+  "output_artifacts": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Style.luau",
+    "src/stations-client/Portrait.luau",
+    "src/shared/UiLayout.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The hover card keeps its old look. Opening Eggs and Waves from the bar anywhere is a new freedom, easy to take out (remove the two nav buttons)."
+}

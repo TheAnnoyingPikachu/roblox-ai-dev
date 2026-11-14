@@ -256,8 +256,7 @@ end
 -- The asset that shows species `s`, or its variant `v`: a variant "<word>_<species>" is the asset
 -- "creature_<species>_<word>" (StationRules.spec keeps the ids in that form).
 function Creatures.asset(s: string, v: string?): string
-	local word = if v then string.match(v, "^(%l+)_") else nil
-	return if word then `creature_{s}_{word}` else `creature_{s}`
+	return StationRules.assetOf(s, v)
 end
 
 -- How a Hexbound foe looks (decision 0042) is in its StationConfig entry: the model of its kind, a
@@ -319,6 +318,42 @@ function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?
 	CollectionService:AddTag(model, "Creature")
 	model.Parent = parent
 	return model
+end
+
+-- Still copies of every uploaded model for the client's picture frames (decision 0044): the meshes
+-- in their rest pose, with no joints, lights, particles or hit box, in ReplicatedStorage.Portraits.
+-- They load in the background and appear as they are ready; the client waits for each.
+function Creatures.publishPortraits()
+	local folder = ReplicatedStorage:FindFirstChild("Portraits") or Instance.new("Folder")
+	folder.Name = "Portraits"
+	folder.Parent = ReplicatedStorage
+	for name, entry in StationAssets do
+		if entry.model == nil then
+			continue
+		end
+		task.spawn(function()
+			local source = template(name)
+			if source == nil then
+				return
+			end
+			local copy = source:Clone()
+			for _, d in copy:GetDescendants() do
+				if
+					d:IsA("Motor6D")
+					or d:IsA("WeldConstraint")
+					or d:IsA("ParticleEmitter")
+					or d:IsA("PointLight")
+					or d.Name == "Hit"
+					or d.Name == "Aura"
+				then
+					d:Destroy()
+				elseif d:IsA("BasePart") then
+					d.Anchored = true
+				end
+			end
+			copy.Parent = folder
+		end)
+	end
 end
 
 -- A foe standing at `at`, in its own size and tint. Nil when its model is not uploaded.
