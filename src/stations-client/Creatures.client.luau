@@ -343,17 +343,8 @@ local ATTACKS: { [string]: Clip } = {
 	-- the neck draws back and whips forward
 	flamingo = attack({
 		{ 0.00, {} },
-		{ 0.30, { body = { -7, 0, 0, 0, 0.04, 0.3 }, head = { -46, 8 }, tail = { -14 } } },
-		{
-			0.44,
-			{
-				body = { 9, 0, 0, 0, 0.02, -0.7 },
-				head = { 42, -10 },
-				leg_fl = { -18 },
-				leg_fr = { -18 },
-				tail = { 16 },
-			},
-		},
+		{ 0.30, { body = { -7, 0, 0, 0, 0, 0.3 }, head = { -46, 8 }, tail = { -14 } } },
+		{ 0.44, { body = { 9, 0, 0, 0, 0, -0.7 }, head = { 42, -10 }, tail = { 16 } } },
 		{ 0.60, { body = { 3, 0, 0, 0, 0, -0.4 }, head = { 18, 12 } } },
 		{ 0.95, {} },
 	}),
@@ -402,7 +393,8 @@ local ATTACKS: { [string]: Clip } = {
 		{ 0.95, {} },
 	}),
 }
--- A power attack for the three that cannot rear like the others (1.6 s, the slam at MAGIC_IMPACT).
+-- Power attacks (1.6 s, the slam at MAGIC_IMPACT where the ground erupts). Every base animal has its
+-- own; a variant can add one under its asset name ("creature_lion_sun") and it wins over its species'.
 local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
 	return {
 		length = 1.6,
@@ -417,42 +409,122 @@ local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
 	}
 end
 local MAGICS: { [string]: Clip } = {
+	-- throws its head back in a howl, then drives down on the target
+	jackal = powerClip(
+		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { -34 }, tail = { -20 } },
+		{ body = { 20, 0, 0, 0, 0.14, 0.3 }, head = { -50 }, leg_fl = { 14 }, leg_fr = { 14 }, tail = { -26 } },
+		{ body = { -8, 0, 0, 0, -0.12, -1.2 }, head = { 38 }, leg_fl = { -24 }, leg_fr = { -24 }, tail = { 22 } }
+	),
 	-- draws into the shell, rises, and crashes down
 	tortoise = powerClip(
 		{ body = { 6, 0, 0, 0, 0.08, 0.15 }, head = { -18, 0, 0, 0, 0, 0.3 } },
 		{ body = { 16, 0, 0, 0, 0.32, 0.3 }, head = { -24, 0, 0, 0, 0, 0.35 }, leg_fl = { 30 }, leg_fr = { 30 } },
 		{ body = { -9, 0, 0, 0, -0.12, -0.4 }, head = { 22 }, leg_fl = { -10 }, leg_fr = { -10 } }
 	),
+	-- rises on its hind legs, arms overhead, then drops in a double smash
+	meerkat = powerClip(
+		{ body = { 28, 0, 0, 0, 0.3, 0.2 }, head = { -10 }, leg_fl = { 130 }, leg_fr = { 124 }, tail = { -22 } },
+		{ body = { 38, 0, 0, 0, 0.46, 0.3 }, head = { -14 }, leg_fl = { 168 }, leg_fr = { 160 }, tail = { -30 } },
+		{ body = { 6, 0, 0, 0, -0.04, -0.7 }, head = { 18 }, leg_fl = { -30 }, leg_fr = { -30 }, tail = { 20 } }
+	),
 	-- coils low and bounds in
-	cheetah = powerClip({
-		body = { -9, 0, 0, 0, -0.2, 0.4 },
-		head = { -8 },
-		leg_fl = { 20 },
-		leg_fr = { 20 },
-		leg_bl = { -18 },
-		leg_br = { -18 },
-	}, {
-		body = { -12, 0, 0, 0, -0.3, 0.5 },
-		head = { -12 },
-		leg_fl = { 26 },
-		leg_fr = { 26 },
-		leg_bl = { -24 },
-		leg_br = { -24 },
-		tail = { -26 },
-	}, {
-		body = { 14, 0, 0, 0, 0.1, -1.6 },
-		head = { 16 },
-		leg_fl = { 50 },
-		leg_fr = { 50 },
-		leg_bl = { -34 },
-		leg_br = { -34 },
-		tail = { 24 },
-	}),
-	-- the neck coils far back and spears down with a stamp
+	cheetah = powerClip(
+		{
+			body = { -9, 0, 0, 0, -0.2, 0.4 },
+			head = { -8 },
+			leg_fl = { 20 },
+			leg_fr = { 20 },
+			leg_bl = { -18 },
+			leg_br = { -18 },
+		},
+		{
+			body = { -12, 0, 0, 0, -0.3, 0.5 },
+			head = { -12 },
+			leg_fl = { 26 },
+			leg_fr = { 26 },
+			leg_bl = { -24 },
+			leg_br = { -24 },
+			tail = { -26 },
+		},
+		{
+			body = { 14, 0, 0, 0, 0.1, -1.6 },
+			head = { 16 },
+			leg_fl = { 50 },
+			leg_fr = { 50 },
+			leg_bl = { -34 },
+			leg_br = { -34 },
+			tail = { 24 },
+		}
+	),
+	-- the neck coils far back, then spears down; the feet stay planted
 	flamingo = powerClip(
-		{ body = { -6, 0, 0, 0, 0.1, 0.2 }, head = { -40, 10 }, leg_fl = { 24 } },
-		{ body = { -9, 0, 0, 0, 0.14, 0.3 }, head = { -58, -12 }, leg_fl = { 34 }, tail = { -20 } },
-		{ body = { 12, 0, 0, 0, -0.12, -0.8 }, head = { 52 }, leg_fl = { -16 }, leg_fr = { -16 }, tail = { 20 } }
+		{ body = { -6, 0, 0, 0, 0, 0.2 }, head = { -40, 10 } },
+		{ body = { -9, 0, 0, 0, 0, 0.3 }, head = { -58, -12 }, tail = { -20 } },
+		{ body = { 12, 0, 0, 0, 0, -0.8 }, head = { 52 }, tail = { 20 } }
+	),
+	-- a crouch and a roar, then a long leaping pounce
+	lion = powerClip(
+		{
+			body = { -8, 0, 0, 0, -0.24, 0.3 },
+			head = { -6 },
+			leg_fl = { 20 },
+			leg_fr = { 20 },
+			leg_bl = { -16 },
+			leg_br = { -16 },
+		},
+		{
+			body = { -10, 0, 0, 0, -0.28, 0.4 },
+			head = { 30 },
+			leg_fl = { 24 },
+			leg_fr = { 24 },
+			leg_bl = { -20 },
+			leg_br = { -20 },
+			tail = { -24 },
+		},
+		{
+			body = { 20, 0, 0, 0, 0.36, -1.7 },
+			head = { 14 },
+			leg_fl = { 58 },
+			leg_fr = { 54 },
+			leg_bl = { -38 },
+			leg_br = { -38 },
+			tail = { 26 },
+		}
+	),
+	-- backs up, paws the ground, then charges and tosses its horn
+	rhino = powerClip(
+		{
+			body = { -4, 0, 0, 0, -0.06, 0.6 },
+			head = { -30 },
+			leg_fl = { 36 },
+			leg_fr = { -6 },
+			leg_bl = { -14 },
+			leg_br = { -14 },
+		},
+		{
+			body = { -6, 0, 0, 0, -0.1, 0.8 },
+			head = { -36 },
+			leg_fl = { -6 },
+			leg_fr = { 40 },
+			leg_bl = { -18 },
+			leg_br = { -18 },
+			tail = { -16 },
+		},
+		{
+			body = { 8, 0, 0, 0, 0.08, -2.0 },
+			head = { 34 },
+			leg_fl = { -26 },
+			leg_fr = { -26 },
+			leg_bl = { -22 },
+			leg_br = { -22 },
+			tail = { 22 },
+		}
+	),
+	-- trunk raised in a trumpet and the body half reared, then a stomping slam
+	elephant = powerClip(
+		{ body = { 12, 0, 0, 0, 0.12, 0.2 }, head = { -34 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { -14 } },
+		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { -44 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
+		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { 36 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
 	),
 }
 
@@ -460,6 +532,15 @@ local MAGICS: { [string]: Clip } = {
 local function speciesOf(model: Model): string?
 	local asset = model:GetAttribute("Asset")
 	return if type(asset) == "string" then string.match(asset, "^creature_(%l+)") else nil
+end
+
+-- The clip a model plays from `set`: its asset's own (a variant's), then its species', then `fallback`.
+local function pick(set: { [string]: Clip }, model: Model, fallback: Clip): Clip
+	local asset = model:GetAttribute("Asset")
+	if type(asset) ~= "string" then
+		return fallback
+	end
+	return set[asset] or set[speciesOf(model) or ""] or fallback
 end
 
 local function ease(u: number): number
@@ -580,6 +661,17 @@ local function win(t: number, biped: boolean): Pose
 		tail = { 0, 20 * math.sin(t * 6) * u, 0 },
 	}
 end
+
+-- A flamingo's victory keeps both feet planted: the neck sways and bobs, the tail wags.
+local function winFlamingo(t: number): Pose
+	local u = ease(math.min(1, t / 0.5))
+	return {
+		body = { -5 * u, 0, 0, 0, 0, 0 },
+		head = { (-12 + 8 * math.sin(t * 6)) * u, 22 * math.sin(t * 3) * u },
+		tail = { 0, 24 * math.sin(t * 6) * u, 0 },
+	}
+end
+local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo }
 
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow
 -- beat at rest, a wider one when it moves, a hard one when it attacks, still when it is down.
@@ -970,20 +1062,21 @@ RunService.PreSimulation:Connect(function(dt: number)
 				target = scaled(target, rig.flinch)
 			end
 		elseif anim == "win" then
-			target = win(t, biped)
+			local own = WINS[speciesOf(model) or ""]
+			target = if own and not biped then own(t) else win(t, biped)
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
 			target = if biped then walkBiped(time, rate) else walk(time, rate)
 		elseif anim == "attack" and t < ATTACK.length then
 			local kind = model:GetAttribute("Asset")
 			local clip = if not biped
-				then ATTACKS[speciesOf(model) or ""] or ATTACK
+				then pick(ATTACKS, model, ATTACK)
 				elseif kind == "foe_archer" then ARCHER_ATTACK
 				elseif kind == "foe_mage" then MAGE_ATTACK
 				else BIPED_ATTACK
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
-			target = sample(if biped then BIPED_MAGIC else MAGICS[speciesOf(model) or ""] or MAGIC, t)
+			target = sample(if biped then BIPED_MAGIC else pick(MAGICS, model, MAGIC), t)
 			if rig.magicAt ~= at then
 				rig.magicAt = at
 				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
