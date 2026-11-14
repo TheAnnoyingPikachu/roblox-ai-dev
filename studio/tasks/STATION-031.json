@@ -37,7 +37,7 @@
     "A slow-motion beat on the killing blow and a power-attack camera cut-in, and a skip button that leaves the fight through wave_done",
     "No script errors, effects cleaned up after a fight, and desktop frame time not noticeably worse with 3 vs 3 fighters"
   ],
-  "verification": "Slice 1 (impact, arrows and bolts, skip label) built and checked in Studio on 2026-11-14: lune 683/683, selene clean, admin test waves 3 and 6 with no script errors, effects cleaned up, wave 6 unchanged (won, 32s, 65 attacks). Slices 2 and 3 not started. Not measured: frame time before/after, phones, wave 10.",
+  "verification": "Slices 1 and 2 built and checked in Studio on 2026-11-14: lune 683/683, selene clean, admin test waves 2, 3 and 6 with no script errors, effects cleaned up, wave 6 unchanged (won, 32s, 65 attacks); all eight species' attack and win poses seen as stills. Slice 3 not started. Not measured: frame time before/after, phones, wave 10, motion tuning by eye.",
   "output_artifacts": [
     "src/stations/WaveShow.luau",
     "src/stations-client/Creatures.client.luau",
@@ -45,5 +45,5 @@
   ],
   "risk_level": "low",
   "status": "in_progress",
-  "notes": "Slice 1 done (decision 0048). Next: slice 2 (per-species attacks, win pose, defeat reaction), slice 3 (slow-motion beat, power-attack cut-in). Split into further task files if a slice passes ten files. The handoff names what is not measured: phones, a Drake or Dragon in the new arena, two players."
+  "notes": "Slices 1 (impact, shots, skip) and 2 (per-species attacks, win pose, defeat knock-up) done (decision 0048). Next: slice 3 (slow-motion beat on the killing blow, power-attack cut-in). Split into a further task file if it passes ten files. The handoff names what is not measured: phones, a Drake or Dragon in the new arena, two players."
 }

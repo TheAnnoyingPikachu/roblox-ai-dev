@@ -54,6 +54,9 @@ vendors.
 
 ## Built
 
+- Fight presentation, slice 2 (decision 0048): every animal has its own attack (jackal snap, cheetah
+  swipe, tortoise slam, meerkat jab, flamingo whip, lion pounce, elephant stomp, rhino charge), the
+  survivors cheer when the fight ends, and a defeated animal is thrown back before it falls.
 - Fight presentation, slice 1 (decision 0048): hits throw sparks and a shock disc, freeze for a
   blink, flinch harder on power hits and punch the camera; archers and mages fire a visible arrow or
   bolt; the fight button reads "Skip the fight". Display only.

@@ -246,6 +246,10 @@ local DIE_QUAD: Clip = {
 	length = 1.2,
 	keys = {
 		{ 0.00, {} },
+		{
+			0.20,
+			{ body = { 14, 0, 6, 0, 0.12, 0.5 }, head = { -26 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { 20 } },
+		}, -- thrown back
 		{ 0.50, { body = { 8, 0, 40, 0, -0.25, 0 }, head = { 20 } } },
 		{
 			1.20,
@@ -280,6 +284,183 @@ local DIE_BIPED: Clip = {
 		},
 	},
 }
+
+-- Per-species attacks (decision 0048). Every one is 0.95 s long (the server's Creatures.LENGTH.attack)
+-- with its contact near 0.44 s, where the server lands the hit; a variant uses its species' clip.
+-- The rhino keeps the horn charge above (ATTACK), which is also the fallback for a species not listed.
+local function attack(keys: { { any } }): Clip
+	return { length = 0.95, keys = keys }
+end
+local ATTACKS: { [string]: Clip } = {
+	-- a lunge and a snap, then a shake of the head
+	jackal = attack({
+		{ 0.00, {} },
+		{
+			0.20,
+			{ body = { -4, 0, 0, 0, -0.1, 0.3 }, head = { -22 }, leg_fl = { 12 }, leg_fr = { 12 }, tail = { -14 } },
+		},
+		{
+			0.42,
+			{ body = { 8, 0, 0, 0, 0.06, -0.9 }, head = { 30 }, leg_fl = { -22 }, leg_fr = { -22 }, tail = { 20 } },
+		},
+		{ 0.54, { body = { 4, 0, 0, 0, 0.03, -0.7 }, head = { 14, 24 } } },
+		{ 0.66, { body = { 2, 0, 0, 0, 0, -0.5 }, head = { 14, -24 } } },
+		{ 0.95, {} },
+	}),
+	-- rears a little and swipes down with one paw, then the other
+	cheetah = attack({
+		{ 0.00, {} },
+		{ 0.24, { body = { 14, 0, 0, 0, 0.18, 0.2 }, head = { 8 }, leg_fr = { 75 }, leg_fl = { 20 }, tail = { -18 } } },
+		{
+			0.42,
+			{ body = { -6, 0, 0, 0, -0.04, -0.6 }, head = { 14 }, leg_fr = { -24 }, leg_fl = { 30 }, tail = { 18 } },
+		},
+		{ 0.58, { body = { -2, 0, 0, 0, 0, -0.4 }, leg_fl = { -22 }, leg_fr = { 10 } } },
+		{ 0.95, {} },
+	}),
+	-- a heavy shell-first slam: lifts the front, then drops it with the head thrust out
+	tortoise = attack({
+		{ 0.00, {} },
+		{
+			0.28,
+			{ body = { 11, 0, 0, 0, 0.18, 0.1 }, head = { -14, 0, 0, 0, 0, 0.25 }, leg_fl = { 24 }, leg_fr = { 24 } },
+		},
+		{ 0.44, { body = { -10, 0, 0, 0, -0.06, -0.5 }, head = { 24 }, leg_fl = { -12 }, leg_fr = { -12 } } },
+		{ 0.66, { body = { -3, 0, 0, 0, 0, -0.2 }, head = { 8 } } },
+		{ 0.95, {} },
+	}),
+	-- stands up and jabs with both forepaws
+	meerkat = attack({
+		{ 0.00, {} },
+		{ 0.26, { body = { 32, 0, 0, 0, 0.3, 0.2 }, head = { -8 }, leg_fl = { 95 }, leg_fr = { 88 }, tail = { -24 } } },
+		{
+			0.44,
+			{ body = { 12, 0, 0, 0, 0.12, -0.6 }, head = { 14 }, leg_fl = { -20 }, leg_fr = { -14 }, tail = { 14 } },
+		},
+		{ 0.62, { body = { 6, 0, 0, 0, 0.06, -0.3 }, leg_fl = { 20 }, leg_fr = { 20 } } },
+		{ 0.95, {} },
+	}),
+	-- the neck draws back and whips forward
+	flamingo = attack({
+		{ 0.00, {} },
+		{ 0.30, { body = { -7, 0, 0, 0, 0.04, 0.3 }, head = { -46, 8 }, tail = { -14 } } },
+		{
+			0.44,
+			{
+				body = { 9, 0, 0, 0, 0.02, -0.7 },
+				head = { 42, -10 },
+				leg_fl = { -18 },
+				leg_fr = { -18 },
+				tail = { 16 },
+			},
+		},
+		{ 0.60, { body = { 3, 0, 0, 0, 0, -0.4 }, head = { 18, 12 } } },
+		{ 0.95, {} },
+	}),
+	-- a crouch, then a long pounce with both front paws out
+	lion = attack({
+		{ 0.00, {} },
+		{
+			0.26,
+			{
+				body = { -8, 0, 0, 0, -0.22, 0.2 },
+				head = { -10 },
+				leg_fl = { 20 },
+				leg_fr = { 20 },
+				leg_bl = { -16 },
+				leg_br = { -16 },
+				tail = { -20 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { 18, 0, 0, 0, 0.34, -1.2 },
+				head = { 12 },
+				leg_fl = { 58 },
+				leg_fr = { 52 },
+				leg_bl = { -36 },
+				leg_br = { -36 },
+				tail = { 24 },
+			},
+		},
+		{ 0.62, { body = { -4, 0, 0, 0, 0.02, -0.6 }, head = { 8 }, leg_fl = { 10 }, leg_fr = { 10 } } },
+		{ 0.95, {} },
+	}),
+	-- the front legs rise, then a stomp and a trunk-first slam
+	elephant = attack({
+		{ 0.00, {} },
+		{
+			0.30,
+			{ body = { 10, 0, 0, 0, 0.16, 0.2 }, head = { -20 }, leg_fl = { 42 }, leg_fr = { 36 }, tail = { -10 } },
+		},
+		{
+			0.44,
+			{ body = { -7, 0, 0, 0, -0.08, -0.5 }, head = { 30 }, leg_fl = { -12 }, leg_fr = { -10 }, tail = { 12 } },
+		},
+		{ 0.66, { body = { -2, 0, 0, 0, 0, -0.2 }, head = { 10 } } },
+		{ 0.95, {} },
+	}),
+}
+-- A power attack for the three that cannot rear like the others (1.6 s, the slam at MAGIC_IMPACT).
+local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
+	return {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{ 0.40, coil },
+			{ 0.78, wound },
+			{ MAGIC_IMPACT, slam },
+			{ 1.12, { body = { 2 } } },
+			{ 1.60, {} },
+		},
+	}
+end
+local MAGICS: { [string]: Clip } = {
+	-- draws into the shell, rises, and crashes down
+	tortoise = powerClip(
+		{ body = { 6, 0, 0, 0, 0.08, 0.15 }, head = { -18, 0, 0, 0, 0, 0.3 } },
+		{ body = { 16, 0, 0, 0, 0.32, 0.3 }, head = { -24, 0, 0, 0, 0, 0.35 }, leg_fl = { 30 }, leg_fr = { 30 } },
+		{ body = { -9, 0, 0, 0, -0.12, -0.4 }, head = { 22 }, leg_fl = { -10 }, leg_fr = { -10 } }
+	),
+	-- coils low and bounds in
+	cheetah = powerClip({
+		body = { -9, 0, 0, 0, -0.2, 0.4 },
+		head = { -8 },
+		leg_fl = { 20 },
+		leg_fr = { 20 },
+		leg_bl = { -18 },
+		leg_br = { -18 },
+	}, {
+		body = { -12, 0, 0, 0, -0.3, 0.5 },
+		head = { -12 },
+		leg_fl = { 26 },
+		leg_fr = { 26 },
+		leg_bl = { -24 },
+		leg_br = { -24 },
+		tail = { -26 },
+	}, {
+		body = { 14, 0, 0, 0, 0.1, -1.6 },
+		head = { 16 },
+		leg_fl = { 50 },
+		leg_fr = { 50 },
+		leg_bl = { -34 },
+		leg_br = { -34 },
+		tail = { 24 },
+	}),
+	-- the neck coils far back and spears down with a stamp
+	flamingo = powerClip(
+		{ body = { -6, 0, 0, 0, 0.1, 0.2 }, head = { -40, 10 }, leg_fl = { 24 } },
+		{ body = { -9, 0, 0, 0, 0.14, 0.3 }, head = { -58, -12 }, leg_fl = { 34 }, tail = { -20 } },
+		{ body = { 12, 0, 0, 0, -0.12, -0.8 }, head = { 52 }, leg_fl = { -16 }, leg_fr = { -16 }, tail = { 20 } }
+	),
+}
+
+-- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
+local function speciesOf(model: Model): string?
+	local asset = model:GetAttribute("Asset")
+	return if type(asset) == "string" then string.match(asset, "^creature_(%l+)") else nil
+end
 
 local function ease(u: number): number
 	return u * u * (3 - 2 * u)
@@ -375,6 +556,31 @@ local function walkBiped(t: number, rate: number): Pose
 	}
 end
 
+-- Victory (the survivors, at the end): an animal rears and pumps its front paws and wags its tail,
+-- a biped throws both arms up and bounces. Time is since the pose began.
+local function win(t: number, biped: boolean): Pose
+	local u = ease(math.min(1, t / 0.5))
+	if biped then
+		return {
+			leg_fl = { 170 * u + 8 * math.sin(t * 8) * u },
+			leg_fr = { 170 * u - 8 * math.sin(t * 8) * u },
+			body = { 0, 0, 0, 0, 0.12 * math.abs(math.sin(t * 5)) * u, 0 },
+			head = { -10 * u },
+			tail = { 8 * math.sin(t * 4) * u, 0, 0 },
+		}
+	end
+	local pump = 12 * math.sin(t * 7) * u
+	return {
+		body = { 24 * u, 0, 0, 0, (0.34 + 0.06 * math.abs(math.sin(t * 5))) * u, 0.2 * u },
+		head = { 14 * u },
+		leg_fl = { 50 * u + pump },
+		leg_fr = { 50 * u - pump },
+		leg_bl = { -26 * u },
+		leg_br = { -26 * u },
+		tail = { 0, 20 * math.sin(t * 6) * u, 0 },
+	}
+end
+
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow
 -- beat at rest, a wider one when it moves, a hard one when it attacks, still when it is down.
 local function wings(time: number, anim: string?): Pose
@@ -383,6 +589,8 @@ local function wings(time: number, anim: string?): Pose
 		amp, rate = 16, 0.9
 	elseif anim == "attack" or anim == "magic" then
 		amp, rate = 38, 1.8
+	elseif anim == "win" then
+		amp, rate = 30, 1.2
 	elseif anim == "die" then
 		amp = 0
 	end
@@ -761,19 +969,21 @@ RunService.PreSimulation:Connect(function(dt: number)
 			if rig.flinch ~= 1 then
 				target = scaled(target, rig.flinch)
 			end
+		elseif anim == "win" then
+			target = win(t, biped)
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
 			target = if biped then walkBiped(time, rate) else walk(time, rate)
 		elseif anim == "attack" and t < ATTACK.length then
 			local kind = model:GetAttribute("Asset")
 			local clip = if not biped
-				then ATTACK
+				then ATTACKS[speciesOf(model) or ""] or ATTACK
 				elseif kind == "foe_archer" then ARCHER_ATTACK
 				elseif kind == "foe_mage" then MAGE_ATTACK
 				else BIPED_ATTACK
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
-			target = sample(if biped then BIPED_MAGIC else MAGIC, t)
+			target = sample(if biped then BIPED_MAGIC else MAGICS[speciesOf(model) or ""] or MAGIC, t)
 			if rig.magicAt ~= at then
 				rig.magicAt = at
 				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))

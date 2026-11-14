@@ -372,6 +372,18 @@ function WaveShow.run(
 		end)
 	end
 
+	-- the survivors of the winning side celebrate a beat after the last hit, until the show is cleared
+	task.delay(0.4 + seconds + 0.6, function()
+		if not live() then
+			return
+		end
+		for _, slot in slots[if won then 1 else 2] do
+			if slot.hp > 0 then
+				Creatures.play(slot.model, "win")
+			end
+		end
+	end)
+
 	local names = {}
 	for _, e in foes do
 		table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)

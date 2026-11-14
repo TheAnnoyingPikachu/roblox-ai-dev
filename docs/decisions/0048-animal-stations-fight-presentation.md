@@ -1,4 +1,4 @@
-# 0048: Animal Stations: fight presentation, slice 1 (impact, shots, skip)
+# 0048: Animal Stations: fight presentation (slice 1: impact, shots, skip; slice 2: species, win pose)
 
 Status: proposed (for SHANNON at the first Animal Stations checkpoint)
 Date: 2026-11-14. Builds on 0043 (real fights) and 0045 (fight camera). Task STATION-031.
@@ -26,9 +26,23 @@ settled before the replay starts, and nothing below can delay or change them.
 - The pure numbers (lead, flight time, hit-stop, flinch, punch curve) are in `src/shared/FightFx.luau`
   with `tests/FightFx.spec.luau`.
 
-## Not done yet (slices 2 and 3)
+## Slice 2: per-species attacks, a win pose, a harder defeat
 
-Per-species attacks, a win pose, a slow-motion beat on the killing blow and a power-attack cut-in.
+- **Attacks.** `Creatures.client` picks the attack clip from the model's species (read from its `Asset`,
+  so a variant uses its species' clip): jackal lunge and snap with a head shake, cheetah double paw swipe,
+  tortoise shell slam, meerkat stand-and-jab, flamingo neck whip, lion pounce, elephant stomp and slam,
+  rhino keeps the horn charge (also the fallback). Every clip is 0.95 s with contact near 0.44 s, so the
+  server's `LENGTH` and lead are unchanged. The power attack keeps the shared rear-and-slam, except the
+  tortoise, cheetah and flamingo, which have their own wind-ups (the slam stays at `MAGIC_IMPACT`).
+- **Win pose.** A beat after the last hit (`seconds + 0.6` after the replay starts) `WaveShow` sets
+  `Anim = "win"` on the winning side's survivors; it holds until the show is cleared. Animals rear and
+  pump their front paws; the Hexbound throw both arms up; a dragon beats its wings harder.
+- **Defeat.** A four-legged fall is now thrown back first (a knock-up key at 0.2 s) before the roll.
+- Nothing about a result changed: the pose is set after the log has played out.
+
+## Not done yet (slice 3)
+
+A slow-motion beat on the killing blow and a power-attack cut-in.
 The power attack's charge glow and landing slam already existed and are unchanged.
 
 ## Checked
@@ -37,3 +51,7 @@ Lune 683/683. In Studio (admin test waves 3 and 6, starters): no script errors; 
 archer's arrow fly; the FOV punches (55 to 51); sparks and discs appear and are gone after the fight
 (0 stray parts); wave 6 still ends "won in 32s (65 attacks)". Not measured: frame time against a
 before number, phones, wave 10's big models.
+
+Slice 2 checked in Studio: all eight species' contact poses and win pose posed side by side in the air;
+the three custom power wind-ups ran without errors; a wave 2 fight with the starters showed the win pose
+on all three survivors. Not tuned in motion by eye beyond stills.
