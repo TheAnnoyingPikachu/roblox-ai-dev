@@ -660,6 +660,22 @@ local function mountains(root: Instance, rng: Random)
 	spawn.Name = "Spawn"
 	CollectionService:AddTag(spawn, "WaveSpawn")
 	signboard(arena, CFrame.new(0, 0, -(ARENA_NEAR - 12)), 24, "Endless Waves", Color3.fromRGB(190, 70, 70), 8)
+	-- the wave gate: a red crystal on a stone pillar beside the road; its prompt (tagged "WaveGate")
+	-- opens the wave list on the client
+	local at = Vector3.new(18, 0, -(ARENA_NEAR - 26))
+	pillar(arena, at, 5, 1.6, STONE_DARK, M.Cobblestone)
+	local crystal = ball(arena, at + Vector3.new(0, 7, 0), 3.4, Color3.fromRGB(220, 60, 60), M.Neon)
+	glow(crystal, Color3.fromRGB(255, 90, 90), 22, 1.2)
+	local gate = Instance.new("ProximityPrompt")
+	gate.ActionText, gate.ObjectText = "Choose a wave", "Wave gate"
+	gate.HoldDuration, gate.MaxActivationDistance, gate.RequiresLineOfSight = 0.3, 14, false
+	gate.Parent = crystal
+	CollectionService:AddTag(gate, "WaveGate")
+end
+
+-- Where a player stands after a wave: back at the arena's near end, on the road, facing the stand.
+function World.arenaGate(): CFrame
+	return CFrame.lookAt(Vector3.new(0, 3, -(ARENA_NEAR - 34)), Vector3.new(0, 3, -(ARENA_NEAR + 40)))
 end
 
 -- Ranches -------------------------------------------------------------------------------------------

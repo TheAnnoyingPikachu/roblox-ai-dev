@@ -445,6 +445,37 @@ function StationProgress.upgrade(p: Profile, id: string, now: number): (Profile,
 	return p, true, nil
 end
 
+-- Whether `p` can send its team at wave `level` now: any wave up to one past the best cleared,
+-- with at least one animal on the team. The code says why not.
+function StationProgress.canFight(p: Profile, level: number): (boolean, string?)
+	if level < 1 or level > p.best + 1 or level ~= math.floor(level) then
+		return false, "wave"
+	elseif #StationProgress.fighters(p) == 0 then
+		return false, "no_team"
+	end
+	return true, nil
+end
+
+-- What clearing wave `level` pays `p` now: coins, player XP and samples.
+function StationProgress.payout(p: Profile, level: number): (number, number, number)
+	return LevelRules.reward(level, p.best), LevelRules.xp(level, p.best), LevelRules.samples(level, p.best)
+end
+
+-- Pay for clearing wave `level` (the server has decided the fight was won) and record it as the
+-- best if it is.
+function StationProgress.clear(p: Profile, level: number): (Profile, boolean, string?)
+	local ok, code = StationProgress.canFight(p, level)
+	if not ok then
+		return p, false, code
+	end
+	local coins, xp, samples = StationProgress.payout(p, level)
+	p.coins = math.min(p.coins + coins, StationProgress.MAX_COINS)
+	p.xp = math.min(p.xp + xp, StationProgress.MAX_XP)
+	p.samples = math.min(p.samples + samples, StationProgress.MAX_SAMPLES)
+	p.best = math.max(p.best, level)
+	return p, true, nil
+end
+
 -- The animals that fight: the team in order, then the Titan.
 function StationProgress.fighters(p: Profile): { Animal }
 	local out = {}

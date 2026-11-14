@@ -158,3 +158,15 @@ describe("LevelRules.reward", function()
 		expect(LevelRules.reward(5, 9)).toBe(math.floor(LevelRules.reward(5, 4) * LevelRules.REPLAY_PCT / 100))
 	end)
 end)
+
+describe("LevelRules.xp and samples", function()
+	it("pay XP for every clear, samples from wave 5 and double on boss waves, and a part for replays", function()
+		expect(LevelRules.xp(1, 0)).toBe(LevelRules.XP_START + LevelRules.XP_PER_LEVEL)
+		expect(LevelRules.xp(5, 9)).toBe(math.floor(LevelRules.xp(5, 4) * LevelRules.REPLAY_PCT / 100))
+		expect(LevelRules.samples(4, 0)).toBe(0)
+		expect(LevelRules.samples(5, 4)).toBe(1)
+		expect(LevelRules.samples(10, 9)).toBe(4) -- a boss wave drops double
+		expect(LevelRules.samples(10, 10)).toBe(1) -- a replay a quarter of that
+		expect(LevelRules.samples(40, 39) > LevelRules.samples(20, 19)).toBeTruthy()
+	end)
+end)

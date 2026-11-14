@@ -54,8 +54,11 @@ vendors.
 
 ## Built
 
-- The Hexbound enemies in game (decision 0042): five models with their own animations and an evil
-  aura each, shown by the admin's test wave in the arena (a replay of a fight, with health bars).
+- The Hexbound enemies in game (decision 0042): five models with their own animations and a dark
+  glow each.
+- Real wave fights (decision 0043): the wave gate at the arena's entrance lists the waves open to
+  you; the server decides the fight with your team, pays coins, XP and samples, and the arena
+  replays it with health bars and damage numbers. One fight at a time; a loss costs nothing.
 
 - Pure, tested rules in `src/shared`: `StationConfig`, `StationRules` (hatch, stat levels,
   training time), `BattleRules` (wave fights), `LevelRules` (waves, rewards), `StationProgress`
@@ -77,12 +80,10 @@ vendors.
 
 ## Not built yet
 
-- Anything but the admin's test wave using the enemies: the Hexbound models, auras and animations
-  are in game (decision 0042), but the real wave fight is not wired to players yet.
-- Wave fights in the arena. Until then coins, wave progress and most XP cannot be earned in play.
+- Archers and mages firing a visible arrow or spell (the rules have no range yet).
+- Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- Samples dropping from harder waves (the higher upgrade levels need them), more ranch upgrades
-  and expanding the plot. More hub vendors. Gear. The egg overhaul.
+- More ranch upgrades and expanding the plot. More hub vendors. Gear. The egg overhaul.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
 - Magical attacks, microgames, teams of 3 players.
 - Fights between players. They will work differently from wave fights and stats will not affect

@@ -36,7 +36,9 @@ local WALK_IN = 3 -- seconds they take
 local RANGED = { foe_archer = true, foe_mage = true } -- these stand and shoot instead of lunging
 
 local counter = 0
-local runs: { [Player]: number } = {} -- the token of each admin's current show
+local runs: { [Player]: number } = {} -- the token of each player's current show
+local pending: { [Player]: () -> () } = {} -- the result report, owed once per show
+local active: Player? = nil -- whose show is in the arena (it holds one at a time)
 
 -- A team to try the waves with: the three starters, or the strongest team there is, all stats
 -- trained to 70 (the best a player can reach), so waves up to the 60s are fair.
@@ -75,9 +77,22 @@ local function folderOf(player: Player): Folder
 	return f :: Folder
 end
 
--- Stop the admin's show and remove what it made.
+-- Whose show is in the arena now, if any.
+function WaveShow.active(): Player?
+	return active
+end
+
+-- Stop the player's show and remove what it made. A result not yet reported is reported now.
 function WaveShow.clear(player: Player)
 	runs[player] = nil
+	if active == player then
+		active = nil
+	end
+	local owed = pending[player]
+	if owed then
+		pending[player] = nil
+		owed()
+	end
 	local f = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
 	if f then
 		f:ClearAllChildren()
@@ -96,8 +111,6 @@ local function fall(model: Model)
 	for _, d in model:GetDescendants() do
 		if d:IsA("ParticleEmitter") or d:IsA("PointLight") then
 			d.Enabled = false
-		elseif d.Name == "AuraDisc" then
-			(d :: BasePart).Transparency = 1
 		end
 	end
 	task.delay(2.2, function()
@@ -139,7 +152,11 @@ function WaveShow.run(
 	if stand == nil then
 		return false, "arena"
 	end
+	if active ~= nil and active ~= player then
+		return false, "busy"
+	end
 	WaveShow.clear(player)
+	active = player
 	counter += 1
 	local token = counter
 	runs[player] = token
@@ -271,16 +288,23 @@ function WaveShow.run(
 		end)
 	end
 
+	local names = {}
+	for _, e in foes do
+		table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
+	end
+	pending[player] = function()
+		report({ wave = wave, won = won, seconds = seconds, attacks = actions, foes = table.concat(names, ", ") })
+	end
 	task.delay(seconds + 0.4 + 1.6, function()
 		if not live() then
 			return
 		end
-		local names = {}
-		for _, e in foes do
-			table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
+		local owed = pending[player]
+		if owed then
+			pending[player] = nil
+			owed()
 		end
-		report({ wave = wave, won = won, seconds = seconds, attacks = actions, foes = table.concat(names, ", ") })
-		task.wait(10)
+		task.wait(60) -- the result stays up until the player leaves; an idle show frees the arena
 		if live() then
 			WaveShow.clear(player)
 		end

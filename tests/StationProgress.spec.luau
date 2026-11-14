@@ -608,3 +608,54 @@ describe("StationProgress ranch upgrades", function()
 		expect(training(StationProgress.sanitize({ animals = animals, upgrades = { house = 2 } }, 0))).toBe(4)
 	end)
 end)
+
+describe("StationProgress wave fights", function()
+	local function withTeam(): StationProgress.Profile
+		local p = fresh()
+		return get(p, "meadow", hatched("jackal"))
+	end
+
+	it("opens waves one at a time up to one past the best, and needs an animal on the team", function()
+		local p = fresh()
+		local ok, code = StationProgress.canFight(p, 1)
+		expect(ok).toBe(false)
+		expect(code).toBe("no_team")
+		p = withTeam()
+		expect(StationProgress.canFight(p, 1)).toBe(true)
+		local _, why = StationProgress.canFight(p, 2)
+		expect(why).toBe("wave")
+		p.best = 4
+		expect(StationProgress.canFight(p, 5)).toBe(true)
+		expect(StationProgress.canFight(p, 3)).toBe(true) -- a replay
+		local _, bad = StationProgress.canFight(p, 6)
+		expect(bad).toBe("wave")
+		local _, zero = StationProgress.canFight(p, 0)
+		expect(zero).toBe("wave")
+		local _, half = StationProgress.canFight(p, 2.5)
+		expect(half).toBe("wave")
+	end)
+
+	it("pays coins, XP and samples for a first clear, records the best and pays a quarter for a replay", function()
+		local p = withTeam()
+		p.best = 9
+		local coins, xp, samples = p.coins, p.xp, p.samples
+		local q, ok = StationProgress.clear(p, 10)
+		expect(ok).toBe(true)
+		expect(q.best).toBe(10)
+		expect(q.coins > coins).toBeTruthy()
+		expect(q.xp > xp).toBeTruthy()
+		expect(q.samples).toBe(samples + 4) -- a boss wave drops double
+		local before = q.coins
+		q = StationProgress.clear(q, 10)
+		expect(q.best).toBe(10)
+		expect(q.coins - before < before - coins).toBeTruthy() -- the replay pays less
+	end)
+
+	it("refuses to pay for a wave that is not open", function()
+		local p = withTeam()
+		local q, ok, code = StationProgress.clear(p, 5)
+		expect(ok).toBe(false)
+		expect(code).toBe("wave")
+		expect(q.best).toBe(0)
+	end)
+end)

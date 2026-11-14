@@ -58,8 +58,8 @@ The animals' rig names are reused. Knight, archer, mage and ogre are bipeds: `le
 the arms, `leg_bl`/`leg_br` the legs, `tail` the cape, cloak or loincloth. They have a heavy walk,
 a sword or club chop (knight, ogre), a bow shot (archer), a spell cast (mage), a power attack with
 both arms thrown up, a hit reaction and a fall onto the back. The dragon uses the four-legged poses
-and beats its two wings (`wing_l`, `wing_r`). Every Hexbound has an evil aura: a green pool of
-light, rising smoke and sparks, one light.
+and beats its two wings (`wing_l`, `wing_r`). Every Hexbound has an evil aura: a dark glow of black-violet smoke and one faint violet light
+(decision 0043; it was a green pool of light and sparks).
 
 Not built: a real bow or spell effect (an archer does not shoot a visible arrow), a roar, a death
 effect beyond the fall and the fade.

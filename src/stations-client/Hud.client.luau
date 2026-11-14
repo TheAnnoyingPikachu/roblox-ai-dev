@@ -18,6 +18,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
@@ -63,6 +64,10 @@ local REFUSED: { [string]: string } = {
 	training = "Stop its training first",
 	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
 	loading = "Still loading your ranch...",
+	wave = "That wave is not open yet: clear the one before it",
+	no_team = "Put an animal on your team first",
+	busy = "The arena is busy: try again in a moment",
+	arena = "The arena is not ready",
 	rate = "Slow down a little",
 }
 
@@ -468,10 +473,12 @@ end
 
 local menu, menuRows = sheet("RanchMenu", "Your ranch")
 local shop, shopRows = sheet("EggShop", "Egg vendor")
+local waves, waveRows = sheet("Waves", "Endless waves")
 local store, storeRows = sheet("EggStorage", "Egg storage")
 
 local function only(frame: Frame) -- one list at a time
-	menu.Visible, shop.Visible, store.Visible = frame == menu, frame == shop, frame == store
+	menu.Visible, shop.Visible, store.Visible, waves.Visible =
+		frame == menu, frame == shop, frame == store, frame == waves
 end
 
 -- Admin menu (decision 0038): only for players the server marks as admin (the game's owner, or
@@ -671,6 +678,87 @@ local function drawStore()
 	Ui.label(storeRows, head, { size = 16, muted = true }).LayoutOrder = 0
 end
 
+-- The wave gate's list (decision 0043): the wave to fight (any up to one past the best cleared), who
+-- is in it, what clearing it pays, and a Fight button. The server decides and pays; this only asks.
+local wave = 1
+local result = Ui.panel(screen, { size = UDim2.fromOffset(420, 230), name = "WaveResult" })
+result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -20), false
+result.AutomaticSize, result.Size = Enum.AutomaticSize.Y, UDim2.fromOffset(420, 0)
+local resultText = Ui.label(result, "", { size = 20 })
+local again = Ui.button(result, "", function() end)
+local function fight(n: number)
+	local ok, code = request:InvokeServer("wave", n)
+	if not ok then
+		Ui.toast(screen, REFUSED[code] or `Can't do that ({code})`)
+		return false
+	end
+	wave, waves.Visible = n, false
+	resultText.Text, again.Visible, result.Visible = `Wave {n}: the fight is on...`, false, true
+	return true
+end
+Ui.button(result, "Leave the arena", function()
+	result.Visible = false
+	send("wave_done")
+end, { danger = true })
+
+local function drawWaves()
+	if profile == nil then
+		return
+	end
+	clear(waveRows)
+	wave = math.clamp(wave, 1, profile.best + 1)
+	local n = 0
+	local function place(thing: GuiObject)
+		n += 1
+		thing.LayoutOrder = n
+	end
+	place(
+		Ui.label(
+			waveRows,
+			`Wave {wave}{if wave > profile.best then "  (new)" else "  (cleared: replays pay a quarter)"}`,
+			{ size = 24 }
+		)
+	)
+	place(Ui.label(waveRows, `Best wave cleared: {profile.best}`, { size = 16, muted = true }))
+	local foes = {}
+	for _, e in LevelRules.enemies(wave) do
+		table.insert(foes, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
+	end
+	local boss = if wave % LevelRules.BOSS_EVERY == 0 then "  BOSS WAVE: a dragon leads them." else ""
+	place(Ui.label(waveRows, `Enemies: {table.concat(foes, ", ")}.{boss}`, { size = 16 }))
+	local coinsWon, xpWon, samplesWon = StationProgress.payout(profile, wave)
+	local pays = `Clearing it pays {Format.commas(coinsWon)} coins and {xpWon} XP`
+	place(Ui.label(waveRows, pays .. (if samplesWon > 0 then ` and {samplesWon} samples.` else "."), { size = 16 }))
+	local team = {}
+	for _, a in StationProgress.fighters(profile) do
+		table.insert(team, nameOf(a))
+	end
+	place(
+		Ui.label(
+			waveRows,
+			if #team > 0
+				then `Your team: {table.concat(team, ", ")}`
+				else "Your team is empty: open the Animals panel and put an animal on your team.",
+			{ size = 16, muted = #team > 0 }
+		)
+	)
+	place(Ui.button(waveRows, `Fight wave {wave}`, function()
+		fight(wave)
+	end))
+	if wave > 1 then
+		place(Ui.button(waveRows, "Previous wave", function()
+			wave -= 1
+			drawWaves()
+		end))
+	end
+	if wave <= profile.best then
+		place(Ui.button(waveRows, "Next wave", function()
+			wave += 1
+			drawWaves()
+		end))
+	end
+end
+
 -- The prompts in the world: the Ranch House door, the egg storage and a finished egg (the owner
 -- only), and the vendors' stalls.
 ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
@@ -689,6 +777,10 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 	elseif CollectionService:HasTag(prompt, "EggStorage") then
 		drawStore()
 		only(store)
+	elseif CollectionService:HasTag(prompt, "WaveGate") then
+		wave = if profile then profile.best + 1 else 1
+		drawWaves()
+		only(waves)
 	elseif CollectionService:HasTag(prompt, "Egg") then
 		send("open", prompt:GetAttribute("Index"))
 	elseif CollectionService:HasTag(prompt, "Vendor") then
@@ -734,6 +826,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if store.Visible then
 			drawStore()
 		end
+		if waves.Visible then
+			drawWaves()
+		end
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
@@ -745,6 +840,24 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			hatchEffect(payload.at, payload.body, payload.spot) -- then the animal steps out
 		end
 		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
+	elseif kind == "wavedone" then
+		local took = string.format("%.0f", payload.seconds)
+		if payload.won then
+			local drops = `+{Format.commas(payload.coins)} coins   +{payload.xp} XP`
+			if payload.samples > 0 then
+				drops ..= `   +{payload.samples} samples`
+			end
+			resultText.Text =
+				`Wave {payload.wave} cleared in {took}s!{if payload.first then " First clear!" else ""}\n{drops}`
+			wave = payload.wave + 1
+			again.Text = `Fight wave {wave}`
+		else
+			resultText.Text =
+				`Wave {payload.wave}: your team was beaten in {took}s by {payload.foes}.\nTrain your animals up and try again.`
+			wave = payload.wave
+			again.Text = `Try wave {wave} again`
+		end
+		again.Visible, result.Visible = true, true
 	elseif kind == "waveshow" then
 		local took = string.format("%.0f", payload.seconds)
 		Ui.toast(

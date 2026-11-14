@@ -45,12 +45,12 @@ local function textureOf(entry: StationAssets.Asset): string?
 	return nil
 end
 
-local HEXFIRE = Color3.fromRGB(150, 255, 70)
+local DARK = Color3.fromRGB(70, 30, 110) -- the glow of their aura
 
--- An evil aura for a Hexbound model (decision 0042): a pale green glow on the ground, dark smoke
--- rising off the footprint, a few hexfire sparks and one soft light. Built into the model, so it
--- costs the server nothing while it runs, and kept small: about 25 live particles and one light
--- with no shadows for each enemy.
+-- An evil aura for a Hexbound model (decisions 0042, 0043): a dark glow, thick black-violet smoke
+-- rising off the footprint and one faint deep-violet light. Built into the model, so it costs the
+-- server nothing while it runs, and kept small: about 25 live particles and one light with no
+-- shadows for each enemy.
 local function aura(model: Model, root: BasePart, rootFrame: CFrame, size: { number }, unit: number)
 	local w, l = size[1] * 0.8, size[3] * 0.8
 	local base = Instance.new("Part")
@@ -67,55 +67,28 @@ local function aura(model: Model, root: BasePart, rootFrame: CFrame, size: { num
 	local haze = Instance.new("ParticleEmitter")
 	haze.Name = "Haze"
 	haze.Texture = "rbxasset://textures/particles/smoke_main.dds"
-	haze.Color = ColorSequence.new(Color3.fromRGB(90, 170, 50), Color3.fromRGB(12, 34, 24))
+	haze.Color = ColorSequence.new(Color3.fromRGB(58, 24, 90), Color3.fromRGB(6, 4, 12))
 	haze.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.55),
-		NumberSequenceKeypoint.new(0.5, 0.72),
+		NumberSequenceKeypoint.new(0, 0.35),
+		NumberSequenceKeypoint.new(0.5, 0.6),
 		NumberSequenceKeypoint.new(1, 1),
 	})
 	haze.Size =
-		NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.0 * unit), NumberSequenceKeypoint.new(1, 3.0 * unit) })
+		NumberSequence.new({ NumberSequenceKeypoint.new(0, 1.4 * unit), NumberSequenceKeypoint.new(1, 3.6 * unit) })
 	haze.Lifetime = NumberRange.new(1.8, 3)
-	haze.Rate = 7
+	haze.Rate = 12
 	haze.Speed = NumberRange.new(0.8, 2.2)
 	haze.RotSpeed = NumberRange.new(-20, 20)
-	haze.LightEmission = 0.25
-	haze.Acceleration = Vector3.new(0, 1.2, 0)
+	haze.LightEmission = 0.05
+	haze.Acceleration = Vector3.new(0, 1.4, 0)
 	haze.Shape = Enum.ParticleEmitterShape.Box
 	haze.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
 	haze.EmissionDirection = Enum.NormalId.Top
 	haze.Parent = base
 
-	local sparks = Instance.new("ParticleEmitter")
-	sparks.Name = "Sparks"
-	sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	sparks.Color = ColorSequence.new(HEXFIRE, Color3.fromRGB(220, 255, 170))
-	sparks.LightEmission = 1
-	sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3 * unit), NumberSequenceKeypoint.new(1, 0) })
-	sparks.Lifetime = NumberRange.new(1.2, 2.2)
-	sparks.Rate = 6
-	sparks.Speed = NumberRange.new(1.5 * unit, 3.5 * unit)
-	sparks.Shape = Enum.ParticleEmitterShape.Box
-	sparks.ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume
-	sparks.EmissionDirection = Enum.NormalId.Top
-	sparks.Parent = base
-
 	local light = Instance.new("PointLight")
-	light.Color, light.Range, light.Brightness, light.Shadows = HEXFIRE, 8 * unit, 0.7, false
+	light.Color, light.Range, light.Brightness, light.Shadows = DARK, 9 * unit, 0.6, false
 	light.Parent = base
-
-	local d = math.max(w, l) * 1.1
-	local disc = Instance.new("Part")
-	disc.Name = "AuraDisc"
-	disc.Shape = Enum.PartType.Cylinder
-	disc.Size = Vector3.new(0.1, d, d)
-	disc.CFrame = rootFrame * CFrame.new(0, 0.12, 0) * CFrame.Angles(0, 0, math.pi / 2)
-	disc.Color, disc.Material, disc.Transparency = HEXFIRE, Enum.Material.Neon, 0.86
-	disc.CanCollide, disc.CanQuery, disc.CanTouch, disc.CastShadow, disc.Massless = false, false, false, false, true
-	local hold2 = Instance.new("WeldConstraint")
-	hold2.Part0, hold2.Part1 = root, disc
-	hold2.Parent = disc
-	disc.Parent = model
 end
 
 -- The rigged template for `name`, or nil when the asset is not uploaded or did not load.

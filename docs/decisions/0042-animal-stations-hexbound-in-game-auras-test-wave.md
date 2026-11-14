@@ -11,7 +11,7 @@ lacklustre look a bit? also run a test wave in game".
 - **The five enemy models are baked, uploaded and in the game**, each rigged like an animal.
   A tier of a kind is the same model with its own size and tint, set in its `StationConfig.FOES`
   entry (`model`, `size`, `tint`), so there are still only five models.
-- **Evil aura.** Every Hexbound carries one, built into its model: a pale green pool of light on
+- **Evil aura** (the green pool and sparks were replaced by a dark glow in decision 0043). Every Hexbound carries one, built into its model: a pale green pool of light on
   the ground, dark smoke rising off its footprint, a few hexfire sparks, and one soft light with no
   shadows. About 25 live particles and one light each. They are built once into the model, so the
   server does no work while they run, and the cost scales with the enemies in view, not with players.

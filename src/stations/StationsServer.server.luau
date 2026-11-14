@@ -117,6 +117,8 @@ local Payload = require(Kit:WaitForChild("Payload"))
 local Router = require(Kit:WaitForChild("Router"))
 local Remotes = require(KitRoblox:WaitForChild("Remotes"))
 local Saves = require(KitRoblox:WaitForChild("Saves"))
+local BattleRules = require(Shared:WaitForChild("BattleRules"))
+local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local Rng = require(Shared:WaitForChild("Rng"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
@@ -247,6 +249,44 @@ local function standBefore(player: Player, list: { Look })
 	end
 end
 
+-- Wave fights (decision 0043). The server picks the team and decides the fight with the pure rules,
+-- pays at once and then replays the fight in the arena (WaveShow), one player at a time. A player
+-- who leaves mid-replay keeps what the fight paid, but the next fight waits until this one's
+-- fight time is up, so skipping the replay does not make farming faster.
+local readyAt: { [Player]: number } = {} -- os.clock() when the player may start another fight
+local function waveFight(player: Player, level: number): (boolean, string?)
+	local p = saves.get(player)
+	if p == nil then
+		return false, "loading"
+	elseif os.clock() < (readyAt[player] or 0) then
+		return false, "busy"
+	end
+	local copy = StationProgress.sanitize(p, os.time())
+	local ok, code = StationProgress.canFight(copy, level)
+	if not ok then
+		return false, code
+	end
+	local team = StationProgress.fighters(copy)
+	local won, _, seconds = LevelRules.fight(team :: any, level)
+	readyAt[player] = os.clock() + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
+	local coins, xp, samples = StationProgress.payout(copy, level)
+	local first = level > copy.best
+	local started, why = WaveShow.run(player, level, team :: any, function(result)
+		result.coins, result.xp, result.samples =
+			if won then coins else 0, if won then xp else 0, if won then samples else 0
+		result.first = first
+		remotes.fx(player, "wavedone", result)
+	end)
+	if not started then
+		readyAt[player] = nil
+	elseif won then
+		saves.apply(player, function(q)
+			return (StationProgress.clear(q, level))
+		end)
+	end
+	return started, why
+end
+
 local router = Router.new({
 	ready = function(player)
 		return saves ~= nil and saves.isLoaded(player)
@@ -365,6 +405,21 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- fight wave `n` with the player's own team; `wave_done` leaves the arena
+		wave = {
+			args = { Payload.int({ min = 1, max = 1e6 }) },
+			handler = waveFight,
+		},
+		wave_done = {
+			args = {},
+			handler = function(player)
+				WaveShow.clear(player)
+				if player.Character then
+					player.Character:PivotTo(World.arenaGate())
+				end
+				return true, nil
+			end,
+		},
 		-- a test wave in the arena: `team` is "mine" (the admin's own team), "starters" or "mythics"
 		testwave = {
 			args = { Payload.int({ min = 1, max = 200 }), Payload.enum({ "mine", "starters", "mythics" }) },
@@ -400,8 +455,8 @@ local router = Router.new({
 				return ok, code
 			end,
 		},
-		-- Studio only: coins and samples cannot be earned until wave fights are built, so the
-		-- ranch menu has a test funds button. The action does not exist on a live server.
+		-- Studio only: a test funds button in the ranch menu to try the upgrades without
+		-- fighting for them. The action does not exist on a live server.
 		funds = if RunService:IsStudio()
 			then {
 				args = {},
@@ -453,6 +508,7 @@ end
 Players.PlayerRemoving:Connect(function(player)
 	looks(player):Destroy()
 	WaveShow.clear(player)
+	readyAt[player] = nil
 	local i = ranchOf(player)
 	if i then
 		owners[i] = nil

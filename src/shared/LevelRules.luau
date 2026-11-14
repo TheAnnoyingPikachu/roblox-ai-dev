@@ -20,6 +20,8 @@ LevelRules.BOSS_EVERY = 10 -- every 10th level's last enemy is a dragon
 LevelRules.REWARD_START = 40 -- coins for clearing level 1 the first time
 LevelRules.REWARD_GROWTH = 1.08
 LevelRules.REPLAY_PCT = 25 -- replaying a cleared level pays this % of its reward
+LevelRules.XP_START, LevelRules.XP_PER_LEVEL = 10, 4 -- player XP for a first clear: 10 + 4 per wave
+LevelRules.SAMPLE_EVERY = 5 -- a first clear drops a sample per this many waves (boss waves drop double)
 
 function LevelRules.scale(level: number): number
 	return LevelRules.SCALE_START * LevelRules.SCALE_GROWTH ^ (level - 1)
@@ -75,6 +77,22 @@ end
 -- Coins for clearing `level` when the player's best cleared level is `best` (0 = none).
 function LevelRules.reward(level: number, best: number): number
 	local full = math.floor(LevelRules.REWARD_START * LevelRules.REWARD_GROWTH ^ (level - 1))
+	return if level > best then full else math.floor(full * LevelRules.REPLAY_PCT / 100)
+end
+
+-- Player XP for clearing `level` (the same replay cut as coins).
+function LevelRules.xp(level: number, best: number): number
+	local full = LevelRules.XP_START + LevelRules.XP_PER_LEVEL * level
+	return if level > best then full else math.floor(full * LevelRules.REPLAY_PCT / 100)
+end
+
+-- Samples dropped by clearing `level`: none before wave 5, more as the waves go on, double from a
+-- boss wave. These pay for the higher ranch upgrades.
+function LevelRules.samples(level: number, best: number): number
+	local full = math.floor(level / LevelRules.SAMPLE_EVERY)
+	if level % LevelRules.BOSS_EVERY == 0 then
+		full *= 2
+	end
 	return if level > best then full else math.floor(full * LevelRules.REPLAY_PCT / 100)
 end
 
