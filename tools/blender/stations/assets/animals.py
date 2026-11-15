@@ -371,32 +371,38 @@ def lion_coat(c, hy, hz, belly, spine, hi, bridge, spots, paw):
     c["foot_rgb"] = paw
 
 
+SUNFIRE = (255, 196, 48)
+
+
 def lion(variant=False):
     c = dict(LION)
     hy, hz = -0.96 * 0.72 - 0.55, 2.0 + 0.96 * 0.42 + 0.72  # the head's middle
-    if not variant:  # the mane: a ruff of big locks behind the face, part of the head
-        c["head_extra"] = [((math.cos(a) * 0.72, hy + 0.5, hz - 0.1 + math.sin(a) * 0.72), 0.5, (1.0, 1.15, 1.0)) for a in [i / 9 * math.tau for i in range(9)]] + [((0, hy + 0.85, hz - 0.2), 0.95, (1.0, 0.9, 1.05))]
+    # the mane: a ruff of big locks behind the face, part of the head
+    c["head_extra"] = [((math.cos(a) * 0.72, hy + 0.5, hz - 0.1 + math.sin(a) * 0.72), 0.5, (1.0, 1.15, 1.0)) for a in [i / 9 * math.tau for i in range(9)]] + [((0, hy + 0.85, hz - 0.2), 0.95, (1.0, 0.9, 1.05))]
+    if not variant:
         c["skin"] = k.paint("li_tawny", [(0, (150, 110, 62)), (0.5, (196, 152, 86)), (1, (182, 140, 82))], 0, 3.8, rest=True, grain=(0.18, 15))
         c.update(iris=(240, 176, 36), socket=(70, 48, 30))
         lion_coat(c, hy, hz, (232, 206, 158), (140, 100, 54), (216, 172, 102), (122, 86, 52), (74, 48, 30), (112, 82, 50))
-    else:  # Sun Lion: pale gold, a mane of flames, burning eyes and tail
-        c["skin"] = k.paint("li_sun", [(0, (206, 160, 92)), (1, (246, 218, 150))], 0, 3.8, rest=True, grain=(0.12, 15))
-        c.update(iris=FLAME, socket=(120, 80, 40), glow_eyes=True, claw=(255, 170, 60))
-        lion_coat(c, hy, hz, (240, 216, 160), (214, 164, 90), (252, 232, 176), (190, 146, 92), (140, 94, 52), (206, 160, 92))
+    else:  # Sun Lion: a deep gold coat, a full mane of crimson and orange locks crowned in flame, a blazing tail
+        c["skin"] = k.paint("li_sun2", [(0, (150, 92, 36)), (0.5, (214, 152, 60)), (1, (232, 176, 80))], 0, 3.8, rest=True, grain=(0.18, 15))
+        c.update(iris=(255, 244, 190), socket=(96, 44, 20), glow_eyes=True, claw=(255, 214, 120))
+        lion_coat(c, hy, hz, (246, 214, 140), (146, 80, 34), (244, 196, 100), (170, 104, 46), (104, 54, 28), (132, 78, 34))
     lion_head(c, hy, hz)
     groups, torso, skull, hc = predator(c)
     if variant:
-        rng, glow = random.Random(5), k.glow(FLAME)
+        k.zone(c["skin"], (176, 52, 24), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.25, jag=0.15)  # a crimson ruff
+        k.zone(c["skin"], (252, 226, 160), (0, hy - 0.75, hz - 0.35), (0.42, 0.5, 0.36), soft=0.4)  # pale muzzle
+        rng, glow = random.Random(5), k.glow(SUNFIRE)
         flames = []
-        for ring_r, n, long in ((0.62, 11, 1.25), (0.5, 8, 0.85)):
+        for ring_r, n, long in ((1.0, 14, 1.5), (0.78, 12, 1.2), (0.55, 8, 0.85)):  # three rings of flame, a crown
             for i in range(n):
-                a = i / n * math.tau + rng.uniform(-0.15, 0.15)
+                a = i / n * math.tau + rng.uniform(-0.12, 0.12)
                 d = Vector((math.cos(a), 0.55, math.sin(a) * 1.05)).normalized()
                 base = hc + Vector((math.cos(a) * ring_r, 0.42, math.sin(a) * ring_r))
                 flames.append(shard(base - d * 0.2, base + d * long * rng.uniform(0.75, 1.15), 0.2, glow))
-        for i in range(8):  # licks of flame along the spine and haunches, shorter towards the tail
-            base = Vector((rng.uniform(-0.1, 0.1), 0.45 + i * 0.26, c["chest_z"] + 0.8 - i * 0.03))
-            flames.append(shard(base, base + Vector((0, 0.3, 0.7 - i * 0.05)), 0.14, glow))
+        for i in range(6):  # licks of flame along the spine and haunches, shorter towards the tail
+            base = Vector((rng.uniform(-0.1, 0.1), 0.45 + i * 0.32, c["chest_z"] + 0.8 - i * 0.03))
+            flames.append(shard(base, base + Vector((0, 0.3, 0.7 - i * 0.06)), 0.14, glow))
         groups["head_glow"] += flames
         tip = c["tail_tip"]
         groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.3)), tip + Vector((0, 0.3, -0.85))], [0.1, 0.27, 0.0], glow, n=10, steps=8, name="flame")]
@@ -404,41 +410,61 @@ def lion(variant=False):
         k.zone(c["skin"], (92, 58, 34), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.25, jag=0.15)  # the mane is darker
         k.zone(c["skin"], (236, 218, 180), (0, hy - 0.75, hz - 0.35), (0.42, 0.5, 0.36), soft=0.4)  # pale muzzle
         groups["tail"].append(k.blob(0.26, tuple(c["tail_tip"]), k.flat((70, 44, 28)), scale=(0.9, 0.9, 1.5), name="tuft"))
-    lion_fur(c, groups, skull, hc, (176, 136, 80) if not variant else (232, 206, 150), None if variant else ((74, 46, 28), (130, 92, 52)))
+    lion_fur(c, groups, skull, hc, (176, 136, 80) if not variant else (222, 160, 72), ((74, 46, 28), (130, 92, 52)) if not variant else ((176, 44, 22), (238, 116, 32)))
     return groups, c["joints"]
 
 
-SHADOW = (170, 90, 255)
+SHADOW = (110, 255, 90)  # a sickly green glow
 
 
 def shadow_lion(variant=True):
-    """Shadow Lion (legendary): a coal-black lion, the mane a swept-back ruff of black locks with violet
-    shards raking back from it and down the spine, violet eyes, claws and tail-tip."""
+    """Shadow Lion (legendary): a lean ink-black lion with a bone-white skull mask and spine, a mane of
+    long smoky tendrils streaming back, glowing green ribs, eyes and tail-wisp."""
     c = dict(LION)
     hy, hz = -0.96 * 0.72 - 0.55, 2.0 + 0.96 * 0.42 + 0.72
-    c["head_extra"] = [((math.cos(a) * 0.72, hy + 0.5, hz - 0.1 + math.sin(a) * 0.72), 0.5, (1.0, 1.15, 1.0)) for a in [i / 9 * math.tau for i in range(9)]] + [((0, hy + 0.85, hz - 0.2), 0.95, (1.0, 0.9, 1.05))]
-    c["skin"] = k.paint("li_shadow", [(0, (18, 16, 26)), (0.6, (40, 36, 56)), (1, (60, 52, 82))], 0, 3.8, rest=True, grain=(0.16, 15))
-    c.update(iris=SHADOW, socket=(8, 6, 14), glow_eyes=True, claw=(190, 130, 255))
-    lion_coat(c, hy, hz, (30, 26, 46), (10, 8, 18), (78, 62, 112), (12, 10, 20), (150, 110, 230), (10, 8, 16))
+    c["torso_extra"] = c["torso_extra"][:2]  # the shoulders, but no extra spine
+    c["torso_tris"] = 2300
+    c["skin"] = k.paint("li_shade", [(0, (10, 10, 14)), (0.6, (24, 26, 34)), (1, (36, 40, 52))], 0, 3.8, rest=True, grain=(0.2, 15))
+    c.update(iris=SHADOW, socket=(4, 6, 6), glow_eyes=True, claw=BONE)
+    lion_coat(c, hy, hz, (20, 22, 28), (6, 6, 9), (48, 54, 68), (200, 192, 168), (190, 180, 154), (8, 8, 10))
     lion_head(c, hy, hz)
     groups, torso, skull, hc = predator(c)
-    k.zone(c["skin"], (92, 66, 140), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.3, jag=0.2)  # the mane glints violet
+    m = c["skin"]
+    # the skull mask: bone over the brow, down the nose and over the cheek bones
+    for side in (-1, 1):
+        k.zone(m, BONE, (side * 0.3, hy - 0.42, hz + 0.22), (0.28, 0.2, 0.12), soft=0.3, jag=0.12, jag_scale=10)
+        k.zone(m, BONE, (side * 0.46, hy - 0.4, hz - 0.2), (0.12, 0.3, 0.16), soft=0.3, jag=0.12, jag_scale=10)
+    k.zone(m, BONE, (0, hy - 0.7, hz + 0.02), (0.17, 0.55, 0.15), soft=0.3, jag=0.1, jag_scale=10)
     rng, glow = random.Random(11), k.glow(SHADOW)
-    shards = []
-    for i in range(12):  # a crest raked back from the mane, longest at the top
-        a = i / 12 * math.tau + rng.uniform(-0.12, 0.12)
-        top = max(0.0, math.sin(a)) * 0.9
-        d = Vector((math.cos(a) * 0.5, 1.0, 0.3 + math.sin(a) * 0.7)).normalized()
-        base = hc + Vector((math.cos(a) * 0.62, 0.5, 0.15 + math.sin(a) * 0.62))
-        shards.append(shard(base, base + d * (0.9 + top + rng.uniform(0, 0.3)), 0.17, glow))
-    for i in range(7):  # and down the spine, shorter towards the tail
-        y = 0.55 + i * 0.3
-        base = Vector((0, y, c["chest_z"] + 0.78 - i * 0.02))
-        shards.append(shard(base, base + Vector((0, 0.35, 0.78 - i * 0.07)), 0.14, glow))
-    groups["head_glow"] += shards
+    tones = [k.flat((16, 18, 26)), k.flat((34, 40, 54))]
+    for i in range(20):  # the mane: long tendrils streaming back like smoke in a wind
+        a = i / 20 * math.tau + rng.uniform(-0.1, 0.1)
+        up = math.sin(a)
+        out = Vector((math.cos(a), 0, up))
+        base = hc + out * 0.8 + Vector((0, 0.45, 0))
+        d1 = Vector((out.x * 0.5, 0.9, out.z * 0.35 + 0.1))
+        d2 = Vector((out.x * 0.35, 0.95, out.z * 0.2 - 0.25 + max(0.0, up) * 0.35))
+        d3 = Vector((-out.x * 0.2, 0.9, -0.3 + max(0.0, up) * 0.25))
+        n = rng.uniform(0.7, 1.7)
+        p1 = base + d1 * 0.55 * n
+        p2 = p1 + d2 * 0.6 * n
+        p3 = p2 + d3 * 0.55 * n
+        groups["head"].append(k.horn([base - d1 * 0.2, p1, p2, p3], [0.2, 0.17, 0.11, 0.0], tones[i % 2], n=6, steps=6, name="lock"))
+        if i % 2 == 0:  # an ember drifting off the end of every second tendril
+            groups["head_glow"].append(shard(p3, p3 + d3 * 0.45 + Vector((0, 0.1, 0.12)), 0.07, glow))
+    for i in range(7):  # a spine of bone vertebrae, then a rib cage of glowing bands
+        y = 0.4 + i * 0.27
+        base = Vector((0, y, c["chest_z"] + 0.86 - abs(i - 3) * 0.015))
+        groups["body"].append(k.horn([base, base + Vector((0, 0.08, 0.2)), base + Vector((0, 0.18, 0.44 - i * 0.025))], [0.1, 0.07, 0.0], k.flat(BONE), n=5, steps=3, name="lock"))
+    bands = []
+    for y in (0.0, 0.3, 0.6, 0.9, 1.2, 1.5):  # each rib runs from the spine down the flank to the belly
+        for side in (-1, 1):
+            pts = [side_point(c, side * a, y + a * 0.004) for a in (14, 38, 62, 86, 110, 134)]
+            bands.append(k.vein(torso, pts, 0.05, glow, name="rib"))
+    groups["body_glow"] = bands
     tip = c["tail_tip"]
-    groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.3)), tip + Vector((0, 0.3, -0.85))], [0.1, 0.27, 0.0], glow, n=10, steps=8, name="flame")]
-    lion_fur(c, groups, skull, hc, (44, 38, 62), ((34, 28, 54), (84, 56, 130)), whisker=(190, 150, 255), seed=7)
+    groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.2)), tip + Vector((0.05, 0.35, -0.2)), tip + Vector((0, 0.6, 0.15))], [0.1, 0.2, 0.12, 0.0], glow, n=8, steps=8, name="wisp")]
+    lion_fur(c, groups, skull, hc, (20, 22, 30), None, whisker=(190, 235, 180), seed=7)
     return groups, c["joints"]
 
 
@@ -718,8 +744,8 @@ ASSETS = [
     asset("creature_cheetah", cheetah, False, 1.4, {}, "Cheetah: spotted sprinter."),
     asset("creature_cheetah_lightning", cheetah, True, 1.75, {"head_glow": BOLT, "body_glow": BOLT, "tail_glow": BOLT}, "Lightning Cheetah (mythic): storm coat, Neon bolts."),
     asset("creature_lion", lion, False, 1.7, {}, "Lion: heavy, maned.", 12500),
-    asset("creature_lion_sun", lion, True, 2.1, {"head_glow": FLAME, "tail_glow": FLAME}, "Sun Lion (mythic): a mane and tail of Neon flame.", 12500),
-    asset("creature_lion_shadow", shadow_lion, True, 1.9, {"head_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): coal black, violet shards raked back from the mane and down the spine.", 12500),
+    asset("creature_lion_sun", lion, True, 2.1, {"head_glow": SUNFIRE, "tail_glow": SUNFIRE}, "Sun Lion (mythic): deep gold, a crimson mane crowned in Neon flame.", 12500),
+    asset("creature_lion_shadow", shadow_lion, True, 1.9, {"head_glow": SHADOW, "body_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): ink black, a bone skull mask and spine, a mane of smoky tendrils, glowing green ribs.", 12500),
     asset("creature_meerkat", meerkat, False, 1.0, {}, "Meerkat: small and quick."),
     asset("creature_meerkat_storm", meerkat, True, 1.25, {"head_glow": STORM, "body_glow": STORM, "tail_glow": STORM}, "Storm Meerkat (legendary): Neon bands and tail charge."),
     asset("creature_tortoise", tortoise, False, 1.6, {}, "Tortoise: plated shell with a spiked rim."),

@@ -64,8 +64,8 @@ player is about 5 tall).
 | Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |
 | Phoenix Flamingo | | mythic | twist mana | Fire-red, with a crest, wing tips and tail of flame. | 11 x 8 |
 | Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Heavy tawny cat with a big dark mane and a tufted tail. | 7 x 13 |
-| Sun Lion | | mythic | twist strength | Pale gold, a mane and tail of flame, burning eyes. | 11 x 16 |
-| Shadow Lion (concept, not in the game yet) | | legendary | twist speed | Coal-black coat, a violet-glinting mane, violet shards raked back from it and down the spine, violet eyes, claws and tail tip. Concept render: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/animals.py`. | about 9 x 15 |
+| Sun Lion | | mythic | twist strength | Deep gold, a full crimson and orange mane crowned in three rings of flame, flame along the spine and tail, white-hot eyes. | 11 x 16 |
+| Shadow Lion (concept, not in the game yet) | | legendary | twist speed | Ink-black and lean, a bone-white skull mask and spine, a mane of long smoky tendrils streaming back with green embers, glowing green ribs, eyes and tail wisp. Concept render: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/animals.py`. | about 9 x 15 |
 | Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | War elephant: wide ears, heavy brow, long trunk and tusks. | 15 x 25 |
 | Frost Mammoth | | mythic | twist health | Pale and shaggy, huge glowing ice tusks, ice spikes down its back. | 20 x 30 |
 

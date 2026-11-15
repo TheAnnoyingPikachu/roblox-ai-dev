@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "design",
-  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow. Also reworks the three lions' Blender models: cat legs (bent hock, thigh, elbow), shoulder and spine masses, cheeks and a nose bridge, painted fur markings, a clumped mane with a beard, and fur tufts.",
+  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed; redesigned once as an ink-black lion with a bone mask and green glowing ribs), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow. Also reworks the three lions' Blender models: cat legs (bent hock, thigh, elbow), shoulder and spine masses, cheeks and a nose bridge, painted fur markings, a clumped mane with a beard, and fur tufts.",
   "inputs": [
     "docs/game-design/game7-animals.md"
   ],
@@ -23,7 +23,7 @@
     "The Shadow Lion renders from four sides in the draft build and reads as a lion variant distinct from the Sun Lion",
     "StationConfig and StationAssets are untouched until the model is baked, uploaded and SHANNON approves the variant"
   ],
-  "verification": "Full Blender 5.2 build of creature_lion (12130 tris), creature_lion_sun (10450) and creature_lion_shadow (12042), all under the 12500 budget; baked atlas and four-view renders inspected. The manifest was restored after the test builds, so the game's models and StationAssets are unchanged. Not done: a build for the upload, the upload, how the new parts animate in the game, the StationConfig variant.",
+  "verification": "Full Blender 5.2 build of creature_lion (12130 tris), creature_lion_sun (12420) and creature_lion_shadow (11984), all under the 12500 budget; four-view renders inspected. The manifest was restored after the test builds, so the game's models and StationAssets are unchanged. Not done: a build for the upload, the upload, how the new parts animate in the game, the StationConfig variant.",
   "output_artifacts": [
     "docs/concepts/shadow-lion-concept.png",
     "docs/concepts/lion-family.png"
