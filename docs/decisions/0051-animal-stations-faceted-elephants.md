@@ -34,6 +34,14 @@ war elephant with a cannon on it.
   it gave a plain Elephant before. Nothing else in the odds moves, and no save changes.
 - The War Elephant uses the Elephant's clips; its cannon is for show and does not fire.
 - SHANNON looked at the same hide on the lions and left them as they are.
+- The elephants' clips fit the new shapes as they were (walk, attack, power attack, defeat, win).
+- Vertex colours. The faceted models carry their face colours as a colour attribute. Exported with
+  it, Roblox multiplies the texture by those colours again, and every colour comes out darker and
+  harsher (the Elephant navy, its ear purple). `tools/blender/stations/kit.py` now drops colour
+  attributes after the bake, and the elephants were uploaded a second time without them; in the game
+  they match the concept cards. **The lions of 0050 were uploaded with the fault** and are darker and
+  more saturated in the game than the approved renders: they need a rebuild and a new upload, which
+  waits for SHANNON's word.
 
 ## Raised with SHANNON
 

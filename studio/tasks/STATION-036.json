@@ -13,18 +13,19 @@
   ],
   "files": [
     "assets/stations/creature_elephant*",
-    "tools/blender/stations/manifest.json",
-    "tools/blender/stations/uploaded.json",
-    "src/shared/StationAssets.luau",
-    "src/shared/StationConfig.luau",
-    "src/stations-client/Creatures.client.luau",
-    "tests/StationRules.spec.luau",
     "docs/assets/register.md",
     "docs/decisions/0051-animal-stations-faceted-elephants.md",
     "docs/game-design/game7-animals.md",
     "docs/game-design/game7-gdd.md",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations-client/Creatures.client.luau",
     "src/stations/CLAUDE.md",
-    "studio/tasks/STATION-036.json"
+    "studio/tasks/STATION-036.json",
+    "tests/StationRules.spec.luau",
+    "tools/blender/stations/kit.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json"
   ],
   "tests": [
     "StationRules.spec.luau",
@@ -36,12 +37,12 @@
     "The elephants' clips fit the new models",
     "Old saves load unchanged"
   ],
-  "verification": "Pending: the upload and a look in Studio.",
+  "verification": "2026-11-15: upload-assets run 43749504282 succeeded (three models, three textures), after a first run (43748916603) whose models came out too dark in the game because they carried vertex colours; kit.py now drops them after the bake. Lune 687/687, selene and stylua clean. In Studio (local build): the Elephant, the Frost Mammoth and the War Elephant load with the new models and match the concept cards; the attack slam, the power wind-up and the defeat were frozen and looked at on the models and fit without changes; a test wave 6 with a Lion and the Elephant as the Titan was won with no script errors. Not checked: the walk and the win pose by eye, phones, two players, a War Elephant from a real hatch, the War Elephant in a fight.",
   "output_artifacts": [
     "src/shared/StationAssets.luau",
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
-  "notes": "SHANNON chose the textured elephants on 2026-11-15 and asked to continue. The upload runs in GitHub (environment assets), never with a key on this machine."
+  "status": "in_review",
+  "notes": "SHANNON chose the textured elephants on 2026-11-15 and asked to continue. The upload runs in GitHub (environment assets), never with a key on this machine. Open for SHANNON: the three lions (STATION-034) carry the same vertex-colour fault and look darker in the game than approved; the fix is a rebuild and one more upload run for them."
 }

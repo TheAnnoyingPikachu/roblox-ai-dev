@@ -569,8 +569,8 @@ local StationAssets: { [string]: Asset } = {
 			creature_elephant_leg_br = { -2.346, 6.413, -7.477 },
 			creature_elephant_tail = { 0, 8.897, -10.375 },
 		},
-		model = 107676244175144,
-		decal = 130624022094500,
+		model = 75935305767377,
+		decal = 106308552014919,
 		texture = nil,
 	},
 	creature_elephant_frost = {
@@ -609,8 +609,8 @@ local StationAssets: { [string]: Asset } = {
 			creature_elephant_frost_leg_br = { -2.618, 7.19, -9.653 },
 			creature_elephant_frost_tail = { 0, 9.962, -12.887 },
 		},
-		model = 114208785229758,
-		decal = 127096621703245,
+		model = 76201899217815,
+		decal = 84952892150281,
 		texture = nil,
 	},
 	foe_archer = {
@@ -925,8 +925,8 @@ local StationAssets: { [string]: Asset } = {
 			creature_elephant_war_leg_br = { -2.542, 6.985, -8.325 },
 			creature_elephant_war_tail = { 0, 9.676, -11.464 },
 		},
-		model = 131812226946040,
-		decal = 94997982543319,
+		model = 87558446601190,
+		decal = 136181197990894,
 		texture = nil,
 	},
 }
