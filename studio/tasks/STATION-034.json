@@ -1,0 +1,47 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-034",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The new lions in the game: the Lion and the Sun Lion get the faceted models of decision 0050, and the Shadow Lion joins as the Lion's legendary variant (twist speed).",
+  "inputs": [
+    "docs/decisions/0050-animal-stations-faceted-lion-style.md"
+  ],
+  "dependencies": [
+    "STATION-033"
+  ],
+  "files": [
+    "assets/stations/creature_lion*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "tests/StationRules.spec.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0050-animal-stations-faceted-lion-style.md",
+    "docs/game-design/game7-animals.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-034.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Lion, the Sun Lion and the Shadow Lion load in the game with the new models, rigged and animated like every creature",
+    "A legendary roll on a Lion hatches a Shadow Lion; a mythic roll still hatches a Sun Lion; no other odds change",
+    "Every species has at most one variant of each tier (the spec checks it)",
+    "Old saves load unchanged"
+  ],
+  "verification": "Pending: the upload and a look in Studio.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON approved the look and asked for the lions to go into the game on 2026-11-15. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

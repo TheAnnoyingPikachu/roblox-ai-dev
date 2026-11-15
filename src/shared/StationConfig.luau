@@ -2,7 +2,8 @@
 -- Game 7 "Animal Stations" data (decisions 0019 to 0041): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations, and the
 -- Hexbound, the enemies of the waves. Every species has a basic version (never above epic; the
--- Titan is legendary) and one rare variant (legendary or mythic). Looks for art:
+-- Titan is legendary) and a rare variant (legendary or mythic), at most one of each tier: a hatch
+-- picks its variant by the tier it rolls (the Lion has both, decision 0050). Looks for art:
 -- docs/game-design/game7-animals.md and game7-enemies.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
@@ -182,7 +183,10 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "rare",
 		stats = s(55, 90, 40, 25, 70, 30),
-		variants = { v("sun_lion", "Sun Lion", "mythic", "strength") },
+		variants = {
+			v("sun_lion", "Sun Lion", "mythic", "strength"),
+			v("shadow_lion", "Shadow Lion", "legendary", "speed"),
+		},
 	},
 	{
 		id = "elephant",

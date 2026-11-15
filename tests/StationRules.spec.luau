@@ -130,12 +130,13 @@ describe("StationConfig", function()
 		end
 	)
 
-	it("gives every animal exactly one variant, legendary or mythic, named <word>_<species>", function()
+	it("gives every animal a variant, at most one of each tier, legendary or mythic, named <word>_<species>", function()
 		local ids = {}
 		for _, sp in StationConfig.SPECIES do
 			expect(ids[sp.id]).toBeNil()
 			ids[sp.id] = true
-			expect(#sp.variants).toBe(1)
+			expect(#sp.variants >= 1).toBeTruthy()
+			local tiers = {} -- a hatch picks its variant by tier, so a species has one of each at most
 			-- a basic animal is never above epic, unless it is the Titan (legendary)
 			if sp.role ~= StationConfig.TITAN then
 				expect(table.find(StationConfig.BASIC_RARITIES, sp.rarity) ~= nil).toBeTruthy()
@@ -144,6 +145,8 @@ describe("StationConfig", function()
 				expect(ids[va.id]).toBeNil()
 				ids[va.id] = true
 				expect(va.tier == "legendary" or va.tier == "mythic").toBeTruthy()
+				expect(tiers[va.tier]).toBeNil()
+				tiers[va.tier] = true
 				expect(StationConfig.tier(va.tier) ~= nil).toBeTruthy()
 				expect(table.find(StationConfig.STATS, va.twist) ~= nil).toBeTruthy()
 				expect(string.match(va.id, "^%l+_" .. sp.id .. "$") ~= nil).toBeTruthy() -- the model's name comes from it

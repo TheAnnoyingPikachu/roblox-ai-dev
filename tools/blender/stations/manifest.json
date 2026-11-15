@@ -642,91 +642,91 @@
     "png": "build/blender/stations/creature_lion.png",
     "preview": "build/blender/stations/previews/creature_lion.png",
     "size_studs": [
-      4.09,
-      7.24,
-      12.69
+      5.22,
+      7.45,
+      13.0
     ],
-    "tris": 7360,
+    "tris": 1584,
     "parts": {
-      "creature_lion_body": 1896,
-      "creature_lion_head": 2388,
-      "creature_lion_leg_fl": 594,
-      "creature_lion_leg_fr": 594,
-      "creature_lion_leg_bl": 594,
-      "creature_lion_leg_br": 594,
-      "creature_lion_tail": 700
+      "creature_lion_body": 76,
+      "creature_lion_head": 880,
+      "creature_lion_tail": 84,
+      "creature_lion_leg_fl": 120,
+      "creature_lion_leg_bl": 152,
+      "creature_lion_leg_fr": 120,
+      "creature_lion_leg_br": 152
     },
-    "tris_budget": 11000,
-    "script": "tools/blender/stations/assets/animals.py",
-    "notes": "Lion: heavy, maned.",
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/lions.py",
+    "notes": "Lion: a chunky low-poly tawny cat with a mane of big brown shards.",
     "glow": {},
     "centres": {
       "creature_lion_body": [
-        -0.039,
-        3.438,
-        0.296
+        0.113,
+        3.134,
+        1.51
       ],
       "creature_lion_head": [
         0.0,
-        5.086,
-        3.748
-      ],
-      "creature_lion_leg_fl": [
-        0.781,
-        1.972,
-        2.237
-      ],
-      "creature_lion_leg_fr": [
-        -0.851,
-        1.971,
-        2.237
-      ],
-      "creature_lion_leg_bl": [
-        0.634,
-        1.976,
-        -1.421
-      ],
-      "creature_lion_leg_br": [
-        -0.726,
-        1.985,
-        -1.421
+        3.956,
+        3.647
       ],
       "creature_lion_tail": [
-        -0.039,
-        2.234,
-        -4.516
+        0.113,
+        2.432,
+        -3.865
+      ],
+      "creature_lion_leg_fl": [
+        0.895,
+        1.668,
+        3.344
+      ],
+      "creature_lion_leg_bl": [
+        0.895,
+        1.811,
+        -0.301
+      ],
+      "creature_lion_leg_fr": [
+        -0.669,
+        1.668,
+        3.344
+      ],
+      "creature_lion_leg_br": [
+        -0.669,
+        1.811,
+        -0.301
       ]
     },
     "joints": {
       "creature_lion_head": [
-        -0.039,
-        4.124,
-        3.118
+        0.113,
+        3.622,
+        4.184
       ],
       "creature_lion_leg_fl": [
-        0.777,
-        3.269,
-        1.943
+        0.895,
+        2.76,
+        3.321
       ],
       "creature_lion_leg_fr": [
-        -0.855,
-        3.269,
-        1.943
+        -0.669,
+        2.76,
+        3.321
       ],
       "creature_lion_leg_bl": [
-        0.641,
-        3.269,
-        -1.712
+        0.895,
+        2.76,
+        -0.359
       ],
       "creature_lion_leg_br": [
-        -0.719,
-        3.269,
-        -1.712
+        -0.669,
+        2.76,
+        -0.359
       ],
       "creature_lion_tail": [
-        -0.039,
-        3.915,
-        -2.732
+        0.113,
+        3.392,
+        -1.336
       ]
     }
   },
@@ -735,114 +735,103 @@
     "png": "build/blender/stations/creature_lion_sun.png",
     "preview": "build/blender/stations/previews/creature_lion_sun.png",
     "size_studs": [
-      6.83,
-      10.75,
-      15.93
+      6.33,
+      9.23,
+      16.05
     ],
-    "tris": 7272,
+    "tris": 1808,
     "parts": {
-      "creature_lion_sun_body": 1896,
-      "creature_lion_sun_head": 2188,
-      "creature_lion_sun_leg_fl": 594,
-      "creature_lion_sun_leg_fr": 594,
-      "creature_lion_sun_leg_bl": 594,
-      "creature_lion_sun_leg_br": 594,
-      "creature_lion_sun_tail": 172,
-      "creature_lion_sun_head_glow": 482,
-      "creature_lion_sun_tail_glow": 158
+      "creature_lion_sun_body": 76,
+      "creature_lion_sun_head": 832,
+      "creature_lion_sun_head_glow": 24,
+      "creature_lion_sun_tail": 84,
+      "creature_lion_sun_leg_fl": 120,
+      "creature_lion_sun_leg_bl": 276,
+      "creature_lion_sun_leg_fr": 120,
+      "creature_lion_sun_leg_br": 276
     },
-    "tris_budget": 12500,
-    "script": "tools/blender/stations/assets/animals.py",
-    "notes": "Sun Lion (mythic): a mane and tail of Neon flame.",
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/lions.py",
+    "notes": "Sun Lion (mythic): golden, a mane of big yellow shards, a sun on each haunch, glowing eyes.",
     "glow": {
       "creature_lion_sun_head_glow": [
         255,
-        140,
-        24
-      ],
-      "creature_lion_sun_tail_glow": [
-        255,
-        140,
-        24
+        222,
+        90
       ]
     },
     "centres": {
       "creature_lion_sun_body": [
-        -0.291,
-        4.724,
-        0.489
+        0.024,
+        3.869,
+        1.864
       ],
       "creature_lion_sun_head": [
-        -0.294,
-        6.249,
-        5.076
-      ],
-      "creature_lion_sun_leg_fl": [
-        0.723,
-        2.913,
-        2.886
-      ],
-      "creature_lion_sun_leg_fr": [
-        -1.293,
-        2.912,
-        2.886
-      ],
-      "creature_lion_sun_leg_bl": [
-        0.541,
-        2.918,
-        -1.631
-      ],
-      "creature_lion_sun_leg_br": [
-        -1.139,
-        2.929,
-        -1.631
-      ],
-      "creature_lion_sun_tail": [
-        -0.291,
-        3.629,
-        -5.243
+        0.0,
+        4.902,
+        4.596
       ],
       "creature_lion_sun_head_glow": [
-        0.0,
-        7.09,
-        4.539
+        0.024,
+        5.333,
+        7.013
       ],
-      "creature_lion_sun_tail_glow": [
-        -0.291,
-        0.925,
-        -7.431
+      "creature_lion_sun_tail": [
+        0.024,
+        3.003,
+        -4.772
+      ],
+      "creature_lion_sun_leg_fl": [
+        0.99,
+        2.059,
+        4.129
+      ],
+      "creature_lion_sun_leg_bl": [
+        1.011,
+        2.237,
+        -0.372
+      ],
+      "creature_lion_sun_leg_fr": [
+        -0.941,
+        2.059,
+        4.129
+      ],
+      "creature_lion_sun_leg_br": [
+        -0.963,
+        2.237,
+        -0.372
       ]
     },
     "joints": {
       "creature_lion_sun_head": [
-        -0.291,
-        5.572,
-        3.975
+        0.024,
+        4.473,
+        5.166
       ],
       "creature_lion_sun_leg_fl": [
-        0.717,
-        4.515,
-        2.523
+        0.99,
+        3.408,
+        4.101
       ],
       "creature_lion_sun_leg_fr": [
-        -1.299,
-        4.515,
-        2.523
+        -0.941,
+        3.408,
+        4.101
       ],
       "creature_lion_sun_leg_bl": [
-        0.549,
-        4.515,
-        -1.992
+        0.99,
+        3.408,
+        -0.443
       ],
       "creature_lion_sun_leg_br": [
-        -1.131,
-        4.515,
-        -1.992
+        -0.941,
+        3.408,
+        -0.443
       ],
       "creature_lion_sun_tail": [
-        -0.291,
-        5.313,
-        -3.252
+        0.024,
+        4.189,
+        -1.65
       ]
     }
   },
@@ -2413,6 +2402,133 @@
         -1.28,
         6.133,
         5.345
+      ]
+    }
+  },
+  "creature_lion_shadow": {
+    "fbx": "build/blender/stations/creature_lion_shadow.fbx",
+    "png": "build/blender/stations/creature_lion_shadow.png",
+    "preview": "build/blender/stations/previews/creature_lion_shadow.png",
+    "size_studs": [
+      5.93,
+      8.48,
+      15.03
+    ],
+    "tris": 1656,
+    "parts": {
+      "creature_lion_shadow_body": 108,
+      "creature_lion_shadow_head": 752,
+      "creature_lion_shadow_head_glow": 120,
+      "creature_lion_shadow_body_glow": 48,
+      "creature_lion_shadow_tail": 76,
+      "creature_lion_shadow_tail_glow": 8,
+      "creature_lion_shadow_leg_fl": 120,
+      "creature_lion_shadow_leg_bl": 152,
+      "creature_lion_shadow_leg_fr": 120,
+      "creature_lion_shadow_leg_br": 152
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/lions.py",
+    "notes": "Shadow Lion (legendary): ink black, a bone mask and spine, glowing green ribs and shards.",
+    "glow": {
+      "creature_lion_shadow_head_glow": [
+        110,
+        255,
+        90
+      ],
+      "creature_lion_shadow_body_glow": [
+        110,
+        255,
+        90
+      ],
+      "creature_lion_shadow_tail_glow": [
+        110,
+        255,
+        90
+      ]
+    },
+    "centres": {
+      "creature_lion_shadow_body": [
+        -0.036,
+        3.99,
+        1.746
+      ],
+      "creature_lion_shadow_head": [
+        0.016,
+        4.508,
+        4.352
+      ],
+      "creature_lion_shadow_head_glow": [
+        -0.292,
+        4.66,
+        4.038
+      ],
+      "creature_lion_shadow_body_glow": [
+        -0.036,
+        3.724,
+        1.782
+      ],
+      "creature_lion_shadow_tail": [
+        -0.036,
+        2.898,
+        -4.231
+      ],
+      "creature_lion_shadow_tail_glow": [
+        -0.036,
+        2.008,
+        -6.028
+      ],
+      "creature_lion_shadow_leg_fl": [
+        0.869,
+        1.929,
+        3.868
+      ],
+      "creature_lion_shadow_leg_bl": [
+        0.869,
+        2.095,
+        -0.348
+      ],
+      "creature_lion_shadow_leg_fr": [
+        -0.94,
+        1.929,
+        3.868
+      ],
+      "creature_lion_shadow_leg_br": [
+        -0.94,
+        2.095,
+        -0.348
+      ]
+    },
+    "joints": {
+      "creature_lion_shadow_head": [
+        -0.036,
+        4.19,
+        4.839
+      ],
+      "creature_lion_shadow_leg_fl": [
+        0.869,
+        3.192,
+        3.841
+      ],
+      "creature_lion_shadow_leg_fr": [
+        -0.94,
+        3.192,
+        3.841
+      ],
+      "creature_lion_shadow_leg_bl": [
+        0.869,
+        3.192,
+        -0.415
+      ],
+      "creature_lion_shadow_leg_br": [
+        -0.94,
+        3.192,
+        -0.415
+      ],
+      "creature_lion_shadow_tail": [
+        -0.036,
+        3.924,
+        -1.545
       ]
     }
   }

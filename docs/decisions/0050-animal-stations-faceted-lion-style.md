@@ -1,7 +1,7 @@
 # 0050: Animal Stations: the lions are faceted low-poly
 
-Status: proposed (for SHANNON at the next Animal Stations checkpoint)
-Date: 2026-11-15. Amends 0033 (animal models). Task STATION-033.
+Status: accepted by SHANNON on 2026-11-15 (the look, and the lions going into the game)
+Date: 2026-11-15. Amends 0033 (animal models) and 0037 (one variant an animal). Tasks STATION-033, STATION-034.
 
 ## Decision
 
@@ -37,9 +37,18 @@ plain preview).
   come from it. The pedestal, rings and bloom are render dressing, not part of the model.
 - The other animals are unchanged. Whether they follow this style is for SHANNON to say.
 
+## Into the game (STATION-034)
+
+- The Lion and the Sun Lion get the new models: built, exported to `assets/stations` and uploaded by the
+  Upload Blender assets workflow; `StationAssets` and the manifest carry the new rig.
+- The Shadow Lion is the Lion's second variant: legendary, twist speed (`shadow_lion` in `StationConfig`).
+  0037 gave every animal one variant. Now an animal may have one of each tier, because a hatch rolls a
+  tier and takes that animal's variant of it. What changes for players: a legendary roll on a Lion
+  (1 in 2,000 Lion hatches) now gives a Shadow Lion, where it gave a plain Lion before. Nothing else in
+  the odds moves, and no save changes: old saves have no `shadow_lion` and need none.
+- The Shadow Lion uses the Lion's attack and power clips until it gets its own.
+
 ## Not done
 
-Nothing is uploaded and `StationAssets` and the manifest are unchanged, so the game still shows the
-old models until they are rebuilt and uploaded by the workflow. The clips were written for the old
-shapes and have not been seen on the new ones. The aura of the reference in the game would be an
+The clips were written for the old shapes; the walk and the attacks on the new legs still need a look. The aura of the reference in the game would be an
 effect (particles or a light), which is not built.
