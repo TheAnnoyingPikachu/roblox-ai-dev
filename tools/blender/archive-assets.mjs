@@ -1,6 +1,8 @@
 // Archives Roblox assets a game no longer uses (a replaced model, its decal and its image), with the
 // Open Cloud Assets API. Archived assets leave the creator's inventory and stop loading in
 // experiences; POST /assets/v1/assets/{id}:restore brings one back.
+// Roblox archives decals this way; it refuses models and images ("not an archivable asset type",
+// seen 2026-11-15), which then count as failed.
 //
 //   ROBLOX_API_KEY=... node tools/blender/archive-assets.mjs <id,id,...> [--apply]
 //

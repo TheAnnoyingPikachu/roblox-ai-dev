@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "Archive the Roblox assets Animal Stations no longer uses (the replaced Lion, Sun Lion, Elephant, Frost Mammoth, Jackal and Pharaoh Jackal models and textures, the first dark upload of the elephants, and a generator trial mesh), through the upload workflow, which gains an archive mode.",
+  "objective": "Archive the Roblox assets Animal Stations no longer uses, as far as Roblox allows (the decals of the replaced Lion, Sun Lion, Elephant, Frost Mammoth, Jackal and Pharaoh Jackal and of the first dark upload of the elephants), through the upload workflow, which gains an archive mode.",
   "inputs": [
     "docs/assets/register.md"
   ],
@@ -24,11 +24,11 @@
     "With the archive input the workflow uploads nothing",
     "The register says which assets were archived"
   ],
-  "verification": "Pending: the dry run and the archive run.",
+  "verification": "2026-11-15: the guard refused an id in use when tried locally (no key). Dry run 43753075148 listed the 25 ids by type and name, all as expected, and uploaded nothing. Run 43753151230 with archive_apply archived the 9 decals; Roblox refused the 10 models (the six replaced models, the three dark elephants, the generator trial mesh 83393387271349) and the 6 images with 'not an archivable asset type', so those stay on the account. None of the 25 ids is referenced by code on this branch or on main.",
   "output_artifacts": [
     "tools/blender/archive-assets.mjs"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
-  "notes": "SHANNON asked on 2026-11-15 to get rid of the old assets. Archiving can be undone (POST /assets/v1/assets/{id}:restore). The key stays in the GitHub environment."
+  "status": "in_review",
+  "notes": "SHANNON asked on 2026-11-15 to get rid of the old assets. Archiving can be undone (POST /assets/v1/assets/{id}:restore). The key stays in the GitHub environment. Open: the 10 models and 6 images cannot be archived through Open Cloud; SHANNON can try the Creator Dashboard by hand if it matters."
 }
