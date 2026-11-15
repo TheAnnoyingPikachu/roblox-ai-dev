@@ -1500,91 +1500,91 @@
     "png": "build/blender/stations/creature_elephant.png",
     "preview": "build/blender/stations/previews/creature_elephant.png",
     "size_studs": [
-      10.23,
-      14.8,
-      24.56
+      14.24,
+      14.14,
+      24.51
     ],
-    "tris": 10004,
+    "tris": 1704,
     "parts": {
-      "creature_elephant_body": 2600,
-      "creature_elephant_head": 4132,
-      "creature_elephant_leg_fl": 652,
-      "creature_elephant_leg_fr": 652,
-      "creature_elephant_leg_bl": 650,
-      "creature_elephant_leg_br": 650,
-      "creature_elephant_tail": 668
+      "creature_elephant_body": 200,
+      "creature_elephant_head": 580,
+      "creature_elephant_tail": 44,
+      "creature_elephant_leg_fl": 220,
+      "creature_elephant_leg_bl": 220,
+      "creature_elephant_leg_fr": 220,
+      "creature_elephant_leg_br": 220
     },
-    "tris_budget": 14000,
-    "script": "tools/blender/stations/assets/animals.py",
-    "notes": "Elephant, the Titan.",
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/elephants.py",
+    "notes": "Elephant, the Titan: a faceted blue-grey elephant with flared ears and pale tusks.",
     "glow": {},
     "centres": {
       "creature_elephant_body": [
-        -0.001,
-        9.201,
-        -2.977
+        0.0,
+        8.676,
+        -3.343
       ],
       "creature_elephant_head": [
         0.0,
-        8.126,
-        5.976
-      ],
-      "creature_elephant_leg_fl": [
-        2.459,
-        4.445,
-        0.82
-      ],
-      "creature_elephant_leg_fr": [
-        -2.461,
-        4.46,
-        0.823
-      ],
-      "creature_elephant_leg_bl": [
-        2.459,
-        4.438,
-        -6.235
-      ],
-      "creature_elephant_leg_br": [
-        -2.461,
-        4.438,
-        -6.235
+        7.764,
+        6.972
       ],
       "creature_elephant_tail": [
-        -0.001,
-        7.212,
-        -11.12
+        0.0,
+        6.461,
+        -11.16
+      ],
+      "creature_elephant_leg_fl": [
+        2.345,
+        3.676,
+        0.568
+      ],
+      "creature_elephant_leg_bl": [
+        2.346,
+        3.673,
+        -7.298
+      ],
+      "creature_elephant_leg_fr": [
+        -2.346,
+        3.661,
+        0.568
+      ],
+      "creature_elephant_leg_br": [
+        -2.346,
+        3.653,
+        -7.298
       ]
     },
     "joints": {
       "creature_elephant_head": [
-        -0.001,
-        10.307,
-        2.68
+        0.0,
+        9.725,
+        2.597
       ],
       "creature_elephant_leg_fl": [
-        2.459,
-        7.007,
-        0.28
+        2.346,
+        6.413,
+        0.389
       ],
       "creature_elephant_leg_fr": [
-        -2.461,
-        7.007,
-        0.28
+        -2.346,
+        6.413,
+        0.389
       ],
       "creature_elephant_leg_bl": [
-        2.459,
-        7.007,
-        -6.77
+        2.346,
+        6.413,
+        -7.477
       ],
       "creature_elephant_leg_br": [
-        -2.461,
-        7.007,
-        -6.77
+        -2.346,
+        6.413,
+        -7.477
       ],
       "creature_elephant_tail": [
-        -0.001,
-        10.007,
-        -10.219
+        0.0,
+        8.897,
+        -10.375
       ]
     }
   },
@@ -1593,25 +1593,25 @@
     "png": "build/blender/stations/creature_elephant_frost.png",
     "preview": "build/blender/stations/previews/creature_elephant_frost.png",
     "size_studs": [
-      11.94,
-      20.27,
-      30.07
+      12.23,
+      19.4,
+      29.97
     ],
-    "tris": 10050,
+    "tris": 2008,
     "parts": {
-      "creature_elephant_frost_body": 2598,
-      "creature_elephant_frost_head": 3152,
-      "creature_elephant_frost_leg_fl": 652,
-      "creature_elephant_frost_leg_fr": 652,
-      "creature_elephant_frost_leg_bl": 650,
-      "creature_elephant_frost_leg_br": 650,
-      "creature_elephant_frost_tail": 668,
-      "creature_elephant_frost_body_glow": 108,
-      "creature_elephant_frost_head_glow": 920
+      "creature_elephant_frost_body": 424,
+      "creature_elephant_frost_head": 528,
+      "creature_elephant_frost_head_glow": 84,
+      "creature_elephant_frost_body_glow": 48,
+      "creature_elephant_frost_tail": 44,
+      "creature_elephant_frost_leg_fl": 220,
+      "creature_elephant_frost_leg_bl": 220,
+      "creature_elephant_frost_leg_fr": 220,
+      "creature_elephant_frost_leg_br": 220
     },
-    "tris_budget": 15000,
-    "script": "tools/blender/stations/assets/animals.py",
-    "notes": "Frost Mammoth (mythic Titan): Neon ice tusks and back spikes.",
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/elephants.py",
+    "notes": "Frost Mammoth (mythic Titan): pale and shaggy, Neon ice tusks and back spikes.",
     "glow": {
       "creature_elephant_frost_head_glow": [
         120,
@@ -1626,81 +1626,81 @@
     },
     "centres": {
       "creature_elephant_frost_body": [
-        0.003,
-        10.735,
-        -4.182
+        -0.005,
+        9.539,
+        -5.017
       ],
       "creature_elephant_frost_head": [
         0.0,
-        9.48,
-        4.798
-      ],
-      "creature_elephant_frost_leg_fl": [
-        2.868,
-        5.186,
-        0.248
-      ],
-      "creature_elephant_frost_leg_fr": [
-        -2.872,
-        5.204,
-        0.251
-      ],
-      "creature_elephant_frost_leg_bl": [
-        2.868,
-        5.177,
-        -7.983
-      ],
-      "creature_elephant_frost_leg_br": [
-        -2.872,
-        5.177,
-        -7.983
-      ],
-      "creature_elephant_frost_tail": [
-        -0.002,
-        8.414,
-        -13.683
-      ],
-      "creature_elephant_frost_body_glow": [
-        -0.14,
-        16.847,
-        -4.187
+        9.002,
+        5.528
       ],
       "creature_elephant_frost_head_glow": [
-        -0.002,
-        10.482,
-        10.844
+        0.0,
+        9.373,
+        10.04
+      ],
+      "creature_elephant_frost_body_glow": [
+        -0.043,
+        15.993,
+        -4.587
+      ],
+      "creature_elephant_frost_tail": [
+        0.0,
+        7.244,
+        -13.763
+      ],
+      "creature_elephant_frost_leg_fl": [
+        2.618,
+        4.121,
+        -0.675
+      ],
+      "creature_elephant_frost_leg_bl": [
+        2.618,
+        4.102,
+        -9.453
+      ],
+      "creature_elephant_frost_leg_fr": [
+        -2.618,
+        4.124,
+        -0.675
+      ],
+      "creature_elephant_frost_leg_br": [
+        -2.617,
+        4.112,
+        -9.453
       ]
     },
     "joints": {
       "creature_elephant_frost_head": [
-        -0.002,
-        12.025,
-        2.418
+        0.0,
+        10.886,
+        1.589
       ],
       "creature_elephant_frost_leg_fl": [
-        2.868,
-        8.175,
-        -0.382
+        2.618,
+        7.19,
+        -0.875
       ],
       "creature_elephant_frost_leg_fr": [
-        -2.872,
-        8.175,
-        -0.382
+        -2.618,
+        7.19,
+        -0.875
       ],
       "creature_elephant_frost_leg_bl": [
-        2.868,
-        8.175,
-        -8.607
+        2.618,
+        7.19,
+        -9.653
       ],
       "creature_elephant_frost_leg_br": [
-        -2.872,
-        8.175,
-        -8.607
+        -2.618,
+        7.19,
+        -9.653
       ],
       "creature_elephant_frost_tail": [
-        -0.002,
-        11.675,
-        -12.632
+        0.0,
+        9.962,
+        -12.887
       ]
     }
   },
@@ -2529,6 +2529,122 @@
         -0.036,
         3.924,
         -1.545
+      ]
+    }
+  },
+  "creature_elephant_war": {
+    "fbx": "build/blender/stations/creature_elephant_war.fbx",
+    "png": "build/blender/stations/creature_elephant_war.png",
+    "preview": "build/blender/stations/previews/creature_elephant_war.png",
+    "size_studs": [
+      15.43,
+      19.39,
+      27.0
+    ],
+    "tris": 2080,
+    "parts": {
+      "creature_elephant_war_body": 496,
+      "creature_elephant_war_head": 600,
+      "creature_elephant_war_head_glow": 24,
+      "creature_elephant_war_body_glow": 36,
+      "creature_elephant_war_tail": 44,
+      "creature_elephant_war_leg_fl": 220,
+      "creature_elephant_war_leg_bl": 220,
+      "creature_elephant_war_leg_fr": 220,
+      "creature_elephant_war_leg_br": 220
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/elephants.py",
+    "notes": "War Elephant (legendary Titan): war gear and a cannon on its back, a glowing muzzle.",
+    "glow": {
+      "creature_elephant_war_head_glow": [
+        255,
+        150,
+        40
+      ],
+      "creature_elephant_war_body_glow": [
+        255,
+        150,
+        40
+      ]
+    },
+    "centres": {
+      "creature_elephant_war_body": [
+        0.0,
+        12.068,
+        -3.426
+      ],
+      "creature_elephant_war_head": [
+        0.0,
+        8.461,
+        7.553
+      ],
+      "creature_elephant_war_head_glow": [
+        0.002,
+        11.578,
+        7.005
+      ],
+      "creature_elephant_war_body_glow": [
+        0.0,
+        18.063,
+        -0.41
+      ],
+      "creature_elephant_war_tail": [
+        0.0,
+        7.037,
+        -12.314
+      ],
+      "creature_elephant_war_leg_fl": [
+        2.542,
+        3.969,
+        0.391
+      ],
+      "creature_elephant_war_leg_bl": [
+        2.542,
+        3.997,
+        -8.131
+      ],
+      "creature_elephant_war_leg_fr": [
+        -2.542,
+        3.995,
+        0.391
+      ],
+      "creature_elephant_war_leg_br": [
+        -2.542,
+        3.992,
+        -8.131
+      ]
+    },
+    "joints": {
+      "creature_elephant_war_head": [
+        0.0,
+        10.573,
+        2.589
+      ],
+      "creature_elephant_war_leg_fl": [
+        2.542,
+        6.985,
+        0.197
+      ],
+      "creature_elephant_war_leg_fr": [
+        -2.542,
+        6.985,
+        0.197
+      ],
+      "creature_elephant_war_leg_bl": [
+        2.542,
+        6.985,
+        -8.325
+      ],
+      "creature_elephant_war_leg_br": [
+        -2.542,
+        6.985,
+        -8.325
+      ],
+      "creature_elephant_war_tail": [
+        0.0,
+        9.676,
+        -11.464
       ]
     }
   }

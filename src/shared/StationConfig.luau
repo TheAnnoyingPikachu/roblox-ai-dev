@@ -3,7 +3,7 @@
 -- the small African beta pool with its variants, the Titan, eggs and training stations, and the
 -- Hexbound, the enemies of the waves. Every species has a basic version (never above epic; the
 -- Titan is legendary) and a rare variant (legendary or mythic), at most one of each tier: a hatch
--- picks its variant by the tier it rolls (the Lion has both, decision 0050). Looks for art:
+-- picks its variant by the tier it rolls (the Lion and the Elephant have both, decisions 0050 and 0051). Looks for art:
 -- docs/game-design/game7-animals.md and game7-enemies.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
@@ -195,7 +195,10 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "legendary",
 		stats = s(30, 160, 180, 60, 200, 120),
-		variants = { v("frost_elephant", "Frost Mammoth", "mythic", "health") },
+		variants = {
+			v("frost_elephant", "Frost Mammoth", "mythic", "health"),
+			v("war_elephant", "War Elephant", "legendary", "strength"),
+		},
 	},
 } :: { Species }
 

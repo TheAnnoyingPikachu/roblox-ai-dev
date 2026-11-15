@@ -1,7 +1,7 @@
 # 0051: Animal Stations: the elephants go faceted, and a War Elephant with a cannon
 
-Status: proposed (concepts for SHANNON; nothing is in the game yet)
-Date: 2026-11-15. Builds on 0050 (the faceted lions). Task STATION-035.
+Status: accepted by SHANNON on 2026-11-15 (the textured elephants go forward; the lions keep their plain hide)
+Date: 2026-11-15. Builds on 0050 (the faceted lions). Tasks STATION-035, STATION-036.
 
 ## Decision
 
@@ -24,9 +24,20 @@ war elephant with a cannon on it.
 - The rig is the usual set of pieces; the cannon rides on the body. Each is scaled to the length of the
   model it replaces (24.5 and 30 studs; the War Elephant 27).
 
-## Open for SHANNON
+## Into the game (STATION-036)
 
-- Approve the three looks, or ask for changes.
+- The Elephant and the Frost Mammoth get the new models: built, exported to `assets/stations` and
+  uploaded by the Upload Blender assets workflow; `StationAssets` and the manifest carry the new rig.
+- The War Elephant is the Elephant's second variant (`war_elephant` in `StationConfig`), legendary with
+  twist strength as proposed below; SHANNON saw the open points and asked to continue. What changes
+  for players: a legendary roll on a Titan (1 in 2,000 Titan hatches) now gives a War Elephant, where
+  it gave a plain Elephant before. Nothing else in the odds moves, and no save changes.
+- The War Elephant uses the Elephant's clips; its cannon is for show and does not fire.
+- SHANNON looked at the same hide on the lions and left them as they are.
+
+## Raised with SHANNON
+
+- The three looks: taken forward with the textured hide.
 - The War Elephant as a variant: 0050 allows an animal one variant of each tier and the Elephant has
   only its mythic one, so legendary is free. Its twist is proposed as strength. The basic Elephant is
   itself legendary, so a legendary variant of it is new ground: say if it should be mythic instead
@@ -39,6 +50,4 @@ war elephant with a cannon on it.
 
 ## Not done
 
-Concepts only: nothing is uploaded, `StationConfig`, `StationAssets` and the manifest are unchanged,
-and the game still shows the old elephants. The clips have not been seen on the new shapes; the
-cannon does not fire.
+The cannon does not fire: a power attack of its own for the War Elephant is future work.

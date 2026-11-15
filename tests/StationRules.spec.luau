@@ -417,22 +417,26 @@ describe("StationRules.hatch", function()
 		expect(good).toBe(true)
 	end)
 
-	it("drops the Titan from the Golden Egg about 1 time in 20, always as the plain Elephant", function()
+	it("drops the Titan from the Golden Egg about 1 time in 20, now and then as one of its variants", function()
 		local rng = Rng.seed(9)
-		local titans, variants = 0, 0
-		for _ = 1, 40000 do -- about 11 Titans here also roll a variant tier, which they do not have
+		local titans, special, variants = 0, 0, 0
+		for _ = 1, 40000 do -- a Titan rolls a variant tier like any animal: about 11 here are War Elephants
 			local a
 			a, rng = StationRules.hatch("golden", rng)
 			local animal = a :: StationRules.Owned
 			if StationRules.role(animal) == StationConfig.TITAN then
 				titans += 1
 				expect(animal.s).toBe("elephant")
-				expect(animal.v).toBeNil()
+				if animal.v then
+					special += 1
+					expect(StationConfig.variant("elephant", animal.v) ~= nil).toBeTruthy()
+				end
 			elseif animal.v then
 				variants += 1
 			end
 		end
 		expect(titans >= 1700 and titans <= 2300).toBeTruthy() -- 5% of 40,000 = 2,000
+		expect(special >= 1 and special <= 40).toBeTruthy() -- rare, but they do hatch
 		expect(variants > 0).toBeTruthy()
 	end)
 

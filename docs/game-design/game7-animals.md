@@ -24,8 +24,8 @@ version for the art pipeline.
 - Every animal has a **basic** version. A normal animal is never above epic (today: common,
   uncommon or rare); the Titan is legendary.
 - Every animal has **a variant**, always legendary or mythic, and at most one of each: a hatch
-  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion has both, decision
-  0050). Any hatch of that animal, from any egg, can be it:
+  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion and the Elephant have both,
+  decisions 0050 and 0051). Any hatch of that animal, from any egg, can be it:
 
 | Variant rarity | Chance per hatch | Stats | Twist |
 |---|---|---|---|
@@ -67,11 +67,10 @@ player is about 5 tall).
 | Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Faceted low-poly (decision 0050): a chunky tawny cat, a mane of big brown crystal shards, pale paws and muzzle, amber slit eyes, a tufted tail. Card: `docs/concepts/lion-card.png`. | 7 x 13 |
 | Sun Lion | | mythic | twist strength | Golden, a mane of big yellow crystal shards, a sun with twelve rays on each haunch, glowing eyes, a flame of a tail. Card: `docs/concepts/sun-lion-card.png`. | 9 x 16 |
 | Shadow Lion | | legendary | twist speed | Ink black, a bone mask, spine and fangs, a mane of big black crystal shards with a few glowing green ones, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 8 x 15 |
-| Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | War elephant: wide ears, heavy brow, long trunk and tusks. | 15 x 25 |
-| Frost Mammoth | | mythic | twist health | Pale and shaggy, huge glowing ice tusks, ice spikes down its back. | 20 x 30 |
-| War Elephant (concept, not in the game yet) | | legendary (proposed) | twist strength (proposed) | Dark elephant in war gear with a cannon on its back, ember eyes, a glowing muzzle. Card: `docs/concepts/war-elephant-card.png`. | about 19 x 27 |
+| Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | Faceted low-poly (decision 0051): blue-grey, flared ears, a heavy brow, a ringed trunk, curved pale tusks, amber slit eyes. Card: `docs/concepts/elephant-card.png`. | 14 x 25 |
+| Frost Mammoth | | mythic | twist health | Icy blue and shaggy with a hump, small ears, huge curved tusks of glowing ice, ice spikes down its back, glowing eyes. Card: `docs/concepts/frost-mammoth-card.png`. | 19 x 30 |
+| War Elephant | | legendary | twist strength | Dark elephant in war gear with a cannon on its back, ember eyes, a glowing muzzle. Card: `docs/concepts/war-elephant-card.png`. | about 19 x 27 |
 
-New faceted looks for the Elephant and the Frost Mammoth are proposed in decision 0051 (cards: `docs/concepts/elephant-card.png`, `docs/concepts/frost-mammoth-card.png`); the rows above still describe the models in the game.
 
 ## Solitary animals
 
