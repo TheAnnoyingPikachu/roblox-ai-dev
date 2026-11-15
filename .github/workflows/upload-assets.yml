@@ -16,6 +16,10 @@
 # Output: tools/blender/<game>/uploaded.json and src/shared/NightAssets.luau, SpireAssets.luau,
 # GardenAssets.luau or StationAssets.luau as the run artifact.
 # Commit both (with register.md rows) in a PR to switch the game to the new models.
+#
+# With the `archive` input it uploads nothing and instead archives the listed asset ids (replaced
+# models and textures no game uses any more: tools/blender/archive-assets.mjs). It only lists what
+# they are unless `archive_apply` is ticked, and refuses ids an uploaded.json still lists.
 name: Upload Blender assets
 
 on:
@@ -35,6 +39,15 @@ on:
         type: string
         required: false
         default: ""
+      archive:
+        description: "Instead of uploading: comma-separated asset ids to archive (replaced, unused)"
+        type: string
+        required: false
+        default: ""
+      archive_apply:
+        description: "With archive: really archive them (off = only list what they are)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -67,7 +80,16 @@ jobs:
         with:
           node-version: 20
 
+      - name: Archive unused assets
+        if: inputs.archive != ''
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          IDS: ${{ inputs.archive }}
+          APPLY: ${{ inputs.archive_apply }}
+        run: node tools/blender/archive-assets.mjs "$IDS" $([ "$APPLY" = "true" ] && echo --apply)
+
       - name: Upload models and textures
+        if: inputs.archive == ''
         env:
           ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
           GAME: ${{ inputs.game }}
@@ -75,7 +97,7 @@ jobs:
         run: node tools/blender/upload-assets.mjs "$GAME" $ASSETS
 
       - name: Write the assets module
-        if: always()
+        if: always() && inputs.archive == ''
         env:
           GAME: ${{ inputs.game }}
         run: |
@@ -89,7 +111,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Keep results
-        if: always()
+        if: always() && inputs.archive == ''
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.game }}-assets-${{ github.run_id }}

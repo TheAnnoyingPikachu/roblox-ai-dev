@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-039",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Archive the Roblox assets Animal Stations no longer uses (the replaced Lion, Sun Lion, Elephant, Frost Mammoth, Jackal and Pharaoh Jackal models and textures, the first dark upload of the elephants, and a generator trial mesh), through the upload workflow, which gains an archive mode.",
+  "inputs": [
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-038"
+  ],
+  "files": [
+    ".github/workflows/upload-assets.yml",
+    "tools/blender/archive-assets.mjs",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-039.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Only ids no uploaded.json lists can be archived (the script refuses the others)",
+    "A dry run lists what each id is before anything is archived",
+    "With the archive input the workflow uploads nothing",
+    "The register says which assets were archived"
+  ],
+  "verification": "Pending: the dry run and the archive run.",
+  "output_artifacts": [
+    "tools/blender/archive-assets.mjs"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON asked on 2026-11-15 to get rid of the old assets. Archiving can be undone (POST /assets/v1/assets/{id}:restore). The key stays in the GitHub environment."
+}
