@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "design",
-  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow.",
+  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow. Also adds detail to all three lions (whiskers, ear and chest tufts, clumped mane locks and a beard, a tufted tail tip, flame licks on the Sun Lion).",
   "inputs": [
     "docs/game-design/game7-animals.md"
   ],
@@ -23,7 +23,7 @@
     "The Shadow Lion renders from four sides in the draft build and reads as a lion variant distinct from the Sun Lion",
     "StationConfig and StationAssets are untouched until the model is baked, uploaded and SHANNON approves the variant"
   ],
-  "verification": "Draft build run in Blender 5.2 (creature_lion_shadow: 7276 tris, previews rendered); contact sheets viewed. Not done: the full bake and export, the upload, the StationConfig variant, a clip set or a power attack for it.",
+  "verification": "Draft build run in Blender 5.2: creature_lion 10454 tris (budget 11000), creature_lion_sun 8686 (12500), creature_lion_shadow 10366 (12500); previews rendered and viewed from four sides. Not done: the full bake and export, the upload, the StationConfig variant, a clip set for it. The detail also changes the shipped Lion and Sun Lion models once they are rebuilt and re-uploaded (SHANNON's call).",
   "output_artifacts": [
     "docs/concepts/shadow-lion-concept.png",
     "docs/concepts/lion-family.png"

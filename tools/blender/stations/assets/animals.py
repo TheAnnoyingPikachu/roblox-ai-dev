@@ -234,6 +234,50 @@ LION = dict(chest_z=2.0, chest_r=0.96, waist_r=0.7, hip_r=0.8, len=2.15, leg_r=0
 FLAME = (255, 140, 24)
 
 
+def lion_fur(c, groups, skull, hc, coat, mane=None, whisker=(236, 226, 200), seed=3):
+    """The lion's small detail: whiskers, ear tufts, a fringe of chest and elbow tufts,
+    a tufted tail tip and, with `mane` (two colours), locks clumped out of the ruff and a beard."""
+    rng = random.Random(seed)
+    R, L = c["head_r"], c["len"]
+    cz, cr = c["chest_z"], c["chest_r"]
+    tuft, white = k.flat(coat), k.flat(whisker)
+    head, body = groups["head"], groups["body"]
+    tip = hc + Vector((0, -R * 0.75 - c["snout"], -R * 0.2))
+    for side in (-1, 1):
+        for i in range(4):  # whiskers fanned out of the muzzle
+            b = Vector((side * R * 0.3, tip.y + R * 0.55 - i * 0.04, tip.z + 0.1 - i * 0.05))
+            d = Vector((side * 1.0, -0.15 - i * 0.12, 0.12 - i * 0.2)).normalized()
+            head.append(k.horn([b, b + d * 0.35 + Vector((0, 0, 0.04)), b + d * 0.75 + Vector((0, 0.05, -0.1))], [0.022, 0.016, 0.0], white, n=4, steps=4, name="whisker"))
+        ear = Vector((side * R * 0.72, hc.y + R * 0.3, hc.z + R * 0.72))
+        head.append(k.horn([ear + Vector((0, 0, 0.1)), ear + Vector((side * 0.05, 0.04, 0.35)), ear + Vector((side * 0.1, 0.1, 0.62))], [0.07, 0.05, 0.0], tuft, n=5, steps=4, name="eartuft"))
+        for j in range(5):  # a tuft behind each elbow and down the throat
+            ex = side * (cr * 0.5 + 0.1)
+            b = Vector((ex, -0.15 + j * 0.05, cz - 0.55 - j * 0.1))
+            body.append(k.horn([b, b + Vector((side * 0.05, 0.2, -0.2)), b + Vector((side * 0.08, 0.38, -0.46))], [0.1, 0.07, 0.0], tuft, n=5, steps=4, name="elbow"))
+    for j in range(9):
+        x = (j - 4) * 0.13
+        b = Vector((x, -cr * 0.74 - 0.06, cz + 0.38 - abs(j - 4) * 0.08))
+        body.append(k.horn([b, b + Vector((x * 0.15, -0.08, -0.3)), b + Vector((x * 0.3, -0.04, -0.62 - rng.uniform(0, 0.15)))], [0.12, 0.09, 0.0], tuft, n=5, steps=4, name="chest"))
+    t = Vector(c["tail_tip"])
+    for i in range(6):  # the tail's tuft, as locks
+        a = i / 6 * math.tau
+        d = Vector((math.cos(a) * 0.3, 0.12 + rng.uniform(0, 0.1), -0.55 + math.sin(a) * 0.15))
+        groups["tail"].append(k.horn([t, t + d * 0.5, t + d * 1.1], [0.1, 0.1, 0.0], tuft, n=5, steps=4, name="lock"))
+    if mane:  # two tones of locks, clumped out of the ruff: a full ring, then a beard under the chin
+        tones = [k.flat(mane[0]), k.flat(mane[1])]
+        for i in range(24):
+            a = i / 24 * math.tau + rng.uniform(-0.08, 0.08)
+            r = rng.uniform(0.85, 1.05)
+            base = hc + Vector((math.cos(a) * r, 0.4, math.sin(a) * r))
+            d = Vector((math.cos(a) * 0.85, 0.5, math.sin(a) * 0.6 - 0.35)).normalized()
+            n = rng.uniform(0.5, 0.85)
+            head.append(k.horn([base - d * 0.25, base + d * n * 0.5 + Vector((0, 0, -0.06)), base + d * n + Vector((0, 0.05, -0.18))], [0.2, 0.17, 0.0], tones[i % 2], n=6, steps=5, name="lock"))
+        for i in range(9):
+            x = (i - 4) * 0.14
+            base = hc + Vector((x, -0.35, -0.75 - abs(i - 4) * 0.04))
+            head.append(k.horn([base, base + Vector((x * 0.2, 0.05, -0.3)), base + Vector((x * 0.4, 0.1, -0.7 - rng.uniform(0, 0.2)))], [0.12, 0.1, 0.0], tones[i % 2], n=5, steps=5, name="beard"))
+
+
 def lion(variant=False):
     c = dict(LION)
     hy, hz = -0.96 * 0.72 - 0.55, 2.0 + 0.96 * 0.42 + 0.72  # the head's middle
@@ -254,6 +298,9 @@ def lion(variant=False):
                 d = Vector((math.cos(a), 0.55, math.sin(a) * 1.05)).normalized()
                 base = hc + Vector((math.cos(a) * ring_r, 0.42, math.sin(a) * ring_r))
                 flames.append(shard(base - d * 0.2, base + d * long * rng.uniform(0.75, 1.15), 0.2, glow))
+        for i in range(8):  # licks of flame along the spine and haunches, shorter towards the tail
+            base = Vector((rng.uniform(-0.1, 0.1), 0.45 + i * 0.26, c["chest_z"] + 0.8 - i * 0.03))
+            flames.append(shard(base, base + Vector((0, 0.3, 0.7 - i * 0.05)), 0.14, glow))
         groups["head_glow"] += flames
         tip = c["tail_tip"]
         groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.3)), tip + Vector((0, 0.3, -0.85))], [0.1, 0.27, 0.0], glow, n=10, steps=8, name="flame")]
@@ -261,6 +308,7 @@ def lion(variant=False):
         k.zone(c["skin"], (92, 58, 34), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.25, jag=0.15)  # the mane is darker
         k.zone(c["skin"], (236, 218, 180), (0, hy - 0.75, hz - 0.35), (0.42, 0.5, 0.36), soft=0.4)  # pale muzzle
         groups["tail"].append(k.blob(0.26, tuple(c["tail_tip"]), k.flat((70, 44, 28)), scale=(0.9, 0.9, 1.5), name="tuft"))
+    lion_fur(c, groups, skull, hc, (176, 136, 80) if not variant else (232, 206, 150), None if variant else ((74, 46, 28), (130, 92, 52)))
     return groups, c["joints"]
 
 
@@ -292,6 +340,7 @@ def shadow_lion(variant=True):
     groups["head_glow"] += shards
     tip = c["tail_tip"]
     groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.3)), tip + Vector((0, 0.3, -0.85))], [0.1, 0.27, 0.0], glow, n=10, steps=8, name="flame")]
+    lion_fur(c, groups, skull, hc, (44, 38, 62), ((34, 28, 54), (84, 56, 130)), whisker=(190, 150, 255), seed=7)
     return groups, c["joints"]
 
 
