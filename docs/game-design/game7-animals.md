@@ -60,7 +60,7 @@ player is about 5 tall).
 |---|---|---|---|---|---|
 | Jackal | Attack | common | 42 / 22 / 15 / 18 / 30 / 10 | Lean sandy hunter, big pointed ears, long muzzle, dark saddle, bushy tail. | 4 x 7 |
 | Pharaoh Jackal | | legendary | twist mana | Black coat, gold collar and anklets, turquoise glowing eyes and brow gem. | 5 x 9 |
-| Moon Jackal (concept, not in the game yet) | | mythic (proposed) | twist speed (proposed) | Silver-white with a deep blue saddle and socks, a glowing crescent on the brow and each haunch, glowing eyes, ear tips and tail tip. Card: `docs/concepts/moon-jackal-card.png`. | about 5 x 10 |
+| Sphinx Jackal (concept, not in the game yet) | | mythic (proposed) | twist speed (proposed) | Sandstone, a pharaoh's blue and gold striped headdress, a glowing sun disc between the ears, a striped beard, a gold collar, folded wings of gold and blue feathers, glowing gold eyes. Card: `docs/concepts/sphinx-jackal-card.png`. | about 5 x 10 |
 | Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Small and quick, tan with dark bands across the back and dark eye patches. | 2 x 5 |
 | Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing bands across the back, a charged tail tip. | 3 x 6 |
 | Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |

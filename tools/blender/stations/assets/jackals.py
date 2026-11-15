@@ -1,5 +1,5 @@
 """The jackals (decision 0052), in the faceted low-poly style of the lions and elephants: the Jackal,
-the Pharaoh Jackal and the Moon Jackal. A lean body with a deep chest and a tucked waist on long thin
+the Pharaoh Jackal and the Sphinx Jackal. A lean body with a deep chest and a tucked waist on long thin
 legs, a long narrow muzzle, tall pointed ears, a dark saddle over the back and a bushy tail of leaf
 shards. The hide is textured with facets (`rough`), as on the elephants.
 
@@ -17,10 +17,10 @@ from mathutils import Matrix, Vector
 loft, yring, zring, quad, shard, plate, tone, rough = F.loft, F.yring, F.zring, F.quad, F.shard, F.plate, F.tone, F.rough
 
 SAND = ((0.82, 0.74, 0.66), (1.06, 1.08, 1.12), (6, 8, 10))
-MOONLIT = ((0.74, 0.8, 0.92), (1.05, 1.05, 1.03), (6, 6, 4))  # shadows turn blue
 GOLD = (236, 184, 64)
 TURQUOISE = (60, 230, 220)
-MOON = (160, 205, 255)
+SUNGOLD = (255, 208, 90)
+LAPIS = (38, 72, 168)
 HIND = 1.9  # how far behind the front legs the hind legs stand
 FADE = 1.6  # the hide darkens below this height
 NOD = 14  # degrees the head and neck are tipped down about the neck: a hunter carries its head low
@@ -157,26 +157,45 @@ def pharaoh_jackal():
     )
 
 
-def moon_extra(groups, skull, thighs, rng, glow):
-    """A glowing crescent on the brow and on each haunch, and glowing tips on the ears."""
-    arc = [math.radians(a) for a in range(60, 301, 40)]
-    crescent = [(0.16 * math.cos(a), 0.16 * math.sin(a)) for a in arc] + [(0.07 + 0.125 * math.cos(a), 0.125 * math.sin(a)) for a in reversed(arc)]
-    at, n = k.land(skull, (0, -0.92, 2.7), (0, -0.3, 1))
-    groups["head_glow"].append(plate("crescent", at, k._frame(n, (0, -1, 0)), crescent, 0.025, None, rng, lift=0.012, m=glow))
+def sphinx_extra(groups, skull, thighs, rng, glow):
+    """A pharaoh's striped headdress with its two lappets, a cobra and a glowing sun disc on the brow, a
+    gold beard, a broad collar, and a folded wing of gold and blue feathers down each flank."""
+    gold, blue = tone(GOLD), tone(LAPIS, F.COOL)
+    head, body = groups["head"], groups["body"]
+    # the headdress: a blue cap over the skull behind a gold band; the ears stand through it
+    head.append(loft("cap", [yring(-1.0, 2.79, 0.335, 0.16, 0.09, 0.1), yring(-0.8, 2.81, 0.4, 0.2, 0.13, 0.12), yring(-0.44, 2.72, 0.38, 0.2, 0.2, 0.12)], blue, rng))
+    head.append(loft("band", [yring(y, 2.8, 0.345, 0.11, 0.06, 0.09) for y in (-1.07, -0.98)], gold, rng))
     for s in (1, -1):
-        groups["head_glow"].append(shard((s * 0.34, -0.645, 3.26), (s * 0.395, -0.61, 3.6), 0.22, 0.12, None, rng, at=0.3, m=glow, name="eartip"))
-        at, n = k.land(thighs[s], (s * 0.3, HIND - 0.02, 1.55), (s, 0, 0))
-        fx, fy, fz = k._frame(n)
-        side = "leg_b" + ("l" if s > 0 else "r") + "_glow"
-        groups.setdefault(side, []).append(plate("crescent", at, (fx * s, fy, fz), [(u * 1.5, v * 1.5) for u, v in crescent], 0.025, None, rng, lift=0.014, m=glow))
+        x = s * 0.42
+        for i in range(4):  # a lappet hanging beside the neck, striped blue and gold, wider at the hem
+            z, wide = 2.7 - i * 0.24, 0.14 + i * 0.02
+            head.append(loft("lappet", [zring(x, -0.72, z, 0.045, wide, 0.02), zring(x, -0.72, z - 0.24, 0.045, wide + 0.02, 0.02)], blue if i % 2 == 0 else gold, rng))
+        head.append(shard((s * 0.34, -0.645, 3.26), (s * 0.395, -0.61, 3.6), 0.22, 0.12, gold, rng, at=0.3, name="eartip"))
+    head.append(shard((0, -1.04, 2.9), (0, -1.2, 3.22), 0.13, 0.11, gold, rng, at=0.35, name="cobra"))
+    disc = [(0.2 * math.cos(i * math.tau / 8), 0.2 * math.sin(i * math.tau / 8)) for i in range(8)]
+    groups["head_glow"].append(plate("disc", Vector((0, -0.8, 3.3)), (Vector((1, 0, 0)), Vector((0, 0, 1)), Vector((0, -1, 0))), disc, 0.06, None, rng, m=glow))
+    for i in range(3):  # the false beard: a short striped block under the chin, wider at the hem
+        z, wide = 2.33 - i * 0.14, 0.07 + i * 0.015
+        head.append(loft("beard", [zring(0, -1.34 - i * 0.02, z, wide, wide, 0.025), zring(0, -1.36 - i * 0.02, z - 0.14, wide + 0.015, wide + 0.015, 0.025)], gold if i % 2 == 0 else blue, rng))
+    for y, zc, w, up, down, thick, tones in ((-0.56, 2.23, 0.31, 0.33, 0.38, 0.07, gold), (-0.42, 2.11, 0.335, 0.355, 0.41, 0.04, blue)):
+        head.append(loft("collar", [yring(y + dy, zc, w, up, down, 0.1) for dy in (-thick, thick)], tones, rng))
+    # the wings, folded: five feathers from each shoulder back along the flank, gold above and blue below
+    pale = tone((255, 226, 140))
+    for s in (1, -1):
+        root = Vector((s * 0.5, 0.0, 2.2))
+        for i in range(5):
+            d = Vector((s * 0.14, 1, 0.3 - 0.15 * i)).normalized()
+            tones = (gold, pale) if i < 3 else (blue, tone((60, 150, 200), F.COOL))
+            body.append(shard(root - d * 0.15, root + d * (2.0 - 0.17 * i), 0.56, 0.12, tones, rng, face=(s, 0, 0.2), at=0.35, name="feather"))
+        body.append(shard(root + Vector((0, -0.3, -0.25)), root + Vector((s * 0.06, 0.45, 0.3)), 0.5, 0.16, gold, rng, face=(s, 0, 0), name="shoulder"))
 
 
-def moon_jackal():
-    """Moon Jackal (mythic): a silver-white coat with a deep blue saddle and socks, a glowing crescent on
-    the brow, glowing eyes, ear tips and tail tip."""
+def sphinx_jackal():
+    """Sphinx Jackal (mythic): a sandstone jackal in a pharaoh's blue and gold headdress, with a gold
+    beard and collar, folded wings of gold and blue feathers, a glowing sun disc and glowing eyes."""
     return jackal_model(
-        dict(kind=MOONLIT, coat=(182, 198, 228), legs=(204, 216, 240), dark=(48, 62, 124), pale=(236, 242, 252), paw=(52, 66, 126), nose=(38, 46, 80), ear_in=(128, 150, 202),
-             tail=(168, 186, 226), tip="glow", glow=MOON, glow_eyes=True, extra=moon_extra),
+        dict(coat=(216, 188, 136), legs=(224, 200, 152), dark=LAPIS, pale=(240, 224, 184), paw=(176, 146, 98), nose=(60, 46, 36), ear_in=LAPIS,
+             tail=(190, 160, 108), tip=GOLD, glow=SUNGOLD, glow_eyes=True, extra=sphinx_extra),
         12,
     )
 
@@ -184,5 +203,5 @@ def moon_jackal():
 ASSETS = [
     F.asset("creature_jackal", jackal, 1.18, {}, "Jackal: a lean faceted pack hunter with a dark saddle and a bushy tail."),
     F.asset("creature_jackal_pharaoh", pharaoh_jackal, 1.45, {"head_glow": TURQUOISE}, "Pharaoh Jackal (legendary): black with gold bands; eyes and brow gem are Neon."),
-    F.asset("creature_jackal_moon", moon_jackal, 1.53, {"head_glow": MOON, "tail_glow": MOON, "leg_bl_glow": MOON, "leg_br_glow": MOON}, "Moon Jackal (mythic): silver with a deep blue saddle, a Neon crescent on the brow."),
+    F.asset("creature_jackal_sphinx", sphinx_jackal, 1.53, {"head_glow": SUNGOLD}, "Sphinx Jackal (mythic): sandstone, a blue and gold headdress, folded wings, a Neon sun disc."),
 ]
