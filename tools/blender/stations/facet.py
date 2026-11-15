@@ -1,9 +1,11 @@
-"""The faceted low-poly helpers shared by the lions, the elephants, the jackals and the cheetahs (decisions
-0050 to 0053). A piece is a closed solid of flat faces; every face has one colour (the `lp` colour attribute),
+"""The faceted low-poly helpers shared by the lions, the elephants, the jackals, the cheetahs and the rhinos
+(decisions 0050 to 0054). A piece is a closed solid of flat faces; every face has one colour (the `lp` colour attribute),
 picked from three tones (shadow, base, light) by which way the face points plus a little chance, so the
 facets read in any light and bake straight into the texture. kit.py drops the attribute after the bake:
 left on the mesh it would be exported as vertex colours, which Roblox multiplies the texture by.
 """
+
+import math
 
 import bmesh
 import bpy
@@ -118,6 +120,24 @@ def yring(y, zc, w, up, down, c, x=0.0):
 def zring(x, y, z, wx, wy, c):
     """A level rectangle with cut corners at height z (a section of a leg)."""
     return [(x + wx - c, y - wy, z), (x + wx, y - wy + c, z), (x + wx, y + wy - c, z), (x + wx - c, y + wy, z), (x - wx + c, y + wy, z), (x - wx, y + wy - c, z), (x - wx, y - wy + c, z), (x - wx + c, y - wy, z)]
+
+
+def oval(y, zc, w, up, down, n=12, x=0.0, power=2.6):
+    """An upright rounded section at depth y, of n points: a full, slightly squared oval (a rhino's
+    barrel), where `yring` gives a box with cut corners. Half width w, `up` above zc and `down` below."""
+    out = []
+    for i in range(n):
+        a = math.pi / 2 - math.tau * (i + 0.5) / n
+        c, s_ = math.cos(a), math.sin(a)
+        px = math.copysign(abs(c) ** (2 / power), c)
+        pz = math.copysign(abs(s_) ** (2 / power), s_)
+        out.append((x + w * px, y, zc + (up if pz > 0 else down) * pz))
+    return out
+
+
+def round_z(x, y, z, wx, wy, n=10):
+    """A level oval of n points at height z (a section of a round leg)."""
+    return [(x + wx * math.cos(math.tau * (i + 0.5) / n), y + wy * math.sin(math.tau * (i + 0.5) / n), z) for i in range(n)]
 
 
 def quad(y, zc, w, up, down, x=0.0):
