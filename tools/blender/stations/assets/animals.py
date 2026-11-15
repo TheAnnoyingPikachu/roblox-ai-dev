@@ -2,8 +2,8 @@
 pieces (body, head, four legs, tail) with a dangerous look. Each animal has a basic model and one
 rare variant with a new skin and glowing `_glow` pieces. Facing Blender -Y; left is +X.
 
-The Jackal, Cheetah and Meerkat share one predator body with their own numbers. The
-Tortoise and Flamingo are built on their own; the lions are in lions.py, the elephants in elephants.py. The Flamingo has two legs: its wings are
+The Cheetah and Meerkat share one predator body with their own numbers. The Tortoise and Flamingo
+are built on their own. The lions, elephants and jackals are faceted, in lions.py, elephants.py and jackals.py. The Flamingo has two legs: its wings are
 the "back legs", so the same joints and moves work for it.
 """
 
@@ -15,7 +15,6 @@ from mathutils import Vector
 
 INK = (16, 13, 18)
 BONE = (214, 200, 172)
-GOLD = (255, 196, 64)
 
 
 def shard(base, tip, r, m, name="shard"):
@@ -158,38 +157,6 @@ def predator(c):
 def side_point(c, a, y):
     """A ray onto the predator torso: `a` degrees round from the top (towards +X), at `y`."""
     return (0, y, c["chest_z"]), Vector((math.sin(math.radians(a)), 0, math.cos(math.radians(a))))
-
-
-# Jackal ---------------------------------------------------------------------------------------------
-
-JACKAL = dict(chest_z=1.75, chest_r=0.62, waist_r=0.5, hip_r=0.56, len=1.7, leg_r=0.2, foot_r=0.26, head_r=0.42, neck=0.55, head_up=0.72, neck_r=0.34, snout=0.72, ears="point", ear=1.25, tail_len=1.7, tail_r=0.2, tail_fat=1.5)
-
-
-def jackal(variant=False):
-    c = dict(JACKAL)
-    if variant:  # Pharaoh Jackal: black, gold collar and anklets, turquoise eyes and brow gem
-        c["skin"] = k.paint("jk_night", [(0, (18, 18, 26)), (1, (44, 44, 60))], 0, 3.2, rest=True, grain=(0.12, 9))
-        c.update(iris=(60, 230, 220), socket=(8, 8, 12), glow_eyes=True, claw=GOLD)
-    else:
-        c["skin"] = k.paint("jk_sand", [(0, (120, 96, 66)), (0.5, (176, 146, 100)), (1, (150, 126, 96))], 0, 3.2, rest=True, grain=(0.14, 9))
-        c.update(iris=(236, 170, 40), socket=(60, 46, 36), foot_rgb=(70, 56, 44))
-    groups, torso, skull, hc = predator(c)
-    skin = c["skin"]
-    if variant:
-        gold = k.flat(GOLD, emit=0.15)
-        neck = Vector(c["joints"]["head"])
-        groups["head"].append(ring(neck + (hc - neck) * 0.45, hc - neck, c["neck_r"] * 1.22, 0.07, gold, "collar"))
-        groups["head"].append(ring(neck + (hc - neck) * 0.62, hc - neck, c["neck_r"] * 1.16, 0.045, gold, "collar"))
-        for part, x, y in (("leg_fl", 0.31, 0), ("leg_fr", -0.31, 0), ("leg_bl", 0.28, 1.7), ("leg_br", -0.28, 1.7)):
-            groups[part].append(ring((x, y - 0.06, 0.62), (0, 0, 1), 0.2, 0.05, gold, "anklet"))
-        p, n = k.land(skull, hc, k.outward(0, 40))
-        groups["head_glow"].append(shard(p - n * 0.05, p + n * 0.22, 0.09, k.glow((60, 230, 220))))
-        k.zone(skin, GOLD, c["tail_tip"], (0.36, 0.5, 0.5), soft=0.4)
-    else:
-        k.zone(skin, (64, 52, 44), (0, 0.85, 2.45), (0.5, 1.5, 0.5), soft=0.6)  # dark saddle
-        k.zone(skin, (206, 190, 156), (0, 0.7, 1.15), (0.5, 1.5, 0.42), soft=0.5)  # pale belly
-        k.zone(skin, (40, 32, 30), c["tail_tip"], (0.36, 0.5, 0.5), soft=0.4)
-    return groups, c["joints"]
 
 
 # Cheetah -------------------------------------------------------------------------------------------
@@ -415,8 +382,6 @@ def asset(name, maker, variant, scale, glow, note, budget=11000):
 
 
 ASSETS = [
-    asset("creature_jackal", jackal, False, 1.25, {}, "Jackal: lean pack hunter."),
-    asset("creature_jackal_pharaoh", jackal, True, 1.55, {"head_glow": (60, 230, 220)}, "Pharaoh Jackal (legendary): black with gold bands; eyes and brow gem are Neon."),
     asset("creature_cheetah", cheetah, False, 1.4, {}, "Cheetah: spotted sprinter."),
     asset("creature_cheetah_lightning", cheetah, True, 1.75, {"head_glow": BOLT, "body_glow": BOLT, "tail_glow": BOLT}, "Lightning Cheetah (mythic): storm coat, Neon bolts."),
     asset("creature_meerkat", meerkat, False, 1.0, {}, "Meerkat: small and quick."),

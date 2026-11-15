@@ -8,19 +8,13 @@ Jointed like every creature: body, head (with the trunk, ears and tusks), four l
 `_glow` pieces. Facing Blender -Y; left is +X.
 """
 
-import importlib.util
 import math
-import os
 import random
 
+import facet as L
 import kit as k
 from mathutils import Vector
 
-# shortcut: the faceted helpers are borrowed from lions.py, loaded here the way kit.py loads the Garden
-# kit; when a third family goes faceted, move them to a module next to kit.py and import it from all three
-_spec = importlib.util.spec_from_file_location("lions", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lions.py"))
-L = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(L)
 loft, yring, zring, quad, shard, plate, tone, rough = L.loft, L.yring, L.zring, L.quad, L.shard, L.plate, L.tone, L.rough
 
 GREY = ((0.76, 0.76, 0.8), (1.12, 1.12, 1.14), (6, 6, 10))
