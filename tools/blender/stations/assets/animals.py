@@ -10,6 +10,8 @@ the "back legs", so the same joints and moves work for it.
 import math
 import random
 
+import bmesh
+import bpy
 import kit as k
 from mathutils import Vector
 
@@ -62,49 +64,6 @@ def leg(skin, x, y, top, r, r2, foot_r, claw, name, foot_rgb=None, toes=3):
     return [ob, *claws]
 
 
-def claws_at(foot, foot_r, claw, toes=3):
-    out = []
-    for a in (-36, 0, 36) if toes == 3 else (-48, -16, 16, 48):
-        d = k.outward(a, 0)
-        base = foot + d * foot_r * 0.72
-        pts = [base, base + d * foot_r * 0.45 - Vector((0, 0, 0.05)), base + d * foot_r * 0.7 - Vector((0, 0, foot_r * 0.42))]
-        out.append(k.horn(pts, [foot_r * 0.28, foot_r * 0.2, 0.0], claw, n=6, steps=5, name="claw"))
-    return out
-
-
-def cat_leg(skin, x, y, top, r, foot_r, claw, name, front, foot_rgb=None):
-    """A big cat's leg. Front: a shoulder blade, the elbow behind it, a tapering forearm and a broad
-    paw. Back: a heavy thigh, the knee forward, the hock pointing back, a slim shin and the paw."""
-    s = 1 if x > 0 else -1
-    foot = Vector((x, y - 0.12, foot_r * 0.5))
-    if front:
-        elbow = Vector((x, y + 0.14, top * 0.6))
-        wrist = Vector((x, y - 0.02, foot_r * 1.25))
-        parts = [
-            (Vector((x, y - 0.02, top - 0.05)), r * 1.35, (0.8, 1.35, 1.0)),
-            ("capsule", Vector((x, y, top - 0.1)), elbow, r * 1.12),
-            (elbow, r * 1.02, (0.9, 1.0, 0.9)),
-            ("capsule", elbow, wrist, r * 0.78),
-            (wrist, r * 0.7, (1.0, 1.0, 0.9)),
-        ]
-    else:
-        knee = Vector((x, y - 0.32, top * 0.58))
-        hock = Vector((x, y + 0.3, top * 0.3))
-        parts = [
-            (Vector((x, y + 0.05, top - 0.15)), r * 1.75, (0.82, 1.35, 1.2)),  # the thigh
-            ("capsule", Vector((x, y, top - 0.15)), knee, r * 1.1),
-            (knee, r * 0.95, (0.95, 1.0, 0.9)),
-            ("capsule", knee, hock, r * 0.82),
-            (hock, r * 0.66, (1.0, 1.0, 1.0)),
-            ("capsule", hock, Vector((x, y + 0.02, foot_r * 1.1)), r * 0.58),
-        ]
-    parts.append((tuple(foot), foot_r, (0.98, 1.2, 0.55)))
-    ob = k.fuse(parts, skin, tris=600, soft=0.24, name=name)
-    if foot_rgb:
-        k.zone(skin, foot_rgb, (x, y - 0.1, 0.1), (foot_r * 1.6, foot_r * 1.8, foot_r * 0.8), soft=0.5)
-    return [ob, *claws_at(foot, foot_r, claw)]
-
-
 def eyes(skull, skin, hc, theta, phi, r, iris, socket, glowing):
     """Slanted eyes in dark sockets. Returns (baked parts, glowing parts)."""
     parts, glows = [], []
@@ -132,11 +91,10 @@ def predator(c):
             ((0, L, cz + 0.05), hr, (0.86, 1.0, 0.98)),
             *k.pair((cr * 0.5, -0.05, cz + 0.05), cr * 0.66, (0.55, 1.0, 1.12)),
             *k.pair((hr * 0.5, L, cz), hr * 0.7, (0.55, 1.0, 1.12)),
-            *c.get("torso_extra", []),
         ],
         skin,
-        tris=c.get("torso_tris", 1900),
-        soft=c.get("torso_soft", 0.22),
+        tris=1900,
+        soft=0.22,
         name="torso",
     )
     fx, bx = cr * 0.5, hr * 0.5
@@ -179,21 +137,10 @@ def predator(c):
     groups = {
         "body": [torso],
         "head": [skull, *face],
-        **(
-            {
-                "leg_fl": cat_leg(skin, fx, 0, cz, lr, fr, claw, "leg_fl", True, c.get("foot_rgb")),
-                "leg_fr": cat_leg(skin, -fx, 0, cz, lr, fr, claw, "leg_fr", True, c.get("foot_rgb")),
-                "leg_bl": cat_leg(skin, bx, L, cz, lr, fr, claw, "leg_bl", False, c.get("foot_rgb")),
-                "leg_br": cat_leg(skin, -bx, L, cz, lr, fr, claw, "leg_br", False, c.get("foot_rgb")),
-            }
-            if c.get("cat")
-            else {
-                "leg_fl": leg(skin, fx, 0, cz, lr, lr2, fr, claw, "leg_fl", c.get("foot_rgb")),
-                "leg_fr": leg(skin, -fx, 0, cz, lr, lr2, fr, claw, "leg_fr", c.get("foot_rgb")),
-                "leg_bl": leg(skin, bx, L, cz, lr, lr2, fr, claw, "leg_bl", c.get("foot_rgb")),
-                "leg_br": leg(skin, -bx, L, cz, lr, lr2, fr, claw, "leg_br", c.get("foot_rgb")),
-            }
-        ),
+        "leg_fl": leg(skin, fx, 0, cz, lr, lr2, fr, claw, "leg_fl", c.get("foot_rgb")),
+        "leg_fr": leg(skin, -fx, 0, cz, lr, lr2, fr, claw, "leg_fr", c.get("foot_rgb")),
+        "leg_bl": leg(skin, bx, L, cz, lr, lr2, fr, claw, "leg_bl", c.get("foot_rgb")),
+        "leg_br": leg(skin, -bx, L, cz, lr, lr2, fr, claw, "leg_br", c.get("foot_rgb")),
         "tail": [tail],
     }
     if glows:
@@ -284,188 +231,254 @@ def cheetah(variant=False):
 
 
 # Lion ----------------------------------------------------------------------------------------------
-
-LION = dict(chest_z=2.0, chest_r=0.96, waist_r=0.66, hip_r=0.8, len=2.15, leg_r=0.3, foot_r=0.4, head_r=0.62, neck=0.55, head_up=0.72, neck_r=0.5, snout=0.5, muzzle=1.25, ears="round", tail_len=2.1, tail_r=0.12, cat=True, torso_tris=2600, torso_soft=0.34,
-            torso_extra=[*k.pair((0.5, 0.35, 2.3), 0.5, (0.65, 1.3, 1.0)), ((0, 1.1, 2.62), 0.34, (0.7, 4.0, 0.7))])  # shoulder blades, a ridge of spine
-FLAME = (255, 140, 24)
-
-
-def lion_head(c, hy, hz):
-    """Cheek masses and a raised nose bridge, so the face is broad and square, not a ball."""
-    extra = list(c.get("head_extra", []))
-    extra += k.pair((0.4, hy - 0.08, hz - 0.3), 0.3, (0.75, 1.0, 0.8))
-    extra.append(("capsule", (0, hy - 0.3, hz + 0.2), (0, hy - 0.85, hz - 0.02), 0.17))
-    c["head_extra"] = extra
-
-
-def lion_fur(c, groups, skull, hc, coat, mane=None, whisker=(236, 226, 200), seed=3):
-    """The lion's small detail: whiskers, ear tufts, a fringe of chest tufts,
-    a tufted tail tip and, with `mane` (two colours), locks clumped out of the ruff and a beard."""
-    rng = random.Random(seed)
-    R, L = c["head_r"], c["len"]
-    cz, cr = c["chest_z"], c["chest_r"]
-    tuft, white = k.flat(coat), k.flat(whisker)
-    head, body = groups["head"], groups["body"]
-    tip = hc + Vector((0, -R * 0.75 - c["snout"], -R * 0.2))
-    for side in (-1, 1):
-        for i in range(3):  # whiskers fanned out of the muzzle
-            b = Vector((side * R * 0.3, tip.y + R * 0.55 - i * 0.04, tip.z + 0.1 - i * 0.05))
-            d = Vector((side * 1.0, -0.15 - i * 0.12, 0.12 - i * 0.2)).normalized()
-            head.append(k.horn([b, b + d * 0.35 + Vector((0, 0, 0.04)), b + d * 0.75 + Vector((0, 0.05, -0.1))], [0.022, 0.016, 0.0], white, n=4, steps=4, name="whisker"))
-        ear = Vector((side * R * 0.72, hc.y + R * 0.3, hc.z + R * 0.72))
-        head.append(k.horn([ear + Vector((0, 0, 0.1)), ear + Vector((side * 0.05, 0.04, 0.35)), ear + Vector((side * 0.1, 0.1, 0.62))], [0.07, 0.05, 0.0], tuft, n=5, steps=4, name="eartuft"))
-    fx, bx = cr * 0.5, c["hip_r"] * 0.5
-    for side in (-1, 1):
-        for j in range(3):  # fur hanging behind each elbow and hock breaks the leg's outline
-            e = Vector((side * fx, 0.2 + j * 0.03, cz - 0.7 - j * 0.12))
-            groups["leg_fl" if side > 0 else "leg_fr"].append(k.horn([e, e + Vector((side * 0.04, 0.22, -0.12)), e + Vector((side * 0.06, 0.45, -0.34))], [0.1, 0.07, 0.0], tuft, n=5, steps=3, name="elbow"))
-            h = Vector((side * bx, L + 0.35 + j * 0.03, cz - 1.15 - j * 0.14))
-            groups["leg_bl" if side > 0 else "leg_br"].append(k.horn([h, h + Vector((side * 0.04, 0.22, -0.1)), h + Vector((side * 0.05, 0.44, -0.3))], [0.1, 0.07, 0.0], tuft, n=5, steps=3, name="hock"))
-    for j in range(8):  # a fringe along the belly
-        y = 0.1 + j * 0.28
-        for side in (-1, 1):
-            b = Vector((side * (0.42 - abs(j - 3.5) * 0.03), y, cz - 0.62 + abs(j - 3.5) * 0.05))
-            body.append(k.horn([b, b + Vector((side * 0.02, 0.06, -0.18)), b + Vector((side * 0.03, 0.14, -0.38))], [0.09, 0.07, 0.0], tuft, n=5, steps=3, name="belly"))
-    for j in range(9):
-        x = (j - 4) * 0.13
-        b = Vector((x, -cr * 0.74 - 0.06, cz + 0.38 - abs(j - 4) * 0.08))
-        body.append(k.horn([b, b + Vector((x * 0.15, -0.08, -0.3)), b + Vector((x * 0.3, -0.04, -0.62 - rng.uniform(0, 0.15)))], [0.12, 0.09, 0.0], tuft, n=5, steps=4, name="chest"))
-    t = Vector(c["tail_tip"])
-    for i in range(6):  # the tail's tuft, as locks
-        a = i / 6 * math.tau
-        d = Vector((math.cos(a) * 0.3, 0.12 + rng.uniform(0, 0.1), -0.55 + math.sin(a) * 0.15))
-        groups["tail"].append(k.horn([t, t + d * 0.5, t + d * 1.1], [0.1, 0.1, 0.0], tuft, n=5, steps=4, name="lock"))
-    if mane:  # two tones of locks, clumped out of the ruff: a full ring, then a beard under the chin
-        tones = [k.flat(mane[0]), k.flat(mane[1])]
-        for i in range(24):
-            a = i / 24 * math.tau + rng.uniform(-0.08, 0.08)
-            r = rng.uniform(0.85, 1.05)
-            base = hc + Vector((math.cos(a) * r, 0.4, math.sin(a) * r))
-            d = Vector((math.cos(a) * 0.85, 0.5, math.sin(a) * 0.6 - 0.35)).normalized()
-            n = rng.uniform(0.5, 0.85)
-            head.append(k.horn([base - d * 0.25, base + d * n * 0.5 + Vector((0, 0, -0.06)), base + d * n + Vector((0, 0.05, -0.18))], [0.2, 0.17, 0.0], tones[i % 2], n=6, steps=5, name="lock"))
-        for i in range(6):
-            x = (i - 2.5) * 0.19
-            base = hc + Vector((x, -0.3, -0.72 - abs(i - 2.5) * 0.05))
-            head.append(k.horn([base, base + Vector((x * 0.3, 0.12, -0.28)), base + Vector((x * 0.55, 0.3, -0.52 - rng.uniform(0, 0.12)))], [0.17, 0.14, 0.0], tones[i % 2], n=6, steps=5, name="beard"))
-    # Flat-coloured hair needs only a few texels: without this every lock and tuft takes an island of
-    # the one atlas and the body's texture shrinks to mush.
-    hair = ("whisker", "eartuft", "elbow", "hock", "belly", "chest", "lock", "beard")
-    for part in groups.values():
-        k.texel([ob for ob in part if ob.name.startswith(hair)], 0.2)
-
-
-def lion_coat(c, hy, hz, belly, spine, hi, bridge, spots, paw):
-    """Fur markings painted on the fused bodies: a pale belly and chest, a darker spine, lighter
-    shoulders and haunches that read as muscle, a dark nose bridge and whisker spots."""
-    m = c["skin"]
-    k.zone(m, belly, (0, 1.0, 1.3), (0.75, 1.9, 0.6), soft=0.5, jag=0.12, jag_scale=9)
-    k.zone(m, belly, (0, -0.55, 1.75), (0.6, 0.65, 0.65), soft=0.5, jag=0.12, jag_scale=9)
-    k.zone(m, spine, (0, 1.0, 2.95), (0.32, 2.1, 0.3), soft=0.6, jag=0.15, jag_scale=8)
-    for side in (-1, 1):
-        k.zone(m, hi, (side * 0.62, 0.3, 2.4), (0.35, 0.8, 0.6), soft=0.5, jag=0.1, jag_scale=8)  # shoulder
-        k.zone(m, hi, (side * 0.6, 2.05, 2.25), (0.4, 0.75, 0.65), soft=0.5, jag=0.1, jag_scale=8)  # haunch
-        for i, (dy, dz) in enumerate(((0.62, 0.02), (0.7, -0.07), (0.78, -0.16), (0.6, -0.12))):  # whisker spots
-            k.zone(m, spots, (side * (0.15 + i * 0.03), hy - dy, hz + dz - 0.1), (0.04, 0.04, 0.04), soft=0.3)
-    k.zone(m, bridge, (0, hy - 0.62, hz + 0.04), (0.13, 0.5, 0.14), soft=0.6)
-    c["foot_rgb"] = paw
-
+# A chunky, faceted low-poly cat (SHANNON's reference, decision 0050): a lofted blocky body and legs,
+# big cream paws and a mane of crystal shards, the same build for the Lion and both variants. Every
+# piece is flat shaded (its edges are split), so the facets show in the game as well as in Blender.
 
 SUNFIRE = (255, 196, 48)
+SHADOW = (110, 255, 90)  # a sickly green glow
+CREAM = (250, 232, 186)
+
+
+def facet(ob):
+    """Split every edge so the piece shades flat: the low-poly look survives the export."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bmesh.ops.split_edges(bm, edges=bm.edges[:])
+    bm.to_mesh(ob.data)
+    bm.free()
+    return ob
+
+
+def solid(name, rings, m, rng, wobble=0.02):
+    """A faceted solid lofted through `rings` (lists of points, equal length), capped at both ends and
+    nudged a little off true so the facets are not machine-regular."""
+    bm = bmesh.new()
+    rows = []
+    for ring in rings:
+        rows.append([bm.verts.new(Vector(p) + Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))) * wobble) for p in ring])
+    n = len(rows[0])
+    for a, b in zip(rows, rows[1:]):
+        for i in range(n):
+            j = (i + 1) % n
+            bm.faces.new((a[i], a[j], b[j], b[i]))
+    bm.faces.new(rows[0][::-1])
+    bm.faces.new(rows[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(ob)
+    me.materials.append(m)
+    return facet(k.rest(ob))
+
+
+def hexring(x, y, z, wx, wy):
+    """A horizontal hexagon (a limb's cross-section) centred on (x, y) at height z."""
+    return [(x + wx * math.cos(math.radians(30 + 60 * i)), y + wy * math.sin(math.radians(30 + 60 * i)), z) for i in range(6)]
+
+
+def octring(y, z, w, up, down):
+    """An upright octagon with flat top, bottom and sides at depth y: half width w, half heights up and down."""
+    out = []
+    for i in range(8):
+        a = math.radians(22.5 + 45 * i)
+        s_ = math.sin(a)
+        out.append((w * math.cos(a) / 0.9239, y, z + (up if s_ > 0 else down) * s_ / 0.9239))
+    return out
+
+
+def spike(base, tip, w, m, name="spike", flat=1.0):
+    """A four-sided crystal shard from base to tip, widest a third of the way along. flat < 1 squashes it
+    into a blade, wide across the head and thin the other way, like the mane's flames."""
+    b, t = Vector(base), Vector(tip)
+    ob = k.tube([b, b + (t - b) * 0.38, t], [w * 0.55, w, 0.0], m=m, n=4, name=name)
+    if flat != 1.0:
+        axis = (t - b).normalized()
+        side = axis.cross(Vector((0, 1, 0)))
+        if side.length < 1e-3:
+            side = Vector((1, 0, 0))
+        normal = axis.cross(side.normalized()).normalized()
+        for v in ob.data.vertices:
+            v.co += normal * (v.co - b).dot(normal) * (flat - 1.0)
+    return facet(ob)
+
+
+def lion_coat(m, belly, spine, hi, bridge):
+    """Fur markings painted on the solids: a pale belly and chest, a dark spine, lighter shoulders and
+    haunches, a pale muzzle and chin, a dark nose bridge."""
+    k.zone(m, belly, (0, 1.1, 1.0), (0.8, 1.9, 0.38), soft=0.4, jag=0.1, jag_scale=9)
+    k.zone(m, belly, (0, -0.6, 1.75), (0.6, 0.6, 0.6), soft=0.4, jag=0.1, jag_scale=9)
+    k.zone(m, spine, (0, 1.2, 3.1), (0.35, 2.1, 0.3), soft=0.5, jag=0.15, jag_scale=8)
+    for side in (-1, 1):
+        k.zone(m, hi, (side * 0.9, 0.2, 2.45), (0.3, 0.8, 0.6), soft=0.4, jag=0.1, jag_scale=8)
+        k.zone(m, hi, (side * 0.9, 2.1, 2.3), (0.3, 0.8, 0.65), soft=0.4, jag=0.1, jag_scale=8)
+    k.zone(m, bridge, (0, -1.7, 3.12), (0.13, 0.55, 0.16), soft=0.5)
+
+
+def poly_leg(skin, x, front, name, rng, pal):
+    """Chunky stacked blocks: a front leg with a broad elbow and a big paw; a back leg with a heavy
+    thigh, the knee forward and the hock back. Three claws and a cream paw."""
+    if front:
+        spec = [(x, -0.05, 2.55, 0.56, 0.62), (x, 0.05, 1.8, 0.52, 0.58), (x, 0.14, 1.2, 0.45, 0.48), (x, 0.02, 0.62, 0.38, 0.4), (x, -0.02, 0.36, 0.42, 0.44), (x, -0.14, 0.17, 0.5, 0.54), (x, -0.17, 0.0, 0.52, 0.58)]
+    else:
+        L = 2.15
+        spec = [(x, L + 0.05, 2.55, 0.62, 0.78), (x, L - 0.15, 1.95, 0.6, 0.82), (x, L - 0.3, 1.4, 0.44, 0.52), (x, L - 0.05, 0.95, 0.38, 0.44), (x, L + 0.3, 0.7, 0.36, 0.38), (x, L + 0.15, 0.4, 0.36, 0.4), (x, L, 0.17, 0.5, 0.54), (x, L - 0.03, 0.0, 0.52, 0.58)]
+    parts = [solid(name, [hexring(*sp) for sp in spec], skin, rng)]
+    fy = spec[-1][1]
+    k.zone(skin, pal["paw"], (x, fy - 0.05, 0.12), (0.62, 0.7, 0.34), soft=0.3, jag=0.1, jag_scale=9)
+    claw = k.flat(pal["claw"])
+    for dx in (-0.18, 0.0, 0.18):
+        parts.append(spike((x + dx, fy - 0.48, 0.17), (x + dx, fy - 0.82, 0.02), 0.08, claw, name="claw"))
+    return parts
+
+
+def poly_lion(pal, seed):
+    """The faceted lion from a palette (see lion() and shadow_lion()). Returns (groups, joints)."""
+    rng = random.Random(seed)
+    skin = pal["skin"]
+    hc = Vector((0, -1.24, 3.12))
+    R = 0.62
+    torso = solid("torso", [octring(*r) for r in ((-0.95, 2.3, 0.62, 0.65, 0.65), (-0.5, 2.1, 0.95, 1.05, 1.1), (0.3, 2.1, 1.02, 1.08, 1.15), (1.2, 2.18, 0.85, 0.95, 0.9), (2.0, 2.15, 0.95, 0.98, 0.95), (2.7, 2.12, 0.75, 0.82, 0.75), (3.0, 2.1, 0.5, 0.58, 0.52))], skin, rng)
+    H = 1.32  # a big head, like the reference
+    skull = solid("skull", [octring(y, z, w * H, up * H, down * H) for y, z, w, up, down in ((-2.3, 3.0, 0.2, 0.15, 0.14), (-1.95, 3.02, 0.34, 0.26, 0.26), (-1.55, 3.08, 0.46, 0.34, 0.36), (-1.15, 3.2, 0.56, 0.45, 0.42), (-0.8, 3.2, 0.56, 0.5, 0.46), (-0.5, 3.15, 0.5, 0.46, 0.42))], skin, rng)
+    head = [
+        skull,
+        solid("neck", [octring(-0.5, 2.5, 0.62, 0.6, 0.65), octring(-1.0, 2.95, 0.6, 0.6, 0.6)], skin, rng),
+        solid("jaw", [octring(-2.0, 2.82, 0.22, 0.06, 0.07), octring(-1.5, 2.74, 0.36, 0.1, 0.12), octring(-1.1, 2.72, 0.42, 0.12, 0.14)], skin, rng),
+        solid("mane_core", [octring(*r) for r in ((-0.95, 3.12, 0.95, 1.0, 1.0), (-0.45, 3.12, 1.1, 1.15, 1.1), (0.1, 3.08, 1.05, 1.1, 1.05), (0.5, 2.95, 0.8, 0.9, 0.85))], skin, rng, 0.05),
+    ]
+    for side in (-1, 1):  # pointed ears
+        head.append(solid("ear", [hexring(side * 0.5, -0.85, 3.6, 0.28, 0.2), hexring(side * 0.48, -0.86, 3.9, 0.22, 0.13), hexring(side * 0.46, -0.87, 4.2, 0.03, 0.03)], skin, rng))
+    face, glows = eyes(skull, skin, hc, 46, 14, R * 0.19, pal["iris"], pal["socket"], pal.get("glow_eyes", False))
+    tip = hc + Vector((0, -R * 0.75 - 0.5, -R * 0.2))
+    nose = hc + Vector((0, -R * 0.6 - 0.5, -R * 0.1))
+    face.append(k.lens(skull, nose, (0, -1, 0.35), R * 0.17, k.flat(pal["nose"]), scale=(1.2, 0.85), thick=0.6, sink=0.4, seg=12, name="nose"))
+    line = [((0, tip.y + R * 0.45, tip.z - R * 0.05), k.outward(a, -4)) for a in (-95, -60, -25, 0, 25, 60, 95)]
+    face.append(k.vein(skull, line, R * 0.05, k.flat(INK), name="mouth"))
+    for side in (-1, 1):  # fangs
+        p, _ = k.land(skull, (0, tip.y + R * 0.3, tip.z), k.outward(side * 38, -30))
+        face.append(k.horn([p + Vector((0, 0, 0.04)), p - Vector((0, 0, R * 0.3))], [R * 0.09, 0.0], k.flat(BONE), n=6, steps=3, name="fang"))
+    k.texel(face, k.FACE_TEXEL)
+    head += face
+
+    flats: dict = {}
+    glowm = k.glow(pal["glow"])
+    small = []  # flat-coloured shards: they need only a few texels, so keep them off the atlas's big islands
+
+    def pick(spec, i):
+        if spec == "glow":
+            return glowm, True
+        return flats.setdefault(spec[i % len(spec)], k.flat(spec[i % len(spec)])), False
+
+    groups = {"body": [torso], "head": head, "head_glow": list(glows)}
+
+    def crown(spec, n, radius, y, length, width, back, tips=False):
+        """A ring of crystal shards round the head, raked back, longer on top, shorter below."""
+        for i in range(n):
+            a = i / n * math.tau + rng.uniform(-0.12, 0.12)
+            out = Vector((math.cos(a), 0, math.sin(a)))
+            long_ = length * rng.uniform(0.75, 1.2) * (1 + 0.25 * max(0.0, out.z)) * (0.7 if out.z < -0.3 else 1.0)
+            base = Vector((0, y, 3.1)) + out * radius
+            d = Vector((out.x * 0.8, back + 0.25 * out.z, out.z * 0.8 + 0.15)).normalized()
+            m, is_glow = pick(spec, i)
+            ob = spike(base - d * 0.2, base + d * long_, width * rng.uniform(0.85, 1.15), m, flat=0.4)
+            groups["head_glow" if is_glow else "head"].append(ob)
+            if not is_glow:
+                small.append(ob)
+            if tips and i % 3 == 0:  # an ember at the end of every third shard
+                groups["head_glow"].append(spike(base + d * long_, base + d * (long_ + 0.45), 0.1, glowm, flat=0.5))
+
+    crown(pal["A"], 15, 0.9, -0.35, 1.8, 0.5, 0.6, pal.get("tips", False))
+    crown(pal["B"], 13, 0.75, -0.8, 1.15, 0.4, 0.3)
+    crown(pal["C"], 11, 0.72, -1.05, 0.75, 0.3, -0.15)
+    for i in range(9):  # a beard of tufts down the throat and chest
+        x = (i - 4) * 0.13
+        base = Vector((x, -0.95, 2.62 - abs(x) * 0.3))
+        m, is_glow = pick(pal["chest"], i)
+        ob = spike(base, base + Vector((x * 0.3, 0.2, -rng.uniform(0.7, 1.0))), 0.26, m, flat=0.5)
+        groups["head_glow" if is_glow else "head"].append(ob)
+        small.append(ob)
+    body_glow = []
+    for i in range(8):  # a ridge down the spine
+        base = Vector((0, 0.3 + i * 0.24, 3.0))
+        m, is_glow = pick(pal["spine"], i)
+        ob = spike(base, base + Vector((0, 0.3, 0.75 - i * 0.05)), 0.26, m, flat=0.45)
+        (body_glow if is_glow else groups["body"]).append(ob)
+        if not is_glow:
+            small.append(ob)
+
+    t0 = Vector((0, 2.75, 2.28))
+    tail_tip = Vector((0, 4.65, 1.05))
+    path = [t0, Vector((0, 3.4, 2.45)), Vector((0, 4.0, 2.2)), Vector((0, 4.45, 1.6)), tail_tip]
+    groups["tail"] = [facet(k.rest(k.tube(path, [0.17, 0.15, 0.13, 0.12, 0.1], m=skin, n=6, name="tail")))]
+    if pal["tail"] == "tuft":
+        for i in range(9):
+            a = i / 9 * math.tau
+            d = Vector((math.cos(a) * 0.5, 0.15, -0.6 + math.sin(a) * 0.3)).normalized()
+            m, _ = pick(pal["tuft"], i)
+            ob = spike(tail_tip - d * 0.1, tail_tip + d * rng.uniform(0.6, 0.9), 0.14, m)
+            groups["tail"].append(ob)
+            small.append(ob)
+    else:  # a wisp of flame: a curling tongue and a fan of shards
+        groups["tail_glow"] = [k.horn([tail_tip, tail_tip + Vector((0, 0.1, -0.3)), tail_tip + Vector((0.05, 0.4, -0.35)), tail_tip + Vector((0, 0.7, 0.1))], [0.12, 0.28, 0.2, 0.0], glowm, n=6, steps=6, name="wisp")]
+        for i in range(7):
+            a = (i - 3) * 0.35
+            groups["tail_glow"].append(spike(tail_tip, tail_tip + Vector((math.sin(a) * 0.6, 0.45, -0.7 + math.cos(a) * 0.2)), 0.12, glowm))
+    if body_glow:
+        groups["body_glow"] = body_glow
+    for sp in (True, False):
+        for side in (1, -1):
+            nm = ("leg_f" if sp else "leg_b") + ("l" if side > 0 else "r")
+            groups[nm] = poly_leg(skin, side * (0.62 if sp else 0.6), sp, nm, rng, pal)
+    k.texel(small, 0.25)
+    joints = {"head": (0, -0.69, 2.41), "leg_fl": (0.62, 0, 1.9), "leg_fr": (-0.62, 0, 1.9), "leg_bl": (0.6, 2.15, 1.9), "leg_br": (-0.6, 2.15, 1.9), "tail": tuple(t0)}
+    pal["torso"], pal["tail_tip"] = torso, tail_tip
+    return {name: parts for name, parts in groups.items() if parts}, joints  # no empty pieces
 
 
 def lion(variant=False):
-    c = dict(LION)
-    hy, hz = -0.96 * 0.72 - 0.55, 2.0 + 0.96 * 0.42 + 0.72  # the head's middle
-    # the mane: a ruff of big locks behind the face, part of the head
-    c["head_extra"] = [((math.cos(a) * 0.72, hy + 0.5, hz - 0.1 + math.sin(a) * 0.72), 0.5, (1.0, 1.15, 1.0)) for a in [i / 9 * math.tau for i in range(9)]] + [((0, hy + 0.85, hz - 0.2), 0.95, (1.0, 0.9, 1.05))]
-    if not variant:
-        c["skin"] = k.paint("li_tawny", [(0, (150, 110, 62)), (0.5, (196, 152, 86)), (1, (182, 140, 82))], 0, 3.8, rest=True, grain=(0.18, 15))
-        c.update(iris=(240, 176, 36), socket=(70, 48, 30))
-        lion_coat(c, hy, hz, (232, 206, 158), (140, 100, 54), (216, 172, 102), (122, 86, 52), (74, 48, 30), (112, 82, 50))
-    else:  # Sun Lion: a deep gold coat, a full mane of crimson and orange locks crowned in flame, a blazing tail
-        c["skin"] = k.paint("li_sun2", [(0, (150, 92, 36)), (0.5, (214, 152, 60)), (1, (232, 176, 80))], 0, 3.8, rest=True, grain=(0.18, 15))
-        c.update(iris=(255, 244, 190), socket=(96, 44, 20), glow_eyes=True, claw=(255, 214, 120))
-        lion_coat(c, hy, hz, (246, 214, 140), (146, 80, 34), (244, 196, 100), (170, 104, 46), (104, 54, 28), (132, 78, 34))
-    lion_head(c, hy, hz)
-    groups, torso, skull, hc = predator(c)
-    if variant:
-        k.zone(c["skin"], (176, 52, 24), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.25, jag=0.15)  # a crimson ruff
-        k.zone(c["skin"], (252, 226, 160), (0, hy - 0.75, hz - 0.35), (0.42, 0.5, 0.36), soft=0.4)  # pale muzzle
-        rng, glow = random.Random(5), k.glow(SUNFIRE)
-        flames = []
-        for ring_r, n, long in ((1.0, 14, 1.5), (0.78, 12, 1.2), (0.55, 8, 0.85)):  # three rings of flame, a crown
-            for i in range(n):
-                a = i / n * math.tau + rng.uniform(-0.12, 0.12)
-                d = Vector((math.cos(a), 0.55, math.sin(a) * 1.05)).normalized()
-                base = hc + Vector((math.cos(a) * ring_r, 0.42, math.sin(a) * ring_r))
-                flames.append(shard(base - d * 0.2, base + d * long * rng.uniform(0.75, 1.15), 0.2, glow))
-        for i in range(6):  # licks of flame along the spine and haunches, shorter towards the tail
-            base = Vector((rng.uniform(-0.1, 0.1), 0.45 + i * 0.32, c["chest_z"] + 0.8 - i * 0.03))
-            flames.append(shard(base, base + Vector((0, 0.3, 0.7 - i * 0.06)), 0.14, glow))
-        groups["head_glow"] += flames
-        tip = c["tail_tip"]
-        groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.3)), tip + Vector((0, 0.3, -0.85))], [0.1, 0.27, 0.0], glow, n=10, steps=8, name="flame")]
-    else:
-        k.zone(c["skin"], (92, 58, 34), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.25, jag=0.15)  # the mane is darker
-        k.zone(c["skin"], (236, 218, 180), (0, hy - 0.75, hz - 0.35), (0.42, 0.5, 0.36), soft=0.4)  # pale muzzle
-        groups["tail"].append(k.blob(0.26, tuple(c["tail_tip"]), k.flat((70, 44, 28)), scale=(0.9, 0.9, 1.5), name="tuft"))
-    lion_fur(c, groups, skull, hc, (176, 136, 80) if not variant else (222, 160, 72), ((74, 46, 28), (130, 92, 52)) if not variant else ((176, 44, 22), (238, 116, 32)))
-    return groups, c["joints"]
-
-
-SHADOW = (110, 255, 90)  # a sickly green glow
+    if not variant:  # a tawny lion with a dark brown crown of shards
+        skin = k.paint("li_poly", [(0, (186, 134, 58)), (0.5, (216, 168, 82)), (1, (204, 156, 74))], 0, 3.8, rest=True, grain=(0.12, 12))
+        pal = dict(skin=skin, paw=(236, 216, 174), claw=(58, 46, 40), nose=(58, 40, 34), iris=(240, 176, 36), socket=(80, 54, 30), glow=(255, 150, 40),
+                   A=[(124, 80, 40), (160, 110, 54), (96, 62, 32)], B=[(176, 124, 62), (142, 96, 46)], C=[(204, 154, 82), (228, 182, 108)],
+                   chest=[(110, 72, 36), (142, 94, 48)], spine=[(130, 86, 44), (108, 70, 34)], tail="tuft", tuft=[(120, 78, 38), (150, 102, 50)])
+        lion_coat(skin, (234, 208, 160), (156, 108, 54), (226, 180, 104), (150, 104, 54))
+        k.zone(skin, (112, 72, 38), (0, -0.2, 3.1), (1.15, 0.9, 1.15), soft=0.3, jag=0.15)  # the mane's core
+        k.zone(skin, (240, 224, 186), (0, -1.85, 2.95), (0.38, 0.5, 0.3), soft=0.4)  # pale muzzle
+        return poly_lion(pal, 3)[0:2]
+    # Sun Lion: a golden coat with a sun on each haunch, a blazing crown of crystal flame, white-hot eyes
+    emblem = [((170, 74, 18), (side * 0.97, 2.1, 2.3), r0, r1) for side in (-1, 1) for r0, r1 in ((0.2, 0.27), (0.0, 0.11))]
+    skin = k.paint("li_sun3", [(0, (200, 112, 30)), (0.5, (240, 158, 48)), (1, (250, 188, 74))], 0, 3.8, rest=True, grain=(0.12, 12), marks=emblem)
+    pal = dict(skin=skin, paw=CREAM, claw=(255, 226, 150), nose=(120, 70, 40), iris=(255, 232, 90), socket=(190, 100, 30), glow_eyes=True, glow=SUNFIRE,
+               A="glow", B="glow", C=[(255, 176, 52), (240, 140, 36)], chest=[(214, 90, 26), (240, 130, 36)], spine="glow", tail="wisp")
+    lion_coat(skin, (255, 226, 150), (176, 92, 26), (255, 206, 92), (214, 150, 70))
+    k.zone(skin, (200, 84, 24), (0, -0.2, 3.1), (1.15, 0.9, 1.15), soft=0.3, jag=0.15)
+    k.zone(skin, (255, 238, 196), (0, -1.85, 2.95), (0.38, 0.5, 0.3), soft=0.4)
+    return poly_lion(pal, 5)[0:2]
 
 
 def shadow_lion(variant=True):
-    """Shadow Lion (legendary): a lean ink-black lion with a bone-white skull mask and spine, a mane of
-    long smoky tendrils streaming back, glowing green ribs, eyes and tail-wisp."""
-    c = dict(LION)
-    hy, hz = -0.96 * 0.72 - 0.55, 2.0 + 0.96 * 0.42 + 0.72
-    c["torso_extra"] = c["torso_extra"][:2]  # the shoulders, but no extra spine
-    c["torso_tris"] = 2300
-    c["skin"] = k.paint("li_shade", [(0, (10, 10, 14)), (0.6, (24, 26, 34)), (1, (36, 40, 52))], 0, 3.8, rest=True, grain=(0.2, 15))
-    c.update(iris=SHADOW, socket=(4, 6, 6), glow_eyes=True, claw=BONE)
-    lion_coat(c, hy, hz, (20, 22, 28), (6, 6, 9), (48, 54, 68), (200, 192, 168), (190, 180, 154), (8, 8, 10))
-    lion_head(c, hy, hz)
-    groups, torso, skull, hc = predator(c)
-    m = c["skin"]
-    # the skull mask: bone over the brow, down the nose and over the cheek bones
-    for side in (-1, 1):
-        k.zone(m, BONE, (side * 0.3, hy - 0.42, hz + 0.22), (0.28, 0.2, 0.12), soft=0.3, jag=0.12, jag_scale=10)
-        k.zone(m, BONE, (side * 0.46, hy - 0.4, hz - 0.2), (0.12, 0.3, 0.16), soft=0.3, jag=0.12, jag_scale=10)
-    k.zone(m, BONE, (0, hy - 0.7, hz + 0.02), (0.17, 0.55, 0.15), soft=0.3, jag=0.1, jag_scale=10)
-    rng, glow = random.Random(11), k.glow(SHADOW)
-    tones = [k.flat((16, 18, 26)), k.flat((34, 40, 54))]
-    for i in range(20):  # the mane: long tendrils streaming back like smoke in a wind
-        a = i / 20 * math.tau + rng.uniform(-0.1, 0.1)
-        up = math.sin(a)
-        out = Vector((math.cos(a), 0, up))
-        base = hc + out * 0.8 + Vector((0, 0.45, 0))
-        d1 = Vector((out.x * 0.5, 0.9, out.z * 0.35 + 0.1))
-        d2 = Vector((out.x * 0.35, 0.95, out.z * 0.2 - 0.25 + max(0.0, up) * 0.35))
-        d3 = Vector((-out.x * 0.2, 0.9, -0.3 + max(0.0, up) * 0.25))
-        n = rng.uniform(0.7, 1.7)
-        p1 = base + d1 * 0.55 * n
-        p2 = p1 + d2 * 0.6 * n
-        p3 = p2 + d3 * 0.55 * n
-        groups["head"].append(k.horn([base - d1 * 0.2, p1, p2, p3], [0.2, 0.17, 0.11, 0.0], tones[i % 2], n=6, steps=6, name="lock"))
-        if i % 2 == 0:  # an ember drifting off the end of every second tendril
-            groups["head_glow"].append(shard(p3, p3 + d3 * 0.45 + Vector((0, 0.1, 0.12)), 0.07, glow))
-    for i in range(7):  # a spine of bone vertebrae, then a rib cage of glowing bands
-        y = 0.4 + i * 0.27
-        base = Vector((0, y, c["chest_z"] + 0.86 - abs(i - 3) * 0.015))
-        groups["body"].append(k.horn([base, base + Vector((0, 0.08, 0.2)), base + Vector((0, 0.18, 0.44 - i * 0.025))], [0.1, 0.07, 0.0], k.flat(BONE), n=5, steps=3, name="lock"))
-    bands = []
-    for y in (0.0, 0.3, 0.6, 0.9, 1.2, 1.5):  # each rib runs from the spine down the flank to the belly
+    """Shadow Lion (legendary): an ink-black lion with a bone skull mask and spine, a crown of black
+    shards with green embers, glowing green ribs, eyes and tail wisp."""
+    skin = k.paint("li_shade2", [(0, (8, 8, 12)), (0.6, (22, 24, 32)), (1, (34, 38, 50))], 0, 3.8, rest=True, grain=(0.16, 12))
+    pal = dict(skin=skin, paw=(16, 16, 22), claw=BONE, nose=(24, 28, 28), iris=SHADOW, socket=(2, 4, 4), glow_eyes=True, glow=SHADOW,
+               A=[(14, 16, 22), (30, 36, 50), (8, 10, 14)], B=[(24, 28, 40), (12, 14, 20)], C=[(38, 44, 58), (20, 24, 34)],
+               chest=[(10, 12, 18), (24, 28, 38)], spine=[BONE], tail="wisp", tips=True)
+    lion_coat(skin, (18, 20, 26), (4, 4, 8), (46, 52, 66), BONE)
+    k.zone(skin, (14, 16, 24), (0, -0.2, 3.1), (1.15, 0.9, 1.15), soft=0.3, jag=0.15)
+    for side in (-1, 1):  # the skull mask: bone over the brow and the cheek bones
+        k.zone(skin, BONE, (side * 0.32, -1.5, 3.4), (0.26, 0.22, 0.12), soft=0.3, jag=0.12, jag_scale=10)
+        k.zone(skin, BONE, (side * 0.5, -1.45, 3.0), (0.12, 0.3, 0.16), soft=0.3, jag=0.12, jag_scale=10)
+    groups, joints = poly_lion(pal, 7)
+    glow = k.glow(SHADOW)
+    ribs = []
+    for y in (0.0, 0.35, 0.7, 1.05, 1.4, 1.75):  # each rib runs from the spine down the flank to the belly
         for side in (-1, 1):
-            pts = [side_point(c, side * a, y + a * 0.004) for a in (14, 38, 62, 86, 110, 134)]
-            bands.append(k.vein(torso, pts, 0.05, glow, name="rib"))
-    groups["body_glow"] = bands
-    tip = c["tail_tip"]
-    groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.2)), tip + Vector((0.05, 0.35, -0.2)), tip + Vector((0, 0.6, 0.15))], [0.1, 0.2, 0.12, 0.0], glow, n=8, steps=8, name="wisp")]
-    lion_fur(c, groups, skull, hc, (20, 22, 30), None, whisker=(190, 235, 180), seed=7)
-    return groups, c["joints"]
+            ribs.append(k.vein(pal["torso"], [side_point({"chest_z": 2.1}, side * a, y + a * 0.004) for a in (14, 38, 62, 86, 110, 134)], 0.05, glow, name="rib"))
+    groups["body_glow"] = ribs
+    return groups, joints
 
 
 # Meerkat -------------------------------------------------------------------------------------------
@@ -743,9 +756,9 @@ ASSETS = [
     asset("creature_jackal_pharaoh", jackal, True, 1.55, {"head_glow": (60, 230, 220)}, "Pharaoh Jackal (legendary): black with gold bands; eyes and brow gem are Neon."),
     asset("creature_cheetah", cheetah, False, 1.4, {}, "Cheetah: spotted sprinter."),
     asset("creature_cheetah_lightning", cheetah, True, 1.75, {"head_glow": BOLT, "body_glow": BOLT, "tail_glow": BOLT}, "Lightning Cheetah (mythic): storm coat, Neon bolts."),
-    asset("creature_lion", lion, False, 1.7, {}, "Lion: heavy, maned.", 12500),
-    asset("creature_lion_sun", lion, True, 2.1, {"head_glow": SUNFIRE, "tail_glow": SUNFIRE}, "Sun Lion (mythic): deep gold, a crimson mane crowned in Neon flame.", 12500),
-    asset("creature_lion_shadow", shadow_lion, True, 1.9, {"head_glow": SHADOW, "body_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): ink black, a bone skull mask and spine, a mane of smoky tendrils, glowing green ribs.", 12500),
+    asset("creature_lion", lion, False, 1.7, {}, "Lion: a chunky faceted cat with a crown of crystal shards.", 9000),
+    asset("creature_lion_sun", lion, True, 2.1, {"head_glow": SUNFIRE, "tail_glow": SUNFIRE, "body_glow": SUNFIRE}, "Sun Lion (mythic): golden, a sun on each haunch, a crown of Neon crystal flame.", 9000),
+    asset("creature_lion_shadow", shadow_lion, True, 1.9, {"head_glow": SHADOW, "body_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): ink black, a bone skull mask and spine, glowing green ribs and embers.", 9000),
     asset("creature_meerkat", meerkat, False, 1.0, {}, "Meerkat: small and quick."),
     asset("creature_meerkat_storm", meerkat, True, 1.25, {"head_glow": STORM, "body_glow": STORM, "tail_glow": STORM}, "Storm Meerkat (legendary): Neon bands and tail charge."),
     asset("creature_tortoise", tortoise, False, 1.6, {}, "Tortoise: plated shell with a spiked rim."),
