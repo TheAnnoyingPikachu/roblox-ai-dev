@@ -28,7 +28,7 @@
     "The other animals build as before",
     "StationConfig, StationAssets and the manifest are untouched until SHANNON approves and the models are uploaded"
   ],
-  "verification": "Blender 5.2 on 2026-11-15, after the pass to match the reference card (a fuller mane, a chunkier body and legs, the sun with rays, a bigger tail flame, the face): full build (bake and export) of creature_lion (1584 tris, 8.0 tall x 13.0 long), creature_lion_sun (1808, 9.9 x 16.0) and creature_lion_shadow (1656, 9.0 x 15.0) passed, with body, head, four legs and tail pieces and the glow pieces; the hero render was compared side by side with the reference. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
+  "verification": "Blender 5.2 on 2026-11-15, after the pass to match the reference card (a fuller mane, a chunkier body and legs, the sun with rays, a bigger tail flame, the face): full build (bake and export) of creature_lion (1584 tris, 7.5 tall x 13.0 long), creature_lion_sun (1808, 9.2 x 16.1) and creature_lion_shadow (1656, 8.5 x 15.0), with the mane swept back passed, with body, head, four legs and tail pieces and the glow pieces; the hero render was compared side by side with the reference. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
   "output_artifacts": [
     "docs/concepts/lion-family.png",
     "docs/concepts/lion-card.png",

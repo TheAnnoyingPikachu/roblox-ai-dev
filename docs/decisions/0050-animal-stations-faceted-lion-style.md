@@ -15,7 +15,7 @@ plain preview).
   long blocky bodies, compact paws with three short toes, a face after the reference (a short deep
   muzzle, pale lips wrapped round its front, a dark wedge of a nose with a line down to the mouth, a
   chin, a brow ledge over slit eyes, rounded ears, a lighter stripe up the nose), a full mane of about
-  60 broad leaves with a wide bib down the chest, and a flame of seven shards for the tail tuft.
+  60 broad leaves swept back so they overlap like feathers, with a wide bib down the chest, and a flame of seven shards for the tail tuft.
 - Nothing is smooth and nothing is painted with gradients. Every face has one colour (the `lp`
   colour attribute), picked from three tones by which way the face points plus a little chance, and
   that bakes straight into the texture. Shards lighten from root to tip.

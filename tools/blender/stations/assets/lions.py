@@ -230,7 +230,8 @@ def lion_model(p, seed):
         ob.data.transform(grow)
 
     # the mane: a core, five rings of broad leaves (the first frames the face, the last lies over the
-    # shoulders), and a wide bib of three rows down the chest
+    # shoulders), and a wide bib of three rows down the chest. Each ring is swept further back than the
+    # one before, broad side out, so the leaves overlap like feathers and do not stand out as spikes
     mane_kind, lit = p.get("mane_kind", kind), p.get("lit", 0.0)
     root, deep = tone(p["mane_root"], mane_kind), tone(p["bib_root"], mane_kind)
     head.append(loft("core", [yring(-1.2, 3.15 + LIFT, 0.85, 0.85, 0.8, 0.36), yring(-0.5, 3.05 + LIFT, 1.15, 1.1, 1.05, 0.48), yring(0.4, 2.95 + LIFT, 0.8, 0.8, 0.75, 0.34)], T("core"), rng, emit=lit))
@@ -242,16 +243,16 @@ def lion_model(p, seed):
         if glow and p.get("sparks") and count % p["sparks"] == 0:  # every so many, a glowing one
             groups["head_glow"].append(shard(base, tip, width * 0.6, width * 0.3, None, rng, face=face, m=glow))
         else:
-            head.append(shard(base, tip, width, width * 0.45, (tones, tone(rng.choice(tips), mane_kind)), rng, face=face, at=0.45, emit=lit))
+            head.append(shard(base, tip, width, width * 0.36, (tones, tone(rng.choice(tips), mane_kind)), rng, face=face, at=0.45, emit=lit))
 
-    for y, zc, radius, n, length, width, sweep, a0, a1 in ((-1.3, 3.3, 0.88, 10, 0.9, 0.8, -0.1, -50, 230), (-1.05, 3.26, 0.98, 11, 1.35, 1.0, 0.2, -60, 240), (-0.7, 3.2, 1.06, 11, 1.7, 1.15, 0.5, -55, 235), (-0.25, 3.12, 1.0, 9, 1.8, 1.15, 0.85, -40, 220), (0.2, 3.05, 0.85, 6, 1.6, 1.05, 1.3, 20, 160)):
+    for y, zc, radius, n, length, width, sweep, a0, a1 in ((-1.3, 3.3, 0.88, 10, 0.9, 0.9, 0.1, -50, 230), (-1.05, 3.26, 0.98, 11, 1.3, 1.15, 0.5, -60, 240), (-0.7, 3.2, 1.06, 11, 1.6, 1.3, 0.95, -55, 235), (-0.25, 3.12, 1.0, 9, 1.7, 1.3, 1.4, -40, 220), (0.2, 3.05, 0.85, 6, 1.5, 1.2, 2.0, 20, 160)):
         for i in range(n):
             a = math.radians(a0 + (a1 - a0) * (i + 0.5) / n + rng.uniform(-5, 5))
             out = Vector((math.cos(a), 0, math.sin(a)))
             d = (out + Vector((0, sweep, -0.3 if out.z < -0.2 else 0.12))).normalized()
             base = Vector((0, y, zc + LIFT)) + out * radius
             long_ = length * rng.uniform(0.9, 1.1) * (1 + 0.4 * max(0.0, out.z))
-            lock(base - d * 0.25, base + d * long_, width * rng.uniform(0.9, 1.1), p["mane"], root, Vector((0, -0.7, 0)) + out)
+            lock(base - d * 0.25, base + d * long_, width * rng.uniform(0.9, 1.1), p["mane"], root, Vector((0, -0.25, 0)) + out)
     for y, z, half, n, long_, width, lean in ((-1.55, 2.6, 0.55, 3, 1.0, 0.9, -0.08), (-1.2, 2.5, 0.9, 5, 1.6, 1.05, -0.02), (-0.85, 2.3, 1.0, 5, 2.0, 1.1, 0.06)):
         for i in range(n):
             x = half * (2 * i / (n - 1) - 1)
