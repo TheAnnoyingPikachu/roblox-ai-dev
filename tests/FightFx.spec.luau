@@ -51,12 +51,6 @@ describe("FightFx rhythm", function()
 		expect(FightFx.cut(0.1) > 0 and FightFx.cut(0.1) < 1).toBeTruthy()
 		expect(FightFx.cut(1.1) > 0 and FightFx.cut(1.1) < 1).toBeTruthy()
 	end)
-
-	it("lets the killing blow cut at once and others only every CUT_EVERY seconds", function()
-		expect(FightFx.canCut(0, true)).toBe(true)
-		expect(FightFx.canCut(1, false)).toBe(false)
-		expect(FightFx.canCut(FightFx.CUT_EVERY, false)).toBe(true)
-	end)
 end)
 
 describe("FightFx hit feel", function()

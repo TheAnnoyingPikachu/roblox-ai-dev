@@ -36,5 +36,5 @@
   ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "Changes the admin's own save, which decision 0038 kept out of the admin menu; recorded in 0049. Checkpoint question for SHANNON: keep it live for the owner, or Studio only like the funds button (recommended: live for the owner only if you want it; Studio only is the safe default for a published game)."
+  "notes": "Changes the admin's own save, which decision 0038 kept out of the admin menu; recorded in 0049. SHANNON settled it on 2026-11-15: live for the owner only (isAdmin)."
 }

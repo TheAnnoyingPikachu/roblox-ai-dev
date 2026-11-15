@@ -53,10 +53,9 @@ settled before the replay starts, and nothing below can delay or change them.
   0.8 s, easing back to full speed by 1.5 s (`FightFx.slow`). This is display only: a clip reads a later
   time than the server's clock (`rig.held`), the server's timing and the report never slow. The target's
   fall plays slowly; the winners cheer 1.0 s after the fight's end.
-- **Camera cut-in.** A power hit or the killing blow cuts the camera 62% of the way towards its
-  target and back out over 1.3 s (`FightFx.cut`, `ArenaCamera`); other cuts wait 4 s between each
-  (`FightFx.canCut`), the killing blow always cuts. A boss is covered by this: its power attacks and the
-  killing blow cut in; there is no separate boss rule.
+- **Camera cut-in.** Only the killing blow cuts the camera 62% of the way towards its target and
+  back out over 1.3 s (`FightFx.cut`, `ArenaCamera`). Power attacks first cut in too (every 4 s at most);
+  SHANNON asked for that to go (2026-11-15), so attacks no longer move the camera beyond the FOV punch.
 - **Skip button:** slice 1.
 
 ## Checked

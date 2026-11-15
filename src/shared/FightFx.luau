@@ -60,7 +60,6 @@ end
 
 FightFx.SLOW_SECONDS = 1.5
 FightFx.CUT_SECONDS = 1.3
-FightFx.CUT_EVERY = 4 -- seconds between camera cuts, except for the killing blow
 
 -- How fast clips play `age` seconds after the fight's killing blow: slow motion at 0.3 for 0.8 s,
 -- then back to full speed by SLOW_SECONDS. Display only: the server's clock never slows.
@@ -83,11 +82,6 @@ function FightFx.cut(age: number): number
 		return 1
 	end
 	return 1 - ease((age - 0.9) / (FightFx.CUT_SECONDS - 0.9))
-end
-
--- Whether a hit may cut the camera in: the killing blow always, others once CUT_EVERY has passed.
-function FightFx.canCut(since: number, final: boolean): boolean
-	return final or since >= FightFx.CUT_EVERY
 end
 
 return FightFx

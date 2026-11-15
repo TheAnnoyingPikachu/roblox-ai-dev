@@ -20,5 +20,5 @@ creatures to their ranch, so ranch features and fights can be tried without hatc
 
 ## Open for SHANNON
 
-- **Live or Studio only.** Built live for the owner (matches the admin menu). The safe choice for a
-  published game is Studio only, like the funds button: one line, `if RunService:IsStudio()`.
+- ~~Live or Studio only.~~ Settled by SHANNON (2026-11-15): the admin menus stay in live games, for
+  the game's owner only (`isAdmin`: the owning user, or anyone in Studio).

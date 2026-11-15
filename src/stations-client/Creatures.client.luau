@@ -826,7 +826,6 @@ local player = Players.LocalPlayer
 -- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,
 -- a harder flinch, a short hold and a camera punch. A burst and one short-lived part: no lights.
 local slowAt = -math.huge -- when the fight's killing blow landed (clips play slowly for a moment)
-local lastCut = -math.huge -- when the camera last cut in on a hit
 
 local function strike(rig: Rig)
 	local model = rig.model
@@ -876,9 +875,8 @@ local function strike(rig: Rig)
 	if final then
 		slowAt = os.clock()
 	end
-	-- a power hit or the killing blow cuts the camera in on its target (ArenaCamera reads these)
-	if hot and FightFx.canCut(os.clock() - lastCut, final) then
-		lastCut = os.clock()
+	-- only the killing blow cuts the camera in on its target (ArenaCamera reads these)
+	if final then
 		player:SetAttribute("CamCut", hit.Position)
 		player:SetAttribute("CamCutAt", os.clock())
 	end
