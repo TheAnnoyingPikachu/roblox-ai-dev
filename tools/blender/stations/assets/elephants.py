@@ -1,7 +1,8 @@
 """The elephants (decision 0051), in the faceted low-poly style of the lions (decision 0050): the
 Elephant (the Titan), the Frost Mammoth and the War Elephant. A boxy body on four pillars of legs
-with pale toenails, a tall head with flared plate ears, a trunk of tapering blocks and shard tusks.
-Every face has one flat colour, as on the lions; keep faces big and flat.
+with pale toenails, a tall head with flared plate ears, a ringed trunk of tapering blocks and curved
+tusks. Every face has one flat colour, as on the lions; the hide's big faces are broken into facets
+(`rough`), with folds of skin at the shoulders, hips, knees and ankles, so they do not look plain.
 
 Jointed like every creature: body, head (with the trunk, ears and tusks), four legs, tail, and Neon
 `_glow` pieces. Facing Blender -Y; left is +X.
@@ -12,6 +13,7 @@ import math
 import os
 import random
 
+import bmesh
 import kit as k
 from mathutils import Vector
 
@@ -30,6 +32,20 @@ HIND = 2.35  # how far behind the front legs the hind legs stand
 EAR = [(0.0, 0.75), (0.75, 1.15), (1.5, 0.8), (1.75, 0.0), (1.4, -0.9), (0.6, -1.25), (0.0, -0.7)]  # (out, up)
 
 
+def rough(ob, tones, rng, bulge=0.04):
+    """A hide of facets: every face is broken into triangles round a slightly raised middle and painted
+    again, each triangle its own tone, darker towards the ground. The big flat faces looked plain."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    middles = bmesh.ops.poke(bm, faces=bm.faces[:])["verts"]
+    bm.normal_update()
+    for v in middles:
+        v.co += v.normal * bulge * rng.uniform(0.4, 1.0)
+    bm.to_mesh(ob.data)
+    bm.free()
+    return L.colour(ob, tones, rng, 0.26, bias=lambda c: -0.4 * max(0.0, 1 - c.z / 3.0))
+
+
 def elephant_model(p, seed):
     """The elephant from a palette `p` (see the three makers below). Returns (groups, joints)."""
     rng = random.Random(seed)
@@ -41,43 +57,61 @@ def elephant_model(p, seed):
 
     # the torso: a deep barrel, highest over the shoulders (a mammoth has a hump there)
     hump = p.get("hump", 0.0)
-    torso = loft("torso", [yring(*r) for r in ((-1.75, 3.05, 1.0, 1.0, 1.05, 0.35), (-0.9, 3.1, 1.4, 1.45 + hump, 1.3, 0.45), (0.9, 3.05, 1.45, 1.35 + hump * 0.4, 1.3, 0.45), (2.6, 2.95, 1.35, 1.3, 1.2, 0.42), (3.45, 2.85, 0.95, 1.0, 0.9, 0.32))], body, rng)
+    barrel = ((-1.75, 3.05, 1.0, 1.0, 1.05, 0.35), (-0.9, 3.1, 1.4, 1.45 + hump, 1.3, 0.45), (0.9, 3.05, 1.45, 1.35 + hump * 0.4, 1.3, 0.45), (2.6, 2.95, 1.35, 1.3, 1.2, 0.42), (3.45, 2.85, 0.95, 1.0, 0.9, 0.32))
+
+    def girth(y):
+        """The torso's section at depth y, between its rings: (zc, half width, up, down, cut)."""
+        for a, b in zip(barrel, barrel[1:]):
+            if a[0] <= y <= b[0]:
+                u = (y - a[0]) / (b[0] - a[0])
+                return tuple(a[i] + (b[i] - a[i]) * u for i in range(1, 6))
+        raise ValueError(f"no torso at y = {y}")
+
+    torso = rough(loft("torso", [yring(*r) for r in barrel], body, rng), body, rng)
     groups["body"].append(torso)
+    for y in (-0.15, 1.9):  # a fold of skin behind the shoulders and before the hips
+        zc, w, up, down, c = girth(y)
+        groups["body"].append(loft("fold", [yring(y + dy, zc, w + 0.06, up + 0.06, down + 0.06, c) for dy in (-0.05, 0.05)], T("brow"), rng))
 
     # legs: pillars, the lower half lighter, a flared foot with three pale toenails
     for s in (1, -1):
         for front in (True, False):
             x, y = s * 0.85, (-0.5 if front else HIND)
             parts = [
-                loft("leg", [zring(x, y, 2.6, 0.55, 0.6, 0.15), zring(x, y, 1.3, 0.5, 0.54, 0.14)], body, rng),
-                loft("shank", [zring(x, y, 1.35, 0.47, 0.5, 0.13), zring(x, y, 0.32, 0.5, 0.54, 0.13), zring(x, y - 0.04, 0.0, 0.58, 0.64, 0.14)], fore, rng),
+                rough(loft("leg", [zring(x, y, 2.6, 0.55, 0.6, 0.15), zring(x, y, 1.3, 0.5, 0.54, 0.14)], body, rng), body, rng),
+                rough(loft("shank", [zring(x, y, 1.35, 0.47, 0.5, 0.13), zring(x, y, 0.32, 0.5, 0.54, 0.13), zring(x, y - 0.04, 0.0, 0.58, 0.64, 0.14)], fore, rng), fore, rng),
             ]
+            for z in (1.32, 0.42):  # creases at the knee and the ankle
+                parts.append(loft("crease", [zring(x, y, z + dz, 0.57, 0.61, 0.15) for dz in (0.05, -0.05)], T("brow"), rng))
             for dx in (-0.32, 0.0, 0.32):
                 parts.append(loft("nail", [quad(y - 0.6, 0.15, 0.13, 0.13, 0.15, x + dx), quad(y - 0.74, 0.12, 0.11, 0.08, 0.12, x + dx)], pale, rng))
             groups[("leg_f" if front else "leg_b") + ("l" if s > 0 else "r")] = parts
 
     # the head: a domed skull narrowing to the face, the trunk hanging from it in four bends
-    skull = loft("skull", [yring(*r) for r in ((-2.95, 3.35, 0.6, 0.7, 0.55, 0.2), (-2.6, 3.65, 0.9, 0.95, 0.85, 0.3), (-2.0, 3.75, 1.05, 1.1, 1.0, 0.34), (-1.3, 3.6, 0.95, 0.95, 0.9, 0.3))], body, rng)
+    skull = rough(loft("skull", [yring(*r) for r in ((-2.95, 3.35, 0.6, 0.7, 0.55, 0.2), (-2.6, 3.65, 0.9, 0.95, 0.85, 0.3), (-2.0, 3.75, 1.05, 1.1, 1.0, 0.34), (-1.3, 3.6, 0.95, 0.95, 0.9, 0.3))], body, rng), body, rng, 0.03)
     head = groups["head"]
     head.append(skull)
-    head.append(loft("trunk", [zring(0, -2.9, 3.2, 0.5, 0.5, 0.14), zring(0, -3.25, 2.45, 0.44, 0.44, 0.12), zring(0, -3.4, 1.65, 0.36, 0.36, 0.1), zring(0, -3.35, 0.95, 0.29, 0.29, 0.08), zring(0, -3.65, 0.5, 0.24, 0.24, 0.07)], body, rng))
+    bends = [zring(0, -2.9, 3.2, 0.5, 0.5, 0.14), zring(0, -3.25, 2.45, 0.44, 0.44, 0.12), zring(0, -3.4, 1.65, 0.36, 0.36, 0.1), zring(0, -3.35, 0.95, 0.29, 0.29, 0.08), zring(0, -3.65, 0.5, 0.24, 0.24, 0.07)]
+    for i in range(4):  # ringed: every other segment a shade darker
+        ring = body if i % 2 == 0 else T("brow")
+        head.append(rough(loft("trunk", bends[i : i + 2], ring, rng), ring, rng, 0.03))
     size = p.get("ear", 1.0)
     for s in (1, -1):
         # ears: flat plates flared forward and out, a lighter inside
         fx, fy, fz = k._frame(Vector((s * 0.5, -1, 0)), (0, 0, 1))
         frame, at = (fx * s, fy, fz), Vector((s * 0.95, -1.75, 3.95))
-        head.append(plate("ear", at, frame, [(u * size, v * size) for u, v in EAR], 0.14, body, rng))
-        head.append(plate("ear", at + fz * 0.14, frame, [((0.16 + u * 0.72) * size, v * 0.72 * size) for u, v in EAR], 0.03, T("ear_in"), rng))
+        head.append(rough(plate("ear", at, frame, [(u * size, v * size) for u, v in EAR], 0.14, body, rng), body, rng, 0.03))
+        head.append(rough(plate("ear", at + fz * 0.17, frame, [((0.16 + u * 0.72) * size, v * 0.72 * size) for u, v in EAR], 0.03, T("ear_in"), rng), T("ear_in"), rng, 0.01))
         # a heavy brow over a slit of an eye
         head.append(shard((s * 0.2, -2.95, 3.95), (s * 0.98, -2.45, 4.15), 0.36, 0.28, T("brow"), rng, face=(0, -1, 0.5), name="brow"))
         at, n = k.land(skull, (s * 0.6, -2.6, 3.8), (s * 0.75, -0.65, 0.1))
         ex, ey, ez = k._frame(n)
         slit = [(-0.26, -0.08), (0.03, 0.1), (0.31, 0.09), (0.08, -0.065)]
         if p.get("glow_eyes"):
-            groups["head_glow"].append(plate("eye", at, (ex * s, ey, ez), slit, 0.05, None, rng, m=glow))
+            groups["head_glow"].append(plate("eye", at, (ex * s, ey, ez), slit, 0.05, None, rng, lift=0.035, m=glow))
         else:
-            head.append(plate("eye", at, (ex * s, ey, ez), slit, 0.04, tone(p["iris"], L.WARM), rng))
-            head.append(plate("pupil", at, (ex * s, ey, ez), [(0.0, -0.06), (0.065, 0.0), (0.06, 0.09), (-0.005, 0.03)], 0.02, tone(L.INK), rng, lift=0.042))
+            head.append(plate("eye", at, (ex * s, ey, ez), slit, 0.04, tone(p["iris"], L.WARM), rng, lift=0.035))
+            head.append(plate("pupil", at, (ex * s, ey, ez), [(0.0, -0.06), (0.065, 0.0), (0.06, 0.09), (-0.005, 0.03)], 0.02, tone(L.INK), rng, lift=0.077))
         # a tusk: a curved four-sided horn through the palette's points, tapering to its tip
         path, radii = [Vector((s * x, y, z)) for x, y, z, _ in p["tusks"]], [r for _, _, _, r in p["tusks"]]
         if p.get("tusk_glow"):
@@ -95,7 +129,7 @@ def elephant_model(p, seed):
 
     extra = p.get("extra")
     if extra:
-        extra(groups, torso, rng, glow)
+        extra(groups, torso, rng, glow, girth)
     joints = {"head": (0, -1.3, 3.5), "leg_fl": (0.85, -0.5, 2.3), "leg_fr": (-0.85, -0.5, 2.3), "leg_bl": (0.85, HIND, 2.3), "leg_br": (-0.85, HIND, 2.3), "tail": tuple(t0)}
     return {name: parts for name, parts in groups.items() if parts}, joints  # no empty pieces
 
@@ -109,7 +143,7 @@ def elephant():
     )
 
 
-def frost_extra(groups, torso, rng, glow):
+def frost_extra(groups, torso, rng, glow, girth):
     """A shaggy skirt of pale fur down both flanks, a mop on the crown, and ice down the back."""
     fur, tips = tone((122, 152, 198), FROSTY), tone((224, 236, 250), FROSTY)
     for s in (1, -1):
@@ -139,15 +173,15 @@ def frost_mammoth():
     )
 
 
-def war_extra(groups, torso, rng, glow):
+def war_extra(groups, torso, rng, glow, girth):
     """War gear: a red blanket with a gold hem, a wooden deck carrying a cannon over the head, a steel
     plate and a spike on the brow, gold caps on the tusks. The muzzle and the fuse glow."""
     steel, gold, red = tone((78, 84, 98), GREY), tone((226, 176, 60)), tone((172, 40, 40))
     wood, iron = tone((126, 88, 52)), tone((50, 52, 60), GREY)
     body, head = groups["body"], groups["head"]
-    drape = ((-0.75, 1.445, 0.83), (0.9, 1.49, 0.69), (2.3, 1.41, 0.57))  # (y, half width, top above 3.75): just proud of the torso
-    body.append(loft("blanket", [yring(y, 3.75, w, up, 0.95, 0.46) for y, w, up in drape], red, rng))
-    body.append(loft("hem", [yring(y, 2.86, w + 0.03, 0.08, 0.08, 0.03) for y, w, _ in drape], gold, rng))
+    drape = [(y, *girth(y)) for y in (-0.75, 0.9, 2.3)]  # cut to the torso, a hand proud of its facets
+    body.append(rough(loft("blanket", [yring(y, 3.75, w + 0.1, zc + up + 0.1 - 3.75, 0.95, c + 0.02) for y, zc, w, up, _, c in drape], red, rng), red, rng, 0.02))
+    body.append(loft("hem", [yring(y, 2.86, w + 0.14, 0.08, 0.08, 0.03) for y, _, w, _, _, _ in drape], gold, rng))
     body.append(loft("deck", [yring(-0.55, 4.72, 0.95, 0.2, 0.3, 0.1), yring(2.05, 4.58, 0.95, 0.2, 0.3, 0.1)], wood, rng))
     for x in (-0.42, 0.42):  # the carriage's cheeks
         body.append(loft("cheek", [quad(1.5, 5.15, 0.1, 0.32, 0.3, x), quad(-0.3, 5.3, 0.1, 0.3, 0.3, x)], wood, rng))

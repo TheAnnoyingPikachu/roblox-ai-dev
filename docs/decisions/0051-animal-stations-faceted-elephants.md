@@ -11,7 +11,10 @@ war elephant with a cannon on it.
 - The Elephant (the Titan), the Frost Mammoth and a new War Elephant are built in
   `tools/blender/stations/assets/elephants.py` with the lions' faceted helpers: a boxy body on four
   pillars of legs with pale toenails, a tall head with flared plate ears, a trunk of tapering blocks,
-  curved four-sided tusks, a short tail. About 900 to 1,250 triangles each.
+  curved four-sided tusks, a short tail. About 1,700 to 2,100 triangles each.
+- The hide is textured with facets, not paint: every big face is broken into triangles round a slightly
+  raised middle, each its own tone and darker towards the ground, with folds of skin at the shoulders
+  and hips, creases at the knees and ankles, and a ringed trunk (SHANNON asked for more texture).
 - Elephant: blue-grey, amber slit eyes, pale tusks.
 - Frost Mammoth (mythic, as now): icy blue with a hump, small ears, a shaggy fringe down both flanks,
   huge curved tusks of glowing ice, ice spikes down the back, glowing eyes.

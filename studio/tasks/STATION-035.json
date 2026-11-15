@@ -13,12 +13,13 @@
     "STATION-034"
   ],
   "files": [
-    "tools/blender/stations/assets/elephants.py",
-    "tools/blender/stations/assets/animals.py",
     "docs/concepts/*.png",
     "docs/decisions/0051-animal-stations-faceted-elephants.md",
     "docs/game-design/game7-animals.md",
-    "studio/tasks/STATION-035.json"
+    "studio/tasks/STATION-035.json",
+    "tools/blender/stations/assets/animals.py",
+    "tools/blender/stations/assets/elephants.py",
+    "tools/blender/stations/assets/lions.py"
   ],
   "tests": [],
   "acceptance_criteria": [
@@ -27,7 +28,7 @@
     "The other animals build as before",
     "StationConfig, StationAssets and the manifest are untouched until SHANNON approves"
   ],
-  "verification": "Blender 5.2 on 2026-11-15: full build (bake and export) of creature_elephant (892 tris, 14.1 tall x 24.5 long), creature_elephant_frost (1196, 19.3 x 30.0) and creature_elephant_war (1232, 19.3 x 27.0) passed with the usual pieces and the glow pieces; the cards were inspected. Jackal and flamingo draft builds give the same triangle counts as before the elephants moved out of animals.py. The manifest was restored after the test builds, so the game is unchanged. Not done: the upload, the StationConfig variant, the clips on the new shapes.",
+  "verification": "Blender 5.2 on 2026-11-15, after the texture pass (a faceted hide, folds, creases, a ringed trunk): full build (bake and export) of creature_elephant (1704 tris, 14.1 tall x 24.5 long), creature_elephant_frost (2008, 19.4 x 30.0) and creature_elephant_war (2080, 19.4 x 27.0) passed with the usual pieces and the glow pieces; the cards were inspected. The lion builds to the same triangles, size and joints as before the shared colour helper gained its optional bias. The manifest was restored after the test builds, so the game is unchanged. Not done: the upload, the StationConfig variant, the clips on the new shapes.",
   "output_artifacts": [
     "docs/concepts/elephant-family.png",
     "docs/concepts/elephant-card.png",

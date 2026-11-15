@@ -63,14 +63,15 @@ def material(emit=0.0):
     return m
 
 
-def colour(ob, tones, rng, chance=0.2):
-    """One colour for each face of `ob`. tones: a (shadow, base, light) triple, or one per face."""
+def colour(ob, tones, rng, chance=0.2, bias=None):
+    """One colour for each face of `ob`. tones: a (shadow, base, light) triple, or one per face.
+    bias(centre): added to a face's light from where it is (the elephants darken towards the ground)."""
     me = ob.data
     attr = me.color_attributes.get(ATTR) or me.color_attributes.new(ATTR, "FLOAT_COLOR", "CORNER")
     each = not isinstance(tones[0][0], (int, float))
     for poly in me.polygons:
         shadow, base, light = tones[poly.index] if each else tones
-        t = max(-1.0, min(1.0, poly.normal.dot(LIGHT) * 0.8 + rng.uniform(-chance, chance)))
+        t = max(-1.0, min(1.0, poly.normal.dot(LIGHT) * 0.8 + rng.uniform(-chance, chance) + (bias(poly.center) if bias else 0)))
         rgb = k.mix(base, light, t) if t > 0 else k.mix(base, shadow, -t)
         c = k.lin(rgb)
         for i in poly.loop_indices:
