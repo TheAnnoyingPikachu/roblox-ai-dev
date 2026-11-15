@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "design",
-  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow. Also adds detail to all three lions (whiskers, ear and chest tufts, clumped mane locks and a beard, a tufted tail tip, flame licks on the Sun Lion).",
+  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow. Also reworks the three lions' Blender models: cat legs (bent hock, thigh, elbow), shoulder and spine masses, cheeks and a nose bridge, painted fur markings, a clumped mane with a beard, and fur tufts.",
   "inputs": [
     "docs/game-design/game7-animals.md"
   ],
@@ -23,12 +23,12 @@
     "The Shadow Lion renders from four sides in the draft build and reads as a lion variant distinct from the Sun Lion",
     "StationConfig and StationAssets are untouched until the model is baked, uploaded and SHANNON approves the variant"
   ],
-  "verification": "Draft build run in Blender 5.2: creature_lion 10454 tris (budget 11000), creature_lion_sun 8686 (12500), creature_lion_shadow 10366 (12500); previews rendered and viewed from four sides. Not done: the full bake and export, the upload, the StationConfig variant, a clip set for it. The detail also changes the shipped Lion and Sun Lion models once they are rebuilt and re-uploaded (SHANNON's call).",
+  "verification": "Full Blender 5.2 build of creature_lion (12130 tris), creature_lion_sun (10450) and creature_lion_shadow (12042), all under the 12500 budget; baked atlas and four-view renders inspected. The manifest was restored after the test builds, so the game's models and StationAssets are unchanged. Not done: a build for the upload, the upload, how the new parts animate in the game, the StationConfig variant.",
   "output_artifacts": [
     "docs/concepts/shadow-lion-concept.png",
     "docs/concepts/lion-family.png"
   ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "Checkpoint for SHANNON: approve the Shadow Lion (name, legendary tier, twist speed, look) or ask for another idea; on approval the next step is the full build, the Upload Blender assets workflow, then the StationConfig variant."
+  "notes": "Checkpoint for SHANNON: approve the Shadow Lion and the new lion shapes. The Lion's triangle budget went from 11000 to 12500 to match the variants. Hair parts get a small texture weight (0.2) so they do not crowd the atlas; the earlier detail pass without it made the body texture worse."
 }
