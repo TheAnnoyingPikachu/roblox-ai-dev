@@ -63,9 +63,9 @@ player is about 5 tall).
 | Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing bands across the back, a charged tail tip. | 3 x 6 |
 | Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |
 | Phoenix Flamingo | | mythic | twist mana | Fire-red, with a crest, wing tips and tail of flame. | 11 x 8 |
-| Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Heavy tawny cat with a big dark mane and a tufted tail. | 7 x 13 |
-| Sun Lion | | mythic | twist strength | Golden, a sun on each haunch, a crown of crystal flame blades, white-hot eyes, a blazing tail. Faceted low-poly like the Lion (decision 0050). | 11 x 16 |
-| Shadow Lion (concept, not in the game yet) | | legendary | twist speed | Ink-black faceted lion with a bone skull mask and spine, a crown of black blades with green embers, glowing green ribs, eyes and tail wisp. Concept render: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/animals.py`. | about 9 x 15 |
+| Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Faceted low-poly (decision 0050): a blocky tawny cat, a mane of brown crystal shards, pale paws and muzzle, amber slit eyes, a tufted tail. Card: `docs/concepts/lion-card.png`. | 7 x 13 |
+| Sun Lion | | mythic | twist strength | Golden, a blazing mane of yellow crystal shards with Neon sparks, a sun on each haunch, glowing eyes, a flame of a tail. Card: `docs/concepts/sun-lion-card.png`. | 9 x 16 |
+| Shadow Lion (concept, not in the game yet) | | legendary | twist speed | Ink black, a bone mask, spine, claws and fangs, a mane of black crystal shot with glowing green shards, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 9 x 15 |
 | Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | War elephant: wide ears, heavy brow, long trunk and tusks. | 15 x 25 |
 | Frost Mammoth | | mythic | twist health | Pale and shaggy, huge glowing ice tusks, ice spikes down its back. | 20 x 30 |
 

@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "design",
-  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed; redesigned once as an ink-black lion with a bone mask and green glowing ribs), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow. The three lions are rebuilt as chunky faceted low-poly cats with a mane of crystal blades, to match SHANNON's Sun Lion reference (decision 0050).",
+  "objective": "The three lions (Lion, Sun Lion and a new legendary Shadow Lion, twist speed) rebuilt from scratch as faceted low-poly cats after the Sun Lion reference card from SHANNON (decision 0050), with a presentation render of each. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
   "inputs": [
     "docs/game-design/game7-animals.md"
   ],
@@ -12,24 +12,30 @@
     "STATION-032"
   ],
   "files": [
-    "docs/concepts/lion-family.png",
-    "docs/concepts/shadow-lion-concept.png",
+    "docs/concepts/*.png",
     "docs/decisions/0050-animal-stations-faceted-lion-style.md",
     "docs/game-design/game7-animals.md",
     "studio/tasks/STATION-033.json",
-    "tools/blender/stations/assets/animals.py"
+    "tools/blender/stations/assets/animals.py",
+    "tools/blender/stations/assets/lions.py",
+    "tools/blender/stations/build.py",
+    "tools/blender/stations/kit.py"
   ],
   "tests": [],
   "acceptance_criteria": [
-    "The Shadow Lion renders from four sides in the draft build and reads as a lion variant distinct from the Sun Lion",
-    "StationConfig and StationAssets are untouched until the model is baked, uploaded and SHANNON approves the variant"
+    "The three lions read as one family in the style of the reference: faceted bodies, a mane of crystal shards, paws with toes, slit eyes",
+    "Each builds, bakes and exports through the normal build with the usual rig pieces and joints",
+    "The other animals build as before",
+    "StationConfig, StationAssets and the manifest are untouched until SHANNON approves and the models are uploaded"
   ],
-  "verification": "Full Blender 5.2 build of creature_lion (2262 tris), creature_lion_sun (2244) and creature_lion_shadow (2890), well under budget; four-view renders compared with the reference. The manifest was restored after the test builds, so the game's models and StationAssets are unchanged. Not done: a build for the upload, the upload, how the new shapes animate in the game, the StationConfig variant.",
+  "verification": "Blender 5.2 on 2026-11-15: full build (bake and export) of creature_lion (2414 tris), creature_lion_sun (2574) and creature_lion_shadow (2646) passed, with body, head, four legs and tail pieces and the glow pieces; the baked preview and the presentation cards were inspected against the reference. Jackal and cheetah draft builds give the same triangle counts as before the lions moved out of animals.py. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
   "output_artifacts": [
-    "docs/concepts/shadow-lion-concept.png",
-    "docs/concepts/lion-family.png"
+    "docs/concepts/lion-family.png",
+    "docs/concepts/lion-card.png",
+    "docs/concepts/sun-lion-card.png",
+    "docs/concepts/shadow-lion-concept.png"
   ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "Checkpoint for SHANNON: approve the faceted style and the Shadow Lion. The rig pieces and joints are the same, but the leg shapes changed, so attack and walk clips need a look in the game. Whether the other animals follow the style is open."
+  "notes": "Checkpoint for SHANNON: approve the faceted lions and the Shadow Lion, then the next step is the build for upload, the Upload Blender assets workflow and the StationConfig variant. Open: whether the other animals follow the style; an aura effect in the game for the Sun Lion; a look at the clips on the new legs."
 }

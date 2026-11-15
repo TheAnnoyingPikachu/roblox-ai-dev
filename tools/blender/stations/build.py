@@ -1,10 +1,11 @@
 """Builds the Animal Stations creatures headless.
 
-blender --background --factory-startup --python tools/blender/stations/build.py -- [--draft] [asset ...]
+blender --background --factory-startup --python tools/blender/stations/build.py -- [--draft | --beauty] [asset ...]
 
 With no names, builds every asset in assets/*.py. Writes build/blender/stations/<asset>.fbx/.png,
 previews/<asset>[_side|_front|_back].png and tools/blender/stations/manifest.json. --draft skips
 the bake and export and only renders the previews (seconds instead of minutes), for shaping.
+--beauty renders a presentation card of each asset instead (build/blender/stations/beauty).
 
 Besides the Garden fields the manifest records the rig, in Roblox axes (x right, y up, z back)
 from the point on the ground under the model's middle: `centres` (each mesh's bounding-box
@@ -51,6 +52,7 @@ def roblox(v):
 def main():
     args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
     draft = "--draft" in args
+    beauty = "--beauty" in args
     wanted = [a for a in args if not a.startswith("--")]
     manifest = {}
     if os.path.exists(MANIFEST):
@@ -74,6 +76,9 @@ def main():
             for ob in every:
                 ob.data.transform(Matrix.Scale(scale, 4))
             lo, hi = kit._ground_dims(every)
+            if beauty:
+                kit.beauty(name, groups, lo, hi)
+                continue
             if draft:
                 kit.preview(name, every, lo, hi)
                 print(f"[stations] {name}: draft previews, {sum(kit._tris(o) for o in every)} tris, {time.time() - started:.0f}s", flush=True)
@@ -102,7 +107,7 @@ def main():
             "joints": {f"{name}_{part}": roblox(Vector(j) * scale + offset) for part, j in asset["joints"].items()},
         }
         print(f"[stations] {name}: {stats['tris']} tris, {time.time() - started:.0f}s", flush=True)
-    if not draft:
+    if not draft and not beauty:
         with open(MANIFEST, "w", encoding="utf-8", newline="\n") as f:
             json.dump(manifest, f, indent=2)
             f.write("\n")

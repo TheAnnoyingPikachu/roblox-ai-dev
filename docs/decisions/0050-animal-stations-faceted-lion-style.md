@@ -5,20 +5,33 @@ Date: 2026-11-15. Amends 0033 (animal models). Task STATION-033.
 
 ## Decision
 
-SHANNON shared a reference picture of the Sun Lion (chunky, faceted low-poly, a mane of broad crystal
-blades, big cream paws) and asked for all the lions to look like it.
+SHANNON shared a reference card of the Sun Lion (chunky, faceted low-poly, a mane of broad crystal
+shards, big cream paws, a sun on the haunch) and asked for all the lions to look like it, then asked
+for another try with the earlier limits taken off (triangle budget, the shared smooth body kit, the
+plain preview).
 
-- The Lion, Sun Lion and Shadow Lion are rebuilt in that style in `tools/blender/stations/assets/animals.py`
-  (`poly_lion`): lofted blocky body and legs, a big head, three claws, and a mane of flat blades. Every piece
-  is flat shaded (its edges are split) so the facets show in the game.
-- The rig is unchanged: the same pieces (body, head, four legs, tail, glow pieces) and the same joint
-  positions, so the clips and the glow handling keep working. The shapes differ, so the walk and attacks
-  must be looked at in the game.
-- Roughly 2,300 to 2,900 triangles each, far under the budget, and the body's texture is sharper because
-  few pieces share the atlas.
-- The other animals are unchanged. Whether they follow this style is SHANNON's call.
+- The Lion, the Sun Lion and the new Shadow Lion are built from scratch in
+  `tools/blender/stations/assets/lions.py`, no longer on the predator body in `animals.py`: lofted
+  blocky bodies and legs, paws with three toes, an angular face with slit eyes, a mane of about 75
+  layered crystal shards with a bib down the chest, and a flame of a tail tuft.
+- Nothing is smooth and nothing is painted with gradients. Every face has one colour (the `lp`
+  colour attribute), picked from three tones by which way the face points plus a little chance, and
+  that bakes straight into the texture. Shards lighten from root to tip.
+- Sun Lion: golden, a sun on each haunch, glowing eyes and a few Neon sparks in the mane and tail.
+  Shadow Lion: ink black, a bone mask, spine, claws and fangs, glowing green ribs, eyes and shards.
+  The Lion and the Sun Lion have no claws or fangs, as on the reference.
+- The rig is the same set of pieces (body, head with the mane, four legs, tail, glow pieces); the
+  joints moved a little and are recorded per build as before. Each lion is scaled to about the length
+  of the model it replaces (13, 16 and 15 studs), so the arena spacing holds.
+- About 2,400 to 2,650 triangles each. The budget is no longer a design limit for these models.
+- `build.py --beauty` renders a presentation card of an asset (a hero shot on a pedestal with bloom,
+  and front, side and back views) to `build/blender/stations/beauty`; the cards in `docs/concepts`
+  come from it. The pedestal, rings and bloom are render dressing, not part of the model.
+- The other animals are unchanged. Whether they follow this style is for SHANNON to say.
 
 ## Not done
 
-Nothing is uploaded and `StationAssets` and the manifest are unchanged, so the game still shows the old
-models until they are rebuilt and uploaded by the workflow.
+Nothing is uploaded and `StationAssets` and the manifest are unchanged, so the game still shows the
+old models until they are rebuilt and uploaded by the workflow. The clips were written for the old
+shapes and have not been seen on the new ones. The aura of the reference in the game would be an
+effect (particles or a light), which is not built.
