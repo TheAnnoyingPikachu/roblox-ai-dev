@@ -63,8 +63,10 @@ player is about 5 tall).
 | Sphinx Jackal | | mythic | twist speed | Sandstone, a pharaoh's blue and gold striped headdress, a glowing sun disc between the ears, a striped beard, a gold collar, folded wings of gold and blue feathers, glowing gold eyes. Card: `docs/concepts/sphinx-jackal-card.png`. | about 5 x 10 |
 | Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Small and quick, tan with dark bands across the back and dark eye patches. | 2 x 5 |
 | Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing bands across the back, a charged tail tip. | 3 x 6 |
+| Star Meerkat (concept, not in the game yet) | | mythic (proposed) | twist speed (proposed) | A coat of night sky, glowing gold stars joined into constellations, a ring of stars round the head, a comet for a tail tip. Card: `docs/concepts/star-meerkat-card.png`. | about 7 x 7 |
 | Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |
 | Phoenix Flamingo | | mythic | twist mana | Fire-red, with a crest, wing tips and tail of flame. | 11 x 8 |
+| Peacock Flamingo (concept, not in the game yet) | | legendary (proposed) | twist stamina (proposed) | Teal with a royal blue neck, emerald wings, a great fan of tail feathers with glowing eyes, a beaded crest. Card: `docs/concepts/peacock-flamingo-card.png`. | about 10 x 7 |
 | Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Faceted low-poly (decision 0050): a chunky tawny cat, a mane of big brown crystal shards, pale paws and muzzle, amber slit eyes, a tufted tail. Card: `docs/concepts/lion-card.png`. | 7 x 13 |
 | Sun Lion | | mythic | twist strength | Golden, a mane of big yellow crystal shards, a sun with twelve rays on each haunch, glowing eyes, a flame of a tail. Card: `docs/concepts/sun-lion-card.png`. | 9 x 16 |
 | Shadow Lion | | legendary | twist speed | Ink black, a bone mask, spine and fangs, a mane of big black crystal shards with a few glowing green ones, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 8 x 15 |
@@ -79,6 +81,7 @@ player is about 5 tall).
 |---|---|---|---|---|---|
 | Tortoise | Defence | common | 5 / 25 / 48 / 20 / 55 / 50 | War tortoise: high plated shell with a spiked rim, thick clawed legs, hooked beak. | 4 x 9 |
 | Gemshell Tortoise | | legendary | twist defence | Dark shell with a glowing crystal on every plate. | 7 x 12 |
+| Island Tortoise (concept, not in the game yet) | | mythic (proposed) | twist health (proposed) | Mossy stone carrying an island: an acacia with glowing fruit, rocks, grass and glowing flowers, vines from the rim. Card: `docs/concepts/island-tortoise-card.png`. | about 10 x 14 |
 | Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Faceted (decision 0053): a slender golden sprinter on very long legs, black diamond spots and tear marks, a very long ringed tail. Card: `docs/concepts/cheetah-card.png`. | 5 x 11 |
 | Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric blue spots, glowing bolts down both flanks and a crest of them on the neck, a zigzag tail with a glowing tip. Card: `docs/concepts/lightning-cheetah-card.png`. | 6 x 14 |
 | Fire Cheetah | | legendary | twist strength | A coat burning from scorched black legs through red to an orange back, flames painted up the flanks and legs, a glowing mane of flame from brow to tail, flames at the heels and for a tail tip, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 14 |
@@ -86,6 +89,8 @@ player is about 5 tall).
 | Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide, high shoulders with bone studs, scimitar horn, claw scars. | 8 x 14 |
 | Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns, rock spikes, burning tail. | 13 x 18 |
 | Crystal Rhino (concept, not in the game yet) | | legendary (proposed) | twist defence (proposed) | Living grey rock grown through with gemstones of nine colours: great clusters of crystals on the hump and rump, a ridge down the spine, veins of gem, a great glowing crystal horn, a mace of crystals for a tail. Card: `docs/concepts/crystal-rhino-card.png`. | about 10 x 16 |
+
+New looks for the Meerkat (now upright), the Storm Meerkat, the Tortoise, the Gemshell Tortoise, the Flamingo and the Phoenix Flamingo are proposed in decision 0055 (cards in `docs/concepts/`); their rows still describe the models in the game.
 
 New, rounder and textured looks for the Rhino and the Lava Rhino are proposed in decision 0054 (cards: `docs/concepts/rhino-card.png`, `docs/concepts/lava-rhino-card.png`); their rows above still describe the models in the game.
 

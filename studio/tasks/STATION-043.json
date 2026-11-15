@@ -1,0 +1,43 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-043",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Concepts for the rest of the animals (decision 0055): the meerkats, tortoises and flamingos in the textured faceted build, each family with one new variant (Star Meerkat, Island Tortoise, Peacock Flamingo), each model with a presentation card. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "inputs": [
+    "docs/decisions/0054-animal-stations-rhinos.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "dependencies": [
+    "STATION-042"
+  ],
+  "files": [
+    "tools/blender/stations/assets/meerkats.py",
+    "tools/blender/stations/assets/tortoises.py",
+    "tools/blender/stations/assets/flamingos.py",
+    "tools/blender/stations/assets/animals.py",
+    "tools/blender/stations/assets/rhinos.py",
+    "tools/blender/stations/facet.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0055-animal-stations-meerkats-tortoises-flamingos.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-043.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Each family reads as its animal at a glance and sits with the families before",
+    "Each model builds, bakes and exports through the normal build with the usual rig pieces and joints",
+    "The enemies still build (they share helpers with the old animals file)",
+    "StationConfig, StationAssets and the manifest are untouched until SHANNON approves"
+  ],
+  "verification": "Blender 5.2 on 2026-11-15: full build (bake and export) of the nine models passed with the usual pieces: creature_meerkat 1692 tris, _storm 2000, _star 2132, creature_tortoise 2428, _gemshell 3556, _island 3292, creature_flamingo 1350, _phoenix 1478, _peacock 1614; sizes in decision 0055 (the Tortoise's from its scale, set after the build, not rebuilt). The family strips were inspected (one or two rounds each). The manifest was restored after the test builds, so the game is unchanged. Not done: the enemies were not rebuilt after animals.py lost its animal builds (the helpers they import are untouched; the build loads foes.py without error); the three rhinos were not rebuilt after `boulder` moved to facet.lump (the same code); the upload, the StationConfig variants, the clips on the new shapes.",
+  "output_artifacts": [
+    "docs/concepts/meerkat-family.png",
+    "docs/concepts/tortoise-family.png",
+    "docs/concepts/flamingo-family.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the nine looks; the three new variants (Star Meerkat mythic twist speed, Island Tortoise mythic twist health, Peacock Flamingo legendary twist stamina); the upright meerkat (smaller option: keep it on four legs). On approval: build for upload, the upload workflow, StationConfig, and fitting the clips, as for the other families."
+}

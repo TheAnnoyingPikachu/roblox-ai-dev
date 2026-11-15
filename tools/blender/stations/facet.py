@@ -111,12 +111,17 @@ def _surface(nt, colour, surface):
         return towards(col, (255, 255, 255), ramp(voronoi(5.0, "F1"), 0.0, 0.14, 0.85, 0.0)), None
     if surface == "horn":  # growth rings and streaks along it
         return shaded(colour, times(ramp(noise(5.0, 2.0, (1.0, 1.0, 5.0)), 0.3, 0.7, 0.76, 1.08), ramp(noise(9.0, 2.0, (4.0, 4.0, 0.5)), 0.3, 0.7, 0.88, 1.06))), None
+    if surface == "fur":  # short strands running down, and blotches
+        return shaded(colour, times(ramp(noise(7.0, 2.0, (3.0, 3.0, 0.5)), 0.3, 0.7, 0.8, 1.1), ramp(noise(2.0, 2.0), 0.3, 0.7, 0.9, 1.08))), None
+    if surface == "scales":  # scales or feathers: each light in its middle, dark at its edge
+        return shaded(colour, times(ramp(voronoi(6.5, "F1"), 0.0, 0.55, 1.1, 0.74), ramp(noise(2.0, 2.0), 0.3, 0.7, 0.9, 1.08))), None
     raise ValueError(f"no surface {surface!r}")
 
 
 def material(emit=0.0, surface=None):
     """The material of a faceted piece: it shows the face colours, optionally lit from within, optionally
-    under a surface texture ("hide", "rock", "crust": rock with lava in its cracks, "gem", "horn")."""
+    under a surface texture ("hide", "rock", "crust": rock with lava in its cracks, "gem", "horn", "fur",
+    "scales")."""
     name = f"lp_{surface or 'facets'}_{emit}"
     known = name in k._materials
     m = k.mat(name, (255, 255, 255), kind="flat", rough=0.6)
@@ -264,6 +269,15 @@ def plate(name, p, frame, outline, thick, tones, rng, lift=0.004, m=None, emit=0
     lo = [p + x * u + y * v + z * lift for u, v in outline]
     faces = [tuple(range(n))[::-1], tuple(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
     return mesh(name, lo + [q + z * thick for q in lo], faces, tones, rng, m=m, emit=emit, surface=surface)
+
+
+def lump(at, size, tones, rng, surface="rock"):
+    """A lump (a rock, a puff of cloud, a clump of leaves) round the point `at`, of half extents `size`:
+    twenty faces, no two the same."""
+    ob = k.ico(1.0, m=material(surface=surface), subdiv=1, name="lump")
+    for v in ob.data.vertices:
+        v.co = Vector(at) + Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2])) * rng.uniform(0.72, 1.18)
+    return colour(ob, tones, rng, 0.3)
 
 
 def small_paw(x, y, tones, rng):

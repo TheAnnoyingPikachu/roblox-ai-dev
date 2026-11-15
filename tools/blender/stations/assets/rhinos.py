@@ -17,7 +17,7 @@ import facet as F
 import kit as k
 from mathutils import Matrix, Vector
 
-loft, oval, round_z, quad, shard, plate, tone, rough = F.loft, F.oval, F.round_z, F.quad, F.shard, F.plate, F.tone, F.rough
+loft, oval, round_z, quad, shard, plate, tone, rough, boulder = F.loft, F.oval, F.round_z, F.quad, F.shard, F.plate, F.tone, F.rough, F.lump
 
 SLATE = ((0.78, 0.78, 0.82), (1.1, 1.1, 1.12), (6, 6, 10))
 STONE = ((0.64, 0.64, 0.7), (1.2, 1.19, 1.16), (10, 10, 8))  # rock: shadow and light far apart, so every chip reads
@@ -291,14 +291,6 @@ def cluster(target, centre, direction, *a, lean=(0, 0, 0), rubble=None, **kw):
             turn = i * math.tau / rubble[1] + rng.uniform(-0.3, 0.3)
             out = side * math.cos(turn) + n.cross(side) * math.sin(turn)
             into.append(boulder(at + out * rng.uniform(0.38, 0.6) - n * 0.05, [rng.uniform(0.16, 0.28) for _ in range(3)], rubble[0], rng))
-
-
-def boulder(at, size, tones, rng):
-    """A lump of rock: twenty faces, no two the same."""
-    ob = k.ico(1.0, m=F.material(surface="rock"), subdiv=1, name="boulder")
-    for v in ob.data.vertices:
-        v.co = Vector(at) + Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2])) * rng.uniform(0.72, 1.18)
-    return F.colour(ob, tones, rng, 0.3)
 
 
 def crystal_extra(groups, pieces, rng, glow):
