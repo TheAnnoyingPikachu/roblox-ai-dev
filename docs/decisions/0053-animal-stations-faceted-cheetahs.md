@@ -1,7 +1,7 @@
 # 0053: Animal Stations: the cheetahs go faceted, and a Fire Cheetah
 
-Status: proposed (concepts for SHANNON; nothing is in the game yet)
-Date: 2026-11-15. Builds on 0050 to 0052 (the faceted lions, elephants and jackals). Task STATION-040.
+Status: accepted by SHANNON on 2026-11-15 (the three looks, and the cheetahs going into the game)
+Date: 2026-11-15. Builds on 0050 to 0052 (the faceted lions, elephants and jackals). Tasks STATION-040, STATION-041.
 
 ## Decision
 
@@ -28,12 +28,19 @@ SHANNON asked for the cheetahs next, with a lightning and a fire cheetah.
   the animal is the size it was; it is longer overall (10.9, 13.9 and 13.5 studs) because the tail is.
 - The small paw the jackals and cheetahs share moved to `facet.py`; the jackals build exactly as uploaded.
 
-## Open for SHANNON
+## Into the game (STATION-041)
 
-- Approve the three looks, or ask for changes.
-- The Fire Cheetah: its tier (legendary) and its twist (strength).
+- The Cheetah and the Lightning Cheetah get the new models: built, exported to `assets/stations` and
+  uploaded by the Upload Blender assets workflow; `StationAssets` and the manifest carry the new rig.
+- The Fire Cheetah is the Cheetah's second variant (`fire_cheetah` in `StationConfig`), legendary with
+  twist strength as proposed. What changes for players: a legendary roll on a Cheetah (1 in 2,000
+  Cheetah hatches) now gives a Fire Cheetah, where it gave a plain Cheetah before. Nothing else in
+  the odds moves, and no save changes.
+- The Fire Cheetah uses the Cheetah's clips until it gets its own.
+- Style, from SHANNON with the go-ahead: the models do not have to be low-poly, they only need not be
+  very detailed; no self-imposed limits. The families after this one may be rounder or smoother.
 
 ## Not done
 
-Concepts only: nothing is uploaded, `StationConfig`, `StationAssets` and the manifest are unchanged,
-and the game still shows the old cheetahs. The clips have not been seen on the new shapes.
+The Fire Cheetah's heel flames are painted, not Neon, and the Lightning Cheetah's tail does not crackle:
+effects for them are future work.

@@ -3,7 +3,7 @@
 -- the small African beta pool with its variants, the Titan, eggs and training stations, and the
 -- Hexbound, the enemies of the waves. Every species has a basic version (never above epic; the
 -- Titan is legendary) and a rare variant (legendary or mythic), at most one of each tier: a hatch
--- picks its variant by the tier it rolls (the Lion, the Elephant and the Jackal have both, decisions 0050 to 0052). Looks for art:
+-- picks its variant by the tier it rolls (the Lion, the Elephant, the Jackal and the Cheetah have both, decisions 0050 to 0053). Looks for art:
 -- docs/game-design/game7-animals.md and game7-enemies.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
@@ -159,7 +159,10 @@ StationConfig.SPECIES = {
 		group = "solitary",
 		rarity = "uncommon",
 		stats = s(70, 35, 20, 20, 45, 15),
-		variants = { v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed") },
+		variants = {
+			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
+			v("fire_cheetah", "Fire Cheetah", "legendary", "strength"),
+		},
 	},
 	{
 		id = "rhino",

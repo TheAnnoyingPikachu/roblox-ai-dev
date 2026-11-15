@@ -422,91 +422,91 @@
     "png": "build/blender/stations/creature_cheetah.png",
     "preview": "build/blender/stations/previews/creature_cheetah.png",
     "size_studs": [
-      1.62,
-      4.65,
-      9.35
+      1.54,
+      4.62,
+      10.85
     ],
-    "tris": 6884,
+    "tris": 2428,
     "parts": {
-      "creature_cheetah_body": 1900,
-      "creature_cheetah_head": 2436,
-      "creature_cheetah_leg_fl": 594,
-      "creature_cheetah_leg_fr": 594,
-      "creature_cheetah_leg_bl": 594,
-      "creature_cheetah_leg_br": 594,
-      "creature_cheetah_tail": 172
+      "creature_cheetah_body": 744,
+      "creature_cheetah_head": 564,
+      "creature_cheetah_tail": 88,
+      "creature_cheetah_leg_fl": 220,
+      "creature_cheetah_leg_bl": 296,
+      "creature_cheetah_leg_fr": 220,
+      "creature_cheetah_leg_br": 296
     },
-    "tris_budget": 11000,
-    "script": "tools/blender/stations/assets/animals.py",
-    "notes": "Cheetah: spotted sprinter.",
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/cheetahs.py",
+    "notes": "Cheetah: a slender faceted sprinter with black spots and tear marks.",
     "glow": {},
     "centres": {
       "creature_cheetah_body": [
-        0.0,
-        2.75,
-        0.769
+        -0.001,
+        2.861,
+        1.931
       ],
       "creature_cheetah_head": [
-        0.001,
-        3.543,
-        3.261
-      ],
-      "creature_cheetah_leg_fl": [
-        0.466,
-        1.512,
-        2.295
-      ],
-      "creature_cheetah_leg_fr": [
-        -0.464,
-        1.51,
-        2.294
-      ],
-      "creature_cheetah_leg_bl": [
-        0.374,
-        1.511,
-        -0.574
-      ],
-      "creature_cheetah_leg_br": [
-        -0.374,
-        1.51,
-        -0.574
+        0.004,
+        3.676,
+        4.565
       ],
       "creature_cheetah_tail": [
-        0.001,
-        1.625,
-        -2.984
+        0.022,
+        2.659,
+        -2.786
+      ],
+      "creature_cheetah_leg_fl": [
+        0.449,
+        1.419,
+        3.36
+      ],
+      "creature_cheetah_leg_bl": [
+        0.46,
+        1.527,
+        0.286
+      ],
+      "creature_cheetah_leg_fr": [
+        -0.442,
+        1.418,
+        3.36
+      ],
+      "creature_cheetah_leg_br": [
+        -0.456,
+        1.528,
+        0.286
       ]
     },
     "joints": {
       "creature_cheetah_head": [
-        0.001,
-        3.139,
-        2.761
+        0.004,
+        3.335,
+        3.882
       ],
       "creature_cheetah_leg_fl": [
-        0.463,
-        2.611,
-        2.096
+        0.439,
+        2.393,
+        3.273
       ],
       "creature_cheetah_leg_fr": [
-        -0.461,
-        2.611,
-        2.096
+        -0.431,
+        2.393,
+        3.273
       ],
       "creature_cheetah_leg_bl": [
-        0.379,
-        2.611,
-        -0.774
+        0.439,
+        2.393,
+        0.228
       ],
       "creature_cheetah_leg_br": [
-        -0.377,
-        2.611,
-        -0.774
+        -0.431,
+        2.393,
+        0.228
       ],
       "creature_cheetah_tail": [
-        0.001,
-        3.015,
-        -1.341
+        0.004,
+        3.263,
+        -0.207
       ]
     }
   },
@@ -515,26 +515,26 @@
     "png": "build/blender/stations/creature_cheetah_lightning.png",
     "preview": "build/blender/stations/previews/creature_cheetah_lightning.png",
     "size_studs": [
-      2.1,
-      6.03,
-      11.96
+      1.99,
+      6.0,
+      13.86
     ],
-    "tris": 7640,
+    "tris": 2500,
     "parts": {
-      "creature_cheetah_lightning_body": 1900,
-      "creature_cheetah_lightning_head": 2236,
-      "creature_cheetah_lightning_leg_fl": 594,
-      "creature_cheetah_lightning_leg_fr": 594,
-      "creature_cheetah_lightning_leg_bl": 594,
-      "creature_cheetah_lightning_leg_br": 594,
-      "creature_cheetah_lightning_tail": 172,
-      "creature_cheetah_lightning_head_glow": 140,
-      "creature_cheetah_lightning_body_glow": 288,
-      "creature_cheetah_lightning_tail_glow": 528
+      "creature_cheetah_lightning_body": 720,
+      "creature_cheetah_lightning_head": 516,
+      "creature_cheetah_lightning_head_glow": 48,
+      "creature_cheetah_lightning_body_glow": 96,
+      "creature_cheetah_lightning_tail": 80,
+      "creature_cheetah_lightning_tail_glow": 8,
+      "creature_cheetah_lightning_leg_fl": 220,
+      "creature_cheetah_lightning_leg_bl": 296,
+      "creature_cheetah_lightning_leg_fr": 220,
+      "creature_cheetah_lightning_leg_br": 296
     },
-    "tris_budget": 11000,
-    "script": "tools/blender/stations/assets/animals.py",
-    "notes": "Lightning Cheetah (mythic): storm coat, Neon bolts.",
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/cheetahs.py",
+    "notes": "Lightning Cheetah (mythic): storm coat, Neon bolts down the flanks, a zigzag tail.",
     "glow": {
       "creature_cheetah_lightning_head_glow": [
         90,
@@ -554,86 +554,86 @@
     },
     "centres": {
       "creature_cheetah_lightning_body": [
-        0.033,
-        3.659,
-        1.101
+        0.009,
+        3.7,
+        2.404
       ],
       "creature_cheetah_lightning_head": [
-        0.034,
-        4.65,
-        4.217
-      ],
-      "creature_cheetah_lightning_leg_fl": [
-        0.616,
-        2.111,
-        3.009
-      ],
-      "creature_cheetah_lightning_leg_fr": [
-        -0.546,
-        2.108,
-        3.008
-      ],
-      "creature_cheetah_lightning_leg_bl": [
-        0.5,
-        2.109,
-        -0.577
-      ],
-      "creature_cheetah_lightning_leg_br": [
-        -0.434,
-        2.108,
-        -0.578
-      ],
-      "creature_cheetah_lightning_tail": [
-        0.034,
-        2.253,
-        -3.59
+        0.004,
+        4.766,
+        5.817
       ],
       "creature_cheetah_lightning_head_glow": [
-        0.032,
-        5.495,
-        4.92
+        0.005,
+        5.379,
+        5.431
       ],
       "creature_cheetah_lightning_body_glow": [
-        0.0,
-        4.126,
-        1.31
+        0.002,
+        4.062,
+        2.407
+      ],
+      "creature_cheetah_lightning_tail": [
+        0.027,
+        3.834,
+        -3.095
       ],
       "creature_cheetah_lightning_tail_glow": [
-        0.034,
-        0.35,
-        -5.631
+        0.004,
+        3.875,
+        -6.298
+      ],
+      "creature_cheetah_lightning_leg_fl": [
+        0.583,
+        1.838,
+        4.255
+      ],
+      "creature_cheetah_lightning_leg_bl": [
+        0.595,
+        1.981,
+        0.269
+      ],
+      "creature_cheetah_lightning_leg_fr": [
+        -0.574,
+        1.84,
+        4.255
+      ],
+      "creature_cheetah_lightning_leg_br": [
+        -0.591,
+        1.981,
+        0.269
       ]
     },
     "joints": {
       "creature_cheetah_lightning_head": [
-        0.034,
-        4.144,
-        3.592
+        0.004,
+        4.324,
+        4.931
       ],
       "creature_cheetah_lightning_leg_fl": [
-        0.611,
-        3.484,
-        2.76
+        0.568,
+        3.102,
+        4.142
       ],
       "creature_cheetah_lightning_leg_fr": [
-        -0.544,
-        3.484,
-        2.76
+        -0.56,
+        3.102,
+        4.142
       ],
       "creature_cheetah_lightning_leg_bl": [
-        0.506,
-        3.484,
-        -0.827
+        0.568,
+        3.102,
+        0.194
       ],
       "creature_cheetah_lightning_leg_br": [
-        -0.439,
-        3.484,
-        -0.827
+        -0.56,
+        3.102,
+        0.194
       ],
       "creature_cheetah_lightning_tail": [
-        0.034,
-        3.99,
-        -1.536
+        0.004,
+        4.23,
+        -0.37
       ]
     }
   },
@@ -2750,6 +2750,133 @@
         0.0,
         2.984,
         -1.712
+      ]
+    }
+  },
+  "creature_cheetah_fire": {
+    "fbx": "build/blender/stations/creature_cheetah_fire.fbx",
+    "png": "build/blender/stations/creature_cheetah_fire.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_fire.png",
+    "size_studs": [
+      1.92,
+      5.54,
+      13.51
+    ],
+    "tris": 2620,
+    "parts": {
+      "creature_cheetah_fire_body": 760,
+      "creature_cheetah_fire_head": 588,
+      "creature_cheetah_fire_head_glow": 64,
+      "creature_cheetah_fire_body_glow": 72,
+      "creature_cheetah_fire_tail": 120,
+      "creature_cheetah_fire_tail_glow": 40,
+      "creature_cheetah_fire_leg_fl": 208,
+      "creature_cheetah_fire_leg_bl": 280,
+      "creature_cheetah_fire_leg_fr": 208,
+      "creature_cheetah_fire_leg_br": 280
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/cheetahs.py",
+    "notes": "Fire Cheetah (legendary): a coat graded from scorched black to orange, painted flames, a Neon mane of flame.",
+    "glow": {
+      "creature_cheetah_fire_head_glow": [
+        255,
+        150,
+        40
+      ],
+      "creature_cheetah_fire_body_glow": [
+        255,
+        150,
+        40
+      ],
+      "creature_cheetah_fire_tail_glow": [
+        255,
+        150,
+        40
+      ]
+    },
+    "centres": {
+      "creature_cheetah_fire_body": [
+        -0.009,
+        3.702,
+        2.758
+      ],
+      "creature_cheetah_fire_head": [
+        -0.009,
+        4.293,
+        5.662
+      ],
+      "creature_cheetah_fire_head_glow": [
+        -0.008,
+        4.642,
+        5.553
+      ],
+      "creature_cheetah_fire_body_glow": [
+        -0.002,
+        4.305,
+        2.738
+      ],
+      "creature_cheetah_fire_tail": [
+        0.028,
+        3.539,
+        -3.113
+      ],
+      "creature_cheetah_fire_tail_glow": [
+        0.019,
+        3.729,
+        -5.432
+      ],
+      "creature_cheetah_fire_leg_fl": [
+        0.493,
+        1.583,
+        4.105
+      ],
+      "creature_cheetah_fire_leg_bl": [
+        0.556,
+        1.705,
+        0.679
+      ],
+      "creature_cheetah_fire_leg_fr": [
+        -0.513,
+        1.585,
+        4.105
+      ],
+      "creature_cheetah_fire_leg_br": [
+        -0.564,
+        1.706,
+        0.679
+      ]
+    },
+    "joints": {
+      "creature_cheetah_fire_head": [
+        -0.009,
+        3.726,
+        5.029
+      ],
+      "creature_cheetah_fire_leg_fl": [
+        0.477,
+        2.673,
+        4.348
+      ],
+      "creature_cheetah_fire_leg_fr": [
+        -0.495,
+        2.673,
+        4.348
+      ],
+      "creature_cheetah_fire_leg_bl": [
+        0.477,
+        2.673,
+        0.946
+      ],
+      "creature_cheetah_fire_leg_br": [
+        -0.495,
+        2.673,
+        0.946
+      ],
+      "creature_cheetah_fire_tail": [
+        -0.009,
+        3.645,
+        0.46
       ]
     }
   }

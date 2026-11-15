@@ -13,7 +13,7 @@ vendors.
 
 - **Animals:** a small African beta pool of 8 species (`game7-animals.md`). Each has a role
   (Attack, Defence, Utility), a group (pack or solitary) and a rare variant, always legendary
-  or mythic (decision 0037; the Lion, the Elephant and the Jackal have one of each, decisions 0050 to 0052); a normal animal is never above epic. The Elephant is the Titan:
+  or mythic (decision 0037; the Lion, the Elephant, the Jackal and the Cheetah have one of each, decisions 0050 to 0053); a normal animal is never above epic. The Elephant is the Titan:
   legendary, a rare hatch from the egg that unlocks at player level
   15 (there is no legendary-only egg). The eggs are placeholders: an overhaul is planned.
 - **Stats:** six, each with one job in a wave fight:
@@ -54,6 +54,9 @@ vendors.
 
 ## Built
 
+- The cheetahs (decision 0053): the Cheetah and the Lightning Cheetah have new faceted models, and the
+  Fire Cheetah, with painted flames and a mane of flame, is the Cheetah's legendary variant (twist
+  strength).
 - The jackals (decision 0052): the Jackal and the Pharaoh Jackal have new faceted models with a
   textured hide, and the Sphinx Jackal, in a pharaoh's headdress with folded wings, is the Jackal's
   mythic variant (twist speed).

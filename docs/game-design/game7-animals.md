@@ -24,8 +24,8 @@ version for the art pipeline.
 - Every animal has a **basic** version. A normal animal is never above epic (today: common,
   uncommon or rare); the Titan is legendary.
 - Every animal has **a variant**, always legendary or mythic, and at most one of each: a hatch
-  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion, the Elephant and the Jackal have both,
-  decisions 0050 to 0052). Any hatch of that animal, from any egg, can be it:
+  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion, the Elephant, the Jackal and the Cheetah
+  have both, decisions 0050 to 0053). Any hatch of that animal, from any egg, can be it:
 
 | Variant rarity | Chance per hatch | Stats | Twist |
 |---|---|---|---|
@@ -79,11 +79,9 @@ player is about 5 tall).
 |---|---|---|---|---|---|
 | Tortoise | Defence | common | 5 / 25 / 48 / 20 / 55 / 50 | War tortoise: high plated shell with a spiked rim, thick clawed legs, hooked beak. | 4 x 9 |
 | Gemshell Tortoise | | legendary | twist defence | Dark shell with a glowing crystal on every plate. | 7 x 12 |
-| Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Slender golden sprinter with black spots and tear marks, very long tail. | 5 x 9 |
-| Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric spots, glowing bolts down both flanks. | 6 x 12 |
-| Fire Cheetah (concept, not in the game yet) | | legendary (proposed) | twist strength (proposed) | A coat burning from scorched black legs through red to an orange back, flames painted up the flanks and legs, a glowing mane of flame from brow to tail, flames at the heels and for a tail tip, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 14 |
-
-New faceted looks for the Cheetah and the Lightning Cheetah are proposed in decision 0053 (cards: `docs/concepts/cheetah-card.png`, `docs/concepts/lightning-cheetah-card.png`); their rows above still describe the models in the game.
+| Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Faceted (decision 0053): a slender golden sprinter on very long legs, black diamond spots and tear marks, a very long ringed tail. Card: `docs/concepts/cheetah-card.png`. | 5 x 11 |
+| Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric blue spots, glowing bolts down both flanks and a crest of them on the neck, a zigzag tail with a glowing tip. Card: `docs/concepts/lightning-cheetah-card.png`. | 6 x 14 |
+| Fire Cheetah | | legendary | twist strength | A coat burning from scorched black legs through red to an orange back, flames painted up the flanks and legs, a glowing mane of flame from brow to tail, flames at the heels and for a tail tip, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 14 |
 
 | Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide, high shoulders with bone studs, scimitar horn, claw scars. | 8 x 14 |
 | Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns, rock spikes, burning tail. | 13 x 18 |

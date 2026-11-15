@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-041",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The new cheetahs in the game: the Cheetah and the Lightning Cheetah get the faceted models of decision 0053, and the Fire Cheetah joins as the Cheetah's legendary variant (twist strength).",
+  "inputs": [
+    "docs/decisions/0053-animal-stations-faceted-cheetahs.md"
+  ],
+  "dependencies": [
+    "STATION-040"
+  ],
+  "files": [
+    "assets/stations/creature_cheetah*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations-client/Creatures.client.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0053-animal-stations-faceted-cheetahs.md",
+    "docs/game-design/game7-animals.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-041.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Cheetah, the Lightning Cheetah and the Fire Cheetah load in the game with the new models, rigged and animated like every creature, in the colours of the concept cards",
+    "A legendary roll on a Cheetah hatches a Fire Cheetah; a mythic roll still hatches a Lightning Cheetah; no other odds change",
+    "The cheetahs' clips fit the new models",
+    "Old saves load unchanged"
+  ],
+  "verification": "Pending: the upload and a look in Studio.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON approved the three cheetahs on 2026-11-15 and asked for them in the game. The upload runs in GitHub (environment assets), never with a key on this machine."
+}
