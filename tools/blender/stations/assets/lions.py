@@ -190,26 +190,40 @@ def lion_model(p, seed):
             *paw(x, HIND + 0.12, cream, rng),
         ]
 
-    # the head: a boxy muzzle stepping up to a broad brow, one pale block for the lips and chin
-    skull = loft("skull", [yring(*r) for r in ((-2.45, 2.98, 0.32, 0.24, 0.24, 0.12), (-2.0, 3.0, 0.46, 0.42, 0.36, 0.16), (-1.65, 3.15, 0.76, 0.64, 0.52, 0.28), (-1.25, 3.2, 0.78, 0.68, 0.55, 0.3), (-0.8, 3.15, 0.64, 0.6, 0.5, 0.26))], body, rng)
+    # the head, after the reference: a short deep muzzle with a blunt front, stepping up to a broad
+    # brow; the pale lips wrap the front of the snout under a dark wedge of a nose, the chin sits a
+    # little back under a dark line of a mouth. The lips, mouth and chin have small corner cuts and
+    # stand just proud of the skull, or its own cut corners swallow them
+    skull = loft("skull", [yring(*r) for r in ((-2.4, 2.95, 0.34, 0.3, 0.3, 0.12), (-2.0, 3.0, 0.44, 0.42, 0.38, 0.15), (-1.7, 3.18, 0.74, 0.66, 0.56, 0.28), (-1.25, 3.22, 0.78, 0.7, 0.58, 0.3), (-0.8, 3.15, 0.64, 0.6, 0.5, 0.26))], body, rng)
     head = groups["head"]
     head.append(skull)
-    head.append(loft("muzzle", [yring(-2.5, 2.8, 0.34, 0.14, 0.2, 0.1), yring(-2.08, 2.76, 0.47, 0.14, 0.26, 0.13)], tone(p["muzzle"], p.get("paw_kind", PALE)), rng))
-    head.append(loft("nose", [yring(-2.54, 3.12, 0.2, 0.09, 0.1, 0.07), yring(-2.3, 3.18, 0.22, 0.08, 0.08, 0.07)], tone(p["nose"]), rng))
+    pale, dark = tone(p["muzzle"], p.get("paw_kind", PALE)), tone(p["nose"])
+    head.append(loft("lips", [yring(-2.44, 2.93, 0.36, 0.19, 0.185, 0.04), yring(-1.98, 2.92, 0.475, 0.19, 0.19, 0.05)], pale, rng))
+    head.append(loft("mouth", [yring(-2.42, 2.725, 0.34, 0.025, 0.025, 0.02), yring(-1.9, 2.705, 0.47, 0.025, 0.03, 0.02)], dark, rng))
+    head.append(loft("chin", [yring(-2.4, 2.63, 0.35, 0.075, 0.08, 0.05), yring(-1.95, 2.61, 0.46, 0.075, 0.07, 0.06)], pale, rng))
+    # the nose: wide on top, narrow below, wrapped over the front edge, with a line down to the mouth
+    head.append(loft("nose", [[(0.24, -2.47, 3.27), (0.1, -2.47, 3.0), (-0.1, -2.47, 3.0), (-0.24, -2.47, 3.27)], [(0.26, -2.2, 3.37), (0.14, -2.2, 3.2), (-0.14, -2.2, 3.2), (-0.26, -2.2, 3.37)]], dark, rng))
+    head.append(loft("philtrum", [quad(-2.46, 2.87, 0.02, 0.13, 0.13), quad(-2.43, 2.87, 0.02, 0.13, 0.13)], dark, rng))
+    head.append(loft("bridge", [yring(-2.2, 3.35, 0.15, 0.02, 0.03, 0.015), yring(-1.72, 3.83, 0.22, 0.02, 0.06, 0.015)], T("bridge"), rng))
+    ear = [(-0.27, 0.0), (-0.25, 0.2), (-0.12, 0.37), (0.12, 0.37), (0.25, 0.2), (0.27, 0.0)]  # rounded
     for s in (1, -1):
-        head.append(shard((s * 0.1, -2.0, 3.5), (s * 0.8, -1.68, 3.86), 0.28, 0.24, T("brow"), rng, face=(0, -1, 0.3), at=0.45, name="brow"))
-        head.append(shard((s * 0.5, -1.3, 3.7), (s * 0.72, -1.22, 4.34), 0.52, 0.22, body, rng, at=0.45, name="ear"))
-        # a slanted slit of an eye on the plane between the muzzle and the cheek
-        at, n = k.land(skull, (s * 0.55, -1.8, 3.24), (s * 0.6, -0.8, 0.0))
+        # a ledge of a brow over the eye, low at the nose and a little higher outside
+        head.append(shard((s * 0.16, -2.02, 3.42), (s * 0.84, -1.66, 3.58), 0.3, 0.22, T("brow"), rng, face=(0, -1, 0.6), name="brow"))
+        frame = k._frame(Vector((s * 0.35, -1, 0)), (s * 0.3, 0, 1))
+        at = Vector((s * 0.56, -1.2, 3.78))
+        head.append(plate("ear", at, frame, ear, 0.14, body, rng))
+        head.append(plate("ear", at + frame[2] * 0.14, frame, [(u * 0.6, 0.03 + v * 0.62) for u, v in ear], 0.03, T("ear_in"), rng))
+        # a slit of an eye high on the plane between the muzzle and the cheek
+        at, n = k.land(skull, (s * 0.55, -1.85, 3.3), (s * 0.6, -0.8, 0.1))
         fx, fy, fz = k._frame(n)
-        slit = [(-0.21, -0.075), (0.0, 0.07), (0.25, 0.095), (0.07, -0.045)]
+        slit = [(-0.2, -0.06), (0.02, 0.08), (0.24, 0.07), (0.06, -0.05)]
         if p.get("glow_eyes"):
             groups["head_glow"].append(plate("eye", at, (fx * s, fy, fz), slit, 0.04, None, rng, m=glow))
         else:
             head.append(plate("eye", at, (fx * s, fy, fz), slit, 0.035, tone(p["iris"]), rng))
-            head.append(plate("pupil", at, (fx * s, fy, fz), [(0.0, -0.05), (0.055, 0.0), (0.045, 0.075), (-0.005, 0.02)], 0.02, tone(INK), rng, lift=0.036))
+            head.append(plate("pupil", at, (fx * s, fy, fz), [(0.0, -0.045), (0.05, 0.0), (0.045, 0.07), (-0.005, 0.02)], 0.02, tone(INK), rng, lift=0.036))
         if p.get("fang"):
-            head.append(shard((s * 0.24, -2.36, 2.62), (s * 0.24, -2.38, 2.28), 0.13, 0.1, tone(p["fang"], PALE), rng, name="fang"))
+            head.append(shard((s * 0.22, -2.38, 2.76), (s * 0.22, -2.4, 2.4), 0.13, 0.1, tone(p["fang"], PALE), rng, name="fang"))
     grow = Matrix.Translation((0, -1.0, 3.1 + LIFT)) @ Matrix.Scale(HEAD, 4) @ Matrix.Translation((0, 1.0, -3.1))
     for ob in head + groups["head_glow"]:
         ob.data.transform(grow)
@@ -266,7 +280,7 @@ def lion_model(p, seed):
 def lion():
     """Lion: tawny, a dark brown mane, pale paws and muzzle, amber eyes."""
     return lion_model(
-        dict(body=(214, 158, 80), fore=(226, 178, 102), paw=(236, 218, 180), muzzle=(238, 222, 188), nose=(62, 40, 34), brow=(176, 122, 58), iris=(244, 180, 40),
+        dict(body=(214, 158, 80), fore=(226, 178, 102), paw=(236, 218, 180), muzzle=(238, 222, 188), nose=(62, 40, 34), brow=(220, 168, 92), bridge=(230, 184, 110), ear_in=(150, 96, 50), iris=(244, 180, 40),
              core=(74, 44, 24), mane_root=(88, 52, 26), mane=[(142, 92, 44), (168, 114, 56), (114, 72, 34), (188, 134, 70)], bib_root=(70, 42, 22), bib=[(120, 76, 36), (142, 92, 46)]),
         3,
     )
@@ -284,7 +298,7 @@ def sun_lion():
     """Sun Lion (mythic): a golden coat, a mane of yellow crystal, a sun on each haunch, glowing eyes, a
     flame of a tail."""
     return lion_model(
-        dict(body=(242, 150, 38), fore=(252, 184, 64), paw=(250, 226, 176), muzzle=(250, 228, 180), mane_kind=FIRE, nose=(118, 62, 38), brow=(226, 122, 30),
+        dict(body=(242, 150, 38), fore=(252, 184, 64), paw=(250, 226, 176), muzzle=(250, 228, 180), mane_kind=FIRE, nose=(104, 54, 34), brow=(246, 166, 48), bridge=(255, 192, 72), ear_in=(206, 96, 30),
              core=(214, 104, 22), mane_root=(240, 140, 24), mane=[(255, 210, 44), (255, 222, 70), (255, 196, 36), (255, 226, 84)], bib_root=(214, 104, 22), bib=[(248, 164, 36), (255, 190, 46), (255, 210, 60)],
              glow=SUNFIRE, glow_eyes=True, lit=0.08, extra=sun_extra),
         5,
@@ -308,7 +322,7 @@ def shadow_lion():
     """Shadow Lion (legendary): ink black, a bone mask and spine, a mane of black crystal with a few green
     shards, glowing green ribs, eyes and tail."""
     return lion_model(
-        dict(kind=COOL, paw_kind=COOL, body=(30, 32, 44), fore=(40, 44, 60), paw=(58, 62, 80), muzzle=BONE, nose=(14, 16, 20), brow=BONE, fang=BONE,
+        dict(kind=COOL, paw_kind=COOL, body=(30, 32, 44), fore=(40, 44, 60), paw=(58, 62, 80), muzzle=BONE, nose=(14, 16, 20), brow=BONE, bridge=BONE, ear_in=(66, 76, 98), fang=BONE,
              core=(8, 9, 13), mane_root=(10, 11, 16), mane=[(34, 40, 56), (22, 26, 38), (50, 58, 78), (16, 18, 26)], bib_root=(8, 9, 13), bib=[(26, 30, 42), (38, 44, 60)],
              glow=SHADOW, glow_eyes=True, sparks=5, extra=shadow_extra),
         7,
