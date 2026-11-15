@@ -28,7 +28,7 @@
     "The other animals build as before",
     "StationConfig, StationAssets and the manifest are untouched until SHANNON approves and the models are uploaded"
   ],
-  "verification": "Blender 5.2 on 2026-11-15, after the simplifying pass and the longer legs and compact paws SHANNON asked for: full build (bake and export) of creature_lion (1200 tris, 8.7 tall x 12.8 long), creature_lion_sun (1296, 10.9 x 16.3) and creature_lion_shadow (1272, 9.9 x 14.8) passed, with body, head, four legs and tail pieces and the glow pieces; the presentation cards were compared with the reference. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
+  "verification": "Blender 5.2 on 2026-11-15, after the simplifying pass, the compact paws and the longer body SHANNON asked for: full build (bake and export) of creature_lion (1200 tris, 7.4 tall x 12.6 long), creature_lion_sun (1296, 9.3 x 15.9) and creature_lion_shadow (1272, 8.4 x 14.5) passed, with body, head, four legs and tail pieces and the glow pieces; the presentation cards were compared with the reference. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
   "output_artifacts": [
     "docs/concepts/lion-family.png",
     "docs/concepts/lion-card.png",

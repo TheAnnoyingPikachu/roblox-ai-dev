@@ -12,7 +12,7 @@ plain preview).
 
 - The Lion, the Sun Lion and the new Shadow Lion are built from scratch in
   `tools/blender/stations/assets/lions.py`, no longer on the predator body in `animals.py`: lofted
-  blocky bodies carried high on long legs, compact paws with three short toes, a boxy face with slit eyes, a mane of about 30 big
+  long blocky bodies, compact paws with three short toes, a boxy face with slit eyes, a mane of about 30 big
   crystal shards with a bib down the chest, and a fan of six shards for the tail tuft.
 - Nothing is smooth and nothing is painted with gradients. Every face has one colour (the `lp`
   colour attribute), picked from three tones by which way the face points plus a little chance, and
@@ -23,7 +23,8 @@ plain preview).
 - Kept plain on purpose. A first version (about 75 shards, bevelled sections, a nose bridge, cheek
   tufts, a mouth line, an eight-rayed sun, claws) was too detailed for SHANNON; this one has fewer,
   bigger faces. Add a piece only if it reads from across the arena. A squat version with long flat
-  feet was also wrong: the reference stands tall, legs about as long as the body is deep.
+  feet was also wrong, and so was a taller one: SHANNON wants the body long, the hind legs standing
+  well behind the front ones (`HIND` in lions.py), not more height.
 - The rig is the same set of pieces (body, head with the mane, four legs, tail, glow pieces); the
   joints moved a little and are recorded per build as before. Each lion is scaled to about the length
   of the model it replaces (13, 16 and 15 studs), so the arena spacing holds.
