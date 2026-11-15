@@ -20,14 +20,14 @@
     "texture": null
   },
   "creature_cheetah": {
-    "model": 71145036331250,
-    "decal": 99987879723805,
-    "texture": 116622437436712
+    "model": 136222492678063,
+    "decal": 71432202009375,
+    "texture": null
   },
   "creature_cheetah_lightning": {
-    "model": 74921129990147,
-    "decal": 95795974885943,
-    "texture": 140088446131089
+    "model": 109207546284029,
+    "decal": 129607729735952,
+    "texture": null
   },
   "creature_lion": {
     "model": 130586378174171,
@@ -117,6 +117,11 @@
   "creature_jackal_sphinx": {
     "model": 121824721955985,
     "decal": 109191769703070,
+    "texture": null
+  },
+  "creature_cheetah_fire": {
+    "model": 84637522481024,
+    "decal": 91148467592505,
     "texture": null
   }
 }

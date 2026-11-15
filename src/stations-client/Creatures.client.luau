@@ -429,30 +429,32 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 38, 0, 0, 0, 0.46, 0.3 }, head = { -14 }, leg_fl = { 168 }, leg_fr = { 160 }, tail = { -30 } },
 		{ body = { 6, 0, 0, 0, -0.04, -0.7 }, head = { 18 }, leg_fl = { -30 }, leg_fr = { -30 }, tail = { 20 } }
 	),
-	-- coils low and bounds in
+	-- coils low and bounds in. Its legs are very long: in the coil the front legs splay far forward and the
+	-- body drops only a little, or the paws sink into the ground; in the bound the body rises and the long
+	-- tail is held up, or the hind paws and the tail do
 	cheetah = powerClip({
-		body = { -9, 0, 0, 0, -0.2, 0.4 },
+		body = { -9, 0, 0, 0, -0.12, 0.4 },
 		head = { -8 },
-		leg_fl = { 20 },
-		leg_fr = { 20 },
-		leg_bl = { -18 },
-		leg_br = { -18 },
+		leg_fl = { 44 },
+		leg_fr = { 44 },
+		leg_bl = { -10 },
+		leg_br = { -10 },
 	}, {
-		body = { -12, 0, 0, 0, -0.3, 0.5 },
+		body = { -12, 0, 0, 0, -0.2, 0.5 },
 		head = { -12 },
-		leg_fl = { 26 },
-		leg_fr = { 26 },
-		leg_bl = { -24 },
-		leg_br = { -24 },
+		leg_fl = { 52 },
+		leg_fr = { 52 },
+		leg_bl = { -17 },
+		leg_br = { -17 },
 		tail = { -26 },
 	}, {
-		body = { 14, 0, 0, 0, 0.1, -1.6 },
+		body = { 14, 0, 0, 0, 0.26, -1.6 },
 		head = { 16 },
 		leg_fl = { 50 },
 		leg_fr = { 50 },
 		leg_bl = { -34 },
 		leg_br = { -34 },
-		tail = { 24 },
+		tail = { -20 },
 	}),
 	-- the neck coils far back, then spears down; the feet stay planted
 	flamingo = powerClip(
@@ -661,14 +663,15 @@ local function winFlamingo(t: number): Pose
 		tail = { 0, 24 * math.sin(t * 6) * u, 0 },
 	}
 end
--- A lion or a jackal rears like the others but holds its tail up: their long tails would lie on the
--- ground.
+-- A lion, a jackal or a cheetah rears like the others but holds its tail up: their long tails would lie
+-- on the ground.
 local function winTailUp(t: number): Pose
 	local pose = win(t, false)
 	pose.tail = { -24 * ease(math.min(1, t / 0.5)), pose.tail[2], 0 }
 	return pose
 end
-local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo, lion = winTailUp, jackal = winTailUp }
+local WINS: { [string]: (number) -> Pose } =
+	{ flamingo = winFlamingo, lion = winTailUp, jackal = winTailUp, cheetah = winTailUp }
 local PLANTED = { flamingo = true } -- species whose feet never leave the ground, not even when hit
 
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow

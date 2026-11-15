@@ -37,6 +37,11 @@ SHANNON asked for the cheetahs next, with a lightning and a fire cheetah.
   Cheetah hatches) now gives a Fire Cheetah, where it gave a plain Cheetah before. Nothing else in
   the odds moves, and no save changes.
 - The Fire Cheetah uses the Cheetah's clips until it gets its own.
+- Clips (`Creatures.client`), fitted by measuring each paw and the tail against the ground in Studio.
+  The power attack: in the coil the front paws sank half a stud (the legs are very long), so the front
+  legs splay far forward and the body drops less; in the bound the hind paws and the tail sank, so the
+  body rises and the tail is held up. The win pose holds the tail up, as for the lions and jackals.
+  The walk and the paw-swipe attack fit as they were.
 - Style, from SHANNON with the go-ahead: the models do not have to be low-poly, they only need not be
   very detailed; no self-imposed limits. The families after this one may be rounder or smoother.
 

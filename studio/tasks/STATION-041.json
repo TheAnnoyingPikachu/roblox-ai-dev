@@ -35,12 +35,12 @@
     "The cheetahs' clips fit the new models",
     "Old saves load unchanged"
   ],
-  "verification": "Pending: the upload and a look in Studio.",
+  "verification": "2026-11-15: upload-assets run 43767875270 succeeded (three models, three textures, exported without vertex colours). Lune 687/687, selene and stylua clean. In Studio (local build): the Cheetah, the Lightning Cheetah and the Fire Cheetah load with the new models in the colours of the concept cards, and their portraits are published. Each leg's and the tail's lowest point was measured against the ground in the idle, attack, power attack, hit and win poses: the power attack's coil (front paws 0.5 to 0.6 studs under) and bound (hind paws 0.2 and the tail 1.3 under) and the win pose (tail 0.3 under) were fixed and measured again, all within 0.1 of the ground or clear of it. A test wave 10 with the three cheetahs as the team was won with no script errors. Left as it is: the shared hit flinch sinks the hind paws 0.2 studs for a moment. Not checked: phones, two players, a Fire Cheetah from a real hatch, the clips in motion at full speed.",
   "output_artifacts": [
     "src/shared/StationAssets.luau",
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
-  "notes": "SHANNON approved the three cheetahs on 2026-11-15 and asked for them in the game. The upload runs in GitHub (environment assets), never with a key on this machine."
+  "status": "in_review",
+  "notes": "SHANNON approved the three cheetahs on 2026-11-15 and asked for them in the game. The upload runs in GitHub (environment assets), never with a key on this machine. Still open for SHANNON from STATION-036: the three lions carry the vertex-colour fault and look darker in the game than approved. The replaced Cheetah and Lightning Cheetah assets are still on the account (decals 99987879723805 and 95795974885943 could be archived by the workflow)."
 }
