@@ -348,7 +348,9 @@ local ATTACKS: { [string]: Clip } = {
 		{ 0.60, { body = { 3, 0, 0, 0, 0, -0.4 }, head = { 18, 12 } } },
 		{ 0.95, {} },
 	}),
-	-- a crouch, then a long pounce with both front paws out
+	-- a crouch, then a long pounce with both front paws out. The crouch splays the front legs far
+	-- forward (chest low, haunches up) so the paws stay on the ground as the body drops, and the
+	-- tail is held up through the leap: the lions' long tail flame would drag on the ground
 	lion = attack({
 		{ 0.00, {} },
 		{
@@ -356,10 +358,10 @@ local ATTACKS: { [string]: Clip } = {
 			{
 				body = { -8, 0, 0, 0, -0.22, 0.2 },
 				head = { -10 },
-				leg_fl = { 20 },
-				leg_fr = { 20 },
-				leg_bl = { -16 },
-				leg_br = { -16 },
+				leg_fl = { 40 },
+				leg_fr = { 40 },
+				leg_bl = { -18 },
+				leg_br = { -18 },
 				tail = { -20 },
 			},
 		},
@@ -372,7 +374,7 @@ local ATTACKS: { [string]: Clip } = {
 				leg_fr = { 52 },
 				leg_bl = { -36 },
 				leg_br = { -36 },
-				tail = { 24 },
+				tail = { -22 },
 			},
 		},
 		{ 0.62, { body = { -4, 0, 0, 0, 0.02, -0.6 }, head = { 8 }, leg_fl = { 10 }, leg_fr = { 10 } } },
@@ -462,17 +464,17 @@ local MAGICS: { [string]: Clip } = {
 	lion = powerClip({
 		body = { -8, 0, 0, 0, -0.24, 0.3 },
 		head = { -6 },
-		leg_fl = { 20 },
-		leg_fr = { 20 },
-		leg_bl = { -16 },
-		leg_br = { -16 },
+		leg_fl = { 42 },
+		leg_fr = { 42 },
+		leg_bl = { -20 },
+		leg_br = { -20 },
 	}, {
 		body = { -10, 0, 0, 0, -0.28, 0.4 },
 		head = { 30 },
-		leg_fl = { 24 },
-		leg_fr = { 24 },
-		leg_bl = { -20 },
-		leg_br = { -20 },
+		leg_fl = { 46 },
+		leg_fr = { 46 },
+		leg_bl = { -22 },
+		leg_br = { -22 },
 		tail = { -24 },
 	}, {
 		body = { 20, 0, 0, 0, 0.36, -1.7 },
@@ -481,7 +483,7 @@ local MAGICS: { [string]: Clip } = {
 		leg_fr = { 54 },
 		leg_bl = { -38 },
 		leg_br = { -38 },
-		tail = { 26 },
+		tail = { -22 },
 	}),
 	-- backs up, paws the ground, then charges and tosses its horn
 	rhino = powerClip({
@@ -659,7 +661,13 @@ local function winFlamingo(t: number): Pose
 		tail = { 0, 24 * math.sin(t * 6) * u, 0 },
 	}
 end
-local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo }
+-- A lion rears like the others but holds its tail up: its long tail flame would lie on the ground.
+local function winLion(t: number): Pose
+	local pose = win(t, false)
+	pose.tail = { -24 * ease(math.min(1, t / 0.5)), pose.tail[2], 0 }
+	return pose
+end
+local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo, lion = winLion }
 local PLANTED = { flamingo = true } -- species whose feet never leave the ground, not even when hit
 
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow

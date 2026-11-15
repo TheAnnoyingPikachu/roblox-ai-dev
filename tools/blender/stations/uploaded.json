@@ -30,14 +30,14 @@
     "texture": 140088446131089
   },
   "creature_lion": {
-    "model": 96631333073951,
-    "decal": 79965920754607,
-    "texture": 98958378979109
+    "model": 130586378174171,
+    "decal": 87858491746017,
+    "texture": null
   },
   "creature_lion_sun": {
-    "model": 98955561745401,
-    "decal": 128348669161992,
-    "texture": 131578033588743
+    "model": 74186882513776,
+    "decal": 92765121784934,
+    "texture": null
   },
   "creature_meerkat": {
     "model": 96988536912015,
@@ -103,5 +103,10 @@
     "model": 79434671365622,
     "decal": 107048042960848,
     "texture": 87545615844296
+  },
+  "creature_lion_shadow": {
+    "model": 72212451895565,
+    "decal": 100442030209221,
+    "texture": null
   }
 }

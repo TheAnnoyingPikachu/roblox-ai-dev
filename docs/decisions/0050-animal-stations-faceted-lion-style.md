@@ -47,8 +47,12 @@ plain preview).
   (1 in 2,000 Lion hatches) now gives a Shadow Lion, where it gave a plain Lion before. Nothing else in
   the odds moves, and no save changes: old saves have no `shadow_lion` and need none.
 - The Shadow Lion uses the Lion's attack and power clips until it gets its own.
+- The lions' clips were fitted to the new shape (`Creatures.client`): the crouch before a pounce splays
+  the front legs far forward so the paws stay on the ground, and the tail is held up through the leap
+  and the win pose, because the long tail flame dragged on the ground. The other clips fit as they were.
 
 ## Not done
 
-The clips were written for the old shapes; the walk and the attacks on the new legs still need a look. The aura of the reference in the game would be an
+Defeated, a lion lies on its side with the lower half of its mane in the ground (the mane is wider than
+the body); left as it is. The aura of the reference in the game would be an
 effect (particles or a light), which is not built.

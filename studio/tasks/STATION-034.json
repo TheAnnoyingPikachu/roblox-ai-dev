@@ -13,17 +13,18 @@
   ],
   "files": [
     "assets/stations/creature_lion*",
-    "tools/blender/stations/manifest.json",
-    "tools/blender/stations/uploaded.json",
-    "src/shared/StationAssets.luau",
-    "src/shared/StationConfig.luau",
-    "tests/StationRules.spec.luau",
     "docs/assets/register.md",
     "docs/decisions/0050-animal-stations-faceted-lion-style.md",
     "docs/game-design/game7-animals.md",
     "docs/game-design/game7-gdd.md",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations-client/Creatures.client.luau",
     "src/stations/CLAUDE.md",
-    "studio/tasks/STATION-034.json"
+    "studio/tasks/STATION-034.json",
+    "tests/StationRules.spec.luau",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json"
   ],
   "tests": [
     "StationRules.spec.luau",
@@ -34,14 +35,15 @@
     "The Lion, the Sun Lion and the Shadow Lion load in the game with the new models, rigged and animated like every creature",
     "A legendary roll on a Lion hatches a Shadow Lion; a mythic roll still hatches a Sun Lion; no other odds change",
     "Every species has at most one variant of each tier (the spec checks it)",
-    "Old saves load unchanged"
+    "Old saves load unchanged",
+    "The lions' clips fit the new model: paws on the ground in the crouch, the tail clear of the ground in the leap and the win pose"
   ],
-  "verification": "Pending: the upload and a look in Studio.",
+  "verification": "2026-11-15: upload-assets run 43745266341 succeeded (three models, three textures). Lune 687/687, selene and stylua clean. In Studio (local build): the Lion, the Sun Lion and the Shadow Lion load with the new models and textures; the walk, the attack crouch and pounce, the power roar, the defeat and the win pose were frozen and looked at on the model, and the crouch and the tail were fixed and looked at again; a test wave 6 with the three lions on the team was won with no script errors. Not checked: phones, two players, a Shadow Lion from a real hatch (1 in 2,000), the lions in slow motion on a killing blow.",
   "output_artifacts": [
     "src/shared/StationAssets.luau",
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
+  "status": "in_review",
   "notes": "SHANNON approved the look and asked for the lions to go into the game on 2026-11-15. The upload runs in GitHub (environment assets), never with a key on this machine."
 }
