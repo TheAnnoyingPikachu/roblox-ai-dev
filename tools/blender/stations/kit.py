@@ -254,7 +254,7 @@ def beauty(name, groups, lo, hi):
         bpy.ops.render.render(write_still=True)
         return _bloom(_pixels(scene.render.filepath))
 
-    hero = shot("_hero", (-0.9, -1.0, 0.22), 1536, 1024, fill=0.8)
+    hero = shot("_hero", (-0.9, -1.0, 0.1), 1536, 1024, fill=0.8)  # from about shoulder height
     views = [shot(s, d, 512, 512, fill=0.9) for s, d in (("_front", (0.0, -1.0, 0.12)), ("_side", (-1.0, -0.08, 0.12)), ("_back", (0.55, 1.0, 0.3)))]
     card = np.concatenate([np.concatenate(views, axis=1), hero], axis=0)  # image rows run bottom to top
     rgba = np.concatenate([card, np.ones((*card.shape[:2], 1), dtype=np.float32)], axis=-1)
