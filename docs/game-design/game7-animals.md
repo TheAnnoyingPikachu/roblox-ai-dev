@@ -81,7 +81,7 @@ player is about 5 tall).
 | Gemshell Tortoise | | legendary | twist defence | Dark shell with a glowing crystal on every plate. | 7 x 12 |
 | Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Slender golden sprinter with black spots and tear marks, very long tail. | 5 x 9 |
 | Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric spots, glowing bolts down both flanks. | 6 x 12 |
-| Fire Cheetah (concept, not in the game yet) | | legendary (proposed) | twist strength (proposed) | Red-hot coat with ember-yellow spots and scorched legs, a glowing ridge of flame down the spine, a flame tail, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 13 |
+| Fire Cheetah (concept, not in the game yet) | | legendary (proposed) | twist strength (proposed) | A coat burning from scorched black legs through red to an orange back, flames painted up the flanks and legs, a glowing mane of flame from brow to tail, flames at the heels and for a tail tip, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 14 |
 
 New faceted looks for the Cheetah and the Lightning Cheetah are proposed in decision 0053 (cards: `docs/concepts/cheetah-card.png`, `docs/concepts/lightning-cheetah-card.png`); their rows above still describe the models in the game.
 
