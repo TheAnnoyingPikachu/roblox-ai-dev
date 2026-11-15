@@ -1,0 +1,53 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-045",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The rhinos, meerkats, tortoises and flamingos in the game with the models of decisions 0054 and 0055, and their four new variants: Crystal Rhino (legendary, twist defence), Star Meerkat (mythic, twist speed), Island Tortoise (mythic, twist health), Peacock Flamingo (legendary, twist stamina).",
+  "inputs": [
+    "docs/decisions/0054-animal-stations-rhinos.md",
+    "docs/decisions/0055-animal-stations-meerkats-tortoises-flamingos.md"
+  ],
+  "dependencies": [
+    "STATION-042",
+    "STATION-043",
+    "STATION-044"
+  ],
+  "files": [
+    "assets/stations/creature_rhino*",
+    "assets/stations/creature_meerkat*",
+    "assets/stations/creature_tortoise*",
+    "assets/stations/creature_flamingo*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Creatures.client.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0054-animal-stations-rhinos.md",
+    "docs/decisions/0055-animal-stations-meerkats-tortoises-flamingos.md",
+    "docs/game-design/game7-animals.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-045.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The twelve animals load in the game with the new models, rigged and animated like every creature, in the colours of their cards",
+    "The four new variants exist in StationConfig and hatch from the eggs that list them (decision 0056)",
+    "The clips fit the new shapes, the upright meerkat's above all",
+    "Old saves load unchanged"
+  ],
+  "verification": "Pending: the upload and a look in Studio.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-15: 'looks is go variants are go eggs are go'. The upload runs in GitHub (environment assets), never with a key on this machine."
+}
