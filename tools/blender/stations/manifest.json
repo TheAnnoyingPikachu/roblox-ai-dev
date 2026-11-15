@@ -1410,10 +1410,11 @@
       11.3,
       10.29
     ],
-    "tris": 1478,
+    "tris": 1486,
     "parts": {
       "creature_flamingo_phoenix_body": 320,
       "creature_flamingo_phoenix_head": 430,
+      "creature_flamingo_phoenix_tail": 8,
       "creature_flamingo_phoenix_leg_fl": 108,
       "creature_flamingo_phoenix_leg_fr": 108,
       "creature_flamingo_phoenix_leg_bl": 152,
@@ -1458,6 +1459,11 @@
         0.0,
         7.649,
         3.81
+      ],
+      "creature_flamingo_phoenix_tail": [
+        0.0,
+        5.508,
+        -0.723
       ],
       "creature_flamingo_phoenix_leg_fl": [
         0.448,

@@ -112,6 +112,8 @@ def phoenix_extra(groups, pieces, rng, glow):
         b = ROOT + Vector((dx * 1.2, length * 0.45, 0.25))
         c = ROOT + Vector((dx * 2.2, length * 0.85, -0.5 - abs(dx)))
         groups["tail_glow"] += [shard(a, b, 0.3, 0.1, None, rng, face=(0, 0, 1), at=0.6, m=glow, name="streamer"), shard(b - (b - a) * 0.15, c, 0.36, 0.1, None, rng, face=(0, 0, 1), at=0.35, m=glow, name="streamer")]
+    # the rig needs a painted tail piece: a stub of red feathers the streamers flow from
+    groups["tail"].append(shard(ROOT - Vector((0, 0.25, 0)), ROOT + Vector((0, 0.5, -0.08)), 0.34, 0.16, tone((226, 62, 24), F.FIRE), rng, face=(0, 0, 1), at=0.4, name="rump", surface="scales"))
     gold = tone((255, 196, 50), F.FIRE)
     for i in range(7):
         a = (i - 3) * 0.3
