@@ -1,11 +1,12 @@
 """The lions (decision 0050): the Lion, the Sun Lion and the Shadow Lion as chunky low-poly cats, after
-SHANNON's Sun Lion reference card. A few big blocks: a lofted body and legs, paws with three toes, a
-boxy head with slit eyes, and a mane of some thirty large crystal shards. Nothing is smooth: every
+SHANNON's Sun Lion reference card. Big blocks: a long boxy body on thick square legs, paws with three
+short toes, a head after the reference, and a full mane of about sixty broad leaves. Nothing is smooth: every
 face has one colour (the `lp` colour attribute), picked from three tones by which way the face points
 plus a little chance, so the facets read in any light and bake straight into the texture.
 
-Keep it plain: SHANNON found a denser version (75 shards, bevelled sections, small face pieces) too
-detailed. Add a piece only if it reads from across the arena.
+The measure is the reference card: SHANNON asked for the lions to match it. A version with thin
+shards, bevelled sections and small extra pieces was too detailed, a plainer one with thirty shards
+too sparse. Keep faces big and flat; add a piece only if the reference has it.
 
 Jointed like every creature: body, head (with the mane), four legs, tail, and Neon `_glow` pieces.
 Facing Blender -Y; left is +X.
@@ -154,9 +155,9 @@ def plate(name, p, frame, outline, thick, tones, rng, lift=0.004, m=None):
 def paw(x, y, tones, rng):
     """A compact block of a paw, a little wider than the leg, with three short toes: from the heel at
     y + 0.4 to the toes at y - 0.62."""
-    parts = [loft("paw", [yring(y + 0.4, 0.26, 0.4, 0.24, 0.26, 0.12, x), yring(y - 0.3, 0.28, 0.46, 0.27, 0.28, 0.13, x)], tones, rng)]
-    for dx in (-0.3, 0.0, 0.3):
-        parts.append(loft("toe", [quad(y - 0.26, 0.24, 0.14, 0.22, 0.24, x + dx), quad(y - 0.62, 0.18, 0.13, 0.12, 0.18, x + dx)], tones, rng))
+    parts = [loft("paw", [yring(y + 0.44, 0.26, 0.47, 0.24, 0.26, 0.12, x), yring(y - 0.32, 0.28, 0.55, 0.27, 0.28, 0.13, x)], tones, rng)]
+    for dx in (-0.36, 0.0, 0.36):
+        parts.append(loft("toe", [quad(y - 0.28, 0.24, 0.165, 0.22, 0.24, x + dx), quad(y - 0.66, 0.18, 0.15, 0.12, 0.18, x + dx)], tones, rng))
     return parts
 
 
@@ -170,23 +171,23 @@ def lion_model(p, seed):
     groups = {"body": [], "head": [], "head_glow": [], "body_glow": [], "tail": [], "tail_glow": []}
 
     # the torso: a deep chest, a tucked waist, square hips
-    torso = loft("torso", [yring(*r) for r in ((-1.0, 2.75, 0.6, 0.65, 0.7, 0.3), (-0.3, 2.7, 0.92, 0.95, 0.92, 0.4), (1.7, 2.77, 0.76, 0.78, 0.66, 0.34), (HIND + 0.1, 2.73, 0.86, 0.82, 0.78, 0.38), (HIND + 0.95, 2.8, 0.45, 0.45, 0.4, 0.2))], body, rng)
+    torso = loft("torso", [yring(*r) for r in ((-1.0, 2.75, 0.66, 0.68, 0.72, 0.2), (-0.3, 2.7, 1.0, 1.0, 0.95, 0.24), (1.7, 2.77, 0.84, 0.82, 0.7, 0.22), (HIND + 0.1, 2.73, 0.94, 0.86, 0.8, 0.24), (HIND + 0.95, 2.8, 0.5, 0.48, 0.42, 0.15))], body, rng)
     groups["body"].append(torso)
 
     # legs: the upper leg in the body's colour, the lower lighter, a pale paw
     thighs = {}
     for s in (1, -1):
-        x = s * 0.6
-        thigh = loft("thigh", [zring(x, HIND + 0.05, 3.15, 0.42, 0.76, 0.2), zring(x, HIND - 0.05, 2.4, 0.5, 0.86, 0.22), zring(x, HIND - 0.25, 1.7, 0.4, 0.56, 0.17)], body, rng)
+        x = s * 0.68
+        thigh = loft("thigh", [zring(x, HIND + 0.05, 3.15, 0.5, 0.8, 0.13), zring(x, HIND - 0.05, 2.2, 0.58, 0.92, 0.15), zring(x, HIND - 0.25, 1.7, 0.46, 0.62, 0.12)], body, rng)
         thighs[s] = thigh
         groups["leg_f" + ("l" if s > 0 else "r")] = [
-            loft("arm", [zring(x, 0.0, 2.9, 0.44, 0.56, 0.2), zring(x, 0.06, 1.5, 0.38, 0.46, 0.17)], body, rng),
-            loft("forearm", [zring(x, 0.06, 1.55, 0.36, 0.46, 0.16), zring(x, 0.0, 0.45, 0.34, 0.42, 0.15)], fore, rng),
+            loft("arm", [zring(x, 0.0, 2.9, 0.52, 0.62, 0.13), zring(x, 0.06, 1.5, 0.46, 0.52, 0.11)], body, rng),
+            loft("forearm", [zring(x, 0.06, 1.55, 0.44, 0.5, 0.11), zring(x, 0.0, 0.45, 0.42, 0.48, 0.1)], fore, rng),
             *paw(x, 0.0, cream, rng),
         ]
         groups["leg_b" + ("l" if s > 0 else "r")] = [
             thigh,
-            loft("shin", [zring(x, HIND - 0.25, 1.75, 0.36, 0.5, 0.15), zring(x, HIND + 0.32, 1.05, 0.33, 0.42, 0.14), zring(x, HIND + 0.18, 0.45, 0.34, 0.42, 0.14)], fore, rng),
+            loft("shin", [zring(x, HIND - 0.25, 1.75, 0.44, 0.56, 0.11), zring(x, HIND + 0.32, 1.05, 0.4, 0.48, 0.1), zring(x, HIND + 0.18, 0.45, 0.42, 0.48, 0.1)], fore, rng),
             *paw(x, HIND + 0.12, cream, rng),
         ]
 
@@ -228,7 +229,8 @@ def lion_model(p, seed):
     for ob in head + groups["head_glow"]:
         ob.data.transform(grow)
 
-    # the mane: a core, three rings of big shards raked back, and a bib down the chest
+    # the mane: a core, five rings of broad leaves (the first frames the face, the last lies over the
+    # shoulders), and a wide bib of three rows down the chest
     mane_kind, lit = p.get("mane_kind", kind), p.get("lit", 0.0)
     root, deep = tone(p["mane_root"], mane_kind), tone(p["bib_root"], mane_kind)
     head.append(loft("core", [yring(-1.2, 3.15 + LIFT, 0.85, 0.85, 0.8, 0.36), yring(-0.5, 3.05 + LIFT, 1.15, 1.1, 1.05, 0.48), yring(0.4, 2.95 + LIFT, 0.8, 0.8, 0.75, 0.34)], T("core"), rng, emit=lit))
@@ -240,9 +242,9 @@ def lion_model(p, seed):
         if glow and p.get("sparks") and count % p["sparks"] == 0:  # every so many, a glowing one
             groups["head_glow"].append(shard(base, tip, width * 0.6, width * 0.3, None, rng, face=face, m=glow))
         else:
-            head.append(shard(base, tip, width, width * 0.45, (tones, tone(rng.choice(tips), mane_kind)), rng, face=face, emit=lit))
+            head.append(shard(base, tip, width, width * 0.45, (tones, tone(rng.choice(tips), mane_kind)), rng, face=face, at=0.45, emit=lit))
 
-    for y, zc, radius, n, length, width, sweep, a0, a1 in ((-1.15, 3.3, 0.95, 8, 0.95, 1.0, 0.15, -40, 220), (-0.8, 3.22, 1.05, 9, 1.35, 1.3, 0.45, -58, 238), (-0.3, 3.12, 1.0, 7, 1.3, 1.3, 0.75, -30, 210)):
+    for y, zc, radius, n, length, width, sweep, a0, a1 in ((-1.3, 3.3, 0.88, 10, 0.9, 0.8, -0.1, -50, 230), (-1.05, 3.26, 0.98, 11, 1.35, 1.0, 0.2, -60, 240), (-0.7, 3.2, 1.06, 11, 1.7, 1.15, 0.5, -55, 235), (-0.25, 3.12, 1.0, 9, 1.8, 1.15, 0.85, -40, 220), (0.2, 3.05, 0.85, 6, 1.6, 1.05, 1.3, 20, 160)):
         for i in range(n):
             a = math.radians(a0 + (a1 - a0) * (i + 0.5) / n + rng.uniform(-5, 5))
             out = Vector((math.cos(a), 0, math.sin(a)))
@@ -250,30 +252,32 @@ def lion_model(p, seed):
             base = Vector((0, y, zc + LIFT)) + out * radius
             long_ = length * rng.uniform(0.9, 1.1) * (1 + 0.4 * max(0.0, out.z))
             lock(base - d * 0.25, base + d * long_, width * rng.uniform(0.9, 1.1), p["mane"], root, Vector((0, -0.7, 0)) + out)
-    for y, z, half, n, long_, width, lean in ((-1.5, 2.55, 0.5, 3, 1.0, 0.75, -0.08), (-1.0, 2.45, 0.85, 4, 1.6, 0.95, 0.05)):
+    for y, z, half, n, long_, width, lean in ((-1.55, 2.6, 0.55, 3, 1.0, 0.9, -0.08), (-1.2, 2.5, 0.9, 5, 1.6, 1.05, -0.02), (-0.85, 2.3, 1.0, 5, 2.0, 1.1, 0.06)):
         for i in range(n):
             x = half * (2 * i / (n - 1) - 1)
             base = Vector((x, y, z + LIFT - abs(x) * 0.25))
             d = Vector((x * 0.38, lean, -1)).normalized()
-            lock(base - d * 0.2, base + d * long_ * rng.uniform(0.9, 1.1), width, p["bib"], deep, (0, -1, 0))
+            lock(base - d * 0.2, base + d * long_ * (1.15 - 0.3 * abs(x) / half), width, p["bib"], deep, (0, -1, 0))
 
-    # the tail: thin, rising from the rump and falling to a fan of six shards
-    t0, tip = Vector((0, HIND + 0.85, 2.95)), Vector((0, HIND + 3.0, 2.0))
-    tail = k.tube([t0, Vector((0, HIND + 1.55, 3.25)), Vector((0, HIND + 2.45, 2.85)), tip], [0.18, 0.16, 0.13, 0.11], m=material(), n=4, name="tail")
+    # the tail: thin, rising from the rump and falling to a flame of seven shards, the middle one longest
+    t0, tip = Vector((0, HIND + 0.85, 2.95)), Vector((0, HIND + 3.3, 2.2))
+    tail = k.tube([t0, Vector((0, HIND + 1.6, 3.4)), Vector((0, HIND + 2.6, 3.1)), tip], [0.18, 0.16, 0.13, 0.11], m=material(), n=4, name="tail")
     groups["tail"].append(colour(tail, body, rng))
-    for i in range(6):
-        a = math.radians(-55 + 23 * i)  # from down and back round to up and back
-        d = Vector(((i % 3 - 1) * 0.3, math.cos(a), math.sin(a))).normalized()
-        long_ = 1.3 + 0.55 * math.cos(a - 0.2)
+    flow = Vector((0, 0.8, -0.6))
+    for i in range(7):
+        off = (i - 3) / 3  # -1 to 1 across the flame
+        d = (flow + Vector((off * 0.32, -abs(off) * 0.12, (0.5 if i % 2 else -0.1) * abs(off)))).normalized()
+        base = tip - flow * (0.25 + 0.2 * abs(off))
+        long_, width = 2.8 - 0.9 * abs(off), 1.25 - 0.25 * abs(off)
         if glow and p.get("sparks") and i == 3:
-            groups["tail_glow"].append(shard(tip - d * 0.2, tip + d * long_, 0.6, 0.35, None, rng, face=(1, 0, 0.3), at=0.42, m=glow))
+            groups["tail_glow"].append(shard(base, base + d * long_, width * 0.7, 0.35, None, rng, face=(1, 0, 0.3), at=0.36, m=glow))
         else:
-            groups["tail"].append(shard(tip - d * 0.25, tip + d * long_, 0.95, 0.5, (root, tone(p["mane"][i % len(p["mane"])], mane_kind)), rng, face=(1 if i % 2 else -1, 0, 0.3), at=0.42, emit=lit))
+            groups["tail"].append(shard(base, base + d * long_, width, 0.6, (root, tone(p["mane"][i % len(p["mane"])], mane_kind)), rng, face=(1 if i % 2 else -1, 0, 0.3), at=0.36, emit=lit))
 
     extra = p.get("extra")
     if extra:
         extra(groups, torso, thighs, rng, glow)
-    joints = {"head": (0, -0.75, 3.15), "leg_fl": (0.6, 0, 2.4), "leg_fr": (-0.6, 0, 2.4), "leg_bl": (0.6, HIND, 2.4), "leg_br": (-0.6, HIND, 2.4), "tail": tuple(t0)}
+    joints = {"head": (0, -0.75, 3.15), "leg_fl": (0.68, 0, 2.4), "leg_fr": (-0.68, 0, 2.4), "leg_bl": (0.68, HIND, 2.4), "leg_br": (-0.68, HIND, 2.4), "tail": tuple(t0)}
     return {name: parts for name, parts in groups.items() if parts}, joints  # no empty pieces
 
 
@@ -287,18 +291,24 @@ def lion():
 
 
 def sun_extra(groups, torso, thighs, rng, glow):
-    """A sun on each haunch: one eight-pointed star, raised a hair off the thigh."""
-    star = [((0.44 if i % 2 == 0 else 0.2) * math.cos(i * math.tau / 16), (0.44 if i % 2 == 0 else 0.2) * math.sin(i * math.tau / 16)) for i in range(16)]
+    """A sun on each haunch, as on the reference: a disc and twelve rays, raised a hair off the thigh."""
+    gold = tone((255, 228, 120))
+    disc = [(0.2 * math.cos(i * math.tau / 8), 0.2 * math.sin(i * math.tau / 8)) for i in range(8)]
     for s in (1, -1):
-        at, n = k.land(thighs[s], (s * 0.5, HIND - 0.05, 2.6), (s, 0, 0))
-        groups["leg_b" + ("l" if s > 0 else "r")].append(plate("sun", at, k._frame(n), star, 0.03, tone((255, 228, 120)), rng))
+        at, n = k.land(thighs[s], (s * 0.5, HIND, 2.68), (s, 0, 0))
+        frame, leg = k._frame(n), groups["leg_b" + ("l" if s > 0 else "r")]
+        leg.append(plate("sun", at, frame, disc, 0.03, gold, rng))
+        for i in range(12):
+            c, s_ = math.cos(i * math.tau / 12), math.sin(i * math.tau / 12)
+            ray = [(0.26 * c - 0.055 * s_, 0.26 * s_ + 0.055 * c), (0.44 * c, 0.44 * s_), (0.26 * c + 0.055 * s_, 0.26 * s_ - 0.055 * c)]
+            leg.append(plate("ray", at, frame, ray, 0.03, gold, rng))
 
 
 def sun_lion():
     """Sun Lion (mythic): a golden coat, a mane of yellow crystal, a sun on each haunch, glowing eyes, a
     flame of a tail."""
     return lion_model(
-        dict(body=(242, 150, 38), fore=(252, 184, 64), paw=(250, 226, 176), muzzle=(250, 228, 180), mane_kind=FIRE, nose=(104, 54, 34), brow=(246, 166, 48), bridge=(255, 192, 72), ear_in=(206, 96, 30),
+        dict(body=(244, 154, 38), fore=(250, 172, 52), paw=(250, 226, 176), muzzle=(250, 228, 180), mane_kind=FIRE, nose=(104, 54, 34), brow=(246, 166, 48), bridge=(255, 192, 72), ear_in=(206, 96, 30),
              core=(214, 104, 22), mane_root=(240, 140, 24), mane=[(255, 210, 44), (255, 222, 70), (255, 196, 36), (255, 226, 84)], bib_root=(214, 104, 22), bib=[(248, 164, 36), (255, 190, 46), (255, 210, 60)],
              glow=SUNFIRE, glow_eyes=True, lit=0.08, extra=sun_extra),
         5,
@@ -343,7 +353,7 @@ def asset(name, maker, scale, glow, note):
 
 # scales keep each lion about as long as the model it replaces (13, 16 and 15 studs), tail flame included
 ASSETS = [
-    asset("creature_lion", lion, 1.17, {}, "Lion: a chunky low-poly tawny cat with a mane of big brown shards."),
-    asset("creature_lion_sun", sun_lion, 1.48, {"head_glow": SUNFIRE}, "Sun Lion (mythic): golden, a mane of big yellow shards, a sun on each haunch, glowing eyes."),
-    asset("creature_lion_shadow", shadow_lion, 1.35, {"head_glow": SHADOW, "body_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): ink black, a bone mask and spine, glowing green ribs and shards."),
+    asset("creature_lion", lion, 1.15, {}, "Lion: a chunky low-poly tawny cat with a mane of big brown shards."),
+    asset("creature_lion_sun", sun_lion, 1.42, {"head_glow": SUNFIRE}, "Sun Lion (mythic): golden, a mane of big yellow shards, a sun on each haunch, glowing eyes."),
+    asset("creature_lion_shadow", shadow_lion, 1.33, {"head_glow": SHADOW, "body_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): ink black, a bone mask and spine, glowing green ribs and shards."),
 ]

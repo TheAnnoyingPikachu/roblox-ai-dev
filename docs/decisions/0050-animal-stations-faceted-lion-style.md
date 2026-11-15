@@ -14,23 +14,24 @@ plain preview).
   `tools/blender/stations/assets/lions.py`, no longer on the predator body in `animals.py`: lofted
   long blocky bodies, compact paws with three short toes, a face after the reference (a short deep
   muzzle, pale lips wrapped round its front, a dark wedge of a nose with a line down to the mouth, a
-  chin, a brow ledge over slit eyes, rounded ears, a lighter stripe up the nose), a mane of about 30 big
-  crystal shards with a bib down the chest, and a fan of six shards for the tail tuft.
+  chin, a brow ledge over slit eyes, rounded ears, a lighter stripe up the nose), a full mane of about
+  60 broad leaves with a wide bib down the chest, and a flame of seven shards for the tail tuft.
 - Nothing is smooth and nothing is painted with gradients. Every face has one colour (the `lp`
   colour attribute), picked from three tones by which way the face points plus a little chance, and
   that bakes straight into the texture. Shards lighten from root to tip.
-- Sun Lion: golden, a star of a sun on each haunch, glowing eyes. Shadow Lion: ink black, a bone
+- Sun Lion: golden, a sun (a disc and twelve rays) on each haunch, glowing eyes. Shadow Lion: ink black, a bone
   mask, spine and fangs, glowing green ribs, eyes and a few shards. No lion has claws, and the Lion
   and the Sun Lion have no fangs, as on the reference.
 - Kept plain on purpose. A first version (about 75 shards, bevelled sections, a nose bridge, cheek
-  tufts, an eight-rayed sun, claws) was too detailed for SHANNON; this one has fewer,
-  bigger faces. Add a piece only if it reads from across the arena. A squat version with long flat
+  tufts, an eight-rayed sun, claws) was too detailed for SHANNON; a plainer one
+  (30 shards) was then too far from the reference. The measure is the reference card: big flat faces,
+  and a piece only if the reference has it. A squat version with long flat
   feet was also wrong, and so was a taller one: SHANNON wants the body long, the hind legs standing
   well behind the front ones (`HIND` in lions.py), not more height.
 - The rig is the same set of pieces (body, head with the mane, four legs, tail, glow pieces); the
   joints moved a little and are recorded per build as before. Each lion is scaled to about the length
   of the model it replaces (13, 16 and 15 studs), so the arena spacing holds.
-- About 1,350 to 1,450 triangles each. The budget is no longer a design limit for these models.
+- About 1,600 to 1,800 triangles each. The budget is no longer a design limit for these models.
 - `build.py --beauty` renders a presentation card of an asset (a hero shot on a pedestal with bloom,
   and front, side and back views) to `build/blender/stations/beauty`; the cards in `docs/concepts`
   come from it. The pedestal, rings and bloom are render dressing, not part of the model.

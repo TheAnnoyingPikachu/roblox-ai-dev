@@ -197,7 +197,7 @@ def beauty(name, groups, lo, hi):
     nt.links.new(sky.outputs[0], both.inputs[2])
     nt.links.new(both.outputs[0], next(n for n in nt.nodes if n.type == "OUTPUT_WORLD").inputs[0])
 
-    neon = _garden.mat("pv_neon", GLOW_RGB, kind="flat", emit=2.0, rough=0.4)
+    neon = _garden.mat("pv_neon", GLOW_RGB, kind="flat", emit=3.0, rough=0.4)
     for part, objs in groups.items():
         if part.endswith("_glow"):
             for ob in objs:
@@ -254,7 +254,7 @@ def beauty(name, groups, lo, hi):
         bpy.ops.render.render(write_still=True)
         return _bloom(_pixels(scene.render.filepath))
 
-    hero = shot("_hero", (-0.9, -1.0, 0.1), 1536, 1024, fill=0.8)  # from about shoulder height
+    hero = shot("_hero", (-0.9, -1.0, 0.1), 1536, 1024, fill=0.92)  # from about shoulder height
     views = [shot(s, d, 512, 512, fill=0.9) for s, d in (("_front", (0.0, -1.0, 0.12)), ("_side", (-1.0, -0.08, 0.12)), ("_back", (0.55, 1.0, 0.3)))]
     card = np.concatenate([np.concatenate(views, axis=1), hero], axis=0)  # image rows run bottom to top
     rgba = np.concatenate([card, np.ones((*card.shape[:2], 1), dtype=np.float32)], axis=-1)
