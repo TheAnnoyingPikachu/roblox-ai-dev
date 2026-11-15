@@ -24,8 +24,8 @@ version for the art pipeline.
 - Every animal has a **basic** version. A normal animal is never above epic (today: common,
   uncommon or rare); the Titan is legendary.
 - Every animal has **a variant**, always legendary or mythic, and at most one of each: a hatch
-  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion and the Elephant have both,
-  decisions 0050 and 0051). Any hatch of that animal, from any egg, can be it:
+  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion, the Elephant and the Jackal have both,
+  decisions 0050 to 0052). Any hatch of that animal, from any egg, can be it:
 
 | Variant rarity | Chance per hatch | Stats | Twist |
 |---|---|---|---|
@@ -58,9 +58,9 @@ player is about 5 tall).
 
 | Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look | Size (tall x long) |
 |---|---|---|---|---|---|
-| Jackal | Attack | common | 42 / 22 / 15 / 18 / 30 / 10 | Lean sandy hunter, big pointed ears, long muzzle, dark saddle, bushy tail. | 4 x 7 |
-| Pharaoh Jackal | | legendary | twist mana | Black coat, gold collar and anklets, turquoise glowing eyes and brow gem. | 5 x 9 |
-| Sphinx Jackal (concept, not in the game yet) | | mythic (proposed) | twist speed (proposed) | Sandstone, a pharaoh's blue and gold striped headdress, a glowing sun disc between the ears, a striped beard, a gold collar, folded wings of gold and blue feathers, glowing gold eyes. Card: `docs/concepts/sphinx-jackal-card.png`. | about 5 x 10 |
+| Jackal | Attack | common | 42 / 22 / 15 / 18 / 30 / 10 | Faceted low-poly (decision 0052): a lean sandy hunter, big pointed ears, a long muzzle, a dark saddle, dark paws, a bushy tail. Card: `docs/concepts/jackal-card.png`. | 4 x 7 |
+| Pharaoh Jackal | | legendary | twist mana | Black coat, gold collars, anklets, ear tips and tail tip, turquoise glowing eyes and brow gem. Card: `docs/concepts/pharaoh-jackal-card.png`. | 5 x 9 |
+| Sphinx Jackal | | mythic | twist speed | Sandstone, a pharaoh's blue and gold striped headdress, a glowing sun disc between the ears, a striped beard, a gold collar, folded wings of gold and blue feathers, glowing gold eyes. Card: `docs/concepts/sphinx-jackal-card.png`. | about 5 x 10 |
 | Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Small and quick, tan with dark bands across the back and dark eye patches. | 2 x 5 |
 | Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing bands across the back, a charged tail tip. | 3 x 6 |
 | Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |
@@ -72,8 +72,6 @@ player is about 5 tall).
 | Frost Mammoth | | mythic | twist health | Icy blue and shaggy with a hump, small ears, huge curved tusks of glowing ice, ice spikes down its back, glowing eyes. Card: `docs/concepts/frost-mammoth-card.png`. | 19 x 30 |
 | War Elephant | | legendary | twist strength | Dark elephant in war gear with a cannon on its back, ember eyes, a glowing muzzle. Card: `docs/concepts/war-elephant-card.png`. | about 19 x 27 |
 
-
-New faceted looks for the Jackal and the Pharaoh Jackal are proposed in decision 0052 (cards: `docs/concepts/jackal-card.png`, `docs/concepts/pharaoh-jackal-card.png`); their rows above still describe the models in the game.
 
 ## Solitary animals
 

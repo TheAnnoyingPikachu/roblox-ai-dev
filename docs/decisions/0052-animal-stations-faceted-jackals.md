@@ -1,7 +1,7 @@
 # 0052: Animal Stations: the jackals go faceted, and a Sphinx Jackal
 
-Status: proposed (concepts for SHANNON; nothing is in the game yet)
-Date: 2026-11-15. Builds on 0050 (the faceted lions) and 0051 (the elephants, the textured hide). Task STATION-037.
+Status: accepted by SHANNON on 2026-11-15 (the three looks, and the jackals going into the game)
+Date: 2026-11-15. Builds on 0050 (the faceted lions) and 0051 (the elephants, the textured hide). Tasks STATION-037, STATION-038.
 
 ## Decision
 
@@ -25,14 +25,18 @@ a restyle of the Jackal and the Pharaoh Jackal, and one new variant to propose.
   lions and the elephants build exactly as before the move.
 - Each is scaled to the length of the model it replaces (7.4 and 9.1 studs; the Sphinx Jackal 9.6).
 
-## Open for SHANNON
+## Into the game (STATION-038)
 
-- Approve the three looks, or ask for changes.
-- The Sphinx Jackal: its tier (mythic) and its twist (speed, the Jackal's best stat).
+- The Jackal and the Pharaoh Jackal get the new models: built, exported to `assets/stations` and
+  uploaded by the Upload Blender assets workflow; `StationAssets` and the manifest carry the new rig.
+- The Sphinx Jackal is the Jackal's second variant (`sphinx_jackal` in `StationConfig`), mythic with
+  twist speed as proposed. What changes for players: a mythic roll on a Jackal (1 in 20,000 Jackal
+  hatches) now gives a Sphinx Jackal, where it gave a plain Jackal before. Nothing else in the odds
+  moves, and no save changes.
+- The Sphinx Jackal uses the Jackal's clips until it gets its own.
 
 ## Not done
 
-Concepts only: nothing is uploaded, `StationConfig`, `StationAssets` and the manifest are unchanged,
-and the game still shows the old jackals. The clips have not been seen on the new shapes. The Sphinx
+The Sphinx
 Jackal's wings are part of the body and its headdress part of the head: they move with those pieces
 and do not flap or sway.
