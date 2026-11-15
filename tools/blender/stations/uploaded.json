@@ -70,14 +70,14 @@
     "texture": 88059213635831
   },
   "creature_elephant": {
-    "model": 135819780744859,
-    "decal": 96273762718040,
-    "texture": 116759262068844
+    "model": 107676244175144,
+    "decal": 130624022094500,
+    "texture": null
   },
   "creature_elephant_frost": {
-    "model": 73471345466348,
-    "decal": 75426479120166,
-    "texture": 137464478157038
+    "model": 114208785229758,
+    "decal": 127096621703245,
+    "texture": null
   },
   "foe_archer": {
     "model": 106670895681049,
@@ -107,6 +107,11 @@
   "creature_lion_shadow": {
     "model": 72212451895565,
     "decal": 100442030209221,
+    "texture": null
+  },
+  "creature_elephant_war": {
+    "model": 131812226946040,
+    "decal": 94997982543319,
     "texture": null
   }
 }

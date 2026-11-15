@@ -265,5 +265,21 @@ def beauty(name, groups, lo, hi):
     out.save()
 
 
+_bake_night = _night._bake
+
+
+def _bake(objs, size, **kw):
+    """The Night bake, then every colour attribute is dropped. The faceted models carry their face
+    colours as one (`lp`); it is baked into the texture, and left on the mesh it is exported as vertex
+    colours, which Roblox multiplies the texture by again: every colour comes out darker and harsher."""
+    final = _bake_night(objs, size, **kw)
+    for ob in bpy.data.objects:
+        if ob.type == "MESH":
+            for attr in list(ob.data.color_attributes):
+                ob.data.color_attributes.remove(attr)
+    return final
+
+
+_night._bake = _bake
 _night.preview = preview
 _garden.preview = preview
