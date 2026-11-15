@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-033",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for a new lion variant, the Shadow Lion (legendary, twist speed), as a Blender model draft and render, with comparison sheets of the Lion and Sun Lion. Concept only: not wired into the game until its model is built and uploaded by the workflow.",
+  "inputs": [
+    "docs/game-design/game7-animals.md"
+  ],
+  "dependencies": [
+    "STATION-032"
+  ],
+  "files": [
+    "tools/blender/stations/assets/animals.py",
+    "docs/concepts/lion-family.png",
+    "docs/concepts/shadow-lion-concept.png",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-033.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Shadow Lion renders from four sides in the draft build and reads as a lion variant distinct from the Sun Lion",
+    "StationConfig and StationAssets are untouched until the model is baked, uploaded and SHANNON approves the variant"
+  ],
+  "verification": "Draft build run in Blender 5.2 (creature_lion_shadow: 7276 tris, previews rendered); contact sheets viewed. Not done: the full bake and export, the upload, the StationConfig variant, a clip set or a power attack for it.",
+  "output_artifacts": [
+    "docs/concepts/shadow-lion-concept.png",
+    "docs/concepts/lion-family.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the Shadow Lion (name, legendary tier, twist speed, look) or ask for another idea; on approval the next step is the full build, the Upload Blender assets workflow, then the StationConfig variant."
+}

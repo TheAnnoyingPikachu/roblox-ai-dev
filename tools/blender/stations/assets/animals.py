@@ -264,6 +264,37 @@ def lion(variant=False):
     return groups, c["joints"]
 
 
+SHADOW = (170, 90, 255)
+
+
+def shadow_lion(variant=True):
+    """Shadow Lion (legendary): a coal-black lion, the mane a swept-back ruff of black locks with violet
+    shards raking back from it and down the spine, violet eyes, claws and tail-tip."""
+    c = dict(LION)
+    hy, hz = -0.96 * 0.72 - 0.55, 2.0 + 0.96 * 0.42 + 0.72
+    c["head_extra"] = [((math.cos(a) * 0.72, hy + 0.5, hz - 0.1 + math.sin(a) * 0.72), 0.5, (1.0, 1.15, 1.0)) for a in [i / 9 * math.tau for i in range(9)]] + [((0, hy + 0.85, hz - 0.2), 0.95, (1.0, 0.9, 1.05))]
+    c["skin"] = k.paint("li_shadow", [(0, (18, 16, 26)), (0.6, (40, 36, 56)), (1, (60, 52, 82))], 0, 3.8, rest=True, grain=(0.1, 8))
+    c.update(iris=SHADOW, socket=(8, 6, 14), glow_eyes=True, claw=(190, 130, 255))
+    groups, torso, skull, hc = predator(c)
+    k.zone(c["skin"], (92, 66, 140), (0, hy + 0.75, hz - 0.15), (1.5, 0.95, 1.6), soft=0.3, jag=0.2)  # the mane glints violet
+    rng, glow = random.Random(11), k.glow(SHADOW)
+    shards = []
+    for i in range(12):  # a crest raked back from the mane, longest at the top
+        a = i / 12 * math.tau + rng.uniform(-0.12, 0.12)
+        top = max(0.0, math.sin(a)) * 0.9
+        d = Vector((math.cos(a) * 0.5, 1.0, 0.3 + math.sin(a) * 0.7)).normalized()
+        base = hc + Vector((math.cos(a) * 0.62, 0.5, 0.15 + math.sin(a) * 0.62))
+        shards.append(shard(base, base + d * (0.9 + top + rng.uniform(0, 0.3)), 0.17, glow))
+    for i in range(7):  # and down the spine, shorter towards the tail
+        y = 0.55 + i * 0.3
+        base = Vector((0, y, c["chest_z"] + 0.78 - i * 0.02))
+        shards.append(shard(base, base + Vector((0, 0.35, 0.78 - i * 0.07)), 0.14, glow))
+    groups["head_glow"] += shards
+    tip = c["tail_tip"]
+    groups["tail_glow"] = [k.horn([tip, tip + Vector((0, 0.1, -0.3)), tip + Vector((0, 0.3, -0.85))], [0.1, 0.27, 0.0], glow, n=10, steps=8, name="flame")]
+    return groups, c["joints"]
+
+
 # Meerkat -------------------------------------------------------------------------------------------
 
 MEERKAT = dict(chest_z=1.05, chest_r=0.42, waist_r=0.4, hip_r=0.45, len=1.45, leg_r=0.14, foot_r=0.18, head_r=0.34, neck=0.32, head_up=0.5, neck_r=0.26, snout=0.34, muzzle=0.85, ears="round", ear=0.7, tail_len=1.6, tail_r=0.1)
@@ -541,6 +572,7 @@ ASSETS = [
     asset("creature_cheetah_lightning", cheetah, True, 1.75, {"head_glow": BOLT, "body_glow": BOLT, "tail_glow": BOLT}, "Lightning Cheetah (mythic): storm coat, Neon bolts."),
     asset("creature_lion", lion, False, 1.7, {}, "Lion: heavy, maned."),
     asset("creature_lion_sun", lion, True, 2.1, {"head_glow": FLAME, "tail_glow": FLAME}, "Sun Lion (mythic): a mane and tail of Neon flame.", 12500),
+    asset("creature_lion_shadow", shadow_lion, True, 1.9, {"head_glow": SHADOW, "tail_glow": SHADOW}, "Shadow Lion (legendary): coal black, violet shards raked back from the mane and down the spine.", 12500),
     asset("creature_meerkat", meerkat, False, 1.0, {}, "Meerkat: small and quick."),
     asset("creature_meerkat_storm", meerkat, True, 1.25, {"head_glow": STORM, "body_glow": STORM, "tail_glow": STORM}, "Storm Meerkat (legendary): Neon bands and tail charge."),
     asset("creature_tortoise", tortoise, False, 1.6, {}, "Tortoise: plated shell with a spiked rim."),
