@@ -12,18 +12,21 @@ plain preview).
 
 - The Lion, the Sun Lion and the new Shadow Lion are built from scratch in
   `tools/blender/stations/assets/lions.py`, no longer on the predator body in `animals.py`: lofted
-  blocky bodies and legs, paws with three toes, an angular face with slit eyes, a mane of about 75
-  layered crystal shards with a bib down the chest, and a flame of a tail tuft.
+  blocky bodies and legs, paws with three toes, a boxy face with slit eyes, a mane of about 30 big
+  crystal shards with a bib down the chest, and a fan of six shards for the tail tuft.
 - Nothing is smooth and nothing is painted with gradients. Every face has one colour (the `lp`
   colour attribute), picked from three tones by which way the face points plus a little chance, and
   that bakes straight into the texture. Shards lighten from root to tip.
-- Sun Lion: golden, a sun on each haunch, glowing eyes and a few Neon sparks in the mane and tail.
-  Shadow Lion: ink black, a bone mask, spine, claws and fangs, glowing green ribs, eyes and shards.
-  The Lion and the Sun Lion have no claws or fangs, as on the reference.
+- Sun Lion: golden, a star of a sun on each haunch, glowing eyes. Shadow Lion: ink black, a bone
+  mask, spine and fangs, glowing green ribs, eyes and a few shards. No lion has claws, and the Lion
+  and the Sun Lion have no fangs, as on the reference.
+- Kept plain on purpose. A first version (about 75 shards, bevelled sections, a nose bridge, cheek
+  tufts, a mouth line, an eight-rayed sun, claws) was too detailed for SHANNON; this one has fewer,
+  bigger faces. Add a piece only if it reads from across the arena.
 - The rig is the same set of pieces (body, head with the mane, four legs, tail, glow pieces); the
   joints moved a little and are recorded per build as before. Each lion is scaled to about the length
   of the model it replaces (13, 16 and 15 studs), so the arena spacing holds.
-- About 2,400 to 2,650 triangles each. The budget is no longer a design limit for these models.
+- About 1,200 to 1,300 triangles each. The budget is no longer a design limit for these models.
 - `build.py --beauty` renders a presentation card of an asset (a hero shot on a pedestal with bloom,
   and front, side and back views) to `build/blender/stations/beauty`; the cards in `docs/concepts`
   come from it. The pedestal, rings and bloom are render dressing, not part of the model.

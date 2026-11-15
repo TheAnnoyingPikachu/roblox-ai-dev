@@ -148,7 +148,7 @@ def _bloom(rgb):
     lum = rgb @ np.array([0.3, 0.59, 0.11], dtype=np.float32)
     small = (rgb * np.clip((lum - 0.72) / 0.2, 0, 1)[..., None])[::4, ::4]
     out = rgb
-    for sigma, strength in ((3, 0.6), (16, 0.9)):
+    for sigma, strength in ((3, 0.5), (16, 0.6)):
         halo = np.stack([_night._blur(small[..., c], sigma) for c in range(3)], axis=-1)
         halo = np.repeat(np.repeat(halo, 4, axis=0), 4, axis=1)[: rgb.shape[0], : rgb.shape[1]]
         halo = np.stack([_night._blur(halo[..., c], 2) for c in range(3)], axis=-1)

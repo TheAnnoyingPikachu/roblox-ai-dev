@@ -28,7 +28,7 @@
     "The other animals build as before",
     "StationConfig, StationAssets and the manifest are untouched until SHANNON approves and the models are uploaded"
   ],
-  "verification": "Blender 5.2 on 2026-11-15: full build (bake and export) of creature_lion (2414 tris), creature_lion_sun (2574) and creature_lion_shadow (2646) passed, with body, head, four legs and tail pieces and the glow pieces; the baked preview and the presentation cards were inspected against the reference. Jackal and cheetah draft builds give the same triangle counts as before the lions moved out of animals.py. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
+  "verification": "Blender 5.2 on 2026-11-15, after the simplifying pass SHANNON asked for: full build (bake and export) of creature_lion (1200 tris), creature_lion_sun (1296) and creature_lion_shadow (1272) passed, with body, head, four legs and tail pieces and the glow pieces; the presentation cards were inspected. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
   "output_artifacts": [
     "docs/concepts/lion-family.png",
     "docs/concepts/lion-card.png",
