@@ -13,6 +13,7 @@ Facing Blender -Y; left is +X.
 """
 
 import math
+import os
 import random
 
 import bmesh
@@ -29,6 +30,11 @@ INK = (16, 13, 18)
 BONE = (224, 212, 184)
 SUNFIRE = (255, 222, 90)
 SHADOW = (110, 255, 90)  # a sickly green glow
+
+# shortcut: a switch for the example render of the lions with the elephants' faceted hide (decision 0051).
+# Off, the lions build exactly as uploaded. If SHANNON approves the retexture, turn it on for good and
+# delete the switch.
+HIDE = os.environ.get("LIONS_HIDE") == "1"
 
 WARM = ((0.86, 0.70, 0.62), (1.05, 1.13, 1.25), (8, 10, 16))  # shadows turn red, lights turn yellow
 COOL = ((0.5, 0.5, 0.56), (1.55, 1.6, 1.7), (10, 12, 18))
@@ -77,6 +83,21 @@ def colour(ob, tones, rng, chance=0.2, bias=None):
         for i in poly.loop_indices:
             attr.data[i].color = c
     return ob
+
+
+def rough(ob, tones, rng, bulge=0.04, fade=3.0):
+    """A hide of facets: every face is broken into triangles round a slightly raised middle and painted
+    again, each triangle its own tone, darker towards the ground (below the height `fade`). Big flat
+    faces looked plain."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    middles = bmesh.ops.poke(bm, faces=bm.faces[:])["verts"]
+    bm.normal_update()
+    for v in middles:
+        v.co += v.normal * bulge * rng.uniform(0.4, 1.0)
+    bm.to_mesh(ob.data)
+    bm.free()
+    return colour(ob, tones, rng, 0.26, bias=lambda c: -0.4 * max(0.0, 1 - c.z / fade))
 
 
 def mesh(name, verts, faces, tones, rng, emit=0.0, m=None, chance=0.2):
@@ -170,25 +191,29 @@ def lion_model(p, seed):
     body, fore, cream = T("body"), T("fore"), tone(p["paw"], p.get("paw_kind", PALE))
     glow = k.glow(p["glow"]) if p.get("glow") else None
     groups = {"body": [], "head": [], "head_glow": [], "body_glow": [], "tail": [], "tail_glow": []}
+    # with the switch on, the body, legs and skull get the faceted hide; off, they stay as built
+    chance = random.Random(seed + 100)  # its own, so the mane comes out the same with or without the hide
+    skin = (lambda ob, tones: rough(ob, tones, chance, 0.015, 2.4)) if HIDE else (lambda ob, tones: ob)  # noqa: E731
+    proud = 0.02 if HIDE else 0.004  # what lies on the hide clears its facets
 
     # the torso: a deep chest, a tucked waist, square hips
-    torso = loft("torso", [yring(*r) for r in ((-1.0, 2.75, 0.66, 0.68, 0.72, 0.2), (-0.3, 2.7, 1.0, 1.0, 0.95, 0.24), (1.7, 2.77, 0.84, 0.82, 0.7, 0.22), (HIND + 0.1, 2.73, 0.94, 0.86, 0.8, 0.24), (HIND + 0.95, 2.8, 0.5, 0.48, 0.42, 0.15))], body, rng)
+    torso = skin(loft("torso", [yring(*r) for r in ((-1.0, 2.75, 0.66, 0.68, 0.72, 0.2), (-0.3, 2.7, 1.0, 1.0, 0.95, 0.24), (1.7, 2.77, 0.84, 0.82, 0.7, 0.22), (HIND + 0.1, 2.73, 0.94, 0.86, 0.8, 0.24), (HIND + 0.95, 2.8, 0.5, 0.48, 0.42, 0.15))], body, rng), body)
     groups["body"].append(torso)
 
     # legs: the upper leg in the body's colour, the lower lighter, a pale paw
     thighs = {}
     for s in (1, -1):
         x = s * 0.68
-        thigh = loft("thigh", [zring(x, HIND + 0.05, 3.15, 0.5, 0.8, 0.13), zring(x, HIND - 0.05, 2.2, 0.58, 0.92, 0.15), zring(x, HIND - 0.25, 1.7, 0.46, 0.62, 0.12)], body, rng)
+        thigh = skin(loft("thigh", [zring(x, HIND + 0.05, 3.15, 0.5, 0.8, 0.13), zring(x, HIND - 0.05, 2.2, 0.58, 0.92, 0.15), zring(x, HIND - 0.25, 1.7, 0.46, 0.62, 0.12)], body, rng), body)
         thighs[s] = thigh
         groups["leg_f" + ("l" if s > 0 else "r")] = [
-            loft("arm", [zring(x, 0.0, 2.9, 0.52, 0.62, 0.13), zring(x, 0.06, 1.5, 0.46, 0.52, 0.11)], body, rng),
-            loft("forearm", [zring(x, 0.06, 1.55, 0.44, 0.5, 0.11), zring(x, 0.0, 0.45, 0.42, 0.48, 0.1)], fore, rng),
+            skin(loft("arm", [zring(x, 0.0, 2.9, 0.52, 0.62, 0.13), zring(x, 0.06, 1.5, 0.46, 0.52, 0.11)], body, rng), body),
+            skin(loft("forearm", [zring(x, 0.06, 1.55, 0.44, 0.5, 0.11), zring(x, 0.0, 0.45, 0.42, 0.48, 0.1)], fore, rng), fore),
             *paw(x, 0.0, cream, rng),
         ]
         groups["leg_b" + ("l" if s > 0 else "r")] = [
             thigh,
-            loft("shin", [zring(x, HIND - 0.25, 1.75, 0.44, 0.56, 0.11), zring(x, HIND + 0.32, 1.05, 0.4, 0.48, 0.1), zring(x, HIND + 0.18, 0.45, 0.42, 0.48, 0.1)], fore, rng),
+            skin(loft("shin", [zring(x, HIND - 0.25, 1.75, 0.44, 0.56, 0.11), zring(x, HIND + 0.32, 1.05, 0.4, 0.48, 0.1), zring(x, HIND + 0.18, 0.45, 0.42, 0.48, 0.1)], fore, rng), fore),
             *paw(x, HIND + 0.12, cream, rng),
         ]
 
@@ -196,7 +221,7 @@ def lion_model(p, seed):
     # brow; the pale lips wrap the front of the snout under a dark wedge of a nose, the chin sits a
     # little back under a dark line of a mouth. The lips, mouth and chin have small corner cuts and
     # stand just proud of the skull, or its own cut corners swallow them
-    skull = loft("skull", [yring(*r) for r in ((-2.4, 2.95, 0.34, 0.3, 0.3, 0.12), (-2.0, 3.0, 0.44, 0.42, 0.38, 0.15), (-1.7, 3.18, 0.74, 0.66, 0.56, 0.28), (-1.25, 3.22, 0.78, 0.7, 0.58, 0.3), (-0.8, 3.15, 0.64, 0.6, 0.5, 0.26))], body, rng)
+    skull = skin(loft("skull", [yring(*r) for r in ((-2.4, 2.95, 0.34, 0.3, 0.3, 0.12), (-2.0, 3.0, 0.44, 0.42, 0.38, 0.15), (-1.7, 3.18, 0.74, 0.66, 0.56, 0.28), (-1.25, 3.22, 0.78, 0.7, 0.58, 0.3), (-0.8, 3.15, 0.64, 0.6, 0.5, 0.26))], body, rng), body)
     head = groups["head"]
     head.append(skull)
     pale, dark = tone(p["muzzle"], p.get("paw_kind", PALE)), tone(p["nose"])
@@ -220,10 +245,10 @@ def lion_model(p, seed):
         fx, fy, fz = k._frame(n)
         slit = [(-0.2, -0.06), (0.02, 0.08), (0.24, 0.07), (0.06, -0.05)]
         if p.get("glow_eyes"):
-            groups["head_glow"].append(plate("eye", at, (fx * s, fy, fz), slit, 0.04, None, rng, m=glow))
+            groups["head_glow"].append(plate("eye", at, (fx * s, fy, fz), slit, 0.04, None, rng, lift=proud, m=glow))
         else:
-            head.append(plate("eye", at, (fx * s, fy, fz), slit, 0.035, tone(p["iris"]), rng))
-            head.append(plate("pupil", at, (fx * s, fy, fz), [(0.0, -0.045), (0.05, 0.0), (0.045, 0.07), (-0.005, 0.02)], 0.02, tone(INK), rng, lift=0.036))
+            head.append(plate("eye", at, (fx * s, fy, fz), slit, 0.035, tone(p["iris"]), rng, lift=proud))
+            head.append(plate("pupil", at, (fx * s, fy, fz), [(0.0, -0.045), (0.05, 0.0), (0.045, 0.07), (-0.005, 0.02)], 0.02, tone(INK), rng, lift=proud + 0.032))
         if p.get("fang"):
             head.append(shard((s * 0.22, -2.38, 2.76), (s * 0.22, -2.4, 2.4), 0.13, 0.1, tone(p["fang"], PALE), rng, name="fang"))
     grow = Matrix.Translation((0, -1.0, 3.1 + LIFT)) @ Matrix.Scale(HEAD, 4) @ Matrix.Translation((0, 1.0, -3.1))
@@ -299,11 +324,11 @@ def sun_extra(groups, torso, thighs, rng, glow):
     for s in (1, -1):
         at, n = k.land(thighs[s], (s * 0.5, HIND, 2.68), (s, 0, 0))
         frame, leg = k._frame(n), groups["leg_b" + ("l" if s > 0 else "r")]
-        leg.append(plate("sun", at, frame, disc, 0.03, gold, rng))
+        leg.append(plate("sun", at, frame, disc, 0.03, gold, rng, lift=0.02 if HIDE else 0.004))
         for i in range(12):
             c, s_ = math.cos(i * math.tau / 12), math.sin(i * math.tau / 12)
             ray = [(0.26 * c - 0.055 * s_, 0.26 * s_ + 0.055 * c), (0.44 * c, 0.44 * s_), (0.26 * c + 0.055 * s_, 0.26 * s_ - 0.055 * c)]
-            leg.append(plate("ray", at, frame, ray, 0.03, gold, rng))
+            leg.append(plate("ray", at, frame, ray, 0.03, gold, rng, lift=0.02 if HIDE else 0.004))
 
 
 def sun_lion():

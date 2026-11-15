@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "design",
-  "objective": "Concepts for the elephants in the faceted style of the lions (decision 0051): the Elephant, the Frost Mammoth and a new War Elephant variant with a cannon on its back, each with a presentation card. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "objective": "Concepts for the elephants in the faceted style of the lions (decision 0051): the Elephant, the Frost Mammoth and a new War Elephant variant with a cannon on its back, each with a presentation card. Concept only: nothing is uploaded or wired into the game until SHANNON approves. Also an example of the same faceted hide on the three lions, as a render only.",
   "inputs": [
     "docs/decisions/0050-animal-stations-faceted-lion-style.md",
     "docs/game-design/game7-animals.md"
@@ -28,11 +28,12 @@
     "The other animals build as before",
     "StationConfig, StationAssets and the manifest are untouched until SHANNON approves"
   ],
-  "verification": "Blender 5.2 on 2026-11-15, after the texture pass (a faceted hide, folds, creases, a ringed trunk): full build (bake and export) of creature_elephant (1704 tris, 14.1 tall x 24.5 long), creature_elephant_frost (2008, 19.4 x 30.0) and creature_elephant_war (2080, 19.4 x 27.0) passed with the usual pieces and the glow pieces; the cards were inspected. The lion builds to the same triangles, size and joints as before the shared colour helper gained its optional bias. The manifest was restored after the test builds, so the game is unchanged. Not done: the upload, the StationConfig variant, the clips on the new shapes.",
+  "verification": "Blender 5.2 on 2026-11-15, after the texture pass (a faceted hide, folds, creases, a ringed trunk): full build (bake and export) of creature_elephant (1704 tris, 14.1 tall x 24.5 long), creature_elephant_frost (2008, 19.4 x 30.0) and creature_elephant_war (2080, 19.4 x 27.0) passed with the usual pieces and the glow pieces; the cards were inspected. The lion builds to the same triangles, size and joints as before the shared colour helper gained its optional bias. The manifest was restored after the test builds, so the game is unchanged. Not done: the upload, the StationConfig variant, the clips on the new shapes. Lion retexture example (2026-11-15): rendered with LIONS_HIDE=1; with the switch off the three lions build to the same triangles, sizes, joints, centres and parts as the uploaded models.",
   "output_artifacts": [
-    "docs/concepts/elephant-family.png",
     "docs/concepts/elephant-card.png",
+    "docs/concepts/elephant-family.png",
     "docs/concepts/frost-mammoth-card.png",
+    "docs/concepts/lion-retexture-example.png",
     "docs/concepts/war-elephant-card.png"
   ],
   "risk_level": "low",

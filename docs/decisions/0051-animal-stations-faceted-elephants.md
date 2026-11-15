@@ -32,6 +32,10 @@ war elephant with a cannon on it.
   itself legendary, so a legendary variant of it is new ground: say if it should be mythic instead
   (then the Frost Mammoth would have to move, as one tier holds one variant).
 - The base Elephant was described as a war elephant; with this variant it becomes a plain elephant.
+- The same hide on the lions: `docs/concepts/lion-retexture-example.png` shows the three lions as they
+  are in the game and with the faceted hide on the body, legs and skull (the mane is unchanged). It is
+  an example only, behind the `LIONS_HIDE` switch in `lions.py`, which is off: the lions build as
+  uploaded. Approving it means turning the switch on for good, a rebuild and a new upload of the lions.
 
 ## Not done
 

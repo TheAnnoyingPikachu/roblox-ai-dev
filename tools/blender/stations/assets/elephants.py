@@ -13,7 +13,6 @@ import math
 import os
 import random
 
-import bmesh
 import kit as k
 from mathutils import Vector
 
@@ -22,7 +21,7 @@ from mathutils import Vector
 _spec = importlib.util.spec_from_file_location("lions", os.path.join(os.path.dirname(os.path.abspath(__file__)), "lions.py"))
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-loft, yring, zring, quad, shard, plate, tone = L.loft, L.yring, L.zring, L.quad, L.shard, L.plate, L.tone
+loft, yring, zring, quad, shard, plate, tone, rough = L.loft, L.yring, L.zring, L.quad, L.shard, L.plate, L.tone, L.rough
 
 GREY = ((0.76, 0.76, 0.8), (1.12, 1.12, 1.14), (6, 6, 10))
 FROSTY = ((0.74, 0.82, 0.94), (1.05, 1.05, 1.03), (6, 6, 4))  # the shadows of snow are blue
@@ -30,20 +29,6 @@ ICE = (120, 220, 255)
 EMBER = (255, 150, 40)
 HIND = 2.35  # how far behind the front legs the hind legs stand
 EAR = [(0.0, 0.75), (0.75, 1.15), (1.5, 0.8), (1.75, 0.0), (1.4, -0.9), (0.6, -1.25), (0.0, -0.7)]  # (out, up)
-
-
-def rough(ob, tones, rng, bulge=0.04):
-    """A hide of facets: every face is broken into triangles round a slightly raised middle and painted
-    again, each triangle its own tone, darker towards the ground. The big flat faces looked plain."""
-    bm = bmesh.new()
-    bm.from_mesh(ob.data)
-    middles = bmesh.ops.poke(bm, faces=bm.faces[:])["verts"]
-    bm.normal_update()
-    for v in middles:
-        v.co += v.normal * bulge * rng.uniform(0.4, 1.0)
-    bm.to_mesh(ob.data)
-    bm.free()
-    return L.colour(ob, tones, rng, 0.26, bias=lambda c: -0.4 * max(0.0, 1 - c.z / 3.0))
 
 
 def elephant_model(p, seed):
