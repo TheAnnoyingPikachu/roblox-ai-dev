@@ -179,6 +179,7 @@ local ranch = newSheet("ranch", "Your ranch")
 local shop = newSheet("shop", "Egg vendor")
 local waves = newSheet("waves", "Endless waves")
 local admin = newSheet("admin", "Admin")
+local adminAdd = newSheet("adminadd", "Admin: add animals")
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
 end
@@ -256,6 +257,11 @@ local adminToggle = Style.button(root, "Admin", function()
 end, "ghost", UDim2.fromOffset(84, 40))
 adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 12)
 adminToggle.TextSize = 16
+local addToggle = Style.button(root, "Add animals", function()
+	show(if openName == "adminadd" then nil else "adminadd")
+end, "ghost", UDim2.fromOffset(120, 40))
+addToggle.AnchorPoint, addToggle.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 58)
+addToggle.TextSize = 16
 
 -- Animals ------------------------------------------------------------------------------------------
 
@@ -1023,9 +1029,42 @@ do
 		add(`Spawn {foe.name} (Hexbound {foe.kind})`, "look", k)
 	end
 end
+
+-- Admin menu 2 (decision 0049): add an animal of any species or variant to your own ranch, with
+-- every stat at the level chosen on the first button. The server checks the admin and the numbers.
+do
+	local LEVELS = { 1, 10, 35, StationConfig.MAX_LEVEL }
+	local at = 1
+	local pick: TextLabel
+	local function label()
+		pick.Text = `Stat level for new animals: {LEVELS[at]} (tap to change)`
+	end
+	pick = Style.button(adminAdd.body, "", function()
+		at = at % #LEVELS + 1
+		label()
+	end, "ghost", UDim2.new(1, -20, 0, 44))
+	pick.LayoutOrder = 0
+	label()
+	local k = 0 -- the server lists them in this order too (LOOKS: species, then variants, then foes)
+	local function add(text: string)
+		k += 1
+		local mine = k
+		Style.button(adminAdd.body, text, function()
+			send("admin_add", mine, LEVELS[at])
+		end, "ghost", UDim2.new(1, -20, 0, 44)).LayoutOrder =
+			mine
+	end
+	for _, sp in StationConfig.SPECIES do
+		add(`Add {sp.name}`)
+		for _, va in sp.variants do
+			add(`Add {va.name} ({va.tier})`)
+		end
+	end
+end
 local function showAdmin()
 	adminToggle.Visible = player:GetAttribute("Admin") == true
-	if not adminToggle.Visible and openName == "admin" then
+	addToggle.Visible = adminToggle.Visible
+	if not adminToggle.Visible and (openName == "admin" or openName == "adminadd") then
 		show(nil)
 	end
 end

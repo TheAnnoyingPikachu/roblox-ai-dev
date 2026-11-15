@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-032",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A second admin menu that adds any animal or variant to the admin's own ranch at a chosen stat level, so ranch features and fights can be tried without hatching.",
+  "inputs": [
+    "docs/decisions/0038-animal-stations-admin-menu.md"
+  ],
+  "dependencies": [
+    "STATION-031"
+  ],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0049-animal-stations-admin-add-animals.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-032.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Only an admin (the game's owner, or anyone in Studio) can add animals; the server checks it and the numbers",
+    "Any species or variant can be added at stat level 1, 10, 35 or the maximum, joins the team like a hatched animal, and shows in the Animals panel and the herd",
+    "The Barn's limit is skipped, the save's limit of 100 animals is not",
+    "No other profile field changes (coins, eggs, XP, upgrades)"
+  ],
+  "verification": "lune 688/688, selene and stylua clean. Studio (2026-11-15): added a jackal at level 10 and a Pharaoh Jackal at 70 through the menu's action, both reached the herd; a junk place and a foe place were refused; the Add animals sheet lists every species and variant. Not checked: the Animals panel after an add, a full barn, a second player (non-admin refused by the server, not tried live).",
+  "output_artifacts": [
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Changes the admin's own save, which decision 0038 kept out of the admin menu; recorded in 0049. Checkpoint question for SHANNON: keep it live for the owner, or Studio only like the funds button (recommended: live for the owner only if you want it; Studio only is the safe default for a published game)."
+}

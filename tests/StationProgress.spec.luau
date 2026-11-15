@@ -283,6 +283,38 @@ describe("StationProgress.buy", function()
 		expect(#p.animals).toBe(11)
 	end)
 
+	it("gives an admin's animal at a chosen level, past the Barn, and refuses junk", function()
+		local p = fresh()
+		p.coins = 1e9
+		for _ = 1, 10 do
+			p = get(p, "meadow", hatched("jackal"))
+		end
+		local ok, code, born
+		p, ok, code, born = StationProgress.give(p, "lion", nil, 5)
+		expect(ok).toBe(true) -- the Barn holds 10 and is full
+		expect(#p.animals).toBe(11)
+		local a = born :: StationProgress.Animal
+		expect(a.s).toBe("lion")
+		expect(StationRules.level(a, "speed")).toBe(5)
+		expect(a.id).toBe(p.nextId - 1)
+		expect(StationProgress.sanitize(p, 0).animals[11].s).toBe("lion")
+		for _, bad in
+			{
+				{ "dodo", nil, 1 },
+				{ "lion", "x_y", 1 },
+				{ "lion", nil, 0 },
+				{ "lion", nil, StationConfig.MAX_LEVEL + 1 },
+			}
+		do
+			_, ok, code = StationProgress.give(p, bad[1] :: string, bad[2] :: string?, bad[3] :: number)
+			expect(ok).toBe(false)
+			expect(code).toBe("animal")
+		end
+		p.animals = table.create(StationProgress.MAX_ANIMALS, p.animals[1])
+		_, ok, code = StationProgress.give(p, "lion", nil, 1)
+		expect(code).toBe("full")
+	end)
+
 	it("keeps eggs through sanitize, drops broken ones, and hides their animals from the client", function()
 		local p = fresh()
 		p.coins = 1e9

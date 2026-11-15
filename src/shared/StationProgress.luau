@@ -296,6 +296,30 @@ function StationProgress.crack(p: Profile, k: number, now: number): (Profile, bo
 	return p, true, nil, animal
 end
 
+-- Admin menu (decision 0049): add one animal of species `s` (and variant `v`) with every stat at
+-- `level`, joining the team like a hatched one. It skips the Barn's limit, not the save's.
+function StationProgress.give(p: Profile, s: string, v: string?, level: number): (Profile, boolean, string?, Animal?)
+	local stats = StationRules.versionStats(s, v)
+	if stats == nil or level ~= math.floor(level) or level < 1 or level > StationConfig.MAX_LEVEL then
+		return p, false, "animal", nil
+	elseif #p.animals >= StationProgress.MAX_ANIMALS then
+		return p, false, "full", nil
+	end
+	local trained = {} :: any
+	for _, stat in StationConfig.STATS do
+		trained[stat] = level
+	end
+	local animal: Animal = { id = p.nextId, s = s, v = v, stats = stats, trained = trained :: Stats }
+	p.nextId += 1
+	table.insert(p.animals, animal)
+	if StationProgress.isTitan(animal) then
+		p.titan = p.titan or animal.id
+	elseif #p.team < StationProgress.TEAM_SIZE then
+		table.insert(p.team, animal.id)
+	end
+	return p, true, nil, animal
+end
+
 -- The profile as the client may see it: the held eggs without the animals inside them.
 function StationProgress.public(p: Profile): any
 	local copy = table.clone(p) :: any

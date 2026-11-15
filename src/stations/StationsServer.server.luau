@@ -383,6 +383,21 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- the admin menu (decision 0049): add the k-th animal of `LOOKS` (never a foe) to the admin's own
+		-- ranch with every stat at `level`
+		admin_add = {
+			args = { Payload.int({ min = 1, max = 100 }), Payload.int({ min = 1, max = StationConfig.MAX_LEVEL }) },
+			handler = function(player, k: number, level: number)
+				local look = LOOKS[k]
+				if not isAdmin(player) or look == nil or look.s == nil then
+					return false, "admin"
+				end
+				return apply(player, function(p)
+					local q, ok, code = StationProgress.give(p, look.s :: string, look.v, level)
+					return q, ok, code
+				end)
+			end,
+		},
 		look_anim = {
 			args = { Payload.enum({ "idle", "walk", "attack", "magic", "hit", "die" }) },
 			handler = function(player, anim: string)
