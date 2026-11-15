@@ -17,20 +17,20 @@ version for the art pipeline.
   team. **Solitary** animals get stronger when no teammate shares their role.
 - The **Titan** is its own category: legendary only, huge, and it fills
   the team's fourth slot. A team is three animals plus one Titan. It is a rare hatch from the
-  egg that unlocks at player level 15.
+  Golden Egg, which unlocks when wave 20 is cleared.
 
 ## How versions work
 
 - Every animal has a **basic** version. A normal animal is never above epic (today: common,
   uncommon or rare); the Titan is legendary.
-- Every animal has **a variant**, always legendary or mythic, and at most one of each: a hatch
-  rolls a tier and gets that animal's variant of the tier, if it has one (the Lion, the Elephant, the Jackal and the Cheetah
-  have both, decisions 0050 to 0053). Any hatch of that animal, from any egg, can be it:
+- Every animal has **variants**, always legendary or mythic (the Lion, the Elephant, the Jackal and the Cheetah
+  have one of each, decisions 0050 to 0053). A variant is a drop of its own (decision 0056): it
+  hatches only from the eggs that list it, at the chance that egg gives it (the table under Eggs):
 
 | Variant rarity | Chance per hatch | Stats | Twist |
 |---|---|---|---|
-| Legendary | 1 in 2,000 | basic × 2 | +40 to one stat |
-| Mythic | 1 in 20,000 | basic × 3 | +60 to one stat |
+| Legendary | 1 in 5,000 to 1 in 400, by egg | basic × 2 | +40 to one stat |
+| Mythic | 1 in 20,000 to 1 in 2,000, by egg | basic × 3 | +60 to one stat |
 
 - On hatch every stat gets a **base level** from 1 to 15 (higher numbers are rarer: a 15 is 1
   in 90), and 1 hatch in 10,000 has one stat at level 70 straight away.
@@ -97,15 +97,18 @@ New, rounder and textured looks for the Rhino and the Lava Rhino are proposed in
 
 ## Eggs
 
-| Egg | Price | Hatches (basic odds) |
-|---|---|---|
-| Meadow Egg | 100 | Jackal, Tortoise or Meerkat |
-| Wild Egg | 1,500 | commons 54%, uncommons 46% |
-| Safari Egg | 15,000, from player level 10 | uncommons 80%, the Lion 20% |
-| Golden Egg | 50,000, from player level 15 | the Lion 50%, uncommons 45%, the Titan Elephant 5% |
+The egg overhaul (decision 0056, draft numbers). Eggs unlock with the waves. A hatch rolls the egg's
+rare drops first, then a basic animal.
 
-Variant chances are the same in every egg. There is no legendary-only egg (decision 0031). These
-eggs are placeholders: an egg overhaul is planned.
+| Egg | Price | Unlocks | Basic animals | Legendary drops | Mythic drops |
+|---|---|---|---|---|---|
+| Meadow Egg | 100 | from the start | Jackal, Tortoise or Meerkat | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 5,000 each | none |
+| Wild Egg | 1,500 | wave 5 cleared | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 2,000 each; Fire Cheetah 1 in 4,000 | Sphinx Jackal 1 in 20,000 |
+| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Fire Cheetah 1 in 500; Shadow Lion 1 in 2,000 | Sphinx Jackal 1 in 5,000; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
+| Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion 1 in 400; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
+
+There is no legendary-only egg (decision 0031). The concept variants (Crystal Rhino, Peacock Flamingo,
+Island Tortoise, Star Meerkat) get rows when their models are in the game.
 
 ## Parked for later
 

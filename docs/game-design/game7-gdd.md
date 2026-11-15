@@ -14,8 +14,9 @@ vendors.
 - **Animals:** a small African beta pool of 8 species (`game7-animals.md`). Each has a role
   (Attack, Defence, Utility), a group (pack or solitary) and a rare variant, always legendary
   or mythic (decision 0037; the Lion, the Elephant, the Jackal and the Cheetah have one of each, decisions 0050 to 0053); a normal animal is never above epic. The Elephant is the Titan:
-  legendary, a rare hatch from the egg that unlocks at player level
-  15 (there is no legendary-only egg). The eggs are placeholders: an overhaul is planned.
+  legendary, a rare hatch from the Golden Egg (there is no legendary-only egg). The egg overhaul
+  (decision 0056): a variant is a drop of its own, listed with its chance in the eggs that hatch
+  it and likelier in the higher eggs; eggs unlock with the waves (5, 10 and 20).
 - **Stats:** six, each with one job in a wave fight:
 
 | Stat | Job |
@@ -111,7 +112,7 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- More ranch upgrades and expanding the plot. More hub vendors. Gear. The egg overhaul.
+- More ranch upgrades and expanding the plot. More hub vendors. Gear.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
 - Magical attacks, microgames, teams of 3 players.
 - Fights between players. They will work differently from wave fights and stats will not affect

@@ -37,13 +37,13 @@ function StationRules.pick(odds: { StationConfig.Odds }, r: number): string
 	return odds[#odds].id
 end
 
--- The variant tier for r in 1..PPM (rarest first), or nil for the basic version.
-function StationRules.pickTier(r: number): string?
+-- An egg's rare drop for r in 1..PPM, in the order the egg lists them, or nil for a basic animal.
+function StationRules.pickRare(rare: { StationConfig.Rare }, r: number): StationConfig.Rare?
 	local total = 0
-	for _, t in StationConfig.TIERS do
-		total += t.ppm
+	for _, row in rare do
+		total += row.ppm
 		if r <= total then
-			return t.tier
+			return row
 		end
 	end
 	return nil
@@ -85,7 +85,8 @@ function StationRules.versionStats(speciesId: string, variantId: string?): Stats
 end
 
 -- Hatch one animal from `eggId`. Nil for an unknown egg (the server refuses the request).
--- Draws: species, variant tier, a base level per stat, the jackpot (and its stat when it hits).
+-- Draws: a basic species, the egg's rare drops (a hit replaces the species), a base level per stat,
+-- the jackpot (and its stat when it hits).
 function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
@@ -95,14 +96,10 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	r, rng = Rng.int(rng, 1, 10000)
 	local species = StationRules.pick(egg.odds, r)
 	t, rng = Rng.int(rng, 1, StationRules.PPM)
-	local tier = StationRules.pickTier(t)
 	local variantId: string? = nil
-	if tier then
-		for _, va in (StationConfig.species(species) :: StationConfig.Species).variants do
-			if va.tier == tier then
-				variantId = va.id
-			end
-		end
+	local rare = StationRules.pickRare(egg.rare, t)
+	if rare then -- a variant is a drop of its own (decision 0056): it sets the species too
+		species, variantId = rare.s, rare.v
 	end
 	local levels = {} :: any
 	for _, stat in StationConfig.STATS do

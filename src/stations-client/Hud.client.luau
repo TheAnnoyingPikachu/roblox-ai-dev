@@ -53,7 +53,7 @@ local EGG_ART: { [string]: { body: Color3, spot: Color3 } } = {
 
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
-	locked = "That egg unlocks at a higher player level",
+	locked = "Clear more waves to unlock that egg",
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
 	admin = "Admins only",
@@ -527,10 +527,10 @@ redraw.shop = function()
 	Style.clear(shop.chips)
 	Style.amount(shop.chips, "coins", Format.commas(profile.coins))
 	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)}`)
-	local level = StationProgress.playerLevel(profile)
+	Style.chip(shop.chips, `Best wave: {profile.best}`)
 	for k, def in StationConfig.EGGS do
-		local locked = def.unlock ~= nil and level < def.unlock
-		local card = Style.card(shop.body, UDim2.fromOffset(366, 230))
+		local locked = def.wave ~= nil and profile.best < def.wave
+		local card = Style.card(shop.body, UDim2.fromOffset(366, 312))
 		card.LayoutOrder = k
 		eggArt(card, def.id, 80).Position = UDim2.fromOffset(14, 12)
 		local name = Style.text(card, def.name, 22, C.text, UDim2.new(1, -110, 0, 26))
@@ -543,7 +543,7 @@ redraw.shop = function()
 		Style.amount(row, "coins", Format.commas(def.price))
 		Style.chip(row, Format.ago(def.hatch))
 		if locked then
-			local lock = Style.chip(card, `Unlocks at level {def.unlock}`, C.bad, Color3.new(1, 1, 1))
+			local lock = Style.chip(card, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
 			lock.Position = UDim2.fromOffset(106, 74)
 		end
 		local inside = Instance.new("Frame") -- what it can hatch
@@ -564,15 +564,44 @@ redraw.shop = function()
 		end
 		local list = Style.text(card, table.concat(names, ", "), 13, C.muted, UDim2.new(1, -28, 0, 32))
 		list.Position = UDim2.fromOffset(14, 156)
+		local rare = Instance.new("Frame") -- its variants: drops of their own, each with its odds
+		rare.BackgroundTransparency = 1
+		rare.Position, rare.Size = UDim2.fromOffset(14, 188), UDim2.new(1, -28, 0, 72)
+		-- shortcut: seven cells fit a card's row, wrap or shrink them when an egg lists more
+		Style.list(rare, 4, true)
+		rare.Parent = card
+		for i, drop in def.rare do
+			local colour = RARITY_COLOUR[(StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier]
+				or C.text
+			local cell = Instance.new("Frame")
+			cell.BackgroundTransparency = 1
+			cell.Size = UDim2.fromOffset(44, 72)
+			cell.LayoutOrder = i
+			cell.Parent = rare
+			Portrait.new(
+				cell,
+				StationRules.assetOf(drop.s, drop.v),
+				{ size = UDim2.fromOffset(44, 44), background = darker(colour) }
+			)
+			local odds = Style.text(
+				cell,
+				`1 in {Format.short(StationRules.PPM / drop.ppm)}`,
+				11,
+				colour,
+				UDim2.fromOffset(44, 26)
+			)
+			odds.Position = UDim2.fromOffset(0, 46)
+			odds.TextXAlignment = Enum.TextXAlignment.Center
+		end
 		local can = not locked and profile.coins >= def.price
 		local b = Style.button(card, `Buy for {Format.commas(def.price)}`, function()
 			if locked then
-				Ui.toast(screen, `Reach level {def.unlock} to unlock the {def.name}`)
+				Ui.toast(screen, `Clear wave {def.wave} to unlock the {def.name}`)
 				return
 			end
 			send("buy", def.id)
 		end, if can then "primary" else "off")
-		b.Position, b.Size = UDim2.fromOffset(14, 184), UDim2.new(1, -28, 0, 36)
+		b.Position, b.Size = UDim2.fromOffset(14, 266), UDim2.new(1, -28, 0, 36)
 	end
 end
 

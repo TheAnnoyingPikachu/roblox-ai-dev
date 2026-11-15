@@ -2,8 +2,8 @@
 -- Game 7 "Animal Stations" data (decisions 0019 to 0041): stats and stat levels, roles, groups,
 -- the small African beta pool with its variants, the Titan, eggs and training stations, and the
 -- Hexbound, the enemies of the waves. Every species has a basic version (never above epic; the
--- Titan is legendary) and a rare variant (legendary or mythic), at most one of each tier: a hatch
--- picks its variant by the tier it rolls (the Lion, the Elephant, the Jackal and the Cheetah have both, decisions 0050 to 0053). Looks for art:
+-- Titan is legendary) and rare variants (legendary or mythic). A variant is a drop of its own in
+-- the eggs that list it (`Egg.rare`, decision 0056), rarer than any basic animal. Looks for art:
 -- docs/game-design/game7-animals.md and game7-enemies.md.
 -- Draft values; balance comes later. Pure data, no Roblox APIs.
 
@@ -43,12 +43,22 @@ export type Foe = {
 	from: number?, -- the first wave it can appear in the normal line (nil: never)
 	boss: number?, -- the first wave it can be the dragon that ends a boss wave (nil: never)
 }
-export type Tier = { tier: string, ppm: number, mult: number, twist: number }
+export type Tier = { tier: string, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
--- unlock: the player level needed to buy it (nil = from the start); xp: player XP for buying it;
--- hatch: seconds it sits in the ranch's hatchery before it opens (decision 0036, draft numbers)
-export type Egg =
-	{ id: string, name: string, price: number, xp: number, hatch: number, unlock: number?, odds: { Odds } }
+export type Rare = { s: string, v: string, ppm: number } -- a variant as a drop of its own: ppm of the egg's hatches
+-- wave: the wave that must be cleared before it can be bought (nil = from the start); xp: player XP
+-- for buying it; hatch: seconds it sits in the ranch's hatchery before it opens (decision 0036,
+-- draft numbers); odds: its basic animals; rare: its variants, rolled first (decision 0056)
+export type Egg = {
+	id: string,
+	name: string,
+	price: number,
+	xp: number,
+	hatch: number,
+	wave: number?,
+	odds: { Odds },
+	rare: { Rare },
+}
 export type Station = { id: string, name: string, stat: Stat }
 
 -- Each stat has one job in a wave fight (decision 0032, BattleRules): Speed is attack speed,
@@ -94,11 +104,11 @@ StationConfig.GROUPS = { "pack", "solitary" }
 StationConfig.PACK_PCT = 10
 StationConfig.SOLITARY_PCT = 25
 
--- Variant chance on every hatch, from any egg, in parts per million (shown as "1 in N").
--- A variant's stats are the basic stats x mult, plus `twist` on its twist stat.
+-- Variant tiers. A variant's stats are the basic stats x mult, plus `twist` on its twist stat. How
+-- often one hatches is set egg by egg (EGGS, `rare`).
 StationConfig.TIERS = {
-	{ tier = "mythic", ppm = 50, mult = 3.0, twist = 60 }, -- 1 in 20,000
-	{ tier = "legendary", ppm = 500, mult = 2.0, twist = 40 }, -- 1 in 2,000
+	{ tier = "mythic", mult = 3.0, twist = 60 },
+	{ tier = "legendary", mult = 2.0, twist = 40 },
 } :: { Tier }
 
 local function v(id: string, name: string, tier: string, twist: Stat): Variant
@@ -377,10 +387,17 @@ StationConfig.FOES = {
 	},
 } :: { Foe }
 
--- Eggs roll a species (basic odds); the variant roll (TIERS) happens on top, the same for every egg.
--- There is no legendary-only egg: the Titan (the one legendary species) is a rare hatch from the
--- Golden Egg, which unlocks at player level 15 and drops other animals too (decision 0031).
--- Placeholder eggs: an egg overhaul is planned.
+-- Eggs (decision 0056). A hatch first rolls the egg's rare drops: each variant it lists is a drop of
+-- its own, `ppm` hatches in a million (shown as "1 in N", so every ppm divides a million). If none
+-- hits, it rolls a basic animal by `odds`. A variant gets likelier egg by egg, and an animal's mythic
+-- starts one egg after its legendary. Eggs unlock with the waves: the Wild Egg once the ogres have
+-- been met (wave 5), the Safari Egg with the first dragon beaten (wave 10), the Golden Egg with the
+-- second (wave 20). There is no legendary-only egg: the Titan is a rare hatch from the Golden Egg,
+-- which drops other animals too (decision 0031). Draft numbers.
+local function r(species: string, variant: string, oneIn: number): Rare
+	return { s = species, v = variant, ppm = 1_000_000 / oneIn }
+end
+
 StationConfig.EGGS = {
 	{
 		id = "meadow",
@@ -393,6 +410,11 @@ StationConfig.EGGS = {
 			{ id = "tortoise", bp = 3300 },
 			{ id = "meerkat", bp = 3300 },
 		},
+		rare = {
+			r("jackal", "pharaoh_jackal", 5000),
+			r("tortoise", "gemshell_tortoise", 5000),
+			r("meerkat", "storm_meerkat", 5000),
+		},
 	},
 	{
 		id = "wild",
@@ -400,6 +422,7 @@ StationConfig.EGGS = {
 		price = 1500,
 		xp = 40,
 		hatch = 600,
+		wave = 5,
 		odds = {
 			{ id = "jackal", bp = 1800 },
 			{ id = "tortoise", bp = 1800 },
@@ -408,6 +431,13 @@ StationConfig.EGGS = {
 			{ id = "rhino", bp = 1500 },
 			{ id = "flamingo", bp = 1500 },
 		},
+		rare = {
+			r("jackal", "sphinx_jackal", 20000),
+			r("jackal", "pharaoh_jackal", 2000),
+			r("tortoise", "gemshell_tortoise", 2000),
+			r("meerkat", "storm_meerkat", 2000),
+			r("cheetah", "fire_cheetah", 4000),
+		},
 	},
 	{
 		id = "safari",
@@ -415,12 +445,20 @@ StationConfig.EGGS = {
 		price = 15000,
 		xp = 150,
 		hatch = 3600,
-		unlock = 10,
+		wave = 10,
 		odds = {
 			{ id = "cheetah", bp = 2700 },
 			{ id = "rhino", bp = 2700 },
 			{ id = "flamingo", bp = 2600 },
 			{ id = "lion", bp = 2000 },
+		},
+		rare = {
+			r("cheetah", "lightning_cheetah", 10000),
+			r("rhino", "lava_rhino", 10000),
+			r("flamingo", "phoenix_flamingo", 10000),
+			r("jackal", "sphinx_jackal", 5000),
+			r("cheetah", "fire_cheetah", 500),
+			r("lion", "shadow_lion", 2000),
 		},
 	},
 	{
@@ -429,13 +467,22 @@ StationConfig.EGGS = {
 		price = 50000,
 		xp = 500,
 		hatch = 14400,
-		unlock = 15,
+		wave = 20,
 		odds = {
 			{ id = "lion", bp = 5000 },
 			{ id = "cheetah", bp = 1500 },
 			{ id = "rhino", bp = 1500 },
 			{ id = "flamingo", bp = 1500 },
 			{ id = "elephant", bp = 500 },
+		},
+		rare = {
+			r("elephant", "frost_elephant", 20000),
+			r("lion", "sun_lion", 4000),
+			r("cheetah", "lightning_cheetah", 2000),
+			r("rhino", "lava_rhino", 2000),
+			r("flamingo", "phoenix_flamingo", 2000),
+			r("lion", "shadow_lion", 400),
+			r("elephant", "war_elephant", 2000),
 		},
 	},
 } :: { Egg }
