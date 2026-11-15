@@ -26,14 +26,6 @@ FADE = 1.6  # the hide darkens below this height
 NOD = 14  # degrees the head and neck are tipped down about the neck: a hunter carries its head low
 
 
-def foot(x, y, tones, rng):
-    """A small block of a paw with three stubby toes."""
-    parts = [loft("paw", [yring(y + 0.16, 0.14, 0.15, 0.13, 0.14, 0.05, x), yring(y - 0.2, 0.15, 0.18, 0.14, 0.15, 0.06, x)], tones, rng)]
-    for dx in (-0.12, 0.0, 0.12):
-        parts.append(loft("toe", [quad(y - 0.17, 0.11, 0.055, 0.1, 0.11, x + dx), quad(y - 0.36, 0.08, 0.05, 0.05, 0.08, x + dx)], tones, rng))
-    return parts
-
-
 def jackal_model(p, seed):
     """The jackal from a palette `p` (see the three makers below). Returns (groups, joints)."""
     rng = random.Random(seed)
@@ -69,12 +61,12 @@ def jackal_model(p, seed):
         groups["leg_f" + side] = [
             hide(loft("arm", [zring(x, 0.0, 1.75, 0.2, 0.26, 0.07), zring(x, 0.05, 1.05, 0.17, 0.2, 0.06)], coat, rng), coat),
             hide(loft("forearm", [zring(x, 0.05, 1.08, 0.14, 0.16, 0.05), zring(x, 0.0, 0.28, 0.13, 0.15, 0.05)], legs, rng), legs),
-            *foot(x, 0.0, T("paw"), rng),
+            *F.small_paw(x, 0.0, T("paw"), rng),
         ]
         groups["leg_b" + side] = [
             thighs[s],
             hide(loft("shin", [zring(x, HIND - 0.18, 1.03, 0.14, 0.2, 0.05), zring(x, HIND + 0.22, 0.62, 0.12, 0.15, 0.04), zring(x, HIND + 0.12, 0.28, 0.13, 0.15, 0.05)], legs, rng), legs),
-            *foot(x, HIND + 0.08, T("paw"), rng),
+            *F.small_paw(x, HIND + 0.08, T("paw"), rng),
         ]
 
     # the head: a long narrow muzzle widening to the skull, a pale lower jaw, a dark nose, a neck

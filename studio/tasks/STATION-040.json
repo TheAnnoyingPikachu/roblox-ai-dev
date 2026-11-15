@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-040",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Concepts for the cheetahs in the faceted, textured style (decision 0053): the Cheetah, the Lightning Cheetah and a new Fire Cheetah variant, each with a presentation card. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "inputs": [
+    "docs/decisions/0052-animal-stations-faceted-jackals.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "dependencies": [
+    "STATION-038"
+  ],
+  "files": [
+    "tools/blender/stations/assets/cheetahs.py",
+    "tools/blender/stations/assets/animals.py",
+    "tools/blender/stations/assets/jackals.py",
+    "tools/blender/stations/facet.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0053-animal-stations-faceted-cheetahs.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-040.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The three cheetahs read as one family in the style of the lions, elephants and jackals",
+    "Each builds, bakes and exports through the normal build with the usual rig pieces and joints",
+    "The jackals build exactly as uploaded after the shared paw moved; the other animals build as before",
+    "StationConfig, StationAssets and the manifest are untouched until SHANNON approves"
+  ],
+  "verification": "Blender 5.2 on 2026-11-15: full build (bake and export) of creature_cheetah (2428 tris), creature_cheetah_lightning (2500) and creature_cheetah_fire (2448) passed with the usual pieces and the glow pieces; the cards were inspected. At their final scales they measure about 4.6 tall x 10.9 long, 6.0 x 13.9 and 5.6 x 13.0 studs (worked out from the built sizes, not rebuilt). After the paw moved to facet.py the three jackals build to the same triangles, sizes, joints, centres, parts and glow as the manifest. Meerkat, tortoise, flamingo and rhino draft builds pass after the cheetahs left animals.py. The manifest was restored after the test builds, so the game is unchanged. Not done: the upload, the StationConfig variant, the clips on the new shapes.",
+  "output_artifacts": [
+    "docs/concepts/cheetah-family.png",
+    "docs/concepts/cheetah-card.png",
+    "docs/concepts/lightning-cheetah-card.png",
+    "docs/concepts/fire-cheetah-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the three looks and the Fire Cheetah (legendary, twist strength). On approval the next step is the build for upload, the upload workflow, the StationConfig variant and a look at the clips, as for the other families. Still open from STATION-036: the lions in the game carry the vertex-colour fault and need a rebuild and a new upload."
+}

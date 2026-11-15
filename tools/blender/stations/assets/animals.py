@@ -2,8 +2,8 @@
 pieces (body, head, four legs, tail) with a dangerous look. Each animal has a basic model and one
 rare variant with a new skin and glowing `_glow` pieces. Facing Blender -Y; left is +X.
 
-The Cheetah and Meerkat share one predator body with their own numbers. The Tortoise and Flamingo
-are built on their own. The lions, elephants and jackals are faceted, in lions.py, elephants.py and jackals.py. The Flamingo has two legs: its wings are
+The Meerkat is built on the predator body. The Tortoise and Flamingo are built on their own. The
+lions, elephants, jackals and cheetahs are faceted, in lions.py, elephants.py, jackals.py and cheetahs.py. The Flamingo has two legs: its wings are
 the "back legs", so the same joints and moves work for it.
 """
 
@@ -157,42 +157,6 @@ def predator(c):
 def side_point(c, a, y):
     """A ray onto the predator torso: `a` degrees round from the top (towards +X), at `y`."""
     return (0, y, c["chest_z"]), Vector((math.sin(math.radians(a)), 0, math.cos(math.radians(a))))
-
-
-# Cheetah -------------------------------------------------------------------------------------------
-
-CHEETAH = dict(chest_z=1.95, chest_r=0.66, waist_r=0.44, hip_r=0.54, len=2.05, leg_r=0.19, foot_r=0.25, head_r=0.4, neck=0.5, head_up=0.68, neck_r=0.3, snout=0.4, ears="round", tail_len=2.6, tail_r=0.15)
-BOLT = (90, 190, 255)
-
-
-def cheetah(variant=False):
-    c = dict(CHEETAH)
-    if variant:  # Lightning Cheetah: storm-dark coat, electric spots, glowing bolts down both flanks
-        c["skin"] = k.paint("ch_storm", [(0, (16, 22, 44)), (1, (36, 48, 84))], 0, 3.4, rest=True, dots=[((90, 190, 255), 5.5, 0.17)])
-        c.update(iris=BOLT, socket=(6, 8, 16), glow_eyes=True, claw=(120, 200, 255))
-    else:
-        c["skin"] = k.paint("ch_gold", [(0, (176, 130, 70)), (0.5, (214, 164, 84)), (1, (196, 150, 80))], 0, 3.4, rest=True, dots=[((34, 26, 22), 5.5, 0.2)])
-        c.update(iris=(240, 180, 40), socket=(40, 30, 24))
-    groups, torso, skull, hc = predator(c)
-    for side in (-1, 1):  # tear marks from the eyes down to the mouth
-        marks = [(tuple(hc), k.outward(side * (40 - 6 * i), 6 - 13 * i)) for i in range(4)]
-        groups["head"].append(k.vein(skull, marks, 0.035, k.flat(INK), name="tear"))
-    if variant:
-        rng, glow = random.Random(11), k.glow(BOLT)
-        bolts = []
-        for side in (-1, 1):
-            for y0 in (-0.1, 0.9, 1.8):
-                y, pts = y0, []
-                for step in range(6):
-                    y += rng.uniform(-0.22, 0.22)
-                    pts.append(side_point(c, side * (16 + step * 17 + rng.uniform(-6, 6)), min(max(y, -0.4), 2.3)))
-                bolts.append(k.vein(torso, pts, 0.045, glow))
-        groups["body_glow"] = bolts
-        groups["tail_glow"] = [k.blob(0.2, tuple(c["tail_tip"]), glow, name="spark")]
-    else:
-        k.zone(c["skin"], (236, 222, 196), (0, 0.9, 1.4), (0.42, 1.6, 0.4), soft=0.5)
-        k.zone(c["skin"], (34, 26, 22), c["tail_tip"], (0.3, 0.4, 0.5), soft=0.3)
-    return groups, c["joints"]
 
 
 # Meerkat -------------------------------------------------------------------------------------------
@@ -382,8 +346,6 @@ def asset(name, maker, variant, scale, glow, note, budget=11000):
 
 
 ASSETS = [
-    asset("creature_cheetah", cheetah, False, 1.4, {}, "Cheetah: spotted sprinter."),
-    asset("creature_cheetah_lightning", cheetah, True, 1.75, {"head_glow": BOLT, "body_glow": BOLT, "tail_glow": BOLT}, "Lightning Cheetah (mythic): storm coat, Neon bolts."),
     asset("creature_meerkat", meerkat, False, 1.0, {}, "Meerkat: small and quick."),
     asset("creature_meerkat_storm", meerkat, True, 1.25, {"head_glow": STORM, "body_glow": STORM, "tail_glow": STORM}, "Storm Meerkat (legendary): Neon bands and tail charge."),
     asset("creature_tortoise", tortoise, False, 1.6, {}, "Tortoise: plated shell with a spiked rim."),

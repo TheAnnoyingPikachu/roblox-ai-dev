@@ -1,5 +1,5 @@
-"""The faceted low-poly helpers shared by the lions, the elephants and the jackals (decisions 0050 to
-0052). A piece is a closed solid of flat faces; every face has one colour (the `lp` colour attribute),
+"""The faceted low-poly helpers shared by the lions, the elephants, the jackals and the cheetahs (decisions
+0050 to 0053). A piece is a closed solid of flat faces; every face has one colour (the `lp` colour attribute),
 picked from three tones (shadow, base, light) by which way the face points plus a little chance, so the
 facets read in any light and bake straight into the texture. kit.py drops the attribute after the bake:
 left on the mesh it would be exported as vertex colours, which Roblox multiplies the texture by.
@@ -151,6 +151,14 @@ def plate(name, p, frame, outline, thick, tones, rng, lift=0.004, m=None):
     lo = [p + x * u + y * v + z * lift for u, v in outline]
     faces = [tuple(range(n))[::-1], tuple(range(n, 2 * n))] + [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
     return mesh(name, lo + [q + z * thick for q in lo], faces, tones, rng, m=m)
+
+
+def small_paw(x, y, tones, rng):
+    """A small block of a paw with three stubby toes (the jackals' and the cheetahs')."""
+    parts = [loft("paw", [yring(y + 0.16, 0.14, 0.15, 0.13, 0.14, 0.05, x), yring(y - 0.2, 0.15, 0.18, 0.14, 0.15, 0.06, x)], tones, rng)]
+    for dx in (-0.12, 0.0, 0.12):
+        parts.append(loft("toe", [quad(y - 0.17, 0.11, 0.055, 0.1, 0.11, x + dx), quad(y - 0.36, 0.08, 0.05, 0.05, 0.08, x + dx)], tones, rng))
+    return parts
 
 
 def asset(name, maker, scale, glow, note):
