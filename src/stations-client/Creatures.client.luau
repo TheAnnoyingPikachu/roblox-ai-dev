@@ -411,11 +411,11 @@ local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
 	}
 end
 local MAGICS: { [string]: Clip } = {
-	-- throws its head back in a howl, then drives down on the target
+	-- throws its head back in a howl (a positive pitch lifts the nose), then drives down on the target
 	jackal = powerClip(
-		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { -34 }, tail = { -20 } },
-		{ body = { 20, 0, 0, 0, 0.14, 0.3 }, head = { -50 }, leg_fl = { 14 }, leg_fr = { 14 }, tail = { -26 } },
-		{ body = { -8, 0, 0, 0, -0.12, -1.2 }, head = { 38 }, leg_fl = { -24 }, leg_fr = { -24 }, tail = { 22 } }
+		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { 36 }, tail = { -20 } },
+		{ body = { 20, 0, 0, 0, 0.14, 0.3 }, head = { 52 }, leg_fl = { 14 }, leg_fr = { 14 }, tail = { -26 } },
+		{ body = { -8, 0, 0, 0, -0.12, -1.2 }, head = { -22 }, leg_fl = { -24 }, leg_fr = { -24 }, tail = { 22 } }
 	),
 	-- draws into the shell, rises, and crashes down
 	tortoise = powerClip(
@@ -512,9 +512,9 @@ local MAGICS: { [string]: Clip } = {
 	}),
 	-- trunk raised in a trumpet and the body half reared, then a stomping slam
 	elephant = powerClip(
-		{ body = { 12, 0, 0, 0, 0.12, 0.2 }, head = { -34 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { -14 } },
-		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { -44 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
-		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { 36 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
+		{ body = { 12, 0, 0, 0, 0.12, 0.2 }, head = { 30 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { -14 } },
+		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
+		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
 	),
 }
 
@@ -661,13 +661,14 @@ local function winFlamingo(t: number): Pose
 		tail = { 0, 24 * math.sin(t * 6) * u, 0 },
 	}
 end
--- A lion rears like the others but holds its tail up: its long tail flame would lie on the ground.
-local function winLion(t: number): Pose
+-- A lion or a jackal rears like the others but holds its tail up: their long tails would lie on the
+-- ground.
+local function winTailUp(t: number): Pose
 	local pose = win(t, false)
 	pose.tail = { -24 * ease(math.min(1, t / 0.5)), pose.tail[2], 0 }
 	return pose
 end
-local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo, lion = winLion }
+local WINS: { [string]: (number) -> Pose } = { flamingo = winFlamingo, lion = winTailUp, jackal = winTailUp }
 local PLANTED = { flamingo = true } -- species whose feet never leave the ground, not even when hit
 
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow

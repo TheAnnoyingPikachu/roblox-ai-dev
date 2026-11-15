@@ -35,12 +35,12 @@
     "The jackals' clips fit the new models",
     "Old saves load unchanged"
   ],
-  "verification": "Pending: the upload and a look in Studio.",
+  "verification": "2026-11-15: upload-assets run 43752043982 succeeded (three models, three textures, exported without vertex colours). Lune 687/687, selene and stylua clean. In Studio (local build): the Jackal, the Pharaoh Jackal and the Sphinx Jackal load with the new models in the colours of the concept cards, and their portraits are published; the attack crouch and snap, the walk, the defeat, the win pose and the power attack's howl and slam were frozen and looked at on the models; the howl (head down) and the win pose (tail on the ground) were fixed and looked at again, and so was the Elephant's trumpet; a test wave 6 with the three jackals as the team was won with no script errors. Not checked: phones, two players, a Sphinx Jackal from a real hatch (1 in 20,000), the clips in motion at full speed.",
   "output_artifacts": [
     "src/shared/StationAssets.luau",
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
-  "notes": "SHANNON approved the three jackals on 2026-11-15 and asked for them in the game like the lions and elephants. The upload runs in GitHub (environment assets), never with a key on this machine."
+  "status": "in_review",
+  "notes": "SHANNON approved the three jackals on 2026-11-15 and asked for them in the game like the lions and elephants. The upload runs in GitHub (environment assets), never with a key on this machine. Still open for SHANNON from STATION-036: the three lions carry the vertex-colour fault and look darker in the game than approved; the fix is a rebuild and one more upload run for them."
 }

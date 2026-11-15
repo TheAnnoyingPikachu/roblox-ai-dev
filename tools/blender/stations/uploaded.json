@@ -10,14 +10,14 @@
     "texture": 94181598243034
   },
   "creature_jackal": {
-    "model": 126796159830306,
-    "decal": 94111495992936,
-    "texture": 92340314696990
+    "model": 134165595027982,
+    "decal": 102689800561942,
+    "texture": null
   },
   "creature_jackal_pharaoh": {
-    "model": 82574589587706,
-    "decal": 122998351099246,
-    "texture": 116528824217284
+    "model": 75452633506717,
+    "decal": 83327504233843,
+    "texture": null
   },
   "creature_cheetah": {
     "model": 71145036331250,
@@ -112,6 +112,11 @@
   "creature_elephant_war": {
     "model": 87558446601190,
     "decal": 136181197990894,
+    "texture": null
+  },
+  "creature_jackal_sphinx": {
+    "model": 121824721955985,
+    "decal": 109191769703070,
     "texture": null
   }
 }

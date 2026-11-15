@@ -34,6 +34,11 @@ a restyle of the Jackal and the Pharaoh Jackal, and one new variant to propose.
   hatches) now gives a Sphinx Jackal, where it gave a plain Jackal before. Nothing else in the odds
   moves, and no save changes.
 - The Sphinx Jackal uses the Jackal's clips until it gets its own.
+- Clips (`Creatures.client`). The jackals' walk, attack and defeat fit the new shapes as they were. In
+  the win pose the tail lay on the ground: the jackals now hold it up, as the lions do. The power
+  attack's howl pointed the head at the ground (its head pitch had the wrong sign, an old fault the
+  long new muzzle made plain): the head is now thrown back and comes down with the slam. The
+  Elephant's trumpet had the same fault and the same fix: it raises its head and trunk.
 
 ## Not done
 
