@@ -3,7 +3,7 @@ pieces (body, head, four legs, tail) with a dangerous look. Each animal has a ba
 rare variant with a new skin and glowing `_glow` pieces. Facing Blender -Y; left is +X.
 
 The Jackal, Cheetah and Meerkat share one predator body with their own numbers. The
-Tortoise, Elephant and Flamingo are built on their own; the lions are in lions.py. The Flamingo has two legs: its wings are
+Tortoise and Flamingo are built on their own; the lions are in lions.py, the elephants in elephants.py. The Flamingo has two legs: its wings are
 the "back legs", so the same joints and moves work for it.
 """
 
@@ -334,90 +334,6 @@ def tortoise(variant=False):
     return groups, joints
 
 
-# Elephant (the Titan) ------------------------------------------------------------------------------
-
-ICE = (120, 220, 255)
-
-
-def elephant(variant=False):
-    """The Titan: a war elephant with wide ears, a heavy brow, a long trunk and long tusks.
-    Variant: the Frost Mammoth, shaggy and pale with huge glowing ice tusks and ice down its back."""
-    if variant:
-        skin = k.paint("el_frost", [(0, (120, 140, 170)), (0.5, (190, 208, 230)), (1, (236, 244, 252))], 0, 4.8, rest=True, grain=(0.2, 6))
-        iris, socket, fold = ICE, (60, 76, 104), (90, 108, 140)
-        tusk_m, grow = k.glow(ICE), 1.3
-    else:
-        skin = k.paint("el_grey", [(0, (70, 66, 68)), (0.5, (112, 110, 116)), (1, (146, 146, 152))], 0, 4.8, rest=True, grain=(0.16, 7))
-        iris, socket, fold = (236, 160, 36), (40, 38, 44), (44, 42, 48)
-        tusk_m, grow = k.paint("el_tusk", [(0, (150, 132, 100)), (1, (244, 236, 214))], 2.2, 3.4, rest=True), 1.0
-    torso = k.fuse(
-        [
-            ((0, -0.5, 3.0), 1.35, (1.0, 1.05, 1.1)),
-            ((0, -0.4, 3.95), 0.8, (0.8, 1.2, 0.7)),  # the hump over the shoulders
-            ((0, 0.75, 2.9), 1.3, (1.0, 1.3, 1.02)),
-            ((0, 1.95, 2.85), 1.2, (1.0, 0.95, 1.0)),
-            *k.pair((0.95, -0.5, 3.0), 0.8, (0.5, 1.0, 1.15)),
-            *k.pair((0.9, 1.9, 2.8), 0.76, (0.5, 0.95, 1.1)),
-            *([((0, y, 3.75), 0.75, (0.9, 0.7, 0.6)) for y in (0.4, 1.2, 2.0)] if variant else []),  # shaggy back
-        ],
-        skin,
-        tris=2600,
-        soft=0.24,
-        name="torso",
-    )
-    for y in (-1.7, 0.2, 1.3):
-        k.zone(skin, fold, (0, y, 3.0), (1.9, 0.07, 1.9), soft=0.8)
-    hc, R = Vector((0, -2.05, 3.55)), 0.95
-    skull = k.fuse(
-        [
-            (tuple(hc), R, (0.95, 1.05, 1.05)),
-            ((0, -1.3, 3.3), 1.0, (0.95, 1.0, 0.95)),  # neck, hidden in the body
-            ((0, -2.15, 4.3), 0.62, (0.95, 0.9, 0.7)),  # domed forehead
-            ("capsule", (0, -2.7, 3.2), (0, -3.2, 2.35), 0.44),  # the trunk, in three bends
-            ("capsule", (0, -3.2, 2.35), (0, -3.3, 1.45), 0.36),
-            ("capsule", (0, -3.3, 1.45), (0, -2.95, 0.72), 0.27),
-            *k.pair((0.5, -2.75, 3.05), 0.42, (0.8, 1.0, 0.9)),  # tusk roots
-            *k.pair((0.46, -2.55, 4.05), 0.34, (0.9, 1.5, 0.5), (20, 0, 0)),  # brow
-            *k.pair((1.3, -1.7, 3.75), 1.0, (0.16, 0.78, 1.18), (0, 14, 20)),  # ears
-        ],
-        skin,
-        tris=3200,
-        soft=0.22,
-        name="skull",
-    )
-    face, glows = eyes(skull, skin, hc, 50, 12, 0.11, iris, socket, variant)
-    k.texel(face, k.FACE_TEXEL)
-    tusks = []
-    for side in (-1, 1):
-        pts = [(side * 0.5, -2.75, 2.95), (side * 0.66, -3.45, 2.3), (side * 0.72, -4.1 * (1 + (grow - 1) * 0.3), 2.4), (side * 0.6, -4.5 * (1 + (grow - 1) * 0.3), 3.0 * grow)]
-        tusks.append(k.horn(pts, [0.23 * grow, 0.2 * grow, 0.12, 0.0], tusk_m, name="tusk"))
-    k.rest(tusks)
-    claw = k.flat((190, 180, 160))
-    tail = k.rest(k.horn([(0, 3.0, 3.3), (0, 3.4, 3.0), (0, 3.55, 2.3), (0, 3.5, 1.8)], [0.17, 0.12, 0.09, 0.085], skin, n=8, steps=8, name="tail"))
-    tuft = k.blob(0.22, (0, 3.5, 1.62), k.flat((30, 28, 34)), scale=(0.85, 0.85, 1.5), name="tuft")
-    groups = {
-        "body": [torso],
-        "head": [skull, *face] + ([] if variant else tusks),
-        "leg_fl": leg(skin, 0.82, -0.5, 2.4, 0.52, 0.47, 0.56, claw, "leg_fl", fold, toes=4),
-        "leg_fr": leg(skin, -0.82, -0.5, 2.4, 0.52, 0.47, 0.56, claw, "leg_fr", fold, toes=4),
-        "leg_bl": leg(skin, 0.82, 1.85, 2.4, 0.52, 0.47, 0.56, claw, "leg_bl", fold, toes=4),
-        "leg_br": leg(skin, -0.82, 1.85, 2.4, 0.52, 0.47, 0.56, claw, "leg_br", fold, toes=4),
-        "tail": [tail, tuft],
-    }
-    if variant:
-        rng, glow = random.Random(9), k.glow(ICE)
-        ice = []
-        for i, h in enumerate((0.9, 1.3, 1.1, 0.9, 0.7, 0.5)):
-            y = -0.9 + 0.62 * i
-            p, _ = k.land(torso, (0, y, 3.0), (rng.uniform(-0.1, 0.1), 0, 1))
-            lean = Vector((rng.uniform(-0.12, 0.12), 0.35, 1)).normalized()
-            ice.append(shard(p - lean * 0.25, p + lean * h, 0.14 + h * 0.18, glow))
-        groups["body_glow"] = ice
-        groups["head_glow"] = tusks + glows
-    joints = {"head": (0, -1.3, 3.4), "leg_fl": (0.82, -0.5, 2.3), "leg_fr": (-0.82, -0.5, 2.3), "leg_bl": (0.82, 1.85, 2.3), "leg_br": (-0.82, 1.85, 2.3), "tail": (0, 3.0, 3.3)}
-    return groups, joints
-
-
 # Flamingo ------------------------------------------------------------------------------------------
 
 EMBER = (255, 110, 20)
@@ -509,6 +425,4 @@ ASSETS = [
     asset("creature_tortoise_gemshell", tortoise, True, 2.0, {"head_glow": GEM, "body_glow": GEM}, "Gemshell Tortoise (legendary): a Neon crystal on every plate.", 12500),
     asset("creature_flamingo", flamingo, False, 1.3, {}, "Flamingo: two legs; its wings are the back-leg pieces.", 9000),
     asset("creature_flamingo_phoenix", flamingo, True, 1.6, {"head_glow": EMBER, "tail_glow": EMBER, "leg_bl_glow": EMBER, "leg_br_glow": EMBER}, "Phoenix Flamingo (mythic): Neon crest, wing tips and tail.", 10000),
-    asset("creature_elephant", elephant, False, 3.0, {}, "Elephant, the Titan.", 14000),
-    asset("creature_elephant_frost", elephant, True, 3.5, {"head_glow": ICE, "body_glow": ICE}, "Frost Mammoth (mythic Titan): Neon ice tusks and back spikes.", 15000),
 ]

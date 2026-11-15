@@ -69,6 +69,9 @@ player is about 5 tall).
 | Shadow Lion | | legendary | twist speed | Ink black, a bone mask, spine and fangs, a mane of big black crystal shards with a few glowing green ones, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 8 x 15 |
 | Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | War elephant: wide ears, heavy brow, long trunk and tusks. | 15 x 25 |
 | Frost Mammoth | | mythic | twist health | Pale and shaggy, huge glowing ice tusks, ice spikes down its back. | 20 x 30 |
+| War Elephant (concept, not in the game yet) | | legendary (proposed) | twist strength (proposed) | Dark elephant in war gear with a cannon on its back, ember eyes, a glowing muzzle. Card: `docs/concepts/war-elephant-card.png`. | about 19 x 27 |
+
+New faceted looks for the Elephant and the Frost Mammoth are proposed in decision 0051 (cards: `docs/concepts/elephant-card.png`, `docs/concepts/frost-mammoth-card.png`); the rows above still describe the models in the game.
 
 ## Solitary animals
 
