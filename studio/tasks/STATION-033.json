@@ -37,5 +37,5 @@
   ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "Checkpoint for SHANNON: approve the faceted lions and the Shadow Lion, then the next step is the build for upload, the Upload Blender assets workflow and the StationConfig variant. Open: whether the other animals follow the style; an aura effect in the game for the Sun Lion; a look at the clips on the new legs."
+  "notes": "Checkpoint for SHANNON: approve the faceted lions and the Shadow Lion, then the next step is the build for upload, the Upload Blender assets workflow and the StationConfig variant. Open: whether the other animals follow the style; an aura effect in the game for the Sun Lion; a look at the clips on the new legs. Generator trial on 2026-11-15 (SHANNON asked): Studio's mesh generator from a text description gave a plain low-poly lion (lumpy mane with holes where the head was cut from the body, a thin tail with no flame, no glowing eyes) and published asset 83393387271349 to SHANNON's account; the block generator fed the reference image gave a crude block lion with a flat yellow starburst for a mane. Neither is nearer the reference than the Blender lions. The generated asset is not used in the game and not in the asset register; both trial models sit only in the local Studio session (Workspace.LionTrial)."
 }
