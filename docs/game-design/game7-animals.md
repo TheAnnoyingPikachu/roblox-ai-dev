@@ -85,9 +85,9 @@ player is about 5 tall).
 
 | Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide, high shoulders with bone studs, scimitar horn, claw scars. | 8 x 14 |
 | Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns, rock spikes, burning tail. | 13 x 18 |
-| Crystal Rhino (concept, not in the game yet) | | legendary (proposed) | twist defence (proposed) | Dark stone hide with clusters of amethyst growing through its armour, horns of glowing crystal, glowing violet eyes. Card: `docs/concepts/crystal-rhino-card.png`. | about 10 x 16 |
+| Crystal Rhino (concept, not in the game yet) | | legendary (proposed) | twist defence (proposed) | Living grey rock grown through with gemstones of nine colours: great clusters of crystals on the hump and rump, a ridge down the spine, veins of gem, a great glowing crystal horn, a mace of crystals for a tail. Card: `docs/concepts/crystal-rhino-card.png`. | about 10 x 16 |
 
-New, rounder looks for the Rhino and the Lava Rhino are proposed in decision 0054 (cards: `docs/concepts/rhino-card.png`, `docs/concepts/lava-rhino-card.png`); their rows above still describe the models in the game.
+New, rounder and textured looks for the Rhino and the Lava Rhino are proposed in decision 0054 (cards: `docs/concepts/rhino-card.png`, `docs/concepts/lava-rhino-card.png`); their rows above still describe the models in the game.
 
 
 ## Eggs

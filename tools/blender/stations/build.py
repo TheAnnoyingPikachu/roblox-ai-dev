@@ -77,7 +77,7 @@ def main():
                 ob.data.transform(Matrix.Scale(scale, 4))
             lo, hi = kit._ground_dims(every)
             if beauty:
-                kit.beauty(name, groups, lo, hi)
+                kit.beauty(name, groups, lo, hi, glow)
                 continue
             if draft:
                 kit.preview(name, every, lo, hi)

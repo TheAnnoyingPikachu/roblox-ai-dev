@@ -156,7 +156,7 @@ def _bloom(rgb):
     return out
 
 
-def beauty(name, groups, lo, hi):
+def beauty(name, groups, lo, hi, glow=None):
     """A presentation card of one asset, not a build output: a three-quarter hero shot on a stone
     pedestal over front, side and back views, with `_glow` parts shining and a bloom on top.
     Written to build/blender/stations/beauty/<name>.png."""
@@ -197,9 +197,9 @@ def beauty(name, groups, lo, hi):
     nt.links.new(sky.outputs[0], both.inputs[2])
     nt.links.new(both.outputs[0], next(n for n in nt.nodes if n.type == "OUTPUT_WORLD").inputs[0])
 
-    neon = _garden.mat("pv_neon", GLOW_RGB, kind="flat", emit=3.0, rough=0.4)
     for part, objs in groups.items():
         if part.endswith("_glow"):
+            neon = _garden.mat(f"pv_neon_{part}", (glow or {}).get(part, GLOW_RGB), kind="flat", emit=3.0, rough=0.4)  # each glow part has its own colour in the game
             for ob in objs:
                 ob.data.materials.clear()
                 ob.data.materials.append(neon)
