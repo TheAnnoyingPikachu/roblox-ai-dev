@@ -11,7 +11,8 @@ local StationRules = {}
 type Stats = StationConfig.Stats
 -- One hatched animal: v nil = basic; stats = its version's numbers; trained = each stat's level
 -- (rolled at hatch, then trained up to MAX_LEVEL) with the progress to the next as the fraction.
-export type Owned = { s: string, v: string?, stats: Stats, trained: Stats? }
+-- rainbow = true: it wears the rainbow coat (decision 0058), a look only; absent on every other animal.
+export type Owned = { s: string, v: string?, stats: Stats, trained: Stats?, rainbow: boolean? }
 
 StationRules.PPM = 1_000_000
 -- The share of the base level roll that gives `level`: BASE_TOP at BASE_MAX, BASE_STEP more for
@@ -86,7 +87,7 @@ end
 
 -- Hatch one animal from `eggId`. Nil for an unknown egg (the server refuses the request).
 -- Draws: a basic species, the egg's rare drops (a hit replaces the species), a base level per stat,
--- the jackpot (and its stat when it hits).
+-- the jackpot (and its stat when it hits), the rainbow coat.
 function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
@@ -114,8 +115,17 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 		which, rng = Rng.int(rng, 1, #StationConfig.STATS)
 		levels[StationConfig.STATS[which]] = StationConfig.MAX_LEVEL
 	end
+	local coat
+	coat, rng = Rng.int(rng, 1, StationRules.PPM)
 	local stats = StationRules.versionStats(species, variantId) :: Stats
-	return { s = species, v = variantId, stats = stats, trained = levels :: Stats }, rng
+	return {
+		s = species,
+		v = variantId,
+		stats = stats,
+		trained = levels :: Stats,
+		rainbow = if coat <= StationConfig.RAINBOW_PPM then true else nil,
+	},
+		rng
 end
 
 -- An animal's role, from its species (or a foe's, from its entry): "attack", "defense", "utility"

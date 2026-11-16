@@ -289,6 +289,38 @@ describe("StationProgress.buy", function()
 		expect(#p.animals).toBe(11)
 	end)
 
+	it("keeps a rainbow coat from the egg to the animal and through a save, and only a true one", function()
+		local p = fresh()
+		p.coins = 1e9
+		local coated = hatched("jackal")
+		coated.rainbow = true
+		p = StationProgress.buy(p, "meadow", coated)
+		expect(StationProgress.sanitize(p, 0).eggs[1].animal.rainbow).toBe(true) -- inside a stored egg
+		expect(StationProgress.public(p).eggs[1].animal).toBeNil() -- and never shown before it hatches
+		p = StationProgress.start(p, 1, 0)
+		local born
+		p, _, _, born = StationProgress.crack(p, 1, 1e9)
+		expect((born :: StationProgress.Animal).rainbow).toBe(true)
+		p = get(p, "meadow", hatched("tortoise"))
+		local again = StationProgress.sanitize(p, 0)
+		expect(again.animals[1].rainbow).toBe(true)
+		expect(again.animals[2].rainbow).toBeNil()
+		-- training and the team leave it on
+		again = StationProgress.train(again, again.animals[1].id, StationConfig.STATIONS[1].id, 0)
+		again = StationProgress.settle(again, 5000)
+		expect(again.animals[1].rainbow).toBe(true)
+		local junk = StationProgress.sanitize({
+			animals = { { id = 1, s = "jackal", rainbow = "yes" }, { id = 2, s = "jackal", rainbow = false } },
+		}, 0)
+		expect(junk.animals[1].rainbow).toBeNil()
+		expect(junk.animals[2].rainbow).toBeNil()
+		-- the admin's menu can add one
+		p, _, _, born = StationProgress.give(p, "lion", "sun_lion", 3, true)
+		expect((born :: StationProgress.Animal).rainbow).toBe(true)
+		p, _, _, born = StationProgress.give(p, "lion", nil, 3, false)
+		expect((born :: StationProgress.Animal).rainbow).toBeNil()
+	end)
+
 	it("gives an admin's animal at a chosen level, past the Barn, and refuses junk", function()
 		local p = fresh()
 		p.coins = 1e9

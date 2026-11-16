@@ -725,78 +725,6 @@ local function pavilion(f: Instance, b: CFrame)
 	kit.signboard(f, b * CFrame.new(0, 0, -6.2), 11, "Rest Area", Color3.fromRGB(150, 110, 80), 5)
 end
 
--- An egg of type `kind` standing on `base`, `h` studs tall: the plain spotted shell with that
--- type's own trimmings. Meadow: a ring of leaves and a flower. Wild: dark bands and two horns.
--- Safari: gold bands and a gem. Golden: a gold shell with a crown, glowing spots and sparkles.
-local function eggModel(f: Instance, base: Vector3, h: number, kind: string, rng: Random): Part
-	local look = kit.eggLook[kind] or kit.eggLook.meadow
-	local shell = kit.egg(f, base, h, look.body, look.spot, rng)
-	local mid = base + V(0, h / 2, 0)
-	local function width(y: number): number -- how wide the shell is `y` above its middle
-		return h * 0.75 * math.sqrt(math.max(0, 1 - (2 * y / h) ^ 2))
-	end
-	local function band(y: number, colour: Color3, mat: Enum.Material)
-		disc(f, mid + V(0, y + h * 0.03, 0), width(y) * 1.03, h * 0.06, colour, mat)
-	end
-	if kind == "meadow" then
-		for k = 0, 7 do
-			local a = k / 8 * math.pi * 2
-			local leaf = CFrame.new(base + V(math.cos(a), 0, math.sin(a)) * h * 0.3)
-				* CFrame.Angles(0, -a, math.rad(40))
-			part(
-				f,
-				V(h * 0.26, h * 0.04, h * 0.14),
-				leaf * CFrame.new(h * 0.1, h * 0.06, 0),
-				Color3.fromRGB(96, 170, 80),
-				M.SmoothPlastic
-			)
-		end
-		ball(f, base + V(0, h * 1.02, 0), h * 0.12, Color3.fromRGB(255, 225, 100), M.SmoothPlastic)
-		for k = 0, 4 do
-			local a = k / 5 * math.pi * 2
-			ball(f, base + V(math.cos(a) * h * 0.1, h, math.sin(a) * h * 0.1), h * 0.11, WHITE, M.SmoothPlastic)
-		end
-	elseif kind == "wild" then
-		for _, y in { -h * 0.2, h * 0.05, h * 0.28 } do
-			band(y, Color3.fromRGB(60, 44, 30), M.SmoothPlastic)
-		end
-		for _, sx in { -1, 1 } do
-			local horn = Instance.new("WedgePart")
-			horn.Anchored, horn.Size = true, V(h * 0.08, h * 0.3, h * 0.12)
-			horn.CFrame = CFrame.new(base + V(sx * h * 0.14, h * 1.04, 0)) * CFrame.Angles(0, math.rad(90 * sx), 0)
-			horn.Color, horn.Material = Color3.fromRGB(236, 226, 200), M.SmoothPlastic
-			horn.Parent = f
-		end
-	elseif kind == "safari" then
-		for _, y in { -h * 0.24, h * 0.24 } do
-			band(y, GOLD, M.Metal)
-		end
-		ball(f, mid + V(0, 0, -width(0) / 2), h * 0.14, Color3.fromRGB(80, 220, 200), M.Neon)
-	elseif kind == "golden" then
-		shell.Material = M.Foil
-		band(-h * 0.3, Color3.fromRGB(170, 90, 230), M.Neon)
-		for k = 0, 5 do
-			local a = k / 6 * math.pi * 2
-			local spike =
-				CFrame.new(mid + V(math.cos(a) * width(h * 0.36) / 2, h * 0.4, math.sin(a) * width(h * 0.36) / 2))
-			part(f, V(h * 0.07, h * 0.24, h * 0.07), spike * CFrame.Angles(0, -a, math.rad(-22)), GOLD, M.Metal)
-			ball(f, (spike * CFrame.new(0, h * 0.14, 0)).Position, h * 0.07, Color3.fromRGB(170, 90, 230), M.Neon)
-		end
-		emitter(shell, {
-			Texture = "rbxasset://textures/particles/sparkles_main.dds",
-			Color = ColorSequence.new(GOLD),
-			LightEmission = 0.8,
-			Transparency = fade(0, 1),
-			Size = fade(h * 0.12, 0),
-			Lifetime = NumberRange.new(0.8, 1.4),
-			Rate = 4,
-			Speed = NumberRange.new(0.5, 1.5),
-			SpreadAngle = Vector2.new(180, 180),
-		})
-	end
-	return shell
-end
-
 -- A prompt on `p` for the client to act on: the tag says what it opens.
 local function prompt(p: BasePart, tag: string, action: string, object: string, i: number): ProximityPrompt
 	local pr = Instance.new("ProximityPrompt")
@@ -930,10 +858,10 @@ local function eggRack(f: Instance, i: number)
 	prompt(shelf, "EggStorage", "Choose an egg to hatch", "Egg storage", i)
 end
 
--- Where the `n`th hatching egg stands in ranch `i`'s hatchery, and an egg type's two colours:
--- for the hatching animation.
-function Ranch.nest(i: number, n: number): Vector3
-	return (hatcheryFrame(i) * CFrame.new(NESTS[math.clamp(n, 1, #NESTS)])).Position + V(0, 1.3, 0)
+-- Where the `n`th hatching egg stands in ranch `i`'s hatchery (facing out of it), and an egg type's
+-- two colours: for the hatching animation.
+function Ranch.nest(i: number, n: number): CFrame
+	return hatcheryFrame(i) * CFrame.new(NESTS[math.clamp(n, 1, #NESTS)] + V(0, 1.3, 0))
 end
 
 function Ranch.look(kind: string): { body: Color3, spot: Color3 }
@@ -962,8 +890,7 @@ function Ranch.eggs(i: number, eggs: { { egg: string, since: number? } })
 		if look and egg and e.since then
 			nest += 1
 			if NESTS[nest] then
-				local at = (hatcheryFrame(i) * CFrame.new(NESTS[nest])).Position + V(0, 1.3, 0)
-				local shell = eggModel(f, at, 3, e.egg, rng)
+				local shell = kit.eggModel(f, Ranch.nest(i, nest), 3, e.egg, rng)
 				glow(shell, WARM, 8, 0.5)
 				local open = prompt(shell, "Egg", "Hatching", egg.name, i)
 				open:SetAttribute("Index", k)
@@ -984,7 +911,7 @@ function Ranch.eggs(i: number, eggs: { { egg: string, since: number? } })
 		elseif look then
 			shelf += 1
 			if shelf <= 12 then
-				eggModel(f, (rackFrame(i) * rackSpot(shelf)).Position, 1.7, e.egg, rng)
+				kit.eggModel(f, rackFrame(i) * rackSpot(shelf), 1.5, e.egg, rng) -- with its crown it still fits a shelf
 			end
 		end
 	end
@@ -1112,7 +1039,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	-- the vendors, by the path: eggs (one of each on the counter) and gear
 	local wares = stall(f, turned(10, -44, 90), Color3.fromRGB(240, 170, 60), "Egg Vendor", "eggs", i)
 	for k, e in StationConfig.EGGS do
-		eggModel(f, (wares * CFrame.new(-4.8 + k * 1.9, 0, 0)).Position, 1.9, e.id, rng)
+		kit.eggModel(f, wares * CFrame.new((k - 2.5) * 2.4, 0, 0), 1.9, e.id, rng)
 	end
 	wares = stall(f, turned(10, -16, 90), Color3.fromRGB(90, 130, 200), "Gear Vendor", "gear", i)
 	local steel = Color3.fromRGB(190, 196, 206)

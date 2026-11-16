@@ -2,7 +2,9 @@
 -- Animal Stations creature models (decision 0033): the jointed Blender creatures in StationAssets.
 -- Each is loaded once, scaled to its measured size and rigged from the manifest: a hidden Root on
 -- the ground, a Motor6D from it to the body, and one from the body to the head, each leg and the
--- tail at the joint the Blender build recorded. Neon `_glow` meshes ride on their piece. Models are
+-- tail at the joint the Blender build recorded. Neon `_glow` meshes ride on their piece. An asset
+-- with no head is a still prop (an egg, decision 0057): no joints, its pieces anchored. An animal can
+-- wear its rainbow coat (decision 0058): the same model with a second texture. Models are
 -- tagged "Creature"; the client animates the Motor6Ds from the Anim and AnimAt attributes set here
 -- (stations-client/Creatures.client.luau). Display only: no game rules.
 
@@ -27,23 +29,44 @@ local STRIDE = 1.5 -- walk strides a second at Scale 1; bigger animals step slow
 local STEP = 2.63 -- studs one stride covers at Scale 1 (the legs swing 27 degrees each way)
 
 local FLAT = Vector3.new(1, 0, 1)
+-- A creature's yaw comes from where its head is. A still prop has none: this is the turn the importer
+-- gives every model of this build (measured on the creatures).
+local STILL_YAW = 0
 local templates: { [string]: Model | boolean } = {} -- true while loading, false when it failed
 
 local function vec(t: { number }): Vector3
 	return Vector3.new(t[1], t[2], t[3])
 end
 
-local function textureOf(entry: StationAssets.Asset): string?
-	if entry.texture then
-		return `rbxassetid://{entry.texture}`
-	elseif entry.decal then
+local function textureOf(texture: number?, decal: number?): string?
+	if texture then
+		return `rbxassetid://{texture}`
+	elseif decal then
 		-- The upload could not resolve the decal's image id: read it from the decal itself.
-		local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.decal)
-		local decal = ok and loaded:FindFirstChildWhichIsA("Decal", true)
-		return if decal then decal.Texture else nil
+		local ok, loaded = pcall(InsertService.LoadAsset, InsertService, decal)
+		local found = ok and loaded:FindFirstChildWhichIsA("Decal", true)
+		return if found then found.Texture else nil
 	end
 	return nil
 end
+
+-- The texture of asset `name`'s rainbow coat, read once; nil when it has none or it did not load.
+local coats: { [string]: string | boolean } = {}
+local function coat(name: string): string?
+	if coats[name] == nil then
+		local entry = StationAssets[name]
+		coats[name] = (entry and textureOf(entry.rainbowTexture, entry.rainbowDecal)) or false
+	end
+	return (coats[name] or nil) :: string?
+end
+
+local RAINBOW = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 90, 90)),
+	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 220, 80)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(90, 230, 120)),
+	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(90, 170, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 110, 255)),
+})
 
 local DARK = Color3.fromRGB(70, 30, 110) -- the glow of their aura
 
@@ -102,7 +125,7 @@ local function build(name: string): Model?
 		warn(`[Creatures] {name} failed to load: {tostring(loaded)}`)
 		return nil
 	end
-	local texture = textureOf(entry)
+	local texture = textureOf(entry.texture, entry.decal)
 	local model = Instance.new("Model")
 	model.Name = name
 	local parts: { [string]: MeshPart } = {}
@@ -135,10 +158,13 @@ local function build(name: string): Model?
 
 	-- Manifest space (x right, y up, z towards the head, origin on the ground under the middle)
 	-- to world: the body's centre gives the place, the head's direction from it the yaw.
-	local body, head = parts[`{name}_body`], parts[`{name}_head`]
-	local cb, ch = vec(entry.centres[body.Name]), vec(entry.centres[head.Name])
-	local want, have = (ch - cb) * FLAT, (head.Position - body.Position) * FLAT
-	local yaw = math.atan2(have.X, have.Z) - math.atan2(want.X, want.Z)
+	local body, head = parts[`{name}_body`], parts[`{name}_head`] :: MeshPart?
+	local cb = vec(entry.centres[body.Name])
+	local yaw = STILL_YAW
+	if head then
+		local want, have = (vec(entry.centres[head.Name]) - cb) * FLAT, (head.Position - body.Position) * FLAT
+		yaw = math.atan2(have.X, have.Z) - math.atan2(want.X, want.Z)
+	end
 	local frame = CFrame.new(body.Position) * CFrame.Angles(0, yaw, 0) * CFrame.new(-cb)
 	for partName, c in entry.centres do
 		local off = (frame * vec(c) - parts[partName].Position).Magnitude
@@ -158,6 +184,9 @@ local function build(name: string): Model?
 	root.CanCollide, root.CanQuery, root.CanTouch = false, false, false
 	root.Parent = model
 	model.PrimaryPart = root
+	if head == nil then
+		return model -- a still prop: its pieces stay anchored round the Root
+	end
 
 	-- A joint at world point `at` with the Root's axes: x right, y up, -z forward.
 	local function joint(jointName: string, part0: BasePart, part1: BasePart, at: Vector3)
@@ -279,6 +308,7 @@ end
 -- its training, or its version's), set as attributes so every player's client sees them.
 function Creatures.describe(model: Model, s: string, v: string?, animal: StationRules.Owned?)
 	model:SetAttribute("Species", s)
+	model:SetAttribute("Rainbow", if animal and animal.rainbow then true else nil)
 	model:SetAttribute("Variant", v)
 	local plain = StationRules.versionStats(s, v) :: StationConfig.Stats
 	for _, stat in StationConfig.STATS do
@@ -294,13 +324,36 @@ function Creatures.describeFoe(model: Model, foeId: string, stats: StationConfig
 	end
 end
 
-function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?): Model?
+-- `rainbow`: in its rainbow coat (decision 0058), with a few sparkles. The client turns the Neon pieces
+-- of a model whose "Rainbow" attribute is set (`describe`) through the colours.
+function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?, rainbow: boolean?): Model?
 	local source = template(name)
 	if source == nil then
 		return nil
 	end
+	local texture = if rainbow then coat(name) else nil
 	local model = source:Clone()
 	model:PivotTo(at)
+	if texture then
+		for _, d in model:GetDescendants() do
+			if d:IsA("MeshPart") and d.Material ~= Enum.Material.Neon then
+				d.TextureID = texture
+			end
+		end
+		local unit = model:GetAttribute("Scale") :: number
+		local glitter = Instance.new("ParticleEmitter")
+		glitter.Name = "Glitter"
+		glitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		glitter.Color = RAINBOW
+		glitter.LightEmission = 0.9
+		glitter.Size =
+			NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.45 * unit), NumberSequenceKeypoint.new(1, 0) })
+		glitter.Lifetime = NumberRange.new(0.8, 1.6)
+		glitter.Rate = 7
+		glitter.Speed = NumberRange.new(0.5 * unit, 2 * unit)
+		glitter.SpreadAngle = Vector2.new(180, 180)
+		glitter.Parent = model:FindFirstChild(`{name}_body`)
+	end
 	if look then
 		local size = look.size or 1
 		if size ~= 1 then
@@ -320,6 +373,20 @@ function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?
 	model:SetAttribute("Asset", name)
 	Creatures.play(model, "idle")
 	CollectionService:AddTag(model, "Creature")
+	model.Parent = parent
+	return model
+end
+
+-- A still prop (an egg) standing at `at`, its front along the CFrame's look, `scale` times the size it
+-- was built. Nil when the asset is not uploaded yet or did not load.
+function Creatures.still(name: string, at: CFrame, scale: number, parent: Instance): Model?
+	local source = template(name)
+	if source == nil then
+		return nil
+	end
+	local model = source:Clone()
+	model:ScaleTo(model:GetScale() * scale)
+	model:PivotTo(at)
 	model.Parent = parent
 	return model
 end
@@ -355,6 +422,7 @@ function Creatures.publishPortraits()
 					d.Anchored = true
 				end
 			end
+			copy:SetAttribute("Coat", coat(name)) -- its rainbow coat's texture, for a rainbow animal's picture
 			copy.Parent = folder
 		end)
 	end

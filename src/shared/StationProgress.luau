@@ -13,8 +13,17 @@ local StationProgress = {}
 
 type Stats = StationConfig.Stats
 -- One owned animal: the hatched Owned fields plus an id, and where it trains (at = station id)
--- since when (os.time).
-export type Animal = { id: number, s: string, v: string?, stats: Stats, trained: Stats?, at: string?, since: number? }
+-- since when (os.time). rainbow = true: it wears the rainbow coat (decision 0058).
+export type Animal = {
+	id: number,
+	s: string,
+	v: string?,
+	stats: Stats,
+	trained: Stats?,
+	rainbow: boolean?,
+	at: string?,
+	since: number?,
+}
 -- A bought egg: which egg, since when it has been hatching (os.time; nil while it waits in the
 -- egg storage), and the animal the server rolled for it when it was bought. The animal is never
 -- sent to the client (`public`).
@@ -113,7 +122,7 @@ local function owned(a: any): StationRules.Owned?
 	local trained = if type(a.trained) == "table"
 		then cleanStats(a.trained, 0, StationConfig.MAX_LEVEL, StationRules.ZERO)
 		else nil
-	return { s = a.s, v = v, stats = stats, trained = trained }
+	return { s = a.s, v = v, stats = stats, trained = trained, rainbow = if a.rainbow == true then true else nil }
 end
 
 function StationProgress.isTitan(a: Animal): boolean
@@ -149,7 +158,8 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			if own == nil or id == 0 or ids[id] then
 				continue
 			end
-			local animal: Animal = { id = id, s = own.s, v = own.v, stats = own.stats, trained = own.trained }
+			local animal: Animal =
+				{ id = id, s = own.s, v = own.v, stats = own.stats, trained = own.trained, rainbow = own.rainbow }
 			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots then
 				animal.at = a.at
 				animal.since = int(a.since, 0, MAX_TIME, now or 0)
@@ -242,6 +252,7 @@ function StationProgress.buy(p: Profile, eggId: string, hatched: StationRules.Ow
 		v = hatched.v,
 		stats = table.clone(hatched.stats),
 		trained = if hatched.trained then table.clone(hatched.trained) else nil, -- the base levels
+		rainbow = hatched.rainbow,
 	}
 	p.eggs = table.clone(p.eggs)
 	table.insert(p.eggs, { egg = eggId, animal = animal })
@@ -282,8 +293,14 @@ function StationProgress.crack(p: Profile, k: number, now: number): (Profile, bo
 	elseif #p.animals >= math.min(StationProgress.value(p, "barn"), StationProgress.MAX_ANIMALS) then
 		return p, false, "full", nil
 	end
-	local animal: Animal =
-		{ id = p.nextId, s = e.animal.s, v = e.animal.v, stats = e.animal.stats, trained = e.animal.trained }
+	local animal: Animal = {
+		id = p.nextId,
+		s = e.animal.s,
+		v = e.animal.v,
+		stats = e.animal.stats,
+		trained = e.animal.trained,
+		rainbow = e.animal.rainbow,
+	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
 	if StationProgress.isTitan(animal) then
@@ -297,8 +314,15 @@ function StationProgress.crack(p: Profile, k: number, now: number): (Profile, bo
 end
 
 -- Admin menu (decision 0049): add one animal of species `s` (and variant `v`) with every stat at
--- `level`, joining the team like a hatched one. It skips the Barn's limit, not the save's.
-function StationProgress.give(p: Profile, s: string, v: string?, level: number): (Profile, boolean, string?, Animal?)
+-- `level`, in a rainbow coat when `rainbow` is true, joining the team like a hatched one. It skips the
+-- Barn's limit, not the save's.
+function StationProgress.give(
+	p: Profile,
+	s: string,
+	v: string?,
+	level: number,
+	rainbow: boolean?
+): (Profile, boolean, string?, Animal?)
 	local stats = StationRules.versionStats(s, v)
 	if stats == nil or level ~= math.floor(level) or level < 1 or level > StationConfig.MAX_LEVEL then
 		return p, false, "animal", nil
@@ -309,7 +333,14 @@ function StationProgress.give(p: Profile, s: string, v: string?, level: number):
 	for _, stat in StationConfig.STATS do
 		trained[stat] = level
 	end
-	local animal: Animal = { id = p.nextId, s = s, v = v, stats = stats, trained = trained :: Stats }
+	local animal: Animal = {
+		id = p.nextId,
+		s = s,
+		v = v,
+		stats = stats,
+		trained = trained :: Stats,
+		rainbow = if rainbow then true else nil,
+	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
 	if StationProgress.isTitan(animal) then

@@ -7,6 +7,8 @@
 -- glow: sRGB Neon colour per glow mesh (left untextured, set to Neon by Creatures.luau).
 -- centres, joints: the rig, in studs from the point on the ground under the model's middle
 -- (x right, y up, z towards the head): where each mesh's centre is, and where each piece turns.
+-- rainbowDecal / rainbowTexture: the Decal and Image ids of its rainbow coat (decision 0058), a second
+-- texture for the same model.
 
 export type Asset = {
 	size: { number },
@@ -17,6 +19,8 @@ export type Asset = {
 	model: number?,
 	decal: number?,
 	texture: number?,
+	rainbowDecal: number?,
+	rainbowTexture: number?,
 }
 
 local StationAssets: { [string]: Asset } = {
@@ -1197,6 +1201,60 @@ local StationAssets: { [string]: Asset } = {
 		},
 		model = 102043598148461,
 		decal = 82479173262899,
+		texture = nil,
+	},
+	egg_meadow = {
+		size = { 3.23, 3.35, 3.34 },
+		parts = { "egg_meadow_body" },
+		glow = {},
+		centres = {
+			egg_meadow_body = { 0, 1.673, 0 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	egg_wild = {
+		size = { 3.52, 3, 3.55 },
+		parts = { "egg_wild_body", "egg_wild_body_glow" },
+		glow = {
+			egg_wild_body_glow = { 90, 255, 200 },
+		},
+		centres = {
+			egg_wild_body = { 0, 1.502, 0 },
+			egg_wild_body_glow = { 0.049, 0.517, -0.022 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	egg_safari = {
+		size = { 3.37, 3.49, 3.43 },
+		parts = { "egg_safari_body" },
+		glow = {},
+		centres = {
+			egg_safari_body = { 0, 1.745, 0 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	egg_golden = {
+		size = { 2.55, 3.54, 2.67 },
+		parts = { "egg_golden_body", "egg_golden_body_glow" },
+		glow = {
+			egg_golden_body_glow = { 170, 70, 255 },
+		},
+		centres = {
+			egg_golden_body = { 0, 1.75, 0.036 },
+			egg_golden_body_glow = { -0.001, 2.307, -0.063 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
 		texture = nil,
 	},
 }

@@ -33,7 +33,7 @@ for i = 1, World.RANCHES do
 end
 -- and the eggs waiting in its hatchery
 local held: { [number]: string } = {}
-local hatchedAt: { [number]: Vector3 } = {} -- animal id -> the nest it has just hatched in
+local hatchedAt: { [number]: CFrame } = {} -- animal id -> the nest it has just hatched in
 local syncHerd: (i: number, animals: { any }) -> ()
 local function showEggs(i: number, eggs: { { egg: string, since: number? } })
 	local key = ""
@@ -365,7 +365,9 @@ local router = Router.new({
 					v = born.v,
 					stats = born.stats,
 					trained = born.trained,
+					rainbow = born.rainbow,
 					at = at,
+					egg = p.eggs[k].egg,
 					body = look.body,
 					spot = look.spot,
 				})
@@ -384,16 +386,20 @@ local router = Router.new({
 			end,
 		},
 		-- the admin menu (decision 0049): add the k-th animal of `LOOKS` (never a foe) to the admin's own
-		-- ranch with every stat at `level`
+		-- ranch with every stat at `level`, in a rainbow coat when `rainbow` is true (decision 0058)
 		admin_add = {
-			args = { Payload.int({ min = 1, max = 100 }), Payload.int({ min = 1, max = StationConfig.MAX_LEVEL }) },
-			handler = function(player, k: number, level: number)
+			args = {
+				Payload.int({ min = 1, max = 100 }),
+				Payload.int({ min = 1, max = StationConfig.MAX_LEVEL }),
+				Payload.boolean(),
+			},
+			handler = function(player, k: number, level: number, rainbow: boolean)
 				local look = LOOKS[k]
 				if not isAdmin(player) or look == nil or look.s == nil then
 					return false, "admin"
 				end
 				return apply(player, function(p)
-					local q, ok, code = StationProgress.give(p, look.s :: string, look.v, level)
+					local q, ok, code = StationProgress.give(p, look.s :: string, look.v, level, rainbow)
 					return q, ok, code
 				end)
 			end,
@@ -619,8 +625,8 @@ function syncHerd(i: number, animals: { StationProgress.Animal })
 				if nest then
 					task.wait(1.4) -- the hatching animation plays first
 				end
-				local at = if nest then CFrame.new(nest) else CFrame.new(somewhere(i))
-				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot)
+				local at = nest or CFrame.new(somewhere(i))
+				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot, nil, a.rainbow)
 				if model and herd[id] == false then
 					herd[id] = model
 					Creatures.describe(model, a.s, a.v, a :: any)

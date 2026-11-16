@@ -1,0 +1,61 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-050",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The rainbow coat (decision 0058): any hatch has a small chance (1 in 200) to come out in a rainbow coat, a second texture for the same model, painted for every animal and variant. A look only.",
+  "inputs": [
+    "docs/decisions/0058-animal-stations-rainbow.md"
+  ],
+  "dependencies": [
+    "STATION-045"
+  ],
+  "files": [
+    "tools/blender/stations/rainbow.py",
+    "tools/blender/stations/export_assets.py",
+    "tools/blender/upload-assets.mjs",
+    "tools/blender/write-assets-module.mjs",
+    "assets/stations/*_rainbow.png",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/Portrait.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/StationRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0058-animal-stations-rainbow.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-animals.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/concepts/*.png",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-050.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationProgress.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A hatch from any egg comes out rainbow 1 time in 200, whatever the animal or variant; its stats are those of the same animal without the coat",
+    "A rainbow animal shows its coat on the ranch, in a fight and in its pictures, and is named Rainbow on its card and when it hatches",
+    "The coat is saved with the animal; old saves load unchanged",
+    "The server decides the coat; a client cannot ask for one (the admin's menu apart)"
+  ],
+  "verification": "Not verified yet: built and exported, waiting for the upload and the check in Studio.",
+  "output_artifacts": [
+    "docs/concepts/rainbow-family.png",
+    "src/shared/StationAssets.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16: 'add a rainbow texture that has a small chance to apply to any animal on hatch'. Checkpoint for SHANNON: the chance (1 in 200, one number in StationConfig); whether a rainbow animal should also be stronger (it is a look only)."
+}

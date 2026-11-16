@@ -43,13 +43,13 @@ local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defence"
 local GROUP_NAME: { [string]: string } = { pack = "Pack", solitary = "Solitary" }
 local STAT_SHORT: { [string]: string } =
 	{ speed = "SPD", strength = "STR", stamina = "STA", mana = "MANA", health = "HP", defence = "DEF" }
--- The colours of each egg, as the world draws it (World.luau's EGG_LOOK).
-local EGG_ART: { [string]: { body: Color3, spot: Color3 } } = {
-	meadow = { body = Color3.fromRGB(250, 240, 200), spot = Color3.fromRGB(130, 210, 110) },
-	wild = { body = Color3.fromRGB(150, 210, 120), spot = Color3.fromRGB(110, 80, 50) },
-	safari = { body = Color3.fromRGB(245, 200, 110), spot = Color3.fromRGB(70, 50, 35) },
-	golden = { body = Color3.fromRGB(255, 205, 70), spot = Color3.fromRGB(150, 80, 220) },
-}
+local RAINBOW = ColorSequence.new({ -- the chip of an animal in a rainbow coat (decision 0058)
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 120)),
+	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 225, 100)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 235, 140)),
+	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(120, 190, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(210, 140, 255)),
+})
 
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
@@ -179,7 +179,7 @@ local ranch = newSheet("ranch", "Your ranch")
 local shop = newSheet("shop", "Egg vendor")
 local waves = newSheet("waves", "Endless waves")
 local admin = newSheet("admin", "Admin")
-local adminAdd = newSheet("adminadd", "Admin: add animals")
+local adminAdd = newSheet("adminadd", "Add animals")
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
 end
@@ -280,8 +280,16 @@ local function animalCard(a: any, order: number)
 
 	local card = Style.card(animals.body, UDim2.fromOffset(236, 272), colour)
 	card.LayoutOrder = order
-	local view = Portrait.new(card, StationRules.assetOf(a.s, a.v), { background = darker(colour) })
+	local view =
+		Portrait.new(card, StationRules.assetOf(a.s, a.v), { background = darker(colour), rainbow = a.rainbow })
 	view.Position = UDim2.fromOffset(10, 10)
+	if a.rainbow then
+		local coat = Style.chip(card, "RAINBOW", Color3.new(1, 1, 1), C.panel)
+		coat.Position = UDim2.fromOffset(14, 70)
+		local colours = Instance.new("UIGradient")
+		colours.Color = RAINBOW
+		colours.Parent = coat
+	end
 	local name = Style.text(card, nameOf(a), 20, colour, UDim2.new(1, -116, 0, 24))
 	name.Position = UDim2.fromOffset(106, 10)
 	name.TextTruncate = Enum.TextTruncate.AtEnd
@@ -373,19 +381,9 @@ end
 
 -- Eggs: the storage and what is hatching ----------------------------------------------------------------
 
-local function eggArt(parent: Instance, eggId: string, height: number): Frame
-	local look = EGG_ART[eggId] or EGG_ART.meadow
-	local egg = Style.frame(parent, UDim2.fromOffset(height * 0.78, height), look.body)
-	local round = Instance.new("UICorner")
-	round.CornerRadius = UDim.new(0.5, 0)
-	round.Parent = egg
-	Style.stroke(egg, look.spot, 3)
-	for _, at in { { 0.3, 0.3 }, { 0.62, 0.5 }, { 0.36, 0.7 } } do
-		local spot = Style.frame(egg, UDim2.fromScale(0.2, 0.15), look.spot)
-		spot.AnchorPoint, spot.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(at[1], at[2])
-		Style.round(spot, 99)
-	end
-	return egg
+-- A picture of an egg: its own model (decision 0057), `side` units square.
+local function eggArt(parent: Instance, eggId: string, side: number): ViewportFrame
+	return Portrait.new(parent, `egg_{eggId}`, { size = UDim2.fromOffset(side, side) })
 end
 
 local function eggCard(k: number, e: any)
@@ -394,7 +392,7 @@ local function eggCard(k: number, e: any)
 	local ready = e.since ~= nil and now >= e.since + def.hatch
 	local card = Style.card(eggs.body, UDim2.fromOffset(236, 140), if ready then C.good else C.edge)
 	card.LayoutOrder = k
-	eggArt(card, e.egg, 74).Position = UDim2.fromOffset(12, 10)
+	eggArt(card, e.egg, 68).Position = UDim2.fromOffset(10, 10)
 	local name = Style.text(card, def.name, 19, C.text, UDim2.new(1, -90, 0, 24))
 	name.Position = UDim2.fromOffset(84, 10)
 	name.TextTruncate = Enum.TextTruncate.AtEnd
@@ -826,7 +824,7 @@ redraw.waves = function()
 		local view = Portrait.new(
 			card,
 			StationRules.assetOf(a.s, a.v),
-			{ size = UDim2.fromOffset(84, 82), background = darker(colour) }
+			{ size = UDim2.fromOffset(84, 82), background = darker(colour), rainbow = a.rainbow }
 		)
 		view.Position = UDim2.fromOffset(10, 8)
 		local name = Style.text(card, nameOf(a), 14, colour, UDim2.new(1, -6, 0, 34))
@@ -897,7 +895,8 @@ local function showCard(model: Model?)
 		local va = if type(v) == "string" then StationConfig.variant(animal.id, v) else nil
 		local rarity = if va then va.tier else animal.rarity
 		local colour = RARITY_COLOUR[rarity] or Color3.new(1, 1, 1)
-		cardName.Text = if va then va.name else animal.name
+		cardName.Text = (if model:GetAttribute("Rainbow") then "Rainbow " else "")
+			.. (if va then va.name else animal.name)
 		cardName.TextColor3 = colour
 		cardEdge.Color = colour
 		cardKind.Text =
@@ -943,27 +942,44 @@ end)
 
 -- Hatching -------------------------------------------------------------------------------------------
 
--- An egg of these colours standing on `at` rocks harder and harder, then bursts: a flash, sparks
--- and bits of shell. Takes HATCH seconds; the server brings the animal out of the nest after it.
+-- The egg `eggId` standing at `at` rocks harder and harder, then bursts: a flash, sparks and bits of
+-- shell in its two colours. Takes HATCH seconds; the server brings the animal out of the nest after
+-- it. The egg is its own model (the still copy the portraits use), or a plain shell without one.
 local HATCH = 1.4
-local function hatchEffect(at: Vector3, body: Color3, spot: Color3)
+local function hatchEffect(nest: CFrame, eggId: string, body: Color3, spot: Color3)
 	local h = 3
-	local shell = Instance.new("Part")
-	shell.Anchored, shell.CanCollide, shell.CanQuery = true, false, false
-	shell.Size, shell.Color, shell.Material = Vector3.new(h * 0.75, h, h * 0.75), body, Enum.Material.SmoothPlastic
-	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Sphere
-	mesh.Parent = shell
+	local at = nest.Position
+	local portraits = ReplicatedStorage:FindFirstChild("Portraits")
+	local source = portraits and portraits:FindFirstChild(`egg_{eggId}`)
+	local shell: Instance
+	local place: (CFrame) -> ()
 	local light = Instance.new("PointLight")
 	light.Color, light.Range, light.Brightness, light.Shadows = spot, 10, 0.5, false
-	light.Parent = shell
+	if source and source:IsA("Model") and source.PrimaryPart then
+		local model = source:Clone()
+		light.Parent = model.PrimaryPart
+		shell, place = model, function(foot: CFrame)
+			model:PivotTo(foot)
+		end
+	else
+		local plain = Instance.new("Part")
+		plain.Anchored, plain.CanCollide, plain.CanQuery = true, false, false
+		plain.Size, plain.Color, plain.Material = Vector3.new(h * 0.75, h, h * 0.75), body, Enum.Material.SmoothPlastic
+		local mesh = Instance.new("SpecialMesh")
+		mesh.MeshType = Enum.MeshType.Sphere
+		mesh.Parent = plain
+		light.Parent = plain
+		shell, place = plain, function(foot: CFrame)
+			plain.CFrame = foot * CFrame.new(0, h / 2, 0)
+		end
+	end
+	place(nest)
 	shell.Parent = Workspace
-	local foot = CFrame.new(at)
 	local started = os.clock()
 	while os.clock() - started < HATCH do -- rock about the foot, faster and wider
 		local t = (os.clock() - started) / HATCH
 		local lean = math.sin(t * t * 60) * math.rad(4 + 22 * t)
-		shell.CFrame = foot * CFrame.Angles(0, 0, lean) * CFrame.new(0, h / 2 + math.abs(lean) * 0.6, 0)
+		place(nest * CFrame.Angles(0, 0, lean) * CFrame.new(0, math.abs(lean) * 0.6, 0))
 		light.Brightness = 0.5 + 4 * t
 		RunService.RenderStepped:Wait()
 	end
@@ -1063,34 +1079,72 @@ do
 	end
 end
 
--- Admin menu 2 (decision 0049): add an animal of any species or variant to your own ranch, with
--- every stat at the level chosen on the first button. The server checks the admin and the numbers.
+-- Admin menu 2 (decisions 0049, 0058): add an animal of any species or variant to your own ranch by
+-- tapping its picture. The row on top sets the level of every stat of the new animal and whether it
+-- wears the rainbow coat. The server checks the admin and the numbers.
 do
 	local LEVELS = { 1, 10, 35, StationConfig.MAX_LEVEL }
-	local at = 1
-	local pick: TextLabel
-	local function label()
-		pick.Text = `Stat level for new animals: {LEVELS[at]} (tap to change)`
-	end
-	pick = Style.button(adminAdd.body, "", function()
-		at = at % #LEVELS + 1
-		label()
-	end, "ghost", UDim2.new(1, -20, 0, 44))
-	pick.LayoutOrder = 0
-	label()
-	local k = 0 -- the server lists them in this order too (LOOKS: species, then variants, then foes)
-	local function add(text: string)
-		k += 1
-		local mine = k
-		Style.button(adminAdd.body, text, function()
-			send("admin_add", mine, LEVELS[at])
-		end, "ghost", UDim2.new(1, -20, 0, 44)).LayoutOrder =
-			mine
-	end
+	local level, rainbow = 1, false
+	local list: { { s: string, v: string? } } = {} -- in the server's order (LOOKS: a species, then its variants)
 	for _, sp in StationConfig.SPECIES do
-		add(`Add {sp.name}`)
+		table.insert(list, { s = sp.id })
 		for _, va in sp.variants do
-			add(`Add {va.name} ({va.tier})`)
+			table.insert(list, { s = sp.id, v = va.id })
+		end
+	end
+	local function draw()
+		Style.clear(adminAdd.body)
+		local row = Instance.new("Frame")
+		row.BackgroundTransparency = 1
+		row.Size, row.AutomaticSize = UDim2.new(1, -20, 0, 0), Enum.AutomaticSize.Y
+		row.LayoutOrder = 0
+		Style.list(row, 6, true, true)
+		row.Parent = adminAdd.body
+		local words = Style.text(row, "Stat level", 16, C.muted, UDim2.fromOffset(80, 40))
+		words.LayoutOrder = 0
+		local picks: { [number]: TextButton } = {}
+		for i, n in LEVELS do
+			picks[n] = Style.button(row, tostring(n), function()
+				level = n
+				for m, b in picks do
+					Style.kind(b, if m == level then "primary" else "ghost")
+				end
+			end, if n == level then "primary" else "ghost", UDim2.fromOffset(52, 40))
+			picks[n].LayoutOrder = i
+		end
+		local coat = Style.button(row, if rainbow then "Rainbow coat: on" else "Rainbow coat: off", function()
+			rainbow = not rainbow
+			draw() -- every picture changes its coat
+		end, if rainbow then "good" else "ghost", UDim2.fromOffset(170, 40))
+		coat.LayoutOrder = #LEVELS + 1
+		for k, a in list do
+			local colour = RARITY_COLOUR[StationRules.rarity(a :: any)] or C.text
+			local name = nameOf(a)
+			local tile = Style.button(adminAdd.body, "", function()
+				local ok, code = request:InvokeServer("admin_add", k, level, rainbow)
+				local said = if ok
+					then `Added a {if rainbow then "Rainbow " else ""}{name}, level {level}`
+					else REFUSED[code] or `Can't do that ({code})`
+				Ui.toast(screen, said, 2)
+			end, "ghost", UDim2.fromOffset(116, 146))
+			tile.Name, tile.LayoutOrder = name, k
+			Style.stroke(tile, colour, 2)
+			local view = Portrait.new(
+				tile,
+				StationRules.assetOf(a.s, a.v),
+				{ size = UDim2.fromOffset(96, 96), background = darker(colour), rainbow = rainbow }
+			)
+			view.Position = UDim2.fromOffset(10, 8)
+			local label = Style.text(tile, name, 14, colour, UDim2.new(1, -8, 0, 34))
+			label.Position = UDim2.fromOffset(4, 108)
+			label.TextXAlignment = Enum.TextXAlignment.Center
+		end
+	end
+	local drawn = false
+	redraw.adminadd = function() -- drawn once, when first opened: a new profile must not scroll it back up
+		if not drawn then
+			drawn = true
+			draw()
 		end
 	end
 end
@@ -1195,9 +1249,10 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			end
 		end
 		if payload.at then
-			hatchEffect(payload.at, payload.body, payload.spot) -- then the animal steps out
+			hatchEffect(payload.at, payload.egg, payload.body, payload.spot) -- then the animal steps out
 		end
-		Ui.toast(screen, `You hatched a {nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
+		local coat = if payload.rainbow then "Rainbow " else ""
+		Ui.toast(screen, `You hatched a {coat}{nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
 	elseif kind == "wavedone" then
 		local took = string.format("%.0f", payload.seconds)
 		Style.clear(drops)

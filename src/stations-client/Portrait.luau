@@ -17,7 +17,8 @@ local Portrait = {}
 local FOV = 26
 local LOOK = Vector3.new(0.62, 0.22, -0.75).Unit -- from the front, a little to the right and above
 
-export type Options = { size: UDim2?, background: Color3?, tint: Color3?, zoom: number? }
+-- rainbow: in its rainbow coat (decision 0058), whose texture the server leaves on the copy as "Coat"
+export type Options = { size: UDim2?, background: Color3?, tint: Color3?, zoom: number?, rainbow: boolean? }
 
 local function fill(view: ViewportFrame, source: Model, asset: string, options: Options)
 	local entry = StationAssets[asset]
@@ -25,6 +26,16 @@ local function fill(view: ViewportFrame, source: Model, asset: string, options: 
 		return
 	end
 	local model = source:Clone()
+	local coat = if options.rainbow then source:GetAttribute("Coat") else nil
+	if type(coat) == "string" then
+		for i, d in model:GetDescendants() do
+			if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
+				d.Color = Color3.fromHSV(i * 0.21 % 1, 0.8, 1)
+			elseif d:IsA("MeshPart") then
+				d.TextureID = coat
+			end
+		end
+	end
 	if options.tint then
 		for _, d in model:GetDescendants() do
 			if d:IsA("MeshPart") and d.Material ~= Enum.Material.Neon then

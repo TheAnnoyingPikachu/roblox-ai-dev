@@ -236,7 +236,7 @@ function WaveShow.run(
 			{ model = model, home = home, hp = fighter.maxHp, maxHp = fighter.maxHp, version = 0, side = side }
 	end
 	for i, a in team do
-		local model = Creatures.spawn(Creatures.asset(a.s, a.v), CFrame.new(0, 500, 0), folder)
+		local model = Creatures.spawn(Creatures.asset(a.s, a.v), CFrame.new(0, 500, 0), folder, nil, a.rainbow)
 		if model then
 			Creatures.describe(model, a.s, a.v, a)
 		end

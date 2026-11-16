@@ -1150,6 +1150,13 @@ end
 RunService.PreSimulation:Connect(function(dt: number)
 	local time = Workspace:GetServerTimeNow()
 	for model, rig in rigs do
+		if model:GetAttribute("Rainbow") then -- a rainbow animal's Neon pieces turn through the colours
+			for i, d in model:GetChildren() do
+				if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
+					d.Color = Color3.fromHSV((time * 0.3 + i * 0.21) % 1, 0.8, 1)
+				end
+			end
+		end
 		local anim = model:GetAttribute("Anim") :: string?
 		local at = (model:GetAttribute("AnimAt") :: number?) or time
 		local clock = os.clock()

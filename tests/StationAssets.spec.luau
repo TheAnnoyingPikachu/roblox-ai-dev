@@ -59,8 +59,40 @@ describe("StationAssets", function()
 		end
 	end)
 
+	it("has a still model for every egg: one painted piece, no joints", function()
+		for _, egg in StationConfig.EGGS do
+			local name = `egg_{egg.id}`
+			local asset = StationAssets[name]
+			expect(asset == nil).toBe(false)
+			expect(asset.model == nil).toBe(false) -- uploaded
+			expect(table.find(asset.parts, `{name}_body`) == nil).toBe(false)
+			expect(asset.glow[`{name}_body`]).toBeNil()
+			expect(count(asset.joints)).toBe(0)
+			expect(asset.size[2] >= 3 and asset.size[2] <= 3.6).toBeTruthy() -- Ranch.luau sizes the eggs by this
+		end
+	end)
+
+	it("has a rainbow coat for every animal and variant, and for nothing else", function()
+		local coats = 0
+		for _, sp in StationConfig.SPECIES do
+			coats += 1
+			expect(StationAssets[StationRules.assetOf(sp.id, nil)].rainbowDecal == nil).toBe(false)
+			for _, va in sp.variants do
+				coats += 1
+				expect(StationAssets[StationRules.assetOf(sp.id, va.id)].rainbowDecal == nil).toBe(false)
+			end
+		end
+		for _, asset in StationAssets do
+			coats -= if asset.rainbowDecal then 1 else 0
+		end
+		expect(coats).toBe(0)
+	end)
+
 	it("keeps every creature a jointed body under 20,000 triangles a mesh", function()
 		for name, entry in manifest do
+			if string.sub(name, 1, 4) == "egg_" then
+				continue
+			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do
 				expect(entry.parts[`{name}_{piece}`] == nil).toBe(false)
 			end

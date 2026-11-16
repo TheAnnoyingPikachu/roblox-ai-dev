@@ -3453,5 +3453,133 @@
         -4.653
       ]
     }
+  },
+  "egg_meadow": {
+    "fbx": "build/blender/stations/egg_meadow.fbx",
+    "png": "build/blender/stations/egg_meadow.png",
+    "preview": "build/blender/stations/previews/egg_meadow.png",
+    "size_studs": [
+      3.23,
+      3.35,
+      3.34
+    ],
+    "tris": 5224,
+    "parts": {
+      "egg_meadow_body": 5224
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Meadow Egg: cream dappled green, in a nest of grass and daisies, a flowering vine, a butterfly.",
+    "glow": {},
+    "centres": {
+      "egg_meadow_body": [
+        0.0,
+        1.673,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "egg_wild": {
+    "fbx": "build/blender/stations/egg_wild.fbx",
+    "png": "build/blender/stations/egg_wild.png",
+    "preview": "build/blender/stations/previews/egg_wild.png",
+    "size_studs": [
+      3.52,
+      3.0,
+      3.55
+    ],
+    "tris": 4490,
+    "parts": {
+      "egg_wild_body": 4350,
+      "egg_wild_body_glow": 140
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Wild Egg: leaf-green with bark spots, bound in thorned vines, ferns and Neon mushrooms at its foot.",
+    "glow": {
+      "egg_wild_body_glow": [
+        90,
+        255,
+        200
+      ]
+    },
+    "centres": {
+      "egg_wild_body": [
+        0.0,
+        1.502,
+        -0.0
+      ],
+      "egg_wild_body_glow": [
+        0.049,
+        0.517,
+        -0.022
+      ]
+    },
+    "joints": {}
+  },
+  "egg_safari": {
+    "fbx": "build/blender/stations/egg_safari.fbx",
+    "png": "build/blender/stations/egg_safari.png",
+    "preview": "build/blender/stations/previews/egg_safari.png",
+    "size_studs": [
+      3.37,
+      3.49,
+      3.43
+    ],
+    "tris": 5416,
+    "parts": {
+      "egg_safari_body": 5416
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Safari Egg: sand-gold, spotted and painted, roped and strapped, hung with feathers and a tooth.",
+    "glow": {},
+    "centres": {
+      "egg_safari_body": [
+        0.0,
+        1.745,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "egg_golden": {
+    "fbx": "build/blender/stations/egg_golden.fbx",
+    "png": "build/blender/stations/egg_golden.png",
+    "preview": "build/blender/stations/previews/egg_golden.png",
+    "size_studs": [
+      2.55,
+      3.54,
+      2.67
+    ],
+    "tris": 6548,
+    "parts": {
+      "egg_golden_body": 6188,
+      "egg_golden_body_glow": 360
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Golden Egg: beaten gold, hooped and ribbed, set with Neon violet gems, crowned, on a clawed stand.",
+    "glow": {
+      "egg_golden_body_glow": [
+        170,
+        70,
+        255
+      ]
+    },
+    "centres": {
+      "egg_golden_body": [
+        0.0,
+        1.75,
+        0.036
+      ],
+      "egg_golden_body_glow": [
+        -0.001,
+        2.307,
+        -0.063
+      ]
+    },
+    "joints": {}
   }
 }

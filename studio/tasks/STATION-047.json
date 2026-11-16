@@ -1,0 +1,48 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-047",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The detailed eggs of decision 0057 in the game, everywhere an egg is drawn: the hatchery, the egg storage rack, the egg vendor's counter, the hub's great egg, the egg pictures in the menus and the hatching animation.",
+  "inputs": [
+    "docs/decisions/0057-animal-stations-detailed-eggs.md"
+  ],
+  "dependencies": [
+    "STATION-046"
+  ],
+  "files": [
+    "assets/stations/egg_*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0057-animal-stations-detailed-eggs.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-animals.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-047.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every egg in the world is its Blender model, sized to fit where it stands, with the plain shell only as the fallback when a model does not load",
+    "The egg pictures in the Eggs menu and the egg vendor show the models",
+    "The hatching animation rocks the egg's own model and bursts in its colours",
+    "Prompts, the ready sparkle and opening an egg work as before"
+  ],
+  "verification": "Not verified yet: built and exported, waiting for the upload and the check in Studio.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16: 'go on egg replace all egg things'. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

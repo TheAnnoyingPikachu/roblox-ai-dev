@@ -11,6 +11,8 @@
 // InsertService:LoadAsset); PNG uploads as "Decal". The decal's image id (what TextureID needs) is
 // read from the decal's content via the Asset Delivery API when the key allows it
 // (legacy-asset:manage); otherwise it stays null and the game resolves it from the decal at runtime.
+// A second texture for an uploaded model is a PNG beside it named <asset>_rainbow.png (Animal
+// Stations' rainbow coats): it uploads as a Decal of its own, under the name <asset>_rainbow.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -104,7 +106,9 @@ const wanted = process.argv.slice(3).flatMap((a) => a.split(",")).map((s) => s.t
 // UI icons: decal-only PNGs in assets/<game>/icons/, named like the GardenIcons keys.
 const ICONS = path.join(FILES, "icons");
 const icons = fs.existsSync(ICONS) ? fs.readdirSync(ICONS).filter((f) => /^garden_icon_.*[.]png$/.test(f)).map((f) => f.slice(0, -4)) : [];
-for (const name of wanted) if (!manifest[name] && !icons.includes(name)) throw new Error(`unknown asset ${name}`);
+const coats = fs.readdirSync(FILES).filter((f) => f.endsWith("_rainbow.png") && manifest[f.slice(0, -12)]).map((f) => f.slice(0, -4));
+const extras = [...icons.map((n) => [n, ICONS, "UI icon (tools/icons)"]), ...coats.map((n) => [n, FILES, "rainbow coat of a model (tools/blender)"])];
+for (const name of wanted) if (!manifest[name] && !extras.some(([n]) => n === name)) throw new Error(`unknown asset ${name}`);
 const uploaded = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : {};
 const failed = [];
 
@@ -129,11 +133,11 @@ for (const name of Object.keys(manifest)) {
 	}
 }
 
-for (const name of icons) {
+for (const [name, folder, what] of extras) {
 	if (wanted.length && !wanted.includes(name)) continue;
 	try {
-		console.log(`${name}: uploading icon`);
-		const decal = await create("Decal", path.join(ICONS, `${name}.png`), "image/png", `${prefix} ${name}`, `${label}: UI icon (tools/icons)`);
+		console.log(`${name}: uploading image`);
+		const decal = await create("Decal", path.join(folder, `${name}.png`), "image/png", `${prefix} ${name}`, `${label}: ${what}`);
 		uploaded[name] = { model: null, decal, texture: await imageOf(decal) };
 		fs.writeFileSync(OUT, JSON.stringify(uploaded, null, 2) + "\n");
 	} catch (err) {

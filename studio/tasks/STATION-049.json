@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-049",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A cleaner admin menu for adding animals (decision 0049): a grid of pictures in place of the list of buttons, with the stat level and the rainbow coat chosen on one row at the top.",
+  "inputs": [
+    "docs/decisions/0049-animal-stations-admin-add-animals.md"
+  ],
+  "dependencies": [
+    "STATION-050"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0058-animal-stations-rainbow.md",
+    "studio/tasks/STATION-049.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every animal and variant is one tile: its picture, its name in its rarity's colour",
+    "The stat level (1, 10, 35, 70) and the rainbow coat are picked on a row at the top",
+    "Tapping a tile adds that animal and says so; the list does not jump back to the top",
+    "Admins only, as before: the server checks"
+  ],
+  "verification": "Not verified yet: built and exported, waiting for the upload and the check in Studio.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16: 'make a new add animals menu thats a bit cleaner'."
+}

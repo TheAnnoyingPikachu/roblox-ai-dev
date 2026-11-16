@@ -14,6 +14,7 @@ local Workspace = game:GetService("Workspace")
 
 local Props = require(script.Parent:WaitForChild("Props"))
 local Arena = require(script.Parent:WaitForChild("Arena"))
+local Creatures = require(script.Parent:WaitForChild("Creatures"))
 local part, pillar, label = Props.part, Props.pillar, Props.label
 
 local World = {}
@@ -211,6 +212,22 @@ local function egg(parent: Instance, base: Vector3, h: number, body: Color3, spo
 	return e
 end
 
+-- An egg of type `kind` standing at `at` (its front along the CFrame's look), its shell `h` studs tall:
+-- the Blender model (decision 0057), or the plain spotted shell when that is not uploaded or did not
+-- load. Returns an unseen part the size of the shell, there at once: for a prompt, a light, sparkles.
+local EGG_BUILT = 3 -- the height of a model's shell as it was built
+local function eggModel(parent: Instance, at: CFrame, h: number, kind: string, rng: Random): Part
+	local look = EGG_LOOK[kind] or EGG_LOOK.meadow
+	local holder = part(parent, Vector3.new(h * 0.75, h, h * 0.75), at * CFrame.new(0, h / 2, 0), look.body)
+	holder.Name, holder.Transparency = "Egg", 1
+	task.spawn(function() -- the first of a kind has to load
+		if Creatures.still(`egg_{kind}`, at, h / EGG_BUILT, parent) == nil then
+			egg(parent, at.Position, h, look.body, look.spot, rng)
+		end
+	end)
+	return holder
+end
+
 -- A sharp four-sided point standing on `base`: four corner wedges, tall corners together.
 local function pyramid(parent: Instance, base: CFrame, width: number, height: number, colour: Color3)
 	for k = 0, 3 do
@@ -327,7 +344,7 @@ local function plaza(root: Instance, rng: Random)
 	water.Reflectance = 0.15
 	disc(h, Vector3.new(0, 4.4, 0), 12, 4, STONE, M.Marble)
 	disc(h, Vector3.new(0, 5.2, 0), 9, 0.8, Color3.fromRGB(255, 215, 90), M.Metal)
-	local great = egg(h, Vector3.new(0, 5.2, 0), 13, Color3.fromRGB(255, 236, 170), Color3.fromRGB(255, 150, 190), rng)
+	local great = eggModel(h, CFrame.new(0, 5.2, 0), 13, "golden", rng)
 	great.Name = "GreatEgg"
 	glow(great, Color3.fromRGB(255, 225, 160), 22, 0.7)
 	local sparkle = Instance.new("ParticleEmitter")
@@ -972,7 +989,7 @@ World.kit = {
 	lamp = lamp,
 	tree = tree,
 	flowers = flowers,
-	egg = egg,
+	eggModel = eggModel,
 	fence = fence,
 	barn = barn,
 	silo = silo,

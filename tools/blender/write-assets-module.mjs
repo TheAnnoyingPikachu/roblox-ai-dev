@@ -45,11 +45,13 @@ const lines = [
 				"-- glow: sRGB Neon colour per glow mesh (left untextured, set to Neon by Creatures.luau).",
 				"-- centres, joints: the rig, in studs from the point on the ground under the model's middle",
 				"-- (x right, y up, z towards the head): where each mesh's centre is, and where each piece turns.",
+				"-- rainbowDecal / rainbowTexture: the Decal and Image ids of its rainbow coat (decision 0058), a second",
+				"-- texture for the same model.",
 			]
 		: []),
 	"",
 	game === "stations"
-		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tcentres: { [string]: { number } },\n\tjoints: { [string]: { number } },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n}"
+		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tcentres: { [string]: { number } },\n\tjoints: { [string]: { number } },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n\trainbowDecal: number?,\n\trainbowTexture: number?,\n}"
 		: game === "spire"
 		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n}"
 		: game === "night"
@@ -81,6 +83,8 @@ for (const [name, entry] of Object.entries(manifest)) {
 	lines.push(`\t\tmodel = ${entry.decal_only ? "nil" : id(u.model)},`);
 	lines.push(`\t\tdecal = ${id(u.decal)},`);
 	lines.push(`\t\ttexture = ${id(u.texture)},`);
+	const coat = uploaded[`${name}_rainbow`];
+	if (coat) lines.push(`\t\trainbowDecal = ${id(coat.decal)},`, `\t\trainbowTexture = ${id(coat.texture)},`);
 	if (entry.root) lines.push(`\t\troot = { ${entry.root.join(", ")} },`);
 	lines.push("\t},");
 }

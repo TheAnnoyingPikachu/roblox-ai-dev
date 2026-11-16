@@ -443,6 +443,40 @@ describe("StationRules.hatch", function()
 		expect(tally[15] > 0).toBeTruthy()
 	end)
 
+	it("hatches about 1 animal in 200 in a rainbow coat, with the stats of the same animal without it", function()
+		expect(StationConfig.RAINBOW_PPM * 200).toBe(StationRules.PPM)
+		local rng = Rng.seed(11)
+		local coats, same = 0, true
+		for _ = 1, 20000 do
+			local a
+			a, rng = StationRules.hatch("meadow", rng)
+			local animal = a :: StationRules.Owned
+			if animal.rainbow then
+				coats += 1
+				local plain = StationRules.versionStats(animal.s, animal.v) :: StationConfig.Stats
+				for _, stat in StationConfig.STATS do
+					same = same and (animal.stats :: any)[stat] == (plain :: any)[stat]
+				end
+			else
+				same = same and animal.rainbow == nil -- absent, never false: nothing extra in a save
+			end
+		end
+		expect(coats >= 60 and coats <= 140).toBeTruthy() -- 100 expected
+		expect(same).toBe(true)
+		-- forced on and off: any egg, any animal
+		local real = StationConfig.RAINBOW_PPM
+		for _, forced in { StationRules.PPM, 0 } do
+			StationConfig.RAINBOW_PPM = forced
+			for _, egg in StationConfig.EGGS do
+				local a
+				a, rng = StationRules.hatch(egg.id, rng)
+				same = same and (a :: StationRules.Owned).rainbow == (if forced == 0 then nil else true)
+			end
+		end
+		StationConfig.RAINBOW_PPM = real
+		expect(same).toBe(true)
+	end)
+
 	it("has a tiny jackpot that hatches exactly one stat at level 70", function()
 		expect(StationConfig.JACKPOT_PPM * 10000).toBe(StationRules.PPM) -- 1 in 10,000
 		-- force the jackpot on, then off, to check both paths; put the real chance back after
