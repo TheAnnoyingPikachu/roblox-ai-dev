@@ -33,5 +33,5 @@
   ],
   "risk_level": "low",
   "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'fix the lions shade'. The three replaced models (130586378174171, 74186882513776, 72212451895565) and their decals (87858491746017, 92765121784934, 100442030209221) are no longer used; the workflow can archive the decals when SHANNON says so."
+  "notes": "SHANNON on 2026-11-16: 'fix the lions shade', then 'archive them'. The three replaced decals (87858491746017, 92765121784934, 100442030209221) were archived on 2026-11-16 (upload-assets run 43809452120, after a dry run that listed them, 43809370535). The three replaced models (130586378174171, 74186882513776, 72212451895565) stay on the account: Roblox's API archives decals only."
 }
