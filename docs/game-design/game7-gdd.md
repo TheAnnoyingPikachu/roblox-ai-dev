@@ -51,7 +51,9 @@ vendors.
 - **Places:** the hub (a plaza made as a place to gather: a fire pit ringed by benches, a market, a
   cafe, a stage, a green with a meeting tree and a pond, decision 0064) and one ranch per player behind the hub's mountains,
   south, east and west (decision 0035). A ranch is reached by teleport pad or on foot up its own
-  mountain pass, ready for riding animals later. Mountains ring every area. A canyon through the
+  mountain pass, ready for riding animals later. A ranch is one valley (decision 0070): the
+  homestead in its middle and its six training grounds set into the land round it, four up the
+  mountainside and two on a beach by a lake, with a path to each. Mountains ring every area. A canyon through the
   hub's mountains to the north is the wave arena. A server holds 3 players.
 
 ## Words

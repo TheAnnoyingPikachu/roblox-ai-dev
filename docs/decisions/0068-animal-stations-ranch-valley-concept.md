@@ -1,6 +1,7 @@
 # 0068: Animal Stations: the whole ranch reworked as one valley (concept)
 
-Status: proposed (a concept for SHANNON; nothing is in the game).
+Status: accepted (SHANNON, 2026-11-16: "go on the ranch vallet and i take your recommendation"); in the
+game by decision 0070, which says how each question below was read.
 Date: 2026-11-16. Task STATION-061.
 
 ## What SHANNON asked

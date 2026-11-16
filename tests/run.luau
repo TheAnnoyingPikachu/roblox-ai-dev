@@ -83,6 +83,9 @@ local SPECS = {
 	["TrainFx.spec.luau"] = function()
 		require("./TrainFx.spec")
 	end,
+	["ValleyMap.spec.luau"] = function()
+		require("./ValleyMap.spec")
+	end,
 	["LevelRules.spec.luau"] = function()
 		require("./LevelRules.spec")
 	end,

@@ -1,5 +1,8 @@
 # 0065: Animal Stations: the training areas built in clearings round each ranch
 
+Replaced in part by decision 0070 (2026-11-16): the clearings and their passes gave way to the ranch
+valley. The areas' looks and upgrade levels below stand.
+
 Status: accepted (SHANNON, 2026-11-16: "go on all four", to the four questions of the report that
 showed the concepts: the training looks, and room for the clearings by fanning them out on the side
 away from the hub and moving the ranches back out). Builds decision 0061. Task STATION-058.

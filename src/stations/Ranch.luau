@@ -718,8 +718,7 @@ end
 local function onPath(x: number, z: number): boolean
 	local p = V(x, 0, z)
 	for k, gate in World.AREA_GATE do
-		local a = rad(World.AREA_ANGLE[k])
-		local along = V(math.sin(a), 0, math.cos(a)) * (World.AREA_DIST - 62) - gate
+		local along = World.AREA_AT[k] - gate
 		local t = math.clamp((p - gate):Dot(along) / along:Dot(along), 0, 1)
 		if (p - (gate + along * t)).Magnitude < 11 then
 			return true

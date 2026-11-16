@@ -1,6 +1,7 @@
 --!strict
--- The six training areas of a ranch (decision 0065): each stands in a clearing of its own beyond the
--- ranch's mountains (World.areaFrame), at the end of a pass. An area is made of the Blender models
+-- The six training areas of a ranch: each stands on its own levelled ground in the ranch's valley
+-- (decision 0070, World.areaFrame), at the end of a path from the homestead, on the land itself: it
+-- has no floor or fence of its own. An area is made of the Blender models
 -- `area_<station>_<first>_<last>` (tools/blender/stations/assets/areas.py): each holds what stands
 -- from Training Grounds level `first` to level `last`, so a level's look is every model whose stretch
 -- holds it. The models take no collisions: `SOLID` lists the unseen blocks an area needs to be walked
@@ -25,7 +26,6 @@ local Areas = {}
 local K = 2.5 -- how many times an area is grown from the yard it is written as (training.py's K)
 local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(45, 40, 55)
-local YARD = { 1, 5, -33.5, 33.5, -25.5, 25.5, 0.25 } -- every area's floor, from level 1
 
 Areas.COLOUR = {
 	speed = Color3.fromRGB(60, 150, 255),
@@ -40,15 +40,13 @@ Areas.COLOUR = {
 -- { first level, last level, x, y, radius, top }.
 local SOLID: { [string]: { { number } } } = {
 	track = {
-		YARD,
 		{ 4, 5, -15, 7, 15.9, 18.1, 1.35 }, -- the stand's four rows
 		{ 4, 5, -15, 7, 18.1, 20.3, 2.45 },
 		{ 4, 5, -15, 7, 20.3, 22.5, 3.55 },
 		{ 4, 5, -15, 7, 22.5, 24.7, 4.65 },
 	},
-	gym = { YARD, { 2, 5, -28, -6, 5.5, 18.5, 0.95 } }, -- the lifting deck
+	gym = { { 2, 5, -28, -6, 5.5, 18.5, 0.95 } }, -- the lifting deck
 	pool = {
-		YARD,
 		{ 1, 5, -30.8, 28.6, -15.4, -8.2, 1.75 }, -- the deck, round the water
 		{ 1, 5, -30.8, 28.6, 10.2, 15.4, 1.75 },
 		{ 1, 5, -30.8, -24.2, -8.2, 10.2, 1.75 },
@@ -59,9 +57,8 @@ local SOLID: { [string]: { { number } } } = {
 		{ 1, 5, -6, 6, -18.4, -17.4, 1 },
 		{ 1, 5, -6, 6, -19.4, -18.4, 0.625 },
 	},
-	library = { YARD, { 1, 5, 0, 2, 16.6, 0.55 } }, -- the slate floor
+	library = { { 1, 5, 0, 2, 16.6, 0.55 } }, -- the slate floor
 	spring = {
-		YARD,
 		{ 1, 5, 0, 1, 22.6, 0.45 }, -- the terrace
 		{ 1, 5, 0, 1, 6.05, 1.2 }, -- the source's basin
 		{ 1, 5, -6.8, -10.78, 5.25, 1.2 }, -- the baths, two more at each of the next levels
@@ -72,7 +69,6 @@ local SOLID: { [string]: { { number } } } = {
 		{ 3, 5, -6.8, 12.78, 5.25, 1.2 },
 	},
 	guard = {
-		YARD,
 		{ 1, 5, -25, 25, -19.5, 15.5, 0.37 }, -- the court
 		{ 3, 5, -20, 20, 17.8, 20.2, 7.75 }, -- the wall
 		{ 4, 5, -23.5, 19, 4.2, 13.35 }, -- its towers
@@ -503,9 +499,9 @@ function Areas.build(parent: Instance, i: number, level: number)
 		CollectionService:AddTag(pad, "TrainPad")
 		-- the sign stands over the path, a little way out of the plot's fence
 		local from = (ranch * CFrame.new(World.AREA_GATE[k])).Position
-		local along = ((cf.Position - cf.LookVector * 62 - from) * Vector3.new(1, 0, 1)).Unit
+		local along = ((cf.Position - from) * Vector3.new(1, 0, 1)).Unit
 		local colour = Areas.COLOUR[st.stat]:Lerp(INK, 0.25)
-		World.kit.signboard(f, CFrame.lookAt(from + along * 24, from), 18, st.name, colour, 9)
+		World.kit.signboard(f, CFrame.lookAt(from + along * 16, from), 18, st.name, colour, 9)
 	end
 end
 
