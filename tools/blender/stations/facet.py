@@ -115,13 +115,15 @@ def _surface(nt, colour, surface):
         return shaded(colour, times(ramp(noise(7.0, 2.0, (3.0, 3.0, 0.5)), 0.3, 0.7, 0.8, 1.1), ramp(noise(2.0, 2.0), 0.3, 0.7, 0.9, 1.08))), None
     if surface == "scales":  # scales or feathers: each light in its middle, dark at its edge
         return shaded(colour, times(ramp(voronoi(6.5, "F1"), 0.0, 0.55, 1.1, 0.74), ramp(noise(2.0, 2.0), 0.3, 0.7, 0.9, 1.08))), None
+    if surface == "shell":  # an eggshell: fine dark speckles, soft blotches
+        return shaded(colour, times(ramp(voronoi(5.0, "F1"), 0.0, 0.16, 0.55, 1.0), ramp(noise(2.2, 2.0), 0.3, 0.7, 0.9, 1.08))), None
     raise ValueError(f"no surface {surface!r}")
 
 
 def material(emit=0.0, surface=None):
     """The material of a faceted piece: it shows the face colours, optionally lit from within, optionally
     under a surface texture ("hide", "rock", "crust": rock with lava in its cracks, "gem", "horn", "fur",
-    "scales")."""
+    "scales", "shell")."""
     name = f"lp_{surface or 'facets'}_{emit}"
     known = name in k._materials
     m = k.mat(name, (255, 255, 255), kind="flat", rough=0.6)
@@ -271,13 +273,13 @@ def plate(name, p, frame, outline, thick, tones, rng, lift=0.004, m=None, emit=0
     return mesh(name, lo + [q + z * thick for q in lo], faces, tones, rng, m=m, emit=emit, surface=surface)
 
 
-def lump(at, size, tones, rng, surface="rock"):
+def lump(at, size, tones, rng, surface="rock", m=None):
     """A lump (a rock, a puff of cloud, a clump of leaves) round the point `at`, of half extents `size`:
-    twenty faces, no two the same."""
-    ob = k.ico(1.0, m=material(surface=surface), subdiv=1, name="lump")
+    twenty faces, no two the same. With `m` (a glow material) it is left unpainted."""
+    ob = k.ico(1.0, m=m or material(surface=surface), subdiv=1, name="lump")
     for v in ob.data.vertices:
         v.co = Vector(at) + Vector((v.co.x * size[0], v.co.y * size[1], v.co.z * size[2])) * rng.uniform(0.72, 1.18)
-    return colour(ob, tones, rng, 0.3)
+    return ob if m else colour(ob, tones, rng, 0.3)
 
 
 def small_paw(x, y, tones, rng):
