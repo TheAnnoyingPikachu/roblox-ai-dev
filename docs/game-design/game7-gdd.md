@@ -115,7 +115,11 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- A large area for each training activity: concepts only so far (decisions 0059 and 0061).
+- A large area for each training activity, each in a clearing of its own round the ranch, with a
+  look for each Training Grounds level: concepts only so far (decision 0061,
+  `docs/concepts/ranch-map-card.png` and a card for each area).
+- A better-looking tortoise (decision 0062, `docs/concepts/tortoise-rework.png`) and a hub centre
+  made as a place to gather (decision 0063, `docs/concepts/hub-commons-card.png`): proposals.
 - Vendors at the hub's two market stalls, and anything to do at its statues and shrines: they are
   scenery.
 - More ranch upgrades and expanding the plot. More hub vendors. Gear.

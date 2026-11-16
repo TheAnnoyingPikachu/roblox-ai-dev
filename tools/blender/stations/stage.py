@@ -9,8 +9,10 @@ With no names, renders every scene in scenes/*.py. Writes build/blender/stations
 
 A scene file lists SCENES = [dict(name=..., build=fn, shots=[...])]. `build(rng)` makes the place round
 the origin, 1 unit = 1 stud, the ground at z = 0, north towards +Y. A shot is (eye, target, lens): the
-first is the hero. The helpers below make faceted pieces from a colour: one flat tone a face, like
-facet.py's, optionally under one of its surface textures.
+first is the hero. A place that grows with an upgrade tags its pieces with the levels they stand at
+(`first`, `last`); a shot (eye, target, lens, level) then shows it at that level, marked with pips.
+The helpers below make faceted pieces from a colour: one flat tone a face, like facet.py's, optionally
+under one of its surface textures.
 """
 
 import importlib.util
@@ -350,15 +352,37 @@ def actor(name, at, yaw=0.0, scale=1.0, statue=None, rng=None, surface="rock", k
 # The card ------------------------------------------------------------------------------------------------
 
 
+TOP = 5  # the highest upgrade level of a place that grows
+
+
+def show(level):
+    """Shows a place as it stands at upgrade `level`: only the pieces whose `first` to `last` hold it."""
+    for ob in bpy.data.objects:
+        if "first" in ob:
+            ob.hide_render = not ob["first"] <= level <= ob["last"]
+
+
+def pips(frame, level):
+    """Marks a frame with its upgrade level: five squares in the top left corner, `level` of them gold."""
+    h = frame.shape[0]
+    frame[h - 44 : h - 8, 8 : 8 + 5 * 30 + 6] = (0.08, 0.08, 0.1)
+    for i in range(TOP):
+        frame[h - 38 : h - 14, 14 + i * 30 : 38 + i * 30] = (1.0, 0.78, 0.2) if i < level else (0.3, 0.3, 0.34)
+    return frame
+
+
 def render(name, shots, ground=GRASS):
-    """Renders the shots [(eye, target, lens), ...] and lays them out: the first wide on top, three below."""
+    """Renders the shots [(eye, target, lens[, level]), ...] and lays them out: the first wide on top, the
+    rest in rows of three below."""
     scene = bpy.context.scene
     k.daylight(scene)
     grass = k.mat("stage_grass", ground, kind="noise", var=0.06, scale=0.6, rough=1.0)
-    k.cyl(900, 0.02, (0, 0, -0.012), m=grass, n=64)
+    k.cyl(4000, 0.02, (0, 0, -0.012), m=grass, n=64)
     os.makedirs(OUT, exist_ok=True)
     frames = []
-    for i, (eye, target, lens) in enumerate(shots):
+    for i, shot in enumerate(shots):
+        eye, target, lens = shot[:3]
+        show(shot[3] if len(shot) > 3 else TOP)
         w, h = (1920, 1080) if i == 0 else (640, 480)
         cam_data = bpy.data.cameras.new("cam")
         cam_data.lens = lens
@@ -372,9 +396,11 @@ def render(name, shots, ground=GRASS):
         scene.render.filepath = os.path.join(OUT, f"{name}_{i}.png")
         bpy.ops.render.render(write_still=True)
         frames.append(k._bloom(k._pixels(scene.render.filepath)))
+        if i > 0 and len(shot) > 3:
+            pips(frames[-1], shot[3])
     rows = [frames[0]]
-    if len(frames) > 1:
-        rows.insert(0, np.concatenate(frames[1:4], axis=1))  # image rows run bottom to top
+    for j in range(1, len(frames) - 2, 3):
+        rows.insert(0, np.concatenate(frames[j : j + 3], axis=1))  # image rows run bottom to top
     width = min(r.shape[1] for r in rows)
     sheet = np.concatenate([r[:, :width] for r in rows], axis=0)
     rgba = np.concatenate([sheet, np.ones((*sheet.shape[:2], 1), dtype=np.float32)], axis=-1)
