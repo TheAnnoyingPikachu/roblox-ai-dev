@@ -1,7 +1,8 @@
 --!strict
 -- Animal Stations world (framework, decision 0029): the hub, a central plaza with the hatchery
 -- gathering place (made of Blender models, decision 0064), and three home ranches (one per player). Each ranch is a
--- large separate area behind the hub's mountains, reached by teleport pad or up its own pass. A ranch is the
+-- large separate area behind the hub's mountains, reached by teleport pad or up its own pass, with six
+-- clearings round it for its training areas (decision 0065), each at the end of a pass of its own. A ranch is the
 -- player's base, where animals live and train: its plot is built here, and what stands on it
 -- by Ranch.luau from its owner's upgrades. Mountains ring every area to hide the void; a canyon through
 -- the hub's mountains is the wave arena. Built once from parts, Roblox materials and terrain.
@@ -25,7 +26,7 @@ World.HUB_RADIUS = 250 -- the walkable hub: an invisible wall stands here, the m
 local ARENA_HALF, ARENA_NEAR, ARENA_FAR = 60, 330, 640
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
-World.RANCH_DIST = 780 -- hub centre to each ranch centre: behind the hub's mountains, up a pass
+World.RANCH_DIST = 840 -- hub centre to each ranch centre: behind the hub's mountains, up a pass
 World.RANCH_Y = 22 -- the island surface (a terrain cylinder topped at 18 lands there; measured)
 local ISLAND = 175 -- island radius
 World.RANCH_HALF = 75 -- half the fenced ranch square
@@ -36,6 +37,13 @@ local PASS_TOP = World.RANCH_DIST - ISLAND
 local PASS_RAMP = PASS_TOP - 165
 -- The ranches lie south, east and west of the hub; the wave arena is to the north.
 local RANCH_ANGLE = { 90, 0, 180 }
+-- The training areas (decision 0065): each ranch has six clearings round it, one for each station in
+-- StationConfig.STATIONS' order, at these angles from the line straight away from the hub.
+World.AREA_ANGLE = { -125, -75, -25, 25, 75, 125 }
+World.AREA_DIST = 420 -- a ranch's middle to a clearing's
+World.AREA_RING = 132 -- a clearing's middle to the feet of its mountains
+World.AREA_PASS = 26 -- half the width of the pass from a ranch to a clearing
+local FLAT = Vector3.new(1, 0, 1)
 
 local M = Enum.Material
 local WHITE = Color3.new(1, 1, 1)
@@ -303,11 +311,22 @@ local function terrain()
 	local clouds = t:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	clouds.Cover, clouds.Density, clouds.Color = 0.45, 0.6, WHITE
 	clouds.Parent = t
-	-- one flat island per ranch, far from the hub
-	for _, angle in RANCH_ANGLE do
+	-- one flat island per ranch, far from the hub, and at the same height a round of ground for each of
+	-- its six clearings and the pass to it
+	for i, angle in RANCH_ANGLE do
 		local c = Vector3.new(math.cos(rad(angle)), 0, math.sin(rad(angle))) * World.RANCH_DIST
 		local top = World.RANCH_Y - 4 -- measured in Studio: a cylinder top at 18 gives a surface at 22
-		t:FillCylinder(CFrame.new(c + Vector3.new(0, (top - 10) / 2, 0)), top + 10, ISLAND, M.Grass)
+		local function ground(where: Vector3, radius: number)
+			t:FillCylinder(CFrame.new(where + Vector3.new(0, (top - 10) / 2, 0)), top + 10, radius, M.Grass)
+		end
+		ground(c, ISLAND)
+		for k = 1, #World.AREA_ANGLE do
+			local area = World.areaFrame(i, k).Position * FLAT
+			ground(area, World.AREA_RING + 30)
+			for s = ISLAND + 10, World.AREA_DIST - World.AREA_RING - 30, 35 do
+				ground(c:Lerp(area, s / World.AREA_DIST), 48)
+			end
+		end
 	end
 end
 
@@ -609,38 +628,142 @@ local function barrier(parent: Instance, a: Vector3, b: Vector3)
 	w.Transparency, w.CastShadow, w.Name = 1, false, "Barrier"
 end
 
+-- Where no mountain may stand: the hub, the arena's canyon, every ranch plot and clearing (circles), and
+-- every pass (a strip from `a` to `b`). `r` is how near a mountain's foot may come to the middle or the
+-- line. Filled by `layout` before anything is built.
+type Zone = { a: Vector3, b: Vector3?, r: number }
+local zones: { Zone } = {}
+
+local function layout()
+	table.clear(zones)
+	table.insert(zones, { a = Vector3.zero, r = World.HUB_RADIUS + 40 })
+	table.insert(
+		zones,
+		{ a = Vector3.new(0, 0, -World.HUB_RADIUS), b = Vector3.new(0, 0, -(ARENA_FAR + 12)), r = ARENA_HALF + 6 }
+	)
+	for i = 1, World.RANCHES do
+		local home = World.ranchFrame(i).Position * FLAT
+		table.insert(zones, { a = Vector3.zero, b = home, r = PASS_HALF - 12 })
+		table.insert(zones, { a = home, r = RING - 16 })
+		for k = 1, #World.AREA_ANGLE do
+			local area = World.areaFrame(i, k).Position * FLAT
+			table.insert(zones, { a = home, b = area, r = World.AREA_PASS - 4 })
+			table.insert(zones, { a = area, r = World.AREA_RING - 16 })
+		end
+	end
+end
+
+-- True when a mountain at `c` with a foot of radius `foot` keeps out of every zone.
+local function clearOf(c: Vector3, foot: number): boolean
+	local p = c * FLAT
+	for _, z in zones do
+		local nearest = z.a
+		if z.b then
+			local along = z.b - z.a
+			nearest = z.a + along * math.clamp((p - z.a):Dot(along) / along:Dot(along), 0, 1)
+		end
+		if (p - nearest).Magnitude - foot < z.r then
+			return false
+		end
+	end
+	return true
+end
+
+-- A mountain seated against the point `base`, reaching away from it along `u` (its middle is `lean`
+-- feet out): as big as `foot` if that keeps out of every zone, else smaller, down to `least`; none if
+-- even that does not fit.
+local function seated(
+	parent: Instance,
+	base: Vector3,
+	u: Vector3,
+	foot: number,
+	lean: number,
+	least: number,
+	rng: Random,
+	toward: Vector3?
+)
+	local f = foot
+	while f >= least do
+		local c = base + u * f * lean
+		if clearOf(c, f) then
+			mountain(parent, c, f, rng, toward)
+			return
+		end
+		f *= 0.86
+	end
+end
+
+-- An invisible wall round `centre` at `radius`, open at each way out: {a unit vector, half the gap's width}.
+local function wallRound(parent: Instance, centre: Vector3, radius: number, ways: { { any } })
+	local gaps = {}
+	for _, w in ways do
+		table.insert(gaps, { math.atan2(w[1].Z, w[1].X), math.asin(w[2] / radius) })
+	end
+	table.sort(gaps, function(x, y)
+		return x[1] < y[1]
+	end)
+	local function rim(a: number): Vector3
+		return centre + Vector3.new(math.cos(a), 0, math.sin(a)) * radius
+	end
+	for k, gap in gaps do
+		local nxt = gaps[k % #gaps + 1]
+		local from, to = gap[1] + gap[2], nxt[1] - nxt[2]
+		if to < from then
+			to += math.pi * 2
+		end
+		local steps = math.ceil((to - from) / rad(15))
+		for s = 0, steps - 1 do
+			barrier(parent, rim(from + (to - from) * s / steps), rim(from + (to - from) * (s + 1) / steps))
+		end
+	end
+end
+
 -- True when a mountain `dist` out at angle `a` (foot radius `foot`) would stand in a pass that
 -- leaves along angle `way`.
 local function inPass(a: number, dist: number, foot: number, way: number): boolean
 	return math.cos(a - way) > 0 and math.abs(math.sin(a - way)) * dist < PASS_HALF + foot
 end
 
--- A ring of mountains round `centre` whose feet start `inner` studs out, a taller row behind
--- them, and an invisible wall in front. Both rows and the wall leave the pass open: it leaves
--- along `way` (a unit vector). Used for the ranches.
-local function mountainRing(parent: Instance, centre: Vector3, inner: number, rng: Random, way: Vector3)
-	local facing = math.atan2(way.Z, way.X)
-	for k = 0, 11 do
-		local a = facing + k / 12 * math.pi * 2
-		local foot = rng:NextNumber(105, 140)
-		if not inPass(a, inner + foot, foot, facing) then
-			mountain(parent, centre + Vector3.new(math.cos(a), 0, math.sin(a)) * (inner + foot), foot, rng, centre)
-		end
-		local behind, tall = a + math.pi / 12, rng:NextNumber(150, 190)
-		if not inPass(behind, inner + 90 + tall, tall, facing) then
-			local at = centre + Vector3.new(math.cos(behind), 0, math.sin(behind)) * (inner + 90 + tall)
-			mountain(parent, at, tall, rng, nil)
-		end
-	end
-	local wall = inner - 16
-	local gap = math.asin((PASS_HALF - 2) / wall)
-	local function rim(k: number): Vector3
-		local a = facing + gap + k * (math.pi * 2 - 2 * gap) / 24
-		return centre + Vector3.new(math.cos(a), 0, math.sin(a)) * wall
-	end
+-- The mountains and unseen walls of ranch `i` and of its six clearings. Mountains stand wherever
+-- they keep out of the plot, the clearings and the passes: a row round the plot between the ways
+-- out, a row round each clearing, and taller ones behind where there is room. Walls ring the plot
+-- and each clearing and run down both sides of each pass, open only where a pass goes through.
+local function ranchMountains(parent: Instance, i: number, rng: Random)
+	local cf = World.ranchFrame(i)
+	local home = cf.Position
+	local ways: { { any } } = { { cf.LookVector, PASS_HALF - 2 } }
 	for k = 0, 23 do
-		barrier(parent, rim(k), rim(k + 1))
+		local a = k / 24 * math.pi * 2
+		local u = Vector3.new(math.cos(a), 0, math.sin(a))
+		seated(parent, home + u * RING, u, rng:NextNumber(70, 110), 1, 34, rng, home)
+		if k % 2 == 0 then
+			seated(parent, home + u * (RING + 90), u, rng:NextNumber(150, 190), 1, 80, rng, nil)
+		end
 	end
+	for k = 1, #World.AREA_ANGLE do
+		local area = World.areaFrame(i, k)
+		local out, side = area.LookVector, area.RightVector
+		table.insert(ways, { out, World.AREA_PASS })
+		for j = 0, 15 do
+			local a = j / 16 * math.pi * 2
+			local u = Vector3.new(math.cos(a), 0, math.sin(a))
+			seated(parent, area.Position + u * World.AREA_RING, u, rng:NextNumber(62, 88), 0.8, 34, rng, nil)
+			if j % 2 == 0 and u:Dot(out) > -0.2 then
+				seated(parent, area.Position + u * (World.AREA_RING + 80), u, rng:NextNumber(110, 150), 1, 70, rng, nil)
+			end
+		end
+		wallRound(parent, area.Position, World.AREA_RING - 16, { { -out, World.AREA_PASS } })
+		local from = math.sqrt((RING - 16) ^ 2 - World.AREA_PASS ^ 2)
+		local to = World.AREA_DIST - math.sqrt((World.AREA_RING - 16) ^ 2 - World.AREA_PASS ^ 2)
+		for _, sx in { -1, 1 } do
+			barrier(
+				parent,
+				home + out * from + side * sx * World.AREA_PASS,
+				home + out * to + side * sx * World.AREA_PASS
+			)
+		end
+	end
+	wallRound(parent, home, RING - 16, ways)
 end
 
 -- The pass from the hub up to ranch `i`: a road through its own canyon, level from the hub's
@@ -694,7 +817,7 @@ local function pass(root: Instance, i: number, rng: Random)
 	for k, s in { World.HUB_RADIUS + 130, World.HUB_RADIUS + 220, World.HUB_RADIUS + 310, World.RANCH_DIST - 165 } do
 		for _, sx in { -1, 1 } do
 			local foot = if k == 4 then rng:NextNumber(86, 92) else rng:NextNumber(140, 165)
-			mountain(f, at(s, sx * (PASS_HALF + foot * 0.94)), foot, rng, at(s, 0))
+			seated(f, at(s, sx * PASS_HALF), side * sx, foot, 0.94, 60, rng, at(s, 0))
 		end
 	end
 	local w = PASS_HALF - 2
@@ -721,7 +844,8 @@ local function mountains(root: Instance, rng: Random)
 			blocked = blocked or inPass(a, dist, foot, rad(way))
 		end
 		if not blocked then
-			mountain(f, Vector3.new(math.cos(a), 0, math.sin(a)) * dist, foot, rng, Vector3.zero)
+			local u = Vector3.new(math.cos(a), 0, math.sin(a))
+			seated(f, u * (World.HUB_RADIUS + 60), u, foot, 1, 110, rng, Vector3.zero)
 		end
 	end
 	for k = 0, 2 do
@@ -815,6 +939,26 @@ function World.ranchFrame(i: number): CFrame
 	local up = Vector3.new(0, World.RANCH_Y, 0)
 	return CFrame.lookAt(Vector3.new(math.cos(a), 0, math.sin(a)) * World.RANCH_DIST + up, up)
 end
+
+-- The frame of the clearing of ranch `i`'s station `k`: its middle on the ground, looking away from
+-- the ranch. An area's model has its gateway on its back (+Z), which so faces the pass in.
+function World.areaFrame(i: number, k: number): CFrame
+	local cf = World.ranchFrame(i)
+	local a = rad(World.AREA_ANGLE[k])
+	local out = cf:VectorToWorldSpace(Vector3.new(math.sin(a), 0, math.cos(a)))
+	local centre = cf.Position + out * World.AREA_DIST
+	return CFrame.lookAt(centre, centre + out)
+end
+
+-- Where the path to station `k`'s clearing leaves a plot, in the plot's own frame: a gap in its fence.
+World.AREA_GATE = {
+	Vector3.new(-World.RANCH_HALF, 0, -52),
+	Vector3.new(-World.RANCH_HALF, 0, 13.75),
+	Vector3.new(-35, 0, World.RANCH_HALF),
+	Vector3.new(35, 0, World.RANCH_HALF),
+	Vector3.new(World.RANCH_HALF, 0, 13.75),
+	Vector3.new(World.RANCH_HALF, 0, -52),
+}
 
 -- Where the owner spawns: just inside the gate, facing the barn.
 function World.ranchSpawn(i: number): CFrame
@@ -919,9 +1063,20 @@ local function ranch(root: Instance, i: number, rng: Random)
 	-- fence with a gate gap facing the plaza
 	fence(f, cf, Vector3.new(-H, 0, -H), Vector3.new(-8, 0, -H))
 	fence(f, cf, Vector3.new(8, 0, -H), Vector3.new(H, 0, -H))
-	fence(f, cf, Vector3.new(H, 0, -H), Vector3.new(H, 0, H))
-	fence(f, cf, Vector3.new(H, 0, H), Vector3.new(-H, 0, H))
-	fence(f, cf, Vector3.new(-H, 0, H), Vector3.new(-H, 0, -H))
+	-- down the sides and along the back, with a gap where the path to each training area leaves
+	for _, sx in { -1, 1 } do
+		for _, run in { { -H, -59 }, { -45, 6.75 }, { 20.75, H } } do
+			fence(f, cf, Vector3.new(sx * H, 0, run[1]), Vector3.new(sx * H, 0, run[2]))
+		end
+		fence(f, cf, Vector3.new(sx * H, 0, H), Vector3.new(sx * 42, 0, H))
+	end
+	fence(f, cf, Vector3.new(-28, 0, H), Vector3.new(28, 0, H))
+	for k, gate in World.AREA_GATE do
+		local area = World.areaFrame(i, k)
+		local from = (cf * CFrame.new(gate)).Position + Vector3.new(0, 0.35, 0)
+		local to = area.Position - area.LookVector * 62 + Vector3.new(0, 0.35, 0)
+		strip(f, from, to, 12, 0.6, PATH, M.Cobblestone)
+	end
 	-- gate: stone pillars with lanterns, a wooden arch with the owner sign (World.setRanchOwner
 	-- changes the text)
 	for _, dx in { -8, 8 } do
@@ -950,16 +1105,16 @@ local function ranch(root: Instance, i: number, rng: Random)
 	end
 	for _, p in
 		{
-			Vector3.new(-H - 12, 0, 30),
-			Vector3.new(H + 12, 0, 30),
+			Vector3.new(-H - 12, 0, 44),
+			Vector3.new(H + 12, 0, 44),
 			Vector3.new(-H - 14, 0, -4),
 			Vector3.new(H + 14, 0, -6),
 		}
 	do
 		tree(f, at(p.X, 0, p.Z).Position, rng, rng:NextNumber(1.1, 1.5))
 	end
-	-- mountains all round the island hide the void
-	mountainRing(f, cf.Position, RING, rng, cf.LookVector)
+	-- mountains round the plot and its clearings hide the void
+	ranchMountains(f, i, rng)
 end
 
 local function ranches(root: Instance, rng: Random)
@@ -1061,6 +1216,7 @@ function World.build(): Folder
 		old:Destroy()
 	end
 	lighting()
+	layout()
 	terrain()
 	local rng = Random.new(2026)
 	local root = Instance.new("Folder")

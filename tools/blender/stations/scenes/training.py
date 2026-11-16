@@ -45,9 +45,9 @@ def cast(name, at, yaw=0.0, first=0, last=S.TOP):
     _cast.append((name, at, yaw, first, last))
 
 
-def area(maker, rng, at=(0.0, 0.0), yaw=0.0):
-    """Builds one area: `maker(rng)` as it is written, grown K times, its animals at their real size, then
-    all of it turned `yaw` degrees and moved to `at`. Returns its pieces."""
+def area(maker, rng, at=(0.0, 0.0), yaw=0.0, animals=True):
+    """Builds one area: `maker(rng)` as it is written, grown K times, its animals at their real size (or
+    none: the game stands its own), then all of it turned `yaw` degrees and moved to `at`. Returns its pieces."""
     old = {ob.name for ob in bpy.data.objects}
     for ob in bpy.data.objects:  # what stands already is not part of it: it stands at every level
         if ob.type == "MESH" and "first" not in ob:
@@ -59,7 +59,7 @@ def area(maker, rng, at=(0.0, 0.0), yaw=0.0):
     new = [ob for ob in bpy.data.objects if ob.type == "MESH" and ob.name not in old]
     for ob in new:
         ob.data.transform(Matrix.Scale(K, 4))
-    for name, pos, turned, first, last in _cast:
+    for name, pos, turned, first, last in _cast if animals else ():
         for ob in actor(name, Vector(pos) * K, turned):
             ob["first"], ob["last"] = first, last
             new.append(ob)
@@ -507,7 +507,7 @@ def stamina(rng):
     lump((24.0, 9.0, z0 + deck + 0.8), 0.8, RED, rng)
     lv(1)
     for i in range(4):  # steps up from the gate
-        box((12.0, 1.0, deck * (4 - i) / 4), (0, -19.3 - i * 1.0, z0), tile_a, rng, kind=S.PALE)
+        box((12.0, 1.0, deck * (4 - i) / 4), (0, -15.9 - i * 1.0, z0), tile_a, rng, kind=S.PALE)
     # the swimmers
     cast("creature_tortoise", (-8.0, 1.0, 0.1), 90, last=0)  # in the pond
     cast("creature_flamingo", (3.0, 2.0, 0.1), -60, last=0)

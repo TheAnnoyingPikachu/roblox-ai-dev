@@ -95,6 +95,39 @@ describe("StationAssets", function()
 		expect(pieces).toBe(0)
 	end)
 
+	it("has models for every station's training area at every Training Grounds level", function()
+		local levels = #(StationConfig.upgrade("grounds") :: StationConfig.Upgrade).levels
+		local known = 0
+		for _, st in StationConfig.STATIONS do
+			local shown = table.create(levels + 1, 0)
+			for name, asset in StationAssets do
+				local station, first, last = string.match(name, "^area_(%a+)_(%d)_(%d)$")
+				if station == st.id then
+					known += 1
+					expect(asset.model == nil).toBe(false) -- uploaded
+					expect(table.find(asset.parts, `{name}_body`) == nil).toBe(false)
+					expect(count(asset.joints)).toBe(0)
+					expect((tonumber(last) :: number) <= levels).toBeTruthy()
+					for level = tonumber(first) :: number, tonumber(last) :: number do
+						shown[level + 1] += 1
+					end
+					for _, tris in manifest[name].parts do
+						expect(tris <= 20000).toBeTruthy()
+					end
+				end
+			end
+			for level = 0, levels do
+				expect(shown[level + 1] > 0).toBeTruthy()
+			end
+		end
+		for name in manifest do -- and every area's model belongs to a station
+			if string.sub(name, 1, 5) == "area_" then
+				known -= 1
+			end
+		end
+		expect(known).toBe(0)
+	end)
+
 	it("has a rainbow coat for every animal and variant, and for nothing else", function()
 		local coats = 0
 		for _, sp in StationConfig.SPECIES do
@@ -113,7 +146,8 @@ describe("StationAssets", function()
 
 	it("keeps every creature a jointed body under 20,000 triangles a mesh", function()
 		for name, entry in manifest do
-			if string.sub(name, 1, 4) == "egg_" or string.sub(name, 1, 4) == "hub_" then
+			local kind = string.sub(name, 1, 4)
+			if kind == "egg_" or kind == "hub_" or kind == "area" then
 				continue
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do

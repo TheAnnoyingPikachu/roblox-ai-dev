@@ -23,6 +23,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StationConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationConfig"))
 local Props = require(script.Parent:WaitForChild("Props"))
 local World = require(script.Parent:WaitForChild("World"))
+local Areas = require(script.Parent:WaitForChild("Areas"))
 
 local part, pillar = Props.part, Props.pillar
 local kit = World.kit
@@ -51,7 +52,6 @@ local HAY = Color3.fromRGB(232, 196, 110)
 local WARM = Color3.fromRGB(255, 214, 140)
 local WATER = Color3.fromRGB(80, 170, 235)
 local GLASS = Color3.fromRGB(130, 165, 190)
-local COURT = Color3.fromRGB(44, 46, 60)
 local GOLD = Color3.fromRGB(255, 200, 70)
 local PADDOCK = Color3.fromRGB(104, 168, 72)
 local HEDGE = Color3.fromRGB(70, 140, 72)
@@ -59,15 +59,6 @@ local BLADE = Color3.fromRGB(86, 150, 62)
 local SHUTTER = Color3.fromRGB(66, 122, 112)
 local BANNER = Color3.fromRGB(226, 78, 64)
 local BLOOM = { Color3.fromRGB(255, 140, 185), Color3.fromRGB(255, 225, 100), Color3.fromRGB(185, 150, 255) }
-local STAT_COLOUR: { [string]: Color3 } = {
-	speed = Color3.fromRGB(60, 150, 255),
-	strength = Color3.fromRGB(235, 70, 70),
-	stamina = Color3.fromRGB(170, 90, 245),
-	mana = Color3.fromRGB(60, 215, 225),
-	health = Color3.fromRGB(70, 205, 120),
-	defence = Color3.fromRGB(255, 165, 50),
-}
-
 -- Where each upgrade's pad stands, the Barn's size per level, and when the extras arrive (the
 -- sum of all upgrade levels, 0 to 14).
 local BARN_SCALE = { 0.62, 0.74, 0.86, 0.98, 1.1 }
@@ -478,202 +469,6 @@ local function barn(f: Instance, at: (number, number, number) -> CFrame, level: 
 	end
 end
 
--- The training courts --------------------------------------------------------------------------------
-
--- What a stat's court trains with, from level 3.
-local function gear(f: Instance, c: CFrame, stat: string, colour: Color3)
-	if stat == "speed" then -- arrows down the lane and two hurdles
-		for k = -1, 1 do
-			for _, side in { -1, 1 } do
-				local turn = CFrame.Angles(0, rad(side * 38), 0)
-				part(f, V(0.7, 0.2, 3.2), c * CFrame.new(side * 1.1, 0.82, k * 3.4) * turn, colour, M.Neon)
-			end
-		end
-		for _, z in { -1.7, 1.7 } do
-			for _, sx in { -1, 1 } do
-				part(f, V(0.3, 2.2, 0.3), c * CFrame.new(sx * 4.6, 1.8, z), WHITE, M.Metal)
-			end
-			part(f, V(9.5, 0.4, 0.3), c * CFrame.new(0, 2.8, z), colour, M.SmoothPlastic)
-		end
-	elseif stat == "strength" then -- a barbell on its stand, a weight stack, a kettlebell
-		local a, b = (c * CFrame.new(-3.6, 2.6, 0)).Position, (c * CFrame.new(3.6, 2.6, 0)).Position
-		bar(f, a, b, 0.22, Color3.fromRGB(200, 204, 212), M.Metal)
-		for _, sx in { -1, 1 } do
-			part(f, V(0.6, 2.4, 0.6), c * CFrame.new(sx * 1.6, 1.4, 0), INK, M.Metal)
-			for k, d in { 3.4, 2.6 } do
-				local plate = part(
-					f,
-					V(0.6, d, d),
-					c * CFrame.new(sx * (2.5 + 0.7 * k), 2.6, 0),
-					if k == 1 then INK else colour,
-					M.Metal
-				)
-				plate.Shape = Enum.PartType.Cylinder
-			end
-		end
-		for k = 0, 2 do
-			part(
-				f,
-				V(2.6 - 0.4 * k, 0.6, 2.6 - 0.4 * k),
-				c * CFrame.new(-4, 1 + 0.65 * k, -4),
-				if k == 2 then colour else INK,
-				M.Metal
-			)
-		end
-		ball(f, (c * CFrame.new(4.2, 1.6, -4)).Position, 1.8, INK, M.Metal)
-		part(f, V(1.2, 0.3, 0.3), c * CFrame.new(4.2, 2.7, -4), colour, M.Metal)
-	elseif stat == "stamina" then -- a pool with a lane rope and a ladder
-		disc(f, c.Position + V(0, 0.95, 0), 10.4, 0.5, STONE, M.Slate)
-		disc(f, c.Position + V(0, 1, 0), 9, 0.3, colour:Lerp(WATER, 0.5), M.Glass)
-		for k = -3, 3 do
-			ball(
-				f,
-				(c * CFrame.new(k * 1.2, 1.15, 0)).Position,
-				0.6,
-				if k % 2 == 0 then WHITE else colour,
-				M.SmoothPlastic
-			)
-		end
-		for _, sx in { -1, 1 } do
-			pillar(f, (c * CFrame.new(sx * 0.6, 0.9, 4.7)).Position, 2, 0.1, WHITE, M.Metal)
-		end
-	elseif stat == "mana" then -- a crystal on a pedestal in a ring of runes
-		pillar(f, c.Position + V(0, 0.5, 0), 2, 1.2, STONE, M.Slate)
-		local crystal =
-			part(f, V(1.9, 3.6, 1.9), c * CFrame.new(0, 4.8, 0) * CFrame.Angles(rad(35), rad(45), 0), colour, M.Neon)
-		glow(crystal, colour, 14, 1.4)
-		for k = 1, 8 do
-			local a = k / 8 * math.pi * 2
-			local rune = c * CFrame.new(math.cos(a) * 4.4, 0.8, math.sin(a) * 4.4) * CFrame.Angles(0, -a, 0)
-			part(f, V(0.5, 0.2, 1.6), rune, colour, M.Neon)
-			if k % 2 == 0 then
-				part(
-					f,
-					V(0.6, 1.4, 0.6),
-					rune * CFrame.new(0.9, 1.6 + (k % 4) * 0.4, 0) * CFrame.Angles(rad(30), rad(45), 0),
-					colour,
-					M.Neon
-				)
-			end
-		end
-	elseif stat == "health" then -- a two-tier spring
-		disc(f, c.Position + V(0, 1.3, 0), 7.4, 0.8, STONE, M.Slate)
-		disc(f, c.Position + V(0, 1.4, 0), 6.2, 0.3, WATER, M.Glass)
-		pillar(f, c.Position + V(0, 1.3, 0), 1.8, 0.5, STONE, M.Slate)
-		disc(f, c.Position + V(0, 3.4, 0), 3, 0.4, STONE, M.Slate)
-		local jet = ball(f, c.Position + V(0, 4, 0), 1.3, colour, M.Neon)
-		emitter(jet, {
-			Color = ColorSequence.new(colour, WHITE),
-			LightEmission = 0.6,
-			Transparency = fade(0.2, 1),
-			Size = fade(0.4, 0),
-			Lifetime = NumberRange.new(0.8, 1.2),
-			Rate = 12,
-			Speed = NumberRange.new(4, 6),
-			SpreadAngle = Vector2.new(28, 28),
-			Acceleration = V(0, -14, 0),
-			EmissionDirection = Enum.NormalId.Top,
-		})
-	else -- defence: a training dummy with a shield, and a rack of shields
-		pillar(f, c.Position + V(0, 0.5, 0), 5, 0.4, WOOD_DARK, M.Wood)
-		part(f, V(4.4, 0.6, 0.6), c * CFrame.new(0, 4, 0), WOOD_DARK, M.Wood)
-		part(f, V(3, 3.4, 0.7), c * CFrame.new(0, 3.2, -0.7), colour, M.Metal)
-		ball(f, c.Position + V(0, 6, 0), 1.7, HAY, M.Fabric)
-		part(f, V(6, 0.4, 0.4), c * CFrame.new(0, 3, 4.6), WOOD_DARK, M.Wood)
-		for k = -1, 1 do
-			part(f, V(0.4, 3, 0.4), c * CFrame.new(k * 2.8, 2, 4.6), WOOD_DARK, M.Wood)
-			if k ~= 0 then
-				part(
-					f,
-					V(1.8, 2.2, 0.4),
-					c * CFrame.new(k * 1.4, 2.4, 4.3) * CFrame.Angles(rad(-12), 0, 0),
-					colour,
-					M.Metal
-				)
-			end
-		end
-	end
-end
-
--- One training court. Level 0 is a bare pad with a marker; then a floor with a border and a
--- sign (1), glowing edges and corner pylons (2), the stat's own gear (3), lights and sparkles
--- (4), a beam of light with a ring round it (5).
-local function court(f: Instance, i: number, c: CFrame, st: StationConfig.Station, level: number)
-	local colour = STAT_COLOUR[st.stat]
-	local size = if level >= 2 then 14 else 12
-	local pad: Part
-	if level == 0 then
-		pad = disc(f, c.Position + V(0, 0.6, 0), 8, 0.4, colour, M.SmoothPlastic)
-		disc(f, c.Position + V(0, 0.5, 0), 9.4, 0.3, INK, M.SmoothPlastic)
-		pillar(f, (c * CFrame.new(0, 0, 5.4)).Position, 3.4, 0.25, WOOD_DARK, M.Wood)
-		part(f, V(2.6, 1.3, 0.4), c * CFrame.new(0, 3.2, 5.4), colour, M.SmoothPlastic)
-	else
-		pad = part(f, V(size, 0.5, size), c * CFrame.new(0, 0.45, 0), COURT, M.SmoothPlastic)
-		part(f, V(size - 3.4, 0.1, size - 3.4), c * CFrame.new(0, 0.72, 0), COURT:Lerp(colour, 0.22), M.SmoothPlastic)
-		local edge = if level >= 2 then M.Neon else M.SmoothPlastic
-		for _, s in { -1, 1 } do
-			part(f, V(size, 0.3, 0.7), c * CFrame.new(0, 0.75, s * (size / 2 - 0.35)), colour, edge)
-			part(f, V(0.7, 0.3, size), c * CFrame.new(s * (size / 2 - 0.35), 0.75, 0), colour, edge)
-			if level >= 2 then
-				part(f, V(size - 2.6, 0.12, 0.25), c * CFrame.new(0, 0.76, s * (size / 2 - 1.4)), WHITE, M.Neon)
-				part(f, V(0.25, 0.12, size - 2.6), c * CFrame.new(s * (size / 2 - 1.4), 0.76, 0), WHITE, M.Neon)
-			end
-		end
-		kit.signboard(f, c * CFrame.new(0, 0, size / 2 + 1.6), 13, st.name, colour:Lerp(INK, 0.25), 6 + level * 0.5)
-	end
-	pad.Name = st.id
-	pad:SetAttribute("Ranch", i)
-	pad:SetAttribute("Station", st.id)
-	CollectionService:AddTag(pad, "TrainPad")
-	if level >= 2 then
-		local tall = 2.5 + level * 0.6
-		for _, sx in { -1, 1 } do
-			for _, sz in { -1, 1 } do
-				local corner = c * CFrame.new(sx * (size / 2 - 0.1), 0, sz * (size / 2 - 0.1))
-				part(f, V(1.2, tall, 1.2), corner * CFrame.new(0, 0.5 + tall / 2, 0), INK, M.Metal)
-				part(f, V(1.35, 0.3, 1.35), corner * CFrame.new(0, 0.5 + tall * 0.55, 0), colour, M.Neon)
-				local cap = part(f, V(1.4, 0.7, 1.4), corner * CFrame.new(0, 0.85 + tall, 0), colour, M.Neon)
-				if level >= 4 then
-					glow(cap, colour, 12, 1)
-				end
-			end
-		end
-	end
-	if level >= 3 then
-		gear(f, c, st.stat, colour)
-	end
-	if level >= 4 then
-		emitter(pad, {
-			Texture = "rbxasset://textures/particles/sparkles_main.dds",
-			Color = ColorSequence.new(colour),
-			LightEmission = 0.8,
-			Transparency = fade(0, 1),
-			Size = fade(0.5, 0),
-			Lifetime = NumberRange.new(1.5, 2.5),
-			Rate = 5,
-			Speed = NumberRange.new(2, 4),
-			SpreadAngle = Vector2.new(10, 10),
-			EmissionDirection = Enum.NormalId.Top,
-		})
-	end
-	if level >= 5 then
-		local beam = part(f, V(26, 1.5, 1.5), c * CFrame.new(0, 13.8, 0) * CFrame.Angles(0, 0, rad(90)), colour, M.Neon)
-		beam.Shape = Enum.PartType.Cylinder
-		beam.Transparency, beam.CanCollide, beam.CastShadow = 0.78, false, false
-		for k = 1, 10 do
-			local a = k / 10 * math.pi * 2
-			local link = part(
-				f,
-				V(1.7, 0.3, 0.3),
-				c * CFrame.new(math.cos(a) * 2.6, 10, math.sin(a) * 2.6) * CFrame.Angles(0, -a + rad(90), 0),
-				colour,
-				M.Neon
-			)
-			link.CanCollide = false
-		end
-	end
-end
-
 -- The rest ---------------------------------------------------------------------------------------------
 
 local function fountain(f: Instance, centre: Vector3)
@@ -919,6 +714,20 @@ function Ranch.eggs(i: number, eggs: { { egg: string, since: number? } })
 end
 
 -- Build ranch `i` for these upgrade levels (missing = 0), replacing what stood there.
+-- True when the plot's point (x, z) is on the path out to a training area.
+local function onPath(x: number, z: number): boolean
+	local p = V(x, 0, z)
+	for k, gate in World.AREA_GATE do
+		local a = rad(World.AREA_ANGLE[k])
+		local along = V(math.sin(a), 0, math.cos(a)) * (World.AREA_DIST - 62) - gate
+		local t = math.clamp((p - gate):Dot(along) / along:Dot(along), 0, 1)
+		if (p - (gate + along * t)).Magnitude < 11 then
+			return true
+		end
+	end
+	return false
+end
+
 function Ranch.render(i: number, levels: { [string]: number })
 	local plot = World.root():FindFirstChild(`Ranch{i}`, true)
 	if plot == nil then
@@ -952,7 +761,12 @@ function Ranch.render(i: number, levels: { [string]: number })
 		local a, r = wild:NextNumber(0, math.pi * 2), wild:NextNumber(H + 7, H + 34)
 		local x, z = math.cos(a) * r, math.sin(a) * r
 		local near = math.abs(x) < 40 and z < 0 -- the gate, the mailbox and the flower beds
-		if math.max(math.abs(x), math.abs(z)) > H + 5 and not near and math.abs(math.abs(x) - (H + 13)) > 7 then
+		if
+			math.max(math.abs(x), math.abs(z)) > H + 5
+			and not near
+			and math.abs(math.abs(x) - (H + 13)) > 7
+			and not onPath(x, z)
+		then
 			local where = (cf * CFrame.new(x, 0, z)).Position
 			if k % 3 == 0 then
 				pine(f, where, wild:NextNumber(1, 1.5), wild)
@@ -1055,11 +869,8 @@ function Ranch.render(i: number, levels: { [string]: number })
 	part(f, V(0.3, 3, 0.12), wares * CFrame.new(2.4, 1.5, 0) * CFrame.Angles(0, 0, rad(18)), steel, M.Metal)
 	part(f, V(1.1, 0.25, 0.3), wares * CFrame.new(2.75, 0.5, 0) * CFrame.Angles(0, 0, rad(18)), WOOD_DARK, M.Wood)
 
-	-- the training courts: a row across the middle, three each side of the path
-	for k, st in StationConfig.STATIONS do
-		local side = if k <= 3 then -1 else 1
-		court(f, i, at(side * (17 + 16 * ((k - 1) % 3)), 0, 20), st, grounds)
-	end
+	-- the training areas, each in its clearing beyond the mountains, as far on as the Training Grounds
+	Areas.build(f, i, grounds)
 
 	prompt(house(f, at(0, 0, 49), houseLevel), "RanchMenu", "Open", "Ranch menu", i)
 

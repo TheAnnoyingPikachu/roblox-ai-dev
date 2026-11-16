@@ -1,0 +1,51 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-058",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The training areas of decision 0061 in the game (decision 0065): six clearings round each ranch, each at the end of a pass through the mountains, with its area standing in it as far on as the ranch's Training Grounds level. The ranches move out to make room. The six small courts leave the plot.",
+  "inputs": [
+    "docs/decisions/0061-animal-stations-training-clearings.md"
+  ],
+  "dependencies": [
+    "STATION-053",
+    "STATION-057"
+  ],
+  "files": [
+    "assets/stations/area_*",
+    "tools/blender/stations/assets/areas.py",
+    "tools/blender/stations/scenes/training.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/Areas.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0065-animal-stations-training-clearings-in-game.md",
+    "docs/decisions/0061-animal-stations-training-clearings.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-058.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each ranch has six clearings, each reached on foot from the plot by a path through a gap in its fence and a pass between mountains",
+    "Each clearing holds its station's area as it looks at the owner's Training Grounds level, and it changes when the upgrade is bought",
+    "No walkable way leads out of a plot, a pass or a clearing except the passes themselves",
+    "The yard floors and the raised decks can be walked on",
+    "The hub, the arena, the passes from the hub and the ranch plots work as before"
+  ],
+  "verification": "Pending: the 45 models are built and exported; the upload and the check in Studio follow.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "high",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16, to the four questions of the last report (which hub centre, the training looks, room for the clearings, the tortoises): 'go on all four'. Read for the areas as: the looks are approved, build them, fanned out on the side away from the hub with the ranches moved back out as recommended. The upload runs in GitHub (environment assets), never with a key on this machine."
+}
