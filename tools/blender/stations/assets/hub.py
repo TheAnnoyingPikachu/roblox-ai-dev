@@ -42,8 +42,9 @@ def made(maker, seed=7):
     return build
 
 
-def piece(name, maker, glow=None, note=""):
-    return dict(name=name, build=made(maker), budget=20000, joints={}, glow={"body_glow": glow} if glow else {}, finalize={"center": False}, notes=note)
+def piece(name, maker, glow=None, note="", **bake):
+    """`bake`: settings for its texture bake other than the usual."""
+    return dict(name=name, build=made(maker), budget=20000, joints={}, glow={"body_glow": glow} if glow else {}, finalize={"center": False, **bake}, notes=note)
 
 
 def gate(name, a, text, sign, banner, glow):
@@ -52,7 +53,7 @@ def gate(name, a, text, sign, banner, glow):
 
 ASSETS = [
     piece("hub_paving", H.paving, note="The plaza's floor: kerb, three rings of slabs, tiled bands, the mosaic and the sunburst."),
-    piece("hub_fountain", lambda rng: H.fountain(rng, cast=False), (150, 220, 255), "The Hatchery Fountain: two pools, the stem and bowl, the lotus. Its falling water is the glow."),
+    piece("hub_fountain", lambda rng: H.fountain(rng, cast=False), (150, 220, 255), "The Hatchery Fountain: two pools, the stem and bowl, the lotus. Its falling water is the glow.", ao_floor=0.78),  # a lighter shade: the petals shadow each other grey
     piece("hub_plinth", lambda rng: H.plinth(rng, 22.5), note="A statue's plinth with its name plate and flowers; the first of eight, 45 degrees apart."),
     *[
         piece(f"hub_shrine_{egg}", lambda rng, q=q, tiles=tiles: H.shrine(rng, S.polar(32.2, q * 90 + 45, 0.3), q * 90 + 45, None, tiles), note=f"The {egg} egg's shrine, where it stands.")

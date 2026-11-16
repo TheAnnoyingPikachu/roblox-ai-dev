@@ -395,7 +395,7 @@ function Creatures.still(name: string, at: CFrame, scale: number, parent: Instan
 end
 
 -- A statue of the animal `name` standing at `at` (its feet there, facing along the CFrame's look),
--- `fit` studs along its longest side: its meshes with no texture, in `stone`. Nil when the model is
+-- `fit` studs along its longest side: its meshes with no texture, in limestone of the colour `stone`. Nil when the model is
 -- not uploaded or did not load.
 function Creatures.statue(name: string, at: CFrame, fit: number, stone: Color3, parent: Instance): Model?
 	local source = template(name)
@@ -405,7 +405,7 @@ function Creatures.statue(name: string, at: CFrame, fit: number, stone: Color3, 
 	local model = source:Clone()
 	for _, d in model:GetDescendants() do
 		if d:IsA("MeshPart") then
-			d.TextureID, d.Color, d.Material, d.Anchored = "", stone, Enum.Material.Marble, true
+			d.TextureID, d.Color, d.Material, d.Anchored = "", stone, Enum.Material.Limestone, true
 		elseif d ~= model.PrimaryPart then
 			d:Destroy() -- joints, lights, particles, the hit box the cursor finds animals by
 		end

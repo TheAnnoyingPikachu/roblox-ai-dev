@@ -283,5 +283,65 @@
     "model": null,
     "decal": 70860331775093,
     "texture": null
+  },
+  "hub_paving": {
+    "model": 119308597705721,
+    "decal": 85877668039746,
+    "texture": null
+  },
+  "hub_fountain": {
+    "model": 117737577809931,
+    "decal": 138253971037150,
+    "texture": null
+  },
+  "hub_plinth": {
+    "model": 78565296859539,
+    "decal": 116439583624036,
+    "texture": null
+  },
+  "hub_shrine_meadow": {
+    "model": 106387687056262,
+    "decal": 138187953004086,
+    "texture": null
+  },
+  "hub_shrine_wild": {
+    "model": 94654008066960,
+    "decal": 100304750444038,
+    "texture": null
+  },
+  "hub_shrine_safari": {
+    "model": 76896585571819,
+    "decal": 110911483961324,
+    "texture": null
+  },
+  "hub_shrine_golden": {
+    "model": 99850254332299,
+    "decal": 132565631529803,
+    "texture": null
+  },
+  "hub_garden": {
+    "model": 123214203197967,
+    "decal": 102802148486755,
+    "texture": null
+  },
+  "hub_gate_arena": {
+    "model": 81711142154083,
+    "decal": 106897384904088,
+    "texture": null
+  },
+  "hub_gate_welcome": {
+    "model": 129033685067538,
+    "decal": 81094989384290,
+    "texture": null
+  },
+  "hub_gate_ranches": {
+    "model": 134435266098566,
+    "decal": 121756196466091,
+    "texture": null
+  },
+  "hub_stalls": {
+    "model": 105362102984851,
+    "decal": 101677319092658,
+    "texture": null
   }
 }

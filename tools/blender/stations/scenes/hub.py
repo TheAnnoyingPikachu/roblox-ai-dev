@@ -80,7 +80,7 @@ def fountain(rng, cast=True):
     for ring, (n, r0, r1, z0, z1, w) in enumerate(((12, 2.8, 6.2, 8.2, 9.6, 2.4), (12, 2.6, 4.9, 8.6, 11.2, 2.0))):
         for i in range(n):
             a = (i + 0.5 * ring) * 360 / n
-            shard(polar(r0, a, z0), polar(r1, a, z1), w, 0.4, ((255, 190, 214), (255, 228, 236))[ring], rng, face=polar(1, a), at=0.45)
+            shard(polar(r0, a, z0), polar(r1, a, z1), w, 0.4, ((255, 150, 192), (255, 208, 224))[ring], rng, face=polar(1, a), at=0.45)
     if cast:
         actor("egg_golden", (0, 0, 9.0), 0, scale=13 / 3.54)
 
