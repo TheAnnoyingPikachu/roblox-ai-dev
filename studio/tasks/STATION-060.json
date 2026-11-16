@@ -1,0 +1,58 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-060",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The training kit moves with the animal that trains (decision 0067): the barbell is lifted, a ram swings, the boulder is shoved, straw men lurch, the great crystal turns, flames flicker, runes and channels pulse, steam rises, throwers lob balls, a runner kicks up dust and a swimmer splashes. The Animals menu greys out a training ground another animal is using. The Speed Track loses its finish gantry and its bench.",
+  "inputs": [
+    "docs/decisions/0066-animal-stations-training-seen.md"
+  ],
+  "dependencies": [
+    "STATION-059"
+  ],
+  "files": [
+    "assets/stations/area_*",
+    "assets/stations/kit_*",
+    "tools/blender/stations/assets/areas.py",
+    "tools/blender/stations/scenes/training.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/TrainFx.luau",
+    "src/stations/Areas.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Kit.client.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/TrainFx.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0067-animal-stations-moving-kit.md",
+    "docs/decisions/0061-animal-stations-training-clearings.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-060.json"
+  ],
+  "tests": [
+    "TrainFx.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each station's kit moves in time with the clip of the animal training there, and rests when none does",
+    "The barbell and a ram come to the height of the animal that uses them",
+    "In the Animals menu a ground another animal is training at is greyed out and says so; the animal's own ground and free grounds look as before",
+    "The Speed Track has no finish gantry and no bench; its chequered line is still on the ground",
+    "Nothing shown decides or delays any training"
+  ],
+  "verification": "Pending: the models are rebuilt and exported; the upload and the check in Studio follow.",
+  "output_artifacts": [
+    "src/stations-client/Kit.client.luau",
+    "src/shared/TrainFx.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16: 'can you make all the kit animations and menu grey effect', and 'also get rid of the finish line gate thingy and just have the checker on the floor and get rid of this random bench (both on speed training)'. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

@@ -4017,12 +4017,12 @@
     "preview": "build/blender/stations/previews/area_track_3_5.png",
     "size_studs": [
       165.91,
-      22.95,
+      22.93,
       121.62
     ],
-    "tris": 1716,
+    "tris": 1608,
     "parts": {
-      "area_track_3_5_body": 1716
+      "area_track_3_5_body": 1608
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -4031,12 +4031,12 @@
     "centres": {
       "area_track_3_5_body": [
         2.046,
-        11.475,
+        11.465,
         0.009
       ]
     },
     "joints": {},
-    "lift": 0.468
+    "lift": 0.487
   },
   "area_track_4_5": {
     "fbx": "build/blender/stations/area_track_4_5.fbx",
@@ -4045,55 +4045,21 @@
     "size_studs": [
       55.0,
       25.58,
-      102.62
+      23.74
     ],
-    "tris": 1100,
+    "tris": 196,
     "parts": {
-      "area_track_4_5_body": 1040,
-      "area_track_4_5_body_glow": 20,
-      "area_track_4_5_body2_glow": 20,
-      "area_track_4_5_body3_glow": 20
+      "area_track_4_5_body": 196
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
     "notes": "The track's training area: what stands at levels 4 to 5 of the Training Grounds.",
-    "glow": {
-      "area_track_4_5_body_glow": [
-        255,
-        60,
-        60
-      ],
-      "area_track_4_5_body2_glow": [
-        255,
-        210,
-        60
-      ],
-      "area_track_4_5_body3_glow": [
-        80,
-        240,
-        110
-      ]
-    },
+    "glow": {},
     "centres": {
       "area_track_4_5_body": [
         -10.0,
         12.79,
-        -11.561
-      ],
-      "area_track_4_5_body_glow": [
-        9.25,
-        18.375,
-        30.0
-      ],
-      "area_track_4_5_body2_glow": [
-        9.25,
-        18.375,
-        27.25
-      ],
-      "area_track_4_5_body3_glow": [
-        9.25,
-        18.375,
-        24.5
+        -51.0
       ]
     },
     "joints": {},
@@ -4255,9 +4221,9 @@
       37.83,
       109.25
     ],
-    "tris": 3252,
+    "tris": 2872,
     "parts": {
-      "area_gym_2_5_body": 3212,
+      "area_gym_2_5_body": 2832,
       "area_gym_2_5_body_glow": 40
     },
     "tris_budget": 20000,
@@ -4763,15 +4729,14 @@
     "preview": "build/blender/stations/previews/area_library_3_5.png",
     "size_studs": [
       165.91,
-      36.88,
+      22.79,
       121.62
     ],
-    "tris": 1636,
+    "tris": 1556,
     "parts": {
       "area_library_3_5_body": 1400,
-      "area_library_3_5_body_glow": 184,
-      "area_library_3_5_body2_glow": 20,
-      "area_library_3_5_body3_glow": 32
+      "area_library_3_5_body_glow": 136,
+      "area_library_3_5_body2_glow": 20
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -4786,11 +4751,6 @@
         255,
         200,
         90
-      ],
-      "area_library_3_5_body3_glow": [
-        150,
-        120,
-        255
       ]
     },
     "centres": {
@@ -4800,19 +4760,14 @@
         0.009
       ],
       "area_library_3_5_body_glow": [
-        17.798,
-        21.425,
-        16.209
+        35.0,
+        10.425,
+        36.25
       ],
       "area_library_3_5_body2_glow": [
         -52.5,
         10.875,
         25.0
-      ],
-      "area_library_3_5_body3_glow": [
-        2.852,
-        22.75,
-        -3.849
       ]
     },
     "joints": {},
@@ -5371,9 +5326,9 @@
       24.55,
       127.5
     ],
-    "tris": 2018,
+    "tris": 1882,
     "parts": {
-      "area_guard_1_5_body": 2018
+      "area_guard_1_5_body": 1882
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -5394,13 +5349,13 @@
     "png": "build/blender/stations/area_guard_2_5.png",
     "preview": "build/blender/stations/previews/area_guard_2_5.png",
     "size_studs": [
-      107.14,
+      107.01,
       37.97,
       96.0
     ],
-    "tris": 3362,
+    "tris": 3226,
     "parts": {
-      "area_guard_2_5_body": 3322,
+      "area_guard_2_5_body": 3186,
       "area_guard_2_5_body_glow": 40
     },
     "tris_budget": 20000,
@@ -5415,7 +5370,7 @@
     },
     "centres": {
       "area_guard_2_5_body": [
-        -23.428,
+        -23.493,
         18.984,
         15.0
       ],
@@ -5464,9 +5419,9 @@
       46.09,
       115.38
     ],
-    "tris": 1370,
+    "tris": 1234,
     "parts": {
-      "area_guard_4_5_body": 1274,
+      "area_guard_4_5_body": 1138,
       "area_guard_4_5_body_glow": 96
     },
     "tris_budget": 20000,
@@ -5520,5 +5475,109 @@
     },
     "joints": {},
     "lift": 4.5
+  },
+  "kit_gym_bar": {
+    "fbx": "build/blender/stations/kit_gym_bar.fbx",
+    "png": "build/blender/stations/kit_gym_bar.png",
+    "preview": "build/blender/stations/previews/kit_gym_bar.png",
+    "size_studs": [
+      42.5,
+      13.0,
+      13.0
+    ],
+    "tris": 380,
+    "parts": {
+      "kit_gym_bar_body": 380
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The Strength Gym's barbell, on its stands: the animal under it lifts it.",
+    "glow": {},
+    "centres": {
+      "kit_gym_bar_body": [
+        -42.5,
+        6.5,
+        -30.0
+      ]
+    },
+    "joints": {},
+    "lift": 7.875
+  },
+  "kit_library_crystal": {
+    "fbx": "build/blender/stations/kit_library_crystal.fbx",
+    "png": "build/blender/stations/kit_library_crystal.png",
+    "preview": "build/blender/stations/previews/kit_library_crystal.png",
+    "size_studs": [
+      11.7,
+      25.38,
+      10.95
+    ],
+    "tris": 146,
+    "parts": {
+      "kit_library_crystal_body": 66,
+      "kit_library_crystal_body_glow": 48,
+      "kit_library_crystal_body2_glow": 32
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The Magic Library's great crystal in its gold band: it turns over the open book.",
+    "glow": {
+      "kit_library_crystal_body_glow": [
+        60,
+        215,
+        225
+      ],
+      "kit_library_crystal_body2_glow": [
+        150,
+        120,
+        255
+      ]
+    },
+    "centres": {
+      "kit_library_crystal_body": [
+        0.0,
+        9.05,
+        -5.0
+      ],
+      "kit_library_crystal_body_glow": [
+        -1.418,
+        12.688,
+        -6.276
+      ],
+      "kit_library_crystal_body2_glow": [
+        2.852,
+        11.25,
+        -3.849
+      ]
+    },
+    "joints": {},
+    "lift": 12.125
+  },
+  "kit_guard_ram": {
+    "fbx": "build/blender/stations/kit_guard_ram.fbx",
+    "png": "build/blender/stations/kit_guard_ram.png",
+    "preview": "build/blender/stations/previews/kit_guard_ram.png",
+    "size_studs": [
+      6.5,
+      6.5,
+      24.5
+    ],
+    "tris": 112,
+    "parts": {
+      "kit_guard_ram_body": 112
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "A Guard Yard ram's log with its padded head: it swings at the animal on the pad.",
+    "glow": {},
+    "centres": {
+      "kit_guard_ram_body": [
+        0.0,
+        3.25,
+        -17.75
+      ]
+    },
+    "joints": {},
+    "lift": 5.75
   }
 }

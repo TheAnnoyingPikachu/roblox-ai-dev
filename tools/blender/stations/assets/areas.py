@@ -8,6 +8,10 @@ whose stretch holds the ranch's level (Areas.luau reads the stretch from the nam
 Each is built where it stands in its yard (the yard's middle is the origin, the ground z = 0, the
 gateway on -Y) and exported uncentred, like the hub's pieces; one painted `body` and a Neon piece for
 each colour that glows. The animals of the concept cards are left out: the game stands its own.
+
+The kit that moves (decision 0067) is left out of those models too and built as models of its own,
+`kit_<station>_<piece>`, each where it stands at rest: the gym's barbell, the library's great crystal,
+a ram's log (the same model hangs in each of the guard yard's three frames).
 """
 
 import importlib.util
@@ -16,6 +20,7 @@ import random
 
 import bpy
 import stage as S
+from mathutils import Matrix
 
 _spec = importlib.util.spec_from_file_location("scene_training", os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scenes", "training.py"))
 T = importlib.util.module_from_spec(_spec)
@@ -38,6 +43,7 @@ def piece(station, maker, stretches, first, last):
 
     def build():
         rng = random.Random(7)
+        T.KIT = False
         T.area(getattr(T, maker), rng, animals=False)
         found = set()
         for ob in list(bpy.data.objects):
@@ -53,4 +59,23 @@ def piece(station, maker, stretches, first, last):
     return asset
 
 
-ASSETS = [piece(station, maker, stretches, first, last) for station, maker, stretches in AREAS for first, last in stretches]
+def kit(name, maker, note):
+    asset = dict(name=name, budget=20000, joints={}, glow={}, finalize={"center": False, "ao_floor": 0.7}, notes=note)
+
+    def build():
+        rng = random.Random(7)
+        maker(rng)
+        for ob in bpy.data.objects:
+            if ob.type == "MESH":
+                ob.data.transform(Matrix.Scale(T.K, 4))
+        return S.sort_pieces(rng, asset)
+
+    asset["build"] = build
+    return asset
+
+
+ASSETS = [piece(station, maker, stretches, first, last) for station, maker, stretches in AREAS for first, last in stretches] + [
+    kit("kit_gym_bar", T.barbell, "The Strength Gym's barbell, on its stands: the animal under it lifts it."),
+    kit("kit_library_crystal", T.crystal, "The Magic Library's great crystal in its gold band: it turns over the open book."),
+    kit("kit_guard_ram", T.ram_log, "A Guard Yard ram's log with its padded head: it swings at the animal on the pad."),
+]

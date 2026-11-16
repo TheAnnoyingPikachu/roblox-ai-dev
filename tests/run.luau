@@ -80,6 +80,9 @@ local SPECS = {
 	["StationRules.spec.luau"] = function()
 		require("./StationRules.spec")
 	end,
+	["TrainFx.spec.luau"] = function()
+		require("./TrainFx.spec")
+	end,
 	["LevelRules.spec.luau"] = function()
 		require("./LevelRules.spec")
 	end,

@@ -6,6 +6,9 @@
 -- holds it. The models take no collisions: `SOLID` lists the unseen blocks an area needs to be walked
 -- on, read off tools/blender/stations/scenes/training.py in its own numbers (x east and y north of the
 -- yard's middle, z up, before the yard is grown K times): change the two together.
+-- The kit that moves (decision 0067) is models of its own (`kit_*`) or a Neon piece of an area's model:
+-- this stands and tags it ("Kit", with a `Kit` attribute that says how it moves), and
+-- stations-client/Kit.client.luau moves it on each client.
 -- Display only: no game rules live here.
 
 local CollectionService = game:GetService("CollectionService")
@@ -82,32 +85,43 @@ local SOLID: { [string]: { { number } } } = {
 -- stands, {x, y, z, yaw} in the yard's numbers with its nose (`nose`) or its middle there, or the two
 -- ends of the length it swims. `book`: what it looks at, as {how far ahead of its nose, how high above
 -- where it stands}. The track's round is worked out below.
-type Work = { from: number, anim: string, nose: boolean?, at: { number }?, ends: { { number } }?, book: { number }? }
+-- `kit`: the piece it works at, which moves with it. `water`: how high the water it swims in stands.
+type Work = {
+	from: number,
+	anim: string,
+	nose: boolean?,
+	at: { number }?,
+	ends: { { number } }?,
+	book: { number }?,
+	kit: string?,
+	water: number?,
+}
 local WORK: { [string]: { Work } } = {
 	track = { { from = 0, anim = "run" } },
 	gym = {
-		{ from = 0, anim = "heave", nose = true, at = { -11.1, -13, 0.35, 90 } }, -- at the boulder
-		{ from = 2, anim = "heave", at = { -17, 12, 0.95, 0 } }, -- under the bar
+		{ from = 0, anim = "heave", nose = true, at = { -11.1, -13, 0.35, 90 }, kit = "boulder" }, -- at the boulder
+		{ from = 2, anim = "heave", at = { -17, 12, 0.95, 0 }, kit = "bar" }, -- under the bar
 	},
 	pool = {
-		{ from = 0, anim = "swim", ends = { { -13, 1, 0.1 }, { 4, 1.5, 0.1 } } }, -- the pond
-		{ from = 1, anim = "swim", ends = { { -24, 1, 0.6 }, { 16, 1, 0.6 } } }, -- the middle lane
+		{ from = 0, anim = "swim", ends = { { -13, 1, 0.1 }, { 4, 1.5, 0.1 } }, water = 0.32 }, -- the pond
+		{ from = 1, anim = "swim", ends = { { -24, 1, 0.6 }, { 16, 1, 0.6 } }, water = 1.4 }, -- the middle lane
 	},
 	library = {
 		{ from = 0, anim = "study", nose = true, at = { 0, 1.4, 0.3, 180 }, book = { 0.6, 2.75 } }, -- at the book on its stand
-		{ from = 1, anim = "study", nose = true, at = { 0, -1.5, 0.55, 180 }, book = { 3.5, 3.9 } }, -- at the great book
+		{ from = 1, anim = "study", nose = true, at = { 0, -1.5, 0.55, 180 }, book = { 3.5, 3.9 }, kit = "crystal" }, -- at the great book
 	},
 	spring = {
 		{ from = 0, anim = "soak", at = { 0, 1, 0.2, 20 } }, -- in the spring
 		{ from = 1, anim = "soak", at = { -6.8, -10.78, 0.55, 30 } }, -- in the first bath
 	},
 	guard = {
-		{ from = 0, anim = "brace", nose = true, at = { -3.5, -13.6, 0.25, 180 } }, -- at a straw man
-		{ from = 1, anim = "brace", nose = true, at = { 0, 2.2, 0.37, 180 } }, -- against the first ram
+		{ from = 0, anim = "brace", nose = true, at = { -3.5, -13.6, 0.25, 180 }, kit = "dummies" }, -- at a straw man
+		{ from = 1, anim = "brace", nose = true, at = { 0, 2.2, 0.37, 180 }, kit = "ram" }, -- against the first ram
 	},
 }
 
-export type Act = { anim: string, at: CFrame?, round: { Vector3 }?, gaze: number? }
+-- `splash`: how far above its feet the water it swims in stands.
+export type Act = { anim: string, at: CFrame?, round: { Vector3 }?, gaze: number?, kit: string?, splash: number? }
 
 -- What the animal training at ranch `i`'s station does at Training Grounds `level`: its clip and where
 -- it stands, or the round it goes (the track's lap, the pool's length and back), and for one that
@@ -151,7 +165,8 @@ function Areas.act(i: number, stationId: string, level: number, size: { number }
 	elseif work.ends then -- its nose a little short of each end
 		local a, b = work.ends[1], work.ends[2]
 		local reach = length / K / 2 + 0.6
-		return { anim = work.anim, round = { point(a[1] + reach, a[2], a[3]), point(b[1] - reach, b[2], b[3]) } }
+		local round = { point(a[1] + reach, a[2], a[3]), point(b[1] - reach, b[2], b[3]) }
+		return { anim = work.anim, round = round, splash = ((work.water or a[3]) - a[3]) * K }
 	end
 	local at = work.at :: { number }
 	local facing = cf:VectorToWorldSpace(Vector3.new(math.sin(math.rad(at[4])), 0, math.cos(math.rad(at[4]))))
@@ -160,7 +175,112 @@ function Areas.act(i: number, stationId: string, level: number, size: { number }
 	local gaze = if book
 		then math.clamp(math.deg(math.atan2(book[2] * K - size[2] * 0.85, book[1] * K + length * 0.15)), -30, 35)
 		else nil
-	return { anim = work.anim, at = CFrame.lookAt(where, where + facing), gaze = gaze }
+	return { anim = work.anim, at = CFrame.lookAt(where, where + facing), gaze = gaze, kit = work.kit }
+end
+
+-- The kit that is a model of its own: { model, the level it arrives at, how it moves, how far along the
+-- yard's x it stands from where it was built }, and the numbers its motion needs (studs): `High`, how
+-- high above the animal's floor the piece's axis rests; `Least`, how low it may come; `Rope`, a ram's.
+local KIT: { [string]: { { any } } } = {
+	gym = { { "kit_gym_bar", 2, "bar", 0, { High = 12, Least = 6.8 } } },
+	library = { { "kit_library_crystal", 3, "crystal", 0, {} } },
+	guard = {
+		{ "kit_guard_ram", 1, "ram", 0, { High = 8.1, Least = 3.7, Rope = 12.5 } },
+		{ "kit_guard_ram", 2, "", -17, {} }, -- the two that hang idle
+		{ "kit_guard_ram", 4, "", 17, {} },
+	},
+}
+
+-- What moves inside an area's own models: a whole model, or its Neon piece of a colour.
+local MOVES: { [string]: { model: string?, glow: { [string]: string }? } } = {
+	area_gym_0_5 = { model = "boulder" },
+	area_guard_0_5 = { model = "dummies" },
+	area_track_5_5 = { glow = { ["60,150,255"] = "pulse" } }, -- the arrows round the bends
+	area_gym_5_5 = { glow = { ["255,150,50"] = "flicker" } }, -- braziers
+	area_guard_4_5 = { glow = { ["255,150,50"] = "flicker" } },
+	area_library_0_0 = { glow = { ["255,200,90"] = "flicker" } }, -- candles
+	area_library_1_5 = { glow = { ["255,200,90"] = "flicker" } },
+	area_library_3_5 = { glow = { ["60,215,225"] = "pulse" } }, -- the font of mana
+	area_library_5_5 = { glow = { ["150,120,255"] = "spin", ["60,215,225"] = "pulse" } }, -- rings of light, runes
+	area_spring_1_5 = { glow = { ["150,240,226"] = "pulse" } }, -- the channels from the source
+	area_spring_2_5 = { glow = { ["150,240,226"] = "pulse" } },
+	area_spring_3_5 = { glow = { ["150,240,226"] = "pulse" } },
+	area_spring_5_5 = { glow = { ["150,255,170"] = "pulse", ["70,205,120"] = "pulse" } }, -- lanterns, crystals
+}
+
+-- Where steam rises in the spring: { first level, x, y, z } (its source and its baths, as in SOLID).
+local STEAM = {
+	{ 0, 0, 1, 0.6 },
+	{ 1, -6.8, -10.78, 1.0 },
+	{ 1, 6.8, -10.78, 1.0 },
+	{ 2, 13.6, 1, 1.0 },
+	{ 2, -13.6, 1, 1.0 },
+	{ 3, 6.8, 12.78, 1.0 },
+	{ 3, -6.8, 12.78, 1.0 },
+}
+
+local function tagKit(inst: Instance, how: string)
+	inst:SetAttribute("Kit", how)
+	CollectionService:AddTag(inst, "Kit")
+end
+
+-- Stands one of an area's models and tags what moves in it.
+local function slice(name: string, cf: CFrame, f: Instance)
+	local model = Creatures.still(name, cf * CFrame.Angles(0, math.pi, 0), 1, f)
+	local moves = MOVES[name]
+	if model == nil or moves == nil then
+		return
+	end
+	if moves.model == "boulder" then
+		model:SetAttribute("Along", cf.RightVector) -- the way the animal shoves it
+		tagKit(model, "boulder")
+	elseif moves.model == "dummies" then
+		model:SetAttribute("Foot", (cf * CFrame.new(0, 0.25 * K, 12.5 * K)).Position) -- the line their posts stand on
+		model:SetAttribute("Along", cf.RightVector)
+		tagKit(model, "dummies")
+	end
+	for part, rgb in StationAssets[name].glow do
+		local how = moves.glow and moves.glow[`{rgb[1]},{rgb[2]},{rgb[3]}`]
+		local piece = model:FindFirstChild(part)
+		if how and piece then
+			tagKit(piece, how)
+		end
+	end
+end
+
+-- Stands a piece of kit that is a model of its own. A ram hangs by two ropes from its frame's beam: they
+-- are drawn here, so they follow the log wherever it swings.
+local function kit(spec: { any }, cf: CFrame, f: Instance)
+	local name, how, dx = spec[1] :: string, spec[3] :: string, spec[4] :: number
+	local model = Creatures.still(name, cf * CFrame.new(dx * K, 0, 0) * CFrame.Angles(0, math.pi, 0), 1, f)
+	if model == nil then
+		return
+	end
+	for key, value in spec[5] :: { [string]: number } do
+		model:SetAttribute(key, value)
+	end
+	if name == "kit_guard_ram" then
+		local log = model:FindFirstChild("kit_guard_ram_body") :: BasePart
+		local beam = Props.part(f, Vector3.new(1, 1, 1), cf * CFrame.new(dx * K, 8.6 * K, -8 * K), WHITE)
+		beam.Transparency, beam.CanCollide, beam.CastShadow, beam.Name = 1, false, false, "Ropes"
+		for _, dy in { -2.4, 2.4 } do
+			local top, bottom = Instance.new("Attachment"), Instance.new("Attachment")
+			top.Parent, bottom.Parent = beam, log
+			top.WorldPosition = (cf * CFrame.new(dx * K, 8.6 * K, -(8 + dy * 0.2) * K)).Position
+			bottom.WorldPosition = (cf * CFrame.new(dx * K, 4.6 * K, -(8 + dy) * K)).Position
+			local rope = Instance.new("Beam")
+			rope.Attachment0, rope.Attachment1 = top, bottom
+			rope.Width0, rope.Width1, rope.FaceCamera, rope.Segments = 0.45, 0.45, true, 1
+			rope.Color, rope.LightInfluence = ColorSequence.new(Color3.fromRGB(86, 88, 100)), 1
+			rope.Parent = beam
+		end
+		model:SetAttribute("Back", -cf.LookVector) -- away from the animal on its pad
+	elseif name == "kit_library_crystal" then
+		model:SetAttribute("Foot", (cf * CFrame.new(0, 0, -2 * K)).Position) -- the line it turns about
+	end
+	if how ~= "" then
+		tagKit(model, how)
+	end
 end
 
 -- the models of each station, with the levels each stands at
@@ -188,7 +308,7 @@ function Areas.build(parent: Instance, i: number, level: number)
 		f.Parent = parent
 		for _, piece in pieces[st.id] or {} do
 			if piece.first <= level and level <= piece.last then
-				task.spawn(Creatures.still, piece.name, cf * CFrame.Angles(0, math.pi, 0), 1, f) -- each has to load
+				task.spawn(slice, piece.name, cf, f) -- each has to load
 			end
 		end
 		for _, s in SOLID[st.id] do
@@ -203,6 +323,43 @@ function Areas.build(parent: Instance, i: number, level: number)
 					block = Props.part(f, size, cf * middle, WHITE)
 				end
 				block.Transparency, block.CastShadow, block.Name = 1, false, "Solid"
+			end
+		end
+		for _, spec in KIT[st.id] or {} do
+			if (spec[2] :: number) <= level then
+				task.spawn(kit, spec, cf, f)
+			end
+		end
+		if st.id == "guard" and level >= 3 then -- the two throwers lob balls at the shields they face
+			for _, side in { -1, 1 } do
+				local at = cf * CFrame.new(side * 23.8 * K, 4.3 * K, 13 * K)
+				local thrower = Props.part(f, Vector3.new(1, 1, 1), at, Areas.COLOUR.defence)
+				thrower.Transparency, thrower.CanCollide, thrower.CastShadow, thrower.Name = 1, false, false, "Thrower"
+				thrower:SetAttribute("To", (cf * CFrame.new(side * 18.2 * K, 3.2 * K, 13 * K)).Position)
+				thrower:SetAttribute("Phase", if side > 0 then 1.6 else 0)
+				tagKit(thrower, "lob")
+			end
+		elseif st.id == "spring" then -- steam off the water
+			for _, s in STEAM do
+				if s[1] <= level and (s[1] > 0 or level == 0) then
+					local vent =
+						Props.part(f, Vector3.new(6, 0.2, 6), cf * CFrame.new(s[2] * K, s[4] * K, -s[3] * K), WHITE)
+					vent.Transparency, vent.CanCollide, vent.CastShadow, vent.Name = 1, false, false, "Steam"
+					local steam = Instance.new("ParticleEmitter")
+					steam.Texture = "rbxasset://textures/particles/smoke_main.dds"
+					steam.Color = ColorSequence.new(WHITE)
+					steam.Transparency = NumberSequence.new({
+						NumberSequenceKeypoint.new(0, 1),
+						NumberSequenceKeypoint.new(0.25, 0.72),
+						NumberSequenceKeypoint.new(1, 1),
+					})
+					steam.Size = NumberSequence.new(3, 8)
+					steam.Lifetime, steam.Rate = NumberRange.new(3, 5), 3
+					steam.Speed, steam.SpreadAngle = NumberRange.new(1.5, 3), Vector2.new(12, 12)
+					steam.RotSpeed, steam.LightEmission = NumberRange.new(-15, 15), 0.3
+					steam.EmissionDirection = Enum.NormalId.Top
+					steam.Parent = vent
+				end
 			end
 		end
 		local pad = Props.part(f, Vector3.new(4, 0.2, 4), cf * CFrame.new(0, 0.1, 0), WHITE)

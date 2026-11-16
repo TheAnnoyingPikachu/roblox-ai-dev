@@ -328,15 +328,23 @@ local function animalCard(a: any, order: number)
 	grid.Parent = card
 	for i, st in StationConfig.STATIONS do
 		local training = a.at == st.id
+		local taken = false -- a ground trains one animal (decision 0066): another's is greyed out
+		for _, other in profile.animals do
+			taken = taken or (other.id ~= a.id and other.at == st.id)
+		end
 		local button = Style.button(grid, statText(live(a), st.stat, training), function()
 			if training then
 				send("stop", a.id)
 			else
-				send("train", a.id, st.id)
+				send("train", a.id, st.id) -- a taken ground is refused, and the toast says why
 			end
-		end, "stat")
+		end, if taken then "off" else "stat")
 		button.LayoutOrder, button.TextSize = i, 13
-		if training then
+		if taken then
+			button.Text =
+				`{STAT_SHORT[st.stat]} {StationRules.level(live(a), st.stat :: any)}/{StationConfig.MAX_LEVEL}\nin use`
+			button.AutoButtonColor = false
+		elseif training then
 			button.BackgroundColor3 = TRAINING
 			table.insert(tickers, function()
 				button.Text = statText(live(a), st.stat, true)

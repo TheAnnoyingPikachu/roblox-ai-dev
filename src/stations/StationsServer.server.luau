@@ -601,8 +601,44 @@ end
 -- length) is moved along it here, like the herd; the others stand and play their clip.
 local trainers: { [number]: { [string]: { id: number, level: number, model: Model | boolean } } } = {}
 
+-- What an animal at work kicks up: dust behind a runner, splashes round a swimmer (at the water's top).
+local function spray(model: Model, act: Areas.Act)
+	local root = model.PrimaryPart :: BasePart
+	local at = Instance.new("Attachment")
+	at.Position = Vector3.new(0, act.splash or 0.3, 0)
+	at.Parent = root
+	local puff = Instance.new("ParticleEmitter")
+	local swims = act.anim == "swim"
+	puff.Texture = "rbxasset://textures/particles/smoke_main.dds"
+	puff.Color = ColorSequence.new(if swims then Color3.fromRGB(225, 245, 255) else Color3.fromRGB(214, 184, 142))
+	puff.Transparency = NumberSequence.new(0.45, 1)
+	puff.Size = NumberSequence.new(if swims then 1.2 else 0.8, if swims then 3.2 else 2.6)
+	puff.Lifetime, puff.Rate = NumberRange.new(0.6, 1.1), if swims then 14 else 9
+	puff.Speed, puff.SpreadAngle = NumberRange.new(2, 5), Vector2.new(60, 60)
+	puff.Acceleration = Vector3.new(0, if swims then -9 else 2, 0)
+	puff.EmissionDirection = Enum.NormalId.Top
+	puff.Parent = at
+end
+
+-- Tells the station's kit what its animal works at and how big it is (stations-client/Kit.client.luau
+-- moves the kit by these), or with no model that nothing does.
+local function mark(i: number, station: string, model: Model?, act: Areas.Act?)
+	local plot = World.root():FindFirstChild(`Ranch{i}`, true)
+	local built = plot and plot:FindFirstChild("Built")
+	local folder = built and built:FindFirstChild(station)
+	if folder then
+		folder:SetAttribute("Work", if model and act then act.kit else nil)
+		folder:SetAttribute("WorkHeight", if model then StationAssets[model.Name].size[2] else nil)
+		folder:SetAttribute("WorkScale", if model then model:GetAttribute("Scale") else nil)
+	end
+end
+
 local function work(model: Model, act: Areas.Act)
 	model:SetAttribute("Gaze", act.gaze)
+	model:SetAttribute("Work", act.kit)
+	if act.anim == "run" or act.anim == "swim" then
+		spray(model, act)
+	end
 	Creatures.play(model, act.anim)
 	local round = act.round
 	if round == nil then
@@ -647,8 +683,11 @@ local function syncTrainers(i: number, animals: { StationProgress.Animal }, leve
 				t.model:Destroy()
 			end
 			at[station] = nil
+			mark(i, station, nil, nil)
 		elseif typeof(t.model) == "Instance" then
 			Creatures.describe(t.model, a.s, a.v, a :: any) -- training moves its stats
+			-- the ranch may have been built again since (another upgrade): its kit must hear again
+			mark(i, station, t.model, { anim = "", kit = t.model:GetAttribute("Work") :: string? })
 		end
 	end
 	local plot = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
@@ -664,6 +703,7 @@ local function syncTrainers(i: number, animals: { StationProgress.Animal }, leve
 				if model and at[station] == t then
 					t.model = model
 					Creatures.describe(model, a.s, a.v, a :: any)
+					mark(i, station, model, act)
 					work(model, act)
 				elseif model then
 					model:Destroy() -- stopped while it loaded

@@ -23,6 +23,7 @@ RED = (224, 64, 60)
 IRON = (86, 88, 100)
 W, D = 64, 48  # a yard, as it is written
 K = 2.5  # and how many times it is grown
+KIT = True  # with the kit that moves: the game leaves it out of an area's models and stands it itself, to move it
 
 _now = {"first": 0, "last": S.TOP}
 _cast = []
@@ -198,17 +199,6 @@ def speed(rng):
     for i in range(8):  # the finish line, chequered
         for j in range(2):
             box((0.5, 1.2, 0.04), (4.0 + j * 0.5, -(5.0 + 0.6 + i * 1.2), 0.43), S.INK if (i + j) % 2 else S.WHITE, rng)
-    lv(4)
-    # the gantry over the line
-    for sy in (-4.2, -15.4):
-        box((0.8, 0.8, 8.0), (4.25, sy, 0.25), IRON, rng)
-    box((1.0, 12.2, 1.6), (4.25, -9.8, 8.25), SPEED, rng, chance=0.08)
-    words("FINISH", (3.7, -9.8, 9.05), 1.1, S.WHITE, yaw=-90)
-    for i, rgb in enumerate(((255, 60, 60), (255, 210, 60), (80, 240, 110))):
-        neon(S.k.ico(0.42, (3.7, -12.0 + i * 1.1, 7.6), subdiv=1), rgb, 2.5)
-    for i in range(10):
-        for j in range(2):
-            box((0.12, 1.2, 0.7), (4.8, -15.2 + i * 1.2, 6.9 + j * 0.7), S.INK if (i + j) % 2 else S.WHITE, rng)
     lv(2)
     for x in (-8.0, 0.0, 8.0):  # hurdles down the far straight
         for i in range(4):
@@ -266,7 +256,6 @@ def speed(rng):
     lv(3)
     barrel((-27.0, 18.5, 0.25), rng, SPEED)
     barrel((-25.0, 19.4, 0.25), rng)
-    spin(bench((26.0, -6.0, 0.25), rng), (26.0, -6.0), 90)
     lv(1)
     for sx in (-30.0, 30.0):
         tree((sx, 22.0, 0.25), rng, 0.8)
@@ -293,6 +282,14 @@ def weight(at, r, rng, band, axis=0.0):
     post(r * 0.2, 0.84, c - polar(0.42, axis), IRON, rng, n=8, rot=(0, 90, axis))
 
 
+def barbell(rng, x=-17.0, y=12.0, z=5.75):
+    """The gym's barbell on its stands: a bar and four stone discs. It moves: the animal under it lifts it."""
+    pipe([(x - 8.5, y, z), (x + 8.5, y, z)], 0.28, (190, 194, 204), rng, n=8)
+    for sx, r in ((-7.6, 2.6), (-6.6, 2.1), (6.6, 2.1), (7.6, 2.6)):
+        post(r, 0.8, (x + sx - 0.4, y, z), (150, 146, 142), rng, n=12, rot=(0, 90, 0), surface="rock", kind=S.COOL)
+        post(r * 0.6, 0.86, (x + sx - 0.43, y, z), STRENGTH, rng, n=12, rot=(0, 90, 0))
+
+
 def strength(rng):
     yard(rng, "STRENGTH GYM", STRENGTH, (214, 188, 140), bare=(204, 182, 134))
     lv(0, 1)  # a new ranch: a boulder to push and two stones to lift
@@ -315,10 +312,8 @@ def strength(rng):
     for sx in (-21.0, -13.0):
         box((0.7, 0.7, 4.2), (sx, 12.0, 0.95), IRON, rng)
         box((1.5, 0.9, 0.4), (sx, 12.0, 5.15), IRON, rng)
-    pipe([(-25.5, 12.0, 5.75), (-8.5, 12.0, 5.75)], 0.28, (190, 194, 204), rng, n=8)
-    for sx, r in ((-24.6, 2.6), (-23.6, 2.1), (-10.4, 2.1), (-9.4, 2.6)):
-        post(r, 0.8, (sx - 0.4, 12.0, 5.75), (150, 146, 142), rng, n=12, rot=(0, 90, 0), surface="rock", kind=S.COOL)
-        post(r * 0.6, 0.86, (sx - 0.43, 12.0, 5.75), STRENGTH, rng, n=12, rot=(0, 90, 0))
+    if KIT:
+        barbell(rng)
     lv(3)
     box((2.6, 1.6, 1.2), (-9.0, 16.4, 0.95), S.STONE, rng, kind=S.PALE)  # the chalk trough
     lump((-9.0, 16.4, 2.25), (1.0, 0.55, 0.3), S.WHITE, rng)
@@ -544,6 +539,15 @@ def shelf(rng, at, yaw, tall=9.0):
             x += w + 0.04
 
 
+def crystal(rng):
+    """The library's great crystal over the open book: five shards in a gold band. It moves: it turns."""
+    for i, (h, w, off) in enumerate(((7.0, 2.2, (0, 0)), (4.0, 1.3, (1.6, 0.6)), (3.4, 1.1, (-1.5, -0.5)), (2.8, 0.9, (0.3, -1.6)), (2.6, 0.9, (-0.6, 1.5)))):
+        base = Vector((off[0], 2 + off[1], 8.0 + i * 0.25))
+        gem(base, base + Vector((off[0] * 0.25, off[1] * 0.25, h)), w, (MANA, (150, 120, 255))[i % 2], rng=rng)
+        gem(base, base - Vector((off[0] * 0.1, off[1] * 0.1, h * 0.45)), w, (MANA, (150, 120, 255))[i % 2], rng=rng)
+    slab(1.25, 1.5, 0, 360, 8.3, 0.34, S.GOLD, rng, centre=(0, 2), step=45)  # the band that holds them
+
+
 def mana(rng):
     yard(rng, "MAGIC LIBRARY", MANA, (72, 74, 104), kind=S.COOL)
     slate, pale = (82, 84, 118), (112, 116, 156)
@@ -574,10 +578,8 @@ def mana(rng):
         box((2.6, 3.4, 0.4), (side * 1.32, 2.0, 3.9), S.WHITE, rng, kind=S.PALE, tilt=(0, side * 12))
         box((2.8, 3.6, 0.2), (side * 1.36, 2.0, 3.72), (130, 60, 90), rng, tilt=(0, side * 12))
     lv(3)
-    for i, (h, w, off) in enumerate(((7.0, 2.2, (0, 0)), (4.0, 1.3, (1.6, 0.6)), (3.4, 1.1, (-1.5, -0.5)), (2.8, 0.9, (0.3, -1.6)), (2.6, 0.9, (-0.6, 1.5)))):
-        base = Vector((off[0], 2 + off[1], 8.0 + i * 0.25))
-        gem(base, base + Vector((off[0] * 0.25, off[1] * 0.25, h)), w, (MANA, (150, 120, 255))[i % 2], rng=rng)
-        gem(base, base - Vector((off[0] * 0.1, off[1] * 0.1, h * 0.45)), w, (MANA, (150, 120, 255))[i % 2], rng=rng)
+    if KIT:
+        crystal(rng)
     lv(5)
     for i in range(3):  # rings of light round it
         neon(S.k.ring(3.4 + i * 0.9, 9.0 + i * 1.5, 0.09, None, n=28, sides=5, centre=(0, 2)), (150, 120, 255), 2.0)
@@ -885,6 +887,14 @@ def pad(rng, x, y, r=3.0):
     disc(r - 0.5, (x, y, 0.37), 0.05, (240, 232, 210), rng, n=12, kind=S.PALE)
 
 
+def ram_log(rng, x=0.0, y=8.0):
+    """A ram's log with its padded head and iron bands. It moves: it swings at the animal on the pad."""
+    post(1.0, 8.4, (x, y + 4.0, 3.6), LOG, rng, n=8, rot=(90, 0, 0))
+    post(1.3, 1.5, (x, y - 4.3, 3.6), HAY, rng, n=8, rot=(90, 0, 0))
+    for dy in (-3.9, 2.6):
+        post(1.08, 0.4, (x, y + dy, 3.6), IRON, rng, n=8, rot=(90, 0, 0), kind=S.COOL)
+
+
 def ram(rng, x, y):
     """A ram: a log slung from a frame, its padded head towards the pad to its south, where an animal
     braces against it."""
@@ -893,12 +903,10 @@ def ram(rng, x, y):
             pipe([(x + sx, y + sy * 4.0, 0.25), (x + sx, y + sy * 0.3, 9.2)], 0.36, (150, 104, 64), rng, n=6)
         lump((x + sx, y, 9.3), 0.6, S.GOLD, rng)
     box((7.8, 0.8, 0.8), (x, y, 8.6), S.WOOD_DARK, rng)
-    post(1.0, 8.4, (x, y + 4.0, 3.6), LOG, rng, n=8, rot=(90, 0, 0))
-    post(1.3, 1.5, (x, y - 4.3, 3.6), HAY, rng, n=8, rot=(90, 0, 0))
-    for dy in (-3.9, 2.6):
-        post(1.08, 0.4, (x, y + dy, 3.6), IRON, rng, n=8, rot=(90, 0, 0), kind=S.COOL)
-    for dy in (-2.4, 2.4):
-        pipe([(x, y + dy * 0.2, 8.6), (x, y + dy, 4.6)], 0.09, IRON, rng, n=4)
+    if KIT:
+        ram_log(rng, x, y)
+        for dy in (-2.4, 2.4):  # the ropes it hangs by (the game draws its own, which follow the log)
+            pipe([(x, y + dy * 0.2, 8.6), (x, y + dy, 4.6)], 0.09, IRON, rng, n=4)
     pad(rng, x, y - 9.0)
 
 

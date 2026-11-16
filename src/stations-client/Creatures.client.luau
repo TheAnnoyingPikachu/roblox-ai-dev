@@ -17,6 +17,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local FightFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("FightFx"))
+local TrainFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("TrainFx"))
 
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
@@ -684,9 +685,8 @@ end
 -- Training (decision 0066): what an animal does at its station, on a loop, as (time, strides a second,
 -- upright or not, its model). The server sets the clip's name as Anim and, for the two that travel, moves
 -- the animal. A head's first number is its pitch: up is positive.
-local function pulse(u: number, rise: number, fall: number): number -- 0 to 1 over `rise`, back by `fall`, then rest
-	return if u < rise then ease(u / rise) elseif u < fall then 1 - ease((u - rise) / (fall - rise)) else 0
-end
+-- The lift and the blow are timed by TrainFx, which the kit they are done with is moved by too.
+local pulse = TrainFx.pulse
 
 local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 	-- the track: a gallop, the front pair and the hind pair swinging against each other
@@ -721,8 +721,7 @@ local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 	end,
 	-- the gym: sinks under the weight, shakes, drives up, stands a moment
 	heave = function(t, _, biped)
-		local u = (t % 2.8) / 2.8
-		local down = pulse(u, 0.35, 0.62)
+		local down, u = TrainFx.heave(t)
 		local shake = if u > 0.3 and u < 0.42 then 0.7 * math.sin(t * 55) else 0
 		if biped then -- arms up under the bar as it straightens
 			local arms = -150 * (1 - down) * (if u < 0.9 then 1 else 0.6)
@@ -793,7 +792,7 @@ local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 	end,
 	-- the guard yard: set low against the blow, thrown back as it lands, set again
 	brace = function(t, _, biped)
-		local hit = pulse((t % 2.4) / 2.4, 0.07, 0.4)
+		local hit = TrainFx.brace(t)
 		if biped then
 			return {
 				leg_fl = { -60 + 30 * hit },
