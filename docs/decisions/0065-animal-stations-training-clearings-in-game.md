@@ -59,6 +59,8 @@ Changed from the concept: the pool's steps now touch its deck (they stood apart 
 - Animals are not seen in the areas. Training is still the menu's; whether animals show there is
   the open question of decision 0061.
 - No signs or paths inside the plot lead to the gaps in its fence.
+- One model, `area_spring_2_5`, was uploaded twice: Roblox would not serve its first texture. The
+  first pair is unused.
 - Not measured: frame rate. Fact: the world is now 14,691 parts and folders before any area model
   loads, with 379 mountains and 535 unseen walls. Assumption: three ranches at the top level show
   about 500,000 triangles of area models between them.
