@@ -44,6 +44,7 @@ def piece(station, maker, stretches, first, last):
     def build():
         rng = random.Random(7)
         T.KIT = False
+        T.OPEN = True  # it stands on the valley's own ground (decision 0070): no floor or fence of its own
         T.area(getattr(T, maker), rng, animals=False)
         found = set()
         for ob in list(bpy.data.objects):

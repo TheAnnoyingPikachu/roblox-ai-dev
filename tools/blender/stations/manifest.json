@@ -3950,13 +3950,13 @@
     "png": "build/blender/stations/area_track_1_5.png",
     "preview": "build/blender/stations/previews/area_track_1_5.png",
     "size_studs": [
-      167.5,
-      18.62,
-      127.5
+      162.45,
+      17.48,
+      97.47
     ],
-    "tris": 2492,
+    "tris": 1724,
     "parts": {
-      "area_track_1_5_body": 2492
+      "area_track_1_5_body": 1724
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -3964,13 +3964,13 @@
     "glow": {},
     "centres": {
       "area_track_1_5_body": [
-        0.0,
-        9.312,
-        -0.0
+        -0.077,
+        8.739,
+        -12.234
       ]
     },
     "joints": {},
-    "lift": 0.0
+    "lift": 0.625
   },
   "area_track_2_5": {
     "fbx": "build/blender/stations/area_track_2_5.fbx",
@@ -4016,13 +4016,13 @@
     "png": "build/blender/stations/area_track_3_5.png",
     "preview": "build/blender/stations/previews/area_track_3_5.png",
     "size_studs": [
-      165.91,
-      22.93,
-      121.62
+      109.42,
+      6.49,
+      60.51
     ],
-    "tris": 1608,
+    "tris": 1384,
     "parts": {
-      "area_track_3_5_body": 1608
+      "area_track_3_5_body": 1384
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -4030,13 +4030,13 @@
     "glow": {},
     "centres": {
       "area_track_3_5_body": [
-        2.046,
-        11.465,
-        0.009
+        -15.039,
+        3.245,
+        -20.382
       ]
     },
     "joints": {},
-    "lift": 0.487
+    "lift": 0.434
   },
   "area_track_4_5": {
     "fbx": "build/blender/stations/area_track_4_5.fbx",
@@ -4190,13 +4190,13 @@
     "png": "build/blender/stations/area_gym_1_5.png",
     "preview": "build/blender/stations/previews/area_gym_1_5.png",
     "size_studs": [
-      167.5,
-      11.23,
-      127.5
+      100.0,
+      10.6,
+      37.12
     ],
-    "tris": 1336,
+    "tris": 568,
     "parts": {
-      "area_gym_1_5_body": 1336
+      "area_gym_1_5_body": 568
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -4204,13 +4204,13 @@
     "glow": {},
     "centres": {
       "area_gym_1_5_body": [
-        0.0,
-        5.613,
-        -0.0
+        -17.5,
+        5.3,
+        20.562
       ]
     },
     "joints": {},
-    "lift": 0.0
+    "lift": 0.625
   },
   "area_gym_2_5": {
     "fbx": "build/blender/stations/area_gym_2_5.fbx",
@@ -4256,13 +4256,13 @@
     "png": "build/blender/stations/area_gym_3_5.png",
     "preview": "build/blender/stations/previews/area_gym_3_5.png",
     "size_studs": [
-      165.91,
-      22.79,
-      121.62
+      132.68,
+      15.0,
+      82.65
     ],
-    "tris": 1348,
+    "tris": 1124,
     "parts": {
-      "area_gym_3_5_body": 1328,
+      "area_gym_3_5_body": 1104,
       "area_gym_3_5_body_glow": 20
     },
     "tris_budget": 20000,
@@ -4277,9 +4277,9 @@
     },
     "centres": {
       "area_gym_3_5_body": [
-        2.046,
-        11.396,
-        0.009
+        -2.839,
+        7.5,
+        -1.824
       ],
       "area_gym_3_5_body_glow": [
         32.5,
@@ -4426,13 +4426,13 @@
     "png": "build/blender/stations/area_pool_1_5.png",
     "preview": "build/blender/stations/previews/area_pool_1_5.png",
     "size_studs": [
-      167.5,
-      7.79,
-      127.5
+      148.25,
+      7.16,
+      86.88
     ],
-    "tris": 3684,
+    "tris": 2916,
     "parts": {
-      "area_pool_1_5_body": 3684
+      "area_pool_1_5_body": 2916
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -4440,13 +4440,13 @@
     "glow": {},
     "centres": {
       "area_pool_1_5_body": [
-        0.0,
-        3.895,
-        -0.0
+        -2.75,
+        3.582,
+        5.062
       ]
     },
     "joints": {},
-    "lift": 0.0
+    "lift": 0.625
   },
   "area_pool_2_5": {
     "fbx": "build/blender/stations/area_pool_2_5.fbx",
@@ -4492,13 +4492,13 @@
     "png": "build/blender/stations/area_pool_3_5.png",
     "preview": "build/blender/stations/previews/area_pool_3_5.png",
     "size_studs": [
-      165.91,
-      28.75,
-      121.62
+      126.3,
+      25.88,
+      76.18
     ],
-    "tris": 974,
+    "tris": 750,
     "parts": {
-      "area_pool_3_5_body": 974
+      "area_pool_3_5_body": 750
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -4506,13 +4506,13 @@
     "glow": {},
     "centres": {
       "area_pool_3_5_body": [
-        2.046,
-        14.375,
-        0.009
+        -1.402,
+        12.938,
+        0.912
       ]
     },
     "joints": {},
-    "lift": 0.625
+    "lift": 3.5
   },
   "area_pool_4_5": {
     "fbx": "build/blender/stations/area_pool_4_5.fbx",
@@ -4639,13 +4639,13 @@
     "png": "build/blender/stations/area_library_1_5.png",
     "preview": "build/blender/stations/previews/area_library_1_5.png",
     "size_studs": [
-      167.5,
-      24.62,
-      127.5
+      151.54,
+      24.06,
+      110.63
     ],
-    "tris": 2684,
+    "tris": 1916,
     "parts": {
-      "area_library_1_5_body": 2644,
+      "area_library_1_5_body": 1876,
       "area_library_1_5_body_glow": 40
     },
     "tris_budget": 20000,
@@ -4660,18 +4660,18 @@
     },
     "centres": {
       "area_library_1_5_body": [
-        0.0,
-        12.312,
-        -0.0
+        1.25,
+        12.028,
+        -4.386
       ],
       "area_library_1_5_body_glow": [
         3.375,
-        9.25,
+        8.682,
         23.125
       ]
     },
     "joints": {},
-    "lift": 0.0
+    "lift": 0.568
   },
   "area_library_2_5": {
     "fbx": "build/blender/stations/area_library_2_5.fbx",
@@ -4728,13 +4728,13 @@
     "png": "build/blender/stations/area_library_3_5.png",
     "preview": "build/blender/stations/previews/area_library_3_5.png",
     "size_studs": [
-      165.91,
-      22.79,
-      121.62
+      106.43,
+      15.98,
+      73.38
     ],
-    "tris": 1556,
+    "tris": 1332,
     "parts": {
-      "area_library_3_5_body": 1400,
+      "area_library_3_5_body": 1176,
       "area_library_3_5_body_glow": 136,
       "area_library_3_5_body2_glow": 20
     },
@@ -4755,9 +4755,9 @@
     },
     "centres": {
       "area_library_3_5_body": [
-        2.046,
-        11.396,
-        0.009
+        -10.712,
+        7.99,
+        6.691
       ],
       "area_library_3_5_body_glow": [
         35.0,
@@ -4987,13 +4987,13 @@
     "png": "build/blender/stations/area_spring_1_5.png",
     "preview": "build/blender/stations/previews/area_spring_1_5.png",
     "size_studs": [
-      167.5,
-      15.74,
-      127.5
+      113.0,
+      13.91,
+      113.0
     ],
-    "tris": 1928,
+    "tris": 1160,
     "parts": {
-      "area_spring_1_5_body": 1904,
+      "area_spring_1_5_body": 1136,
       "area_spring_1_5_body_glow": 24
     },
     "tris_budget": 20000,
@@ -5009,17 +5009,17 @@
     "centres": {
       "area_spring_1_5_body": [
         0.0,
-        7.868,
-        -0.0
+        6.954,
+        -2.5
       ],
       "area_spring_1_5_body_glow": [
         0.0,
-        3.84,
+        2.317,
         13.197
       ]
     },
     "joints": {},
-    "lift": -2.59
+    "lift": -1.067
   },
   "area_spring_2_3": {
     "fbx": "build/blender/stations/area_spring_2_3.fbx",
@@ -5103,13 +5103,13 @@
     "png": "build/blender/stations/area_spring_3_5.png",
     "preview": "build/blender/stations/previews/area_spring_3_5.png",
     "size_studs": [
-      165.91,
-      22.79,
-      121.62
+      160.7,
+      20.18,
+      103.85
     ],
-    "tris": 1964,
+    "tris": 1740,
     "parts": {
-      "area_spring_3_5_body": 1940,
+      "area_spring_3_5_body": 1716,
       "area_spring_3_5_body_glow": 24
     },
     "tris_budget": 20000,
@@ -5124,9 +5124,9 @@
     },
     "centres": {
       "area_spring_3_5_body": [
-        2.046,
-        11.396,
-        0.009
+        0.23,
+        10.089,
+        6.853
       ],
       "area_spring_3_5_body_glow": [
         0.0,
@@ -5322,13 +5322,13 @@
     "png": "build/blender/stations/area_guard_1_5.png",
     "preview": "build/blender/stations/previews/area_guard_1_5.png",
     "size_studs": [
-      167.5,
-      24.55,
-      127.5
+      124.75,
+      24.35,
+      87.25
     ],
-    "tris": 1882,
+    "tris": 1114,
     "parts": {
-      "area_guard_1_5_body": 1882
+      "area_guard_1_5_body": 1114
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -5337,12 +5337,12 @@
     "centres": {
       "area_guard_1_5_body": [
         0.0,
-        12.274,
-        -0.0
+        12.177,
+        5.0
       ]
     },
     "joints": {},
-    "lift": 0.0
+    "lift": 0.281
   },
   "area_guard_2_5": {
     "fbx": "build/blender/stations/area_guard_2_5.fbx",
@@ -5388,13 +5388,13 @@
     "png": "build/blender/stations/area_guard_3_5.png",
     "preview": "build/blender/stations/previews/area_guard_3_5.png",
     "size_studs": [
-      165.91,
-      23.08,
-      121.62
+      149.25,
+      18.98,
+      93.78
     ],
-    "tris": 1484,
+    "tris": 1260,
     "parts": {
-      "area_guard_3_5_body": 1484
+      "area_guard_3_5_body": 1260
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/areas.py",
@@ -5402,13 +5402,13 @@
     "glow": {},
     "centres": {
       "area_guard_3_5_body": [
-        2.046,
-        11.539,
-        0.009
+        1.375,
+        9.492,
+        -4.359
       ]
     },
     "joints": {},
-    "lift": 0.339
+    "lift": 0.392
   },
   "area_guard_4_5": {
     "fbx": "build/blender/stations/area_guard_4_5.fbx",
