@@ -496,8 +496,8 @@ describe("StationProgress team and training", function()
 	it("lets two animals train at once on a new ranch and refuses an unknown station", function()
 		local p = three()
 		local ok, code
-		for id = 1, 3 do
-			p, ok, code = StationProgress.train(p, id, "pool", 0)
+		for id, station in { "pool", "track", "gym" } do
+			p, ok, code = StationProgress.train(p, id, station, 0)
 		end
 		expect(ok).toBe(false)
 		expect(code).toBe("train_full")
@@ -507,6 +507,38 @@ describe("StationProgress team and training", function()
 		expect(animal(p, 1).at).toBe("guard")
 		_, ok, code = StationProgress.train(p, 1, "moon", 0)
 		expect(code).toBe("station")
+	end)
+
+	it("keeps only the first of two animals a stored save has training at one station", function()
+		local p = StationProgress.train(three(), 1, "track", 0)
+		p = StationProgress.train(p, 2, "gym", 0)
+		p.animals[2].at = "track" -- as a save from before the rule could hold
+		local clean = StationProgress.sanitize(p, 100)
+		expect(animal(clean, 1).at).toBe("track")
+		expect(animal(clean, 2).at).toBeNil()
+		expect(animal(clean, 2).since).toBeNil()
+	end)
+
+	it("trains one animal at a time at a station, and frees it when that one stops or moves", function()
+		local p, ok, code = StationProgress.train(three(), 1, "track", 0)
+		expect(ok).toBe(true)
+		p, ok, code = StationProgress.train(p, 2, "track", 10)
+		expect(ok).toBe(false)
+		expect(code).toBe("station_busy")
+		expect(animal(p, 2).at).toBeNil()
+		p, ok = StationProgress.train(p, 1, "track", 20) -- the one that is there may start again
+		expect(ok).toBe(true)
+		p, ok = StationProgress.train(p, 2, "gym", 20)
+		expect(ok).toBe(true)
+		p, ok, code = StationProgress.train(p, 2, "track", 30) -- nor may another move in
+		expect(ok).toBe(false)
+		expect(code).toBe("station_busy")
+		expect(animal(p, 2).at).toBe("gym")
+		p = StationProgress.stop(p, 1, 40)
+		p, ok = StationProgress.train(p, 2, "track", 50)
+		expect(ok).toBe(true)
+		p, ok = StationProgress.train(p, 3, "gym", 60) -- and the one it left is free
+		expect(ok).toBe(true)
 	end)
 
 	it("finishes training at level 70: the animal is freed and that stat cannot be trained again", function()
@@ -634,12 +666,12 @@ describe("StationProgress ranch upgrades", function()
 		p = StationProgress.crack(p, 1, 1e9)
 		expect(#p.animals).toBe(11)
 		local ok, code
-		for id = 1, 3 do
-			p, ok, code = StationProgress.train(p, id, "gym", 0)
+		for id, station in { "gym", "track", "pool" } do
+			p, ok, code = StationProgress.train(p, id, station, 0)
 		end
 		expect(code).toBe("train_full")
 		p = StationProgress.upgrade(p, "house", 0)
-		p, ok = StationProgress.train(p, 3, "gym", 0)
+		p, ok = StationProgress.train(p, 3, "pool", 0)
 		expect(ok).toBe(true)
 	end)
 
@@ -681,8 +713,8 @@ describe("StationProgress ranch upgrades", function()
 
 	it("keeps only as many animals training as the Ranch House has places when a save is read", function()
 		local animals = {}
-		for id = 1, 5 do
-			table.insert(animals, { id = id, s = "jackal", at = "gym", since = 0 })
+		for id = 1, 5 do -- each at a station of its own: a station trains one
+			table.insert(animals, { id = id, s = "jackal", at = StationConfig.STATIONS[id].id, since = 0 })
 		end
 		local function training(p: StationProgress.Profile): number
 			local n = 0

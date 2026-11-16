@@ -77,6 +77,92 @@ local SOLID: { [string]: { { number } } } = {
 	},
 }
 
+-- What an animal does while it trains at a station (decision 0066), from the Training Grounds level
+-- `from` on (before a kit arrives it uses what stands there): the clip it plays, then either where it
+-- stands, {x, y, z, yaw} in the yard's numbers with its nose (`nose`) or its middle there, or the two
+-- ends of the length it swims. `book`: what it looks at, as {how far ahead of its nose, how high above
+-- where it stands}. The track's round is worked out below.
+type Work = { from: number, anim: string, nose: boolean?, at: { number }?, ends: { { number } }?, book: { number }? }
+local WORK: { [string]: { Work } } = {
+	track = { { from = 0, anim = "run" } },
+	gym = {
+		{ from = 0, anim = "heave", nose = true, at = { -11.1, -13, 0.35, 90 } }, -- at the boulder
+		{ from = 2, anim = "heave", at = { -17, 12, 0.95, 0 } }, -- under the bar
+	},
+	pool = {
+		{ from = 0, anim = "swim", ends = { { -13, 1, 0.1 }, { 4, 1.5, 0.1 } } }, -- the pond
+		{ from = 1, anim = "swim", ends = { { -24, 1, 0.6 }, { 16, 1, 0.6 } } }, -- the middle lane
+	},
+	library = {
+		{ from = 0, anim = "study", nose = true, at = { 0, 1.4, 0.3, 180 }, book = { 0.6, 2.75 } }, -- at the book on its stand
+		{ from = 1, anim = "study", nose = true, at = { 0, -1.5, 0.55, 180 }, book = { 3.5, 3.9 } }, -- at the great book
+	},
+	spring = {
+		{ from = 0, anim = "soak", at = { 0, 1, 0.2, 20 } }, -- in the spring
+		{ from = 1, anim = "soak", at = { -6.8, -10.78, 0.55, 30 } }, -- in the first bath
+	},
+	guard = {
+		{ from = 0, anim = "brace", nose = true, at = { -3.5, -13.6, 0.25, 180 } }, -- at a straw man
+		{ from = 1, anim = "brace", nose = true, at = { 0, 2.2, 0.37, 180 } }, -- against the first ram
+	},
+}
+
+export type Act = { anim: string, at: CFrame?, round: { Vector3 }?, gaze: number? }
+
+-- What the animal training at ranch `i`'s station does at Training Grounds `level`: its clip and where
+-- it stands, or the round it goes (the track's lap, the pool's length and back), and for one that
+-- reads how far up (degrees) its book is from its head. `size` is the animal's, in studs (width,
+-- height, length).
+function Areas.act(i: number, stationId: string, level: number, size: { number }): Act
+	local length = size[3]
+	local k = 1
+	for n, st in StationConfig.STATIONS do
+		if st.id == stationId then
+			k = n
+		end
+	end
+	local cf = World.areaFrame(i, k)
+	local function point(x: number, y: number, z: number): Vector3
+		return (cf * CFrame.new(x * K, z * K, -y * K)).Position
+	end
+	local work = WORK[stationId][1]
+	for _, w in WORK[stationId] do
+		if w.from <= level then
+			work = w
+		end
+	end
+	if stationId == "track" then -- once round the second lane; from level 2 it leaps the far straight's hurdles
+		local r, z = 8.6, if level >= 1 then 0.43 else 0.35
+		local round = { point(-13, -r, z), point(13, -r, z) }
+		for a = -60, 60, 30 do
+			table.insert(round, point(13 + r * math.cos(math.rad(a)), r * math.sin(math.rad(a)), z))
+		end
+		table.insert(round, point(13, r, z))
+		for _, x in if level >= 2 then { 8, 0, -8 } else {} do
+			table.insert(round, point(x + 2.6, r, z))
+			table.insert(round, point(x, r, z + 2.3))
+			table.insert(round, point(x - 2.6, r, z))
+		end
+		table.insert(round, point(-13, r, z))
+		for a = 120, 240, 30 do
+			table.insert(round, point(-13 + r * math.cos(math.rad(a)), r * math.sin(math.rad(a)), z))
+		end
+		return { anim = work.anim, round = round }
+	elseif work.ends then -- its nose a little short of each end
+		local a, b = work.ends[1], work.ends[2]
+		local reach = length / K / 2 + 0.6
+		return { anim = work.anim, round = { point(a[1] + reach, a[2], a[3]), point(b[1] - reach, b[2], b[3]) } }
+	end
+	local at = work.at :: { number }
+	local facing = cf:VectorToWorldSpace(Vector3.new(math.sin(math.rad(at[4])), 0, math.cos(math.rad(at[4]))))
+	local where = point(at[1], at[2], at[3]) - (if work.nose then facing * length / 2 else Vector3.zero)
+	local book = work.book
+	local gaze = if book
+		then math.clamp(math.deg(math.atan2(book[2] * K - size[2] * 0.85, book[1] * K + length * 0.15)), -30, 35)
+		else nil
+	return { anim = work.anim, at = CFrame.lookAt(where, where + facing), gaze = gaze }
+end
+
 -- the models of each station, with the levels each stands at
 local pieces: { [string]: { { name: string, first: number, last: number } } } = {}
 for name in StationAssets do

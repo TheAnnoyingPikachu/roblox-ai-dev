@@ -148,6 +148,7 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	local ids: { [number]: Animal } = {}
 	local maxId = 0
 	local training = 0
+	local taken: { [string]: boolean } = {} -- a station trains one animal: a save from before that rule keeps the first
 	if type(record.animals) == "table" then
 		for _, a in record.animals do
 			if #p.animals >= StationProgress.MAX_ANIMALS then
@@ -160,7 +161,8 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			end
 			local animal: Animal =
 				{ id = id, s = own.s, v = own.v, stats = own.stats, trained = own.trained, rainbow = own.rainbow }
-			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots then
+			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots and not taken[a.at] then
+				taken[a.at] = true
 				animal.at = a.at
 				animal.since = int(a.since, 0, MAX_TIME, now or 0)
 				training += 1
@@ -418,6 +420,7 @@ function StationProgress.toggleTeam(p: Profile, id: number): (Profile, boolean, 
 end
 
 -- Start animal `id` training at `stationId` (it leaves the team), or move it to another station.
+-- A station trains one animal at a time (decision 0066).
 function StationProgress.train(p: Profile, id: number, stationId: string, now: number): (Profile, boolean, string?)
 	local i, a = StationProgress.find(p, id)
 	local st = StationConfig.station(stationId)
@@ -427,6 +430,11 @@ function StationProgress.train(p: Profile, id: number, stationId: string, now: n
 		return p, false, "station"
 	elseif StationRules.level(a :: any, st.stat) >= StationConfig.MAX_LEVEL then
 		return p, false, "maxed"
+	end
+	for _, x in p.animals do
+		if x.id ~= id and x.at == stationId then
+			return p, false, "station_busy"
+		end
 	end
 	if a.at == nil then
 		local n = 0

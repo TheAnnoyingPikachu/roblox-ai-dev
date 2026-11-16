@@ -9,6 +9,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
+local Areas = require(script.Parent:WaitForChild("Areas"))
 local Creatures = require(script.Parent:WaitForChild("Creatures"))
 local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
@@ -528,7 +529,7 @@ saves = Saves.start({
 			show(i, profile.upgrades)
 			showEggs(i, profile.eggs)
 			if syncHerd then -- not yet while this script is still starting
-				syncHerd(i, profile.animals)
+				syncHerd(i, profile.animals, profile.upgrades.grounds or 0)
 			end
 		end
 	end,
@@ -553,7 +554,7 @@ Players.PlayerRemoving:Connect(function(player)
 		World.setRanchOwner(i, nil)
 		show(i, {})
 		showEggs(i, {})
-		syncHerd(i, {})
+		syncHerd(i, {}, 0)
 	end
 end)
 
@@ -595,12 +596,92 @@ local function wander(model: Model, i: number)
 	end
 end
 
-function syncHerd(i: number, animals: { StationProgress.Animal })
+-- Training (decision 0066): the animal that trains at a station is seen in that station's area, at
+-- its work: `Areas.act` says where and how. One that goes a round (the track's lap, the pool's
+-- length) is moved along it here, like the herd; the others stand and play their clip.
+local trainers: { [number]: { [string]: { id: number, level: number, model: Model | boolean } } } = {}
+
+local function work(model: Model, act: Areas.Act)
+	model:SetAttribute("Gaze", act.gaze)
+	Creatures.play(model, act.anim)
+	local round = act.round
+	if round == nil then
+		return
+	end
+	local root = model.PrimaryPart :: BasePart
+	local speed = Creatures.speed(model) * (if act.anim == "run" then 2.4 else 0.9)
+	local k = 1
+	while model.Parent do
+		local from, to = round[k], round[k % #round + 1]
+		local facing = CFrame.lookAt(from, Vector3.new(to.X, from.Y, to.Z))
+		if root.CFrame.LookVector:Dot(facing.LookVector) < 0 then -- the end of a length: turn round first
+			local turn = TweenService:Create(root, TweenInfo.new(1.2), { CFrame = facing.Rotation + from })
+			turn:Play()
+			turn.Completed:Wait()
+		end
+		local seconds = (to - from).Magnitude / speed
+		local go = TweenService:Create(
+			root,
+			TweenInfo.new(seconds, Enum.EasingStyle.Linear),
+			{ CFrame = facing.Rotation + to }
+		)
+		go:Play()
+		go.Completed:Wait()
+		k = k % #round + 1
+	end
+end
+
+local function syncTrainers(i: number, animals: { StationProgress.Animal }, level: number)
+	local at = trainers[i] or {}
+	trainers[i] = at
+	local wanted: { [string]: StationProgress.Animal } = {}
+	for _, a in animals do
+		if a.at and wanted[a.at] == nil then
+			wanted[a.at] = a
+		end
+	end
+	for station, t in at do
+		local a = wanted[station]
+		if a == nil or a.id ~= t.id or t.level ~= level then -- stopped, replaced, or its area has changed
+			if typeof(t.model) == "Instance" then
+				t.model:Destroy()
+			end
+			at[station] = nil
+		elseif typeof(t.model) == "Instance" then
+			Creatures.describe(t.model, a.s, a.v, a :: any) -- training moves its stats
+		end
+	end
+	local plot = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
+	for station, a in wanted do
+		if at[station] == nil then
+			local t = { id = a.id, level = level, model = false :: Model | boolean }
+			at[station] = t
+			task.spawn(function()
+				local name = Creatures.asset(a.s, a.v)
+				local act = Areas.act(i, station, level, StationAssets[name].size)
+				local start = act.at or CFrame.lookAt((act.round :: { Vector3 })[1], (act.round :: { Vector3 })[2])
+				local model = Creatures.spawn(name, start, plot, nil, a.rainbow)
+				if model and at[station] == t then
+					t.model = model
+					Creatures.describe(model, a.s, a.v, a :: any)
+					work(model, act)
+				elseif model then
+					model:Destroy() -- stopped while it loaded
+				end
+			end)
+		end
+	end
+end
+
+function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: number)
+	syncTrainers(i, animals, grounds)
 	local herd = herds[i] or {}
 	herds[i] = herd
 	local wanted: { [number]: StationProgress.Animal } = {}
-	for k, a in animals do
-		if k <= HERD_MAX then
+	local roaming = 0
+	for _, a in animals do -- one that trains is in its training area, not here
+		if a.at == nil and roaming < HERD_MAX then
+			roaming += 1
 			wanted[a.id] = a
 		end
 	end
@@ -643,6 +724,6 @@ end
 for i, owner in owners do -- anyone whose profile loaded before this point
 	local p = saves.get(owner)
 	if p then
-		syncHerd(i, p.animals)
+		syncHerd(i, p.animals, p.upgrades.grounds or 0)
 	end
 end

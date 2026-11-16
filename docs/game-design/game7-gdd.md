@@ -35,7 +35,9 @@ vendors.
   Any hatch comes out in a rainbow coat 1 time in 200 (decision 0058): 5% more of every stat.
 - **Training:** in real time at the ranch, also while you are away. Every level takes a little
   longer than the last: two minutes for level 1, about a day for level 61 and two days for
-  level 70 (about three weeks for one stat). Training enhancements will shorten this.
+  level 70 (about three weeks for one stat). Training enhancements will shorten this. Each of
+  the six training grounds trains one animal at a time, and that animal is seen there at its
+  work: running laps, lifting, swimming lengths, reading, soaking, bracing (decision 0066).
 - **Team:** three animals in any mix, plus one Titan in its own fourth slot.
 - **Wave fights:** on a clock and decided by the server. Attack animals hit harder, Defence
   animals draw the enemies' hits and take less, Utility animals heal. Pack and solitary animals
@@ -115,9 +117,8 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- Animals seen training in their area. The six training areas are built, each in a clearing of
-  its own round the ranch with a look for each Training Grounds level (decision 0065), but
-  training is still the menu's and most of an area's kit is walked through.
+- Moving kit in the training areas (the ram does not swing, the bar does not rise) and a pose of
+  its own for each species; most of an area's kit is walked through.
 - Anything to do on the hub's plaza: its stalls, stage and notice board are scenery.
 - More ranch upgrades and expanding the plot. More hub vendors. Gear.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").

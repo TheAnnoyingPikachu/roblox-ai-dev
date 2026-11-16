@@ -681,6 +681,139 @@ local function walkBiped(t: number, rate: number, animal: boolean): Pose
 	}
 end
 
+-- Training (decision 0066): what an animal does at its station, on a loop, as (time, strides a second,
+-- upright or not, its model). The server sets the clip's name as Anim and, for the two that travel, moves
+-- the animal. A head's first number is its pitch: up is positive.
+local function pulse(u: number, rise: number, fall: number): number -- 0 to 1 over `rise`, back by `fall`, then rest
+	return if u < rise then ease(u / rise) elseif u < fall then 1 - ease((u - rise) / (fall - rise)) else 0
+end
+
+local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
+	-- the track: a gallop, the front pair and the hind pair swinging against each other
+	run = function(t, rate, biped)
+		if biped then
+			return walkBiped(t, rate * 1.9, true)
+		end
+		local phase = t * rate * 1.7 * TAU
+		return {
+			leg_fl = { 36 * math.sin(phase) },
+			leg_fr = { 36 * math.sin(phase - 0.6) },
+			leg_bl = { 36 * math.sin(phase + 2.8) },
+			leg_br = { 36 * math.sin(phase + 2.2) },
+			body = { 4 * math.sin(phase + 0.8), 0, 0, 0, 0.14 * math.abs(math.sin(phase)), 0 },
+			head = { -4 * math.sin(phase + 0.8), 0, 0 },
+			tail = { 0, 9 * math.sin(phase), 0 },
+		}
+	end,
+	-- the pool: paddling, the body rolling a little, the head held up
+	swim = function(t, _, biped)
+		local phase = t * 1.3 * TAU
+		local a, slow = 22 * math.sin(phase), math.sin(phase / 2)
+		return {
+			leg_fl = { if biped then 2 * a else a },
+			leg_fr = { if biped then -2 * a else -a },
+			leg_bl = { if biped then -a / 2 else -a },
+			leg_br = { if biped then a / 2 else a },
+			body = { 0, 3 * slow, 3 * math.sin(phase), 0, 0.05 * slow, 0 },
+			head = { 9, -3 * slow, 0 },
+			tail = { 0, 16 * slow, 0 },
+		}
+	end,
+	-- the gym: sinks under the weight, shakes, drives up, stands a moment
+	heave = function(t, _, biped)
+		local u = (t % 2.8) / 2.8
+		local down = pulse(u, 0.35, 0.62)
+		local shake = if u > 0.3 and u < 0.42 then 0.7 * math.sin(t * 55) else 0
+		if biped then -- arms up under the bar as it straightens
+			local arms = -150 * (1 - down) * (if u < 0.9 then 1 else 0.6)
+			return {
+				leg_fl = { arms },
+				leg_fr = { arms },
+				body = { 4 * down + shake, 0, 0, 0, -0.1 * down, 0 },
+				head = { -6 * down, 0, 0 },
+			}
+		end
+		return {
+			leg_fl = { 30 * down },
+			leg_fr = { 30 * down },
+			leg_bl = { -30 * down },
+			leg_br = { -30 * down },
+			body = { 3 * down + shake, 0, 0, 0, -0.2 * down, 0 },
+			head = { 10 - 16 * down, 0, 0 },
+			tail = { 0, 6 * math.sin(t * TAU / 2.8), 0 },
+		}
+	end,
+	-- the library: its eyes on the book (the server says how far up or down that is from its head, as
+	-- Gaze), reading along the lines, now and then a paw to the page
+	study = function(t, _, biped, model)
+		local line = math.sin(t * TAU / 5)
+		local gaze = (model:GetAttribute("Gaze") :: number?) or -10
+		local pose: Pose = {
+			body = { 0, 1.5 * line, 0, 0, 0.02 * math.sin(t * TAU / 3.4), 0 },
+			head = { gaze + 3 * math.sin(t * TAU / 2.5), 8 * line, 0 },
+			tail = { 0, 9 * math.sin(t * TAU / 2.8), 0 },
+		}
+		local paw = pulse((t % 6.5) / 6.5, 0.08, 0.2)
+		if paw > 0 then
+			pose.leg_fl = { (if biped then -70 else -34) * paw }
+		end
+		return pose
+	end,
+	-- the spring: lying low in the water, legs folded, breathing slowly
+	soak = function(t, _, biped, model)
+		local breath = math.sin(t * TAU / 4.5)
+		if model:GetAttribute("Species") == "flamingo" then -- it stands in it and dips its head to bathe
+			local dip = pulse((t % 6) / 6, 0.2, 0.5)
+			return {
+				body = { -3 * dip, 0, 2 * breath, 0, 0.02 * breath, 0 },
+				head = { -8 - 34 * dip + 3 * breath, 10 * math.sin(t * TAU / 9) * (1 - dip), 0 },
+				leg_bl = { 0, 0, 10 * dip }, -- its wings lift a little as it does
+				leg_br = { 0, 0, -10 * dip },
+				tail = { 0, 6 * math.sin(t * TAU / 3.5), 0 },
+			}
+		elseif biped then -- sitting back in it
+			return {
+				leg_bl = { -70 },
+				leg_br = { -70 },
+				leg_fl = { -12 + 3 * breath },
+				leg_fr = { -12 - 3 * breath },
+				body = { -6, 0, 1.5 * breath, 0, -0.4 + 0.02 * breath, 0 },
+				head = { 4 + 3 * breath, 6 * math.sin(t * TAU / 7), 0 },
+			}
+		end
+		return {
+			leg_fl = { 62 },
+			leg_fr = { 62 },
+			leg_bl = { -62 },
+			leg_br = { -62 },
+			body = { 0, 0, 1.5 * breath, 0, -0.5 + 0.02 * breath, 0 },
+			head = { 6 + 3 * breath, 5 * math.sin(t * TAU / 7), 0 },
+			tail = { 0, 8 * math.sin(t * TAU / 3.5), 0 },
+		}
+	end,
+	-- the guard yard: set low against the blow, thrown back as it lands, set again
+	brace = function(t, _, biped)
+		local hit = pulse((t % 2.4) / 2.4, 0.07, 0.4)
+		if biped then
+			return {
+				leg_fl = { -60 + 30 * hit },
+				leg_fr = { -60 + 30 * hit },
+				body = { 6 - 10 * hit, 0, 0, 0, -0.04, 0.2 * hit },
+				head = { 6 - 10 * hit, 0, 0 },
+			}
+		end
+		return {
+			leg_fl = { -16 + 10 * hit },
+			leg_fr = { -16 + 10 * hit },
+			leg_bl = { 14 },
+			leg_br = { 14 },
+			body = { 5 - 9 * hit, 0, 0, 0, -0.07, 0.3 * hit },
+			head = { 8 - 14 * hit, 0, 0 },
+			tail = { 0, 6 * math.sin(t * TAU / 2), 0 },
+		}
+	end,
+}
+
 -- Victory (the survivors, at the end): an animal rears and pumps its front paws and wags its tail,
 -- a biped throws both arms up and bounces. Time is since the pose began.
 local function win(t: number, biped: boolean): Pose
@@ -1204,6 +1337,8 @@ RunService.PreSimulation:Connect(function(dt: number)
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
 			target = if biped then walkBiped(time, rate, model:GetAttribute("Hexbound") ~= true) else walk(time, rate)
+		elseif anim and TRAIN[anim] then
+			target = TRAIN[anim](time, (model:GetAttribute("Stride") :: number?) or 1.5, biped, model)
 		elseif anim == "attack" and t < ATTACK.length then
 			local kind = model:GetAttribute("Asset")
 			local clip = if not biped

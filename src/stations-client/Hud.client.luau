@@ -64,6 +64,7 @@ local REFUSED: { [string]: string } = {
 	top = "That is already at its top level",
 	team_full = "Your team is full (3)",
 	train_full = "Every training place is taken: upgrade the Ranch House",
+	station_busy = "Another animal is training there: stop it first",
 	training = "Stop its training first",
 	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
 	loading = "Still loading your ranch...",
