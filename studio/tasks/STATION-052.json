@@ -1,0 +1,49 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-052",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The approved concept of the hub's centre (decision 0059) built in the game from Blender models (decision 0060): paving, the Hatchery Fountain, a ring of statues, four egg shrines, raised gardens, a gateway on each road and two market stalls. Also a smaller hub lawn and ranches nearer the hub.",
+  "inputs": [
+    "docs/decisions/0059-animal-stations-hub-and-training-concepts.md",
+    "docs/decisions/0057-animal-stations-detailed-eggs.md"
+  ],
+  "dependencies": [
+    "STATION-051"
+  ],
+  "files": [
+    "assets/stations/hub_*",
+    "tools/blender/stations/assets/hub.py",
+    "tools/blender/stations/scenes/hub.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/World.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0060-animal-stations-hub-centre-in-game.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-052.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The plaza in the game matches the approved concept card: every piece stands where the concept has it, at its size",
+    "The statues, the Golden Egg and the shrines' eggs are made from the models the game already has",
+    "A player cannot walk through the fountain, a plinth, a garden bed, a gateway pier or a stall",
+    "The hub's wall is nearer the plaza and each ranch is nearer the hub; every pass still joins its ranch and its walls leave no gap",
+    "Teleports, spawns, the wave arena and the ranches work as before"
+  ],
+  "verification": "Pending: the models are built and exported; the upload and the check in Studio follow.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16: 'go ahead with the centre area, make the grass area in the hub a bit smaller and bring the ranches in a tad'. The upload runs in GitHub (environment assets), never with a key on this machine. Checkpoint for SHANNON: 'the grass area in the hub' was read as the hub's lawn (HUB_RADIUS 300 to 250), not the raised gardens on the plaza; the ranches came in from 900 to 780; the wave arena was left where it is."
+}

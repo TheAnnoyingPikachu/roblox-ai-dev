@@ -1305,6 +1305,165 @@ local StationAssets: { [string]: Asset } = {
 		decal = 113123737601036,
 		texture = nil,
 	},
+	hub_paving = {
+		size = { 97, 0.55, 97 },
+		parts = { "hub_paving_body" },
+		glow = {},
+		centres = {
+			hub_paving_body = { 0, 0.275, 0 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_fountain = {
+		size = { 30.8, 10.9, 30.8 },
+		parts = { "hub_fountain_body", "hub_fountain_body_glow" },
+		glow = {
+			hub_fountain_body_glow = { 150, 220, 255 },
+		},
+		centres = {
+			hub_fountain_body = { 0, 5.45, 0 },
+			hub_fountain_body_glow = { 0, 3.963, 0 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_plinth = {
+		size = { 8.33, 3.3, 7.61 },
+		parts = { "hub_plinth_body" },
+		glow = {},
+		centres = {
+			hub_plinth_body = { 21.97, 1.65, -9.071 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_shrine_meadow = {
+		size = { 9.24, 10.1, 9.24 },
+		parts = { "hub_shrine_meadow_body" },
+		glow = {},
+		centres = {
+			hub_shrine_meadow_body = { 22.769, 5.051, -22.769 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_shrine_wild = {
+		size = { 9.24, 10.1, 9.24 },
+		parts = { "hub_shrine_wild_body" },
+		glow = {},
+		centres = {
+			hub_shrine_wild_body = { -22.769, 5.051, -22.769 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_shrine_safari = {
+		size = { 9.24, 10.1, 9.24 },
+		parts = { "hub_shrine_safari_body" },
+		glow = {},
+		centres = {
+			hub_shrine_safari_body = { -22.769, 5.051, 22.769 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_shrine_golden = {
+		size = { 9.24, 10.1, 9.24 },
+		parts = { "hub_shrine_golden_body" },
+		glow = {},
+		centres = {
+			hub_shrine_golden_body = { 22.769, 5.051, 22.769 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_garden = {
+		size = { 37.34, 9.33, 37.34 },
+		parts = { "hub_garden_body", "hub_garden_body_glow" },
+		glow = {
+			hub_garden_body_glow = { 255, 214, 130 },
+		},
+		centres = {
+			hub_garden_body = { 26.307, 4.666, -26.307 },
+			hub_garden_body_glow = { 22.513, 6.05, -22.513 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_gate_arena = {
+		size = { 24.4, 13.5, 3.4 },
+		parts = { "hub_gate_arena_body", "hub_gate_arena_body_glow" },
+		glow = {
+			hub_gate_arena_body_glow = { 150, 255, 70 },
+		},
+		centres = {
+			hub_gate_arena_body = { 0, 6.75, -50.5 },
+			hub_gate_arena_body_glow = { 0, 10.9, -50.5 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_gate_welcome = {
+		size = { 24.4, 13.5, 3.4 },
+		parts = { "hub_gate_welcome_body", "hub_gate_welcome_body_glow" },
+		glow = {
+			hub_gate_welcome_body_glow = { 255, 214, 130 },
+		},
+		centres = {
+			hub_gate_welcome_body = { 0, 6.75, 50.5 },
+			hub_gate_welcome_body_glow = { 0, 10.9, 50.5 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_gate_ranches = {
+		size = { 3.4, 13.5, 24.4 },
+		parts = { "hub_gate_ranches_body", "hub_gate_ranches_body_glow" },
+		glow = {
+			hub_gate_ranches_body_glow = { 255, 214, 130 },
+		},
+		centres = {
+			hub_gate_ranches_body = { 50.5, 6.75, 0 },
+			hub_gate_ranches_body_glow = { 50.5, 10.9, 0 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
+	hub_stalls = {
+		size = { 34.11, 7.28, 8 },
+		parts = { "hub_stalls_body" },
+		glow = {},
+		centres = {
+			hub_stalls_body = { 0, 3.641, -60 },
+		},
+		joints = {},
+		model = nil,
+		decal = nil,
+		texture = nil,
+	},
 }
 
 return StationAssets

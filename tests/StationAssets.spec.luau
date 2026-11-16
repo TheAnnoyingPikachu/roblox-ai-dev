@@ -72,6 +72,28 @@ describe("StationAssets", function()
 		end
 	end)
 
+	it("has a still model for every piece of the hub's centre that World.luau stands there", function()
+		local pieces = 0
+		for name in string.gmatch(fs.readFile("src/stations/World.luau"), '"(hub_[%w_]+)"') do
+			pieces += 1
+			local asset = StationAssets[name]
+			expect(asset == nil).toBe(false)
+			expect(asset.model == nil).toBe(false) -- uploaded
+			expect(table.find(asset.parts, `{name}_body`) == nil).toBe(false)
+			expect(count(asset.joints)).toBe(0)
+			for _, tris in manifest[name].parts do
+				expect(tris <= 20000).toBeTruthy()
+			end
+		end
+		expect(pieces).toBe(12)
+		for name in manifest do -- and nothing is built for the hub that is not used
+			if string.sub(name, 1, 4) == "hub_" then
+				pieces -= 1
+			end
+		end
+		expect(pieces).toBe(0)
+	end)
+
 	it("has a rainbow coat for every animal and variant, and for nothing else", function()
 		local coats = 0
 		for _, sp in StationConfig.SPECIES do
@@ -90,7 +112,7 @@ describe("StationAssets", function()
 
 	it("keeps every creature a jointed body under 20,000 triangles a mesh", function()
 		for name, entry in manifest do
-			if string.sub(name, 1, 4) == "egg_" then
+			if string.sub(name, 1, 4) == "egg_" or string.sub(name, 1, 4) == "hub_" then
 				continue
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do

@@ -18,7 +18,6 @@ PARTY = ((240, 80, 80), (250, 190, 60), (90, 200, 120), (80, 160, 240), (190, 12
 
 
 def paving(rng):
-    disc(48.4, (0, 0, -0.3), 0.5, (112, 106, 100), rng, n=64)  # the bed the slabs lie in: it shows in the joints
     for i in range(48):  # the kerb
         slab(46.6, 48.5, i * 7.5 + 0.15, (i + 1) * 7.5 - 0.15, 0.0, 0.55, S.STONE_DARK, rng, surface="rock", kind=S.COOL)
     for band, (r0, r1) in enumerate(((17.1, 26.9), (27.9, 36.5), (37.5, 46.5))):  # three rings of slabs, laid like bricks
@@ -38,7 +37,8 @@ def paving(rng):
         prism([(17.3, -half), (tip, 0), (17.3, half)], (0, 0, 0.3), 0.06, SUN_A if long else SUN_B, rng, yaw=a, chance=0.1)
 
 
-def fountain(rng):
+def fountain(rng, cast=True):
+    """`cast`: with the Golden Egg and the four stone tortoises (the game stands its own on the model)."""
     for i in range(16):  # the lower basin: a wall of sixteen stones under a lip, a gold boss on each
         a0, a1 = i * 22.5 + 0.25, (i + 1) * 22.5 - 0.25
         slab(13.4, 15.0, a0, a1, 0.3, 1.5, S.MARBLE, rng, kind=S.PALE)
@@ -58,7 +58,7 @@ def fountain(rng):
         p, q = polar(r, a, 1.34), polar(r, a + 8, 1.34)
         shard(p, q, 0.5, 0.2, ((255, 140, 50), S.WHITE, (250, 200, 70))[i % 3], rng, face=(0, 0, 1))
     # the stem and the upper bowl
-    turn([(7.2, 0.0), (7.4, 0.7), (5.4, 1.3), (4.2, 3.0), (4.0, 4.4), (4.8, 5.2), (7.0, 5.9), (9.0, 6.4), (9.3, 6.9), (8.7, 6.9)], (0, 0, 0.3), S.MARBLE, rng, n=16, kind=S.PALE)
+    turn([(7.2, 0.0), (7.4, 0.7), (5.4, 1.3), (4.2, 3.0), (4.0, 4.4), (4.8, 5.2), (7.0, 5.9), (9.0, 6.4), (9.3, 6.9), (8.7, 6.9), (8.5, 6.5)], (0, 0, 0.3), S.MARBLE, rng, n=16, kind=S.PALE)
     for z, r in ((1.75, 5.45), (4.75, 4.2)):
         turn([(r, 0), (r + 0.25, 0.14), (r, 0.28)], (0, 0, z), S.GOLD, rng, n=16)
     disc(8.7, (0, 0, 6.6), 0.42, S.WATER, rng, n=32, surface="gem", kind=S.COOL, emit=0.25, chance=0.08)
@@ -71,7 +71,8 @@ def fountain(rng):
             lump(polar(11.8, a + 11.25, 1.4), (0.9, 0.9, 0.25), S.WHITE, rng)  # where it lands
     for i in range(4):  # four stone tortoises on the lip spit into the pool
         a = 45 + i * 90
-        actor("creature_tortoise", polar(14.2, a, 2.15), face_in(a), statue=S.MARBLE, rng=rng, fit=2.6, surface=None)
+        if cast:
+            actor("creature_tortoise", polar(14.2, a, 2.15), face_in(a), statue=S.MARBLE, rng=rng, fit=2.6, surface=None)
         pts = [polar(13.0 - 2.4 * t, a, 3.1 + 1.2 * t - 3.0 * t * t) for t in [j / 8 for j in range(9)]]
         neon(S.k.tube(pts, 0.13, n=5), (150, 220, 255), 0.9)
     # the lotus and the Golden Egg
@@ -80,25 +81,31 @@ def fountain(rng):
         for i in range(n):
             a = (i + 0.5 * ring) * 360 / n
             shard(polar(r0, a, z0), polar(r1, a, z1), w, 0.4, ((255, 190, 214), (255, 228, 236))[ring], rng, face=polar(1, a), at=0.45)
-    actor("egg_golden", (0, 0, 9.0), 0, scale=13 / 3.54)
+    if cast:
+        actor("egg_golden", (0, 0, 9.0), 0, scale=13 / 3.54)
+
+
+def plinth(rng, a):
+    """A statue's plinth at angle `a` round the fountain, its name plate on the outer side. Returns its foot."""
+    p = polar(24.5, a)
+    post(3.5, 0.6, p, S.STONE_DARK, rng, n=8, rot=(0, 0, a + 22.5), surface="rock", kind=S.COOL)
+    post(2.9, 2.3, p + Vector((0, 0, 0.6)), S.MARBLE, rng, n=8, rot=(0, 0, a + 22.5), kind=S.PALE)
+    post(3.0, 0.26, p + Vector((0, 0, 1.9)), S.GOLD, rng, n=8, rot=(0, 0, a + 22.5))
+    post(3.25, 0.4, p + Vector((0, 0, 2.9)), S.STONE, rng, n=8, rot=(0, 0, a + 22.5), kind=S.PALE)
+    box((1.7, 0.16, 0.8), polar(24.5 + 2.76, a, 0.95), S.GOLD, rng, yaw=a + 90)  # its name plate
+    for j in range(5):  # flowers at its foot
+        flowers(p + polar(4.3, a + 140 + j * 20), rng, n=4, spread=0.6)
+    return p
 
 
 def statues(rng):
     for i, species in enumerate(SPECIES):
         a = 22.5 + 45 * i
-        p = polar(24.5, a)
-        post(3.5, 0.6, p, S.STONE_DARK, rng, n=8, rot=(0, 0, a + 22.5), surface="rock", kind=S.COOL)
-        post(2.9, 2.3, p + Vector((0, 0, 0.6)), S.MARBLE, rng, n=8, rot=(0, 0, a + 22.5), kind=S.PALE)
-        post(3.0, 0.26, p + Vector((0, 0, 1.9)), S.GOLD, rng, n=8, rot=(0, 0, a + 22.5))
-        post(3.25, 0.4, p + Vector((0, 0, 2.9)), S.STONE, rng, n=8, rot=(0, 0, a + 22.5), kind=S.PALE)
-        box((1.7, 0.16, 0.8), polar(24.5 + 2.76, a, 0.95), S.GOLD, rng, yaw=a + 90)  # its name plate
-        actor(f"creature_{species}", p + Vector((0, 0, 3.3)), a + 90, statue=(238, 232, 220), rng=rng, fit=6.2, surface=None)
-        for j in range(5):  # flowers at its foot
-            flowers(p + polar(4.3, a + 140 + j * 20), rng, n=4, spread=0.6)
+        actor(f"creature_{species}", plinth(rng, a) + Vector((0, 0, 3.3)), a + 90, statue=(238, 232, 220), rng=rng, fit=6.2, surface=None)
 
 
 def shrine(rng, at, a, egg, tiles):
-    """A round shrine for one egg: six columns under a tiled cone, the egg on a stand."""
+    """A round shrine for one egg: six columns under a tiled cone, the egg on a stand (None: an empty stand)."""
     x, y, z = at
     disc(4.3, at, 0.35, S.STONE_DARK, rng, n=12, surface="rock", kind=S.COOL)
     disc(3.9, (x, y, z + 0.35), 0.3, S.MARBLE, rng, n=12, kind=S.PALE)
@@ -113,46 +120,53 @@ def shrine(rng, at, a, egg, tiles):
         pipe([Vector(at) + polar(4.55, j * 30, 6.45), Vector(at) + polar(0.5, j * 30, 9.35)], 0.12, S.GOLD, rng, n=4)
     lump((x, y, z + 9.6), 0.45, S.GOLD, rng)
     turn([(1.3, 0.0), (1.0, 0.4), (1.15, 1.1)], (x, y, z + 0.65), S.STONE, rng, n=10, kind=S.PALE)
-    actor(f"egg_{egg}", (x, y, z + 1.75), a + 90, scale=0.92)
+    if egg:
+        actor(f"egg_{egg}", (x, y, z + 1.75), a + 90, scale=0.92)
+
+
+def garden(rng, q):
+    """The raised garden of quarter `q` (0: north-east, then round to the left), without its shrine."""
+    q0 = q * 90
+    slab(38.3, 45.9, q0 + 11.5, q0 + 78.5, 0.3, 0.75, S.STONE, rng, kind=S.PALE)  # the bed's wall
+    slab(38.8, 45.4, q0 + 12.3, q0 + 77.7, 0.6, 0.55, (96, 162, 80), rng, step=4, chance=0.3)  # its lawn
+    for a in (22, 45, 68):
+        tree(polar(42.2, q0 + a, 1.1), rng, s=rng.uniform(0.85, 1.05), leaf=((76, 150, 72), (110, 170, 70), (236, 150, 170))[(q + a) % 3])
+    for _ in range(9):
+        a, r = q0 + rng.uniform(14, 76), rng.uniform(39.8, 44.6)
+        if rng.random() < 0.45:
+            bush(polar(r, a, 1.1), rng, s=rng.uniform(0.6, 0.9))
+        else:
+            flowers(polar(r, a, 1.15), rng, n=9, spread=1.3)
+    rock(polar(44.0, q0 + 33, 1.1), rng, 0.8)
+    lamps = []
+    for a in (16, 36, 54, 74):  # lamps on the wall, their lanterns over the walk
+        p = polar(37.6, q0 + a, 0.3)
+        spin(lantern(p, rng, h=6.4), p, q0 + a + 180)
+        lamps.append(p + Vector((0, 0, 6.9)))
+    for a, b in zip(lamps, lamps[1:]):
+        bunting(a, b, 1.1, rng, PARTY, n=8)
+    for a in (26, 64):
+        p = polar(34.4, q0 + a, 0.3)
+        bench(p, rng, face_in(q0 + a))
+        for side in (-1, 1):  # a stone planter at each end of the bench
+            c = p + polar(3.4, q0 + a + 90 * side)
+            turn([(0.8, 0.0), (1.1, 0.9), (1.0, 1.1)], c, S.STONE, rng, n=8, kind=S.PALE)
+            flowers(c + Vector((0, 0, 1.0)), rng, n=6, spread=0.6)
 
 
 def gardens(rng):
     for q in range(4):
-        q0 = q * 90
-        slab(38.3, 45.9, q0 + 11.5, q0 + 78.5, 0.3, 0.75, S.STONE, rng, kind=S.PALE)  # the bed's wall
-        slab(38.8, 45.4, q0 + 12.3, q0 + 77.7, 0.6, 0.55, (96, 162, 80), rng, step=4, chance=0.3)  # its lawn
-        for a in (22, 45, 68):
-            tree(polar(42.2, q0 + a, 1.1), rng, s=rng.uniform(0.85, 1.05), leaf=((76, 150, 72), (110, 170, 70), (236, 150, 170))[(q + a) % 3])
-        for _ in range(9):
-            a, r = q0 + rng.uniform(14, 76), rng.uniform(39.8, 44.6)
-            if rng.random() < 0.45:
-                bush(polar(r, a, 1.1), rng, s=rng.uniform(0.6, 0.9))
-            else:
-                flowers(polar(r, a, 1.15), rng, n=9, spread=1.3)
-        rock(polar(44.0, q0 + 33, 1.1), rng, 0.8)
-        lamps = []
-        for a in (16, 36, 54, 74):  # lamps on the wall, their lanterns over the walk
-            p = polar(37.6, q0 + a, 0.3)
-            spin(lantern(p, rng, h=6.4), p, q0 + a + 180)
-            lamps.append(p + Vector((0, 0, 6.9)))
-        for a, b in zip(lamps, lamps[1:]):
-            bunting(a, b, 1.1, rng, PARTY, n=8)
-        for a in (26, 64):
-            p = polar(34.4, q0 + a, 0.3)
-            bench(p, rng, face_in(q0 + a))
-            for side in (-1, 1):  # a stone planter at each end of the bench
-                c = p + polar(3.4, q0 + a + 90 * side)
-                turn([(0.8, 0.0), (1.1, 0.9), (1.0, 1.1)], c, S.STONE, rng, n=8, kind=S.PALE)
-                flowers(c + Vector((0, 0, 1.0)), rng, n=6, spread=0.6)
+        garden(rng, q)
         egg, tiles = EGGS[q]
-        shrine(rng, polar(32.2, q0 + 45, 0.3), q0 + 45, egg, tiles)
+        shrine(rng, polar(32.2, q * 90 + 45, 0.3), q * 90 + 45, egg, tiles)
 
 
-def gateway(rng, a, name, sign, banner, glow):
-    """A gateway across a road: two stone piers with lanterns, a roofed beam and a hanging board."""
+def gateway(rng, a, name, sign, banner, glow, half=7.0, road=True):
+    """A gateway across a road: two stone piers with lanterns `half` studs either side of its middle, a
+    roofed beam and a hanging board. `road`: with a stretch of the road it stands on."""
     mid = polar(50.5, a)
     for side in (-1, 1):
-        c = mid + polar(7.0, a + 90 * side)
+        c = mid + polar(half, a + 90 * side)
         box((2.8, 2.8, 1.0), c, S.STONE_DARK, rng, yaw=a, surface="rock", kind=S.COOL)
         box((2.2, 2.2, 8.4), c + Vector((0, 0, 1.0)), S.STONE, rng, yaw=a, surface="rock", kind=S.PALE)
         box((2.8, 2.8, 0.6), c + Vector((0, 0, 9.4)), S.MARBLE, rng, yaw=a, kind=S.PALE)
@@ -160,8 +174,8 @@ def gateway(rng, a, name, sign, banner, glow):
         post(0.95, 0.45, c + Vector((0, 0, 11.55)), S.INK, rng, n=6, r2=0.15)
         flag(c + polar(1.16, a + 180, 8.6), 1.7, 5.2, banner, rng, yaw=a + 90)
         flag(c + polar(1.16, a, 8.6), 1.7, 5.2, banner, rng, yaw=a + 90)
-    box((18.4, 1.6, 1.3), mid + Vector((0, 0, 10.0)), S.WOOD_DARK, rng, yaw=a + 90)
-    roof(20.0, 3.4, 2.2, mid + Vector((0, 0, 11.3)), (176, 70, 60), rng, yaw=a + 90, ridge=20.0)
+    box((2 * half + 4.4, 1.6, 1.3), mid + Vector((0, 0, 10.0)), S.WOOD_DARK, rng, yaw=a + 90)
+    roof(2 * half + 6.0, 3.4, 2.2, mid + Vector((0, 0, 11.3)), (176, 70, 60), rng, yaw=a + 90, ridge=2 * half + 6.0)
     box((9.5, 0.35, 2.2), mid + Vector((0, 0, 7.2)), sign, rng, yaw=a + 90)
     box((10.1, 0.25, 2.8), mid + Vector((0, 0, 6.9)), S.GOLD, rng, yaw=a + 90)
     for face in (-1, 1):  # where the road leads, on both sides
@@ -169,10 +183,12 @@ def gateway(rng, a, name, sign, banner, glow):
     for side in (-1, 1):
         c = mid + polar(3.6, a + 90 * side)
         pipe([c + Vector((0, 0, 10.0)), c + Vector((0, 0, 9.4))], 0.07, S.INK, rng, n=4)
-    road = polar(72.5, a)
-    box((45.0, 10.5, 0.14), road, (206, 190, 160), rng, yaw=a, kind=S.PALE)
+    if not road:
+        return
+    way = polar(72.5, a)
+    box((45.0, 10.5, 0.14), way, (206, 190, 160), rng, yaw=a, kind=S.PALE)
     for side in (-1, 1):
-        box((45.0, 0.6, 0.3), road + polar(5.5, a + 90 * side), S.STONE_DARK, rng, yaw=a, surface="rock", kind=S.COOL)
+        box((45.0, 0.6, 0.3), way + polar(5.5, a + 90 * side), S.STONE_DARK, rng, yaw=a, surface="rock", kind=S.COOL)
 
 
 def stall(rng, at, yaw, stripe):
@@ -223,6 +239,7 @@ def surroundings(rng):
 
 
 def build(rng):
+    disc(48.4, (0, 0, -0.3), 0.5, (112, 106, 100), rng, n=64)  # the bed the slabs lie in: it shows in the joints
     paving(rng)
     fountain(rng)
     statues(rng)

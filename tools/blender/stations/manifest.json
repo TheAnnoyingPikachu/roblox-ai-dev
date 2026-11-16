@@ -3581,5 +3581,377 @@
       ]
     },
     "joints": {}
+  },
+  "hub_paving": {
+    "fbx": "build/blender/stations/hub_paving.fbx",
+    "png": "build/blender/stations/hub_paving.png",
+    "preview": "build/blender/stations/previews/hub_paving.png",
+    "size_studs": [
+      97.0,
+      0.55,
+      97.0
+    ],
+    "tris": 5136,
+    "parts": {
+      "hub_paving_body": 5136
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The plaza's floor: kerb, three rings of slabs, tiled bands, the mosaic and the sunburst.",
+    "glow": {},
+    "centres": {
+      "hub_paving_body": [
+        0.0,
+        0.275,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "hub_fountain": {
+    "fbx": "build/blender/stations/hub_fountain.fbx",
+    "png": "build/blender/stations/hub_fountain.png",
+    "preview": "build/blender/stations/previews/hub_fountain.png",
+    "size_studs": [
+      30.8,
+      10.9,
+      30.8
+    ],
+    "tris": 4944,
+    "parts": {
+      "hub_fountain_body": 3576,
+      "hub_fountain_body_glow": 1368
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The Hatchery Fountain: two pools, the stem and bowl, the lotus. Its falling water is the glow.",
+    "glow": {
+      "hub_fountain_body_glow": [
+        150,
+        220,
+        255
+      ]
+    },
+    "centres": {
+      "hub_fountain_body": [
+        0.0,
+        5.45,
+        -0.0
+      ],
+      "hub_fountain_body_glow": [
+        0.0,
+        3.963,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "hub_plinth": {
+    "fbx": "build/blender/stations/hub_plinth.fbx",
+    "png": "build/blender/stations/hub_plinth.png",
+    "preview": "build/blender/stations/previews/hub_plinth.png",
+    "size_studs": [
+      8.33,
+      3.3,
+      7.61
+    ],
+    "tris": 764,
+    "parts": {
+      "hub_plinth_body": 764
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "A statue's plinth with its name plate and flowers; the first of eight, 45 degrees apart.",
+    "glow": {},
+    "centres": {
+      "hub_plinth_body": [
+        21.97,
+        1.65,
+        -9.071
+      ]
+    },
+    "joints": {}
+  },
+  "hub_shrine_meadow": {
+    "fbx": "build/blender/stations/hub_shrine_meadow.fbx",
+    "png": "build/blender/stations/hub_shrine_meadow.png",
+    "preview": "build/blender/stations/previews/hub_shrine_meadow.png",
+    "size_studs": [
+      9.24,
+      10.1,
+      9.24
+    ],
+    "tris": 954,
+    "parts": {
+      "hub_shrine_meadow_body": 954
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The meadow egg's shrine, where it stands.",
+    "glow": {},
+    "centres": {
+      "hub_shrine_meadow_body": [
+        22.769,
+        5.051,
+        -22.769
+      ]
+    },
+    "joints": {}
+  },
+  "hub_shrine_wild": {
+    "fbx": "build/blender/stations/hub_shrine_wild.fbx",
+    "png": "build/blender/stations/hub_shrine_wild.png",
+    "preview": "build/blender/stations/previews/hub_shrine_wild.png",
+    "size_studs": [
+      9.24,
+      10.1,
+      9.24
+    ],
+    "tris": 954,
+    "parts": {
+      "hub_shrine_wild_body": 954
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The wild egg's shrine, where it stands.",
+    "glow": {},
+    "centres": {
+      "hub_shrine_wild_body": [
+        -22.769,
+        5.051,
+        -22.769
+      ]
+    },
+    "joints": {}
+  },
+  "hub_shrine_safari": {
+    "fbx": "build/blender/stations/hub_shrine_safari.fbx",
+    "png": "build/blender/stations/hub_shrine_safari.png",
+    "preview": "build/blender/stations/previews/hub_shrine_safari.png",
+    "size_studs": [
+      9.24,
+      10.1,
+      9.24
+    ],
+    "tris": 954,
+    "parts": {
+      "hub_shrine_safari_body": 954
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The safari egg's shrine, where it stands.",
+    "glow": {},
+    "centres": {
+      "hub_shrine_safari_body": [
+        -22.769,
+        5.051,
+        22.769
+      ]
+    },
+    "joints": {}
+  },
+  "hub_shrine_golden": {
+    "fbx": "build/blender/stations/hub_shrine_golden.fbx",
+    "png": "build/blender/stations/hub_shrine_golden.png",
+    "preview": "build/blender/stations/previews/hub_shrine_golden.png",
+    "size_studs": [
+      9.24,
+      10.1,
+      9.24
+    ],
+    "tris": 954,
+    "parts": {
+      "hub_shrine_golden_body": 954
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The golden egg's shrine, where it stands.",
+    "glow": {},
+    "centres": {
+      "hub_shrine_golden_body": [
+        22.769,
+        5.051,
+        22.769
+      ]
+    },
+    "joints": {}
+  },
+  "hub_garden": {
+    "fbx": "build/blender/stations/hub_garden.fbx",
+    "png": "build/blender/stations/hub_garden.png",
+    "preview": "build/blender/stations/previews/hub_garden.png",
+    "size_studs": [
+      37.34,
+      9.33,
+      37.34
+    ],
+    "tris": 4644,
+    "parts": {
+      "hub_garden_body": 4564,
+      "hub_garden_body_glow": 80
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "A raised garden with its lamps, flags and benches; the first of four, 90 degrees apart.",
+    "glow": {
+      "hub_garden_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_garden_body": [
+        26.307,
+        4.666,
+        -26.307
+      ],
+      "hub_garden_body_glow": [
+        22.513,
+        6.05,
+        -22.513
+      ]
+    },
+    "joints": {}
+  },
+  "hub_gate_arena": {
+    "fbx": "build/blender/stations/hub_gate_arena.fbx",
+    "png": "build/blender/stations/hub_gate_arena.png",
+    "preview": "build/blender/stations/previews/hub_gate_arena.png",
+    "size_studs": [
+      24.4,
+      13.5,
+      3.4
+    ],
+    "tris": 1692,
+    "parts": {
+      "hub_gate_arena_body": 1652,
+      "hub_gate_arena_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The gateway across a road into the plaza: WAVE ARENA.",
+    "glow": {
+      "hub_gate_arena_body_glow": [
+        150,
+        255,
+        70
+      ]
+    },
+    "centres": {
+      "hub_gate_arena_body": [
+        0.0,
+        6.75,
+        -50.5
+      ],
+      "hub_gate_arena_body_glow": [
+        0.0,
+        10.9,
+        -50.5
+      ]
+    },
+    "joints": {}
+  },
+  "hub_gate_welcome": {
+    "fbx": "build/blender/stations/hub_gate_welcome.fbx",
+    "png": "build/blender/stations/hub_gate_welcome.png",
+    "preview": "build/blender/stations/previews/hub_gate_welcome.png",
+    "size_studs": [
+      24.4,
+      13.5,
+      3.4
+    ],
+    "tris": 2252,
+    "parts": {
+      "hub_gate_welcome_body": 2212,
+      "hub_gate_welcome_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The gateway across a road into the plaza: WELCOME.",
+    "glow": {
+      "hub_gate_welcome_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_gate_welcome_body": [
+        0.0,
+        6.75,
+        50.5
+      ],
+      "hub_gate_welcome_body_glow": [
+        0.0,
+        10.9,
+        50.5
+      ]
+    },
+    "joints": {}
+  },
+  "hub_gate_ranches": {
+    "fbx": "build/blender/stations/hub_gate_ranches.fbx",
+    "png": "build/blender/stations/hub_gate_ranches.png",
+    "preview": "build/blender/stations/previews/hub_gate_ranches.png",
+    "size_studs": [
+      3.4,
+      13.5,
+      24.4
+    ],
+    "tris": 3116,
+    "parts": {
+      "hub_gate_ranches_body": 3076,
+      "hub_gate_ranches_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The gateway across a road into the plaza: RANCHES.",
+    "glow": {
+      "hub_gate_ranches_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_gate_ranches_body": [
+        50.5,
+        6.75,
+        -0.0
+      ],
+      "hub_gate_ranches_body_glow": [
+        50.5,
+        10.9,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "hub_stalls": {
+    "fbx": "build/blender/stations/hub_stalls.fbx",
+    "png": "build/blender/stations/hub_stalls.png",
+    "preview": "build/blender/stations/previews/hub_stalls.png",
+    "size_studs": [
+      34.11,
+      7.28,
+      8.0
+    ],
+    "tris": 532,
+    "parts": {
+      "hub_stalls_body": 532
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The two market stalls beside the arena road.",
+    "glow": {},
+    "centres": {
+      "hub_stalls_body": [
+        0.0,
+        3.641,
+        -60.0
+      ]
+    },
+    "joints": {}
   }
 }
