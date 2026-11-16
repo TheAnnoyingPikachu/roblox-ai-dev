@@ -37,6 +37,10 @@ statues, shrines and gateways.
   (`Creatures.statue`). Their uploads stay on the account, unused: twelve models and twelve images,
   and the first fountain's pair. The images can be archived by the upload workflow when SHANNON
   says; models cannot be through the API.
+- The gathering place's eight models were uploaded twice by mistake: the first upload run stuck in
+  GitHub's queue, the upload was started again and succeeded, and an hour later the stuck run ran
+  as well. The game uses the second start's models; the late run's eight models and eight images
+  are unused duplicates (register: "second upload").
 
 ## Not done
 
