@@ -11,7 +11,8 @@ local StationRules = {}
 type Stats = StationConfig.Stats
 -- One hatched animal: v nil = basic; stats = its version's numbers; trained = each stat's level
 -- (rolled at hatch, then trained up to MAX_LEVEL) with the progress to the next as the fraction.
--- rainbow = true: it wears the rainbow coat (decision 0058), a look only; absent on every other animal.
+-- rainbow = true: it wears the rainbow coat (decision 0058), which adds to every stat (`stat`); absent
+-- on every other animal.
 export type Owned = { s: string, v: string?, stats: Stats, trained: Stats?, rainbow: boolean? }
 
 StationRules.PPM = 1_000_000
@@ -159,13 +160,18 @@ function StationRules.level(animal: Owned, stat: StationConfig.Stat): number
 	return if animal.trained then math.floor((animal.trained :: any)[stat]) else 0
 end
 
--- An animal's stat right now: the hatched value grown by its level (doubled at MAX_LEVEL).
+-- An animal's stat right now: the hatched value grown by its level (doubled at MAX_LEVEL), and for
+-- an animal in a rainbow coat RAINBOW_BONUS percent more, rounded up (decision 0058).
 -- Whole-number maths, so a result that should be exact is never one short. Not capped: level
 -- enemies have no levels but hatched stats that keep growing.
 function StationRules.stat(animal: Owned, stat: StationConfig.Stat): number
 	local max = StationConfig.MAX_LEVEL
 	local grown = max + StationConfig.LEVEL_GROWTH * StationRules.level(animal, stat)
-	return math.floor((animal.stats :: any)[stat] * grown / max)
+	local value = math.floor((animal.stats :: any)[stat] * grown / max)
+	if animal.rainbow then
+		value += (value * StationConfig.RAINBOW_BONUS + 99) // 100
+	end
+	return value
 end
 
 -- Seconds of training to go from level n - 1 to level n: LEVEL_FIRST for level 1, growing by the

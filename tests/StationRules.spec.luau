@@ -443,38 +443,72 @@ describe("StationRules.hatch", function()
 		expect(tally[15] > 0).toBeTruthy()
 	end)
 
-	it("hatches about 1 animal in 200 in a rainbow coat, with the stats of the same animal without it", function()
-		expect(StationConfig.RAINBOW_PPM * 200).toBe(StationRules.PPM)
-		local rng = Rng.seed(11)
-		local coats, same = 0, true
-		for _ = 1, 20000 do
-			local a
-			a, rng = StationRules.hatch("meadow", rng)
-			local animal = a :: StationRules.Owned
-			if animal.rainbow then
-				coats += 1
-				local plain = StationRules.versionStats(animal.s, animal.v) :: StationConfig.Stats
-				for _, stat in StationConfig.STATS do
-					same = same and (animal.stats :: any)[stat] == (plain :: any)[stat]
-				end
-			else
-				same = same and animal.rainbow == nil -- absent, never false: nothing extra in a save
-			end
-		end
-		expect(coats >= 60 and coats <= 140).toBeTruthy() -- 100 expected
-		expect(same).toBe(true)
-		-- forced on and off: any egg, any animal
-		local real = StationConfig.RAINBOW_PPM
-		for _, forced in { StationRules.PPM, 0 } do
-			StationConfig.RAINBOW_PPM = forced
-			for _, egg in StationConfig.EGGS do
+	it(
+		"hatches about 1 animal in 200 in a rainbow coat, with the hatched stats of the same animal without it",
+		function()
+			expect(StationConfig.RAINBOW_PPM * 200).toBe(StationRules.PPM)
+			local rng = Rng.seed(11)
+			local coats, same = 0, true
+			for _ = 1, 20000 do
 				local a
-				a, rng = StationRules.hatch(egg.id, rng)
-				same = same and (a :: StationRules.Owned).rainbow == (if forced == 0 then nil else true)
+				a, rng = StationRules.hatch("meadow", rng)
+				local animal = a :: StationRules.Owned
+				if animal.rainbow then
+					coats += 1
+					local plain = StationRules.versionStats(animal.s, animal.v) :: StationConfig.Stats
+					for _, stat in StationConfig.STATS do
+						same = same and (animal.stats :: any)[stat] == (plain :: any)[stat]
+					end
+				else
+					same = same and animal.rainbow == nil -- absent, never false: nothing extra in a save
+				end
+			end
+			expect(coats >= 60 and coats <= 140).toBeTruthy() -- 100 expected
+			expect(same).toBe(true)
+			-- forced on and off: any egg, any animal
+			local real = StationConfig.RAINBOW_PPM
+			for _, forced in { StationRules.PPM, 0 } do
+				StationConfig.RAINBOW_PPM = forced
+				for _, egg in StationConfig.EGGS do
+					local a
+					a, rng = StationRules.hatch(egg.id, rng)
+					same = same and (a :: StationRules.Owned).rainbow == (if forced == 0 then nil else true)
+				end
+			end
+			StationConfig.RAINBOW_PPM = real
+			expect(same).toBe(true)
+		end
+	)
+
+	it("gives a rainbow animal 5% more of every stat, rounded up, at any level", function()
+		expect(StationConfig.RAINBOW_BONUS).toBe(5)
+		local function lion(level: number, rainbow: boolean?): StationRules.Owned
+			local trained = {} :: any
+			for _, stat in StationConfig.STATS do
+				trained[stat] = level
+			end
+			return {
+				s = "lion",
+				stats = StationRules.versionStats("lion", nil) :: StationConfig.Stats,
+				trained = trained,
+				rainbow = rainbow,
+			}
+		end
+		for _, level in { 0, 1, 35, StationConfig.MAX_LEVEL } do
+			for _, stat in StationConfig.STATS do
+				local plain = StationRules.stat(lion(level), stat)
+				local coated = StationRules.stat(lion(level, true), stat)
+				expect(coated).toBe(plain + math.ceil(plain * 5 / 100))
+				expect(coated > plain).toBeTruthy() -- every stat gains at least 1
 			end
 		end
-		StationConfig.RAINBOW_PPM = real
-		expect(same).toBe(true)
+		-- exact where 5% is a whole number, one up where it is not
+		local stats = { speed = 100, strength = 8, stamina = 20, mana = 21, health = 1, defence = 399 }
+		local want = { speed = 105, strength = 9, stamina = 21, mana = 23, health = 2, defence = 419 }
+		for _, stat in StationConfig.STATS do
+			expect(StationRules.stat({ s = "lion", stats = stats, rainbow = true }, stat)).toBe((want :: any)[stat])
+			expect(StationRules.stat({ s = "lion", stats = stats }, stat)).toBe((stats :: any)[stat])
+		end
 	end)
 
 	it("has a tiny jackpot that hatches exactly one stat at level 70", function()

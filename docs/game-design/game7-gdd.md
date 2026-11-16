@@ -32,7 +32,7 @@ vendors.
 - **Stat levels:** every stat has a level up to 70, and a maxed stat is doubled. Species still
   matter: a stat's value is the species' number grown by its level. On hatch every stat starts
   at a level from 1 to 15 (a 15 is 1 in 90), with a 1 in 10,000 jackpot of one stat at 70.
-  Any hatch comes out in a rainbow coat 1 time in 200 (decision 0058): a look only.
+  Any hatch comes out in a rainbow coat 1 time in 200 (decision 0058): 5% more of every stat.
 - **Training:** in real time at the ranch, also while you are away. Every level takes a little
   longer than the last: two minutes for level 1, about a day for level 61 and two days for
   level 70 (about three weeks for one stat). Training enhancements will shorten this.

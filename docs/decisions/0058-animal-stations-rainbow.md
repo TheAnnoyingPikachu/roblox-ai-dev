@@ -1,6 +1,6 @@
 # 0058: Animal Stations: the rainbow coat, and a cleaner menu for adding animals
 
-Status: accepted (SHANNON asked for it on 2026-11-16; the numbers are drafts)
+Status: accepted (SHANNON asked for it on 2026-11-16 and set both numbers the same day)
 Date: 2026-11-16. Tasks STATION-050 (the coat), STATION-049 (the menu).
 
 ## What SHANNON asked
@@ -15,12 +15,17 @@ chance to apply to any animal on hatch".
 - Any hatch, from any egg, of any animal or variant, comes out in a rainbow coat 1 time in 200
   (`StationConfig.RAINBOW_PPM = 5000`). It is rolled with the animal, when the egg is bought, after
   every other draw, so nothing else about a hatch changes.
-- A look only. A rainbow animal has the stats, rarity, role and training of the same animal without
-  the coat. It is named "Rainbow" on the card under the cursor and when it hatches, and carries a
-  RAINBOW chip in the Animals menu.
-- Economy value (rule 8): the chance. Fact: a Meadow Egg hatches in a minute and a Golden Egg in
+- The coat adds 5% to every stat (`StationConfig.RAINBOW_BONUS = 5`), at every level, in fights and
+  on every card: `StationRules.stat` adds it to the stat it has worked out. It is rounded up, so a
+  stat of 8 becomes 9 and no stat of a rainbow animal is left the same as a plain one's. The
+  hatched numbers stored with the animal are those of the same animal without the coat, and its
+  rarity, role and training are unchanged. It is named "Rainbow" on the card under the cursor and
+  when it hatches, and carries a RAINBOW chip in the Animals menu.
+- Economy values (rule 8): the chance and the bonus. SHANNON on 2026-11-16: "1 in 200 is good give
+  them a 5% stat increase to all stats". Fact: a Meadow Egg hatches in a minute and a Golden Egg in
   hours, and six eggs hatch at once. Assumption: at 1 in 200 a player who plays every day meets a
-  rainbow in the first days, which keeps it a surprise without making it a rumour. Not playtested.
+  rainbow in the first days. Assumption: 5% is felt in a close fight but is far smaller than a
+  variant's doubling, so a rainbow common does not replace a legendary. Not playtested.
 - Data schema (rule 8): an animal gains one optional field, `rainbow = true`. It is absent on every
   other animal, so nothing is added to old saves and they load unchanged; `sanitize` keeps only a
   true one. The field rides inside a bought egg and is never sent to the client before the egg opens.
@@ -50,6 +55,6 @@ chance to apply to any animal on hatch".
 
 ## Not done
 
-- A rainbow animal is not stronger and is not worth more. Whether it should be is SHANNON's call.
+- A rainbow animal is not worth more coins or samples.
 - The Hexbound and the eggs have no rainbow coat.
 - No sound, and no announcement to other players when one hatches.

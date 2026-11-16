@@ -111,8 +111,8 @@ hub's fountain, in the menus and in the hatching animation.
 ### The rainbow coat
 
 Any hatch, from any egg, of any animal or variant, comes out in a rainbow coat 1 time in 200
-(decision 0058, a draft number; `docs/concepts/rainbow-family.png`). It is a look only: the same
-stats, rarity and role. The coat runs through the rainbow from nose to tail and keeps the animal's
+(decision 0058; `docs/concepts/rainbow-family.png`). The coat adds 5% to every stat, rounded up;
+rarity and role stay the same. It runs through the rainbow from nose to tail and keeps the animal's
 spots, stripes and plates; its glowing pieces turn through the colours.
 
 ## Parked for later

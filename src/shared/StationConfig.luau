@@ -85,9 +85,10 @@ StationConfig.LEVEL_LAST = 48 * 3600
 StationConfig.BASE_MAX = 15
 StationConfig.BASE_TOP, StationConfig.BASE_STEP = 7, 5
 StationConfig.JACKPOT_PPM = 100 -- 1 in 10,000 hatches
--- Rainbow (decision 0058): any hatch, of any animal or variant, can come out in a rainbow coat. A look
--- only: its stats are those of the same animal without it. Draft number.
+-- Rainbow (decision 0058): any hatch, of any animal or variant, can come out in a rainbow coat. The
+-- coat adds RAINBOW_BONUS percent to every stat, rounded up, so even a stat of 8 gains 1.
 StationConfig.RAINBOW_PPM = 5000 -- 1 in 200 hatches
+StationConfig.RAINBOW_BONUS = 5
 -- Player XP comes from everything the player does (decision 0032). Built so far: hatching (each
 -- egg's `xp`) and every stat level a creature gains in training. Waves, the login tracks and
 -- gear will add theirs when they exist.
