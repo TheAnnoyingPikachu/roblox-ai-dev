@@ -1,6 +1,6 @@
 # 0055: Animal Stations: the meerkats, tortoises and flamingos, and a new variant of each
 
-Status: proposed (concepts for SHANNON; nothing is in the game yet)
+Status: accepted by SHANNON on 2026-11-15 ("looks is go variants are go"); in the game since 2026-11-16 (task STATION-045)
 Date: 2026-11-15. Builds on 0050 to 0054 (the lions, elephants, jackals, cheetahs and rhinos). Task STATION-043.
 
 ## Decision
@@ -58,8 +58,26 @@ gets one new variant in the tier it lacks, as the other families did.
 - The upright meerkat. The smaller option is to keep it on four legs like the old one; upright reads
   as a meerkat at a glance, but its clips (walk, attack) will need fitting.
 
+## Into the game (STATION-045)
+
+- The nine are uploaded and in `StationAssets`; Star Meerkat (mythic, twist speed), Island Tortoise
+  (mythic, twist health) and Peacock Flamingo (legendary, twist stamina) are in `StationConfig` and in
+  the eggs (decision 0056). The Phoenix Flamingo was uploaded twice: its tail was all Neon, and the
+  rig needs a painted tail piece, so it got a stub of red feathers.
+- Upright animals. An animal whose front-leg joints are more than twice as high as its hind ones
+  stands upright: `Creatures.build` scales it by its hips and gives it `Biped`, so the client uses
+  the two-legged idle, walk, fall and win, with shorter steps (its feet are long) and its own attack
+  and power clips (`ATTACKS.meerkat`, `MAGICS.meerkat`, written again for an upright body). Its tail
+  lies on the ground: it never swings below where it rests and lifts as the body leans back.
+- Feet on the ground, for every animal and Hexbound: each frame the client works out how far the
+  pose pushes a leg's box under the ground the model stands on and lifts the body by as much (not
+  in a fall). Display only. Measured in Studio before it: the rhinos' feet sank 0.2 to 0.8 studs in
+  the walk, charge and power attack, the meerkats' 0.3 to 0.45 in the walk. After it no leg of the
+  twelve new animals or the three lions goes under its standing height in idle, walk, attack, power
+  attack, hit or win.
+- The tortoise's win pose holds the tail up (it sank 0.3 studs on the Island Tortoise).
+
 ## Not done
 
-Concepts only: nothing is uploaded, `StationAssets` and the manifest are unchanged, and the game
-still shows the old models. The clips have not been seen on the new shapes; the meerkat's will need
-the most work. Each family had one or two rounds of looking at its card, not the many the lions had.
+Each family had one or two rounds of looking at its card, not the many the lions had. Left as it is:
+the shared hit flinch drops a long tail (the lions') 0.4 to 0.8 studs into the ground for a moment.

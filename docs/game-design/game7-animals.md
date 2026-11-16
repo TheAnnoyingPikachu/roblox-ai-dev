@@ -61,12 +61,12 @@ player is about 5 tall).
 | Jackal | Attack | common | 42 / 22 / 15 / 18 / 30 / 10 | Faceted low-poly (decision 0052): a lean sandy hunter, big pointed ears, a long muzzle, a dark saddle, dark paws, a bushy tail. Card: `docs/concepts/jackal-card.png`. | 4 x 7 |
 | Pharaoh Jackal | | legendary | twist mana | Black coat, gold collars, anklets, ear tips and tail tip, turquoise glowing eyes and brow gem. Card: `docs/concepts/pharaoh-jackal-card.png`. | 5 x 9 |
 | Sphinx Jackal | | mythic | twist speed | Sandstone, a pharaoh's blue and gold striped headdress, a glowing sun disc between the ears, a striped beard, a gold collar, folded wings of gold and blue feathers, glowing gold eyes. Card: `docs/concepts/sphinx-jackal-card.png`. | about 5 x 10 |
-| Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Small and quick, tan with dark bands across the back and dark eye patches. | 2 x 5 |
-| Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing bands across the back, a charged tail tip. | 3 x 6 |
-| Star Meerkat (concept, not in the game yet) | | mythic (proposed) | twist speed (proposed) | A coat of night sky, glowing gold stars joined into constellations, a ring of stars round the head, a comet for a tail tip. Card: `docs/concepts/star-meerkat-card.png`. | about 7 x 7 |
-| Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Tall pink wader, hooked black-tipped beak, hard stare. Two legs: its wings are built as the back legs. | 8 x 6 |
-| Phoenix Flamingo | | mythic | twist mana | Fire-red, with a crest, wing tips and tail of flame. | 11 x 8 |
-| Peacock Flamingo (concept, not in the game yet) | | legendary (proposed) | twist stamina (proposed) | Teal with a royal blue neck, emerald wings, a great fan of tail feathers with glowing eyes, a beaded crest. Card: `docs/concepts/peacock-flamingo-card.png`. | about 10 x 7 |
+| Meerkat | Utility | common | 30 / 8 / 15 / 42 / 25 / 8 | Textured faceted model (decision 0055): it stands upright, a sentinel: sandy with a cream belly, dark bands across the back, dark eye patches, thin arms at the chest, a long tail propped behind. Card: `docs/concepts/meerkat-card.png`. | 5 x 5 |
+| Storm Meerkat | | legendary | twist mana | Thundercloud coat, glowing forked lightning down the back, a ruff of cloud, a crest of sparks, a ball of lightning between the paws, a charged tail. Card: `docs/concepts/storm-meerkat-card.png`. | 7 x 6 |
+| Star Meerkat | | mythic | twist speed | A coat of night sky, glowing gold stars joined into constellations, a great star on the chest, a ring of stars round the head, a comet for a tail tip. Card: `docs/concepts/star-meerkat-card.png`. | 7 x 7 |
+| Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Textured faceted model (decision 0055): tall and pink on two stilts, coral wings with black flight feathers, a pale beak with a black hook, a hard stare. Two legs: its wings are built as the back legs. Card: `docs/concepts/flamingo-card.png`. | 8 x 6 |
+| Phoenix Flamingo | | mythic | twist mana | Fire-red with a gold neck, a glowing crest, flight feathers and long tail streamers of flame, gold flames up the breast. Card: `docs/concepts/phoenix-flamingo-card.png`. | 11 x 10 |
+| Peacock Flamingo | | legendary | twist stamina | Teal with a royal blue neck, emerald wings, a great fan of tail feathers with glowing eyes, a beaded crest. Card: `docs/concepts/peacock-flamingo-card.png`. | 10 x 7 |
 | Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Faceted low-poly (decision 0050): a chunky tawny cat, a mane of big brown crystal shards, pale paws and muzzle, amber slit eyes, a tufted tail. Card: `docs/concepts/lion-card.png`. | 7 x 13 |
 | Sun Lion | | mythic | twist strength | Golden, a mane of big yellow crystal shards, a sun with twelve rays on each haunch, glowing eyes, a flame of a tail. Card: `docs/concepts/sun-lion-card.png`. | 9 x 16 |
 | Shadow Lion | | legendary | twist speed | Ink black, a bone mask, spine and fangs, a mane of big black crystal shards with a few glowing green ones, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 8 x 15 |
@@ -79,36 +79,33 @@ player is about 5 tall).
 
 | Version | Role | Rarity | Stats (spd/str/sta/mana/hp/def) | Look | Size (tall x long) |
 |---|---|---|---|---|---|
-| Tortoise | Defence | common | 5 / 25 / 48 / 20 / 55 / 50 | War tortoise: high plated shell with a spiked rim, thick clawed legs, hooked beak. | 4 x 9 |
-| Gemshell Tortoise | | legendary | twist defence | Dark shell with a glowing crystal on every plate. | 7 x 12 |
-| Island Tortoise (concept, not in the game yet) | | mythic (proposed) | twist health (proposed) | Mossy stone carrying an island: an acacia with glowing fruit, rocks, grass and glowing flowers, vines from the rim. Card: `docs/concepts/island-tortoise-card.png`. | about 10 x 14 |
+| Tortoise | Defence | common | 5 / 25 / 48 / 20 / 55 / 50 | Textured faceted model (decision 0055): a war tortoise, olive and scaly, a high dome of six-sided horn plates in tiers, bone spikes round the rim, a hooked beak. Card: `docs/concepts/tortoise-card.png`. | 4 x 9 |
+| Gemshell Tortoise | | legendary | twist defence | A midnight shell set with cut rose gems in gold settings, the four down the spine glowing, gold beads round the rim, teal skin, gold claws and beak. Card: `docs/concepts/gemshell-tortoise-card.png`. | 5 x 12 |
+| Island Tortoise | | mythic | twist health | Mossy stone carrying an island: an acacia with glowing fruit, rocks, grass and glowing flowers, vines from the rim, a sprout on its head. Card: `docs/concepts/island-tortoise-card.png`. | 10 x 14 |
 | Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Faceted (decision 0053): a slender golden sprinter on very long legs, black diamond spots and tear marks, a very long ringed tail. Card: `docs/concepts/cheetah-card.png`. | 5 x 11 |
 | Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric blue spots, glowing bolts down both flanks and a crest of them on the neck, a zigzag tail with a glowing tip. Card: `docs/concepts/lightning-cheetah-card.png`. | 6 x 14 |
 | Fire Cheetah | | legendary | twist strength | A coat burning from scorched black legs through red to an orange back, flames painted up the flanks and legs, a glowing mane of flame from brow to tail, flames at the heels and for a tail tip, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 14 |
 
-| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | War rhino: slate hide, high shoulders with bone studs, scimitar horn, claw scars. | 8 x 14 |
-| Lava Rhino | | mythic | twist strength | Obsidian hide split by glowing cracks, molten horns, rock spikes, burning tail. | 13 x 18 |
-| Crystal Rhino (concept, not in the game yet) | | legendary (proposed) | twist defence (proposed) | Living grey rock grown through with gemstones of nine colours: great clusters of crystals on the hump and rump, a ridge down the spine, veins of gem, a great glowing crystal horn, a mace of crystals for a tail. Card: `docs/concepts/crystal-rhino-card.png`. | about 10 x 16 |
+| Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | Textured faceted model (decision 0054): a massive slate war rhino slung low on pillar legs under sleeves of armour, a short deep head, a scimitar of a bone horn, bone studs on the shoulder plate, claw scars. Card: `docs/concepts/rhino-card.png`. | 8 x 14 |
+| Lava Rhino | | mythic | twist strength | Obsidian plates with lava in their cracks, glowing lava in the folds between them and round the knees, molten horns, rock spikes with hot tips, a burning tail. Card: `docs/concepts/lava-rhino-card.png`. | 11 x 19 |
+| Crystal Rhino | | legendary | twist defence | Living grey rock grown through with gemstones of nine colours: great clusters of crystals on the hump and rump, a ridge down the spine, veins of gem, a great glowing crystal horn, a mace of crystals for a tail; seven crystals glow, each in its own colour. Card: `docs/concepts/crystal-rhino-card.png`. | 12 x 16 |
 
-New looks for the Meerkat (now upright), the Storm Meerkat, the Tortoise, the Gemshell Tortoise, the Flamingo and the Phoenix Flamingo are proposed in decision 0055 (cards in `docs/concepts/`); their rows still describe the models in the game.
-
-New, rounder and textured looks for the Rhino and the Lava Rhino are proposed in decision 0054 (cards: `docs/concepts/rhino-card.png`, `docs/concepts/lava-rhino-card.png`); their rows above still describe the models in the game.
 
 
 ## Eggs
 
-The egg overhaul (decision 0056, draft numbers). Eggs unlock with the waves. A hatch rolls the egg's
+The egg overhaul (decision 0056, draft numbers). The Meadow and Wild Eggs are open from the start; the Safari and Golden Eggs unlock with the waves. A hatch rolls the egg's
 rare drops first, then a basic animal.
 
 | Egg | Price | Unlocks | Basic animals | Legendary drops | Mythic drops |
 |---|---|---|---|---|---|
 | Meadow Egg | 100 | from the start | Jackal, Tortoise or Meerkat | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 5,000 each | none |
-| Wild Egg | 1,500 | wave 5 cleared | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 2,000 each; Fire Cheetah 1 in 4,000 | Sphinx Jackal 1 in 20,000 |
-| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Fire Cheetah 1 in 500; Shadow Lion 1 in 2,000 | Sphinx Jackal 1 in 5,000; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
+| Wild Egg | 1,500 | from the start | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 2,000 each; Fire Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 4,000 each | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 20,000 each |
+| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Fire Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
 | Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion 1 in 400; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
 
-There is no legendary-only egg (decision 0031). The concept variants (Crystal Rhino, Peacock Flamingo,
-Island Tortoise, Star Meerkat) get rows when their models are in the game.
+There is no legendary-only egg (decision 0031). New, detailed looks for the four eggs are proposed in
+decision 0057 (`docs/concepts/egg-family.png`); the game still shows the plain spotted shells.
 
 ## Parked for later
 

@@ -329,15 +329,46 @@ local ATTACKS: { [string]: Clip } = {
 		{ 0.66, { body = { -3, 0, 0, 0, 0, -0.2 }, head = { 8 } } },
 		{ 0.95, {} },
 	}),
-	-- stands up and jabs with both forepaws
+	-- it stands upright (decision 0055; its arms are the front legs): rocks back with both arms up, then
+	-- lunges and claws down. The legs turn against the body so the feet stay flat, the tail so it stays
+	-- on the ground
 	meerkat = attack({
 		{ 0.00, {} },
-		{ 0.26, { body = { 32, 0, 0, 0, 0.3, 0.2 }, head = { -8 }, leg_fl = { 95 }, leg_fr = { 88 }, tail = { -24 } } },
+		{
+			0.26,
+			{
+				body = { 9, 0, 0, 0, 0.03, 0.15 },
+				head = { 6 },
+				leg_fl = { 120 },
+				leg_fr = { 108 },
+				leg_bl = { -9 },
+				leg_br = { -9 },
+				tail = { -10 },
+			},
+		},
 		{
 			0.44,
-			{ body = { 12, 0, 0, 0, 0.12, -0.6 }, head = { 14 }, leg_fl = { -20 }, leg_fr = { -14 }, tail = { 14 } },
+			{
+				body = { -16, 0, 0, 0, 0, -0.45 },
+				head = { 10 },
+				leg_fl = { 28 },
+				leg_fr = { 36 },
+				leg_bl = { 16 },
+				leg_br = { 16 },
+				tail = { 12 },
+			},
 		},
-		{ 0.62, { body = { 6, 0, 0, 0, 0.06, -0.3 }, leg_fl = { 20 }, leg_fr = { 20 } } },
+		{
+			0.62,
+			{
+				body = { -6, 0, 0, 0, 0, -0.2 },
+				leg_fl = { 16 },
+				leg_fr = { 16 },
+				leg_bl = { 6 },
+				leg_br = { 6 },
+				tail = { 4 },
+			},
+		},
 		{ 0.95, {} },
 	}),
 	-- the neck draws back and whips forward
@@ -423,12 +454,32 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 16, 0, 0, 0, 0.32, 0.3 }, head = { -24, 0, 0, 0, 0, 0.35 }, leg_fl = { 30 }, leg_fr = { 30 } },
 		{ body = { -9, 0, 0, 0, -0.12, -0.4 }, head = { 22 }, leg_fl = { -10 }, leg_fr = { -10 } }
 	),
-	-- rises on its hind legs, arms overhead, then drops in a double smash
-	meerkat = powerClip(
-		{ body = { 28, 0, 0, 0, 0.3, 0.2 }, head = { -10 }, leg_fl = { 130 }, leg_fr = { 124 }, tail = { -22 } },
-		{ body = { 38, 0, 0, 0, 0.46, 0.3 }, head = { -14 }, leg_fl = { 168 }, leg_fr = { 160 }, tail = { -30 } },
-		{ body = { 6, 0, 0, 0, -0.04, -0.7 }, head = { 18 }, leg_fl = { -30 }, leg_fr = { -30 }, tail = { 20 } }
-	),
+	-- upright: gathers the charge between its paws, lifts it overhead on its toes, then hurls it down
+	meerkat = powerClip({
+		body = { 4, 0, 0, 0, -0.05, 0.1 },
+		head = { -8 },
+		leg_fl = { 60 },
+		leg_fr = { 60 },
+		leg_bl = { -4 },
+		leg_br = { -4 },
+		tail = { -5 },
+	}, {
+		body = { 12, 0, 0, 0, 0.08, 0.2 },
+		head = { 14 },
+		leg_fl = { 165 },
+		leg_fr = { 158 },
+		leg_bl = { -12 },
+		leg_br = { -12 },
+		tail = { -14 },
+	}, {
+		body = { -22, 0, 0, 0, -0.03, -0.6 },
+		head = { 8 },
+		leg_fl = { 40 },
+		leg_fr = { 40 },
+		leg_bl = { 22 },
+		leg_br = { 22 },
+		tail = { 16 },
+	}),
 	-- coils low and bounds in. Its legs are very long: in the coil the front legs splay far forward and the
 	-- body drops only a little, or the paws sink into the ground; in the bound the body rises and the long
 	-- tail is held up, or the hind paws and the tail do
@@ -615,9 +666,10 @@ local function idleBiped(t: number): Pose
 	}
 end
 
-local function walkBiped(t: number, rate: number): Pose
+-- An upright animal (a meerkat) has long feet: it takes short steps, or their ends dig in.
+local function walkBiped(t: number, rate: number, animal: boolean): Pose
 	local phase = t * rate * TAU
-	local a = 26 * math.sin(phase)
+	local a = (if animal then 13 else 26) * math.sin(phase)
 	return {
 		leg_bl = { a },
 		leg_br = { -a },
@@ -671,7 +723,7 @@ local function winTailUp(t: number): Pose
 	return pose
 end
 local WINS: { [string]: (number) -> Pose } =
-	{ flamingo = winFlamingo, lion = winTailUp, jackal = winTailUp, cheetah = winTailUp }
+	{ flamingo = winFlamingo, lion = winTailUp, jackal = winTailUp, cheetah = winTailUp, tortoise = winTailUp }
 local PLANTED = { flamingo = true } -- species whose feet never leave the ground, not even when hit
 
 -- A dragon's wings (the "wing_l" joint is on its left, so it lifts with a negative roll): a slow
@@ -818,9 +870,14 @@ end
 
 -- Rigs ---------------------------------------------------------------------------------------------
 
+-- Where a rig's legs are, for keeping its feet on the ground: the body joint's frame on the root, and
+-- for each leg its joint's frame on the body and the corners of its box seen from that joint.
+type Feet = { base: CFrame, legs: { { joint: string, frame: CFrame, points: { Vector3 } } }, ground: number }
+
 type Rig = {
 	model: Model,
 	joints: { [string]: Motor6D },
+	feet: Feet?, -- nil until its body and four legs have arrived
 	now: { [string]: { number } }, -- the pose on screen, eased towards the target each frame
 	magicAt: number, -- the AnimAt of the magic attack whose effects have started
 	impactAt: number, -- and of the one whose slam has played
@@ -834,6 +891,58 @@ type Rig = {
 
 local rigs: { [Model]: Rig } = {}
 local player = Players.LocalPlayer
+
+local LEGS = { "leg_fl", "leg_fr", "leg_bl", "leg_br" }
+
+-- A rig's `Feet`, once its body and legs are there. `ground` is how low its legs reach standing still.
+local function feetOf(joints: { [string]: Motor6D }): Feet?
+	local body = joints.body
+	if body == nil then
+		return nil
+	end
+	local legs, ground = {}, math.huge
+	for _, name in LEGS do
+		local motor = joints[name]
+		local part = motor and motor.Part1
+		if motor == nil or part == nil then
+			return nil
+		end
+		local half, back = part.Size / 2, motor.C1:Inverse()
+		local frame = body.C1:Inverse() * motor.C0
+		local points = {}
+		for i = 0, 7 do
+			local corner = Vector3.new(
+				if i % 2 == 0 then half.X else -half.X,
+				if i // 2 % 2 == 0 then half.Y else -half.Y,
+				if i // 4 == 0 then half.Z else -half.Z
+			)
+			local p = back * corner
+			table.insert(points, p)
+			ground = math.min(ground, (body.C0 * frame * p).Y)
+		end
+		table.insert(legs, { joint = name, frame = frame, points = points })
+	end
+	return { base = body.C0, legs = legs, ground = ground }
+end
+
+local function turned(v: { number }, scale: number): CFrame
+	return CFrame.new(v[4] * scale, v[5] * scale, v[6] * scale)
+		* CFrame.Angles(math.rad(v[1]), math.rad(v[2]), math.rad(v[3]))
+end
+
+-- How far (studs) the pose `now` pushes a leg under the ground it stands on: the body is lifted by as
+-- much, so no clip has to be fitted to every animal's legs. A leg's box stands in for its mesh.
+local function sunk(feet: Feet, now: { [string]: { number } }, scale: number): number
+	local body = feet.base * turned(now.body, scale)
+	local low = math.huge
+	for _, leg in feet.legs do
+		local at = body * leg.frame * turned(now[leg.joint], scale)
+		for _, p in leg.points do
+			low = math.min(low, (at * p).Y)
+		end
+	end
+	return math.max(0, feet.ground - low)
+end
 
 -- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,
 -- a harder flinch, a short hold and a camera punch. A burst and one short-lived part: no lights.
@@ -1087,17 +1196,17 @@ RunService.PreSimulation:Connect(function(dt: number)
 			target = if own and not biped then own(t) else win(t, biped)
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
-			target = if biped then walkBiped(time, rate) else walk(time, rate)
+			target = if biped then walkBiped(time, rate, model:GetAttribute("Hexbound") ~= true) else walk(time, rate)
 		elseif anim == "attack" and t < ATTACK.length then
 			local kind = model:GetAttribute("Asset")
 			local clip = if not biped
 				then pick(ATTACKS, model, ATTACK)
 				elseif kind == "foe_archer" then ARCHER_ATTACK
 				elseif kind == "foe_mage" then MAGE_ATTACK
-				else BIPED_ATTACK
+				else pick(ATTACKS, model, BIPED_ATTACK) -- an upright animal has its own
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
-			target = sample(if biped then BIPED_MAGIC else pick(MAGICS, model, MAGIC), t)
+			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
 			if rig.magicAt ~= at then
 				rig.magicAt = at
 				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
@@ -1115,6 +1224,17 @@ RunService.PreSimulation:Connect(function(dt: number)
 				target[joint] = v
 			end
 		end
+		if biped and model:GetAttribute("Hexbound") ~= true then
+			-- an upright animal's tail lies on the ground behind it: it never swings below where it rests,
+			-- and lifts by as much as the body leans back
+			local tail, body = target.tail, target.body
+			target = table.clone(target)
+			target.tail = {
+				math.min(if tail then tail[1] or 0 else 0, 0) - math.max(if body then body[1] or 0 else 0, 0),
+				if tail then tail[2] or 0 else 0,
+				if tail then tail[3] or 0 else 0,
+			}
+		end
 		local scale = ((model:GetAttribute("Scale") :: number?) or 1)
 		local blend = math.min(1, dt * 22)
 		for _, joint in JOINTS do
@@ -1122,10 +1242,20 @@ RunService.PreSimulation:Connect(function(dt: number)
 			for k = 1, 6 do
 				v[k] += ((if goal then goal[k] or 0 else 0) - v[k]) * blend
 			end
+		end
+		local lift = Vector3.zero -- feet stay on the ground, except in a fall
+		if anim ~= "die" then
+			rig.feet = rig.feet or feetOf(rig.joints)
+			local feet = rig.feet
+			if feet then
+				lift = feet.base:VectorToObjectSpace(Vector3.new(0, sunk(feet, rig.now, scale), 0))
+			end
+		end
+		for _, joint in JOINTS do
 			local motor = rig.joints[joint]
 			if motor then
-				motor.Transform = CFrame.new(v[4] * scale, v[5] * scale, v[6] * scale)
-					* CFrame.Angles(math.rad(v[1]), math.rad(v[2]), math.rad(v[3]))
+				local pose = turned(rig.now[joint], scale)
+				motor.Transform = if joint == "body" then CFrame.new(lift) * pose else pose
 			end
 		end
 	end

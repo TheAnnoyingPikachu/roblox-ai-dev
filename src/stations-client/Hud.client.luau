@@ -528,9 +528,14 @@ redraw.shop = function()
 	Style.amount(shop.chips, "coins", Format.commas(profile.coins))
 	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)}`)
 	Style.chip(shop.chips, `Best wave: {profile.best}`)
+	local rows = 1 -- seven rare drops fit across a card: every card is as tall as the longest list needs
+	for _, def in StationConfig.EGGS do
+		rows = math.max(rows, math.ceil(#def.rare / 7))
+	end
+	local more = (rows - 1) * 76
 	for k, def in StationConfig.EGGS do
 		local locked = def.wave ~= nil and profile.best < def.wave
-		local card = Style.card(shop.body, UDim2.fromOffset(366, 312))
+		local card = Style.card(shop.body, UDim2.fromOffset(366, 312 + more))
 		card.LayoutOrder = k
 		eggArt(card, def.id, 80).Position = UDim2.fromOffset(14, 12)
 		local name = Style.text(card, def.name, 22, C.text, UDim2.new(1, -110, 0, 26))
@@ -566,9 +571,8 @@ redraw.shop = function()
 		list.Position = UDim2.fromOffset(14, 156)
 		local rare = Instance.new("Frame") -- its variants: drops of their own, each with its odds
 		rare.BackgroundTransparency = 1
-		rare.Position, rare.Size = UDim2.fromOffset(14, 188), UDim2.new(1, -28, 0, 72)
-		-- shortcut: seven cells fit a card's row, wrap or shrink them when an egg lists more
-		Style.list(rare, 4, true)
+		rare.Position, rare.Size = UDim2.fromOffset(14, 188), UDim2.new(1, -28, 0, 72 + more)
+		Style.list(rare, 4, true, true)
 		rare.Parent = card
 		for i, drop in def.rare do
 			local colour = RARITY_COLOUR[(StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier]
@@ -601,7 +605,7 @@ redraw.shop = function()
 			end
 			send("buy", def.id)
 		end, if can then "primary" else "off")
-		b.Position, b.Size = UDim2.fromOffset(14, 266), UDim2.new(1, -28, 0, 36)
+		b.Position, b.Size = UDim2.fromOffset(14, 266 + more), UDim2.new(1, -28, 0, 36)
 	end
 end
 

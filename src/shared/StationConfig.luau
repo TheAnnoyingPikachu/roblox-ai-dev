@@ -151,7 +151,10 @@ StationConfig.SPECIES = {
 		group = "solitary",
 		rarity = "common",
 		stats = s(5, 25, 48, 20, 55, 50),
-		variants = { v("gemshell_tortoise", "Gemshell Tortoise", "legendary", "defence") },
+		variants = {
+			v("gemshell_tortoise", "Gemshell Tortoise", "legendary", "defence"),
+			v("island_tortoise", "Island Tortoise", "mythic", "health"),
+		},
 	},
 	{
 		id = "meerkat",
@@ -160,7 +163,10 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "common",
 		stats = s(30, 8, 15, 42, 25, 8),
-		variants = { v("storm_meerkat", "Storm Meerkat", "legendary", "mana") },
+		variants = {
+			v("storm_meerkat", "Storm Meerkat", "legendary", "mana"),
+			v("star_meerkat", "Star Meerkat", "mythic", "speed"),
+		},
 	},
 	{
 		id = "cheetah",
@@ -181,7 +187,10 @@ StationConfig.SPECIES = {
 		group = "solitary",
 		rarity = "uncommon",
 		stats = s(25, 50, 60, 10, 70, 55),
-		variants = { v("lava_rhino", "Lava Rhino", "mythic", "strength") },
+		variants = {
+			v("lava_rhino", "Lava Rhino", "mythic", "strength"),
+			v("crystal_rhino", "Crystal Rhino", "legendary", "defence"),
+		},
 	},
 	{
 		id = "flamingo",
@@ -190,7 +199,10 @@ StationConfig.SPECIES = {
 		group = "pack",
 		rarity = "uncommon",
 		stats = s(30, 10, 30, 65, 50, 15),
-		variants = { v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "mana") },
+		variants = {
+			v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "mana"),
+			v("peacock_flamingo", "Peacock Flamingo", "legendary", "stamina"),
+		},
 	},
 	{
 		id = "lion",
@@ -390,9 +402,9 @@ StationConfig.FOES = {
 -- Eggs (decision 0056). A hatch first rolls the egg's rare drops: each variant it lists is a drop of
 -- its own, `ppm` hatches in a million (shown as "1 in N", so every ppm divides a million). If none
 -- hits, it rolls a basic animal by `odds`. A variant gets likelier egg by egg, and an animal's mythic
--- starts one egg after its legendary. Eggs unlock with the waves: the Wild Egg once the ogres have
--- been met (wave 5), the Safari Egg with the first dragon beaten (wave 10), the Golden Egg with the
--- second (wave 20). There is no legendary-only egg: the Titan is a rare hatch from the Golden Egg,
+-- starts one egg after its legendary. The Meadow and Wild Eggs are open from the start; the others
+-- unlock with the waves: the Safari Egg with the first dragon beaten (wave 10), the Golden Egg with
+-- the second (wave 20). There is no legendary-only egg: the Titan is a rare hatch from the Golden Egg,
 -- which drops other animals too (decision 0031). Draft numbers.
 local function r(species: string, variant: string, oneIn: number): Rare
 	return { s = species, v = variant, ppm = 1_000_000 / oneIn }
@@ -422,7 +434,6 @@ StationConfig.EGGS = {
 		price = 1500,
 		xp = 40,
 		hatch = 600,
-		wave = 5,
 		odds = {
 			{ id = "jackal", bp = 1800 },
 			{ id = "tortoise", bp = 1800 },
@@ -433,10 +444,14 @@ StationConfig.EGGS = {
 		},
 		rare = {
 			r("jackal", "sphinx_jackal", 20000),
+			r("tortoise", "island_tortoise", 20000),
+			r("meerkat", "star_meerkat", 20000),
 			r("jackal", "pharaoh_jackal", 2000),
 			r("tortoise", "gemshell_tortoise", 2000),
 			r("meerkat", "storm_meerkat", 2000),
 			r("cheetah", "fire_cheetah", 4000),
+			r("rhino", "crystal_rhino", 4000),
+			r("flamingo", "peacock_flamingo", 4000),
 		},
 	},
 	{
@@ -457,7 +472,11 @@ StationConfig.EGGS = {
 			r("rhino", "lava_rhino", 10000),
 			r("flamingo", "phoenix_flamingo", 10000),
 			r("jackal", "sphinx_jackal", 5000),
+			r("tortoise", "island_tortoise", 5000),
+			r("meerkat", "star_meerkat", 5000),
 			r("cheetah", "fire_cheetah", 500),
+			r("rhino", "crystal_rhino", 500),
+			r("flamingo", "peacock_flamingo", 500),
 			r("lion", "shadow_lion", 2000),
 		},
 	},

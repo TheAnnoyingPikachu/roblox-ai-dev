@@ -16,7 +16,8 @@ vendors.
   or mythic (decision 0037; the Lion, the Elephant, the Jackal and the Cheetah have one of each, decisions 0050 to 0053); a normal animal is never above epic. The Elephant is the Titan:
   legendary, a rare hatch from the Golden Egg (there is no legendary-only egg). The egg overhaul
   (decision 0056): a variant is a drop of its own, listed with its chance in the eggs that hatch
-  it and likelier in the higher eggs; eggs unlock with the waves (5, 10 and 20).
+  it and likelier in the higher eggs; the Meadow and Wild Eggs are open from the start, the Safari and
+  Golden Eggs unlock with the waves (10 and 20).
 - **Stats:** six, each with one job in a wave fight:
 
 | Stat | Job |

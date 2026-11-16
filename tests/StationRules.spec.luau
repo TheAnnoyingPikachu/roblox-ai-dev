@@ -100,7 +100,7 @@ describe("StationConfig", function()
 	end)
 
 	it(
-		"has no legendary-only egg: the Titan is a rare hatch from the Golden Egg; the eggs unlock with the waves (5, 10, 20)",
+		"has no legendary-only egg: the Titan is a rare hatch from the Golden Egg; the Meadow and Wild Eggs are open from the start, the others unlock with the waves (10, 20)",
 		function()
 			local locked = 0
 			for _, egg in StationConfig.EGGS do
@@ -114,9 +114,12 @@ describe("StationConfig", function()
 					end
 				end
 				expect(other).toBe(true) -- every egg drops ordinary animals
-				if egg.wave and egg.id ~= "golden" then
+				if egg.id == "meadow" or egg.id == "wild" then
+					expect(egg.wave).toBeNil()
+					expect(titan).toBe(false)
+				elseif egg.id ~= "golden" then
 					locked += 1
-					expect(egg.wave).toBe(if egg.id == "wild" then 5 else 10)
+					expect(egg.wave).toBe(10)
 					expect(titan).toBe(false)
 				elseif egg.wave then
 					locked += 1
@@ -133,7 +136,7 @@ describe("StationConfig", function()
 				end
 				expect(egg.xp > 0).toBeTruthy()
 			end
-			expect(locked).toBe(3)
+			expect(locked).toBe(2)
 		end
 	)
 
@@ -172,7 +175,7 @@ describe("StationConfig", function()
 						legendary = math.min(legendary, row.ppm)
 					end
 				end
-				expect(sum <= 5000).toBeTruthy() -- at most 1 hatch in 200 is a variant
+				expect(sum <= 10000).toBeTruthy() -- at most 1 hatch in 100 is a variant
 				expect(mythic <= legendary).toBeTruthy()
 			end
 			for _, t in StationConfig.TIERS do

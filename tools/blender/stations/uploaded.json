@@ -1,13 +1,13 @@
 {
   "creature_rhino": {
-    "model": 76840541365035,
-    "decal": 121698041405933,
-    "texture": 133392548986108
+    "model": 76549371458447,
+    "decal": 140476843057340,
+    "texture": null
   },
   "creature_rhino_lava": {
-    "model": 103288532892750,
-    "decal": 124762936971480,
-    "texture": 94181598243034
+    "model": 122352849729122,
+    "decal": 140072610273836,
+    "texture": null
   },
   "creature_jackal": {
     "model": 134165595027982,
@@ -40,34 +40,34 @@
     "texture": null
   },
   "creature_meerkat": {
-    "model": 96988536912015,
-    "decal": 103569982618360,
-    "texture": 134705021317393
+    "model": 139346470766592,
+    "decal": 105444891165997,
+    "texture": null
   },
   "creature_meerkat_storm": {
-    "model": 134662156841930,
-    "decal": 109249984327956,
-    "texture": 120641028155451
+    "model": 74887176629141,
+    "decal": 72264938315040,
+    "texture": null
   },
   "creature_tortoise": {
-    "model": 90089098787500,
-    "decal": 113145899686805,
-    "texture": 92810608932817
+    "model": 97061991941811,
+    "decal": 102965779243782,
+    "texture": null
   },
   "creature_tortoise_gemshell": {
-    "model": 93978770831848,
-    "decal": 82910619354383,
-    "texture": 103635688064733
+    "model": 82632934131085,
+    "decal": 116425248210050,
+    "texture": null
   },
   "creature_flamingo": {
-    "model": 136324436270285,
-    "decal": 72758422452583,
-    "texture": 126655039240179
+    "model": 84475583271429,
+    "decal": 75133722125261,
+    "texture": null
   },
   "creature_flamingo_phoenix": {
-    "model": 80206577963432,
-    "decal": 110307725151451,
-    "texture": 88059213635831
+    "model": 123413892267664,
+    "decal": 90932908315622,
+    "texture": null
   },
   "creature_elephant": {
     "model": 75935305767377,
@@ -122,6 +122,26 @@
   "creature_cheetah_fire": {
     "model": 84637522481024,
     "decal": 91148467592505,
+    "texture": null
+  },
+  "creature_flamingo_peacock": {
+    "model": 123295968510330,
+    "decal": 95238347000685,
+    "texture": null
+  },
+  "creature_meerkat_star": {
+    "model": 106026915030650,
+    "decal": 133122768964836,
+    "texture": null
+  },
+  "creature_rhino_crystal": {
+    "model": 81910035120108,
+    "decal": 106216783042683,
+    "texture": null
+  },
+  "creature_tortoise_island": {
+    "model": 102043598148461,
+    "decal": 82479173262899,
     "texture": null
   }
 }

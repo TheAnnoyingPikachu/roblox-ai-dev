@@ -1,6 +1,6 @@
 # 0054: Animal Stations: the rhinos, rounder and textured, and a Crystal Rhino
 
-Status: proposed (second round of concepts for SHANNON; nothing is in the game yet)
+Status: accepted by SHANNON on 2026-11-15 ("looks is go variants are go"); in the game since 2026-11-16 (task STATION-045)
 Date: 2026-11-15. Builds on 0050 to 0053 (the lions, elephants, jackals and cheetahs). Task STATION-042.
 
 ## Decision
@@ -57,9 +57,10 @@ out. This is the second round.
 - Whether the textures should go onto the families already in the game (the lions, elephants, jackals
   and cheetahs have flat face colours only).
 
-## Not done
+## Into the game (STATION-045)
 
-Concepts only: nothing is uploaded, `StationConfig`, `StationAssets` and the manifest are unchanged,
-and the game still shows the old rhinos. The clips have not been seen on the new shapes. The Crystal
-Rhino is the first model with seven Neon pieces in seven colours; that has been seen on its card but
-not in Studio.
+The three are uploaded and in `StationAssets`; the Crystal Rhino is the Rhino's legendary variant
+(`crystal_rhino`, twist defence), a drop of the Wild and Safari Eggs (decision 0056). Seen in Studio:
+the textures and the seven Neon colours of the Crystal Rhino match the cards. The rhinos' wide feet
+sank into the ground in the walk, the charge and the power attack; that is fixed for every animal by
+the feet rule of decision 0055, not by fitting the rhino's clips.
