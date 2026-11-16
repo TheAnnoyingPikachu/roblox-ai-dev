@@ -21,11 +21,11 @@ end
 
 -- Seconds of training to take a stat from level 0 to level n.
 local function secondsTo(n: number): number
-	local total = 0
+	local seconds = 0
 	for level = 1, n do
-		total += StationRules.levelSeconds(level)
+		seconds += StationRules.levelSeconds(level)
 	end
-	return total
+	return seconds
 end
 
 describe("StationConfig", function()
