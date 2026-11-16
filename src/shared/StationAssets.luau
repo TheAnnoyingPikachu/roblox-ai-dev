@@ -1328,8 +1328,8 @@ local StationAssets: { [string]: Asset } = {
 			hub_fountain_body_glow = { 0, 3.963, 0 },
 		},
 		joints = {},
-		model = 117737577809931,
-		decal = 138253971037150,
+		model = 108405343444160,
+		decal = 70999171923856,
 		texture = nil,
 	},
 	hub_plinth = {

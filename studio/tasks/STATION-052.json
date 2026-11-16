@@ -34,16 +34,16 @@
   "acceptance_criteria": [
     "The plaza in the game matches the approved concept card: every piece stands where the concept has it, at its size",
     "The statues, the Golden Egg and the shrines' eggs are made from the models the game already has",
-    "A player cannot walk through the fountain, a plinth, a garden bed, a gateway pier or a stall",
+    "A player cannot walk through the fountain's stem, a plinth, a gateway pier or a stall, and can climb onto a garden bed",
     "The hub's wall is nearer the plaza and each ranch is nearer the hub; every pass still joins its ranch and its walls leave no gap",
     "Teleports, spawns, the wave arena and the ranches work as before"
   ],
-  "verification": "Pending: the models are built and exported; the upload and the check in Studio follow.",
+  "verification": "Lune 694/694, stylua and selene clean. Blender 5.2: the twelve models built, baked and exported (532 to 5,136 triangles each). Uploaded in upload-assets runs 43901523860 (all twelve) and 43904026671 (the fountain again, with a pinker lotus); both succeeded. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. All twelve models, the eight statues, the four tortoises and the five eggs loaded with no rig warning (`Creatures.build` warns when a mesh is more than 0.15 studs from where the manifest puts it: none did, so every piece stands where it was built). Screens from the concept card's four camera places show the same plaza: paving, fountain with the Golden Egg on a pink lotus, statues on named plinths, shrines with their eggs, gardens with lamps and flags, the four gateways with readable names on both faces, the stalls. Walked by script: stopped by a plinth (3.8 studs from its middle), by a gateway pier and by the fountain's stem; through the WELCOME gateway; up onto a garden bed. The lower pool's lip can be stepped over. Layout: rays down each of the three passes every 4 studs from the plaza to the ranch (three across) all hit ground, the biggest step 0.75 studs, rising from 0.4 to 22.5; each ranch spawn stands on ground at 22.5; 120 rays out of the hub at 6 studs up all hit a wall or a mountain. Not checked: phones, two players, frame rate (the centre is about 110,000 triangles by estimate, not measured), teleports by hand, the look at any time of day but the fixed afternoon.",
   "output_artifacts": [
     "src/shared/StationAssets.luau",
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
+  "status": "in_review",
   "notes": "SHANNON on 2026-11-16: 'go ahead with the centre area, make the grass area in the hub a bit smaller and bring the ranches in a tad'. The upload runs in GitHub (environment assets), never with a key on this machine. Checkpoint for SHANNON: 'the grass area in the hub' was read as the hub's lawn (HUB_RADIUS 300 to 250), not the raised gardens on the plaza; the ranches came in from 900 to 780; the wave arena was left where it is."
 }

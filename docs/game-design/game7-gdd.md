@@ -45,7 +45,8 @@ vendors.
   dragons, not animals (`game7-enemies.md`). Clearing a wave pays coins.
 - **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
   waves, daily, weekly and monthly login tracks and gear levels when they exist.
-- **Places:** the hub (plaza) and one ranch per player behind the hub's mountains,
+- **Places:** the hub (a plaza with the Hatchery Fountain, statues of the eight animals, a shrine
+  for each egg and a gateway on each road, decision 0060) and one ranch per player behind the hub's mountains,
   south, east and west (decision 0035). A ranch is reached by teleport pad or on foot up its own
   mountain pass, ready for riding animals later. Mountains ring every area. A canyon through the
   hub's mountains to the north is the wave arena. A server holds 3 players.
@@ -114,8 +115,9 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- A finished hub centre and a large area for each training activity: concepts only so far
-  (decision 0059, `docs/concepts/hub-centre-card.png` and `training-family.png`).
+- A large area for each training activity: concepts only so far (decisions 0059 and 0061).
+- Vendors at the hub's two market stalls, and anything to do at its statues and shrines: they are
+  scenery.
 - More ranch upgrades and expanding the plot. More hub vendors. Gear.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
 - Magical attacks, microgames, teams of 3 players.

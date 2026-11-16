@@ -17,7 +17,7 @@ The concept of decision 0059 (`docs/concepts/hub-centre-card.png`) is now what s
   like an egg, and goes through the same build, upload and `StationAssets` as the animals.
 - Made from models the game already has: the Golden Egg on the lotus, the egg in each shrine
   (`World.kit.eggModel`), and the statues. A statue is an animal's own model with no texture, in
-  marble (`Creatures.statue`): one of each of the eight animals on the plinths, with its name on the
+  pale limestone (`Creatures.statue`; Roblox's marble showed dark veins like cracks): one of each of the eight animals on the plinths, with its name on the
   plate, and four small tortoises on the fountain's lip.
 - The models take no collisions. `World.luau` adds unseen parts for what is solid: the floor, the
   pools and their lip, the plinths, the shrines' floors, the garden beds, tree trunks, benches, the
@@ -28,6 +28,10 @@ The concept of decision 0059 (`docs/concepts/hub-centre-card.png`) is now what s
 - A gateway's piers stand 9.2 studs either side of the road's middle, not 7: the game's roads are
   18 studs wide, the concept's sketched road was 10.5.
 - The Golden Egg faces south, to the walk players arrive by.
+- The fountain's upper bowl holds water (the concept's had a stone lid by mistake), and its lotus is
+  a stronger pink: the first bake came out grey in the game, so the fountain was built and uploaded
+  twice. The first upload is listed in the register as replaced; it is not archived.
+- A player can step over the lower pool's lip and wade to the stem.
 - Gone from the old plaza: the plain basin and pedestal, the eight rim lamps, the benches with brick
   planters, and the "Welcome to Animal Stations!" board on the south walk (the WELCOME gateway
   replaces it).
