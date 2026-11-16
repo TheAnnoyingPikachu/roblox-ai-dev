@@ -30,13 +30,13 @@
     "texture": null
   },
   "creature_lion": {
-    "model": 130586378174171,
-    "decal": 87858491746017,
+    "model": 119352423442764,
+    "decal": 90187080883676,
     "texture": null
   },
   "creature_lion_sun": {
-    "model": 74186882513776,
-    "decal": 92765121784934,
+    "model": 75354072041359,
+    "decal": 103996188639805,
     "texture": null
   },
   "creature_meerkat": {
@@ -105,8 +105,8 @@
     "texture": 87545615844296
   },
   "creature_lion_shadow": {
-    "model": 72212451895565,
-    "decal": 100442030209221,
+    "model": 84330657139211,
+    "decal": 96709137028260,
     "texture": null
   },
   "creature_elephant_war": {
@@ -142,6 +142,146 @@
   "creature_tortoise_island": {
     "model": 102043598148461,
     "decal": 82479173262899,
+    "texture": null
+  },
+  "egg_meadow": {
+    "model": 86159010376482,
+    "decal": 86786888313176,
+    "texture": null
+  },
+  "egg_wild": {
+    "model": 85535547879897,
+    "decal": 85175222554732,
+    "texture": null
+  },
+  "egg_safari": {
+    "model": 108612089352225,
+    "decal": 138472957530180,
+    "texture": null
+  },
+  "egg_golden": {
+    "model": 102266706260443,
+    "decal": 113123737601036,
+    "texture": null
+  },
+  "creature_cheetah_fire_rainbow": {
+    "model": null,
+    "decal": 71750186648345,
+    "texture": null
+  },
+  "creature_cheetah_lightning_rainbow": {
+    "model": null,
+    "decal": 70577399905893,
+    "texture": null
+  },
+  "creature_cheetah_rainbow": {
+    "model": null,
+    "decal": 78896724471023,
+    "texture": null
+  },
+  "creature_elephant_frost_rainbow": {
+    "model": null,
+    "decal": 136262845457745,
+    "texture": null
+  },
+  "creature_elephant_rainbow": {
+    "model": null,
+    "decal": 108728257611042,
+    "texture": null
+  },
+  "creature_elephant_war_rainbow": {
+    "model": null,
+    "decal": 127949184851551,
+    "texture": null
+  },
+  "creature_flamingo_peacock_rainbow": {
+    "model": null,
+    "decal": 113367855197254,
+    "texture": null
+  },
+  "creature_flamingo_phoenix_rainbow": {
+    "model": null,
+    "decal": 102322258529239,
+    "texture": null
+  },
+  "creature_flamingo_rainbow": {
+    "model": null,
+    "decal": 120310437187499,
+    "texture": null
+  },
+  "creature_jackal_pharaoh_rainbow": {
+    "model": null,
+    "decal": 105135521026667,
+    "texture": null
+  },
+  "creature_jackal_rainbow": {
+    "model": null,
+    "decal": 101896062344441,
+    "texture": null
+  },
+  "creature_jackal_sphinx_rainbow": {
+    "model": null,
+    "decal": 131828677849707,
+    "texture": null
+  },
+  "creature_lion_rainbow": {
+    "model": null,
+    "decal": 137718915644204,
+    "texture": null
+  },
+  "creature_lion_shadow_rainbow": {
+    "model": null,
+    "decal": 115760230582829,
+    "texture": null
+  },
+  "creature_lion_sun_rainbow": {
+    "model": null,
+    "decal": 135094054978037,
+    "texture": null
+  },
+  "creature_meerkat_rainbow": {
+    "model": null,
+    "decal": 116064783475813,
+    "texture": null
+  },
+  "creature_meerkat_star_rainbow": {
+    "model": null,
+    "decal": 136233384155506,
+    "texture": null
+  },
+  "creature_meerkat_storm_rainbow": {
+    "model": null,
+    "decal": 111482771458387,
+    "texture": null
+  },
+  "creature_rhino_crystal_rainbow": {
+    "model": null,
+    "decal": 79748155802315,
+    "texture": null
+  },
+  "creature_rhino_lava_rainbow": {
+    "model": null,
+    "decal": 107981238686200,
+    "texture": null
+  },
+  "creature_rhino_rainbow": {
+    "model": null,
+    "decal": 93929317033246,
+    "texture": null
+  },
+  "creature_tortoise_gemshell_rainbow": {
+    "model": null,
+    "decal": 128474956672445,
+    "texture": null
+  },
+  "creature_tortoise_island_rainbow": {
+    "model": null,
+    "decal": 104255661921687,
+    "texture": null
+  },
+  "creature_tortoise_rainbow": {
+    "model": null,
+    "decal": 70860331775093,
     "texture": null
   }
 }

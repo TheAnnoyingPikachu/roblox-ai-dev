@@ -50,12 +50,12 @@
     "The coat is saved with the animal; old saves load unchanged",
     "The server decides the coat; a client cannot ask for one (the admin's menu apart)"
   ],
-  "verification": "Not verified yet: built and exported, waiting for the upload and the check in Studio.",
+  "verification": "Lune 692/692, stylua clean, selene has its one old warning. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. The 24 coats painted from the uploaded models' own files and uploaded in upload-assets run 43804783464 (the four eggs, the three lions and 24 rainbow coats, all succeeded); cards of six were inspected (`docs/concepts/rainbow-family.png`). Specs: about 1 hatch in 200 is rainbow (60 to 140 in 20,000), with the plain animal's stats; the field is absent on every other animal; it survives buy, start, crack, training and sanitize; junk values are dropped; every animal and variant has a coat and nothing else has. In Studio: all 24 portraits carry their coat's texture; rainbow animals added from the admin's menu (Lion, Crystal Rhino, Star Meerkat, Phoenix Flamingo, Cheetah) walk the ranch in their coats with sparkles, the Crystal Rhino's Neon crystals turning through the colours, the Cheetah keeping its spots (screens); the Animals menu shows the RAINBOW chip. With the chance forced to 1 for one test session (in Studio only, put back after): a Meadow Egg bought and opened gave 'You hatched a Rainbow Jackal! (common)', the jackal stepped out of the nest in its coat, and it fought wave 1 in the arena in the same coat. A coat's texture can take a moment to arrive, like any texture: the animal is plain grey for that moment. Not checked: a rainbow hatch at the real chance, the card under the cursor, the pictures of a rainbow animal in the Waves menu, phones, two players, whether 1 in 200 feels right.",
   "output_artifacts": [
     "docs/concepts/rainbow-family.png",
     "src/shared/StationAssets.luau"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
+  "status": "in_review",
   "notes": "SHANNON on 2026-11-16: 'add a rainbow texture that has a small chance to apply to any animal on hatch'. Checkpoint for SHANNON: the chance (1 in 200, one number in StationConfig); whether a rainbow animal should also be stronger (it is a look only)."
 }

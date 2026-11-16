@@ -56,6 +56,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 76549371458447,
 		decal = 140476843057340,
 		texture = nil,
+		rainbowDecal = 93929317033246,
+		rainbowTexture = nil,
 	},
 	creature_rhino_lava = {
 		size = { 6.89, 11.33, 18.52 },
@@ -111,6 +113,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 122352849729122,
 		decal = 140072610273836,
 		texture = nil,
+		rainbowDecal = 107981238686200,
+		rainbowTexture = nil,
 	},
 	creature_jackal = {
 		size = { 1.3, 4.02, 7.38 },
@@ -144,6 +148,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 134165595027982,
 		decal = 102689800561942,
 		texture = nil,
+		rainbowDecal = 101896062344441,
+		rainbowTexture = nil,
 	},
 	creature_jackal_pharaoh = {
 		size = { 1.6, 5.09, 9.07 },
@@ -181,6 +187,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 75452633506717,
 		decal = 83327504233843,
 		texture = nil,
+		rainbowDecal = 105135521026667,
+		rainbowTexture = nil,
 	},
 	creature_cheetah = {
 		size = { 1.54, 4.62, 10.85 },
@@ -214,6 +222,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 136222492678063,
 		decal = 71432202009375,
 		texture = nil,
+		rainbowDecal = 78896724471023,
+		rainbowTexture = nil,
 	},
 	creature_cheetah_lightning = {
 		size = { 1.99, 6, 13.86 },
@@ -257,6 +267,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 109207546284029,
 		decal = 129607729735952,
 		texture = nil,
+		rainbowDecal = 70577399905893,
+		rainbowTexture = nil,
 	},
 	creature_lion = {
 		size = { 5.22, 7.45, 13 },
@@ -287,9 +299,11 @@ local StationAssets: { [string]: Asset } = {
 			creature_lion_leg_br = { -0.669, 2.76, -0.359 },
 			creature_lion_tail = { 0.113, 3.392, -1.336 },
 		},
-		model = 130586378174171,
-		decal = 87858491746017,
+		model = 119352423442764,
+		decal = 90187080883676,
 		texture = nil,
+		rainbowDecal = 137718915644204,
+		rainbowTexture = nil,
 	},
 	creature_lion_sun = {
 		size = { 6.33, 9.23, 16.05 },
@@ -324,9 +338,11 @@ local StationAssets: { [string]: Asset } = {
 			creature_lion_sun_leg_br = { -0.941, 3.408, -0.443 },
 			creature_lion_sun_tail = { 0.024, 4.189, -1.65 },
 		},
-		model = 74186882513776,
-		decal = 92765121784934,
+		model = 75354072041359,
+		decal = 103996188639805,
 		texture = nil,
+		rainbowDecal = 135094054978037,
+		rainbowTexture = nil,
 	},
 	creature_meerkat = {
 		size = { 1.97, 4.82, 4.93 },
@@ -360,6 +376,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 139346470766592,
 		decal = 105444891165997,
 		texture = nil,
+		rainbowDecal = 116064783475813,
+		rainbowTexture = nil,
 	},
 	creature_meerkat_storm = {
 		size = { 3.48, 6.7, 6.29 },
@@ -403,6 +421,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 74887176629141,
 		decal = 72264938315040,
 		texture = nil,
+		rainbowDecal = 111482771458387,
+		rainbowTexture = nil,
 	},
 	creature_tortoise = {
 		size = { 5.87, 3.59, 9.01 },
@@ -436,6 +456,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 97061991941811,
 		decal = 102965779243782,
 		texture = nil,
+		rainbowDecal = 70860331775093,
+		rainbowTexture = nil,
 	},
 	creature_tortoise_gemshell = {
 		size = { 7.8, 4.83, 12.02 },
@@ -476,6 +498,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 82632934131085,
 		decal = 116425248210050,
 		texture = nil,
+		rainbowDecal = 128474956672445,
+		rainbowTexture = nil,
 	},
 	creature_flamingo = {
 		size = { 2.03, 8.04, 5.86 },
@@ -509,6 +533,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 84475583271429,
 		decal = 75133722125261,
 		texture = nil,
+		rainbowDecal = 120310437187499,
+		rainbowTexture = nil,
 	},
 	creature_flamingo_phoenix = {
 		size = { 3.52, 11.3, 10.29 },
@@ -555,6 +581,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 123413892267664,
 		decal = 90932908315622,
 		texture = nil,
+		rainbowDecal = 102322258529239,
+		rainbowTexture = nil,
 	},
 	creature_elephant = {
 		size = { 14.24, 14.14, 24.51 },
@@ -588,6 +616,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 75935305767377,
 		decal = 106308552014919,
 		texture = nil,
+		rainbowDecal = 108728257611042,
+		rainbowTexture = nil,
 	},
 	creature_elephant_frost = {
 		size = { 12.23, 19.4, 29.97 },
@@ -628,6 +658,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 76201899217815,
 		decal = 84952892150281,
 		texture = nil,
+		rainbowDecal = 136262845457745,
+		rainbowTexture = nil,
 	},
 	foe_archer = {
 		size = { 2.71, 6.59, 2.86 },
@@ -901,9 +933,11 @@ local StationAssets: { [string]: Asset } = {
 			creature_lion_shadow_leg_br = { -0.94, 3.192, -0.415 },
 			creature_lion_shadow_tail = { -0.036, 3.924, -1.545 },
 		},
-		model = 72212451895565,
-		decal = 100442030209221,
+		model = 84330657139211,
+		decal = 96709137028260,
 		texture = nil,
+		rainbowDecal = 115760230582829,
+		rainbowTexture = nil,
 	},
 	creature_elephant_war = {
 		size = { 15.43, 19.39, 27 },
@@ -944,6 +978,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 87558446601190,
 		decal = 136181197990894,
 		texture = nil,
+		rainbowDecal = 127949184851551,
+		rainbowTexture = nil,
 	},
 	creature_jackal_sphinx = {
 		size = { 2.34, 5.37, 9.57 },
@@ -981,6 +1017,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 121824721955985,
 		decal = 109191769703070,
 		texture = nil,
+		rainbowDecal = 131828677849707,
+		rainbowTexture = nil,
 	},
 	creature_cheetah_fire = {
 		size = { 1.92, 5.54, 13.51 },
@@ -1024,6 +1062,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 84637522481024,
 		decal = 91148467592505,
 		texture = nil,
+		rainbowDecal = 71750186648345,
+		rainbowTexture = nil,
 	},
 	creature_flamingo_peacock = {
 		size = { 5.62, 9.79, 7.02 },
@@ -1064,6 +1104,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 123295968510330,
 		decal = 95238347000685,
 		texture = nil,
+		rainbowDecal = 113367855197254,
+		rainbowTexture = nil,
 	},
 	creature_meerkat_star = {
 		size = { 2.69, 7.46, 6.77 },
@@ -1107,6 +1149,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 106026915030650,
 		decal = 133122768964836,
 		texture = nil,
+		rainbowDecal = 136233384155506,
+		rainbowTexture = nil,
 	},
 	creature_rhino_crystal = {
 		size = { 7.69, 11.53, 16.04 },
@@ -1162,6 +1206,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 81910035120108,
 		decal = 106216783042683,
 		texture = nil,
+		rainbowDecal = 79748155802315,
+		rainbowTexture = nil,
 	},
 	creature_tortoise_island = {
 		size = { 8.58, 9.91, 13.88 },
@@ -1202,6 +1248,8 @@ local StationAssets: { [string]: Asset } = {
 		model = 102043598148461,
 		decal = 82479173262899,
 		texture = nil,
+		rainbowDecal = 104255661921687,
+		rainbowTexture = nil,
 	},
 	egg_meadow = {
 		size = { 3.23, 3.35, 3.34 },
@@ -1211,8 +1259,8 @@ local StationAssets: { [string]: Asset } = {
 			egg_meadow_body = { 0, 1.673, 0 },
 		},
 		joints = {},
-		model = nil,
-		decal = nil,
+		model = 86159010376482,
+		decal = 86786888313176,
 		texture = nil,
 	},
 	egg_wild = {
@@ -1226,8 +1274,8 @@ local StationAssets: { [string]: Asset } = {
 			egg_wild_body_glow = { 0.049, 0.517, -0.022 },
 		},
 		joints = {},
-		model = nil,
-		decal = nil,
+		model = 85535547879897,
+		decal = 85175222554732,
 		texture = nil,
 	},
 	egg_safari = {
@@ -1238,8 +1286,8 @@ local StationAssets: { [string]: Asset } = {
 			egg_safari_body = { 0, 1.745, 0 },
 		},
 		joints = {},
-		model = nil,
-		decal = nil,
+		model = 108612089352225,
+		decal = 138472957530180,
 		texture = nil,
 	},
 	egg_golden = {
@@ -1253,8 +1301,8 @@ local StationAssets: { [string]: Asset } = {
 			egg_golden_body_glow = { -0.001, 2.307, -0.063 },
 		},
 		joints = {},
-		model = nil,
-		decal = nil,
+		model = 102266706260443,
+		decal = 113123737601036,
 		texture = nil,
 	},
 }

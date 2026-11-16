@@ -1,7 +1,7 @@
 # 0057: Animal Stations: detailed eggs
 
-Status: proposed (concepts for SHANNON; nothing is in the game yet)
-Date: 2026-11-16. Task STATION-046.
+Status: accepted (SHANNON on 2026-11-16: "go on egg replace all egg things"); in the game
+Date: 2026-11-16. Tasks STATION-046 (concepts), STATION-047 (in the game).
 
 ## What SHANNON asked
 
@@ -28,15 +28,28 @@ parts today. Each keeps its two colours and is dressed for where its animals com
 - One piece each (`body`), with a Neon `body_glow` on the Wild and Golden Eggs. Three studs tall
   before its dressing. `facet.py` gains a `shell` surface (speckles) and glowing `lump`s.
 
-## Open for SHANNON
+## In the game (STATION-047)
 
-- Approve the four looks, or ask for changes.
-- On approval they are uploaded and put in the game: the hatchery, the egg storage rack, the vendor's
-  counter and the egg pictures in the menus all draw eggs today (`Ranch.eggModel`, the HUD's
-  `eggArt`), and the hatching animation is written for the plain shell. The smaller option is the
-  world models only, keeping the flat egg pictures in the menus.
+Everything that drew an egg now shows the models.
+
+- An egg is a still prop: `Creatures.build` gives an asset with no head a Root on the ground and no
+  joints, and `Creatures.still` stands a copy somewhere at a scale. A still prop has no head to
+  read its facing from, so it takes the turn the importer gives every model of this build.
+- `World.kit.eggModel` is the one way to stand an egg in the world: the model, at a size given by
+  the height of its shell, with an unseen part the size of the shell that is there at once for a
+  prompt, a light or sparkles (the first model of a kind has to load). The plain spotted shell is
+  kept only as the fallback when a model is not uploaded or does not load; the trimmings built
+  from parts are gone.
+- Where: the six nests of the hatchery (shell 3 studs), the egg storage rack (1.5 studs, down from
+  1.7 so a crowned egg clears the shelf above), the egg vendor's counter (1.9 studs, spaced
+  wider) and the great egg on the hub's fountain, which is now a Golden Egg 13 studs tall.
+- The egg pictures in the Eggs menu and the egg vendor are portraits of the models (the still
+  copies the animals' portraits use).
+- The hatching animation rocks the egg's own model about its foot, then bursts as before in the
+  egg's two colours. `Ranch.nest` returns a CFrame, so the egg and the animal that steps out face
+  out of the hatchery.
 
 ## Not done
 
-Concepts only: nothing is uploaded and the game still shows the plain eggs. Two rounds of looking at
-the cards.
+- The eggs do not glow or move while they hatch, beyond the ready sparkle they had.
+- A fifth, later egg.

@@ -104,8 +104,16 @@ rare drops first, then a basic animal.
 | Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Fire Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
 | Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion 1 in 400; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
 
-There is no legendary-only egg (decision 0031). New, detailed looks for the four eggs are proposed in
-decision 0057 (`docs/concepts/egg-family.png`); the game still shows the plain spotted shells.
+There is no legendary-only egg (decision 0031). The four eggs are detailed models (decision 0057,
+`docs/concepts/egg-family.png`): in the hatchery, on the storage rack and the vendor's counter, on the
+hub's fountain, in the menus and in the hatching animation.
+
+### The rainbow coat
+
+Any hatch, from any egg, of any animal or variant, comes out in a rainbow coat 1 time in 200
+(decision 0058, a draft number; `docs/concepts/rainbow-family.png`). It is a look only: the same
+stats, rarity and role. The coat runs through the rainbow from nose to tail and keeps the animal's
+spots, stripes and plates; its glowing pieces turn through the colours.
 
 ## Parked for later
 

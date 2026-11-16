@@ -37,12 +37,12 @@
     "The hatching animation rocks the egg's own model and bursts in its colours",
     "Prompts, the ready sparkle and opening an egg work as before"
   ],
-  "verification": "Not verified yet: built and exported, waiting for the upload and the check in Studio.",
+  "verification": "Lune 692/692, stylua clean, selene has its one old warning. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. Uploaded in upload-assets run 43804783464 (the four eggs, the three lions and 24 rainbow coats, all succeeded). In Studio: the four egg models load with no rig warning (13 in the world at the start: four on each of three vendors' counters and the hub's great egg) and are published as portraits; screens show the vendor's counter with all four facing the customer, the hatchery with a Meadow and a Wild Egg on their nests and stored eggs fitting the rack's shelves, the Golden Egg on the hub's fountain, and the egg vendor's menu with the four egg pictures. A Meadow Egg bought, hatched and opened between two Wild Eggs: the hatching animation rocked the `egg_meadow` model for 1.47 s, leaning up to 24 degrees, and the animal stepped out of that nest. Before the upload's ids were in, the same session showed the plain shells through the same code (the fallback) and the animation used the plain shell. Found and fixed on the way: the server read the opened egg's type after the profile had changed, so the animation showed the next egg's model. Not checked: the Safari and Golden Eggs in a nest or on the rack (locked behind waves 10 and 20; seen on the counter and in the menu only), the Eggs menu's own cards, phones, two players.",
   "output_artifacts": [
     "src/shared/StationAssets.luau",
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_progress",
-  "notes": "SHANNON on 2026-11-16: 'go on egg replace all egg things'. The upload runs in GitHub (environment assets), never with a key on this machine."
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'go on egg replace all egg things'. The upload runs in GitHub (environment assets), never with a key on this machine. Checkpoint for SHANNON: the hub's great egg is now a Golden Egg (it was a pastel egg of its own); say if it should be another."
 }

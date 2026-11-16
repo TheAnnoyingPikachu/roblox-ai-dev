@@ -354,7 +354,8 @@ local router = Router.new({
 				for j = 1, k do
 					nth += if p.eggs[j].since then 1 else 0
 				end
-				local i, look = ranchOf(player), Ranch.look(p.eggs[k].egg)
+				local eggId = p.eggs[k].egg -- read now: the profile is changed in place below
+				local i, look = ranchOf(player), Ranch.look(eggId)
 				local at = if i then Ranch.nest(i, nth) else nil
 				hatchedAt[born.id] = at
 				saves.apply(player, function(q)
@@ -367,7 +368,7 @@ local router = Router.new({
 					trained = born.trained,
 					rainbow = born.rainbow,
 					at = at,
-					egg = p.eggs[k].egg,
+					egg = eggId,
 					body = look.body,
 					spot = look.spot,
 				})

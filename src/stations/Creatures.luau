@@ -30,8 +30,8 @@ local STEP = 2.63 -- studs one stride covers at Scale 1 (the legs swing 27 degre
 
 local FLAT = Vector3.new(1, 0, 1)
 -- A creature's yaw comes from where its head is. A still prop has none: this is the turn the importer
--- gives every model of this build (measured on the creatures).
-local STILL_YAW = 0
+-- gives every model of this build (measured on the lion and the rhino: their heads come in towards -Z).
+local STILL_YAW = math.pi
 local templates: { [string]: Model | boolean } = {} -- true while loading, false when it failed
 
 local function vec(t: { number }): Vector3
