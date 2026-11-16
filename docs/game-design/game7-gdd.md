@@ -114,6 +114,8 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
+- A finished hub centre and a large area for each training activity: concepts only so far
+  (decision 0059, `docs/concepts/hub-centre-card.png` and `training-family.png`).
 - More ranch upgrades and expanding the plot. More hub vendors. Gear.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
 - Magical attacks, microgames, teams of 3 players.

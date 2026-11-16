@@ -156,11 +156,9 @@ def _bloom(rgb):
     return out
 
 
-def beauty(name, groups, lo, hi, glow=None):
-    """A presentation card of one asset, not a build output: a three-quarter hero shot on a stone
-    pedestal over front, side and back views, with `_glow` parts shining and a bloom on top.
-    Written to build/blender/stations/beauty/<name>.png."""
-    scene = bpy.context.scene
+def daylight(scene):
+    """The light of a presentation card: EEVEE, a blue sky for the camera, a warm white one for the
+    models (so yellows stay yellow) and three suns."""
     try:
         scene.render.engine = "BLENDER_EEVEE"
     except TypeError:
@@ -179,7 +177,6 @@ def beauty(name, groups, lo, hi, glow=None):
         world.use_nodes = True
     except Exception:
         pass
-    # the camera sees a blue sky; the model is lit by a warm white one, so yellows stay yellow
     nt = world.node_tree
     sky = next(n for n in nt.nodes if n.type == "BACKGROUND")
     height, ramp = nt.nodes.new("ShaderNodeSeparateXYZ"), nt.nodes.new("ShaderNodeValToRGB")  # pale at the horizon
@@ -196,6 +193,22 @@ def beauty(name, groups, lo, hi, glow=None):
     nt.links.new(ambient.outputs[0], both.inputs[1])
     nt.links.new(sky.outputs[0], both.inputs[2])
     nt.links.new(both.outputs[0], next(n for n in nt.nodes if n.type == "OUTPUT_WORLD").inputs[0])
+    for label, energy, source, rgb in (("key", 2.0, (-1.2, -0.3, 1.2), (255, 244, 226)), ("rim", 1.2, (0.9, 0.9, 0.6), (255, 226, 170)), ("fill", 0.5, (-0.3, -1.0, 0.2), (200, 220, 255))):
+        light = bpy.data.lights.new(label, "SUN")
+        light.color = _garden.lin(rgb)[:3]
+        light.energy = energy
+        light.angle = math.radians(12)
+        ob = bpy.data.objects.new(label, light)
+        ob.rotation_euler = (-Vector(source)).to_track_quat("-Z", "Y").to_euler()
+        scene.collection.objects.link(ob)
+
+
+def beauty(name, groups, lo, hi, glow=None):
+    """A presentation card of one asset, not a build output: a three-quarter hero shot on a stone
+    pedestal over front, side and back views, with `_glow` parts shining and a bloom on top.
+    Written to build/blender/stations/beauty/<name>.png."""
+    scene = bpy.context.scene
+    daylight(scene)
 
     for part, objs in groups.items():
         if part.endswith("_glow"):
@@ -214,18 +227,6 @@ def beauty(name, groups, lo, hi, glow=None):
     for i, (radius, m) in enumerate(((0.9, gold), (0.84, stone), (0.7, gold), (0.655, stone))):  # two glowing rings
         _garden.cyl(r * radius, 0.002 * r, (centre.x, centre.y, 0.002 * r * i), m=m, n=14)
 
-    def sun(label, energy, source, rgb):
-        light = bpy.data.lights.new(label, "SUN")
-        light.color = _garden.lin(rgb)[:3]
-        light.energy = energy
-        light.angle = math.radians(12)
-        ob = bpy.data.objects.new(label, light)
-        ob.rotation_euler = (-Vector(source)).to_track_quat("-Z", "Y").to_euler()
-        scene.collection.objects.link(ob)
-
-    sun("key", 2.0, (-1.2, -0.3, 1.2), (255, 244, 226))
-    sun("rim", 1.2, (0.9, 0.9, 0.6), (255, 226, 170))
-    sun("fill", 0.5, (-0.3, -1.0, 0.2), (200, 220, 255))
     os.makedirs(BEAUTY, exist_ok=True)
 
     def shot(suffix, direction, w, h, lens=60, fill=1.0):

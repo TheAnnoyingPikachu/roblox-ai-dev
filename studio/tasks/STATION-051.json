@@ -1,0 +1,44 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-051",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Concepts (decision 0059) for a highly detailed, finished centre of the hub and for a large area for each of the six training activities on a ranch: Speed Track, Strength Gym, Swim Pool, Magic Library, Healing Spring, Guard Yard. Concept only: nothing is built, uploaded or wired into the game.",
+  "inputs": [
+    "docs/decisions/0057-animal-stations-detailed-eggs.md"
+  ],
+  "dependencies": [
+    "STATION-047"
+  ],
+  "files": [
+    "tools/blender/stations/stage.py",
+    "tools/blender/stations/scenes/*.py",
+    "tools/blender/stations/kit.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0059-animal-stations-hub-and-training-concepts.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-051.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The hub centre keeps the plaza's size and roads and reads as the finished heart of the map",
+    "Each training area reads as its activity at a glance and carries its stat's colour",
+    "The game's own animals and eggs stand in every scene at their real size",
+    "The game, its assets and the animals' card renderer are unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-16: `stage.py` built and rendered all seven scenes with no error (hub_centre 132,462 triangles in 96 s; the six areas 19,816 to 33,174 triangles in 5 to 15 s each). Every card was looked at over three rounds and fixed where it failed: statues changed from rock texture to clean marble, the library's bookcases turned to face the reader, an elephant that hid two scenes taken out, four close shots moved out of walls and trees, the pool deck toned down. `kit.beauty` was refactored to share its lighting (`kit.daylight`): a fresh card of the Lion was rendered and looks as before. No game file changed. Not checked: the places in the game engine's own light, on a phone, or against a triangle budget.",
+  "output_artifacts": [
+    "docs/concepts/hub-centre-card.png",
+    "docs/concepts/training-family.png",
+    "docs/concepts/speed-track-card.png",
+    "docs/concepts/strength-gym-card.png",
+    "docs/concepts/swim-pool-card.png",
+    "docs/concepts/magic-library-card.png",
+    "docs/concepts/healing-spring-card.png",
+    "docs/concepts/guard-yard-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'start making concepts for a highly detailed finish centre of the map and then some concepts for large areas specific for each training activity on the ranches, concept only for now'. Checkpoint for SHANNON (decision 0059): the looks; where six 64 by 48 yards go, since they do not fit the 150-stud ranch square (recommended: move the fence out on the island); whether animals are seen training in their area; how an area grows with its upgrade."
+}
