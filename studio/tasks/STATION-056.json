@@ -27,7 +27,7 @@
   "acceptance_criteria": [
     "The three tortoises in the game are the new models, standing, walking and attacking as before",
     "Each has its rainbow coat",
-    "The stone tortoises on the hub's fountain and the tortoise's pictures in the menus use the new model"
+    "The tortoise on the hub's plaza and the tortoise's pictures in the menus use the new model"
   ],
   "verification": "Lune 695/695, stylua and selene clean. Blender 5.2: the three models built and baked (3,596, 4,912 and 4,468 triangles) and their coats painted. Uploaded in upload-assets run 43911773850 (three models, three coats; succeeded). Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. The Tortoise stood on the hub's plaza as one of its animals; a Gemshell Tortoise, an Island Tortoise and a rainbow Tortoise and Gemshell Tortoise were spawned beside the south walk: all loaded with no rig warning, textured, the Gemshell's spine glowing, the rainbow coats on. An attack clip was started on the Gemshell and its head dipped. Not checked: a tortoise in a wave fight, its power attack, its pictures in the menus, the card under the cursor.",
   "output_artifacts": [
