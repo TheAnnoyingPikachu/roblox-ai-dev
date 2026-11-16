@@ -1,0 +1,35 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-061",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for a whole ranch reworked as one valley (decision 0068): the homestead in the middle and the six training grounds set into the land round it, in mountain basins and down on a beach. Concept only.",
+  "inputs": [
+    "docs/decisions/0065-animal-stations-training-clearings-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-058"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/ranch_valley.py",
+    "tools/blender/stations/scenes/training.py",
+    "tools/blender/stations/stage.py",
+    "docs/concepts/ranch-valley-card.png",
+    "docs/decisions/0068-animal-stations-ranch-valley-concept.md",
+    "studio/tasks/STATION-061.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "One card shows the whole ranch, a plan of it and five closer views",
+    "All six grounds, the homestead, the paths between them and the road to the hub are in it",
+    "The game and its assets are unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-16: `stage.py` built and rendered `ranch_valley` with no error (230,288 triangles on the first pass). The card was looked at twice; after the first look the mountains were lowered round the homestead, two cameras were moved out of hills, and the paths and stream were drawn as smooth strips. No game file changed. Not checked: the concept in the game engine or on a phone.",
+  "output_artifacts": [
+    "docs/concepts/ranch-valley-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'like make a concept for an entire ranch rework to fit everything in an optimised and cool way please'. Checkpoint for SHANNON: the four decisions in 0068."
+}
