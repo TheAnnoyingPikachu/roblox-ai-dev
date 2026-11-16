@@ -1104,19 +1104,19 @@
     "png": "build/blender/stations/creature_tortoise.png",
     "preview": "build/blender/stations/previews/creature_tortoise.png",
     "size_studs": [
-      5.87,
-      3.59,
-      9.01
+      6.2,
+      4.33,
+      10.11
     ],
-    "tris": 2428,
+    "tris": 3596,
     "parts": {
-      "creature_tortoise_body": 1660,
-      "creature_tortoise_head": 312,
-      "creature_tortoise_tail": 8,
-      "creature_tortoise_leg_fl": 112,
-      "creature_tortoise_leg_fr": 112,
-      "creature_tortoise_leg_bl": 112,
-      "creature_tortoise_leg_br": 112
+      "creature_tortoise_body": 1932,
+      "creature_tortoise_head": 592,
+      "creature_tortoise_tail": 16,
+      "creature_tortoise_leg_fl": 344,
+      "creature_tortoise_leg_fr": 344,
+      "creature_tortoise_leg_bl": 184,
+      "creature_tortoise_leg_br": 184
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/tortoises.py",
@@ -1124,71 +1124,71 @@
     "glow": {},
     "centres": {
       "creature_tortoise_body": [
-        0.0,
-        2.247,
-        -0.696
+        -0.008,
+        2.551,
+        -0.674
       ],
       "creature_tortoise_head": [
-        0.007,
-        1.698,
-        2.982
+        0.002,
+        1.853,
+        3.229
       ],
       "creature_tortoise_tail": [
-        0.007,
-        1.066,
-        -3.855
+        0.0,
+        0.982,
+        -4.08
       ],
       "creature_tortoise_leg_fl": [
-        1.934,
-        0.781,
-        1.236
+        1.994,
+        0.808,
+        1.313
       ],
       "creature_tortoise_leg_fr": [
-        -1.919,
-        0.782,
-        1.236
+        -1.994,
+        0.812,
+        1.313
       ],
       "creature_tortoise_leg_bl": [
-        1.934,
-        0.786,
-        -2.601
+        1.994,
+        0.818,
+        -2.618
       ],
       "creature_tortoise_leg_br": [
-        -1.919,
-        0.775,
-        -2.601
+        -1.994,
+        0.817,
+        -2.618
       ]
     },
     "joints": {
       "creature_tortoise_head": [
-        0.007,
-        1.381,
-        1.627
+        0.0,
+        1.376,
+        1.65
       ],
       "creature_tortoise_leg_fl": [
-        1.432,
-        1.411,
-        0.803
+        1.425,
+        1.406,
+        0.825
       ],
       "creature_tortoise_leg_fr": [
-        -1.418,
-        1.411,
-        0.803
+        -1.425,
+        1.406,
+        0.825
       ],
       "creature_tortoise_leg_bl": [
-        1.432,
-        1.411,
-        -2.197
+        1.425,
+        1.406,
+        -2.175
       ],
       "creature_tortoise_leg_br": [
-        -1.418,
-        1.411,
-        -2.197
+        -1.425,
+        1.406,
+        -2.175
       ],
       "creature_tortoise_tail": [
-        0.007,
-        1.381,
-        -3.397
+        0.0,
+        1.376,
+        -3.375
       ]
     }
   },
@@ -1197,20 +1197,20 @@
     "png": "build/blender/stations/creature_tortoise_gemshell.png",
     "preview": "build/blender/stations/previews/creature_tortoise_gemshell.png",
     "size_studs": [
-      7.8,
-      4.83,
-      12.02
+      8.27,
+      4.79,
+      13.48
     ],
-    "tris": 3556,
+    "tris": 4912,
     "parts": {
-      "creature_tortoise_gemshell_body": 2636,
-      "creature_tortoise_gemshell_head": 264,
-      "creature_tortoise_gemshell_tail": 8,
-      "creature_tortoise_gemshell_leg_fl": 112,
-      "creature_tortoise_gemshell_leg_fr": 112,
-      "creature_tortoise_gemshell_leg_bl": 112,
-      "creature_tortoise_gemshell_leg_br": 112,
-      "creature_tortoise_gemshell_body_glow": 176,
+      "creature_tortoise_gemshell_body": 3052,
+      "creature_tortoise_gemshell_head": 544,
+      "creature_tortoise_gemshell_tail": 16,
+      "creature_tortoise_gemshell_leg_fl": 344,
+      "creature_tortoise_gemshell_leg_fr": 344,
+      "creature_tortoise_gemshell_leg_bl": 184,
+      "creature_tortoise_gemshell_leg_br": 184,
+      "creature_tortoise_gemshell_body_glow": 220,
       "creature_tortoise_gemshell_head_glow": 24
     },
     "tris_budget": 20000,
@@ -1230,81 +1230,81 @@
     },
     "centres": {
       "creature_tortoise_gemshell_body": [
-        0.001,
-        2.952,
-        -0.934
+        0.005,
+        2.808,
+        -0.898
       ],
       "creature_tortoise_gemshell_head": [
-        -0.0,
-        2.268,
-        3.976
+        -0.003,
+        2.48,
+        4.307
       ],
       "creature_tortoise_gemshell_tail": [
         0.0,
-        1.426,
-        -5.14
+        1.318,
+        -5.44
       ],
       "creature_tortoise_gemshell_leg_fl": [
-        2.568,
-        1.042,
-        1.648
+        2.659,
+        1.089,
+        1.751
       ],
       "creature_tortoise_gemshell_leg_fr": [
-        -2.568,
-        1.056,
-        1.648
+        -2.659,
+        1.096,
+        1.751
       ],
       "creature_tortoise_gemshell_leg_bl": [
-        2.568,
-        1.047,
-        -3.468
+        2.659,
+        1.086,
+        -3.491
       ],
       "creature_tortoise_gemshell_leg_br": [
-        -2.568,
-        1.057,
-        -3.468
+        -2.659,
+        1.092,
+        -3.491
       ],
       "creature_tortoise_gemshell_body_glow": [
-        0.002,
-        4.149,
-        -0.925
+        0.0,
+        4.207,
+        -0.902
       ],
       "creature_tortoise_gemshell_head_glow": [
-        -0.001,
-        3.092,
-        4.873
+        0.003,
+        3.149,
+        5.216
       ]
     },
     "joints": {
       "creature_tortoise_gemshell_head": [
         0.0,
-        1.846,
-        2.17
+        1.843,
+        2.2
       ],
       "creature_tortoise_gemshell_leg_fl": [
         1.9,
-        1.886,
-        1.07
+        1.883,
+        1.1
       ],
       "creature_tortoise_gemshell_leg_fr": [
         -1.9,
-        1.886,
-        1.07
+        1.883,
+        1.1
       ],
       "creature_tortoise_gemshell_leg_bl": [
         1.9,
-        1.886,
-        -2.93
+        1.883,
+        -2.9
       ],
       "creature_tortoise_gemshell_leg_br": [
         -1.9,
-        1.886,
-        -2.93
+        1.883,
+        -2.9
       ],
       "creature_tortoise_gemshell_tail": [
         0.0,
-        1.846,
-        -4.53
+        1.843,
+        -4.5
       ]
     }
   },
@@ -3343,19 +3343,19 @@
     "png": "build/blender/stations/creature_tortoise_island.png",
     "preview": "build/blender/stations/previews/creature_tortoise_island.png",
     "size_studs": [
-      8.58,
-      9.91,
-      13.88
+      9.1,
+      9.85,
+      14.83
     ],
-    "tris": 3292,
+    "tris": 4468,
     "parts": {
-      "creature_tortoise_island_body": 2404,
-      "creature_tortoise_island_head": 280,
-      "creature_tortoise_island_tail": 16,
-      "creature_tortoise_island_leg_fl": 112,
-      "creature_tortoise_island_leg_fr": 112,
-      "creature_tortoise_island_leg_bl": 112,
-      "creature_tortoise_island_leg_br": 112,
+      "creature_tortoise_island_body": 2684,
+      "creature_tortoise_island_head": 560,
+      "creature_tortoise_island_tail": 24,
+      "creature_tortoise_island_leg_fl": 344,
+      "creature_tortoise_island_leg_fr": 344,
+      "creature_tortoise_island_leg_bl": 184,
+      "creature_tortoise_island_leg_br": 184,
       "creature_tortoise_island_body_glow": 120,
       "creature_tortoise_island_head_glow": 24
     },
@@ -3376,81 +3376,81 @@
     },
     "centres": {
       "creature_tortoise_island_body": [
-        -0.002,
-        5.483,
-        -0.693
+        0.006,
+        5.467,
+        -0.991
       ],
       "creature_tortoise_island_head": [
-        0.0,
-        2.827,
-        4.703
+        -0.005,
+        2.874,
+        4.739
       ],
       "creature_tortoise_island_tail": [
         0.0,
-        1.573,
-        -5.654
+        1.455,
+        -5.984
       ],
       "creature_tortoise_island_leg_fl": [
-        2.825,
-        1.165,
-        2.143
+        2.925,
+        1.209,
+        1.926
       ],
       "creature_tortoise_island_leg_fr": [
-        -2.825,
-        1.159,
-        2.143
+        -2.925,
+        1.209,
+        1.926
       ],
       "creature_tortoise_island_leg_bl": [
-        2.825,
-        1.154,
-        -3.485
+        2.925,
+        1.204,
+        -3.84
       ],
       "creature_tortoise_island_leg_br": [
-        -2.825,
-        1.165,
-        -3.485
+        -2.925,
+        1.198,
+        -3.84
       ],
       "creature_tortoise_island_body_glow": [
-        0.115,
-        6.727,
-        -1.077
+        -0.027,
+        6.761,
+        -1.509
       ],
       "creature_tortoise_island_head_glow": [
-        -0.002,
-        3.405,
-        5.687
+        0.002,
+        3.472,
+        5.739
       ]
     },
     "joints": {
       "creature_tortoise_island_head": [
         0.0,
-        2.035,
-        2.717
+        2.033,
+        2.42
       ],
       "creature_tortoise_island_leg_fl": [
         2.09,
-        2.079,
-        1.507
+        2.077,
+        1.21
       ],
       "creature_tortoise_island_leg_fr": [
         -2.09,
-        2.079,
-        1.507
+        2.077,
+        1.21
       ],
       "creature_tortoise_island_leg_bl": [
         2.09,
-        2.079,
-        -2.893
+        2.077,
+        -3.19
       ],
       "creature_tortoise_island_leg_br": [
         -2.09,
-        2.079,
-        -2.893
+        2.077,
+        -3.19
       ],
       "creature_tortoise_island_tail": [
         0.0,
-        2.035,
-        -4.653
+        2.033,
+        -4.95
       ]
     }
   },
