@@ -24,7 +24,7 @@
     "It has no statues, shrines or central monument, and reads as a place people and animals gather",
     "The game and its assets are unchanged"
   ],
-  "verification": "Blender 5.2 on 2026-11-16: `stage.py` built and rendered `hub_commons` with no error (99,312 triangles, 70 s). The card was looked at twice: the stage first stood in the foreground with its blank back to the main view (swapped with the market) and the arch's lettering was mirrored (turned). No game file changed. Not checked: the place in the game engine's light, at night, on a phone.",
+  "verification": "CI run 43910022080 passed on pull request 25. Blender 5.2 on 2026-11-16: `stage.py` built and rendered `hub_commons` with no error (99,312 triangles, 70 s). The card was looked at twice: the stage first stood in the foreground with its blank back to the main view (swapped with the market) and the arch's lettering was mirrored (turned). No game file changed. Not checked: the place in the game engine's light, at night, on a phone.",
   "output_artifacts": [
     "docs/concepts/hub-commons-card.png"
   ],
