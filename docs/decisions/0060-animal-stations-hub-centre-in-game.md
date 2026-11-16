@@ -1,7 +1,8 @@
 # 0060: Animal Stations: the hub's centre in the game, a smaller hub, nearer ranches
 
-Status: accepted (SHANNON, 2026-11-16: "go ahead with the centre area, make the grass area in the hub
-a bit smaller and bring the ranches in a tad"). Task STATION-052.
+Status: the centre is replaced by decision 0064 (the gathering place) and the ranches' distance by
+0065 (840); the smaller hub stands. Accepted by SHANNON, 2026-11-16: "go ahead with the centre area,
+make the grass area in the hub a bit smaller and bring the ranches in a tad". Task STATION-052.
 
 ## The centre
 

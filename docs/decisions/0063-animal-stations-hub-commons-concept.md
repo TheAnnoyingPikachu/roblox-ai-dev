@@ -1,7 +1,7 @@
 # 0063: Animal Stations: the hub's centre as a place to gather (concept)
 
-Status: proposed (a concept for SHANNON; the centre of decision 0060 stays in the game until this is
-decided). Date: 2026-11-16. Task STATION-055.
+Status: accepted and built (SHANNON, 2026-11-16: "go on all four"; see decision 0064).
+Date: 2026-11-16. Task STATION-055.
 
 ## What SHANNON asked
 

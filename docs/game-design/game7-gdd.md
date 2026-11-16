@@ -45,8 +45,8 @@ vendors.
   dragons, not animals (`game7-enemies.md`). Clearing a wave pays coins.
 - **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
   waves, daily, weekly and monthly login tracks and gear levels when they exist.
-- **Places:** the hub (a plaza with the Hatchery Fountain, statues of the eight animals, a shrine
-  for each egg and a gateway on each road, decision 0060) and one ranch per player behind the hub's mountains,
+- **Places:** the hub (a plaza made as a place to gather: a fire pit ringed by benches, a market, a
+  cafe, a stage, a green with a meeting tree and a pond, decision 0064) and one ranch per player behind the hub's mountains,
   south, east and west (decision 0035). A ranch is reached by teleport pad or on foot up its own
   mountain pass, ready for riding animals later. Mountains ring every area. A canyon through the
   hub's mountains to the north is the wave arena. A server holds 3 players.
@@ -115,13 +115,10 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- A large area for each training activity, each in a clearing of its own round the ranch, with a
-  look for each Training Grounds level: concepts only so far (decision 0061,
-  `docs/concepts/ranch-map-card.png` and a card for each area).
-- A better-looking tortoise (decision 0062, `docs/concepts/tortoise-rework.png`) and a hub centre
-  made as a place to gather (decision 0063, `docs/concepts/hub-commons-card.png`): proposals.
-- Vendors at the hub's two market stalls, and anything to do at its statues and shrines: they are
-  scenery.
+- Animals seen training in their area. The six training areas are built, each in a clearing of
+  its own round the ranch with a look for each Training Grounds level (decision 0065), but
+  training is still the menu's and most of an area's kit is walked through.
+- Anything to do on the hub's plaza: its stalls, stage and notice board are scenery.
 - More ranch upgrades and expanding the plot. More hub vendors. Gear.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").
 - Magical attacks, microgames, teams of 3 players.

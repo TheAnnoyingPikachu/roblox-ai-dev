@@ -1,6 +1,7 @@
 # 0061: Animal Stations: training areas in clearings round the ranch, with upgrade looks (concepts, second round)
 
-Status: proposed (concepts for SHANNON; nothing is in the game). Replaces the training half of 0059.
+Status: accepted and built (SHANNON, 2026-11-16: "go on all four"; see decision 0065 for what was
+built and how it differs). Replaces the training half of 0059.
 Date: 2026-11-16. Task STATION-053.
 
 ## What SHANNON asked

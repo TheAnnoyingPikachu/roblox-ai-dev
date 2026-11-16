@@ -1,6 +1,7 @@
 # 0062: Animal Stations: a better-looking tortoise (proposal)
 
-Status: proposed (cards for SHANNON; the three tortoises in the game are unchanged).
+Status: accepted and in the game (SHANNON, 2026-11-16: "go on all four"). The three models and
+their rainbow coats were rebuilt and uploaded (upload-assets run 43911773850).
 Date: 2026-11-16. Task STATION-054.
 
 ## What SHANNON asked
@@ -35,18 +36,14 @@ All three tortoises share one body, so all three change.
 
 Where its joints are has not changed, so its animations fit as they are.
 
-## If SHANNON approves
+## As built
 
-Not started. The three models would be built, baked and exported again, their three rainbow coats
-painted again, and the six files uploaded by the Upload Blender assets workflow; the three old
-models and six old images would then be unused (the images can be archived, the models cannot be
-through the API). By the build's numbers the Tortoise would be 10.1 studs long where it is 9.0 (a
-longer beak, a spike on the tail); not measured on a built model.
+The three models were built, baked and exported again, their rainbow coats painted again, and the
+six files uploaded. Measured on the built models: the Tortoise is 10.11 studs long (it was 9.01),
+the Gemshell Tortoise 13.48, the Island Tortoise 14.83; 3,596, 4,912 and 4,468 triangles. The three
+old models and six old images are unused now (the images can be archived, the models cannot be
+through the API).
 
 ## Not done
 
-- Not seen in the game engine, in a fight, as a statue on the hub's fountain, or in the menus'
-  pictures.
-- `tools/blender/stations/assets/tortoises.py` now holds the proposed build, so a rebuild of the
-  tortoises gives the new look: do not rebuild them before this is decided. The previous file is the
-  commit before this one.
+- Not seen in a fight or in the menus' pictures.
