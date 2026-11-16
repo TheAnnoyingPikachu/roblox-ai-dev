@@ -4,7 +4,7 @@
 -- station's folder says what its animal is working at (`Work`) and which animal that is (`Worker`). The
 -- barbell and the ram are put where that animal's back and head are, as they are drawn this frame; the
 -- timings are TrainFx's, the same the animal's own clip is drawn from, so the two stay together. Display only: nothing here decides or delays any training.
---   bar      the gym's barbell: comes down onto the animal's back and sinks and rises with it
+--   bar      a barbell of the gym's: comes onto the animal's back and sinks and rises with it
 --   ram      a guard yard ram: hangs at the height of the animal's head and swings at it
 --   boulder  the gym's boulder: shoved along as the animal drives, and rolls back
 --   dummies  the guard yard's straw men: lurch at the animal as the blow lands
@@ -13,6 +13,9 @@
 --   pulse    a Neon piece that glows and dims (runes, channels, lanterns, arrows)
 --   flicker  the same, quick and uneven (flames, candles)
 --   lob      a thrower: lobs a ball at the shield it faces
+--   tome     a small reader's own book: floats before it, bobbing
+-- A piece is at work when the station's `Work` names it (its `Answers`): there are pieces of three sizes
+-- for animals of three sizes (decision 0069), and only the one its animal uses moves.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -93,9 +96,12 @@ end
 RunService.PreRender:Connect(function(dt: number)
 	local time = Workspace:GetServerTimeNow()
 	for inst, piece in pieces do
-		local kind, rest, folder = piece.kind, piece.rest, piece.folder
+		local kind, folder = piece.kind, piece.folder
+		local said = inst:GetAttribute("Rest") -- the server moves a piece's rest when it fits it to an animal
+		local rest = if typeof(said) == "CFrame" then said else piece.rest
+		piece.axis = number(inst, "Axis", piece.axis)
 		-- how much this piece is at work: eased, so it settles onto an animal and back to rest
-		local busy = folder ~= nil and folder:GetAttribute("Work") == kind
+		local busy = folder ~= nil and folder:GetAttribute("Work") == (inst:GetAttribute("Answers") or kind)
 		piece.ease += ((if busy then 1 else 0) - piece.ease) * math.min(1, dt * 5)
 		local on = piece.ease
 		if kind == "bar" then
@@ -145,6 +151,9 @@ RunService.PreRender:Connect(function(dt: number)
 			(inst :: BasePart).Transparency = 0.3 + 0.3 * math.sin(time * 2.2)
 		elseif kind == "flicker" then
 			(inst :: BasePart).Transparency = 0.12 + 0.12 * math.sin(time * 13) + 0.1 * math.sin(time * 7.3)
+		elseif kind == "tome" then
+			local sway = CFrame.Angles(0, 0, math.rad(5) * math.sin(time * 0.9));
+			(inst :: Model):PivotTo(rest * sway + Vector3.new(0, 0.25 * math.sin(time * 1.6), 0))
 		elseif kind == "lob" then
 			-- a ball leaves the thrower every few seconds and arcs to the shield
 			local ball = piece.ball

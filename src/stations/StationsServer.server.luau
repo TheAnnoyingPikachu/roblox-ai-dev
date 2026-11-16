@@ -631,6 +631,9 @@ local function mark(i: number, station: string, model: Model?, act: Areas.Act?)
 		local worker = folder:FindFirstChild("Worker") or Instance.new("ObjectValue")
 		worker.Name, (worker :: ObjectValue).Value = "Worker", model
 		worker.Parent = folder
+		-- and its kit is fitted to the animal's size
+		local size = if model then StationAssets[model.Name].size else nil
+		Areas.fit(folder, if model and act then act.kit else nil, size, if model then model:GetPivot() else nil)
 	end
 end
 

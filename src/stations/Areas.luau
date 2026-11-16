@@ -86,21 +86,42 @@ local SOLID: { [string]: { { number } } } = {
 -- ends of the length it swims. `book`: what it looks at, as {how far ahead of its nose, how high above
 -- where it stands}. The track's round is worked out below.
 -- `kit`: the piece it works at, which moves with it. `water`: how high the water it swims in stands.
+-- Training is fitted to the animal's size (decision 0069): `sized` and `kits` give a place and a piece
+-- for each size class (small, middling, large) where one does not suit all.
 type Work = {
 	from: number,
 	anim: string,
 	nose: boolean?,
 	at: { number }?,
+	sized: { { number } }?,
 	ends: { { number } }?,
 	book: { number }?,
 	kit: string?,
+	kits: { string }?,
 	water: number?,
 }
+
+-- An animal's size class from its size in studs (width, height, length): 1 small (a jackal, a cheetah,
+-- a tortoise, a meerkat), 2 middling (a lion, a rhino, a flamingo), 3 large (an elephant).
+function Areas.class(size: { number }): number
+	return if size[2] < 6.5 then 1 elseif size[2] < 12 then 2 else 3
+end
 local WORK: { [string]: { Work } } = {
 	track = { { from = 0, anim = "run" } },
 	gym = {
-		{ from = 0, anim = "heave", nose = true, at = { -11.1, -13, 0.35, 90 }, kit = "boulder" }, -- at the boulder
-		{ from = 2, anim = "heave", at = { -17, 12, 0.95, 0 }, kit = "bar" }, -- under the bar
+		{ -- at a boulder of its size
+			from = 0,
+			anim = "heave",
+			nose = true,
+			sized = { { 11.9, -6.5, 0.25, 90 }, { 3.2, -7.8, 0.25, 90 }, { -11.1, -13, 0.35, 90 } },
+			kits = { "boulder1", "boulder2", "boulder3" },
+		},
+		{ -- under a barbell of its size: the two smaller lie before the deck, the great one is on it
+			from = 2,
+			anim = "heave",
+			sized = { { -3, 2.5, 0.25, 0 }, { -18, 2.5, 0.25, 0 }, { -17, 12, 0.95, 0 } },
+			kits = { "bar1", "bar2", "bar3" },
+		},
 	},
 	pool = {
 		{ from = 0, anim = "swim", ends = { { -13, 1, 0.1 }, { 4, 1.5, 0.1 } }, water = 0.32 }, -- the pond
@@ -108,7 +129,14 @@ local WORK: { [string]: { Work } } = {
 	},
 	library = {
 		{ from = 0, anim = "study", nose = true, at = { 0, 1.4, 0.3, 180 }, book = { 0.6, 2.75 } }, -- at the book on its stand
-		{ from = 1, anim = "study", nose = true, at = { 0, -1.5, 0.55, 180 }, book = { 3.5, 3.9 }, kit = "crystal" }, -- at the great book
+		{ -- at the great book; a small animal on the cushions instead, with a book of its own before it
+			from = 1,
+			anim = "study",
+			nose = true,
+			sized = { { -15, -17, 0.33, 90 }, { 0, -1.5, 0.55, 180 }, { 0, -1.5, 0.55, 180 } },
+			book = { 3.5, 3.9 },
+			kits = { "tome", "crystal", "crystal" },
+		},
 	},
 	spring = {
 		{ from = 0, anim = "soak", at = { 0, 1, 0.2, 20 } }, -- in the spring
@@ -168,28 +196,50 @@ function Areas.act(i: number, stationId: string, level: number, size: { number }
 		local round = { point(a[1] + reach, a[2], a[3]), point(b[1] - reach, b[2], b[3]) }
 		return { anim = work.anim, round = round, splash = ((work.water or a[3]) - a[3]) * K }
 	end
-	local at = work.at :: { number }
+	local class = Areas.class(size)
+	local at = (if work.sized then work.sized[class] else work.at) :: { number }
+	local piece = if work.kits then work.kits[class] else work.kit
 	local facing = cf:VectorToWorldSpace(Vector3.new(math.sin(math.rad(at[4])), 0, math.cos(math.rad(at[4]))))
 	local where = point(at[1], at[2], at[3]) - (if work.nose then facing * length / 2 else Vector3.zero)
 	local book = work.book
-	local gaze = if book
-		then math.clamp(math.deg(math.atan2(book[2] * K - size[2] * 0.85, book[1] * K + length * 0.15)), -30, 35)
+	local gaze = if piece == "tome"
+		then -8 -- its own book floats just under its eyes
+		elseif book then math.clamp(
+			math.deg(math.atan2(book[2] * K - size[2] * 0.85, book[1] * K + length * 0.15)),
+			-30,
+			35
+		)
 		else nil
-	return { anim = work.anim, at = CFrame.lookAt(where, where + facing), gaze = gaze, kit = work.kit }
+	return { anim = work.anim, at = CFrame.lookAt(where, where + facing), gaze = gaze, kit = piece }
 end
 
--- The kit that is a model of its own: { model, the level it arrives at, how it moves, how far along the
--- yard's x it stands from where it was built }, and the numbers its motion needs (studs): `High`, how
--- high above the animal's floor the piece's axis rests; `Least`, how low it may come; `Rope`, a ram's.
+-- The kit that is a model of its own: { model, the level it arrives at, how it moves, the name a
+-- worker's `kit` calls it by ("" for one that only hangs there), how far along the yard's x it stands from
+-- where it was built }, and the numbers its motion needs (studs): `High`, how high above the animal's
+-- floor the piece's axis rests; `Least`, how low it may come; `Rope`, a ram's.
 local KIT: { [string]: { { any } } } = {
-	gym = { { "kit_gym_bar", 2, "bar", 0, { High = 12, Least = 6.8 } } },
-	library = { { "kit_library_crystal", 3, "crystal", 0, {} } },
+	gym = { { "kit_gym_bar", 2, "bar", "bar3", 0, { High = 12, Least = 6.8 } } },
+	library = { { "kit_library_crystal", 3, "crystal", "crystal", 0, {} } },
 	guard = {
-		{ "kit_guard_ram", 1, "ram", 0, { High = 8.1, Least = 3.7, Rope = 12.5 } },
-		{ "kit_guard_ram", 2, "", -17, {} }, -- the two that hang idle
-		{ "kit_guard_ram", 4, "", 17, {} },
+		{ "kit_guard_ram", 1, "ram", "ram", 0, { High = 8.1, Least = 3.7, Rope = 12.5 } },
+		{ "kit_guard_ram", 2, "", "", -17, {} }, -- the two that hang idle
+		{ "kit_guard_ram", 4, "", "", 17, {} },
 	},
 }
+
+-- Smaller copies of a piece, for smaller animals (decision 0069): { model, the level it arrives at, how
+-- it moves, the name it is called by, its size against the full one, where its middle stands (x, y),
+-- and of the full piece as it was built: its middle (x, y) and how high its underside is }. A copy lies
+-- on the yard's floor.
+local COPIES: { [string]: { { any } } } = {
+	gym = {
+		{ "area_gym_0_5", 0, "boulder", "boulder1", 0.3, 13, -6.5, -8, -13, 0.2 },
+		{ "area_gym_0_5", 0, "boulder", "boulder2", 0.55, 5, -7.8, -8, -13, 0.2 },
+		{ "kit_gym_bar", 2, "bar", "bar1", 0.36, -3, 2.5, -17, 12, 3.15 },
+		{ "kit_gym_bar", 2, "bar", "bar2", 0.62, -18, 2.5, -17, 12, 3.15 },
+	},
+}
+local RAM_SIZE = { 0.45, 0.7, 1 } -- the ram's log against its full size, for each size class
 
 -- What moves inside an area's own models: a whole model, or its Neon piece of a colour.
 local MOVES: { [string]: { model: string?, glow: { [string]: string }? } } = {
@@ -219,9 +269,26 @@ local STEAM = {
 	{ 3, -6.8, 12.78, 1.0 },
 }
 
-local function tagKit(inst: Instance, how: string)
+-- Tags a piece for the client to move: `how`, and the name a worker's `kit` calls it by (its `Work`).
+local function tagKit(inst: Instance, how: string, answers: string?)
 	inst:SetAttribute("Kit", how)
+	inst:SetAttribute("Answers", answers or how)
+	if inst:IsA("Model") then
+		inst:SetAttribute("Rest", inst:GetPivot()) -- where it rests: the client moves it from here
+	end
 	CollectionService:AddTag(inst, "Kit")
+end
+
+-- Sizes a ram's log to the size class of the animal on its pad: smaller about the face of its head,
+-- which stays where the animal's nose is.
+local function fitRam(ram: Model, class: number)
+	local s = RAM_SIZE[class] or 1
+	local rest0, front = ram:GetAttribute("Rest0") :: CFrame, ram:GetAttribute("Front") :: Vector3
+	ram:ScaleTo((ram:GetAttribute("Scale0") :: number) * s)
+	local rest = rest0 + (front - rest0.Position) * (1 - s)
+	ram:PivotTo(rest)
+	ram:SetAttribute("Rest", rest)
+	ram:SetAttribute("Least", 3.25 * s + 0.45)
 end
 
 -- Stands one of an area's models and tags what moves in it.
@@ -233,7 +300,7 @@ local function slice(name: string, cf: CFrame, f: Instance)
 	end
 	if moves.model == "boulder" then
 		model:SetAttribute("Along", cf.RightVector) -- the way the animal shoves it
-		tagKit(model, "boulder")
+		tagKit(model, "boulder", "boulder3")
 	elseif moves.model == "dummies" then
 		model:SetAttribute("Foot", (cf * CFrame.new(0, 0.25 * K, 12.5 * K)).Position) -- the line their posts stand on
 		model:SetAttribute("Along", cf.RightVector)
@@ -251,12 +318,12 @@ end
 -- Stands a piece of kit that is a model of its own. A ram hangs by two ropes from its frame's beam: they
 -- are drawn here, so they follow the log wherever it swings.
 local function kit(spec: { any }, cf: CFrame, f: Instance)
-	local name, how, dx = spec[1] :: string, spec[3] :: string, spec[4] :: number
+	local name, how, dx = spec[1] :: string, spec[3] :: string, spec[5] :: number
 	local model = Creatures.still(name, cf * CFrame.new(dx * K, 0, 0) * CFrame.Angles(0, math.pi, 0), 1, f)
 	if model == nil then
 		return
 	end
-	for key, value in spec[5] :: { [string]: number } do
+	for key, value in spec[6] :: { [string]: number } do
 		model:SetAttribute(key, value)
 	end
 	local own = model:FindFirstChild(`{name}_body`) :: BasePart
@@ -276,11 +343,72 @@ local function kit(spec: { any }, cf: CFrame, f: Instance)
 			rope.Parent = beam
 		end
 		model:SetAttribute("Back", cf.LookVector) -- away from the animal on its pad, which is on the gateway's side
+		model:SetAttribute("Rest0", model:GetPivot())
+		model:SetAttribute("Scale0", model:GetScale())
+		model:SetAttribute("Front", (cf * CFrame.new(dx * K, 3.6 * K, -2.2 * K)).Position) -- the face of its head
 	elseif name == "kit_library_crystal" then
 		model:SetAttribute("Foot", (cf * CFrame.new(0, 0, -2 * K)).Position) -- the line it turns about
 	end
 	if how ~= "" then
-		tagKit(model, how)
+		tagKit(model, how, spec[4] :: string)
+		local class = f:GetAttribute("Class")
+		if how == "ram" and type(class) == "number" then -- its animal came before it had loaded
+			fitRam(model, class)
+		end
+	end
+end
+
+-- Stands a smaller copy of a piece on the yard's floor, for a smaller animal.
+local function copy(spec: { any }, cf: CFrame, f: Instance)
+	local name, how, answers, s = spec[1] :: string, spec[3] :: string, spec[4] :: string, spec[5] :: number
+	local x, y, mx, my, under =
+		spec[6] :: number, spec[7] :: number, spec[8] :: number, spec[9] :: number, spec[10] :: number
+	-- the model's own origin is the yard's middle: put it so the piece's middle comes where it should
+	local at = cf * CFrame.new((x - s * mx) * K, (0.25 - s * under) * K, -(y - s * my) * K)
+	local model = Creatures.still(name, at * CFrame.Angles(0, math.pi, 0), s, f)
+	if model == nil then
+		return
+	end
+	local own = model:FindFirstChild(`{name}_body`) :: BasePart
+	model:SetAttribute("Axis", own.Position.Y)
+	if how == "bar" then -- it lies on the floor on its discs, and can sink no lower
+		local radius = own.Position.Y - (cf.Position.Y + 0.25 * K)
+		model:SetAttribute("High", radius)
+		model:SetAttribute("Least", radius)
+	elseif how == "boulder" then
+		model:SetAttribute("Along", cf.RightVector)
+	end
+	tagKit(model, how, answers)
+end
+
+-- Fits a station's kit to the animal that has come to work there (decision 0069), or with no animal
+-- clears what was made for the last one. `kit`: the piece it works at; `size`: its own, in studs;
+-- `at`: where it stands. The ram's log is sized to it; a small reader gets a book of its own, floating
+-- before it.
+function Areas.fit(folder: Instance, piece: string?, size: { number }?, at: CFrame?)
+	local old = folder:FindFirstChild("Tome")
+	if old then
+		old:Destroy()
+	end
+	folder:SetAttribute("Class", if size then Areas.class(size) else nil)
+	if piece == "ram" and size then
+		for _, child in folder:GetChildren() do
+			if child:IsA("Model") and child:GetAttribute("Kit") == "ram" then
+				fitRam(child, Areas.class(size))
+			end
+		end
+	elseif piece == "tome" and size and at then
+		local tome = Instance.new("Model")
+		tome.Name = "Tome"
+		local cover = Props.part(tome, Vector3.new(2.6, 0.3, 1.9), CFrame.identity, Color3.fromRGB(130, 60, 90))
+		local pages = Props.part(tome, Vector3.new(2.3, 0.2, 1.7), CFrame.new(0, 0.22, 0), WHITE, Enum.Material.Neon)
+		cover.CanCollide, pages.CanCollide, pages.CastShadow = false, false, false
+		pages.Color = Color3.fromRGB(190, 236, 240)
+		tome.PrimaryPart = cover
+		-- before its nose, a little under its eyes, tipped up towards them
+		tome:PivotTo(at * CFrame.new(0, size[2] * 0.7, -(size[3] / 2 + 2.4)) * CFrame.Angles(math.rad(35), 0, 0))
+		tome.Parent = folder
+		tagKit(tome, "tome")
 	end
 end
 
@@ -329,6 +457,11 @@ function Areas.build(parent: Instance, i: number, level: number)
 		for _, spec in KIT[st.id] or {} do
 			if (spec[2] :: number) <= level then
 				task.spawn(kit, spec, cf, f)
+			end
+		end
+		for _, spec in COPIES[st.id] or {} do
+			if (spec[2] :: number) <= level then
+				task.spawn(copy, spec, cf, f)
 			end
 		end
 		if st.id == "guard" and level >= 3 then -- the two throwers lob balls at the shields they face

@@ -118,8 +118,8 @@ vendors.
 - Archers and mages firing a visible arrow or spell (the rules have no range yet).
 - Hexbound hit and death effects beyond the fall, a roar, and a prediction of how a fight will go.
 - Animals standing at the training court they train at.
-- Training fitted to each animal's size (a small animal still trains at kit built for the
-  biggest); most of an area's kit is walked through. No sound.
+- A training clip of its own for each species (animals of one size train alike, at kit of their
+  size: decision 0069); most of an area's kit is walked through. No sound.
 - Anything to do on the hub's plaza: its stalls, stage and notice board are scenery.
 - More ranch upgrades and expanding the plot. More hub vendors. Gear.
 - Login tracks (daily, weekly, monthly). Saving to Roblox is deferred ("we'll do saving later").

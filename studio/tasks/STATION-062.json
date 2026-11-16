@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-062",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Training fitted to an animal's size (decision 0069): three size classes, each with kit of its size at the Strength Gym (boulders, barbells), the Guard Yard (the ram's log) and the Magic Library (a small reader's own book), so a small animal no longer trains at kit built for the biggest.",
+  "inputs": [
+    "docs/decisions/0067-animal-stations-moving-kit.md"
+  ],
+  "dependencies": [
+    "STATION-060"
+  ],
+  "files": [
+    "src/stations/Areas.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Kit.client.luau",
+    "docs/decisions/0069-animal-stations-training-by-size.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-062.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "A small, a middling and a large animal sent to the Strength Gym each work at a barbell of their own size, which rides their back",
+    "The Guard Yard's ram is sized to the animal on its pad and hangs at its head",
+    "A small animal at the Magic Library reads a book of its own at its own height",
+    "Nothing shown decides or delays any training"
+  ],
+  "verification": "Lune 702/702, stylua and selene clean. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16, at Training Grounds 5, through the game's own requests. The gym, one animal after another: the jackal worked at `bar1` (15.3 studs long), the lion at `bar2` (26.4), the elephant at `bar3` (42.5); each bar's axis rode 0.2 to 0.3 studs above that animal's back through the lift. The guard yard with the jackal: the log was 11.0 studs long (24.5 at full size), hung at 26.3 against the jackal's head at 26.4, and its face came within 1.3 studs of the head's middle; seen in a screen. The library with the meerkat: it worked at `tome`, a book stood 3.4 studs before its head and 0.9 below it. Not checked: the boulders of three sizes on a new ranch (levels 0 and 1), a middling animal at the ram, the book by eye, an animal of one class following one of another at the ram without a restart.",
+  "output_artifacts": [
+    "src/stations/Areas.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'if creatures are of similar size then reuse the animations, its just that small creatures look weird training strength under a large barbell', then 'go with the size fitted animation'. Read as: kit and place by size class, the same clips at each animal's own size."
+}
