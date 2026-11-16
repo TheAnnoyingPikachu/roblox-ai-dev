@@ -398,8 +398,9 @@ def render(name, shots, ground=GRASS):
     rest in rows of three below."""
     scene = bpy.context.scene
     k.daylight(scene)
-    grass = k.mat("stage_grass", ground, kind="noise", var=0.06, scale=0.6, rough=1.0)
-    k.cyl(4000, 0.02, (0, 0, -0.012), m=grass, n=64)
+    if ground is not None:  # a scene with land of its own (hills, a sea) gives None
+        grass = k.mat("stage_grass", ground, kind="noise", var=0.06, scale=0.6, rough=1.0)
+        k.cyl(4000, 0.02, (0, 0, -0.012), m=grass, n=64)
     os.makedirs(OUT, exist_ok=True)
     frames = []
     for i, shot in enumerate(shots):

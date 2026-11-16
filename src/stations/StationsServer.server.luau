@@ -620,16 +620,17 @@ local function spray(model: Model, act: Areas.Act)
 	puff.Parent = at
 end
 
--- Tells the station's kit what its animal works at and how big it is (stations-client/Kit.client.luau
--- moves the kit by these), or with no model that nothing does.
+-- Tells the station's kit what its animal works at and which animal that is
+-- (stations-client/Kit.client.luau moves the kit by these), or with no model that nothing does.
 local function mark(i: number, station: string, model: Model?, act: Areas.Act?)
 	local plot = World.root():FindFirstChild(`Ranch{i}`, true)
 	local built = plot and plot:FindFirstChild("Built")
 	local folder = built and built:FindFirstChild(station)
 	if folder then
 		folder:SetAttribute("Work", if model and act then act.kit else nil)
-		folder:SetAttribute("WorkHeight", if model then StationAssets[model.Name].size[2] else nil)
-		folder:SetAttribute("WorkScale", if model then model:GetAttribute("Scale") else nil)
+		local worker = folder:FindFirstChild("Worker") or Instance.new("ObjectValue")
+		worker.Name, (worker :: ObjectValue).Value = "Worker", model
+		worker.Parent = folder
 	end
 end
 

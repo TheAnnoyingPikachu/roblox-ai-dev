@@ -51,7 +51,7 @@ corner (3).
 | 1 | the clay track, four lanes | the boulder's run, the log sled | the pool, its ladders and steps |
 | 2 | hurdles, hay bales, cones | the lifting deck and barbell, five stones on plinths | lane ropes, starting blocks, palms |
 | 3 | the infield: slalom, tyres, pond | chalk, spare weights, tyres, a striking post, a bell at the run's end | the lifeguard's chair, rings, floats |
-| 4 | the finish gantry, the stand | the timber frame, kettlebells, an anvil | the diving tower, parasols and loungers |
+| 4 | the stand (its finish gantry was taken out, decision 0067) | the timber frame, kettlebells, an anvil | the diving tower, parasols and loungers |
 | 5 | the timing tower, glowing arrows, flags | the climbing rope, braziers, flags | the tube slide |
 
 | Level | Magic Library | Healing Spring (new design) | Guard Yard (new design) |

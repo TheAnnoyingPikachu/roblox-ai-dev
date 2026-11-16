@@ -1,9 +1,9 @@
 --!strict
 -- Animal Stations training kit (decision 0067): moves the kit of the training areas on this client.
 -- The server stands every piece and tags what moves "Kit", with a `Kit` attribute that says how; the
--- station's folder says what its animal is working at (`Work`) and how big it is (`WorkHeight`,
--- `WorkScale`). The timings are TrainFx's, the same the animal's own clip is drawn from, so the two
--- stay together. Display only: nothing here decides or delays any training.
+-- station's folder says what its animal is working at (`Work`) and which animal that is (`Worker`). The
+-- barbell and the ram are put where that animal's back and head are, as they are drawn this frame; the
+-- timings are TrainFx's, the same the animal's own clip is drawn from, so the two stay together. Display only: nothing here decides or delays any training.
 --   bar      the gym's barbell: comes down onto the animal's back and sinks and rises with it
 --   ram      a guard yard ram: hangs at the height of the animal's head and swings at it
 --   boulder  the gym's boulder: shoved along as the animal drives, and rolls back
@@ -21,7 +21,18 @@ local Workspace = game:GetService("Workspace")
 
 local TrainFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("TrainFx"))
 
-type Piece = { kind: string, rest: CFrame, folder: Instance?, ease: number, ball: Part? }
+-- `axis`: how high the piece's own middle is at rest; `aim`: how far from there its animal wants it;
+-- `angle`: how far it has turned (the server's clock is too big a number to turn by)
+type Piece = {
+	kind: string,
+	rest: CFrame,
+	folder: Instance?,
+	ease: number,
+	ball: Part?,
+	axis: number,
+	aim: number,
+	angle: number,
+}
 local pieces: { [Instance]: Piece } = {}
 
 -- The station's folder: the nearest ancestor that is a Folder (a piece is in it, or in a model in it).
@@ -39,7 +50,17 @@ local function add(inst: Instance)
 		return
 	end
 	local rest = if inst:IsA("Model") then inst:GetPivot() else (inst :: BasePart).CFrame
-	pieces[inst] = { kind = kind, rest = rest, folder = stationOf(inst), ease = 0 }
+	-- the server says how high the piece's middle rests (`Axis`): its meshes may not have arrived yet
+	local axis = inst:GetAttribute("Axis")
+	pieces[inst] = {
+		kind = kind,
+		rest = rest,
+		folder = stationOf(inst),
+		ease = 0,
+		axis = if type(axis) == "number" then axis else rest.Position.Y,
+		aim = 0,
+		angle = 0,
+	}
 end
 
 local function remove(inst: Instance)
@@ -61,6 +82,14 @@ local function number(inst: Instance?, name: string, fallback: number): number
 	return if type(v) == "number" then v else fallback
 end
 
+-- The piece `part` ("body", "head") of the animal at work in a station, as it is drawn now.
+local function workerPart(folder: Instance?, part: string): BasePart?
+	local link = folder and folder:FindFirstChild("Worker")
+	local model = if link and link:IsA("ObjectValue") then link.Value else nil
+	local found = model and model.Parent and model:FindFirstChild(`{model.Name}_{part}`)
+	return if found and found:IsA("BasePart") then found else nil
+end
+
 RunService.PreRender:Connect(function(dt: number)
 	local time = Workspace:GetServerTimeNow()
 	for inst, piece in pieces do
@@ -70,20 +99,30 @@ RunService.PreRender:Connect(function(dt: number)
 		piece.ease += ((if busy then 1 else 0) - piece.ease) * math.min(1, dt * 5)
 		local on = piece.ease
 		if kind == "bar" then
-			-- its axis comes down to the animal's back (never so low that its discs meet the deck)
-			local high, least = number(inst, "High", 12), number(inst, "Least", 6.8)
-			local back = math.max(number(folder, "WorkHeight", high) * 0.95, least)
-			local down = (TrainFx.heave(time))
-			local y = (back - high - 0.2 * number(folder, "WorkScale", 1) * down) * on;
-			(inst :: Model):PivotTo(rest + Vector3.new(0, y, 0))
+			-- its axis rides on the animal's back as that sinks and rises (never so low that its discs
+			-- meet the deck)
+			local back = workerPart(folder, "body")
+			if back then
+				local floor = piece.axis - number(inst, "High", 12) + number(inst, "Least", 6.8)
+				local lie, size = back.CFrame, back.Size -- the top of its box, however the mesh is turned
+				local half = math.abs(lie.RightVector.Y) * size.X + math.abs(lie.UpVector.Y) * size.Y
+				piece.aim = math.max(back.Position.Y + (half + math.abs(lie.LookVector.Y) * size.Z) / 2 + 0.3, floor)
+					- piece.axis
+			end
+			(inst :: Model):PivotTo(rest + Vector3.new(0, piece.aim * on, 0))
 		elseif kind == "ram" then
-			-- lowered on its ropes to the animal's head, it swings back from the blow and in again
-			local high, least = number(inst, "High", 8.1), number(inst, "Least", 3.7)
-			local drop = high - math.clamp(number(folder, "WorkHeight", high / 0.75) * 0.75, least, high)
-			local rope = number(inst, "Rope", 12.5) + drop
+			-- lowered on its ropes to the animal's head (slowly: the head is thrown about), it swings back
+			-- from the blow and in again
+			local head = workerPart(folder, "head")
+			if head then
+				local floor = piece.axis - number(inst, "High", 8.1) + number(inst, "Least", 3.7)
+				local want = math.clamp(head.Position.Y, floor, piece.axis) - piece.axis
+				piece.aim += (want - piece.aim) * math.min(1, dt * 1.5)
+			end
+			local rope = number(inst, "Rope", 12.5) - piece.aim
 			local angle = math.rad(TrainFx.SWING) * TrainFx.swing(time)
 			local back = inst:GetAttribute("Back") :: Vector3
-			local move = back * rope * math.sin(angle) + Vector3.new(0, rope * (1 - math.cos(angle)) - drop, 0);
+			local move = back * rope * math.sin(angle) + Vector3.new(0, rope * (1 - math.cos(angle)) + piece.aim, 0);
 			(inst :: Model):PivotTo(rest + move * on)
 		elseif kind == "boulder" then
 			local along = inst:GetAttribute("Along") :: Vector3
@@ -95,11 +134,13 @@ RunService.PreRender:Connect(function(dt: number)
 			(inst :: Model):PivotTo(CFrame.new(foot) * lean * CFrame.new(-foot) * rest)
 		elseif kind == "crystal" then
 			local axis = inst:GetAttribute("Foot") :: Vector3
-			local turn = CFrame.Angles(0, time * (0.35 + 0.5 * on), 0)
+			piece.angle = (piece.angle + dt * (0.35 + 0.6 * on)) % (math.pi * 2)
+			local turn = CFrame.Angles(0, piece.angle, 0)
 			local bob = Vector3.new(0, 0.5 * math.sin(time * 1.3), 0);
 			(inst :: Model):PivotTo(CFrame.new(axis + bob) * turn * CFrame.new(-axis) * rest)
 		elseif kind == "spin" then
-			(inst :: BasePart).CFrame = CFrame.new(rest.Position) * CFrame.Angles(0, time * 0.7, 0) * rest.Rotation
+			piece.angle = (piece.angle + dt * 0.7) % (math.pi * 2);
+			(inst :: BasePart).CFrame = CFrame.new(rest.Position) * CFrame.Angles(0, piece.angle, 0) * rest.Rotation
 		elseif kind == "pulse" then
 			(inst :: BasePart).Transparency = 0.3 + 0.3 * math.sin(time * 2.2)
 		elseif kind == "flicker" then

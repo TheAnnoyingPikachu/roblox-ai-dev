@@ -732,12 +732,14 @@ local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 				head = { -6 * down, 0, 0 },
 			}
 		end
+		-- the legs fold far and the body is dropped further than any legs let it: it comes to rest
+		-- on its feet (the body is lifted to them), low for thin legs, less so for thick ones
 		return {
-			leg_fl = { 30 * down },
-			leg_fr = { 30 * down },
-			leg_bl = { -30 * down },
-			leg_br = { -30 * down },
-			body = { 3 * down + shake, 0, 0, 0, -0.2 * down, 0 },
+			leg_fl = { 52 * down },
+			leg_fr = { 52 * down },
+			leg_bl = { -52 * down },
+			leg_br = { -52 * down },
+			body = { 3 * down + shake, 0, 0, 0, -0.62 * down, 0 },
 			head = { 10 - 16 * down, 0, 0 },
 			tail = { 0, 6 * math.sin(t * TAU / 2.8), 0 },
 		}

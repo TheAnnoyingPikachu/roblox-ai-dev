@@ -305,13 +305,13 @@
     "texture": null
   },
   "area_track_3_5": {
-    "model": 123460126187328,
-    "decal": 125971391891582,
+    "model": 102223197686498,
+    "decal": 75621976527585,
     "texture": null
   },
   "area_track_4_5": {
-    "model": 72874714121496,
-    "decal": 83880862879471,
+    "model": 97778563381111,
+    "decal": 77953895578616,
     "texture": null
   },
   "area_track_5_5": {
@@ -340,8 +340,8 @@
     "texture": null
   },
   "area_gym_2_5": {
-    "model": 82958685437015,
-    "decal": 112314055540378,
+    "model": 74570276157920,
+    "decal": 74645294214722,
     "texture": null
   },
   "area_gym_3_5": {
@@ -415,8 +415,8 @@
     "texture": null
   },
   "area_library_3_5": {
-    "model": 116289654223037,
-    "decal": 105310815659947,
+    "model": 108240291426607,
+    "decal": 83500513762907,
     "texture": null
   },
   "area_library_4_5": {
@@ -485,13 +485,13 @@
     "texture": null
   },
   "area_guard_1_5": {
-    "model": 87940834836193,
-    "decal": 97306152684050,
+    "model": 126829205197428,
+    "decal": 92919281318233,
     "texture": null
   },
   "area_guard_2_5": {
-    "model": 130606617536915,
-    "decal": 85492963637880,
+    "model": 136378507117839,
+    "decal": 130180333607302,
     "texture": null
   },
   "area_guard_3_5": {
@@ -500,8 +500,8 @@
     "texture": null
   },
   "area_guard_4_5": {
-    "model": 88362538376146,
-    "decal": 90362639780946,
+    "model": 134126191010409,
+    "decal": 74300486382048,
     "texture": null
   },
   "area_guard_5_5": {
@@ -547,6 +547,21 @@
   "hub_signs": {
     "model": 87839061570804,
     "decal": 139923546569617,
+    "texture": null
+  },
+  "kit_gym_bar": {
+    "model": 73319446503448,
+    "decal": 114006588812683,
+    "texture": null
+  },
+  "kit_library_crystal": {
+    "model": 76042269217378,
+    "decal": 93094718722133,
+    "texture": null
+  },
+  "kit_guard_ram": {
+    "model": 116906159720919,
+    "decal": 134881696278512,
     "texture": null
   }
 }

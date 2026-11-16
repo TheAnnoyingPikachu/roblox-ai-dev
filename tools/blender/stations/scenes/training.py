@@ -23,6 +23,7 @@ RED = (224, 64, 60)
 IRON = (86, 88, 100)
 W, D = 64, 48  # a yard, as it is written
 K = 2.5  # and how many times it is grown
+OPEN = False  # with no floor or fence of its own: it stands on land that is shaped for it (scenes/ranch_valley.py)
 KIT = True  # with the kit that moves: the game leaves it out of an area's models and stands it itself, to move it
 
 _now = {"first": 0, "last": S.TOP}
@@ -85,11 +86,12 @@ def yard(rng, name, colour, ground, kind=S.PALE, bare=(146, 170, 96)):
     box((12.0, 0.4, 2.6), (0, -hd, 2.9), S.WOOD, rng)
     words(name, (0, -hd - 0.26, 4.2), 1.3, S.WHITE)
     lv(1)
-    box((W + 3, D + 3, 0.25), (0, 0, 0), ground, rng, kind=kind, chance=0.12)
-    for a, b in (((-hw, -hd), (-8, -hd)), ((8, -hd), (hw, -hd)), ((hw, -hd), (hw, hd)), ((hw, hd), (-hw, hd)), ((-hw, hd), (-hw, -hd))):
-        fence((*a, z), (*b, z), rng, gap=4.0)
+    if not OPEN:
+        box((W + 3, D + 3, 0.25), (0, 0, 0), ground, rng, kind=kind, chance=0.12)
+        for a, b in (((-hw, -hd), (-8, -hd)), ((8, -hd), (hw, -hd)), ((hw, -hd), (hw, hd)), ((hw, hd), (-hw, hd)), ((-hw, hd), (-hw, -hd))):
+            fence((*a, z), (*b, z), rng, gap=4.0)
     lv(3)
-    for sx in (-1, 1):
+    for sx in (-1, 1) if not OPEN else ():
         for sy in (-1, 1):
             post(0.28, 8.5, (sx * hw, sy * hd, z), S.WOOD_DARK, rng, n=6)
             flag((sx * hw + 1.0, sy * hd, 8.6), 2.0, 3.0, colour, rng)

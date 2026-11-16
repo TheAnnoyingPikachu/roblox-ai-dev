@@ -259,13 +259,14 @@ local function kit(spec: { any }, cf: CFrame, f: Instance)
 	for key, value in spec[5] :: { [string]: number } do
 		model:SetAttribute(key, value)
 	end
+	local own = model:FindFirstChild(`{name}_body`) :: BasePart
+	model:SetAttribute("Axis", own.Position.Y) -- how high its middle rests
 	if name == "kit_guard_ram" then
-		local log = model:FindFirstChild("kit_guard_ram_body") :: BasePart
 		local beam = Props.part(f, Vector3.new(1, 1, 1), cf * CFrame.new(dx * K, 8.6 * K, -8 * K), WHITE)
 		beam.Transparency, beam.CanCollide, beam.CastShadow, beam.Name = 1, false, false, "Ropes"
 		for _, dy in { -2.4, 2.4 } do
 			local top, bottom = Instance.new("Attachment"), Instance.new("Attachment")
-			top.Parent, bottom.Parent = beam, log
+			top.Parent, bottom.Parent = beam, own
 			top.WorldPosition = (cf * CFrame.new(dx * K, 8.6 * K, -(8 + dy * 0.2) * K)).Position
 			bottom.WorldPosition = (cf * CFrame.new(dx * K, 4.6 * K, -(8 + dy) * K)).Position
 			local rope = Instance.new("Beam")
@@ -274,7 +275,7 @@ local function kit(spec: { any }, cf: CFrame, f: Instance)
 			rope.Color, rope.LightInfluence = ColorSequence.new(Color3.fromRGB(86, 88, 100)), 1
 			rope.Parent = beam
 		end
-		model:SetAttribute("Back", -cf.LookVector) -- away from the animal on its pad
+		model:SetAttribute("Back", cf.LookVector) -- away from the animal on its pad, which is on the gateway's side
 	elseif name == "kit_library_crystal" then
 		model:SetAttribute("Foot", (cf * CFrame.new(0, 0, -2 * K)).Position) -- the line it turns about
 	end
