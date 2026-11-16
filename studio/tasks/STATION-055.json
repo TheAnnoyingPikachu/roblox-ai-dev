@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-055",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A second concept for the hub's centre (decision 0063): less like a shrine, more a place to gather. A fire pit ringed by benches, a market, a cafe, a stage and a green with a meeting tree and a pond, on the same plaza. Concept only: the built centre of decision 0060 stays.",
+  "inputs": [
+    "docs/decisions/0060-animal-stations-hub-centre-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-052"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/hub_commons.py",
+    "docs/concepts/hub-commons-card.png",
+    "docs/decisions/0063-animal-stations-hub-commons-concept.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-055.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The plaza keeps its size and its four roads, so the concept fits where the built centre stands",
+    "It has no statues, shrines or central monument, and reads as a place people and animals gather",
+    "The game and its assets are unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-16: `stage.py` built and rendered `hub_commons` with no error (99,312 triangles, 70 s). The card was looked at twice: the stage first stood in the foreground with its blank back to the main view (swapped with the market) and the arch's lettering was mirrored (turned). No game file changed. Not checked: the place in the game engine's light, at night, on a phone.",
+  "output_artifacts": [
+    "docs/concepts/hub-commons-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'after this can you make a new concept for the center, less shrine like and more communal area like'. Checkpoint for SHANNON: this centre, the built one, or parts of both."
+}
