@@ -11,7 +11,7 @@ import os
 
 import stage as S
 from mathutils import Vector
-from stage import actor, bench, box, bunting, bush, disc, flag, flowers, lantern, lump, neon, pipe, polar, post, prism, rock, roof, shard, slab, spin, tree, turn, words
+from stage import bench, box, bunting, bush, disc, flag, flowers, lantern, lump, neon, pipe, polar, post, prism, rock, roof, shard, slab, spin, tree, turn, words
 
 _spec = importlib.util.spec_from_file_location("scene_hub", os.path.join(os.path.dirname(os.path.abspath(__file__)), "hub.py"))
 H = importlib.util.module_from_spec(_spec)
@@ -23,6 +23,11 @@ HAY = (228, 196, 110)
 IRON = (86, 88, 100)
 PARTY = H.PARTY
 Z = 0.3  # the top of the paving
+CAST = True  # with the animals and eggs in it (the game stands its own on the models)
+
+
+def actor(*args, **kw):
+    return S.actor(*args, **kw) if CAST else []
 
 
 def local(at, yaw):
@@ -223,9 +228,8 @@ def green(rng):
         lump(t(0.6, 0.2, 2.75), (0.7, 0.5, 0.3), (226, 90, 80), rng)
 
 
-def dressing(rng):
-    """What ties it together: lamps on the kerb, strings of lights from a ring of poles, planters, a
-    finger post at each road, a notice board, a rustic arch over the south walk."""
+def lights(rng):
+    """Lamps on the kerb, strings of flags from a ring of poles out to them, planters and bushes between."""
     poles = []
     for i in range(8):
         a = 22.5 + i * 45
@@ -242,6 +246,10 @@ def dressing(rng):
         bush(polar(44.6, a - 9, Z), rng, 0.8)
     for a, b in zip(poles, poles[1:] + poles[:1]):
         bunting(a, b, 1.5, rng, PARTY, n=10, size=0.8)
+
+
+def signs(rng):
+    """A finger post at each road, the notice board, the plain arch over the south walk."""
     signs = {90: ("WAVE ARENA", (88, 52, 140)), 0: ("RANCHES", (70, 140, 80)), 180: ("RANCHES", (70, 140, 80)), 270: ("WAY IN", (60, 120, 200))}
     for a, (name, rgb) in signs.items():  # a finger post beside each road
         q = polar(44.5, a + 13, Z)
@@ -277,7 +285,8 @@ def build(rng):
     cafe(rng)
     stage(rng)
     green(rng)
-    dressing(rng)
+    lights(rng)
+    signs(rng)
     for a in (0, 90, 180, 270):  # the roads out
         way = polar(72.5, a)
         box((45.0, 10.5, 0.14), way, (206, 190, 160), rng, yaw=a, kind=S.PALE)

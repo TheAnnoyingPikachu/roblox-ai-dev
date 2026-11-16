@@ -1,0 +1,53 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-057",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The gathering place of decision 0063 built on the hub's plaza in place of the first centre (decision 0064): the fire pit and its benches, the market with the egg seller's cart, the cafe, the stage, the green with its meeting tree and pond, strings of flags, finger posts and the arch, with a few animals standing about.",
+  "inputs": [
+    "docs/decisions/0063-animal-stations-hub-commons-concept.md",
+    "docs/decisions/0060-animal-stations-hub-centre-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-055"
+  ],
+  "files": [
+    "assets/stations/hub_*",
+    "tools/blender/stations/assets/hub.py",
+    "tools/blender/stations/scenes/hub_commons.py",
+    "tools/blender/stations/stage.py",
+    "tools/blender/stations/build.py",
+    "tools/blender/write-assets-module.mjs",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/World.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0064-animal-stations-hub-commons-in-game.md",
+    "docs/decisions/0063-animal-stations-hub-commons-concept.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-057.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The plaza in the game matches the approved concept card: every piece stands where the concept has it",
+    "The Golden Egg sits on the egg seller's cart among three smaller eggs",
+    "A player cannot walk through a stall, the stage, the cafe's counter, the tree or a bench",
+    "The animals that stand about are the game's own models, idling",
+    "The first centre's models are no longer built or loaded"
+  ],
+  "verification": "Pending: the models are built and exported; the upload and the check in Studio follow.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON on 2026-11-16, to the four questions of the last report (which hub centre, the training looks, room for the clearings, the tortoises): 'go on all four'. Read for the hub as: build the gathering place. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

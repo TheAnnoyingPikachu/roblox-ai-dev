@@ -50,6 +50,7 @@ describe("StationAssets", function()
 				end
 			end
 			expect(count(asset.joints)).toBe(count(entry.joints))
+			expect(asset.lift or 0).toBe(entry.lift or 0)
 			for part, j in asset.joints do
 				expect(asset.centres[part] == nil).toBe(false)
 				for i = 1, 3 do
@@ -85,7 +86,7 @@ describe("StationAssets", function()
 				expect(tris <= 20000).toBeTruthy()
 			end
 		end
-		expect(pieces).toBe(12)
+		expect(pieces).toBe(8)
 		for name in manifest do -- and nothing is built for the hub that is not used
 			if string.sub(name, 1, 4) == "hub_" then
 				pieces -= 1

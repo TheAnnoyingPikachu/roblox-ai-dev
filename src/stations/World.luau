@@ -1,6 +1,6 @@
 --!strict
 -- Animal Stations world (framework, decision 0029): the hub, a central plaza with the hatchery
--- fountain (its centre is made of Blender models, decision 0060), and three home ranches (one per player). Each ranch is a
+-- gathering place (made of Blender models, decision 0064), and three home ranches (one per player). Each ranch is a
 -- large separate area behind the hub's mountains, reached by teleport pad or up its own pass. A ranch is the
 -- player's base, where animals live and train: its plot is built here, and what stands on it
 -- by Ranch.luau from its owner's upgrades. Mountains ring every area to hide the void; a canyon through
@@ -313,32 +313,42 @@ end
 
 -- Plaza ----------------------------------------------------------------------------------------------
 
--- The plaza's centre (decision 0060) is made of the models of tools/blender/stations/assets/hub.py.
--- Each was built where it stands, so every one goes on the plaza's middle: {model, the height of its
--- foot above the plaza's ground, the turns (degrees) it stands at}. Where a statue, an egg or an unseen
--- wall goes below is read off that file and scenes/hub.py: change them together.
-local Y0 = 0.25 -- the plaza's ground; its slabs' tops are 0.3 above it
-local CENTRE: { { any } } = {
-	{ "hub_paving", 0, { 0 } },
-	{ "hub_fountain", 0.3, { 0 } },
-	{ "hub_plinth", 0, { 0, 45, 90, 135, 180, 225, 270, 315 } },
-	{ "hub_shrine_meadow", 0.3, { 0 } },
-	{ "hub_shrine_wild", 0.3, { 0 } },
-	{ "hub_shrine_safari", 0.3, { 0 } },
-	{ "hub_shrine_golden", 0.3, { 0 } },
-	{ "hub_garden", 0.3, { 0, 90, 180, 270 } },
-	{ "hub_gate_arena", 0, { 0 } },
-	{ "hub_gate_welcome", 0, { 0 } },
-	{ "hub_gate_ranches", 0, { 0, 180 } },
-	{ "hub_stalls", 0, { 0 } },
+-- The plaza is a place to gather (decision 0064), made of the models of
+-- tools/blender/stations/assets/hub.py. Each was built where it stands, so every one goes on the
+-- plaza's middle. Where an egg, an animal or an unseen wall goes below is read off
+-- tools/blender/stations/scenes/hub_commons.py, in its own numbers (x east, y north, in studs from the
+-- plaza's middle): change the two together.
+local Y0 = 0.25 -- the plaza's ground
+local PAVING = 0.3 -- and how far above it the paving's top is
+local CENTRE =
+	{ "hub_floor", "hub_fire", "hub_market", "hub_cafe", "hub_stage", "hub_green", "hub_lights", "hub_signs" }
+-- who stands about: species, variant, where, and its yaw there
+local VISITORS: { { any } } = {
+	{ "lion", nil, -11.5, 0, 0, 90 }, -- by the fire
+	{ "cheetah", nil, 0.5, -21.5, 0, 180 },
+	{ "jackal", nil, -14, -27, 0, 300 }, -- at the market
+	{ "tortoise", nil, -23, 9, 0, 100 },
+	{ "flamingo", nil, 30.5, -5, 0, 200 }, -- at the pond
+	{ "rhino", nil, 9.5, -29, 0, 0 }, -- at the trough
+	{ "elephant", nil, -6, 37.5, 0, 100 }, -- coming in from the arena road
+	{ "meerkat", nil, 30.7, 28.6, 1.6, 315 }, -- on the stage
+	{ "meerkat", "star_meerkat", 28.9, 31.8, 1.6, 335 },
 }
-local STATUES = { "jackal", "tortoise", "meerkat", "cheetah", "rhino", "flamingo", "lion", "elephant" }
-local SHRINES = { "meadow", "wild", "safari", "golden" }
-local MARBLE = Color3.fromRGB(238, 232, 220)
 
--- A point on the plaza: `r` studs from its middle at `deg` degrees (0 east, 90 north), `up` above its ground.
+-- A point on the plaza: `x` studs east and `y` north of its middle, `up` above its ground.
+local function onPlaza(x: number, y: number, up: number): Vector3
+	return Vector3.new(x, Y0 + up, -y)
+end
+
+-- The same from a distance `r` and a direction `deg` (0 east, 90 north).
 local function around(r: number, deg: number, up: number): Vector3
-	return Vector3.new(r * math.cos(rad(deg)), Y0 + up, -r * math.sin(rad(deg)))
+	return onPlaza(r * math.cos(rad(deg)), r * math.sin(rad(deg)), up)
+end
+
+-- The CFrame of something standing on (x, y, up) and facing `yaw` degrees, as the Blender scenes turn things.
+local function standing(x: number, y: number, up: number, yaw: number): CFrame
+	local p = onPlaza(x, y, up)
+	return CFrame.lookAt(p, p + Vector3.new(math.sin(rad(yaw)), 0, math.cos(rad(yaw))))
 end
 
 -- The models take no collisions: each solid piece gets an unseen part to stand on or walk into.
@@ -349,96 +359,133 @@ end
 
 local function plaza(root: Instance, rng: Random)
 	local f = folder(root, "Plaza")
-	-- the bed the slabs lie in: it shows in their joints, and it is the floor
-	disc(f, Vector3.new(0, Y0 + 0.28, 0), World.PLAZA * 2 + 1, 0.8, Color3.fromRGB(112, 106, 100), M.Concrete)
-	for _, piece in CENTRE do
-		for _, turn in piece[3] do
-			local at = CFrame.new(0, Y0 + piece[2], 0) * CFrame.Angles(0, rad(turn) + math.pi, 0)
-			task.spawn(Creatures.still, piece[1], at, 1, f) -- the first of a kind has to load
+	-- a plain floor under the paving: what feet stand on, and what shows if a model does not load
+	disc(f, Vector3.new(0, Y0 + PAVING - 0.02, 0), World.PLAZA * 2 + 1, 0.8, Color3.fromRGB(112, 106, 100), M.Concrete)
+	for _, name in CENTRE do
+		task.spawn(Creatures.still, name, CFrame.new(0, Y0, 0) * CFrame.Angles(0, math.pi, 0), 1, f) -- each has to load
+	end
+	-- An unseen block of a piece that stands on (px, py) turned `yaw`: `w` by `d` and `h` tall, its
+	-- middle at (x, y) of the piece, its foot `from` above the paving.
+	local function block(
+		px: number,
+		py: number,
+		yaw: number,
+		x: number,
+		y: number,
+		w: number,
+		d: number,
+		h: number,
+		from: number?
+	)
+		local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
+		local where = onPlaza(px + x * c - y * s, py + x * s + y * c, PAVING + (from or 0) + h / 2)
+		solid(part(f, Vector3.new(w, h, d), CFrame.new(where) * CFrame.Angles(0, rad(yaw), 0), WHITE))
+	end
+	local function column(x: number, y: number, radius: number, h: number, from: number?)
+		solid(pillar(f, onPlaza(x, y, PAVING + (from or 0)), h, radius, WHITE))
+	end
+
+	-- the fire and its two rows of benches
+	column(0, 0, 4.2, 1)
+	for q = 0, 3 do
+		for k = 0, 3 do
+			local front, back = q * 90 + 14 + (k + 0.5) * 15.5, q * 90 + 12 + (k + 0.5) * 16.5
+			local function arc(r: number, deg: number, w: number, d: number, h: number)
+				solid(
+					part(
+						f,
+						Vector3.new(w, h, d),
+						CFrame.lookAt(around(r, deg, PAVING + h / 2), around(0, deg, PAVING + h / 2)),
+						WHITE
+					)
+				)
+			end
+			arc(9, front, 2.7, 1.6, 1.15)
+			arc(10.9, back, 3.4, 1.8, 0.85)
+			arc(12.85, back, 4, 1.9, 3.3)
 		end
 	end
 
-	-- Hatchery Fountain: the Golden Egg on its lotus, four stone tortoises on the lower pool's lip
+	-- the market: five stalls, and the egg seller's cart with the Golden Egg on it
+	for _, a in { 193, 208, 223, 238, 253 } do
+		solid(
+			part(
+				f,
+				Vector3.new(8, 3.3, 5),
+				CFrame.lookAt(around(38.5, a, PAVING + 1.65), around(0, a, PAVING + 1.65)),
+				WHITE
+			)
+		)
+	end
+	block(-20, -17, 215, 0, 0, 7, 4.2, 2.8)
 	local h = folder(f, "Hatchery")
-	local great = eggModel(h, CFrame.new(0, Y0 + 9, 0) * CFrame.Angles(0, math.pi, 0), 11, "golden", rng)
+	local great = eggModel(h, standing(-20, -17, PAVING + 2.5, 35), 4.5, "golden", rng)
 	great.Name = "GreatEgg"
-	glow(great, Color3.fromRGB(255, 225, 160), 22, 0.7)
+	glow(great, Color3.fromRGB(255, 225, 160), 14, 0.7)
 	local sparkle = Instance.new("ParticleEmitter")
 	sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	sparkle.Rate, sparkle.Lifetime = 6, NumberRange.new(1.5, 2.5)
-	sparkle.Speed = NumberRange.new(1, 3)
+	sparkle.Rate, sparkle.Lifetime = 4, NumberRange.new(1.5, 2.5)
+	sparkle.Speed = NumberRange.new(1, 2)
 	sparkle.SpreadAngle = Vector2.new(180, 180)
-	sparkle.Size = NumberSequence.new(0.6)
+	sparkle.Size = NumberSequence.new(0.4)
 	sparkle.Color = ColorSequence.new(Color3.fromRGB(255, 240, 180))
 	sparkle.LightEmission = 1
 	sparkle.Parent = great
-	for i = 0, 3 do
-		local a = 45 + i * 90
-		local at = CFrame.lookAt(around(14.2, a, 2.15), around(0, a, 2.15))
-		task.spawn(Creatures.statue, "creature_tortoise", at, 2.6, MARBLE, h)
-	end
-	solid(disc(h, Vector3.new(0, Y0 + 1.35, 0), 30.8, 1.35, WHITE)) -- the lower pool, up to its water
-	for i = 0, 15 do -- and its lip
-		local a = i * 22.5 + 11.25
-		solid(part(h, Vector3.new(6, 2.15, 2.3), CFrame.lookAt(around(14.25, a, 1.075), around(0, a, 1.075)), WHITE))
-	end
-	solid(disc(h, Vector3.new(0, Y0 + 7.2, 0), 10, 5.9, WHITE)) -- the stem
-	solid(disc(h, Vector3.new(0, Y0 + 7.2, 0), 18.6, 1.3, WHITE)) -- the upper bowl
-
-	-- the ring of statues, one of each animal, looking out from its plinth over its name
-	for i, species in STATUES do
-		local a = 22.5 + 45 * (i - 1)
-		local facing = CFrame.lookAt(around(24.5, a, 3.3), around(60, a, 3.3))
-		task.spawn(Creatures.statue, `creature_{species}`, facing, 6.2, MARBLE, f)
-		solid(disc(f, around(24.5, a, 3.3), 6.6, 3.3, WHITE))
-		local plate = solid(part(f, Vector3.new(1.7, 0.8, 0.2), facing * CFrame.new(0, -1.95, -2.8), WHITE))
-		plate.CanCollide = false
-		local gui = Instance.new("SurfaceGui")
-		gui.Face, gui.LightInfluence = Enum.NormalId.Front, 0
-		gui.SizingMode, gui.PixelsPerStud = Enum.SurfaceGuiSizingMode.PixelsPerStud, 120
-		gui.Parent = plate
-		local name = Instance.new("TextLabel")
-		name.Size, name.BackgroundTransparency = UDim2.fromScale(1, 1), 1
-		name.Text = string.upper(string.sub(species, 1, 1)) .. string.sub(species, 2)
-		name.TextScaled, name.Font, name.TextColor3 = true, Enum.Font.FredokaOne, INK
-		name.Parent = gui
+	for i, kind in { "meadow", "wild", "safari" } do
+		local x, y = -2.4 + (i - 1) * 0.3, -1.4 + (i - 1) * 1.4 -- on the cart, which is turned 215 degrees
+		local c, s = math.cos(rad(215)), math.sin(rad(215))
+		eggModel(h, standing(-20 + x * c - y * s, -17 + x * s + y * c, PAVING + 2.2, 35), 1.65, kind, rng)
 	end
 
-	-- a shrine for each egg, the egg on its stand
-	for q, kind in SHRINES do
-		local a = q * 90 - 45
-		eggModel(f, CFrame.lookAt(around(32.2, a, 2.05), around(60, a, 2.05)), 2.76, kind, rng)
-		solid(disc(f, around(32.2, a, 0.95), 8.6, 0.95, WHITE))
+	-- the cafe: its floor, counter and back wall, four tables
+	block(-30, 30, 45, 0, 0, 15, 9, 0.4)
+	block(-30, 30, 45, 0, -2.6, 13, 1.6, 3.2, 0.4)
+	block(-30, 30, 45, 0, 4, 14.6, 0.5, 6.8, 0.4)
+	for _, t in { { -21, 17.5 }, { -14.5, 24.5 }, { -17.5, 34.5 }, { -36, 16 } } do
+		column(t[1], t[2], 1.7, 2.5)
 	end
 
-	-- the raised gardens: each bed as a row of blocks, its trees' trunks and its two benches
-	for q = 0, 3 do
-		for k = 0, 7 do
-			local a = q * 90 + 11.5 + (k + 0.5) * 67 / 8
-			solid(
-				part(f, Vector3.new(6.8, 1.15, 7.6), CFrame.lookAt(around(42.1, a, 0.575), around(0, a, 0.575)), WHITE)
-			)
-		end
-		for _, a in { 22, 45, 68 } do
-			solid(pillar(f, around(42.2, q * 90 + a, 1.1), 4.4, 0.55, WHITE))
-		end
-		for _, a in { 26, 64 } do
-			local at = q * 90 + a
-			solid(
-				part(f, Vector3.new(4.4, 1.3, 1.8), CFrame.lookAt(around(34.4, at, 0.95), around(0, at, 0.95)), WHITE)
-			)
+	-- the stage: its platform, steps and back, three rows of benches
+	block(30, 30, 135, 0, 0, 19, 10, 1.6)
+	block(30, 30, 135, 0, -4.4, 18.4, 0.5, 8.6, 1.6)
+	for i = 0, 2 do
+		block(30, 30, 135, 0, 5.5 + i, 6, 1, 1.2 - 0.4 * i)
+		for _, dx in { -5.6, 0, 5.6 } do
+			block(30, 30, 135, dx, 11.5 + i * 3.6, 4.4, 1.8, 1.3)
 		end
 	end
 
-	-- the piers of the gateway on each road, and the two market stalls beside the arena road
-	for _, a in { 0, 90, 180, 270 } do
-		for _, side in { -9.2, 9.2 } do
-			local at = CFrame.lookAt(around(50.5, a, 5), around(0, a, 5)) * CFrame.new(side, 0, 0)
-			solid(part(f, Vector3.new(2.8, 10, 2.8), at, WHITE))
-		end
+	-- the green: the tree's mound, bench and trunk, the pier, the trough, two picnic tables
+	column(25, -25, 11, 0.5)
+	column(25, -25, 6.2, 1.2, 0.5)
+	column(25, -25, 2.3, 12, 1.7)
+	block(31.9, -10.5, 0, 0, 0, 7, 3, 0.9)
+	block(9.5, -37.5, 8, 0, 0, 9, 2.6, 1.6)
+	block(12, -14, 20, 0, 0, 5.4, 4.8, 2.5)
+	block(38, -28, -30, 0, 0, 5.4, 4.8, 2.5)
+
+	-- poles, lamps and planters; finger posts, the notice board, the arch's two trunks
+	for i = 0, 7 do
+		local a = 22.5 + i * 45
+		solid(pillar(f, around(18.2, a, PAVING), 9.5, 0.3, WHITE))
+		solid(pillar(f, around(45.4, a, PAVING), 7, 0.3, WHITE))
+		solid(pillar(f, around(44, a + 9, PAVING), 1.3, 1.3, WHITE))
 	end
-	for _, x in { -13.5, 13.5 } do
-		solid(part(f, Vector3.new(5, 3.3, 8), Vector3.new(x, Y0 + 1.65, -60), WHITE))
+	for _, a in { 13, 103, 193, 283 } do
+		solid(pillar(f, around(44.5, a, PAVING), 7.6, 0.3, WHITE))
+	end
+	block(-41.6, 5.8, -82, 0, 0, 6.6, 0.5, 6)
+	column(-9.4, -50.5, 0.9, 10, -PAVING)
+	column(9.4, -50.5, 0.9, 10, -PAVING)
+
+	-- the animals that stand about
+	for _, v in VISITORS do
+		task.spawn(function()
+			local model = Creatures.spawn(Creatures.asset(v[1], v[2]), standing(v[3], v[4], PAVING + v[5], v[6]), f)
+			if model then
+				Creatures.describe(model, v[1], v[2])
+			end
+		end)
 	end
 end
 

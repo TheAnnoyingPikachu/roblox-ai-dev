@@ -15,6 +15,7 @@ The helpers below make faceted pieces from a colour: one flat tone a face, like 
 under one of its surface textures.
 """
 
+import ast
 import importlib.util
 import math
 import os
@@ -347,6 +348,27 @@ def actor(name, at, yaw=0.0, scale=1.0, statue=None, rng=None, surface="rock", k
             elif part.endswith("_glow"):
                 neon(ob, asset["glow"].get(part, k.GLOW_RGB))
     return objs
+
+
+def sort_pieces(rng, asset):
+    """Sorts every mesh in the scene into the pieces of a game model: the painted `body`, and one Neon
+    piece for each colour that glows (`body_glow`, `body2_glow`, ...), whose colours it writes into
+    `asset["glow"]`. Lettering and steam are painted on, plain white. Returns the groups."""
+    groups, colours = {"body": []}, {}
+    for ob in bpy.data.objects:
+        if ob.type != "MESH":
+            continue
+        kind = ob.data.materials[0].name if ob.data.materials else ""
+        if kind.startswith("neon_"):
+            rgb = tuple(round(c) for c in ast.literal_eval(kind[5 : kind.rindex("_")]))
+            part = colours.setdefault(rgb, "body_glow" if not colours else f"body{len(colours) + 1}_glow")
+            groups.setdefault(part, []).append(ob)
+        else:
+            if kind.startswith("words_") or kind == "steam":
+                paint(ob, WHITE, rng, chance=0.0)
+            groups["body"].append(ob)
+    asset["glow"] = {part: rgb for rgb, part in colours.items()}
+    return groups
 
 
 # The card ------------------------------------------------------------------------------------------------

@@ -3,8 +3,8 @@
 -- Each is loaded once, scaled to its measured size and rigged from the manifest: a hidden Root on
 -- the ground, a Motor6D from it to the body, and one from the body to the head, each leg and the
 -- tail at the joint the Blender build recorded. Neon `_glow` meshes ride on their piece. An asset
--- with no head is a still prop (an egg, decision 0057; a piece of the hub's centre, decision 0060): no
--- joints, its pieces anchored. An animal can also stand as a statue: its meshes in plain stone. It can
+-- with no head is a still prop (an egg, decision 0057; a piece of a place, decisions 0064 and 0065): no
+-- joints, its pieces anchored. An animal can
 -- wear its rainbow coat (decision 0058): the same model with a second texture. Models are
 -- tagged "Creature"; the client animates the Motor6Ds from the Anim and AnimAt attributes set here
 -- (stations-client/Creatures.client.luau). Display only: no game rules.
@@ -176,8 +176,9 @@ local function build(name: string): Model?
 		end
 	end
 
-	-- The Root faces the way the creature does (a CFrame looks along -Z; manifest +Z is the head).
-	local rootFrame = frame * CFrame.Angles(0, math.pi, 0)
+	-- The Root faces the way the creature does (a CFrame looks along -Z; manifest +Z is the head). A
+	-- piece of a place was built where it stands: its Root is on the place's ground, `lift` below it.
+	local rootFrame = frame * CFrame.new(0, -(entry.lift or 0), 0) * CFrame.Angles(0, math.pi, 0)
 	local root = Instance.new("Part")
 	root.Name = "Root"
 	root.Size = Vector3.new(2, 0.2, 4)
@@ -394,29 +395,6 @@ function Creatures.still(name: string, at: CFrame, scale: number, parent: Instan
 	return model
 end
 
--- A statue of the animal `name` standing at `at` (its feet there, facing along the CFrame's look),
--- `fit` studs along its longest side: its meshes with no texture, in limestone of the colour `stone`. Nil when the model is
--- not uploaded or did not load.
-function Creatures.statue(name: string, at: CFrame, fit: number, stone: Color3, parent: Instance): Model?
-	local source = template(name)
-	if source == nil then
-		return nil
-	end
-	local model = source:Clone()
-	for _, d in model:GetDescendants() do
-		if d:IsA("MeshPart") then
-			d.TextureID, d.Color, d.Material, d.Anchored = "", stone, Enum.Material.Limestone, true
-		elseif d ~= model.PrimaryPart then
-			d:Destroy() -- joints, lights, particles, the hit box the cursor finds animals by
-		end
-	end
-	local size = StationAssets[name].size
-	model:ScaleTo(model:GetScale() * fit / math.max(size[1], size[2], size[3]))
-	model:PivotTo(at)
-	model.Parent = parent
-	return model
-end
-
 -- Still copies of every uploaded model for the client's picture frames (decision 0044): the meshes
 -- in their rest pose, with no joints, lights, particles or hit box, in ReplicatedStorage.Portraits.
 -- They load in the background and appear as they are ready; the client waits for each.
@@ -425,7 +403,8 @@ function Creatures.publishPortraits()
 	folder.Name = "Portraits"
 	folder.Parent = ReplicatedStorage
 	for name, entry in StationAssets do
-		if entry.model == nil or string.sub(name, 1, 4) == "hub_" then -- the hub's pieces are never pictured
+		local kind = string.sub(name, 1, 4)
+		if entry.model == nil or kind == "hub_" or kind == "area" then -- the pieces of places are never pictured
 			continue
 		end
 		task.spawn(function()
