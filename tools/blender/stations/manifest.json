@@ -5805,23 +5805,35 @@
     "png": "build/blender/stations/home_hatchery_1.png",
     "preview": "build/blender/stations/previews/home_hatchery_1.png",
     "size_studs": [
-      15.0,
-      7.59,
-      15.0
+      19.97,
+      11.05,
+      12.8
     ],
-    "tris": 1140,
+    "tris": 1628,
     "parts": {
-      "home_hatchery_1_body": 1140
+      "home_hatchery_1_body": 1608,
+      "home_hatchery_1_body_glow": 20
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
     "notes": "The Hatchery: a canvas on four posts over a bed of straw.",
-    "glow": {},
+    "glow": {
+      "home_hatchery_1_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
     "centres": {
       "home_hatchery_1_body": [
-        0.0,
-        3.797,
+        0.487,
+        5.525,
         -0.0
+      ],
+      "home_hatchery_1_body_glow": [
+        -7.8,
+        5.15,
+        5.8
       ]
     },
     "joints": {},

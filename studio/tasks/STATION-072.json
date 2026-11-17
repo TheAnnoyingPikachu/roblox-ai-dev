@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-072",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Hatchery's first look rebuilt as a proper open shed: a plank floor, four posts on beams with knee braces, a gabled canvas with a red ridge and a red and cream scalloped edge, its name hung from the front beam, a lantern and hay bales. Its old canvas sloped the wrong way and sat loose over its posts.",
+  "inputs": [
+    "docs/decisions/0072-animal-stations-open-homestead.md"
+  ],
+  "dependencies": [
+    "STATION-071"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/homestead.py",
+    "assets/stations/home_hatchery_1.*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/concepts/ranch-homestead-card.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-072.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The first Hatchery's roof sits on its posts and beams, its name can be read from the front",
+    "The nests the game stands (up to two rows of 4.2-stud spacing) stay clear of its posts",
+    "The footprint and its unseen floor in Ranch.luau are unchanged"
+  ],
+  "verification": "Blender 5.2, 2026-11-17: drafted and looked at from three sides twice, then built (1,628 triangles) and exported. Pending: upload.",
+  "output_artifacts": [
+    "assets/stations/home_hatchery_1.fbx"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'the stage one hatchery looks a bit off, could you fix it/make it look a bit better'. A fix to one existing look, so no concept card first."
+}

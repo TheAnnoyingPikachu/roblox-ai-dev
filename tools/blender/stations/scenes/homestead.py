@@ -221,13 +221,28 @@ def hatchery(t):
     a two-tiered roof. The game stands the nests in it, as many as its level gives."""
 
     def make(rng):
-        if t == 0:
-            disc(7.5, (0, 0, 0.15), 0.35, HAY, rng, n=10)
+        if t == 0:  # an open shed: a plank floor, four posts and beams, a gabled canvas with a scalloped edge
+            box((17, 12, 0.3), (0, 0, 0.15), S.WOOD, rng)
+            disc(6.4, (0, 0, 0.45), 0.25, HAY, rng, n=12)
+            px, py, ph = 7.4, 4.8, 7.0
             for sx in (-1, 1):
-                post(0.4, 7.5, (sx * 6.6, 3.8, 0.15), S.WOOD_DARK, rng, n=6)
-                post(0.4, 5.8, (sx * 6.6, -3.8, 0.15), S.WOOD_DARK, rng, n=6)
-            box((15, 9.4, 0.35), (0, 0, 6.5), (232, 222, 200), rng, tilt=(-11, 0), kind=S.PALE)
-            sign("HATCHERY", (0, -4.6, 6.6), rng, size=0.9)
+                for sy in (-1, 1):
+                    post(0.45, ph, (sx * px, sy * py, 0.45), S.WOOD_DARK, rng, n=6)
+                    box((1.9, 0.3, 0.3), (sx * (px - 0.8), sy * py, ph - 0.95), S.WOOD_DARK, rng, tilt=(0, sx * 45))  # knee braces
+                box((0.5, py * 2 + 0.9, 0.5), (sx * px, 0, ph), S.WOOD_DARK, rng)
+                box((px * 2 + 1.4, 0.5, 0.5), (0, sx * py, ph), S.WOOD_DARK, rng)
+            roof(px * 2 + 3, py * 2 + 3, 3.4, (0, 0, ph + 0.5), (236, 224, 196), rng, ridge=px * 2 + 1, kind=S.PALE)
+            for sy in (-1, 1):  # the canvas's scalloped edge, red and cream
+                for i in range(9):
+                    x = -px - 0.4 + i * (px * 2 + 0.8) / 8
+                    if sy < 0 and abs(x) < 4.6:
+                        continue  # the name board hangs here
+                    flag((x, sy * (py + 1.5), ph + 0.55), 1.9, 1.4, (BARN_RED, CREAM)[i % 2], rng)
+            box((px * 2 + 1.6, 0.9, 0.5), (0, 0, ph + 3.7), BARN_RED, rng)  # the ridge
+            sign("HATCHERY", (0, -py - 0.45, ph - 0.2), rng, size=0.9)
+            lantern((-px - 1.6, -py - 1.0, 0.15), rng, h=5.5)
+            for i, (x, y) in enumerate(((px + 2.2, py - 1.0), (px + 2.2, py - 3.4), (px + 2.2, py - 2.2))):
+                box((1.6, 2.2, 1.2), (x, y, 0.15 + (1.2 if i == 2 else 0)), HAY, rng, yaw=4)
             if LIVE:
                 for i in range(3):
                     nest((-3.5 + i * 3.5, 0.5, 0.5), rng, i)
