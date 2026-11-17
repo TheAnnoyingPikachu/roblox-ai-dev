@@ -215,13 +215,9 @@ def giraffe():
 
 
 def diamond_giraffe():
-    """Diamond Giraffe (concept): a pale silver coat under faceted diamond plates for patches, glowing
-    diamond horns, a crest of crystal down its neck, diamonds out of its shoulders, glowing eyes."""
-    return giraffe_model(
-        dict(coat=(168, 182, 208), legs=(196, 208, 228), legs_dark=(130, 146, 178), dark=(70, 84, 112), patch=(120, 210, 250), muzzle=(150, 162, 186), ear_in=(170, 210, 240), iris=(240, 170, 40),
-             patch_surface="gem", patch_thick=0.05, glow=DIAMOND, extra=diamond_extra),
-        11,
-    )
+    """Diamond Giraffe (decision 0083): diamond ore: grey stone all over set with diamonds, chips and
+    crystals breaking out of the body, neck and legs, glowing diamond horns, crest and eyes."""
+    return giraffe_model(ORE, 11)
 
 
 DIAMOND = (90, 215, 255)
@@ -242,10 +238,9 @@ ORE = dict(coat=(118, 120, 130), legs=(98, 100, 110), legs_dark=(70, 72, 82), da
            iris=(240, 170, 40), hide="rock", patch_surface="gem", patch_thick=0.07, patch_scale=0.55, glow=DIAMOND, extra=ore_extra)
 
 ASSETS = [
-    F.asset("concept_giraffe_diamond_ore", lambda: giraffe_model(ORE, 11), 2.9, {"head_glow": DIAMOND, "body_glow": DIAMOND}, "Diamond Giraffe concept (decision 0083): diamond ore: stone set with diamonds all over, glowing diamond horns, crest and eyes."),
     F.asset("concept_giraffe_sunny", SUNNY, 2.9, {}, "Giraffe concept (decision 0082): golden, warm orange patches, round eyes, soft horn tufts."),
     F.asset("concept_giraffe_savanna", SAVANNA, 2.9, {}, "Giraffe concept (decision 0082): cream, dark chocolate patches, round eyes, soft horn tufts."),
     F.asset("concept_giraffe_gem", GEM, 2.9, {"head_glow": DIAMOND}, "Diamond Giraffe concept (decision 0082): pale blue, gem patches, glowing gems on its horn tips."),
     F.asset("creature_giraffe", giraffe, 2.9, {}, "Giraffe: a faceted cream giraffe under chestnut patches, a dark mane and sharp horns."),
-    F.asset("creature_giraffe_diamond", diamond_giraffe, 2.9, {"head_glow": DIAMOND, "body_glow": DIAMOND}, "Diamond Giraffe (concept): a silver giraffe under diamond plates, glowing diamond horns, crest and shoulders."),
+    F.asset("creature_giraffe_diamond", diamond_giraffe, 2.9, {"head_glow": DIAMOND, "body_glow": DIAMOND}, "Diamond Giraffe: diamond ore, grey stone set with diamonds all over, glowing diamond horns, crest and eyes (decision 0083)."),
 ]

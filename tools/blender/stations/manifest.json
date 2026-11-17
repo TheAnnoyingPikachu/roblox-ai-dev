@@ -6683,25 +6683,25 @@
     "png": "build/blender/stations/creature_giraffe_diamond.png",
     "preview": "build/blender/stations/previews/creature_giraffe_diamond.png",
     "size_studs": [
-      4.3,
+      5.44,
       24.39,
       14.98
     ],
-    "tris": 3208,
+    "tris": 3672,
     "parts": {
-      "creature_giraffe_diamond_body": 1184,
-      "creature_giraffe_diamond_head": 820,
+      "creature_giraffe_diamond_body": 1352,
+      "creature_giraffe_diamond_head": 908,
       "creature_giraffe_diamond_tail": 52,
-      "creature_giraffe_diamond_head_glow": 168,
-      "creature_giraffe_diamond_body_glow": 72,
-      "creature_giraffe_diamond_leg_fl": 212,
-      "creature_giraffe_diamond_leg_bl": 244,
-      "creature_giraffe_diamond_leg_fr": 212,
-      "creature_giraffe_diamond_leg_br": 244
+      "creature_giraffe_diamond_head_glow": 208,
+      "creature_giraffe_diamond_body_glow": 128,
+      "creature_giraffe_diamond_leg_fl": 244,
+      "creature_giraffe_diamond_leg_bl": 268,
+      "creature_giraffe_diamond_leg_fr": 244,
+      "creature_giraffe_diamond_leg_br": 268
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/giraffes.py",
-    "notes": "Diamond Giraffe (concept): a silver giraffe under diamond plates, glowing diamond horns, crest and shoulders.",
+    "notes": "Diamond Giraffe: diamond ore, grey stone set with diamonds all over, glowing diamond horns, crest and eyes (decision 0083).",
     "glow": {
       "creature_giraffe_diamond_head_glow": [
         90,
@@ -6716,101 +6716,101 @@
     },
     "centres": {
       "creature_giraffe_diamond_body": [
-        -0.022,
-        9.541,
-        -2.595
+        0.016,
+        9.639,
+        -2.383
       ],
       "creature_giraffe_diamond_head": [
-        0.0,
+        0.071,
         15.965,
         3.077
       ],
       "creature_giraffe_diamond_tail": [
-        0.0,
+        0.071,
         6.202,
         -6.91
       ],
       "creature_giraffe_diamond_head_glow": [
-        -0.001,
-        17.613,
+        0.469,
+        17.51,
         1.659
       ],
       "creature_giraffe_diamond_body_glow": [
-        0.0,
-        12.241,
-        -1.718
+        -0.174,
+        10.464,
+        -2.224
       ],
       "creature_giraffe_diamond_leg_fl": [
-        0.961,
+        1.305,
         4.506,
         -0.16
       ],
       "creature_giraffe_diamond_leg_bl": [
-        0.961,
+        1.286,
         4.362,
         -5.274
       ],
       "creature_giraffe_diamond_leg_fr": [
-        -0.962,
+        -1.152,
         4.504,
         -0.16
       ],
       "creature_giraffe_diamond_leg_br": [
-        -0.969,
+        -1.048,
         4.363,
         -5.275
       ]
     },
     "joints": {
       "creature_giraffe_diamond_head": [
-        0.0,
+        0.071,
         10.005,
         -0.059
       ],
       "creature_giraffe_diamond_leg_fl": [
-        0.87,
+        0.941,
         8.7,
         -0.204
       ],
       "creature_giraffe_diamond_leg_fr": [
-        -0.87,
+        -0.799,
         8.7,
         -0.204
       ],
       "creature_giraffe_diamond_leg_bl": [
-        0.87,
+        0.941,
         8.41,
         -5.279
       ],
       "creature_giraffe_diamond_leg_br": [
-        -0.87,
+        -0.799,
         8.41,
         -5.279
       ],
       "creature_giraffe_diamond_tail": [
-        0.0,
+        0.071,
         9.28,
         -6.497
       ]
     },
     "eyes": [
       [
-        1.0,
+        1.071,
         20.3,
         4.329,
         0.697
       ],
       [
-        -1.002,
+        -0.931,
         20.303,
         4.331,
         0.698
       ]
     ],
     "lid": [
-      167,
-      179,
-      205
+      118,
+      119,
+      134
     ]
   }
 }

@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-084",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Diamond Giraffe in the game becomes the diamond ore of decision 0083: stone all over set with diamonds, mean again. Its model and rainbow coat rebuilt and uploaded in place of the old ones.",
+  "inputs": [
+    "docs/decisions/0083-animal-stations-diamond-ore-giraffe-concept.md"
+  ],
+  "dependencies": [
+    "STATION-083"
+  ],
+  "files": [
+    "tools/blender/stations/assets/giraffes.py",
+    "assets/stations/creature_giraffe_diamond*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "docs/concepts/diamond-giraffe-card.png",
+    "docs/decisions/0083-animal-stations-diamond-ore-giraffe-concept.md",
+    "studio/tasks/STATION-084.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Diamond Giraffe in the game is the diamond ore look, with its rainbow coat",
+    "The old model's decals are archived"
+  ],
+  "verification": "PENDING",
+  "output_artifacts": [
+    "assets/stations/creature_giraffe_diamond.fbx"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'go on both the giraffe changes' (the look and the go-ahead of decision 0083). The regular Giraffe keeps its look; the gentle concepts of decision 0082 stay concepts."
+}
