@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-085",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A polish plan for Animal Stations: what to fix and smooth, in phases, from the open notes of decisions 0050 to 0083 and this session's Studio checks. A plan only.",
+  "inputs": [
+    "docs/decisions/0083-animal-stations-diamond-ore-giraffe-concept.md"
+  ],
+  "dependencies": [
+    "STATION-084"
+  ],
+  "files": [
+    "docs/game-design/game7-polish-plan.md",
+    "studio/tasks/STATION-085.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every item has a size and says if it needs SHANNON",
+    "A recommended order and one checkpoint"
+  ],
+  "verification": "Written from the 'Not done' sections of decisions 0050 to 0083 (collected by script) less what later tasks fixed (the moving kit, animals in their areas), and the Studio checks of 2026-11-17. No game file changed.",
+  "output_artifacts": [
+    "docs/game-design/game7-polish-plan.md"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'can we make a polishing plan for the game'. Checkpoint for SHANNON: the three items at the end of the plan."
+}
