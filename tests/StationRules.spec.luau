@@ -66,13 +66,13 @@ describe("StationConfig", function()
 		end
 	end)
 
-	it("has the small beta roster: a pack of cat, dog, meerkat, bird and the Titan; three solitary", function()
+	it("has the small beta roster: a pack of cat, dog, meerkat, bird, giraffe and the Titan; three solitary", function()
 		local group = {}
 		for _, sp in StationConfig.SPECIES do
 			group[sp.id] = sp.group
 		end
-		expect(#StationConfig.SPECIES).toBe(8)
-		for _, id in { "lion", "jackal", "meerkat", "flamingo", "elephant" } do
+		expect(#StationConfig.SPECIES).toBe(9)
+		for _, id in { "lion", "jackal", "meerkat", "flamingo", "giraffe", "elephant" } do
 			expect(group[id]).toBe("pack")
 		end
 		for _, id in { "cheetah", "rhino", "tortoise" } do

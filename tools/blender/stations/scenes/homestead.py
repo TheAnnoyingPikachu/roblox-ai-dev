@@ -37,6 +37,7 @@ RH = _load("ranch_house")  # the Ranch House: a farmhouse of fieldstone and timb
 LIVE = True  # with what the game stands itself
 PEN = None  # (r, deg) of the animal pen of scenes/animal_pen.py (a concept): the herd lives there, not in the meadow
 EXTRA = []  # more makers for the card, called with rng before the woods round it
+TEAM = None  # a maker for the meadow as a pen for the team only (scenes/team_pen.py, a concept)
 R = 112.0  # the homestead's radius: src/shared/ValleyMap.luau's HOME
 MEADOW = 34.0  # the herd's meadow in its middle
 RING = (37.0, 45.0)  # the path round the meadow
@@ -571,7 +572,7 @@ def meadow(rng):
     disc(MEADOW, (0, 0, 0.05), 0.17, (136, 194, 94), rng, n=40, chance=0.0)
     slab(RING[0], RING[1], 0, 360, 0.02, 0.3, PATH, rng, kind=S.PALE)
     ways = sorted([deg for _, deg, _ in WAYS] + [HUB])
-    for i, a in enumerate(ways):
+    for i, a in enumerate(ways if not TEAM else ()):  # the team's pen has a fence instead
         b = ways[(i + 1) % len(ways)] + (360 if i == len(ways) - 1 else 0)
         slab(MEADOW + 0.4, MEADOW + 1.8, 180 - (b - 11), 180 - (a + 11), 0.15, 1.3, S.STONE_DARK, rng, kind=S.COOL)
     disc(9, (10, 6, 0.2), 0.12, S.WATER, rng, n=14, chance=0.0)  # the pond
@@ -594,6 +595,9 @@ def meadow(rng):
         return
     box((7, 2.0, 1.5), (-6, 18, 0.2), S.WOOD, rng, yaw=-14)  # a feeding trough
     box((6.4, 1.4, 0.4), (-6, 18, 1.5), HAY, rng, yaw=-14)
+    if TEAM:
+        TEAM(rng)
+        return
     actor("creature_jackal", (4, -16, 0.2), -40)
     actor("creature_meerkat", (-17, 10, 0.2), 160)
     actor("creature_tortoise", (20, 17, 0.2), 240)

@@ -594,9 +594,10 @@ redraw.shop = function()
 		local finds = Style.text(card, "RARE FINDS", 12, C.muted, UDim2.fromOffset(200, 16))
 		finds.Position = UDim2.fromOffset(14, 192)
 		local rare = cellRow(card, 210, 44)
+		local side = math.min(44, (338 - 5 * (#def.rare - 1)) // #def.rare) -- one row, however many
 		for i, drop in def.rare do
 			local tier = (StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier
-			animalCell(rare, i, StationRules.assetOf(drop.s, drop.v), nil, RARITY_COLOUR[tier] or C.text, 44)
+			animalCell(rare, i, StationRules.assetOf(drop.s, drop.v), nil, RARITY_COLOUR[tier] or C.text, side)
 		end
 		local can = not locked and profile.coins >= def.price
 		local b = Style.button(card, `Buy for {Format.commas(def.price)}`, function()

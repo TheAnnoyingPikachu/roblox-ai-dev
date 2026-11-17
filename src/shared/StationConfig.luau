@@ -132,7 +132,7 @@ local function s(speed: number, strength: number, stamina: number, mana: number,
 end
 
 -- Small African beta pool: one common and one uncommon per role, a rare lion, and the Titan.
--- Pack: jackal (dog), lion (cat), meerkat, flamingo (bird), elephant. Solitary: tortoise, cheetah, rhino.
+-- Pack: jackal (dog), lion (cat), meerkat, flamingo (bird), giraffe, elephant. Solitary: tortoise, cheetah, rhino.
 -- One variant each (decision 0037): legendary for the commons, mythic for the rest. A variant is
 -- always legendary or higher. Its model is the asset "creature_<species>_<first word of its id>".
 StationConfig.SPECIES = {
@@ -218,6 +218,17 @@ StationConfig.SPECIES = {
 		variants = {
 			v("sun_lion", "Sun Lion", "mythic", "strength"),
 			v("shadow_lion", "Shadow Lion", "legendary", "speed"),
+		},
+	},
+	{ -- decision 0079: draft numbers, a little over the Lion's total
+		id = "giraffe",
+		name = "Giraffe",
+		role = "utility",
+		group = "pack",
+		rarity = "rare",
+		stats = s(50, 60, 45, 55, 80, 25),
+		variants = {
+			v("diamond_giraffe", "Diamond Giraffe", "mythic", "defence"),
 		},
 	},
 	{
@@ -464,13 +475,15 @@ StationConfig.EGGS = {
 		hatch = 3600,
 		wave = 10,
 		odds = {
-			{ id = "cheetah", bp = 2500 },
-			{ id = "rhino", bp = 2500 },
-			{ id = "flamingo", bp = 2500 },
-			{ id = "lion", bp = 2500 },
+			{ id = "cheetah", bp = 2000 },
+			{ id = "rhino", bp = 2000 },
+			{ id = "flamingo", bp = 2000 },
+			{ id = "lion", bp = 2000 },
+			{ id = "giraffe", bp = 2000 },
 		},
 		rare = {
 			r("lion", "shadow_lion", 2000),
+			r("giraffe", "diamond_giraffe", 10000),
 			r("cheetah", "fire_cheetah", 1000),
 			r("rhino", "crystal_rhino", 1000),
 			r("flamingo", "peacock_flamingo", 1000),
@@ -487,13 +500,15 @@ StationConfig.EGGS = {
 		hatch = 14400,
 		wave = 20,
 		odds = {
-			{ id = "lion", bp = 5000 },
+			{ id = "lion", bp = 4000 },
 			{ id = "cheetah", bp = 1500 },
 			{ id = "rhino", bp = 1500 },
 			{ id = "flamingo", bp = 1500 },
+			{ id = "giraffe", bp = 1000 },
 			{ id = "elephant", bp = 500 },
 		},
 		rare = {
+			r("giraffe", "diamond_giraffe", 4000),
 			r("elephant", "frost_elephant", 20000),
 			r("lion", "sun_lion", 4000),
 			r("cheetah", "lightning_cheetah", 2000),

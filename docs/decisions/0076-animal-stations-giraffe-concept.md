@@ -1,7 +1,7 @@
 # 0076: Animal Stations: the Giraffe (concept)
 
 Status: the look accepted (SHANNON, 2026-11-17: "go ahead and make the regular giraffe and make a diamond
-varient concept"); built and uploaded by STATION-077, not hatchable yet (below). Date: 2026-11-17.
+varient concept"); built and uploaded by STATION-077; hatchable with its variant since STATION-079 (decision 0079). Date: 2026-11-17.
 Tasks STATION-074, STATION-077.
 
 ## What SHANNON asked

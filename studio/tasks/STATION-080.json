@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-080",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for the homestead's meadow as a pen that only the player's team of three is in (decision 0080). Concept only.",
+  "inputs": [
+    "docs/decisions/0077-animal-stations-animal-pen-concept.md"
+  ],
+  "dependencies": [
+    "STATION-079"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/team_pen.py",
+    "tools/blender/stations/scenes/homestead.py",
+    "docs/concepts/team-pen-card.png",
+    "docs/decisions/0080-animal-stations-team-pen-concept.md",
+    "studio/tasks/STATION-080.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The card shows the homestead as it is with its meadow fenced as the team's pen, from above, on the plan, on a new ranch and at its gate",
+    "The homestead's own card and the models are unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: `stage.py -- team_pen` rendered with no error (121,056 triangles, 11 seconds); the card looked at. Not checked: the game engine, a phone.",
+  "output_artifacts": [
+    "docs/concepts/team-pen-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'make a concept for a pen in the middle of the ranch like it is right now but only your 3 animal team can be in there'. Checkpoint for SHANNON: the three items of decision 0080."
+}

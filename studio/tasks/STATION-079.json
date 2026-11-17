@@ -38,7 +38,7 @@
     "The Titan in its den lies flat with its eyes covered and a 'Zzz' over it",
     "The Giraffe and the Diamond Giraffe hatch from eggs and stand in the admin menu"
   ],
-  "verification": "PENDING",
+  "verification": "Lune 716/716 (the roster spec now nine species), stylua and selene clean. Blender 5.2: the three elephants rebuilt for their manifests only (nothing changed but the new `eyes` and `lid`); the Diamond Giraffe built (3,208 triangles), exported, its rainbow coat painted; uploaded with it by upload-assets run 44188560627. Studio: local build, stamp `dev`, 2026-11-17. With the Titan's Den bought and an Elephant given through the admin menu: it lay flat in its den, two lids over its eyes, 'z Z z' over it (seen in screens; the lids were first placed in the head mesh's own frame and missed, then placed from the joints at rest). The admin menu stood the Giraffe and the Diamond Giraffe; the vendor's Safari and Golden cards showed the Giraffe and eight rare finds in one row. Not checked: a real hatch of either, the Frost Mammoth's and War Elephant's lids, a phone.",
   "output_artifacts": [
     "src/shared/StationConfig.luau"
   ],
