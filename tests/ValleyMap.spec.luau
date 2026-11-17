@@ -50,6 +50,23 @@ describe("ValleyMap", function()
 		end
 	end)
 
+	it("raises a hill behind the Titan's Den with room in it for the den's hall, level before its gate", function()
+		local den = ValleyMap.DEN
+		local ux, uz = math.cos(math.rad(den.deg)), math.sin(math.rad(den.deg))
+		local function at(along: number, across: number): number
+			return ValleyMap.height(ux * along - uz * across, uz * along + ux * across)
+		end
+		for _, across in { -den.half - 4, 0, den.half + 4 } do
+			expect(math.abs(at(den.face - 2, across)) < 1e-6).toBeTruthy() -- level where its front stands
+		end
+		for along = den.face + 8, den.back, 4 do -- over the hall the land is well above its ceiling
+			for _, across in { -den.half, -8, 0, 8, den.half } do
+				expect(at(along, across) >= den.tall + 5).toBeTruthy()
+			end
+		end
+		expect(den.face > ValleyMap.HOME).toBeTruthy() -- and the hall is outside the homestead's level round
+	end)
+
 	it("brings the road to the hub down to the hub's level before the valley's edge", function()
 		expect(math.abs(ValleyMap.height(0, -ValleyMap.ROAD_TOP + 20)) < 1e-6).toBeTruthy()
 		local last = 0

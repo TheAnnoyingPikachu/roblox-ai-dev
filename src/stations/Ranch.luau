@@ -73,7 +73,7 @@ local PLACE: { [string]: { number } } = {
 	brooder = { 98, 25.5 }, -- its boiler stands on its left, clear of the track's path
 	windmill = { 86, 349 },
 	lodge = { 82, 182 },
-	den = { 84, 134 },
+	den = { ValleyMap.DEN.face, ValleyMap.DEN.deg }, -- its front on the face of its hill (decision 0075)
 }
 local MARKET = { 62, 298 }
 -- The size of the plot staked out for a building that a new ranch does not have.
@@ -81,20 +81,38 @@ local PLOT: { [string]: { number } } = {
 	brooder = { 18, 11 },
 	windmill = { 18, 16 },
 	lodge = { 26, 15 },
-	den = { 32, 26 },
+	den = { 30, 24 },
 }
 -- The buildings' sizes in their three looks: (width, depth, wall height) unless said.
-local HOUSE = { { 20, 16, 9 }, { 28, 20, 11 }, { 28, 22, 13 } }
+-- the farmhouse (decision 0074): its blocks { x, y, foot, width, depth, height }, and its door { x, y, sill }
+local HOUSE = {
+	{
+		blocks = { { 0, 0, 0, 21.2, 15.2, 9.8 }, { 0, -9.5, 0, 9.2, 5, 1.75 }, { 11.7, 1, 0, 4, 3.8, 17 } },
+		door = { 0, -7, 1.75 },
+	},
+	{
+		blocks = { { 0, 0, 0, 28, 18, 11.8 }, { 0, -12.2, 0, 29, 6.4, 1.75 }, { -15.8, 1.5, 0, 4.4, 3.8, 22 } },
+		door = { 0, -9, 1.75 },
+	},
+	{
+		blocks = {
+			{ -5, 0, 0, 30, 20, 17.2 },
+			{ 14.5, -3.5, 0, 13, 19, 16 },
+			{ -7.6, -13.3, 0, 26, 6.6, 1.75 },
+			{ -21.8, 2, 0, 4.4, 3.8, 28 },
+		},
+		door = { -1, -10, 1.75 },
+	},
+}
 local BARN = { { 18, 14, 8 }, { 26, 20, 11 }, { 34, 24, 14 } }
 local CELLAR = { {}, { 9, 8, 6, 11 }, { 11, 9, 7.5, 16 } } -- the mound's half sizes, its front's width
 local BROODER = { { 10, 7 }, { 15, 9 }, { 20, 11 } }
 local MILL = { { 4.5, 15 }, { 6.5, 22 }, { 7.5, 28 } } -- (foot radius, height)
 local SAILS = { { 5.4, 12.2, 18, 4 }, { 5.89, 20.5, 26, 4 }, { 6.55, 26.5, 34, 8 } } -- their hub (in front, high), span, arms
 local LODGE = { {}, { 20, 12, 8 }, { 28, 15, 10 } }
-local DEN = { { 30, 26, 18 }, { 32, 26, 18 }, { 36, 28, 21 } }
 -- How near a scattered tree, bush or rock may come to each building's middle.
 local ROOM: { [string]: number } =
-	{ house = 30, barn = 34, hatchery = 22, cellar = 28, brooder = 18, windmill = 24, lodge = 23, den = 30 }
+	{ house = 30, barn = 34, hatchery = 22, cellar = 28, brooder = 18, windmill = 24, lodge = 23, den = 12 }
 
 -- When the extras arrive: the sum of all upgrade levels (0 to 44).
 local PAVED, BENCHES, LANTERNS, ORCHARD, FLOWERS, FIELD, WELL, SHELTER, MORE_LANTERNS, GARDEN, FIRE, HIVES, FLAGS =
@@ -416,24 +434,17 @@ local function building(f: Instance, cf: CFrame, id: string, level: number, home
 	local b = CFrame.lookAt(middle, middle + cf:VectorToWorldSpace(at)) -- its back to the outside
 	local look = lookOf(id, level)
 	if look == 0 then
-		stakes(f, b, id)
+		stakes(f, if id == "den" then b * CFrame.new(0, 0, -14) else b, id) -- the den's plot is inside its cave
 		return
 	end
 	-- its model has to load: it must not hold the rebuild up, or a second rebuild would start beside this one
 	task.spawn(Creatures.still, `home_{id}_{look}`, b * CFrame.Angles(0, math.pi, 0), 1, f)
 	if id == "house" then
-		local w, d, h = HOUSE[look][1], HOUSE[look][2], HOUSE[look][3]
-		block(f, b, 0, 0, 0, w, d, h + 0.6)
-		if look >= 2 then
-			block(f, b, 0, -d / 2 - 3, 0, w * 0.62, 6, 0.9)
+		for _, s in HOUSE[look].blocks do
+			block(f, b, s[1], s[2], s[3], s[4], s[5], s[6])
 		end
-		if look == 3 then
-			for _, sx in { -1, 1 } do
-				block(f, b, sx * (w / 2 + 4), 2, 0, 8, 16, 9.6)
-			end
-			block(f, b, -w / 2 + 2.5, d / 2 - 2, 0, 7, 7, 23.6)
-		end
-		local door = part(f, V(4.4, 7.2, 0.6), b * CFrame.new(0, 4.2, d / 2 + 0.3), WHITE)
+		local x, y, sill = HOUSE[look].door[1], HOUSE[look].door[2], HOUSE[look].door[3]
+		local door = part(f, V(4.4, 7, 0.6), b * CFrame.new(x, sill + 3.5, -y + 0.3), WHITE)
 		door.Transparency, door.CanCollide, door.CastShadow, door.Name = 1, false, false, "Door"
 		prompt(door, "RanchMenu", "Open", "Ranch menu", i)
 	elseif id == "barn" then
@@ -502,16 +513,16 @@ local function building(f: Instance, cf: CFrame, id: string, level: number, home
 			block(f, b, 0, 0, 0, w + 2, d + 2, 0.75)
 			block(f, b, 0, d / 2 - 0.6, 0.75, w, 1.2, h)
 		end
-	elseif id == "den" then
-		local w, d, h = DEN[look][1], DEN[look][2], DEN[look][3]
+	elseif id == "den" then -- the hall is the hill's rock (Valley.den): only the gate is solid
+		local half, tall = ValleyMap.DEN.half, ValleyMap.DEN.tall
 		if look >= 2 then
-			block(f, b, 0, d / 2 - 1.2, 0, w, 2.4, h)
 			for _, sx in { -1, 1 } do
-				block(f, b, sx * (w / 2 - 1.2), 0, 0, 2.4, d, h)
-				block(f, b, sx * w * 0.4, -d / 2 + 1.2, 0, w * 0.2, 2.4, h)
+				block(f, b, sx * (half + 1.5), 0.6, 0, 9, 4, tall + 4)
 			end
+			block(f, b, 0, 0.6, tall - 2, half * 2 + 21, 4, 6)
 		end
-		local stand = cf:ToObjectSpace(b * CFrame.new(0, 0, -1)).Position * V(1, 0, 1)
+		local stand = cf:ToObjectSpace(b * CFrame.new(0, 0, -(ValleyMap.DEN.back - ValleyMap.DEN.face) * 0.55)).Position
+			* V(1, 0, 1)
 		home.den = CFrame.lookAt(cf * (stand + V(0, LAWN + 0.45, 0)), cf * V(0, LAWN + 0.45, 0)) -- the Titan faces out of it
 	end
 end
@@ -601,7 +612,7 @@ end
 -- plot and piece of fixed decor.
 local function scatter(seed: number, n: number, margin: number): { Vector3 }
 	local rng, out = Random.new(seed), {}
-	local ways = { HUB_WAY }
+	local ways = { HUB_WAY, ValleyMap.DEN.deg } -- and the way into the den
 	for _, g in ValleyMap.GROUNDS do
 		table.insert(ways, math.deg(math.atan2(g.z, g.x)))
 	end
@@ -748,7 +759,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	-- where each way leaves
 	local wild = Random.new(900 + i)
 	for a = 0, 352, 8 do
-		local clear = true
+		local clear = apart(a, ValleyMap.DEN.deg) > 12 -- nor across the way into the den
 		for _, w in ways do
 			clear = clear and apart(a, w) > 9
 		end

@@ -123,6 +123,17 @@ function Valley.write(terrain: Terrain, frame: CFrame)
 	end
 end
 
+-- Cuts the Titan's Den's hall out of the hill ValleyMap raises behind it (decision 0075): heights cannot
+-- hold a cave, so the hall is emptied after the land is written. Its floor is the homestead's ground.
+function Valley.den(terrain: Terrain, frame: CFrame)
+	local den = ValleyMap.DEN
+	local out = Vector3.new(math.cos(math.rad(den.deg)), 0, math.sin(math.rad(den.deg)))
+	local mid = (den.face - 4 + den.back) / 2
+	local centre = frame * (out * mid + Vector3.new(0, (den.tall - 2) / 2, 0)) -- from 2 below the ground (a voxel's top)
+	local look = CFrame.lookAt(centre, centre + frame:VectorToWorldSpace(out))
+	terrain:FillBlock(look, Vector3.new(den.half * 2, den.tall + 2, den.back - den.face + 4), Enum.Material.Air)
+end
+
 export type Kit = {
 	tree: (Instance, Vector3, Random, number) -> (),
 	pine: (Instance, Vector3, number, Random) -> (),

@@ -1,6 +1,6 @@
 # 0074: Animal Stations: the Ranch House as a classic farmhouse (concept)
 
-Status: proposed (a concept for SHANNON; nothing is in the game).
+Status: accepted (SHANNON, 2026-11-17: "go ahead with the farm house as well"); in the game by decision 0075.
 Date: 2026-11-17. Task STATION-069.
 
 ## What SHANNON asked

@@ -15,6 +15,10 @@ ValleyMap.WALL = 418 -- no one walks further out than this
 ValleyMap.HOME = 112 -- the radius levelled for the homestead
 ValleyMap.PAD = 106 -- and for each training ground
 ValleyMap.RING = 45 -- the outside of the ring path round the homestead's meadow: every way out starts on it
+-- The Titan's Den is dug into a hill against the homestead's edge (decision 0075). `deg`: the line it
+-- lies on, out from the homestead's middle; `face` to `back`: how far out along that line its hall
+-- runs; `half`: half the hall's width; `tall`: the hall's height; `top`: the hill's height over it.
+ValleyMap.DEN = { deg = 134, face = 116, back = 148, half = 17.5, tall = 21.5, top = 28 }
 ValleyMap.LAKE = -20 -- the top of the lake's water
 ValleyMap.HUB = -22 -- the hub's ground, which the road comes down to
 ValleyMap.ROAD_TOP, ValleyMap.ROAD_FOOT = 175, 340 -- how far along the hub road its slope begins and ends
@@ -40,6 +44,7 @@ end
 ValleyMap.STREAM = { { -99, 372 }, { -99, 273 }, { -30, 170 }, { 60, 112 }, { 140, 30 }, { 215, -40 }, { 330, -55 } }
 
 local LAKEWARD = { x = 0.98, z = -0.19 } -- the way down to the lake
+local DEN_X, DEN_Z = math.cos(math.rad(ValleyMap.DEN.deg)), math.sin(math.rad(ValleyMap.DEN.deg))
 
 local function smooth(a: number, b: number, v: number): number
 	local t = math.clamp((v - a) / (b - a), 0, 1)
@@ -151,6 +156,21 @@ function ValleyMap.height(x: number, z: number): number
 	end
 	if weight > 0 then
 		h += (sum / weight - h) * smooth(46, 0, nearest)
+	end
+	-- the den's hill: level ground before its gate, then a steep face up to a top that covers the hall
+	-- and runs back into the mountainside
+	local along, across = x * DEN_X + z * DEN_Z, math.abs(z * DEN_X - x * DEN_Z)
+	local den = ValleyMap.DEN
+	if along > den.face - 4 and along < den.back + 30 and across < den.half + 24 then
+		if along <= den.face then
+			h *= smooth(den.half + 8, den.half + 24, across)
+		else
+			local knoll = den.top
+				* smooth(den.face, den.face + 7, along)
+				* smooth(den.half + 24, den.half + 7, across)
+				* smooth(den.back + 30, den.back + 6, along)
+			h = math.max(h, knoll)
+		end
 	end
 	if t > 0.14 and d < 9 and r > ValleyMap.HOME then -- the stream's bed
 		local clear = true

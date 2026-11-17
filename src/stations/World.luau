@@ -314,6 +314,7 @@ local function terrain()
 		local span = ValleyMap.HALF * 2 + 400
 		t:FillBlock(CFrame.new(frame.Position.X, -8, frame.Position.Z), Vector3.new(span, 12, span), M.Grass)
 		Valley.write(t, frame)
+		Valley.den(t, frame)
 	end
 end
 
