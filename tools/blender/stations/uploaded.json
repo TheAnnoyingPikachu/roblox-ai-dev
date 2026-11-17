@@ -563,5 +563,125 @@
     "model": 116906159720919,
     "decal": 134881696278512,
     "texture": null
+  },
+  "home_house_1": {
+    "model": 122683382384484,
+    "decal": 80917279990893,
+    "texture": null
+  },
+  "home_house_2": {
+    "model": 126150551468465,
+    "decal": 134072974886688,
+    "texture": null
+  },
+  "home_house_3": {
+    "model": 74627812183513,
+    "decal": 95496119420491,
+    "texture": null
+  },
+  "home_barn_1": {
+    "model": 87882436394274,
+    "decal": 83100068129582,
+    "texture": null
+  },
+  "home_barn_2": {
+    "model": 114666492162928,
+    "decal": 80941398131558,
+    "texture": null
+  },
+  "home_barn_3": {
+    "model": 136466984914127,
+    "decal": 76519872389922,
+    "texture": null
+  },
+  "home_hatchery_1": {
+    "model": 90118028535968,
+    "decal": 116905996522393,
+    "texture": null
+  },
+  "home_hatchery_2": {
+    "model": 118258257520505,
+    "decal": 121069886317990,
+    "texture": null
+  },
+  "home_hatchery_3": {
+    "model": 133173322174027,
+    "decal": 95422251536211,
+    "texture": null
+  },
+  "home_cellar_1": {
+    "model": 111971669988965,
+    "decal": 110594967132834,
+    "texture": null
+  },
+  "home_cellar_2": {
+    "model": 117264605295438,
+    "decal": 137597745241423,
+    "texture": null
+  },
+  "home_cellar_3": {
+    "model": 137165970639254,
+    "decal": 83703877454673,
+    "texture": null
+  },
+  "home_brooder_1": {
+    "model": 108712066423388,
+    "decal": 130553334000589,
+    "texture": null
+  },
+  "home_brooder_2": {
+    "model": 117282215833889,
+    "decal": 133329065290239,
+    "texture": null
+  },
+  "home_brooder_3": {
+    "model": 72098489838682,
+    "decal": 116770421582727,
+    "texture": null
+  },
+  "home_windmill_1": {
+    "model": 128381817062964,
+    "decal": 95852165370319,
+    "texture": null
+  },
+  "home_windmill_2": {
+    "model": 75748542753589,
+    "decal": 95910787567366,
+    "texture": null
+  },
+  "home_windmill_3": {
+    "model": 102564953282684,
+    "decal": 131795349807625,
+    "texture": null
+  },
+  "home_lodge_1": {
+    "model": 84680252386324,
+    "decal": 106471854205262,
+    "texture": null
+  },
+  "home_lodge_2": {
+    "model": 124165669139515,
+    "decal": 140475310416902,
+    "texture": null
+  },
+  "home_lodge_3": {
+    "model": 99799013756267,
+    "decal": 111678315224490,
+    "texture": null
+  },
+  "home_den_1": {
+    "model": 139784593477928,
+    "decal": 74402960060117,
+    "texture": null
+  },
+  "home_den_2": {
+    "model": 97734855037012,
+    "decal": 136175365060200,
+    "texture": null
+  },
+  "home_den_3": {
+    "model": 128140149610744,
+    "decal": 114436191279575,
+    "texture": null
   }
 }

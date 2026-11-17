@@ -565,6 +565,85 @@ StationConfig.UPGRADES = {
 			{ coins = 500000, samples = 150, value = 200 },
 		},
 	},
+	-- the homestead's other buildings (decision 0072): draft numbers, none playtested
+	{
+		id = "hatchery",
+		name = "Hatchery",
+		gives = "eggs hatching at once",
+		base = 3,
+		levels = {
+			{ coins = 400, samples = 0, value = 4 },
+			{ coins = 2500, samples = 0, value = 5 },
+			{ coins = 12000, samples = 10, value = 6 },
+			{ coins = 60000, samples = 40, value = 8 },
+			{ coins = 300000, samples = 120, value = 10 },
+		},
+	},
+	{
+		id = "cellar",
+		name = "Egg Cellar",
+		gives = "eggs you can store",
+		base = 8,
+		levels = {
+			{ coins = 300, samples = 0, value = 12 },
+			{ coins = 1500, samples = 0, value = 18 },
+			{ coins = 8000, samples = 5, value = 24 },
+			{ coins = 40000, samples = 30, value = 36 },
+			{ coins = 200000, samples = 100, value = 48 },
+		},
+	},
+	{
+		id = "brooder",
+		name = "Brooder",
+		gives = "% hatching speed",
+		base = 100,
+		levels = {
+			{ coins = 1000, samples = 0, value = 115 },
+			{ coins = 5000, samples = 0, value = 130 },
+			{ coins = 25000, samples = 10, value = 150 },
+			{ coins = 120000, samples = 50, value = 175 },
+			{ coins = 500000, samples = 150, value = 200 },
+		},
+	},
+	{
+		id = "windmill",
+		name = "Windmill",
+		gives = "coins an hour, also while you are away",
+		base = 0,
+		levels = {
+			{ coins = 2000, samples = 0, value = 60 },
+			{ coins = 10000, samples = 0, value = 150 },
+			{ coins = 40000, samples = 15, value = 400 },
+			{ coins = 150000, samples = 50, value = 1000 },
+			{ coins = 500000, samples = 150, value = 2500 },
+		},
+	},
+	{
+		id = "lodge",
+		name = "Trophy Lodge",
+		gives = "% coins from waves",
+		base = 100,
+		levels = {
+			{ coins = 1500, samples = 0, value = 110 },
+			{ coins = 8000, samples = 0, value = 120 },
+			{ coins = 40000, samples = 15, value = 130 },
+			{ coins = 180000, samples = 60, value = 140 },
+			{ coins = 600000, samples = 200, value = 150 },
+		},
+	},
+	{
+		id = "den",
+		name = "Titan's Den",
+		gives = "% of the Titan's stats in waves",
+		base = 100,
+		levels = {
+			{ coins = 3000, samples = 0, value = 104 },
+			{ coins = 15000, samples = 5, value = 108 },
+			{ coins = 60000, samples = 25, value = 112 },
+			{ coins = 250000, samples = 80, value = 116 },
+			{ coins = 800000, samples = 250, value = 120 },
+		},
+	},
 } :: { Upgrade }
 
 local function find<T>(list: { T }, id: string): T?

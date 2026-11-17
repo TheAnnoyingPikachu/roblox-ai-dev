@@ -1,6 +1,7 @@
 # 0071: Animal Stations: an open, bigger homestead with more to upgrade (concept)
 
-Status: proposed (a concept for SHANNON; nothing is in the game).
+Status: accepted (SHANNON, 2026-11-17: "do all those buildings, do all your suggested drafts, the area doesnt
+need to be bigger just needs to fit everything"); in the game by decision 0072, at 224 studs across.
 Date: 2026-11-17. Task STATION-064.
 
 ## What SHANNON asked

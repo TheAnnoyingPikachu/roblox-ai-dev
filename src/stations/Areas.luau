@@ -501,7 +501,7 @@ function Areas.build(parent: Instance, i: number, level: number)
 		local from = (ranch * CFrame.new(World.AREA_GATE[k])).Position
 		local along = ((cf.Position - from) * Vector3.new(1, 0, 1)).Unit
 		local colour = Areas.COLOUR[st.stat]:Lerp(INK, 0.25)
-		World.kit.signboard(f, CFrame.lookAt(from + along * 16, from), 18, st.name, colour, 9)
+		World.kit.signboard(f, CFrame.lookAt(from + along * 2, from), 18, st.name, colour, 9)
 	end
 end
 

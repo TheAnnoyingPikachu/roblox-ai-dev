@@ -13,7 +13,8 @@ type Stats = StationConfig.Stats
 -- (rolled at hatch, then trained up to MAX_LEVEL) with the progress to the next as the fraction.
 -- rainbow = true: it wears the rainbow coat (decision 0058), which adds to every stat (`stat`); absent
 -- on every other animal.
-export type Owned = { s: string, v: string?, stats: Stats, trained: Stats?, rainbow: boolean? }
+-- `boost` is never stored: StationProgress.fighters sets it on the Titan for a wave (the Titan's Den).
+export type Owned = { s: string, v: string?, stats: Stats, trained: Stats?, rainbow: boolean?, boost: number? }
 
 StationRules.PPM = 1_000_000
 -- The share of the base level roll that gives `level`: BASE_TOP at BASE_MAX, BASE_STEP more for
@@ -170,6 +171,9 @@ function StationRules.stat(animal: Owned, stat: StationConfig.Stat): number
 	local value = math.floor((animal.stats :: any)[stat] * grown / max)
 	if animal.rainbow then
 		value += (value * StationConfig.RAINBOW_BONUS + 99) // 100
+	end
+	if animal.boost then -- the Titan's Den: this many percent of the stat, rounded down
+		value = value * animal.boost // 100
 	end
 	return value
 end

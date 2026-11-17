@@ -178,10 +178,10 @@ describe("StationProgress.buy", function()
 		_, ok, code = StationProgress.buy(p, "wild", hatched("rhino"))
 		expect(code).toBe("coins")
 		p.coins = 1e9
-		for _ = 1, StationProgress.MAX_EGGS + StationProgress.MAX_STORED do
+		for _ = 1, 3 + 8 do -- a new ranch: three nests and room for eight in the storage
 			p = StationProgress.buy(p, "meadow", hatched("jackal"))
 		end
-		expect(#p.eggs).toBe(30)
+		expect(#p.eggs).toBe(11)
 		_, ok, code = StationProgress.buy(p, "meadow", hatched("jackal"))
 		expect(code).toBe("eggs_full")
 	end)
@@ -209,9 +209,10 @@ describe("StationProgress.buy", function()
 		end
 	)
 
-	it("starts the egg the player chooses, six at once, and nothing starts by itself", function()
+	it("starts the egg the player chooses, six at once with six nests, and nothing starts by itself", function()
 		local p = fresh()
 		p.coins = 1e9
+		p.upgrades.hatchery = 3 -- six nests
 		for k = 1, 8 do
 			p = StationProgress.buy(p, "meadow", hatched(if k == 7 then "meerkat" else "jackal"))
 		end
@@ -238,6 +239,7 @@ describe("StationProgress.buy", function()
 		local wait = (StationConfig.egg("meadow") :: StationConfig.Egg).hatch
 		local p = fresh()
 		p.coins = 1e9
+		p.upgrades.hatchery = 1 -- four nests
 		for k, sp in { "jackal", "tortoise", "meerkat", "jackal" } do
 			p = StationProgress.buy(p, "meadow", hatched(sp))
 			p = StationProgress.start(p, k, k * 10)
@@ -246,8 +248,8 @@ describe("StationProgress.buy", function()
 		_, ok, code = StationProgress.crack(p, 2, 20 + wait - 1)
 		expect(ok).toBe(false)
 		expect(code).toBe("not_ready")
-		expect(StationProgress.due(p.eggs[2], 20 + wait - 1)).toBe(false)
-		expect(StationProgress.due(p.eggs[2], 20 + wait)).toBe(true)
+		expect(StationProgress.due(p, p.eggs[2], 20 + wait - 1)).toBe(false)
+		expect(StationProgress.due(p, p.eggs[2], 20 + wait)).toBe(true)
 		expect(#p.animals).toBe(0) -- time alone opens nothing
 		p, ok, code, born = StationProgress.crack(p, 2, 20 + wait) -- the second egg, the player's choice
 		expect(ok).toBe(true)
@@ -366,16 +368,16 @@ describe("StationProgress.buy", function()
 		expect(again.eggs[1].animal.s).toBe("cheetah")
 		expect(again.eggs[2].since).toBeNil()
 		local eggs = {}
-		for _ = 1, 9 do
+		for _ = 1, 13 do
 			table.insert(eggs, { egg = "meadow", since = 5, animal = { s = "jackal" } })
 		end
 		table.insert(eggs, 1, { egg = "moon", since = 5, animal = { s = "jackal" } })
 		table.insert(eggs, 2, { egg = "meadow", since = 5, animal = { s = "dragon" } })
 		table.insert(eggs, 3, "junk")
 		local q = StationProgress.sanitize({ eggs = eggs }, 0)
-		expect(#q.eggs).toBe(9) -- the nine good ones: no more than six hatching, the rest back in storage
+		expect(#q.eggs).toBe(13) -- the good ones: no more hatching than a save can hold, the rest back in storage
 		expect(StationProgress.hatching(q)).toBe(StationProgress.MAX_EGGS)
-		expect(q.eggs[7].since).toBeNil()
+		expect(q.eggs[11].since).toBeNil()
 		expect(q.eggs[1].animal.stats.speed).toBe(
 			(StationRules.versionStats("jackal", nil) :: StationConfig.Stats).speed
 		)
@@ -601,6 +603,138 @@ describe("StationProgress ranch upgrades", function()
 		expect(StationProgress.value(p, "barn")).toBe(10)
 		expect(StationProgress.value(p, "grounds")).toBe(100)
 		expect(p.samples).toBe(0)
+	end)
+
+	it("starts a ranch with three nests, room for eight stored eggs, and no brooder, windmill, lodge or den", function()
+		local p = fresh()
+		expect(StationProgress.value(p, "hatchery")).toBe(3)
+		expect(StationProgress.value(p, "cellar")).toBe(8)
+		expect(StationProgress.value(p, "brooder")).toBe(100)
+		expect(StationProgress.value(p, "windmill")).toBe(0)
+		expect(StationProgress.value(p, "lodge")).toBe(100)
+		expect(StationProgress.value(p, "den")).toBe(100)
+		-- the most a save can hold is what the top levels give
+		local function top(id: string): number
+			local u = StationConfig.upgrade(id) :: StationConfig.Upgrade
+			return u.levels[#u.levels].value
+		end
+		expect(top("hatchery")).toBe(StationProgress.MAX_EGGS)
+		expect(top("cellar")).toBe(StationProgress.MAX_STORED)
+	end)
+
+	it("lets the Hatchery and the Egg Cellar say how many eggs hatch and wait, and never cuts a save down", function()
+		local p = rich()
+		for k = 1, 11 do
+			p = StationProgress.buy(p, "meadow", hatched("jackal"))
+			if k <= 3 then
+				p = StationProgress.start(p, k, 0)
+			end
+		end
+		local _, ok, code = StationProgress.start(p, 4, 0)
+		expect(code).toBe("nests_full")
+		_, ok, code = StationProgress.buy(p, "meadow", hatched("jackal"))
+		expect(code).toBe("eggs_full")
+		p = StationProgress.upgrade(p, "hatchery", 0) -- a fourth nest
+		p, ok = StationProgress.start(p, 4, 0)
+		expect(ok).toBe(true)
+		p, ok = StationProgress.buy(p, "meadow", hatched("jackal")) -- and so room for one more egg
+		expect(ok).toBe(true)
+		p = StationProgress.upgrade(p, "cellar", 0) -- twelve stored
+		for _ = 1, 4 do
+			p, ok = StationProgress.buy(p, "meadow", hatched("jackal"))
+			expect(ok).toBe(true)
+		end
+		expect(#p.eggs).toBe(16)
+		-- a save from before the upgrades, with six hatching and twenty stored, keeps them all
+		local old = { eggs = {} }
+		for k = 1, 26 do
+			table.insert(old.eggs, { egg = "meadow", since = if k <= 6 then 5 else nil, animal = { s = "jackal" } })
+		end
+		local q = StationProgress.sanitize(old, 0)
+		expect(#q.eggs).toBe(26)
+		expect(StationProgress.hatching(q)).toBe(6)
+	end)
+
+	it("hatches faster with the Brooder, rounded up to whole seconds", function()
+		local egg = StationConfig.egg("wild") :: StationConfig.Egg
+		local p = rich()
+		expect(StationProgress.hatchSeconds(p, egg)).toBe(egg.hatch)
+		p = StationProgress.buy(p, "wild", hatched("rhino"))
+		p = StationProgress.start(p, 1, 100)
+		p = StationProgress.upgrade(p, "brooder", 100) -- 115%
+		local quick = math.ceil(egg.hatch * 100 / 115)
+		expect(StationProgress.hatchSeconds(p, egg)).toBe(quick)
+		expect(StationProgress.due(p, p.eggs[1], 100 + quick - 1)).toBe(false)
+		expect(StationProgress.due(p, p.eggs[1], 100 + quick)).toBe(true) -- an egg already hatching is faster too
+		for _ = 2, 5 do
+			p = StationProgress.upgrade(p, "brooder", 100)
+		end
+		expect(StationProgress.hatchSeconds(p, egg)).toBe(egg.hatch / 2) -- 200%
+	end)
+
+	it("pays the Windmill's coins by the hour, also for time away, eight hours at most", function()
+		local p = rich()
+		local earned
+		p, earned = StationProgress.earn(p, 5000)
+		expect(earned).toBe(0) -- no windmill
+		expect(p.mill).toBeNil()
+		p = StationProgress.upgrade(p, "windmill", 1000) -- 60 coins an hour, from now
+		expect(p.mill).toBe(1000)
+		local coins = p.coins
+		p, earned = StationProgress.earn(p, 1000 + 59)
+		expect(earned).toBe(0) -- a coin takes a minute
+		expect(p.mill).toBe(1000) -- and the minute stays on the clock
+		p, earned = StationProgress.earn(p, 1000 + 150)
+		expect(earned).toBe(2)
+		expect(p.mill).toBe(1120) -- the half minute left over keeps counting
+		p, earned = StationProgress.earn(p, 1120 + 3600)
+		expect(earned).toBe(60)
+		expect(p.coins).toBe(coins + 62)
+		p, earned = StationProgress.earn(p, p.mill :: number + 30 * 24 * 3600) -- a month away
+		expect(earned).toBe(60 * StationProgress.MILL_HOURS)
+		expect(p.mill).toBe(1120 + 3600 + 30 * 24 * 3600)
+		-- settling the save pays too, and the clock is kept through sanitize but never ahead of now
+		local at = p.mill :: number
+		local before = p.coins
+		p = StationProgress.settle(p, at + 600)
+		expect(p.coins).toBe(before + 10)
+		local again = StationProgress.sanitize(p, at + 600)
+		expect(again.mill).toBe(at + 600)
+		again = StationProgress.sanitize(p, at)
+		expect(again.mill).toBe(at)
+	end)
+
+	it("pays more coins for a wave with the Trophy Lodge, and nothing else more", function()
+		local p = rich()
+		p.best = 30
+		local coins, xp, samples = StationProgress.payout(p, 31)
+		p = StationProgress.upgrade(p, "lodge", 0) -- 110%
+		local more, sameXp, sameSamples = StationProgress.payout(p, 31)
+		expect(more).toBe(coins * 110 // 100)
+		expect(sameXp).toBe(xp)
+		expect(sameSamples).toBe(samples)
+	end)
+
+	it("gives the Titan its Den's share of every stat in a wave, and no other animal", function()
+		local p = rich()
+		local ok
+		p, ok = StationProgress.give(p, "lion", nil, 10)
+		p, ok = StationProgress.give(p, "elephant", nil, 10)
+		expect(ok).toBe(true)
+		local plain = StationProgress.fighters(p)
+		expect(#plain).toBe(2)
+		expect((plain[2] :: any).boost).toBeNil()
+		p = StationProgress.upgrade(p, "den", 0) -- 104%
+		local team = StationProgress.fighters(p)
+		expect((team[1] :: any).boost).toBeNil()
+		expect((team[2] :: any).boost).toBe(104)
+		for _, stat in StationConfig.STATS do
+			local base = StationRules.stat(plain[2] :: any, stat)
+			expect(StationRules.stat(team[2] :: any, stat)).toBe(base * 104 // 100)
+			expect(StationRules.stat(team[1] :: any, stat)).toBe(StationRules.stat(plain[1] :: any, stat))
+		end
+		local _, stored = StationProgress.find(p, p.titan :: number)
+		expect((stored :: any).boost).toBeNil() -- the saved animal is untouched
 	end)
 
 	it("makes every level of every upgrade cost more and give more than the one before", function()

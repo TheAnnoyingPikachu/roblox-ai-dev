@@ -14,23 +14,27 @@ ValleyMap.HALF = 448 -- the valley is written this far each way from its middle
 ValleyMap.WALL = 418 -- no one walks further out than this
 ValleyMap.HOME = 112 -- the radius levelled for the homestead
 ValleyMap.PAD = 106 -- and for each training ground
+ValleyMap.RING = 45 -- the outside of the ring path round the homestead's meadow: every way out starts on it
 ValleyMap.LAKE = -20 -- the top of the lake's water
 ValleyMap.HUB = -22 -- the hub's ground, which the road comes down to
 ValleyMap.ROAD_TOP, ValleyMap.ROAD_FOOT = 175, 340 -- how far along the hub road its slope begins and ends
 
--- `sx`, `sz`: where its path leaves the homestead's plot (a square 75 studs each way from the middle):
--- a gap in the fence where the plot is clear of buildings, or beside the plot's own gate at the front.
+-- `sx`, `sz`: where its path starts, on the homestead's ring path, straight towards it.
 export type Ground = { id: string, x: number, z: number, h: number, sx: number, sz: number }
 -- The training grounds, in StationConfig.STATIONS' order. Heights are whole voxels (4 studs), so the
 -- terrain stands exactly level there.
 ValleyMap.GROUNDS = {
-	{ id = "track", x = 263, z = 61, h = -12, sx = 75, sz = 22 }, -- on the flat behind the beach
-	{ id = "gym", x = -243, z = -118, h = 8, sx = -22, sz = -88 }, -- in a cut in the hill
-	{ id = "pool", x = 221, z = -155, h = -16, sx = 22, sz = -88 }, -- on the beach, by the water
-	{ id = "library", x = -278, z = 112, h = 44, sx = -75, sz = 30 }, -- on a high ledge
-	{ id = "spring", x = -99, z = 273, h = 28, sx = -52, sz = 75 }, -- in a basin under the waterfall
-	{ id = "guard", x = 127, z = 238, h = 16, sx = 45, sz = 75 }, -- in the mouth of a pass
+	{ id = "track", x = 263, z = 61, h = -12, sx = 0, sz = 0 }, -- on the flat behind the beach
+	{ id = "gym", x = -243, z = -118, h = 8, sx = 0, sz = 0 }, -- in a cut in the hill
+	{ id = "pool", x = 221, z = -155, h = -16, sx = 0, sz = 0 }, -- on the beach, by the water
+	{ id = "library", x = -278, z = 112, h = 44, sx = 0, sz = 0 }, -- on a high ledge
+	{ id = "spring", x = -99, z = 273, h = 28, sx = 0, sz = 0 }, -- in a basin under the waterfall
+	{ id = "guard", x = 127, z = 238, h = 16, sx = 0, sz = 0 }, -- in the mouth of a pass
 } :: { Ground }
+for _, g in ValleyMap.GROUNDS do
+	local d = math.sqrt(g.x * g.x + g.z * g.z)
+	g.sx, g.sz = g.x / d * ValleyMap.RING, g.z / d * ValleyMap.RING
+end
 
 -- The stream, from above the spring to the lake.
 ValleyMap.STREAM = { { -99, 372 }, { -99, 273 }, { -30, 170 }, { 60, 112 }, { 140, 30 }, { 215, -40 }, { 330, -55 } }
@@ -67,7 +71,7 @@ function ValleyMap.stream(x: number, z: number): (number, number)
 end
 
 export type Way = { sx: number, sz: number, ax: number, az: number, bx: number, bz: number, h0: number, h1: number }
--- The paths: straight from where each leaves the plot (s) to its ground's edge (b). It is level as far
+-- The paths: straight from the homestead's ring path (s) to each ground's edge (b). It is level as far
 -- as the homestead's edge (a), then slopes to the ground's height.
 local ways: { Way } = {}
 for _, g in ValleyMap.GROUNDS do
@@ -185,7 +189,7 @@ function ValleyMap.kind(x: number, z: number, h: number, steep: number): string
 			return "path"
 		end
 	end
-	if z < -75 and math.abs(x) < 9 then
+	if z < -ValleyMap.RING and math.abs(x) < 9 then
 		return "path"
 	end
 	local s = x * LAKEWARD.x + z * LAKEWARD.z

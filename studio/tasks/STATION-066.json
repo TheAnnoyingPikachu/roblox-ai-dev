@@ -20,6 +20,8 @@
     "src/shared/StationAssets.luau",
     "docs/assets/register.md",
     "docs/concepts/ranch-homestead-card.png",
+    "tests/StationAssets.spec.luau",
+    "src/stations/Creatures.luau",
     "studio/tasks/STATION-066.json"
   ],
   "tests": [
@@ -30,7 +32,7 @@
     "A model holds nothing the game stands itself: eggs, nests, racks, the Titan, the windmill's sails",
     "Every model is uploaded and listed in StationAssets and in the asset register"
   ],
-  "verification": "Blender 5.2 on 2026-11-17: `build.py` built the 24 models with no error, 92 to 3,724 triangles each (budget 20,000); a sheet of all 24 previews was looked at. One fault was found and fixed there: the Ranch House's wing roofs lay across the wings and made the model 54 studs wide. Upload and the game are recorded when done.",
+  "verification": "Blender 5.2 on 2026-11-17: `build.py` built the 24 models with no error, 92 to 3,724 triangles each (budget 20,000); a sheet of all 24 previews was looked at. One fault was found and fixed there: the Ranch House's wing roofs lay across the wings and made the model 54 studs wide. Upload-assets run 44137951448 uploaded all 24 (a model and a decal each); `uploaded.json` and `StationAssets.luau` hold them (113 assets, 137 uploads) and a new case in StationAssets.spec checks there are three looks for every upgrade but the Training Grounds. Lune 715/715. In Studio (local build, stamp `dev`) looks 1 and 3 of all eight stood in the game with their lettering the right way round; look 2 was not looked at there.",
   "output_artifacts": [
     "tools/blender/stations/assets/homestead.py"
   ],

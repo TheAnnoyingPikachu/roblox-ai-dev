@@ -31,7 +31,8 @@ World.SPAWN = Vector3.new(0, 0.6, 76)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
 World.RANCH_DIST = 900 -- hub centre to each ranch centre: two valleys side by side must not meet
 World.RANCH_Y = 22 -- the homestead's ground: the hub's is at 0, and ValleyMap.HUB below the homestead
-World.RANCH_HALF = 75 -- half the fenced ranch square
+World.LAWN = 0 -- the homestead's lawn above that ground: none, it is the valley's own grass (a part's grass is far darker)
+World.RANCH_GATE = ValleyMap.HOME - 8 -- a homestead's middle to its gate: just inside the round the valley levels
 local PASS_HALF = 34 -- half the width of the pass from the hub up to each ranch
 -- along a pass from the hub: where it starts to climb, and where it is up (ValleyMap's road, seen from the hub)
 local PASS_TOP = World.RANCH_DIST - ValleyMap.ROAD_TOP
@@ -727,7 +728,7 @@ local function pass(root: Instance, i: number, rng: Random)
 	local f = folder(root, `Pass{i}`)
 	local a = rad(RANCH_ANGLE[i])
 	local dir, side = Vector3.new(math.cos(a), 0, math.sin(a)), Vector3.new(-math.sin(a), 0, math.cos(a))
-	local gate = World.RANCH_DIST - World.RANCH_HALF
+	local gate = World.RANCH_DIST - World.RANCH_GATE
 	local function height(s: number): number
 		return World.RANCH_Y * math.clamp((s - PASS_RAMP) / (PASS_TOP - PASS_RAMP), 0, 1)
 	end
@@ -902,15 +903,17 @@ function World.areaFrame(i: number, k: number): CFrame
 	return CFrame.lookAt(centre, centre + cf:VectorToWorldSpace(Vector3.new(g.x, 0, g.z)).Unit)
 end
 
--- In the plot's own frame, for each ground: where its path leaves the plot, and the ground's middle.
+-- In the homestead's own frame, for each ground: where its path leaves the homestead's lawn (its name
+-- board stands there), and the ground's middle.
 World.AREA_GATE, World.AREA_AT = {} :: { Vector3 }, {} :: { Vector3 }
 for k, g in ValleyMap.GROUNDS do
-	World.AREA_GATE[k], World.AREA_AT[k] = Vector3.new(g.sx, 0, g.sz), Vector3.new(g.x, 0, g.z)
+	local out = Vector3.new(g.x, 0, g.z)
+	World.AREA_GATE[k], World.AREA_AT[k] = out.Unit * (ValleyMap.HOME - 6), out
 end
 
 -- Where the owner spawns: just inside the gate, facing the barn.
 function World.ranchSpawn(i: number): CFrame
-	return World.ranchFrame(i) * CFrame.new(0, 3, -World.RANCH_HALF + 8) * CFrame.Angles(0, math.pi, 0)
+	return World.ranchFrame(i) * CFrame.new(0, 3, -World.RANCH_GATE + 10) * CFrame.Angles(0, math.pi, 0)
 end
 
 -- Wooden post-and-rail fence between two local points (y = 0) of `cf`.
@@ -1003,76 +1006,38 @@ local function ranch(root: Instance, i: number, rng: Random)
 	f:SetAttribute("Index", i)
 	f:SetAttribute("Owner", 0)
 	local cf = World.ranchFrame(i)
-	local H = World.RANCH_HALF
+	local G = World.RANCH_GATE
 	local function at(x: number, y: number, z: number): CFrame
 		return cf * CFrame.new(x, y, z)
 	end
-	part(f, Vector3.new(H * 2, 0.4, H * 2), at(0, 0.2, 0), Color3.fromRGB(120, 176, 84), M.Grass)
-	-- fence with a gate gap facing the plaza
-	fence(f, cf, Vector3.new(-H, 0, -H), Vector3.new(-8, 0, -H))
-	fence(f, cf, Vector3.new(8, 0, -H), Vector3.new(H, 0, -H))
-	-- down the sides and along the back, with a gap where a training ground's path leaves through it
-	-- (two leave beside the gate instead). A side is a line from one corner to the next.
-	for _, side in
-		{
-			{ Vector3.new(-H, 0, -H), Vector3.new(-H, 0, H) },
-			{ Vector3.new(-H, 0, H), Vector3.new(H, 0, H) },
-			{ Vector3.new(H, 0, H), Vector3.new(H, 0, -H) },
-		}
-	do
-		local a, b = side[1], side[2]
-		local length, along = (b - a).Magnitude, (b - a).Unit
-		local gaps = {}
-		for _, gate in World.AREA_GATE do
-			local d = (gate - a):Dot(along)
-			if ((gate - a) - along * d).Magnitude < 1 and d > 0 and d < length then
-				table.insert(gaps, d)
-			end
-		end
-		table.sort(gaps)
-		local from = 0
-		for _, d in gaps do
-			fence(f, cf, a + along * from, a + along * (d - 7))
-			from = d + 7
-		end
-		fence(f, cf, a + along * from, b)
-	end
+	-- the homestead is open all round (decision 0072): its lawn is the round the valley levels for it
 	-- gate: stone pillars with lanterns, a wooden arch with the owner sign (World.setRanchOwner
-	-- changes the text)
+	-- changes the text). No fence leads off it: a low wall each side stops after a few steps.
 	for _, dx in { -8, 8 } do
-		part(f, Vector3.new(3.4, 6, 3.4), at(dx, 3, -H), STONE_DARK, M.Cobblestone)
-		part(f, Vector3.new(4, 0.7, 4), at(dx, 6.3, -H), STONE, M.Slate)
-		part(f, Vector3.new(1.6, 7, 1.6), at(dx, 10, -H), WOOD_DARK, M.Wood)
-		local lantern = part(f, Vector3.new(1.3, 1.7, 1.3), at(dx, 5, -H - 2.3), WARM, M.Neon)
-		part(f, Vector3.new(1.7, 0.35, 1.7), at(dx, 6, -H - 2.3), INK, M.Metal)
-		part(f, Vector3.new(0.3, 0.3, 1.2), at(dx, 6.1, -H - 1.6), INK, M.Metal)
+		part(f, Vector3.new(3.4, 6, 3.4), at(dx, 3, -G), STONE_DARK, M.Cobblestone)
+		part(f, Vector3.new(4, 0.7, 4), at(dx, 6.3, -G), STONE, M.Slate)
+		part(f, Vector3.new(1.6, 7, 1.6), at(dx, 10, -G), WOOD_DARK, M.Wood)
+		local lantern = part(f, Vector3.new(1.3, 1.7, 1.3), at(dx, 5, -G - 2.3), WARM, M.Neon)
+		part(f, Vector3.new(1.7, 0.35, 1.7), at(dx, 6, -G - 2.3), INK, M.Metal)
+		part(f, Vector3.new(0.3, 0.3, 1.2), at(dx, 6.1, -G - 1.6), INK, M.Metal)
 		glow(lantern, WARM, 16, 1.2)
+		local side = dx / 8
+		part(f, Vector3.new(13, 3, 2.2), at(side * 16.2, 1.5, -G), STONE_DARK, M.Cobblestone)
+		part(f, Vector3.new(3, 4.2, 3), at(side * 24, 2.1, -G), STONE_DARK, M.Cobblestone)
+		flowers(f, at(side * 16.5, World.LAWN, -G - 2.6).Position, rng, 8, 3)
 	end
-	part(f, Vector3.new(18, 1, 1.4), at(0, 12.6, -H), WOOD_DARK, M.Wood)
-	local sign = part(f, Vector3.new(14, 3.2, 0.6), at(0, 10.2, -H), WOOD, M.WoodPlanks)
+	part(f, Vector3.new(18, 1, 1.4), at(0, 12.6, -G), WOOD_DARK, M.Wood)
+	local sign = part(f, Vector3.new(14, 3.2, 0.6), at(0, 10.2, -G), WOOD, M.WoodPlanks)
 	sign.Name = "OwnerSign"
 	label(sign, "Free Ranch", WHITE, 0.6)
 	-- teleport pad to the hub, just inside the gate
-	teleporter(f, at(16, 0, -H + 6).Position, "hub", "Go to the hub")
-	signboard(f, at(27, 0, -H + 3), 11, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
-	-- mailbox by the gate, flowers along the front fence, trees outside the corners
-	local box = at(12.5, 0, -H - 3.5)
+	teleporter(f, at(17, 0, -G + 7).Position, "hub", "Go to the hub")
+	signboard(f, at(27, World.LAWN, -G + 5), 11, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
+	-- mailbox by the gate
+	local box = at(12.5, 0, -G - 3.5)
 	pillar(f, box.Position, 3.4, 0.25, WOOD_DARK, M.Wood)
 	part(f, Vector3.new(1.4, 1.3, 2.2), box * CFrame.new(0, 4, 0), RED, M.SmoothPlastic)
 	part(f, Vector3.new(0.15, 1, 0.5), box * CFrame.new(0.8, 4.5, 0.6), Color3.fromRGB(255, 220, 80), M.SmoothPlastic)
-	for _, x in { -28, -18, 18, 28 } do
-		flowers(f, at(x, 0, -H - 2.5).Position, rng, 6, 2.5)
-	end
-	for _, p in
-		{
-			Vector3.new(-H - 12, 0, 52),
-			Vector3.new(H + 12, 0, 48),
-			Vector3.new(-H - 14, 0, -4),
-			Vector3.new(H + 14, 0, -6),
-		}
-	do
-		tree(f, at(p.X, 0, p.Z).Position, rng, rng:NextNumber(1.1, 1.5))
-	end
 	-- the valley round it: its trees, waterfall and bridges, and what closes it
 	Valley.dress(f, cf, rng, { tree = tree, pine = pine, rock = rock })
 	valleyRim(f, i, rng)

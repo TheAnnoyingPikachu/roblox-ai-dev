@@ -20,9 +20,14 @@ Creatures.publishPortraits()
 -- What stands on each ranch follows its owner's upgrades (a free ranch shows a new one).
 local shown: { [number]: string } = {}
 local function show(i: number, upgrades: { [string]: number })
+	local ids = {}
+	for id in upgrades do
+		table.insert(ids, id)
+	end
+	table.sort(ids)
 	local key = ""
-	for _, track in { "house", "barn", "grounds" } do
-		key ..= `{upgrades[track] or 0},`
+	for _, id in ids do
+		key ..= `{id}{upgrades[id]},`
 	end
 	if shown[i] ~= key then
 		shown[i] = key
@@ -35,11 +40,12 @@ end
 -- and the eggs waiting in its hatchery
 local held: { [number]: string } = {}
 local hatchedAt: { [number]: CFrame } = {} -- animal id -> the nest it has just hatched in
-local syncHerd: (i: number, animals: { any }) -> ()
-local function showEggs(i: number, eggs: { { egg: string, since: number? } })
+local syncHerd: (i: number, animals: { any }, grounds: number, titan: number?) -> ()
+-- `eggs`: the profile's list, each hatching one with `due`, when it can be opened (the Brooder shortens it)
+local function showEggs(i: number, eggs: { { egg: string, since: number?, due: number? } })
 	local key = ""
 	for _, e in eggs do
-		key ..= e.egg .. (if e.since then "+," else ",")
+		key ..= e.egg .. (if e.since then `+{e.due},` else ",")
 	end
 	if held[i] ~= key then
 		held[i] = key
@@ -128,6 +134,25 @@ local StationRules = require(Shared:WaitForChild("StationRules"))
 
 local rng = Rng.seed(os.time(), Random.new():NextInteger(1, 2 ^ 30))
 local saves
+
+-- A profile's eggs as Ranch.eggs shows them: each hatching one with the time it can be opened.
+local function eggsOf(p: StationProgress.Profile): { { egg: string, since: number?, due: number? } }
+	local out = {}
+	for k, e in p.eggs do
+		local egg = StationConfig.egg(e.egg)
+		out[k] = {
+			egg = e.egg,
+			since = e.since,
+			due = if e.since and egg then e.since + StationProgress.hatchSeconds(p, egg) else nil,
+		}
+	end
+	return out
+end
+
+-- The Titan that stands in its den: the profile's, once the Titan's Den is built.
+local function denTitan(p: StationProgress.Profile): number?
+	return if (p.upgrades.den or 0) > 0 then p.titan else nil
+end
 local remotes: Remotes.Handle
 
 local function ids(list: { { id: string } }): { string }
@@ -527,9 +552,9 @@ saves = Saves.start({
 		local i = ranchOf(player)
 		if i then
 			show(i, profile.upgrades)
-			showEggs(i, profile.eggs)
+			showEggs(i, eggsOf(profile))
 			if syncHerd then -- not yet while this script is still starting
-				syncHerd(i, profile.animals, profile.upgrades.grounds or 0)
+				syncHerd(i, profile.animals, profile.upgrades.grounds or 0, denTitan(profile))
 			end
 		end
 	end,
@@ -544,17 +569,43 @@ for _, p in Players:GetPlayers() do
 	task.spawn(saves.load, p)
 end
 
+-- The Windmill (decision 0072) pays its owner once a minute while they play. The first payment after
+-- they arrive covers the time they were away: they are told what it was.
+local milled: { [Player]: boolean } = {}
+task.spawn(function()
+	while true do
+		for _, player in Players:GetPlayers() do
+			local p = saves.get(player)
+			if p and StationProgress.value(p, "windmill") > 0 then
+				local now = os.time()
+				local _, coins = StationProgress.earn(StationProgress.sanitize(p, now), now) -- on a copy, for the sum
+				if coins > 0 then
+					saves.apply(player, function(q)
+						return (StationProgress.earn(q, now))
+					end)
+					if not milled[player] then
+						remotes.fx(player, "mill", coins)
+					end
+				end
+				milled[player] = true
+			end
+		end
+		task.wait(60)
+	end
+end)
+
 Players.PlayerRemoving:Connect(function(player)
 	looks(player):Destroy()
 	WaveShow.clear(player)
 	readyAt[player] = nil
+	milled[player] = nil
 	local i = ranchOf(player)
 	if i then
 		owners[i] = nil
 		World.setRanchOwner(i, nil)
 		show(i, {})
 		showEggs(i, {})
-		syncHerd(i, {}, 0)
+		syncHerd(i, {}, 0, nil)
 	end
 end)
 
@@ -567,9 +618,10 @@ local HERD_MAX = 8
 local herds: { [number]: { [number]: Model | boolean } } = {} -- false while its model loads
 local dice = Random.new()
 
-local function somewhere(i: number): Vector3 -- a spot in the roaming area (Ranch.luau's layout)
-	local g = World.RANCH_HALF / 60
-	return World.ranchFrame(i) * Vector3.new(dice:NextNumber(-50, -14) * g, 0.5, dice:NextNumber(-48, -1) * g)
+local places: { [number]: { [number]: boolean } } = {} -- true for one that stands in the Titan's Den
+
+local function somewhere(i: number): Vector3 -- a spot in the meadow (Ranch.luau's layout)
+	return Ranch.somewhere(i, dice)
 end
 
 local function wander(model: Model, i: number)
@@ -717,24 +769,30 @@ local function syncTrainers(i: number, animals: { StationProgress.Animal }, leve
 	end
 end
 
-function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: number)
+-- `titan`: the id of the Titan that stands in its den (decision 0072) and does not roam.
+function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: number, titan: number?)
 	syncTrainers(i, animals, grounds)
 	local herd = herds[i] or {}
 	herds[i] = herd
+	local placed = places[i] or {}
+	places[i] = placed
+	local den = if titan then Ranch.den(i) else nil
 	local wanted: { [number]: StationProgress.Animal } = {}
 	local roaming = 0
 	for _, a in animals do -- one that trains is in its training area, not here
-		if a.at == nil and roaming < HERD_MAX then
+		if a.at == nil and den and a.id == titan then
+			wanted[a.id] = a
+		elseif a.at == nil and roaming < HERD_MAX then
 			roaming += 1
 			wanted[a.id] = a
 		end
 	end
 	for id, model in herd do
-		if wanted[id] == nil then
+		if wanted[id] == nil or placed[id] ~= (den ~= nil and id == titan) then -- gone, or its place changed
 			if typeof(model) == "Instance" then
 				model:Destroy()
 			end
-			herd[id] = nil
+			herd[id], placed[id] = nil, nil
 		end
 	end
 	local plot = World.root():FindFirstChild(`Ranch{i}`, true) :: Instance
@@ -745,18 +803,24 @@ function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: numbe
 		end
 		if herd[id] == nil then
 			herd[id] = false
+			local home = if id == titan then den else nil
+			placed[id] = home ~= nil
 			task.spawn(function()
 				local nest = hatchedAt[id]
 				hatchedAt[id] = nil
 				if nest then
 					task.wait(1.4) -- the hatching animation plays first
 				end
-				local at = nest or CFrame.new(somewhere(i))
+				local at = home or nest or CFrame.new(somewhere(i))
 				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot, nil, a.rainbow)
 				if model and herd[id] == false then
 					herd[id] = model
 					Creatures.describe(model, a.s, a.v, a :: any)
-					wander(model, i)
+					if home then
+						Creatures.play(model, "idle")
+					else
+						wander(model, i)
+					end
 				elseif model then
 					model:Destroy() -- sold or gone while it loaded
 				end
@@ -768,6 +832,6 @@ end
 for i, owner in owners do -- anyone whose profile loaded before this point
 	local p = saves.get(owner)
 	if p then
-		syncHerd(i, p.animals, p.upgrades.grounds or 0)
+		syncHerd(i, p.animals, p.upgrades.grounds or 0, denTitan(p))
 	end
 end

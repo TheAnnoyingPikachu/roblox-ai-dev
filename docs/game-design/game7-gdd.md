@@ -52,7 +52,8 @@ vendors.
   cafe, a stage, a green with a meeting tree and a pond, decision 0064) and one ranch per player behind the hub's mountains,
   south, east and west (decision 0035). A ranch is reached by teleport pad or on foot up its own
   mountain pass, ready for riding animals later. A ranch is one valley (decision 0070): the
-  homestead in its middle and its six training grounds set into the land round it, four up the
+  homestead in its middle (open, with no fence: the herd's meadow inside a ring path, and eight
+  buildings to upgrade round it, decision 0072) and its six training grounds set into the land round it, four up the
   mountainside and two on a beach by a lake, with a path to each. Mountains ring every area. A canyon through the
   hub's mountains to the north is the wave arena. A server holds 3 players.
 
@@ -104,11 +105,15 @@ vendors.
   teleports. Client: coins and level, and the Animals panel.
 - World: the hub with its wave arena canyon and three ranch islands, as simple placeholders.
   SHANNON has said the world is right for now.
-- The ranch tycoon (decision 0034): three upgrades bought in the ranch menu (opened at the Ranch House door) with coins and
+- The ranch tycoon (decisions 0034, 0072): nine upgrades bought in the ranch menu (opened at the Ranch House door) with coins and
   samples. Ranch House: animals training at once (2 to 6). Barn: animals you can keep (10 to 80).
-  Training Grounds: training speed (100% to 200%). Every level changes how the ranch looks.
+  Training Grounds: training speed (100% to 200%). Hatchery: eggs hatching at once (3 to 10). Egg
+  Cellar: eggs stored (8 to 48). Brooder: hatching speed (100% to 200%). Windmill: coins an hour,
+  also for up to eight hours away (60 to 2,500). Trophy Lodge: coins from waves (100% to 150%).
+  Titan's Den: the Titan's stats in a wave (100% to 120%). Every level changes how the ranch looks.
 - Eggs (decision 0036): bought from the egg vendor on the ranch into the egg storage; the player
-  chooses which to hatch, six at once; they take 1 minute to 4 hours; a finished egg is opened by
+  chooses which to hatch, as many at once as the Hatchery has nests; they take 1 minute to 4 hours,
+  less with the Brooder; a finished egg is opened by
   hand at the hatchery. A gear vendor's stall stands ready for gear.
 - A model for every animal and its variant (decisions 0033, 0037): sixteen jointed models that
   share the same moves (idle, walk, attack, magic attack). A player's animals walk the roaming

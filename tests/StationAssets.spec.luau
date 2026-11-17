@@ -146,6 +146,28 @@ describe("StationAssets", function()
 		end
 	end)
 
+	it("has three looks of a model for every ranch upgrade's building, and no other homestead model", function()
+		local looks: { [string]: boolean } = {}
+		for _, u in StationConfig.UPGRADES do
+			if u.id ~= "grounds" then -- the Training Grounds are the six areas
+				for look = 1, 3 do
+					local name = `home_{u.id}_{look}`
+					looks[name] = true
+					local asset = StationAssets[name]
+					expect(asset == nil).toBe(false)
+					expect(table.find(asset.parts, `{name}_body`) == nil).toBe(false)
+					expect(count(asset.joints)).toBe(0)
+				end
+			end
+		end
+		expect(count(looks)).toBe(24)
+		for name in manifest do
+			if string.sub(name, 1, 5) == "home_" then
+				expect(looks[name]).toBe(true)
+			end
+		end
+	end)
+
 	it("has a rainbow coat for every animal and variant, and for nothing else", function()
 		local coats = 0
 		for _, sp in StationConfig.SPECIES do
@@ -165,7 +187,7 @@ describe("StationAssets", function()
 	it("keeps every creature a jointed body under 20,000 triangles a mesh", function()
 		for name, entry in manifest do
 			local kind = string.sub(name, 1, 4)
-			if kind == "egg_" or kind == "hub_" or kind == "area" or kind == "kit_" then
+			if kind == "egg_" or kind == "hub_" or kind == "area" or kind == "kit_" or kind == "home" then
 				continue
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do

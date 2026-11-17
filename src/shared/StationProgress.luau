@@ -39,7 +39,8 @@ export type Profile = {
 	xp: number, -- player XP; the player level comes from it (playerLevel)
 	samples: number, -- dropped by harder waves; with coins they pay for ranch upgrades
 	upgrades: { [string]: number }, -- level of each ranch upgrade (StationConfig.UPGRADES), 0 = not bought
-	eggs: { HeldEgg }, -- bought eggs, oldest first: at most MAX_EGGS hatching, the rest in the egg storage
+	eggs: { HeldEgg }, -- bought eggs, oldest first: some hatching (the Hatchery says how many), the rest in the egg storage
+	mill: number?, -- when the Windmill last paid (os.time); nil without one
 }
 
 StationProgress.VERSION = 1
@@ -47,8 +48,11 @@ StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
 StationProgress.MAX_SAMPLES = 1e9
-StationProgress.MAX_EGGS = 6 -- eggs hatching at once
-StationProgress.MAX_STORED = 24 -- eggs the egg storage holds besides
+-- The most eggs a save can hold hatching and stored: the top of the Hatchery and of the Egg Cellar,
+-- which set how many a player may have (decision 0072). A save is never cut down to fit a level.
+StationProgress.MAX_EGGS = 10
+StationProgress.MAX_STORED = 48
+StationProgress.MILL_HOURS = 8 -- the Windmill holds this many hours of coins while the player is away
 StationProgress.TEAM_SIZE = LevelRules.TEAM_SIZE
 StationProgress.MAX_XP = 1e12
 StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)^2
@@ -71,7 +75,9 @@ function StationProgress.defaults(_now: number): Profile
 end
 
 -- What ranch upgrade `id` gives `p` now: animals training at once ("house"), animals kept
--- ("barn"), training speed in percent ("grounds").
+-- ("barn"), training speed in percent ("grounds"), eggs hatching at once ("hatchery"), eggs stored
+-- ("cellar"), hatching speed in percent ("brooder"), coins an hour ("windmill"), wave coins in
+-- percent ("lodge"), the Titan's stats in a wave in percent ("den").
 function StationProgress.value(p: Profile, id: string): number
 	local u = StationConfig.upgrade(id) :: StationConfig.Upgrade
 	local level = p.upgrades[id] or 0
@@ -143,6 +149,9 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	for _, u in StationConfig.UPGRADES do
 		local stored = if type(record.upgrades) == "table" then record.upgrades[u.id] else nil
 		p.upgrades[u.id] = int(stored, 0, #u.levels, 0)
+	end
+	if StationProgress.value(p, "windmill") > 0 then -- never ahead of the clock: it would not pay until then
+		p.mill = math.min(int(record.mill, 0, MAX_TIME, now or 0), now or MAX_TIME)
 	end
 	local slots = StationProgress.value(p, "house")
 	local ids: { [number]: Animal } = {}
@@ -230,7 +239,7 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 		return false, "egg"
 	elseif egg.wave and p.best < egg.wave then -- eggs unlock with the waves (decision 0056)
 		return false, "locked"
-	elseif #p.eggs >= StationProgress.MAX_EGGS + StationProgress.MAX_STORED then
+	elseif #p.eggs >= StationProgress.value(p, "hatchery") + StationProgress.value(p, "cellar") then
 		return false, "eggs_full"
 	elseif p.coins < egg.price then
 		return false, "coins"
@@ -261,15 +270,15 @@ function StationProgress.buy(p: Profile, eggId: string, hatched: StationRules.Ow
 	return p, true, nil
 end
 
--- Start hatching the `k`th egg at `now`: it must be in the storage, and one of the six hatching
--- places must be free.
+-- Start hatching the `k`th egg at `now`: it must be in the storage, and one of the Hatchery's nests
+-- must be free.
 function StationProgress.start(p: Profile, k: number, now: number): (Profile, boolean, string?)
 	local e = p.eggs[k]
 	if e == nil then
 		return p, false, "egg"
 	elseif e.since then
 		return p, false, "hatching"
-	elseif StationProgress.hatching(p) >= StationProgress.MAX_EGGS then
+	elseif StationProgress.hatching(p) >= StationProgress.value(p, "hatchery") then
 		return p, false, "nests_full"
 	end
 	p.eggs = table.clone(p.eggs)
@@ -277,10 +286,16 @@ function StationProgress.start(p: Profile, k: number, now: number): (Profile, bo
 	return p, true, nil
 end
 
--- True when egg `e` is hatching and has waited its hatch time: it can be opened.
-function StationProgress.due(e: { egg: string, since: number? }, now: number): boolean
+-- How many seconds `egg` takes to hatch for `p`: its own time, shortened by the Brooder. Whole seconds,
+-- rounded up. The Brooder's level now counts for the whole wait, also for an egg already hatching.
+function StationProgress.hatchSeconds(p: Profile, egg: StationConfig.Egg): number
+	return math.ceil(egg.hatch * 100 / StationProgress.value(p, "brooder"))
+end
+
+-- True when `p`'s egg `e` is hatching and has waited its hatch time: it can be opened.
+function StationProgress.due(p: Profile, e: { egg: string, since: number? }, now: number): boolean
 	local egg = StationConfig.egg(e.egg)
-	return egg ~= nil and e.since ~= nil and now >= e.since + egg.hatch
+	return egg ~= nil and e.since ~= nil and now >= e.since + StationProgress.hatchSeconds(p, egg)
 end
 
 -- Open the `k`th egg: it must have finished hatching and the Barn must have room. Its animal
@@ -290,7 +305,7 @@ function StationProgress.crack(p: Profile, k: number, now: number): (Profile, bo
 	local e = p.eggs[k]
 	if e == nil then
 		return p, false, "egg", nil
-	elseif not StationProgress.due(e, now) then
+	elseif not StationProgress.due(p, e, now) then
 		return p, false, "not_ready", nil
 	elseif #p.animals >= math.min(StationProgress.value(p, "barn"), StationProgress.MAX_ANIMALS) then
 		return p, false, "full", nil
@@ -368,9 +383,27 @@ function StationProgress.trainingSeconds(p: Profile, seconds: number): number
 	return math.max(0, seconds) * StationProgress.value(p, "grounds") / 100
 end
 
+-- Pay what the Windmill has earned by `now`: its coins an hour for the time since it last paid, also
+-- while the player was away, but no more than MILL_HOURS of it at once. Whole coins: the time a part of
+-- a coin took stays on the clock. Returns the coins paid.
+function StationProgress.earn(p: Profile, now: number): (Profile, number)
+	local rate = StationProgress.value(p, "windmill")
+	if rate <= 0 then
+		return p, 0
+	end
+	local since = p.mill or now
+	local cap = StationProgress.MILL_HOURS * 3600
+	local coins = math.floor(rate * math.clamp(now - since, 0, cap) / 3600)
+	p.mill = if now - since > cap then now else math.min(now, since + math.ceil(coins * 3600 / rate))
+	p.coins = math.min(p.coins + coins, StationProgress.MAX_COINS)
+	return p, coins
+end
+
 -- Add training time to every training animal up to `now`. Every stat level gained gives the
 -- player XP. An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
+-- The Windmill pays too.
 function StationProgress.settle(p: Profile, now: number): Profile
+	p = (StationProgress.earn(p, now))
 	for i, a in p.animals do
 		if a.at and a.since then
 			local st = StationConfig.station(a.at) :: StationConfig.Station
@@ -505,6 +538,9 @@ function StationProgress.upgrade(p: Profile, id: string, now: number): (Profile,
 	p.samples -= cost.samples
 	p.upgrades = table.clone(p.upgrades)
 	p.upgrades[id] = level
+	if id == "windmill" then
+		p.mill = p.mill or now -- a new mill starts to earn now
+	end
 	return p, true, nil
 end
 
@@ -519,9 +555,10 @@ function StationProgress.canFight(p: Profile, level: number): (boolean, string?)
 	return true, nil
 end
 
--- What clearing wave `level` pays `p` now: coins, player XP and samples.
+-- What clearing wave `level` pays `p` now: coins (the Trophy Lodge adds to them), player XP and samples.
 function StationProgress.payout(p: Profile, level: number): (number, number, number)
-	return LevelRules.reward(level, p.best), LevelRules.xp(level, p.best), LevelRules.samples(level, p.best)
+	local coins = LevelRules.reward(level, p.best) * StationProgress.value(p, "lodge") // 100
+	return coins, LevelRules.xp(level, p.best), LevelRules.samples(level, p.best)
 end
 
 -- Pay for clearing wave `level` (the server has decided the fight was won) and record it as the
@@ -539,7 +576,7 @@ function StationProgress.clear(p: Profile, level: number): (Profile, boolean, st
 	return p, true, nil
 end
 
--- The animals that fight: the team in order, then the Titan.
+-- The animals that fight: the team in order, then the Titan, with the stats its Den gives it.
 function StationProgress.fighters(p: Profile): { Animal }
 	local out = {}
 	for _, id in p.team do
@@ -551,7 +588,12 @@ function StationProgress.fighters(p: Profile): { Animal }
 	if p.titan then
 		local _, a = StationProgress.find(p, p.titan)
 		if a then
-			table.insert(out, a)
+			local den = StationProgress.value(p, "den")
+			if den > 100 then
+				a = table.clone(a);
+				(a :: any).boost = den
+			end
+			table.insert(out, a :: Animal)
 		end
 	end
 	return out

@@ -398,7 +398,8 @@ end
 local function eggCard(k: number, e: any)
 	local def = StationConfig.egg(e.egg) :: StationConfig.Egg
 	local now = Workspace:GetServerTimeNow()
-	local ready = e.since ~= nil and now >= e.since + def.hatch
+	local need = StationProgress.hatchSeconds(profile, def) -- the Brooder shortens it
+	local ready = e.since ~= nil and now >= e.since + need
 	local card = Style.card(eggs.body, UDim2.fromOffset(236, 140), if ready then C.good else C.edge)
 	card.LayoutOrder = k
 	eggArt(card, e.egg, 68).Position = UDim2.fromOffset(10, 10)
@@ -408,7 +409,7 @@ local function eggCard(k: number, e: any)
 	local info = Style.text(card, "", 14, C.muted, UDim2.new(1, -90, 0, 36))
 	info.Position = UDim2.fromOffset(84, 34)
 	if e.since == nil then
-		info.Text = `Takes {Format.ago(def.hatch)} to hatch`
+		info.Text = `Takes {Format.ago(need)} to hatch`
 		local b = Style.button(card, "Hatch it", function()
 			send("hatch", k)
 		end, "primary")
@@ -420,8 +421,8 @@ local function eggCard(k: number, e: any)
 		left.Position = UDim2.fromOffset(10, 110)
 		local function tick()
 			local t = Workspace:GetServerTimeNow()
-			local remaining = e.since + def.hatch - t
-			set(1 - remaining / def.hatch)
+			local remaining = e.since + need - t
+			set(1 - remaining / need)
 			if remaining <= 0 then
 				info.Text = "Ready! Open it at your hatchery."
 				info.TextColor3 = C.good
@@ -444,8 +445,8 @@ redraw.eggs = function()
 	for _, e in profile.eggs do
 		hatching += if e.since then 1 else 0
 	end
-	Style.chip(eggs.chips, `Hatching {hatching}/{StationProgress.MAX_EGGS}`, C.accent, C.accentText)
-	Style.chip(eggs.chips, `In storage {#profile.eggs - hatching}/{StationProgress.MAX_STORED}`)
+	Style.chip(eggs.chips, `Hatching {hatching}/{StationProgress.value(profile, "hatchery")}`, C.accent, C.accentText)
+	Style.chip(eggs.chips, `In storage {#profile.eggs - hatching}/{StationProgress.value(profile, "cellar")}`)
 	if #profile.eggs == 0 then
 		local empty = Style.card(eggs.body, UDim2.new(1, -20, 0, 80))
 		local t = Style.text(
@@ -553,7 +554,7 @@ redraw.shop = function()
 		Style.list(row, 8, true)
 		row.Parent = card
 		Style.amount(row, "coins", Format.commas(def.price))
-		Style.chip(row, Format.ago(def.hatch))
+		Style.chip(row, Format.ago(if profile then StationProgress.hatchSeconds(profile, def) else def.hatch))
 		if locked then
 			local lock = Style.chip(card, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
 			lock.Position = UDim2.fromOffset(106, 74)
@@ -1291,6 +1292,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			`Wave {payload.wave}: {if payload.won then "your team won" else "your team lost"} in {took}s ({payload.attacks} attacks) against {payload.foes}`,
 			7
 		)
+	elseif kind == "mill" then -- what the Windmill earned while the player was away
+		Ui.toast(screen, `Your windmill earned {Format.commas(payload)} coins while you were away`, 5)
 	elseif kind == "bought" then
 		local egg = StationConfig.egg(payload)
 		if egg then
