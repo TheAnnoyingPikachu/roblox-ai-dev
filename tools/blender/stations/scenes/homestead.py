@@ -35,6 +35,8 @@ H = _load("hub")
 RH = _load("ranch_house")  # the Ranch House: a farmhouse of fieldstone and timber (decision 0074)
 
 LIVE = True  # with what the game stands itself
+PEN = None  # (r, deg) of the animal pen of scenes/animal_pen.py (a concept): the herd lives there, not in the meadow
+EXTRA = []  # more makers for the card, called with rng before the woods round it
 R = 112.0  # the homestead's radius: src/shared/ValleyMap.luau's HOME
 MEADOW = 34.0  # the herd's meadow in its middle
 RING = (37.0, 45.0)  # the path round the meadow
@@ -580,6 +582,16 @@ def meadow(rng):
         p = Vector((10, 6, 0.2)) + plan(rng.uniform(6, 8), 200 + i * 16)
         post(0.12, rng.uniform(2.0, 3.2), p, (88, 150, 70), rng, n=4)
     tree((-12, -7, 0.2), rng, s=3.0)
+    if PEN:  # the herd is in its pen: the meadow is a green to sit on
+        lv(1)
+        for a in (30, 150, 250):
+            p = plan(22, a)
+            disc(3.2, (p.x, p.y, 0.15), 0.4, (150, 110, 76), rng, n=10)
+            flowers((p.x, p.y, 0.55), rng, n=10, spread=2.4)
+        for a in (200, 340):
+            p = plan(26, a)
+            bench((p.x, p.y, 0.15), rng, yaw=-a - 90)
+        return
     box((7, 2.0, 1.5), (-6, 18, 0.2), S.WOOD, rng, yaw=-14)  # a feeding trough
     box((6.4, 1.4, 0.4), (-6, 18, 1.5), HAY, rng, yaw=-14)
     actor("creature_jackal", (4, -16, 0.2), -40)
@@ -679,9 +691,6 @@ def grounds(rng):
         q = plan(7.4, i * 72 + 20)
         box((4.6, 1.3, 1.2), (fire.x + q.x, fire.y + q.y, 0.15), S.WOOD_DARK, rng, yaw=250 - i * 72)
     lv(4)
-    for a in (37.5, 86, 134, 182, 238, 298, 349):
-        p = plan(RING[1] + 2, a - 12)
-        lantern((p.x, p.y, 0.15), rng, h=7)
     for i in range(3):  # hives
         p = plan(92 + i * 5, 165.5)
         box((2.6, 2.6, 0.5), (p.x, p.y, 0.15), S.WOOD_DARK, rng, yaw=15)
@@ -702,6 +711,8 @@ def beyond(rng):
         if any(abs((a - w + 180) % 360 - 180) < 5 + 900 / r for w in ways):
             continue
         p = plan(r, a)
+        if PEN and (p - plan(*PEN)).length < 52:
+            continue
         (pine if rng.random() < 0.45 else tree)((p.x, p.y, 0), rng, s=rng.uniform(1.5, 2.6))
     for i in range(40):
         p = plan(rng.uniform(640, 800), i * 9 + rng.uniform(-3, 3))
@@ -726,6 +737,8 @@ def build(rng):
         for t in range(3):
             lv(*stages[t + 1])
             place(maker(t), r, deg, rng)
+    for extra in EXTRA:
+        extra(rng)
     beyond(rng)
     _tag()
 

@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-073",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Fewer lanterns round the homestead's middle: the second ring of lanterns by the ring path (one more beside each building's path, from a total level of 18) is gone; one lantern stays by each building's path.",
+  "inputs": [
+    "docs/decisions/0072-animal-stations-open-homestead.md"
+  ],
+  "dependencies": [
+    "STATION-072"
+  ],
+  "files": [
+    "src/stations/Ranch.luau",
+    "tools/blender/stations/scenes/homestead.py",
+    "studio/tasks/STATION-073.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "At most one lantern stands by each building's path on the ring",
+    "Nothing else of the homestead changes"
+  ],
+  "verification": "Lune 716/716, stylua and selene clean. The card's scene drops the same lanterns. Not checked in Studio: the change only removes the second loop of lanterns and the level constant it used.",
+  "output_artifacts": [
+    "src/stations/Ranch.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'please get rid of the excess lanterns around the centre area of the barn and then make a giraffe concept art and also make a concept for an animal pen fit into the current ranch so the animals arent in the center'."
+}

@@ -115,8 +115,8 @@ local ROOM: { [string]: number } =
 	{ house = 30, barn = 34, hatchery = 22, cellar = 28, brooder = 18, windmill = 24, lodge = 23, den = 12 }
 
 -- When the extras arrive: the sum of all upgrade levels (0 to 44).
-local PAVED, BENCHES, LANTERNS, ORCHARD, FLOWERS, FIELD, WELL, SHELTER, MORE_LANTERNS, GARDEN, FIRE, HIVES, FLAGS =
-	2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 26, 30
+local PAVED, BENCHES, LANTERNS, ORCHARD, FLOWERS, FIELD, WELL, SHELTER, GARDEN, FIRE, HIVES, FLAGS =
+	2, 4, 6, 8, 10, 12, 14, 16, 20, 22, 26, 30
 -- Decor that stands at a fixed place (how far out, angle, how much room it takes): the scattered things keep off.
 local FIXED = {
 	{ 58, 100, 7 }, -- the well
@@ -812,11 +812,8 @@ function Ranch.render(i: number, levels: { [string]: number })
 		end
 	end
 	if total >= LANTERNS then
-		for _, where in PLACE do
+		for _, where in PLACE do -- one by each building's path (a second ring of them was too many: STATION-073)
 			lantern(f, spot(RING1 + 2, where[2] + 12))
-			if total >= MORE_LANTERNS then
-				lantern(f, spot(RING1 + 2, where[2] - 12))
-			end
 		end
 	end
 	if total >= ORCHARD then -- between the windmill and the track's path (the mill's store is on its other side)
