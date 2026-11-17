@@ -57,6 +57,7 @@ local WOOD_DARK = Color3.fromRGB(112, 76, 48)
 local BARK = Color3.fromRGB(96, 66, 44)
 local ROOF = Color3.fromRGB(96, 70, 62)
 local HAY = Color3.fromRGB(232, 196, 110)
+local RAIL = Color3.fromRGB(236, 226, 204) -- the team pen's rails
 local WARM = Color3.fromRGB(255, 214, 140)
 local WATER = Color3.fromRGB(80, 170, 235)
 local GOLD = Color3.fromRGB(255, 200, 70)
@@ -678,19 +679,41 @@ function Ranch.render(i: number, levels: { [string]: number })
 		local colour = if paved then PATH:Lerp(STONE, rng:NextNumber(0, 0.35)) else DIRT
 		part(f, V(RING1 * rad(12) + 0.3, 0.24, RING1 - RING0), piece, colour, if paved then M.Cobblestone else M.Ground)
 	end
-	local ways = { HUB_WAY }
+	-- the team's pen (decision 0080): a rail fence round the meadow, its one gate towards the road in,
+	-- under a "Your Team" board; only the team walks in it (StationsServer's herd)
+	local ways = { HUB_WAY } -- where each path leaves (the rim's bushes keep off them)
 	for _, g in ValleyMap.GROUNDS do
 		table.insert(ways, (math.deg(math.atan2(g.z, g.x)) + 360) % 360)
 	end
-	table.sort(ways)
-	for k, a in ways do
-		local b = if k == #ways then ways[1] + 360 else ways[k + 1]
-		local n = math.max(1, math.round((b - a - 22) / 8))
-		for s = 0, n - 1 do
-			local deg = a + 11 + (s + 0.5) * (b - a - 22) / n
-			local len = rad((b - a - 22) / n) * (MEADOW + 1.1) + 0.3
-			part(f, V(len, 1.4, 1.5), out(MEADOW + 1.1, deg) * CFrame.new(0, 0.7, 0), STONE, M.Cobblestone)
+	local FENCE, GATE_GAP, STEP = MEADOW + 1, 9, 8
+	local function shut(deg: number): boolean
+		return math.abs((deg - HUB_WAY + 180) % 360 - 180) >= GATE_GAP
+	end
+	for deg = 0, 359, STEP do
+		if shut(deg) then
+			part(f, V(0.6, 4.6, 0.6), out(FENCE, deg) * CFrame.new(0, 2.3, 0), WOOD_DARK, M.Wood)
+			if shut(deg + STEP) then
+				local len = rad(STEP) * FENCE + 0.3
+				for _, y in { 1.7, 3.5 } do
+					part(f, V(len, 0.45, 0.3), out(FENCE, deg + STEP / 2) * CFrame.new(0, y, 0), RAIL, M.WoodPlanks)
+				end
+			end
 		end
+	end
+	local gate = out(FENCE, HUB_WAY)
+	for _, x in { -6.4, 6.4 } do
+		part(f, V(1.1, 9.4, 1.1), gate * CFrame.new(x, 4.7, 0), WOOD_DARK, M.Wood)
+		lantern(f, (gate * CFrame.new(x * 1.35, 0, -1.4)).Position)
+	end
+	part(f, V(14.4, 0.9, 0.9), gate * CFrame.new(0, 9.2, 0), WOOD_DARK, M.Wood)
+	Props.label(
+		part(f, V(11.4, 2.6, 0.5), gate * CFrame.new(0, 7.3, -0.5), WOOD, M.WoodPlanks),
+		"Your Team",
+		WHITE,
+		0.4
+	)
+	for _, at in { spot(17, 205), spot(22, 300), spot(20, 240) } do -- a bed of straw for each of the three
+		disc(f, at, 3.2, 0.3, HAY, M.Fabric)
 	end
 	pond(f, spot(11.7, 149), 16, rng)
 	kit.tree(f, spot(13.9, -30), rng, 2.1)

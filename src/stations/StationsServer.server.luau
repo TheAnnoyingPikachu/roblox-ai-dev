@@ -40,7 +40,7 @@ end
 -- and the eggs waiting in its hatchery
 local held: { [number]: string } = {}
 local hatchedAt: { [number]: CFrame } = {} -- animal id -> the nest it has just hatched in
-local syncHerd: (i: number, animals: { any }, grounds: number, titan: number?) -> ()
+local syncHerd: (i: number, animals: { any }, grounds: number, titan: number?, team: { number }) -> ()
 -- `eggs`: the profile's list, each hatching one with `due`, when it can be opened (the Brooder shortens it)
 local function showEggs(i: number, eggs: { { egg: string, since: number?, due: number? } })
 	local key = ""
@@ -570,7 +570,7 @@ saves = Saves.start({
 			show(i, profile.upgrades)
 			showEggs(i, eggsOf(profile))
 			if syncHerd then -- not yet while this script is still starting
-				syncHerd(i, profile.animals, profile.upgrades.grounds or 0, denTitan(profile))
+				syncHerd(i, profile.animals, profile.upgrades.grounds or 0, denTitan(profile), profile.team)
 			end
 		end
 	end,
@@ -595,16 +595,16 @@ Players.PlayerRemoving:Connect(function(player)
 		World.setRanchOwner(i, nil)
 		show(i, {})
 		showEggs(i, {})
-		syncHerd(i, {}, 0, nil)
+		syncHerd(i, {}, 0, nil, {})
 	end
 end)
 
--- The herd (decision 0037): a ranch owner's animals walk its roaming area, the first HERD_MAX of
--- them. Each wanders on its own: it walks to a spot, stands a while, and now and then shows an
--- attack. One that has just hatched steps out of its nest first.
+-- The herd (decisions 0037, 0080): a ranch owner's team walks the pen in the meadow; the rest are off
+-- the ranch unless they train (then they are in their training area). Each wanders on its own: it
+-- walks to a spot, stands a while, and now and then shows an attack. One that has just hatched steps
+-- out of its nest first.
 -- shortcut: the server tweens each Root, which replicates at network rate, move them on the
 -- client if it looks rough online.
-local HERD_MAX = 8
 local herds: { [number]: { [number]: Model | boolean } } = {} -- false while its model loads
 local dice = Random.new()
 
@@ -760,7 +760,8 @@ local function syncTrainers(i: number, animals: { StationProgress.Animal }, leve
 end
 
 -- `titan`: the id of the Titan that stands in its den (decision 0072) and does not roam.
-function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: number, titan: number?)
+-- `team`: the ids of the team, the only ones in the pen.
+function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: number, titan: number?, team: { number })
 	syncTrainers(i, animals, grounds)
 	local herd = herds[i] or {}
 	herds[i] = herd
@@ -768,12 +769,8 @@ function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: numbe
 	places[i] = placed
 	local den = if titan then Ranch.den(i) else nil
 	local wanted: { [number]: StationProgress.Animal } = {}
-	local roaming = 0
 	for _, a in animals do -- one that trains is in its training area, not here
-		if a.at == nil and den and a.id == titan then
-			wanted[a.id] = a
-		elseif a.at == nil and roaming < HERD_MAX then
-			roaming += 1
+		if a.at == nil and ((den and a.id == titan) or table.find(team, a.id)) then
 			wanted[a.id] = a
 		end
 	end
@@ -822,6 +819,6 @@ end
 for i, owner in owners do -- anyone whose profile loaded before this point
 	local p = saves.get(owner)
 	if p then
-		syncHerd(i, p.animals, p.upgrades.grounds or 0, denTitan(p))
+		syncHerd(i, p.animals, p.upgrades.grounds or 0, denTitan(p), p.team)
 	end
 end

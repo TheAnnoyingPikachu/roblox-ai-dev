@@ -1,6 +1,7 @@
 # 0080: Animal Stations: the meadow as a pen for the team (concept)
 
-Status: proposed (a concept for SHANNON; nothing is in the game). Date: 2026-11-17. Task STATION-080.
+Status: accepted (SHANNON, 2026-11-17: "leave them off the ranch unless theyre training and go ahead and
+build it"); in the game by STATION-081. Date: 2026-11-17. Tasks STATION-080, STATION-081.
 
 ## What SHANNON asked
 
@@ -27,6 +28,16 @@ its `TEAM` switch set; the homestead's own card and models are unchanged):
    solid blocks with the gate open.
 3. The go-ahead to build it.
 
+## Built (STATION-081)
+
+- The herd on the homestead is the team (`Profile.team`, at most three) and the Titan in its den. Every
+  other animal is off the ranch, unless it trains: then it is in its training area, as before. (The
+  first eight animals roamed before.)
+- `Ranch.luau` builds the fence where the meadow's stone kerb was (just outside the meadow, inside the
+  ring path): posts every 8 degrees with two rails, which are solid, and the one gate towards the road
+  in, under a "Your Team" board with a lantern each side; three beds of straw inside. The team walks
+  where the herd walked (`Ranch.somewhere`), all inside the fence.
+
 ## Not done
 
-Nothing is in the game. Not looked at from a player's height inside, or on a phone.
+The gate has no door that closes. Not looked at from a player's height inside, or on a phone.
