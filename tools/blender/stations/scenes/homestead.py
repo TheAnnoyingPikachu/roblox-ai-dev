@@ -217,7 +217,7 @@ def barn(t):
 
 
 def hatchery(t):
-    """The Hatchery (eggs hatching at once): a canvas on four posts, a round pavilion, a great one under
+    """The Hatchery (eggs hatching at once): an open shed under a gabled canvas, a round pavilion, a great one under
     a two-tiered roof. The game stands the nests in it, as many as its level gives."""
 
     def make(rng):

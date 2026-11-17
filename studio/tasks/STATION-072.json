@@ -12,7 +12,7 @@
     "STATION-071"
   ],
   "files": [
-    "tools/blender/stations/scenes/homestead.py",
+    "tools/blender/stations/scenes/homestead.py", "tools/blender/stations/assets/homestead.py",
     "assets/stations/home_hatchery_1.*",
     "tools/blender/stations/manifest.json",
     "tools/blender/stations/uploaded.json",
@@ -29,7 +29,7 @@
     "The nests the game stands (up to two rows of 4.2-stud spacing) stay clear of its posts",
     "The footprint and its unseen floor in Ranch.luau are unchanged"
   ],
-  "verification": "Blender 5.2, 2026-11-17: drafted and looked at from three sides twice, then built (1,628 triangles) and exported. Pending: upload.",
+  "verification": "Blender 5.2, 2026-11-17: drafted and looked at from three sides twice, then built (1,628 triangles) and exported. Uploaded by upload-assets run 44169650690 (model 122399847354548); the old decal archived after. Lune 716/716, stylua and selene clean. Studio: local build, stamp `dev`, 2026-11-17: on a new ranch (Hatchery level 0) the shed stands at its place with the game's three nests clear of its posts, its name read from the front. Not checked: a phone, the second row of nests at level 1.",
   "output_artifacts": [
     "assets/stations/home_hatchery_1.fbx"
   ],

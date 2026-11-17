@@ -5816,7 +5816,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Hatchery: a canvas on four posts over a bed of straw.",
+    "notes": "The Hatchery: an open shed under a gabled canvas, over a bed of straw.",
     "glow": {
       "home_hatchery_1_body_glow": [
         255,
