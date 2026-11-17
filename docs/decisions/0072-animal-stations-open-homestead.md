@@ -54,9 +54,9 @@ The Ranch House, the Barn and the Training Grounds keep their numbers.
   levels' numbers (10 and 48), which are now the most a save can hold.
 - **Brooder.** An egg's time is divided by the Brooder's speed, rounded up to whole seconds. The
   level a player has now counts for the whole wait, also for an egg already hatching.
-- **Windmill.** It pays whole coins for the time since it last paid: once a minute while its owner
-  plays, and for up to eight hours of time away, paid when they come back with a message saying how
-  much. The time a part of a coin took stays on its clock. The save gains `mill`, that clock.
+- **Windmill.** It fills with whole coins for the time since it was last emptied, also while its
+  owner is away, up to eight hours' worth, and pays when the owner collects at the mill (decision
+  0073; at first it paid by itself once a minute). The save gains `mill`, its clock.
 - **Trophy Lodge.** Multiplies the coins a cleared wave pays, rounded down. Not its XP or samples.
 - **Titan's Den.** Multiplies every stat of the Titan in a wave fight, rounded down. Nothing is
   stored on the animal: the boost is put on the copy that fights. Once the den is built the Titan
@@ -91,10 +91,11 @@ first look and 24 in the others; the rest are down in the cellar.
 - Nothing happens at the Trophy Lodge or the Brooder but their numbers: no trophies for waves
   cleared, no eggs on the warm beds.
 - Three looks a building, not one for every level.
-- The windmill has no way to collect by hand, and shows no count of what it holds.
 - No sound. Nothing new on a phone was looked at.
 
 ## Checkpoint for SHANNON
+
+Answered on 2026-11-17: items 1 to 3 are good as they are; item 4, collect by hand, is decision 0073.
 
 1. The prices and numbers above are drafts: say which to change.
 2. A new ranch now starts with three nests and room for eight stored eggs, not six and 24.

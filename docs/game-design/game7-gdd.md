@@ -108,8 +108,8 @@ vendors.
 - The ranch tycoon (decisions 0034, 0072): nine upgrades bought in the ranch menu (opened at the Ranch House door) with coins and
   samples. Ranch House: animals training at once (2 to 6). Barn: animals you can keep (10 to 80).
   Training Grounds: training speed (100% to 200%). Hatchery: eggs hatching at once (3 to 10). Egg
-  Cellar: eggs stored (8 to 48). Brooder: hatching speed (100% to 200%). Windmill: coins an hour,
-  also for up to eight hours away (60 to 2,500). Trophy Lodge: coins from waves (100% to 150%).
+  Cellar: eggs stored (8 to 48). Brooder: hatching speed (100% to 200%). Windmill: coins an hour
+  (60 to 2,500), held at the mill up to eight hours' worth until you collect them. Trophy Lodge: coins from waves (100% to 150%).
   Titan's Den: the Titan's stats in a wave (100% to 120%). Every level changes how the ranch looks.
 - Eggs (decision 0036): bought from the egg vendor on the ranch into the egg storage; the player
   chooses which to hatch, as many at once as the Hatchery has nests; they take 1 minute to 4 hours,

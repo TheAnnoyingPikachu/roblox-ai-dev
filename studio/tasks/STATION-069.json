@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-069",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for the Ranch House as a classic farmhouse of fieldstone and timber (decision 0074), in three looks for its levels: a cottage, a farmhouse with a long porch, a great farmhouse with a cross wing. Concept only.",
+  "inputs": [
+    "docs/decisions/0072-animal-stations-open-homestead.md"
+  ],
+  "dependencies": [
+    "STATION-067"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/ranch_house.py",
+    "docs/concepts/ranch-house-card.png",
+    "docs/decisions/0074-animal-stations-ranch-house-farmhouse-concept.md",
+    "studio/tasks/STATION-069.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "One card shows the three looks side by side and the top one from the front, the back, its porch and its end",
+    "Every look fits the house's place on the homestead",
+    "The game and its assets are unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: `stage.py` built and rendered `ranch_house` with no error (24,896 triangles, 6 seconds). The card was looked at twice; after the first look the porch's posts were stopped under its beam (they stood through its roof), the name board was hung under the porch's beam (it was sunk in the roof), and the views were moved back. No game file changed. Not checked: the concept in the game engine or on a phone.",
+  "output_artifacts": [
+    "docs/concepts/ranch-house-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: '1 is good 2 is good 3 is good and make collecting money from the windmill, also make a new concept for the ranch house. make it a classic looking wood and stone farm house', then 'continue, then when youre done when creatures are training they are phasing through the old barbell, could you fix that please'. Checkpoint for SHANNON: the two decisions in 0074."
+}

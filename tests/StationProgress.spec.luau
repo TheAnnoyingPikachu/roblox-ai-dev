@@ -672,37 +672,46 @@ describe("StationProgress ranch upgrades", function()
 		expect(StationProgress.hatchSeconds(p, egg)).toBe(egg.hatch / 2) -- 200%
 	end)
 
-	it("pays the Windmill's coins by the hour, also for time away, eight hours at most", function()
-		local p = rich()
-		local earned
-		p, earned = StationProgress.earn(p, 5000)
-		expect(earned).toBe(0) -- no windmill
-		expect(p.mill).toBeNil()
-		p = StationProgress.upgrade(p, "windmill", 1000) -- 60 coins an hour, from now
-		expect(p.mill).toBe(1000)
-		local coins = p.coins
-		p, earned = StationProgress.earn(p, 1000 + 59)
-		expect(earned).toBe(0) -- a coin takes a minute
-		expect(p.mill).toBe(1000) -- and the minute stays on the clock
-		p, earned = StationProgress.earn(p, 1000 + 150)
-		expect(earned).toBe(2)
-		expect(p.mill).toBe(1120) -- the half minute left over keeps counting
-		p, earned = StationProgress.earn(p, 1120 + 3600)
-		expect(earned).toBe(60)
-		expect(p.coins).toBe(coins + 62)
-		p, earned = StationProgress.earn(p, p.mill :: number + 30 * 24 * 3600) -- a month away
-		expect(earned).toBe(60 * StationProgress.MILL_HOURS)
-		expect(p.mill).toBe(1120 + 3600 + 30 * 24 * 3600)
-		-- settling the save pays too, and the clock is kept through sanitize but never ahead of now
-		local at = p.mill :: number
-		local before = p.coins
-		p = StationProgress.settle(p, at + 600)
-		expect(p.coins).toBe(before + 10)
-		local again = StationProgress.sanitize(p, at + 600)
-		expect(again.mill).toBe(at + 600)
-		again = StationProgress.sanitize(p, at)
-		expect(again.mill).toBe(at)
-	end)
+	it(
+		"fills the Windmill by the hour, also while away, to eight hours' worth, and pays only when collected",
+		function()
+			local p = rich()
+			local ok, code, got
+			p, ok, code = StationProgress.collect(p, 5000)
+			expect(ok).toBe(false)
+			expect(code).toBe("no_mill")
+			expect(p.mill).toBeNil()
+			p = StationProgress.upgrade(p, "windmill", 1000) -- 60 coins an hour, from now
+			expect(p.mill).toBe(1000)
+			local coins = p.coins
+			expect(StationProgress.held(p, 1000 + 59)).toBe(0) -- a coin takes a minute
+			_, ok, code = StationProgress.collect(p, 1000 + 59)
+			expect(code).toBe("mill_empty")
+			expect(StationProgress.held(p, 1000 + 150)).toBe(2)
+			p = StationProgress.settle(p, 1000 + 150)
+			expect(p.coins).toBe(coins) -- nothing is paid until it is collected
+			p, ok, code, got = StationProgress.collect(p, 1000 + 150)
+			expect(ok).toBe(true)
+			expect(got).toBe(2)
+			expect(p.coins).toBe(coins + 2)
+			expect(p.mill).toBe(1120) -- the half minute left over keeps counting
+			local month = 1120 + 30 * 24 * 3600
+			expect(StationProgress.held(p, month)).toBe(60 * StationProgress.MILL_HOURS) -- a month away: it is full
+			p, ok, code, got = StationProgress.collect(p, month)
+			expect(got).toBe(480)
+			expect(p.mill).toBe(month)
+			-- buying a level empties it first, at the rate it was earned at
+			local before = p.coins
+			p = StationProgress.upgrade(p, "windmill", month + 3600) -- it holds 60; the second level costs 10,000
+			expect(p.coins).toBe(before + 60 - 10000)
+			expect(p.mill).toBe(month + 3600)
+			expect(StationProgress.held(p, month + 3600)).toBe(0)
+			expect(StationProgress.held(p, month + 7200)).toBe(150) -- an hour at the new rate
+			-- the clock is kept through sanitize, but never ahead of now
+			expect(StationProgress.sanitize(p, month + 7200).mill).toBe(month + 3600)
+			expect(StationProgress.sanitize(p, month).mill).toBe(month)
+		end
+	)
 
 	it("pays more coins for a wave with the Trophy Lodge, and nothing else more", function()
 		local p = rich()

@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-068",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Windmill's coins are collected at the mill (decision 0073): it fills by the hour to eight hours' worth and pays only when its owner collects at the till by its door, which shows what it holds.",
+  "inputs": [
+    "docs/decisions/0072-animal-stations-open-homestead.md"
+  ],
+  "dependencies": [
+    "STATION-067"
+  ],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations/Ranch.luau",
+    "docs/decisions/0073-animal-stations-windmill-collect.md",
+    "docs/decisions/0072-animal-stations-open-homestead.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-068.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Nothing is paid until the owner collects; settling a save pays nothing",
+    "The mill holds at most eight hours of coins",
+    "Buying a level pays what the mill holds at the old rate first",
+    "The till shows its owner what the mill holds, and collecting there pays exactly that"
+  ],
+  "verification": "Lune 715/715 (the Windmill's case rewritten: nothing until collected, the part of a coin left on the clock, full after a month away, a level bought with coins in the mill, the clock through sanitize). stylua and selene clean. Studio: local build, stamp `dev` (no CI stamp), 2026-11-17, through the game's own requests. With the Windmill at level 5 (2,500 an hour) the till's prompt and board read '10 coins' some 14 seconds after it was built; a collect then paid 18 coins when the client's count was 18, the message said 18 and the purse rose by 18; a second collect a moment later paid 1. The board read '30 coins' in a screen, beside the door. Not checked: the prompt pressed by hand (the request was sent directly), the two refusals in Studio (a collect with no mill and with an empty one: unit tests only, the first Studio try was cut short by the rate limit), a full mill, what another player sees.",
+  "output_artifacts": [
+    "src/shared/StationProgress.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: '1 is good 2 is good 3 is good and make collecting money from the windmill, also make a new concept for the ranch house. make it a classic looking wood and stone farm house', then 'continue, then when youre done when creatures are training they are phasing through the old barbell, could you fix that please'. Items 1 to 3 of decision 0072's checkpoint were accepted as they are."
+}

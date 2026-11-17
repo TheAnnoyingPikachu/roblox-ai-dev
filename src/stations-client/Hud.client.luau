@@ -57,8 +57,10 @@ local REFUSED: { [string]: string } = {
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
 	admin = "Admins only",
-	eggs_full = "Your egg storage is full",
-	nests_full = "All six hatching places are taken",
+	eggs_full = "Your egg storage is full: upgrade the Egg Cellar",
+	nests_full = "Every nest is taken: upgrade the Hatchery",
+	no_mill = "Build the Windmill first",
+	mill_empty = "The windmill has no coins for you yet",
 	not_ready = "That egg is not ready yet",
 	hatching = "That egg is already hatching",
 	top = "That is already at its top level",
@@ -1204,6 +1206,7 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 	local owners = CollectionService:HasTag(prompt, "RanchMenu")
 		or CollectionService:HasTag(prompt, "EggStorage")
 		or CollectionService:HasTag(prompt, "Egg")
+		or CollectionService:HasTag(prompt, "Mill")
 	if owners and not mine then
 		Ui.toast(screen, "This is not your ranch")
 	elseif CollectionService:HasTag(prompt, "RanchMenu") then
@@ -1214,6 +1217,8 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 		openWaves()
 	elseif CollectionService:HasTag(prompt, "Egg") then
 		send("open", prompt:GetAttribute("Index"))
+	elseif CollectionService:HasTag(prompt, "Mill") then
+		send("collect")
 	elseif CollectionService:HasTag(prompt, "Vendor") then
 		if prompt:GetAttribute("Kind") == "eggs" then
 			show("shop")
@@ -1242,6 +1247,20 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 			local sparkle = prompt.Parent and prompt.Parent:FindFirstChildOfClass("ParticleEmitter")
 			if sparkle then
 				sparkle.Enabled = ready
+			end
+		end
+		for _, prompt in CollectionService:GetTagged("Mill") do -- what the owner's windmill holds, on its till
+			if profile and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
+				local held = StationProgress.held(profile, Workspace:GetServerTimeNow())
+				local full = held >= StationProgress.value(profile, "windmill") * StationProgress.MILL_HOURS
+				local text =
+					`{Format.commas(held)} {if held == 1 then "coin" else "coins"}{if full then " (full)" else ""}`
+				(prompt :: ProximityPrompt).ObjectText = text
+				for _, d in (prompt.Parent :: Instance):GetDescendants() do
+					if d:IsA("TextLabel") then
+						d.Text = text
+					end
+				end
 			end
 		end
 	end
@@ -1292,8 +1311,12 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			`Wave {payload.wave}: {if payload.won then "your team won" else "your team lost"} in {took}s ({payload.attacks} attacks) against {payload.foes}`,
 			7
 		)
-	elseif kind == "mill" then -- what the Windmill earned while the player was away
-		Ui.toast(screen, `Your windmill earned {Format.commas(payload)} coins while you were away`, 5)
+	elseif kind == "collected" then
+		Ui.toast(
+			screen,
+			`Collected {Format.commas(payload)} {if payload == 1 then "coin" else "coins"} from your windmill`,
+			4
+		)
 	elseif kind == "bought" then
 		local egg = StationConfig.egg(payload)
 		if egg then

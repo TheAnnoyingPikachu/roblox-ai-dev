@@ -13,8 +13,9 @@
 -- Bought eggs wait on the egg rack at the Egg Cellar (a prompt tagged "EggStorage" lets the owner
 -- choose one to hatch) and hatch in the Hatchery's nests, as many as its level gives, where a
 -- finished egg is opened by its own prompt (Ranch.eggs shows them all). The stalls carry prompts
--- tagged "Vendor" (attribute Kind = "eggs" or "gear"). Also tagged: TrainPad (Ranch, Station),
--- RanchNest (Ranch). Display only: no game rules live here.
+-- tagged "Vendor" (attribute Kind = "eggs" or "gear"), and the Windmill's till one tagged "Mill": the
+-- owner collects its coins there. Also tagged: TrainPad (Ranch, Station), RanchNest (Ranch). Display
+-- only: no game rules live here.
 --
 -- Places are polar: studs from the homestead's middle, and degrees where 0 is to the right and 90 is
 -- away from the hub (ValleyMap's plan). A building's own numbers (its size, where its door, nests or
@@ -418,7 +419,8 @@ local function building(f: Instance, cf: CFrame, id: string, level: number, home
 		stakes(f, b, id)
 		return
 	end
-	Creatures.still(`home_{id}_{look}`, b * CFrame.Angles(0, math.pi, 0), 1, f)
+	-- its model has to load: it must not hold the rebuild up, or a second rebuild would start beside this one
+	task.spawn(Creatures.still, `home_{id}_{look}`, b * CFrame.Angles(0, math.pi, 0), 1, f)
 	if id == "house" then
 		local w, d, h = HOUSE[look][1], HOUSE[look][2], HOUSE[look][3]
 		block(f, b, 0, 0, 0, w, d, h + 0.6)
@@ -477,6 +479,21 @@ local function building(f: Instance, cf: CFrame, id: string, level: number, home
 			block(f, b, -foot - 8, 3, 0, 10, 8, 6)
 		end
 		sails(f, b, look)
+		-- the till, left of the door: what the mill holds is collected here. The owner's client writes
+		-- the sum on its board (a prompt tagged "Mill").
+		local till = b * CFrame.new(-foot * 0.5 - 2.6, 0.1, foot + 2.6)
+		part(f, V(3.4, 2.4, 2.4), till * CFrame.new(0, 1.2, 0), WOOD_DARK, M.WoodPlanks)
+		part(f, V(3.7, 0.4, 2.7), till * CFrame.new(0, 2.6, 0), WOOD, M.Wood)
+		for k, o in { V(-0.8, 3.1, 0.2), V(0.5, 3.1, -0.3), V(0, 3.6, 0.1) } do
+			ball(f, (till * CFrame.new(o)).Position, 1.1 - k * 0.1, GOLD, M.Metal)
+		end
+		for _, sx in { -1, 1 } do
+			part(f, V(0.4, 6.4, 0.4), till * CFrame.new(sx * 2.9, 3.2, -1.6), WOOD_DARK, M.Wood)
+		end
+		local board = part(f, V(7, 1.8, 0.4), till * CFrame.new(0, 5.6, -1.6), INK, M.SmoothPlastic)
+		board.Name = "Till"
+		Props.label(board, "Windmill", GOLD, 0.3)
+		prompt(board, "Mill", "Collect", "Windmill", i)
 	elseif id == "lodge" then
 		if look == 1 then
 			block(f, b, 0, 0, 0, 2.6, 2.6, 2.3)
@@ -618,9 +635,10 @@ function Ranch.render(i: number, levels: { [string]: number })
 	if plot == nil then
 		return
 	end
-	local old = plot:FindFirstChild("Built")
-	if old then
-		old:Destroy()
+	for _, old in plot:GetChildren() do -- nothing below may wait: the old ranch goes and the new one stands at once
+		if old.Name == "Built" then
+			old:Destroy()
+		end
 	end
 	local f = Instance.new("Folder")
 	f.Name = "Built"

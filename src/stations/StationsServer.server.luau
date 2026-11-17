@@ -519,6 +519,22 @@ local router = Router.new({
 				return ok, code
 			end,
 		},
+		-- The owner empties their Windmill at the mill (decision 0073).
+		collect = {
+			args = {},
+			handler = function(player)
+				local p = saves.get(player)
+				local now = os.time()
+				local coins = if p then StationProgress.held(StationProgress.sanitize(p, now), now) else 0
+				local ok, code = apply(player, function(q)
+					return StationProgress.collect(q, now)
+				end)
+				if ok then
+					remotes.fx(player, "collected", coins)
+				end
+				return ok, code
+			end,
+		},
 		-- Studio only: a test funds button in the ranch menu to try the upgrades without
 		-- fighting for them. The action does not exist on a live server.
 		funds = if RunService:IsStudio()
@@ -569,36 +585,10 @@ for _, p in Players:GetPlayers() do
 	task.spawn(saves.load, p)
 end
 
--- The Windmill (decision 0072) pays its owner once a minute while they play. The first payment after
--- they arrive covers the time they were away: they are told what it was.
-local milled: { [Player]: boolean } = {}
-task.spawn(function()
-	while true do
-		for _, player in Players:GetPlayers() do
-			local p = saves.get(player)
-			if p and StationProgress.value(p, "windmill") > 0 then
-				local now = os.time()
-				local _, coins = StationProgress.earn(StationProgress.sanitize(p, now), now) -- on a copy, for the sum
-				if coins > 0 then
-					saves.apply(player, function(q)
-						return (StationProgress.earn(q, now))
-					end)
-					if not milled[player] then
-						remotes.fx(player, "mill", coins)
-					end
-				end
-				milled[player] = true
-			end
-		end
-		task.wait(60)
-	end
-end)
-
 Players.PlayerRemoving:Connect(function(player)
 	looks(player):Destroy()
 	WaveShow.clear(player)
 	readyAt[player] = nil
-	milled[player] = nil
 	local i = ranchOf(player)
 	if i then
 		owners[i] = nil
