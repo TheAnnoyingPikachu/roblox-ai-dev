@@ -2584,6 +2584,11 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 		rainbowDecal = 136160077733155,
 		rainbowTexture = nil,
+		eyes = {
+			{ 0.991, 20.299, 4.327, 0.695 },
+			{ -0.993, 20.301, 4.328, 0.695 },
+		},
+		lid = { 236, 212, 171 },
 	},
 	creature_giraffe_diamond = {
 		size = { 4.3, 24.39, 14.98 },

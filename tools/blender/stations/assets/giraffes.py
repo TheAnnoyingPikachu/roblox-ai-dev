@@ -41,7 +41,9 @@ def giraffe_model(p, seed):
             except ValueError:
                 continue  # the ray misses the piece here
             r, turn = size * rng.uniform(0.85, 1.1), rng.uniform(0, math.tau)
-            outline = [(r * rng.uniform(0.8, 1.0) * math.cos(turn + i * math.tau / 6), r * rng.uniform(0.8, 1.0) * math.sin(turn + i * math.tau / 6)) for i in range(6)]
+            sides = 8 if p.get("gentle") else 6
+            lo = 0.85 if p.get("gentle") else 0.8
+            outline = [(r * rng.uniform(lo, 1.0) * math.cos(turn + i * math.tau / sides), r * rng.uniform(lo, 1.0) * math.sin(turn + i * math.tau / sides)) for i in range(sides)]
             into.append(plate("patch", at, k._frame(n), outline, p.get("patch_thick", 0.012), patch, rng, lift=0.016, surface=p.get("patch_surface")))
 
     # the torso: deep at the chest, sloping down to narrow hips
@@ -86,7 +88,9 @@ def giraffe_model(p, seed):
             continue
         lean = Vector((0, 0.85, 0.5)).normalized()
         tip = at + lean * (0.2 + 0.05 * math.sin(i * 1.7)) * (1.6 if glow else 1.0)
-        if glow:  # a crest of glowing crystal
+        if p.get("gentle"):  # a short soft mane
+            head.append(F.lump(at + lean * 0.04, (0.06, 0.1, 0.08), T("mane"), rng, surface="fur"))
+        elif glow:  # a crest of glowing crystal
             groups["head_glow"].append(shard(at - lean * 0.08, tip, 0.2, 0.1, None, rng, face=(1, 0, 0), at=0.35, m=glow, name="mane"))
         else:
             head.append(shard(at - lean * 0.08, tip, 0.18, 0.08, dark, rng, face=(1, 0, 0), at=0.35, name="mane"))
@@ -101,7 +105,13 @@ def giraffe_model(p, seed):
         # horns: sharp, leaning back, bare dark tips (a fighter's, worn bald)
         base = Vector((s * 0.11, -1.62, 6.95))
         head.append(loft("horn", [zring(base.x, base.y, base.z, 0.065, 0.07, 0.02), zring(base.x + s * 0.02, base.y + 0.1, base.z + 0.42, 0.05, 0.055, 0.015)], coat, rng))
-        if glow:  # a diamond on each horn
+        if p.get("gentle"):  # a soft round tuft on each (a glowing gem on the diamond one's)
+            tuft = base + Vector((s * 0.025, 0.11, 0.47))
+            if glow:
+                groups["head_glow"].append(F.lump(tuft, (0.09, 0.09, 0.1), None, rng, m=glow))
+            else:
+                head.append(F.lump(tuft, (0.085, 0.085, 0.08), T("mane"), rng, surface="fur"))
+        elif glow:  # a diamond on each horn
             groups["head_glow"].append(shard(base + Vector((s * 0.02, 0.06, 0.3)), base + Vector((s * 0.06, 0.22, 0.95)), 0.2, 0.18, None, rng, at=0.3, m=glow, name="horn_tip"))
         else:
             head.append(shard(base + Vector((s * 0.02, 0.08, 0.36)), base + Vector((s * 0.04, 0.18, 0.72)), 0.13, 0.12, dark, rng, at=0.25, name="horn_tip"))
@@ -113,11 +123,23 @@ def giraffe_model(p, seed):
         head.append(plate("ear", at, frame, ear, 0.05, coat, rng))
         head.append(plate("ear", at + Vector((0, 0, 0.05)), frame, [(u * 0.6, 0.03 + v * 0.75) for u, v in ear], 0.015, T("ear_in"), rng))
         # a heavy brow over a narrow amber eye
-        head.append(shard((s * 0.06, -2.0, 6.97), (s * 0.27, -1.78, 7.0), 0.15, 0.1, coat, rng, face=(0, -1, 0.5), name="brow"))
+        if not p.get("gentle"):
+            head.append(shard((s * 0.06, -2.0, 6.97), (s * 0.27, -1.78, 7.0), 0.15, 0.1, coat, rng, face=(0, -1, 0.5), name="brow"))
         eye, n = k.land(skull, (s * 0.2, -1.9, 6.88), (s * 0.8, -0.45, 0.2))
         ex, ey, ez = k._frame(n)
         slit = [(-0.07, -0.03), (0.01, 0.04), (0.1, 0.035), (0.03, -0.025)]
-        if glow:
+        if p.get("gentle"):
+            ring = lambda r, n_=10: [(r * math.cos(i * math.tau / n_), r * 1.1 * math.sin(i * math.tau / n_)) for i in range(n_)]  # noqa: E731
+            head.append(plate("eye", eye, (ex * s, ey, ez), ring(0.097), 0.016, tone((250, 248, 240), F.PALE), rng, lift=0.008))
+            head.append(plate("iris", eye, (ex * s, ey, ez), ring(0.074), 0.01, tone(p["iris"], F.WARM), rng, lift=0.024))
+            head.append(plate("pupil", eye, (ex * s, ey, ez), ring(0.046), 0.008, tone(F.INK), rng, lift=0.034))
+            head.append(plate("shine", eye + (ex * s) * -0.027 + ey * 0.034, (ex * s, ey, ez), ring(0.018, 6), 0.006, tone((255, 255, 255), F.PALE), rng, lift=0.042))
+            cheek, cn = k.land(skull, (s * 0.12, -2.22, 6.66), (s, -0.2, 0))  # a little blush
+            head.append(plate("blush", cheek, k._frame(cn), ring(0.06, 8), 0.006, tone((250, 160, 160), F.PALE), rng, lift=0.006))
+            for j in range(3):  # lashes over the eye
+                root = eye + ey * 0.1 + (ex * s) * (0.04 * (j - 1))
+                head.append(shard(root, root + (ey * 0.9 + (ex * s) * (0.35 * (j - 1)) + ez * 0.3).normalized() * 0.07, 0.025, 0.012, tone(F.INK), rng, face=tuple(ez), name="lash"))
+        elif glow:
             groups["head_glow"].append(plate("eye", eye, (ex * s, ey, ez), slit, 0.022, None, rng, lift=0.011, m=glow))
         else:
             head.append(plate("eye", eye, (ex * s, ey, ez), slit, 0.018, tone(p["iris"], F.WARM), rng, lift=0.011))
@@ -172,7 +194,22 @@ def diamond_giraffe():
 
 DIAMOND = (90, 215, 255)
 
+
+def gentle(**look):
+    """A gentle giraffe (decision 0082): round eyes with lashes, soft tufts on its horns, a short soft mane."""
+    base = dict(legs_dark=(226, 196, 150), dark=(92, 62, 44), muzzle=(196, 160, 128), ear_in=(240, 180, 160), iris=(110, 70, 40), gentle=True)
+    return lambda: giraffe_model({**base, **look}, 5)
+
+
+SUNNY = gentle(coat=(246, 204, 120), legs=(252, 230, 184), patch=(206, 112, 48), mane=(176, 96, 44))
+SAVANNA = gentle(coat=(242, 226, 192), legs=(250, 240, 220), patch=(124, 72, 42), mane=(110, 66, 40))
+GEM = gentle(coat=(196, 210, 236), legs=(222, 230, 246), legs_dark=(170, 184, 214), dark=(96, 110, 150), patch=(110, 200, 248), muzzle=(176, 186, 210),
+             ear_in=(190, 220, 248), iris=(60, 120, 200), mane=(140, 170, 220), patch_surface="gem", patch_thick=0.04, glow=DIAMOND)
+
 ASSETS = [
+    F.asset("concept_giraffe_sunny", SUNNY, 2.9, {}, "Giraffe concept (decision 0082): golden, warm orange patches, round eyes, soft horn tufts."),
+    F.asset("concept_giraffe_savanna", SAVANNA, 2.9, {}, "Giraffe concept (decision 0082): cream, dark chocolate patches, round eyes, soft horn tufts."),
+    F.asset("concept_giraffe_gem", GEM, 2.9, {"head_glow": DIAMOND}, "Diamond Giraffe concept (decision 0082): pale blue, gem patches, glowing gems on its horn tips."),
     F.asset("creature_giraffe", giraffe, 2.9, {}, "Giraffe: a faceted cream giraffe under chestnut patches, a dark mane and sharp horns."),
     F.asset("creature_giraffe_diamond", diamond_giraffe, 2.9, {"head_glow": DIAMOND, "body_glow": DIAMOND}, "Diamond Giraffe (concept): a silver giraffe under diamond plates, glowing diamond horns, crest and shoulders."),
 ]
