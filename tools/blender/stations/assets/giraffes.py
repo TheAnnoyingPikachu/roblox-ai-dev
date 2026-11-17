@@ -27,7 +27,8 @@ def giraffe_model(p, seed):
     rng = random.Random(seed)
     T = lambda key: tone(p[key])  # noqa: E731
     coat, legs, dark, patch = T("coat"), T("legs"), T("dark"), T("patch")
-    groups = {"body": [], "head": [], "tail": []}
+    glow = k.glow(p["glow"]) if p.get("glow") else None
+    groups = {"body": [], "head": [], "tail": [], "head_glow": [], "body_glow": []}
 
     def hide(ob, tones, bulge=0.012):
         return rough(ob, tones, rng, bulge, FADE)
@@ -41,7 +42,7 @@ def giraffe_model(p, seed):
                 continue  # the ray misses the piece here
             r, turn = size * rng.uniform(0.85, 1.1), rng.uniform(0, math.tau)
             outline = [(r * rng.uniform(0.8, 1.0) * math.cos(turn + i * math.tau / 6), r * rng.uniform(0.8, 1.0) * math.sin(turn + i * math.tau / 6)) for i in range(6)]
-            into.append(plate("patch", at, k._frame(n), outline, 0.012, patch, rng, lift=0.016))
+            into.append(plate("patch", at, k._frame(n), outline, p.get("patch_thick", 0.012), patch, rng, lift=0.016, surface=p.get("patch_surface")))
 
     # the torso: deep at the chest, sloping down to narrow hips
     torso = hide(loft("torso", [yring(*r) for r in ((-0.95, 3.4, 0.32, 0.32, 0.38, 0.11), (-0.6, 3.46, 0.48, 0.6, 0.64, 0.17), (0.35, 3.22, 0.46, 0.46, 0.56, 0.16), (1.3, 3.02, 0.42, 0.4, 0.44, 0.14), (1.72, 2.98, 0.26, 0.28, 0.28, 0.09))], coat, rng), coat)
@@ -84,10 +85,14 @@ def giraffe_model(p, seed):
         except ValueError:
             continue
         lean = Vector((0, 0.85, 0.5)).normalized()
-        head.append(shard(at - lean * 0.08, at + lean * (0.2 + 0.05 * math.sin(i * 1.7)), 0.18, 0.08, dark, rng, face=(1, 0, 0), at=0.35, name="mane"))
+        tip = at + lean * (0.2 + 0.05 * math.sin(i * 1.7)) * (1.6 if glow else 1.0)
+        if glow:  # a crest of glowing crystal
+            groups["head_glow"].append(shard(at - lean * 0.08, tip, 0.2, 0.1, None, rng, face=(1, 0, 0), at=0.35, m=glow, name="mane"))
+        else:
+            head.append(shard(at - lean * 0.08, tip, 0.18, 0.08, dark, rng, face=(1, 0, 0), at=0.35, name="mane"))
 
     # the head: long, a heavy brow, a dark muzzle
-    first = len(head)
+    first, glow_first = len(head), len(groups["head_glow"])
     skull = hide(loft("skull", [yring(*r) for r in ((-1.5, 6.82, 0.17, 0.17, 0.16, 0.06), (-1.75, 6.84, 0.24, 0.22, 0.22, 0.08), (-2.1, 6.74, 0.2, 0.17, 0.2, 0.07), (-2.42, 6.6, 0.16, 0.13, 0.17, 0.06))], coat, rng), coat, 0.008)
     head.append(skull)
     head.append(loft("muzzle", [yring(-2.4, 6.6, 0.165, 0.135, 0.175, 0.06), yring(-2.66, 6.53, 0.13, 0.1, 0.14, 0.05)], T("muzzle"), rng))
@@ -96,7 +101,10 @@ def giraffe_model(p, seed):
         # horns: sharp, leaning back, bare dark tips (a fighter's, worn bald)
         base = Vector((s * 0.11, -1.62, 6.95))
         head.append(loft("horn", [zring(base.x, base.y, base.z, 0.065, 0.07, 0.02), zring(base.x + s * 0.02, base.y + 0.1, base.z + 0.42, 0.05, 0.055, 0.015)], coat, rng))
-        head.append(shard(base + Vector((s * 0.02, 0.08, 0.36)), base + Vector((s * 0.04, 0.18, 0.72)), 0.13, 0.12, dark, rng, at=0.25, name="horn_tip"))
+        if glow:  # a diamond on each horn
+            groups["head_glow"].append(shard(base + Vector((s * 0.02, 0.06, 0.3)), base + Vector((s * 0.06, 0.22, 0.95)), 0.2, 0.18, None, rng, at=0.3, m=glow, name="horn_tip"))
+        else:
+            head.append(shard(base + Vector((s * 0.02, 0.08, 0.36)), base + Vector((s * 0.04, 0.18, 0.72)), 0.13, 0.12, dark, rng, at=0.25, name="horn_tip"))
         # ears: long, flat, sticking out sideways and a little down
         fx, fy, fz = k._frame(Vector((0, -1, 0.3)), (s, 0, 0.2))
         ear = [(-0.06, 0.0), (0.06, 0.0), (0.08, 0.16), (0.0, 0.34), (-0.08, 0.16)]
@@ -108,14 +116,18 @@ def giraffe_model(p, seed):
         head.append(shard((s * 0.06, -2.0, 6.97), (s * 0.27, -1.78, 7.0), 0.15, 0.1, coat, rng, face=(0, -1, 0.5), name="brow"))
         eye, n = k.land(skull, (s * 0.2, -1.9, 6.88), (s * 0.8, -0.45, 0.2))
         ex, ey, ez = k._frame(n)
-        head.append(plate("eye", eye, (ex * s, ey, ez), [(-0.07, -0.03), (0.01, 0.04), (0.1, 0.035), (0.03, -0.025)], 0.018, tone(p["iris"], F.WARM), rng, lift=0.011))
-        head.append(plate("pupil", eye, (ex * s, ey, ez), [(0.0, -0.02), (0.024, 0.0), (0.02, 0.028), (-0.003, 0.01)], 0.009, tone(F.INK), rng, lift=0.03))
+        slit = [(-0.07, -0.03), (0.01, 0.04), (0.1, 0.035), (0.03, -0.025)]
+        if glow:
+            groups["head_glow"].append(plate("eye", eye, (ex * s, ey, ez), slit, 0.022, None, rng, lift=0.011, m=glow))
+        else:
+            head.append(plate("eye", eye, (ex * s, ey, ez), slit, 0.018, tone(p["iris"], F.WARM), rng, lift=0.011))
+            head.append(plate("pupil", eye, (ex * s, ey, ez), [(0.0, -0.02), (0.024, 0.0), (0.02, 0.028), (-0.003, 0.01)], 0.009, tone(F.INK), rng, lift=0.03))
         head.append(plate("nostril", Vector((s * 0.07, -2.665, 6.6)), (Vector((s, 0, 0)), Vector((0, 0, 1)), Vector((0, -1, 0))), [(-0.03, -0.02), (0.03, -0.02), (0.02, 0.03), (-0.02, 0.03)], 0.01, tone(F.INK), rng))
         patches(skull, head, [(0, -1.72, 6.85)], (s, 0, 0.3), 0.1)
 
     top = Vector((0, -1.62, 6.62))
     grow = Matrix.Translation(top) @ Matrix.Scale(1.4, 4) @ Matrix.Translation(-top)
-    for ob in head[first:]:
+    for ob in head[first:] + groups["head_glow"][glow_first:]:
         ob.data.transform(grow)
 
     # the tail: thin and long, a heavy dark tuft
@@ -125,8 +137,19 @@ def giraffe_model(p, seed):
         d = Vector(((i - 1.5) * 0.25, 0.12, -1)).normalized()
         groups["tail"].append(shard(end - d * 0.05, end + d * 0.55, 0.18, 0.12, dark, rng, face=(0, 1, 0), at=0.4))
 
+    if p.get("extra"):
+        p["extra"](groups, torso, rng, glow)
     joints = {"head": (0, -0.5, 3.45), "leg_fl": (0.3, -0.45, 3.0), "leg_fr": (-0.3, -0.45, 3.0), "leg_bl": (0.3, HIND, 2.9), "leg_br": (-0.3, HIND, 2.9), "tail": tuple(t0)}
     return {name: parts for name, parts in groups.items() if parts}, joints  # no empty pieces
+
+
+def diamond_extra(groups, torso, rng, glow):
+    """Diamonds grown out of its shoulders and down its back, and clear crystal hooves' rims."""
+    for i, (y, h) in enumerate(((-0.75, 0.7), (-0.5, 1.05), (-0.25, 0.85), (0.1, 0.6), (0.45, 0.5), (0.85, 0.4))):
+        at, _ = k.land(torso, (0, y, 3.4), (0, 0, 1))
+        for side in (-1, 1) if i < 3 else (0,):
+            lean = Vector((side * 0.35, 0.25, 1)).normalized()
+            groups["body_glow"].append(shard(at - lean * 0.1 + Vector((side * 0.12, 0, 0)), at + lean * h, 0.32, 0.26, None, rng, face=(1, 0, 0), at=0.3, m=glow, name="diamond"))
 
 
 def giraffe():
@@ -137,6 +160,19 @@ def giraffe():
     )
 
 
+def diamond_giraffe():
+    """Diamond Giraffe (concept): a pale silver coat under faceted diamond plates for patches, glowing
+    diamond horns, a crest of crystal down its neck, diamonds out of its shoulders, glowing eyes."""
+    return giraffe_model(
+        dict(coat=(168, 182, 208), legs=(196, 208, 228), legs_dark=(130, 146, 178), dark=(70, 84, 112), patch=(120, 210, 250), muzzle=(150, 162, 186), ear_in=(170, 210, 240), iris=(240, 170, 40),
+             patch_surface="gem", patch_thick=0.05, glow=DIAMOND, extra=diamond_extra),
+        11,
+    )
+
+
+DIAMOND = (90, 215, 255)
+
 ASSETS = [
-    F.asset("creature_giraffe", giraffe, 2.9, {}, "Giraffe (concept): a faceted cream giraffe under chestnut patches, a dark mane and sharp horns."),
+    F.asset("creature_giraffe", giraffe, 2.9, {}, "Giraffe: a faceted cream giraffe under chestnut patches, a dark mane and sharp horns."),
+    F.asset("creature_giraffe_diamond", diamond_giraffe, 2.9, {"head_glow": DIAMOND, "body_glow": DIAMOND}, "Diamond Giraffe (concept): a silver giraffe under diamond plates, glowing diamond horns, crest and shoulders."),
 ]

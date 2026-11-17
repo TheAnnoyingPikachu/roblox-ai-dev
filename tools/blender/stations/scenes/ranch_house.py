@@ -165,17 +165,19 @@ def chimney(x, y, z_top, rng, w=3.6, d=3.0, smoke=True):
             lump((x + k * 0.9, y + k * 0.3, z_top + 3.2 + k * 2.0), 1.0 + k * 0.4, S.WHITE, rng, kind=S.PALE)
 
 
-def porch(wall, x0, x1, depth, floor_z, eave_z, rng, steps=0.0, rail=True, roofed=True):
-    """A porch along a wall from x0 to x1: a deck on stone piers, posts, a rail with a gap at the steps, and
-    a roof that leans on the wall."""
+def porch(wall, x0, x1, depth, floor_z, eave_z, rng, steps=0.0, rail=True, roofed=True, ground=0.0):
+    """A porch along a wall from x0 to x1: a deck on stone piers with a stone skirt under it, posts, a rail
+    with a gap at the steps, and a roof that leans on the wall. `ground`: how far the ground is below the
+    wall's foot (a wall on a footing)."""
     length, mid = x1 - x0, (x0 + x1) / 2
+    rise = floor_z - 0.5 + ground  # from the ground to the deck's underside
     wall.box((length, depth, 0.5), mid, depth / 2, floor_z - 0.5, DECK, rng, chance=0.4)
     for i in range(int(length // 2.2)):  # the deck's boards
         wall.box((1.9, depth - 0.2, 0.12), x0 + 1.1 + i * 2.2, depth / 2, floor_z, (176, 128, 84) if i % 2 else DECK, rng)
     n = max(2, round(length / 6.5) + 1)
     xs = [x0 + 0.6 + i * (length - 1.2) / (n - 1) for i in range(n)]
     for x in xs:
-        wall.box((1.2, 1.2, floor_z - 0.5), x, depth - 0.7, 0.0, FIELD, rng, surface="rock", kind=S.COOL)
+        wall.box((1.2, 1.2, rise), x, depth - 0.7, -ground, FIELD, rng, surface="rock", kind=S.COOL)
         if roofed:
             wall.box((0.6, 0.6, eave_z - floor_z - 2.2), x, depth - 0.7, floor_z, BEAM, rng)
             wall.box((1.5, 0.5, 0.5), x, depth - 0.7, eave_z - 2.9, BEAM, rng)
@@ -186,8 +188,12 @@ def porch(wall, x0, x1, depth, floor_z, eave_z, rng, steps=0.0, rail=True, roofe
             wall.box((b - a - 0.6, 0.25, 0.3), (a + b) / 2, depth - 0.7, floor_z + 2.6, BEAM, rng)
             for k in range(int((b - a) // 1.2)):
                 wall.box((0.22, 0.22, 2.5), a + 0.9 + k * 1.2, depth - 0.7, floor_z + 0.1, TRIM, rng)
+    if rise > 0.2:  # the skirt: no gap under the deck
+        wall.box((length - 0.4, 0.5, rise), mid, depth - 0.75, -ground, FIELD, rng, surface="rock", kind=S.COOL)
+        for x in (x0 + 0.45, x1 - 0.45):
+            wall.box((0.5, depth - 0.8, rise), x, (depth - 0.8) / 2, -ground, FIELD, rng, surface="rock", kind=S.COOL)
     for k in range(3):  # the steps
-        wall.box((5.0, 1.3, floor_z - 0.5 - k * (floor_z - 0.5) / 3), steps, depth + 0.65 + k * 1.3, 0.0, FIELD, rng, surface="rock", kind=S.PALE)
+        wall.box((5.0, 1.3, rise + 0.5 - k * (rise + 0.5) / 3), steps, depth + 0.65 + k * 1.3, -ground, FIELD, rng, surface="rock", kind=S.PALE)
     if roofed:
         px, py, pz = wall.p(mid, -0.2, eave_z)
         slope(length + 1.6, depth + 1.4, 1.9, (px, py, pz), SHINGLE, rng, yaw=wall.yaw, thick=0.45)
@@ -237,7 +243,7 @@ def cottage(rng):
         window(ws["front"], x, 2.4, rng, planter=True)
     window(ws["left"], 0, 2.4, rng, w=2.6)
     window(ws["back"], -4, 2.4, rng, w=2.6, shutters=False)
-    porch(ws["front"], -4.6, 4.6, 5.0, 0.0, 7.6, rng, steps=0.0, rail=False)
+    porch(ws["front"], -4.6, 4.6, 5.0, 0.0, 7.6, rng, steps=0.0, rail=False, ground=foot)
     woodpile((-w / 2 - 2.2, -1.0, GROUND), rng, yaw=90)
     post(1.3, 2.8, (w / 2 - 2, -d / 2 - 2.2, GROUND), BEAM, rng, n=8)  # a rain barrel
     words("RANCH HOUSE", (0, -d / 2 - 5.6, GROUND + foot + 7.4), 0.95, S.WHITE, glow=0.5)

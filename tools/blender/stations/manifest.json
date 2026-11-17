@@ -5589,9 +5589,9 @@
       26.14,
       24.53
     ],
-    "tris": 4436,
+    "tris": 4472,
     "parts": {
-      "home_house_1_body": 4368,
+      "home_house_1_body": 4404,
       "home_house_1_body_glow": 68
     },
     "tris_budget": 20000,
@@ -5628,9 +5628,9 @@
       30.53,
       30.59
     ],
-    "tris": 6032,
+    "tris": 6068,
     "parts": {
-      "home_house_2_body": 5828,
+      "home_house_2_body": 5864,
       "home_house_2_body_glow": 164,
       "home_house_2_body2_glow": 40
     },
@@ -5678,9 +5678,9 @@
       36.67,
       32.98
     ],
-    "tris": 9178,
+    "tris": 9214,
     "parts": {
-      "home_house_3_body": 8806,
+      "home_house_3_body": 8842,
       "home_house_3_body_glow": 332,
       "home_house_3_body2_glow": 40
     },
@@ -6508,5 +6508,98 @@
     },
     "joints": {},
     "lift": -0.6
+  },
+  "creature_giraffe": {
+    "fbx": "build/blender/stations/creature_giraffe.fbx",
+    "png": "build/blender/stations/creature_giraffe.png",
+    "preview": "build/blender/stations/previews/creature_giraffe.png",
+    "size_studs": [
+      4.3,
+      23.46,
+      14.98
+    ],
+    "tris": 3160,
+    "parts": {
+      "creature_giraffe_body": 1184,
+      "creature_giraffe_head": 1012,
+      "creature_giraffe_tail": 52,
+      "creature_giraffe_leg_fl": 212,
+      "creature_giraffe_leg_bl": 244,
+      "creature_giraffe_leg_fr": 212,
+      "creature_giraffe_leg_br": 244
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/giraffes.py",
+    "notes": "Giraffe: a faceted cream giraffe under chestnut patches, a dark mane and sharp horns.",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_body": [
+        0.007,
+        9.545,
+        -2.585
+      ],
+      "creature_giraffe_head": [
+        0.0,
+        16.573,
+        3.077
+      ],
+      "creature_giraffe_tail": [
+        0.0,
+        6.202,
+        -6.91
+      ],
+      "creature_giraffe_leg_fl": [
+        0.906,
+        4.505,
+        -0.16
+      ],
+      "creature_giraffe_leg_bl": [
+        0.914,
+        4.363,
+        -5.276
+      ],
+      "creature_giraffe_leg_fr": [
+        -0.907,
+        4.512,
+        -0.16
+      ],
+      "creature_giraffe_leg_br": [
+        -0.914,
+        4.358,
+        -5.276
+      ]
+    },
+    "joints": {
+      "creature_giraffe_head": [
+        0.0,
+        10.005,
+        -0.059
+      ],
+      "creature_giraffe_leg_fl": [
+        0.87,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_leg_fr": [
+        -0.87,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_leg_bl": [
+        0.87,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_leg_br": [
+        -0.87,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_tail": [
+        0.0,
+        9.28,
+        -6.497
+      ]
+    }
   }
 }

@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-077",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Giraffe built and uploaded with its rainbow coat (decision 0076), and a concept for its variant, the Diamond Giraffe. It is not hatchable until its variant is approved: every animal needs one.",
+  "inputs": [
+    "docs/decisions/0076-animal-stations-giraffe-concept.md"
+  ],
+  "dependencies": [
+    "STATION-074"
+  ],
+  "files": [
+    "tools/blender/stations/assets/giraffes.py",
+    "assets/stations/creature_giraffe*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "docs/concepts/giraffe-card.png",
+    "docs/concepts/diamond-giraffe-card.png",
+    "docs/decisions/0076-animal-stations-giraffe-concept.md",
+    "studio/tasks/STATION-077.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "creature_giraffe and its rainbow coat are uploaded and listed in StationAssets",
+    "The Diamond Giraffe is a card only: not built for the game, not uploaded",
+    "No species, egg or save changes"
+  ],
+  "verification": "Blender 5.2, 2026-11-17: creature_giraffe built (3,160 triangles), exported, its rainbow coat painted (`rainbow.py --card`, looked at). Uploaded by upload-assets run PENDING. The Diamond Giraffe's card was looked at twice; after the first its coat was darkened and its glow made bluer, as the white glow was lost on a white coat. Lune and selene clean. Not checked: the Giraffe in Studio (it is in no species list, so nothing spawns it), its walk.",
+  "output_artifacts": [
+    "assets/stations/creature_giraffe.fbx",
+    "docs/concepts/diamond-giraffe-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'the porch of the ranch house is floating slightly, go ahead and make the regular giraffe and make a diamond varient concept then pull up the animal pen concept'. Checkpoint for SHANNON: the Diamond Giraffe's look, and the draft numbers in decision 0076."
+}
