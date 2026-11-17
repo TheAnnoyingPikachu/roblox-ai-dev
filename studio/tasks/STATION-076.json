@@ -27,7 +27,7 @@
     "No porch or stoop of the three looks has a gap under it",
     "Its steps reach the ground"
   ],
-  "verification": "Cause, seen in Studio (local build, stamp `dev`, 2026-11-17): the cottage's stoop deck sat at the door's sill, 1.6 studs up on the footing, its piers and steps measured from there. Blender 5.2: the three looks drafted and looked at from the side and front, then built and exported (4,472, 6,068 and 9,214 triangles). Uploaded by upload-assets run PENDING; the replaced decals archived after. Not checked: the new porches in Studio, a phone.",
+  "verification": "Cause, seen in Studio (local build, stamp `dev`, 2026-11-17): the cottage's stoop deck sat at the door's sill, 1.6 studs up on the footing, its piers and steps measured from there. Blender 5.2: the three looks drafted and looked at from the side and front, then built and exported (4,472, 6,068 and 9,214 triangles). Uploaded by upload-assets run 44184947829; the replaced decals archived after. Studio after the upload (stamp `dev`): the cottage's stoop stands on its stone skirt with its steps to the ground. Not checked: the two bigger looks in Studio, a phone.",
   "output_artifacts": [
     "assets/stations/home_house_1.fbx"
   ],

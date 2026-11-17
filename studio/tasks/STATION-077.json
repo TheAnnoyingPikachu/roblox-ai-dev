@@ -31,7 +31,7 @@
     "The Diamond Giraffe is a card only: not built for the game, not uploaded",
     "No species, egg or save changes"
   ],
-  "verification": "Blender 5.2, 2026-11-17: creature_giraffe built (3,160 triangles), exported, its rainbow coat painted (`rainbow.py --card`, looked at). Uploaded by upload-assets run PENDING. The Diamond Giraffe's card was looked at twice; after the first its coat was darkened and its glow made bluer, as the white glow was lost on a white coat. Lune and selene clean. Not checked: the Giraffe in Studio (it is in no species list, so nothing spawns it), its walk.",
+  "verification": "Blender 5.2, 2026-11-17: creature_giraffe built (3,160 triangles), exported, its rainbow coat painted (`rainbow.py --card`, looked at). Uploaded by upload-assets run 44184947829. The Diamond Giraffe's card was looked at twice; after the first its coat was darkened and its glow made bluer, as the white glow was lost on a white coat. Lune and selene clean. Not checked: the Giraffe in Studio (it is in no species list, so nothing spawns it), its walk.",
   "output_artifacts": [
     "assets/stations/creature_giraffe.fbx",
     "docs/concepts/diamond-giraffe-card.png"

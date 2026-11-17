@@ -17,7 +17,8 @@ vendors.
   legendary, a rare hatch from the Golden Egg (there is no legendary-only egg). The egg overhaul
   (decision 0056): a variant is a drop of its own, listed with its chance in the eggs that hatch
   it and likelier in the higher eggs; the Meadow and Wild Eggs are open from the start, the Safari and
-  Golden Eggs unlock with the waves (10 and 20).
+  Golden Eggs unlock with the waves (10 and 20). Each egg has its own set and at most seven rare finds;
+  how rare a hatch is shows when it opens, not in the vendor (decision 0078).
 - **Stats:** six, each with one job in a wave fight:
 
 | Stat | Job |

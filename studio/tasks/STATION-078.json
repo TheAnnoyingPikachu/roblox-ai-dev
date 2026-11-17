@@ -1,0 +1,38 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-078",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The egg vendor cleaned up and the eggs spread out (decision 0078): every card the same size with the animals named under their pictures and the rare finds in one row edged by tier; the Wild and Safari Eggs each get their own set of animals and rare finds; the '1 in N' leaves the menu and a hatch shows its rarity in a pop-up instead.",
+  "inputs": [
+    "docs/decisions/0056-animal-stations-egg-overhaul.md"
+  ],
+  "dependencies": [
+    "STATION-077"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "tests/StationRules.spec.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0078-animal-stations-egg-spread-hatch-reveal.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-078.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each egg lists at most seven rare finds and no two eggs in a row share them; every variant is still a drop of some egg",
+    "The vendor shows no '1 in N'; every card is the same size and nothing overlaps",
+    "A hatch shows its rarity, bigger for a rarer one, with the odds for a rare find"
+  ],
+  "verification": "Lune 716/716 (the Safari test rewritten: it now checks that every variant hatched is one its egg lists, and counts Shadow Lions), stylua and selene clean. Studio: local build, stamp `dev`, 2026-11-17: the vendor's four cards looked at in a screen; a Lava Rhino hatch sent by hand showed 'MYTHIC!!!' with 'Lava Rhino' and 'Only 1 in 10,000 Safari Eggs hatches one'. Not checked: a real hatch end to end, a phone.",
+  "output_artifacts": [
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'clean up the eggs menu and creature icons positioning and spread the creatures appropriately between them and then get rid of the 1 in such and such number for the varients and instead have an animation that says how rare it is when they hatch'."
+}

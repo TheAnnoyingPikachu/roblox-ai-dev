@@ -532,80 +532,71 @@ end
 
 -- Egg vendor --------------------------------------------------------------------------------------------
 
+-- An egg's card (decision 0078): the egg, its price and time; the animals it hatches, each named under its
+-- picture; its rare finds in one row, each edged in its tier's colour. How rare a find is shows when it
+-- hatches, not here.
+local function animalCell(parent: Instance, order: number, asset: string, label: string?, colour: Color3, side: number)
+	local cell = Instance.new("Frame")
+	cell.BackgroundTransparency = 1
+	cell.Size = UDim2.fromOffset(side, side + (if label then 16 else 0))
+	cell.LayoutOrder = order
+	cell.Parent = parent
+	local view = Portrait.new(cell, asset, { size = UDim2.fromOffset(side, side), background = darker(colour) })
+	Style.stroke(view, colour, if label then 1 else 2)
+	if label then
+		local t = Style.text(cell, label, 11, C.muted, UDim2.fromOffset(side + 6, 14))
+		t.Position = UDim2.fromOffset(-3, side + 2)
+		t.TextXAlignment = Enum.TextXAlignment.Center
+		t.TextTruncate = Enum.TextTruncate.AtEnd
+	end
+end
+
+local function cellRow(parent: Instance, y: number, height: number): Frame
+	local f = Instance.new("Frame")
+	f.BackgroundTransparency = 1
+	f.Position, f.Size = UDim2.fromOffset(14, y), UDim2.new(1, -28, 0, height)
+	Style.list(f, 5, true)
+	f.Parent = parent
+	return f
+end
+
 redraw.shop = function()
 	Style.clear(shop.body)
 	Style.clear(shop.chips)
 	Style.amount(shop.chips, "coins", Format.commas(profile.coins))
 	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)}`)
 	Style.chip(shop.chips, `Best wave: {profile.best}`)
-	local rows = 1 -- seven rare drops fit across a card: every card is as tall as the longest list needs
-	for _, def in StationConfig.EGGS do
-		rows = math.max(rows, math.ceil(#def.rare / 7))
-	end
-	local more = (rows - 1) * 76
 	for k, def in StationConfig.EGGS do
 		local locked = def.wave ~= nil and profile.best < def.wave
-		local card = Style.card(shop.body, UDim2.fromOffset(366, 312 + more))
+		local card = Style.card(shop.body, UDim2.fromOffset(366, 312))
 		card.LayoutOrder = k
 		eggArt(card, def.id, 80).Position = UDim2.fromOffset(14, 12)
 		local name = Style.text(card, def.name, 22, C.text, UDim2.new(1, -110, 0, 26))
 		name.Position = UDim2.fromOffset(106, 12)
-		local row = Instance.new("Frame")
-		row.BackgroundTransparency = 1
-		row.Position, row.Size = UDim2.fromOffset(106, 44), UDim2.new(1, -120, 0, 26)
-		Style.list(row, 8, true)
-		row.Parent = card
-		Style.amount(row, "coins", Format.commas(def.price))
-		Style.chip(row, Format.ago(if profile then StationProgress.hatchSeconds(profile, def) else def.hatch))
+		local price = Instance.new("Frame")
+		price.BackgroundTransparency = 1
+		price.Position, price.Size = UDim2.fromOffset(106, 44), UDim2.new(1, -120, 0, 26)
+		Style.list(price, 8, true)
+		price.Parent = card
+		Style.amount(price, "coins", Format.commas(def.price))
+		Style.chip(price, Format.ago(if profile then StationProgress.hatchSeconds(profile, def) else def.hatch))
 		if locked then
 			local lock = Style.chip(card, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
 			lock.Position = UDim2.fromOffset(106, 74)
 		end
-		local inside = Instance.new("Frame") -- what it can hatch
-		inside.BackgroundTransparency = 1
-		inside.Position, inside.Size = UDim2.fromOffset(14, 100), UDim2.new(1, -28, 0, 52)
-		Style.list(inside, 5, true)
-		inside.Parent = card
-		local names = {}
+		local hatches = Style.text(card, "HATCHES", 12, C.muted, UDim2.fromOffset(200, 16))
+		hatches.Position = UDim2.fromOffset(14, 100)
+		local basics = cellRow(card, 118, 66)
 		for i, o in def.odds do
 			local sp = StationConfig.species(o.id) :: StationConfig.Species
-			table.insert(names, sp.name)
-			local view = Portrait.new(
-				inside,
-				StationRules.assetOf(o.id, nil),
-				{ size = UDim2.fromOffset(48, 48), background = darker(RARITY_COLOUR[sp.rarity] or C.text) }
-			)
-			view.LayoutOrder = i
+			animalCell(basics, i, StationRules.assetOf(o.id, nil), sp.name, RARITY_COLOUR[sp.rarity] or C.text, 50)
 		end
-		local list = Style.text(card, table.concat(names, ", "), 13, C.muted, UDim2.new(1, -28, 0, 32))
-		list.Position = UDim2.fromOffset(14, 156)
-		local rare = Instance.new("Frame") -- its variants: drops of their own, each with its odds
-		rare.BackgroundTransparency = 1
-		rare.Position, rare.Size = UDim2.fromOffset(14, 188), UDim2.new(1, -28, 0, 72 + more)
-		Style.list(rare, 4, true, true)
-		rare.Parent = card
+		local finds = Style.text(card, "RARE FINDS", 12, C.muted, UDim2.fromOffset(200, 16))
+		finds.Position = UDim2.fromOffset(14, 192)
+		local rare = cellRow(card, 210, 44)
 		for i, drop in def.rare do
-			local colour = RARITY_COLOUR[(StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier]
-				or C.text
-			local cell = Instance.new("Frame")
-			cell.BackgroundTransparency = 1
-			cell.Size = UDim2.fromOffset(44, 72)
-			cell.LayoutOrder = i
-			cell.Parent = rare
-			Portrait.new(
-				cell,
-				StationRules.assetOf(drop.s, drop.v),
-				{ size = UDim2.fromOffset(44, 44), background = darker(colour) }
-			)
-			local odds = Style.text(
-				cell,
-				`1 in {Format.short(StationRules.PPM / drop.ppm)}`,
-				11,
-				colour,
-				UDim2.fromOffset(44, 26)
-			)
-			odds.Position = UDim2.fromOffset(0, 46)
-			odds.TextXAlignment = Enum.TextXAlignment.Center
+			local tier = (StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier
+			animalCell(rare, i, StationRules.assetOf(drop.s, drop.v), nil, RARITY_COLOUR[tier] or C.text, 44)
 		end
 		local can = not locked and profile.coins >= def.price
 		local b = Style.button(card, `Buy for {Format.commas(def.price)}`, function()
@@ -615,7 +606,7 @@ redraw.shop = function()
 			end
 			send("buy", def.id)
 		end, if can then "primary" else "off")
-		b.Position, b.Size = UDim2.fromOffset(14, 266 + more), UDim2.new(1, -28, 0, 36)
+		b.Position, b.Size = UDim2.fromOffset(14, 266), UDim2.new(1, -28, 0, 36)
 	end
 end
 
@@ -677,6 +668,80 @@ local function announce(n: number)
 		TweenService:Create(banner, fade, { TextTransparency = 1 }):Play()
 		TweenService:Create(bannerStroke, fade, { Transparency = 1 }):Play()
 		TweenService:Create(bannerSub, fade, { TextTransparency = 1 }):Play()
+	end)
+end
+
+-- What hatched, and how rare it is (decision 0078): its rarity pops up big in its colour, over the
+-- animal's name and, for a rare find, how few eggs give one. A rarer hatch pops bigger and shakes.
+local reveal = Style.text(root, "", 64, C.text, UDim2.new(1, 0, 0, 80))
+reveal.AnchorPoint, reveal.Position, reveal.TextTransparency = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.3), 1
+reveal.TextXAlignment, reveal.ZIndex = Enum.TextXAlignment.Center, 7
+local revealStroke = Instance.new("UIStroke")
+revealStroke.Thickness, revealStroke.Transparency, revealStroke.Color = 5, 1, Color3.fromRGB(20, 16, 30)
+revealStroke.Parent = reveal
+local revealScale = Instance.new("UIScale")
+revealScale.Parent = reveal
+local revealSub = Style.text(root, "", 24, C.text, UDim2.new(1, 0, 0, 60))
+revealSub.AnchorPoint, revealSub.TextTransparency = Vector2.new(0.5, 0), 1
+revealSub.Position = UDim2.new(0.5, 0, 0.3, 46)
+revealSub.TextXAlignment, revealSub.ZIndex = Enum.TextXAlignment.Center, 7
+local revealSubStroke = Instance.new("UIStroke")
+revealSubStroke.Thickness, revealSubStroke.Transparency, revealSubStroke.Color = 3, 1, Color3.fromRGB(20, 16, 30)
+revealSubStroke.Parent = revealSub
+local revealed = 0
+local BIG: { [string]: number } = { common = 0, uncommon = 0, rare = 1, epic = 1, legendary = 2, mythic = 3 }
+local function showRarity(a: any)
+	revealed += 1
+	local mine = revealed
+	local rarity = StationRules.rarity(a)
+	local big = BIG[rarity] or 0
+	reveal.Text = string.upper(rarity) .. string.rep("!", big)
+	reveal.TextColor3 = RARITY_COLOUR[rarity] or C.text
+	local lines = { (if a.rainbow then "Rainbow " else "") .. nameOf(a) }
+	local def = StationConfig.egg(a.egg or "")
+	if a.v and def then
+		for _, drop in def.rare do
+			if drop.v == a.v then
+				table.insert(lines, `Only 1 in {Format.commas(StationRules.PPM // drop.ppm)} {def.name}s hatches one`)
+			end
+		end
+	end
+	if a.rainbow then
+		table.insert(lines, "A rainbow coat!")
+	end
+	revealSub.Text = table.concat(lines, "\n")
+	revealSub.TextColor3 = if a.rainbow then Color3.fromRGB(255, 225, 100) else C.text
+	reveal.TextTransparency, revealStroke.Transparency = 0, 0
+	revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
+	revealScale.Scale, reveal.Rotation = 0.2, 0
+	local pop = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	TweenService:Create(revealScale, pop, { Scale = 1 + big * 0.12 }):Play()
+	task.delay(0.35, function()
+		if revealed ~= mine then
+			return
+		end
+		TweenService:Create(revealSub, TweenInfo.new(0.3), { TextTransparency = 0 }):Play()
+		TweenService:Create(revealSubStroke, TweenInfo.new(0.3), { Transparency = 0 }):Play()
+		for i = 1, big * 6 do -- a rarer hatch shakes
+			if revealed ~= mine then
+				return
+			end
+			reveal.Rotation = (if i % 2 == 0 then 1 else -1) * big * 1.5 * (1 - i / (big * 6 + 1))
+			task.wait(0.04)
+		end
+		reveal.Rotation = 0
+	end)
+	task.delay(2.6 + big * 0.6, function()
+		if revealed ~= mine then
+			return
+		end
+		local fade = TweenInfo.new(0.7)
+		for _, x in { reveal, revealSub } do
+			TweenService:Create(x, fade, { TextTransparency = 1 }):Play()
+		end
+		for _, x in { revealStroke, revealSubStroke } do
+			TweenService:Create(x, fade, { Transparency = 1 }):Play()
+		end
 	end)
 end
 
@@ -1280,8 +1345,10 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if payload.at then
 			hatchEffect(payload.at, payload.egg, payload.body, payload.spot) -- then the animal steps out
 		end
-		local coat = if payload.rainbow then "Rainbow " else ""
-		Ui.toast(screen, `You hatched a {coat}{nameOf(payload)}! ({StationRules.rarity(payload)}){lucky}`, 4)
+		showRarity(payload)
+		if lucky ~= "" then
+			Ui.toast(screen, lucky, 4)
+		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.0f", payload.seconds)
 		Style.clear(drops)

@@ -409,7 +409,8 @@ StationConfig.FOES = {
 -- starts one egg after its legendary. The Meadow and Wild Eggs are open from the start; the others
 -- unlock with the waves: the Safari Egg with the first dragon beaten (wave 10), the Golden Egg with
 -- the second (wave 20). There is no legendary-only egg: the Titan is a rare hatch from the Golden Egg,
--- which drops other animals too (decision 0031). Draft numbers.
+-- which drops other animals too (decision 0031). Each egg has its own set and at most seven variants,
+-- the commons' in the first two, the uncommons' in the middle two (decision 0078). Draft numbers.
 local function r(species: string, variant: string, oneIn: number): Rare
 	return { s = species, v = variant, ppm = 1_000_000 / oneIn }
 end
@@ -439,23 +440,20 @@ StationConfig.EGGS = {
 		xp = 40,
 		hatch = 600,
 		odds = {
-			{ id = "jackal", bp = 1800 },
-			{ id = "tortoise", bp = 1800 },
-			{ id = "meerkat", bp = 1800 },
-			{ id = "cheetah", bp = 1600 },
-			{ id = "rhino", bp = 1500 },
-			{ id = "flamingo", bp = 1500 },
+			{ id = "jackal", bp = 1000 },
+			{ id = "tortoise", bp = 1000 },
+			{ id = "meerkat", bp = 1000 },
+			{ id = "cheetah", bp = 2400 },
+			{ id = "rhino", bp = 2300 },
+			{ id = "flamingo", bp = 2300 },
 		},
 		rare = {
-			r("jackal", "sphinx_jackal", 20000),
-			r("tortoise", "island_tortoise", 20000),
-			r("meerkat", "star_meerkat", 20000),
-			r("jackal", "pharaoh_jackal", 2000),
-			r("tortoise", "gemshell_tortoise", 2000),
-			r("meerkat", "storm_meerkat", 2000),
 			r("cheetah", "fire_cheetah", 4000),
 			r("rhino", "crystal_rhino", 4000),
 			r("flamingo", "peacock_flamingo", 4000),
+			r("jackal", "sphinx_jackal", 20000),
+			r("tortoise", "island_tortoise", 20000),
+			r("meerkat", "star_meerkat", 20000),
 		},
 	},
 	{
@@ -466,22 +464,19 @@ StationConfig.EGGS = {
 		hatch = 3600,
 		wave = 10,
 		odds = {
-			{ id = "cheetah", bp = 2700 },
-			{ id = "rhino", bp = 2700 },
-			{ id = "flamingo", bp = 2600 },
-			{ id = "lion", bp = 2000 },
+			{ id = "cheetah", bp = 2500 },
+			{ id = "rhino", bp = 2500 },
+			{ id = "flamingo", bp = 2500 },
+			{ id = "lion", bp = 2500 },
 		},
 		rare = {
+			r("lion", "shadow_lion", 2000),
+			r("cheetah", "fire_cheetah", 1000),
+			r("rhino", "crystal_rhino", 1000),
+			r("flamingo", "peacock_flamingo", 1000),
 			r("cheetah", "lightning_cheetah", 10000),
 			r("rhino", "lava_rhino", 10000),
 			r("flamingo", "phoenix_flamingo", 10000),
-			r("jackal", "sphinx_jackal", 5000),
-			r("tortoise", "island_tortoise", 5000),
-			r("meerkat", "star_meerkat", 5000),
-			r("cheetah", "fire_cheetah", 500),
-			r("rhino", "crystal_rhino", 500),
-			r("flamingo", "peacock_flamingo", 500),
-			r("lion", "shadow_lion", 2000),
 		},
 	},
 	{

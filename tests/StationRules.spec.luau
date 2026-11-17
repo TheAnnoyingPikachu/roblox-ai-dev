@@ -355,18 +355,21 @@ describe("StationRules.hatch", function()
 
 	it("hatches a variant only from an egg that lists it, as its own animal", function()
 		local rng = Rng.seed(7)
-		local sphinx = 0
-		for _ = 1, 60000 do -- the Safari Egg has no Jackal, but lists the Sphinx Jackal (1 in 5,000: about 12 here)
+		local listed = {}
+		for _, row in (StationConfig.egg("safari") :: StationConfig.Egg).rare do
+			listed[row.v] = true
+		end
+		local shadow = 0
+		for _ = 1, 60000 do -- the Safari Egg lists the Shadow Lion at 1 in 2,000: about 30 here
 			local a
 			a, rng = StationRules.hatch("safari", rng)
 			local animal = a :: StationRules.Owned
-			if animal.s == "jackal" then
-				sphinx += 1
-				expect(animal.v).toBe("sphinx_jackal")
+			if animal.v then
+				expect(listed[animal.v]).toBe(true) -- never the Sun Lion or the Pharaoh Jackal: not in this egg
 			end
-			expect(animal.v ~= "pharaoh_jackal" and animal.v ~= "sun_lion").toBeTruthy() -- not in this egg
+			shadow += if animal.v == "shadow_lion" then 1 else 0
 		end
-		expect(sphinx >= 2 and sphinx <= 30).toBeTruthy()
+		expect(shadow >= 12 and shadow <= 55).toBeTruthy()
 	end)
 
 	it("refuses an unknown egg without using the rng", function()
