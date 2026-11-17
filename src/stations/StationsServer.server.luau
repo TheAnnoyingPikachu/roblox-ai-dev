@@ -807,7 +807,7 @@ function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: numbe
 					herd[id] = model
 					Creatures.describe(model, a.s, a.v, a :: any)
 					if home then
-						Creatures.play(model, "idle")
+						Creatures.play(model, "sleep") -- the Titan sleeps in its den (Creatures.client's TRAIN)
 					else
 						wander(model, i)
 					end

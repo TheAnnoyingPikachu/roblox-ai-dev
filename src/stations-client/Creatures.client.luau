@@ -18,6 +18,7 @@ local Workspace = game:GetService("Workspace")
 
 local FightFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("FightFx"))
 local TrainFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("TrainFx"))
+local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
 
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
@@ -688,6 +689,51 @@ end
 -- The lift and the blow are timed by TrainFx, which the kit they are done with is moved by too.
 local pulse = TrainFx.pulse
 
+-- Asleep: lids over its eyes (where its manifest says they are, in its brow's colour) and a "Zzz" over
+-- it, both gone with the model. The label is in the player's gui: a BillboardGui in the model did not show.
+local asleep: { [Model]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+local function fallAsleep(model: Model)
+	local asset = model:GetAttribute("Asset") :: string?
+	local entry = asset and StationAssets[asset]
+	local head = asset and model:FindFirstChild(`{asset}_head`) :: BasePart?
+	local root = model.PrimaryPart
+	local bodyJoint = root and root:FindFirstChild("body") :: Motor6D?
+	local headJoint = bodyJoint and bodyJoint.Part1 and bodyJoint.Part1:FindFirstChild("head") :: Motor6D?
+	if entry and entry.eyes and head and root and bodyJoint and headJoint then
+		-- the eye at rest: manifest space is the Root turned about (Creatures.build), the head at rest is where
+		-- its joints put it with no pose; the lid keeps that place on the head as it moves
+		local frame = root.CFrame * CFrame.Angles(0, math.pi, 0)
+		local headRest = root.CFrame * bodyJoint.C0 * bodyJoint.C1:Inverse() * headJoint.C0 * headJoint.C1:Inverse()
+		local shade = entry.lid or { 90, 90, 100 }
+		for _, e in entry.eyes do
+			local lid = Instance.new("Part")
+			lid.Shape, lid.Size = Enum.PartType.Ball, Vector3.one * e[4] * 1.15
+			lid.Color, lid.Material = Color3.fromRGB(shade[1], shade[2], shade[3]), Enum.Material.SmoothPlastic
+			lid.CanCollide, lid.CanQuery, lid.CanTouch, lid.Massless, lid.CastShadow = false, false, false, true, false
+			lid.CFrame = head.CFrame * headRest:ToObjectSpace(frame * CFrame.new(e[1], e[2], e[3]))
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0, weld.Part1, weld.Parent = head, lid, lid
+			lid.Name, lid.Parent = "Lid", model
+		end
+	end
+	if model.PrimaryPart then
+		local tag = Instance.new("BillboardGui")
+		tag.Name, tag.Size = "Zzz", UDim2.fromOffset(90, 50)
+		local tall = if entry then entry.size[2] else model:GetExtentsSize().Y -- standing: it is lying by now
+		tag.StudsOffsetWorldSpace = Vector3.new(0, tall * 0.8, 0)
+		local label = Instance.new("TextLabel")
+		label.Size, label.BackgroundTransparency, label.Text = UDim2.fromScale(1, 1), 1, "z Z z"
+		label.TextScaled, label.Font, label.TextColor3 = true, Enum.Font.FredokaOne, Color3.fromRGB(220, 230, 255)
+		label.TextStrokeTransparency = 0.4
+		label.Parent = tag
+		tag.Adornee = model.PrimaryPart
+		tag.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+		model.Destroying:Connect(function()
+			tag:Destroy()
+		end)
+	end
+end
+
 local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 	-- the track: a gallop, the front pair and the hind pair swinging against each other
 	run = function(t, rate, biped)
@@ -790,6 +836,34 @@ local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 			body = { 0, 0, 1.5 * breath, 0, -0.5 + 0.02 * breath, 0 },
 			head = { 6 + 3 * breath, 5 * math.sin(t * TAU / 7), 0 },
 			tail = { 0, 8 * math.sin(t * TAU / 3.5), 0 },
+		}
+	end,
+	-- asleep (the Titan in its den): lying flat, legs out, its head on the ground, eyes shut, breathing
+	-- slowly, with a "Zzz" over it
+	sleep = function(t, _, biped, model)
+		if not asleep[model] then
+			asleep[model] = true
+			fallAsleep(model)
+		end
+		local breath = math.sin(t * TAU / 6)
+		if biped then
+			return {
+				leg_bl = { -80 },
+				leg_br = { -80 },
+				leg_fl = { -20 },
+				leg_fr = { -20 },
+				body = { 20, 0, 2 * breath, 0, -0.5 + 0.02 * breath, 0 },
+				head = { 30 + 2 * breath, 0, 0 },
+			}
+		end
+		return {
+			leg_fl = { 84 },
+			leg_fr = { 84 },
+			leg_bl = { -84 },
+			leg_br = { -84 },
+			body = { 0, 0, 0, 0, -0.68 + 0.015 * breath, 0 },
+			head = { -14 + 1.5 * breath, 0, 6 },
+			tail = { 0, 0, 0 },
 		}
 	end,
 	-- the guard yard: set low against the blow, thrown back as it lands, set again

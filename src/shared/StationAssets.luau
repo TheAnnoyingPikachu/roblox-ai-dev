@@ -10,6 +10,8 @@
 -- (x right, y up, z towards the head): where each mesh's centre is, and where each piece turns.
 -- rainbowDecal / rainbowTexture: the Decal and Image ids of its rainbow coat (decision 0058), a second
 -- texture for the same model.
+-- eyes, lid: where its eyes are ({ x, y, z, size }, in the axes of `centres`) and its brow's colour, to close
+-- them (the Titan asleep in its den).
 
 export type Asset = {
 	size: { number },
@@ -18,6 +20,8 @@ export type Asset = {
 	centres: { [string]: { number } },
 	joints: { [string]: { number } },
 	lift: number?,
+	eyes: { { number } }?,
+	lid: { number }?,
 	model: number?,
 	decal: number?,
 	texture: number?,
@@ -620,6 +624,11 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 		rainbowDecal = 108728257611042,
 		rainbowTexture = nil,
+		eyes = {
+			{ 2.311, 10.653, 6.667, 1.243 },
+			{ -2.313, 10.653, 6.669, 1.241 },
+		},
+		lid = { 94, 100, 118 },
 	},
 	creature_elephant_frost = {
 		size = { 12.23, 19.4, 29.97 },
@@ -662,6 +671,11 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 		rainbowDecal = 136262845457745,
 		rainbowTexture = nil,
+		eyes = {
+			{ 2.594, 11.924, 6.147, 1.403 },
+			{ -2.596, 11.925, 6.149, 1.401 },
+		},
+		lid = { 106, 135, 185 },
 	},
 	foe_archer = {
 		size = { 2.71, 6.59, 2.86 },
@@ -982,6 +996,11 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 		rainbowDecal = 127949184851551,
 		rainbowTexture = nil,
+		eyes = {
+			{ 2.513, 11.578, 7.007, 1.369 },
+			{ -2.511, 11.577, 7.004, 1.371 },
+		},
+		lid = { 80, 78, 87 },
 	},
 	creature_jackal_sphinx = {
 		size = { 2.34, 5.37, 9.57 },

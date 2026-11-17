@@ -51,6 +51,26 @@ def roblox(v):
     return [round(v.x, 3), round(v.z, 3), round(-v.y, 3)]
 
 
+def eyes_of(every, offset):
+    """Where a creature's eyes are (pieces named "eye..."), as [x, y, z, size] in the manifest's axes, and the
+    sRGB colour of its brow (pieces named "brow..."): the game lays a lid of that colour over each eye to
+    close it (the Titan asleep in its den)."""
+    eyes = []
+    for ob in every:
+        if ob.name.startswith("eye"):
+            elo, ehi = kit._ground_dims([ob])
+            eyes.append(roblox((elo + ehi) / 2 + offset) + [round(max(ehi - elo), 3)])
+    shades = []
+    for ob in every:
+        attr = ob.data.color_attributes.get("lp") if ob.name.startswith("brow") else None
+        if attr:
+            shades += [tuple(d.color)[:3] for d in attr.data]
+    if not shades:
+        return eyes, None
+    mean = [sum(c[i] for c in shades) / len(shades) for i in range(3)]
+    return eyes, [round(255 * (c * 12.92 if c <= 0.0031308 else 1.055 * c ** (1 / 2.4) - 0.055)) for c in mean]
+
+
 def main():
     args = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
     draft = "--draft" in args
@@ -87,6 +107,7 @@ def main():
                 continue
             # finalize moves the model so the ground under its middle is the origin
             offset = Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))
+            eyes, lid = eyes_of(every, offset)
             stats = kit.finalize(name, groups, asset["budget"], **asset.get("finalize", {}))
             if stats["tris"] > asset["budget"]:
                 raise ValueError(f"{name}: {stats['tris']} tris is over the budget {asset['budget']} (decimation would move the joints)")
@@ -110,6 +131,8 @@ def main():
         }
         if asset.get("finalize", {}).get("center") is False:
             manifest[name]["lift"] = round(lo.z, 3)
+        if eyes:
+            manifest[name]["eyes"], manifest[name]["lid"] = eyes, lid
         print(f"[stations] {name}: {stats['tris']} tris, {time.time() - started:.0f}s", flush=True)
     if not draft and not beauty:
         with open(MANIFEST, "w", encoding="utf-8", newline="\n") as f:

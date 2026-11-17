@@ -1630,7 +1630,26 @@
         8.897,
         -10.375
       ]
-    }
+    },
+    "eyes": [
+      [
+        2.311,
+        10.653,
+        6.667,
+        1.243
+      ],
+      [
+        -2.313,
+        10.653,
+        6.669,
+        1.241
+      ]
+    ],
+    "lid": [
+      94,
+      100,
+      118
+    ]
   },
   "creature_elephant_frost": {
     "fbx": "build/blender/stations/creature_elephant_frost.fbx",
@@ -1746,7 +1765,26 @@
         9.962,
         -12.887
       ]
-    }
+    },
+    "eyes": [
+      [
+        2.594,
+        11.924,
+        6.147,
+        1.403
+      ],
+      [
+        -2.596,
+        11.925,
+        6.149,
+        1.401
+      ]
+    ],
+    "lid": [
+      106,
+      135,
+      185
+    ]
   },
   "foe_archer": {
     "fbx": "build/blender/stations/foe_archer.fbx",
@@ -2690,7 +2728,26 @@
         9.676,
         -11.464
       ]
-    }
+    },
+    "eyes": [
+      [
+        2.513,
+        11.578,
+        7.007,
+        1.369
+      ],
+      [
+        -2.511,
+        11.577,
+        7.004,
+        1.371
+      ]
+    ],
+    "lid": [
+      80,
+      78,
+      87
+    ]
   },
   "creature_jackal_sphinx": {
     "fbx": "build/blender/stations/creature_jackal_sphinx.fbx",
@@ -6601,5 +6658,140 @@
         -6.497
       ]
     }
+  },
+  "creature_giraffe_diamond": {
+    "fbx": "build/blender/stations/creature_giraffe_diamond.fbx",
+    "png": "build/blender/stations/creature_giraffe_diamond.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_diamond.png",
+    "size_studs": [
+      4.3,
+      24.39,
+      14.98
+    ],
+    "tris": 3208,
+    "parts": {
+      "creature_giraffe_diamond_body": 1184,
+      "creature_giraffe_diamond_head": 820,
+      "creature_giraffe_diamond_tail": 52,
+      "creature_giraffe_diamond_head_glow": 168,
+      "creature_giraffe_diamond_body_glow": 72,
+      "creature_giraffe_diamond_leg_fl": 212,
+      "creature_giraffe_diamond_leg_bl": 244,
+      "creature_giraffe_diamond_leg_fr": 212,
+      "creature_giraffe_diamond_leg_br": 244
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/giraffes.py",
+    "notes": "Diamond Giraffe (concept): a silver giraffe under diamond plates, glowing diamond horns, crest and shoulders.",
+    "glow": {
+      "creature_giraffe_diamond_head_glow": [
+        90,
+        215,
+        255
+      ],
+      "creature_giraffe_diamond_body_glow": [
+        90,
+        215,
+        255
+      ]
+    },
+    "centres": {
+      "creature_giraffe_diamond_body": [
+        -0.022,
+        9.541,
+        -2.595
+      ],
+      "creature_giraffe_diamond_head": [
+        0.0,
+        15.965,
+        3.077
+      ],
+      "creature_giraffe_diamond_tail": [
+        0.0,
+        6.202,
+        -6.91
+      ],
+      "creature_giraffe_diamond_head_glow": [
+        -0.001,
+        17.613,
+        1.659
+      ],
+      "creature_giraffe_diamond_body_glow": [
+        0.0,
+        12.241,
+        -1.718
+      ],
+      "creature_giraffe_diamond_leg_fl": [
+        0.961,
+        4.506,
+        -0.16
+      ],
+      "creature_giraffe_diamond_leg_bl": [
+        0.961,
+        4.362,
+        -5.274
+      ],
+      "creature_giraffe_diamond_leg_fr": [
+        -0.962,
+        4.504,
+        -0.16
+      ],
+      "creature_giraffe_diamond_leg_br": [
+        -0.969,
+        4.363,
+        -5.275
+      ]
+    },
+    "joints": {
+      "creature_giraffe_diamond_head": [
+        0.0,
+        10.005,
+        -0.059
+      ],
+      "creature_giraffe_diamond_leg_fl": [
+        0.87,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_diamond_leg_fr": [
+        -0.87,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_diamond_leg_bl": [
+        0.87,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_diamond_leg_br": [
+        -0.87,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_diamond_tail": [
+        0.0,
+        9.28,
+        -6.497
+      ]
+    },
+    "eyes": [
+      [
+        1.0,
+        20.3,
+        4.329,
+        0.697
+      ],
+      [
+        -1.002,
+        20.303,
+        4.331,
+        0.698
+      ]
+    ],
+    "lid": [
+      167,
+      179,
+      205
+    ]
   }
 }
