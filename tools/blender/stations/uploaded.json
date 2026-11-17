@@ -690,13 +690,13 @@
     "texture": null
   },
   "creature_giraffe_diamond": {
-    "model": 102703596098688,
-    "decal": 97997060080483,
+    "model": 121848951803762,
+    "decal": 79793837205123,
     "texture": null
   },
   "creature_giraffe_diamond_rainbow": {
     "model": null,
-    "decal": 129134334391208,
+    "decal": 75338716323031,
     "texture": null
   },
   "creature_giraffe_rainbow": {

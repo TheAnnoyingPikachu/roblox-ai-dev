@@ -29,7 +29,7 @@
     "The Diamond Giraffe in the game is the diamond ore look, with its rainbow coat",
     "The old model's decals are archived"
   ],
-  "verification": "PENDING",
+  "verification": "Blender 5.2, 2026-11-17: built (3,672 triangles), exported, its rainbow coat painted and looked at; uploaded with it by upload-assets run 44193794274; the old decals archived after. Lune 716/716. Studio: local build, stamp `dev`: the admin menu stood the new Diamond Giraffe (stone, its diamonds, glowing horns and crest; the glow light tints the stone a little blue). Not checked: a real hatch, a phone.",
   "output_artifacts": [
     "assets/stations/creature_giraffe_diamond.fbx"
   ],

@@ -1,7 +1,7 @@
 # 0083: Animal Stations: the Diamond Giraffe as diamond ore (concept)
 
-Status: proposed (a concept for SHANNON; the game's Diamond Giraffe is unchanged). Date: 2026-11-17.
-Task STATION-083.
+Status: accepted (SHANNON, 2026-11-17: "go on both the giraffe changes"); in the game by STATION-084.
+Date: 2026-11-17. Tasks STATION-083, STATION-084.
 
 ## What SHANNON asked
 
@@ -26,6 +26,12 @@ Built by `ORE` and `ore_extra` in `tools/blender/stations/assets/giraffes.py` (t
 1. The look: go, or changes.
 2. The go-ahead to build and upload it, with its rainbow coat, in place of `creature_giraffe_diamond`.
 
+## Built (STATION-084)
+
+`creature_giraffe_diamond` and its rainbow coat are rebuilt as the ore and uploaded in place of the
+old ones (upload-assets run 44193794274); the old decals are archived. In the game the glow light every glowing
+animal carries tints its grey stone a little blue.
+
 ## Not done
 
-Nothing is built for the game or uploaded. Not looked at in the game engine or on a phone.
+Not looked at on a phone; a real hatch of it not tried.
