@@ -268,8 +268,8 @@ def farmhouse(rng):
     for sx in (-1, 1):
         lantern((sx * 4.4, -d / 2 - 10.4, GROUND), rng, h=6.0)
     woodpile((w / 2 + 2.4, 3.0, GROUND), rng, yaw=90)
-    words("RANCH HOUSE", (0, -d / 2 - 6.35, GROUND + h - 2.3), 1.1, S.WHITE, glow=0.5)
-    box((11.0, 0.4, 2.0), (0, -d / 2 - 6.05, GROUND + h - 3.3), BEAM, rng)
+    words("RANCH HOUSE", (0, -d / 2 - 7.15, GROUND + h - 2.3), 1.1, S.WHITE, glow=0.5)
+    box((11.0, 0.4, 2.0), (0, -d / 2 - 6.85, GROUND + h - 3.3), BEAM, rng)
 
 
 def great_house(rng):
@@ -310,7 +310,7 @@ def great_house(rng):
     rocker((mx - 10.5, -d / 2 - 2.8, GROUND + 1.6), rng)
     rocker((mx - 6.6, -d / 2 - 2.8, GROUND + 1.6), rng)
     for sx in (-1, 1):
-        lantern((mx - 1.0 + sx * 4.6, -d / 2 - 10.8, GROUND), rng, h=6.4)
+        lantern((mx - 1.0 + sx * 9.5, -d / 2 - 10.8, GROUND), rng, h=6.4)  # clear of the name over the steps
     # a cupola on the ridge, with a weather vane
     box((4.0, 4.0, 3.0), (mx, 0, top + rise - 0.6), BOARD, rng)
     for face in walls(mx, 0, 4.0, 4.0, top + rise - 0.6).values():
@@ -320,8 +320,8 @@ def great_house(rng):
     box((2.6, 0.12, 0.9), (mx + 0.4, 0, top + rise + 7.2), (250, 196, 60), rng)
     woodpile((mx - w / 2 - 2.4, -5.0, GROUND), rng, yaw=90)
     bench((wx + 1.0, wy - wd / 2 - 2.4, GROUND), rng, yaw=180)
-    words("RANCH HOUSE", (mx - 1.0, -d / 2 - 6.55, GROUND + h - 2.3), 1.2, S.WHITE, glow=0.5)
-    box((12.0, 0.4, 2.2), (mx - 1.0, -d / 2 - 6.25, GROUND + h - 3.4), BEAM, rng)
+    words("RANCH HOUSE", (mx - 1.0, -d / 2 - 7.35, GROUND + h - 2.3), 1.2, S.WHITE, glow=0.5)
+    box((12.0, 0.4, 2.2), (mx - 1.0, -d / 2 - 7.05, GROUND + h - 3.4), BEAM, rng)
 
 
 LOOKS = (cottage, farmhouse, great_house)

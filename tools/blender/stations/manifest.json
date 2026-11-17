@@ -5585,18 +5585,18 @@
     "png": "build/blender/stations/home_house_1.png",
     "preview": "build/blender/stations/previews/home_house_1.png",
     "size_studs": [
-      23.4,
-      16.7,
-      19.4
+      27.04,
+      26.14,
+      24.53
     ],
-    "tris": 2328,
+    "tris": 4436,
     "parts": {
-      "home_house_1_body": 2304,
-      "home_house_1_body_glow": 24
+      "home_house_1_body": 4368,
+      "home_house_1_body_glow": 68
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Ranch House: a cabin.",
+    "notes": "The Ranch House: a timber cottage on a fieldstone footing, with a stone chimney and a stoop.",
     "glow": {
       "home_house_1_body_glow": [
         255,
@@ -5606,76 +5606,87 @@
     },
     "centres": {
       "home_house_1_body": [
-        0.0,
-        8.35,
-        -0.0
+        1.319,
+        13.069,
+        3.637
       ],
       "home_house_1_body_glow": [
-        0.0,
-        4.9,
-        8.1
+        -1.35,
+        5.8,
+        0.25
       ]
     },
     "joints": {},
-    "lift": 0.1
+    "lift": 0.15
   },
   "home_house_2": {
     "fbx": "build/blender/stations/home_house_2.fbx",
     "png": "build/blender/stations/home_house_2.png",
     "preview": "build/blender/stations/previews/home_house_2.png",
     "size_studs": [
-      31.4,
-      20.3,
-      28.55
+      38.8,
+      30.53,
+      30.59
     ],
-    "tris": 2524,
+    "tris": 6032,
     "parts": {
-      "home_house_2_body": 2476,
-      "home_house_2_body_glow": 48
+      "home_house_2_body": 5828,
+      "home_house_2_body_glow": 164,
+      "home_house_2_body2_glow": 40
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Ranch House: a farmhouse with a porch.",
+    "notes": "The Ranch House: a farmhouse, fieldstone below and timber above, two dormers, a porch the length of its front.",
     "glow": {
       "home_house_2_body_glow": [
         255,
         226,
         150
+      ],
+      "home_house_2_body2_glow": [
+        255,
+        214,
+        130
       ]
     },
     "centres": {
       "home_house_2_body": [
-        0.0,
-        10.15,
-        2.575
+        1.4,
+        15.266,
+        4.664
       ],
       "home_house_2_body_glow": [
         0.0,
-        4.9,
-        10.1
+        10.25,
+        0.25
+      ],
+      "home_house_2_body2_glow": [
+        1.2,
+        5.65,
+        19.4
       ]
     },
     "joints": {},
-    "lift": 0.1
+    "lift": 0.15
   },
   "home_house_3": {
     "fbx": "build/blender/stations/home_house_3.fbx",
     "png": "build/blender/stations/home_house_3.png",
     "preview": "build/blender/stations/previews/home_house_3.png",
     "size_studs": [
-      46.4,
-      35.3,
-      34.46
+      50.01,
+      36.67,
+      32.98
     ],
-    "tris": 3724,
+    "tris": 9178,
     "parts": {
-      "home_house_3_body": 3564,
-      "home_house_3_body_glow": 120,
+      "home_house_3_body": 8806,
+      "home_house_3_body_glow": 332,
       "home_house_3_body2_glow": 40
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Ranch House: a house with two wings and a tower.",
+    "notes": "The Ranch House: a great farmhouse with a cross wing, two chimneys, a cupola and a long porch.",
     "glow": {
       "home_house_3_body_glow": [
         255,
@@ -5690,23 +5701,23 @@
     },
     "centres": {
       "home_house_3_body": [
-        0.0,
-        17.65,
-        2.83
+        1.005,
+        18.337,
+        4.868
       ],
       "home_house_3_body_glow": [
-        0.0,
-        7.6,
-        8.6
+        0.5,
+        15.25,
+        1.525
       ],
       "home_house_3_body2_glow": [
-        1.2,
-        6.2,
-        19.5
+        -4.8,
+        6.05,
+        20.8
       ]
     },
     "joints": {},
-    "lift": 0.1
+    "lift": 0.15
   },
   "home_barn_1": {
     "fbx": "build/blender/stations/home_barn_1.fbx",
@@ -6341,47 +6352,65 @@
     "png": "build/blender/stations/home_den_1.png",
     "preview": "build/blender/stations/previews/home_den_1.png",
     "size_studs": [
-      36.0,
-      27.0,
-      32.0
+      39.0,
+      19.72,
+      36.67
     ],
-    "tris": 1180,
+    "tris": 1232,
     "parts": {
-      "home_den_1_body": 1180
+      "home_den_1_body": 1172,
+      "home_den_1_body_glow": 60
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Titan's Den: a great thatched shelter.",
-    "glow": {},
+    "notes": "The Titan's Den: a timber frame in the mouth of a cave in a hill.",
+    "glow": {
+      "home_den_1_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
     "centres": {
       "home_den_1_body": [
         0.0,
-        13.5,
-        -0.0
+        9.859,
+        -13.164
+      ],
+      "home_den_1_body_glow": [
+        0.0,
+        9.4,
+        -30.5
       ]
     },
     "joints": {},
-    "lift": 0.15
+    "lift": 0.0
   },
   "home_den_2": {
     "fbx": "build/blender/stations/home_den_2.fbx",
     "png": "build/blender/stations/home_den_2.png",
     "preview": "build/blender/stations/previews/home_den_2.png",
     "size_studs": [
-      40.18,
-      28.0,
-      32.06
+      57.0,
+      26.3,
+      34.66
     ],
-    "tris": 1348,
+    "tris": 1460,
     "parts": {
-      "home_den_2_body": 1308,
-      "home_den_2_body_glow": 40
+      "home_den_2_body": 1360,
+      "home_den_2_body_glow": 60,
+      "home_den_2_body2_glow": 40
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Titan's Den: a stone stable with a gate the Titan walks through.",
+    "notes": "The Titan's Den: a stone gate into a hall dug into a hill.",
     "glow": {
       "home_den_2_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_den_2_body2_glow": [
         255,
         214,
         130
@@ -6389,44 +6418,55 @@
     },
     "centres": {
       "home_den_2_body": [
-        0.592,
-        14.0,
-        0.53
+        0.0,
+        13.15,
+        -14.17
       ],
       "home_den_2_body_glow": [
+        0.0,
+        9.4,
+        -30.5
+      ],
+      "home_den_2_body2_glow": [
         1.2,
-        8.65,
-        16.0
+        8.8,
+        2.6
       ]
     },
     "joints": {},
-    "lift": 0.15
+    "lift": 0.0
   },
   "home_den_3": {
     "fbx": "build/blender/stations/home_den_3.fbx",
     "png": "build/blender/stations/home_den_3.png",
     "preview": "build/blender/stations/previews/home_den_3.png",
     "size_studs": [
-      45.6,
-      34.72,
+      57.4,
+      26.9,
       41.3
     ],
-    "tris": 1664,
+    "tris": 1776,
     "parts": {
-      "home_den_3_body": 1608,
-      "home_den_3_body_glow": 40,
-      "home_den_3_body2_glow": 16
+      "home_den_3_body": 1660,
+      "home_den_3_body_glow": 60,
+      "home_den_3_body2_glow": 40,
+      "home_den_3_body3_glow": 16
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Titan's Den: a hall with tusks at its gate.",
+    "notes": "The Titan's Den: a great stone gate with tusks, banners and braziers.",
     "glow": {
       "home_den_3_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_den_3_body2_glow": [
         255,
         214,
         130
       ],
-      "home_den_3_body2_glow": [
+      "home_den_3_body3_glow": [
         255,
         150,
         60
@@ -6435,21 +6475,26 @@
     "centres": {
       "home_den_3_body": [
         0.0,
-        17.36,
-        4.15
+        13.45,
+        -10.85
       ],
       "home_den_3_body_glow": [
-        1.2,
-        9.371,
-        17.0
+        0.0,
+        10.0,
+        -30.5
       ],
       "home_den_3_body2_glow": [
+        1.2,
+        9.4,
+        2.6
+      ],
+      "home_den_3_body3_glow": [
         0.0,
-        6.171,
-        23.0
+        6.2,
+        8.0
       ]
     },
     "joints": {},
-    "lift": -0.571
+    "lift": -0.6
   }
 }

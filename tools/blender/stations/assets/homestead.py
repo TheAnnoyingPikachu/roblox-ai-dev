@@ -19,14 +19,14 @@ HS = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(HS)
 
 LOOKS = (
-    ("house", HS.house, ("The Ranch House: a cabin.", "The Ranch House: a farmhouse with a porch.", "The Ranch House: a house with two wings and a tower.")),
+    ("house", HS.house, ("The Ranch House: a timber cottage on a fieldstone footing, with a stone chimney and a stoop.", "The Ranch House: a farmhouse, fieldstone below and timber above, two dormers, a porch the length of its front.", "The Ranch House: a great farmhouse with a cross wing, two chimneys, a cupola and a long porch.")),
     ("barn", HS.barn, ("The Barn: a shed with its hay.", "The Barn: a barn with a silo.", "The Barn: a great barn with two silos, a weather vane and a hay cart.")),
     ("hatchery", HS.hatchery, ("The Hatchery: a canvas on four posts over a bed of straw.", "The Hatchery: a round pavilion.", "The Hatchery: a great pavilion under a two-tiered roof, with lanterns.")),
     ("cellar", HS.cellar, ("The Egg Cellar: a thatched shelter for the egg rack.", "The Egg Cellar: a cellar dug into a grassy mound.", "The Egg Cellar: a bigger mound with two doors.")),
     ("brooder", HS.brooder, ("The Brooder: two warm beds under heat lamps and a glass roof.", "The Brooder: four warm beds.", "The Brooder: six warm beds and a boiler.")),
     ("windmill", HS.windmill, ("The Windmill: a post mill, without its sails.", "The Windmill: a stone tower mill, without its sails.", "The Windmill: a tall tower mill with a gallery and a store, without its sails.")),
     ("lodge", HS.lodge, ("The Trophy Lodge: a first cup between two banners.", "The Trophy Lodge: a hall of three cups.", "The Trophy Lodge: a great hall with the great cup in the middle.")),
-    ("den", HS.den, ("The Titan's Den: a great thatched shelter.", "The Titan's Den: a stone stable with a gate the Titan walks through.", "The Titan's Den: a hall with tusks at its gate.")),
+    ("den", HS.den, ("The Titan's Den: a timber frame in the mouth of a cave in a hill.", "The Titan's Den: a stone gate into a hall dug into a hill.", "The Titan's Den: a great stone gate with tusks, banners and braziers.")),
 )
 
 

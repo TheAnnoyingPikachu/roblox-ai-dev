@@ -32,6 +32,7 @@ def _load(name):
 
 
 H = _load("hub")
+RH = _load("ranch_house")  # the Ranch House: a farmhouse of fieldstone and timber (decision 0074)
 
 LIVE = True  # with what the game stands itself
 R = 112.0  # the homestead's radius: src/shared/ValleyMap.luau's HOME
@@ -39,7 +40,6 @@ MEADOW = 34.0  # the herd's meadow in its middle
 RING = (37.0, 45.0)  # the path round the meadow
 
 # (width, depth, wall height) of each building's three looks
-HOUSE = ((20, 16, 9), (28, 20, 11), (28, 22, 13))
 BARN = ((18, 14, 8), (26, 20, 11), (34, 24, 14))
 BARN_DOOR = ((7, 6), (10, 8.5), (13, 10.5))
 HATCHERY = ((None, None), (11.5, 8), (14.0, 10))  # (radius, posts) of the round ones
@@ -47,7 +47,9 @@ CELLAR = (None, ((9, 8, 6), (11, 7.5)), ((11, 9, 7.5), (16, 9)))  # the mound's 
 BROODER = ((10, 7, 6.5), (15, 9, 7.5), (20, 11, 8.5))
 MILL = (None, (6.5, 22.0, 26.0), (7.5, 28.0, 34.0))  # (foot radius, height, the sails' span) of the towers
 LODGE = (None, (20, 12, 8), (28, 15, 10))
-DEN = ((30, 26, 18), (32, 26, 18), (36, 28, 21))
+# the Titan's Den: a hall dug into a hill, its mouth `HALF` either side and `TALL` high, `DEEP` back from
+# its face (ValleyMap.DEN): only its front is a model, the hall is the hill's own rock
+DEN_HALF, DEN_TALL, DEN_DEEP = 17.5, 21.5, 32.0
 
 PATH = (214, 196, 160)
 LAWN = (118, 180, 84)
@@ -162,50 +164,11 @@ def plot(name, w, d):
 
 
 def house(t):
-    """The Ranch House (animals training at once): a cabin, a farmhouse with a porch, a house with wings
-    and a tower. The ranch menu opens at its door."""
+    """The Ranch House (animals training at once): the farmhouse of scenes/ranch_house.py: a cottage, a
+    farmhouse with a long porch, a great farmhouse with a cross wing. The ranch menu opens at its door."""
 
     def make(rng):
-        w, d, h = HOUSE[t]
-        front = -d / 2
-        box((w + 2.4, d + 2.4, 0.5), (0, 0, 0.1), S.STONE, rng, kind=S.PALE)
-        box((w, d, h), (0, 0, 0.6), CREAM, rng, kind=S.PALE)
-        roof(w + 3.4, d + 3.4, h * 0.7, (0, 0, h + 0.6), ROOF_RED, rng, ridge=w * 0.55)
-        box((2.8, 2.8, h * 0.8), (w * 0.3, d * 0.12, h + 0.6), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
-        box((4.4, 0.5, 7.2), (0, front - 0.1, 0.6), S.WOOD_DARK, rng)
-        box((5.6, 0.6, 0.6), (0, front - 0.15, 7.8), S.WOOD, rng)
-        for i in range(min(t + 1, 2)):  # lit windows either side of the door
-            for sx in (-1, 1):
-                x = sx * (5.0 + i * 5.2)
-                window((3.2, 0.4, 3.6), (x, front - 0.1, 3.2))
-                box((4.0, 0.5, 0.5), (x, front - 0.15, 2.6), S.WOOD, rng)
-                for side in (-1, 1):
-                    box((0.8, 0.3, 3.6), (x + side * 2.05, front - 0.12, 3.2), SHUTTER, rng)
-                if t == 2:
-                    window((2.8, 0.4, 2.6), (x, front - 0.1, 9.6))
-        pw = w * 0.62
-        if t >= 1:  # a porch
-            box((pw, 6, 0.6), (0, front - 3, 0.3), S.WOOD, rng)
-            for i in range(4):
-                post(0.4, 7.0, (-pw / 2 + 0.8 + i * (pw - 1.6) / 3, front - 5.5, 0.9), S.WOOD_DARK, rng, n=6)
-            roof(pw + 2, 7.5, 2.0, (0, front - 3.1, 7.9), (150, 60, 52), rng, ridge=pw * 0.8)
-        if t == 2:  # two wings and a tower
-            for sx in (-1, 1):
-                x = sx * (w / 2 + 4)
-                box((8, 16, 9), (x, 2, 0.6), CREAM, rng, kind=S.PALE)
-                roof(18.4, 10.4, 6, (x, 2, 9.6), ROOF_RED, rng, yaw=90, ridge=9)  # turned: its ridge runs front to back
-                window((3.0, 0.4, 3.4), (x, -6.1, 3.4))
-                lantern((sx * (pw / 2 + 2.6), front - 8.5, 0.15), rng, h=6.5)
-                flowers((sx * (pw / 2 + 5.5), front - 2.6, 0.15), rng, n=12, spread=2.4)
-            tx, ty = -w / 2 + 2.5, d / 2 - 2
-            post(4.2, 23, (tx, ty, 0.6), CREAM, rng, n=8, kind=S.PALE)
-            post(5.4, 8, (tx, ty, 23.6), ROOF_RED, rng, n=8, r2=0.3)
-            post(0.14, 4, (tx, ty, 31.4), S.INK, rng, n=4)
-            flag((tx + 1.4, ty, 35.2), 2.8, 2.4, S.GOLD, rng, point=False)
-        if t == 0:
-            sign("RANCH HOUSE", (0, front - 0.6, 8.9), rng, size=0.95)
-        else:
-            sign("RANCH HOUSE", (0, front - 6.4, 9.4), rng, size=(1.15, 1.25)[t - 1])
+        RH.LOOKS[t](rng)
 
     return make
 
@@ -283,7 +246,7 @@ def hatchery(t):
             for a in (45, 135, 225, 315):
                 lantern(Vector((0, 0, 0.15)) + polar(r + 3.5, a), rng, h=6.5)
         gem((0, 0, top - 0.3), (0, 0, top + 3.0), 1.6, LIT, rng=rng)
-        sign("HATCHERY", (0, -(r - 1.2), hh - 0.5), rng, size=1.1)
+        sign("HATCHERY", (0, -(r + 0.4), hh - 0.7), rng, size=1.1)  # in front of the posts, under the roof's edge
         if LIVE:
             for i in range(6):
                 nest(Vector((0, 0, 0.75)) + polar((7, 9.5)[t - 1], i * 60 + 30), rng, i)
@@ -458,46 +421,54 @@ def lodge(t):
             for sx in (-1, 1):
                 brazier((sx * (w / 2 + 3), -d / 2 - 2, 0.15), rng)
         size = (0.95, 1.25)[t - 1]
-        sign("TROPHY LODGE", (0, -d / 2 - 0.8, h + 1.25 + size * 0.45), rng, size=size, board=S.INK)
+        sign("TROPHY LODGE", (0, -d / 2 - 0.5, h - 0.45), rng, size=size, board=S.INK)  # under the cornice, before the columns
 
     return make
 
 
 def den(t):
-    """The Titan's Den (the Titan's strength in waves): a great thatched shelter, a stone stable with a gate
-    the Titan walks through, a hall with tusks at its gate. The game stands the owner's Titan in it."""
+    """The Titan's Den (the Titan's strength in waves): the front of a hall dug into the hill behind it (the
+    hall itself is the hill's rock, cut by the game). A timber frame in the cave's mouth, a stone gate, a
+    great stone gate with tusks. Inside: a stone floor, a bed of hay, a trough, lamps on the back wall. The
+    game stands the owner's Titan in it."""
 
     def make(rng):
-        w, d, h = DEN[t]
-        front = -d / 2
-        disc(10 + t, (0, 1, 0.15), 0.4, HAY, rng, n=12)
-        box((8, 2.4, 1.8), (w / 2 - 7.5, front + 6, 0.15), S.WOOD, rng)
-        box((7.2, 1.6, 0.3), (w / 2 - 7.5, front + 6, 1.85), S.WATER, rng, chance=0.0)
-        if t == 0:
+        half, tall, deep = DEN_HALF, DEN_TALL, DEN_DEEP
+        rock = dict(surface="rock", kind=S.COOL)
+        box((half * 2 - 1, deep - 1, 0.3), (0, deep / 2, 0.0), (150, 144, 136), rng, **rock)  # the floor
+        disc(9 + t, (0, deep * 0.55, 0.3), 0.4, HAY, rng, n=12)
+        box((8, 2.4, 1.8), (half - 6, deep * 0.3, 0.3), S.WOOD, rng)  # the trough
+        box((7.2, 1.6, 0.3), (half - 6, deep * 0.3, 2.0), S.WATER, rng, chance=0.0)
+        for x in (-half * 0.55, 0, half * 0.55):  # lamps on the back wall
+            box((1.2, 1.0, 0.3), (x, deep - 1.1, 9.0), S.INK, rng)
+            neon(S.k.cyl(0.7, 1.6, (x, deep - 1.5, 9.4), n=6), LIT)
+        if t == 0:  # a timber frame in the mouth of the cave
             for sx in (-1, 1):
-                for sy in (-1, 0, 1):
-                    post(1.2, h, (sx * (w / 2 - 1.5), sy * (d / 2 - 1.5), 0.15), S.WOOD_DARK, rng, n=7)
-            roof(w + 6, d + 6, 9, (0, 0, h + 0.15), THATCH, rng, ridge=w * 0.55)
-            sign("TITAN'S DEN", (0, front - 2.5, 2.4), rng, size=1.0)
-        else:
-            wall = dict(surface="rock", kind=S.COOL)
-            box((w, 2.4, h), (0, d / 2 - 1.2, 0.15), S.STONE_DARK, rng, **wall)
+                post(1.3, tall - 4, (sx * (half - 1.5), 0.5, 0.15), S.WOOD_DARK, rng, n=7)
+                box((2.0, 2.0, 1.2), (sx * (half - 1.5), 0.5, 0.0), S.STONE, rng, **rock)
+            box((half * 2 + 2, 2.4, 2.2), (0, 0.5, tall - 4), S.WOOD_DARK, rng)
+            box((half * 2 + 4, 6.0, 0.5), (0, -2.2, tall - 3.0), THATCH, rng, tilt=(-14, 0))
+            sign("TITAN'S DEN", (0, -0.9, tall - 6.2), rng, size=1.3)
+        else:  # a stone gate across the mouth, its sides and top running into the hill
+            stone = S.STONE_DARK if t == 1 else (176, 170, 160)
             for sx in (-1, 1):
-                box((2.4, d, h), (sx * (w / 2 - 1.2), 0, 0.15), S.STONE_DARK, rng, **wall)
-                box((w * 0.2, 2.4, h), (sx * w * 0.4, front + 1.2, 0.15), S.STONE_DARK, rng, **wall)
-                lantern((sx * (w * 0.5 + 3), front - 3, 0.15), rng, h=9)
-            box((w, 3.0, 3.0), (0, front + 1.5, h - 2.85), S.WOOD_DARK, rng)
-            roof(w + 5, d + 5, 10 + 3 * (t - 1), (0, 0, h + 0.15), SLATE, rng, ridge=w * 0.5)
-            sign("TITAN'S DEN", (0, front - 0.2, h - 1.35 + (0.7, 0.9)[t - 1]), rng, size=(1.4, 1.7)[t - 1], board=S.INK)
+                box((9.0, 4.0, tall + 4), (sx * (half + 1.5), 0.6, 0.0), stone, rng, **rock)
+                box((10.0, 5.0, 1.4), (sx * (half + 1.5), 0.4, 0.0), S.STONE, rng, kind=S.PALE)
+            box((half * 2 + 21, 4.0, 6.0), (0, 0.6, tall - 2.0), stone, rng, **rock)
+            box((half * 2 + 22, 4.6, 0.8), (0, 0.4, tall + 4.0), S.STONE, rng, kind=S.PALE)
+            box((half * 2 - 3, 0.8, 2.6), (0, -1.5, tall - 4.6), S.WOOD_DARK, rng)
+            sign("TITAN'S DEN", (0, -1.7, tall + 0.9), rng, size=(1.8, 2.1)[t - 1], board=S.INK)
+            for sx in (-1, 1):
+                lantern((sx * (half + 7.5), -2.6, 0.15), rng, h=9)
         if t == 2:
-            box((w + 0.4, 0.5, 0.6), (0, front - 0.1, h - 3.5), S.GOLD, rng)
+            box((half * 2 + 22.4, 0.5, 0.6), (0, -1.45, tall - 2.6), S.GOLD, rng)
             for sx in (-1, 1):  # tusks either side of the gate
-                x = sx * w * 0.34
-                pipe([(x, front - 1.5, 0.2), (x + sx * 2.2, front - 4.2, 7.4), (x - sx * 0.5, front - 5.8, 14.6), (x - sx * 5.6, front - 5.2, 20)], [1.8, 1.4, 0.95, 0.25], IVORY, rng, n=7, kind=S.PALE)
-                flag((sx * w * 0.2, front - 0.2, h - 3.6), 3.8, 6.4, (224, 64, 60), rng)
-                brazier((sx * (w * 0.5 + 3), front - 9, 0.15), rng)
+                x = sx * (half - 0.5)
+                pipe([(x, -1.5, 0.2), (x + sx * 2.2, -4.2, 7.0), (x - sx * 0.5, -5.8, 13.6), (x - sx * 5.2, -5.2, 18.6)], [1.8, 1.4, 0.95, 0.25], IVORY, rng, n=7, kind=S.PALE)
+                flag((sx * (half + 1.5), -1.5, tall - 5.4), 4.4, 8.0, (224, 64, 60), rng)
+                brazier((sx * (half + 8.5), -8, 0.15), rng)
         if LIVE:
-            actor(("creature_elephant", "creature_elephant", "creature_elephant_war")[t], (0, 1, 0.5), 0)
+            actor(("creature_elephant", "creature_elephant", "creature_elephant_war")[t], (0, deep * 0.55, 0.7), 0)
 
     return make
 
@@ -512,7 +483,7 @@ BUILDINGS = (
     ("BROODER", brooder, 98, 25.5, (18, 11), ((0, 0), (1, 2), (3, 4), (5, 5))),
     ("WINDMILL", windmill, 86, 349, (18, 16), ((0, 1), (2, 2), (3, 4), (5, 5))),
     ("TROPHY LODGE", lodge, 82, 182, (26, 15), ((0, 1), (2, 3), (4, 4), (5, 5))),
-    ("TITAN'S DEN", den, 84, 134, (32, 26), ((0, 2), (3, 3), (4, 4), (5, 5))),
+    ("TITAN'S DEN", den, 116, 134, (30, 24), ((0, 2), (3, 3), (4, 4), (5, 5))),  # its front on its hill's face
 )
 
 
@@ -731,9 +702,12 @@ def build(rng):
     meadow(rng)
     grounds(rng)
     for name, maker, r, deg, lot, stages in BUILDINGS:
+        if maker is den:
+            lv(0)
+            place(lambda rng: lump((0, DEN_DEEP / 2 + 4, 10), (DEN_HALF + 14, DEN_DEEP / 2 + 12, 30), (112, 168, 80), rng), r, deg, rng)
         if stages[0]:
             lv(*stages[0])
-            place(plot(name, *lot), r, deg, rng)
+            place(plot(name, *lot), r + (14 if maker is den else 0), deg, rng)
         for t in range(3):
             lv(*stages[t + 1])
             place(maker(t), r, deg, rng)
