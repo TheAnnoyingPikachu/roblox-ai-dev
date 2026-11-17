@@ -1,10 +1,15 @@
-"""A ranch's homestead reworked (concept, decision 0071): the middle of the ranch as an open green, not a
-fenced square. The herd's meadow is at its heart, a ring path runs round it, and the buildings stand
-round the path with open ground between them, so every way out to a training ground is in sight. It is
-300 studs across (the fenced plot is 150) and has eight buildings to upgrade where the plot has two.
+"""A ranch's homestead (decisions 0071 and 0072): the middle of the ranch as an open green, not a fenced
+square. The herd's meadow is at its heart, a ring path runs round it, and the buildings stand round the
+path with open ground between them, so every way out to a training ground is in sight. It fills the
+round the valley levels for it (224 studs across) and has eight buildings to upgrade.
 
-`lv` says at which stages of building up what follows stands (0: a new ranch, 5: everything bought). A
-building is written round its own middle with its front towards -Y, in three looks, and stood by `place`.
+The eight buildings are the game's models too (assets/homestead.py): each is written round its own
+middle with its front towards -Y, in three looks. With `LIVE` off a building is built without what the
+game stands itself: the eggs, their racks, the Titan, the windmill's sails. The sizes at the top are
+repeated in src/stations/Ranch.luau (`SOLID`, where the nests go): change the two together.
+
+`lv` says at which stages of building up what follows stands on the card (0: a new ranch, 5: everything
+bought); `place` stands a building at its place round the meadow.
 """
 
 import importlib.util
@@ -28,9 +33,22 @@ def _load(name):
 
 H = _load("hub")
 
-R = 150.0  # the homestead's radius
-MEADOW = 50.0  # the herd's meadow in its middle
-RING = (54.0, 64.0)  # the path round the meadow
+LIVE = True  # with what the game stands itself
+R = 112.0  # the homestead's radius: src/shared/ValleyMap.luau's HOME
+MEADOW = 34.0  # the herd's meadow in its middle
+RING = (37.0, 45.0)  # the path round the meadow
+
+# (width, depth, wall height) of each building's three looks
+HOUSE = ((20, 16, 9), (28, 20, 11), (28, 22, 13))
+BARN = ((18, 14, 8), (26, 20, 11), (34, 24, 14))
+BARN_DOOR = ((7, 6), (10, 8.5), (13, 10.5))
+HATCHERY = ((None, None), (11.5, 8), (14.0, 10))  # (radius, posts) of the round ones
+CELLAR = (None, ((9, 8, 6), (11, 7.5)), ((11, 9, 7.5), (16, 9)))  # the mound's half sizes, its stone front
+BROODER = ((10, 7, 6.5), (15, 9, 7.5), (20, 11, 8.5))
+MILL = (None, (6.5, 22.0, 26.0), (7.5, 28.0, 34.0))  # (foot radius, height, the sails' span) of the towers
+LODGE = (None, (20, 12, 8), (28, 15, 10))
+DEN = ((30, 26, 18), (32, 26, 18), (36, 28, 21))
+
 PATH = (214, 196, 160)
 LAWN = (118, 180, 84)
 CREAM = (236, 220, 188)
@@ -41,12 +59,15 @@ HAY = (228, 196, 110)
 THATCH = (198, 164, 96)
 GLASS = (170, 224, 236)
 IVORY = (240, 232, 208)
+SHUTTER = (96, 150, 110)
 LIT = (255, 226, 150)
+HEAT = (255, 160, 70)
+FLAME = (255, 150, 60)
 EGGS = ((150, 210, 120), (240, 170, 90), (232, 200, 130), (250, 196, 60), (170, 150, 240))
 BANNERS = ((150, 80, 200), (224, 64, 60), (250, 196, 60), (60, 150, 255), (70, 205, 120))
 
 # The ways out to the training grounds: name, the angle it leaves at (0 is east, 90 is away from the hub:
-# the angles of src/shared/ValleyMap.luau's grounds), its stat's colour. The road to the hub leaves south.
+# the angles of ValleyMap's grounds), its stat's colour. The road to the hub leaves south.
 WAYS = (
     ("SPEED TRACK", 13, (60, 150, 255)),
     ("GUARD YARD", 62, (255, 165, 50)),
@@ -91,13 +112,28 @@ def sign(text, at, rng, size=1.4, board=S.WOOD_DARK):
     words(text, (at[0], at[1] - 0.33, at[2]), size, S.WHITE, glow=0.5)
 
 
+def window(size, at):
+    """A lit window, standing on `at`: it glows (Neon in the game)."""
+    return neon(S.k.box(size, (at[0], at[1], at[2] + size[2] / 2), (0, 0, 0)), LIT, 1.3)
+
+
 def egg(at, rng, i=0, s=1.0):
     lump((at[0], at[1], at[2] + 1.15 * s), (0.85 * s, 0.85 * s, 1.15 * s), EGGS[i % len(EGGS)], rng)
 
 
 def nest(at, rng, i=0):
-    post(2.2, 0.7, at, HAY, rng, n=8)
+    post(2.0, 0.7, at, HAY, rng, n=8)
     egg((at[0], at[1], at[2] + 0.5), rng, i)
+
+
+def rack(x, y, cols, rows, rng):
+    """The egg storage's rack as the game builds it, with eggs on it: for the card only."""
+    for sx in (-1, 1):
+        post(0.3, rows * 2.3 + 1.4, (x + sx * cols * 1.3, y, 0.15), S.WOOD_DARK, rng, n=5)
+    for j in range(rows):
+        box((cols * 2.6 + 0.4, 2.2, 0.35), (x, y, 1.0 + j * 2.3), S.WOOD, rng)
+        for i in range(cols):
+            egg((x - (cols - 1) * 1.3 + i * 2.6, y, 1.3 + j * 2.3), rng, i + j, s=0.7)
 
 
 def plot(name, w, d):
@@ -110,9 +146,8 @@ def plot(name, w, d):
             box((0.14, d, 0.14), (sx * w / 2, 0, 1.9), HAY, rng)
             box((w, 0.14, 0.14), (0, sx * d / 2, 1.9), HAY, rng)
             post(0.3, 6.4, (sx * 4.2, -d / 2 - 3, 0.15), S.WOOD_DARK, rng, n=5)
-        box((w - 4, d - 4, 0.12), (0, 0, 0.15), (176, 150, 110), rng, chance=0.3)
+        box((w - 3, d - 3, 0.12), (0, 0, 0.15), (176, 150, 110), rng, chance=0.3)
         sign(name, (0, -d / 2 - 3, 5.2), rng, size=1.0, board=S.WOOD)
-        box((3.0, 0.5, 1.5), (0, -d / 2 - 3, 2.2), S.GOLD, rng)
 
     return make
 
@@ -125,41 +160,46 @@ def house(t):
     and a tower. The ranch menu opens at its door."""
 
     def make(rng):
-        w, d, h = ((24, 18, 9), (38, 24, 12), (50, 28, 14))[t]
+        w, d, h = HOUSE[t]
         front = -d / 2
-        box((w + 3, d + 3, 0.5), (0, 0, 0.1), S.STONE, rng, kind=S.PALE)
+        box((w + 2.4, d + 2.4, 0.5), (0, 0, 0.1), S.STONE, rng, kind=S.PALE)
         box((w, d, h), (0, 0, 0.6), CREAM, rng, kind=S.PALE)
-        roof(w + 4, d + 4, h * 0.7, (0, 0, h + 0.6), ROOF_RED, rng, ridge=w * 0.55)
-        box((3.2, 3.2, h * 0.8), (w * 0.3, d * 0.12, h + 0.6), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
-        box((4.6, 0.5, 7.4), (0, front - 0.1, 0.6), S.WOOD_DARK, rng)
-        box((5.8, 0.6, 0.6), (0, front - 0.15, 8.0), S.WOOD, rng)
-        for i in range(t + 1):  # lit windows either side of the door
+        roof(w + 3.4, d + 3.4, h * 0.7, (0, 0, h + 0.6), ROOF_RED, rng, ridge=w * 0.55)
+        box((2.8, 2.8, h * 0.8), (w * 0.3, d * 0.12, h + 0.6), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
+        box((4.4, 0.5, 7.2), (0, front - 0.1, 0.6), S.WOOD_DARK, rng)
+        box((5.6, 0.6, 0.6), (0, front - 0.15, 7.8), S.WOOD, rng)
+        for i in range(min(t + 1, 2)):  # lit windows either side of the door
             for sx in (-1, 1):
-                x = sx * (5.6 + i * 6.2)
-                box((3.6, 0.4, 3.8), (x, front - 0.1, 3.4), LIT, rng, chance=0.0)
-                box((4.4, 0.5, 0.5), (x, front - 0.15, 2.8), S.WOOD, rng)
+                x = sx * (5.0 + i * 5.2)
+                window((3.2, 0.4, 3.6), (x, front - 0.1, 3.2))
+                box((4.0, 0.5, 0.5), (x, front - 0.15, 2.6), S.WOOD, rng)
                 for side in (-1, 1):
-                    box((0.9, 0.3, 3.8), (x + side * 2.3, front - 0.12, 3.4), (96, 150, 110), rng)
+                    box((0.8, 0.3, 3.6), (x + side * 2.05, front - 0.12, 3.2), SHUTTER, rng)
                 if t == 2:
-                    box((3.2, 0.4, 3.0), (x, front - 0.1, 10.2), LIT, rng, chance=0.0)
+                    window((2.8, 0.4, 2.6), (x, front - 0.1, 9.6))
         pw = w * 0.62
         if t >= 1:  # a porch
-            box((pw, 7, 0.6), (0, front - 3.5, 0.3), S.WOOD, rng)
+            box((pw, 6, 0.6), (0, front - 3, 0.3), S.WOOD, rng)
             for i in range(4):
-                post(0.4, 7.2, (-pw / 2 + 0.8 + i * (pw - 1.6) / 3, front - 6.4, 0.9), S.WOOD_DARK, rng, n=6)
-            roof(pw + 2, 8.5, 2.2, (0, front - 3.6, 8.1), (150, 60, 52), rng, ridge=pw * 0.8)
+                post(0.4, 7.0, (-pw / 2 + 0.8 + i * (pw - 1.6) / 3, front - 5.5, 0.9), S.WOOD_DARK, rng, n=6)
+            roof(pw + 2, 7.5, 2.0, (0, front - 3.1, 7.9), (150, 60, 52), rng, ridge=pw * 0.8)
         if t == 2:  # two wings and a tower
             for sx in (-1, 1):
-                box((14, 18, 10), (sx * (w / 2 + 6), 3, 0.6), CREAM, rng, kind=S.PALE)
-                roof(17, 21, 7, (sx * (w / 2 + 6), 3, 10.6), ROOF_RED, rng, yaw=90, ridge=10)
-                box((3.4, 0.4, 3.6), (sx * (w / 2 + 6), -6.1, 3.6), LIT, rng, chance=0.0)
-                lantern((sx * (pw / 2 + 3), front - 10, 0.15), rng, h=6.5)
-                flowers((sx * (pw / 2 + 7), front - 3, 0.15), rng, n=12, spread=3.0)
-            post(5.2, 26, (-w / 2 + 3, d / 2 - 2, 0.6), CREAM, rng, n=8, kind=S.PALE)
-            post(6.6, 9, (-w / 2 + 3, d / 2 - 2, 26.6), ROOF_RED, rng, n=8, r2=0.3)
-            post(0.14, 4, (-w / 2 + 3, d / 2 - 2, 35.4), S.INK, rng, n=4)
-            flag((-w / 2 + 4.4, d / 2 - 2, 39.2), 2.8, 2.4, S.GOLD, rng, point=False)
-        sign("RANCH HOUSE", (0, front - (7.4 if t else 0.6), (9.7, 9.9, 9.9)[t] if t else 9.0), rng, size=(1.0, 1.3, 1.5)[t])
+                x = sx * (w / 2 + 4)
+                box((8, 16, 9), (x, 2, 0.6), CREAM, rng, kind=S.PALE)
+                roof(18.4, 10.4, 6, (x, 2, 9.6), ROOF_RED, rng, yaw=90, ridge=9)  # turned: its ridge runs front to back
+                window((3.0, 0.4, 3.4), (x, -6.1, 3.4))
+                lantern((sx * (pw / 2 + 2.6), front - 8.5, 0.15), rng, h=6.5)
+                flowers((sx * (pw / 2 + 5.5), front - 2.6, 0.15), rng, n=12, spread=2.4)
+            tx, ty = -w / 2 + 2.5, d / 2 - 2
+            post(4.2, 23, (tx, ty, 0.6), CREAM, rng, n=8, kind=S.PALE)
+            post(5.4, 8, (tx, ty, 23.6), ROOF_RED, rng, n=8, r2=0.3)
+            post(0.14, 4, (tx, ty, 31.4), S.INK, rng, n=4)
+            flag((tx + 1.4, ty, 35.2), 2.8, 2.4, S.GOLD, rng, point=False)
+        if t == 0:
+            sign("RANCH HOUSE", (0, front - 0.6, 8.9), rng, size=0.95)
+        else:
+            sign("RANCH HOUSE", (0, front - 6.4, 9.4), rng, size=(1.15, 1.25)[t - 1])
 
     return make
 
@@ -168,154 +208,158 @@ def barn(t):
     """The Barn (animals you can keep): a shed, a barn with a silo, a great barn with two."""
 
     def make(rng):
-        w, d, h = ((22, 16, 9), (34, 24, 13), (46, 30, 16))[t]
+        w, d, h = BARN[t]
+        dw, dh = BARN_DOOR[t]
         front = -d / 2
         box((w, d, h), (0, 0, 0.3), BARN_RED, rng)
         roof(w + 3, d + 3, h * 0.62, (0, 0, h + 0.3), SLATE, rng, ridge=w * 0.72)
-        dw, dh = ((8, 7), (12, 10), (15, 12))[t]
         box((dw, 0.5, dh), (0, front - 0.1, 0.3), S.WOOD_DARK, rng)
         box((dw + 1.6, 0.6, 0.8), (0, front - 0.15, dh + 0.3), S.WHITE, rng, kind=S.PALE)
+        box((w + 0.3, d + 0.3, 0.7), (0, 0, h * 0.52), S.WHITE, rng, kind=S.PALE)  # a white band round it
         for sx in (-1, 1):
             box((0.8, 0.6, dh), (sx * (dw / 2 + 0.4), front - 0.15, 0.3), S.WHITE, rng, kind=S.PALE)
-            box((0.8, 0.6, h), (sx * (w / 2 - 0.4), front - 0.15, 0.3), S.WHITE, rng, kind=S.PALE)
-        box((w + 0.3, d + 0.3, 0.7), (0, 0, h * 0.52), S.WHITE, rng, kind=S.PALE)  # a white band, and the back's trim
-        for sx in (-1, 1):
-            box((0.8, 0.6, h), (sx * (w / 2 - 0.4), -front + 0.15, 0.3), S.WHITE, rng, kind=S.PALE)
+            for sy in (-1, 1):
+                box((0.8, 0.6, h), (sx * (w / 2 - 0.4), sy * (front - 0.15), 0.3), S.WHITE, rng, kind=S.PALE)
         if t >= 1:  # the loft door, at the back
-            box((4.2, 0.5, 4.2), (0, -front + 0.1, h * 0.52 + 1.4), S.WOOD_DARK, rng)
-            box((5.4, 0.6, 0.6), (0, -front + 0.15, h * 0.52 + 5.6), S.WHITE, rng, kind=S.PALE)
+            box((3.8, 0.5, 3.8), (0, -front + 0.1, h * 0.52 + 1.2), S.WOOD_DARK, rng)
+            box((5.0, 0.6, 0.6), (0, -front + 0.15, h * 0.52 + 5.0), S.WHITE, rng, kind=S.PALE)
         lean = math.degrees(math.atan2(dh, dw))
-        for turn_ in (lean, -lean):
-            box((math.hypot(dw, dh) * 0.94, 0.25, 0.5), (0, front - 0.4, 0.3 + dh / 2 - 0.25), S.WHITE, rng, tilt=(0, turn_), kind=S.PALE)
+        for way in (lean, -lean):  # braces across the doors
+            box((math.hypot(dw, dh) * 0.94, 0.25, 0.5), (0, front - 0.4, 0.3 + dh / 2 - 0.25), S.WHITE, rng, tilt=(0, way), kind=S.PALE)
         for i in range(3 + 3 * t):  # hay beside it
-            box((2.6, 1.4, 1.3), (-w / 2 - 3 - (i % 3) * 2.9, front + 2 + (i // 3) * 1.8, 0.15), HAY, rng, yaw=8)
+            box((2.6, 1.4, 1.3), (-w / 2 - 2.4 - (i % 3) * 2.8, front + 2 + (i // 3) * 1.8, 0.15), HAY, rng, yaw=8)
         if t >= 1:
-            post(5.4, h + 8, (w / 2 + 7, 2, 0.15), (205, 210, 215), rng, n=10)
-            post(5.8, 4.6, (w / 2 + 7, 2, h + 8.15), BARN_RED, rng, n=10, r2=0.4)
+            post(4.6, h + 7, (w / 2 + 6, 2, 0.15), (205, 210, 215), rng, n=10)
+            post(5.0, 4.2, (w / 2 + 6, 2, h + 7.15), BARN_RED, rng, n=10, r2=0.4)
         if t == 2:
-            post(4.4, h + 2, (w / 2 + 6, -10, 0.15), (205, 210, 215), rng, n=10)
-            post(4.8, 4.0, (w / 2 + 6, -10, h + 2.15), BARN_RED, rng, n=10, r2=0.4)
+            post(3.8, h + 2, (w / 2 + 5.4, -9, 0.15), (205, 210, 215), rng, n=10)
+            post(4.2, 3.6, (w / 2 + 5.4, -9, h + 2.15), BARN_RED, rng, n=10, r2=0.4)
             top = h + 0.3 + h * 0.62
             post(0.15, 4, (0, 0, top), S.INK, rng, n=4)
             box((2.8, 0.14, 1.0), (0, 0, top + 3.2), S.GOLD, rng)
-            box((7, 3.8, 1.2), (-w / 2 - 9, front - 7, 1.5), S.WOOD, rng, yaw=20)  # a hay cart
-            box((6.4, 3.2, 1.6), (-w / 2 - 9, front - 7, 2.7), HAY, rng, yaw=20)
-            for dx in (-2.6, 2.6):
-                post(1.5, 0.5, (-w / 2 - 9 + dx, front - 7 + dx * 0.36, 0.15), S.WOOD_DARK, rng, n=8)
-        size = (1.0, 1.4, 1.6)[t]
+            box((6.4, 3.6, 1.2), (-w / 2 - 7, front - 6, 1.5), S.WOOD, rng, yaw=20)  # a hay cart
+            box((5.8, 3.0, 1.5), (-w / 2 - 7, front - 6, 2.7), HAY, rng, yaw=20)
+            for dx in (-2.4, 2.4):
+                post(1.5, 0.5, (-w / 2 - 7 + dx, front - 6 + dx * 0.36, 0.15), S.WOOD_DARK, rng, n=8)
+        size = (0.9, 1.2, 1.5)[t]
         sign("BARN", (0, front - 0.6, dh + 0.9 + size), rng, size=size)
 
     return make
 
 
 def hatchery(t):
-    """The Hatchery (eggs hatching at once): three nests under a canvas, a round pavilion of six, a great
-    one of ten under a two-tiered roof."""
+    """The Hatchery (eggs hatching at once): a canvas on four posts, a round pavilion, a great one under
+    a two-tiered roof. The game stands the nests in it, as many as its level gives."""
 
     def make(rng):
         if t == 0:
-            disc(8, (0, 0, 0.15), 0.35, HAY, rng, n=10)
-            for i in range(3):
-                nest((-4.4 + i * 4.4, 0.5, 0.5), rng, i)
+            disc(7.5, (0, 0, 0.15), 0.35, HAY, rng, n=10)
             for sx in (-1, 1):
                 post(0.4, 7.5, (sx * 6.6, 3.8, 0.15), S.WOOD_DARK, rng, n=6)
                 post(0.4, 5.8, (sx * 6.6, -3.8, 0.15), S.WOOD_DARK, rng, n=6)
             box((15, 9.4, 0.35), (0, 0, 6.5), (232, 222, 200), rng, tilt=(-11, 0), kind=S.PALE)
             sign("HATCHERY", (0, -4.6, 6.6), rng, size=0.9)
+            if LIVE:
+                for i in range(3):
+                    nest((-3.5 + i * 3.5, 0.5, 0.5), rng, i)
             return
-        r, n = ((13, 8), (17, 10))[t - 1]
+        r, n = HATCHERY[t]
         hh = 8.5 + t
         disc(r, (0, 0, 0.15), 0.6, (226, 214, 190), rng, n=16, kind=S.PALE)
         for i in range(n):  # no post stands in the middle of the front
             post(0.55, hh, Vector((0, 0, 0.75)) + polar(r - 1.5, i * 360 / n + (22.5 if n == 8 else 0)), S.WOOD_DARK, rng, n=6)
-        post(r + 2.5, 5.5 + t, (0, 0, hh + 0.75), (240, 168, 72), rng, n=12, r2=(1.0, 6.5)[t - 1])
+        post(r + 2.3, 5.5 + t, (0, 0, hh + 0.75), (240, 168, 72), rng, n=12, r2=(1.0, 6.0)[t - 1])
         top = hh + 0.75 + 5.5 + t
         if t == 2:
-            post(6.0, 2.4, (0, 0, top), (226, 214, 190), rng, n=12, kind=S.PALE)
-            post(8.2, 4.4, (0, 0, top + 2.4), (240, 168, 72), rng, n=12, r2=0.6)
-            top += 6.8
+            post(5.6, 2.2, (0, 0, top), (226, 214, 190), rng, n=12, kind=S.PALE)
+            post(7.6, 4.2, (0, 0, top + 2.2), (240, 168, 72), rng, n=12, r2=0.6)
+            top += 6.4
             for a in (45, 135, 225, 315):
-                lantern(Vector((0, 0, 0.15)) + polar(r + 4, a), rng, h=6.5)
-        gem((0, 0, top - 0.3), (0, 0, top + 3.2), 1.7, LIT, rng=rng)
-        for i in range(6):
-            nest(Vector((0, 0, 0.75)) + polar((7, 11)[t - 1], i * 60 + 30), rng, i)
-        if t == 2:
-            for i in range(4):
-                nest(Vector((0, 0, 0.75)) + polar(4.6, i * 90), rng, i + 2)
-        sign("HATCHERY", (0, -(r - 1.2), hh - 0.5), rng, size=1.2)
+                lantern(Vector((0, 0, 0.15)) + polar(r + 3.5, a), rng, h=6.5)
+        gem((0, 0, top - 0.3), (0, 0, top + 3.0), 1.6, LIT, rng=rng)
+        sign("HATCHERY", (0, -(r - 1.2), hh - 0.5), rng, size=1.1)
+        if LIVE:
+            for i in range(6):
+                nest(Vector((0, 0, 0.75)) + polar((7, 9.5)[t - 1], i * 60 + 30), rng, i)
+            if t == 2:
+                for i in range(4):
+                    nest(Vector((0, 0, 0.75)) + polar(4.2, i * 90), rng, i + 2)
 
     return make
 
 
 def cellar(t):
-    """The Egg Cellar (eggs you can store): a rack under a thatch, a cellar dug into a grassy mound, a
-    bigger one with two doors."""
-
-    def rack(x, y, n, rng):
-        for sx in (-1, 1):
-            post(0.3, 6.4, (x + sx * (n * 1.1 + 0.2), y, 0.15), S.WOOD_DARK, rng, n=5)
-        for j in range(2):
-            box((n * 2.2 + 0.8, 2.0, 0.3), (x, y, 1.0 + j * 2.7), S.WOOD, rng)
-            for i in range(n):
-                egg((x - (n - 1) * 1.1 + i * 2.2, y, 1.3 + j * 2.7), rng, i + j, s=0.75)
+    """The Egg Cellar (eggs you can store): a thatched shelter over the egg rack, a cellar dug into a
+    grassy mound, a bigger one with two doors. The game stands the rack and the eggs on it."""
 
     def make(rng):
         if t == 0:
-            rack(0, 0, 4, rng)
-            box((11.5, 4.4, 0.35), (0, 0, 6.6), THATCH, rng, tilt=(-9, 0))
-            sign("EGG CELLAR", (0, -2.4, 8.0), rng, size=0.8)
+            for sx in (-1, 1):
+                post(0.4, 11.5, (sx * 6.4, 2.4, 0.15), S.WOOD_DARK, rng, n=6)
+                post(0.4, 10.4, (sx * 6.4, -2.4, 0.15), S.WOOD_DARK, rng, n=6)
+            box((14.4, 6.6, 0.4), (0, 0, 10.9), THATCH, rng, tilt=(-9, 0))
+            if LIVE:
+                rack(0, 0, 4, 3, rng)
             return
-        mw, md, mh = ((12, 11, 7), (17, 14, 9))[t - 1]
+        (mw, md, mh), (fw, fh) = CELLAR[t]
         lump((0, 4, mh * 0.42), (mw, md, mh), (112, 172, 80), rng)  # the mound
-        fw, fh = ((13, 8), (20, 10))[t - 1]
         yf = 4 - md * 0.72
         box((fw, 1.6, fh), (0, yf, 0.15), S.STONE, rng, surface="rock", kind=S.COOL)
-        for x in ((0,), (-5, 5))[t - 1]:
-            box((4.4, 0.5, 5.6), (x, yf - 0.9, 0.15), S.WOOD_DARK, rng)
-            box((5.4, 0.7, 0.7), (x, yf - 0.95, 5.75), S.STONE_DARK, rng)
-            neon(S.k.cyl(0.4, 0.7, (x + 3.1, yf - 1.1, 4.6), n=6), LIT)
-        for x, y in ((3, 7), (-4, 5))[: t]:  # air pipes
-            post(0.6, 3.2, (x, y, mh * 1.2), S.STONE_DARK, rng, n=6)
+        for x in ((0,), (-4, 4))[t - 1]:
+            box((4.2, 0.5, 5.4), (x, yf - 0.9, 0.15), S.WOOD_DARK, rng)
+            box((5.2, 0.7, 0.7), (x, yf - 0.95, 5.55), S.STONE_DARK, rng)
+            neon(S.k.cyl(0.4, 0.7, (x + 2.9, yf - 1.1, 4.4), n=6), LIT)
+        for x, y in ((2.6, 6), (-3.4, 4.6))[:t]:  # air pipes
+            post(0.6, 3.0, (x, y, mh * 1.2), S.STONE_DARK, rng, n=6)
         for a in range(5):
-            bush(Vector((0, 4, mh * 0.9)) + polar(mw * 0.5, a * 72 + 20), rng, s=1.3)
-        rack(-fw / 2 - 6.5, yf - 1.5, 3 + (t - 1), rng)
+            bush(Vector((0, 4, mh * 0.9)) + polar(mw * 0.5, a * 72 + 20), rng, s=1.2)
         if t == 2:
-            rack(fw / 2 + 6.5, yf - 1.5, 4, rng)
-            for sx in (-1, 1):
-                lantern((sx * (fw / 2 + 1.6), yf - 5, 0.15), rng, h=6)
-        size = (1.0, 1.3)[t - 1]
-        sign("EGG CELLAR", (0, yf - 1.15, fh - 0.2), rng, size=size)
+            lantern((-fw / 2 - 1.6, yf - 4, 0.15), rng, h=6)
+        sign("EGG CELLAR", (0, yf - 1.15, fh - 0.25), rng, size=(0.9, 1.2)[t - 1])
+        if LIVE:
+            rack(fw / 2 + 9, yf - 1, 6, 4, rng)
 
     return make
 
 
 def brooder(t):
-    """The Brooder (hatching speed): warm beds under heat lamps and a glass roof; the biggest has a boiler."""
+    """The Brooder (hatching speed): warm straw beds under heat lamps and a glass roof; the biggest has a
+    boiler."""
 
     def make(rng):
-        w, d, h = ((12, 8, 6.5), (18, 11, 7.5), (26, 14, 8.5))[t]
+        w, d, h = BROODER[t]
         box((w, d, 0.6), (0, 0, 0.15), S.STONE, rng, kind=S.PALE)
         nx = (2, 3, 5)[t]
         for i in range(nx):
             for sy in (-1, 1):
                 post(0.35, h, (-w / 2 + 0.6 + i * (w - 1.2) / (nx - 1), sy * (d / 2 - 0.6), 0.75), S.WHITE, rng, n=6, kind=S.PALE)
-        roof(w + 1.5, d + 1.5, 3.2, (0, 0, h + 0.75), GLASS, rng, ridge=w * 0.75, kind=S.PALE)
+        roof(w + 1.5, d + 1.5, 3.0, (0, 0, h + 0.75), GLASS, rng, ridge=w * 0.75, kind=S.PALE)
         cols, rows = ((2, 1), (2, 2), (3, 2))[t]
         for i in range(cols):
             for j in range(rows):
-                x, y = (i - (cols - 1) / 2) * 4.8, (j - (rows - 1) / 2) * 4.6
-                box((3.6, 3.2, 0.9), (x, y, 0.75), HAY, rng)
-                egg((x, y, 1.4), rng, i + j, s=0.9)
+                x, y = (i - (cols - 1) / 2) * 4.6, (j - (rows - 1) / 2) * 4.2
+                box((3.4, 3.0, 0.9), (x, y, 0.75), HAY, rng)
                 post(0.08, 1.3, (x, y, h - 0.55), S.INK, rng, n=4)
-                neon(S.k.cyl(0.6, 0.9, (x, y, h - 1.0), n=6), (255, 160, 70))
-        if t == 2:  # the boiler
-            post(2.4, 7, (w / 2 + 3.6, 1, 0.15), S.STONE_DARK, rng, n=8, surface="rock", kind=S.COOL)
-            post(0.7, 5.5, (w / 2 + 3.6, 1, 7.15), S.INK, rng, n=6)
+                neon(S.k.cyl(0.6, 0.9, (x, y, h - 1.0), n=6), HEAT)
+                if LIVE:
+                    egg((x, y, 1.4), rng, i + j, s=0.9)
+        if t == 2:  # the boiler, on the side away from the path
+            post(2.2, 7, (-w / 2 - 3.2, 1, 0.15), S.STONE_DARK, rng, n=8, surface="rock", kind=S.COOL)
+            post(0.7, 5.5, (-w / 2 - 3.2, 1, 7.15), S.INK, rng, n=6)
             for k in range(3):
-                lump((w / 2 + 3.6 + k * 0.9, 1, 13.6 + k * 1.9), 1.2 + k * 0.35, S.WHITE, rng, kind=S.PALE)
+                lump((-w / 2 - 3.2 - k * 0.9, 1, 13.6 + k * 1.9), 1.2 + k * 0.35, S.WHITE, rng, kind=S.PALE)
         sign("BROODER", (0, -d / 2 - 0.6, h + 0.35), rng, size=(0.8, 1.0, 1.2)[t])
 
     return make
+
+
+def mill_hub(t):
+    """Where the windmill's sails turn, in its own numbers: (how far in front of its middle, how high, the
+    sails' span, how many arms). The game stands the sails there and turns them."""
+    if t == 0:
+        return 5.4, 12.2, 18.0, 4
+    r0, h, span = MILL[t]
+    return r0 * 0.66 + 1.6, h - 1.5, span, (4, 8)[t - 1]
 
 
 def windmill(t):
@@ -329,26 +373,27 @@ def windmill(t):
             box((9, 9, 9), (0, 0, 6.15), S.WOOD, rng)
             roof(10.5, 10.5, 4, (0, 0, 15.15), ROOF_RED, rng, ridge=5)
             sign("WINDMILL", (0, -4.8, 8.0), rng, size=0.8)
-            hub, arm, y, blades = 12.2, 18.0, -5.4, 2
         else:
-            r0, h = ((7.0, 24.0), (8.6, 32.0))[t - 1]
+            r0, h, _ = MILL[t]
             post(r0, h, (0, 0, 0.15), S.STONE, rng, n=10, r2=r0 * 0.64, surface="rock", kind=S.PALE)
             post(r0 * 0.78, 6.0, (0, 0, h + 0.15), S.WOOD_DARK, rng, n=10, r2=0.5)
             box((4, 0.6, 6.4), (0, -r0 + 0.5, 0.15), S.WOOD_DARK, rng)
-            box((2.4, 0.5, 2.8), (0, -r0 * 0.84, h * 0.46), LIT, rng, chance=0.0)
-            sign("WINDMILL", (0, -r0 * 0.93, 9.0), rng, size=1.0 + 0.2 * (t - 1))
-            hub, arm, y, blades = h - 1.5, (30.0, 40.0)[t - 1], -r0 * 0.66 - 1.6, (2, 4)[t - 1]
-        box((1.6, 2.2, 1.6), (0, y + 0.9, hub - 0.8), S.INK, rng)
-        for i in range(blades):
-            box((arm, 0.45, 3.0 if blades == 2 else 2.4), (0, y, hub - 1.5), S.WHITE, rng, tilt=(0, i * 180 / blades + 20), kind=S.PALE)
+            window((2.4, 0.5, 2.8), (0, -r0 * 0.84, h * 0.46))
+            sign("WINDMILL", (0, -r0 * 0.93, 9.0), rng, size=1.0 + 0.15 * (t - 1))
+        y, hub, span, arms = mill_hub(t)
+        box((1.6, 2.2, 1.6), (0, -y + 0.9, hub - 0.8), S.INK, rng)
+        if LIVE:
+            for i in range(arms // 2):
+                box((span, 0.45, 3.0 if arms == 4 else 2.4), (0, -y, hub - 1.5), S.WHITE, rng, tilt=(0, i * 360 / arms + 20), kind=S.PALE)
         if t == 2:  # a gallery, a store, sacks of what it earned
-            disc(11.0, (0, 0, 12.0), 0.5, S.WOOD, rng, n=10)
+            r0, h, _ = MILL[t]
+            disc(9.6, (0, 0, 11.0), 0.5, S.WOOD, rng, n=10)
             for i in range(10):
-                post(0.25, 2.4, Vector((0, 0, 12.5)) + polar(10.5, i * 36), S.WOOD_DARK, rng, n=4)
-            box((12, 9, 7), (-r0 - 9, 3, 0.15), S.WOOD, rng)
-            roof(14, 11, 4, (-r0 - 9, 3, 7.15), ROOF_RED, rng, ridge=8)
+                post(0.25, 2.4, Vector((0, 0, 11.5)) + polar(9.1, i * 36), S.WOOD_DARK, rng, n=4)
+            box((10, 8, 6), (-r0 - 8, 3, 0.15), S.WOOD, rng)
+            roof(12, 10, 3.6, (-r0 - 8, 3, 6.15), ROOF_RED, rng, ridge=7)
             for i in range(6):
-                lump((-r0 - 2.5 - (i % 3) * 2.2, -6 - (i // 3) * 2.0, 1.1), (1.1, 1.0, 1.1), S.GOLD if i % 2 else (232, 214, 170), rng)
+                lump((-r0 - 2.5 - (i % 3) * 2.2, -5 - (i // 3) * 2.0, 1.1), (1.1, 1.0, 1.1), S.GOLD if i % 2 else (232, 214, 170), rng)
             post(0.14, 5, (0, 0, h + 6.15), S.INK, rng, n=4)
             flag((1.5, 0, h + 10.9), 3.0, 2.6, (224, 64, 60), rng, point=False)
 
@@ -366,7 +411,7 @@ def plinth(at, rng, s=1.0):
 
 def brazier(at, rng):
     turn([(1.0, 0), (0.5, 0.5), (0.5, 3.0), (1.8, 4.0), (1.5, 4.0)], at, S.INK, rng, n=8)
-    gem((at[0], at[1], at[2] + 3.9), (at[0], at[1], at[2] + 7.0), 1.6, (255, 150, 60), rng=rng)
+    gem((at[0], at[1], at[2] + 3.9), (at[0], at[1], at[2] + 7.0), 1.6, FLAME, rng=rng)
 
 
 def lodge(t):
@@ -381,7 +426,7 @@ def lodge(t):
                 flag((sx * 4.5, 1.2, 10.8), 2.6, 5.0, BANNERS[(sx + 1) // 2], rng)
             sign("TROPHY LODGE", (0, -2.4, 1.8), rng, size=0.7)
             return
-        w, d, h = ((24, 14, 9), (36, 18, 11))[t - 1]
+        w, d, h = LODGE[t]
         box((w + 2, d + 2, 0.6), (0, 0, 0.15), S.MARBLE, rng, kind=S.PALE)
         box((w, 1.2, h), (0, d / 2 - 0.6, 0.75), CREAM, rng, kind=S.PALE)
         for sx in (-1, 1):
@@ -390,23 +435,23 @@ def lodge(t):
         for i in range(nc):
             post(0.9, h, (-w / 2 + 1.2 + i * (w - 2.4) / (nc - 1), -d / 2 + 1.2, 0.75), S.MARBLE, rng, n=8, kind=S.PALE)
         for i in range(nc - 1):  # a banner between each pair of columns
-            flag((-w / 2 + 1.2 + (i + 0.5) * (w - 2.4) / (nc - 1), -d / 2 + 1.2, h + 0.6), 3.0, 3.6, BANNERS[i % 5], rng)
+            flag((-w / 2 + 1.2 + (i + 0.5) * (w - 2.4) / (nc - 1), -d / 2 + 1.2, h + 0.6), 2.6, 3.4, BANNERS[i % 5], rng)
+        for i in range(3):  # and on its back wall
+            flag(((i - 1) * w * 0.3, d / 2 + 0.1, h - 0.4), 3.0, 5.2, BANNERS[(i + 2) % 5], rng)
         box((w + 1, d + 1, 1.0), (0, 0, h + 0.75), S.MARBLE, rng, kind=S.PALE)
         roof(w + 3, d + 3, 5 + t, (0, 0, h + 1.75), (70, 84, 130), rng, ridge=w * 0.6)
-        for i in range(3):  # banners on its back wall too
-            flag(((i - 1) * w * 0.3, d / 2 + 0.1, h - 0.4), 3.2, 5.6, BANNERS[(i + 2) % 5], rng)
         cups = (3, 5)[t - 1]
         for i in range(cups):
             if t == 2 and i == cups // 2:
-                box((6.4, 6.4, 1.0), (0, 1, 0.75), S.MARBLE, rng, kind=S.PALE)
-                plinth((0, 1, 1.75), rng, s=1.8)
+                box((5.6, 5.6, 1.0), (0, 1, 0.75), S.MARBLE, rng, kind=S.PALE)
+                plinth((0, 1, 1.75), rng, s=1.6)
             else:
-                plinth(((i - (cups - 1) / 2) * (w - 8) / (cups - 1), 2.5, 0.75), rng)
+                plinth(((i - (cups - 1) / 2) * (w - 7) / (cups - 1), 2.2, 0.75), rng)
         if t == 2:
             box((w + 1.3, 0.3, 0.4), (0, -d / 2 - 0.55, h + 0.8), S.GOLD, rng)
             for sx in (-1, 1):
-                brazier((sx * (w / 2 + 3.5), -d / 2 - 2, 0.15), rng)
-        size = (1.0, 1.3)[t - 1]
+                brazier((sx * (w / 2 + 3), -d / 2 - 2, 0.15), rng)
+        size = (0.95, 1.25)[t - 1]
         sign("TROPHY LODGE", (0, -d / 2 - 0.8, h + 1.25 + size * 0.45), rng, size=size, board=S.INK)
 
     return make
@@ -414,14 +459,14 @@ def lodge(t):
 
 def den(t):
     """The Titan's Den (the Titan's strength in waves): a great thatched shelter, a stone stable with a gate
-    the Titan walks through, a hall with tusks at its gate. The Titan stands in it."""
+    the Titan walks through, a hall with tusks at its gate. The game stands the owner's Titan in it."""
 
     def make(rng):
-        w, d, h = ((34, 28, 19), (38, 28, 19), (46, 32, 23))[t]
+        w, d, h = DEN[t]
         front = -d / 2
-        disc(11 + t, (0, 1, 0.15), 0.4, HAY, rng, n=12)
-        box((9, 2.6, 1.8), (w / 2 - 8, front + 6, 0.15), S.WOOD, rng)
-        box((8.2, 1.8, 0.3), (w / 2 - 8, front + 6, 1.85), S.WATER, rng, chance=0.0)
+        disc(10 + t, (0, 1, 0.15), 0.4, HAY, rng, n=12)
+        box((8, 2.4, 1.8), (w / 2 - 7.5, front + 6, 0.15), S.WOOD, rng)
+        box((7.2, 1.6, 0.3), (w / 2 - 7.5, front + 6, 1.85), S.WATER, rng, chance=0.0)
         if t == 0:
             for sx in (-1, 1):
                 for sy in (-1, 0, 1):
@@ -437,33 +482,35 @@ def den(t):
                 lantern((sx * (w * 0.5 + 3), front - 3, 0.15), rng, h=9)
             box((w, 3.0, 3.0), (0, front + 1.5, h - 2.85), S.WOOD_DARK, rng)
             roof(w + 5, d + 5, 10 + 3 * (t - 1), (0, 0, h + 0.15), SLATE, rng, ridge=w * 0.5)
-            sign("TITAN'S DEN", (0, front - 0.2, h - 1.35 + (0.7, 0.9)[t - 1]), rng, size=(1.5, 1.9)[t - 1], board=S.INK)
+            sign("TITAN'S DEN", (0, front - 0.2, h - 1.35 + (0.7, 0.9)[t - 1]), rng, size=(1.4, 1.7)[t - 1], board=S.INK)
         if t == 2:
             box((w + 0.4, 0.5, 0.6), (0, front - 0.1, h - 3.5), S.GOLD, rng)
             for sx in (-1, 1):  # tusks either side of the gate
                 x = sx * w * 0.34
-                pipe([(x, front - 1.5, 0.2), (x + sx * 2.4, front - 4.5, 8), (x - sx * 0.5, front - 6.2, 16), (x - sx * 6.5, front - 5.6, 22)], [1.9, 1.5, 1.0, 0.25], IVORY, rng, n=7, kind=S.PALE)
-                flag((sx * w * 0.2, front - 0.2, h - 3.6), 4.2, 7.0, (224, 64, 60), rng)
-                brazier((sx * (w * 0.5 + 3), front - 10, 0.15), rng)
-        actor(("creature_elephant", "creature_elephant", "creature_elephant_war")[t], (0, 1, 0.5), 0)
+                pipe([(x, front - 1.5, 0.2), (x + sx * 2.2, front - 4.2, 7.4), (x - sx * 0.5, front - 5.8, 14.6), (x - sx * 5.6, front - 5.2, 20)], [1.8, 1.4, 0.95, 0.25], IVORY, rng, n=7, kind=S.PALE)
+                flag((sx * w * 0.2, front - 0.2, h - 3.6), 3.8, 6.4, (224, 64, 60), rng)
+                brazier((sx * (w * 0.5 + 3), front - 9, 0.15), rng)
+        if LIVE:
+            actor(("creature_elephant", "creature_elephant", "creature_elephant_war")[t], (0, 1, 0.5), 0)
 
     return make
 
 
-# name, maker, how far out, at what angle, its plot's size, the stages of its empty plot and its three looks
+# name, maker, how far out, at what angle, its plot's size, the stages on the card of its empty plot and
+# of its three looks. src/stations/Ranch.luau stands the buildings at the same places.
 BUILDINGS = (
-    ("RANCH HOUSE", house, 118, 86, None, (None, (0, 1), (2, 3), (4, 5))),
-    ("BARN", barn, 114, 238, None, (None, (0, 1), (2, 3), (4, 5))),
-    ("HATCHERY", hatchery, 96, 37, None, (None, (0, 1), (2, 3), (4, 5))),
-    ("EGG CELLAR", cellar, 134, 50, None, (None, (0, 1), (2, 3), (4, 5))),
-    ("BROODER", brooder, 134, 24, (22, 14), ((0, 0), (1, 2), (3, 4), (5, 5))),
-    ("WINDMILL", windmill, 120, 349, (22, 20), ((0, 1), (2, 2), (3, 4), (5, 5))),
-    ("TROPHY LODGE", lodge, 112, 182, (32, 20), ((0, 1), (2, 3), (4, 4), (5, 5))),
-    ("TITAN'S DEN", den, 116, 134, (40, 30), ((0, 2), (3, 3), (4, 4), (5, 5))),
+    ("RANCH HOUSE", house, 84, 86, None, (None, (0, 1), (2, 3), (4, 5))),
+    ("BARN", barn, 84, 238, None, (None, (0, 1), (2, 3), (4, 5))),
+    ("HATCHERY", hatchery, 70, 37.5, None, (None, (0, 1), (2, 3), (4, 5))),
+    ("EGG CELLAR", cellar, 98, 52, None, (None, (0, 1), (2, 3), (4, 5))),
+    ("BROODER", brooder, 98, 23, (18, 11), ((0, 0), (1, 2), (3, 4), (5, 5))),
+    ("WINDMILL", windmill, 86, 349, (18, 16), ((0, 1), (2, 2), (3, 4), (5, 5))),
+    ("TROPHY LODGE", lodge, 82, 182, (26, 15), ((0, 1), (2, 3), (4, 4), (5, 5))),
+    ("TITAN'S DEN", den, 84, 134, (32, 26), ((0, 2), (3, 3), (4, 4), (5, 5))),
 )
 
 
-# The rest of the homestead ---------------------------------------------------------------------------------
+# The rest of the homestead, for the card -------------------------------------------------------------------
 
 
 def spoke(deg, r0, r1, width, rng):
@@ -472,13 +519,13 @@ def spoke(deg, r0, r1, width, rng):
 
 
 def waypost(name, colour):
-    """Where a path leaves for a training ground: its name on a board in its stat's colour."""
+    """Where a path leaves for a training ground: its name on a board over the path, in its stat's colour."""
 
     def make(rng):
         for sx in (-1, 1):
-            post(0.6, 15, (sx * (len(name) * 0.7 + 1.2), 0, 0.15), S.WOOD_DARK, rng, n=6)
-        box((len(name) * 1.4 + 4.4, 0.8, 5.2), (0, 0, 9.6), colour, rng, chance=0.08)
-        words(name, (0, -0.5, 12.2), 1.9, S.WHITE, glow=0.7)
+            post(0.6, 11.5, (sx * 8.6, 0, 0.15), S.WOOD_DARK, rng, n=6)
+        box((19, 0.8, 4.2), (0, 0, 8.2), colour, rng, chance=0.08)
+        words(name, (0, -0.5, 10.3), 1.5, S.WHITE, glow=0.7)
 
     return make
 
@@ -486,18 +533,17 @@ def waypost(name, colour):
 def market(rng):
     """The two vendors, by the way in."""
     lv(0)
-    H.stall(rng, (-7, 0, 0.15), 0, (226, 90, 80))
-    H.stall(rng, (7, 0, 0.15), 0, (80, 150, 220))
-    sign("EGGS", (-7, -2.9, 8.7), rng, size=1.0)
-    sign("GEAR", (7, -2.9, 8.7), rng, size=1.0)
+    H.stall(rng, (-6, 0, 0.15), 0, (226, 90, 80))
+    H.stall(rng, (6, 0, 0.15), 0, (80, 150, 220))
+    sign("EGGS", (-6, -2.9, 8.7), rng, size=1.0)
+    sign("GEAR", (6, -2.9, 8.7), rng, size=1.0)
     lv(2)
-    for i, x in enumerate((-14.5, -17.2, 14.6)):
+    for i, x in enumerate((-12.6, -15.2, 12.8)):
         box((2.4, 2.4, 2.4), (x, 1 - i, 0.15), S.WOOD, rng, yaw=i * 14)
-    post(1.2, 2.8, (17.6, 0, 0.15), S.WOOD_DARK, rng, n=8)
     lv(4)
     for sx in (-1, 1):
-        lantern((sx * 13, -5, 0.15), rng, h=7)
-    bunting((-13, -5, 7.2), (13, -5, 7.2), 1.6, rng, BANNERS, n=13, size=1.1)
+        lantern((sx * 11.5, -5, 0.15), rng, h=7)
+    bunting((-11.5, -5, 7.2), (11.5, -5, 7.2), 1.5, rng, BANNERS, n=12, size=1.0)
 
 
 def gate(rng):
@@ -509,18 +555,18 @@ def gate(rng):
         box((4.8, 4.8, 0.8), (sx * 11, 0, 9.15), S.STONE, rng, kind=S.PALE)
         post(0.8, 5.6, (sx * 11, 0, 9.95), S.WOOD_DARK, rng, n=6)
         neon(S.k.cyl(0.75, 1.5, (sx * 11, -2.9, 6.4), n=6), LIT)
-        box((16, 2.2, 3.0), (sx * 21, 0, 0.15), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
-        box((3, 3, 4.2), (sx * 30, 0, 0.15), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
-        flowers((sx * 21, -2.6, 0.15), rng, n=14, spread=4.0)
+        box((14, 2.2, 3.0), (sx * 20, 0, 0.15), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
+        box((3, 3, 4.2), (sx * 28, 0, 0.15), S.STONE_DARK, rng, surface="rock", kind=S.COOL)
+        flowers((sx * 20, -2.6, 0.15), rng, n=14, spread=3.6)
     box((26, 1.4, 1.2), (0, 0, 14.9), S.WOOD_DARK, rng)
     sign("YOUR RANCH", (0, -0.9, 12.9), rng, size=1.9, board=S.WOOD)
 
 
 def well(rng):
-    turn([(4.0, 0.0), (4.4, 2.2), (3.8, 2.6)], (0, 0, 0.15), S.STONE, rng, n=10, kind=S.PALE)
-    for sx in (-3.2, 3.2):
-        post(0.3, 6.0, (sx, 0, 2.6), S.WOOD_DARK, rng, n=5)
-    roof(9.0, 6.0, 2.4, (0, 0, 8.6), ROOF_RED, rng, ridge=6.0)
+    turn([(3.4, 0.0), (3.8, 2.0), (3.2, 2.4)], (0, 0, 0.15), S.STONE, rng, n=10, kind=S.PALE)
+    for sx in (-2.7, 2.7):
+        post(0.3, 5.6, (sx, 0, 2.4), S.WOOD_DARK, rng, n=5)
+    roof(7.6, 5.2, 2.2, (0, 0, 8.0), ROOF_RED, rng, ridge=5.0)
 
 
 def meadow(rng):
@@ -533,155 +579,145 @@ def meadow(rng):
     ways = sorted([deg for _, deg, _ in WAYS] + [HUB])
     for i, a in enumerate(ways):
         b = ways[(i + 1) % len(ways)] + (360 if i == len(ways) - 1 else 0)
-        slab(MEADOW + 0.5, MEADOW + 2.0, a + 9, b - 9, 0.15, 1.3, S.STONE_DARK, rng, kind=S.COOL)
-    disc(13, (-14, 8, 0.2), 0.12, S.WATER, rng, n=14, chance=0.0)  # the pond
-    for i in range(11):
-        p = Vector((-14, 8, 0.15)) + polar(13.4, i * 33 + rng.uniform(-6, 6))
-        rock(p, rng, s=rng.uniform(1.0, 2.0))
+        slab(MEADOW + 0.4, MEADOW + 1.8, a + 11, b - 11, 0.15, 1.3, S.STONE_DARK, rng, kind=S.COOL)
+    disc(9, (-10, 6, 0.2), 0.12, S.WATER, rng, n=14, chance=0.0)  # the pond
     for i in range(9):
-        p = Vector((-14, 8, 0.2)) + polar(rng.uniform(9, 12), 200 + i * 14)
-        post(0.12, rng.uniform(2.0, 3.4), p, (88, 150, 70), rng, n=4)
-    tree((17, -10, 0.2), rng, s=3.6)
-    box((8, 2.2, 1.6), (8, 24, 0.2), S.WOOD, rng, yaw=14)  # a feeding trough
-    box((7.4, 1.6, 0.4), (8, 24, 1.6), HAY, rng, yaw=14)
-    actor("creature_jackal", (-6, -22, 0.2), 40)
-    actor("creature_meerkat", (24, 14, 0.2), 200)
-    actor("creature_tortoise", (-28, 24, 0.2), 120)
+        p = Vector((-10, 6, 0.15)) + polar(9.4, i * 40 + rng.uniform(-6, 6))
+        rock(p, rng, s=rng.uniform(0.9, 1.7))
+    for i in range(7):
+        p = Vector((-10, 6, 0.2)) + polar(rng.uniform(6, 8), 200 + i * 16)
+        post(0.12, rng.uniform(2.0, 3.2), p, (88, 150, 70), rng, n=4)
+    tree((12, -7, 0.2), rng, s=3.0)
+    box((7, 2.0, 1.5), (6, 18, 0.2), S.WOOD, rng, yaw=14)  # a feeding trough
+    box((6.4, 1.4, 0.4), (6, 18, 1.5), HAY, rng, yaw=14)
+    actor("creature_jackal", (-4, -16, 0.2), 40)
+    actor("creature_meerkat", (17, 10, 0.2), 200)
+    actor("creature_tortoise", (-20, 17, 0.2), 120)
     lv(1)
-    for _ in range(9):
-        p = polar(rng.uniform(8, 44), rng.uniform(0, 360))
-        if (p - Vector((-14, 8, 0))).length > 16:
-            flowers((p.x, p.y, 0.2), rng, n=9, spread=2.4)
+    for _ in range(7):
+        p = polar(rng.uniform(6, 30), rng.uniform(0, 360))
+        if (p - Vector((-10, 6, 0))).length > 12:
+            flowers((p.x, p.y, 0.2), rng, n=8, spread=2.0)
     lv(2)
-    actor("creature_lion", (30, -28, 0.2), -60)
-    actor("creature_flamingo", (-31, 2, 0.2), 90)
-    actor("creature_cheetah", (2, 36, 0.2), 160)
-    box((6, 2.0, 1.4), (-22, -30, 0.2), S.WOOD, rng, yaw=-30)
-    box((5.4, 1.4, 0.3), (-22, -30, 1.5), S.WATER, rng, yaw=-30, chance=0.0)
+    actor("creature_lion", (21, -20, 0.2), -60)
+    actor("creature_flamingo", (-22, 1, 0.2), 90)
+    actor("creature_cheetah", (1, 26, 0.2), 160)
     lv(4)
-    actor("creature_rhino", (-10, -40, 0.2), 20)
-    actor("creature_lion_sun", (38, 8, 0.2), 250)
-    actor("creature_flamingo_phoenix", (-24, -8, 0.2), 300)
-    actor("creature_jackal_pharaoh", (14, -36, 0.2), 110)
-    actor("creature_meerkat_storm", (-36, 14, 0.2), 60)
-    actor("creature_tortoise_island", (20, 30, 0.2), 310)
-    actor("creature_cheetah_lightning", (-2, 14, 0.2), 230)
+    actor("creature_rhino", (-7, -27, 0.2), 20)
+    actor("creature_lion_sun", (27, 5, 0.2), 250)
+    actor("creature_flamingo_phoenix", (-17, -6, 0.2), 300)
+    actor("creature_jackal_pharaoh", (9, -27, 0.2), 110)
+    actor("creature_cheetah_lightning", (-2, 10, 0.2), 230)
     for sx in (-1, 1):  # a shelter from the rain
         for sy in (-1, 1):
-            post(0.5, 7, (-30 + sx * 7, -20 + sy * 5, 0.2), S.WOOD_DARK, rng, n=6)
-    roof(18, 14, 3.4, (-30, -20, 7.2), THATCH, rng, ridge=10)
+            post(0.5, 6.5, (-21 + sx * 5, -15 + sy * 3.6, 0.2), S.WOOD_DARK, rng, n=6)
+    roof(13, 10, 3.0, (-21, -15, 6.7), THATCH, rng, ridge=7)
     for i in range(4):
-        disc(1.3, Vector((-14, 8, 0.33)) + polar(rng.uniform(3, 9), i * 90 + 20), 0.08, (96, 170, 96), rng, n=7)
+        disc(1.1, Vector((-10, 6, 0.33)) + polar(rng.uniform(2, 6), i * 90 + 20), 0.08, (96, 170, 96), rng, n=7)
 
 
 def grounds(rng):
-    """What stands between the buildings, and comes with the stages: paths, lamps, benches, an orchard, a
+    """What stands between the buildings: the paths, the gate, the vendors, lamps, benches, an orchard, a
     field, a garden, hives."""
+    ways = [deg for _, deg, _ in WAYS] + [HUB]
     lv(0)
     for name, deg, colour in WAYS:
-        spoke(deg, RING[1], 250, 12, rng)
-        place(waypost(name, colour), R - 14, deg + 7.5, rng)
-    spoke(HUB, RING[1], 330, 18, rng)
+        spoke(deg, RING[1], 190, 10, rng)
+        place(waypost(name, colour), R - 6, deg, rng)
+    spoke(HUB, RING[1], 250, 16, rng)
     for _, _, r, deg, _, _ in BUILDINGS:
-        spoke(deg, RING[1], r - 9, 7, rng)
-    spoke(298, RING[1], 92, 7, rng)
-    place(market, 98, 298, rng)
+        spoke(deg, RING[1], r - 11, 6, rng)
+    spoke(298, RING[1], 58, 6, rng)
+    place(market, 62, 298, rng)
     lv(0)
-    place(gate, R - 2, HUB, rng, flip=True)
-    place(well, 80, 100, rng)
-    pad = polar(128, 279)  # the teleport pad to the hub, just inside the gate
-    disc(5.4, (pad.x, pad.y, 0.15), 0.4, S.STONE, rng, n=12, kind=S.PALE)
-    neon(S.k.cyl(4.0, 0.14, (pad.x, pad.y, 0.62), n=12), (90, 220, 255), 2.2)
-    for k in range(5):  # an avenue up the road from the hub
+    place(gate, R - 4, HUB, rng, flip=True)
+    place(well, 58, 100, rng)
+    pad = polar(99, 279.5)  # the teleport pad to the hub, just inside the gate
+    disc(5.0, (pad.x, pad.y, 0.15), 0.4, S.STONE, rng, n=12, kind=S.PALE)
+    neon(S.k.cyl(3.7, 0.14, (pad.x, pad.y, 0.62), n=12), (90, 220, 255), 2.2)
+    for k in range(3):  # an avenue up the road from the hub
         for side in (-1, 1):
-            p = polar(78 + k * 14, HUB) + polar(15 * side, HUB + 90)
-            tree((p.x, p.y, 0.15), rng, s=1.7)
+            p = polar(58 + k * 13, HUB) + polar(13 * side, HUB + 90)
+            tree((p.x, p.y, 0.15), rng, s=1.5)
     for _, deg, _ in WAYS:  # two trees where each way leaves
         for side in (-1, 1):
-            p = polar(R - 4, deg) + polar(13 * side, deg + 90)
-            (pine if deg in (110, 158, 206) else tree)((p.x, p.y, 0.15), rng, s=2.0)
-    for a in range(0, 360, 6):  # bushes and rocks along the rim, none across a way
-        if all(abs((a - w + 180) % 360 - 180) > 7 for w in [deg for _, deg, _ in WAYS] + [HUB]):
+            p = polar(R - 2, deg) + polar(13 * side, deg + 90)
+            (pine if deg in (110, 158, 206) else tree)((p.x, p.y, 0.15), rng, s=1.8)
+    for a in range(0, 360, 8):  # bushes and rocks along the rim, none across a way
+        if all(abs((a - w + 180) % 360 - 180) > 9 for w in ways):
             p = polar(R + rng.uniform(-3, 2), a + rng.uniform(-2, 2))
             if rng.random() < 0.75:
-                bush((p.x, p.y, 0.15), rng, s=rng.uniform(1.6, 2.6))
+                bush((p.x, p.y, 0.15), rng, s=rng.uniform(1.6, 2.4))
             else:
-                rock((p.x, p.y, 0.15), rng, s=rng.uniform(1.6, 3.0))
+                rock((p.x, p.y, 0.15), rng, s=rng.uniform(1.6, 2.8))
     lv(1)
     for a in (0, 74, 122, 170, 222, 310):
-        p = polar(RING[1] + 3.5, a)
+        p = polar(RING[1] + 3, a)
         bench((p.x, p.y, 0.15), rng, yaw=a - 90)
     for i in range(8):  # an orchard between the windmill and the pool's path
-        p = polar(104 + (i // 2) * 12, 333 + (i % 2) * 7)
-        tree((p.x, p.y, 0.15), rng, s=1.5, leaf=(96, 168, 70))
-        lump((p.x + 1.6, p.y - 1.2, 8.2), 0.5, (226, 60, 50), rng)
+        p = polar(72 + (i // 2) * 10, 331.5 + (i % 2) * 6.5)
+        tree((p.x, p.y, 0.15), rng, s=1.3, leaf=(96, 168, 70))
+        lump((p.x + 1.4, p.y - 1.0, 7.2), 0.45, (226, 60, 50), rng)
     lv(2)
-    for a in (37, 86, 134, 182, 238, 298, 349):
-        p = polar(RING[1] + 2.2, a + 11)
+    for a in (37.5, 86, 134, 182, 238, 298, 349):
+        p = polar(RING[1] + 2, a + 12)
         lantern((p.x, p.y, 0.15), rng, h=7)
-    for i in range(4):  # a field between the barn and the road
-        for j in range(8):
-            p = polar(100 + j * 5, 254.8 + i * 2.2)
-            if j == 0:
-                q = polar(117.5, 254.8 + i * 2.2)
-                box((40, 2.2, 0.25), (q.x, q.y, 0.12), (150, 110, 76), rng, yaw=254.8 + i * 2.2)
+    for i in range(4):  # a field behind the market
+        a = 295.5 + i * 2.4
+        q = polar(90, a)
+        box((28, 2.0, 0.25), (q.x, q.y, 0.12), (150, 110, 76), rng, yaw=a)
+        for j in range(6):
+            p = polar(78 + j * 4.8, a)
             lump((p.x, p.y, 0.9), (0.9, 0.9, 0.8), (110, 180, 80) if i % 2 else (232, 140, 50), rng)
-    scare = polar(144, 258)
+    scare = polar(106, 299)
     post(0.25, 7, (scare.x, scare.y, 0.15), S.WOOD_DARK, rng, n=5)
-    box((6, 0.4, 0.4), (scare.x, scare.y, 5.0), S.WOOD_DARK, rng, yaw=347)
+    box((6, 0.4, 0.4), (scare.x, scare.y, 5.0), S.WOOD_DARK, rng, yaw=29)
     lump((scare.x, scare.y, 7.6), 0.9, HAY, rng)
     lv(3)
-    bed = polar(112, 282)  # a garden between the market and the road
-    disc(9, (bed.x, bed.y, 0.15), 0.5, (150, 110, 76), rng, n=12)
+    bed = polar(82, 287.5)  # a garden between the road and the field
+    disc(6.5, (bed.x, bed.y, 0.15), 0.5, (150, 110, 76), rng, n=12)
     for i in range(7):
-        q = Vector((bed.x, bed.y, 0.65)) + polar(5.4 if i else 0, i * 60)
-        flowers((q.x, q.y, q.z), rng, n=10, spread=2.2)
-    turn([(1.2, 0), (0.6, 0.4), (0.5, 3.0), (1.3, 3.4)], (bed.x, bed.y, 0.65), S.MARBLE, rng, n=8, kind=S.PALE)
-    fire = polar(116, 312)  # a picnic green between the market and the pool's path
-    disc(4.2, (fire.x, fire.y, 0.15), 0.3, S.STONE_DARK, rng, n=9, surface="rock", kind=S.COOL)
-    gem((fire.x, fire.y, 0.5), (fire.x, fire.y, 4.2), 2.0, (255, 150, 60), rng=rng)
+        q = Vector((bed.x, bed.y, 0.65)) + polar(4.0 if i else 0, i * 60)
+        flowers((q.x, q.y, q.z), rng, n=9, spread=1.7)
+    turn([(1.0, 0), (0.5, 0.4), (0.45, 2.6), (1.1, 3.0)], (bed.x, bed.y, 0.65), S.MARBLE, rng, n=8, kind=S.PALE)
+    fire = polar(92, 313.5)  # a fire to sit round, between the field and the pool's path
+    disc(3.6, (fire.x, fire.y, 0.15), 0.3, S.STONE_DARK, rng, n=9, surface="rock", kind=S.COOL)
+    gem((fire.x, fire.y, 0.5), (fire.x, fire.y, 3.8), 1.8, FLAME, rng=rng)
     for i in range(5):
-        q = polar(8.5, i * 72 + 20)
-        box((5.2, 1.4, 1.3), (fire.x + q.x, fire.y + q.y, 0.15), S.WOOD_DARK, rng, yaw=i * 72 + 110)
-    for i in range(2):
-        q = polar(17, 150 + i * 150)
-        box((7, 3.4, 0.4), (fire.x + q.x, fire.y + q.y, 2.4), S.WOOD, rng, yaw=312)
-        for side in (-1, 1):
-            box((7, 1.0, 0.3), (fire.x + q.x + polar(2.9 * side, 42).x, fire.y + q.y + polar(2.9 * side, 42).y, 1.3), S.WOOD, rng, yaw=312)
-            box((0.5, 5.4, 2.4), (fire.x + q.x + polar(2.6 * side, 312).x, fire.y + q.y + polar(2.6 * side, 312).y, 0.15), S.WOOD_DARK, rng, yaw=312)
+        q = polar(7.4, i * 72 + 20)
+        box((4.6, 1.3, 1.2), (fire.x + q.x, fire.y + q.y, 0.15), S.WOOD_DARK, rng, yaw=i * 72 + 110)
     lv(4)
-    for a in (37, 86, 134, 182, 238, 298, 349):
-        p = polar(RING[1] + 2.2, a - 11)
+    for a in (37.5, 86, 134, 182, 238, 298, 349):
+        p = polar(RING[1] + 2, a - 12)
         lantern((p.x, p.y, 0.15), rng, h=7)
     for i in range(3):  # hives
-        p = polar(124 + i * 5, 166)
-        box((2.6, 2.6, 0.5), (p.x, p.y, 0.15), S.WOOD_DARK, rng, yaw=166)
-        box((2.2, 2.2, 2.6), (p.x, p.y, 0.65), (240, 210, 110), rng, yaw=166)
-        roof(3.0, 3.0, 1.0, (p.x, p.y, 3.25), S.WOOD, rng, yaw=166)
+        p = polar(92 + i * 5, 165.5)
+        box((2.6, 2.6, 0.5), (p.x, p.y, 0.15), S.WOOD_DARK, rng, yaw=165)
+        box((2.2, 2.2, 2.6), (p.x, p.y, 0.65), (240, 210, 110), rng, yaw=165)
+        roof(3.0, 3.0, 1.0, (p.x, p.y, 3.25), S.WOOD, rng, yaw=165)
     lv(5)
-    for a in range(0, 360, 30):  # strings of flags round the ring for a finished ranch
-        p, q = polar(RING[1] + 2.2, a + 11), polar(RING[1] + 2.2, a + 41)
-        if a % 60 == 0:
-            bunting((p.x, p.y, 7.0), (q.x, q.y, 7.0), 1.4, rng, BANNERS, n=11, size=1.0)
+    for a in range(0, 360, 60):  # strings of flags round the ring for a finished ranch
+        p, q = polar(RING[1] + 2, a + 12), polar(RING[1] + 2, a + 42)
+        bunting((p.x, p.y, 7.0), (q.x, q.y, 7.0), 1.2, rng, BANNERS, n=9, size=1.0)
 
 
 def beyond(rng):
     """What lies round the homestead, to frame it: woods that keep clear of the ways, far mountains."""
     lv(0)
     ways = [deg for _, deg, _ in WAYS] + [HUB]
-    for _ in range(170):
-        a, r = rng.uniform(0, 360), rng.uniform(R + 8, 440)
+    for _ in range(150):
+        a, r = rng.uniform(0, 360), rng.uniform(R + 10, 340)
         if any(abs((a - w + 180) % 360 - 180) < 5 + 900 / r for w in ways):
             continue
         p = polar(r, a)
-        (pine if rng.random() < 0.45 else tree)((p.x, p.y, 0), rng, s=rng.uniform(1.6, 2.8))
+        (pine if rng.random() < 0.45 else tree)((p.x, p.y, 0), rng, s=rng.uniform(1.5, 2.6))
     for i in range(40):
-        p = polar(rng.uniform(820, 1000), i * 9 + rng.uniform(-3, 3))
-        foot, tall = rng.uniform(110, 190), rng.uniform(130, 280)
+        p = polar(rng.uniform(640, 800), i * 9 + rng.uniform(-3, 3))
+        foot, tall = rng.uniform(90, 150), rng.uniform(110, 230)
         post(foot, tall, (p.x, p.y, -2), (118, 122, 148), rng, n=7, r2=foot * 0.12, rot=(0, 0, rng.uniform(0, 50)), kind=S.COOL, chance=0.3)
         q = p + polar(foot * 0.7, rng.uniform(0, 360))
         post(foot * 0.7, tall * 0.6, (q.x, q.y, -2), (112, 116, 140), rng, n=6, r2=foot * 0.1, rot=(0, 0, rng.uniform(0, 50)), kind=S.COOL, chance=0.3)
-        if tall > 190:
+        if tall > 160:
             post(foot * 0.36, tall * 0.28, (p.x, p.y, tall * 0.74 - 2), S.WHITE, rng, n=7, r2=foot * 0.1, kind=S.PALE)
 
 
@@ -699,7 +735,7 @@ def build(rng):
     _tag()
 
 
-HERO = ((170, -330, 215), (0, 8, 4))
+HERO = ((128, -250, 164), (0, 6, 3))
 SCENES = [
     dict(
         name="homestead",
@@ -707,12 +743,12 @@ SCENES = [
         ground=(104, 164, 78),
         shots=[
             (*HERO, 36, S.TOP),  # the finished homestead from over the road to the hub
-            ((0, -1, 760), (0, 0, 0), 50, S.TOP),  # the plan
+            ((0, -1, 570), (0, 0, 0), 50, S.TOP),  # the plan
             (*HERO, 36, 0),  # a new ranch
             (*HERO, 36, 3),  # half way
-            ((0, -134, 13), (0, 60, 10), 24, S.TOP),  # in at the gate: the meadow, the house behind it
-            ((50, 29, 13), (93, 73, 6), 26, S.TOP),  # the egg corner: hatchery, brooder, cellar
-            ((-22, 18, 15), (-84, 86, 11), 24, S.TOP),  # the Titan's den, the lodge beside it
+            ((0, -100, 11), (0, 45, 8), 24, S.TOP),  # in at the gate: the meadow, the house behind it
+            ((37, 20, 11), (72, 58, 5), 24, S.TOP),  # the egg corner: hatchery, brooder, cellar
+            ((-15, 13, 12), (-60, 62, 9), 24, S.TOP),  # the Titan's den
         ],
     ),
 ]

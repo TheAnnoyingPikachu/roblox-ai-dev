@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-066",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The homestead's eight buildings as game models (decision 0072): the Ranch House, Barn, Hatchery, Egg Cellar, Brooder, Windmill, Trophy Lodge and Titan's Den, three looks each, built from the makers of the concept scene at the size that fits the valley's homestead (224 studs across), exported and uploaded.",
+  "inputs": [
+    "docs/decisions/0071-animal-stations-homestead-concept.md"
+  ],
+  "dependencies": [
+    "STATION-064"
+  ],
+  "files": [
+    "tools/blender/stations/assets/homestead.py",
+    "tools/blender/stations/scenes/homestead.py",
+    "assets/stations/home_*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "docs/concepts/ranch-homestead-card.png",
+    "studio/tasks/STATION-066.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "24 models: eight buildings in three looks each, every one within its triangle budget",
+    "A model holds nothing the game stands itself: eggs, nests, racks, the Titan, the windmill's sails",
+    "Every model is uploaded and listed in StationAssets and in the asset register"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: `build.py` built the 24 models with no error, 92 to 3,724 triangles each (budget 20,000); a sheet of all 24 previews was looked at. One fault was found and fixed there: the Ranch House's wing roofs lay across the wings and made the model 54 studs wide. Upload and the game are recorded when done.",
+  "output_artifacts": [
+    "tools/blender/stations/assets/homestead.py"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'do all those buildings, do all your suggested drafts, the area doesnt need to be bigger just needs to fit everything'. Read as the go-ahead to build and upload the eight buildings (question 4 of decision 0071) at the homestead's present size (question 2: 224 studs across)."
+}

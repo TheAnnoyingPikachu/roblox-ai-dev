@@ -5579,5 +5579,877 @@
     },
     "joints": {},
     "lift": 5.75
+  },
+  "home_house_1": {
+    "fbx": "build/blender/stations/home_house_1.fbx",
+    "png": "build/blender/stations/home_house_1.png",
+    "preview": "build/blender/stations/previews/home_house_1.png",
+    "size_studs": [
+      23.4,
+      16.7,
+      19.4
+    ],
+    "tris": 2328,
+    "parts": {
+      "home_house_1_body": 2304,
+      "home_house_1_body_glow": 24
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Ranch House: a cabin.",
+    "glow": {
+      "home_house_1_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_house_1_body": [
+        0.0,
+        8.35,
+        -0.0
+      ],
+      "home_house_1_body_glow": [
+        0.0,
+        4.9,
+        8.1
+      ]
+    },
+    "joints": {},
+    "lift": 0.1
+  },
+  "home_house_2": {
+    "fbx": "build/blender/stations/home_house_2.fbx",
+    "png": "build/blender/stations/home_house_2.png",
+    "preview": "build/blender/stations/previews/home_house_2.png",
+    "size_studs": [
+      31.4,
+      20.3,
+      28.55
+    ],
+    "tris": 2524,
+    "parts": {
+      "home_house_2_body": 2476,
+      "home_house_2_body_glow": 48
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Ranch House: a farmhouse with a porch.",
+    "glow": {
+      "home_house_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_house_2_body": [
+        0.0,
+        10.15,
+        2.575
+      ],
+      "home_house_2_body_glow": [
+        0.0,
+        4.9,
+        10.1
+      ]
+    },
+    "joints": {},
+    "lift": 0.1
+  },
+  "home_house_3": {
+    "fbx": "build/blender/stations/home_house_3.fbx",
+    "png": "build/blender/stations/home_house_3.png",
+    "preview": "build/blender/stations/previews/home_house_3.png",
+    "size_studs": [
+      46.4,
+      35.3,
+      34.46
+    ],
+    "tris": 3724,
+    "parts": {
+      "home_house_3_body": 3564,
+      "home_house_3_body_glow": 120,
+      "home_house_3_body2_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Ranch House: a house with two wings and a tower.",
+    "glow": {
+      "home_house_3_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_house_3_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_house_3_body": [
+        0.0,
+        17.65,
+        2.83
+      ],
+      "home_house_3_body_glow": [
+        0.0,
+        7.6,
+        8.6
+      ],
+      "home_house_3_body2_glow": [
+        1.2,
+        6.2,
+        19.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.1
+  },
+  "home_barn_1": {
+    "fbx": "build/blender/stations/home_barn_1.fbx",
+    "png": "build/blender/stations/home_barn_1.png",
+    "preview": "build/blender/stations/previews/home_barn_1.png",
+    "size_studs": [
+      28.88,
+      13.11,
+      17.0
+    ],
+    "tris": 1084,
+    "parts": {
+      "home_barn_1_body": 1084
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Barn: a shed with its hay.",
+    "glow": {},
+    "centres": {
+      "home_barn_1_body": [
+        -3.942,
+        6.555,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_barn_2": {
+    "fbx": "build/blender/stations/home_barn_2.fbx",
+    "png": "build/blender/stations/home_barn_2.png",
+    "preview": "build/blender/stations/previews/home_barn_2.png",
+    "size_studs": [
+      46.14,
+      22.2,
+      23.0
+    ],
+    "tris": 1216,
+    "parts": {
+      "home_barn_2_body": 1216
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Barn: a barn with a silo.",
+    "glow": {},
+    "centres": {
+      "home_barn_2_body": [
+        0.685,
+        11.1,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_barn_3": {
+    "fbx": "build/blender/stations/home_barn_3.fbx",
+    "png": "build/blender/stations/home_barn_3.png",
+    "preview": "build/blender/stations/previews/home_barn_3.png",
+    "size_studs": [
+      55.66,
+      27.03,
+      34.29
+    ],
+    "tris": 1428,
+    "parts": {
+      "home_barn_3_body": 1428
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Barn: a great barn with two silos, a weather vane and a hay cart.",
+    "glow": {},
+    "centres": {
+      "home_barn_3_body": [
+        -0.072,
+        13.515,
+        3.643
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_hatchery_1": {
+    "fbx": "build/blender/stations/home_hatchery_1.fbx",
+    "png": "build/blender/stations/home_hatchery_1.png",
+    "preview": "build/blender/stations/previews/home_hatchery_1.png",
+    "size_studs": [
+      15.0,
+      7.59,
+      15.0
+    ],
+    "tris": 1140,
+    "parts": {
+      "home_hatchery_1_body": 1140
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Hatchery: a canvas on four posts over a bed of straw.",
+    "glow": {},
+    "centres": {
+      "home_hatchery_1_body": [
+        0.0,
+        3.797,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_hatchery_2": {
+    "fbx": "build/blender/stations/home_hatchery_2.fbx",
+    "png": "build/blender/stations/home_hatchery_2.png",
+    "preview": "build/blender/stations/previews/home_hatchery_2.png",
+    "size_studs": [
+      27.6,
+      19.6,
+      27.6
+    ],
+    "tris": 1284,
+    "parts": {
+      "home_hatchery_2_body": 1276,
+      "home_hatchery_2_body_glow": 8
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Hatchery: a round pavilion.",
+    "glow": {
+      "home_hatchery_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_hatchery_2_body": [
+        0.0,
+        8.3,
+        -0.0
+      ],
+      "home_hatchery_2_body_glow": [
+        0.0,
+        17.95,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_hatchery_3": {
+    "fbx": "build/blender/stations/home_hatchery_3.fbx",
+    "png": "build/blender/stations/home_hatchery_3.png",
+    "preview": "build/blender/stations/previews/home_hatchery_3.png",
+    "size_studs": [
+      32.6,
+      28.0,
+      32.6
+    ],
+    "tris": 1892,
+    "parts": {
+      "home_hatchery_3_body": 1804,
+      "home_hatchery_3_body_glow": 80,
+      "home_hatchery_3_body2_glow": 8
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Hatchery: a great pavilion under a two-tiered roof, with lanterns.",
+    "glow": {
+      "home_hatchery_3_body_glow": [
+        255,
+        214,
+        130
+      ],
+      "home_hatchery_3_body2_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_hatchery_3_body": [
+        0.0,
+        12.5,
+        -0.0
+      ],
+      "home_hatchery_3_body_glow": [
+        1.2,
+        6.15,
+        -0.0
+      ],
+      "home_hatchery_3_body2_glow": [
+        0.0,
+        26.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_cellar_1": {
+    "fbx": "build/blender/stations/home_cellar_1.fbx",
+    "png": "build/blender/stations/home_cellar_1.png",
+    "preview": "build/blender/stations/previews/home_cellar_1.png",
+    "size_studs": [
+      14.4,
+      11.66,
+      6.58
+    ],
+    "tris": 92,
+    "parts": {
+      "home_cellar_1_body": 92
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Egg Cellar: a thatched shelter for the egg rack.",
+    "glow": {},
+    "centres": {
+      "home_cellar_1_body": [
+        0.0,
+        5.832,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_cellar_2": {
+    "fbx": "build/blender/stations/home_cellar_2.fbx",
+    "png": "build/blender/stations/home_cellar_2.png",
+    "preview": "build/blender/stations/previews/home_cellar_2.png",
+    "size_studs": [
+      12.32,
+      12.89,
+      13.89
+    ],
+    "tris": 2152,
+    "parts": {
+      "home_cellar_2_body": 2132,
+      "home_cellar_2_body_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Egg Cellar: a cellar dug into a grassy mound.",
+    "glow": {
+      "home_cellar_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_cellar_2_body": [
+        -0.047,
+        6.447,
+        -3.634
+      ],
+      "home_cellar_2_body_glow": [
+        2.9,
+        7.094,
+        2.86
+      ]
+    },
+    "joints": {},
+    "lift": -2.694
+  },
+  "home_cellar_3": {
+    "fbx": "build/blender/stations/home_cellar_3.fbx",
+    "png": "build/blender/stations/home_cellar_3.png",
+    "preview": "build/blender/stations/previews/home_cellar_3.png",
+    "size_studs": [
+      18.1,
+      15.37,
+      18.44
+    ],
+    "tris": 2336,
+    "parts": {
+      "home_cellar_3_body": 2276,
+      "home_cellar_3_body_glow": 40,
+      "home_cellar_3_body2_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Egg Cellar: a bigger mound with two doors.",
+    "glow": {
+      "home_cellar_3_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_cellar_3_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_cellar_3_body": [
+        -1.05,
+        7.684,
+        -2.18
+      ],
+      "home_cellar_3_body_glow": [
+        2.9,
+        7.767,
+        3.58
+      ],
+      "home_cellar_3_body2_glow": [
+        -8.4,
+        9.167,
+        6.48
+      ]
+    },
+    "joints": {},
+    "lift": -3.367
+  },
+  "home_brooder_1": {
+    "fbx": "build/blender/stations/home_brooder_1.fbx",
+    "png": "build/blender/stations/home_brooder_1.png",
+    "preview": "build/blender/stations/previews/home_brooder_1.png",
+    "size_studs": [
+      11.5,
+      10.1,
+      8.75
+    ],
+    "tris": 2408,
+    "parts": {
+      "home_brooder_1_body": 2368,
+      "home_brooder_1_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Brooder: two warm beds under heat lamps and a glass roof.",
+    "glow": {
+      "home_brooder_1_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
+    "centres": {
+      "home_brooder_1_body": [
+        0.0,
+        5.05,
+        0.125
+      ],
+      "home_brooder_1_body_glow": [
+        0.0,
+        5.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_brooder_2": {
+    "fbx": "build/blender/stations/home_brooder_2.fbx",
+    "png": "build/blender/stations/home_brooder_2.png",
+    "preview": "build/blender/stations/previews/home_brooder_2.png",
+    "size_studs": [
+      16.5,
+      11.1,
+      10.75
+    ],
+    "tris": 2536,
+    "parts": {
+      "home_brooder_2_body": 2456,
+      "home_brooder_2_body_glow": 80
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Brooder: four warm beds.",
+    "glow": {
+      "home_brooder_2_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
+    "centres": {
+      "home_brooder_2_body": [
+        0.0,
+        5.55,
+        0.125
+      ],
+      "home_brooder_2_body_glow": [
+        0.0,
+        6.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_brooder_3": {
+    "fbx": "build/blender/stations/home_brooder_3.fbx",
+    "png": "build/blender/stations/home_brooder_3.png",
+    "preview": "build/blender/stations/previews/home_brooder_3.png",
+    "size_studs": [
+      27.3,
+      18.62,
+      12.75
+    ],
+    "tris": 2812,
+    "parts": {
+      "home_brooder_3_body": 2692,
+      "home_brooder_3_body_glow": 120
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Brooder: six warm beds and a boiler.",
+    "glow": {
+      "home_brooder_3_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
+    "centres": {
+      "home_brooder_3_body": [
+        -2.901,
+        9.311,
+        0.125
+      ],
+      "home_brooder_3_body_glow": [
+        0.0,
+        7.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_windmill_1": {
+    "fbx": "build/blender/stations/home_windmill_1.fbx",
+    "png": "build/blender/stations/home_windmill_1.png",
+    "preview": "build/blender/stations/previews/home_windmill_1.png",
+    "size_studs": [
+      10.5,
+      19.0,
+      10.85
+    ],
+    "tris": 528,
+    "parts": {
+      "home_windmill_1_body": 528
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Windmill: a post mill, without its sails.",
+    "glow": {},
+    "centres": {
+      "home_windmill_1_body": [
+        0.0,
+        9.5,
+        0.175
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_windmill_2": {
+    "fbx": "build/blender/stations/home_windmill_2.fbx",
+    "png": "build/blender/stations/home_windmill_2.png",
+    "preview": "build/blender/stations/previews/home_windmill_2.png",
+    "size_studs": [
+      12.36,
+      28.0,
+      13.0
+    ],
+    "tris": 540,
+    "parts": {
+      "home_windmill_2_body": 528,
+      "home_windmill_2_body_glow": 12
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Windmill: a stone tower mill, without its sails.",
+    "glow": {
+      "home_windmill_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_windmill_2_body": [
+        0.0,
+        14.0,
+        -0.0
+      ],
+      "home_windmill_2_body_glow": [
+        0.0,
+        11.37,
+        5.46
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_windmill_3": {
+    "fbx": "build/blender/stations/home_windmill_3.fbx",
+    "png": "build/blender/stations/home_windmill_3.png",
+    "preview": "build/blender/stations/previews/home_windmill_3.png",
+    "size_studs": [
+      30.85,
+      39.29,
+      19.2
+    ],
+    "tris": 860,
+    "parts": {
+      "home_windmill_3_body": 848,
+      "home_windmill_3_body_glow": 12
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Windmill: a tall tower mill with a gallery and a store, without its sails.",
+    "glow": {
+      "home_windmill_3_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_windmill_3_body": [
+        -6.075,
+        19.643,
+        -0.0
+      ],
+      "home_windmill_3_body_glow": [
+        0.0,
+        14.416,
+        6.3
+      ]
+    },
+    "joints": {},
+    "lift": -0.136
+  },
+  "home_lodge_1": {
+    "fbx": "build/blender/stations/home_lodge_1.fbx",
+    "png": "build/blender/stations/home_lodge_1.png",
+    "preview": "build/blender/stations/previews/home_lodge_1.png",
+    "size_studs": [
+      11.6,
+      11.0,
+      4.6
+    ],
+    "tris": 2344,
+    "parts": {
+      "home_lodge_1_body": 2344
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Trophy Lodge: a first cup between two banners.",
+    "glow": {},
+    "centres": {
+      "home_lodge_1_body": [
+        0.0,
+        5.5,
+        0.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_lodge_2": {
+    "fbx": "build/blender/stations/home_lodge_2.fbx",
+    "png": "build/blender/stations/home_lodge_2.png",
+    "preview": "build/blender/stations/previews/home_lodge_2.png",
+    "size_studs": [
+      23.0,
+      15.6,
+      15.0
+    ],
+    "tris": 2756,
+    "parts": {
+      "home_lodge_2_body": 2756
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Trophy Lodge: a hall of three cups.",
+    "glow": {},
+    "centres": {
+      "home_lodge_2_body": [
+        0.0,
+        7.8,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_lodge_3": {
+    "fbx": "build/blender/stations/home_lodge_3.fbx",
+    "png": "build/blender/stations/home_lodge_3.png",
+    "preview": "build/blender/stations/previews/home_lodge_3.png",
+    "size_studs": [
+      37.6,
+      18.6,
+      20.3
+    ],
+    "tris": 3244,
+    "parts": {
+      "home_lodge_3_body": 3228,
+      "home_lodge_3_body_glow": 16
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Trophy Lodge: a great hall with the great cup in the middle.",
+    "glow": {
+      "home_lodge_3_body_glow": [
+        255,
+        150,
+        60
+      ]
+    },
+    "centres": {
+      "home_lodge_3_body": [
+        0.0,
+        9.3,
+        1.15
+      ],
+      "home_lodge_3_body_glow": [
+        0.0,
+        5.45,
+        9.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_den_1": {
+    "fbx": "build/blender/stations/home_den_1.fbx",
+    "png": "build/blender/stations/home_den_1.png",
+    "preview": "build/blender/stations/previews/home_den_1.png",
+    "size_studs": [
+      36.0,
+      27.0,
+      32.0
+    ],
+    "tris": 1180,
+    "parts": {
+      "home_den_1_body": 1180
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Titan's Den: a great thatched shelter.",
+    "glow": {},
+    "centres": {
+      "home_den_1_body": [
+        0.0,
+        13.5,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_den_2": {
+    "fbx": "build/blender/stations/home_den_2.fbx",
+    "png": "build/blender/stations/home_den_2.png",
+    "preview": "build/blender/stations/previews/home_den_2.png",
+    "size_studs": [
+      40.18,
+      28.0,
+      32.06
+    ],
+    "tris": 1348,
+    "parts": {
+      "home_den_2_body": 1308,
+      "home_den_2_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Titan's Den: a stone stable with a gate the Titan walks through.",
+    "glow": {
+      "home_den_2_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_den_2_body": [
+        0.592,
+        14.0,
+        0.53
+      ],
+      "home_den_2_body_glow": [
+        1.2,
+        8.65,
+        16.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_den_3": {
+    "fbx": "build/blender/stations/home_den_3.fbx",
+    "png": "build/blender/stations/home_den_3.png",
+    "preview": "build/blender/stations/previews/home_den_3.png",
+    "size_studs": [
+      45.6,
+      34.72,
+      41.3
+    ],
+    "tris": 1664,
+    "parts": {
+      "home_den_3_body": 1608,
+      "home_den_3_body_glow": 40,
+      "home_den_3_body2_glow": 16
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Titan's Den: a hall with tusks at its gate.",
+    "glow": {
+      "home_den_3_body_glow": [
+        255,
+        214,
+        130
+      ],
+      "home_den_3_body2_glow": [
+        255,
+        150,
+        60
+      ]
+    },
+    "centres": {
+      "home_den_3_body": [
+        0.0,
+        17.36,
+        4.15
+      ],
+      "home_den_3_body_glow": [
+        1.2,
+        9.371,
+        17.0
+      ],
+      "home_den_3_body2_glow": [
+        0.0,
+        6.171,
+        23.0
+      ]
+    },
+    "joints": {},
+    "lift": -0.571
   }
 }
