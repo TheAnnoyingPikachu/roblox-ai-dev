@@ -40,14 +40,14 @@ def giraffe_model(p, seed):
                 at, n = k.land(target, c, direction)
             except ValueError:
                 continue  # the ray misses the piece here
-            r, turn = size * rng.uniform(0.85, 1.1), rng.uniform(0, math.tau)
+            r, turn = size * p.get("patch_scale", 1.0) * rng.uniform(0.85, 1.1), rng.uniform(0, math.tau)
             sides = 8 if p.get("gentle") else 6
             lo = 0.85 if p.get("gentle") else 0.8
             outline = [(r * rng.uniform(lo, 1.0) * math.cos(turn + i * math.tau / sides), r * rng.uniform(lo, 1.0) * math.sin(turn + i * math.tau / sides)) for i in range(sides)]
             into.append(plate("patch", at, k._frame(n), outline, p.get("patch_thick", 0.012), patch, rng, lift=0.016, surface=p.get("patch_surface")))
 
     # the torso: deep at the chest, sloping down to narrow hips
-    torso = hide(loft("torso", [yring(*r) for r in ((-0.95, 3.4, 0.32, 0.32, 0.38, 0.11), (-0.6, 3.46, 0.48, 0.6, 0.64, 0.17), (0.35, 3.22, 0.46, 0.46, 0.56, 0.16), (1.3, 3.02, 0.42, 0.4, 0.44, 0.14), (1.72, 2.98, 0.26, 0.28, 0.28, 0.09))], coat, rng), coat)
+    torso = hide(loft("torso", [yring(*r) for r in ((-0.95, 3.4, 0.32, 0.32, 0.38, 0.11), (-0.6, 3.46, 0.48, 0.6, 0.64, 0.17), (0.35, 3.22, 0.46, 0.46, 0.56, 0.16), (1.3, 3.02, 0.42, 0.4, 0.44, 0.14), (1.72, 2.98, 0.26, 0.28, 0.28, 0.09))], coat, rng, surface=p.get("hide")), coat)
     groups["body"].append(torso)
     for s in (1, -1):
         flank = [(0, -0.82 + i * 0.4 + (row % 2) * 0.2, 2.82 + row * 0.36 - i * 0.04) for row in range(4) for i in range(7)]
@@ -57,10 +57,10 @@ def giraffe_model(p, seed):
     # legs: very long, the lower half pale, dark hooves; the upper half carries patches
     for s in (1, -1):
         x, side = s * 0.3, "l" if s > 0 else "r"
-        arm = hide(loft("arm", [zring(x, -0.45, 3.1, 0.17, 0.26, 0.06), zring(x, -0.45, 1.7, 0.12, 0.15, 0.04)], coat, rng), coat)
-        shank = hide(loft("shank", [zring(x, -0.45, 1.75, 0.11, 0.13, 0.035), zring(x, -0.47, 0.22, 0.1, 0.12, 0.035)], legs, rng), legs)
-        thigh = hide(loft("thigh", [zring(x, HIND, 3.0, 0.2, 0.36, 0.07), zring(x, HIND - 0.05, 2.3, 0.17, 0.3, 0.06), zring(x, HIND + 0.05, 1.65, 0.12, 0.16, 0.04)], coat, rng), coat)
-        shin = hide(loft("shin", [zring(x, HIND + 0.05, 1.7, 0.11, 0.14, 0.035), zring(x, HIND, 0.22, 0.1, 0.12, 0.035)], legs, rng), legs)
+        arm = hide(loft("arm", [zring(x, -0.45, 3.1, 0.17, 0.26, 0.06), zring(x, -0.45, 1.7, 0.12, 0.15, 0.04)], coat, rng, surface=p.get("hide")), coat)
+        shank = hide(loft("shank", [zring(x, -0.45, 1.75, 0.11, 0.13, 0.035), zring(x, -0.47, 0.22, 0.1, 0.12, 0.035)], legs, rng, surface=p.get("hide")), legs)
+        thigh = hide(loft("thigh", [zring(x, HIND, 3.0, 0.2, 0.36, 0.07), zring(x, HIND - 0.05, 2.3, 0.17, 0.3, 0.06), zring(x, HIND + 0.05, 1.65, 0.12, 0.16, 0.04)], coat, rng, surface=p.get("hide")), coat)
+        shin = hide(loft("shin", [zring(x, HIND + 0.05, 1.7, 0.11, 0.14, 0.035), zring(x, HIND, 0.22, 0.1, 0.12, 0.035)], legs, rng, surface=p.get("hide")), legs)
         groups["leg_f" + side] = [arm, shank]
         groups["leg_b" + side] = [thigh, shin]
         for name, y, limb in (("leg_f", -0.47, arm), ("leg_b", HIND, thigh)):
@@ -71,7 +71,7 @@ def giraffe_model(p, seed):
 
     # the neck: long, leaning forward, a mane of dark bristles down its back
     head = groups["head"]
-    neck = hide(loft("neck", [zring(0, y, z, w, d, d * 0.35) for z, y, w, d in NECK], coat, rng), coat)
+    neck = hide(loft("neck", [zring(0, y, z, w, d, d * 0.35) for z, y, w, d in NECK], coat, rng, surface=p.get("hide")), coat)
     head.append(neck)
     for s in (1, -1):
         for j in range(9):
@@ -97,7 +97,7 @@ def giraffe_model(p, seed):
 
     # the head: long, a heavy brow, a dark muzzle
     first, glow_first = len(head), len(groups["head_glow"])
-    skull = hide(loft("skull", [yring(*r) for r in ((-1.5, 6.82, 0.17, 0.17, 0.16, 0.06), (-1.75, 6.84, 0.24, 0.22, 0.22, 0.08), (-2.1, 6.74, 0.2, 0.17, 0.2, 0.07), (-2.42, 6.6, 0.16, 0.13, 0.17, 0.06))], coat, rng), coat, 0.008)
+    skull = hide(loft("skull", [yring(*r) for r in ((-1.5, 6.82, 0.17, 0.17, 0.16, 0.06), (-1.75, 6.84, 0.24, 0.22, 0.22, 0.08), (-2.1, 6.74, 0.2, 0.17, 0.2, 0.07), (-2.42, 6.6, 0.16, 0.13, 0.17, 0.06))], coat, rng, surface=p.get("hide")), coat, 0.008)
     head.append(skull)
     head.append(loft("muzzle", [yring(-2.4, 6.6, 0.165, 0.135, 0.175, 0.06), yring(-2.66, 6.53, 0.13, 0.1, 0.14, 0.05)], T("muzzle"), rng))
     head.append(shard((0, -1.95, 6.98), (0, -2.35, 6.82), 0.16, 0.06, coat, rng, face=(0, -0.3, 1), name="ridge"))  # the bump down its face
@@ -174,6 +174,38 @@ def diamond_extra(groups, torso, rng, glow):
             groups["body_glow"].append(shard(at - lean * 0.1 + Vector((side * 0.12, 0, 0)), at + lean * h, 0.32, 0.26, None, rng, face=(1, 0, 0), at=0.3, m=glow, name="diamond"))
 
 
+def ore_extra(groups, torso, rng, glow):
+    """Diamond ore: cyan diamonds set all over the stone (most of them painted gem, some glowing),
+    breaking out of the back, the flanks, the neck and the legs, and a cluster on each shoulder."""
+    gem, ice = tone((70, 200, 245), F.COOL), tone((150, 232, 255), F.COOL)
+    neck = next(ob for ob in groups["head"] if ob.name.startswith("neck"))
+
+    def crystal(target, into, centre, direction, size):
+        try:
+            at, n = k.land(target, centre, direction)
+        except ValueError:
+            return
+        lean = (n + Vector((rng.uniform(-0.4, 0.4), rng.uniform(-0.4, 0.4), rng.uniform(0, 0.5)))).normalized()
+        if rng.random() < 0.3:
+            groups["body_glow" if into is not groups["head"] else "head_glow"].append(shard(at - lean * 0.05, at + lean * size, size * 0.5, size * 0.4, None, rng, face=(1, 0, 0), at=0.3, m=glow, name="diamond"))
+        else:
+            into.append(shard(at - lean * 0.05, at + lean * size, size * 0.55, size * 0.42, (gem, ice), rng, face=(1, 0, 0), at=0.3, name="diamond", surface="gem"))
+
+    for _ in range(34):  # over the body
+        y, z = rng.uniform(-0.9, 1.6), rng.uniform(2.75, 3.95)
+        crystal(torso, groups["body"], (0, y, z), (rng.choice((-1, 1)), 0, rng.uniform(-0.2, 0.8)), rng.uniform(0.26, 0.55))
+    for _ in range(16):  # up the neck
+        t = rng.random()
+        crystal(neck, groups["head"], (0, -0.55 - t * 1.05, 3.6 + t * 2.7), (rng.choice((-1, 1)), rng.uniform(-0.2, 0.6), 0.1), rng.uniform(0.2, 0.38))
+    for leg in ("leg_fl", "leg_fr", "leg_bl", "leg_br"):  # and down each leg
+        side = 1 if leg.endswith("l") else -1
+        limb = groups[leg][0]
+        y = -0.45 if leg.startswith("leg_f") else HIND
+        for _ in range(4):
+            crystal(limb, groups[leg], (0, y, rng.uniform(1.9, 2.9)), (side, rng.uniform(-0.3, 0.3), 0), rng.uniform(0.16, 0.3))
+    diamond_extra(groups, torso, rng, glow)
+
+
 def giraffe():
     """Giraffe: tall and cream under a net of chestnut patches, a dark mane, sharp dark-tipped horns."""
     return giraffe_model(
@@ -206,7 +238,11 @@ SAVANNA = gentle(coat=(242, 226, 192), legs=(250, 240, 220), patch=(124, 72, 42)
 GEM = gentle(coat=(196, 210, 236), legs=(222, 230, 246), legs_dark=(170, 184, 214), dark=(96, 110, 150), patch=(110, 200, 248), muzzle=(176, 186, 210),
              ear_in=(190, 220, 248), iris=(60, 120, 200), mane=(140, 170, 220), patch_surface="gem", patch_thick=0.04, glow=DIAMOND)
 
+ORE = dict(coat=(118, 120, 130), legs=(98, 100, 110), legs_dark=(70, 72, 82), dark=(48, 50, 60), patch=(96, 214, 250), muzzle=(84, 86, 98), ear_in=(110, 180, 220),
+           iris=(240, 170, 40), hide="rock", patch_surface="gem", patch_thick=0.07, patch_scale=0.55, glow=DIAMOND, extra=ore_extra)
+
 ASSETS = [
+    F.asset("concept_giraffe_diamond_ore", lambda: giraffe_model(ORE, 11), 2.9, {"head_glow": DIAMOND, "body_glow": DIAMOND}, "Diamond Giraffe concept (decision 0083): diamond ore: stone set with diamonds all over, glowing diamond horns, crest and eyes."),
     F.asset("concept_giraffe_sunny", SUNNY, 2.9, {}, "Giraffe concept (decision 0082): golden, warm orange patches, round eyes, soft horn tufts."),
     F.asset("concept_giraffe_savanna", SAVANNA, 2.9, {}, "Giraffe concept (decision 0082): cream, dark chocolate patches, round eyes, soft horn tufts."),
     F.asset("concept_giraffe_gem", GEM, 2.9, {"head_glow": DIAMOND}, "Diamond Giraffe concept (decision 0082): pale blue, gem patches, glowing gems on its horn tips."),
