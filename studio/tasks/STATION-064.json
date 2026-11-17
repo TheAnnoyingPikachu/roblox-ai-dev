@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-064",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for the middle of the ranch reworked (decision 0071): an open green 300 studs across with the herd's meadow at its heart and eight buildings to upgrade round a ring path, six of them new upgrades. Concept only: the training grounds, the game and its assets are unchanged.",
+  "inputs": [
+    "docs/decisions/0070-animal-stations-ranch-valley-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-063"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/homestead.py",
+    "docs/concepts/ranch-homestead-card.png",
+    "docs/decisions/0071-animal-stations-homestead-concept.md",
+    "studio/tasks/STATION-064.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "One card shows the finished homestead, its plan, a new ranch, a ranch half built and three closer views",
+    "Every building, the meadow, the gate, the vendors and the seven ways out are in it",
+    "The decision record lists each upgrade with what the game has today and labels every new number a draft",
+    "The game and its assets are unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: `stage.py` built and rendered `homestead` with no error (135,080 triangles, 20 seconds). The card was looked at three times. After the first look the Titan's Den moved to the back so its gate faces the view, the Barn moved to the front, the windmill's store left the orchard, and trees, a picnic green, a rim of bushes and a fuller herd were added; after the second the Barn's back got its trim and the gate view moved onto the road, out of a tree. No game file changed. Not checked: the concept in the game engine or on a phone, or standing in the valley's land.",
+  "output_artifacts": [
+    "docs/concepts/ranch-homestead-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'make a new more open style middle ranch area, and make it bigger with more upgrades', then 'like just the middle not the training grounds'. Read as a concept first (each new set of looks needs its own go-ahead; new upgrades change the economy and need a decision record). Checkpoint for SHANNON: the four decisions in 0071."
+}
