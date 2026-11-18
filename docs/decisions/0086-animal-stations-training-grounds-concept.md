@@ -1,6 +1,7 @@
 # 0086: Animal Stations: the training grounds in the overhaul's look (concept)
 
-Status: proposed. Date: 2026-11-18. Task STATION-090.
+Status: accepted (SHANNON, 2026-11-18: "go for the after look its awesome!"); built by STATION-091.
+Date: 2026-11-18. Tasks STATION-090, STATION-091.
 
 ## What SHANNON asked
 
@@ -38,6 +39,20 @@ holds, as the trees are models; not measured).
 1. Go, or changes. Recommended: go, as above, built into `Valley.dress` so it stands at every level.
 2. Whether the slopes get ledges and grassy tops too (more work; recommended later, if the woods are
    not enough).
+
+## Built (STATION-091)
+
+- `Valley.luau`: the track's floor is LeafyGrass; `Valley.dress` stands the border (every 9 degrees on
+  the rim, open 16 degrees either side of the path) and up to 260 tries of woods per ground, from 6 to
+  75 studs past its edge, kept off paths, the stream, water, the homestead, other grounds and the den's
+  hill (`wild`).
+- `ValleyMap.kind`: a floor ends 84 studs out, give or take 8 by noise, instead of a 90-stud circle;
+  the pool keeps its circle.
+- Fixed on the way: `calm` in `World.luau` (STATION-089) made a row of no width at the end of each
+  round and Roblox threw "Region cannot be empty", which stopped the world build after ranch 1's
+  valley. A row is now at least 4 studs wide.
+- Fact: the world counted about 19,800 parts in Studio with the areas at level 5, up from about 9,300.
+  The flower clumps are the most parts for what they give (12 each); cut them first if phones are slow.
 
 ## Not done
 

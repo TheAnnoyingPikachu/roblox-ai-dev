@@ -24,7 +24,7 @@ local MATERIAL: { [string]: Enum.Material } = {
 	rock = M.Rock,
 	snow = M.Snow,
 	-- the floor of each training ground
-	track = M.Grass,
+	track = M.LeafyGrass, -- no grass blades up through its lanes and pond (decision 0086)
 	gym = M.Sandstone,
 	pool = M.Sand,
 	library = M.Slate,
@@ -140,7 +140,33 @@ export type Kit = {
 	tree: (Instance, Vector3, Random, number) -> (),
 	pine: (Instance, Vector3, number, Random) -> (),
 	rock: (Instance, Vector3, number, Random) -> (),
+	bush: (Instance, Vector3, number, Random) -> (),
+	flowers: (Instance, Vector3, Random, number, number) -> (),
 }
+
+-- Whether (x, z) in the plan is clear for a tree round a training ground: off the paths, the stream,
+-- the water, the homestead, the den's hill and every ground.
+local function wild(x: number, z: number, h: number): boolean
+	if x * x + z * z < (ValleyMap.HOME + 12) ^ 2 or ValleyMap.stream(x, z) < 12 or ValleyMap.water(x, z, h) then
+		return false
+	end
+	for _, g in ValleyMap.GROUNDS do
+		if (x - g.x) ^ 2 + (z - g.z) ^ 2 < (ValleyMap.PAD + 4) ^ 2 then
+			return false
+		end
+	end
+	for _, w in ValleyMap.WAYS do
+		local dx, dz = w.bx - w.sx, w.bz - w.sz
+		local t = math.clamp(((x - w.sx) * dx + (z - w.sz) * dz) / (dx * dx + dz * dz), 0, 1)
+		if (x - w.sx - dx * t) ^ 2 + (z - w.sz - dz * t) ^ 2 < 16 * 16 then
+			return false
+		end
+	end
+	local den = ValleyMap.DEN
+	local ox, oz = math.cos(math.rad(den.deg)), math.sin(math.rad(den.deg))
+	local along, across = x * ox + z * oz, math.abs(z * ox - x * oz)
+	return not (along > den.face - 12 and along < den.back + 40 and across < den.half + 30)
+end
 
 -- Dresses the valley of `frame`: trees and rocks on its slopes, the waterfall behind the spring, a
 -- bridge where a path crosses the stream.
@@ -174,6 +200,41 @@ function Valley.dress(parent: Instance, frame: CFrame, rng: Random, kit: Kit)
 					kit.pine(parent, at, rng:NextNumber(1.4, 2.2), rng)
 				else
 					kit.rock(parent, at, rng:NextNumber(3, 6), rng)
+				end
+			end
+		end
+	end
+
+	-- round each training ground (decision 0086): a border of bushes, rocks and flowers on its rim, open
+	-- where its path comes in, and woods up the slopes behind (trees where it is gentle, pines steeper)
+	for _, g in ValleyMap.GROUNDS do
+		local home = math.deg(math.atan2(-g.z, -g.x)) -- the way its path comes in from
+		for a = 0, 359, 9 do
+			if math.abs((a - home + 180) % 360 - 180) > 16 then
+				local r = ValleyMap.PAD + 2 + rng:NextNumber(-3, 5)
+				local x, z = g.x + math.cos(math.rad(a)) * r, g.z + math.sin(math.rad(a)) * r
+				if not ValleyMap.water(x, z, ValleyMap.height(x, z)) and ValleyMap.stream(x, z) > 8 then
+					local roll = rng:NextNumber()
+					if roll < 0.45 then
+						kit.bush(parent, on(x, z), rng:NextNumber(1.1, 1.7), rng)
+					elseif roll < 0.7 then
+						kit.rock(parent, on(x, z), rng:NextNumber(2, 4), rng)
+					else
+						kit.flowers(parent, on(x, z), rng, 6, 2.4)
+					end
+				end
+			end
+		end
+		for _ = 1, 260 do -- about half land: the rest is on a path, the water or another ground
+			local a, r = rng:NextNumber(0, 360), rng:NextNumber(ValleyMap.PAD + 6, ValleyMap.PAD + 75)
+			local x, z = g.x + math.cos(math.rad(a)) * r, g.z + math.sin(math.rad(a)) * r
+			local h = ValleyMap.height(x, z)
+			local steep = (math.abs(ValleyMap.height(x + 4, z) - h) + math.abs(ValleyMap.height(x, z + 4) - h)) / 8
+			if math.abs((a - home + 180) % 360 - 180) > 22 and steep < 1.2 and h < 100 and wild(x, z, h) then
+				if steep < 0.35 and rng:NextNumber() < 0.55 then
+					kit.tree(parent, on(x, z), rng, rng:NextNumber(1.1, 1.6))
+				else
+					kit.pine(parent, on(x, z, -1), rng:NextNumber(1.3, 2.1), rng)
 				end
 			end
 		end

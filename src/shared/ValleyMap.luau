@@ -200,7 +200,10 @@ end
 -- of a training ground (its floor), or "path", "sand", "rock", "snow" or "grass".
 function ValleyMap.kind(x: number, z: number, h: number, steep: number): string
 	for _, g in ValleyMap.GROUNDS do
-		if (x - g.x) ^ 2 + (z - g.z) ^ 2 < 90 * 90 then
+		local d = math.sqrt((x - g.x) ^ 2 + (z - g.z) ^ 2)
+		-- a floor frays into the land round it (decision 0086), all but the pool's, which is the beach
+		local edge = if g.id == "pool" then 90 else 84 + 8 * math.noise(x * 0.05, z * 0.05, 5.1)
+		if d < edge then
 			return g.id
 		end
 	end

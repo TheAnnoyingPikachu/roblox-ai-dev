@@ -358,7 +358,7 @@ end
 -- a few studs deep, one 4-stud row at a time (voxels lie on a 4-stud grid).
 local function calm(t: Terrain, centre: Vector3, r: number)
 	for z = -r, r, 4 do
-		local x = math.sqrt(math.max(0, r * r - z * z))
+		local x = math.max(2, math.sqrt(math.max(0, r * r - z * z))) -- a row of no width is an error
 		local lo, hi = centre + Vector3.new(-x, -8, z), centre + Vector3.new(x, 4, z + 4)
 		t:ReplaceMaterial(Region3.new(lo, hi):ExpandToGrid(4), 4, M.Grass, M.LeafyGrass)
 	end
@@ -1116,7 +1116,7 @@ local function ranch(root: Instance, i: number, rng: Random)
 	part(f, Vector3.new(1.4, 1.3, 2.2), box * CFrame.new(0, 4, 0), RED, M.SmoothPlastic)
 	part(f, Vector3.new(0.15, 1, 0.5), box * CFrame.new(0.8, 4.5, 0.6), Color3.fromRGB(255, 220, 80), M.SmoothPlastic)
 	-- the valley round it: its trees, waterfall and bridges, and what closes it
-	Valley.dress(f, cf, rng, { tree = tree, pine = pine, rock = rock })
+	Valley.dress(f, cf, rng, { tree = tree, pine = pine, rock = rock, bush = bush, flowers = flowers })
 	valleyRim(f, i, rng)
 end
 
