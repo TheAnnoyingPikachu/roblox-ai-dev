@@ -53,6 +53,15 @@ local RAINBOW = ColorSequence.new({ -- the chip of an animal in a rainbow coat (
 
 local REFUSED: { [string]: string } = {
 	coins = "Not enough coins",
+	trade_unknown = "That animal is not yours any more",
+	trade_training = "That animal is training: stop it first",
+	trade_max = "At most 4 animals in one trade",
+	trade_full = "No room in a barn for that trade: upgrade the Barn",
+	trade_nobody = "That player is not here",
+	trade_busy = "One of you is already trading",
+	trade_expired = "That trade request ran out",
+	trade_none = "No trade is open",
+	trade_empty = "Put an animal in the trade first",
 	locked = "Clear more waves to unlock that egg",
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
@@ -183,6 +192,7 @@ local shop = newSheet("shop", "Egg vendor")
 local waves = newSheet("waves", "Endless waves")
 local admin = newSheet("admin", "Admin")
 local adminAdd = newSheet("adminadd", "Add animals")
+local trade = newSheet("trade", "Trade")
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
 end
@@ -216,14 +226,14 @@ nav.Name = "Nav"
 nav.BackgroundTransparency = 1
 nav.AnchorPoint, nav.Position, nav.Size = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -10), UDim2.new(1, -24, 0, 64)
 local navLimit = Instance.new("UISizeConstraint")
-navLimit.MaxSize = Vector2.new(420, 64)
+navLimit.MaxSize = Vector2.new(540, 64)
 navLimit.Parent = nav
 Style.list(nav, 8, true)
 nav.Parent = root
 
 local hideResult: () -> () = function() end -- set once the fight panel exists
 local function navButton(label: string, stripe: Color3, order: number, onClick: () -> ()): TextLabel
-	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 3, -6, 1, 0))
+	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 4, -6, 1, 0))
 	b.LayoutOrder, b.TextSize = order, 22
 	Style.stroke(b, C.edge, 2)
 	local line = Style.frame(b, UDim2.new(0.5, 0, 0, 5), stripe)
@@ -243,6 +253,9 @@ end)
 local openWaves: () -> () -- below, with the wave sheet
 navButton("Waves", C.bad, 2, function()
 	openWaves()
+end)
+local tradeDot = navButton("Trade", C.gold, 4, function()
+	show("trade")
 end)
 navButton("Home", C.info, 3, function()
 	local ok, code = request:InvokeServer("home")
@@ -608,6 +621,147 @@ redraw.shop = function()
 			send("buy", def.id)
 		end, if can then "primary" else "off")
 		b.Position, b.Size = UDim2.fromOffset(14, 266), UDim2.new(1, -28, 0, 36)
+	end
+end
+
+-- Trading (decision 0084) ---------------------------------------------------------------------------------
+
+local tradeState: any = nil -- the open trade as the server last sent it: with, mine, theirs, ready, theyReady
+local invite: any = nil -- the latest request to trade: from (UserId), name, at (os.clock)
+
+local function tradeCell(parent: Instance, order: number, a: any, label: string, onClick: (() -> ())?, picked: boolean?)
+	local colour = RARITY_COLOUR[StationRules.rarity(a)] or C.text
+	local card =
+		Style.card(parent, UDim2.fromOffset(108, if onClick then 150 else 118), if picked then C.good else C.edge)
+	card.LayoutOrder = order
+	local view = Portrait.new(
+		card,
+		StationRules.assetOf(a.s, a.v),
+		{ size = UDim2.fromOffset(88, 72), background = darker(colour), rainbow = a.rainbow }
+	)
+	view.Position = UDim2.fromOffset(10, 8)
+	local name = Style.text(card, label, 12, C.text, UDim2.fromOffset(100, 30))
+	name.Position = UDim2.fromOffset(4, 82)
+	name.TextXAlignment = Enum.TextXAlignment.Center
+	if onClick then
+		local b =
+			Style.button(card, if picked then "Take out" else "Put in", onClick, if picked then "ghost" else "primary")
+		b.Position, b.Size = UDim2.fromOffset(8, 112), UDim2.fromOffset(92, 30)
+		b.TextSize = 14
+	end
+end
+
+local function tradeSection(title: string, order: number, height: number): Frame
+	local card = Style.card(trade.body, UDim2.new(1, -20, 0, height))
+	card.LayoutOrder = order
+	local t = Style.text(card, title, 16, C.muted, UDim2.new(1, -24, 0, 20))
+	t.Position = UDim2.fromOffset(12, 8)
+	local row = Instance.new("Frame")
+	row.BackgroundTransparency = 1
+	row.Position, row.Size = UDim2.fromOffset(12, 34), UDim2.new(1, -24, 1, -42)
+	Style.list(row, 8, true, true)
+	row.Parent = card
+	return row
+end
+
+redraw.trade = function()
+	Style.clear(trade.body)
+	Style.clear(trade.chips)
+	tradeDot.Parent.Visible = false
+	if tradeState then
+		Style.chip(trade.chips, `Trading with {tradeState.with}`, C.accent, C.accentText)
+		Style.chip(
+			trade.chips,
+			if tradeState.theyReady then "They are ready" else "They are choosing",
+			if tradeState.theyReady then C.good else nil
+		)
+		local theirs = tradeSection(`{tradeState.with} gives`, 1, 170)
+		if #tradeState.theirs == 0 then
+			Style.text(theirs, "Nothing yet", 15, C.muted, UDim2.fromOffset(200, 20))
+		end
+		for k, a in tradeState.theirs do
+			tradeCell(theirs, k, a, nameOf(a))
+		end
+		local mine = tradeSection("You give", 2, 170)
+		if #tradeState.mine == 0 then
+			Style.text(mine, "Pick from your animals below", 15, C.muted, UDim2.fromOffset(260, 20))
+		end
+		for k, id in tradeState.mine do
+			local _, a = StationProgress.find(profile, id)
+			if a then
+				tradeCell(mine, k, a, nameOf(a))
+			end
+		end
+		local buttons = Style.card(trade.body, UDim2.new(1, -20, 0, 64))
+		buttons.LayoutOrder = 3
+		local ready = Style.button(buttons, if tradeState.ready then "Ready! (tap to wait)" else "Ready", function()
+			send("trade_ready")
+		end, if tradeState.ready then "good" else "primary")
+		ready.Position, ready.Size = UDim2.fromOffset(12, 10), UDim2.new(0.5, -18, 0, 44)
+		local cancel = Style.button(buttons, "Cancel trade", function()
+			send("trade_cancel")
+		end, "ghost")
+		cancel.Position, cancel.Size = UDim2.new(0.5, 6, 0, 10), UDim2.new(0.5, -18, 0, 44)
+		local rows = math.max(1, math.ceil(#profile.animals / 5))
+		local own = tradeSection("Your animals (training ones cannot be traded)", 4, 50 + rows * 158)
+		for k, a in profile.animals do
+			local picked = table.find(tradeState.mine, a.id) ~= nil
+			local label = nameOf(a) .. (if a.at then " (training)" else "")
+			tradeCell(
+				own,
+				k,
+				a,
+				label,
+				if a.at
+					then nil
+					else function()
+						send("trade_put", a.id)
+					end,
+				picked
+			)
+		end
+		return
+	end
+	Style.chip(trade.chips, "Swap animals with a player in this server")
+	if invite and os.clock() - invite.at < 30 then
+		local card = Style.card(trade.body, UDim2.new(1, -20, 0, 74), C.gold)
+		card.LayoutOrder = 0
+		local t = Style.text(card, `{invite.name} wants to trade`, 18, C.text, UDim2.new(0.5, 0, 0, 24))
+		t.Position = UDim2.fromOffset(14, 25)
+		local yes = Style.button(card, "Accept", function()
+			local from = invite.from
+			invite = nil
+			send("trade_answer", from, true)
+		end, "good")
+		yes.Position, yes.Size = UDim2.new(0.5, 0, 0, 14), UDim2.new(0.25, -12, 0, 44)
+		local no = Style.button(card, "Decline", function()
+			local from = invite.from
+			invite = nil
+			send("trade_answer", from, false)
+			redraw.trade()
+		end, "ghost")
+		no.Position, no.Size = UDim2.new(0.75, 0, 0, 14), UDim2.new(0.25, -12, 0, 44)
+	end
+	local others = 0
+	for _, other in Players:GetPlayers() do
+		if other ~= player then
+			others += 1
+			local card = Style.card(trade.body, UDim2.new(1, -20, 0, 64))
+			card.LayoutOrder = others
+			local t = Style.text(card, other.DisplayName, 18, C.text, UDim2.new(0.6, 0, 0, 24))
+			t.Position = UDim2.fromOffset(14, 20)
+			local ask = Style.button(card, "Ask to trade", function()
+				send("trade_ask", other.UserId)
+				Ui.toast(screen, `Asked {other.DisplayName} to trade`, 2)
+			end, "primary")
+			ask.Position, ask.Size = UDim2.new(0.6, 0, 0, 10), UDim2.new(0.4, -12, 0, 44)
+		end
+	end
+	if others == 0 then
+		local card = Style.card(trade.body, UDim2.new(1, -20, 0, 64))
+		card.LayoutOrder = 1
+		local t = Style.text(card, "Nobody else is in this server yet.", 16, C.muted, UDim2.new(1, -28, 0, 24))
+		t.Position = UDim2.fromOffset(14, 20)
 	end
 end
 
@@ -1379,6 +1533,37 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			`Wave {payload.wave}: {if payload.won then "your team won" else "your team lost"} in {took}s ({payload.attacks} attacks) against {payload.foes}`,
 			7
 		)
+	elseif kind == "trade_invite" then
+		invite = { from = payload.from, name = payload.name, at = os.clock() }
+		Ui.toast(screen, `{payload.name} wants to trade: open Trade`, 5)
+		tradeDot.Text, tradeDot.Parent.Visible = "!", true
+		if openName == "trade" then
+			redraw.trade()
+		end
+	elseif kind == "trade" then
+		if payload.closed then
+			tradeState = nil
+			local said = ({
+				done = "Trade done! Your new animals are in your barn.",
+				declined = "They said no to the trade",
+				cancelled = "The trade was cancelled",
+				left = "The other player left: the trade is off",
+				failed = "The trade could not finish",
+			})[payload.closed]
+			if said then
+				Ui.toast(screen, said, 4)
+			end
+		else
+			local opening = tradeState == nil
+			tradeState = payload
+			if opening and openName ~= "trade" then
+				show("trade")
+				return
+			end
+		end
+		if openName == "trade" then
+			redraw.trade()
+		end
 	elseif kind == "collected" then
 		Ui.toast(
 			screen,

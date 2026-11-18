@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-087",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Player trading between two players in one server (up to four animals each, both ready to swap) and the admin menu limited to SHANNON's account in every server (decision 0084).",
+  "inputs": [
+    "docs/decisions/0038-animal-stations-admin-menu.md"
+  ],
+  "dependencies": [
+    "STATION-086"
+  ],
+  "files": [
+    "src/shared/StationTrade.luau",
+    "tests/StationTrade.spec.luau",
+    "tests/run.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0084-animal-stations-trading-admin-owner.md",
+    "studio/tasks/STATION-087.json"
+  ],
+  "tests": [
+    "StationTrade.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Only UserId 96807256 is admin, in Studio and live",
+    "A trade moves the offered animals both ways only when both are ready, and refuses training animals, a full Barn or more than four",
+    "Leaving or cancelling ends a trade with nothing moved"
+  ],
+  "verification": "Lune 721/721 (StationTrade, 5 new cases: offer limits, swap with new ids and kept coats, refusals that change nothing, the Barn, the Titan's slot), stylua and selene clean. Studio: local build, stamp `dev`, 2026-11-18: Admin true for SHANNON's account; the Trade button on the bar; trade_ask to oneself refused (trade_nobody), trade_put with no trade (trade_none), an unknown answer (trade_expired); the empty Trade sheet and a trade sheet sent by hand (a Diamond Giraffe for a Lion) looked at in screens. Not checked: a real trade between two players (Studio has one; needs the test place or a two-player Studio test), the saves of a trade online.",
+  "output_artifacts": [
+    "src/shared/StationTrade.luau"
+  ],
+  "risk_level": "high",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'before this can we make player trading and the admin menu accessible to me only in all lobbies'. The decision record's 'Known risk' is accepted for a private test only."
+}

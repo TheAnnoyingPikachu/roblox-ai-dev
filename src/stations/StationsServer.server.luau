@@ -61,8 +61,11 @@ end
 local owners: { [number]: Player } = {}
 
 -- The admin menu (decision 0038) is for the game's owner, and for anyone running it in Studio.
+-- The admin menu is SHANNON's only, in every server and in Studio (decision 0084): not the experience's
+-- owner, which would be a group if it is ever published under one.
+local ADMINS: { [number]: boolean } = { [96807256] = true }
 local function isAdmin(player: Player): boolean
-	return RunService:IsStudio() or (game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId)
+	return ADMINS[player.UserId] == true
 end
 
 local function ranchOf(player: Player): number?
@@ -130,6 +133,7 @@ local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local Rng = require(Shared:WaitForChild("Rng"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
+local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 
 local rng = Rng.seed(os.time(), Random.new():NextInteger(1, 2 ^ 30))
@@ -314,6 +318,76 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 	return started, why
 end
 
+-- Trading (decision 0084): two players in this server swap animals. A trade lives here, not in the
+-- saves: each side puts in up to StationTrade.MAX animals, any change makes both unready, and when both
+-- are ready the server checks both saves again and swaps.
+type Trade = { a: Player, b: Player, offer: { [Player]: { number } }, ready: { [Player]: boolean } }
+local trades: { [Player]: Trade } = {}
+local invites: { [Player]: { from: Player, at: number } } = {} -- by the player who was asked
+local INVITE_SECONDS = 30
+
+local function partner(t: Trade, player: Player): Player
+	return if t.a == player then t.b else t.a
+end
+
+local function pushTrade(t: Trade)
+	for _, me in { t.a, t.b } do
+		local them = partner(t, me)
+		local theirs = {}
+		local pt = saves.get(them)
+		if pt then
+			for _, a in StationTrade.copies(pt, t.offer[them]) do
+				table.insert(theirs, { s = a.s, v = a.v, rainbow = a.rainbow, stats = a.stats, trained = a.trained })
+			end
+		end
+		remotes.fx(me, "trade", {
+			with = them.DisplayName,
+			mine = t.offer[me],
+			theirs = theirs,
+			ready = t.ready[me] == true,
+			theyReady = t.ready[them] == true,
+		})
+	end
+end
+
+local function closeTrade(t: Trade, why: string)
+	trades[t.a], trades[t.b] = nil, nil
+	for _, who in { t.a, t.b } do
+		if who.Parent then
+			remotes.fx(who, "trade", { closed = why })
+		end
+	end
+end
+
+local function finishTrade(t: Trade): (boolean, string?)
+	local pa, pb = saves.get(t.a), saves.get(t.b)
+	if pa == nil or pb == nil then
+		closeTrade(t, "failed")
+		return false, "loading"
+	end
+	local giveA, giveB = table.clone(t.offer[t.a]), table.clone(t.offer[t.b])
+	local getA, getB = StationTrade.copies(pb, giveB), StationTrade.copies(pa, giveA)
+	-- dry runs on copies first: neither save changes unless both can
+	local _, okA, codeA = StationTrade.swap(StationProgress.sanitize(pa, os.time()), giveA, getA)
+	local _, okB, codeB = StationTrade.swap(StationProgress.sanitize(pb, os.time()), giveB, getB)
+	if not (okA and okB) then
+		t.ready[t.a], t.ready[t.b] = false, false
+		pushTrade(t)
+		return false, codeA or codeB
+	end
+	-- shortcut: the two saves are written separately, so a server crash or a failed write between them
+	-- could duplicate or lose an animal; add Egg Garden's ledger and heal (src/garden/Trades.luau) before
+	-- a public release (decision 0084).
+	saves.apply(t.a, function(q)
+		return (StationTrade.swap(q, giveA, getA))
+	end)
+	saves.apply(t.b, function(q)
+		return (StationTrade.swap(q, giveB, getB))
+	end)
+	closeTrade(t, "done")
+	return true, nil
+end
+
 local router = Router.new({
 	ready = function(player)
 		return saves ~= nil and saves.isLoaded(player)
@@ -328,6 +402,90 @@ local router = Router.new({
 			end,
 		},
 		buy = { args = { Payload.enum(ids(StationConfig.EGGS)) }, handler = buy },
+		trade_ask = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, userId: number)
+				local target = Players:GetPlayerByUserId(userId)
+				if target == nil or target == player or not saves.isLoaded(target) then
+					return false, "trade_nobody"
+				elseif trades[player] or trades[target] then
+					return false, "trade_busy"
+				end
+				invites[target] = { from = player, at = os.clock() }
+				remotes.fx(target, "trade_invite", { from = player.UserId, name = player.DisplayName })
+				return true, nil
+			end,
+		},
+		trade_answer = {
+			args = { Payload.int({ min = 1, max = 1e12 }), Payload.boolean() },
+			handler = function(player, userId: number, yes: boolean)
+				local invite = invites[player]
+				if
+					invite == nil
+					or invite.from.UserId ~= userId
+					or invite.from.Parent == nil
+					or os.clock() - invite.at > INVITE_SECONDS
+				then
+					return false, "trade_expired"
+				end
+				invites[player] = nil
+				if not yes then
+					remotes.fx(invite.from, "trade", { closed = "declined" })
+					return true, nil
+				elseif trades[player] or trades[invite.from] then
+					return false, "trade_busy"
+				end
+				local t: Trade =
+					{ a = invite.from, b = player, offer = { [invite.from] = {}, [player] = {} }, ready = {} }
+				trades[t.a], trades[t.b] = t, t
+				pushTrade(t)
+				return true, nil
+			end,
+		},
+		trade_put = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, id: number)
+				local t, p = trades[player], saves.get(player)
+				if t == nil or p == nil then
+					return false, "trade_none"
+				end
+				local offer, ok, code = StationTrade.toggle(p, t.offer[player], id)
+				if not ok then
+					return false, code
+				end
+				t.offer[player] = offer
+				t.ready[t.a], t.ready[t.b] = false, false -- any change: both look again
+				pushTrade(t)
+				return true, nil
+			end,
+		},
+		trade_ready = {
+			args = {},
+			handler = function(player)
+				local t = trades[player]
+				if t == nil then
+					return false, "trade_none"
+				elseif #t.offer[t.a] + #t.offer[t.b] == 0 then
+					return false, "trade_empty"
+				end
+				t.ready[player] = not t.ready[player]
+				if t.ready[t.a] and t.ready[t.b] then
+					return finishTrade(t)
+				end
+				pushTrade(t)
+				return true, nil
+			end,
+		},
+		trade_cancel = {
+			args = {},
+			handler = function(player)
+				local t = trades[player]
+				if t then
+					closeTrade(t, "cancelled")
+				end
+				return true, nil
+			end,
+		},
 		team = {
 			args = { Payload.int({ min = 1, max = 1e12 }) },
 			handler = function(player, id: number)
@@ -586,6 +744,11 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	local t = trades[player]
+	if t then
+		closeTrade(t, "left")
+	end
+	invites[player] = nil
 	looks(player):Destroy()
 	WaveShow.clear(player)
 	readyAt[player] = nil
