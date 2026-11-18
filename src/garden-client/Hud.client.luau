@@ -132,7 +132,7 @@ local items: { UiKit.StripItem } = {
 	},
 	{
 		icon = "paw",
-		label = "CREATURES",
+		label = "PETS",
 		colour = ACCENT.Creatures,
 		main = true,
 		onClick = function()
@@ -235,7 +235,7 @@ end
 local function inviteDot()
 	local t = ClientState.tradeState
 	local invited = t ~= nil and t.state == "proposed" and type(t.b) == "table" and t.b.user == player.UserId
-	badge("CREATURES", if invited then 0 else nil)
+	badge("PETS", if invited then 0 else nil)
 end
 ClientState.TradeChanged:Connect(inviteDot)
 
