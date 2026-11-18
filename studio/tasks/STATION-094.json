@@ -1,0 +1,28 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-094",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "research",
+  "objective": "A handoff for the next session: where the repo and Studio are, what STATION-085 to 093 did, what waits on SHANNON, the open items and how the work was checked in Studio.",
+  "inputs": [],
+  "dependencies": [
+    "STATION-093"
+  ],
+  "files": [
+    "docs/production/game7-session-handoff-2026-11-18.md",
+    "studio/tasks/STATION-094.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Names the last commit, the next free task and decision numbers, and what waits on SHANNON",
+    "No secrets"
+  ],
+  "verification": "Written from the session and checked against git log, CI (2afd908 success) and the task and decision files, 2026-11-18.",
+  "output_artifacts": [
+    "docs/production/game7-session-handoff-2026-11-18.md"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'after this make a handoff please'."
+}
