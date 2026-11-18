@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-089",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The visual overhaul of decision 0085, steps 1 and 2: the new look (terrain and part colours, grass blades, lighting) in code, faceted tree, pine and bush models in place of the plastic balls, path borders, water edges, rocks in clusters.",
+  "inputs": [
+    "docs/decisions/0085-animal-stations-visual-overhaul-concept.md"
+  ],
+  "dependencies": [
+    "STATION-088"
+  ],
+  "files": [
+    "tools/blender/stations/assets/scenery.py",
+    "assets/stations/scenery_*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/World.luau",
+    "src/stations/Valley.luau",
+    "src/stations/Ranch.luau",
+    "src/stations/Creatures.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0085-animal-stations-visual-overhaul-concept.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-089.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The game looks like decision 0085's after",
+    "Trees, pines and bushes are the faceted models, with the old parts as the fallback",
+    "No frame-rate drop that a phone notices (checked on the test place)"
+  ],
+  "verification": "PENDING",
+  "output_artifacts": [
+    "src/stations/World.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'commence step one and two, go ahead with it all'."
+}

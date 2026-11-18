@@ -6812,5 +6812,161 @@
       119,
       134
     ]
+  },
+  "scenery_tree_1": {
+    "fbx": "build/blender/stations/scenery_tree_1.fbx",
+    "png": "build/blender/stations/scenery_tree_1.png",
+    "preview": "build/blender/stations/previews/scenery_tree_1.png",
+    "size_studs": [
+      12.42,
+      16.05,
+      10.51
+    ],
+    "tris": 152,
+    "parts": {
+      "scenery_tree_1_body": 152
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A broad faceted tree, mid green.",
+    "glow": {},
+    "centres": {
+      "scenery_tree_1_body": [
+        0.0,
+        8.027,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_tree_2": {
+    "fbx": "build/blender/stations/scenery_tree_2.fbx",
+    "png": "build/blender/stations/scenery_tree_2.png",
+    "preview": "build/blender/stations/previews/scenery_tree_2.png",
+    "size_studs": [
+      12.92,
+      16.17,
+      10.55
+    ],
+    "tris": 152,
+    "parts": {
+      "scenery_tree_2_body": 152
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A broad faceted tree, light green.",
+    "glow": {},
+    "centres": {
+      "scenery_tree_2_body": [
+        0.0,
+        8.084,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_tree_3": {
+    "fbx": "build/blender/stations/scenery_tree_3.fbx",
+    "png": "build/blender/stations/scenery_tree_3.png",
+    "preview": "build/blender/stations/previews/scenery_tree_3.png",
+    "size_studs": [
+      7.6,
+      16.53,
+      6.82
+    ],
+    "tris": 100,
+    "parts": {
+      "scenery_tree_3_body": 100
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A tall narrow faceted tree, cool green.",
+    "glow": {},
+    "centres": {
+      "scenery_tree_3_body": [
+        0.0,
+        8.263,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_pine_1": {
+    "fbx": "build/blender/stations/scenery_pine_1.fbx",
+    "png": "build/blender/stations/scenery_pine_1.png",
+    "preview": "build/blender/stations/previews/scenery_pine_1.png",
+    "size_studs": [
+      7.67,
+      14.03,
+      7.86
+    ],
+    "tris": 68,
+    "parts": {
+      "scenery_pine_1_body": 68
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A faceted pine, four tiers.",
+    "glow": {},
+    "centres": {
+      "scenery_pine_1_body": [
+        0.0,
+        7.014,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_pine_2": {
+    "fbx": "build/blender/stations/scenery_pine_2.fbx",
+    "png": "build/blender/stations/scenery_pine_2.png",
+    "preview": "build/blender/stations/previews/scenery_pine_2.png",
+    "size_studs": [
+      7.84,
+      11.62,
+      7.77
+    ],
+    "tris": 56,
+    "parts": {
+      "scenery_pine_2_body": 56
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A faceted pine, three tiers.",
+    "glow": {},
+    "centres": {
+      "scenery_pine_2_body": [
+        0.0,
+        5.812,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_bush_1": {
+    "fbx": "build/blender/stations/scenery_bush_1.fbx",
+    "png": "build/blender/stations/scenery_bush_1.png",
+    "preview": "build/blender/stations/previews/scenery_bush_1.png",
+    "size_studs": [
+      4.62,
+      2.59,
+      3.73
+    ],
+    "tris": 180,
+    "parts": {
+      "scenery_bush_1_body": 180
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A low faceted bush with a few flowers.",
+    "glow": {},
+    "centres": {
+      "scenery_bush_1_body": [
+        0.0,
+        1.297,
+        -0.0
+      ]
+    },
+    "joints": {}
   }
 }
