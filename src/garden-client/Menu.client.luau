@@ -1453,37 +1453,178 @@ local function claimAll(track: string, n: number)
 	claiming = false
 end
 
+-- A looping tween, skipped under ReducedMotion.
+local function loop(inst: Instance, seconds: number, goal: { [string]: any })
+	if not GuiService.ReducedMotionEnabled then
+		TweenService
+			:Create(inst, TweenInfo.new(seconds, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), goal)
+			:Play()
+	end
+end
+
+-- The banner over a login track (owner, 2026-11-07: "make the trackers pop"): the egg, the title and
+-- a bar of sign-in days with a marker per reward, so the goal reads at a glance.
+local function trackBanner(body: Instance, track: string, t: Track): any
+	local day = today()
+	local week = track == "week"
+	local eggSlot, last = t.slots[#t.slots], t.slots[#t.slots].count
+	for _, s in t.slots do
+		if s.egg then
+			eggSlot = s
+			break
+		end
+	end
+	local top = row(body, 150, 1)
+	top.BackgroundColor3 = UI.WHITE
+	new("UIGradient", {
+		Color = if week then ColorSequence.new(UI.CORAL, UI.PINK) else ColorSequence.new(UI.LILAC, UI.SKY),
+		Rotation = 0,
+		Parent = top,
+	})
+	local eggArea = new("Frame", {
+		Name = "IconArea",
+		AnchorPoint = Vector2.new(0, 0.5),
+		Position = UDim2.new(0, 10, 0.5, 0),
+		Size = UDim2.fromOffset(118, 118),
+		BackgroundColor3 = UI.WHITE,
+		BackgroundTransparency = 0.55,
+		Parent = top,
+	}, { new("UICorner", { CornerRadius = UDim.new(1, 0) }), new("UIStroke", { Color = UI.WHITE, Thickness = 3 }) })
+	eggIcon({ icon = eggArea } :: any, if week then "weekly" else "monthly", 84)
+	loop(new("UIScale", { Parent = eggArea }), 0.9, { Scale = 1.06 })
+	local monday = (MetaRules.weekOf(day) * 7 - 3) * 86400 -- weeks start on Monday, UTC
+	local period = if week
+		then `Week of {tonumber(os.date("!%d", monday))} {os.date("!%b", monday)}`
+		else tostring(os.date("!%B", day * 86400))
+	text(top, if week then "WEEKLY EGG" else "MONTHLY EGG", 34, UI.WHITE, {
+		Position = UDim2.fromOffset(142, 12),
+		Size = UDim2.new(1, -340, 0, 40),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Outline = UI.INK,
+		OutlineThickness = 2.5,
+	})
+	local got = t.days >= eggSlot.count
+	text(
+		top,
+		if got
+			then `{period}  ·  egg unlocked! Bonus rewards keep coming`
+			else `{period}  ·  {eggSlot.count - t.days} more sign-in{if eggSlot.count - t.days == 1
+				then ""
+				else "s"} to the egg`,
+		20,
+		UI.WHITE,
+		{
+			Position = UDim2.fromOffset(142, 54),
+			Size = UDim2.new(1, -340, 0, 24),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Outline = UI.INK,
+			OutlineThickness = 1.5,
+		}
+	)
+	-- The bar: days signed in out of the last reward's count, a dot per reward, the egg's dot gold.
+	local bar = new("Frame", {
+		Position = UDim2.fromOffset(142, 94),
+		Size = UDim2.new(1, -340, 0, 26),
+		BackgroundColor3 = UI.WHITE,
+		BackgroundTransparency = 0.35,
+		Parent = top,
+	}, { new("UICorner", { CornerRadius = UDim.new(1, 0) }), new("UIStroke", { Color = UI.WHITE, Thickness = 2 }) })
+	new("Frame", {
+		Size = UDim2.fromScale(math.clamp(t.days / last, 0, 1), 1),
+		BackgroundColor3 = UI.WHITE,
+		Parent = bar,
+	}, {
+		new("UICorner", { CornerRadius = UDim.new(1, 0) }),
+		new("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(255, 226, 120), UI.GOLD) }),
+	})
+	for _, s in t.slots do
+		local isEgg = s == eggSlot
+		local size = if isEgg then 30 else 16
+		new("Frame", {
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(s.count / last, if s.count == last then -size / 2 else 0, 0.5, 0),
+			Size = UDim2.fromOffset(size, size),
+			BackgroundColor3 = if isEgg then UI.GOLD elseif t.days >= s.count then UI.LEAF else UI.WHITE,
+			ZIndex = 3,
+			Parent = bar,
+		}, { new("UICorner", { CornerRadius = UDim.new(1, 0) }), new("UIStroke", { Color = UI.INK, Thickness = 2 }) })
+	end
+	text(top, `{t.days} / {last} days`, 18, UI.WHITE, {
+		Position = UDim2.fromOffset(142, 122),
+		Size = UDim2.new(1, -340, 0, 22),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Outline = UI.INK,
+		OutlineThickness = 1.5,
+	})
+	local claim = action(
+		top,
+		if t.ready > 1 then "CLAIM ALL" else "CLAIM",
+		UI.LEAF,
+		t.ready > 0 and not claiming,
+		function()
+			task.spawn(claimAll, track, t.ready)
+		end,
+		1,
+		170
+	)
+	if t.ready > 0 then
+		-- Named Pop so a press reuses it (UiKit.pop) instead of stacking a second UIScale.
+		loop(new("UIScale", { Name = "Pop", Parent = claim }), 0.5, { Scale = 1.08 })
+	end
+	return eggSlot
+end
+
 local function loginTab(p: UiKit.Panel, track: string)
 	local body = p.body
 	local t = trackOf(track)
-	local day = today()
-	local top = row(body, 72, 1)
-	local monday = (MetaRules.weekOf(day) * 7 - 3) * 86400 -- weeks start on Monday, UTC
-	local headline = if track == "week"
-		then `Week of Monday {tonumber(os.date("!%d", monday))} {os.date("!%b", monday)}`
-		else tostring(os.date("!%B", day * 86400))
-	label(top, 16, 8, -260, 28, `{headline}  ·  signed in {t.days} day{if t.days == 1 then "" else "s"}`)
-	label(
-		top,
-		16,
-		40,
-		-260,
-		22,
-		if track == "week"
-			then "Sign in on any 5 days this week for the Weekly Egg."
-			else "Sign in on any 18 days this month for the Monthly Egg.",
-		UI.INK_SOFT
-	)
-	action(top, if t.ready > 1 then "CLAIM ALL" else "CLAIM", UI.LEAF, t.ready > 0 and not claiming, function()
-		task.spawn(claimAll, track, t.ready)
-	end, 1, 170)
+	local eggSlot = trackBanner(body, track, t)
 	local grid = gridBox(body, 2, 96, 196) -- 20 over the reward card: a 3-line caption at 12 px (QA M2)
+	local afterEgg = false
 	for i, slot in t.slots do
 		local claimed = i <= t.claimed
 		local ready = not claimed and i <= t.claimed + t.ready
-		local stroke = if slot.egg then UI.GOLD elseif ready then UI.LEAF else Color3.fromRGB(240, 222, 230)
+		local bonus = afterEgg
+		afterEgg = afterEgg or slot == eggSlot
+		local stroke = if slot.egg
+			then UI.GOLD
+			elseif ready then UI.LEAF
+			elseif bonus then UI.LILAC
+			else Color3.fromRGB(240, 222, 230)
 		local c = UiKit.card(grid, "reward", stroke)
 		c.frame.LayoutOrder = i
+		local cardBody = c.icon.Parent :: Frame
+		local outline = cardBody:FindFirstChildOfClass("UIStroke")
+		if slot.egg then
+			-- Gold card with a shine sweeping across it.
+			cardBody.BackgroundColor3 = UI.WHITE
+			local shine = new("UIGradient", {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 222, 130)),
+					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 250, 225)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 222, 130)),
+				}),
+				Rotation = 25,
+				Offset = Vector2.new(-0.6, 0),
+				Parent = cardBody,
+			})
+			loop(shine, 1.6, { Offset = Vector2.new(0.6, 0) })
+			if outline then
+				outline.Thickness = 5
+			end
+			cornerTag(c, "EGG", UI.GOLD)
+		elseif bonus then
+			cardBody.BackgroundColor3 = Color3.fromRGB(240, 232, 255)
+			cornerTag(c, "BONUS", UI.LILAC)
+		end
+		if ready then
+			cardBody.BackgroundColor3 = if slot.egg then UI.WHITE else Color3.fromRGB(228, 248, 226)
+			if outline then
+				outline.Thickness = 5
+				loop(outline, 0.5, { Color = UI.WHITE })
+			end
+		elseif claimed then
+			cardBody.BackgroundTransparency = 0.35
+		end
 		local caption: string
 		if slot.egg then
 			eggIcon(c, slot.egg, 54)
