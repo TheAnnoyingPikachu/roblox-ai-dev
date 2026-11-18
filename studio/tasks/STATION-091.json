@@ -3,7 +3,7 @@
   "task_id": "STATION-091",
   "owner": "A01",
   "verifier": "CI",
-  "task_type": "feature",
+  "task_type": "implementation",
   "objective": "Build decision 0086's look round the training grounds: the track's floor without grass blades, every floor but the pool's frayed into the land, a border of bushes, rocks and flowers on each rim and woods up the slopes behind. Also fix `calm` in World.luau, whose last row had no width and stopped the world build (STATION-089).",
   "inputs": [
     "docs/decisions/0086-animal-stations-training-grounds-concept.md"
@@ -20,7 +20,7 @@
     "studio/tasks/STATION-091.json"
   ],
   "tests": [
-    "tests/ValleyMap.spec.luau"
+    "ValleyMap.spec.luau"
   ],
   "acceptance_criteria": [
     "No grass blades through the track",
