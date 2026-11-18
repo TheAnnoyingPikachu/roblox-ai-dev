@@ -32,6 +32,9 @@ local MATERIAL: { [string]: Enum.Material } = {
 	guard = M.Limestone,
 }
 
+local LEDGE = { Color3.fromRGB(150, 142, 132), Color3.fromRGB(136, 128, 120), Color3.fromRGB(164, 154, 140) } -- the mountains' greys
+local GRASS = Color3.fromRGB(108, 168, 72)
+
 -- The colours of the land's materials: the animals' world is bright and flat-toned.
 function Valley.colours(terrain: Terrain)
 	-- decision 0085: warm grey stone, deeper greens, a deeper blue water
@@ -141,7 +144,6 @@ export type Kit = {
 	pine: (Instance, Vector3, number, Random) -> (),
 	rock: (Instance, Vector3, number, Random) -> (),
 	bush: (Instance, Vector3, number, Random) -> (),
-	flowers: (Instance, Vector3, Random, number, number) -> (),
 }
 
 -- Whether (x, z) in the plan is clear for a tree round a training ground: off the paths, the stream,
@@ -166,6 +168,41 @@ local function wild(x: number, z: number, h: number): boolean
 	local ox, oz = math.cos(math.rad(den.deg)), math.sin(math.rad(den.deg))
 	local along, across = x * ox + z * oz, math.abs(z * ox - x * oz)
 	return not (along > den.face - 12 and along < den.back + 40 and across < den.half + 30)
+end
+
+-- The rock round the training grounds (decision 0087), on a fixed grid: calls `fn(x, z, s, gx, gz)` for
+-- each spot of bare rock clear of everything (`wild`), with its slope `s` over 12 studs and the way
+-- downhill (gx, gz). A spot with `s` under TOP is a grassy top; steeper, it may hold a ledge.
+local TOP = 0.9
+local function rocky(fn: (number, number, number, number, number) -> ())
+	for _, g in ValleyMap.GROUNDS do
+		for r = ValleyMap.PAD + 10, ValleyMap.PAD + 94, 8 do
+			local n = math.floor(2 * math.pi * r / 10)
+			for k = 0, n - 1 do
+				local a = k / n * 2 * math.pi
+				local x, z = g.x + math.cos(a) * r, g.z + math.sin(a) * r
+				local h = ValleyMap.height(x, z)
+				local fine = (math.abs(ValleyMap.height(x + 4, z) - h) + math.abs(ValleyMap.height(x, z + 4) - h)) / 8
+				if h < 100 and ValleyMap.kind(x, z, h, fine) == "rock" and wild(x, z, h) then
+					local gx = (ValleyMap.height(x - 6, z) - ValleyMap.height(x + 6, z)) / 12
+					local gz = (ValleyMap.height(x, z - 6) - ValleyMap.height(x, z + 6)) / 12
+					fn(x, z, math.sqrt(gx * gx + gz * gz), gx, gz)
+				end
+			end
+		end
+	end
+end
+
+-- Turns the rock to grass where it lies nearly flat round the training grounds (decision 0087). Called
+-- after `Valley.write`.
+function Valley.tops(terrain: Terrain, frame: CFrame)
+	rocky(function(x, z, s)
+		if s < TOP then
+			local at = (frame * CFrame.new(x, ValleyMap.height(x, z), z)).Position
+			local box = Region3.new(at - Vector3.new(6, 6, 6), at + Vector3.new(6, 3, 6)):ExpandToGrid(VOXEL)
+			terrain:ReplaceMaterial(box, VOXEL, M.Rock, M.LeafyGrass)
+		end
+	end)
 end
 
 -- Dresses the valley of `frame`: trees and rocks on its slopes, the waterfall behind the spring, a
@@ -205,8 +242,37 @@ function Valley.dress(parent: Instance, frame: CFrame, rng: Random, kit: Kit)
 		end
 	end
 
-	-- round each training ground (decision 0086): a border of bushes, rocks and flowers on its rim, open
-	-- where its path comes in, and woods up the slopes behind (trees where it is gentle, pines steeper)
+	-- the rock round the training grounds (decision 0087): a pine on some grassy tops, and on the steep
+	-- faces stone ledges with grass on them, set into the face so none stands out over a gap
+	rocky(function(x, z, s, gx, gz)
+		if s < TOP then
+			if rng:NextNumber() < 0.3 then
+				kit.pine(parent, on(x, z, -1), rng:NextNumber(1.3, 1.9), rng)
+			end
+		elseif s < 3.5 and rng:NextNumber() < 0.2 then -- about 220 a ranch, three parts each
+			local top = on(x, z)
+			local out = frame:VectorToWorldSpace(Vector3.new(gx, 0, gz)).Unit
+			local w, deep = rng:NextNumber(12, 24), rng:NextNumber(7, 11)
+			local shelf = CFrame.lookAt(top, top + out)
+				* CFrame.Angles(0, 0, math.rad(rng:NextNumber(-4, 4)))
+				* CFrame.new(0, -1.4, deep / 2 - 3) -- mostly into the face: 3 studs stand out
+			Props.part(parent, Vector3.new(w, 3.4, deep), shelf, LEDGE[rng:NextInteger(1, #LEDGE)], M.Slate)
+			local under = shelf * CFrame.new(rng:NextNumber(-2, 2), -2.4, 0.6)
+			Props.part(parent, Vector3.new(w * 0.8, 2.6, deep * 0.8), under, LEDGE[rng:NextInteger(1, #LEDGE)], M.Slate)
+			Props.part(parent, Vector3.new(w - 0.6, 0.7, deep - 0.6), shelf * CFrame.new(0, 2, 0), GRASS, M.Grass)
+			local roll, spot =
+				rng:NextNumber(), (shelf * CFrame.new(rng:NextNumber(-w / 3, w / 3), 2.3, -deep / 2 + 2)).Position
+			if roll < 0.45 then
+				kit.bush(parent, spot, rng:NextNumber(1, 1.5), rng)
+			elseif roll < 0.75 then
+				kit.pine(parent, spot, rng:NextNumber(0.9, 1.4), rng)
+			end
+		end
+	end)
+
+	-- round each training ground (decision 0086): a border of bushes and rocks on its rim, open where its
+	-- path comes in (no flower clumps: twelve parts each), and woods up the slopes behind (trees where it
+	-- is gentle, pines steeper)
 	for _, g in ValleyMap.GROUNDS do
 		local home = math.deg(math.atan2(-g.z, -g.x)) -- the way its path comes in from
 		for a = 0, 359, 9 do
@@ -214,13 +280,10 @@ function Valley.dress(parent: Instance, frame: CFrame, rng: Random, kit: Kit)
 				local r = ValleyMap.PAD + 2 + rng:NextNumber(-3, 5)
 				local x, z = g.x + math.cos(math.rad(a)) * r, g.z + math.sin(math.rad(a)) * r
 				if not ValleyMap.water(x, z, ValleyMap.height(x, z)) and ValleyMap.stream(x, z) > 8 then
-					local roll = rng:NextNumber()
-					if roll < 0.45 then
+					if rng:NextNumber() < 0.6 then
 						kit.bush(parent, on(x, z), rng:NextNumber(1.1, 1.7), rng)
-					elseif roll < 0.7 then
-						kit.rock(parent, on(x, z), rng:NextNumber(2, 4), rng)
 					else
-						kit.flowers(parent, on(x, z), rng, 6, 2.4)
+						kit.rock(parent, on(x, z), rng:NextNumber(2, 4), rng)
 					end
 				end
 			end

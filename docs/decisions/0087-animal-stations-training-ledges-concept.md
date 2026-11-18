@@ -1,6 +1,7 @@
 # 0087: Animal Stations: ledges and grassy tops on the rock round the training grounds (concept)
 
-Status: proposed. Date: 2026-11-18. Task STATION-092.
+Status: accepted (SHANNON, 2026-11-18: "go for it and cut flower clumps now"); built by STATION-093.
+Date: 2026-11-18. Tasks STATION-092, STATION-093.
 
 ## What SHANNON asked
 
@@ -38,6 +39,19 @@ Fact: 229 ledges and 350 grassy tops for one ranch's six areas.
    area, with each shelf pushed further into the face so none floats.
 2. Assumption to check if built: about 230 ledges of 3 parts per ranch (about 2,000 parts for three)
    on top of 0086's; a phone may need fewer.
+
+## Built (STATION-093)
+
+- `Valley.luau`: `rocky` walks a fixed grid of the rock round each ground (10 to 94 studs past its
+  edge) from `ValleyMap`'s heights, not raycasts. Where the slope over 12 studs is under 0.9,
+  `Valley.tops` (called after `Valley.write`) turns the rock to LeafyGrass and `dress` stands a pine on
+  about a third; steeper, up to 3.5, one spot in five gets a ledge set into the face with only 3 studs
+  standing out, so none floats. 641 ledges for three ranches (at one in 2.5 there were 1,307).
+- The flower clumps are gone from the areas' border (SHANNON): bushes and rocks only.
+- Asked at the same time: the whole homestead is LeafyGrass (`calm` to `ValleyMap.HOME`, it was the
+  meadow only), so no blade comes up through a stall, a plot or a path; the tufts along the
+  homestead's dirt paths come one in seven, not one in two.
+- Fact: 23,221 parts in the world in Studio, ranch 1's areas at level 5.
 
 ## Not done
 

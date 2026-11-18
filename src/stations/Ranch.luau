@@ -232,7 +232,7 @@ local function way(f: Instance, where: CFrame, w: number, l: number, paved: bool
 		local edge = Random.new(math.floor(where.Position.X * 7 + where.Position.Z * 13))
 		for z = -l / 2 + 2, l / 2 - 2, 5 do
 			for _, side in { -1, 1 } do
-				if edge:NextNumber() < 0.55 then
+				if edge:NextNumber() < 0.14 then -- a few: more read as a hedge down both sides (SHANNON)
 					local at = where * CFrame.new(side * (w / 2 + 0.3), 0.5, z + edge:NextNumber(-1.5, 1.5))
 					local tuft = HEDGE:Lerp(Color3.fromRGB(150, 196, 90), edge:NextNumber(0, 0.6))
 					part(

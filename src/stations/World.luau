@@ -382,7 +382,8 @@ local function terrain()
 		t:FillBlock(CFrame.new(frame.Position.X, -8, frame.Position.Z), Vector3.new(span, 12, span), M.Grass)
 		Valley.write(t, frame)
 		Valley.den(t, frame)
-		calm(t, frame.Position, ValleyMap.RING + 4) -- the meadow: its pond, fence and ring path
+		Valley.tops(t, frame)
+		calm(t, frame.Position, ValleyMap.HOME) -- the whole homestead: no blades up through a floor or path
 	end
 	calm(t, Vector3.zero, World.PLAZA + 6) -- the hub's plaza floor
 end
@@ -1116,7 +1117,7 @@ local function ranch(root: Instance, i: number, rng: Random)
 	part(f, Vector3.new(1.4, 1.3, 2.2), box * CFrame.new(0, 4, 0), RED, M.SmoothPlastic)
 	part(f, Vector3.new(0.15, 1, 0.5), box * CFrame.new(0.8, 4.5, 0.6), Color3.fromRGB(255, 220, 80), M.SmoothPlastic)
 	-- the valley round it: its trees, waterfall and bridges, and what closes it
-	Valley.dress(f, cf, rng, { tree = tree, pine = pine, rock = rock, bush = bush, flowers = flowers })
+	Valley.dress(f, cf, rng, { tree = tree, pine = pine, rock = rock, bush = bush })
 	valleyRim(f, i, rng)
 end
 
