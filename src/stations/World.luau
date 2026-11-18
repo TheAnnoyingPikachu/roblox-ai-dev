@@ -50,7 +50,7 @@ local PATH = Color3.fromRGB(214, 196, 160)
 local WOOD = Color3.fromRGB(170, 118, 72)
 local WOOD_DARK = Color3.fromRGB(112, 76, 48)
 local BARK = Color3.fromRGB(96, 66, 44)
-local LEAVES = { Color3.fromRGB(96, 180, 80), Color3.fromRGB(120, 196, 90), Color3.fromRGB(80, 160, 90) }
+local LEAVES = { Color3.fromRGB(84, 150, 64), Color3.fromRGB(106, 166, 70), Color3.fromRGB(126, 176, 70) } -- decision 0085
 local FLOWERS = {
 	Color3.fromRGB(255, 140, 185),
 	Color3.fromRGB(255, 225, 100),
@@ -60,7 +60,7 @@ local FLOWERS = {
 	Color3.fromRGB(140, 200, 255),
 }
 local WARM = Color3.fromRGB(255, 210, 150)
-local GRASS = Color3.fromRGB(112, 170, 80) -- terrain grass, and the parts that continue it
+local GRASS = Color3.fromRGB(108, 168, 72) -- terrain grass, and the parts that continue it (decision 0085)
 local PINE = { Color3.fromRGB(50, 124, 82), Color3.fromRGB(62, 140, 92) }
 
 local EGG_LOOK: { [string]: { body: Color3, spot: Color3 } } = {
@@ -169,8 +169,28 @@ local function lamp(parent: Instance, base: Vector3)
 	glow(head, WARM, 18, 1.2)
 end
 
--- Round cartoon tree: trunk plus two or three leaf balls.
-local function tree(parent: Instance, base: Vector3, rng: Random, scale: number)
+-- Scenery models (decision 0085): a faceted tree, pine or bush stood at `base`, turned at random, at
+-- `scale`. It loads in the background (the first of a kind has to), so nothing waits; until it has (or
+-- if it never does), `fallback` builds the old one of parts. A tree keeps an unseen trunk to bump into.
+local function standModel(
+	parent: Instance,
+	kinds: { string },
+	base: Vector3,
+	scale: number,
+	rng: Random,
+	fallback: () -> ()
+)
+	local name = kinds[rng:NextInteger(1, #kinds)]
+	local at = CFrame.new(base) * CFrame.Angles(0, rng:NextNumber(0, math.pi * 2), 0)
+	task.spawn(function()
+		if Creatures.still(name, at, scale, parent) == nil then
+			fallback()
+		end
+	end)
+end
+
+-- Round cartoon tree: trunk plus two or three leaf balls (the fallback of the faceted ones).
+local function ballTree(parent: Instance, base: Vector3, rng: Random, scale: number)
 	local h = rng:NextNumber(7, 10) * scale
 	pillar(parent, base, h, 0.9 * scale, BARK, M.Wood)
 	local leaf = LEAVES[rng:NextInteger(1, #LEAVES)]
@@ -185,6 +205,15 @@ local function tree(parent: Instance, base: Vector3, rng: Random, scale: number)
 			M.SmoothPlastic
 		)
 	end
+end
+
+local function tree(parent: Instance, base: Vector3, rng: Random, scale: number)
+	local trunk = pillar(parent, base, 8 * scale, 1.4 * scale, BARK, M.Wood)
+	trunk.Transparency, trunk.Name = 1, "Trunk"
+	local seed = rng:NextInteger(1, 1e6) -- what the fallback would have rolled, without changing `rng`'s sequence
+	standModel(parent, { "scenery_tree_1", "scenery_tree_2", "scenery_tree_3" }, base, scale, rng, function()
+		ballTree(parent, base, Random.new(seed), scale)
+	end)
 end
 
 local function flowers(parent: Instance, centre: Vector3, rng: Random, n: number, spread: number)
@@ -239,7 +268,7 @@ local function pyramid(parent: Instance, base: CFrame, width: number, height: nu
 end
 
 -- A pine: a trunk and three tiers, `s` times the usual size (about 12 studs tall at 1).
-local function pine(parent: Instance, base: Vector3, s: number, rng: Random)
+local function wedgePine(parent: Instance, base: Vector3, s: number, rng: Random)
 	pillar(parent, base, 3 * s, 0.55 * s, BARK, M.Wood)
 	local green = PINE[rng:NextInteger(1, #PINE)]
 	local spin = CFrame.Angles(0, rng:NextNumber(0, 1.5), 0)
@@ -249,7 +278,16 @@ local function pine(parent: Instance, base: Vector3, s: number, rng: Random)
 	end
 end
 
-local function bush(parent: Instance, at: Vector3, s: number, rng: Random)
+local function pine(parent: Instance, base: Vector3, s: number, rng: Random)
+	local trunk = pillar(parent, base, 6 * s, 1.2 * s, BARK, M.Wood)
+	trunk.Transparency, trunk.Name = 1, "Trunk"
+	local seed = rng:NextInteger(1, 1e6)
+	standModel(parent, { "scenery_pine_1", "scenery_pine_2" }, base, s, rng, function()
+		wedgePine(parent, base, s, Random.new(seed))
+	end)
+end
+
+local function ballBush(parent: Instance, at: Vector3, s: number, rng: Random)
 	local green = LEAVES[rng:NextInteger(1, #LEAVES)]
 	for _ = 1, 3 do
 		local off = Vector3.new(rng:NextNumber(-1, 1), 0.8 + rng:NextNumber(0, 0.5), rng:NextNumber(-1, 1)) * s
@@ -257,14 +295,23 @@ local function bush(parent: Instance, at: Vector3, s: number, rng: Random)
 	end
 end
 
--- A boulder: two tilted blocks, about `s` studs across.
+local function bush(parent: Instance, at: Vector3, s: number, rng: Random)
+	local seed = rng:NextInteger(1, 1e6)
+	standModel(parent, { "scenery_bush_1" }, at, s, rng, function()
+		ballBush(parent, at, s, Random.new(seed))
+	end)
+end
+
+-- A boulder: a cluster of tilted blocks, about `s` studs across (decision 0085: three, and a pebble).
 local function rock(parent: Instance, at: Vector3, s: number, rng: Random)
-	for k = 1, 2 do
+	for k = 1, 3 do
 		local size = Vector3.new(rng:NextNumber(0.9, 1.4), rng:NextNumber(0.6, 0.9), rng:NextNumber(0.8, 1.2)) * s / k
 		local turn = CFrame.Angles(rng:NextNumber(-0.3, 0.3), rng:NextNumber(0, 3), rng:NextNumber(-0.3, 0.3))
 		local where = at + Vector3.new((k - 1) * s * 0.8, size.Y * 0.35, (k - 1) * s * 0.3)
 		part(parent, size, CFrame.new(where) * turn, STONE_DARK:Lerp(INK, rng:NextNumber(0.25, 0.5)), M.Slate)
 	end
+	local pebble = at + Vector3.new(-0.7 * s, 0.1 * s, 0.6 * s)
+	part(parent, Vector3.new(0.35, 0.25, 0.3) * s, CFrame.new(pebble), STONE_DARK:Lerp(INK, 0.4), M.Slate)
 end
 
 -- Lighting and sky ---------------------------------------------------------------------------------
@@ -278,24 +325,43 @@ local function effect(className: string, props: { [string]: any })
 end
 
 local function lighting()
-	Lighting.ClockTime = 14
-	Lighting.Brightness = 2.6
-	Lighting.Ambient = Color3.fromRGB(110, 110, 125)
-	Lighting.OutdoorAmbient = Color3.fromRGB(150, 150, 165)
-	Lighting.EnvironmentDiffuseScale = 0.6
-	Lighting.EnvironmentSpecularScale = 0.4
+	-- decision 0085: a later, warmer afternoon, soft haze, gentle grading
+	Lighting.ClockTime = 15.6
+	Lighting.Brightness = 3
+	Lighting.Ambient = Color3.fromRGB(96, 92, 104)
+	Lighting.OutdoorAmbient = Color3.fromRGB(140, 136, 150)
+	Lighting.ShadowSoftness = 0.35
+	Lighting.EnvironmentDiffuseScale = 0.8
+	Lighting.EnvironmentSpecularScale = 0.5
 	Lighting.GlobalShadows = true
 	effect("Atmosphere", {
-		Density = 0.28,
-		Offset = 0.1,
-		Color = Color3.fromRGB(200, 225, 255),
-		Decay = Color3.fromRGB(120, 160, 210),
-		Glare = 0.2,
-		Haze = 1.2,
+		Density = 0.33,
+		Offset = 0.15,
+		Color = Color3.fromRGB(214, 222, 236),
+		Decay = Color3.fromRGB(150, 140, 170),
+		Glare = 0.35,
+		Haze = 1.6,
 	})
-	effect("BloomEffect", { Intensity = 0.25, Size = 20, Threshold = 2.2 })
-	effect("SunRaysEffect", { Intensity = 0.06, Spread = 0.7 })
-	effect("ColorCorrectionEffect", { Saturation = 0.12, Contrast = 0.05, Brightness = 0.02 })
+	effect("BloomEffect", { Intensity = 0.35, Size = 24, Threshold = 1.6 })
+	effect("SunRaysEffect", { Intensity = 0.1, Spread = 0.6 })
+	effect("ColorCorrectionEffect", {
+		Saturation = 0.08,
+		Contrast = 0.1,
+		Brightness = 0.01,
+		TintColor = Color3.fromRGB(255, 246, 232),
+	})
+	effect("DepthOfFieldEffect", { FarIntensity = 0.25, FocusDistance = 120, InFocusRadius = 140, NearIntensity = 0 })
+end
+
+-- Blades of grass grow on Grass and up through whatever lies flat on it (a floor, a pond, a path):
+-- under such places the ground is LeafyGrass, which has none (decision 0085). A round `r` about `centre`,
+-- a few studs deep, one 4-stud row at a time (voxels lie on a 4-stud grid).
+local function calm(t: Terrain, centre: Vector3, r: number)
+	for z = -r, r, 4 do
+		local x = math.sqrt(math.max(0, r * r - z * z))
+		local lo, hi = centre + Vector3.new(-x, -8, z), centre + Vector3.new(x, 4, z + 4)
+		t:ReplaceMaterial(Region3.new(lo, hi):ExpandToGrid(4), 4, M.Grass, M.LeafyGrass)
+	end
 end
 
 local function terrain()
@@ -305,6 +371,7 @@ local function terrain()
 	Valley.colours(t)
 	-- voxels snap up: a block whose top is at y = -2 gives a surface at y = 0 (checked in Studio)
 	t:FillBlock(CFrame.new(0, -8, 0), Vector3.new(1500, 12, 1500), M.Grass)
+	-- the short blades of grass are the place's (stations.project.json): a script may not set them
 	local clouds = t:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
 	clouds.Cover, clouds.Density, clouds.Color = 0.45, 0.6, WHITE
 	clouds.Parent = t
@@ -315,7 +382,9 @@ local function terrain()
 		t:FillBlock(CFrame.new(frame.Position.X, -8, frame.Position.Z), Vector3.new(span, 12, span), M.Grass)
 		Valley.write(t, frame)
 		Valley.den(t, frame)
+		calm(t, frame.Position, ValleyMap.RING + 4) -- the meadow: its pond, fence and ring path
 	end
+	calm(t, Vector3.zero, World.PLAZA + 6) -- the hub's plaza floor
 end
 
 -- Plaza ----------------------------------------------------------------------------------------------
@@ -534,6 +603,9 @@ local function paths(root: Instance)
 	local f = folder(root, "Paths")
 	for _, seg in ROADS do
 		local a, b = seg[1], seg[2]
+		-- no blades of grass up through the road (decision 0085): the roads lie along x or z
+		local lo, hi = a:Min(b) - Vector3.new(10, 8, 10), a:Max(b) + Vector3.new(10, 4, 10)
+		Workspace.Terrain:ReplaceMaterial(Region3.new(lo, hi):ExpandToGrid(4), 4, M.Grass, M.LeafyGrass)
 		strip(f, a + Vector3.new(0, 0.3, 0), b + Vector3.new(0, 0.3, 0), 18, 0.6, STONE_DARK, M.Cobblestone)
 		strip(f, a + Vector3.new(0, 0.35, 0), b + Vector3.new(0, 0.35, 0), 15, 0.6, PATH, M.Cobblestone)
 		local dir = (b - a).Unit
@@ -553,7 +625,7 @@ end
 
 -- Mountains and the wave arena ---------------------------------------------------------------------
 
-local ROCK = Color3.fromRGB(128, 124, 138)
+local ROCKS = { Color3.fromRGB(150, 142, 132), Color3.fromRGB(136, 128, 120), Color3.fromRGB(164, 154, 140) } -- decision 0085
 local SNOW = Color3.fromRGB(240, 244, 250)
 local FOOTHILL = Color3.fromRGB(100, 156, 82)
 
@@ -563,7 +635,7 @@ local FOOTHILL = Color3.fromRGB(100, 156, 82)
 -- with pines, and lumps and ledges of rock on the slope.
 local function mountain(parent: Instance, pos: Vector3, foot: number, rng: Random, toward: Vector3?)
 	local r = foot / math.sqrt(1 - 0.25 ^ 2)
-	local stone = ROCK:Lerp(INK, rng:NextNumber(0, 0.18))
+	local stone = ROCKS[rng:NextInteger(1, #ROCKS)]:Lerp(INK, rng:NextNumber(0, 0.12))
 	local core = pos - Vector3.new(0, r * 0.25, 0)
 	local m = ball(parent, core, r * 2, stone, M.Slate)
 	m.Name = "Mountain"
@@ -592,6 +664,10 @@ local function mountain(parent: Instance, pos: Vector3, foot: number, rng: Rando
 	end
 	local function onSlope(a: number, e: number): Vector3 -- a direction out of the dome, e radians up from level
 		return Vector3.new(math.cos(a) * math.cos(e), math.sin(e), math.sin(a) * math.cos(e))
+	end
+	for _ = 1, 4 do -- pines up the slope it shows (decision 0085)
+		local out = onSlope(base + rng:NextNumber(-0.9, 0.9), rng:NextNumber(0.3, 0.6))
+		pine(parent, core + out * (r - 1), rng:NextNumber(1.6, 2.6), rng)
 	end
 	for _ = 1, 3 do -- shoulders: lumps of rock that break up the round slope
 		local out = onSlope(base + rng:NextNumber(-1.2, 1.2), rng:NextNumber(0.45, 0.85))

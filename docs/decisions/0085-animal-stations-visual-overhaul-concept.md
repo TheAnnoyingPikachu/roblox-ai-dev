@@ -1,6 +1,7 @@
 # 0085: Animal Stations: a visual overhaul of the map and landscape (concept)
 
-Status: proposed (a concept for SHANNON; nothing in the game is changed). Date: 2026-11-18. Task STATION-088.
+Status: accepted (SHANNON, 2026-11-18: "commence step one and two, go ahead with it all"); built by STATION-089.
+Date: 2026-11-18. Tasks STATION-088, STATION-089.
 
 ## What SHANNON asked
 
@@ -51,7 +52,21 @@ arena share the lighting, so they change too (not looked at yet).
    things on the ground and cost frame rate on phones; recommended: on, short, checked on a phone).
 2. Whether to go on to step 2, and in what order (recommended: trees first, they are everywhere).
 
+## Built (STATION-089)
+
+- Step 1 in code: the lighting (`World.luau`), the terrain colours (`Valley.colours`), the mountains' three
+  greys, the leaf greens, sandy paths. The grass blades are set on the place (`stations.project.json`:
+  `Terrain.Decoration`, `GrassLength` 0.3): Roblox does not let a game script set them.
+- Blades grow up through anything flat on Grass, so the ground under the hub's plaza and roads and
+  each ranch's meadow is LeafyGrass, coloured close to Grass (`calm` in `World.luau`).
+- Step 2: six faceted models (`assets/scenery.py`, upload-assets run 44383622703): three trees, two
+  pines, a bush. `kit.tree`, `kit.pine` and `kit.bush` stand one at random with an unseen trunk to bump
+  into; the old parts are the fallback when a model does not load. Path edges of grass tufts and stones,
+  foam round the waterfall's foot, pines on the slopes of mountains that face a place, rocks in clusters
+  of three with a pebble. The world went from about 14,700 parts to 9,300 (the trees are models now).
+
 ## Not done
 
-Not looked at: the hub, the arena, a training ground close up, a phone, the frame rate with the grass
-blades on.
+Not looked at: the arena, a training ground close up, a phone, the frame rate with the grass blades on.
+The path-edge tufts read as small blocks from close by; the far round mountains of the hub have no
+new detail.

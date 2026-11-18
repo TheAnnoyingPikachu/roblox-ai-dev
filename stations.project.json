@@ -22,6 +22,9 @@
       }
     },
     "Workspace": {
+      "Terrain": {
+        "$properties": { "Decoration": true, "GrassLength": 0.3 }
+      },
       "SpawnLocation": {
         "$className": "SpawnLocation",
         "$properties": {

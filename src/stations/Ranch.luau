@@ -51,7 +51,7 @@ local WHITE = Color3.new(1, 1, 1)
 local INK = Color3.fromRGB(45, 40, 55)
 local STONE = Color3.fromRGB(150, 146, 140)
 local PATH = Color3.fromRGB(214, 198, 168)
-local DIRT = Color3.fromRGB(168, 128, 86)
+local DIRT = Color3.fromRGB(206, 180, 136) -- sandy (decision 0085)
 local WOOD = Color3.fromRGB(170, 118, 72)
 local WOOD_DARK = Color3.fromRGB(112, 76, 48)
 local BARK = Color3.fromRGB(96, 66, 44)
@@ -226,7 +226,28 @@ end
 -- dirt on a new ranch, then grout with stone slabs on it, each a little different.
 local function way(f: Instance, where: CFrame, w: number, l: number, paved: boolean, rng: Random)
 	if not paved then
-		part(f, V(w, 0.3, l), where * CFrame.new(0, 0.05, 0), DIRT, M.Ground)
+		part(f, V(w, 0.3, l), where * CFrame.new(0, 0.05, 0), DIRT, M.Sand)
+		-- its edges (decision 0085): tufts of grass and a stone now and then, from their own seed so the
+		-- ranch's scattered things fall where they did
+		local edge = Random.new(math.floor(where.Position.X * 7 + where.Position.Z * 13))
+		for z = -l / 2 + 2, l / 2 - 2, 5 do
+			for _, side in { -1, 1 } do
+				if edge:NextNumber() < 0.55 then
+					local at = where * CFrame.new(side * (w / 2 + 0.3), 0.5, z + edge:NextNumber(-1.5, 1.5))
+					local tuft = HEDGE:Lerp(Color3.fromRGB(150, 196, 90), edge:NextNumber(0, 0.6))
+					part(
+						f,
+						V(1.4, 0.9, 1.1) * edge:NextNumber(0.7, 1.2),
+						at * CFrame.Angles(0, edge:NextNumber(0, 3), 0),
+						tuft,
+						M.Grass
+					)
+				elseif edge:NextNumber() < 0.25 then
+					local at = where * CFrame.new(side * (w / 2 + 0.2), 0.3, z)
+					part(f, V(0.9, 0.5, 0.7), at * CFrame.Angles(0.2, edge:NextNumber(0, 3), 0.1), STONE, M.Slate)
+				end
+			end
+		end
 		return
 	end
 	part(f, V(w, 0.3, l), where * CFrame.new(0, 0, 0), STONE, M.Slate)
@@ -677,7 +698,7 @@ function Ranch.render(i: number, levels: { [string]: number })
 	for k = 0, 29 do -- the ring path, in thirty pieces; the meadow inside it is the valley's own grass
 		local piece = out((RING0 + RING1) / 2, k * 12) * CFrame.new(0, 0.08, 0)
 		local colour = if paved then PATH:Lerp(STONE, rng:NextNumber(0, 0.35)) else DIRT
-		part(f, V(RING1 * rad(12) + 0.3, 0.24, RING1 - RING0), piece, colour, if paved then M.Cobblestone else M.Ground)
+		part(f, V(RING1 * rad(12) + 0.3, 0.24, RING1 - RING0), piece, colour, if paved then M.Cobblestone else M.Sand)
 	end
 	-- the team's pen (decision 0080): a rail fence round the meadow, its one gate towards the road in,
 	-- under a "Your Team" board; only the team walks in it (StationsServer's herd)

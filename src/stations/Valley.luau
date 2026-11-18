@@ -34,16 +34,18 @@ local MATERIAL: { [string]: Enum.Material } = {
 
 -- The colours of the land's materials: the animals' world is bright and flat-toned.
 function Valley.colours(terrain: Terrain)
-	terrain:SetMaterialColor(M.Ground, Color3.fromRGB(206, 186, 150))
-	terrain:SetMaterialColor(M.Sand, Color3.fromRGB(236, 220, 172))
-	terrain:SetMaterialColor(M.Rock, Color3.fromRGB(132, 128, 146))
+	-- decision 0085: warm grey stone, deeper greens, a deeper blue water
+	terrain:SetMaterialColor(M.Ground, Color3.fromRGB(176, 150, 112))
+	terrain:SetMaterialColor(M.Sand, Color3.fromRGB(232, 214, 168))
+	terrain:SetMaterialColor(M.Rock, Color3.fromRGB(138, 138, 124))
+	terrain:SetMaterialColor(M.Basalt, Color3.fromRGB(110, 106, 100))
 	terrain:SetMaterialColor(M.Sandstone, Color3.fromRGB(214, 190, 142))
 	terrain:SetMaterialColor(M.Limestone, Color3.fromRGB(226, 210, 172))
-	terrain:SetMaterialColor(M.Slate, Color3.fromRGB(84, 86, 120))
-	terrain:SetMaterialColor(M.LeafyGrass, Color3.fromRGB(150, 198, 118))
-	terrain:SetMaterialColor(M.Snow, Color3.fromRGB(240, 244, 250))
-	terrain.WaterColor = Color3.fromRGB(64, 170, 226)
-	terrain.WaterTransparency, terrain.WaterReflectance = 0.25, 0.3
+	terrain:SetMaterialColor(M.Slate, Color3.fromRGB(118, 120, 112))
+	terrain:SetMaterialColor(M.LeafyGrass, Color3.fromRGB(104, 164, 70)) -- close to Grass: it lies under floors and ponds
+	terrain:SetMaterialColor(M.Snow, Color3.fromRGB(246, 248, 252))
+	terrain.WaterColor = Color3.fromRGB(48, 150, 196)
+	terrain.WaterTransparency, terrain.WaterReflectance = 0.35, 0.45
 	terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0.1, 6
 end
 
@@ -196,6 +198,18 @@ function Valley.dress(parent: Instance, frame: CFrame, rng: Random, kit: Kit)
 			fall.Transparency, fall.CanCollide, fall.CastShadow, fall.Name = 0.3, false, false, "Waterfall"
 		end
 		last = p
+	end
+	for k = 0, 9 do -- foam round the waterfall's foot (decision 0085)
+		local a = k / 10 * math.pi * 2
+		local p = (last :: Vector3) + Vector3.new(math.cos(a) * 6.5, 0.4, math.sin(a) * 6.5)
+		local foam = Props.part(
+			parent,
+			Vector3.new(4.5, 0.6, 3),
+			CFrame.new(p) * CFrame.Angles(0, -a, 0),
+			Color3.fromRGB(240, 248, 255),
+			M.SmoothPlastic
+		)
+		foam.Transparency, foam.CanCollide, foam.CastShadow, foam.Name = 0.25, false, false, "Foam"
 	end
 	local pool = Props.part(parent, Vector3.new(16, 1, 16), CFrame.new(last :: Vector3), Color3.new(1, 1, 1), M.Neon)
 	pool.Transparency, pool.CanCollide, pool.CastShadow, pool.Name = 1, false, false, "Mist"

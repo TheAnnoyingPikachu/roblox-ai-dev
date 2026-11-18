@@ -2637,6 +2637,78 @@ local StationAssets: { [string]: Asset } = {
 		},
 		lid = { 118, 119, 134 },
 	},
+	scenery_tree_1 = {
+		size = { 12.42, 16.05, 10.51 },
+		parts = { "scenery_tree_1_body" },
+		glow = {},
+		centres = {
+			scenery_tree_1_body = { 0, 8.027, 0 },
+		},
+		joints = {},
+		model = 123292686051219,
+		decal = 102931409612427,
+		texture = nil,
+	},
+	scenery_tree_2 = {
+		size = { 12.92, 16.17, 10.55 },
+		parts = { "scenery_tree_2_body" },
+		glow = {},
+		centres = {
+			scenery_tree_2_body = { 0, 8.084, 0 },
+		},
+		joints = {},
+		model = 132456625973878,
+		decal = 92275867250120,
+		texture = nil,
+	},
+	scenery_tree_3 = {
+		size = { 7.6, 16.53, 6.82 },
+		parts = { "scenery_tree_3_body" },
+		glow = {},
+		centres = {
+			scenery_tree_3_body = { 0, 8.263, 0 },
+		},
+		joints = {},
+		model = 82578502607922,
+		decal = 126813226530256,
+		texture = nil,
+	},
+	scenery_pine_1 = {
+		size = { 7.67, 14.03, 7.86 },
+		parts = { "scenery_pine_1_body" },
+		glow = {},
+		centres = {
+			scenery_pine_1_body = { 0, 7.014, 0 },
+		},
+		joints = {},
+		model = 108637925565998,
+		decal = 81193929209993,
+		texture = nil,
+	},
+	scenery_pine_2 = {
+		size = { 7.84, 11.62, 7.77 },
+		parts = { "scenery_pine_2_body" },
+		glow = {},
+		centres = {
+			scenery_pine_2_body = { 0, 5.812, 0 },
+		},
+		joints = {},
+		model = 105744035188546,
+		decal = 88217429109801,
+		texture = nil,
+	},
+	scenery_bush_1 = {
+		size = { 4.62, 2.59, 3.73 },
+		parts = { "scenery_bush_1_body" },
+		glow = {},
+		centres = {
+			scenery_bush_1_body = { 0, 1.297, 0 },
+		},
+		joints = {},
+		model = 79560426232029,
+		decal = 119688942868167,
+		texture = nil,
+	},
 }
 
 return StationAssets

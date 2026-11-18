@@ -187,8 +187,15 @@ describe("StationAssets", function()
 	it("keeps every creature a jointed body under 20,000 triangles a mesh", function()
 		for name, entry in manifest do
 			local kind = string.sub(name, 1, 4)
-			if kind == "egg_" or kind == "hub_" or kind == "area" or kind == "kit_" or kind == "home" then
-				continue
+			if
+				kind == "egg_"
+				or kind == "hub_"
+				or kind == "area"
+				or kind == "kit_"
+				or kind == "home"
+				or kind == "scen"
+			then
+				continue -- scenery_: still props (decision 0085)
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do
 				expect(entry.parts[`{name}_{piece}`] == nil).toBe(false)

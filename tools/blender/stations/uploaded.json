@@ -703,5 +703,35 @@
     "model": null,
     "decal": 136160077733155,
     "texture": null
+  },
+  "scenery_tree_1": {
+    "model": 123292686051219,
+    "decal": 102931409612427,
+    "texture": null
+  },
+  "scenery_tree_2": {
+    "model": 132456625973878,
+    "decal": 92275867250120,
+    "texture": null
+  },
+  "scenery_tree_3": {
+    "model": 82578502607922,
+    "decal": 126813226530256,
+    "texture": null
+  },
+  "scenery_pine_1": {
+    "model": 108637925565998,
+    "decal": 81193929209993,
+    "texture": null
+  },
+  "scenery_pine_2": {
+    "model": 105744035188546,
+    "decal": 88217429109801,
+    "texture": null
+  },
+  "scenery_bush_1": {
+    "model": 79560426232029,
+    "decal": 119688942868167,
+    "texture": null
   }
 }

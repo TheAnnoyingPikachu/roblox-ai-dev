@@ -404,7 +404,14 @@ function Creatures.publishPortraits()
 	folder.Parent = ReplicatedStorage
 	for name, entry in StationAssets do
 		local kind = string.sub(name, 1, 4)
-		if entry.model == nil or kind == "hub_" or kind == "area" or kind == "kit_" or kind == "home" then -- the pieces of places are never pictured
+		if
+			entry.model == nil
+			or kind == "hub_"
+			or kind == "area"
+			or kind == "kit_"
+			or kind == "home"
+			or kind == "scen"
+		then -- the pieces of places, and scenery, are never pictured
 			continue
 		end
 		task.spawn(function()
