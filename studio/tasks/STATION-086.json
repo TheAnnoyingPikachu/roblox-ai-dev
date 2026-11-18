@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-086",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A private test place for Animal Stations (polish plan 1.2): the publish workflow gains a 'stations-staging' target that builds stations.project.json. SHANNON creates the experience, its GitHub environment and key; then the branch is published there for SHANNON and friends to test.",
+  "inputs": [
+    "docs/game-design/game7-polish-plan.md"
+  ],
+  "dependencies": [
+    "STATION-085"
+  ],
+  "files": [
+    ".github/workflows/publish.yml",
+    "studio/tasks/STATION-086.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "A publish run to stations-staging builds and verifies stations.project.json",
+    "The place is private: only SHANNON and the friends SHANNON allows can join"
+  ],
+  "verification": "PENDING: waits on SHANNON's setup (experience, environment variables, key).",
+  "output_artifacts": [
+    ".github/workflows/publish.yml"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'publish to a private test place that me and my friends can test' (approval for the private place, rule 7)."
+}
