@@ -155,6 +155,7 @@ StationRules.FORGE = {
 	jackal = "creature_jackal_forge",
 	lion = "creature_lion_forge",
 	pharaoh_jackal = "creature_jackal_pharaoh_forge",
+	sphinx_jackal = "creature_jackal_sphinx_forge",
 	tortoise = "creature_tortoise_forge",
 } :: { [string]: string }
 function StationRules.assetOf(s: string, v: string?): string

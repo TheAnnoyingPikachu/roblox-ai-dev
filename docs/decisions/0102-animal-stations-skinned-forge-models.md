@@ -95,7 +95,14 @@ Date: 2026-11-19. Task STATION-109.
 - It is a four-legged black jackal with a blue-and-gold striped headdress, gold bands, small folded wings
   and an ankh, with no baseplate and 3,135 triangles. It is the Pharaoh Jackal now, under the same asset
   name, and the purple Anubis is gone from the game (`pharaoh_weights` replaces `anubis_weights`).
-- The ForgeGUI plain jackal (job c93507d6) stays.
+- Then SHANNON: "rig the latest two models as well, the sandy sphinx and regular version. it should only
+  be these three jackals in the game". The Jackal is now the "Low-Poly Anubis with Egyptian Headdress"
+  (artifact d3835931, 22:52): sandy, with a striped headdress, gold bands and a blue-and-gold tail, 3,089
+  triangles, under the old name `creature_jackal_forge`. The jackal made earlier (job c93507d6) is gone.
+  The Sphinx Jackal is the "Sphinx variant" (artifact dd7695be, 22:51): a sandy lion's body with a
+  sphinx's face and striped headdress, 5,271 triangles, `creature_jackal_sphinx_forge`.
+- So the three jackals (the Jackal, the Pharaoh and the Sphinx) are all SHANNON's ForgeGUI models, flat
+  shaded in the lion's polygon style.
 
 ## Facts
 
