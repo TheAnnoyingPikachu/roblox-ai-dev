@@ -182,8 +182,11 @@ describe("StationAssets", function()
 		for _, asset in StationAssets do
 			coats -= if asset.rainbowDecal then 1 else 0
 		end
-		for s in StationRules.FORGE do -- the jointed model a ForgeGUI one replaced keeps its coat as the fallback
-			coats += if StationAssets[`creature_{s}`].rainbowDecal then 1 else 0
+		for id in StationRules.FORGE do -- the jointed model a ForgeGUI one replaced keeps its coat as the fallback
+			local word, s = string.match(id, "^(%l+)_(%l+)$") -- a variant's id is "<word>_<species>"
+			coats += if StationAssets[if word then `creature_{s}_{word}` else `creature_{id}`].rainbowDecal
+				then 1
+				else 0
 		end
 		expect(coats).toBe(0)
 	end)

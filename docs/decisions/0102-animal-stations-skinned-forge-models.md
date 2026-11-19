@@ -71,6 +71,21 @@ Date: 2026-11-19. Task STATION-109.
 - `StationRules.FORGE` now lists the jackal, the lion and the tortoise. Their varieties keep the Blender
   models.
 
+## The Pharaoh Jackal (same day)
+
+- SHANNON made three more jackals on the ForgeGUI site.
+- "anubis jackal" (artifact 4f9138bf) is one jackal: black with purple crystal shards, solid all round, no
+  baseplate, 5,130 triangles. SHANNON chose it as the Pharaoh Jackal ("Pharaoh Jackal (Recommended)").
+  It replaces the black-and-gold Blender look. Its weights are `anubis_weights`, shading flat (the lion's
+  style).
+- The other two held three jackals in a row (plain, Pharaoh, Sphinx) in one model: one on rock bases,
+  one only an eighth as deep as it is long. Neither can be rigged. They are to be made again one jackal
+  per model.
+- `StationRules.FORGE` takes a variant's id as well as a species', so a variant can have a ForgeGUI
+  model: `pharaoh_jackal` is `creature_jackal_pharaoh_forge`.
+- The tortoise's first texture never loaded in Studio (the rainbow coat from the same upload did); a
+  second upload loaded.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

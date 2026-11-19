@@ -2785,6 +2785,27 @@ local StationAssets: { [string]: Asset } = {
 		skinned = true,
 		root = { -0.001, 2.047, 0.535 },
 	},
+	creature_jackal_pharaoh_forge = {
+		size = { 3.53, 6.44, 9.1 },
+		parts = { "creature_jackal_pharaoh_forge_body" },
+		glow = {},
+		centres = {
+			creature_jackal_pharaoh_forge_body = { 0, 3.221, 0 },
+		},
+		joints = {
+			creature_jackal_pharaoh_forge_head = { 0.007, 3.983, 2.943 },
+			creature_jackal_pharaoh_forge_leg_fl = { 0.866, 1.787, 2.18 },
+			creature_jackal_pharaoh_forge_leg_fr = { -0.852, 1.787, 2.18 },
+			creature_jackal_pharaoh_forge_leg_bl = { 0.819, 2.264, -1.639 },
+			creature_jackal_pharaoh_forge_leg_br = { -0.805, 2.264, -1.639 },
+			creature_jackal_pharaoh_forge_tail = { 0.007, 3.505, -2.594 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { 0.007, 3.028, 0.175 },
+	},
 }
 
 return StationAssets
