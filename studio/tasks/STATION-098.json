@@ -9,7 +9,7 @@
     "docs/decisions/0091-animal-stations-savanna-ui.md"
   ],
   "dependencies": [
-    "STATION-097"
+    "STATION-094"
   ],
   "files": [
     "src/stations-client/Style.luau",
