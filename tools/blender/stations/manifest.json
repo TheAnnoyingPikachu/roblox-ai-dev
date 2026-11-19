@@ -748,19 +748,19 @@
     "png": "build/blender/stations/creature_meerkat.png",
     "preview": "build/blender/stations/previews/creature_meerkat.png",
     "size_studs": [
-      1.47,
+      1.61,
       4.82,
-      4.16
+      3.94
     ],
-    "tris": 14056,
+    "tris": 16589,
     "parts": {
-      "creature_meerkat_body": 2293,
-      "creature_meerkat_head": 6879,
-      "creature_meerkat_tail": 1087,
-      "creature_meerkat_leg_fl": 597,
-      "creature_meerkat_leg_fr": 507,
-      "creature_meerkat_leg_bl": 1344,
-      "creature_meerkat_leg_br": 1349
+      "creature_meerkat_body": 3106,
+      "creature_meerkat_head": 8098,
+      "creature_meerkat_tail": 339,
+      "creature_meerkat_leg_fl": 446,
+      "creature_meerkat_leg_fr": 417,
+      "creature_meerkat_leg_bl": 2129,
+      "creature_meerkat_leg_br": 2054
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/forge.py",
@@ -768,71 +768,71 @@
     "glow": {},
     "centres": {
       "creature_meerkat_body": [
-        -0.006,
-        2.344,
-        1.067
+        0.0,
+        2.299,
+        0.984
       ],
       "creature_meerkat_head": [
-        0.0,
-        4.219,
-        1.358
+        -0.001,
+        4.257,
+        1.266
       ],
       "creature_meerkat_tail": [
-        0.002,
-        0.184,
-        -1.254
+        -0.001,
+        0.218,
+        -1.044
       ],
       "creature_meerkat_leg_fl": [
-        0.358,
-        2.838,
-        1.272
+        0.398,
+        2.817,
+        1.179
       ],
       "creature_meerkat_leg_fr": [
-        -0.357,
-        2.838,
-        1.274
+        -0.4,
+        2.816,
+        1.191
       ],
       "creature_meerkat_leg_bl": [
-        0.368,
-        0.687,
-        0.644
+        0.402,
+        0.68,
+        0.416
       ],
       "creature_meerkat_leg_br": [
-        -0.355,
-        0.686,
-        0.644
+        -0.402,
+        0.68,
+        0.416
       ]
     },
     "joints": {
       "creature_meerkat_head": [
-        -0.006,
-        3.753,
-        1.058
+        -0.079,
+        3.745,
+        1.051
       ],
       "creature_meerkat_tail": [
-        0.002,
-        0.368,
-        -1.254
+        -0.001,
+        0.435,
+        -1.044
       ],
       "creature_meerkat_leg_fl": [
-        0.268,
-        2.607,
-        1.35
+        0.293,
+        2.482,
+        1.451
       ],
       "creature_meerkat_leg_fr": [
-        -0.282,
-        2.647,
-        1.411
+        -0.329,
+        2.613,
+        1.389
       ],
       "creature_meerkat_leg_bl": [
-        0.246,
-        1.031,
-        0.94
+        0.288,
+        1.033,
+        0.86
       ],
       "creature_meerkat_leg_br": [
-        -0.245,
-        1.034,
-        1.026
+        -0.33,
+        1.032,
+        0.918
       ]
     }
   },
@@ -845,15 +845,15 @@
       6.7,
       4.51
     ],
-    "tris": 17782,
+    "tris": 17760,
     "parts": {
-      "creature_meerkat_storm_body": 3039,
+      "creature_meerkat_storm_body": 6393,
       "creature_meerkat_storm_head": 6807,
       "creature_meerkat_storm_tail": 251,
-      "creature_meerkat_storm_leg_fl": 999,
-      "creature_meerkat_storm_leg_fr": 1124,
-      "creature_meerkat_storm_leg_bl": 2259,
-      "creature_meerkat_storm_leg_br": 3303
+      "creature_meerkat_storm_leg_fl": 284,
+      "creature_meerkat_storm_leg_fr": 684,
+      "creature_meerkat_storm_leg_bl": 1664,
+      "creature_meerkat_storm_leg_br": 1677
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/forge.py",
@@ -861,9 +861,9 @@
     "glow": {},
     "centres": {
       "creature_meerkat_storm_body": [
-        -0.229,
-        2.775,
-        1.106
+        -0.089,
+        2.478,
+        0.826
       ],
       "creature_meerkat_storm_head": [
         0.127,
@@ -876,31 +876,31 @@
         -1.203
       ],
       "creature_meerkat_storm_leg_fl": [
-        0.786,
-        2.992,
-        1.29
+        0.776,
+        3.288,
+        1.284
       ],
       "creature_meerkat_storm_leg_fr": [
-        -0.659,
-        3.009,
-        1.265
+        -0.652,
+        3.293,
+        1.249
       ],
       "creature_meerkat_storm_leg_bl": [
-        0.527,
-        0.822,
-        0.394
+        0.521,
+        0.499,
+        0.389
       ],
       "creature_meerkat_storm_leg_br": [
-        -0.585,
-        0.807,
+        -0.551,
+        0.527,
         0.377
       ]
     },
     "joints": {
       "creature_meerkat_storm_head": [
-        -0.03,
-        3.986,
-        1.136
+        -0.076,
+        3.982,
+        1.151
       ],
       "creature_meerkat_storm_tail": [
         -0.002,
@@ -908,24 +908,24 @@
         -1.203
       ],
       "creature_meerkat_storm_leg_fl": [
-        0.466,
-        2.626,
-        1.629
+        0.637,
+        2.976,
+        1.519
       ],
       "creature_meerkat_storm_leg_fr": [
-        -0.602,
-        3.008,
-        1.274
+        -0.68,
+        3.225,
+        1.171
       ],
       "creature_meerkat_storm_leg_bl": [
-        0.452,
-        1.467,
-        1.103
+        0.526,
+        0.877,
+        1.069
       ],
       "creature_meerkat_storm_leg_br": [
-        -0.685,
-        1.457,
-        1.175
+        -0.575,
+        0.876,
+        0.878
       ]
     }
   },

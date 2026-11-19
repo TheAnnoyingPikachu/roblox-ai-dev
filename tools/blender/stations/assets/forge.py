@@ -97,7 +97,8 @@ PLANS = {
     # one model's shape differs from its kind's
     "jackal_pharaoh": quad(head=(0.76, 0.5), tail=(0.3, 0.25), legs=0.38),  # its tail hangs low
     "jackal_sphinx": quad(head=(0.76, 0.5), tail=(0.1, 0.3), legs=0.38),  # its wings reach back over the tail
-    "meerkat_storm": meerkat(head=0.6, arms=(0.35, 0.55, 0.6)),  # its cloud raises the top
+    # its cloud raises the top; arms high and legs low enough that the game still stands it upright
+    "meerkat_storm": meerkat(head=0.6, arms=(0.42, 0.58, 0.6), legs=0.13),
     "tortoise_island": tortoise(legs=0.2),  # its palm raises the top
     "flamingo_phoenix": bird(leg_from=0.3),  # its flame streamers hang low behind its legs
     "rhino_crystal": quad(head=(0.74, 0.25), tail=(0.1, 0.12), legs=0.33),  # its crystal mace hangs low

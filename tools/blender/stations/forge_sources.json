@@ -44,8 +44,8 @@
   "creature_meerkat": {
     "plan": "meerkat",
     "height": 4.82,
-    "job": "2cc69794-4c80-4706-bf69-a5ece4c8aa2e",
-    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/2cc69794-4c80-4706-bf69-a5ece4c8aa2e/736da1e763e099b032f397676f9aa67989a4fdddd0c0c6b0ba76cde6e0db59f5.glb",
+    "job": "3b32c092-e34e-4baf-9c14-ede61151e504",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/3b32c092-e34e-4baf-9c14-ede61151e504/2e470aece0843f33d03755bd8dd2f9db3f18545f03c314589d3da3bbaa381788.glb",
     "notes": "Meerkat (ForgeGUI): an upright sentinel, sandy with dark eye patches."
   },
   "creature_meerkat_storm": {
