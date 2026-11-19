@@ -2347,7 +2347,7 @@ do
 	Style.round(bossBar, 14)
 	Style.stroke(bossBar, C.ink, 3)
 	bossBar.AnchorPoint, bossBar.Position, bossBar.Visible, bossBar.ZIndex =
-		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14), false, 6
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 34), false, 6
 	local bossName = Style.text(bossBar, "", 20, C.hex, UDim2.new(1, -24, 0, 26))
 	bossName.Position, bossName.TextXAlignment = UDim2.fromOffset(12, 6), Enum.TextXAlignment.Center
 	local bossHp, setBossHp = Style.bar(bossBar, UDim2.new(1, -24, 0, 16), C.bad)
@@ -2492,14 +2492,15 @@ do
 			fly:Play()
 		end
 	end
-	-- the power bar: each side's power still standing (its fighters' power x their HP left)
-	local tug = Style.frame(root, UDim2.fromOffset(360, 16), C.bad)
-	tug.AnchorPoint, tug.Position, tug.Visible, tug.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 88), false, 6
-	Style.round(tug, 8)
+	-- the power bar: each side's power still standing (its fighters' power x their HP left), small, at the
+	-- top of the screen above the boss bar and the KO counter, clear of the fighters' own bars
+	local tug = Style.frame(root, UDim2.fromOffset(280, 13), C.bad)
+	tug.AnchorPoint, tug.Position, tug.Visible, tug.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 12), false, 6
+	Style.round(tug, 7)
 	Style.stroke(tug, C.ink, 3)
 	local ourSide = Style.frame(tug, UDim2.fromScale(0.5, 1), C.good)
-	Style.round(ourSide, 8)
-	local tugLabel = Style.text(tug, "", 12, Color3.new(1, 1, 1), UDim2.fromScale(1, 1))
+	Style.round(ourSide, 7)
+	local tugLabel = Style.text(tug, "", 11, Color3.new(1, 1, 1), UDim2.fromScale(1, 1))
 	tugLabel.TextXAlignment, tugLabel.ZIndex = Enum.TextXAlignment.Center, 8
 	local powerCache: { [Model]: number } = {}
 	local function powerOf(m: Model, side: number): number
@@ -2523,10 +2524,12 @@ do
 	local docked = false
 	fightTick = function(folder: Instance?, showing: boolean)
 		shieldButton.Visible = showing
-		if showing ~= docked then -- the dock (the Menu button and its column) sits mid-left while a fight is on
+		if showing ~= docked then -- the dock (the Menu button and its open column) centred on the left edge in a fight
 			docked = showing
+			local tall = dock.Size.Y.Offset + 160 - 104 -- from the Menu button's top to the open column's foot
+			local down = math.max(0, (root.Size.Y.Offset - tall) / 2 - 104)
 			TweenService:Create(nav, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-				Position = if showing then UDim2.new(0, 0, 0.5, -210) else UDim2.new(),
+				Position = if showing then UDim2.fromOffset(0, down) else UDim2.new(),
 			}):Play()
 		end
 		-- knockouts and the power bar
