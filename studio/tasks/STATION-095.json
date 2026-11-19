@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-095",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0088: every animal and variant replaced by its ForgeGUI model, cut in Blender into the jointed pieces the game already animates.",
+  "inputs": [
+    "docs/decisions/0088-animal-stations-forgegui-creatures.md"
+  ],
+  "dependencies": [
+    "STATION-094"
+  ],
+  "files": [
+    "tools/blender/stations/assets/forge.py",
+    "tools/blender/stations/forge_sources.json",
+    "tools/blender/stations/build.py",
+    "tools/blender/stations/kit.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_*",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0088-animal-stations-forgegui-creatures.md",
+    "studio/tasks/STATION-095.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every animal and variant looks like its ForgeGUI concept sheet",
+    "Every idle, walk, attack, power, hit, win and die clip still plays on the new models",
+    "StationAssets spec passes"
+  ],
+  "verification": "Lune StationAssets 11/11 with the new manifest (old model ids until the upload). Blender 5.2: 26 models cut, checked on colour-coded renders of the pieces and joints, built, exported, rainbow coats repainted. Not done yet: upload, Studio playtest of the clips.",
+  "output_artifacts": [
+    "assets/stations/creature_*"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON: (1) ForgeGUI's licence for game use (recommend: confirm in ForgeGUI's terms; if not allowed, the hand-built models are still in the repo); (2) phone frame rate with the heavier models (recommend: measure on the test place; if it drops, lower the triangle budget in forge.py's BAKE and rebuild); (3) the basic Meerkat's patchy face (recommend: one more ForgeGUI try)."
+}

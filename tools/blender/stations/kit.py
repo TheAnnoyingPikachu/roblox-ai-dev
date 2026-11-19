@@ -278,6 +278,9 @@ def _bake(objs, size, **kw):
         if ob.type == "MESH":
             for attr in list(ob.data.color_attributes):
                 ob.data.color_attributes.remove(attr)
+            # a ForgeGUI model's own UVs (assets/forge.py): read by the bake, not exported
+            if "forge" in ob.data.uv_layers:
+                ob.data.uv_layers.remove(ob.data.uv_layers["forge"])
     return final
 
 
