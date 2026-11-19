@@ -338,6 +338,186 @@ def _drop_pedestal(ob, share):
     bm.free()
 
 
+
+# A creature built in Blender ------------------------------------------------------------------------
+
+
+def _smooth01(x):
+    x = max(0.0, min(1.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def _box(objs):
+    lo, hi = k._ground_dims(objs)
+    return lo, hi, (lo + hi) / 2
+
+
+def _rigid(ob, weights):
+    """Every vertex of `ob` the same weights: the piece keeps its shape and follows its bones."""
+    idx = [v.index for v in ob.data.vertices]
+    for name, w in weights.items():
+        if w > 0.005:
+            g = ob.vertex_groups.get(name) or ob.vertex_groups.new(name=name)
+            g.add(idx, w, "REPLACE")
+
+
+def _per_vertex(ob, fn):
+    for v in ob.data.vertices:
+        for name, w in fn(ob.matrix_world @ v.co).items():
+            if w > 0.005:
+                g = ob.vertex_groups.get(name) or ob.vertex_groups.new(name=name)
+                g.add([v.index], w, "REPLACE")
+
+
+def built(src):
+    """A creature from a maker in assets/ (`module:function`, e.g. lions:sun_lion), whole and clean: its
+    pieces are closed shapes that overlap at the joints, so each follows its bone without tearing. Returns
+    (the joined mesh, bones). Legs: the upper piece (arm, thigh, with what sits on it), the lower (forearm,
+    shin) and the paw each follow their own bone; the torso blends from hips to chest; the head's pieces
+    follow the head; each mane leaf follows head, neck or chest by where it grows, whole; the tail's tube
+    bends along its three bones and its flame rides the tip."""
+    import importlib.util
+
+    module, fn = src["maker"].split(":")
+    spec = importlib.util.spec_from_file_location(module, os.path.join(HERE, "assets", f"{module}.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    groups, joints = getattr(mod, fn)()
+    every = [o for obs in groups.values() for o in obs]
+    s = src["scale"]
+    for o in every:
+        o.data.transform(Matrix.Scale(s, 4))
+    lo, hi, _ = _box(every)
+    offset = Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))
+    for o in every:
+        o.data.transform(Matrix.Translation(offset))
+    J = {n: Vector(j) * s + offset for n, j in joints.items()}
+
+    def named(objs, *prefixes):
+        return [o for o in objs if o.name.split(".")[0] in prefixes]
+
+    # the skeleton, from the pieces
+    torso = named(groups["body"], "torso")
+    tlo, thi, tmid = _box(torso)
+    back, front = (J["leg_bl"] + J["leg_br"]) / 2, (J["leg_fl"] + J["leg_fr"]) / 2
+    hips, chest = Vector((0, back.y, tmid.z)), Vector((0, front.y, tmid.z))
+    mid = (hips + chest) / 2
+    head_at = J["head"]
+    nose_y = min(v.co.y for o in groups["head"] for v in o.data.vertices)
+    bones = {
+        "hips": (hips, mid, None),
+        "chest": (mid, chest, "hips"),
+        "neck": (chest.lerp(head_at, 0.5), head_at, "chest"),
+        "head": (head_at, Vector((0, nose_y, head_at.z)), "neck"),
+    }
+    tube = named(groups["tail"], "tail")[0]
+    t0 = J["tail"]
+    tip = max((v.co for v in tube.data.vertices), key=lambda c: (c - t0).length)
+    pts = [t0.lerp(tip, i / 3) for i in range(4)]
+    for i in range(3):
+        bones[f"tail{i + 1}"] = (pts[i], pts[i + 1], "hips" if i == 0 else f"tail{i}")
+    for leg in LEGS:
+        objs = groups[f"leg_{leg}"]
+        upper = named(objs, "arm", "thigh")
+        lower = named(objs, "forearm", "shin")
+        paw = named(objs, "paw", "toe")
+        ulo, uhi, umid = _box(upper)
+        llo, lhi, lmid = _box(lower)
+        plo, phi, pmid = _box(paw)
+        top = Vector((umid.x, umid.y, uhi.z - 0.15 * (uhi.z - ulo.z)))
+        knee = Vector((lmid.x, (umid.y + lmid.y) / 2, (ulo.z + lhi.z) / 2))
+        ankle = Vector((pmid.x, pmid.y, phi.z))
+        toe = Vector((pmid.x, plo.y, plo.z + 0.1 * s))
+        parent = "chest" if leg[0] == "f" else "hips"
+        bones[f"{leg}_upper"] = (top, knee, parent)
+        bones[f"{leg}_lower"] = (knee, ankle, f"{leg}_upper")
+        bones[f"{leg}_paw"] = (ankle, toe, f"{leg}_lower")
+        for o in objs:
+            base = o.name.split(".")[0]
+            part = "lower" if base in ("forearm", "shin") else "paw" if base in ("paw", "toe") else "upper"
+            _rigid(o, {f"{leg}_{part}": 1.0})
+
+    # the torso (and anything else on the body) blends from hips to chest along its length
+    span = hips.y - chest.y
+
+    def along(p):
+        t = _smooth01((p.y - chest.y) / span * 1.2 - 0.1)
+        return {"hips": t, "chest": 1 - t}
+
+    for o in groups.get("body", []) + groups.get("body_glow", []):
+        if o.name.split(".")[0] == "torso":
+            _per_vertex(o, along)
+        else:
+            _rigid(o, along(_box([o])[2]))
+
+    # the head and mane: forward of the head's joint the head; behind it the neck, then the chest
+    reach = 0.9 * s
+
+    def mane(p):
+        d = head_at.y - p.y  # how far forward of the head's joint (-Y is forward)
+        a = _smooth01((d + 0.5 * reach) / reach)
+        b = _smooth01((d + 1.6 * reach) / reach)
+        return {"head": a, "neck": (1 - a) * b, "chest": (1 - a) * (1 - b)}
+
+    face = ("skull", "lips", "mouth", "chin", "nose", "philtrum", "bridge", "brow", "ear", "eye", "pupil", "fang")
+    for o in groups.get("head", []) + groups.get("head_glow", []):
+        base = o.name.split(".")[0]
+        if base in face:
+            _rigid(o, {"head": 1.0})
+        elif base == "core":
+            _per_vertex(o, mane)
+        else:  # a leaf: by where it grows (its end nearest the head's middle), whole
+            root = min((o.matrix_world @ v.co for v in o.data.vertices), key=lambda c: (c - head_at).length)
+            _rigid(o, mane(root))
+
+    # the tail's tube bends along its bones; the flame rides the last one
+    tails = [n for n in bones if n.startswith("tail")]
+
+    def bend(p):
+        near = sorted((_seg(p, bones[n][0], bones[n][1]), n) for n in tails)[:2]
+        ws = [(1.0 / (d**4 + 1e-6), n) for d, n in near]
+        total = sum(w for w, _ in ws)
+        return {n: w / total for w, n in ws}
+
+    for o in groups.get("tail", []) + groups.get("tail_glow", []):
+        if o is tube:
+            _per_vertex(o, bend)
+        else:
+            _rigid(o, {"tail3": 1.0})
+
+    # one mesh
+    for o in bpy.context.scene.objects:
+        o.select_set(o in every)
+    bpy.context.view_layer.objects.active = torso[0]
+    bpy.ops.object.join()
+    ob = bpy.context.view_layer.objects.active
+    return ob, bones
+
+
+def bake_texture(ob, png):
+    """The faceted colours (and glows) baked into one 1024 texture on a fresh UV map, as kit.finalize does."""
+    bpy.context.view_layer.objects.active = ob
+    for o in bpy.context.scene.objects:
+        o.select_set(o is ob)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.004, area_weight=0.0)
+    bpy.ops.uv.pack_islands(margin=0.006, rotate=True, margin_method="FRACTION", shape_method="CONCAVE")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    lo, hi = k._ground_dims([ob])
+    final = k._bake([ob], max(hi - lo), ao_samples=96, ao_blur=0.8, ao_floor=0.35, toplight=0.14, margin=10)
+    final.filepath_raw, final.file_format = png, "PNG"
+    final.save()
+    mat = bpy.data.materials.new("skin")
+    mat.use_nodes = True
+    tex = mat.node_tree.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(png, check_existing=False)
+    bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    mat.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    ob.data.materials.clear()
+    ob.data.materials.append(mat)
+
+
 # Main ----------------------------------------------------------------------------------------------
 
 
@@ -350,6 +530,18 @@ def main():
     src = skins.get(asset) or forge._sources()[asset]
     species = src.get("species") or asset.split("_")[1]
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    png = os.path.join(FILES, f"skin_{species}.png")
+    if src.get("maker"):  # built in Blender, whole
+        k.reset()
+        ob, bones = built(src)
+        ob.name = ob.data.name = f"skin_{species}"
+        rig = build_armature(bones)
+        mod = ob.modifiers.new("rig", "ARMATURE")
+        mod.object = rig
+        ob.parent = rig
+        bake_texture(ob, png)
+        finish(asset, species, ob, rig, bones, args)
+        return
     ob = forge._import(forge._fetch(asset, src["url"]))
     if src.get("pedestal"):
         _drop_pedestal(ob, src["pedestal"])
@@ -365,15 +557,19 @@ def main():
     rig = build_armature(bones)
     paint(ob, bones, src["plan"]).object = rig
     ob.parent = rig
-    with open(os.path.join(CLIPS, f"{species}.json"), encoding="utf-8") as f:
-        clips = json.load(f)["clips"]
 
     # the texture: the model's own image, at 1024
     img = next(n.image for m in ob.data.materials for n in m.node_tree.nodes if n.type == "TEX_IMAGE" and n.image)
     img.scale(1024, 1024)
-    png = os.path.join(FILES, f"skin_{species}.png")
     img.filepath_raw, img.file_format = png, "PNG"
     img.save()
+    finish(asset, species, ob, rig, bones, args)
+
+
+def finish(asset, species, ob, rig, bones, args):
+    """Exports the skinned mesh and its armature, records the rest frame, renders what was asked."""
+    with open(os.path.join(CLIPS, f"{species}.json"), encoding="utf-8") as f:
+        clips = json.load(f)["clips"]
 
     # the rest frame the game needs: every bone's head, in the manifest's axes (x right, y up, z to the head)
     rest = {n: [round(h.x, 3), round(h.z, 3), round(-h.y, 3)] for n, (h, _, _) in bones.items()}

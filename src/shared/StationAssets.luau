@@ -2524,11 +2524,11 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	skin_lion = {
-		size = { 5.24, 7.45, 13.41 },
+		size = { 6.33, 9.23, 16.05 },
 		parts = { "skin_lion" },
 		glow = {},
 		centres = {
-			skin_lion = { 0, 3.725, 0 },
+			skin_lion = { 0, 4.615, 0 },
 		},
 		joints = {},
 		model = 77188549131924,

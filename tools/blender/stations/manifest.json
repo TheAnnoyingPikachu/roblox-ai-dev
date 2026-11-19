@@ -6334,22 +6334,22 @@
     "png": "assets/stations/skin_lion.png",
     "preview": "build/blender/stations/skin/lion_idle.mp4",
     "size_studs": [
-      5.24,
-      7.45,
-      13.41
+      6.33,
+      9.23,
+      16.05
     ],
-    "tris": 6619,
+    "tris": 1112,
     "parts": {
-      "skin_lion": 6619
+      "skin_lion": 1112
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin.py",
-    "notes": "Skinned Lion (decision 0090, a trial): SHANNON's own website Lion from ForgeGUI, whole (only its display base dropped), on a 19-bone skeleton; clips in clips/lion.json.",
+    "notes": "Skinned Lion (decision 0090, a trial): the Sun Lion built in Blender (assets/lions.py), whole, on a 19-bone skeleton; clips in clips/lion.json.",
     "glow": {},
     "centres": {
       "skin_lion": [
         0.0,
-        3.725,
+        4.615,
         0.0
       ]
     },
@@ -6357,98 +6357,98 @@
     "bones": {
       "hips": [
         0.0,
-        4.122,
-        -1.879
+        3.869,
+        -0.443
       ],
       "chest": [
         0.0,
-        4.122,
-        -0.875
+        3.869,
+        1.829
       ],
       "neck": [
-        0.0,
-        4.329,
-        1.151
+        0.012,
+        4.171,
+        4.633
       ],
       "head": [
-        0.0,
-        4.582,
-        2.4
+        0.024,
+        4.473,
+        5.166
       ],
       "tail1": [
-        0.084,
-        2.94,
-        -5.176
+        0.024,
+        4.189,
+        -1.65
       ],
       "tail2": [
-        0.01,
-        2.58,
-        -5.595
+        0.024,
+        3.866,
+        -2.851
       ],
       "tail3": [
-        -0.065,
-        2.22,
-        -6.014
+        0.024,
+        3.543,
+        -4.052
       ],
       "fl_upper": [
-        1.121,
-        2.737,
-        0.254
+        0.99,
+        3.82,
+        4.101
       ],
       "fl_lower": [
-        1.121,
-        1.56,
-        0.254
+        0.99,
+        2.165,
+        4.073
       ],
       "fl_paw": [
-        1.121,
-        0.383,
-        0.254
+        0.99,
+        0.781,
+        4.257
       ],
       "fr_upper": [
-        -1.088,
-        2.788,
-        0.004
+        -0.941,
+        3.82,
+        4.101
       ],
       "fr_lower": [
-        -1.088,
-        1.606,
-        0.004
+        -0.941,
+        2.165,
+        4.073
       ],
       "fr_paw": [
-        -1.088,
-        0.423,
-        0.004
+        -0.941,
+        0.781,
+        4.257
       ],
       "bl_upper": [
-        0.548,
-        2.791,
-        -2.1
+        0.99,
+        4.164,
+        -0.372
       ],
       "bl_lower": [
-        0.548,
-        1.643,
-        -2.1
+        0.99,
+        2.45,
+        -0.404
       ],
       "bl_paw": [
-        0.548,
-        0.495,
-        -2.1
+        0.99,
+        0.781,
+        -0.457
       ],
       "br_upper": [
-        -0.507,
-        2.794,
-        -1.658
+        -0.941,
+        4.164,
+        -0.372
       ],
       "br_lower": [
-        -0.507,
-        1.648,
-        -1.658
+        -0.941,
+        2.45,
+        -0.404
       ],
       "br_paw": [
-        -0.507,
-        0.502,
-        -1.658
+        -0.941,
+        0.781,
+        -0.457
       ]
     }
   }
