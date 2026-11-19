@@ -1854,14 +1854,14 @@ end
 -- Waves ---------------------------------------------------------------------------------------------------
 
 local wave = 1
--- The fight's panel: a wide, low bar along the bottom, left of the power plates and the shield, so it
--- never covers the animals (SHANNON, 2026-11-19). What happened on the left, what to do next on the right.
-local result = Style.frame(root, UDim2.new(1, -420, 0, 0), C.sand)
+-- The fight's panel: a low bar along the bottom, so it never covers the animals, centred on the screen and
+-- clear of the power plates (SHANNON, 2026-11-19). What happened on the left, what to do next on the right.
+local result = Style.frame(root, UDim2.new(1, -520, 0, 0), C.sand)
 Style.round(result, 18)
 Style.stroke(result, C.ink, 3)
 result.Name = "WaveResult"
 result.AutomaticSize = Enum.AutomaticSize.Y
-result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, -185, 1, -14), false
+result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -24), false
 result.ZIndex = 5
 Style.pad(result, 12)
 local resultTitle: TextLabel, resultSub: TextLabel
@@ -1871,7 +1871,7 @@ do
 	local resultColumns = Style.list(result, 14, true)
 	resultColumns.VerticalAlignment = Enum.VerticalAlignment.Center
 	local resultLimit = Instance.new("UISizeConstraint")
-	resultLimit.MinSize, resultLimit.MaxSize = Vector2.new(480, 0), Vector2.new(1000, 1000)
+	resultLimit.MinSize, resultLimit.MaxSize = Vector2.new(480, 0), Vector2.new(840, 1000)
 	resultLimit.Parent = result
 	local function panelColumn(width: number, order: number, gap: number): Frame
 		local f = Instance.new("Frame")
