@@ -384,6 +384,13 @@ local function terrain()
 		Valley.den(t, frame)
 		Valley.tops(t, frame)
 		calm(t, frame.Position, ValleyMap.HOME) -- the whole homestead: no blades up through a floor or path
+		-- and the road up to it from the hub (its pass is straight along an axis, so one box covers it)
+		local a = rad(RANCH_ANGLE[i])
+		local dir, side = Vector3.new(math.cos(a), 0, math.sin(a)), Vector3.new(-math.sin(a), 0, math.cos(a))
+		local from = dir * (World.HUB_RADIUS - 8) - side * 13 - Vector3.new(0, 10, 0)
+		local to = dir * (World.RANCH_DIST - World.RANCH_GATE + 4) + side * 13 + Vector3.new(0, World.RANCH_Y + 8, 0)
+		local region = Region3.new(from:Min(to), from:Max(to)):ExpandToGrid(4)
+		t:ReplaceMaterial(region, 4, M.Grass, M.LeafyGrass)
 	end
 	calm(t, Vector3.zero, World.PLAZA + 6) -- the hub's plaza floor
 end
