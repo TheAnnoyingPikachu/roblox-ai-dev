@@ -1,0 +1,38 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-099",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0092: the player taps to fire their animals' power attacks in wave fights.",
+  "inputs": [
+    "docs/decisions/0092-animal-stations-tap-power-attacks.md"
+  ],
+  "dependencies": [
+    "STATION-098"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/StationsServer.server.luau",
+    "tests/BattleRules.spec.luau",
+    "docs/decisions/0092-animal-stations-tap-power-attacks.md",
+    "studio/tasks/STATION-099.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "LevelRules.spec.luau",
+    "WaveRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A full meter holds until tapped or until AUTO_FIRE seconds pass",
+    "A tap on a full meter fires an extra power strike; any other tap does nothing",
+    "Pay never goes down because of a tap"
+  ],
+  "verification": "Lune 725/725 (4 new tap tests), selene clean. Studio, local build, stamp `dev`, 2026-11-19: wave 2 with taps sent from the client: each full meter's first tap accepted, taps on an emptied meter or after the end refused with `power`; plates seen in a screen.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON: the balance hypothesis in decision 0092 (a power attack is now an extra strike): play a few waves and say if they feel too easy."
+}

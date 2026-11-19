@@ -137,6 +137,14 @@ function Valley.den(terrain: Terrain, frame: CFrame)
 	local centre = frame * (out * mid + Vector3.new(0, (den.tall - 2) / 2, 0)) -- from 2 below the ground (a voxel's top)
 	local look = CFrame.lookAt(centre, centre + frame:VectorToWorldSpace(out))
 	terrain:FillBlock(look, Vector3.new(den.half * 2, den.tall + 2, den.back - den.face + 4), Enum.Material.Air)
+	-- its floor bare rock: the terrain's grass grew up through the den's stone floor and straw bed. The
+	-- hall is cut from 2 below the ground, so the rock is the 4 under that (no higher: it would bury the floor)
+	local floor = frame * (out * mid + Vector3.new(0, -4, 0))
+	terrain:FillBlock(
+		CFrame.lookAt(floor, floor + frame:VectorToWorldSpace(out)),
+		Vector3.new(den.half * 2 + 4, 4, den.back - den.face + 8),
+		Enum.Material.Slate
+	)
 end
 
 export type Kit = {

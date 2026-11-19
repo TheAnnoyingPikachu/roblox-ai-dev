@@ -584,22 +584,6 @@ function World.hubSpawn(): CFrame
 	return CFrame.lookAt(Vector3.new(0, 3, 80), Vector3.new(0, 3, 0))
 end
 
--- A glowing teleport pad with a prompt. `to` is "hub" or "ranch"; the server connects every
--- prompt tagged "Teleport" and decides where the player goes.
-local function teleporter(parent: Instance, pos: Vector3, to: string, action: string)
-	local pad = disc(parent, pos + Vector3.new(0, 0.7, 0), 8, 0.5, Color3.fromRGB(120, 220, 255), M.Neon)
-	pad.Name = "Teleport"
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = action
-	prompt.ObjectText = "Teleport"
-	prompt.HoldDuration = 0.5
-	prompt.MaxActivationDistance = 12
-	prompt.RequiresLineOfSight = false
-	prompt:SetAttribute("To", to)
-	prompt.Parent = pad
-	CollectionService:AddTag(prompt, "Teleport")
-end
-
 local function paths(root: Instance)
 	local f = folder(root, "Paths")
 	for _, seg in ROADS do
@@ -619,9 +603,7 @@ local function paths(root: Instance)
 		end
 		disc(f, b + Vector3.new(0, 0.32, 0), 18, 0.6, PATH, M.Cobblestone) -- round off the end
 	end
-	-- the hub's teleport pad, beside the south road
-	teleporter(f, Vector3.new(19, 0, 84), "ranch", "Go to your ranch")
-	signboard(f, CFrame.new(19, 0, 92), 13, "To your ranch", Color3.fromRGB(60, 130, 170), 5)
+	-- no teleport pad here any more: the HUD's Travel buttons go anywhere (decision 0093)
 end
 
 -- Mountains and the wave arena ---------------------------------------------------------------------
@@ -1108,9 +1090,6 @@ local function ranch(root: Instance, i: number, rng: Random)
 	local sign = part(f, Vector3.new(14, 3.2, 0.6), at(0, 10.2, -G), WOOD, M.WoodPlanks)
 	sign.Name = "OwnerSign"
 	label(sign, "Free Ranch", WHITE, 0.6)
-	-- teleport pad to the hub, just inside the gate
-	teleporter(f, at(17, 0, -G + 7).Position, "hub", "Go to the hub")
-	signboard(f, at(27, World.LAWN, -G + 5), 11, "To the hub", Color3.fromRGB(60, 130, 170), 3.2)
 	-- mailbox by the gate
 	local box = at(12.5, 0, -G - 3.5)
 	pillar(f, box.Position, 3.4, 0.25, WOOD_DARK, M.Wood)

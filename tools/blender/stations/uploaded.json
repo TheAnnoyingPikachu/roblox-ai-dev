@@ -285,13 +285,8 @@
     "texture": null
   },
   "area_track_0_0": {
-    "model": 99749246386026,
-    "decal": 91966135132745,
-    "texture": null
-  },
-  "area_track_0_1": {
-    "model": 74608676167484,
-    "decal": 85365633087073,
+    "model": 107758620770245,
+    "decal": 126665053917044,
     "texture": null
   },
   "area_track_1_5": {
@@ -300,8 +295,8 @@
     "texture": null
   },
   "area_track_2_5": {
-    "model": 82972522854293,
-    "decal": 135255537502789,
+    "model": 77468201679881,
+    "decal": 113761867220611,
     "texture": null
   },
   "area_track_3_5": {
@@ -320,13 +315,13 @@
     "texture": null
   },
   "area_gym_0_0": {
-    "model": 99184274508796,
-    "decal": 129410763716279,
+    "model": 84025339631090,
+    "decal": 117551018800890,
     "texture": null
   },
   "area_gym_0_1": {
-    "model": 131191561437255,
-    "decal": 96019717118238,
+    "model": 84789338263105,
+    "decal": 88998629733797,
     "texture": null
   },
   "area_gym_0_5": {
@@ -340,8 +335,8 @@
     "texture": null
   },
   "area_gym_2_5": {
-    "model": 74570276157920,
-    "decal": 74645294214722,
+    "model": 122301057159377,
+    "decal": 108846200518755,
     "texture": null
   },
   "area_gym_3_5": {
@@ -360,13 +355,8 @@
     "texture": null
   },
   "area_pool_0_0": {
-    "model": 98423580906953,
-    "decal": 95651034436995,
-    "texture": null
-  },
-  "area_pool_0_1": {
-    "model": 126636805387967,
-    "decal": 114032080074607,
+    "model": 136865844418010,
+    "decal": 77991335713768,
     "texture": null
   },
   "area_pool_1_5": {
@@ -375,8 +365,8 @@
     "texture": null
   },
   "area_pool_2_5": {
-    "model": 100858221509774,
-    "decal": 101677943104972,
+    "model": 119628436859821,
+    "decal": 82203679976064,
     "texture": null
   },
   "area_pool_3_5": {
@@ -395,13 +385,8 @@
     "texture": null
   },
   "area_library_0_0": {
-    "model": 99713694551491,
-    "decal": 102562661406417,
-    "texture": null
-  },
-  "area_library_0_1": {
-    "model": 75323269734559,
-    "decal": 82152010085098,
+    "model": 116467623936626,
+    "decal": 83150865777808,
     "texture": null
   },
   "area_library_1_5": {
@@ -410,8 +395,8 @@
     "texture": null
   },
   "area_library_2_5": {
-    "model": 85519987485533,
-    "decal": 116476826490747,
+    "model": 71925695954923,
+    "decal": 101020396504101,
     "texture": null
   },
   "area_library_3_5": {
@@ -430,13 +415,8 @@
     "texture": null
   },
   "area_spring_0_0": {
-    "model": 118952523577373,
-    "decal": 108660846168850,
-    "texture": null
-  },
-  "area_spring_0_1": {
-    "model": 122618037795472,
-    "decal": 127901483919458,
+    "model": 100392886855390,
+    "decal": 115039362443502,
     "texture": null
   },
   "area_spring_1_5": {
@@ -450,8 +430,8 @@
     "texture": null
   },
   "area_spring_2_5": {
-    "model": 140588501713981,
-    "decal": 74837553162334,
+    "model": 86044718748360,
+    "decal": 71994358408709,
     "texture": null
   },
   "area_spring_3_5": {
@@ -470,13 +450,8 @@
     "texture": null
   },
   "area_guard_0_0": {
-    "model": 118531674548566,
-    "decal": 84001703555709,
-    "texture": null
-  },
-  "area_guard_0_1": {
-    "model": 88129240635330,
-    "decal": 120076193751962,
+    "model": 124295207668728,
+    "decal": 90908475945666,
     "texture": null
   },
   "area_guard_0_5": {
@@ -490,8 +465,8 @@
     "texture": null
   },
   "area_guard_2_5": {
-    "model": 136378507117839,
-    "decal": 130180333607302,
+    "model": 117925092376441,
+    "decal": 90461116516170,
     "texture": null
   },
   "area_guard_3_5": {
@@ -565,18 +540,18 @@
     "texture": null
   },
   "home_house_1": {
-    "model": 105200527213246,
-    "decal": 70931460278358,
+    "model": 71487177473504,
+    "decal": 109540763797437,
     "texture": null
   },
   "home_house_2": {
-    "model": 77401461520643,
-    "decal": 93519198627425,
+    "model": 97779632767179,
+    "decal": 83614151230007,
     "texture": null
   },
   "home_house_3": {
-    "model": 127665408665186,
-    "decal": 101564279492538,
+    "model": 106905574838754,
+    "decal": 90940125405516,
     "texture": null
   },
   "home_barn_1": {
@@ -610,18 +585,18 @@
     "texture": null
   },
   "home_cellar_1": {
-    "model": 111971669988965,
-    "decal": 110594967132834,
+    "model": 121126869530330,
+    "decal": 107060017592946,
     "texture": null
   },
   "home_cellar_2": {
-    "model": 117264605295438,
-    "decal": 137597745241423,
+    "model": 111655579681598,
+    "decal": 76625582396553,
     "texture": null
   },
   "home_cellar_3": {
-    "model": 137165970639254,
-    "decal": 83703877454673,
+    "model": 96189041254807,
+    "decal": 138116689958969,
     "texture": null
   },
   "home_brooder_1": {

@@ -591,7 +591,7 @@ StationConfig.UPGRADES = {
 	},
 	{
 		id = "cellar",
-		name = "Egg Cellar",
+		name = "Egg Storage", -- the cellar and its greenhouse (decision 0091)
 		gives = "eggs you can store",
 		base = 8,
 		levels = {

@@ -80,11 +80,7 @@ def yard(rng, name, colour, ground, kind=S.PALE, bare=(146, 170, 96)):
     lv(0, 0)
     for i, (x, y, r) in enumerate(((-9.0, 1.0, 15.0), (8.0, 2.0, 14.0), (0.0, -5.0, 16.0))):
         disc(r, (x, y, 0), z - 0.01 * i, bare, rng, n=11, chance=0.3)
-    lv(0, 1)
-    for sx in (-1, 1):
-        post(0.3, 5.2, (sx * 5.4, -hd, 0), S.WOOD_DARK, rng, n=6)
-    box((12.0, 0.4, 2.6), (0, -hd, 2.9), S.WOOD, rng)
-    words(name, (0, -hd - 0.26, 4.2), 1.3, S.WHITE)
+    # no name board here: the ranch's signs by the homestead name every area (SHANNON, 2026-11-19)
     lv(1)
     if not OPEN:
         box((W + 3, D + 3, 0.25), (0, 0, 0), ground, rng, kind=kind, chance=0.12)
@@ -102,11 +98,8 @@ def yard(rng, name, colour, ground, kind=S.PALE, bare=(146, 170, 96)):
         box((1.1, 1.1, 8.6), (sx * 7.5, -hd, z + 0.8), S.WOOD_DARK, rng)
         spin(lantern((sx * 9.6, -hd - 0.4, z), rng, h=5.0), (sx * 9.6, -hd - 0.4), 90 - 90 * sx)
         flag((sx * 7.5, -hd - 0.62, 7.6), 1.3, 3.6, colour, rng)
-    box((17.5, 1.2, 1.0), (0, -hd, 9.4), S.WOOD_DARK, rng)
-    box((14.6, 0.5, 3.2), (0, -hd, 10.4), colour, rng, chance=0.08)
-    box((15.4, 0.3, 4.0), (0, -hd, 10.0), S.GOLD, rng)
-    roof(17.0, 2.4, 1.3, (0, -hd, 14.0), S.WOOD_DARK, rng, ridge=17.0)
-    words(name, (0, -hd - 0.3, 12.0), 1.7, S.WHITE)
+    box((17.5, 1.2, 1.0), (0, -hd, 9.4), S.WOOD_DARK, rng)  # the lintel; its name board is gone (the ranch's signs name it)
+    roof(17.0, 2.4, 1.3, (0, -hd, 10.4), S.WOOD_DARK, rng, ridge=17.0)
     lv(0)
 
 

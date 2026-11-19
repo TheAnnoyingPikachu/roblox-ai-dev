@@ -497,3 +497,40 @@ Same source, ownership and upload route as STATION-016 above (`tools/blender/sta
 | 108637925565998 (model), 81193929209993 (decal) (`scenery_pine_1`) | Built by the studio in Blender 5.2, `tools/blender/stations/build.py` | Studio (Claude), 2026-11-18 | Studio-owned original work | None needed | None | FBX, 1 mesh, 68 triangles; 1024 x 1024 PNG | Scenery (decision 0085): A faceted pine, four tiers. Through `src/shared/StationAssets.luau` and `src/stations/World.luau` | Uploaded (upload-assets run 44383622703); in game |
 | 105744035188546 (model), 88217429109801 (decal) (`scenery_pine_2`) | Built by the studio in Blender 5.2, `tools/blender/stations/build.py` | Studio (Claude), 2026-11-18 | Studio-owned original work | None needed | None | FBX, 1 mesh, 56 triangles; 1024 x 1024 PNG | Scenery (decision 0085): A faceted pine, three tiers. Through `src/shared/StationAssets.luau` and `src/stations/World.luau` | Uploaded (upload-assets run 44383622703); in game |
 | 79560426232029 (model), 119688942868167 (decal) (`scenery_bush_1`) | Built by the studio in Blender 5.2, `tools/blender/stations/build.py` | Studio (Claude), 2026-11-18 | Studio-owned original work | None needed | None | FBX, 1 mesh, 180 triangles; 1024 x 1024 PNG | Scenery (decision 0085): A low faceted bush with a few flowers. Through `src/shared/StationAssets.luau` and `src/stations/World.luau` | Uploaded (upload-assets run 44383622703); in game |
+
+## Animal Stations UI sounds (STATION-098)
+
+Generated with ForgeGUI sound effects on SHANNON's ForgeGUI account on 2026-11-19 and published by ForgeGUI to
+SHANNON's Roblox account (user creator) as Audio assets (decision 0091). Played on the client only, by name,
+through `Style.sound` in `src/stations-client/Style.luau`. Licence: assumption, not checked, as for the
+ForgeGUI creature models: SHANNON to confirm (checkpoint in STATION-098).
+
+| Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
+|----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
+| 77373980508668 | ForgeGUI sound, button press | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("press")` | In moderation at build |
+| 95674872035214 | ForgeGUI sound, pointer over a button | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("hover")` | In moderation at build |
+| 124276619105004 | ForgeGUI sound, greyed-out button | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("denied")` | In moderation at build |
+| 74792139934627 | ForgeGUI sound, tab change | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("tab")` | In moderation at build |
+| 81025320537756 | ForgeGUI sound, menu opens | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.6 s | Not used: it sounded like the purchase ka-ching (menus use "tab") | Unused |
+| 97509016133658 | ForgeGUI sound, menu closes | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("close")` | Approved |
+| 112913492194575 | ForgeGUI sound, reward claimed | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.2 s | `Style.sound("claim")` | Approved |
+| 122912592356212 | ForgeGUI sound, ka-ching on a purchase | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.0 s | `Style.sound("buy")` | Approved |
+
+## Animal Stations Ranch menu pictures (STATION-098)
+
+Screenshots of the studio's own ranch buildings (all built by the studio in Blender, see above), taken in
+Roblox Studio on 2026-11-19 with a ranch rendered at each look, cropped to 480 x 270 PNGs and uploaded to
+SHANNON's Roblox account through Studio. Studio-owned original work. Used as `PICTURES` in
+`src/stations-client/Hud.client.luau`.
+
+| Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
+|----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
+| 123119223827948, 75503797264752, 107798905588688 | Ranch House, looks 1 to 3 (retaken with the new name board) | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 101892180349204, 121151105188828, 115965219734238 | Barn, looks 1 to 3 (retaken further back and centred) | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 133902304920898, 124045791914974, 123100005333170 | Hatchery, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 90053421861862, 72531267730211, 133921641057596 | Egg Storage: the hillside burrow cellar and the greenhouse, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 88844343986979, 128424168474378, 125930939253883 | Brooder, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 95016315403212, 71885186151925, 130764990300282 | Windmill, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 89855001205054, 104259688695882, 92288867347305 | Trophy Lodge, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 86742890917401, 83910433232346, 101343125013182 | Titan's Den, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 98297919965705, 106959352530071, 131970264474678, 137939197697617, 120047660590642, 100438873746948 | Speed Track at Training Grounds levels 0 to 5 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
