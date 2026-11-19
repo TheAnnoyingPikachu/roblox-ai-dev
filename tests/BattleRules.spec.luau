@@ -292,3 +292,83 @@ describe("BattleRules.battle log", function()
 		expect(powered).toBe(true)
 	end)
 end)
+
+describe("BattleRules.battle taps (decision 0092)", function()
+	local function team(ids: { string }): { StationRules.Owned }
+		local out = {}
+		for _, id in ids do
+			table.insert(out, owned(id))
+		end
+		return out
+	end
+	local one, two = team({ "lion", "rhino", "flamingo" }), team({ "rhino", "rhino", "rhino" })
+
+	-- when slot `slot`'s meter first fills in a fight with these taps
+	local function filled(log: { BattleRules.Hit }, slot: number): number?
+		for _, e in log do
+			if e.side == 1 and e.slot == slot and not e.power and e.energy >= 1 then
+				return e.t
+			end
+		end
+		return nil
+	end
+
+	it("holds a full meter and fires it itself AUTO_FIRE seconds later, as an extra strike", function()
+		local log = {}
+		BattleRules.battle(one, two, log, {})
+		local at = filled(log, 1) :: number
+		expect(at == nil).toBe(false)
+		local fired: BattleRules.Hit? = nil
+		for _, e in log do
+			if e.side == 1 and e.slot == 1 and e.power then
+				fired = fired or e
+			end
+			expect(e.tap).toBeNil()
+		end
+		expect((fired :: BattleRules.Hit).t).toBe(at + BattleRules.AUTO_FIRE)
+		expect((fired :: BattleRules.Hit).energy < 1).toBeTruthy()
+	end)
+
+	it("fires at a tap's time when the meter is full, and ignores a tap before it fills", function()
+		local log = {}
+		BattleRules.battle(one, two, log, {})
+		local at = filled(log, 1) :: number
+		local tapped = {}
+		BattleRules.battle(one, two, tapped, { { slot = 1, t = at - 0.5 }, { slot = 1, t = at + 1 } })
+		local strikes = {}
+		for _, e in tapped do
+			if e.tap then
+				table.insert(strikes, e)
+			end
+		end
+		expect(#strikes).toBe(1)
+		expect(strikes[1].t).toBe(at + 1)
+		expect(strikes[1].power).toBe(true)
+	end)
+
+	it("changes nothing before a tap's time, so a fight can be replayed with each new tap", function()
+		local log = {}
+		BattleRules.battle(one, two, log, {})
+		local at = (filled(log, 2) or filled(log, 1)) :: number
+		local tapped = {}
+		BattleRules.battle(one, two, tapped, { { slot = 2, t = at + 0.3 }, { slot = 1, t = at + 0.3 } })
+		local i = 1
+		while log[i] and log[i].t < at + 0.3 do
+			expect(tapped[i].t).toBe(log[i].t)
+			expect(tapped[i].dmg).toBe(log[i].dmg)
+			expect(tapped[i].tslot).toBe(log[i].tslot)
+			i += 1
+		end
+	end)
+
+	it("keeps the old rule without taps: a power attack fires on the attack that fills the meter", function()
+		local log = {}
+		BattleRules.battle(one, two, log)
+		for _, e in log do
+			expect(e.tap).toBeNil()
+			if e.side == 1 and e.power then
+				expect(e.energy < 1).toBeTruthy()
+			end
+		end
+	end)
+end)

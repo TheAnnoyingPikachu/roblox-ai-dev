@@ -140,8 +140,17 @@ end
 -- attacks happened and how many seconds the fight took. `log`, when given, is filled with one
 -- entry per attack, in order, so the fight can be shown: when it landed (`t`), who hit (`side`,
 -- `slot`), whom (`tside`, `tslot`), the damage dealt (`dmg`) and the target's HP after it (`hp`),
--- whether it was a power attack (`power`) and, for a healer, who it healed and to what HP
+-- whether it was a power attack (`power`, and `tap` when the player fired it), the attacker's power
+-- meter after it (`energy`, 0 to 1) and, for a healer, who it healed and to what HP
 -- (`heal` = { slot, hp }, on the healer's own side). It never changes the result.
+--
+-- With `taps` (decision 0092) the player fires their team's power attacks: side 1's meters fill and
+-- hold, and a power attack is an extra strike on top of the animal's own attacks, landing at a tap's
+-- time `t` for the animal in `slot`, if its meter is full then (a tap at any other time does
+-- nothing). A full meter nobody taps fires itself AUTO_FIRE seconds after it filled. A tap changes
+-- nothing before its own time, so the server can replay a fight from the start with each new tap.
+-- Without `taps` every power attack fires itself on the attack that fills the meter.
+BattleRules.AUTO_FIRE = 4
 export type Hit = {
 	t: number,
 	side: number,
@@ -151,34 +160,28 @@ export type Hit = {
 	dmg: number,
 	hp: number,
 	power: boolean,
+	tap: boolean?,
+	energy: number,
 	heal: { slot: number, hp: number }?,
 }
-function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?): (boolean, number, number)
+export type Tap = { slot: number, t: number }
+function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?, taps: { Tap }?): (boolean, number, number)
 	local sides = { BattleRules.lineup(one, 1), BattleRules.lineup(two, 2) }
 	local all = table.clone(sides[1])
 	for _, f in sides[2] do
 		table.insert(all, f)
 	end
+	local held = taps ~= nil
+	local queue: { Tap } = if taps then table.clone(taps) else {}
+	table.sort(queue, function(a, b)
+		return a.t < b.t
+	end)
+	local full: { [Fighter]: number } = {} -- when each held meter filled
 	local actions, now = 0, 0
-	while alive(sides[1]) and alive(sides[2]) and actions < BattleRules.MAX_ACTIONS do
-		local f: Fighter? = nil
-		for _, c in all do -- `all` is in side then slot order, so a strict < breaks ties that way
-			if c.hp > 0 and (f == nil or c.next < f.next) then
-				f = c
-			end
-		end
-		local me = f :: Fighter
-		if me.next > BattleRules.MAX_SECONDS then
-			break
-		end
-		now = me.next
+
+	-- `me` attacks at `now`; `power` x damage and heal
+	local function strike(me: Fighter, power: number, tapped: boolean?)
 		local d = target(sides[3 - me.side]) :: Fighter
-		local power = 1
-		me.energy += me.gain
-		if me.energy >= BattleRules.POWER_COST then
-			me.energy -= BattleRules.POWER_COST
-			power = BattleRules.POWER
-		end
 		local hit = me.dmg * power
 		if d.role == "defense" then
 			hit *= BattleRules.GUARD
@@ -197,6 +200,8 @@ function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?): (boo
 				dmg = dealt,
 				hp = d.hp,
 				power = power > 1,
+				tap = tapped,
+				energy = math.min(1, me.energy / BattleRules.POWER_COST),
 			}
 			table.insert(log, entry :: Hit)
 		end
@@ -216,6 +221,67 @@ function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?): (boo
 			end
 		end
 		actions += 1
+	end
+
+	while alive(sides[1]) and alive(sides[2]) and actions < BattleRules.MAX_ACTIONS do
+		local f: Fighter? = nil
+		for _, c in all do -- `all` is in side then slot order, so a strict < breaks ties that way
+			if c.hp > 0 and (f == nil or c.next < f.next) then
+				f = c
+			end
+		end
+		local me = f :: Fighter
+		-- a held power attack due first: a tap, else a meter firing itself (ties before attacks)
+		local auto: Fighter?, autoAt = nil, math.huge
+		for _, c in sides[1] do
+			local at = full[c]
+			if at and c.hp > 0 and at + BattleRules.AUTO_FIRE < autoAt then
+				auto, autoAt = c, at + BattleRules.AUTO_FIRE
+			end
+		end
+		local tap = queue[1]
+		if tap and tap.t <= autoAt and tap.t <= me.next then
+			table.remove(queue, 1)
+			local c = sides[1][tap.slot]
+			if c and c.hp > 0 and full[c] and tap.t >= full[c] then
+				if tap.t > BattleRules.MAX_SECONDS then
+					break
+				end
+				now = math.max(now, tap.t)
+				full[c] = nil
+				c.energy -= BattleRules.POWER_COST
+				strike(c, BattleRules.POWER, true)
+			end
+			continue
+		end
+		if auto and autoAt <= me.next then
+			if autoAt > BattleRules.MAX_SECONDS then
+				break
+			end
+			now = autoAt
+			full[auto] = nil
+			auto.energy -= BattleRules.POWER_COST
+			strike(auto, BattleRules.POWER)
+			continue
+		end
+		if me.next > BattleRules.MAX_SECONDS then
+			break
+		end
+		now = me.next
+		local power = 1
+		if held and me.side == 1 then -- fills and holds; the strike comes from a tap or AUTO_FIRE
+			me.energy = math.min(BattleRules.POWER_COST, me.energy + me.gain)
+			if me.energy >= BattleRules.POWER_COST and full[me] == nil then
+				full[me] = now
+			end
+		else
+			me.energy += me.gain
+			if me.energy >= BattleRules.POWER_COST then
+				me.energy -= BattleRules.POWER_COST
+				power = BattleRules.POWER
+			end
+		end
+		strike(me, power)
 		me.next = now + me.rest + me.swing
 	end
 	return alive(sides[1]) and not alive(sides[2]), actions, now
