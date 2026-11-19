@@ -17,7 +17,7 @@ artifacts on 2026-11-19):
   close button on the corner. A berry dot marks anything new.
 - Ranch upgrades in three tabs of three (option A: Animals, Eggs, Earnings), each card with a picture of
   its building as it stands in game at its tier ("can we change the upgrade photos for actual pictures in
-  game of each tier"), and a small picture of the next tier when the next level changes the look.
+  game of each tier"); the picture changes as the building does.
 - Eggs: the Eggs menu starts eggs and shows every timer from anywhere; a ready egg opens only at the
   hatchery, as before. The menu's "Show me the way" draws a line to the egg's nest.
 - Button feel: buttons lift under the pointer, sink onto their shadow when pressed and spring back; a

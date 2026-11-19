@@ -778,15 +778,6 @@ local function upgradeCard(u: StationConfig.Upgrade, order: number)
 			local tag = Style.chip(view, "Not built yet", C.ink, Color3.new(1, 1, 1))
 			tag.Position, tag.TextSize = UDim2.fromOffset(8, 8), 13
 		end
-		local after = if cost then pictureOf(u, level + 1) else now
-		if built and after ~= now then -- the next level changes how it looks: a peek at it
-			local peek = picture(card, pics[after], UDim2.fromOffset(84, 48))
-			peek.AnchorPoint, peek.Position = Vector2.new(1, 1), UDim2.fromOffset(196, 110)
-			Style.round(peek, 8)
-			Style.stroke(peek, C.ink, 3)
-			local tag = Style.chip(peek, "NEXT", C.accent)
-			tag.Position, tag.TextSize, tag.Size = UDim2.fromOffset(-6, -10), 11, UDim2.fromOffset(0, 20)
-		end
 	end
 	local title = Style.text(card, u.name, 21, C.text, UDim2.new(1, -24, 0, 26))
 	title.Position = UDim2.fromOffset(12, 122)
