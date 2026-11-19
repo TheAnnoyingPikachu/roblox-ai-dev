@@ -7224,62 +7224,62 @@
     "png": "build/blender/stations/creature_jackal_pharaoh_forge.png",
     "preview": "build/blender/stations/previews/creature_jackal_pharaoh_forge_rest.png",
     "size_studs": [
-      3.53,
-      6.44,
+      3.09,
+      5.7,
       9.1
     ],
-    "tris": 5130,
+    "tris": 3135,
     "parts": {
-      "creature_jackal_pharaoh_forge_body": 5130
+      "creature_jackal_pharaoh_forge_body": 3135
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Pharaoh Jackal: SHANNON's Anubis jackal from ForgeGUI (artifact 4f9138bf), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Pharaoh Jackal: SHANNON's Anubis Guardian from ForgeGUI (artifact 518bf4a5), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_jackal_pharaoh_forge_body": [
         0.0,
-        3.221,
+        2.849,
         -0.0
       ]
     },
     "joints": {
       "creature_jackal_pharaoh_forge_head": [
-        0.007,
-        3.983,
-        2.943
+        0.0,
+        3.828,
+        2.862
       ],
       "creature_jackal_pharaoh_forge_leg_fl": [
-        0.866,
-        1.787,
-        2.18
+        1.039,
+        1.939,
+        2.485
       ],
       "creature_jackal_pharaoh_forge_leg_fr": [
-        -0.852,
-        1.787,
-        2.18
+        -1.039,
+        1.939,
+        2.485
       ],
       "creature_jackal_pharaoh_forge_leg_bl": [
-        0.819,
-        2.264,
-        -1.639
+        0.944,
+        2.223,
+        -0.725
       ],
       "creature_jackal_pharaoh_forge_leg_br": [
-        -0.805,
-        2.264,
-        -1.639
+        -0.944,
+        2.223,
+        -0.725
       ],
       "creature_jackal_pharaoh_forge_tail": [
-        0.007,
-        3.505,
-        -2.594
+        0.0,
+        2.506,
+        -1.481
       ]
     },
     "skinned": true,
     "root": [
-      0.007,
-      3.028,
-      0.175
+      0.0,
+      2.884,
+      0.785
     ]
   }
 }

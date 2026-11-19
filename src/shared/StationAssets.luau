@@ -2786,19 +2786,19 @@ local StationAssets: { [string]: Asset } = {
 		root = { -0.001, 2.047, 0.535 },
 	},
 	creature_jackal_pharaoh_forge = {
-		size = { 3.53, 6.44, 9.1 },
+		size = { 3.09, 5.7, 9.1 },
 		parts = { "creature_jackal_pharaoh_forge_body" },
 		glow = {},
 		centres = {
-			creature_jackal_pharaoh_forge_body = { 0, 3.221, 0 },
+			creature_jackal_pharaoh_forge_body = { 0, 2.849, 0 },
 		},
 		joints = {
-			creature_jackal_pharaoh_forge_head = { 0.007, 3.983, 2.943 },
-			creature_jackal_pharaoh_forge_leg_fl = { 0.866, 1.787, 2.18 },
-			creature_jackal_pharaoh_forge_leg_fr = { -0.852, 1.787, 2.18 },
-			creature_jackal_pharaoh_forge_leg_bl = { 0.819, 2.264, -1.639 },
-			creature_jackal_pharaoh_forge_leg_br = { -0.805, 2.264, -1.639 },
-			creature_jackal_pharaoh_forge_tail = { 0.007, 3.505, -2.594 },
+			creature_jackal_pharaoh_forge_head = { 0, 3.828, 2.862 },
+			creature_jackal_pharaoh_forge_leg_fl = { 1.039, 1.939, 2.485 },
+			creature_jackal_pharaoh_forge_leg_fr = { -1.039, 1.939, 2.485 },
+			creature_jackal_pharaoh_forge_leg_bl = { 0.944, 2.223, -0.725 },
+			creature_jackal_pharaoh_forge_leg_br = { -0.944, 2.223, -0.725 },
+			creature_jackal_pharaoh_forge_tail = { 0, 2.506, -1.481 },
 		},
 		model = 118840162265064,
 		decal = 138699331550159,
@@ -2806,7 +2806,7 @@ local StationAssets: { [string]: Asset } = {
 		rainbowDecal = 70715356895161,
 		rainbowTexture = nil,
 		skinned = true,
-		root = { 0.007, 3.028, 0.175 },
+		root = { 0, 2.884, 0.785 },
 	},
 }
 

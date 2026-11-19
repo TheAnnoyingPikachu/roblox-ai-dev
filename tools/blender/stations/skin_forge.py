@@ -98,19 +98,19 @@ def tortoise_weights(p):
     return {k: v for k, v in w.items() if v > 0.001}
 
 
-def anubis_weights(p):
-    """SHANNON's Anubis jackal (ForgeGUI artifact 4f9138bf), the Pharaoh Jackal: symmetric, the head and
-    its tall ears at y < -0.32, a mane of crystal shards hanging to z -0.17 under the chest, front legs at
-    x +-0.09, y -0.23 (apart below z -0.21), hind legs at x +-0.085, y 0.19 (apart below z -0.13), and a
-    spiked tail rising behind from y 0.27."""
-    tail = ramp(0.25, 0.3, p.y)
-    head = ramp(-0.29, -0.35, p.y) * ramp(-0.12, -0.04, p.z)
+def pharaoh_weights(p):
+    """SHANNON's "Anubis Guardian in Gold and Blue" (ForgeGUI artifact 518bf4a5), the Pharaoh Jackal:
+    symmetric, the head and its headdress at y < -0.3, front legs at x +-0.11, y -0.29 (apart below
+    z -0.12), hind legs at x +-0.12, y 0.08 (apart below z -0.1), small wings on the back (they ride on the
+    body) and a long tail hanging behind from y 0.16."""
+    tail = ramp(0.15, 0.2, p.y)
+    head = ramp(-0.27, -0.34, p.y) * ramp(-0.06, 0.02, p.z)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
     leg, down = None, 0.0
-    if 0.03 < abs(p.x) < 0.16:
-        if -0.31 < p.y < -0.12:
-            leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.13, -0.2, p.z)
-        elif 0.0 < p.y < 0.28:
+    if 0.06 < abs(p.x) < 0.17:
+        if -0.37 < p.y < -0.18:
+            leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.08, -0.15, p.z)
+        elif -0.01 < p.y < 0.16:
             leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.07, -0.14, p.z)
     if leg and down > 0:
         w = {k: v * (1 - down) for k, v in w.items()}
@@ -122,17 +122,17 @@ REGIONS = {
     "creature_jackal_pharaoh_forge": {
         "length": 9.1,  # the Blender Pharaoh Jackal's length (StationAssets.creature_jackal_pharaoh.size)
         "joints": {
-            "body": (0.0, -0.02, -0.02),
-            "head": (0.0, -0.31, 0.08),
-            "leg_fl": (0.09, -0.23, -0.15),
-            "leg_fr": (-0.09, -0.23, -0.15),
-            "leg_bl": (0.085, 0.17, -0.1),
-            "leg_br": (-0.085, 0.17, -0.1),
-            "tail": (0.0, 0.27, 0.03),
+            "body": (0.0, -0.08, 0.0),
+            "head": (0.0, -0.3, 0.1),
+            "leg_fl": (0.11, -0.26, -0.1),
+            "leg_fr": (-0.11, -0.26, -0.1),
+            "leg_bl": (0.1, 0.08, -0.07),
+            "leg_br": (-0.1, 0.08, -0.07),
+            "tail": (0.0, 0.16, -0.04),
         },
-        "weights": anubis_weights,
+        "weights": pharaoh_weights,
         "small": 0.06,
-        "notes": "Pharaoh Jackal: SHANNON's Anubis jackal from ForgeGUI (artifact 4f9138bf), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Pharaoh Jackal: SHANNON's Anubis Guardian from ForgeGUI (artifact 518bf4a5), one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_jackal_forge": {
         "length": 7.4,  # the Blender jackal's length (StationAssets.creature_jackal.size)
