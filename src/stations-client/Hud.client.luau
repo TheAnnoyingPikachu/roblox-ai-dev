@@ -1164,19 +1164,42 @@ end
 -- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer.
 local wheelTurn = 0
 local function wheelView()
+	local SIZE, ODDS_W = 400, 190
 	local holder = Instance.new("Frame")
 	holder.BackgroundTransparency = 1
-	holder.Size, holder.LayoutOrder = UDim2.new(1, -12, 0, 360), 1
+	holder.Size, holder.LayoutOrder = UDim2.new(1, -12, 0, SIZE + 120), 1
 	holder.Parent = gifts.body
+
+	-- the odds, out of the way on the left
+	local odds = Instance.new("Frame")
+	odds.BackgroundTransparency = 1
+	odds.Position, odds.Size = UDim2.fromOffset(0, 8), UDim2.new(0, ODDS_W, 1, -8)
+	Style.list(odds, 4)
+	odds.Parent = holder
+	Style.text(odds, "THE ODDS", 13, C.muted, UDim2.new(1, 0, 0, 18)).LayoutOrder = 0
+	local n = #StationRewards.WHEEL
+	for k, slice in StationRewards.WHEEL do
+		local line = Style.text(odds, `{slice.name}: {slice.ppm / 10000}%`, 14, if k == n then C.bad else C.muted)
+		line.LayoutOrder = k
+	end
+	local pity =
+		Style.text(odds, `After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`, 13, C.muted)
+	pity.LayoutOrder = 20
+
+	-- the wheel, big, in the middle of what is left
+	local stage = Instance.new("Frame")
+	stage.BackgroundTransparency = 1
+	stage.Position, stage.Size = UDim2.fromOffset(ODDS_W + 10, 0), UDim2.new(1, -(ODDS_W + 10), 1, 0)
+	stage.Parent = holder
 	local disc = Instance.new("Frame")
 	disc.Name = "Wheel"
 	disc.AnchorPoint, disc.Position, disc.Size =
-		Vector2.new(0, 0.5), UDim2.new(0, 10, 0.5, 0), UDim2.fromOffset(320, 320)
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 22), UDim2.fromOffset(SIZE, SIZE)
 	disc.BackgroundColor3 = C.sand
 	disc.Rotation = wheelTurn % 360
-	Style.round(disc, 160)
-	Style.stroke(disc, C.ink, 5)
-	disc.Parent = holder
+	Style.round(disc, SIZE / 2)
+	Style.stroke(disc, C.ink, 6)
+	disc.Parent = stage
 	local colours = {
 		C.cardHi,
 		C.accent,
@@ -1187,19 +1210,18 @@ local function wheelView()
 		Color3.fromRGB(247, 163, 189),
 		C.gold,
 	}
-	local n = #StationRewards.WHEEL
 	for k, slice in StationRewards.WHEEL do
 		local a = math.rad((k - 1) * 360 / n - 90)
 		local bubble = Instance.new("TextLabel")
 		bubble.AnchorPoint = Vector2.new(0.5, 0.5)
-		bubble.Position = UDim2.new(0.5, math.cos(a) * 112, 0.5, math.sin(a) * 112)
-		bubble.Size = UDim2.fromOffset(78, 78)
+		bubble.Position = UDim2.new(0.5, math.cos(a) * SIZE * 0.35, 0.5, math.sin(a) * SIZE * 0.35)
+		bubble.Size = UDim2.fromOffset(SIZE * 0.25, SIZE * 0.25)
 		bubble.BackgroundColor3 = colours[k]
 		bubble.Font = Ui.theme.font
 		bubble.Text = slice.name
-		bubble.TextWrapped, bubble.TextSize, bubble.TextColor3 = true, 13, C.ink
+		bubble.TextWrapped, bubble.TextSize, bubble.TextColor3 = true, 15, C.ink
 		bubble.Rotation = (k - 1) * 360 / n
-		Style.round(bubble, 39)
+		Style.round(bubble, SIZE * 0.125)
 		Style.stroke(bubble, C.ink, 3)
 		if k == n then
 			local g = Instance.new("UIGradient")
@@ -1208,34 +1230,20 @@ local function wheelView()
 		end
 		bubble.Parent = disc
 	end
-	local hub = Style.text(disc, "SPIN", 22, C.ink, UDim2.fromOffset(84, 84))
+	local hub = Style.text(disc, "", 1, C.ink, UDim2.fromOffset(SIZE * 0.22, SIZE * 0.22))
 	hub.AnchorPoint, hub.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
 	hub.BackgroundTransparency, hub.BackgroundColor3 = 0, C.accent
-	hub.TextXAlignment = Enum.TextXAlignment.Center
-	Style.round(hub, 42)
-	Style.stroke(hub, C.ink, 4)
-	local pointer = Style.text(holder, "▼", 40, C.bad, UDim2.fromOffset(40, 40))
-	pointer.AnchorPoint, pointer.Position = Vector2.new(0.5, 0), UDim2.fromOffset(170, -6)
+	Style.round(hub, SIZE * 0.11)
+	Style.stroke(hub, C.ink, 5)
+	local pointer = Style.text(stage, "▼", 48, C.bad, UDim2.fromOffset(48, 48))
+	pointer.AnchorPoint, pointer.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, -4)
 	pointer.TextXAlignment, pointer.ZIndex = Enum.TextXAlignment.Center, 5
 	Style.outline(pointer)
 
-	local side = Instance.new("Frame")
-	side.BackgroundTransparency = 1
-	side.Position, side.Size = UDim2.fromOffset(350, 0), UDim2.new(1, -350, 1, 0)
-	Style.list(side, 6)
-	side.Parent = holder
-	local can = StationRewards.canSpin(profile, Workspace:GetServerTimeNow())
-	local nextIn = (StationRewards.day(Workspace:GetServerTimeNow()) + 1) * 86400 - Workspace:GetServerTimeNow()
-	local status = if can
-		then (if profile.rewards.spins > 0
-			then `Spins ready: {profile.rewards.spins + (if profile.rewards.spinDay
-					< StationRewards.day(Workspace:GetServerTimeNow())
-				then 1
-				else 0)}`
-			else "Your free spin is ready!")
-		else `Next free spin in {Format.ago(nextIn)}`
-	Style.text(side, status, 18, C.text, UDim2.new(1, 0, 0, 26)).LayoutOrder = 1
-	local b = Style.button(side, "Spin it!", function()
+	-- under the wheel: the button, which pops while a spin is ready, and when the next one comes
+	local now = Workspace:GetServerTimeNow()
+	local can = StationRewards.canSpin(profile, now)
+	local b = Style.button(stage, if can then "Spin it!" else "Spun today", function()
 		if spinning then
 			return
 		end
@@ -1245,24 +1253,27 @@ local function wheelView()
 			spinning = false
 			Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 		end
-	end, if can then "primary" else "off", UDim2.new(1, 0, 0, 52))
-	b.LayoutOrder, b.TextSize = 2, 22
-	local odds = Style.text(side, "THE ODDS", 13, C.muted, UDim2.new(1, 0, 0, 18))
-	odds.LayoutOrder = 3
-	for k, slice in StationRewards.WHEEL do
-		local per = slice.ppm / 10000
-		local line =
-			Style.text(side, `{slice.name}: {per}%`, 14, if k == n then C.bad else C.muted, UDim2.new(1, 0, 0, 18))
-		line.LayoutOrder = 3 + k
+	end, if can then "primary" else "off", UDim2.fromOffset(240, 60))
+	b.AnchorPoint, b.Position, b.TextSize = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 40), 26
+	if can then
+		local pop = b:FindFirstChildOfClass("UIScale") :: UIScale
+		task.spawn(function() -- a gentle pulse until it is pressed or the menu redraws
+			while b.Parent and not spinning do
+				TweenService:Create(pop, TweenInfo.new(0.45, Enum.EasingStyle.Sine), { Scale = 1.08 }):Play()
+				task.wait(0.5)
+				if not b.Parent or spinning then
+					break
+				end
+				TweenService:Create(pop, TweenInfo.new(0.45, Enum.EasingStyle.Sine), { Scale = 1 }):Play()
+				task.wait(0.5)
+			end
+		end)
+	else
+		local nextIn = (StationRewards.day(now) + 1) * 86400 - now
+		local t = Style.text(stage, `Next free spin in {Format.ago(nextIn)}`, 16, C.muted, UDim2.fromOffset(300, 22))
+		t.AnchorPoint, t.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 106)
+		t.TextXAlignment = Enum.TextXAlignment.Center
 	end
-	local pity = Style.text(
-		side,
-		`After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`,
-		13,
-		C.muted,
-		UDim2.new(1, 0, 0, 34)
-	)
-	pity.LayoutOrder = 20
 	return disc
 end
 
