@@ -49,13 +49,15 @@ type Show = {
 	won: boolean,
 	actions: number,
 	seconds: number,
+	ends: { number }, -- the team's HP at the end, shares by slot (a run carries it, decision 0098)
 	start: number,
 	ours: { Model }, -- the team's models by slot
+	setup: BattleRules.Setup?,
+	par: number?, -- the fight's seconds with nobody tapping, nil when that loses (for the stars)
+	couldTap: boolean, -- whether a meter fills in that fight
 }
 local shows: { [Player]: Show } = {}
--- Seconds ahead of the show a tap lands: longer than any attack's wind-up (FightFx.lead), so every
--- attack that has started to play is before it and a replay with the tap shows the same thing so far.
-local TAP_AHEAD = FightFx.POWER_LEAD + 0.3
+local TAP_AHEAD = FightFx.TAP_AHEAD -- seconds ahead of the show a tap lands
 local pending: { [Player]: () -> () } = {} -- the result report, owed once per show
 local active: Player? = nil -- whose show is in the arena (it holds one at a time)
 
@@ -107,6 +109,8 @@ function WaveShow.clear(player: Player)
 	shows[player] = nil
 	player:SetAttribute("CamFocus", nil)
 	player:SetAttribute("CamRadius", nil)
+	player:SetAttribute("ShieldAt", nil)
+	player:SetAttribute("ShieldReady", nil)
 	if active == player then
 		active = nil
 	end
@@ -195,13 +199,22 @@ local function across(sizes: { Vector3 }): ({ number }, number)
 	return out, deepest
 end
 
+-- A pop of words over the fight for `player` (decision 0097): "PERFECT!", a combo, "BLOCKED!".
+local function pop(player: Player, words: string, kind: string)
+	player:SetAttribute("FxPop", words)
+	player:SetAttribute("FxPopKind", kind)
+	player:SetAttribute("FxPopAt", Workspace:GetServerTimeNow())
+end
+
 -- Show wave `wave` between `team` (side 1) and its enemies (side 2) for `player`, and report the
--- result. Returns false and a code when it cannot start.
+-- result. `setup` is a wave run's carried HP and boons (decision 0098). Returns false and a code when
+-- it cannot start.
 function WaveShow.run(
 	player: Player,
 	wave: number,
 	team: { Owned },
-	report: ({ [string]: any }) -> ()
+	report: ({ [string]: any }) -> (),
+	setup: BattleRules.Setup?
 ): (boolean, string?)
 	local stand = CollectionService:GetTagged("WaveStand")[1] :: BasePart?
 	local gatePart = CollectionService:GetTagged("ArenaGate")[1] :: BasePart?
@@ -223,7 +236,11 @@ function WaveShow.run(
 	local foes = LevelRules.enemies(wave)
 	local log: { BattleRules.Hit } = {}
 	local taps: { BattleRules.Tap } = {}
-	local won, actions, seconds = BattleRules.battle(team, foes, log, taps)
+	local won, actions, seconds, ends = BattleRules.battle(team, foes, log, taps, setup)
+	local couldTap = false
+	for _, e in log do
+		couldTap = couldTap or (e.side == 1 and e.energy >= 1)
+	end
 	local show: Show = {
 		token = token,
 		team = team,
@@ -233,11 +250,15 @@ function WaveShow.run(
 		won = won,
 		actions = actions,
 		seconds = seconds,
+		ends = ends,
 		start = math.huge,
 		ours = {},
+		setup = setup,
+		par = if won then seconds else nil,
+		couldTap = couldTap,
 	}
 	shows[player] = show
-	local lineups = { BattleRules.lineup(team, 1), BattleRules.lineup(foes, 2) }
+	local lineups = { BattleRules.lineup(team, 1, setup), BattleRules.lineup(foes, 2) }
 	local folder = folderOf(player)
 
 	-- where everyone stands: our team across the middle of the canyon, the enemies a gap away
@@ -265,9 +286,9 @@ function WaveShow.run(
 		model:SetAttribute("Side", side)
 		model:SetAttribute("Slot", i) -- the client's power plates tap by slot (decision 0092)
 		model:SetAttribute("MaxHp", fighter.maxHp)
-		model:SetAttribute("Hp", fighter.maxHp)
+		model:SetAttribute("Hp", fighter.hp)
 		slots[side][i] =
-			{ model = model, home = home, hp = fighter.maxHp, maxHp = fighter.maxHp, version = 0, side = side }
+			{ model = model, home = home, hp = fighter.hp, maxHp = fighter.maxHp, version = 0, side = side }
 	end
 	for i, a in team do
 		local model = Creatures.spawn(Creatures.asset(a.s, a.v), CFrame.new(0, 500, 0), folder, nil, a.rainbow)
@@ -280,6 +301,9 @@ function WaveShow.run(
 		local model = Creatures.spawnFoe(e.s, CFrame.new(0, 500, 0), folder)
 		if model then
 			Creatures.describeFoe(model, e.s, e.stats)
+			local foe = StationConfig.foe(e.s)
+			model:SetAttribute("Boss", foe ~= nil and foe.kind == "dragon") -- the HUD's bar across the top
+			model:SetAttribute("FoeName", if foe then foe.name else "?")
 		end
 		place(2, i, model, theirX[i], z0 - gap, 1)
 	end
@@ -321,12 +345,29 @@ function WaveShow.run(
 		local root = slot.model.PrimaryPart :: BasePart
 		local from = math.min(gateZ, slot.home.Z - 20)
 		walkFor = math.max(walkFor, (slot.home.Z - from) / WALK_SPEED)
-		root.CFrame = slot.home + Vector3.new(0, 0, from - slot.home.Z)
-		Creatures.play(slot.model, "walk")
+		if slot.model:GetAttribute("Boss") then -- a dragon drops out of the sky instead (decision 0097)
+			root.CFrame = slot.home + Vector3.new(0, 90, 0)
+			Creatures.play(slot.model, "idle")
+		else
+			root.CFrame = slot.home + Vector3.new(0, 0, from - slot.home.Z)
+			Creatures.play(slot.model, "walk")
+		end
 	end
 	for _, slot in slots[2] do
 		local root = slot.model.PrimaryPart :: BasePart
-		TweenService:Create(root, TweenInfo.new(walkFor, Enum.EasingStyle.Linear), { CFrame = slot.home }):Play()
+		local boss = slot.model:GetAttribute("Boss") == true
+		local info = if boss
+			then TweenInfo.new(walkFor, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+			else TweenInfo.new(walkFor, Enum.EasingStyle.Linear)
+		TweenService:Create(root, info, { CFrame = slot.home }):Play()
+		if boss then
+			slot.model:SetAttribute("LandAt", Workspace:GetServerTimeNow() + walkFor)
+		end
+	end
+	for _, slot in slots[1] do -- one already knocked out in a run's earlier wave lies down
+		if slot.hp <= 0 then
+			fall(slot.model)
+		end
 	end
 	task.wait(walkFor)
 	if not live() then
@@ -388,14 +429,30 @@ function WaveShow.run(
 			if e.side == 1 then
 				actor.model:SetAttribute("Power", e.energy)
 			end
+			local ko = e.hp <= 0
 			if not RANGED[kind] then -- a melee attacker freezes with its target; a shooter has nothing to hit
-				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0, final))
+				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0, final, ko))
 				actor.model:SetAttribute("StopAt", now)
 			end
+			local crit = e.perfect == true or (e.combo or 1) > 1
 			target.model:SetAttribute("HitPower", if e.power then 1 else 0)
 			target.model:SetAttribute("HitDmg", e.dmg)
 			target.model:SetAttribute("HitFinal", if final then 1 else 0)
+			target.model:SetAttribute("HitCrit", if crit then 1 else 0)
+			target.model:SetAttribute("HitKo", if ko then 1 else 0)
 			target.model:SetAttribute("HitAt", now)
+			if e.side == 1 and crit then
+				local words = {}
+				if e.perfect then
+					table.insert(words, "PERFECT!")
+				end
+				if (e.combo or 1) > 1 then
+					table.insert(words, `COMBO x{e.combo}`)
+				end
+				pop(player, table.concat(words, "  "), if (e.combo or 1) >= 3 then "big" else "perfect")
+			elseif e.shielded then
+				pop(player, "BLOCKED!", "shield")
+			end
 			target.hp, target.version = e.hp, target.version + 1
 			target.model:SetAttribute("Hp", math.max(0, e.hp))
 			if e.hp <= 0 then
@@ -423,21 +480,57 @@ function WaveShow.run(
 		table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
 	end
 	pending[player] = function()
+		-- stars (decision 0097) and the MVP: the team's animal that dealt the most damage
+		local down, dealt = false, {}
+		for _, e in show.log do
+			down = down or (e.tside == 1 and e.hp <= 0)
+			if e.side == 1 then
+				dealt[e.slot] = (dealt[e.slot] or 0) + e.dmg
+			end
+		end
+		local mvp = 0
+		for slot, d in dealt do
+			if mvp == 0 or d > dealt[mvp] then
+				mvp = slot
+			end
+		end
+		local target = LevelRules.target(show.par, show.couldTap)
+		local best = team[mvp]
+		local va = if best and best.v then StationConfig.variant(best.s, best.v) else nil
+		local sp = if best then StationConfig.species(best.s) else nil
 		report({
 			wave = wave,
 			won = show.won,
 			seconds = show.seconds,
 			attacks = show.actions,
 			foes = table.concat(names, ", "),
+			stars = LevelRules.stars(show.won, down, show.seconds, target),
+			target = target,
+			ends = show.ends,
+			mvp = if va then va.name elseif sp then sp.name else nil,
+			mvpDmg = dealt[mvp] or 0,
 		})
 	end
 	task.spawn(function()
 		local nextHit, cheered = 1, false
+		local told: { [string]: boolean } = {}
 		while live() do
 			local now = os.clock()
 			while show.log[nextHit] and start + show.log[nextHit].t - TAP_AHEAD <= now do
 				play(show.log[nextHit])
 				nextHit += 1
+			end
+			-- an enemy power attack is coming: warn under the attacker (decision 0097)
+			for _, e in show.log do
+				local key = `{e.slot}:{e.t}`
+				local at = start + e.t
+				if e.side == 2 and e.power and not told[key] and at - FightFx.TELL <= now and at > now then
+					told[key] = true
+					local foe = slots[2][e.slot]
+					if foe.hp > 0 then
+						foe.model:SetAttribute("TellAt", Workspace:GetServerTimeNow() + (at - now))
+					end
+				end
 			end
 			-- the survivors of the winning side celebrate a beat after the last hit, until the show is cleared
 			if not cheered and now >= start + show.seconds + 1.0 then
@@ -487,7 +580,7 @@ function WaveShow.power(player: Player, slot: number): (boolean, string?)
 	local taps = table.clone(show.taps)
 	table.insert(taps, { slot = slot, t = t })
 	local log: { BattleRules.Hit } = {}
-	local won, actions, seconds = BattleRules.battle(show.team, show.foes, log, taps)
+	local won, actions, seconds, ends = BattleRules.battle(show.team, show.foes, log, taps, show.setup)
 	local fired = false
 	for _, e in log do
 		fired = fired or (e.tap == true and e.side == 1 and e.slot == slot and e.t == t)
@@ -495,10 +588,38 @@ function WaveShow.power(player: Player, slot: number): (boolean, string?)
 	if not fired or (show.won and not won) then
 		return false, "power"
 	end
-	show.taps, show.log, show.won, show.actions, show.seconds = taps, log, won, actions, seconds
+	show.taps, show.log, show.won, show.actions, show.seconds, show.ends = taps, log, won, actions, seconds, ends
 	if show.ours[slot] then -- the meter empties at once; the strike lands TAP_AHEAD from now
 		show.ours[slot]:SetAttribute("Power", 0)
 	end
+	return true, nil
+end
+
+-- The player raises the team's shield (decision 0097): a tap on slot 0, replayed like a power tap.
+-- Refused while the last shield is cooling down (BattleRules.shields) or when the fight is over.
+function WaveShow.shield(player: Player): (boolean, string?)
+	local show = shows[player]
+	if show == nil or runs[player] ~= show.token then
+		return false, "no_fight"
+	end
+	local t = os.clock() - show.start + TAP_AHEAD
+	if t < 0 or t >= show.seconds then
+		return false, "shield"
+	end
+	local taps = table.clone(show.taps)
+	table.insert(taps, { slot = 0, t = t })
+	if not table.find(BattleRules.shields(taps), t) then
+		return false, "shield_wait"
+	end
+	local log: { BattleRules.Hit } = {}
+	local won, actions, seconds, ends = BattleRules.battle(show.team, show.foes, log, taps, show.setup)
+	if show.won and not won then
+		return false, "shield"
+	end
+	show.taps, show.log, show.won, show.actions, show.seconds, show.ends = taps, log, won, actions, seconds, ends
+	local now = Workspace:GetServerTimeNow()
+	player:SetAttribute("ShieldAt", now + TAP_AHEAD) -- when it rises in the show
+	player:SetAttribute("ShieldReady", now + BattleRules.SHIELD_COOLDOWN)
 	return true, nil
 end
 

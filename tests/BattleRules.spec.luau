@@ -437,20 +437,20 @@ describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)"
 	end
 
 	it("makes a tap PERFECT_AT after the meter filled a Perfect, PERFECT times as strong", function()
-		local one, two = { owned("lion") }, { owned("rhino") } -- alone, so no combo changes the numbers
+		local solo, foe = { owned("lion") }, { owned("rhino") } -- alone, so no combo changes the numbers
 		local base = {}
-		BattleRules.battle(one, two, base, {}, ready)
+		BattleRules.battle(solo, foe, base, {}, ready)
 		local at = filled(base, 1)
 		local plain, perfect = {}, {}
-		BattleRules.battle(one, two, plain, { { slot = 1, t = at + 1 } }, ready)
-		BattleRules.battle(one, two, perfect, { { slot = 1, t = at + BattleRules.PERFECT_AT } }, ready)
+		BattleRules.battle(solo, foe, plain, { { slot = 1, t = at + 1 } }, ready)
+		BattleRules.battle(solo, foe, perfect, { { slot = 1, t = at + BattleRules.PERFECT_AT } }, ready)
 		expect(tapped(plain).perfect).toBeNil()
 		expect(tapped(perfect).perfect).toBe(true)
 		expect(tapped(perfect).dmg > tapped(plain).dmg * 1.4).toBeTruthy()
 		local late = {}
 		BattleRules.battle(
-			one,
-			two,
+			solo,
+			foe,
 			late,
 			{ { slot = 1, t = at + BattleRules.PERFECT_AT + BattleRules.PERFECT_LATE + 0.05 } },
 			ready

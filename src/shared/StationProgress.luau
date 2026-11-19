@@ -790,6 +790,13 @@ function StationProgress.clear(p: Profile, level: number): (Profile, boolean, st
 	return p, true, nil
 end
 
+-- Add `coins` and `samples` the server has decided to pay (a wave run's pot, decision 0098).
+function StationProgress.earn(p: Profile, coins: number, samples: number): Profile
+	p.coins = math.min(p.coins + math.max(0, math.floor(coins)), StationProgress.MAX_COINS)
+	p.samples = math.min(p.samples + math.max(0, math.floor(samples)), StationProgress.MAX_SAMPLES)
+	return p
+end
+
 -- The animals that fight: the team in order, then the Titan, with the stats its Den gives it.
 function StationProgress.fighters(p: Profile): { Animal }
 	local out = {}

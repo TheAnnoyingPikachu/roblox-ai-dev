@@ -1095,6 +1095,8 @@ type Rig = {
 	heldFor: number, -- the AnimAt of that clip
 	flinch: number, -- how far the next "hit" clip is stretched
 	spark: ParticleEmitter?, -- the hit sparks, made on the first hit
+	thud: Sound?, -- the sound of a hit and of a power hit or knockout, made on the first of each
+	boom: Sound?,
 }
 
 local rigs: { [Model]: Rig } = {}
@@ -1169,7 +1171,7 @@ local function strike(rig: Rig)
 	local hot = power > 0 or final
 	local colour = if hot then Color3.fromRGB(255, 120, 70) else Color3.fromRGB(255, 220, 160)
 	rig.flinch = FightFx.flinch(power, dmg / math.max(1, (model:GetAttribute("MaxHp") :: number?) or 1))
-	rig.stopUntil = os.clock() + FightFx.hitStop(power, final)
+	rig.stopUntil = os.clock() + FightFx.hitStop(power, final, model:GetAttribute("HitKo") == 1)
 	local spark = rig.spark
 	if spark == nil then
 		spark = Instance.new("ParticleEmitter")
@@ -1202,13 +1204,34 @@ local function strike(rig: Rig)
 	player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
 	player:SetAttribute("CamPunchAt", os.clock())
 	if final then
-		slowAt = os.clock()
+		slowAt = os.clock() -- the finish is the slow motion alone (decision 0097)
 	end
-	-- only the killing blow cuts the camera in on its target (ArenaCamera reads these)
-	if final then
+	-- the team's power attacks cut the camera in on their target (ArenaCamera reads these)
+	if power > 0 and not final and model:GetAttribute("Side") == 2 then
 		player:SetAttribute("CamCut", hit.Position)
 		player:SetAttribute("CamCutAt", os.clock())
 	end
+	-- and every hit is heard: a thud, a slam for a power hit or a knockout
+	local ko = model:GetAttribute("HitKo") == 1
+	local sound = if hot or ko then rig.boom else rig.thud
+	if sound == nil then
+		sound = Instance.new("Sound")
+		local made = sound :: Sound
+		made.SoundId = if hot or ko
+			then "rbxasset://sounds/impact_explosion_03.mp3"
+			else "rbxasset://sounds/action_jump_land.mp3"
+		made.RollOffMaxDistance, made.RollOffMinDistance = 300, 30
+		made.Parent = hit
+		if hot or ko then
+			rig.boom = made
+		else
+			rig.thud = made
+		end
+	end
+	local s2 = sound :: Sound
+	s2.Volume = if final then 0.9 elseif hot or ko then 0.55 else 0.4
+	s2.PlaybackSpeed = (if ko then 0.8 else 1) * (0.92 + math.random() * 0.16)
+	s2:Play()
 end
 
 local function add(model: Instance)
@@ -1237,6 +1260,8 @@ local function add(model: Instance)
 		heldFor = 0,
 		flinch = 1,
 		spark = nil,
+		thud = nil,
+		boom = nil,
 	}
 	rigs[model] = rig
 	-- the server sets StopAt on a melee attacker and HitAt on whoever is struck; both arrive after
@@ -1261,8 +1286,12 @@ local function floatNumber(model: Model, change: number)
 	if hit == nil then
 		return
 	end
+	-- a power hit's number is gold and bigger, a Perfect's or a combo's bigger still (decision 0097)
+	local power = change < 0 and model:GetAttribute("HitPower") == 1
+	local crit = power and model:GetAttribute("HitCrit") == 1
+	local scale = if crit then 2.1 elseif power then 1.6 else 1
 	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromOffset(120, 40)
+	gui.Size = UDim2.fromOffset(120 * scale, 40 * scale)
 	gui.Adornee = hit
 	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
@@ -1274,11 +1303,21 @@ local function floatNumber(model: Model, change: number)
 	text.BackgroundTransparency = 1
 	text.Font = Enum.Font.FredokaOne
 	text.TextScaled = true
-	text.Text = if change < 0 then tostring(change) else `+{change}`
-	text.TextColor3 = if change < 0 then Color3.fromRGB(255, 90, 80) else Color3.fromRGB(110, 255, 140)
+	text.Text = if change >= 0 then `+{change}` elseif crit then `{change}!` else tostring(change)
+	text.TextColor3 = if change >= 0
+		then Color3.fromRGB(110, 255, 140)
+		elseif power then Color3.fromRGB(255, 200, 60)
+		else Color3.fromRGB(255, 90, 80)
 	text.TextStrokeTransparency = 0
 	text.Parent = gui
 	gui.Parent = hit
+	if power then -- it pops in big and settles
+		local size = Instance.new("UIScale")
+		size.Scale = 1.6
+		size.Parent = text
+		TweenService:Create(size, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+			:Play()
+	end
 	TweenService:Create(gui, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 		StudsOffset = gui.StudsOffset + Vector3.new(0, 4, 0),
 	}):Play()

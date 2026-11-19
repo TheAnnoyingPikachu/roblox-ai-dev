@@ -39,7 +39,7 @@ Date: 2026-11-19. Task STATION-103.
     samples; the best egg with training x2 for 1 hour; a Golden Egg.
 - **The reward moment:**
   - The stars pop in one by one.
-  - Coins burst towards the counter, with the ka-ching.
+  - Coins burst towards the counter, with the claim chime. The ka-ching stays for purchases only (SHANNON, earlier).
   - The MVP (most damage) is named.
   - "Next wave" is ready in the same spot.
 

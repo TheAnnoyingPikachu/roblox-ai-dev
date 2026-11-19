@@ -29,7 +29,7 @@
     "Leaving banks the pot and a loss banks half",
     "Clearing a boss wave in a run gives its boss chest"
   ],
-  "verification": "",
+  "verification": "Lune 754/754, selene clean. Studio, local build, stamp `dev`, 2026-11-19: wave 1 won offered three boons; a pick started wave 2 in the same run, which was won and offered three new boons; the result shows the streak and pot.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

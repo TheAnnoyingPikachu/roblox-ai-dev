@@ -34,7 +34,7 @@
     "Power attacks cut the camera in with the move's name; the last hit is slow motion only",
     "The result shows stars, a coin burst and the MVP; a win offers three boons that start the next wave"
   ],
-  "verification": "",
+  "verification": "Studio, local build, stamp `dev`, 2026-11-19: the camera behind the team with its entrance; the ring on full plates; PERFECT!, COMBO x2 and BLOCKED! pops; the move name (SHELL SLAM!) with the power cut-in; the warning disc under the Hexfire Whelp and the flashing shield button; the boss landing with its bar; the result bar along the bottom (SHANNON: never over the animals) with stars, MVP, coins and boon cards. Console clean of script errors.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

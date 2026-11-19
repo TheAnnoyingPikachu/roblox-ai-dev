@@ -50,6 +50,9 @@ BattleRules.HEAL_PCT = 8 -- Utility: each attack also heals the most hurt teamma
 BattleRules.MAX_SECONDS = 300 -- a fight this long is a loss for side 1 (heals could stall it)
 BattleRules.MAX_ACTIONS = 5000 -- backstop for absurd stats; also a loss for side 1
 
+-- A run's carried HP and boons for side 1 (decision 0098; see `battle`).
+export type Setup = { hp: { number }?, energy: number?, dmg: number?, maxHp: number?, tempo: number? }
+
 -- One animal's battle numbers before group bonuses. Each stat feeds exactly one of them.
 function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 	local sp = StationConfig.species(animal.s) or StationConfig.foe(animal.s)
@@ -84,7 +87,7 @@ end
 -- A whole team ready to fight, with the group bonuses on damage and HP: a pack animal gains
 -- PACK_PCT % for each other pack animal, a solitary animal SOLITARY_PCT % when no teammate
 -- shares its role.
-function BattleRules.lineup(team: { Owned }, side: number): { Fighter }
+function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fighter }
 	local out = {}
 	for i, a in team do
 		table.insert(out, BattleRules.fighter(a, side, i))
@@ -108,6 +111,18 @@ function BattleRules.lineup(team: { Owned }, side: number): { Fighter }
 		f.dmg = math.floor(f.dmg * (100 + pct) / 100)
 		f.maxHp = math.floor(f.maxHp * (100 + pct) / 100)
 		f.hp = f.maxHp
+	end
+	if setup then -- a run's carried HP and boons (decision 0098)
+		for i, f in out do
+			f.dmg = math.max(1, math.floor(f.dmg * (setup.dmg or 1)))
+			f.maxHp = math.max(1, math.floor(f.maxHp * (setup.maxHp or 1)))
+			local share = if setup.hp and setup.hp[i] then setup.hp[i] else 1
+			f.hp = if share <= 0 then 0 else math.max(1, math.floor(f.maxHp * math.min(1, share)))
+			f.swing *= setup.tempo or 1
+			f.rest *= setup.tempo or 1
+			f.next = f.swing
+			f.energy = math.floor(BattleRules.POWER_COST * math.clamp(setup.energy or 0, 0, 0.99))
+		end
 	end
 	return out
 end
@@ -219,7 +234,6 @@ export type Hit = {
 	heal: { slot: number, hp: number }?,
 }
 export type Tap = { slot: number, t: number }
-export type Setup = { hp: { number }?, energy: number?, dmg: number?, maxHp: number?, tempo: number? }
 
 -- The times of the shield taps (slot 0) in `taps` that raise the shield, in order.
 function BattleRules.shields(taps: { Tap }): { number }
@@ -247,19 +261,7 @@ function BattleRules.battle(
 	taps: { Tap }?,
 	setup: Setup?
 ): (boolean, number, number, { number })
-	local sides = { BattleRules.lineup(one, 1), BattleRules.lineup(two, 2) }
-	if setup then
-		for i, f in sides[1] do
-			f.dmg = math.max(1, math.floor(f.dmg * (setup.dmg or 1)))
-			f.maxHp = math.max(1, math.floor(f.maxHp * (setup.maxHp or 1)))
-			local share = if setup.hp and setup.hp[i] then setup.hp[i] else 1
-			f.hp = if share <= 0 then 0 else math.max(1, math.floor(f.maxHp * math.min(1, share)))
-			f.swing *= setup.tempo or 1
-			f.rest *= setup.tempo or 1
-			f.next = f.swing
-			f.energy = math.floor(BattleRules.POWER_COST * math.clamp(setup.energy or 0, 0, 0.99))
-		end
-	end
+	local sides = { BattleRules.lineup(one, 1, setup), BattleRules.lineup(two, 2) }
 	local all = table.clone(sides[1])
 	for _, f in sides[2] do
 		table.insert(all, f)

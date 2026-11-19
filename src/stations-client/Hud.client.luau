@@ -22,6 +22,8 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BattleRules = require(Shared:WaitForChild("BattleRules"))
+local FightFx = require(Shared:WaitForChild("FightFx"))
+local WaveRuns = require(Shared:WaitForChild("WaveRuns"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
@@ -100,6 +102,10 @@ local REFUSED: { [string]: string } = {
 	busy = "The arena is busy: try again in a moment",
 	arena = "The arena is not ready",
 	ranch = "You have no ranch yet",
+	shield = "Nothing to shield from right now",
+	shield_wait = "Your shield is still recharging",
+	boon = "Pick one of the three boons",
+	no_fight = "No fight is on",
 }
 
 local player = Players.LocalPlayer
@@ -1493,30 +1499,76 @@ end
 -- Waves ---------------------------------------------------------------------------------------------------
 
 local wave = 1
-local result = Style.frame(root, UDim2.new(1, -24, 0, 0), C.sand) -- shown over the fight
+-- The fight's panel: a wide, low bar along the bottom, left of the power plates and the shield, so it
+-- never covers the animals (SHANNON, 2026-11-19). What happened on the left, what to do next on the right.
+local result = Style.frame(root, UDim2.new(1, -420, 0, 0), C.sand)
 Style.round(result, 18)
 Style.stroke(result, C.ink, 3)
 result.Name = "WaveResult"
 result.AutomaticSize = Enum.AutomaticSize.Y
-result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -84), false
+result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, -185, 1, -14), false
 result.ZIndex = 5
-Style.pad(result, 14)
-Style.list(result, 8)
-local resultLimit = Instance.new("UISizeConstraint")
-resultLimit.MaxSize = Vector2.new(400, 1000)
-resultLimit.Parent = result
-local resultTitle = Style.text(result, "", 24, C.text)
-local resultSub = Style.text(result, "", 15, C.muted)
-local drops = Instance.new("Frame")
-drops.BackgroundTransparency = 1
-drops.Size = UDim2.new(1, 0, 0, 26)
-Style.list(drops, 14, true)
-drops.Parent = result
-local resultButtons = Instance.new("Frame")
-resultButtons.BackgroundTransparency = 1
-resultButtons.Size = UDim2.new(1, 0, 0, 44)
-Style.list(resultButtons, 8, true)
-resultButtons.Parent = result
+Style.pad(result, 12)
+local resultTitle: TextLabel, resultSub: TextLabel
+local starRow: Frame, drops: Frame, boonRow: Frame, resultButtons: Frame
+local starLabels: { TextLabel } = {}
+do
+	local resultColumns = Style.list(result, 14, true)
+	resultColumns.VerticalAlignment = Enum.VerticalAlignment.Center
+	local resultLimit = Instance.new("UISizeConstraint")
+	resultLimit.MinSize, resultLimit.MaxSize = Vector2.new(480, 0), Vector2.new(1000, 1000)
+	resultLimit.Parent = result
+	local function panelColumn(width: number, order: number, gap: number): Frame
+		local f = Instance.new("Frame")
+		f.BackgroundTransparency = 1
+		f.Size, f.AutomaticSize, f.LayoutOrder = UDim2.new(width, -7, 0, 0), Enum.AutomaticSize.Y, order
+		Style.list(f, gap)
+		f.Parent = result
+		return f
+	end
+	local info, act = panelColumn(0.52, 1, 4), panelColumn(0.48, 2, 8)
+	-- the title, with the stars won beside it (decision 0097): three, popping in one by one
+	local titleRow = Instance.new("Frame")
+	titleRow.BackgroundTransparency = 1
+	titleRow.Size, titleRow.LayoutOrder = UDim2.new(1, 0, 0, 36), 1
+	titleRow.Parent = info
+	resultTitle = Style.text(titleRow, "", 24, C.text, UDim2.new(1, -136, 1, 0))
+	starRow = Instance.new("Frame")
+	starRow.BackgroundTransparency = 1
+	starRow.AnchorPoint, starRow.Position, starRow.Size, starRow.Visible =
+		Vector2.new(1, 0), UDim2.fromScale(1, 0), UDim2.new(0, 132, 1, 0), false
+	Style.list(starRow, 4, true)
+	starRow.Parent = titleRow
+	for i = 1, 3 do
+		local star = Style.text(starRow, "★", 34, C.off, UDim2.fromOffset(40, 36))
+		star.TextXAlignment, star.LayoutOrder = Enum.TextXAlignment.Center, i
+		local edge = Instance.new("UIStroke")
+		edge.Thickness, edge.Color = 3, C.ink
+		edge.Parent = star
+		local size = Instance.new("UIScale")
+		size.Parent = star
+		starLabels[i] = star
+	end
+	resultSub = Style.text(info, "", 14, C.muted)
+	resultSub.LayoutOrder = 2
+	resultSub.TextWrapped, resultSub.AutomaticSize = true, Enum.AutomaticSize.Y
+	drops = Instance.new("Frame")
+	drops.BackgroundTransparency = 1
+	drops.Size, drops.LayoutOrder = UDim2.new(1, 0, 0, 26), 3
+	Style.list(drops, 14, true)
+	drops.Parent = info
+	-- after a win in a run, three boons to pick from: picking one starts the next wave (decision 0098)
+	boonRow = Instance.new("Frame")
+	boonRow.BackgroundTransparency = 1
+	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 96), 1, false
+	Style.list(boonRow, 8, true)
+	boonRow.Parent = act
+	resultButtons = Instance.new("Frame")
+	resultButtons.BackgroundTransparency = 1
+	resultButtons.Size, resultButtons.LayoutOrder = UDim2.new(1, 0, 0, 44), 2
+	Style.list(resultButtons, 8, true)
+	resultButtons.Parent = act
+end
 -- A big title that fades as a fight begins: the wave, and who is in it.
 local banner = Style.text(root, "", 56, C.text, UDim2.new(1, 0, 0, 70))
 banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
@@ -1628,19 +1680,109 @@ local function showRarity(a: any)
 end
 
 local fight: (n: number) -> boolean
+local began: (n: number) -> ()
+local moveName: (species: string) -> ()
+local fightTick: (folder: Instance?, showing: boolean) -> ()
+local music: (kind: string?) -> ()
 local again = Style.button(resultButtons, "", function()
 	fight(wave)
 end, "primary", UDim2.new(0.5, -4, 1, 0))
 local leave = Style.button(resultButtons, "Leave the arena", function()
 	result.Visible = false
+	music(nil)
 	send("wave_done")
 end, "ghost", UDim2.new(0.5, -4, 1, 0))
 hideResult = function()
 	result.Visible = false
 end
+local showStars: (n: number) -> ()
+local coinBurst: () -> ()
+local offerBoons: (ids: { string }, n: number) -> ()
 local function buttons(showAgain: boolean)
 	again.Visible = showAgain
 	leave.Size = if showAgain then UDim2.new(0.5, -4, 1, 0) else UDim2.fromScale(1, 1)
+end
+
+-- The stars pop in one by one: gold for each won, pale for the rest (decision 0097).
+showStars = function(n: number)
+	starRow.Visible = true
+	for i, star in starLabels do
+		star.TextColor3, star.TextTransparency = C.off, 1
+		local size = star:FindFirstChildOfClass("UIScale") :: UIScale
+		size.Scale = 0.2
+		task.delay(0.35 * i, function()
+			star.TextColor3 = if i <= n then C.gold else C.off
+			star.TextTransparency = 0
+			TweenService:Create(size, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Scale = if i <= n then 1.15 else 0.9,
+			}):Play()
+			if i <= n then
+				Style.sound("tab")
+			end
+		end)
+	end
+end
+
+-- Coins burst out of the result and fly to the coin counter (the counter itself follows the save).
+coinBurst = function()
+	Style.sound("claim")
+	local from = result.AbsolutePosition + Vector2.new(result.AbsoluteSize.X / 2, 30)
+	local to = coinsText.AbsolutePosition + Vector2.new(0, coinsText.AbsoluteSize.Y / 2)
+	for i = 1, 14 do
+		local coin = Instance.new("Frame")
+		coin.Size, coin.AnchorPoint, coin.BackgroundColor3 = UDim2.fromOffset(18, 18), Vector2.new(0.5, 0.5), C.gold
+		coin.ZIndex = 12
+		Style.round(coin, 9)
+		Style.stroke(coin, C.ink, 2)
+		local spread = Vector2.new(math.random(-140, 140), math.random(-110, -20))
+		coin.Position = UDim2.fromOffset(from.X, from.Y)
+		coin.Parent = screen
+		local out = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		TweenService:Create(coin, out, { Position = UDim2.fromOffset(from.X + spread.X, from.Y + spread.Y) }):Play()
+		task.delay(0.3 + i * 0.035, function()
+			local fly = TweenService:Create(
+				coin,
+				TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+				{ Position = UDim2.fromOffset(to.X, to.Y), Size = UDim2.fromOffset(10, 10) }
+			)
+			fly.Completed:Once(function()
+				coin:Destroy()
+			end)
+			fly:Play()
+		end)
+	end
+end
+
+-- Three boons as cards (decision 0098); a rare one is edged in gold. Picking one starts wave `n`.
+offerBoons = function(ids: { string }, n: number)
+	Style.clear(boonRow)
+	boonRow.Visible = true
+	for k, id in ids do
+		local boon = WaveRuns.boon(id)
+		if boon then
+			local card = Style.button(boonRow, "", function()
+				if not boonRow.Visible then -- a second click while the first is on its way
+					return
+				end
+				boonRow.Visible = false
+				local ok, code = request:InvokeServer("boon", id)
+				if not ok then
+					boonRow.Visible = true
+					Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
+					return
+				end
+				began(n)
+			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -6, 1, 0))
+			card.Name, card.LayoutOrder = boon.name, k
+			local title = Style.text(card, boon.name, 17, C.text, UDim2.new(1, -12, 0, 24))
+			title.Position, title.TextXAlignment = UDim2.fromOffset(6, 8), Enum.TextXAlignment.Center
+			local words = Style.text(card, boon.text, 13, C.muted, UDim2.new(1, -12, 0, 38))
+			words.Position, words.TextXAlignment, words.TextWrapped =
+				UDim2.fromOffset(6, 32), Enum.TextXAlignment.Center, true
+			local go = Style.text(card, `Wave {n} ▶`, 12, C.text, UDim2.new(1, -12, 0, 16))
+			go.Position, go.TextXAlignment = UDim2.new(0, 6, 1, -20), Enum.TextXAlignment.Center
+		end
+	end
 end
 
 fight = function(n: number): boolean
@@ -1649,15 +1791,370 @@ fight = function(n: number): boolean
 		Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 		return false
 	end
+	began(n)
+	return true
+end
+
+began = function(n: number)
 	wave = n
 	show(nil)
 	resultTitle.Text, resultSub.Text = `Wave {n}`, "The fight is on..."
 	Style.clear(drops)
+	Style.clear(boonRow)
+	starRow.Visible, boonRow.Visible, drops.Visible = false, false, false
 	buttons(false)
 	leave.Text = "Skip the fight" -- the pay is already settled: leaving shows the result at once
 	result.Visible = true
 	announce(n)
-	return true
+	music(if n % LevelRules.BOSS_EVERY == 0 then "boss" else "fight")
+end
+
+-- Fight feel (decision 0097) ---------------------------------------------------------------------------
+-- Words that pop over the fight (PERFECT!, a combo, BLOCKED!, a power attack's name), a flash and a
+-- shake, the boss's bar across the top, the shield button and the warnings before enemy power attacks,
+-- and the fight's music. Display only: the server decides, the shield button only asks.
+do
+	local POWER_MOVES: { [string]: string } = {
+		lion = "KING'S ROAR",
+		jackal = "PACK AMBUSH",
+		tortoise = "SHELL SLAM",
+		meerkat = "BURROW BLITZ",
+		cheetah = "LIGHTNING DASH",
+		rhino = "HORN CHARGE",
+		flamingo = "PINK CYCLONE",
+		giraffe = "SKY KICK",
+		elephant = "EARTHQUAKE STOMP",
+	}
+	-- Roblox-licensed audio (docs/assets/register.md): APM music and stings, Pro Sound Effects
+	local AUDIO = {
+		fight = "rbxassetid://9048541013",
+		boss = "rbxassetid://1848096079",
+		win = "rbxassetid://1836473422",
+		lose = "rbxassetid://9039598193",
+		roar = "rbxassetid://9113980319",
+		whoosh = "rbxassetid://9114373663",
+		shield = "rbxassetid://9125920594",
+		gong = "rbxassetid://9125585534",
+	}
+	local SoundService = game:GetService("SoundService")
+	local audio: { [string]: Sound } = {}
+	local function sound(name: string, volume: number?): Sound
+		local s = audio[name]
+		if s == nil then
+			s = Instance.new("Sound")
+			local made = s :: Sound
+			made.SoundId = AUDIO[name]
+			made.Parent = SoundService
+			audio[name] = made
+		end
+		local out = s :: Sound
+		out.Volume = volume or 0.6
+		return out
+	end
+	local function fxSound(name: string, volume: number?)
+		sound(name, volume):Play()
+	end
+
+	local track: Sound? = nil
+	music = function(kind: string?)
+		local old = track
+		if old then
+			local fade = TweenService:Create(old, TweenInfo.new(0.8), { Volume = 0 })
+			fade.Completed:Once(function()
+				if track ~= old then
+					old:Stop()
+				end
+			end)
+			fade:Play()
+		end
+		track = nil
+		if kind == "fight" or kind == "boss" then
+			local s = sound(kind, 0.25)
+			s.Looped = true
+			s.TimePosition = 0
+			s:Play()
+			track = s
+			fxSound("gong", 0.45)
+		elseif kind == "win" or kind == "lose" then
+			fxSound(kind, 0.7)
+		end
+	end
+
+	local function jolt(strength: number)
+		player:SetAttribute("CamShake", strength) -- ArenaCamera reads these
+		player:SetAttribute("CamShakeAt", os.clock())
+	end
+
+	local whiteout = Instance.new("Frame")
+	whiteout.Name = "Flash"
+	whiteout.Size, whiteout.BackgroundColor3, whiteout.BackgroundTransparency =
+		UDim2.fromScale(1, 1), Color3.new(1, 1, 1), 1
+	whiteout.BorderSizePixel, whiteout.ZIndex, whiteout.Active = 0, 9, false
+	whiteout.Parent = root
+	local function flashScreen(strength: number)
+		whiteout.BackgroundTransparency = 1 - 0.5 * strength
+		TweenService:Create(whiteout, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
+	end
+
+	local function bigWords(at: UDim2, size: number, stroke: Color3): (TextLabel, UIStroke, UIScale)
+		local t = Style.text(root, "", size, C.gold, UDim2.new(1, 0, 0, size + 20))
+		t.AnchorPoint, t.Position, t.TextTransparency = Vector2.new(0.5, 0.5), at, 1
+		t.TextXAlignment, t.ZIndex = Enum.TextXAlignment.Center, 8
+		local edge = Instance.new("UIStroke")
+		edge.Thickness, edge.Color, edge.Transparency = 5, stroke, 1
+		edge.Parent = t
+		local scale = Instance.new("UIScale")
+		scale.Parent = t
+		return t, edge, scale
+	end
+	local popText, popEdge, popScale = bigWords(UDim2.fromScale(0.5, 0.36), 60, C.ink)
+	local moveText, moveEdge, moveScale = bigWords(UDim2.fromScale(0.5, 0.25), 42, C.bad)
+	moveText.TextColor3 = Color3.new(1, 1, 1)
+	local popped, moved = 0, 0
+	local function popWords(words: string, colour: Color3, big: number)
+		popped += 1
+		local mine = popped
+		popText.Text, popText.TextColor3 = words, colour
+		popText.TextTransparency, popEdge.Transparency, popScale.Scale = 0, 0, 0.3
+		TweenService
+			:Create(popScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = big })
+			:Play()
+		task.delay(0.9, function()
+			if popped == mine then
+				TweenService:Create(popText, TweenInfo.new(0.35), { TextTransparency = 1 }):Play()
+				TweenService:Create(popEdge, TweenInfo.new(0.35), { Transparency = 1 }):Play()
+			end
+		end)
+	end
+	moveName = function(species: string)
+		local words = POWER_MOVES[species]
+		if words == nil then
+			return
+		end
+		moved += 1
+		local mine = moved
+		moveText.Text = `{words}!`
+		moveText.TextTransparency, moveEdge.Transparency, moveScale.Scale = 0, 0, 1.6
+		moveText.Position = UDim2.new(0.5, -40, 0.25, 0)
+		local snap = TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		TweenService:Create(moveScale, snap, { Scale = 1 }):Play()
+		TweenService:Create(moveText, snap, { Position = UDim2.fromScale(0.5, 0.25) }):Play()
+		fxSound("whoosh", 0.5)
+		task.delay(1.1, function()
+			if moved == mine then
+				TweenService:Create(moveText, TweenInfo.new(0.3), { TextTransparency = 1 }):Play()
+				TweenService:Create(moveEdge, TweenInfo.new(0.3), { Transparency = 1 }):Play()
+			end
+		end)
+	end
+	player:GetAttributeChangedSignal("FxPopAt"):Connect(function()
+		local words, kind = player:GetAttribute("FxPop"), player:GetAttribute("FxPopKind")
+		if type(words) ~= "string" then
+			return
+		elseif kind == "shield" then
+			popWords(words, C.info, 1)
+		elseif kind == "big" then
+			popWords(words, C.bad, 1.35)
+			flashScreen(1)
+			jolt(1)
+			Style.sound("claim")
+		else
+			popWords(words, C.gold, 1.15)
+			flashScreen(0.6)
+			jolt(0.6)
+			Style.sound("claim")
+		end
+	end)
+
+	-- the boss's bar: it slams in as the dragon lands
+	local bossBar = Style.frame(root, UDim2.fromOffset(440, 66), C.night)
+	Style.round(bossBar, 14)
+	Style.stroke(bossBar, C.ink, 3)
+	bossBar.AnchorPoint, bossBar.Position, bossBar.Visible, bossBar.ZIndex =
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14), false, 6
+	local bossName = Style.text(bossBar, "", 20, C.hex, UDim2.new(1, -24, 0, 26))
+	bossName.Position, bossName.TextXAlignment = UDim2.fromOffset(12, 6), Enum.TextXAlignment.Center
+	local bossHp, setBossHp = Style.bar(bossBar, UDim2.new(1, -24, 0, 16), C.bad)
+	bossHp.Position = UDim2.fromOffset(12, 38)
+	local bossScale = Instance.new("UIScale")
+	bossScale.Parent = bossBar
+	local bossOf: Model? = nil
+
+	-- the shield: a round button left of the plates (or F); it pulses while an enemy power attack is coming
+	local tellUntil = 0
+	local shieldButton = Style.button(root, "SHIELD\n[F]", function() end, "ghost", UDim2.fromOffset(104, 104))
+	shieldButton.AnchorPoint, shieldButton.Position = Vector2.new(1, 1), UDim2.new(1, -252, 1, -20)
+	shieldButton.Visible, shieldButton.TextSize, shieldButton.ZIndex = false, 20, 4
+	Style.radius(shieldButton, 52)
+	local shieldLook = ""
+	local function raiseShield()
+		if not shieldButton.Visible then
+			return
+		end
+		local ready = player:GetAttribute("ShieldReady")
+		if type(ready) == "number" and Workspace:GetServerTimeNow() < ready then
+			Style.sound("denied")
+			return
+		end
+		local ok, code = request:InvokeServer("shield")
+		if ok then
+			fxSound("shield", 0.5)
+		elseif code == "shield_wait" then
+			Style.sound("denied")
+		end
+	end
+	shieldButton.Activated:Connect(raiseShield)
+	UserInputService.InputBegan:Connect(function(input, used)
+		if not used and input.KeyCode == Enum.KeyCode.F then
+			raiseShield()
+		end
+	end)
+	-- the bubble round the team while the shield is up
+	player:GetAttributeChangedSignal("ShieldAt"):Connect(function()
+		local at = player:GetAttribute("ShieldAt")
+		if type(at) ~= "number" then
+			return
+		end
+		task.delay(math.max(0, at - Workspace:GetServerTimeNow()), function()
+			local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+			for _, m in if folder then folder:GetChildren() else {} do
+				local hp = m:GetAttribute("Hp")
+				if m:IsA("Model") and m:GetAttribute("Side") == 1 and type(hp) == "number" and hp > 0 then
+					local cf, size = m:GetBoundingBox()
+					local ball = Instance.new("Part")
+					ball.Shape, ball.Material, ball.Color = Enum.PartType.Ball, Enum.Material.ForceField, C.info
+					ball.Size, ball.CFrame = Vector3.one * math.max(size.X, size.Y, size.Z) * 1.1, cf
+					ball.Anchored, ball.CanCollide, ball.CanQuery, ball.CanTouch, ball.CastShadow =
+						true, false, false, false, false
+					ball.Parent = Workspace
+					TweenService:Create(ball, TweenInfo.new(BattleRules.SHIELD_SECONDS + 0.3), { Transparency = 1 })
+						:Play()
+					Debris:AddItem(ball, BattleRules.SHIELD_SECONDS + 0.4)
+				end
+			end
+		end)
+	end)
+
+	-- An enemy power attack is coming (the server sets TellAt, when it lands): a disc under the attacker,
+	-- orange while it is too soon to shield, red and closing while a shield now would be up when it lands.
+	local function warnOf(m: Model)
+		local at = m:GetAttribute("TellAt")
+		if type(at) ~= "number" then
+			return
+		end
+		local now = Workspace:GetServerTimeNow()
+		local deadline = at - FightFx.TAP_AHEAD - now -- the last moment a press still raises it in time
+		local opens = deadline - BattleRules.SHIELD_SECONDS + 0.1
+		if deadline <= 0 then
+			return
+		end
+		local cf, size = m:GetBoundingBox()
+		local r = math.max(size.X, size.Z) * 0.8
+		local disc = Instance.new("Part")
+		disc.Shape, disc.Material, disc.Color, disc.Transparency =
+			Enum.PartType.Cylinder, Enum.Material.Neon, C.accent, 0.35
+		disc.Size = Vector3.new(0.2, r * 2.4, r * 2.4)
+		disc.CFrame = CFrame.new(cf.Position.X, cf.Position.Y - size.Y / 2 + 0.3, cf.Position.Z)
+			* CFrame.Angles(0, 0, math.pi / 2)
+		disc.Anchored, disc.CanCollide, disc.CanQuery, disc.CanTouch, disc.CastShadow = true, false, false, false, false
+		disc.Parent = Workspace
+		TweenService:Create(disc, TweenInfo.new(deadline, Enum.EasingStyle.Linear), { Size = Vector3.new(0.2, r, r) })
+			:Play()
+		task.delay(math.max(0, opens), function()
+			disc.Color = C.bad
+			tellUntil = os.clock() + math.min(deadline, BattleRules.SHIELD_SECONDS)
+		end)
+		task.delay(deadline, function()
+			disc.Color = C.night
+			TweenService
+				:Create(disc, TweenInfo.new(math.max(0.1, at - Workspace:GetServerTimeNow())), { Transparency = 1 })
+				:Play()
+		end)
+		Debris:AddItem(disc, at - now + 0.5)
+	end
+
+	local warned: { [Model]: boolean } = {}
+	-- Every tick of the fight (from the plates' loop): hook new enemies' warnings, the boss's bar, the
+	-- shield button, and the music building as the enemies fall.
+	fightTick = function(folder: Instance?, showing: boolean)
+		shieldButton.Visible = showing
+		local boss: Model? = nil
+		local left, total = 0, 0
+		for _, m in if folder then folder:GetChildren() else {} do
+			if m:IsA("Model") and m:GetAttribute("Side") == 2 then
+				if not warned[m] then
+					warned[m] = true
+					m:GetAttributeChangedSignal("TellAt"):Connect(function()
+						warnOf(m)
+					end)
+					m.Destroying:Connect(function()
+						warned[m] = nil
+					end)
+				end
+				local hp, max = m:GetAttribute("Hp"), m:GetAttribute("MaxHp")
+				if type(hp) == "number" and type(max) == "number" then
+					left += math.max(0, hp)
+					total += max
+				end
+				if m:GetAttribute("Boss") == true then
+					boss = m
+				end
+			end
+		end
+		if track and total > 0 then
+			track.Volume = 0.25 + 0.25 * (1 - left / total)
+		end
+		-- the boss
+		if boss ~= bossOf then
+			bossOf = boss
+			bossBar.Visible = false
+			if boss then
+				local landAt = boss:GetAttribute("LandAt")
+				task.delay(
+					if type(landAt) == "number" then math.max(0, landAt - Workspace:GetServerTimeNow()) else 0,
+					function()
+						if bossOf ~= boss then
+							return
+						end
+						bossName.Text = string.upper(tostring(boss:GetAttribute("FoeName") or "Boss"))
+						bossBar.Visible, bossScale.Scale = true, 1.8
+						TweenService
+							:Create(bossScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+								Scale = 1,
+							})
+							:Play()
+						fxSound("roar", 0.8)
+						jolt(1)
+					end
+				)
+			end
+		end
+		if boss then
+			local hp, max = boss:GetAttribute("Hp"), boss:GetAttribute("MaxHp")
+			if type(hp) == "number" and type(max) == "number" then
+				setBossHp(math.max(0, hp) / math.max(1, max))
+			end
+		end
+		-- the shield button: cooling down, warning (flashing), or ready
+		local ready = player:GetAttribute("ShieldReady")
+		local wait = if type(ready) == "number" then ready - Workspace:GetServerTimeNow() else 0
+		local look = if wait > 0
+			then `wait {math.ceil(wait)}`
+			elseif os.clock() < tellUntil then (if math.floor(os.clock() * 6) % 2 == 0 then "warn" else "warn2")
+			else "ready"
+		if look ~= shieldLook then
+			shieldLook = look
+			shieldButton.Text = if wait > 0 then `{math.ceil(wait)}` else "SHIELD\n[F]"
+			Style.kind(
+				shieldButton,
+				if wait > 0
+					then "off"
+					elseif look == "warn" then "danger"
+					elseif look == "warn2" then "primary"
+					else "info"
+			)
+		end
+	end
 end
 
 -- Power attacks in a fight (decision 0092): a plate for each of the team's animals, bottom right, with
@@ -1674,7 +2171,16 @@ local plateList = Style.list(plates, 12)
 plateList.VerticalAlignment = Enum.VerticalAlignment.Bottom
 plates.Parent = root
 
-type Plate = { button: TextButton, hp: (number) -> (), power: (number) -> (), name: TextLabel, full: boolean }
+type Plate = {
+	button: TextButton,
+	hp: (number) -> (),
+	power: (number) -> (),
+	name: TextLabel,
+	full: boolean,
+	ring: Frame,
+	edge: UIStroke,
+	grow: UIScale,
+}
 local plateOf: { [number]: Plate } = {}
 
 local function firePower(slot: number)
@@ -1701,7 +2207,51 @@ local function plate(slot: number, label: string): Plate
 	hpBar.Position = UDim2.fromOffset(12, 32)
 	local pBar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 10), C.accent)
 	pBar.Position = UDim2.fromOffset(12, 52)
-	return { button = b, hp = setHp, power = setPower, name = name, full = false }
+	-- the Perfect ring (decision 0097): it closes on the plate at the moment to tap
+	local ring = Instance.new("Frame")
+	ring.Name = "Ring"
+	ring.BackgroundTransparency = 1
+	ring.AnchorPoint, ring.Position, ring.Size = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromScale(1, 1)
+	ring.ZIndex, ring.Visible = 10, false
+	Style.round(ring, 14)
+	local edge = Instance.new("UIStroke")
+	edge.Thickness, edge.Color = 5, C.gold
+	edge.Parent = ring
+	local grow = Instance.new("UIScale")
+	grow.Parent = ring
+	ring.Parent = b
+	return {
+		button = b,
+		hp = setHp,
+		power = setPower,
+		name = name,
+		full = false,
+		ring = ring,
+		edge = edge,
+		grow = grow,
+	}
+end
+
+-- Start the Perfect ring on a plate whose meter has just filled: it closes when a tap would land
+-- BattleRules.PERFECT_AT after the fill (a tap reaches the fight FightFx.TAP_AHEAD ahead of the show,
+-- and a little earlier for the player's ping), then flashes and fades over the late part of the window.
+local function ringOn(p: Plate)
+	local ping = math.min(0.25, player:GetNetworkPing() * 2)
+	local close = math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
+	p.ring.Visible, p.grow.Scale = true, 1.8
+	p.edge.Color, p.edge.Thickness, p.edge.Transparency = C.gold, 5, 0
+	TweenService:Create(p.grow, TweenInfo.new(close, Enum.EasingStyle.Linear), { Scale = 1 }):Play()
+	task.delay(close, function()
+		if not p.full then
+			return
+		end
+		p.edge.Color, p.edge.Thickness = Color3.new(1, 1, 1), 9
+		local fade = TweenService:Create(p.edge, TweenInfo.new(BattleRules.PERFECT_LATE + 0.1), { Transparency = 1 })
+		fade.Completed:Once(function()
+			p.ring.Visible = false
+		end)
+		fade:Play()
+	end)
 end
 
 UserInputService.InputBegan:Connect(function(input, used)
@@ -1738,6 +2288,11 @@ task.spawn(function()
 						local sp = if type(s) == "string" then StationConfig.species(s) else nil
 						p = plate(slot, if va then va.name elseif sp then sp.name else "?")
 						plateOf[slot] = p
+						m:GetAttributeChangedSignal("AnimAt"):Connect(function()
+							if m:GetAttribute("Anim") == "magic" and type(s) == "string" then -- its power attack: say its name
+								moveName(s)
+							end
+						end)
 					end
 					local hp, max = m:GetAttribute("Hp"), m:GetAttribute("MaxHp")
 					local alive = type(hp) == "number" and hp > 0
@@ -1749,6 +2304,11 @@ task.spawn(function()
 					p.power(if type(power) == "number" then power else 0)
 					if full ~= p.full then
 						p.full = full
+						if full then
+							ringOn(p)
+						else
+							p.ring.Visible = false
+						end
 						Style.kind(p.button, if full then "primary" else if alive then "ghost" else "off")
 						p.name.Text = if full
 							then `POWER! {(string.gsub(p.name.Text, "^POWER! ", ""))}`
@@ -1766,6 +2326,7 @@ task.spawn(function()
 			end
 		end
 		plates.Visible = next(plateOf) ~= nil
+		fightTick(folder, plates.Visible)
 	end
 end)
 
@@ -1805,6 +2366,8 @@ redraw.waves = function()
 	Style.clear(waves.tabs)
 	wave = math.clamp(wave, 1, profile.best + 1)
 	Style.chip(waves.chips, `Best wave: {profile.best}`)
+	local got = StationProgress.starsOf(profile, wave)
+	Style.chip(waves.chips, string.rep("★", got) .. string.rep("☆", 3 - got), C.gold, C.ink)
 	local boss = wave % LevelRules.BOSS_EVERY == 0
 	if boss then
 		Style.chip(waves.chips, "BOSS WAVE", C.bad, Color3.new(1, 1, 1))
@@ -1846,6 +2409,29 @@ redraw.waves = function()
 		fight(wave)
 	end, if #team > 0 then "danger" else "off", UDim2.fromOffset(196, 60))
 	go.TextSize, go.LayoutOrder = 24, nextOrder()
+	-- stars (decision 0097): the total, and a chest every StationProgress.CHEST_STARS
+	local total, due = StationProgress.starTotal(profile), StationProgress.chestsDue(profile)
+	local chest = Style.button(
+		waves.tabs,
+		if due > 0 then `★ {total}: open a chest!` else `★ {total} stars`,
+		function()
+			if StationProgress.chestsDue(profile) > 0 then
+				send("claim_chest")
+			end
+		end,
+		if due > 0 then "primary" else "off",
+		UDim2.fromOffset(196, 44)
+	)
+	chest.LayoutOrder = nextOrder()
+	local nextAt = (profile.chests + 1) * StationProgress.CHEST_STARS
+	local hint = Style.text(
+		waves.tabs,
+		if due > 0 then "" else `Next chest at {nextAt} stars`,
+		13,
+		C.muted,
+		UDim2.fromOffset(196, 18)
+	)
+	hint.LayoutOrder, hint.TextXAlignment = nextOrder(), Enum.TextXAlignment.Center
 
 	-- the power match-up (decision 0096): the side with more power nearly always wins
 	local ours, theirs = BattleRules.teamPower(team, 1), BattleRules.teamPower(LevelRules.enemies(wave), 2)
@@ -2403,28 +2989,72 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			Style.toast(screen, lucky, 4)
 		end
 	elseif kind == "wavedone" then
-		local took = string.format("%.0f", payload.seconds)
+		local took = string.format("%.1f", payload.seconds)
 		Style.clear(drops)
+		Style.clear(boonRow)
+		drops.Visible = payload.won
+		music(if payload.won then "win" else "lose")
+		showStars(payload.stars or 0)
+		local goals = `★ win   ★ nobody knocked out   ★ {if payload.target
+			then `under {string.format("%.1f", payload.target)}s`
+			else "any win"}`
 		if payload.won then
 			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave} cleared!`, C.good
-			Style.sound("claim")
-			resultSub.Text = `Your team won in {took}s.{if payload.first then " First clear!" else ""}`
+			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.commas(payload.mvpDmg or 0)} damage)` else ""
+			local lines = { `Won in {took}s.{if payload.first then " First clear!" else ""}{mvp}`, goals }
+			if payload.streak then
+				local pot = if payload.pot then payload.pot.coins else 0
+				table.insert(
+					lines,
+					if pot > 0
+						then `Run: {payload.streak} in a row. Pot: +{Format.commas(pot)} coins, paid when you leave.`
+						else `Run: {payload.streak} in a row. Keep winning to fill the pot.`
+				)
+			end
+			resultSub.Text = table.concat(lines, "\n")
 			Style.amount(drops, "coins", `+{Format.commas(payload.coins)}`)
 			Style.amount(drops, "xp", `+{payload.xp} XP`)
 			if payload.samples > 0 then
 				Style.amount(drops, "samples", `+{payload.samples} samples`)
 			end
+			coinBurst()
+			if payload.chest then
+				Style.toast(screen, `Boss chest! {rewardWords(payload.chest)}`, 5, "good")
+			end
 			wave = payload.wave + 1
 			again.Text = `Fight wave {wave}`
+			if payload.offer then -- pick a boon: it starts the next wave
+				offerBoons(payload.offer, wave)
+			end
+			buttons(payload.offer == nil)
+			local pot = if payload.pot then payload.pot.coins else 0
+			leave.Text = if pot > 0 then `Leave and bank +{Format.commas(pot)}` else "Leave the arena"
 		else
 			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave}: beaten`, C.bad
 			resultSub.Text = `Your team lost in {took}s to {payload.foes}. Train your animals up and try again.`
 			wave = payload.wave
 			again.Text = `Try wave {wave} again`
+			buttons(true)
+			leave.Text = "Leave the arena"
 		end
-		buttons(true)
-		leave.Text = "Leave the arena"
 		result.Visible = true
+	elseif kind == "banked" then
+		if payload.lost and payload.coins > 0 then
+			Style.toast(
+				screen,
+				`Run over after {payload.waves} waves: you keep half the pot, +{Format.commas(payload.coins)} coins`,
+				5
+			)
+		elseif payload.coins > 0 or payload.samples > 0 then
+			Style.toast(
+				screen,
+				`Run banked: +{Format.commas(payload.coins)} coins{if payload.samples > 0
+					then ` and {payload.samples} samples`
+					else ""}`,
+				5,
+				"good"
+			)
+		end
 	elseif kind == "waveshow" then
 		local took = string.format("%.0f", payload.seconds)
 		Style.toast(

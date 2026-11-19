@@ -32,7 +32,7 @@
     "The shield halves enemy power attacks, with a cooldown",
     "A won wave gives up to three stars, kept per wave, and a star chest every 15 stars"
   ],
-  "verification": "",
+  "verification": "Lune 754/754, selene clean. Studio, local build, stamp `dev`, 2026-11-19: wave 1 won with 2 of 3 stars (10.2 s against a 10.0 s target), stars saved per wave; a tap as the ring closed gave PERFECT!; a second animal's power within 3 s gave COMBO x2; the shield pressed in the warning window gave BLOCKED! with a 6 s cooldown.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

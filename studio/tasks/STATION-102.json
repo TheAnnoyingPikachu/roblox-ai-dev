@@ -26,7 +26,7 @@
     "Every enemy in the Waves menu shows its power, with the team-against-wave match-up",
     "The side with more power wins at least 95% of the test fights"
   ],
-  "verification": "",
+  "verification": "Lune 754/754, selene clean. Studio, local build, stamp `dev`, 2026-11-19: power on the Waves menu's enemy cards and the match-up chip (3,590 vs 503: you're stronger). The calculator page's numbers match the game for every animal version and waves 1 to 150 (176 checks).",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

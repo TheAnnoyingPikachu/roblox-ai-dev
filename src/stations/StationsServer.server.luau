@@ -121,6 +121,7 @@ local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 local StationRewards = require(Shared:WaitForChild("StationRewards"))
+local WaveRuns = require(Shared:WaitForChild("WaveRuns"))
 
 local rng = Rng.seed(os.time(), Random.new():NextInteger(1, 2 ^ 30))
 local saves
@@ -366,8 +367,29 @@ end
 -- fight time is up, so skipping the replay does not make farming faster. The player's taps fire
 -- their power attacks during the replay (decision 0092): a fight nobody taps in decides the pay at
 -- once, and a fight the taps turn into a win pays when it ends (a tap never loses a won fight).
+-- Every fight is part of a wave run (decision 0098): HP carries over, a win offers three boons (picking
+-- one starts the next wave), and the run's pot is banked when the player leaves (half after a loss).
+-- Stars (decision 0097) are kept per wave.
 local readyAt: { [Player]: number } = {} -- os.clock() when the player may start another fight
-local function waveFight(player: Player, level: number): (boolean, string?)
+local waveRuns: { [Player]: WaveRuns.Run } = {}
+
+-- End the player's run, if any, and pay its pot: all of it, or WaveRuns.LOSS_KEEP % after a loss.
+local function bankRun(player: Player, lost: boolean)
+	local run = waveRuns[player]
+	waveRuns[player] = nil
+	if run == nil then
+		return
+	end
+	local coins, samples = WaveRuns.bank(run, lost)
+	if coins > 0 or samples > 0 then
+		saves.apply(player, function(q)
+			return StationProgress.earn(q, coins, samples)
+		end)
+	end
+	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = run.streak })
+end
+
+local function waveFight(player: Player, level: number, continuing: boolean?): (boolean, string?)
 	local p = saves.get(player)
 	if p == nil then
 		return false, "loading"
@@ -380,7 +402,18 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 		return false, code
 	end
 	local team = StationProgress.fighters(copy)
-	local won, _, seconds = LevelRules.fight(team :: any, level, {})
+	if not continuing then -- a new run: the old one (if any) is banked
+		bankRun(player, false)
+		local seed
+		seed, rng = Rng.int(rng, 1, 2 ^ 30)
+		waveRuns[player] = WaveRuns.new(level, #team, seed)
+	end
+	local run = waveRuns[player]
+	if run == nil or run.wave ~= level then
+		return false, "wave"
+	end
+	local setup = WaveRuns.setup(run)
+	local won, _, seconds = LevelRules.fight(team :: any, level, {}, setup)
 	readyAt[player] = os.clock() + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
 	local coins, xp, samples = StationProgress.payout(copy, level)
 	local first = level > copy.best
@@ -390,19 +423,95 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 				return (StationProgress.clear(q, level))
 			end)
 		end
+		saves.apply(player, function(q)
+			return StationProgress.setStars(q, level, result.stars)
+		end)
 		result.coins, result.xp, result.samples =
 			if result.won then coins else 0, if result.won then xp else 0, if result.won then samples else 0
 		result.first = first
+		if waveRuns[player] == run then
+			if result.won then
+				local after = WaveRuns.won(run, result.ends, coins, samples)
+				waveRuns[player] = after
+				result.offer, result.streak, result.pot = after.offer, after.streak, after.pot
+				if level % LevelRules.BOSS_EVERY == 0 then -- the boss chest
+					local q = saves.get(player)
+					local items = if q
+						then StationRewards.resolve(
+							StationProgress.sanitize(q, os.time()),
+							StationRewards.bossChest(level)
+						)
+						else nil
+					if items then
+						local animals, now = rollEggs(items), os.time()
+						local given = apply(player, function(r)
+							return StationRewards.grant(r, items, animals, nil, now)
+						end)
+						result.chest = if given then items else nil
+					end
+				end
+			else
+				bankRun(player, true)
+			end
+		end
 		remotes.fx(player, "wavedone", result)
-	end)
+	end, setup)
 	if not started then
 		readyAt[player] = nil
+		if not continuing then
+			waveRuns[player] = nil
+		end
 	elseif won then
 		saves.apply(player, function(q)
 			return (StationProgress.clear(q, level))
 		end)
 	end
 	return started, why
+end
+
+-- Pick boon `id` from the run's offer and fight the run's next wave (decision 0098).
+local function pickBoon(player: Player, id: string): (boolean, string?)
+	local run = waveRuns[player]
+	if run == nil or run.offer == nil then
+		return false, "boon"
+	elseif os.clock() < (readyAt[player] or 0) then
+		return false, "busy"
+	end
+	local p = saves.get(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local can, code = StationProgress.canFight(StationProgress.sanitize(p, os.time()), run.wave)
+	if not can then
+		return false, code
+	end
+	local picked, ok, why = WaveRuns.pick(run, id)
+	if not ok then
+		return false, why
+	end
+	waveRuns[player] = picked
+	return waveFight(player, picked.wave, true)
+end
+
+-- Open the next star chest (decision 0097).
+local function openChest(player: Player): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local spec, code = StationRewards.nextChest(p)
+	if spec == nil then
+		return false, code
+	end
+	local items = StationRewards.resolve(p, spec)
+	local animals, now = rollEggs(items), os.time()
+	local ok, why = apply(player, function(q)
+		return StationRewards.claimChest(q, items, animals, now)
+	end)
+	if ok then
+		remotes.fx(player, "reward", { items = items })
+	end
+	return ok, why
 end
 
 -- Trading (decision 0084): two players in this server swap animals. A trade lives here, not in the
@@ -722,10 +831,19 @@ local router = Router.new({
 			args = { Payload.int({ min = 1, max = 4 }) },
 			handler = WaveShow.power,
 		},
+		-- raise the team's shield (decision 0097)
+		shield = { args = {}, handler = WaveShow.shield },
+		-- pick a boon after a won wave in a run; it starts the next wave (decision 0098)
+		boon = {
+			args = { Payload.enum({ "claws", "hide", "quick", "charged", "mend", "revive", "lucky", "gold" }) },
+			handler = pickBoon,
+		},
+		claim_chest = { args = {}, handler = openChest },
 		wave_done = {
 			args = {},
 			handler = function(player)
-				WaveShow.clear(player)
+				WaveShow.clear(player) -- reports a fight still on, then the run is banked
+				bankRun(player, false)
 				if player.Character then
 					player.Character:PivotTo(World.arenaGate())
 				end
@@ -741,6 +859,7 @@ local router = Router.new({
 					return false, "ranch"
 				end
 				WaveShow.clear(player)
+				bankRun(player, false)
 				local to = World.ranchSpawn(i)
 				pcall(player.RequestStreamAroundAsync, player, to.Position)
 				player.Character:PivotTo(to)
@@ -756,6 +875,7 @@ local router = Router.new({
 					return false, "loading"
 				end
 				WaveShow.clear(player)
+				bankRun(player, false)
 				local to = if where == "hub" then World.hubSpawn() else World.arenaGate()
 				pcall(player.RequestStreamAroundAsync, player, to.Position)
 				player.Character:PivotTo(to)
@@ -911,6 +1031,7 @@ Players.PlayerRemoving:Connect(function(player)
 	invites[player] = nil
 	looks(player):Destroy()
 	WaveShow.clear(player)
+	bankRun(player, false)
 	readyAt[player] = nil
 	local i = ranchOf(player)
 	if i then
