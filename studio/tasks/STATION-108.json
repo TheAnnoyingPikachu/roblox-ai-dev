@@ -31,7 +31,8 @@
     "tests/StationAssets.spec.luau",
     "docs/decisions/0101-animal-stations-swarm-waves.md",
     "studio/tasks/STATION-108.json",
-    "docs/decisions/0097-animal-stations-fight-feel.md"
+    "docs/decisions/0097-animal-stations-fight-feel.md",
+    "src/stations/CLAUDE.md"
   ],
   "tests": [
     "BattleRules.spec.luau",
