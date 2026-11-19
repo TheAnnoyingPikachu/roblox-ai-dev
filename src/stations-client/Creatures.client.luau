@@ -21,7 +21,7 @@ local TrainFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("T
 local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
 
 type Pose = { [string]: { number } }
-type Clip = { length: number, keys: { { any } } }
+type Clip = { length: number, keys: { { any } }, cues: { { any } }?, under: boolean? }
 
 local JOINTS = { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "wing_l", "wing_r" }
 local TAU = math.pi * 2
@@ -287,40 +287,92 @@ local DIE_BIPED: Clip = {
 	},
 }
 
--- Per-species attacks (decision 0048). Every one is 0.95 s long (the server's Creatures.LENGTH.attack)
--- with its contact near 0.44 s, where the server lands the hit; a variant uses its species' clip.
--- The rhino keeps the horn charge above (ATTACK), which is also the fallback for a species not listed.
-local function attack(keys: { { any } }): Clip
-	return { length = 0.95, keys = keys }
+-- Per-species attacks (decisions 0048 and 0089). Every one is 0.95 s long (the server's
+-- Creatures.LENGTH.attack) with its contact at ATTACK_HIT, where the server lands the hit; a variant uses
+-- its species' clip. `cues` are effects fired once each, at a time into the clip (CUES, further down);
+-- `under` lets the body sink into the ground (the meerkat's burrow): nothing lifts its feet back up.
+local ATTACK_HIT = 0.44
+local function attack(keys: { { any } }, cues: { { any } }?, under: boolean?): Clip
+	return { length = 0.95, keys = keys, cues = cues, under = under }
 end
 local ATTACKS: { [string]: Clip } = {
-	-- a lunge and a snap, then a shake of the head
+	-- Snap Lunge: crouches low with its ears back, springs forward low and bites, hops back to its stance
 	jackal = attack({
 		{ 0.00, {} },
 		{
-			0.20,
-			{ body = { -4, 0, 0, 0, -0.1, 0.3 }, head = { -22 }, leg_fl = { 12 }, leg_fr = { 12 }, tail = { -14 } },
+			0.22,
+			{
+				body = { -6, 0, 0, 0, -0.22, 0.35 },
+				head = { -18 },
+				leg_fl = { 18 },
+				leg_fr = { 18 },
+				leg_bl = { -12 },
+				leg_br = { -12 },
+				tail = { -16 },
+			},
 		},
 		{
 			0.42,
-			{ body = { 8, 0, 0, 0, 0.06, -0.9 }, head = { 30 }, leg_fl = { -22 }, leg_fr = { -22 }, tail = { 20 } },
+			{
+				body = { 6, 0, 0, 0, 0.04, -1.0 },
+				head = { 26 },
+				leg_fl = { 34 },
+				leg_fr = { 30 },
+				leg_bl = { -30 },
+				leg_br = { -30 },
+				tail = { 18 },
+			},
 		},
-		{ 0.54, { body = { 4, 0, 0, 0, 0.03, -0.7 }, head = { 14, 24 } } },
-		{ 0.66, { body = { 2, 0, 0, 0, 0, -0.5 }, head = { 14, -24 } } },
+		{ 0.52, { body = { 2, 0, 0, 0, 0, -0.9 }, head = { 4 } } },
+		{
+			0.72,
+			{
+				body = { -2, 0, 0, 0, 0.18, 0.15 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 12 },
+				leg_br = { 12 },
+				tail = { 10 },
+			},
+		},
 		{ 0.95, {} },
-	}),
-	-- rears a little and swipes down with one paw, then the other
+	}, { { 0.42, "bite" }, { 0.82, "dust" } }),
+	-- Pounce Swipe: crouches with its rear raised and its tail flicking, pounces with both front paws out,
+	-- lands lightly and skids round
 	cheetah = attack({
 		{ 0.00, {} },
-		{ 0.24, { body = { 14, 0, 0, 0, 0.18, 0.2 }, head = { 8 }, leg_fr = { 75 }, leg_fl = { 20 }, tail = { -18 } } },
 		{
-			0.42,
-			{ body = { -6, 0, 0, 0, -0.04, -0.6 }, head = { 14 }, leg_fr = { -24 }, leg_fl = { 30 }, tail = { 18 } },
+			0.24,
+			{
+				body = { -10, 0, 0, 0, -0.14, 0.3 },
+				head = { -6 },
+				leg_fl = { 36 },
+				leg_fr = { 36 },
+				leg_bl = { -6 },
+				leg_br = { -6 },
+				tail = { 14, 20 },
+			},
 		},
-		{ 0.58, { body = { -2, 0, 0, 0, 0, -0.4 }, leg_fl = { -22 }, leg_fr = { 10 } } },
+		{
+			0.44,
+			{
+				body = { 10, 0, 0, 0, 0.3, -1.2 },
+				head = { 10 },
+				leg_fl = { 80 },
+				leg_fr = { 74 },
+				leg_bl = { -34 },
+				leg_br = { -34 },
+				tail = { -16 },
+			},
+		},
+		{
+			0.62,
+			{ body = { -4, 0, 0, 0, 0, -0.8 }, leg_fl = { -10 }, leg_fr = { -6 }, leg_bl = { 10 }, leg_br = { 10 } },
+		},
+		{ 0.78, { body = { 0, 14, 0, 0, 0, -0.5 } } },
 		{ 0.95, {} },
-	}),
-	-- a heavy shell-first slam: lifts the front, then drops it with the head thrust out
+	}, { { 0.44, "claws" }, { 0.66, "dust" } }),
+	-- Shell Bash: rears its front up, then slams down and shoves its shell forward
 	tortoise = attack({
 		{ 0.00, {} },
 		{
@@ -330,247 +382,520 @@ local ATTACKS: { [string]: Clip } = {
 		{ 0.44, { body = { -10, 0, 0, 0, -0.06, -0.5 }, head = { 24 }, leg_fl = { -12 }, leg_fr = { -12 } } },
 		{ 0.66, { body = { -3, 0, 0, 0, 0, -0.2 }, head = { 8 } } },
 		{ 0.95, {} },
-	}),
-	-- it stands upright (decision 0055; its arms are the front legs): rocks back with both arms up, then
-	-- lunges and claws down. The legs turn against the body so the feet stay flat, the tail so it stays
-	-- on the ground
+	}, { { 0.44, "slam" } }),
+	-- Burrow Pop (it stands upright, decision 0055; its arms are the front legs): dives head first into the
+	-- ground, travels under it (the server's lunge carries it) and bursts up under the target with a
+	-- claw raised in an uppercut
 	meerkat = attack({
+		{ 0.00, {} },
+		{
+			0.14,
+			{
+				body = { -40, 0, 0, 0, -0.3, -0.3 },
+				head = { -10 },
+				leg_fl = { 150 },
+				leg_fr = { 150 },
+				leg_bl = { 20 },
+				leg_br = { 20 },
+				tail = { 20 },
+			},
+		},
+		{ 0.24, { body = { -70, 0, 0, 0, -3.2, -0.4 }, leg_fl = { 170 }, leg_fr = { 170 } } },
+		{ 0.36, { body = { 0, 0, 0, 0, -3.2, -0.6 } } },
+		{
+			0.44,
+			{
+				body = { 8, 0, 0, 0, 0.4, -0.6 },
+				head = { 12 },
+				leg_fl = { 175 },
+				leg_fr = { 40 },
+				leg_bl = { -10 },
+				leg_br = { -10 },
+			},
+		},
+		{ 0.62, { body = { -4, 0, 0, 0, 0.1, -0.4 }, leg_fl = { 60 }, leg_fr = { 30 } } },
+		{ 0.95, {} },
+	}, { { 0.16, "dig" }, { 0.42, "erupt" } }, true),
+	-- Horn Toss: head low, a heavy step in, the horn flicked up under the target, a snort of steam
+	rhino = attack({
 		{ 0.00, {} },
 		{
 			0.26,
 			{
-				body = { 9, 0, 0, 0, 0.03, 0.15 },
-				head = { 6 },
-				leg_fl = { 120 },
-				leg_fr = { 108 },
-				leg_bl = { -9 },
-				leg_br = { -9 },
+				body = { -6, 0, 0, 0, -0.08, 0.3 },
+				head = { -32 },
+				leg_fl = { 12 },
+				leg_fr = { 12 },
+				leg_bl = { 6 },
+				leg_br = { 6 },
 				tail = { -10 },
+			},
+		},
+		{ 0.38, { body = { -4, 0, 0, 0, -0.06, -0.7 }, head = { -30 }, leg_fl = { -16 }, leg_fr = { 18 } } },
+		{
+			0.46,
+			{
+				body = { 8, 0, 0, 0, 0.12, -0.9 },
+				head = { 38 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { -14 },
+				leg_br = { -14 },
+				tail = { 20 },
+			},
+		},
+		{ 0.66, { body = { 2, 0, 0, 0, 0, -0.4 }, head = { 6 } } },
+		{ 0.95, {} },
+	}, { { 0.4, "dust" }, { 0.72, "snort" } }),
+	-- Beak Jab: coils its neck into an S and whips it forward, then draws one leg up
+	flamingo = attack({
+		{ 0.00, {} },
+		{ 0.30, { body = { -7, 0, 0, 0, 0, 0.3 }, head = { -50, 8 }, tail = { -14 } } },
+		{ 0.44, { body = { 10, 0, 0, 0, 0, -0.7 }, head = { 46, -6 }, tail = { 16 } } },
+		{ 0.62, { body = { 3, 0, 0, 0, 0, -0.4 }, head = { 16, 10 } } },
+		{ 0.80, { leg_fr = { 50 } } },
+		{ 0.95, {} },
+	}, { { 0.44, "bite" } }),
+	-- Claw Maul: rears up on its hind legs with its claws high, crashes both paws down, mane bristling
+	lion = attack({
+		{ 0.00, {} },
+		{
+			0.28,
+			{
+				body = { 34, 0, 0, 0, 0.5, 0.3 },
+				head = { -6 },
+				leg_fl = { 100 },
+				leg_fr = { 92 },
+				leg_bl = { -34 },
+				leg_br = { -34 },
+				tail = { -18 },
 			},
 		},
 		{
 			0.44,
 			{
-				body = { -16, 0, 0, 0, 0, -0.45 },
+				body = { -8, 0, 0, 0, -0.1, -0.9 },
+				head = { 12 },
+				leg_fl = { -14 },
+				leg_fr = { -10 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				tail = { 16 },
+			},
+		},
+		{ 0.62, { body = { -3, 0, 0, 0, 0, -0.5 }, head = { 18, 0, 8 } } },
+		{ 0.95, {} },
+	}, { { 0.44, "claws" }, { 0.46, "slam" } }),
+	-- Neck Swing: winds its neck far back to one side and swings it round to club with its head (the neck
+	-- and head are one piece, so it swings from the shoulders)
+	giraffe = attack({
+		{ 0.00, {} },
+		{ 0.28, { body = { 0, 12, 0 }, head = { -6, 55, 10 }, tail = { 0, -20 } } },
+		{ 0.44, { body = { 0, -10, 0, 0, 0, -0.4 }, head = { -14, -45, -12 } } },
+		{ 0.62, { body = { 0, -4, 0 }, head = { -4, -20, -4 } } },
+		{ 0.95, {} },
+	}, { { 0.44, "thump" } }),
+	-- Trunk Slam: the trunk (part of the head) raised high and whipped down, then swung back up
+	elephant = attack({
+		{ 0.00, {} },
+		{ 0.30, { body = { 6, 0, 0, 0, 0.08, 0.15 }, head = { 34 }, leg_fl = { 14 }, tail = { -8 } } },
+		{ 0.44, { body = { -6, 0, 0, 0, -0.06, -0.4 }, head = { -30 }, leg_fl = { -8 }, tail = { 10 } } },
+		{ 0.64, { body = { -2, 0, 0, 0, 0, -0.2 }, head = { 22, 0, 6 } } },
+		{ 0.80, { head = { 10, 0, -6 } } },
+		{ 0.95, {} },
+	}, { { 0.44, "slam" } }),
+}
+-- Power attacks (1.6 s, the hit at MAGIC_IMPACT). Every base animal has its own; a variant can add one
+-- under its asset name ("creature_lion_sun") and it wins over its species'. A clip with `cues` plays
+-- only its own effects; without, the shared charge and slam.
+local function powerAttack(keys: { { any } }, cues: { { any } }): Clip
+	return { length = 1.6, keys = keys, cues = cues }
+end
+-- a tortoise drawn into its shell: legs, head and tail pulled up and in
+local TUCK = { 0, 0, 0, 0, 0.45, 0 }
+local function tucked(yaw: number, z: number): Pose
+	return {
+		body = { 0, yaw, 0, 0, -0.3, z },
+		head = { -10, 0, 0, 0, 0, 0.6 },
+		leg_fl = TUCK,
+		leg_fr = TUCK,
+		leg_bl = TUCK,
+		leg_br = TUCK,
+		tail = { 0, 0, 0, 0, 0.2, -0.3 },
+	}
+end
+local MAGICS: { [string]: Clip } = {
+	-- Pack Howl: sits back and howls; two ghost jackals leap out beside it and streak through the target
+	jackal = powerAttack({
+		{ 0.00, {} },
+		{
+			0.30,
+			{
+				body = { 22, 0, 0, 0, -0.25, 0.4 },
+				head = { 30 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 50 },
+				leg_br = { 50 },
+				tail = { -30 },
+			},
+		},
+		{
+			0.45,
+			{
+				body = { 24, 0, 0, 0, -0.25, 0.4 },
+				head = { 58 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 52 },
+				leg_br = { 52 },
+				tail = { -30 },
+			},
+		},
+		{
+			0.85,
+			{
+				body = { 24, 0, 0, 0, -0.25, 0.4 },
+				head = { 62, 0, 6 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 52 },
+				leg_br = { 52 },
+				tail = { -30 },
+			},
+		},
+		{ 1.10, { body = { 4 }, head = { 4 } } },
+		{ 1.60, {} },
+	}, { { 0.02, "pack" }, { 0.40, "howl" } }),
+	-- Shell Spin: draws into its shell and spins across the ground like a top into the target, then pops
+	-- its head back out. Three whole turns, so it stops facing the way it started
+	tortoise = powerAttack({
+		{ 0.00, {} },
+		{ 0.30, tucked(0, 0) },
+		{ 0.60, tucked(340, -0.8) },
+		{ 0.92, tucked(760, -2.4) },
+		{ 1.20, tucked(940, -1.2) },
+		{ 1.45, { body = { 0, 1080 } } },
+		{ 1.60, { body = { 0, 1080 } } },
+	}, { { 0.30, "dust" }, { 0.60, "spin" }, { 0.92, "shock" } }),
+	-- Sentinel Call: faces the enemy on tiptoe with its paws to its mouth and whistles; its crew pops out of
+	-- holes in a line between it and the enemy and pelts the enemy with pebbles, then it points them on
+	meerkat = powerAttack({
+		{ 0.00, {} },
+		{
+			0.25,
+			{
+				body = { 4, 0, 0, 0, 0.12, 0 },
+				head = { 14 },
+				leg_fl = { 128, 18 },
+				leg_fr = { 128, -18 },
+				leg_bl = { -4 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { 6, 0, 0, 0, 0.16, 0 },
+				head = { 20 },
+				leg_fl = { 132, 20 },
+				leg_fr = { 132, -20 },
+				leg_bl = { -6 },
+				leg_br = { -6 },
+			},
+		},
+		{ 0.80, { body = { -6, 0, 0, 0, 0.05, -0.2 }, head = { 6 }, leg_fl = { 95 }, leg_fr = { 30 } } },
+		{ 0.92, { body = { -10, 0, 0, 0, 0, -0.3 }, head = { 4 }, leg_fl = { 90 }, leg_fr = { 24 } } },
+		{ 1.20, { body = { -3 }, leg_fl = { 40 } } },
+		{ 1.60, {} },
+	}, { { 0.02, "crew" }, { 0.25, "whistle" } }),
+	-- Blur Dash: coils low, then zig-zags through the target as a streak and skids to a stop
+	cheetah = powerAttack({
+		{ 0.00, {} },
+		{
+			0.40,
+			{
+				body = { -9, 0, 0, 0, -0.12, 0.4 },
+				head = { -8 },
+				leg_fl = { 44 },
+				leg_fr = { 44 },
+				leg_bl = { -10 },
+				leg_br = { -10 },
+			},
+		},
+		{
+			0.70,
+			{
+				body = { -12, 0, 0, 0, -0.2, 0.5 },
+				head = { -12 },
+				leg_fl = { 52 },
+				leg_fr = { 52 },
+				leg_bl = { -17 },
+				leg_br = { -17 },
+				tail = { -26 },
+			},
+		},
+		{
+			0.80,
+			{
+				body = { -4, -18, 0, -0.6, 0.1, -2.5 },
+				head = { 4 },
+				leg_fl = { 60 },
+				leg_fr = { 60 },
+				leg_bl = { -40 },
+				leg_br = { -40 },
+				tail = { -10, 20 },
+			},
+		},
+		{
+			0.86,
+			{
+				body = { -4, 18, 0, 0.6, 0.1, -3.5 },
+				leg_fl = { 60 },
+				leg_fr = { 60 },
+				leg_bl = { -40 },
+				leg_br = { -40 },
+				tail = { -10, -20 },
+			},
+		},
+		{
+			0.92,
+			{
+				body = { -6, 0, 0, 0, 0.05, -4.0 },
 				head = { 10 },
-				leg_fl = { 28 },
-				leg_fr = { 36 },
-				leg_bl = { 16 },
-				leg_br = { 16 },
-				tail = { 12 },
+				leg_fl = { -20 },
+				leg_fr = { -20 },
+				leg_bl = { 20 },
+				leg_br = { 20 },
+			},
+		},
+		{ 1.20, { body = { 10, 0, 0, 0, 0, -2.0 }, leg_fl = { -30 }, leg_fr = { -30 } } },
+		{ 1.60, {} },
+	}, { { 0.70, "streak" }, { 0.92, "claws" }, { 1.2, "dust" } }),
+	-- Stampede Charge: paws the ground twice, charges with the ground cracking and rams the target
+	rhino = powerAttack({
+		{ 0.00, {} },
+		{
+			0.30,
+			{
+				body = { -4, 0, 0, 0, -0.06, 0.6 },
+				head = { -30 },
+				leg_fl = { 36 },
+				leg_fr = { -6 },
+				leg_bl = { -14 },
+				leg_br = { -14 },
 			},
 		},
 		{
-			0.62,
+			0.55,
 			{
-				body = { -6, 0, 0, 0, 0, -0.2 },
-				leg_fl = { 16 },
-				leg_fr = { 16 },
-				leg_bl = { 6 },
-				leg_br = { 6 },
-				tail = { 4 },
-			},
-		},
-		{ 0.95, {} },
-	}),
-	-- the neck draws back and whips forward
-	flamingo = attack({
-		{ 0.00, {} },
-		{ 0.30, { body = { -7, 0, 0, 0, 0, 0.3 }, head = { -46, 8 }, tail = { -14 } } },
-		{ 0.44, { body = { 9, 0, 0, 0, 0, -0.7 }, head = { 42, -10 }, tail = { 16 } } },
-		{ 0.60, { body = { 3, 0, 0, 0, 0, -0.4 }, head = { 18, 12 } } },
-		{ 0.95, {} },
-	}),
-	-- a crouch, then a long pounce with both front paws out. The crouch splays the front legs far
-	-- forward (chest low, haunches up) so the paws stay on the ground as the body drops, and the
-	-- tail is held up through the leap: the lions' long tail flame would drag on the ground
-	lion = attack({
-		{ 0.00, {} },
-		{
-			0.26,
-			{
-				body = { -8, 0, 0, 0, -0.22, 0.2 },
-				head = { -10 },
-				leg_fl = { 40 },
+				body = { -6, 0, 0, 0, -0.1, 0.8 },
+				head = { -36 },
+				leg_fl = { -6 },
 				leg_fr = { 40 },
 				leg_bl = { -18 },
 				leg_br = { -18 },
+				tail = { -16 },
+			},
+		},
+		{
+			0.78,
+			{
+				body = { -6, 0, 0, 0, -0.1, 0.6 },
+				head = { -36 },
+				leg_fl = { 30 },
+				leg_fr = { -6 },
+				leg_bl = { -18 },
+				leg_br = { -18 },
+				tail = { -16 },
+			},
+		},
+		{
+			0.92,
+			{
+				body = { 8, 0, 0, 0, 0.08, -3.0 },
+				head = { 34 },
+				leg_fl = { -26 },
+				leg_fr = { -26 },
+				leg_bl = { -22 },
+				leg_br = { -22 },
+				tail = { 22 },
+			},
+		},
+		{ 1.12, { body = { 2 } } },
+		{ 1.60, {} },
+	}, { { 0.30, "paw" }, { 0.55, "paw" }, { 0.78, "charge" }, { 0.92, "quake" } }),
+	-- Flamingo Twirl: rises on one leg with its wings spread and pirouettes twice, whipping up a whirlwind
+	-- of feathers that sweeps into the target
+	flamingo = powerAttack({
+		{ 0.00, {} },
+		{
+			0.30,
+			{
+				body = { 0, 0, 0, 0, 0.2, 0 },
+				head = { 10 },
+				leg_fr = { 70 },
+				leg_bl = { 0, 0, -70 },
+				leg_br = { 0, 0, 70 },
+				tail = { 10 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { 0, 340, 0, 0, 0.25, 0 },
+				head = { 14 },
+				leg_fr = { 80 },
+				leg_bl = { 0, 0, -80 },
+				leg_br = { 0, 0, 80 },
+				tail = { 14 },
+			},
+		},
+		{
+			0.92,
+			{
+				body = { 0, 720, 0, 0, 0.25, -0.3 },
+				head = { 20 },
+				leg_fr = { 80 },
+				leg_bl = { 0, 0, -86 },
+				leg_br = { 0, 0, 86 },
+				tail = { 18 },
+			},
+		},
+		{
+			1.25,
+			{ body = { 0, 720, 0, 0, 0.1, 0 }, leg_fr = { 40 }, leg_bl = { 0, 0, -30 }, leg_br = { 0, 0, 30 } },
+		},
+		{ 1.60, { body = { 0, 720 } } },
+	}, { { 0.30, "whirl" } }),
+	-- King's Roar: plants its feet with its head drawn back, then roars a cone of shockwave at the target
+	lion = powerAttack({
+		{ 0.00, {} },
+		{
+			0.40,
+			{
+				body = { -6, 0, 0, 0, -0.15, 0.3 },
+				head = { 22 },
+				leg_fl = { 26 },
+				leg_fr = { 26 },
+				leg_bl = { -12 },
+				leg_br = { -12 },
 				tail = { -20 },
 			},
 		},
 		{
-			0.44,
+			0.80,
 			{
-				body = { 18, 0, 0, 0, 0.34, -1.2 },
-				head = { 12 },
-				leg_fl = { 58 },
-				leg_fr = { 52 },
-				leg_bl = { -36 },
-				leg_br = { -36 },
-				tail = { -22 },
+				body = { -10, 0, 0, 0, -0.2, 0.45 },
+				head = { 34 },
+				leg_fl = { 30 },
+				leg_fr = { 30 },
+				leg_bl = { -14 },
+				leg_br = { -14 },
+				tail = { -26 },
 			},
 		},
-		{ 0.62, { body = { -4, 0, 0, 0, 0.02, -0.6 }, head = { 8 }, leg_fl = { 10 }, leg_fr = { 10 } } },
-		{ 0.95, {} },
-	}),
-	-- the front legs rise, then a stomp and a trunk-first slam
-	elephant = attack({
+		{
+			0.92,
+			{
+				body = { 8, 0, 0, 0, -0.05, -0.5 },
+				head = { -14 },
+				leg_fl = { -8 },
+				leg_fr = { -8 },
+				leg_bl = { 10 },
+				leg_br = { 10 },
+				tail = { 20 },
+			},
+		},
+		{ 1.25, { body = { 6, 0, 0, 0, -0.05, -0.4 }, head = { -10, 0, 4 } } },
+		{ 1.60, {} },
+	}, { { 0.40, "glow" }, { 0.90, "roar" } }),
+	-- Sky Stomp: rears high on its hind legs and slams both front hooves down; the ground quakes under the
+	-- target
+	giraffe = powerAttack({
 		{ 0.00, {} },
 		{
-			0.30,
-			{ body = { 10, 0, 0, 0, 0.16, 0.2 }, head = { -20 }, leg_fl = { 42 }, leg_fr = { 36 }, tail = { -10 } },
+			0.40,
+			{
+				body = { 28, 0, 0, 0, 0.6, 0.4 },
+				head = { -16 },
+				leg_fl = { 46 },
+				leg_fr = { 40 },
+				leg_bl = { -28 },
+				leg_br = { -28 },
+				tail = { -14 },
+			},
 		},
 		{
-			0.44,
-			{ body = { -7, 0, 0, 0, -0.08, -0.5 }, head = { 30 }, leg_fl = { -12 }, leg_fr = { -10 }, tail = { 12 } },
+			0.78,
+			{
+				body = { 34, 0, 0, 0, 0.8, 0.5 },
+				head = { -20 },
+				leg_fl = { 56 },
+				leg_fr = { 50 },
+				leg_bl = { -34 },
+				leg_br = { -34 },
+				tail = { -18 },
+			},
 		},
-		{ 0.66, { body = { -2, 0, 0, 0, 0, -0.2 }, head = { 10 } } },
-		{ 0.95, {} },
-	}),
-}
--- Power attacks (1.6 s, the slam at MAGIC_IMPACT where the ground erupts). Every base animal has its
--- own; a variant can add one under its asset name ("creature_lion_sun") and it wins over its species'.
-local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
-	return {
-		length = 1.6,
-		keys = {
-			{ 0.00, {} },
-			{ 0.40, coil },
-			{ 0.78, wound },
-			{ MAGIC_IMPACT, slam },
-			{ 1.12, { body = { 2 } } },
-			{ 1.60, {} },
+		{
+			0.92,
+			{
+				body = { -6, 0, 0, 0, -0.1, -0.4 },
+				head = { 14 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 6 },
+				leg_br = { 6 },
+				tail = { 16 },
+			},
 		},
-	}
-end
-local MAGICS: { [string]: Clip } = {
-	-- throws its head back in a howl (a positive pitch lifts the nose), then drives down on the target
-	jackal = powerClip(
-		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { 36 }, tail = { -20 } },
-		{ body = { 20, 0, 0, 0, 0.14, 0.3 }, head = { 52 }, leg_fl = { 14 }, leg_fr = { 14 }, tail = { -26 } },
-		{ body = { -8, 0, 0, 0, -0.12, -1.2 }, head = { -22 }, leg_fl = { -24 }, leg_fr = { -24 }, tail = { 22 } }
-	),
-	-- draws into the shell, rises, and crashes down
-	tortoise = powerClip(
-		{ body = { 6, 0, 0, 0, 0.08, 0.15 }, head = { -18, 0, 0, 0, 0, 0.3 } },
-		{ body = { 16, 0, 0, 0, 0.32, 0.3 }, head = { -24, 0, 0, 0, 0, 0.35 }, leg_fl = { 30 }, leg_fr = { 30 } },
-		{ body = { -9, 0, 0, 0, -0.12, -0.4 }, head = { 22 }, leg_fl = { -10 }, leg_fr = { -10 } }
-	),
-	-- upright: gathers the charge between its paws, lifts it overhead on its toes, then hurls it down
-	meerkat = powerClip({
-		body = { 4, 0, 0, 0, -0.05, 0.1 },
-		head = { -8 },
-		leg_fl = { 60 },
-		leg_fr = { 60 },
-		leg_bl = { -4 },
-		leg_br = { -4 },
-		tail = { -5 },
-	}, {
-		body = { 12, 0, 0, 0, 0.08, 0.2 },
-		head = { 14 },
-		leg_fl = { 165 },
-		leg_fr = { 158 },
-		leg_bl = { -12 },
-		leg_br = { -12 },
-		tail = { -14 },
-	}, {
-		body = { -22, 0, 0, 0, -0.03, -0.6 },
-		head = { 8 },
-		leg_fl = { 40 },
-		leg_fr = { 40 },
-		leg_bl = { 22 },
-		leg_br = { 22 },
-		tail = { 16 },
-	}),
-	-- coils low and bounds in. Its legs are very long: in the coil the front legs splay far forward and the
-	-- body drops only a little, or the paws sink into the ground; in the bound the body rises and the long
-	-- tail is held up, or the hind paws and the tail do
-	cheetah = powerClip({
-		body = { -9, 0, 0, 0, -0.12, 0.4 },
-		head = { -8 },
-		leg_fl = { 44 },
-		leg_fr = { 44 },
-		leg_bl = { -10 },
-		leg_br = { -10 },
-	}, {
-		body = { -12, 0, 0, 0, -0.2, 0.5 },
-		head = { -12 },
-		leg_fl = { 52 },
-		leg_fr = { 52 },
-		leg_bl = { -17 },
-		leg_br = { -17 },
-		tail = { -26 },
-	}, {
-		body = { 14, 0, 0, 0, 0.26, -1.6 },
-		head = { 16 },
-		leg_fl = { 50 },
-		leg_fr = { 50 },
-		leg_bl = { -34 },
-		leg_br = { -34 },
-		tail = { -20 },
-	}),
-	-- the neck coils far back, then spears down; the feet stay planted
-	flamingo = powerClip(
-		{ body = { -6, 0, 0, 0, 0, 0.2 }, head = { -40, 10 } },
-		{ body = { -9, 0, 0, 0, 0, 0.3 }, head = { -58, -12 }, tail = { -20 } },
-		{ body = { 12, 0, 0, 0, 0, -0.8 }, head = { 52 }, tail = { 20 } }
-	),
-	-- a crouch and a roar, then a long leaping pounce
-	lion = powerClip({
-		body = { -8, 0, 0, 0, -0.24, 0.3 },
-		head = { -6 },
-		leg_fl = { 42 },
-		leg_fr = { 42 },
-		leg_bl = { -20 },
-		leg_br = { -20 },
-	}, {
-		body = { -10, 0, 0, 0, -0.28, 0.4 },
-		head = { 30 },
-		leg_fl = { 46 },
-		leg_fr = { 46 },
-		leg_bl = { -22 },
-		leg_br = { -22 },
-		tail = { -24 },
-	}, {
-		body = { 20, 0, 0, 0, 0.36, -1.7 },
-		head = { 14 },
-		leg_fl = { 58 },
-		leg_fr = { 54 },
-		leg_bl = { -38 },
-		leg_br = { -38 },
-		tail = { -22 },
-	}),
-	-- backs up, paws the ground, then charges and tosses its horn
-	rhino = powerClip({
-		body = { -4, 0, 0, 0, -0.06, 0.6 },
-		head = { -30 },
-		leg_fl = { 36 },
-		leg_fr = { -6 },
-		leg_bl = { -14 },
-		leg_br = { -14 },
-	}, {
-		body = { -6, 0, 0, 0, -0.1, 0.8 },
-		head = { -36 },
-		leg_fl = { -6 },
-		leg_fr = { 40 },
-		leg_bl = { -18 },
-		leg_br = { -18 },
-		tail = { -16 },
-	}, {
-		body = { 8, 0, 0, 0, 0.08, -2.0 },
-		head = { 34 },
-		leg_fl = { -26 },
-		leg_fr = { -26 },
-		leg_bl = { -22 },
-		leg_br = { -22 },
-		tail = { 22 },
-	}),
-	-- trunk raised in a trumpet and the body half reared, then a stomping slam
-	elephant = powerClip(
-		{ body = { 12, 0, 0, 0, 0.12, 0.2 }, head = { 30 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { -14 } },
-		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
-		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
-	),
+		{ 1.12, { body = { 2 } } },
+		{ 1.60, {} },
+	}, { { 0.40, "glow" }, { 0.92, "slam" }, { 0.92, "quake" } }),
+	-- Titan Quake: rears up trumpeting and crashes down on both front feet; glowing cracks split the ground
+	-- and rock bursts up under the target
+	elephant = powerAttack({
+		{ 0.00, {} },
+		{
+			0.40,
+			{
+				body = { 20, 0, 0, 0, 0.3, 0.3 },
+				head = { 40 },
+				leg_fl = { 46 },
+				leg_fr = { 40 },
+				leg_bl = { -20 },
+				leg_br = { -20 },
+				tail = { -14 },
+			},
+		},
+		{
+			0.78,
+			{
+				body = { 26, 0, 0, 0, 0.4, 0.35 },
+				head = { 48 },
+				leg_fl = { 60 },
+				leg_fr = { 54 },
+				leg_bl = { -26 },
+				leg_br = { -26 },
+				tail = { -18 },
+			},
+		},
+		{
+			0.92,
+			{
+				body = { -10, 0, 0, 0, -0.14, -0.7 },
+				head = { -20 },
+				leg_fl = { -16 },
+				leg_fr = { -14 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				tail = { 18 },
+			},
+		},
+		{ 1.12, { body = { 2 } } },
+		{ 1.60, {} },
+	}, { { 0.40, "glow" }, { 0.92, "cracks" }, { 0.92, "quake" } }),
 }
 
 -- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
@@ -1011,14 +1336,15 @@ local function pyramid(stem: Part, width: number, height: number, colour: Color3
 	end
 end
 
--- The slam: a ring of light on the ground, then spikes burst up in a line ahead of the creature.
-local function impact(model: Model, colour: Color3, molten: boolean)
+-- The slam: a ring of light on the ground, then spikes burst up in a line ahead of the creature, or
+-- ahead of `at` (a frame on the ground looking the way the spikes run).
+local function impact(model: Model, colour: Color3, molten: boolean, at: CFrame?)
 	local root = model.PrimaryPart
 	if root == nil then
 		return
 	end
 	local s = ((model:GetAttribute("Scale") :: number?) or 1)
-	local ground = root.CFrame * CFrame.new(0, 0.1, -1.4 * s) -- where the front feet land
+	local ground = at or root.CFrame * CFrame.new(0, 0.1, -1.4 * s) -- where the front feet land
 	local ring = fxPart(Vector3.new(0.3, 2, 2), ground * CFrame.Angles(0, 0, math.pi / 2), colour, Enum.Material.Neon)
 	ring.Shape = Enum.PartType.Cylinder
 	ring.Transparency = 0.2
@@ -1076,11 +1402,554 @@ local function magicColour(model: Model): (Color3, boolean)
 	return Color3.fromRGB(255, 226, 150), false
 end
 
+-- Attack effects (decision 0089) -------------------------------------------------------------------
+
+-- The colour of each animal's effects, by asset, then species; `MOLTEN` ones glow like fire. The models
+-- carry their glow in the texture (decision 0088), so the colour cannot be read off a Neon piece.
+local FX: { [string]: Color3 } = {
+	jackal = Color3.fromRGB(255, 220, 140),
+	creature_jackal_pharaoh = Color3.fromRGB(60, 230, 220),
+	creature_jackal_sphinx = Color3.fromRGB(240, 190, 90),
+	tortoise = Color3.fromRGB(205, 190, 150),
+	creature_tortoise_gemshell = Color3.fromRGB(190, 90, 255),
+	creature_tortoise_island = Color3.fromRGB(80, 200, 255),
+	meerkat = Color3.fromRGB(235, 205, 145),
+	creature_meerkat_storm = Color3.fromRGB(90, 170, 255),
+	creature_meerkat_star = Color3.fromRGB(255, 230, 120),
+	cheetah = Color3.fromRGB(255, 210, 90),
+	creature_cheetah_fire = Color3.fromRGB(255, 110, 30),
+	creature_cheetah_lightning = Color3.fromRGB(120, 220, 255),
+	rhino = Color3.fromRGB(200, 180, 150),
+	creature_rhino_crystal = Color3.fromRGB(120, 230, 255),
+	creature_rhino_lava = Color3.fromRGB(255, 100, 20),
+	flamingo = Color3.fromRGB(255, 120, 170),
+	creature_flamingo_peacock = Color3.fromRGB(40, 200, 150),
+	creature_flamingo_phoenix = Color3.fromRGB(255, 120, 30),
+	lion = Color3.fromRGB(255, 200, 80),
+	creature_lion_sun = Color3.fromRGB(255, 230, 90),
+	creature_lion_shadow = Color3.fromRGB(150, 70, 230),
+	giraffe = Color3.fromRGB(230, 180, 90),
+	creature_giraffe_diamond = Color3.fromRGB(190, 235, 255),
+	elephant = Color3.fromRGB(205, 185, 150),
+	creature_elephant_war = Color3.fromRGB(220, 60, 40),
+	creature_elephant_frost = Color3.fromRGB(150, 220, 255),
+}
+local MOLTEN = { creature_rhino_lava = true, creature_cheetah_fire = true, creature_flamingo_phoenix = true }
+local SMOKE = "rbxasset://textures/particles/smoke_main.dds"
+local SPARKLE = "rbxasset://textures/particles/sparkles_main.dds"
+local DIRT = Color3.fromRGB(150, 120, 85)
+
+local function fxColour(model: Model): (Color3, boolean)
+	local asset = model:GetAttribute("Asset")
+	local own = if type(asset) == "string" then FX[asset] or FX[speciesOf(model) or ""] else nil
+	if own then
+		return own, MOLTEN[asset] == true
+	end
+	return magicColour(model)
+end
+
+local function scaleOf(model: Model): number
+	return (model:GetAttribute("Scale") :: number?) or 1
+end
+
+-- Where a power attack is headed: the target's middle (the server's AimAt), or a way ahead.
+local function aimOf(model: Model): Vector3
+	local aim = model:GetAttribute("AimAt")
+	if typeof(aim) == "Vector3" then
+		return aim
+	end
+	local root = model.PrimaryPart
+	return if root then (root.CFrame * CFrame.new(0, 0, -14 * scaleOf(model))).Position else Vector3.zero
+end
+
+-- A point on the ground the model stands on, under `at`.
+local function floor(model: Model, at: Vector3): Vector3
+	local root = model.PrimaryPart
+	return Vector3.new(at.X, if root then root.Position.Y + 0.1 else at.Y, at.Z)
+end
+
+local function headOf(model: Model): BasePart?
+	return model:FindFirstChild(`{model:GetAttribute("Asset")}_head`) :: BasePart?
+end
+
+-- A puff of dust or a spray of sparks at `at`.
+local function burst(at: Vector3, colour: Color3, count: number, size: number, speed: number, sparkle: boolean?)
+	local p = fxPart(Vector3.one * 0.2, CFrame.new(at), colour, Enum.Material.SmoothPlastic)
+	p.Transparency = 1
+	local e = Instance.new("ParticleEmitter")
+	e.Texture = if sparkle then SPARKLE else SMOKE
+	e.Color = ColorSequence.new(colour)
+	e.LightEmission = if sparkle then 0.9 else 0
+	e.Transparency = NumberSequence.new(if sparkle then 0 else 0.3, 1)
+	e.Size = NumberSequence.new(size, if sparkle then 0 else size * 1.8)
+	e.Lifetime = NumberRange.new(0.5, 1)
+	e.Speed = NumberRange.new(speed * 0.5, speed)
+	e.SpreadAngle = Vector2.new(70, 70)
+	e.Acceleration = Vector3.new(0, if sparkle then -20 else 1, 0)
+	e.Rate = 0
+	e.Parent = p
+	e:Emit(count)
+	Debris:AddItem(p, 1.4)
+end
+
+-- A flat ring of light on the ground that spreads to `size` and fades.
+local function ring(at: Vector3, size: number, colour: Color3, seconds: number)
+	local r =
+		fxPart(Vector3.new(0.25, 1, 1), CFrame.new(at) * CFrame.Angles(0, 0, math.pi / 2), colour, Enum.Material.Neon)
+	r.Shape, r.Transparency = Enum.PartType.Cylinder, 0.2
+	tween(r, seconds, { Size = Vector3.new(0.25, size, size), Transparency = 1 })
+	Debris:AddItem(r, seconds + 0.1)
+end
+
+-- A disc of light standing across the way from `from` to `to`, flying there as it grows and fades.
+local function wave(from: Vector3, to: Vector3, size0: number, size1: number, colour: Color3, seconds: number)
+	if (to - from).Magnitude < 0.1 then
+		return
+	end
+	local face = CFrame.lookAt(from, to) * CFrame.Angles(0, math.pi / 2, 0) -- a cylinder's axis is x
+	local d = fxPart(Vector3.new(0.15, size0, size0), face, colour, Enum.Material.Neon)
+	d.Shape, d.Transparency = Enum.PartType.Cylinder, 0.35
+	tween(d, seconds, { CFrame = face + (to - from), Size = Vector3.new(0.15, size1, size1), Transparency = 1 })
+	Debris:AddItem(d, seconds + 0.1)
+end
+
+-- A thin bar of light from `a` to `b` that flashes and fades: a claw mark, a streak.
+local function streak(a: Vector3, b: Vector3, width: number, colour: Color3, seconds: number)
+	if (b - a).Magnitude < 0.05 then
+		return
+	end
+	local bar =
+		fxPart(Vector3.new(width, width, (b - a).Magnitude), CFrame.lookAt((a + b) / 2, b), colour, Enum.Material.Neon)
+	bar.Transparency = 0.05
+	tween(bar, seconds, { Size = Vector3.new(width * 0.2, width * 0.2, (b - a).Magnitude * 1.15), Transparency = 1 })
+	Debris:AddItem(bar, seconds + 0.1)
+end
+
+-- Moves `m` from one frame to another over `seconds`, then calls `done`.
+local function glide(m: Model, from: CFrame, to: CFrame, seconds: number, done: (() -> ())?)
+	local started = os.clock()
+	local step
+	step = RunService.RenderStepped:Connect(function()
+		local u = math.min(1, (os.clock() - started) / math.max(seconds, 0.01))
+		if m.Parent == nil then
+			step:Disconnect()
+			return
+		end
+		m:PivotTo(from:Lerp(to, ease(u)))
+		if u >= 1 then
+			step:Disconnect()
+			if done then
+				done()
+			end
+		end
+	end)
+end
+
+-- A still copy of `model` as it stands now, not yet in the world: textured, or a ghost of light in
+-- `ghost`'s colour. Its pivot is the model's: the ground under its middle.
+local function copyOf(model: Model, ghost: Color3?): Model
+	local copy = Instance.new("Model")
+	for _, d in model:GetChildren() do
+		if d:IsA("MeshPart") and d.Transparency < 1 then
+			local p = d:Clone()
+			p:ClearAllChildren()
+			p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
+			if ghost then
+				p.TextureID, p.Material, p.Color, p.Transparency = "", Enum.Material.Neon, ghost, 0.45
+			end
+			p.Parent = copy
+		end
+	end
+	copy.WorldPivot = model:GetPivot()
+	return copy
+end
+
+local function fade(m: Model, seconds: number)
+	for _, p in m:GetChildren() do
+		if p:IsA("BasePart") then
+			tween(p, seconds, { Transparency = 1 })
+		end
+	end
+	Debris:AddItem(m, seconds + 0.1)
+end
+
+-- A pebble thrown in an arc from `from` to `to`, landing in `seconds` with a little spray.
+local function pebble(from: Vector3, to: Vector3, seconds: number, size: number, colour: Color3)
+	local p = fxPart(Vector3.one * size, CFrame.new(from), Color3.fromRGB(120, 112, 100), Enum.Material.Slate)
+	p.Shape = Enum.PartType.Ball
+	local started = os.clock()
+	local step
+	step = RunService.RenderStepped:Connect(function()
+		local u = math.min(1, (os.clock() - started) / seconds)
+		p.CFrame = CFrame.new(from:Lerp(to, u) + Vector3.new(0, 4 * size * 4 * u * (1 - u), 0))
+		if u >= 1 then
+			step:Disconnect()
+			p:Destroy()
+			burst(to, colour, 6, 0.25 * size * 4, 6, true)
+		end
+	end)
+end
+
+-- Every cue: (model, colour, molten, seconds until the hit lands). Run in their own thread: they may wait.
+local CUES: { [string]: (Model, Color3, boolean, number) -> () } = {
+	-- two white flashes crossing in front of the jaws or beak
+	bite = function(model, _colour, _molten, _untilHit)
+		local head = headOf(model)
+		if head == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local at = (head.CFrame * CFrame.new(0, 0, -head.Size.Z * 0.6)).Position
+		local up, across = head.CFrame.UpVector * 0.7 * s, head.CFrame.RightVector * 0.7 * s
+		streak(at + up + across, at - up - across, 0.14 * s, Color3.new(1, 1, 1), 0.25)
+		streak(at + up - across, at - up + across, 0.14 * s, Color3.new(1, 1, 1), 0.25)
+	end,
+	-- three claw marks raking down in front of the animal
+	claws = function(model, colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		local head = headOf(model)
+		if root == nil or head == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local mid = (head.CFrame * CFrame.new(0, 0, -head.Size.Z * 0.8)).Position
+		local across, up = root.CFrame.RightVector, root.CFrame.UpVector
+		for i = -1, 1 do
+			local o = across * i * 0.45 * s
+			streak(
+				mid + o + up * 1.2 * s + across * 0.5 * s,
+				mid + o - up * 1.2 * s - across * 0.5 * s,
+				0.12 * s,
+				colour,
+				0.3
+			)
+		end
+	end,
+	-- dust kicked up round the feet
+	dust = function(model, _colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		if root then
+			burst(root.Position, Color3.fromRGB(190, 170, 130), 14, 0.8 * scaleOf(model), 4 * scaleOf(model))
+		end
+	end,
+	-- a heavy blow at the head: a ring on the ground and a cloud of dust
+	slam = function(model, colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local at = floor(model, (root.CFrame * CFrame.new(0, 0, -1.8 * s)).Position)
+		ring(at, 6 * s, colour, 0.4)
+		burst(at, Color3.fromRGB(190, 170, 130), 16, 0.9 * s, 5 * s)
+	end,
+	-- a white flash where the head lands
+	thump = function(model, _colour, _molten, _untilHit)
+		local head = headOf(model)
+		if head then
+			burst(head.Position, Color3.new(1, 1, 1), 14, 0.5 * scaleOf(model), 10 * scaleOf(model), true)
+		end
+	end,
+	-- steam from the nostrils
+	snort = function(model, _colour, _molten, _untilHit)
+		local head = headOf(model)
+		if head then
+			local at = (head.CFrame * CFrame.new(0, -head.Size.Y * 0.2, -head.Size.Z * 0.5)).Position
+			burst(at, Color3.new(1, 1, 1), 8, 0.35 * scaleOf(model), 3)
+		end
+	end,
+	-- earth thrown up where it dives in, and where it bursts out under the target
+	dig = function(model, _colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		if root then
+			burst(
+				floor(model, (root.CFrame * CFrame.new(0, 0, -1.2 * scaleOf(model))).Position),
+				DIRT,
+				18,
+				0.8 * scaleOf(model),
+				7
+			)
+		end
+	end,
+	erupt = function(model, colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		if root then
+			local s = scaleOf(model)
+			local at = floor(model, root.Position)
+			burst(at, DIRT, 30, 1.1 * s, 12 * s)
+			ring(at, 5 * s, colour, 0.35)
+		end
+	end,
+	-- the power gathering at the head (the shared charge)
+	glow = function(model, colour, _molten, untilHit)
+		charge(model, colour, untilHit)
+	end,
+	-- rings of sound from the head, out towards the target
+	howl = function(model, colour, _molten, _untilHit)
+		local head = headOf(model)
+		if head == nil then
+			return
+		end
+		local s = scaleOf(model)
+		for i = 0, 3 do
+			task.delay(i * 0.12, function()
+				local from = head.Position + Vector3.new(0, 0.6 * s, 0)
+				wave(
+					from,
+					from + head.CFrame.LookVector * 8 * s + Vector3.new(0, 2 * s, 0),
+					0.8 * s,
+					5 * s,
+					colour,
+					0.6
+				)
+			end)
+		end
+	end,
+	whistle = function(model, colour, _molten, _untilHit)
+		local head = headOf(model)
+		if head == nil then
+			return
+		end
+		local s = scaleOf(model)
+		for i = 0, 4 do
+			task.delay(i * 0.1, function()
+				wave(head.Position, head.Position + head.CFrame.LookVector * 4 * s, 0.3 * s, 1.6 * s, colour, 0.4)
+			end)
+		end
+	end,
+	-- Pack Howl: two ghost jackals, taken from the jackal while it still stands, leap out either side as
+	-- it howls and streak into the target as the hit lands
+	pack = function(model, colour, _molten, untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local ghosts = { copyOf(model, colour), copyOf(model, colour) }
+		task.wait(0.5)
+		if model.Parent == nil then
+			return
+		end
+		local aim = floor(model, aimOf(model))
+		for i, g in ghosts do
+			local side = if i == 1 then -1 else 1
+			local from = root.CFrame * CFrame.new(side * 2.4 * s, 0, 0.4 * s)
+			local to = from.Rotation + aim + root.CFrame.RightVector * side * 0.8 * s
+			g:PivotTo(from)
+			g.Parent = Workspace
+			glide(g, from, to, math.max(0.1, untilHit - 0.5), function()
+				burst(aim + Vector3.new(0, 1.5 * s, 0), colour, 20, 0.5 * s, 14 * s, true)
+				fade(g, 0.25)
+			end)
+		end
+	end,
+	-- Sentinel Call: four smaller copies of the meerkat, taken while it stands, pop out of holes in a line
+	-- between it and the target, facing the target, and pelt it with pebbles that land on the hit
+	crew = function(model, colour, _molten, untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local crew = {}
+		for i = 1, 4 do
+			local c = copyOf(model)
+			c:ScaleTo(0.55)
+			crew[i] = c
+		end
+		task.wait(0.38)
+		if model.Parent == nil then
+			return
+		end
+		local base = floor(model, root.Position)
+		local aim = aimOf(model)
+		local span = floor(model, aim) - base
+		local dir = if span.Magnitude > 0.1 then span.Unit else root.CFrame.LookVector
+		local across = dir:Cross(Vector3.yAxis)
+		local down = Vector3.new(0, -4 * s, 0)
+		local spots = {}
+		for i, c in crew do
+			local spot = base + span * (0.18 + 0.12 * i) + across * (if i % 2 == 0 then 1.6 else -1.6) * s
+			spots[i] = CFrame.lookAt(spot, spot + dir)
+			c:PivotTo(spots[i] + down)
+			c.Parent = Workspace
+			burst(spot, DIRT, 12, 0.6 * s, 6 * s)
+			glide(c, spots[i] + down, spots[i], 0.18)
+		end
+		task.wait(math.max(0, untilHit - 0.4 - 0.3)) -- let fly 0.3 s before the hit
+		for _, at in spots do
+			pebble(at.Position + Vector3.new(0, 1.6 * s, 0), aim, 0.3, 0.3 * s, colour)
+		end
+		task.wait(0.9)
+		for i, c in crew do
+			burst(spots[i].Position, DIRT, 8, 0.5 * s, 4 * s)
+			glide(c, spots[i], spots[i] + down, 0.25, function()
+				c:Destroy()
+			end)
+		end
+	end,
+	-- Shell Spin: dust thrown off the spinning shell, then a shockwave and rock where it strikes
+	spin = function(model, _colour, _molten, untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		for _ = 1, 4 do
+			burst(floor(model, root.Position), Color3.fromRGB(190, 170, 130), 10, 0.9 * s, 6 * s)
+			task.wait(untilHit / 4)
+		end
+	end,
+	shock = function(model, colour, molten, _untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		ring(floor(model, (root.CFrame * CFrame.new(0, 0, -2.4 * s)).Position), 10 * s, colour, 0.5)
+		impact(model, colour, molten)
+	end,
+	-- Blur Dash: a zig-zag streak from the cheetah to the target, drawn as it dashes
+	streak = function(model, colour, _molten, untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local a = root.Position + Vector3.new(0, 1.4 * s, 0)
+		local b = aimOf(model)
+		local across = (b - a):Cross(Vector3.yAxis)
+		across = if across.Magnitude > 0.01 then across.Unit * 2.2 * s else Vector3.zero
+		local points = { a, a:Lerp(b, 0.35) + across, a:Lerp(b, 0.7) - across, b }
+		for i = 1, 3 do
+			streak(points[i], points[i + 1], 0.45 * s, colour, 0.5)
+			task.wait(untilHit / 3)
+		end
+	end,
+	-- the hoof pawing the ground
+	paw = function(model, _colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		if root then
+			local s = scaleOf(model)
+			burst(floor(model, (root.CFrame * CFrame.new(0.6 * s, 0, -1.6 * s)).Position), DIRT, 10, 0.7 * s, 5 * s)
+		end
+	end,
+	-- Stampede Charge: dust thrown up all along the way to the target
+	charge = function(model, _colour, _molten, untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local from, to = floor(model, root.Position), floor(model, aimOf(model))
+		for i = 1, 5 do
+			burst(from:Lerp(to, i / 6), Color3.fromRGB(190, 170, 130), 14, 1.1 * s, 6 * s)
+			task.wait(untilHit / 5)
+		end
+	end,
+	-- a ring and a burst of rock spikes under the target
+	quake = function(model, colour, molten, _untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local at = floor(model, aimOf(model))
+		local dir = at - floor(model, root.Position)
+		dir = if dir.Magnitude > 0.1 then dir.Unit else root.CFrame.LookVector
+		ring(at, 12 * s, colour, 0.5)
+		-- the spikes start a little short of the target and run on through it
+		impact(model, colour, molten, CFrame.lookAt(at - dir * 3 * s, at))
+	end,
+	-- Titan Quake: glowing cracks running out over the ground from its front feet towards the target
+	cracks = function(model, colour, _molten, _untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local from = floor(model, (root.CFrame * CFrame.new(0, 0, -1.6 * s)).Position)
+		local dir = floor(model, aimOf(model)) - from
+		local reach = dir.Magnitude
+		dir = if reach > 0.1 then dir.Unit else root.CFrame.LookVector
+		for i = -3, 3 do
+			local way = CFrame.fromAxisAngle(Vector3.yAxis, math.rad(i * 14)):VectorToWorldSpace(dir)
+			local length = math.max(4 * s, reach * (1 - math.abs(i) * 0.18))
+			local bar = fxPart(
+				Vector3.new(0.35 * s, 0.08, length),
+				CFrame.lookAt(from + way * length / 2, from + way * length),
+				colour,
+				Enum.Material.Neon
+			)
+			tween(bar, 1.1, { Transparency = 1 })
+			Debris:AddItem(bar, 1.2)
+		end
+	end,
+	-- Flamingo Twirl: feathers whirl round it while it spins, then sweep together into the target
+	whirl = function(model, colour, _molten, untilHit)
+		local root = model.PrimaryPart
+		if root == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local feathers = {}
+		for i = 1, 10 do
+			local f = fxPart(Vector3.new(0.12, 0.5, 1.1) * s, root.CFrame, colour, Enum.Material.Neon)
+			f.Transparency = 0.25
+			feathers[i] = f
+		end
+		local started = os.clock()
+		local step
+		step = RunService.RenderStepped:Connect(function()
+			local t = os.clock() - started
+			if root.Parent == nil or t >= untilHit then
+				step:Disconnect()
+				local aim = aimOf(model)
+				for _, f in feathers do
+					tween(f, 0.3, { CFrame = CFrame.new(aim), Transparency = 1 })
+					Debris:AddItem(f, 0.35)
+				end
+				burst(aim, colour, 20, 0.5 * s, 12 * s, true)
+				return
+			end
+			local middle = root.Position + Vector3.new(0, 3 * s, 0)
+			for i, f in feathers do
+				local a = t * 14 + i * TAU / 10
+				local r = (1.8 + t * 1.4) * s
+				local at = middle + Vector3.new(math.cos(a) * r, (i % 3 - 1) * 0.8 * s, math.sin(a) * r)
+				f.CFrame = CFrame.lookAt(at, middle) * CFrame.Angles(0, 0, a)
+			end
+		end)
+	end,
+	-- King's Roar: a cone of shockwaves from its jaws to the target
+	roar = function(model, colour, _molten, _untilHit)
+		local head = headOf(model)
+		if head == nil then
+			return
+		end
+		local s = scaleOf(model)
+		local aim = aimOf(model)
+		for i = 0, 4 do
+			task.delay(i * 0.07, function()
+				wave(head.Position, aim, (1 + i * 0.4) * s, (5 + i * 1.5) * s, colour, 0.45)
+			end)
+		end
+		ring(floor(model, head.Position), 7 * s, colour, 0.5)
+		task.delay(0.4, burst, aim, colour, 24, 0.6 * s, 14 * s, true)
+	end,
+}
+
 -- Rigs ---------------------------------------------------------------------------------------------
 
 -- Where a rig's legs are, for keeping its feet on the ground: the body joint's frame on the root, and
 -- for each leg its joint's frame on the body and the corners of its box seen from that joint.
-type Feet = { base: CFrame, legs: { { joint: string, frame: CFrame, points: { Vector3 } } }, ground: number }
+type Feet = {
+	base: CFrame,
+	legs: { { joint: string, frame: CFrame, points: { Vector3 } } },
+	ground: number,
+	body: { Vector3 }, -- the corners of the body's box, seen from its joint
+	floor: number, -- how low the body may go: no lower than it rests (a sitting or rearing pose dips it)
+}
 
 type Rig = {
 	model: Model,
@@ -1095,9 +1964,31 @@ type Rig = {
 	heldFor: number, -- the AnimAt of that clip
 	flinch: number, -- how far the next "hit" clip is stretched
 	spark: ParticleEmitter?, -- the hit sparks, made on the first hit
+	cueAt: number, -- the AnimAt of the attack whose cues have fired
+	cueN: number, -- and how many of them
 }
 
 local rigs: { [Model]: Rig } = {}
+
+-- Fires the cues of `clip` whose time has come, each once per play (`at` is the play's AnimAt).
+local function cue(rig: Rig, clip: Clip, at: number, t: number)
+	local cues = clip.cues
+	if cues == nil then
+		return
+	end
+	if rig.cueAt ~= at then
+		rig.cueAt, rig.cueN = at, 0
+	end
+	local hit = if clip.length > 1 then MAGIC_IMPACT else ATTACK_HIT
+	while rig.cueN < #cues and t >= cues[rig.cueN + 1][1] do
+		rig.cueN += 1
+		local run = CUES[cues[rig.cueN][2]]
+		if run then
+			local colour, molten = fxColour(rig.model)
+			task.spawn(run, rig.model, colour, molten, math.max(0.05, hit - t))
+		end
+	end
+end
 local player = Players.LocalPlayer
 
 local LEGS = { "leg_fl", "leg_fr", "leg_bl", "leg_br" }
@@ -1130,7 +2021,22 @@ local function feetOf(joints: { [string]: Motor6D }): Feet?
 		end
 		table.insert(legs, { joint = name, frame = frame, points = points })
 	end
-	return { base = body.C0, legs = legs, ground = ground }
+	local trunk, lowest = {}, ground
+	local part = body.Part1
+	if part then
+		local half, back = part.Size / 2, body.C1:Inverse()
+		for i = 0, 7 do
+			local p = back
+				* Vector3.new(
+					if i % 2 == 0 then half.X else -half.X,
+					if i // 2 % 2 == 0 then half.Y else -half.Y,
+					if i // 4 == 0 then half.Z else -half.Z
+				)
+			table.insert(trunk, p)
+			lowest = math.min(lowest, (body.C0 * p).Y)
+		end
+	end
+	return { base = body.C0, legs = legs, ground = ground, body = trunk, floor = lowest }
 end
 
 local function turned(v: { number }, scale: number): CFrame
@@ -1138,8 +2044,9 @@ local function turned(v: { number }, scale: number): CFrame
 		* CFrame.Angles(math.rad(v[1]), math.rad(v[2]), math.rad(v[3]))
 end
 
--- How far (studs) the pose `now` pushes a leg under the ground it stands on: the body is lifted by as
--- much, so no clip has to be fitted to every animal's legs. A leg's box stands in for its mesh.
+-- How far (studs) the pose `now` pushes a leg under the ground it stands on, or the body lower than it
+-- rests (a sit, a rear, a tuck): the body is lifted by as much, so no clip has to be fitted to every
+-- animal. A piece's box stands in for its mesh.
 local function sunk(feet: Feet, now: { [string]: { number } }, scale: number): number
 	local body = feet.base * turned(now.body, scale)
 	local low = math.huge
@@ -1149,7 +2056,11 @@ local function sunk(feet: Feet, now: { [string]: { number } }, scale: number): n
 			low = math.min(low, (at * p).Y)
 		end
 	end
-	return math.max(0, feet.ground - low)
+	local trunk = math.huge
+	for _, p in feet.body do
+		trunk = math.min(trunk, (body * p).Y)
+	end
+	return math.max(0, feet.ground - low, feet.floor - trunk)
 end
 
 -- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,
@@ -1237,6 +2148,8 @@ local function add(model: Instance)
 		heldFor = 0,
 		flinch = 1,
 		spark = nil,
+		cueAt = 0,
+		cueN = 0,
 	}
 	rigs[model] = rig
 	-- the server sets StopAt on a melee attacker and HitAt on whoever is struck; both arrive after
@@ -1379,6 +2292,7 @@ RunService.PreSimulation:Connect(function(dt: number)
 		end
 		local t = math.max(0, time - at - (if rig.heldFor == at then rig.held else 0))
 		local biped = model:GetAttribute("Biped") == true
+		local dig = false -- a clip that goes underground: nothing lifts its feet back up
 		local target: Pose
 		if anim == "die" then -- holds its last pose
 			target = sample(if biped then DIE_BIPED else DIE_QUAD, t)
@@ -1422,15 +2336,22 @@ RunService.PreSimulation:Connect(function(dt: number)
 				elseif kind == "foe_mage" then MAGE_ATTACK
 				else pick(ATTACKS, model, BIPED_ATTACK) -- an upright animal has its own
 			target = sample(clip, t)
+			cue(rig, clip, at, t)
+			dig = clip.under == true
 		elseif anim == "magic" and t < MAGIC.length then
-			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
-			if rig.magicAt ~= at then
-				rig.magicAt = at
-				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
-			end
-			if t >= MAGIC_IMPACT and rig.impactAt ~= at then
-				rig.impactAt = at
-				impact(model, magicColour(model))
+			local clip = pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC)
+			target = sample(clip, t)
+			if clip.cues then
+				cue(rig, clip, at, t)
+			else -- the shared charge and slam
+				if rig.magicAt ~= at then
+					rig.magicAt = at
+					charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
+				end
+				if t >= MAGIC_IMPACT and rig.impactAt ~= at then
+					rig.impactAt = at
+					impact(model, magicColour(model))
+				end
 			end
 		else
 			target = if biped then idleBiped(time) else idle(time)
@@ -1457,11 +2378,15 @@ RunService.PreSimulation:Connect(function(dt: number)
 		for _, joint in JOINTS do
 			local goal, v = target[joint], rig.now[joint]
 			for k = 1, 6 do
-				v[k] += ((if goal then goal[k] or 0 else 0) - v[k]) * blend
+				local d = (if goal then goal[k] or 0 else 0) - v[k]
+				if k <= 3 then -- an angle eases the short way round: a spin that ends on a whole turn stops there
+					d = (d + 180) % 360 - 180
+				end
+				v[k] += d * blend
 			end
 		end
-		local lift = Vector3.zero -- feet stay on the ground, except in a fall
-		if anim ~= "die" then
+		local lift = Vector3.zero -- feet stay on the ground, except in a fall or a dig
+		if anim ~= "die" and not dig then
 			rig.feet = rig.feet or feetOf(rig.joints)
 			local feet = rig.feet
 			if feet then

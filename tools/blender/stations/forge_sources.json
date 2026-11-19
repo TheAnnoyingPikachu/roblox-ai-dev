@@ -1,0 +1,185 @@
+{
+  "creature_jackal": {
+    "plan": "jackal",
+    "height": 4.02,
+    "job": "e851066a-1b8a-4043-9c71-1091bfd4a569",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/e851066a-1b8a-4043-9c71-1091bfd4a569/35b949de5ae3a33eb67ffcf6bfa7c0495c4f31fea3222984b9e627799afc4cba.glb",
+    "notes": "Jackal (ForgeGUI): tawny gold, a dark grey saddle, huge ears, a black-tipped tail."
+  },
+  "creature_jackal_pharaoh": {
+    "plan": "jackal_pharaoh",
+    "height": 5.09,
+    "job": "cb4e61f6-7d09-40bc-a7f3-1f646e0d3398",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/cb4e61f6-7d09-40bc-a7f3-1f646e0d3398/78e291303c9bc850b3ee328540c9773202c95c3dab0c7671d9b0373fbaae7248.glb",
+    "notes": "Pharaoh Jackal (ForgeGUI, legendary): black, a gold and lapis headdress, gold bands, turquoise eyes and glyphs."
+  },
+  "creature_jackal_sphinx": {
+    "plan": "jackal_sphinx",
+    "height": 5.37,
+    "job": "efbe0da6-fe8e-4d40-99ac-d71ee4b48a13",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/efbe0da6-fe8e-4d40-99ac-d71ee4b48a13/b93c2e25b42945738ad2d3a557e2f83963ccd2cdfd3ef6ddec7d13c0f6a44761.glb",
+    "notes": "Sphinx Jackal (ForgeGUI, mythic): cracked sandstone blocks, golden wings, an amber forehead mark."
+  },
+  "creature_tortoise": {
+    "plan": "tortoise",
+    "height": 4.33,
+    "job": "3a0d65f7-2630-4e71-9618-9469d0702988",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/3a0d65f7-2630-4e71-9618-9469d0702988/899f040ebbe5a8abd12dce88e3abfadf0a6f5f7ed146b0a49b4a7eb94c105091.glb",
+    "notes": "Tortoise (ForgeGUI): a tall olive shell of faceted scutes."
+  },
+  "creature_tortoise_gemshell": {
+    "plan": "tortoise",
+    "height": 4.79,
+    "job": "7b2338d8-45bb-4142-bc5e-0167c2ff212d",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/7b2338d8-45bb-4142-bc5e-0167c2ff212d/ab77953c1e0eb39d35a5e38dc1dd6272f1a9daf7d8342bc1d8691c33de556c15.glb",
+    "notes": "Gemshell Tortoise (ForgeGUI, legendary): a shell of cut gems in gold, crystals on its legs."
+  },
+  "creature_tortoise_island": {
+    "plan": "tortoise_island",
+    "height": 9.85,
+    "job": "0672c391-af08-48d2-ad32-063fe81211fb",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/0672c391-af08-48d2-ad32-063fe81211fb/a3255adcb1839a0f3bc40f087ea34db9dae109578dc57068e8885ecf0738c973.glb",
+    "notes": "Island Tortoise (ForgeGUI, mythic): a tropical island on its shell, palm, flowers and a waterfall."
+  },
+  "creature_meerkat": {
+    "plan": "meerkat",
+    "height": 4.82,
+    "job": "3b32c092-e34e-4baf-9c14-ede61151e504",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/3b32c092-e34e-4baf-9c14-ede61151e504/2e470aece0843f33d03755bd8dd2f9db3f18545f03c314589d3da3bbaa381788.glb",
+    "notes": "Meerkat (ForgeGUI): an upright sentinel, sandy with dark eye patches."
+  },
+  "creature_meerkat_storm": {
+    "plan": "meerkat_storm",
+    "height": 6.7,
+    "job": "3c6a7b20-2a77-405b-b0c5-fbdb9c693403",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/3c6a7b20-2a77-405b-b0c5-fbdb9c693403/3cb4733b49381e84a23116c3ac9e295af62477239a0bb6a434cfeb535d67da0f.glb",
+    "notes": "Storm Meerkat (ForgeGUI, legendary): slate blue, goggles, a storm cloud over its head, lightning at its feet."
+  },
+  "creature_meerkat_star": {
+    "plan": "meerkat",
+    "height": 7.46,
+    "job": "0a7d127b-18f5-427d-a1c5-38d9886b7d3f",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/0a7d127b-18f5-427d-a1c5-38d9886b7d3f/ec82a9c648c288bea471f5e00099c560c7d87c152c672be61fe5d756faba9edd.glb",
+    "notes": "Star Meerkat (ForgeGUI, mythic): a night-sky coat of stars and constellations, a gold star on its brow."
+  },
+  "creature_cheetah": {
+    "plan": "cheetah",
+    "height": 4.62,
+    "job": "92a6b2df-76fe-4226-a1b3-67d5368dacdd",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/92a6b2df-76fe-4226-a1b3-67d5368dacdd/c73df84e2d5435d0fbf75ca3ad0b7611aa72262dfb5d50fc1620b9eabb3007ee.glb",
+    "notes": "Cheetah (ForgeGUI): lean gold with black spots and tear marks, a ringed tail."
+  },
+  "creature_cheetah_fire": {
+    "plan": "cheetah",
+    "height": 5.54,
+    "job": "c05def28-7214-4085-b7e5-90759f420b7e",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/c05def28-7214-4085-b7e5-90759f420b7e/6763c1fa785da523a8a42a6b8705391e0956f029d148b614dfc0428f2ac9b453.glb",
+    "notes": "Fire Cheetah (ForgeGUI, legendary): ember spots, flames along its spine and tail."
+  },
+  "creature_cheetah_lightning": {
+    "plan": "cheetah",
+    "height": 6.0,
+    "job": "038ffe2f-ba85-4e0d-add7-3dfc7515fa57",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/038ffe2f-ba85-4e0d-add7-3dfc7515fa57/e93394c8043facf50550d06ddbc3eacf401e4e1c5827428508decb6652b54dc6.glb",
+    "notes": "Lightning Cheetah (ForgeGUI, mythic): white and electric blue, glowing bolt-shaped spots."
+  },
+  "creature_rhino": {
+    "plan": "rhino",
+    "height": 7.82,
+    "job": "9d4b9200-5cb9-4706-a793-9a3aa4f5d027",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/9d4b9200-5cb9-4706-a793-9a3aa4f5d027/ca64ecfbe09a4ded36b4141271905fd0c82455afd177f6d146530ec44d5a511d.glb",
+    "notes": "Rhino (ForgeGUI): heavy grey armour plates, two faceted horns."
+  },
+  "creature_rhino_crystal": {
+    "plan": "rhino",
+    "height": 11.53,
+    "job": "9908bb6a-1392-43e3-84eb-21a9e19c726a",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/9908bb6a-1392-43e3-84eb-21a9e19c726a/8d2c2db55de0d478e2ce6132563832ea01ad888b6ca3c0caa9f9e61ee304cc98.glb",
+    "notes": "Crystal Rhino (ForgeGUI, legendary): a rhino of faceted grey stone plates studded with cut gems, clear crystals along its back, a crystal horn.",
+    "sweep": true
+  },
+  "creature_rhino_lava": {
+    "plan": "rhino",
+    "height": 11.33,
+    "job": "bac960c1-14d1-47ee-9dab-9a3784fd4449",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/bac960c1-14d1-47ee-9dab-9a3784fd4449/9cdda5a4b1aca286b4cc178b79bf1088ba482dcec3b9d39dbffa1183c59b393c.glb",
+    "notes": "Lava Rhino (ForgeGUI, mythic): charcoal rock split with glowing lava, a molten horn."
+  },
+  "creature_flamingo": {
+    "plan": "flamingo",
+    "height": 8.04,
+    "job": "55ccaba5-5eb1-4964-bc4a-3e30b7457c72",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/55ccaba5-5eb1-4964-bc4a-3e30b7457c72/f120402ed376e61e67392d314c8d82ed429e9f740f1157fa0b1a99e48e03ebed.glb",
+    "notes": "Flamingo (ForgeGUI): faceted pink feathers; its wings are the back-leg pieces."
+  },
+  "creature_flamingo_peacock": {
+    "plan": "flamingo",
+    "height": 9.79,
+    "job": "36ac7260-0048-411b-8a7d-85b83b19d1ab",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/36ac7260-0048-411b-8a7d-85b83b19d1ab/d4daeb59be4ce6fe37071de090d19eb32d6a1e0067afcf5dac703c6a73c659c3.glb",
+    "notes": "Peacock Flamingo (ForgeGUI, legendary): teal and emerald, a fan of eyed tail feathers, a crest."
+  },
+  "creature_flamingo_phoenix": {
+    "plan": "flamingo_phoenix",
+    "height": 11.3,
+    "job": "745b5730-8ee8-48bd-8588-d9feb65a0dc2",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/745b5730-8ee8-48bd-8588-d9feb65a0dc2/c6a96f056575e4ddc573e08ce21646966721eac3fef060ae3f41a7ed2f7b6cd2.glb",
+    "notes": "Phoenix Flamingo (ForgeGUI, mythic): feathers of flame, burning wings and tail."
+  },
+  "creature_lion": {
+    "plan": "lion",
+    "height": 7.45,
+    "job": "01398b24-37bf-4336-b879-fb6b0ef10e05",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/01398b24-37bf-4336-b879-fb6b0ef10e05/83725b20d3b1b50389d2615e55bda10e8b7db798ffc43c99fb9c3d377bf806b3.glb",
+    "notes": "Lion (ForgeGUI): warm tan, a layered spiky brown mane."
+  },
+  "creature_lion_sun": {
+    "plan": "lion",
+    "height": 9.23,
+    "job": "74b2e2f1-0b8b-451b-9116-5beeeb81e381",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/74b2e2f1-0b8b-451b-9116-5beeeb81e381/43b6fddd4fd2b8e4aaba107b2f5f2357aa66a41b93e56d91b57bde5f9fa76c42.glb",
+    "notes": "Sun Lion (ForgeGUI, mythic): a mane of sun rays, a sun emblem on its hip."
+  },
+  "creature_lion_shadow": {
+    "plan": "lion",
+    "height": 8.48,
+    "job": "f32d3f3b-599a-4fbe-bc84-165d90fa7f9a",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/f32d3f3b-599a-4fbe-bc84-165d90fa7f9a/e36d3903cc81c155c42854318936165b033241b837873f6388e3a197a321cd16.glb",
+    "notes": "Shadow Lion (ForgeGUI, legendary): purple-black with a violet mane and glowing eyes."
+  },
+  "creature_giraffe": {
+    "plan": "giraffe",
+    "height": 23.46,
+    "job": "e288af4b-0218-44c8-9ec0-57dbd491462b",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/e288af4b-0218-44c8-9ec0-57dbd491462b/aee816811a593c0bed78d27528b3d1707c4c91c909f0db8f4d0605c707381765.glb",
+    "notes": "Giraffe (ForgeGUI): golden with brown angular patches."
+  },
+  "creature_giraffe_diamond": {
+    "plan": "giraffe",
+    "height": 24.39,
+    "job": "186f0541-9a9e-4112-bc89-4df8e4df69b0",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/186f0541-9a9e-4112-bc89-4df8e4df69b0/6721e9f56a79deccb6622e41e42f447d6cde1b9d186a9099323bc673e567eb96.glb",
+    "notes": "Diamond Giraffe (ForgeGUI, mythic): pale crystal set with cut diamonds in silver."
+  },
+  "creature_elephant": {
+    "plan": "elephant",
+    "height": 14.14,
+    "job": "b4fa210b-e3f7-4fe8-ba97-3abd92ac38b3",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/b4fa210b-e3f7-4fe8-ba97-3abd92ac38b3/a57654d3009762ce622bc1072f0315444683b145159411b1050704e47a086b3b.glb",
+    "notes": "Elephant (ForgeGUI, Titan): massive grey plates, ivory tusks, trunk raised."
+  },
+  "creature_elephant_war": {
+    "plan": "elephant",
+    "height": 19.39,
+    "job": "295e679a-4102-4582-bb77-e76bb0287205",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/295e679a-4102-4582-bb77-e76bb0287205/eb49d4cd309ea527d5eb82fe1b8f55f4ae1d91cdf0dc41a3c42dcb8812947a63.glb",
+    "notes": "War Elephant (ForgeGUI, legendary): red and gold armour, a spiked helm, a howdah with a banner."
+  },
+  "creature_elephant_frost": {
+    "plan": "elephant",
+    "height": 19.4,
+    "job": "cde639d4-6104-4efc-a982-1fa6d0895bed",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/cde639d4-6104-4efc-a982-1fa6d0895bed/22e2165cdf5f161c5423b08428cc26f53a2d83163b02905a0766fcff6c666990.glb",
+    "notes": "Frost Mammoth (ForgeGUI, mythic): shaggy white-blue fur, ice tusks, icicles."
+  }
+}

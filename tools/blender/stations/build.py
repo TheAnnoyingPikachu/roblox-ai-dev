@@ -43,8 +43,11 @@ def specs():
         spec.loader.exec_module(module)
         for asset in module.ASSETS:
             asset["script"] = f"tools/blender/stations/assets/{file}"
+            asset["overrides"] = getattr(module, "OVERRIDES", False)
             found.append(asset)
-    return found
+    # a module with OVERRIDES (forge.py) replaces the hand-built assets of the same names
+    replaced = {a["name"] for a in found if a["overrides"]}
+    return [a for a in found if a["overrides"] or a["name"] not in replaced]
 
 
 def roblox(v):

@@ -497,3 +497,17 @@ Same source, ownership and upload route as STATION-016 above (`tools/blender/sta
 | 108637925565998 (model), 81193929209993 (decal) (`scenery_pine_1`) | Built by the studio in Blender 5.2, `tools/blender/stations/build.py` | Studio (Claude), 2026-11-18 | Studio-owned original work | None needed | None | FBX, 1 mesh, 68 triangles; 1024 x 1024 PNG | Scenery (decision 0085): A faceted pine, four tiers. Through `src/shared/StationAssets.luau` and `src/stations/World.luau` | Uploaded (upload-assets run 44383622703); in game |
 | 105744035188546 (model), 88217429109801 (decal) (`scenery_pine_2`) | Built by the studio in Blender 5.2, `tools/blender/stations/build.py` | Studio (Claude), 2026-11-18 | Studio-owned original work | None needed | None | FBX, 1 mesh, 56 triangles; 1024 x 1024 PNG | Scenery (decision 0085): A faceted pine, three tiers. Through `src/shared/StationAssets.luau` and `src/stations/World.luau` | Uploaded (upload-assets run 44383622703); in game |
 | 79560426232029 (model), 119688942868167 (decal) (`scenery_bush_1`) | Built by the studio in Blender 5.2, `tools/blender/stations/build.py` | Studio (Claude), 2026-11-18 | Studio-owned original work | None needed | None | FBX, 1 mesh, 180 triangles; 1024 x 1024 PNG | Scenery (decision 0085): A low faceted bush with a few flowers. Through `src/shared/StationAssets.luau` and `src/stations/World.luau` | Uploaded (upload-assets run 44383622703); in game |
+
+## Animal Stations ForgeGUI creature models (STATION-095)
+
+Generated with ForgeGUI (forgegui.com; its 3D provider reported as Meshy) on SHANNON's ForgeGUI account on
+2026-11-18, from concept sheets also made with ForgeGUI, then cut into the jointed pieces and re-baked by the
+studio in Blender 5.2 (`tools/blender/stations/assets/forge.py`, decision 0088). The source GLBs are listed with
+their ForgeGUI job ids in `tools/blender/stations/forge_sources.json` and are not committed. Uploaded by the
+Upload Blender assets workflow like every Stations model; ids land in `tools/blender/stations/uploaded.json`.
+Licence: assumption, not checked: ForgeGUI's terms give the account owner the right to use its outputs in a
+game. SHANNON to confirm (checkpoint item in STATION-095).
+
+| Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
+|----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
+| See `uploaded.json` once uploaded (all 26 `creature_*` assets in `forge_sources.json`, and their `_rainbow` coats) | ForgeGUI 3D generation, cut and re-baked in Blender | Generated for SHANNON's ForgeGUI account, 2026-11-18 | ForgeGUI terms (to confirm) | None known | Load by ID only in experiences of the same owner | FBX, 7 meshes, 11,000 to 19,600 triangles; 1024 x 1024 PNG | Every animal and variant, through `src/shared/StationAssets.luau` and `src/stations/Creatures.luau` | Built; not uploaded yet |

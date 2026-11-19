@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-096",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0089: a regular and a power attack, with their effects, for every species.",
+  "inputs": [
+    "docs/decisions/0089-animal-stations-attack-moves.md"
+  ],
+  "dependencies": [
+    "STATION-095"
+  ],
+  "files": [
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0089-animal-stations-attack-moves.md",
+    "studio/tasks/STATION-096.json"
+  ],
+  "tests": [
+    "FightFx.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every species plays its own regular and power attack, landing on the server's hit times",
+    "The meerkat's crew stands between it and the enemy, facing the enemy",
+    "No script errors in a wave fight"
+  ],
+  "verification": "Lune 721/721, selene and stylua clean, the place builds and matches stations.project.json. Not yet seen in Studio.",
+  "output_artifacts": [
+    "src/stations-client/Creatures.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON: the variants' own twists (recommend: after the base moves are approved in Studio)."
+}

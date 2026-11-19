@@ -321,6 +321,9 @@ function WaveShow.run(
 			if not live() or actor.hp <= 0 then
 				return
 			end
+			if e.power and to then -- display only: where the client sends a power attack's effects (decision 0089)
+				actor.model:SetAttribute("AimAt", to.Position)
+			end
 			Creatures.play(actor.model, if e.power then "magic" else "attack")
 			local root = actor.model.PrimaryPart :: BasePart
 			local lunges = not e.power and not RANGED[kind]

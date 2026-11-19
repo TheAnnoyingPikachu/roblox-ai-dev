@@ -4,91 +4,91 @@
     "png": "build/blender/stations/creature_rhino.png",
     "preview": "build/blender/stations/previews/creature_rhino.png",
     "size_studs": [
-      5.38,
+      5.02,
       7.82,
-      13.87
+      16.11
     ],
-    "tris": 3016,
+    "tris": 15612,
     "parts": {
-      "creature_rhino_body": 756,
-      "creature_rhino_head": 636,
-      "creature_rhino_tail": 56,
-      "creature_rhino_leg_fl": 392,
-      "creature_rhino_leg_fr": 392,
-      "creature_rhino_leg_bl": 392,
-      "creature_rhino_leg_br": 392
+      "creature_rhino_body": 7030,
+      "creature_rhino_head": 9312,
+      "creature_rhino_tail": 978,
+      "creature_rhino_leg_fl": 2934,
+      "creature_rhino_leg_fr": 2938,
+      "creature_rhino_leg_bl": 4042,
+      "creature_rhino_leg_br": 3990
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/rhinos.py",
-    "notes": "Rhino: a massive slate war rhino, armour plates with bone studs, a scimitar horn.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Rhino (ForgeGUI): heavy grey armour plates, two faceted horns.",
     "glow": {},
     "centres": {
       "creature_rhino_body": [
-        -0.003,
-        4.725,
-        -1.199
+        0.0,
+        4.989,
+        -1.529
       ],
       "creature_rhino_head": [
-        0.006,
-        5.171,
-        4.894
+        0.008,
+        4.446,
+        5.772
       ],
       "creature_rhino_tail": [
-        0.0,
-        3.106,
-        -6.232
+        0.012,
+        4.203,
+        -7.424
       ],
       "creature_rhino_leg_fl": [
-        1.455,
-        1.801,
-        1.488
+        1.15,
+        1.421,
+        1.059
       ],
       "creature_rhino_leg_fr": [
-        -1.456,
-        1.811,
-        1.488
+        -1.129,
+        1.421,
+        1.067
       ],
       "creature_rhino_leg_bl": [
-        1.454,
-        1.806,
-        -3.57
+        1.03,
+        1.467,
+        -3.168
       ],
       "creature_rhino_leg_br": [
-        -1.454,
-        1.815,
-        -3.57
+        -1.047,
+        1.467,
+        -3.168
       ]
     },
     "joints": {
       "creature_rhino_head": [
-        0.0,
-        4.383,
-        3.096
-      ],
-      "creature_rhino_leg_fl": [
-        1.454,
-        3.171,
-        1.48
-      ],
-      "creature_rhino_leg_fr": [
-        -1.454,
-        3.171,
-        1.48
-      ],
-      "creature_rhino_leg_bl": [
-        1.454,
-        3.171,
-        -3.57
-      ],
-      "creature_rhino_leg_br": [
-        -1.454,
-        3.171,
-        -3.57
+        -0.017,
+        5.33,
+        3.846
       ],
       "creature_rhino_tail": [
-        0.0,
-        4.787,
-        -5.691
+        0.085,
+        4.525,
+        -7.12
+      ],
+      "creature_rhino_leg_fl": [
+        0.995,
+        2.567,
+        1.567
+      ],
+      "creature_rhino_leg_fr": [
+        -1.102,
+        2.57,
+        1.44
+      ],
+      "creature_rhino_leg_bl": [
+        1.074,
+        2.554,
+        -3.352
+      ],
+      "creature_rhino_leg_br": [
+        -1.073,
+        2.545,
+        -3.499
       ]
     }
   },
@@ -97,169 +97,91 @@
     "png": "build/blender/stations/creature_rhino_lava.png",
     "preview": "build/blender/stations/previews/creature_rhino_lava.png",
     "size_studs": [
-      6.89,
+      7.83,
       11.33,
-      18.52
+      19.49
     ],
-    "tris": 3352,
+    "tris": 15323,
     "parts": {
-      "creature_rhino_lava_body": 616,
-      "creature_rhino_lava_head": 352,
-      "creature_rhino_lava_tail": 32,
-      "creature_rhino_lava_leg_fl": 392,
-      "creature_rhino_lava_leg_fr": 392,
-      "creature_rhino_lava_leg_bl": 392,
-      "creature_rhino_lava_leg_br": 392,
-      "creature_rhino_lava_body_glow": 324,
-      "creature_rhino_lava_head_glow": 276,
-      "creature_rhino_lava_tail_glow": 40,
-      "creature_rhino_lava_leg_fl_glow": 36,
-      "creature_rhino_lava_leg_fr_glow": 36,
-      "creature_rhino_lava_leg_bl_glow": 36,
-      "creature_rhino_lava_leg_br_glow": 36
+      "creature_rhino_lava_body": 11824,
+      "creature_rhino_lava_head": 6428,
+      "creature_rhino_lava_tail": 1434,
+      "creature_rhino_lava_leg_fl": 2482,
+      "creature_rhino_lava_leg_fr": 2520,
+      "creature_rhino_lava_leg_bl": 2960,
+      "creature_rhino_lava_leg_br": 2998
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/rhinos.py",
-    "notes": "Lava Rhino (mythic): obsidian plates with lava in their cracks, Neon lava in the folds and round the knees, molten horns, a burning tail.",
-    "glow": {
-      "creature_rhino_lava_body_glow": [
-        255,
-        84,
-        12
-      ],
-      "creature_rhino_lava_head_glow": [
-        255,
-        84,
-        12
-      ],
-      "creature_rhino_lava_tail_glow": [
-        255,
-        84,
-        12
-      ],
-      "creature_rhino_lava_leg_fl_glow": [
-        255,
-        84,
-        12
-      ],
-      "creature_rhino_lava_leg_fr_glow": [
-        255,
-        84,
-        12
-      ],
-      "creature_rhino_lava_leg_bl_glow": [
-        255,
-        84,
-        12
-      ],
-      "creature_rhino_lava_leg_br_glow": [
-        255,
-        84,
-        12
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Lava Rhino (ForgeGUI, mythic): charcoal rock split with glowing lava, a molten horn.",
+    "glow": {},
     "centres": {
       "creature_rhino_lava_body": [
-        0.014,
-        6.89,
-        -1.158
+        0.0,
+        7.34,
+        -1.92
       ],
       "creature_rhino_lava_head": [
-        -0.006,
-        5.853,
-        6.574
+        0.0,
+        6.485,
+        7.065
       ],
       "creature_rhino_lava_tail": [
         0.0,
-        4.737,
-        -7.563
+        6.4,
+        -9.07
       ],
       "creature_rhino_lava_leg_fl": [
-        1.859,
-        2.321,
-        2.275
+        1.78,
+        1.98,
+        1.375
       ],
       "creature_rhino_lava_leg_fr": [
-        -1.862,
-        2.324,
-        2.275
+        -1.775,
+        1.98,
+        1.375
       ],
       "creature_rhino_lava_leg_bl": [
-        1.865,
-        2.308,
-        -4.21
+        1.755,
+        2.035,
+        -4.31
       ],
       "creature_rhino_lava_leg_br": [
-        -1.865,
-        2.32,
-        -4.21
-      ],
-      "creature_rhino_lava_body_glow": [
-        0.002,
-        5.339,
-        -1.102
-      ],
-      "creature_rhino_lava_head_glow": [
-        0.001,
-        7.539,
-        7.488
-      ],
-      "creature_rhino_lava_tail_glow": [
-        0.0,
-        4.122,
-        -8.677
-      ],
-      "creature_rhino_lava_leg_fl_glow": [
-        1.865,
-        2.366,
-        2.265
-      ],
-      "creature_rhino_lava_leg_fr_glow": [
-        -1.865,
-        2.366,
-        2.265
-      ],
-      "creature_rhino_lava_leg_bl_glow": [
-        1.865,
-        2.366,
-        -4.21
-      ],
-      "creature_rhino_lava_leg_br_glow": [
-        -1.865,
-        2.366,
-        -4.21
+        -1.725,
+        2.03,
+        -4.31
       ]
     },
     "joints": {
       "creature_rhino_lava_head": [
-        0.0,
-        5.617,
-        4.337
-      ],
-      "creature_rhino_lava_leg_fl": [
-        1.865,
-        4.063,
-        2.265
-      ],
-      "creature_rhino_lava_leg_fr": [
-        -1.865,
-        4.063,
-        2.265
-      ],
-      "creature_rhino_lava_leg_bl": [
-        1.865,
-        4.063,
-        -4.21
-      ],
-      "creature_rhino_lava_leg_br": [
-        -1.865,
-        4.063,
-        -4.21
+        -0.058,
+        7.434,
+        4.679
       ],
       "creature_rhino_lava_tail": [
-        0.0,
-        6.135,
-        -6.929
+        -0.025,
+        5.736,
+        -8.578
+      ],
+      "creature_rhino_lava_leg_fl": [
+        2.003,
+        3.748,
+        1.822
+      ],
+      "creature_rhino_lava_leg_fr": [
+        -2.084,
+        3.748,
+        1.785
+      ],
+      "creature_rhino_lava_leg_bl": [
+        1.947,
+        3.741,
+        -4.875
+      ],
+      "creature_rhino_lava_leg_br": [
+        -1.901,
+        3.749,
+        -4.902
       ]
     }
   },
@@ -268,91 +190,91 @@
     "png": "build/blender/stations/creature_jackal.png",
     "preview": "build/blender/stations/previews/creature_jackal.png",
     "size_studs": [
-      1.3,
+      1.2,
       4.02,
-      7.38
+      5.43
     ],
-    "tris": 1368,
+    "tris": 15666,
     "parts": {
-      "creature_jackal_body": 224,
-      "creature_jackal_head": 328,
-      "creature_jackal_tail": 48,
-      "creature_jackal_leg_fl": 160,
-      "creature_jackal_leg_bl": 224,
-      "creature_jackal_leg_fr": 160,
-      "creature_jackal_leg_br": 224
+      "creature_jackal_body": 3836,
+      "creature_jackal_head": 13864,
+      "creature_jackal_tail": 2458,
+      "creature_jackal_leg_fl": 3026,
+      "creature_jackal_leg_fr": 2990,
+      "creature_jackal_leg_bl": 2584,
+      "creature_jackal_leg_br": 2574
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/jackals.py",
-    "notes": "Jackal: a lean faceted pack hunter with a dark saddle and a bushy tail.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Jackal (ForgeGUI): tawny gold, a dark grey saddle, huge ears, a black-tipped tail.",
     "glow": {},
     "centres": {
       "creature_jackal_body": [
-        -0.001,
-        2.103,
-        0.27
+        0.001,
+        2.131,
+        -0.265
       ],
       "creature_jackal_head": [
-        -0.001,
-        2.982,
-        2.603
+        0.003,
+        2.95,
+        2.003
       ],
       "creature_jackal_tail": [
-        0.035,
-        1.528,
-        -2.433
+        0.001,
+        2.587,
+        -1.978
       ],
       "creature_jackal_leg_fl": [
-        0.389,
-        1.039,
-        1.358
-      ],
-      "creature_jackal_leg_bl": [
-        0.389,
-        1.127,
-        -0.901
+        0.3,
+        0.849,
+        0.852
       ],
       "creature_jackal_leg_fr": [
-        -0.39,
-        1.038,
-        1.358
+        -0.299,
+        0.852,
+        0.848
+      ],
+      "creature_jackal_leg_bl": [
+        0.282,
+        0.844,
+        -0.492
       ],
       "creature_jackal_leg_br": [
-        -0.389,
-        1.124,
-        -0.901
+        -0.279,
+        0.844,
+        -0.488
       ]
     },
     "joints": {
       "creature_jackal_head": [
-        -0.001,
-        2.478,
-        1.795
-      ],
-      "creature_jackal_leg_fl": [
-        0.389,
-        1.77,
-        1.299
-      ],
-      "creature_jackal_leg_fr": [
-        -0.39,
-        1.77,
-        1.299
-      ],
-      "creature_jackal_leg_bl": [
-        0.389,
-        1.77,
-        -0.943
-      ],
-      "creature_jackal_leg_br": [
-        -0.39,
-        1.77,
-        -0.943
+        0.007,
+        2.396,
+        1.453
       ],
       "creature_jackal_tail": [
-        -0.001,
-        2.301,
-        -1.32
+        0.017,
+        2.012,
+        -1.747
+      ],
+      "creature_jackal_leg_fl": [
+        0.332,
+        1.531,
+        1.078
+      ],
+      "creature_jackal_leg_fr": [
+        -0.338,
+        1.528,
+        1.058
+      ],
+      "creature_jackal_leg_bl": [
+        0.257,
+        1.53,
+        -0.521
+      ],
+      "creature_jackal_leg_br": [
+        -0.252,
+        1.53,
+        -0.534
       ]
     }
   },
@@ -361,103 +283,91 @@
     "png": "build/blender/stations/creature_jackal_pharaoh.png",
     "preview": "build/blender/stations/previews/creature_jackal_pharaoh.png",
     "size_studs": [
-      1.6,
+      1.86,
       5.09,
-      9.07
+      6.89
     ],
-    "tris": 1536,
+    "tris": 15432,
     "parts": {
-      "creature_jackal_pharaoh_body": 224,
-      "creature_jackal_pharaoh_head": 352,
-      "creature_jackal_pharaoh_head_glow": 32,
-      "creature_jackal_pharaoh_tail": 48,
-      "creature_jackal_pharaoh_leg_fl": 188,
-      "creature_jackal_pharaoh_leg_bl": 252,
-      "creature_jackal_pharaoh_leg_fr": 188,
-      "creature_jackal_pharaoh_leg_br": 252
+      "creature_jackal_pharaoh_body": 5134,
+      "creature_jackal_pharaoh_head": 12700,
+      "creature_jackal_pharaoh_tail": 296,
+      "creature_jackal_pharaoh_leg_fl": 4092,
+      "creature_jackal_pharaoh_leg_fr": 4086,
+      "creature_jackal_pharaoh_leg_bl": 2280,
+      "creature_jackal_pharaoh_leg_br": 2276
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/jackals.py",
-    "notes": "Pharaoh Jackal (legendary): black with gold bands; eyes and brow gem are Neon.",
-    "glow": {
-      "creature_jackal_pharaoh_head_glow": [
-        60,
-        230,
-        220
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Pharaoh Jackal (ForgeGUI, legendary): black, a gold and lapis headdress, gold bands, turquoise eyes and glyphs.",
+    "glow": {},
     "centres": {
       "creature_jackal_pharaoh_body": [
         0.0,
-        2.585,
-        0.327
+        3.0,
+        0.483
       ],
       "creature_jackal_pharaoh_head": [
         0.0,
-        3.736,
-        3.198
-      ],
-      "creature_jackal_pharaoh_head_glow": [
-        0.001,
-        3.986,
-        3.292
+        3.765,
+        2.58
       ],
       "creature_jackal_pharaoh_tail": [
-        0.044,
-        1.877,
-        -2.99
+        0.0,
+        1.58,
+        -2.351
       ],
       "creature_jackal_pharaoh_leg_fl": [
-        0.478,
-        1.275,
-        1.664
-      ],
-      "creature_jackal_pharaoh_leg_bl": [
-        0.479,
-        1.384,
-        -1.108
+        0.397,
+        1.021,
+        1.064
       ],
       "creature_jackal_pharaoh_leg_fr": [
-        -0.478,
-        1.274,
-        1.667
+        -0.397,
+        1.019,
+        1.064
+      ],
+      "creature_jackal_pharaoh_leg_bl": [
+        0.376,
+        1.004,
+        -1.481
       ],
       "creature_jackal_pharaoh_leg_br": [
-        -0.479,
-        1.385,
-        -1.108
+        -0.388,
+        1.004,
+        -1.481
       ]
     },
     "joints": {
       "creature_jackal_pharaoh_head": [
-        0.0,
-        3.045,
-        2.206
-      ],
-      "creature_jackal_pharaoh_leg_fl": [
-        0.479,
-        2.175,
-        1.597
-      ],
-      "creature_jackal_pharaoh_leg_fr": [
-        -0.479,
-        2.175,
-        1.597
-      ],
-      "creature_jackal_pharaoh_leg_bl": [
-        0.479,
-        2.175,
-        -1.158
-      ],
-      "creature_jackal_pharaoh_leg_br": [
-        -0.479,
-        2.175,
-        -1.158
+        0.014,
+        2.881,
+        1.913
       ],
       "creature_jackal_pharaoh_tail": [
-        0.0,
-        2.828,
-        -1.622
+        0.01,
+        1.975,
+        -1.36
+      ],
+      "creature_jackal_pharaoh_leg_fl": [
+        0.461,
+        1.938,
+        1.074
+      ],
+      "creature_jackal_pharaoh_leg_fr": [
+        -0.454,
+        1.935,
+        1.072
+      ],
+      "creature_jackal_pharaoh_leg_bl": [
+        0.342,
+        1.938,
+        -0.745
+      ],
+      "creature_jackal_pharaoh_leg_br": [
+        -0.324,
+        1.948,
+        -0.787
       ]
     }
   },
@@ -466,91 +376,91 @@
     "png": "build/blender/stations/creature_cheetah.png",
     "preview": "build/blender/stations/previews/creature_cheetah.png",
     "size_studs": [
-      1.54,
+      1.88,
       4.62,
-      10.85
+      9.14
     ],
-    "tris": 2428,
+    "tris": 14070,
     "parts": {
-      "creature_cheetah_body": 744,
-      "creature_cheetah_head": 564,
-      "creature_cheetah_tail": 88,
-      "creature_cheetah_leg_fl": 220,
-      "creature_cheetah_leg_bl": 296,
-      "creature_cheetah_leg_fr": 220,
-      "creature_cheetah_leg_br": 296
+      "creature_cheetah_body": 1022,
+      "creature_cheetah_head": 10162,
+      "creature_cheetah_tail": 314,
+      "creature_cheetah_leg_fl": 4452,
+      "creature_cheetah_leg_fr": 4428,
+      "creature_cheetah_leg_bl": 3908,
+      "creature_cheetah_leg_br": 3854
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/cheetahs.py",
-    "notes": "Cheetah: a slender faceted sprinter with black spots and tear marks.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Cheetah (ForgeGUI): lean gold with black spots and tear marks, a ringed tail.",
     "glow": {},
     "centres": {
       "creature_cheetah_body": [
-        -0.001,
-        2.861,
-        1.931
+        0.0,
+        2.9,
+        0.449
       ],
       "creature_cheetah_head": [
-        0.004,
-        3.676,
-        4.565
+        0.0,
+        3.373,
+        3.536
       ],
       "creature_cheetah_tail": [
-        0.022,
-        2.659,
-        -2.786
+        -0.002,
+        1.339,
+        -3.385
       ],
       "creature_cheetah_leg_fl": [
-        0.449,
-        1.419,
-        3.36
-      ],
-      "creature_cheetah_leg_bl": [
-        0.46,
-        1.527,
-        0.286
+        0.437,
+        1.105,
+        2.19
       ],
       "creature_cheetah_leg_fr": [
-        -0.442,
-        1.418,
-        3.36
+        -0.435,
+        1.105,
+        2.19
+      ],
+      "creature_cheetah_leg_bl": [
+        0.472,
+        1.108,
+        -2.008
       ],
       "creature_cheetah_leg_br": [
-        -0.456,
-        1.528,
-        0.286
+        -0.47,
+        1.108,
+        -2.008
       ]
     },
     "joints": {
       "creature_cheetah_head": [
-        0.004,
-        3.335,
-        3.882
-      ],
-      "creature_cheetah_leg_fl": [
-        0.439,
-        2.393,
-        3.273
-      ],
-      "creature_cheetah_leg_fr": [
-        -0.431,
-        2.393,
-        3.273
-      ],
-      "creature_cheetah_leg_bl": [
-        0.439,
-        2.393,
-        0.228
-      ],
-      "creature_cheetah_leg_br": [
-        -0.431,
-        2.393,
-        0.228
+        0.0,
+        2.968,
+        2.739
       ],
       "creature_cheetah_tail": [
-        0.004,
-        3.263,
-        -0.207
+        -0.002,
+        1.908,
+        -3.385
+      ],
+      "creature_cheetah_leg_fl": [
+        0.424,
+        1.936,
+        2.235
+      ],
+      "creature_cheetah_leg_fr": [
+        -0.424,
+        1.935,
+        2.235
+      ],
+      "creature_cheetah_leg_bl": [
+        0.427,
+        1.92,
+        -0.822
+      ],
+      "creature_cheetah_leg_br": [
+        -0.406,
+        1.919,
+        -0.849
       ]
     }
   },
@@ -559,125 +469,91 @@
     "png": "build/blender/stations/creature_cheetah_lightning.png",
     "preview": "build/blender/stations/previews/creature_cheetah_lightning.png",
     "size_studs": [
-      1.99,
+      2.25,
       6.0,
-      13.86
+      11.01
     ],
-    "tris": 2500,
+    "tris": 14978,
     "parts": {
-      "creature_cheetah_lightning_body": 720,
-      "creature_cheetah_lightning_head": 516,
-      "creature_cheetah_lightning_head_glow": 48,
-      "creature_cheetah_lightning_body_glow": 96,
-      "creature_cheetah_lightning_tail": 80,
-      "creature_cheetah_lightning_tail_glow": 8,
-      "creature_cheetah_lightning_leg_fl": 220,
-      "creature_cheetah_lightning_leg_bl": 296,
-      "creature_cheetah_lightning_leg_fr": 220,
-      "creature_cheetah_lightning_leg_br": 296
+      "creature_cheetah_lightning_body": 7148,
+      "creature_cheetah_lightning_head": 6284,
+      "creature_cheetah_lightning_tail": 472,
+      "creature_cheetah_lightning_leg_fl": 3852,
+      "creature_cheetah_lightning_leg_fr": 3826,
+      "creature_cheetah_lightning_leg_bl": 4226,
+      "creature_cheetah_lightning_leg_br": 4148
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/cheetahs.py",
-    "notes": "Lightning Cheetah (mythic): storm coat, Neon bolts down the flanks, a zigzag tail.",
-    "glow": {
-      "creature_cheetah_lightning_head_glow": [
-        90,
-        190,
-        255
-      ],
-      "creature_cheetah_lightning_body_glow": [
-        90,
-        190,
-        255
-      ],
-      "creature_cheetah_lightning_tail_glow": [
-        90,
-        190,
-        255
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Lightning Cheetah (ForgeGUI, mythic): white and electric blue, glowing bolt-shaped spots.",
+    "glow": {},
     "centres": {
       "creature_cheetah_lightning_body": [
-        0.009,
-        3.7,
-        2.404
+        -0.003,
+        3.835,
+        0.327
       ],
       "creature_cheetah_lightning_head": [
-        0.004,
-        4.766,
-        5.817
-      ],
-      "creature_cheetah_lightning_head_glow": [
-        0.005,
-        5.379,
-        5.431
-      ],
-      "creature_cheetah_lightning_body_glow": [
-        0.002,
-        4.062,
-        2.407
+        0.0,
+        4.525,
+        4.328
       ],
       "creature_cheetah_lightning_tail": [
-        0.027,
-        3.834,
-        -3.095
-      ],
-      "creature_cheetah_lightning_tail_glow": [
-        0.004,
-        3.875,
-        -6.298
+        -0.003,
+        2.227,
+        -4.097
       ],
       "creature_cheetah_lightning_leg_fl": [
-        0.583,
-        1.838,
-        4.255
-      ],
-      "creature_cheetah_lightning_leg_bl": [
-        0.595,
-        1.981,
-        0.269
+        0.522,
+        1.424,
+        2.289
       ],
       "creature_cheetah_lightning_leg_fr": [
-        -0.574,
-        1.84,
-        4.255
+        -0.527,
+        1.424,
+        2.289
+      ],
+      "creature_cheetah_lightning_leg_bl": [
+        0.561,
+        1.418,
+        -2.876
       ],
       "creature_cheetah_lightning_leg_br": [
-        -0.591,
-        1.981,
-        0.269
+        -0.564,
+        1.418,
+        -2.876
       ]
     },
     "joints": {
       "creature_cheetah_lightning_head": [
-        0.004,
-        4.324,
-        4.931
-      ],
-      "creature_cheetah_lightning_leg_fl": [
-        0.568,
-        3.102,
-        4.142
-      ],
-      "creature_cheetah_lightning_leg_fr": [
-        -0.56,
-        3.102,
-        4.142
-      ],
-      "creature_cheetah_lightning_leg_bl": [
-        0.568,
-        3.102,
-        0.194
-      ],
-      "creature_cheetah_lightning_leg_br": [
-        -0.56,
-        3.102,
-        0.194
+        0.027,
+        4.532,
+        3.308
       ],
       "creature_cheetah_lightning_tail": [
-        0.004,
-        4.23,
-        -0.37
+        -0.0,
+        3.033,
+        -2.743
+      ],
+      "creature_cheetah_lightning_leg_fl": [
+        0.696,
+        2.522,
+        2.299
+      ],
+      "creature_cheetah_lightning_leg_fr": [
+        -0.735,
+        2.512,
+        2.247
+      ],
+      "creature_cheetah_lightning_leg_bl": [
+        0.762,
+        2.513,
+        -1.148
+      ],
+      "creature_cheetah_lightning_leg_br": [
+        -0.737,
+        2.532,
+        -1.116
       ]
     }
   },
@@ -686,91 +562,91 @@
     "png": "build/blender/stations/creature_lion.png",
     "preview": "build/blender/stations/previews/creature_lion.png",
     "size_studs": [
-      5.22,
+      5.02,
       7.45,
-      13.0
+      13.66
     ],
-    "tris": 1584,
+    "tris": 10179,
     "parts": {
-      "creature_lion_body": 76,
-      "creature_lion_head": 880,
-      "creature_lion_tail": 84,
-      "creature_lion_leg_fl": 120,
-      "creature_lion_leg_bl": 152,
-      "creature_lion_leg_fr": 120,
-      "creature_lion_leg_br": 152
+      "creature_lion_body": 2414,
+      "creature_lion_head": 10340,
+      "creature_lion_tail": 390,
+      "creature_lion_leg_fl": 1716,
+      "creature_lion_leg_fr": 1732,
+      "creature_lion_leg_bl": 1886,
+      "creature_lion_leg_br": 1880
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/lions.py",
-    "notes": "Lion: a chunky low-poly tawny cat with a mane of big brown shards.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Lion (ForgeGUI): warm tan, a layered spiky brown mane.",
     "glow": {},
     "centres": {
       "creature_lion_body": [
-        0.113,
-        3.134,
-        1.51
+        0.01,
+        4.582,
+        -1.165
       ],
       "creature_lion_head": [
         0.0,
-        3.956,
-        3.647
+        4.529,
+        4.414
       ],
       "creature_lion_tail": [
-        0.113,
-        2.432,
-        -3.865
+        0.017,
+        2.62,
+        -5.998
       ],
       "creature_lion_leg_fl": [
-        0.895,
-        1.668,
-        3.344
-      ],
-      "creature_lion_leg_bl": [
-        0.895,
-        1.811,
-        -0.301
+        0.864,
+        1.57,
+        2.515
       ],
       "creature_lion_leg_fr": [
-        -0.669,
-        1.668,
-        3.344
+        -0.895,
+        1.574,
+        2.515
+      ],
+      "creature_lion_leg_bl": [
+        0.623,
+        1.542,
+        -3.298
       ],
       "creature_lion_leg_br": [
-        -0.669,
-        1.811,
-        -0.301
+        -0.637,
+        1.595,
+        -3.298
       ]
     },
     "joints": {
       "creature_lion_head": [
-        0.113,
-        3.622,
-        4.184
-      ],
-      "creature_lion_leg_fl": [
-        0.895,
-        2.76,
-        3.321
-      ],
-      "creature_lion_leg_fr": [
-        -0.669,
-        2.76,
-        3.321
-      ],
-      "creature_lion_leg_bl": [
-        0.895,
-        2.76,
-        -0.359
-      ],
-      "creature_lion_leg_br": [
-        -0.669,
-        2.76,
-        -0.359
+        -0.061,
+        4.635,
+        2.454
       ],
       "creature_lion_tail": [
-        0.113,
-        3.392,
-        -1.336
+        0.024,
+        3.108,
+        -5.214
+      ],
+      "creature_lion_leg_fl": [
+        0.897,
+        2.793,
+        1.036
+      ],
+      "creature_lion_leg_fr": [
+        -0.876,
+        2.734,
+        1.405
+      ],
+      "creature_lion_leg_bl": [
+        0.35,
+        2.834,
+        -2.182
+      ],
+      "creature_lion_leg_br": [
+        -0.397,
+        2.854,
+        -2.164
       ]
     }
   },
@@ -781,101 +657,89 @@
     "size_studs": [
       6.33,
       9.23,
-      16.05
+      15.4
     ],
-    "tris": 1808,
+    "tris": 15714,
     "parts": {
-      "creature_lion_sun_body": 76,
-      "creature_lion_sun_head": 832,
-      "creature_lion_sun_head_glow": 24,
-      "creature_lion_sun_tail": 84,
-      "creature_lion_sun_leg_fl": 120,
-      "creature_lion_sun_leg_bl": 276,
-      "creature_lion_sun_leg_fr": 120,
-      "creature_lion_sun_leg_br": 276
+      "creature_lion_sun_body": 3966,
+      "creature_lion_sun_head": 17490,
+      "creature_lion_sun_tail": 482,
+      "creature_lion_sun_leg_fl": 2360,
+      "creature_lion_sun_leg_fr": 2300,
+      "creature_lion_sun_leg_bl": 2318,
+      "creature_lion_sun_leg_br": 2512
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/lions.py",
-    "notes": "Sun Lion (mythic): golden, a mane of big yellow shards, a sun on each haunch, glowing eyes.",
-    "glow": {
-      "creature_lion_sun_head_glow": [
-        255,
-        222,
-        90
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Sun Lion (ForgeGUI, mythic): a mane of sun rays, a sun emblem on its hip.",
+    "glow": {},
     "centres": {
       "creature_lion_sun_body": [
-        0.024,
-        3.869,
-        1.864
+        -0.016,
+        5.749,
+        -1.395
       ],
       "creature_lion_sun_head": [
         0.0,
-        4.902,
-        4.596
-      ],
-      "creature_lion_sun_head_glow": [
-        0.024,
-        5.333,
-        7.013
+        5.935,
+        4.88
       ],
       "creature_lion_sun_tail": [
-        0.024,
-        3.003,
-        -4.772
+        -0.016,
+        3.355,
+        -6.638
       ],
       "creature_lion_sun_leg_fl": [
-        0.99,
-        2.059,
-        4.129
-      ],
-      "creature_lion_sun_leg_bl": [
-        1.011,
-        2.237,
-        -0.372
+        1.094,
+        1.912,
+        2.94
       ],
       "creature_lion_sun_leg_fr": [
-        -0.941,
-        2.059,
-        4.129
+        -1.11,
+        1.924,
+        3.011
+      ],
+      "creature_lion_sun_leg_bl": [
+        0.794,
+        1.991,
+        -3.639
       ],
       "creature_lion_sun_leg_br": [
-        -0.963,
-        2.237,
-        -0.372
+        -0.846,
+        1.987,
+        -3.643
       ]
     },
     "joints": {
       "creature_lion_sun_head": [
-        0.024,
-        4.473,
-        5.166
-      ],
-      "creature_lion_sun_leg_fl": [
-        0.99,
-        3.408,
-        4.101
-      ],
-      "creature_lion_sun_leg_fr": [
-        -0.941,
-        3.408,
-        4.101
-      ],
-      "creature_lion_sun_leg_bl": [
-        0.99,
-        3.408,
-        -0.443
-      ],
-      "creature_lion_sun_leg_br": [
-        -0.941,
-        3.408,
-        -0.443
+        -0.062,
+        5.645,
+        2.768
       ],
       "creature_lion_sun_tail": [
-        0.024,
-        4.189,
-        -1.65
+        -0.03,
+        3.92,
+        -5.823
+      ],
+      "creature_lion_sun_leg_fl": [
+        1.006,
+        3.418,
+        1.298
+      ],
+      "creature_lion_sun_leg_fr": [
+        -1.052,
+        3.41,
+        1.235
+      ],
+      "creature_lion_sun_leg_bl": [
+        0.499,
+        3.484,
+        -2.836
+      ],
+      "creature_lion_sun_leg_br": [
+        -0.482,
+        3.466,
+        -2.958
       ]
     }
   },
@@ -884,91 +748,91 @@
     "png": "build/blender/stations/creature_meerkat.png",
     "preview": "build/blender/stations/previews/creature_meerkat.png",
     "size_studs": [
-      1.97,
+      1.61,
       4.82,
-      4.93
+      3.94
     ],
-    "tris": 1692,
+    "tris": 14079,
     "parts": {
-      "creature_meerkat_body": 720,
-      "creature_meerkat_head": 496,
-      "creature_meerkat_tail": 52,
-      "creature_meerkat_leg_fl": 64,
-      "creature_meerkat_leg_fr": 64,
-      "creature_meerkat_leg_bl": 148,
-      "creature_meerkat_leg_br": 148
+      "creature_meerkat_body": 5096,
+      "creature_meerkat_head": 13886,
+      "creature_meerkat_tail": 652,
+      "creature_meerkat_leg_fl": 674,
+      "creature_meerkat_leg_fr": 644,
+      "creature_meerkat_leg_bl": 3606,
+      "creature_meerkat_leg_br": 3600
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/meerkats.py",
-    "notes": "Meerkat: an upright sentinel, sandy with dark bands and eye patches.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Meerkat (ForgeGUI): an upright sentinel, sandy with dark eye patches.",
     "glow": {},
     "centres": {
       "creature_meerkat_body": [
-        -0.0,
-        2.186,
-        0.934
+        0.0,
+        2.299,
+        0.984
       ],
       "creature_meerkat_head": [
-        0.0,
-        4.131,
-        1.586
+        -0.001,
+        4.257,
+        1.266
       ],
       "creature_meerkat_tail": [
-        0.0,
-        0.721,
-        -0.993
+        -0.001,
+        0.218,
+        -1.044
       ],
       "creature_meerkat_leg_fl": [
-        0.592,
-        2.531,
-        1.637
+        0.398,
+        2.817,
+        1.179
       ],
       "creature_meerkat_leg_fr": [
-        -0.592,
-        2.531,
-        1.637
+        -0.4,
+        2.816,
+        1.191
       ],
       "creature_meerkat_leg_bl": [
-        0.63,
-        0.761,
-        1.251
+        0.402,
+        0.68,
+        0.416
       ],
       "creature_meerkat_leg_br": [
-        -0.63,
-        0.761,
-        1.249
+        -0.402,
+        0.68,
+        0.416
       ]
     },
     "joints": {
       "creature_meerkat_head": [
-        0.0,
-        3.675,
-        1.192
-      ],
-      "creature_meerkat_leg_fl": [
-        0.6,
-        3.15,
-        1.267
-      ],
-      "creature_meerkat_leg_fr": [
-        -0.6,
-        3.15,
-        1.267
-      ],
-      "creature_meerkat_leg_bl": [
-        0.63,
-        1.125,
-        0.817
-      ],
-      "creature_meerkat_leg_br": [
-        -0.63,
-        1.125,
-        0.817
+        -0.079,
+        3.745,
+        1.051
       ],
       "creature_meerkat_tail": [
-        0.0,
-        1.17,
-        0.367
+        -0.001,
+        0.435,
+        -1.044
+      ],
+      "creature_meerkat_leg_fl": [
+        0.293,
+        2.482,
+        1.451
+      ],
+      "creature_meerkat_leg_fr": [
+        -0.329,
+        2.613,
+        1.389
+      ],
+      "creature_meerkat_leg_bl": [
+        0.288,
+        1.033,
+        0.86
+      ],
+      "creature_meerkat_leg_br": [
+        -0.33,
+        1.032,
+        0.918
       ]
     }
   },
@@ -977,125 +841,91 @@
     "png": "build/blender/stations/creature_meerkat_storm.png",
     "preview": "build/blender/stations/previews/creature_meerkat_storm.png",
     "size_studs": [
-      3.48,
+      2.72,
       6.7,
-      6.29
+      4.51
     ],
-    "tris": 2000,
+    "tris": 15177,
     "parts": {
-      "creature_meerkat_storm_body": 708,
-      "creature_meerkat_storm_head": 448,
-      "creature_meerkat_storm_tail": 44,
-      "creature_meerkat_storm_leg_fl": 64,
-      "creature_meerkat_storm_leg_fr": 64,
-      "creature_meerkat_storm_leg_bl": 148,
-      "creature_meerkat_storm_leg_br": 148,
-      "creature_meerkat_storm_body_glow": 288,
-      "creature_meerkat_storm_head_glow": 48,
-      "creature_meerkat_storm_tail_glow": 40
+      "creature_meerkat_storm_body": 10686,
+      "creature_meerkat_storm_head": 11840,
+      "creature_meerkat_storm_tail": 398,
+      "creature_meerkat_storm_leg_fl": 534,
+      "creature_meerkat_storm_leg_fr": 1206,
+      "creature_meerkat_storm_leg_bl": 2754,
+      "creature_meerkat_storm_leg_br": 2936
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/meerkats.py",
-    "notes": "Storm Meerkat (legendary): thundercloud coat, Neon lightning down the back, a charged tail.",
-    "glow": {
-      "creature_meerkat_storm_head_glow": [
-        60,
-        210,
-        255
-      ],
-      "creature_meerkat_storm_body_glow": [
-        60,
-        210,
-        255
-      ],
-      "creature_meerkat_storm_tail_glow": [
-        60,
-        210,
-        255
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Storm Meerkat (ForgeGUI, legendary): slate blue, goggles, a storm cloud over its head, lightning at its feet.",
+    "glow": {},
     "centres": {
       "creature_meerkat_storm_body": [
-        0.013,
-        2.824,
-        1.342
+        -0.089,
+        2.478,
+        0.826
       ],
       "creature_meerkat_storm_head": [
-        0.0,
-        5.094,
-        1.998
+        0.127,
+        5.213,
+        1.311
       ],
       "creature_meerkat_storm_tail": [
-        0.0,
-        0.889,
-        -0.879
+        -0.002,
+        0.267,
+        -1.203
       ],
       "creature_meerkat_storm_leg_fl": [
-        0.73,
-        3.122,
-        2.064
+        0.776,
+        3.288,
+        1.284
       ],
       "creature_meerkat_storm_leg_fr": [
-        -0.73,
-        3.122,
-        2.064
+        -0.652,
+        3.293,
+        1.249
       ],
       "creature_meerkat_storm_leg_bl": [
-        0.777,
-        0.939,
-        1.589
+        0.521,
+        0.499,
+        0.389
       ],
       "creature_meerkat_storm_leg_br": [
-        -0.777,
-        0.939,
-        1.591
-      ],
-      "creature_meerkat_storm_body_glow": [
-        0.0,
-        3.71,
-        1.656
-      ],
-      "creature_meerkat_storm_head_glow": [
-        0.0,
-        6.031,
-        1.655
-      ],
-      "creature_meerkat_storm_tail_glow": [
-        0.019,
-        1.388,
-        -2.757
+        -0.551,
+        0.527,
+        0.377
       ]
     },
     "joints": {
       "creature_meerkat_storm_head": [
-        0.0,
-        4.533,
-        1.516
-      ],
-      "creature_meerkat_storm_leg_fl": [
-        0.74,
-        3.885,
-        1.609
-      ],
-      "creature_meerkat_storm_leg_fr": [
-        -0.74,
-        3.885,
-        1.609
-      ],
-      "creature_meerkat_storm_leg_bl": [
-        0.777,
-        1.388,
-        1.054
-      ],
-      "creature_meerkat_storm_leg_br": [
-        -0.777,
-        1.388,
-        1.054
+        -0.076,
+        3.982,
+        1.151
       ],
       "creature_meerkat_storm_tail": [
-        0.0,
-        1.443,
-        0.499
+        -0.002,
+        0.516,
+        -1.203
+      ],
+      "creature_meerkat_storm_leg_fl": [
+        0.637,
+        2.976,
+        1.519
+      ],
+      "creature_meerkat_storm_leg_fr": [
+        -0.68,
+        3.225,
+        1.171
+      ],
+      "creature_meerkat_storm_leg_bl": [
+        0.526,
+        0.877,
+        1.069
+      ],
+      "creature_meerkat_storm_leg_br": [
+        -0.575,
+        0.876,
+        0.878
       ]
     }
   },
@@ -1104,91 +934,91 @@
     "png": "build/blender/stations/creature_tortoise.png",
     "preview": "build/blender/stations/previews/creature_tortoise.png",
     "size_studs": [
-      6.2,
+      4.5,
       4.33,
-      10.11
+      7.29
     ],
-    "tris": 3596,
+    "tris": 14926,
     "parts": {
-      "creature_tortoise_body": 1932,
-      "creature_tortoise_head": 592,
-      "creature_tortoise_tail": 16,
-      "creature_tortoise_leg_fl": 344,
-      "creature_tortoise_leg_fr": 344,
-      "creature_tortoise_leg_bl": 184,
-      "creature_tortoise_leg_br": 184
+      "creature_tortoise_body": 5908,
+      "creature_tortoise_head": 4026,
+      "creature_tortoise_tail": 262,
+      "creature_tortoise_leg_fl": 5696,
+      "creature_tortoise_leg_fr": 5748,
+      "creature_tortoise_leg_bl": 4108,
+      "creature_tortoise_leg_br": 4104
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/tortoises.py",
-    "notes": "Tortoise: a war tortoise, a high shell of horn plates with a spiked rim.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Tortoise (ForgeGUI): a tall olive shell of faceted scutes.",
     "glow": {},
     "centres": {
       "creature_tortoise_body": [
-        -0.008,
-        2.551,
-        -0.674
+        0.0,
+        2.317,
+        -0.448
       ],
       "creature_tortoise_head": [
-        0.002,
-        1.853,
-        3.229
+        0.0,
+        1.865,
+        3.015
       ],
       "creature_tortoise_tail": [
-        0.0,
-        0.982,
-        -4.08
+        -0.114,
+        1.188,
+        -3.256
       ],
       "creature_tortoise_leg_fl": [
-        1.994,
-        0.808,
-        1.313
+        1.397,
+        0.935,
+        0.784
       ],
       "creature_tortoise_leg_fr": [
-        -1.994,
-        0.812,
-        1.313
+        -1.123,
+        0.928,
+        0.406
       ],
       "creature_tortoise_leg_bl": [
-        1.994,
-        0.818,
-        -2.618
+        1.366,
+        1.0,
+        -1.317
       ],
       "creature_tortoise_leg_br": [
-        -1.994,
-        0.817,
-        -2.618
+        -1.294,
+        1.002,
+        -1.33
       ]
     },
     "joints": {
       "creature_tortoise_head": [
-        0.0,
-        1.376,
-        1.65
-      ],
-      "creature_tortoise_leg_fl": [
-        1.425,
-        1.406,
-        0.825
-      ],
-      "creature_tortoise_leg_fr": [
-        -1.425,
-        1.406,
-        0.825
-      ],
-      "creature_tortoise_leg_bl": [
-        1.425,
-        1.406,
-        -2.175
-      ],
-      "creature_tortoise_leg_br": [
-        -1.425,
-        1.406,
-        -2.175
+        0.004,
+        1.891,
+        2.495
       ],
       "creature_tortoise_tail": [
-        0.0,
-        1.376,
-        -3.375
+        0.042,
+        1.668,
+        -3.15
+      ],
+      "creature_tortoise_leg_fl": [
+        1.204,
+        1.426,
+        1.145
+      ],
+      "creature_tortoise_leg_fr": [
+        -1.222,
+        1.412,
+        1.089
+      ],
+      "creature_tortoise_leg_bl": [
+        1.238,
+        1.413,
+        -1.914
+      ],
+      "creature_tortoise_leg_br": [
+        -1.307,
+        1.418,
+        -1.97
       ]
     }
   },
@@ -1197,114 +1027,91 @@
     "png": "build/blender/stations/creature_tortoise_gemshell.png",
     "preview": "build/blender/stations/previews/creature_tortoise_gemshell.png",
     "size_studs": [
-      8.27,
+      5.44,
       4.79,
-      13.48
+      7.95
     ],
-    "tris": 4912,
+    "tris": 15204,
     "parts": {
-      "creature_tortoise_gemshell_body": 3052,
-      "creature_tortoise_gemshell_head": 544,
-      "creature_tortoise_gemshell_tail": 16,
-      "creature_tortoise_gemshell_leg_fl": 344,
-      "creature_tortoise_gemshell_leg_fr": 344,
-      "creature_tortoise_gemshell_leg_bl": 184,
-      "creature_tortoise_gemshell_leg_br": 184,
-      "creature_tortoise_gemshell_body_glow": 220,
-      "creature_tortoise_gemshell_head_glow": 24
+      "creature_tortoise_gemshell_body": 9122,
+      "creature_tortoise_gemshell_head": 3842,
+      "creature_tortoise_gemshell_tail": 702,
+      "creature_tortoise_gemshell_leg_fl": 4110,
+      "creature_tortoise_gemshell_leg_fr": 4120,
+      "creature_tortoise_gemshell_leg_bl": 4228,
+      "creature_tortoise_gemshell_leg_br": 4284
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/tortoises.py",
-    "notes": "Gemshell Tortoise (legendary): cut rose gems in gold settings, the spine's Neon.",
-    "glow": {
-      "creature_tortoise_gemshell_head_glow": [
-        255,
-        60,
-        190
-      ],
-      "creature_tortoise_gemshell_body_glow": [
-        255,
-        60,
-        190
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Gemshell Tortoise (ForgeGUI, legendary): a shell of cut gems in gold, crystals on its legs.",
+    "glow": {},
     "centres": {
       "creature_tortoise_gemshell_body": [
-        0.005,
-        2.808,
-        -0.898
+        0.0,
+        2.581,
+        -0.4
       ],
       "creature_tortoise_gemshell_head": [
-        -0.003,
-        2.48,
-        4.307
+        -0.02,
+        2.42,
+        3.275
       ],
       "creature_tortoise_gemshell_tail": [
         0.0,
-        1.318,
-        -5.44
+        1.774,
+        -3.645
       ],
       "creature_tortoise_gemshell_leg_fl": [
-        2.659,
-        1.089,
-        1.751
+        1.678,
+        1.023,
+        0.804
       ],
       "creature_tortoise_gemshell_leg_fr": [
-        -2.659,
-        1.096,
-        1.751
+        -1.68,
+        1.043,
+        0.782
       ],
       "creature_tortoise_gemshell_leg_bl": [
-        2.659,
-        1.086,
-        -3.491
+        1.65,
+        1.066,
+        -1.292
       ],
       "creature_tortoise_gemshell_leg_br": [
-        -2.659,
-        1.092,
-        -3.491
-      ],
-      "creature_tortoise_gemshell_body_glow": [
-        0.0,
-        4.207,
-        -0.902
-      ],
-      "creature_tortoise_gemshell_head_glow": [
-        0.003,
-        3.149,
-        5.216
+        -1.668,
+        1.064,
+        -1.297
       ]
     },
     "joints": {
       "creature_tortoise_gemshell_head": [
-        0.0,
-        1.843,
-        2.2
-      ],
-      "creature_tortoise_gemshell_leg_fl": [
-        1.9,
-        1.883,
-        1.1
-      ],
-      "creature_tortoise_gemshell_leg_fr": [
-        -1.9,
-        1.883,
-        1.1
-      ],
-      "creature_tortoise_gemshell_leg_bl": [
-        1.9,
-        1.883,
-        -2.9
-      ],
-      "creature_tortoise_gemshell_leg_br": [
-        -1.9,
-        1.883,
-        -2.9
+        0.016,
+        2.153,
+        2.706
       ],
       "creature_tortoise_gemshell_tail": [
-        0.0,
-        1.843,
-        -4.5
+        0.138,
+        1.639,
+        -3.414
+      ],
+      "creature_tortoise_gemshell_leg_fl": [
+        1.35,
+        1.432,
+        1.308
+      ],
+      "creature_tortoise_gemshell_leg_fr": [
+        -1.367,
+        1.431,
+        1.338
+      ],
+      "creature_tortoise_gemshell_leg_bl": [
+        1.559,
+        1.43,
+        -2.004
+      ],
+      "creature_tortoise_gemshell_leg_br": [
+        -1.616,
+        1.406,
+        -1.814
       ]
     }
   },
@@ -1313,91 +1120,91 @@
     "png": "build/blender/stations/creature_flamingo.png",
     "preview": "build/blender/stations/previews/creature_flamingo.png",
     "size_studs": [
-      2.03,
+      1.84,
       8.04,
-      5.86
+      4.41
     ],
-    "tris": 1350,
+    "tris": 15080,
     "parts": {
-      "creature_flamingo_body": 264,
-      "creature_flamingo_head": 478,
-      "creature_flamingo_tail": 24,
-      "creature_flamingo_leg_fl": 108,
-      "creature_flamingo_leg_fr": 108,
-      "creature_flamingo_leg_bl": 184,
-      "creature_flamingo_leg_br": 184
+      "creature_flamingo_body": 1946,
+      "creature_flamingo_head": 8568,
+      "creature_flamingo_leg_fl": 6490,
+      "creature_flamingo_leg_fr": 6484,
+      "creature_flamingo_tail": 912,
+      "creature_flamingo_leg_bl": 2886,
+      "creature_flamingo_leg_br": 2874
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/flamingos.py",
-    "notes": "Flamingo: two legs; its wings are the back-leg pieces.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Flamingo (ForgeGUI): faceted pink feathers; its wings are the back-leg pieces.",
     "glow": {},
     "centres": {
       "creature_flamingo_body": [
-        0.0,
-        4.396,
-        -0.324
+        0.006,
+        4.756,
+        0.068
       ],
       "creature_flamingo_head": [
-        -0.002,
-        6.215,
-        1.841
-      ],
-      "creature_flamingo_tail": [
-        0.0,
-        4.335,
-        -1.94
+        -0.01,
+        6.397,
+        1.095
       ],
       "creature_flamingo_leg_fl": [
-        0.364,
-        1.99,
-        0.17
+        0.436,
+        1.852,
+        -0.781
       ],
       "creature_flamingo_leg_fr": [
-        -0.364,
-        1.99,
-        0.164
+        -0.44,
+        1.854,
+        -0.781
+      ],
+      "creature_flamingo_tail": [
+        -0.01,
+        4.367,
+        -1.755
       ],
       "creature_flamingo_leg_bl": [
-        0.744,
-        4.42,
-        -1.028
+        0.57,
+        4.681,
+        -0.238
       ],
       "creature_flamingo_leg_br": [
-        -0.744,
-        4.42,
-        -1.024
+        -0.566,
+        4.692,
+        -0.254
       ]
     },
     "joints": {
       "creature_flamingo_head": [
-        0.0,
-        4.673,
-        0.985
+        0.004,
+        5.41,
+        0.702
       ],
       "creature_flamingo_leg_fl": [
-        0.364,
-        3.828,
-        -0.185
+        0.312,
+        3.639,
+        0.021
       ],
       "creature_flamingo_leg_fr": [
-        -0.364,
-        3.828,
-        -0.185
-      ],
-      "creature_flamingo_leg_bl": [
-        0.78,
-        4.933,
-        0.595
-      ],
-      "creature_flamingo_leg_br": [
-        -0.78,
-        4.933,
-        0.595
+        -0.332,
+        3.651,
+        0.022
       ],
       "creature_flamingo_tail": [
-        0.0,
-        4.517,
-        -1.68
+        0.01,
+        4.454,
+        -1.553
+      ],
+      "creature_flamingo_leg_bl": [
+        0.386,
+        4.74,
+        -0.665
+      ],
+      "creature_flamingo_leg_br": [
+        -0.392,
+        4.853,
+        -0.662
       ]
     }
   },
@@ -1406,136 +1213,91 @@
     "png": "build/blender/stations/creature_flamingo_phoenix.png",
     "preview": "build/blender/stations/previews/creature_flamingo_phoenix.png",
     "size_studs": [
-      3.52,
+      3.77,
       11.3,
-      10.29
+      8.84
     ],
-    "tris": 1486,
+    "tris": 15525,
     "parts": {
-      "creature_flamingo_phoenix_body": 320,
-      "creature_flamingo_phoenix_head": 430,
-      "creature_flamingo_phoenix_tail": 8,
-      "creature_flamingo_phoenix_leg_fl": 108,
-      "creature_flamingo_phoenix_leg_fr": 108,
-      "creature_flamingo_phoenix_leg_bl": 152,
-      "creature_flamingo_phoenix_leg_br": 152,
-      "creature_flamingo_phoenix_head_glow": 64,
-      "creature_flamingo_phoenix_tail_glow": 80,
-      "creature_flamingo_phoenix_leg_bl_glow": 32,
-      "creature_flamingo_phoenix_leg_br_glow": 32
+      "creature_flamingo_phoenix_body": 10644,
+      "creature_flamingo_phoenix_head": 7070,
+      "creature_flamingo_phoenix_leg_fl": 3968,
+      "creature_flamingo_phoenix_leg_fr": 3926,
+      "creature_flamingo_phoenix_tail": 562,
+      "creature_flamingo_phoenix_leg_bl": 2608,
+      "creature_flamingo_phoenix_leg_br": 2272
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/flamingos.py",
-    "notes": "Phoenix Flamingo (mythic): Neon crest, flight feathers and tail streamers of flame.",
-    "glow": {
-      "creature_flamingo_phoenix_head_glow": [
-        255,
-        110,
-        20
-      ],
-      "creature_flamingo_phoenix_tail_glow": [
-        255,
-        110,
-        20
-      ],
-      "creature_flamingo_phoenix_leg_bl_glow": [
-        255,
-        110,
-        20
-      ],
-      "creature_flamingo_phoenix_leg_br_glow": [
-        255,
-        110,
-        20
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Phoenix Flamingo (ForgeGUI, mythic): feathers of flame, burning wings and tail.",
+    "glow": {},
     "centres": {
       "creature_flamingo_phoenix_body": [
-        0.0,
-        5.413,
-        1.218
+        -0.02,
+        6.247,
+        -0.133
       ],
       "creature_flamingo_phoenix_head": [
         0.0,
-        7.649,
-        3.81
+        8.94,
+        2.432
+      ],
+      "creature_flamingo_phoenix_leg_fl": [
+        0.919,
+        2.655,
+        0.33
+      ],
+      "creature_flamingo_phoenix_leg_fr": [
+        -0.893,
+        2.655,
+        0.403
       ],
       "creature_flamingo_phoenix_tail": [
         0.0,
-        5.508,
-        -0.723
-      ],
-      "creature_flamingo_phoenix_leg_fl": [
-        0.448,
-        2.45,
-        1.752
-      ],
-      "creature_flamingo_phoenix_leg_fr": [
-        -0.448,
-        2.45,
-        1.741
+        8.616,
+        -3.293
       ],
       "creature_flamingo_phoenix_leg_bl": [
-        0.916,
-        5.599,
-        0.993
+        1.029,
+        7.407,
+        -0.281
       ],
       "creature_flamingo_phoenix_leg_br": [
-        -0.916,
-        5.599,
-        0.994
-      ],
-      "creature_flamingo_phoenix_head_glow": [
-        0.001,
-        10.408,
-        2.99
-      ],
-      "creature_flamingo_phoenix_tail_glow": [
-        0.0,
-        4.959,
-        -2.715
-      ],
-      "creature_flamingo_phoenix_leg_bl_glow": [
-        0.88,
-        5.015,
-        -0.931
-      ],
-      "creature_flamingo_phoenix_leg_br_glow": [
-        -0.88,
-        5.015,
-        -0.931
+        -1.035,
+        7.244,
+        -0.293
       ]
     },
     "joints": {
       "creature_flamingo_phoenix_head": [
-        0.0,
-        5.751,
-        2.757
+        -0.005,
+        7.01,
+        2.664
       ],
       "creature_flamingo_phoenix_leg_fl": [
-        0.448,
-        4.711,
-        1.317
+        0.468,
+        4.555,
+        -0.213
       ],
       "creature_flamingo_phoenix_leg_fr": [
-        -0.448,
-        4.711,
-        1.317
-      ],
-      "creature_flamingo_phoenix_leg_bl": [
-        0.96,
-        6.071,
-        2.277
-      ],
-      "creature_flamingo_phoenix_leg_br": [
-        -0.96,
-        6.071,
-        2.277
+        -0.478,
+        4.392,
+        -0.286
       ],
       "creature_flamingo_phoenix_tail": [
         0.0,
-        5.559,
-        -0.523
+        9.99,
+        -3.293
+      ],
+      "creature_flamingo_phoenix_leg_bl": [
+        0.796,
+        6.496,
+        -0.18
+      ],
+      "creature_flamingo_phoenix_leg_br": [
+        -0.796,
+        6.322,
+        -0.222
       ]
     }
   },
@@ -1544,247 +1306,186 @@
     "png": "build/blender/stations/creature_elephant.png",
     "preview": "build/blender/stations/previews/creature_elephant.png",
     "size_studs": [
-      14.24,
+      8.15,
       14.14,
-      24.51
+      17.85
     ],
-    "tris": 1704,
+    "tris": 12124,
     "parts": {
-      "creature_elephant_body": 200,
-      "creature_elephant_head": 580,
-      "creature_elephant_tail": 44,
-      "creature_elephant_leg_fl": 220,
-      "creature_elephant_leg_bl": 220,
-      "creature_elephant_leg_fr": 220,
-      "creature_elephant_leg_br": 220
+      "creature_elephant_body": 5194,
+      "creature_elephant_head": 10222,
+      "creature_elephant_tail": 280,
+      "creature_elephant_leg_fl": 870,
+      "creature_elephant_leg_fr": 966,
+      "creature_elephant_leg_bl": 3400,
+      "creature_elephant_leg_br": 3316
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/elephants.py",
-    "notes": "Elephant, the Titan: a faceted blue-grey elephant with flared ears and pale tusks.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Elephant (ForgeGUI, Titan): massive grey plates, ivory tusks, trunk raised.",
     "glow": {},
     "centres": {
       "creature_elephant_body": [
         0.0,
-        8.676,
-        -3.343
+        7.946,
+        -1.999
       ],
       "creature_elephant_head": [
         0.0,
-        7.764,
-        6.972
+        10.555,
+        5.942
       ],
       "creature_elephant_tail": [
         0.0,
-        6.461,
-        -11.16
+        5.218,
+        -8.313
       ],
       "creature_elephant_leg_fl": [
-        2.345,
-        3.676,
-        0.568
-      ],
-      "creature_elephant_leg_bl": [
-        2.346,
-        3.673,
-        -7.298
+        1.265,
+        2.98,
+        0.669
       ],
       "creature_elephant_leg_fr": [
-        -2.346,
-        3.661,
-        0.568
+        -1.265,
+        2.98,
+        0.738
+      ],
+      "creature_elephant_leg_bl": [
+        1.348,
+        3.035,
+        -4.319
       ],
       "creature_elephant_leg_br": [
-        -2.346,
-        3.653,
-        -7.298
+        -1.348,
+        3.269,
+        -4.324
       ]
     },
     "joints": {
       "creature_elephant_head": [
-        0.0,
-        9.725,
-        2.597
-      ],
-      "creature_elephant_leg_fl": [
-        2.346,
-        6.413,
-        0.389
-      ],
-      "creature_elephant_leg_fr": [
-        -2.346,
-        6.413,
-        0.389
-      ],
-      "creature_elephant_leg_bl": [
-        2.346,
-        6.413,
-        -7.477
-      ],
-      "creature_elephant_leg_br": [
-        -2.346,
-        6.413,
-        -7.477
+        -0.051,
+        8.696,
+        3.585
       ],
       "creature_elephant_tail": [
-        0.0,
-        8.897,
-        -10.375
-      ]
-    },
-    "eyes": [
-      [
-        2.311,
-        10.653,
-        6.667,
-        1.243
+        0.022,
+        6.186,
+        -7.984
       ],
-      [
-        -2.313,
-        10.653,
-        6.669,
-        1.241
+      "creature_elephant_leg_fl": [
+        1.265,
+        5.268,
+        1.043
+      ],
+      "creature_elephant_leg_fr": [
+        -1.361,
+        5.284,
+        1.005
+      ],
+      "creature_elephant_leg_bl": [
+        1.961,
+        5.446,
+        -4.543
+      ],
+      "creature_elephant_leg_br": [
+        -2.037,
+        5.455,
+        -4.034
       ]
-    ],
-    "lid": [
-      94,
-      100,
-      118
-    ]
+    }
   },
   "creature_elephant_frost": {
     "fbx": "build/blender/stations/creature_elephant_frost.fbx",
     "png": "build/blender/stations/creature_elephant_frost.png",
     "preview": "build/blender/stations/previews/creature_elephant_frost.png",
     "size_studs": [
-      12.23,
+      10.33,
       19.4,
-      29.97
+      28.99
     ],
-    "tris": 2008,
+    "tris": 15804,
     "parts": {
-      "creature_elephant_frost_body": 424,
-      "creature_elephant_frost_head": 528,
-      "creature_elephant_frost_head_glow": 84,
-      "creature_elephant_frost_body_glow": 48,
-      "creature_elephant_frost_tail": 44,
-      "creature_elephant_frost_leg_fl": 220,
-      "creature_elephant_frost_leg_bl": 220,
-      "creature_elephant_frost_leg_fr": 220,
-      "creature_elephant_frost_leg_br": 220
+      "creature_elephant_frost_body": 12060,
+      "creature_elephant_frost_head": 5348,
+      "creature_elephant_frost_tail": 552,
+      "creature_elephant_frost_leg_fl": 1774,
+      "creature_elephant_frost_leg_fr": 1740,
+      "creature_elephant_frost_leg_bl": 5060,
+      "creature_elephant_frost_leg_br": 5074
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/elephants.py",
-    "notes": "Frost Mammoth (mythic Titan): pale and shaggy, Neon ice tusks and back spikes.",
-    "glow": {
-      "creature_elephant_frost_head_glow": [
-        120,
-        220,
-        255
-      ],
-      "creature_elephant_frost_body_glow": [
-        120,
-        220,
-        255
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Frost Mammoth (ForgeGUI, mythic): shaggy white-blue fur, ice tusks, icicles.",
+    "glow": {},
     "centres": {
       "creature_elephant_frost_body": [
-        -0.005,
-        9.539,
-        -5.017
+        0.0,
+        13.077,
+        -3.497
       ],
       "creature_elephant_frost_head": [
         0.0,
-        9.002,
-        5.528
-      ],
-      "creature_elephant_frost_head_glow": [
-        0.0,
-        9.373,
-        10.04
-      ],
-      "creature_elephant_frost_body_glow": [
-        -0.043,
-        15.993,
-        -4.587
+        11.661,
+        9.909
       ],
       "creature_elephant_frost_tail": [
         0.0,
-        7.244,
-        -13.763
+        8.343,
+        -13.316
       ],
       "creature_elephant_frost_leg_fl": [
-        2.618,
-        4.121,
-        -0.675
-      ],
-      "creature_elephant_frost_leg_bl": [
-        2.618,
-        4.102,
-        -9.453
+        2.289,
+        4.041,
+        4.593
       ],
       "creature_elephant_frost_leg_fr": [
-        -2.618,
-        4.124,
-        -0.675
+        -2.259,
+        3.996,
+        4.585
+      ],
+      "creature_elephant_frost_leg_bl": [
+        2.229,
+        4.019,
+        -7.076
       ],
       "creature_elephant_frost_leg_br": [
-        -2.617,
-        4.112,
-        -9.453
+        -2.237,
+        4.041,
+        -7.076
       ]
     },
     "joints": {
       "creature_elephant_frost_head": [
-        0.0,
-        10.886,
-        1.589
-      ],
-      "creature_elephant_frost_leg_fl": [
-        2.618,
-        7.19,
-        -0.875
-      ],
-      "creature_elephant_frost_leg_fr": [
-        -2.618,
-        7.19,
-        -0.875
-      ],
-      "creature_elephant_frost_leg_bl": [
-        2.618,
-        7.19,
-        -9.653
-      ],
-      "creature_elephant_frost_leg_br": [
-        -2.618,
-        7.19,
-        -9.653
+        0.058,
+        14.845,
+        5.799
       ],
       "creature_elephant_frost_tail": [
-        0.0,
-        9.962,
-        -12.887
-      ]
-    },
-    "eyes": [
-      [
-        2.594,
-        11.924,
-        6.147,
-        1.403
+        -0.051,
+        9.323,
+        -13.064
       ],
-      [
-        -2.596,
-        11.925,
-        6.149,
-        1.401
+      "creature_elephant_frost_leg_fl": [
+        1.94,
+        7.37,
+        1.018
+      ],
+      "creature_elephant_frost_leg_fr": [
+        -1.935,
+        7.308,
+        0.752
+      ],
+      "creature_elephant_frost_leg_bl": [
+        3.195,
+        7.363,
+        -4.816
+      ],
+      "creature_elephant_frost_leg_br": [
+        -3.206,
+        7.382,
+        -5.352
       ]
-    ],
-    "lid": [
-      106,
-      135,
-      185
-    ]
+    }
   },
   "foe_archer": {
     "fbx": "build/blender/stations/foe_archer.fbx",
@@ -2492,125 +2193,91 @@
     "png": "build/blender/stations/creature_lion_shadow.png",
     "preview": "build/blender/stations/previews/creature_lion_shadow.png",
     "size_studs": [
-      5.93,
+      5.16,
       8.48,
-      15.03
+      13.75
     ],
-    "tris": 1656,
+    "tris": 14063,
     "parts": {
-      "creature_lion_shadow_body": 108,
-      "creature_lion_shadow_head": 752,
-      "creature_lion_shadow_head_glow": 120,
-      "creature_lion_shadow_body_glow": 48,
-      "creature_lion_shadow_tail": 76,
-      "creature_lion_shadow_tail_glow": 8,
-      "creature_lion_shadow_leg_fl": 120,
-      "creature_lion_shadow_leg_bl": 152,
-      "creature_lion_shadow_leg_fr": 120,
-      "creature_lion_shadow_leg_br": 152
+      "creature_lion_shadow_body": 3684,
+      "creature_lion_shadow_head": 15932,
+      "creature_lion_shadow_tail": 312,
+      "creature_lion_shadow_leg_fl": 1556,
+      "creature_lion_shadow_leg_fr": 1572,
+      "creature_lion_shadow_leg_bl": 2468,
+      "creature_lion_shadow_leg_br": 2602
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/lions.py",
-    "notes": "Shadow Lion (legendary): ink black, a bone mask and spine, glowing green ribs and shards.",
-    "glow": {
-      "creature_lion_shadow_head_glow": [
-        110,
-        255,
-        90
-      ],
-      "creature_lion_shadow_body_glow": [
-        110,
-        255,
-        90
-      ],
-      "creature_lion_shadow_tail_glow": [
-        110,
-        255,
-        90
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Shadow Lion (ForgeGUI, legendary): purple-black with a violet mane and glowing eyes.",
+    "glow": {},
     "centres": {
       "creature_lion_shadow_body": [
-        -0.036,
-        3.99,
-        1.746
+        -0.032,
+        5.445,
+        -1.149
       ],
       "creature_lion_shadow_head": [
-        0.016,
-        4.508,
-        4.352
-      ],
-      "creature_lion_shadow_head_glow": [
-        -0.292,
-        4.66,
-        4.038
-      ],
-      "creature_lion_shadow_body_glow": [
-        -0.036,
-        3.724,
-        1.782
+        0.0,
+        5.586,
+        4.444
       ],
       "creature_lion_shadow_tail": [
-        -0.036,
-        2.898,
-        -4.231
-      ],
-      "creature_lion_shadow_tail_glow": [
-        -0.036,
-        2.008,
-        -6.028
+        -0.011,
+        2.918,
+        -5.942
       ],
       "creature_lion_shadow_leg_fl": [
-        0.869,
-        1.929,
-        3.868
-      ],
-      "creature_lion_shadow_leg_bl": [
-        0.869,
-        2.095,
-        -0.348
+        0.966,
+        1.713,
+        2.629
       ],
       "creature_lion_shadow_leg_fr": [
-        -0.94,
-        1.929,
-        3.868
+        -0.99,
+        1.762,
+        2.612
+      ],
+      "creature_lion_shadow_leg_bl": [
+        0.694,
+        1.741,
+        -3.348
       ],
       "creature_lion_shadow_leg_br": [
-        -0.94,
-        2.095,
-        -0.348
+        -0.705,
+        1.72,
+        -3.348
       ]
     },
     "joints": {
       "creature_lion_shadow_head": [
-        -0.036,
-        4.19,
-        4.839
-      ],
-      "creature_lion_shadow_leg_fl": [
-        0.869,
-        3.192,
-        3.841
-      ],
-      "creature_lion_shadow_leg_fr": [
-        -0.94,
-        3.192,
-        3.841
-      ],
-      "creature_lion_shadow_leg_bl": [
-        0.869,
-        3.192,
-        -0.415
-      ],
-      "creature_lion_shadow_leg_br": [
-        -0.94,
-        3.192,
-        -0.415
+        0.097,
+        5.371,
+        2.469
       ],
       "creature_lion_shadow_tail": [
-        -0.036,
-        3.924,
-        -1.545
+        -0.028,
+        3.286,
+        -5.199
+      ],
+      "creature_lion_shadow_leg_fl": [
+        1.014,
+        3.209,
+        1.489
+      ],
+      "creature_lion_shadow_leg_fr": [
+        -1.048,
+        3.232,
+        1.3
+      ],
+      "creature_lion_shadow_leg_bl": [
+        0.385,
+        3.223,
+        -1.978
+      ],
+      "creature_lion_shadow_leg_br": [
+        -0.408,
+        3.219,
+        -2.156
       ]
     }
   },
@@ -2619,238 +2286,184 @@
     "png": "build/blender/stations/creature_elephant_war.png",
     "preview": "build/blender/stations/previews/creature_elephant_war.png",
     "size_studs": [
-      15.43,
+      9.01,
       19.39,
-      27.0
+      20.07
     ],
-    "tris": 2080,
+    "tris": 14934,
     "parts": {
-      "creature_elephant_war_body": 496,
-      "creature_elephant_war_head": 600,
-      "creature_elephant_war_head_glow": 24,
-      "creature_elephant_war_body_glow": 36,
-      "creature_elephant_war_tail": 44,
-      "creature_elephant_war_leg_fl": 220,
-      "creature_elephant_war_leg_bl": 220,
-      "creature_elephant_war_leg_fr": 220,
-      "creature_elephant_war_leg_br": 220
+      "creature_elephant_war_body": 18992,
+      "creature_elephant_war_head": 5186,
+      "creature_elephant_war_tail": 134,
+      "creature_elephant_war_leg_fl": 1552,
+      "creature_elephant_war_leg_fr": 1534,
+      "creature_elephant_war_leg_bl": 1230,
+      "creature_elephant_war_leg_br": 1240
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/elephants.py",
-    "notes": "War Elephant (legendary Titan): war gear and a cannon on its back, a glowing muzzle.",
-    "glow": {
-      "creature_elephant_war_head_glow": [
-        255,
-        150,
-        40
-      ],
-      "creature_elephant_war_body_glow": [
-        255,
-        150,
-        40
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "War Elephant (ForgeGUI, legendary): red and gold armour, a spiked helm, a howdah with a banner.",
+    "glow": {},
     "centres": {
       "creature_elephant_war_body": [
         0.0,
-        12.068,
-        -3.426
+        12.802,
+        -2.525
       ],
       "creature_elephant_war_head": [
-        0.0,
-        8.461,
-        7.553
-      ],
-      "creature_elephant_war_head_glow": [
-        0.002,
-        11.578,
-        7.005
-      ],
-      "creature_elephant_war_body_glow": [
-        0.0,
-        18.063,
-        -0.41
+        0.01,
+        9.784,
+        6.912
       ],
       "creature_elephant_war_tail": [
-        0.0,
-        7.037,
-        -12.314
+        -1.378,
+        15.754,
+        -9.524
       ],
       "creature_elephant_war_leg_fl": [
-        2.542,
-        3.969,
-        0.391
-      ],
-      "creature_elephant_war_leg_bl": [
-        2.542,
-        3.997,
-        -8.131
+        1.815,
+        4.178,
+        3.811
       ],
       "creature_elephant_war_leg_fr": [
-        -2.542,
-        3.995,
-        0.391
+        -1.8,
+        4.163,
+        3.811
+      ],
+      "creature_elephant_war_leg_bl": [
+        1.661,
+        3.983,
+        -3.672
       ],
       "creature_elephant_war_leg_br": [
-        -2.542,
-        3.992,
-        -8.131
+        -1.61,
+        3.982,
+        -3.672
       ]
     },
     "joints": {
       "creature_elephant_war_head": [
-        0.0,
-        10.573,
-        2.589
-      ],
-      "creature_elephant_war_leg_fl": [
-        2.542,
-        6.985,
-        0.197
-      ],
-      "creature_elephant_war_leg_fr": [
-        -2.542,
-        6.985,
-        0.197
-      ],
-      "creature_elephant_war_leg_bl": [
-        2.542,
-        6.985,
-        -8.325
-      ],
-      "creature_elephant_war_leg_br": [
-        -2.542,
-        6.985,
-        -8.325
+        0.046,
+        11.081,
+        4.001
       ],
       "creature_elephant_war_tail": [
-        0.0,
-        9.676,
-        -11.464
-      ]
-    },
-    "eyes": [
-      [
-        2.513,
-        11.578,
-        7.007,
-        1.369
+        -1.288,
+        16.16,
+        -9.064
       ],
-      [
-        -2.511,
-        11.577,
-        7.004,
-        1.371
+      "creature_elephant_war_leg_fl": [
+        2.794,
+        7.457,
+        1.822
+      ],
+      "creature_elephant_war_leg_fr": [
+        -2.575,
+        7.421,
+        2.026
+      ],
+      "creature_elephant_war_leg_bl": [
+        2.239,
+        7.401,
+        -4.734
+      ],
+      "creature_elephant_war_leg_br": [
+        -2.052,
+        7.405,
+        -4.902
       ]
-    ],
-    "lid": [
-      80,
-      78,
-      87
-    ]
+    }
   },
   "creature_jackal_sphinx": {
     "fbx": "build/blender/stations/creature_jackal_sphinx.fbx",
     "png": "build/blender/stations/creature_jackal_sphinx.png",
     "preview": "build/blender/stations/previews/creature_jackal_sphinx.png",
     "size_studs": [
-      2.34,
+      2.48,
       5.37,
-      9.57
+      4.53
     ],
-    "tris": 1880,
+    "tris": 15411,
     "parts": {
-      "creature_jackal_sphinx_body": 320,
-      "creature_jackal_sphinx_head": 692,
-      "creature_jackal_sphinx_head_glow": 52,
-      "creature_jackal_sphinx_tail": 48,
-      "creature_jackal_sphinx_leg_fl": 160,
-      "creature_jackal_sphinx_leg_bl": 224,
-      "creature_jackal_sphinx_leg_fr": 160,
-      "creature_jackal_sphinx_leg_br": 224
+      "creature_jackal_sphinx_body": 11466,
+      "creature_jackal_sphinx_head": 4054,
+      "creature_jackal_sphinx_tail": 1280,
+      "creature_jackal_sphinx_leg_fl": 3244,
+      "creature_jackal_sphinx_leg_fr": 3332,
+      "creature_jackal_sphinx_leg_bl": 3670,
+      "creature_jackal_sphinx_leg_br": 3776
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/jackals.py",
-    "notes": "Sphinx Jackal (mythic): sandstone, a blue and gold headdress, folded wings, a Neon sun disc.",
-    "glow": {
-      "creature_jackal_sphinx_head_glow": [
-        255,
-        208,
-        90
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Sphinx Jackal (ForgeGUI, mythic): cracked sandstone blocks, golden wings, an amber forehead mark.",
+    "glow": {},
     "centres": {
       "creature_jackal_sphinx_body": [
         0.0,
-        3.037,
-        0.344
+        3.558,
+        -0.383
       ],
       "creature_jackal_sphinx_head": [
-        0.0,
-        3.928,
-        3.375
-      ],
-      "creature_jackal_sphinx_head_glow": [
-        0.002,
-        4.49,
-        3.45
+        0.01,
+        4.034,
+        1.678
       ],
       "creature_jackal_sphinx_tail": [
-        0.046,
-        1.981,
-        -3.155
+        0.0,
+        3.182,
+        -1.876
       ],
       "creature_jackal_sphinx_leg_fl": [
-        0.505,
-        1.347,
-        1.758
-      ],
-      "creature_jackal_sphinx_leg_bl": [
-        0.505,
-        1.461,
-        -1.169
+        0.349,
+        1.113,
+        0.645
       ],
       "creature_jackal_sphinx_leg_fr": [
-        -0.505,
-        1.348,
-        1.76
+        -0.379,
+        1.113,
+        0.645
+      ],
+      "creature_jackal_sphinx_leg_bl": [
+        0.355,
+        1.113,
+        -1.066
       ],
       "creature_jackal_sphinx_leg_br": [
-        -0.505,
-        1.459,
-        -1.169
+        -0.357,
+        1.11,
+        -1.066
       ]
     },
     "joints": {
       "creature_jackal_sphinx_head": [
-        0.0,
-        3.213,
-        2.327
-      ],
-      "creature_jackal_sphinx_leg_fl": [
-        0.505,
-        2.295,
-        1.685
-      ],
-      "creature_jackal_sphinx_leg_fr": [
-        -0.505,
-        2.295,
-        1.685
-      ],
-      "creature_jackal_sphinx_leg_bl": [
-        0.505,
-        2.295,
-        -1.222
-      ],
-      "creature_jackal_sphinx_leg_br": [
-        -0.505,
-        2.295,
-        -1.222
+        0.02,
+        4.058,
+        1.182
       ],
       "creature_jackal_sphinx_tail": [
-        0.0,
-        2.984,
-        -1.712
+        0.011,
+        3.146,
+        -1.799
+      ],
+      "creature_jackal_sphinx_leg_fl": [
+        0.534,
+        2.046,
+        0.522
+      ],
+      "creature_jackal_sphinx_leg_fr": [
+        -0.516,
+        2.045,
+        0.529
+      ],
+      "creature_jackal_sphinx_leg_bl": [
+        0.442,
+        2.039,
+        -0.92
+      ],
+      "creature_jackal_sphinx_leg_br": [
+        -0.435,
+        2.036,
+        -0.877
       ]
     }
   },
@@ -2859,125 +2472,91 @@
     "png": "build/blender/stations/creature_cheetah_fire.png",
     "preview": "build/blender/stations/previews/creature_cheetah_fire.png",
     "size_studs": [
-      1.92,
+      2.05,
       5.54,
-      13.51
+      10.18
     ],
-    "tris": 2620,
+    "tris": 15195,
     "parts": {
-      "creature_cheetah_fire_body": 760,
-      "creature_cheetah_fire_head": 588,
-      "creature_cheetah_fire_head_glow": 64,
-      "creature_cheetah_fire_body_glow": 72,
-      "creature_cheetah_fire_tail": 120,
-      "creature_cheetah_fire_tail_glow": 40,
-      "creature_cheetah_fire_leg_fl": 208,
-      "creature_cheetah_fire_leg_bl": 280,
-      "creature_cheetah_fire_leg_fr": 208,
-      "creature_cheetah_fire_leg_br": 280
+      "creature_cheetah_fire_body": 12640,
+      "creature_cheetah_fire_head": 4074,
+      "creature_cheetah_fire_tail": 1504,
+      "creature_cheetah_fire_leg_fl": 3076,
+      "creature_cheetah_fire_leg_fr": 3094,
+      "creature_cheetah_fire_leg_bl": 3004,
+      "creature_cheetah_fire_leg_br": 2998
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/cheetahs.py",
-    "notes": "Fire Cheetah (legendary): a coat graded from scorched black to orange, painted flames, a Neon mane of flame.",
-    "glow": {
-      "creature_cheetah_fire_head_glow": [
-        255,
-        150,
-        40
-      ],
-      "creature_cheetah_fire_body_glow": [
-        255,
-        150,
-        40
-      ],
-      "creature_cheetah_fire_tail_glow": [
-        255,
-        150,
-        40
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Fire Cheetah (ForgeGUI, legendary): ember spots, flames along its spine and tail.",
+    "glow": {},
     "centres": {
       "creature_cheetah_fire_body": [
-        -0.009,
-        3.702,
-        2.758
+        0.0,
+        3.809,
+        0.362
       ],
       "creature_cheetah_fire_head": [
-        -0.009,
-        4.293,
-        5.662
-      ],
-      "creature_cheetah_fire_head_glow": [
-        -0.008,
-        4.642,
-        5.553
-      ],
-      "creature_cheetah_fire_body_glow": [
-        -0.002,
-        4.305,
-        2.738
+        -0.016,
+        3.905,
+        4.038
       ],
       "creature_cheetah_fire_tail": [
-        0.028,
-        3.539,
-        -3.113
-      ],
-      "creature_cheetah_fire_tail_glow": [
-        0.019,
-        3.729,
-        -5.432
+        0.003,
+        1.867,
+        -3.757
       ],
       "creature_cheetah_fire_leg_fl": [
-        0.493,
-        1.583,
-        4.105
-      ],
-      "creature_cheetah_fire_leg_bl": [
-        0.556,
-        1.705,
-        0.679
+        0.466,
+        1.255,
+        2.114
       ],
       "creature_cheetah_fire_leg_fr": [
-        -0.513,
-        1.585,
-        4.105
+        -0.419,
+        1.255,
+        2.114
+      ],
+      "creature_cheetah_fire_leg_bl": [
+        0.484,
+        1.27,
+        -2.622
       ],
       "creature_cheetah_fire_leg_br": [
-        -0.564,
-        1.706,
-        0.679
+        -0.497,
+        1.27,
+        -2.622
       ]
     },
     "joints": {
       "creature_cheetah_fire_head": [
-        -0.009,
-        3.726,
-        5.029
-      ],
-      "creature_cheetah_fire_leg_fl": [
-        0.477,
-        2.673,
-        4.348
-      ],
-      "creature_cheetah_fire_leg_fr": [
-        -0.495,
-        2.673,
-        4.348
-      ],
-      "creature_cheetah_fire_leg_bl": [
-        0.477,
-        2.673,
-        0.946
-      ],
-      "creature_cheetah_fire_leg_br": [
-        -0.495,
-        2.673,
-        0.946
+        0.031,
+        3.771,
+        3.084
       ],
       "creature_cheetah_fire_tail": [
-        -0.009,
-        3.645,
-        0.46
+        0.003,
+        2.406,
+        -2.539
+      ],
+      "creature_cheetah_fire_leg_fl": [
+        0.61,
+        2.345,
+        2.206
+      ],
+      "creature_cheetah_fire_leg_fr": [
+        -0.588,
+        2.341,
+        2.184
+      ],
+      "creature_cheetah_fire_leg_bl": [
+        0.6,
+        2.296,
+        -1.138
+      ],
+      "creature_cheetah_fire_leg_br": [
+        -0.618,
+        2.296,
+        -1.15
       ]
     }
   },
@@ -2986,114 +2565,91 @@
     "png": "build/blender/stations/creature_flamingo_peacock.png",
     "preview": "build/blender/stations/previews/creature_flamingo_peacock.png",
     "size_studs": [
-      5.62,
+      8.23,
       9.79,
-      7.02
+      5.24
     ],
-    "tris": 1614,
+    "tris": 15533,
     "parts": {
-      "creature_flamingo_peacock_body": 264,
-      "creature_flamingo_peacock_head": 454,
-      "creature_flamingo_peacock_tail": 176,
-      "creature_flamingo_peacock_leg_fl": 108,
-      "creature_flamingo_peacock_leg_fr": 108,
-      "creature_flamingo_peacock_leg_bl": 184,
-      "creature_flamingo_peacock_leg_br": 184,
-      "creature_flamingo_peacock_head_glow": 48,
-      "creature_flamingo_peacock_tail_glow": 88
+      "creature_flamingo_peacock_body": 11044,
+      "creature_flamingo_peacock_head": 3696,
+      "creature_flamingo_peacock_leg_fl": 1234,
+      "creature_flamingo_peacock_leg_fr": 1210,
+      "creature_flamingo_peacock_tail": 7518,
+      "creature_flamingo_peacock_leg_bl": 3188,
+      "creature_flamingo_peacock_leg_br": 3176
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/flamingos.py",
-    "notes": "Peacock Flamingo (legendary): a fan of tail feathers with Neon eyes, a beaded crest.",
-    "glow": {
-      "creature_flamingo_peacock_head_glow": [
-        40,
-        235,
-        190
-      ],
-      "creature_flamingo_peacock_tail_glow": [
-        40,
-        235,
-        190
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Peacock Flamingo (ForgeGUI, legendary): teal and emerald, a fan of eyed tail feathers, a crest.",
+    "glow": {},
     "centres": {
       "creature_flamingo_peacock_body": [
-        0.0,
-        4.907,
-        -0.127
+        -0.113,
+        6.243,
+        0.111
       ],
       "creature_flamingo_peacock_head": [
-        0.0,
-        7.259,
-        2.298
+        -0.013,
+        7.815,
+        1.411
+      ],
+      "creature_flamingo_peacock_leg_fl": [
+        0.418,
+        2.271,
+        -0.0
+      ],
+      "creature_flamingo_peacock_leg_fr": [
+        -0.44,
+        2.271,
+        0.003
       ],
       "creature_flamingo_peacock_tail": [
         0.0,
-        6.854,
-        -2.537
-      ],
-      "creature_flamingo_peacock_leg_fl": [
-        0.406,
-        2.22,
-        0.417
-      ],
-      "creature_flamingo_peacock_leg_fr": [
-        -0.406,
-        2.22,
-        0.412
+        7.836,
+        -2.141
       ],
       "creature_flamingo_peacock_leg_bl": [
-        0.83,
-        4.929,
-        -0.897
+        2.304,
+        6.173,
+        -1.68
       ],
       "creature_flamingo_peacock_leg_br": [
-        -0.83,
-        4.929,
-        -0.902
-      ],
-      "creature_flamingo_peacock_head_glow": [
-        0.0,
-        9.208,
-        2.001
-      ],
-      "creature_flamingo_peacock_tail_glow": [
-        0.0,
-        6.681,
-        -2.885
+        -2.337,
+        6.165,
+        -1.678
       ]
     },
     "joints": {
       "creature_flamingo_peacock_head": [
-        0.0,
-        5.212,
-        1.343
+        -0.006,
+        6.144,
+        1.191
       ],
       "creature_flamingo_peacock_leg_fl": [
-        0.406,
-        4.269,
-        0.038
+        0.338,
+        4.41,
+        0.086
       ],
       "creature_flamingo_peacock_leg_fr": [
-        -0.406,
-        4.269,
-        0.038
-      ],
-      "creature_flamingo_peacock_leg_bl": [
-        0.87,
-        5.502,
-        0.908
-      ],
-      "creature_flamingo_peacock_leg_br": [
-        -0.87,
-        5.502,
-        0.908
+        -0.363,
+        4.41,
+        0.086
       ],
       "creature_flamingo_peacock_tail": [
-        0.0,
-        5.038,
-        -1.629
+        -0.035,
+        7.201,
+        -1.824
+      ],
+      "creature_flamingo_peacock_leg_bl": [
+        1.679,
+        5.665,
+        -1.596
+      ],
+      "creature_flamingo_peacock_leg_br": [
+        -1.707,
+        5.661,
+        -1.595
       ]
     }
   },
@@ -3102,125 +2658,91 @@
     "png": "build/blender/stations/creature_meerkat_star.png",
     "preview": "build/blender/stations/previews/creature_meerkat_star.png",
     "size_studs": [
-      2.69,
+      2.42,
       7.46,
-      6.77
+      5.89
     ],
-    "tris": 2132,
+    "tris": 15481,
     "parts": {
-      "creature_meerkat_star_body": 528,
-      "creature_meerkat_star_head": 448,
-      "creature_meerkat_star_tail": 44,
-      "creature_meerkat_star_leg_fl": 64,
-      "creature_meerkat_star_leg_fr": 64,
-      "creature_meerkat_star_leg_bl": 148,
-      "creature_meerkat_star_leg_br": 148,
-      "creature_meerkat_star_body_glow": 428,
-      "creature_meerkat_star_head_glow": 220,
-      "creature_meerkat_star_tail_glow": 40
+      "creature_meerkat_star_body": 4712,
+      "creature_meerkat_star_head": 18572,
+      "creature_meerkat_star_tail": 702,
+      "creature_meerkat_star_leg_fl": 1058,
+      "creature_meerkat_star_leg_fr": 1066,
+      "creature_meerkat_star_leg_bl": 2414,
+      "creature_meerkat_star_leg_br": 2438
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/meerkats.py",
-    "notes": "Star Meerkat (mythic): a coat of night sky, Neon stars and constellations, a comet tail.",
-    "glow": {
-      "creature_meerkat_star_head_glow": [
-        255,
-        206,
-        70
-      ],
-      "creature_meerkat_star_body_glow": [
-        255,
-        206,
-        70
-      ],
-      "creature_meerkat_star_tail_glow": [
-        255,
-        206,
-        70
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Star Meerkat (ForgeGUI, mythic): a night-sky coat of stars and constellations, a gold star on its brow.",
+    "glow": {},
     "centres": {
       "creature_meerkat_star_body": [
-        0.001,
-        3.0,
-        1.329
+        0.006,
+        3.696,
+        1.513
       ],
       "creature_meerkat_star_head": [
-        0.0,
-        5.643,
-        2.184
+        0.006,
+        6.595,
+        1.857
       ],
       "creature_meerkat_star_tail": [
-        0.0,
-        0.985,
-        -1.011
+        0.006,
+        0.333,
+        -1.633
       ],
       "creature_meerkat_star_leg_fl": [
-        0.809,
-        3.459,
-        2.251
+        0.605,
+        4.324,
+        1.731
       ],
       "creature_meerkat_star_leg_fr": [
-        -0.809,
-        3.459,
-        2.251
+        -0.592,
+        4.324,
+        1.731
       ],
       "creature_meerkat_star_leg_bl": [
-        0.861,
-        1.041,
-        1.72
+        0.609,
+        0.873,
+        0.839
       ],
       "creature_meerkat_star_leg_br": [
-        -0.861,
-        1.041,
-        1.724
-      ],
-      "creature_meerkat_star_body_glow": [
-        0.016,
-        3.122,
-        1.329
-      ],
-      "creature_meerkat_star_head_glow": [
-        -0.009,
-        6.702,
-        1.842
-      ],
-      "creature_meerkat_star_tail_glow": [
-        0.0,
-        0.834,
-        -2.881
+        -0.597,
+        0.873,
+        0.837
       ]
     },
     "joints": {
       "creature_meerkat_star_head": [
-        0.0,
-        5.023,
-        1.644
-      ],
-      "creature_meerkat_star_leg_fl": [
-        0.82,
-        4.305,
-        1.746
-      ],
-      "creature_meerkat_star_leg_fr": [
-        -0.82,
-        4.305,
-        1.746
-      ],
-      "creature_meerkat_star_leg_bl": [
-        0.861,
-        1.537,
-        1.131
-      ],
-      "creature_meerkat_star_leg_br": [
-        -0.861,
-        1.537,
-        1.131
+        -0.013,
+        5.825,
+        1.755
       ],
       "creature_meerkat_star_tail": [
-        0.0,
-        1.599,
-        0.516
+        0.006,
+        0.666,
+        -1.633
+      ],
+      "creature_meerkat_star_leg_fl": [
+        0.466,
+        4.053,
+        2.064
+      ],
+      "creature_meerkat_star_leg_fr": [
+        -0.445,
+        4.107,
+        2.042
+      ],
+      "creature_meerkat_star_leg_bl": [
+        0.442,
+        1.632,
+        1.296
+      ],
+      "creature_meerkat_star_leg_br": [
+        -0.469,
+        1.64,
+        1.326
       ]
     }
   },
@@ -3229,169 +2751,91 @@
     "png": "build/blender/stations/creature_rhino_crystal.png",
     "preview": "build/blender/stations/previews/creature_rhino_crystal.png",
     "size_studs": [
-      7.69,
+      7.7,
       11.53,
-      16.04
+      16.55
     ],
-    "tris": 6440,
+    "tris": 9253,
     "parts": {
-      "creature_rhino_crystal_body": 3400,
-      "creature_rhino_crystal_head": 712,
-      "creature_rhino_crystal_tail": 120,
-      "creature_rhino_crystal_leg_fl": 502,
-      "creature_rhino_crystal_leg_fr": 502,
-      "creature_rhino_crystal_leg_bl": 502,
-      "creature_rhino_crystal_leg_br": 502,
-      "creature_rhino_crystal_body_glow": 44,
-      "creature_rhino_crystal_head_glow": 46,
-      "creature_rhino_crystal_tail_glow": 22,
-      "creature_rhino_crystal_leg_fl_glow": 22,
-      "creature_rhino_crystal_leg_fr_glow": 22,
-      "creature_rhino_crystal_leg_bl_glow": 22,
-      "creature_rhino_crystal_leg_br_glow": 22
+      "creature_rhino_crystal_body": 9216,
+      "creature_rhino_crystal_head": 2332,
+      "creature_rhino_crystal_tail": 328,
+      "creature_rhino_crystal_leg_fl": 1220,
+      "creature_rhino_crystal_leg_fr": 1188,
+      "creature_rhino_crystal_leg_bl": 2170,
+      "creature_rhino_crystal_leg_br": 2052
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/rhinos.py",
-    "notes": "Crystal Rhino (legendary): living rock grown through with gemstones of every colour, Neon crystal horns.",
-    "glow": {
-      "creature_rhino_crystal_head_glow": [
-        40,
-        190,
-        255
-      ],
-      "creature_rhino_crystal_body_glow": [
-        160,
-        60,
-        255
-      ],
-      "creature_rhino_crystal_tail_glow": [
-        30,
-        235,
-        120
-      ],
-      "creature_rhino_crystal_leg_fl_glow": [
-        255,
-        40,
-        90
-      ],
-      "creature_rhino_crystal_leg_fr_glow": [
-        50,
-        110,
-        255
-      ],
-      "creature_rhino_crystal_leg_bl_glow": [
-        255,
-        170,
-        20
-      ],
-      "creature_rhino_crystal_leg_br_glow": [
-        255,
-        70,
-        190
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Crystal Rhino (ForgeGUI, legendary): a rhino of faceted grey stone plates studded with cut gems, clear crystals along its back, a crystal horn.",
+    "glow": {},
     "centres": {
       "creature_rhino_crystal_body": [
-        0.055,
-        6.157,
-        -0.579
+        0.162,
+        7.161,
+        -1.681
       ],
       "creature_rhino_crystal_head": [
-        0.007,
-        4.91,
-        5.757
+        0.14,
+        5.818,
+        5.747
       ],
       "creature_rhino_crystal_tail": [
-        -0.192,
-        3.539,
-        -6.693
+        0.127,
+        5.66,
+        -7.319
       ],
       "creature_rhino_crystal_leg_fl": [
-        2.027,
-        1.972,
-        2.127
+        1.493,
+        2.084,
+        1.571
       ],
       "creature_rhino_crystal_leg_fr": [
-        -1.853,
-        2.109,
-        2.115
+        -1.677,
+        2.075,
+        1.571
       ],
       "creature_rhino_crystal_leg_bl": [
-        2.003,
-        2.043,
-        -3.319
+        1.957,
+        2.675,
+        -3.756
       ],
       "creature_rhino_crystal_leg_br": [
-        -1.939,
-        2.063,
-        -3.294
-      ],
-      "creature_rhino_crystal_body_glow": [
-        0.056,
-        8.962,
-        -0.481
-      ],
-      "creature_rhino_crystal_head_glow": [
-        -0.004,
-        6.476,
-        6.442
-      ],
-      "creature_rhino_crystal_tail_glow": [
-        -0.004,
-        2.297,
-        -6.828
-      ],
-      "creature_rhino_crystal_leg_fl_glow": [
-        3.065,
-        3.384,
-        2.469
-      ],
-      "creature_rhino_crystal_leg_fr_glow": [
-        -3.043,
-        3.399,
-        2.442
-      ],
-      "creature_rhino_crystal_leg_bl_glow": [
-        3.143,
-        3.405,
-        -3.661
-      ],
-      "creature_rhino_crystal_leg_br_glow": [
-        -3.142,
-        3.406,
-        -3.641
+        -1.843,
+        2.675,
+        -3.546
       ]
     },
     "joints": {
       "creature_rhino_crystal_head": [
-        -0.004,
-        4.733,
-        3.816
-      ],
-      "creature_rhino_crystal_leg_fl": [
-        1.544,
-        3.443,
-        2.096
-      ],
-      "creature_rhino_crystal_leg_fr": [
-        -1.552,
-        3.443,
-        2.096
-      ],
-      "creature_rhino_crystal_leg_bl": [
-        1.544,
-        3.443,
-        -3.279
-      ],
-      "creature_rhino_crystal_leg_br": [
-        -1.552,
-        3.443,
-        -3.279
+        0.329,
+        6.409,
+        3.947
       ],
       "creature_rhino_crystal_tail": [
-        -0.004,
-        5.163,
-        -5.536
+        0.146,
+        5.446,
+        -7.353
+      ],
+      "creature_rhino_crystal_leg_fl": [
+        1.24,
+        3.751,
+        2.038
+      ],
+      "creature_rhino_crystal_leg_fr": [
+        -1.048,
+        3.782,
+        2.013
+      ],
+      "creature_rhino_crystal_leg_bl": [
+        2.023,
+        3.811,
+        -3.254
+      ],
+      "creature_rhino_crystal_leg_br": [
+        -1.765,
+        3.796,
+        -3.163
       ]
     }
   },
@@ -3400,114 +2844,91 @@
     "png": "build/blender/stations/creature_tortoise_island.png",
     "preview": "build/blender/stations/previews/creature_tortoise_island.png",
     "size_studs": [
-      9.1,
+      8.45,
       9.85,
-      14.83
+      11.26
     ],
-    "tris": 4468,
+    "tris": 12723,
     "parts": {
-      "creature_tortoise_island_body": 2684,
-      "creature_tortoise_island_head": 560,
-      "creature_tortoise_island_tail": 24,
-      "creature_tortoise_island_leg_fl": 344,
-      "creature_tortoise_island_leg_fr": 344,
-      "creature_tortoise_island_leg_bl": 184,
-      "creature_tortoise_island_leg_br": 184,
-      "creature_tortoise_island_body_glow": 120,
-      "creature_tortoise_island_head_glow": 24
+      "creature_tortoise_island_body": 19208,
+      "creature_tortoise_island_head": 694,
+      "creature_tortoise_island_tail": 224,
+      "creature_tortoise_island_leg_fl": 1016,
+      "creature_tortoise_island_leg_fr": 1004,
+      "creature_tortoise_island_leg_bl": 1642,
+      "creature_tortoise_island_leg_br": 1658
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/tortoises.py",
-    "notes": "Island Tortoise (mythic): mossy stone carrying an island, an acacia with Neon fruit.",
-    "glow": {
-      "creature_tortoise_island_head_glow": [
-        255,
-        206,
-        80
-      ],
-      "creature_tortoise_island_body_glow": [
-        255,
-        206,
-        80
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Island Tortoise (ForgeGUI, mythic): a tropical island on its shell, palm, flowers and a waterfall.",
+    "glow": {},
     "centres": {
       "creature_tortoise_island_body": [
-        0.006,
-        5.467,
-        -0.991
+        0.0,
+        5.125,
+        -0.785
       ],
       "creature_tortoise_island_head": [
-        -0.005,
-        2.874,
-        4.739
+        -0.0,
+        2.818,
+        4.576
       ],
       "creature_tortoise_island_tail": [
-        0.0,
-        1.455,
-        -5.984
+        -0.026,
+        2.786,
+        -4.885
       ],
       "creature_tortoise_island_leg_fl": [
-        2.925,
-        1.209,
-        1.926
+        2.334,
+        1.131,
+        1.309
       ],
       "creature_tortoise_island_leg_fr": [
-        -2.925,
-        1.209,
-        1.926
+        -2.334,
+        1.131,
+        1.595
       ],
       "creature_tortoise_island_leg_bl": [
-        2.925,
-        1.204,
-        -3.84
+        2.514,
+        1.194,
+        -2.296
       ],
       "creature_tortoise_island_leg_br": [
-        -2.925,
-        1.198,
-        -3.84
-      ],
-      "creature_tortoise_island_body_glow": [
-        -0.027,
-        6.761,
-        -1.509
-      ],
-      "creature_tortoise_island_head_glow": [
-        0.002,
-        3.472,
-        5.739
+        -2.497,
+        1.197,
+        -2.296
       ]
     },
     "joints": {
       "creature_tortoise_island_head": [
-        0.0,
-        2.033,
-        2.42
-      ],
-      "creature_tortoise_island_leg_fl": [
-        2.09,
-        2.077,
-        1.21
-      ],
-      "creature_tortoise_island_leg_fr": [
-        -2.09,
-        2.077,
-        1.21
-      ],
-      "creature_tortoise_island_leg_bl": [
-        2.09,
-        2.077,
-        -3.19
-      ],
-      "creature_tortoise_island_leg_br": [
-        -2.09,
-        2.077,
-        -3.19
+        -0.022,
+        2.637,
+        3.841
       ],
       "creature_tortoise_island_tail": [
-        0.0,
-        2.033,
-        -4.95
+        -0.049,
+        2.863,
+        -4.86
+      ],
+      "creature_tortoise_island_leg_fl": [
+        2.611,
+        1.818,
+        1.535
+      ],
+      "creature_tortoise_island_leg_fr": [
+        -2.635,
+        1.841,
+        1.468
+      ],
+      "creature_tortoise_island_leg_bl": [
+        2.723,
+        1.888,
+        -2.857
+      ],
+      "creature_tortoise_island_leg_br": [
+        -2.809,
+        1.878,
+        -2.65
       ]
     }
   },
@@ -6571,247 +5992,186 @@
     "png": "build/blender/stations/creature_giraffe.png",
     "preview": "build/blender/stations/previews/creature_giraffe.png",
     "size_studs": [
-      4.3,
+      4.73,
       23.46,
-      14.98
+      16.78
     ],
-    "tris": 3160,
+    "tris": 11366,
     "parts": {
-      "creature_giraffe_body": 1184,
-      "creature_giraffe_head": 1012,
-      "creature_giraffe_tail": 52,
-      "creature_giraffe_leg_fl": 212,
-      "creature_giraffe_leg_bl": 244,
-      "creature_giraffe_leg_fr": 212,
-      "creature_giraffe_leg_br": 244
+      "creature_giraffe_body": 4656,
+      "creature_giraffe_head": 11540,
+      "creature_giraffe_tail": 272,
+      "creature_giraffe_leg_fl": 1208,
+      "creature_giraffe_leg_fr": 1396,
+      "creature_giraffe_leg_bl": 1762,
+      "creature_giraffe_leg_br": 1898
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/giraffes.py",
-    "notes": "Giraffe: a faceted cream giraffe under chestnut patches, a dark mane and sharp horns.",
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Giraffe (ForgeGUI): golden with brown angular patches.",
     "glow": {},
     "centres": {
       "creature_giraffe_body": [
-        0.007,
-        9.545,
-        -2.585
+        0.0,
+        13.464,
+        -1.108
       ],
       "creature_giraffe_head": [
-        0.0,
-        16.573,
-        3.077
+        -0.03,
+        17.836,
+        4.576
       ],
       "creature_giraffe_tail": [
-        0.0,
-        6.202,
-        -6.91
+        -0.018,
+        8.219,
+        -6.901
       ],
       "creature_giraffe_leg_fl": [
-        0.906,
-        4.505,
-        -0.16
-      ],
-      "creature_giraffe_leg_bl": [
-        0.914,
-        4.363,
-        -5.276
+        1.162,
+        5.865,
+        1.566
       ],
       "creature_giraffe_leg_fr": [
-        -0.907,
-        4.512,
-        -0.16
+        -1.162,
+        5.871,
+        1.566
+      ],
+      "creature_giraffe_leg_bl": [
+        1.102,
+        5.588,
+        -4.034
       ],
       "creature_giraffe_leg_br": [
-        -0.914,
-        4.358,
-        -5.276
+        -1.15,
+        5.588,
+        -4.04
       ]
     },
     "joints": {
       "creature_giraffe_head": [
-        0.0,
-        10.005,
-        -0.059
-      ],
-      "creature_giraffe_leg_fl": [
-        0.87,
-        8.7,
-        -0.204
-      ],
-      "creature_giraffe_leg_fr": [
-        -0.87,
-        8.7,
-        -0.204
-      ],
-      "creature_giraffe_leg_bl": [
-        0.87,
-        8.41,
-        -5.279
-      ],
-      "creature_giraffe_leg_br": [
-        -0.87,
-        8.41,
-        -5.279
+        0.027,
+        15.404,
+        1.886
       ],
       "creature_giraffe_tail": [
-        0.0,
-        9.28,
-        -6.497
-      ]
-    },
-    "eyes": [
-      [
-        0.991,
-        20.299,
-        4.327,
-        0.695
+        -0.018,
+        9.695,
+        -6.901
       ],
-      [
-        -0.993,
-        20.301,
-        4.328,
-        0.695
+      "creature_giraffe_leg_fl": [
+        1.589,
+        10.473,
+        1.888
+      ],
+      "creature_giraffe_leg_fr": [
+        -1.506,
+        10.464,
+        2.407
+      ],
+      "creature_giraffe_leg_bl": [
+        1.49,
+        10.573,
+        -3.555
+      ],
+      "creature_giraffe_leg_br": [
+        -1.526,
+        10.508,
+        -3.327
       ]
-    ],
-    "lid": [
-      236,
-      212,
-      171
-    ]
+    }
   },
   "creature_giraffe_diamond": {
     "fbx": "build/blender/stations/creature_giraffe_diamond.fbx",
     "png": "build/blender/stations/creature_giraffe_diamond.png",
     "preview": "build/blender/stations/previews/creature_giraffe_diamond.png",
     "size_studs": [
-      5.44,
+      5.47,
       24.39,
-      14.98
+      16.14
     ],
-    "tris": 3672,
+    "tris": 14949,
     "parts": {
-      "creature_giraffe_diamond_body": 1352,
-      "creature_giraffe_diamond_head": 908,
-      "creature_giraffe_diamond_tail": 52,
-      "creature_giraffe_diamond_head_glow": 208,
-      "creature_giraffe_diamond_body_glow": 128,
-      "creature_giraffe_diamond_leg_fl": 244,
-      "creature_giraffe_diamond_leg_bl": 268,
-      "creature_giraffe_diamond_leg_fr": 244,
-      "creature_giraffe_diamond_leg_br": 268
+      "creature_giraffe_diamond_body": 4540,
+      "creature_giraffe_diamond_head": 15956,
+      "creature_giraffe_diamond_tail": 302,
+      "creature_giraffe_diamond_leg_fl": 1602,
+      "creature_giraffe_diamond_leg_fr": 1592,
+      "creature_giraffe_diamond_leg_bl": 2870,
+      "creature_giraffe_diamond_leg_br": 3036
     },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/giraffes.py",
-    "notes": "Diamond Giraffe: diamond ore, grey stone set with diamonds all over, glowing diamond horns, crest and eyes (decision 0083).",
-    "glow": {
-      "creature_giraffe_diamond_head_glow": [
-        90,
-        215,
-        255
-      ],
-      "creature_giraffe_diamond_body_glow": [
-        90,
-        215,
-        255
-      ]
-    },
+    "tris_budget": 68600,
+    "script": "tools/blender/stations/assets/forge.py",
+    "notes": "Diamond Giraffe (ForgeGUI, mythic): pale crystal set with cut diamonds in silver.",
+    "glow": {},
     "centres": {
       "creature_giraffe_diamond_body": [
-        0.016,
-        9.639,
-        -2.383
+        0.0,
+        14.367,
+        -1.071
       ],
       "creature_giraffe_diamond_head": [
-        0.071,
-        15.965,
-        3.077
+        0.006,
+        18.186,
+        4.695
       ],
       "creature_giraffe_diamond_tail": [
-        0.071,
-        6.202,
-        -6.91
-      ],
-      "creature_giraffe_diamond_head_glow": [
-        0.469,
-        17.51,
-        1.659
-      ],
-      "creature_giraffe_diamond_body_glow": [
-        -0.174,
-        10.464,
-        -2.224
+        -0.006,
+        8.877,
+        -6.924
       ],
       "creature_giraffe_diamond_leg_fl": [
-        1.305,
-        4.506,
-        -0.16
-      ],
-      "creature_giraffe_diamond_leg_bl": [
-        1.286,
-        4.362,
-        -5.274
+        1.371,
+        5.703,
+        1.546
       ],
       "creature_giraffe_diamond_leg_fr": [
-        -1.152,
-        4.504,
-        -0.16
+        -1.365,
+        5.703,
+        1.553
+      ],
+      "creature_giraffe_diamond_leg_bl": [
+        1.271,
+        5.759,
+        -3.931
       ],
       "creature_giraffe_diamond_leg_br": [
-        -1.048,
-        4.363,
-        -5.275
+        -1.283,
+        5.766,
+        -3.931
       ]
     },
     "joints": {
       "creature_giraffe_diamond_head": [
-        0.071,
-        10.005,
-        -0.059
-      ],
-      "creature_giraffe_diamond_leg_fl": [
-        0.941,
-        8.7,
-        -0.204
-      ],
-      "creature_giraffe_diamond_leg_fr": [
-        -0.799,
-        8.7,
-        -0.204
-      ],
-      "creature_giraffe_diamond_leg_bl": [
-        0.941,
-        8.41,
-        -5.279
-      ],
-      "creature_giraffe_diamond_leg_br": [
-        -0.799,
-        8.41,
-        -5.279
+        -0.023,
+        14.271,
+        2.799
       ],
       "creature_giraffe_diamond_tail": [
-        0.071,
-        9.28,
-        -6.497
-      ]
-    },
-    "eyes": [
-      [
-        1.071,
-        20.3,
-        4.329,
-        0.697
+        -0.006,
+        10.517,
+        -6.924
       ],
-      [
-        -0.931,
-        20.303,
-        4.331,
-        0.698
+      "creature_giraffe_diamond_leg_fl": [
+        1.113,
+        10.971,
+        2.716
+      ],
+      "creature_giraffe_diamond_leg_fr": [
+        -1.177,
+        10.963,
+        2.67
+      ],
+      "creature_giraffe_diamond_leg_bl": [
+        1.904,
+        10.963,
+        -3.637
+      ],
+      "creature_giraffe_diamond_leg_br": [
+        -1.994,
+        10.947,
+        -3.605
       ]
-    ],
-    "lid": [
-      118,
-      119,
-      134
-    ]
+    }
   },
   "scenery_tree_1": {
     "fbx": "build/blender/stations/scenery_tree_1.fbx",

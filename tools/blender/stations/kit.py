@@ -13,6 +13,7 @@ import importlib.util
 import math
 import os
 
+import bmesh
 import bpy
 import numpy as np
 from mathutils import Vector
@@ -278,7 +279,22 @@ def _bake(objs, size, **kw):
         if ob.type == "MESH":
             for attr in list(ob.data.color_attributes):
                 ob.data.color_attributes.remove(attr)
+            # a ForgeGUI model's own UVs (assets/forge.py): read by the bake, not exported
+            if "forge" in ob.data.uv_layers:
+                both_sides(ob)
+                ob.data.uv_layers.remove(ob.data.uv_layers["forge"])
     return final
+
+
+def both_sides(ob):
+    """Gives every face a back, a reversed copy with the same UVs: Roblox draws only a face's front, and a
+    ForgeGUI model's thin sheets (manes, ears, fins) are single faces."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    made = bmesh.ops.duplicate(bm, geom=list(bm.faces))
+    bmesh.ops.reverse_faces(bm, faces=[g for g in made["geom"] if isinstance(g, bmesh.types.BMFace)])
+    bm.to_mesh(ob.data)
+    bm.free()
 
 
 _night._bake = _bake
