@@ -511,3 +511,20 @@ game. SHANNON to confirm (checkpoint item in STATION-095).
 | Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
 |----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
 | See `uploaded.json` once uploaded (all 26 `creature_*` assets in `forge_sources.json`, and their `_rainbow` coats) | ForgeGUI 3D generation, cut and re-baked in Blender | Generated for SHANNON's ForgeGUI account, 2026-11-18 | ForgeGUI terms (to confirm) | None known | Load by ID only in experiences of the same owner | FBX, 7 meshes, 11,000 to 19,600 triangles; 1024 x 1024 PNG | Every animal and variant, through `src/shared/StationAssets.luau` and `src/stations/Creatures.luau` | Built; not uploaded yet |
+
+## Animal Stations UI sounds (STATION-098)
+
+Generated with ForgeGUI sound effects on SHANNON's ForgeGUI account on 2026-11-19 and published by ForgeGUI to
+SHANNON's Roblox account (user creator) as Audio assets (decision 0091). Played on the client only, by name,
+through `Style.sound` in `src/stations-client/Style.luau`. Licence: assumption, not checked, as for the
+ForgeGUI models above: SHANNON to confirm (checkpoint in STATION-098).
+
+| Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
+|----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
+| 77373980508668 | ForgeGUI sound, button press | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("press")` | In moderation at build |
+| 95674872035214 | ForgeGUI sound, pointer over a button | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("hover")` | In moderation at build |
+| 124276619105004 | ForgeGUI sound, greyed-out button | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("denied")` | In moderation at build |
+| 74792139934627 | ForgeGUI sound, tab change | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("tab")` | In moderation at build |
+| 81025320537756 | ForgeGUI sound, menu opens | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.6 s | `Style.sound("open")` | In moderation at build |
+| 97509016133658 | ForgeGUI sound, menu closes | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("close")` | Approved |
+| 112913492194575 | ForgeGUI sound, reward claimed | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.2 s | `Style.sound("claim")` | Approved |
