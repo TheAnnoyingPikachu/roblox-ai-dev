@@ -407,10 +407,11 @@ function Creatures.publishPortraits()
 		if
 			entry.model == nil
 			or kind == "hub_"
-			or (kind == "area" and string.sub(name, 1, 11) ~= "area_track_") -- the Ranch menu pictures the Speed Track
+			or kind == "area"
 			or kind == "kit_"
+			or kind == "home"
 			or kind == "scen"
-		then -- the pieces of places, and scenery, are never pictured; the ranch's buildings are (decision 0091)
+		then -- the pieces of places, and scenery, are never pictured
 			continue
 		end
 		task.spawn(function()

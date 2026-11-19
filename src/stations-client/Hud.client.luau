@@ -26,7 +26,6 @@ local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 local UiLayout = require(Shared:WaitForChild("UiLayout"))
-local StationAssets = require(Shared:WaitForChild("StationAssets"))
 local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 local Portrait = require(script.Parent:WaitForChild("Portrait"))
@@ -711,21 +710,51 @@ local GROUPS = {
 	{ id = "earnings", name = "Earnings", upgrades = { "windmill", "lodge", "den" } },
 }
 
--- The model that pictures upgrade `u` at `level`: its building's look (as Ranch.luau picks it), or for
--- the Training Grounds the Speed Track's training area at that level.
-local function buildingAsset(u: StationConfig.Upgrade, level: number): string?
+-- Pictures of the buildings as they stand in game (decision 0091): each building's three looks, and
+-- the Training Grounds (the Speed Track) at each level. Screenshots from Studio, uploaded as images.
+local PICTURES: { [string]: { string } } = {
+	house = { "122892423784720", "89884999603333", "107816557818671" },
+	barn = { "88047589982655", "78376584365704", "119626553415957" },
+	hatchery = { "133902304920898", "124045791914974", "123100005333170" },
+	cellar = { "116655952825221", "112627395195029", "105504026002055" },
+	brooder = { "88844343986979", "128424168474378", "125930939253883" },
+	windmill = { "95016315403212", "71885186151925", "130764990300282" },
+	lodge = { "89855001205054", "104259688695882", "92288867347305" },
+	den = { "86742890917401", "83910433232346", "101343125013182" },
+	grounds = {
+		"98297919965705",
+		"106959352530071",
+		"131970264474678",
+		"137939197697617",
+		"120047660590642",
+		"100438873746948",
+	},
+}
+local PLOT = { brooder = true, windmill = true, lodge = true, den = true } -- as Ranch.luau: not built at level 0
+
+-- Which picture shows upgrade `u` at `level`: the look Ranch.luau builds (1 to 3; the first look for a
+-- building not bought yet), or the Training Grounds' level itself (0 to 5).
+local function pictureOf(u: StationConfig.Upgrade, level: number): number
 	if u.id == "grounds" then
-		for name in StationAssets do
-			local first, last = string.match(name, "^area_track_(%d)_(%d)$")
-			if first and level >= tonumber(first) :: number and level <= tonumber(last) :: number then
-				return name
-			end
-		end
-		return nil
+		return math.clamp(level + 1, 1, #PICTURES.grounds)
 	end
-	local look = math.clamp(1 + math.min(2, level * 3 // (#u.levels + 1)), 1, 3)
-	local name = `home_{u.id}_{look}`
-	return if StationAssets[name] then name else nil
+	local first = if PLOT[u.id] then 1 else 0
+	if level < first then
+		return 1
+	end
+	return 1 + math.min(2, (level - first) * 3 // (#u.levels - first + 1))
+end
+
+local function picture(parent: Instance, id: string, size: UDim2): ImageLabel
+	local img = Instance.new("ImageLabel")
+	img.Size = size
+	img.BackgroundColor3 = Color3.fromRGB(191, 230, 247)
+	img.BorderSizePixel = 0
+	img.Image = `rbxassetid://{id}`
+	img.ScaleType = Enum.ScaleType.Crop
+	Style.round(img, 11)
+	img.Parent = parent
+	return img
 end
 
 local function canBuy(u: StationConfig.Upgrade): boolean
@@ -738,12 +767,26 @@ local function upgradeCard(u: StationConfig.Upgrade, order: number)
 	local cost = u.levels[level + 1]
 	local card = Style.card(ranch.body, UDim2.fromOffset(204, 330))
 	card.LayoutOrder = order
-	local asset = buildingAsset(u, level)
-	if asset then
-		local view =
-			Portrait.new(card, asset, { size = UDim2.fromOffset(198, 112), background = Color3.fromRGB(191, 230, 247) })
+	local pics = PICTURES[u.id]
+	if pics then
+		local now = pictureOf(u, level)
+		local view = picture(card, pics[now], UDim2.fromOffset(198, 112))
 		view.Position = UDim2.fromOffset(3, 3)
-		Style.round(view, 11)
+		local built = u.id == "grounds" or level >= (if PLOT[u.id] then 1 else 0)
+		if not built then
+			view.ImageTransparency = 0.45
+			local tag = Style.chip(view, "Not built yet", C.ink, Color3.new(1, 1, 1))
+			tag.Position, tag.TextSize = UDim2.fromOffset(8, 8), 13
+		end
+		local after = if cost then pictureOf(u, level + 1) else now
+		if built and after ~= now then -- the next level changes how it looks: a peek at it
+			local peek = picture(card, pics[after], UDim2.fromOffset(84, 48))
+			peek.AnchorPoint, peek.Position = Vector2.new(1, 1), UDim2.fromOffset(196, 110)
+			Style.round(peek, 8)
+			Style.stroke(peek, C.ink, 3)
+			local tag = Style.chip(peek, "NEXT", C.accent)
+			tag.Position, tag.TextSize, tag.Size = UDim2.fromOffset(-6, -10), 11, UDim2.fromOffset(0, 20)
+		end
 	end
 	local title = Style.text(card, u.name, 21, C.text, UDim2.new(1, -24, 0, 26))
 	title.Position = UDim2.fromOffset(12, 122)
@@ -1986,11 +2029,13 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			4
 		)
 	elseif kind == "bought" then
+		Style.sound("buy")
 		local egg = StationConfig.egg(payload)
 		if egg then
 			Style.toast(screen, `{egg.name} bought. It is in your egg storage.`, 3)
 		end
 	elseif kind == "upgraded" then
+		Style.sound("buy")
 		local u = StationConfig.upgrade(payload)
 		if u and profile then
 			Style.toast(screen, `{u.name} upgraded: {StationProgress.value(profile, u.id)} {u.gives}`, 4)

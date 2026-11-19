@@ -47,11 +47,6 @@ local function fill(view: ViewportFrame, source: Model, asset: string, options: 
 	local root = (model.PrimaryPart :: BasePart).CFrame -- faces the way the creature does (-Z)
 	local middle = root * Vector3.new(0, entry.size[2] * 0.5, 0)
 	local away = UiLayout.frameDistance(entry.size, FOV) * (options.zoom or 1)
-	if string.match(asset, "^home_") or string.match(asset, "^area_") then -- a building: frame what is there
-		local box, size = model:GetBoundingBox()
-		root, middle = CFrame.new(box.Position), box.Position
-		away = UiLayout.frameDistance({ size.X, size.Y, size.Z }, FOV) * 0.8 * (options.zoom or 1)
-	end
 	local camera = Instance.new("Camera")
 	camera.FieldOfView = FOV
 	camera.CFrame = CFrame.lookAt(middle + root:VectorToWorldSpace(LOOK) * away, middle)

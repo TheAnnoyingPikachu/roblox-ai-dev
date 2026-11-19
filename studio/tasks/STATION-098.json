@@ -14,8 +14,6 @@
   "files": [
     "src/stations-client/Style.luau",
     "src/stations-client/Hud.client.luau",
-    "src/stations-client/Portrait.luau",
-    "src/stations/Creatures.luau",
     "src/stations/CLAUDE.md",
     "docs/assets/register.md",
     "docs/decisions/0091-animal-stations-savanna-ui.md",
@@ -26,7 +24,8 @@
   ],
   "acceptance_criteria": [
     "Every menu opens in the shared frame with its tabs on the left",
-    "Ranch upgrades show in three tabs with building pictures",
+    "Ranch upgrades show in three tabs with in-game pictures of each building's tier",
+    "Every purchase plays a ka-ching",
     "A ready egg opens only at the hatchery; the Eggs menu points the way",
     "Buttons squash when pressed and make sounds"
   ],

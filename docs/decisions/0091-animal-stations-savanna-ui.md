@@ -16,11 +16,13 @@ artifacts on 2026-11-19):
 - One menu frame: the menu's name and its tabs in a column on the left, the content on the right, a berry
   close button on the corner. A berry dot marks anything new.
 - Ranch upgrades in three tabs of three (option A: Animals, Eggs, Earnings), each card with a picture of
-  its building.
+  its building as it stands in game at its tier ("can we change the upgrade photos for actual pictures in
+  game of each tier"), and a small picture of the next tier when the next level changes the look.
 - Eggs: the Eggs menu starts eggs and shows every timer from anywhere; a ready egg opens only at the
   hatchery, as before. The menu's "Show me the way" draws a line to the egg's nest.
-- Button feel: buttons lift under the pointer, squash onto their shadow when pressed and spring back; a
-  greyed-out button shakes. Seven UI sounds made with ForgeGUI.
+- Button feel: buttons lift under the pointer, sink onto their shadow when pressed and spring back; a
+  greyed-out button shakes. Seven UI sounds made with ForgeGUI, and a ka-ching on every purchase (an egg
+  or an upgrade).
 
 ## How (facts)
 
@@ -33,8 +35,13 @@ artifacts on 2026-11-19):
   (Hatching, In storage, a link to the vendor; free nests and the next Hatchery level), Egg vendor (one tab
   per egg), Ranch (option A), Waves (the wave picker and Fight button in the column), Trade (restyled
   only), Admin (the two admin sheets merged into two tabs).
-- `Creatures.publishPortraits` now also publishes the `home_` buildings and the Speed Track's training
-  areas, and `Portrait` frames a building by its bounding box.
+- The Ranch pictures are screenshots taken in Studio of a ranch rendered at each look (`Ranch.render`
+  with chosen levels), cropped to 480 x 270 and uploaded as images (`PICTURES` in `Hud.client.luau`): eight
+  buildings in three looks and the Speed Track at the six Training Grounds levels. If a building's model
+  or decor changes, take them again.
+- The shadow under every card and button is a copy of its outlined shape, 4 units lower and behind it; a
+  button paints on a `Face` frame and shows its text on a `Label` (copied from the button's own
+  properties), so a press can move everything but the shadow down onto it.
 - Sounds play on the client only (`SoundService:PlayLocalSound`). Asset ids are in
   `docs/assets/register.md`.
 

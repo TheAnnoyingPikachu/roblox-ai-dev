@@ -514,3 +514,23 @@ ForgeGUI creature models: SHANNON to confirm (checkpoint in STATION-098).
 | 81025320537756 | ForgeGUI sound, menu opens | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.6 s | `Style.sound("open")` | In moderation at build |
 | 97509016133658 | ForgeGUI sound, menu closes | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("close")` | Approved |
 | 112913492194575 | ForgeGUI sound, reward claimed | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.2 s | `Style.sound("claim")` | Approved |
+| 122912592356212 | ForgeGUI sound, ka-ching on a purchase | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.0 s | `Style.sound("buy")` | Approved |
+
+## Animal Stations Ranch menu pictures (STATION-098)
+
+Screenshots of the studio's own ranch buildings (all built by the studio in Blender, see above), taken in
+Roblox Studio on 2026-11-19 with a ranch rendered at each look, cropped to 480 x 270 PNGs and uploaded to
+SHANNON's Roblox account through Studio. Studio-owned original work. Used as `PICTURES` in
+`src/stations-client/Hud.client.luau`.
+
+| Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
+|----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
+| 122892423784720, 89884999603333, 107816557818671 | Ranch House, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 88047589982655, 78376584365704, 119626553415957 | Barn, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 133902304920898, 124045791914974, 123100005333170 | Hatchery, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 116655952825221, 112627395195029, 105504026002055 | Egg Cellar, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 88844343986979, 128424168474378, 125930939253883 | Brooder, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 95016315403212, 71885186151925, 130764990300282 | Windmill, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 89855001205054, 104259688695882, 92288867347305 | Trophy Lodge, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 86742890917401, 83910433232346, 101343125013182 | Titan's Den, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 98297919965705, 106959352530071, 131970264474678, 137939197697617, 120047660590642, 100438873746948 | Speed Track at Training Grounds levels 0 to 5 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |

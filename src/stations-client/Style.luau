@@ -56,8 +56,10 @@ Style.SOUNDS = {
 	open = "rbxassetid://81025320537756",
 	close = "rbxassetid://97509016133658",
 	claim = "rbxassetid://112913492194575",
+	buy = "rbxassetid://122912592356212", -- a ka-ching for anything bought
 }
-local VOLUME = { hover = 0.15, press = 0.5, tab = 0.45, denied = 0.5, open = 0.4, close = 0.35, claim = 0.6 }
+local VOLUME =
+	{ buy = 0.55, hover = 0.15, press = 0.5, tab = 0.45, denied = 0.5, open = 0.4, close = 0.35, claim = 0.6 }
 local sounds: { [string]: Sound } = {}
 function Style.sound(name: string)
 	local s = sounds[name]
@@ -92,23 +94,19 @@ function Style.stroke(inst: Instance, colour: Color3?, thickness: number?): UISt
 	return s
 end
 
--- The chunky drop shadow: an ink strip `depth` units deep under `inst`'s outline. A child draws over
--- its parent, so for a button (whose text is its own) the strip sits wholly below it; a card's face is
--- a separate frame, so its strip (`behind`) can run up behind the face and follow its rounded corners.
-function Style.lip(inst: GuiObject, radius: number, depth: number?, behind: boolean?): Frame
-	local d = depth or 4
+-- The chunky drop shadow: the same rounded, outlined shape as `inst`'s face, `depth` units lower and
+-- behind it, so only its bottom shows. `inst` must paint its colour on a face frame (see `surface` and
+-- `Style.button`), never on itself, since a child always draws over its parent.
+local DEPTH = 4
+function Style.lip(inst: GuiObject, radius: number, depth: number?): Frame
 	local f = Instance.new("Frame")
 	f.Name = "Lip"
 	f.BackgroundColor3 = INK
 	f.BorderSizePixel = 0
-	if behind then
-		f.Position, f.Size = UDim2.fromOffset(-3, radius), UDim2.new(1, 6, 1, 3 + d - radius)
-		f.ZIndex = -1
-		Style.round(f, radius + 3)
-	else
-		f.Position, f.Size = UDim2.new(0, -1, 1, 1), UDim2.new(1, 2, 0, d + 2)
-		Style.round(f, math.ceil((d + 2) / 2))
-	end
+	f.Position, f.Size = UDim2.fromOffset(0, depth or DEPTH), UDim2.fromScale(1, 1)
+	f.ZIndex = -1
+	Style.round(f, radius)
+	Style.stroke(f, INK, 3)
 	f.Parent = inst
 	return f
 end
@@ -150,7 +148,7 @@ local function surface(parent: Instance, size: UDim2, colour: Color3, radius: nu
 	outer.Size = size
 	outer.BackgroundTransparency = 1
 	outer.BorderSizePixel = 0
-	Style.lip(outer, radius, 4, true)
+	Style.lip(outer, radius)
 	local face = Instance.new("Frame")
 	face.Name = "Face"
 	face.Size = UDim2.fromScale(1, 1)
@@ -301,7 +299,7 @@ local KIND = {
 
 local function paintButton(b: TextButton, kind: string)
 	local colours = KIND[kind] or KIND.primary
-	b.BackgroundColor3, b.TextColor3 = colours[1], colours[2]
+	b.BackgroundColor3, b.TextColor3 = colours[1], colours[2] -- the face and label copy these
 	b.TextStrokeColor3 = INK
 	b.TextStrokeTransparency = if colours[2] == WHITE then 0.25 else 1
 	b:SetAttribute("Kind", kind)
@@ -313,25 +311,26 @@ local SPRING = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.O
 local function juice(b: TextButton)
 	local scale = Instance.new("UIScale")
 	scale.Parent = b
-	local pad = Instance.new("UIPadding")
-	pad.Parent = b
-	local lip = b:FindFirstChild("Lip") :: Frame
-	local down = false
+	local moved: { GuiObject } = {}
 	local function release()
-		if down then
-			down = false
+		if #moved > 0 then
+			for _, c in moved do
+				c.Position -= UDim2.fromOffset(0, DEPTH)
+			end
+			table.clear(moved)
 			TweenService:Create(scale, SPRING, { Scale = 1 }):Play()
-			TweenService:Create(pad, SPRING, { PaddingTop = UDim.new(0, 0) }):Play()
-			lip.Visible = true
 		end
 	end
 	b.InputBegan:Connect(function(input)
 		local t = input.UserInputType
-		if t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch then
-			down = true
-			TweenService:Create(scale, PRESS, { Scale = 0.95 }):Play()
-			TweenService:Create(pad, PRESS, { PaddingTop = UDim.new(0, 5) }):Play()
-			lip.Visible = false
+		if (t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch) and #moved == 0 then
+			for _, c in b:GetChildren() do -- everything on the button sinks onto its shadow
+				if c:IsA("GuiObject") and c.Name ~= "Lip" then
+					c.Position += UDim2.fromOffset(0, DEPTH)
+					table.insert(moved, c)
+				end
+			end
+			TweenService:Create(scale, PRESS, { Scale = 0.97 }):Play()
 		end
 	end)
 	b.InputEnded:Connect(function(input)
@@ -341,13 +340,13 @@ local function juice(b: TextButton)
 		end
 	end)
 	b.MouseEnter:Connect(function()
-		if UserInputService.MouseEnabled and not down and b:GetAttribute("Kind") ~= "off" then
+		if UserInputService.MouseEnabled and #moved == 0 and b:GetAttribute("Kind") ~= "off" then
 			TweenService:Create(scale, PRESS, { Scale = 1.03 }):Play()
 			Style.sound("hover")
 		end
 	end)
 	b.MouseLeave:Connect(function()
-		if down then
+		if #moved > 0 then
 			release()
 		else
 			TweenService:Create(scale, PRESS, { Scale = 1 }):Play()
@@ -375,10 +374,38 @@ function Style.button(parent: Instance, text: string, onClick: () -> (), kind: s
 	b.Text = text
 	b.AutoButtonColor = false
 	b.BorderSizePixel = 0
+	b.BackgroundTransparency = 1 -- the face paints it
+	b.TextTransparency = 1 -- the label shows it
+	Style.lip(b, 12)
+	local face = Instance.new("Frame")
+	face.Name = "Face"
+	face.Size = UDim2.fromScale(1, 1)
+	face.BorderSizePixel = 0
+	face.ZIndex = 0
+	Style.round(face, 12)
+	Style.stroke(face, INK, 3)
+	face.Parent = b
+	local label = Instance.new("TextLabel")
+	label.Name = "Label"
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.ZIndex = 1
+	local inset = Instance.new("UIPadding")
+	inset.Name = "Inset"
+	inset.PaddingLeft, inset.PaddingRight = UDim.new(0, 6), UDim.new(0, 6)
+	inset.Parent = label
+	label.Parent = b
+	local function copy()
+		face.BackgroundColor3 = b.BackgroundColor3
+		label.Text, label.Font, label.TextSize = b.Text, b.Font, b.TextSize
+		label.TextColor3, label.TextStrokeColor3, label.TextStrokeTransparency =
+			b.TextColor3, b.TextStrokeColor3, b.TextStrokeTransparency
+		label.TextXAlignment, label.TextYAlignment = b.TextXAlignment, b.TextYAlignment
+		label.TextWrapped, label.TextTruncate = b.TextWrapped, b.TextTruncate
+	end
+	b.Changed:Connect(copy) -- callers set Text, TextSize, colours... on the button itself
 	paintButton(b, kind or "primary")
-	Style.round(b, 12)
-	Style.stroke(b, INK, 3)
-	Style.lip(b, 12, 4)
+	copy()
 	juice(b)
 	local busy = false
 	b.Activated:Connect(function()
@@ -410,6 +437,17 @@ end
 -- Restyle `b` as another kind (for a button that changes with the state of the game).
 function Style.kind(b: TextButton, kind: string)
 	paintButton(b, kind)
+end
+
+-- A button's (or card's) corner radius.
+function Style.radius(b: GuiObject, r: number)
+	for _, name in { "Face", "Lip" } do
+		local f = b:FindFirstChild(name)
+		local c = f and f:FindFirstChildOfClass("UICorner")
+		if c then
+			c.CornerRadius = UDim.new(0, r)
+		end
+	end
 end
 
 -- A message at the top of the screen: a sand pill with an icon, berry for a refusal (`kind` "bad"),
@@ -562,7 +600,7 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	close.AnchorPoint, close.Position = Vector2.new(0.5, 0.5), UDim2.new(1, -8, 0, 8)
 	close.TextSize = 34
 	close.ZIndex = 3
-	Style.round(close, 26)
+	Style.radius(close, 26)
 	close:SetAttribute("Sound", "close")
 
 	-- the column on the left, or (narrow) the tabs in a row along the top
@@ -613,7 +651,7 @@ function Style.tab(sh: Sheet, label: string, selected: boolean, onClick: () -> (
 	local b = Style.button(sh.tabs, label, onClick, if selected then "good" else "ghost", UDim2.fromOffset(196, 48))
 	b.TextSize = 19
 	b.TextXAlignment = Enum.TextXAlignment.Left
-	local p = b:FindFirstChildOfClass("UIPadding") :: UIPadding
+	local p = (b:FindFirstChild("Label") :: TextLabel):FindFirstChild("Inset") :: UIPadding
 	p.PaddingLeft = UDim.new(0, 14)
 	b:SetAttribute("Sound", "tab")
 	b.LayoutOrder = #sh.tabs:GetChildren()
