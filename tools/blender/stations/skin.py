@@ -76,7 +76,8 @@ def skeleton(boxes, joints):
     bones = {
         "hips": (hips, mid, None),
         "chest": (mid, chest, "hips"),
-        "neck": (chest, neck, "chest"),
+        # the neck starts part way to the head: from the shoulders it would drag the chest and mane with it
+        "neck": (chest.lerp(neck, 0.45), neck, "chest"),
         "head": (neck, Vector((0, nose.y, neck.z)), "neck"),
     }
     if "tail" in boxes:
@@ -163,6 +164,9 @@ def paint(mesh_ob, bones, plan):
             near.append((_seg(v.co, a, b), name))
         near.sort()
         top = near[:2]
+        # a vertex well away from its second bone stays wholly on its nearest (no long stretched faces)
+        if top[1][0] > 2.5 * top[0][0] + 0.3:
+            top = top[:1]
         ws = [(1.0 / (d * d * d * d + 1e-6), n) for d, n in top]
         total = sum(w for w, _ in ws)
         for w, n in ws:
@@ -288,16 +292,34 @@ def preview(rig, mesh_ob, clips, name, stills=None):
     bpy.data.objects.remove(fl)
 
 
+def _drop_pedestal(ob, share):
+    """Drops the display base a website model stands on: every face whose middle is in the lowest `share`
+    of the model's height (the base's top is where the paws stand)."""
+    lo, hi = k._ground_dims([ob])
+    cut = lo.z + share * (hi.z - lo.z)
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.calc_center_median().z < cut], context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    bm.to_mesh(ob.data)
+    bm.free()
+
+
 # Main ----------------------------------------------------------------------------------------------
 
 
 def main():
     args = sys.argv[sys.argv.index("--") + 1 :]
     asset = args[0]
-    species = asset.split("_")[1]
-    src = forge._sources()[asset]
+    # a model of its own (skin_sources.json: used whole, no cuts), or a creature's ForgeGUI source
+    own = os.path.join(HERE, "skin_sources.json")
+    skins = json.load(open(own, encoding="utf-8")) if os.path.exists(own) else {}
+    src = skins.get(asset) or forge._sources()[asset]
+    species = src.get("species") or asset.split("_")[1]
     bpy.ops.wm.read_factory_settings(use_empty=True)
     ob = forge._import(forge._fetch(asset, src["url"]))
+    if src.get("pedestal"):
+        _drop_pedestal(ob, src["pedestal"])
     lo, hi = k._ground_dims([ob])
     scale = src["height"] / (hi.z - lo.z)
     ob.data.transform(Matrix.Translation(Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))))

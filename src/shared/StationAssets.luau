@@ -2524,7 +2524,7 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	skin_lion = {
-		size = { 5.02, 7.45, 13.66 },
+		size = { 5.24, 7.45, 13.41 },
 		parts = { "skin_lion" },
 		glow = {},
 		centres = {
