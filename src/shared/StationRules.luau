@@ -153,6 +153,7 @@ end
 -- in `FORGE`, by its id.
 StationRules.FORGE = {
 	crystal_rhino = "creature_rhino_crystal_forge",
+	island_tortoise = "creature_tortoise_island_forge",
 	jackal = "creature_jackal_forge",
 	lava_rhino = "creature_rhino_lava_forge",
 	lion = "creature_lion_forge",

@@ -119,6 +119,18 @@ Date: 2026-11-19. Task STATION-109.
 - The three share one body plan, so one weights function (`rhino_weights`) and one joint layout
   (`rhino`) serve all three; only the length, the tail's start and the legs' top differ.
 
+## The tortoises (same day)
+
+- SHANNON: "now rig one of each tortoise, it doesnt matter what gem version you choose".
+- The Tortoise is the "Low-Poly Stone Tortoise" (artifact ea214a64, 23:25, 3,047 triangles), in place of
+  the tortoise generated earlier (job bfdcf1b3, whose thinning and smooth shading went with it).
+- The Island Tortoise is the 23:27 "Low-Poly Stone Tortoise" (artifact e1ded7d6), a tortoise carrying a
+  jungle island (2,933 triangles).
+- One body plan for both: `tortoise_weights` and `tortoise`.
+- No gem tortoise was found among SHANNON's ForgeGUI models (searched "tortoise", "gem", "shell",
+  "turtle"), so the Gemshell Tortoise keeps its Blender model. The 23:31 and 23:32 models, named "Stone
+  Tortoise" and nothing, came out as a meerkat and a green alien creature.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

@@ -7161,62 +7161,62 @@
     "png": "build/blender/stations/creature_tortoise_forge.png",
     "preview": "build/blender/stations/previews/creature_tortoise_forge_rest.png",
     "size_studs": [
-      5.51,
-      4.11,
+      7.06,
+      6.33,
       10.1
     ],
-    "tris": 4999,
+    "tris": 3047,
     "parts": {
-      "creature_tortoise_forge_body": 4999
+      "creature_tortoise_forge_body": 3047
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Tortoise: the ForgeGUI model (job bfdcf1b3), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Tortoise: SHANNON's Low-Poly Stone Tortoise from ForgeGUI (artifact ea214a64), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_tortoise_forge_body": [
         0.0,
-        2.057,
+        3.165,
         -0.0
       ]
     },
     "joints": {
       "creature_tortoise_forge_head": [
-        -0.001,
-        2.047,
-        3.276
+        0.0,
+        2.858,
+        3.584
       ],
       "creature_tortoise_forge_leg_fl": [
-        1.58,
-        1.203,
-        1.8
+        2.43,
+        1.379,
+        2.528
       ],
       "creature_tortoise_forge_leg_fr": [
-        -1.582,
-        1.203,
-        1.8
+        -2.43,
+        1.379,
+        2.528
       ],
       "creature_tortoise_forge_leg_bl": [
-        1.58,
-        0.992,
-        -0.731
+        2.113,
+        1.379,
+        -3.388
       ],
       "creature_tortoise_forge_leg_br": [
-        -1.582,
-        0.992,
-        -0.731
+        -2.113,
+        1.379,
+        -3.388
       ],
       "creature_tortoise_forge_tail": [
-        -0.001,
-        1.098,
-        -2.312
+        0.0,
+        1.062,
+        -4.233
       ]
     },
     "skinned": true,
     "root": [
-      -0.001,
-      2.047,
-      0.535
+      0.0,
+      3.175,
+      -0.008
     ]
   },
   "creature_jackal_pharaoh_forge": {
@@ -7532,6 +7532,69 @@
       0.024,
       4.4,
       -0.019
+    ]
+  },
+  "creature_tortoise_island_forge": {
+    "fbx": "build/blender/stations/creature_tortoise_island_forge.fbx",
+    "png": "build/blender/stations/creature_tortoise_island_forge.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_island_forge_rest.png",
+    "size_studs": [
+      10.34,
+      9.84,
+      14.8
+    ],
+    "tris": 2933,
+    "parts": {
+      "creature_tortoise_island_forge_body": 2933
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Island Tortoise: SHANNON's Low-Poly Stone Tortoise (with an island) from ForgeGUI (artifact e1ded7d6), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_island_forge_body": [
+        0.0,
+        4.921,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_tortoise_island_forge_head": [
+        0.117,
+        4.491,
+        5.255
+      ],
+      "creature_tortoise_island_forge_leg_fl": [
+        3.672,
+        2.327,
+        3.71
+      ],
+      "creature_tortoise_island_forge_leg_fr": [
+        -3.438,
+        2.327,
+        3.71
+      ],
+      "creature_tortoise_island_forge_leg_bl": [
+        3.208,
+        2.327,
+        -4.328
+      ],
+      "creature_tortoise_island_forge_leg_br": [
+        -2.974,
+        2.327,
+        -4.328
+      ],
+      "creature_tortoise_island_forge_tail": [
+        0.117,
+        1.863,
+        -5.41
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.117,
+      4.955,
+      -0.0
     ]
   }
 }

@@ -96,23 +96,45 @@ def sphinx_weights(p):
     return {k: v for k, v in w.items() if v > 0.001}
 
 
-def tortoise_weights(p):
-    """The ForgeGUI tortoise (job bfdcf1b3): a wide shell, the head out on a neck from y -0.31, short legs
-    under the shell's sides (front y -0.3..0, hind y 0..0.17, |x| 0.07..0.25) leaving it below z -0.07,
-    and a spiky tail along the ground from y 0.22."""
-    head = ramp(-0.30, -0.345, p.y)
-    tail = ramp(0.215, 0.26, p.y) * ramp(0.0, -0.04, p.z)
-    w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
-    leg, down = None, 0.0
-    if 0.07 < abs(p.x) < 0.25:
-        if -0.31 < p.y < 0.0:
-            leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.07, -0.11, p.z)
-        elif -0.02 < p.y < 0.17:  # lower: the shell's underside spans the back half at z -0.1
-            leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.095, -0.13, p.z)
-    if leg and down > 0:
-        w = {k: v * (1 - down) for k, v in w.items()}
-        w[leg] = down
-    return {k: v for k, v in w.items() if v > 0.001}
+def tortoise_weights(back, tail_from):
+    """SHANNON's ForgeGUI tortoises (one body plan): a wide shell, the head out in front from y -0.34,
+    stout legs under the shell's sides (|x| 0.07..0.36; front at y -0.36..-0.1, hind at `back`) leaving
+    it below z -0.17, and a small tail under the back from `tail_from`."""
+
+    def weights(p):
+        tail = ramp(tail_from, tail_from + 0.05, p.y) * (1 - ramp(0.04, 0.07, abs(p.x)))
+        head = ramp(-0.34, -0.39, p.y)
+        w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
+        leg, down = None, ramp(-0.17, -0.23, p.z)
+        if 0.07 < abs(p.x) < 0.36 and down > 0:
+            if -0.36 < p.y < -0.1:
+                leg = "leg_fl" if p.x > 0 else "leg_fr"
+            elif back[0] < p.y < back[1]:
+                leg = "leg_bl" if p.x > 0 else "leg_br"
+        if leg:
+            w = {k: v * (1 - down) for k, v in w.items()}
+            w[leg] = down
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return weights
+
+
+def tortoise(name, length, back, hind, tail_from, artifact, what):
+    return {
+        "length": length,
+        "joints": {
+            "body": (0.0, 0.0, 0.0),
+            "head": (0.0, -0.34, -0.03),
+            "leg_fl": (0.23, -0.24, -0.17),
+            "leg_fr": (-0.23, -0.24, -0.17),
+            "leg_bl": (0.2, hind, -0.17),
+            "leg_br": (-0.2, hind, -0.17),
+            "tail": (0.0, tail_from, -0.2),
+        },
+        "weights": tortoise_weights(back, tail_from),
+        "small": 0.06,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), one mesh, skinned to the Stations rig (decision 0102).",
+    }
 
 
 def pharaoh_weights(p):
@@ -226,23 +248,9 @@ REGIONS = {
         "small": 0.06,
         "notes": "Sphinx Jackal: SHANNON's Anubis Statue from ForgeGUI (artifact 54ef40ce), one mesh, skinned to the Stations rig (decision 0102).",
     },
-    "creature_tortoise_forge": {
-        "length": 10.1,  # the Blender tortoise's length (StationAssets.creature_tortoise.size)
-        "joints": {
-            "body": (0.0, -0.05, 0.0),
-            "head": (0.0, -0.31, 0.0),
-            "leg_fl": (0.15, -0.17, -0.08),
-            "leg_fr": (-0.15, -0.17, -0.08),
-            "leg_bl": (0.15, 0.07, -0.1),
-            "leg_br": (-0.15, 0.07, -0.1),
-            "tail": (0.0, 0.22, -0.09),
-        },
-        "weights": tortoise_weights,
-        "small": 0.06,
-        "tris": 5000,
-        "shade": "smooth",
-        "notes": "Tortoise: the ForgeGUI model (job bfdcf1b3), one mesh, skinned to the Stations rig (decision 0102).",
-    },
+    # lengths: the Blender models' (StationAssets.creature_tortoise[_island].size)
+    "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
+    "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
     "creature_lion_forge": {
         "length": 13.0,  # the Blender lion's length (StationAssets.creature_lion.size)
         "joints": {
