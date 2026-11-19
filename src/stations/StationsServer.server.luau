@@ -105,7 +105,6 @@ local function join(player: Player)
 	end
 end
 
-
 -- Saves, eggs, team and training (decision 0025) ---------------------------------------------------
 
 local RS = game:GetService("ReplicatedStorage")
