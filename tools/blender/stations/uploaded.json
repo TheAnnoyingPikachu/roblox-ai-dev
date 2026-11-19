@@ -763,5 +763,35 @@
     "model": null,
     "decal": 80202657347282,
     "texture": null
+  },
+  "creature_rhino_forge": {
+    "model": 94949274052298,
+    "decal": 104193759173754,
+    "texture": null
+  },
+  "creature_rhino_forge_rainbow": {
+    "model": null,
+    "decal": 92978013273871,
+    "texture": null
+  },
+  "creature_rhino_crystal_forge": {
+    "model": 103003682948001,
+    "decal": 94681487576976,
+    "texture": null
+  },
+  "creature_rhino_crystal_forge_rainbow": {
+    "model": null,
+    "decal": 81473813942864,
+    "texture": null
+  },
+  "creature_rhino_lava_forge": {
+    "model": 138265266226163,
+    "decal": 129836025302131,
+    "texture": null
+  },
+  "creature_rhino_lava_forge_rainbow": {
+    "model": null,
+    "decal": 73444848894800,
+    "texture": null
   }
 }
