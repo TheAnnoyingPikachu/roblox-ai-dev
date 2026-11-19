@@ -75,7 +75,7 @@ local REFUSED: { [string]: string } = {
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
 	admin = "Admins only",
-	eggs_full = "Your egg storage is full: upgrade the Egg Cellar",
+	eggs_full = "Your egg storage is full: upgrade the Egg Storage",
 	nests_full = "Every nest is taken: upgrade the Hatchery",
 	no_mill = "Build the Windmill first",
 	mill_empty = "The windmill has no coins for you yet",
@@ -172,7 +172,7 @@ end
 local sheets: { [string]: Style.Sheet } = {}
 local redraw: { [string]: () -> () } = {}
 local openName: string? = nil
-local nav = Instance.new("Frame") -- the bottom bar, hidden while a sheet is open
+local nav = Instance.new("Frame") -- the side dock, hidden while a sheet is open
 
 local function show(name: string?)
 	if name and name ~= openName and sheets[name] then
@@ -233,42 +233,125 @@ wallet.Parent = top
 local _, coinsText = Style.amount(wallet, "coins", "0")
 local _, samplesText = Style.amount(wallet, "samples", "0")
 
--- Bottom bar: Animals, Waves and Home (the eggs stay at the ranch)
+-- The side dock (decision 0093): a small Menu button on the left edge slides a column of big buttons out
+-- from it: Travel (a pop-out with the hub, your ranch and the wave arena; no teleport pads), Animals,
+-- Eggs, Waves and Trade. The whole dock hides while a menu is open.
 nav.Name = "Nav"
 nav.BackgroundTransparency = 1
-nav.AnchorPoint, nav.Position, nav.Size = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -10), UDim2.new(1, -24, 0, 64)
-local navLimit = Instance.new("UISizeConstraint")
-navLimit.MaxSize = Vector2.new(540, 64)
-navLimit.Parent = nav
-Style.list(nav, 8, true)
+nav.Position, nav.Size = UDim2.fromOffset(0, 0), UDim2.fromScale(1, 1)
 nav.Parent = root
 
+-- One column of five 56-unit buttons; on a short screen (a phone held sideways) two columns of three.
+local DOCK_X, CELL_W, CELL_H, GAP = 14, 112, 56, 10
+local dock = Style.panel(nav, UDim2.fromOffset(0, 0))
+local column = Instance.new("Frame")
+column.BackgroundTransparency = 1
+column.Position, column.Size = UDim2.fromOffset(10, 12), UDim2.new(1, -20, 1, -26)
+local dockGrid = Instance.new("UIGridLayout")
+dockGrid.CellSize, dockGrid.CellPadding = UDim2.fromOffset(CELL_W, CELL_H), UDim2.fromOffset(GAP, GAP)
+dockGrid.SortOrder = Enum.SortOrder.LayoutOrder
+dockGrid.Parent = column
+column.Parent = dock
+local DOCK_W = CELL_W + 20
+local function shape()
+	local cols = if root.Size.Y.Offset < 560 then 2 else 1
+	local rows = math.ceil(5 / cols)
+	DOCK_W = cols * CELL_W + (cols - 1) * GAP + 20
+	dock.Size = UDim2.fromOffset(DOCK_W, rows * CELL_H + (rows - 1) * GAP + 28)
+	dockGrid.FillDirectionMaxCells = cols
+end
+shape()
+root:GetPropertyChangedSignal("Size"):Connect(shape)
+dock.Position = UDim2.fromOffset(-DOCK_W - 20, 160)
+
+local open = false
+local menuButton: TextButton -- below
+local function slide(to: boolean)
+	open = to
+	TweenService:Create(
+		dock,
+		TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Position = UDim2.fromOffset(if open then DOCK_X else -DOCK_W - 20, 160) }
+	):Play()
+	menuButton.Text = if open then "◀ Menu" else "Menu ▶"
+end
+menuButton = Style.button(nav, "Menu ▶", function()
+	slide(not open)
+end, "primary", UDim2.fromOffset(CELL_W + 20, 46))
+menuButton.Position, menuButton.TextSize = UDim2.fromOffset(DOCK_X, 104), 20
+menuButton:SetAttribute("Sound", "tab")
+local menuDot = Style.dot(menuButton, "")
+menuDot.Visible = false
+
 local hideResult: () -> () = function() end -- set once the fight panel exists
-local function navButton(label: string, kind: string, order: number, onClick: () -> ()): TextLabel
-	local b = Style.button(nav, label, onClick, kind, UDim2.new(1 / 4, -8, 1, -6))
-	b.LayoutOrder, b.TextSize = order, 24
+local dots: { TextLabel } = {}
+local function dockButton(label: string, kind: string, order: number, onClick: () -> ()): TextLabel
+	local b = Style.button(column, label, onClick, kind)
+	b.LayoutOrder, b.TextSize = order, 21
 	local dot = Style.dot(b, "")
 	dot.Visible = false
+	dot:GetPropertyChangedSignal("Visible"):Connect(function() -- the Menu button shows a dot while any does
+		local any = false
+		for _, d in dots do
+			any = any or d.Visible
+		end
+		menuDot.Visible = any
+	end)
+	table.insert(dots, dot)
 	return dot
 end
-navButton("Animals", "good", 1, function()
-	show("animals")
-end)
-local openWaves: () -> () -- below, with the wave sheet
-navButton("Waves", "danger", 2, function()
-	openWaves()
-end)
-local tradeDot = navButton("Trade", "primary", 4, function()
-	show("trade")
-end)
-navButton("Home", "info", 3, function()
-	local ok, code = request:InvokeServer("home")
+
+-- Travel: a pop-out beside the dock
+local travel = Style.panel(nav, UDim2.fromOffset(196, 214))
+travel.Position, travel.Visible = UDim2.fromOffset(DOCK_X + DOCK_W + 12, 160), false
+local places = Instance.new("Frame")
+places.BackgroundTransparency = 1
+places.Position, places.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -20)
+Style.list(places, 10)
+places.Parent = travel
+Style.text(places, "Go to…", 20, C.text, UDim2.new(1, 0, 0, 26))
+local function travelTo(action: string, ...: any)
+	travel.Visible = false
+	local ok, code = request:InvokeServer(action, ...)
 	if not ok then
 		Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 	else
 		show(nil)
 		hideResult()
 	end
+end
+for k, p in
+	{
+		{ "The hub", "info", "travel", "hub" },
+		{ "My ranch", "good", "home" },
+		{ "Wave arena", "danger", "travel", "arena" },
+	}
+do
+	local b = Style.button(places, p[1], function()
+		travelTo(p[3], p[4])
+	end, p[2], UDim2.new(1, 0, 0, 44))
+	b.LayoutOrder = k + 1
+end
+
+dockButton("Travel", "info", 1, function()
+	travel.Position = UDim2.fromOffset(DOCK_X + DOCK_W + 12, 160)
+	travel.Visible = not travel.Visible
+end)
+dockButton("Animals", "good", 2, function()
+	show("animals")
+end)
+local eggsDot = dockButton("Eggs", "ghost", 3, function()
+	show("eggs")
+end)
+local openWaves: () -> () -- below, with the wave sheet
+dockButton("Waves", "danger", 4, function()
+	openWaves()
+end)
+local tradeDot = dockButton("Trade", "primary", 5, function()
+	show("trade")
+end)
+nav:GetPropertyChangedSignal("Visible"):Connect(function()
+	travel.Visible = false
 end)
 
 -- Admin button, top right: only for players the server marks as admin (decision 0038)
@@ -714,7 +797,7 @@ local GROUPS = {
 -- the Training Grounds (the Speed Track) at each level. Screenshots from Studio, uploaded as images.
 local PICTURES: { [string]: { string } } = {
 	house = { "123119223827948", "75503797264752", "107798905588688" },
-	barn = { "88047589982655", "78376584365704", "119626553415957" },
+	barn = { "101892180349204", "121151105188828", "115965219734238" },
 	hatchery = { "133902304920898", "124045791914974", "123100005333170" },
 	cellar = { "72932407989739", "72296349252417", "119475108003660" },
 	brooder = { "88844343986979", "128424168474378", "125930939253883" },
@@ -1257,7 +1340,7 @@ end
 local plates = Instance.new("Frame")
 plates.Name = "PowerPlates"
 plates.BackgroundTransparency = 1
-plates.AnchorPoint, plates.Position = Vector2.new(0, 1), UDim2.new(0, 14, 1, -90)
+plates.AnchorPoint, plates.Position = Vector2.new(1, 1), UDim2.new(1, -14, 1, -20)
 plates.Size, plates.AutomaticSize = UDim2.fromOffset(224, 0), Enum.AutomaticSize.Y
 plates.Visible = false
 plates.ZIndex = 4
@@ -1899,6 +1982,16 @@ end)
 task.spawn(function() -- once a second: countdowns, and a finished egg can be opened
 	while true do
 		task.wait(1)
+		if profile then -- the Eggs button's dot: eggs ready to open at the hatchery
+			local ready, now = 0, Workspace:GetServerTimeNow()
+			for _, e in profile.eggs do
+				local def = e.since and StationConfig.egg(e.egg)
+				if def and now >= e.since + StationProgress.hatchSeconds(profile, def) then
+					ready += 1
+				end
+			end
+			eggsDot.Text, eggsDot.Visible = tostring(ready), ready > 0
+		end
 		if openName == "animals" then
 			for _, tick in tickers do
 				tick()

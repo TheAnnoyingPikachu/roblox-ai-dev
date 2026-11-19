@@ -6,7 +6,8 @@
   "task_type": "implementation",
   "objective": "Decision 0091: every menu in the Savanna look and the shared menu frame, with button motion and ForgeGUI UI sounds.",
   "inputs": [
-    "docs/decisions/0091-animal-stations-savanna-ui.md"
+    "docs/decisions/0091-animal-stations-savanna-ui.md",
+    "docs/decisions/0093-animal-stations-side-dock-and-travel.md"
   ],
   "dependencies": [
     "STATION-094"
@@ -28,6 +29,11 @@
     "tools/blender/stations/scenes/training.py",
     "tools/blender/stations/assets/areas.py",
     "assets/stations/area_*",
+    "src/stations/World.luau",
+    "src/stations/Valley.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/shared/StationConfig.luau",
+    "docs/decisions/0093-animal-stations-side-dock-and-travel.md",
     "studio/tasks/STATION-098.json"
   ],
   "tests": [
@@ -41,7 +47,9 @@
     "Buttons squash when pressed and make sounds",
     "The egg storage is a greenhouse at every Egg Cellar level, with the stored eggs on its trays",
     "The ranch's lamps stand evenly round the ring, none on a path",
-    "The Ranch House name board glows evenly and clears the porch posts"
+    "The Ranch House name board glows evenly and clears the porch posts",
+    "A Menu button slides out the side dock; Travel goes to the hub, home and the wave arena; no teleport pads remain",
+    "No grass grows through the Titan's Den floor"
   ],
   "verification": "Lune 725/725, selene clean. Studio, local build, stamp `dev`, 2026-11-19: HUD, Animals grid and detail, Eggs, Egg vendor, Ranch (pictures load a moment after opening), Waves, Admin and the folded phone layout (UiSize 430 x 940) seen in screens; no errors in the output. Team pen: flickering surfaces separated (the hay stack's bales no longer overlap, the straw beds and lily pads clear of the grass and water, the ring path's overlapping pieces at alternate heights), seen in Studio.",
   "output_artifacts": [],

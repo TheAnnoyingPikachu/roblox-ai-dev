@@ -4,7 +4,6 @@
 -- loads saves (kit Saves), shows each ranch as its owner has built it and the eggs in its hatchery
 -- (Ranch.luau), and routes every request (kit Router): buying eggs, starting one hatching and
 -- opening it, ranch upgrades, the team and training. The client only names an action; prices, hatches and timings are decided here.
-local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -106,19 +105,6 @@ local function join(player: Player)
 	end
 end
 
--- Teleport pads: the hub pad sends a player to their own ranch, a ranch pad to the hub. The
--- ranches are far away, so the area is asked for first; the move still happens if that fails.
-for _, prompt in CollectionService:GetTagged("Teleport") do
-	(prompt :: ProximityPrompt).Triggered:Connect(function(player)
-		local i = ranchOf(player)
-		local to = if prompt:GetAttribute("To") == "hub" then World.hubSpawn() elseif i then World.ranchSpawn(i) else nil
-		local character = player.Character
-		if to and character then
-			pcall(player.RequestStreamAroundAsync, player, to.Position)
-			character:PivotTo(to)
-		end
-	end)
-end
 
 -- Saves, eggs, team and training (decision 0025) ---------------------------------------------------
 
@@ -649,6 +635,21 @@ local router = Router.new({
 				end
 				WaveShow.clear(player)
 				local to = World.ranchSpawn(i)
+				pcall(player.RequestStreamAroundAsync, player, to.Position)
+				player.Character:PivotTo(to)
+				return true, nil
+			end,
+		},
+		-- travel from anywhere (decision 0093): to the hub or the wave arena's gate (leaving a fight, if
+		-- in one); `home` above goes to the player's own ranch. Places far away are streamed in first.
+		travel = {
+			args = { Payload.enum({ "hub", "arena" }) },
+			handler = function(player, where: string)
+				if player.Character == nil then
+					return false, "loading"
+				end
+				WaveShow.clear(player)
+				local to = if where == "hub" then World.hubSpawn() else World.arenaGate()
 				pcall(player.RequestStreamAroundAsync, player, to.Position)
 				player.Character:PivotTo(to)
 				return true, nil

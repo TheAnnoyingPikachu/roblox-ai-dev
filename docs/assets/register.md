@@ -526,7 +526,7 @@ SHANNON's Roblox account through Studio. Studio-owned original work. Used as `PI
 | Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
 |----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
 | 123119223827948, 75503797264752, 107798905588688 | Ranch House, looks 1 to 3 (retaken with the new name board) | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
-| 88047589982655, 78376584365704, 119626553415957 | Barn, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 101892180349204, 121151105188828, 115965219734238 | Barn, looks 1 to 3 (retaken further back and centred) | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 133902304920898, 124045791914974, 123100005333170 | Hatchery, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 72932407989739, 72296349252417, 119475108003660 | Egg Cellar with the egg storage greenhouse, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 88844343986979, 128424168474378, 125930939253883 | Brooder, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
