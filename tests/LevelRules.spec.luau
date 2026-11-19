@@ -36,9 +36,9 @@ local function reach(team: { StationRules.Owned }, limit: number): number
 end
 
 describe("LevelRules.enemies", function()
-	it("is the same team every time for the same level, of TEAM_SIZE real foes", function()
+	it("is the same team every time for the same level, of the crowd's size, real foes", function()
 		local a, b = LevelRules.enemies(17), LevelRules.enemies(17)
-		expect(#a).toBe(LevelRules.TEAM_SIZE)
+		expect(#a).toBe(LevelRules.crowd(17).count)
 		for k = 1, #a do
 			expect(a[k].s).toBe(b[k].s)
 			expect(a[k].stats.speed).toBe(b[k].stats.speed)
@@ -52,7 +52,7 @@ describe("LevelRules.enemies", function()
 		function()
 			for level = 1, 2 do
 				for _, e in LevelRules.enemies(level) do
-					expect(kindOf(e)).toBe("knight")
+					expect(kindOf(e) == "knight" or kindOf(e) == "imp").toBeTruthy()
 				end
 			end
 			local seen = {}
@@ -87,16 +87,42 @@ describe("LevelRules.enemies", function()
 			}
 		do
 			expect((LevelRules.boss(c[1] :: number) :: StationConfig.Foe).id).toBe(c[2])
-			expect(LevelRules.enemies(c[1] :: number)[LevelRules.TEAM_SIZE].s).toBe(c[2])
+			local wave = LevelRules.enemies(c[1] :: number)
+			expect(wave[#wave].s).toBe(c[2])
 		end
 		for level = 1, 120 do
-			for i, e in LevelRules.enemies(level) do
+			local wave = LevelRules.enemies(level)
+			for i, e in wave do
 				if kindOf(e) == "dragon" then
-					expect(i).toBe(LevelRules.TEAM_SIZE)
+					expect(i).toBe(#wave)
 					expect(level % LevelRules.BOSS_EVERY).toBe(0)
 				end
 			end
 		end
+	end)
+
+	it("sends bigger crowds in rushes, minions first, as strong as the classic wave (decision 0101)", function()
+		for _, level in { 1, 5, 12, 25, 45, 73 } do
+			local row = LevelRules.crowd(level)
+			local wave = LevelRules.enemies(level)
+			expect(#wave).toBe(row.count)
+			local minions, elites, lastRush = 0, 0, 1
+			for _, e in wave do
+				local foe = StationConfig.foe(e.s) :: StationConfig.Foe
+				minions += if foe.minion then 1 else 0
+				elites += if e.elite then 1 else 0
+				expect((e.rush :: number) >= lastRush).toBeTruthy() -- rushes in order
+				lastRush = e.rush :: number
+			end
+			expect(minions).toBe(row.minions)
+			expect(elites).toBe(row.elites)
+			expect(lastRush).toBe(row.rushes)
+			expect(StationConfig.foe(wave[1].s).minion).toBe(true) -- a rush opens with its minions
+			local want = LevelRules.power(level) * (row.power or 1)
+			local got = BattleRules.teamPower(wave, 2)
+			expect(math.abs(got - want) <= want * LevelRules.MATCH).toBeTruthy()
+		end
+		expect(#LevelRules.classic(30)).toBe(LevelRules.TEAM_SIZE)
 	end)
 
 	it("fights a foe by its role and group, like an animal", function()

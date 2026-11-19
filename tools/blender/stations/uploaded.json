@@ -708,5 +708,10 @@
     "model": 86459315201177,
     "decal": 72403370047769,
     "texture": null
+  },
+  "foe_imp": {
+    "model": 84731133206631,
+    "decal": 133656573450079,
+    "texture": null
   }
 }

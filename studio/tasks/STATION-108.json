@@ -30,7 +30,8 @@
     "tests/WaveRuns.spec.luau",
     "tests/StationAssets.spec.luau",
     "docs/decisions/0101-animal-stations-swarm-waves.md",
-    "studio/tasks/STATION-108.json"
+    "studio/tasks/STATION-108.json",
+    "docs/decisions/0097-animal-stations-fight-feel.md"
   ],
   "tests": [
     "BattleRules.spec.luau",
@@ -43,7 +44,7 @@
     "Attack animals splash, power attacks hit up to 5 enemies, Defence power attacks knock the front back, Utility power attacks heal the team",
     "The arena shows the crowd walking in by rushes, a knockout counter and a power bar"
   ],
-  "verification": "In progress.",
+  "verification": "Lune 759/759, selene clean. Upload-assets run 44613815510 (foe_imp). Studio, local build, stamp `dev`, 2026-11-19: test wave 45 with the best team (16 enemies in 3 rushes, elites) cleared with a 16 KO counter, the power bar and coin pops; test wave 12 with the starter team: 8 enemies in two rows, the power bar 644 vs 1,080; the Gloom Imp stands in game with its hexfire glows. Waves 1 to 140: every swarm wave within 5% of its target power (spec), and 98 to 99% of test fights end as against the classic waves.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

@@ -2704,8 +2704,8 @@ local StationAssets: { [string]: Asset } = {
 			foe_imp_leg_br = { -0.221, 0.936, 0.333 },
 			foe_imp_tail = { 0, 1.118, -0.057 },
 		},
-		model = nil,
-		decal = nil,
+		model = 84731133206631,
+		decal = 133656573450079,
 		texture = nil,
 		eyes = {
 			{ 0.169, 2.548, 0.801, 0.22 },

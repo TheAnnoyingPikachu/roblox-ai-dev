@@ -29,11 +29,11 @@ Date: 2026-11-19. Task STATION-103.
   - The server still decides everything. A tap is replayed from the start (decision 0092), and the shield's
     cooldown is `BattleRules.shields`.
 - **Stars** (saved):
-  - Up to three a wave: one for the win, one when none of the team was knocked out, one for winning
-    within the target time.
-  - The target is 95% of the time the fight takes with nobody tapping, or that whole time when no meter
-    could fill. The 85% on the concepts page could not be reached, since tapping well shortens a fight by
-    about 5 to 10%.
+  - Up to three a wave: one for the win, one when none of the team was knocked out, one when the player
+    fired every power attack themselves (none fired itself after AUTO_FIRE).
+  - The concepts page had a time target for the third star. It could not be reached on short fights: a
+    fight that ends before a meter fills cannot be sped up, and tapping well shortens a long one by only
+    5 to 10%. So the third star rewards tapping instead (decision 0101 made fights shorter still).
   - Each wave keeps its best.
   - A **star chest** is due every 15 stars. In turn: 10 wave pays; the best egg; 20 wave pays and 10
     samples; the best egg with training x2 for 1 hour; a Golden Egg.
@@ -46,7 +46,7 @@ Date: 2026-11-19. Task STATION-103.
 ## How (facts)
 
 - Rules: `BattleRules` (`PERFECT_*`, `COMBO_*`, `SHIELD_*`, `shields`, the log's `perfect`, `combo` and
-  `shielded`), `LevelRules.stars` / `target` (`STAR_TIME` 0.95).
+  `shielded`), `LevelRules.stars` / `missed`.
 - Save schema (StationProgress):
   - `stars`: a string, character n is wave n's best, "0" to "3", at most 5,000 waves.
   - `chests`: star chests opened.

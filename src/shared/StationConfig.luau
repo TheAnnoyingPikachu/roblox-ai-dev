@@ -33,7 +33,7 @@ export type Species = {
 export type Foe = {
 	id: string,
 	name: string,
-	kind: string, -- "knight" | "archer" | "mage" | "ogre" | "dragon"
+	kind: string, -- "knight" | "archer" | "mage" | "ogre" | "dragon" | "imp"
 	model: string, -- the asset that shows it ("foe_<kind>"): a tier of a kind is the same model
 	size: number?, -- scaled by this (default 1) ...
 	tint: { number }?, -- ... and tinted this colour, r g b 0 to 255 (default: as built)
@@ -42,6 +42,7 @@ export type Foe = {
 	stats: Stats, -- before the wave's scaling
 	from: number?, -- the first wave it can appear in the normal line (nil: never)
 	boss: number?, -- the first wave it can be the dragon that ends a boss wave (nil: never)
+	minion: boolean?, -- a swarm's minion (decision 0101): never drawn as a regular
 }
 export type Tier = { tier: string, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
@@ -253,7 +254,7 @@ StationConfig.SPECIES = {
 -- heal or ward. Draft numbers, set to the strength of the animals the waves used before, so the
 -- waves are as hard. Their model is the asset "foe_<kind>"; tiers within a kind differ by tint
 -- and size.
-StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "dragon" }
+StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "dragon", "imp" }
 StationConfig.FOES = {
 	{
 		id = "gloom_squire",
@@ -411,6 +412,18 @@ StationConfig.FOES = {
 		group = "solitary",
 		stats = s(100, 200, 100, 120, 320, 160),
 		boss = 60,
+	},
+	-- the swarm's minion (decision 0101): fast and frail, falls in a hit or two
+	{
+		id = "gloom_imp",
+		name = "Gloom Imp",
+		kind = "imp",
+		model = "foe_imp",
+		role = "attack",
+		group = "pack",
+		stats = s(44, 12, 24, 8, 12, 4),
+		from = 1,
+		minion = true,
 	},
 } :: { Foe }
 

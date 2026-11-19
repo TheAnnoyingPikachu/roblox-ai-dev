@@ -14,7 +14,17 @@ type Stats = StationConfig.Stats
 -- rainbow = true: it wears the rainbow coat (decision 0058), which adds to every stat (`stat`); absent
 -- on every other animal.
 -- `boost` is never stored: StationProgress.fighters sets it on the Titan for a wave (the Titan's Den).
-export type Owned = { s: string, v: string?, stats: Stats, trained: Stats?, rainbow: boolean?, boost: number? }
+-- `rush` and `elite` are a wave foe's (decision 0101): which rush it comes in, and whether it is an elite.
+export type Owned = {
+	s: string,
+	v: string?,
+	stats: Stats,
+	trained: Stats?,
+	rainbow: boolean?,
+	boost: number?,
+	rush: number?,
+	elite: boolean?,
+}
 
 StationRules.PPM = 1_000_000
 -- The share of the base level roll that gives `level`: BASE_TOP at BASE_MAX, BASE_STEP more for

@@ -58,7 +58,7 @@ describe("WaveRuns (decision 0098)", function()
 		expect(WaveRuns.bank(run, true)).toBe(50)
 	end)
 
-	it("lets a team that taps every power attack Perfect earn three stars", function()
+	it("gives three stars to a team that taps every power attack itself (decision 0097)", function()
 		local team = { owned("lion"), owned("rhino"), owned("flamingo") }
 		local won, _, par = LevelRules.fight(team, 1, {})
 		expect(won).toBe(true)
@@ -89,11 +89,16 @@ describe("WaveRuns (decision 0098)", function()
 			down = down or (e.tside == 1 and e.hp <= 0)
 		end
 		expect(ok).toBe(true)
-		local target = LevelRules.target(par, true)
-		expect(LevelRules.stars(ok, down, seconds, target)).toBe(3)
-		expect(LevelRules.stars(true, false, par, target)).toBe(2) -- nobody tapping is too slow
-		expect(LevelRules.stars(true, true, 1, nil)).toBe(2)
-		expect(LevelRules.stars(false, false, 1, target)).toBe(0)
-		expect(LevelRules.target(10, false)).toBe(10)
+		expect(seconds <= par).toBeTruthy()
+		expect(LevelRules.stars(ok, down, LevelRules.missed(log))).toBe(3)
+		local fired: { any } = { -- one fired itself, one was tapped, one is the enemy's
+			{ side = 1, power = true },
+			{ side = 1, power = true, tap = true },
+			{ side = 2, power = true },
+		}
+		expect(LevelRules.missed(fired)).toBe(1)
+		expect(LevelRules.stars(true, false, LevelRules.missed(fired))).toBe(2)
+		expect(LevelRules.stars(true, true, 0)).toBe(2)
+		expect(LevelRules.stars(false, false, 0)).toBe(0)
 	end)
 end)

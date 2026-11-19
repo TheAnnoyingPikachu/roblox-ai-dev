@@ -271,8 +271,16 @@ describe("BattleRules.battle log", function()
 			expect(hp[e.tside][e.tslot] > 0).toBeTruthy()
 			hp[e.tside][e.tslot] -= e.dmg
 			expect(hp[e.tside][e.tslot]).toBe(e.hp)
+			for _, x in e.also or {} do -- splash and crowd power attacks (decision 0101)
+				expect(hp[e.tside][x.slot] > 0).toBeTruthy()
+				hp[e.tside][x.slot] -= x.dmg
+				expect(hp[e.tside][x.slot]).toBe(x.hp)
+			end
 			if e.heal then
 				hp[e.side][e.heal.slot] = e.heal.hp
+			end
+			for _, x in e.heals or {} do
+				hp[e.side][x.slot] = x.hp
 			end
 		end
 		for _, h in hp[2] do
@@ -403,9 +411,7 @@ describe("BattleRules power scores (decision 0096)", function()
 				local ours = BattleRules.teamPower(team, 1)
 				for wave = 1, 80 do
 					total += 1
-					if
-						(ours >= BattleRules.teamPower(LevelRules.enemies(wave), 2)) == LevelRules.fight(team, wave, {})
-					then
+					if (ours >= LevelRules.power(wave)) == LevelRules.fight(team, wave, {}) then
 						agree += 1
 					end
 				end
@@ -475,8 +481,10 @@ describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)"
 
 	it("halves enemy power attacks while the shield is up, with a cooldown between shields", function()
 		expect(#BattleRules.shields({ { slot = 0, t = 1 }, { slot = 0, t = 3 }, { slot = 0, t = 7.5 } })).toBe(2)
+		local tanks = { owned("tortoise"), owned("tortoise"), owned("meerkat") } -- a long fight with enemy power attacks
+		local fast = { owned("cheetah"), owned("cheetah"), owned("cheetah") }
 		local base = {}
-		BattleRules.battle(one, two, base, {})
+		BattleRules.battle(tanks, fast, base, {})
 		local hit: BattleRules.Hit? = nil
 		for _, e in base do
 			if e.side == 2 and e.power then
@@ -486,7 +494,7 @@ describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)"
 		end
 		local h = hit :: BattleRules.Hit
 		local log = {}
-		BattleRules.battle(one, two, log, { { slot = 0, t = h.t - 0.5 } })
+		BattleRules.battle(tanks, fast, log, { { slot = 0, t = h.t - 0.5 } })
 		for _, e in log do
 			if e.t == h.t and e.side == 2 and e.slot == h.slot then
 				expect(e.shielded).toBe(true)

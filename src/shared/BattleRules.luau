@@ -33,6 +33,9 @@ export type Fighter = {
 	next: number, -- when its next attack lands
 	side: number,
 	slot: number,
+	rush: number, -- which rush of its wave it comes in (decision 0101); 1 for the team
+	arrive: number, -- when it is in the fight (math.huge while its rush has not been called)
+	engaged: boolean, -- side 2: in the front line (only the front line attacks)
 }
 
 BattleRules.HP_BASE, BattleRules.HP_PER_HEALTH = 20, 1.5
@@ -81,6 +84,9 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 		next = swing, -- the first attack lands after one swing, so the faster animal strikes first
 		side = side,
 		slot = slot,
+		rush = math.max(1, (animal :: any).rush or 1),
+		arrive = 0,
+		engaged = side == 1,
 	}
 end
 
@@ -171,11 +177,12 @@ local function alive(team: { Fighter }): boolean
 	return false
 end
 
--- The enemy to hit: the first standing Defence animal, else the first standing animal.
-local function target(foes: { Fighter }): Fighter?
+-- The enemy to hit at `now`: the first standing Defence animal, else the first standing animal, of
+-- those in the fight (a rush still on its way cannot be hit).
+local function target(foes: { Fighter }, now: number): Fighter?
 	local first: Fighter? = nil
 	for _, f in foes do
-		if f.hp > 0 then
+		if f.hp > 0 and f.arrive <= now then
 			if f.role == "defense" then
 				return f
 			end
@@ -217,6 +224,19 @@ BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.
 BattleRules.PERFECT = 1.5
 BattleRules.COMBO_SECONDS, BattleRules.COMBO_PCT, BattleRules.COMBO_MAX = 3, 25, 4
 BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.2, 6, 0.5
+--
+-- Crowds (decision 0101): a wave's foes may come in rushes (an Owned's `rush`, 1 to 3). Rush 1 is there at
+-- the start; the next is called when half of the one before is down, or RUSH_SECONDS after it arrived, and
+-- arrives RUSH_WALK later (`arrivals`, when given, gets each foe's arrival by slot). Only the front line
+-- attacks: the first FRONT standing foes that have arrived, in slot order; the next steps up when one
+-- falls (`engaged`, when given, gets when each foe joined it). The team fights crowds:
+-- * an Attack animal's normal hit also strikes the next foe for SPLASH of its damage;
+-- * a power attack also strikes up to CROWD - 1 more foes for CROWD_SHARE of its damage;
+-- * a Defence animal's power attack knocks every foe it strikes back KNOCKBACK seconds;
+-- * a Utility animal's power attack heals the whole team, not only the most hurt.
+-- Extra strikes are in their hit's `also` ({ slot, dmg, hp }), a team heal in `heals` ({ slot, hp }).
+BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
+BattleRules.SPLASH, BattleRules.CROWD, BattleRules.CROWD_SHARE, BattleRules.KNOCKBACK = 0.5, 5, 0.6, 1
 export type Hit = {
 	t: number,
 	side: number,
@@ -232,6 +252,8 @@ export type Hit = {
 	shielded: boolean?,
 	energy: number,
 	heal: { slot: number, hp: number }?,
+	heals: { { slot: number, hp: number } }?,
+	also: { { slot: number, dmg: number, hp: number } }?,
 }
 export type Tap = { slot: number, t: number }
 
@@ -259,9 +281,24 @@ function BattleRules.battle(
 	two: { Owned },
 	log: { Hit }?,
 	taps: { Tap }?,
-	setup: Setup?
+	setup: Setup?,
+	arrivals: { [number]: number }?,
+	engaged: { [number]: number }?
 ): (boolean, number, number, { number })
 	local sides = { BattleRules.lineup(one, 1, setup), BattleRules.lineup(two, 2) }
+	local foes = sides[2]
+	-- rushes: rushAt[r] is when rush r arrives (math.huge until it is called)
+	local rushes = 1
+	for _, f in foes do
+		rushes = math.max(rushes, f.rush)
+	end
+	local rushAt, landed = { 0 }, { true }
+	for r = 2, rushes do
+		rushAt[r], landed[r] = math.huge, false
+	end
+	for _, f in foes do
+		f.arrive = rushAt[f.rush]
+	end
 	local all = table.clone(sides[1])
 	for _, f in sides[2] do
 		table.insert(all, f)
@@ -280,9 +317,77 @@ function BattleRules.battle(
 	local shieldTo = -math.huge
 	local combo, comboAt, comboSlot = 0, -math.huge, 0
 
+	-- the front line: the first FRONT standing foes that have arrived; one that joins after the start
+	-- swings from then
+	local function engage()
+		local n = 0
+		for _, f in foes do
+			if f.hp > 0 and f.arrive <= now then
+				n += 1
+				if n <= BattleRules.FRONT and not f.engaged then
+					f.engaged = true
+					if now > 0 then
+						f.next = now + f.swing
+					end
+					if engaged then
+						engaged[f.slot] = now
+					end
+				end
+			end
+		end
+	end
+	local function call(r: number) -- rush r is on its way
+		rushAt[r] = now + BattleRules.RUSH_WALK
+		for _, f in foes do
+			if f.rush == r then
+				f.arrive = rushAt[r]
+				if arrivals then
+					arrivals[f.slot] = rushAt[r]
+				end
+			end
+		end
+	end
+	if arrivals then
+		for _, f in foes do
+			if f.rush == 1 then
+				arrivals[f.slot] = 0
+			end
+		end
+	end
+	engage()
+	-- after a foe falls: the front line steps up, and half of a rush down calls the next one
+	local function fell()
+		engage()
+		for r = 2, rushes do
+			if rushAt[r] == math.huge and landed[r - 1] then
+				local size, down = 0, 0
+				for _, f in foes do
+					if f.rush == r - 1 then
+						size += 1
+						down += if f.hp <= 0 then 1 else 0
+					end
+				end
+				if down * 2 >= size then
+					call(r)
+				end
+			end
+		end
+	end
+
+	-- `d` takes `hit` at `now` (Defence last, as one division, so exact results stay exact)
+	local function hurt(d: Fighter, hit: number): number
+		if d.role == "defense" then
+			hit *= BattleRules.GUARD
+		end
+		local dealt = math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
+		d.hp -= dealt
+		return dealt
+	end
+
 	-- `me` attacks at `now`; `power` x damage and heal
 	local function strike(me: Fighter, power: number, tapped: boolean?, perfect: boolean?)
-		local d = target(sides[3 - me.side]) :: Fighter
+		local enemies = sides[3 - me.side]
+		local d = target(enemies, now) :: Fighter
 		local hit = me.dmg * power
 		local chain = nil
 		if held and me.side == 1 and power > 1 then
@@ -300,12 +405,32 @@ function BattleRules.battle(
 		if shielded then
 			hit *= BattleRules.SHIELD
 		end
-		if d.role == "defense" then
-			hit *= BattleRules.GUARD
+		local dealt = hurt(d, hit)
+		local struck = { d }
+		-- the team fights crowds: splash, and power attacks that hit several
+		local also: { { slot: number, dmg: number, hp: number } }? = nil
+		if me.side == 1 then
+			local extra = if power > 1 then BattleRules.CROWD - 1 elseif me.role == "attack" then 1 else 0
+			local share = if power > 1 then BattleRules.CROWD_SHARE else BattleRules.SPLASH
+			for _, o in enemies do
+				if extra <= 0 then
+					break
+				elseif o ~= d and o.hp > 0 and o.arrive <= now then
+					extra -= 1
+					local got = hurt(o, hit * share)
+					also = also or {}
+					table.insert(also :: any, { slot = o.slot, dmg = got, hp = o.hp })
+					table.insert(struck, o)
+				end
+			end
+			if power > 1 and me.role == "defense" then -- knocked back a step
+				for _, o in struck do
+					if o.hp > 0 and o.engaged then
+						o.next += BattleRules.KNOCKBACK
+					end
+				end
+			end
 		end
-		-- Defence last, as one division, so exact results stay exact
-		local dealt = math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
-		d.hp -= dealt
 		local entry: Hit? = nil
 		if log then
 			entry = {
@@ -322,35 +447,68 @@ function BattleRules.battle(
 				combo = chain,
 				shielded = if shielded then true else nil,
 				energy = math.min(1, me.energy / BattleRules.POWER_COST),
+				also = also,
 			}
 			table.insert(log, entry :: Hit)
 		end
 		if me.role == "utility" then
-			local hurt: Fighter? = nil
-			for _, m in sides[me.side] do
-				if m.hp > 0 and (hurt == nil or m.hp / m.maxHp < hurt.hp / hurt.maxHp) then
-					hurt = m
+			local heal = math.floor(me.maxHp * BattleRules.HEAL_PCT * power / 100)
+			if me.side == 1 and power > 1 then -- the whole team
+				local heals = {}
+				for _, m in sides[1] do
+					if m.hp > 0 then
+						m.hp = math.min(m.maxHp, m.hp + heal)
+						table.insert(heals, { slot = m.slot, hp = m.hp })
+					end
 				end
-			end
-			if hurt then
-				local heal = math.floor(me.maxHp * BattleRules.HEAL_PCT * power / 100)
-				hurt.hp = math.min(hurt.maxHp, hurt.hp + heal)
 				if entry then
-					entry.heal = { slot = hurt.slot, hp = hurt.hp }
+					entry.heals = heals
+				end
+			else
+				local low: Fighter? = nil
+				for _, m in sides[me.side] do
+					if m.hp > 0 and (low == nil or m.hp / m.maxHp < low.hp / low.maxHp) then
+						low = m
+					end
+				end
+				if low then
+					low.hp = math.min(low.maxHp, low.hp + heal)
+					if entry then
+						entry.heal = { slot = low.slot, hp = low.hp }
+					end
 				end
 			end
 		end
 		actions += 1
+		for _, o in struck do
+			if o.hp <= 0 and o.side == 2 then
+				fell()
+				break
+			end
+		end
 	end
 
 	while alive(sides[1]) and alive(sides[2]) and actions < BattleRules.MAX_ACTIONS do
 		local f: Fighter? = nil
 		for _, c in all do -- `all` is in side then slot order, so a strict < breaks ties that way
-			if c.hp > 0 and (f == nil or c.next < f.next) then
+			if c.hp > 0 and c.engaged and (f == nil or c.next < f.next) then
 				f = c
 			end
 		end
-		local me = f :: Fighter
+		local nextAt = if f then f.next else math.huge
+		-- a rush is called by the clock, or lands
+		local rushEvent, rushIs, rushOf = math.huge, "", 0
+		for r = 2, rushes do
+			local t, is = math.huge, ""
+			if rushAt[r] == math.huge and rushAt[r - 1] < math.huge then
+				t, is = rushAt[r - 1] + BattleRules.RUSH_SECONDS, "call"
+			elseif not landed[r] and rushAt[r] < math.huge then
+				t, is = rushAt[r], "land"
+			end
+			if t < rushEvent then
+				rushEvent, rushIs, rushOf = t, is, r
+			end
+		end
 		-- a held power attack due first: a tap, else a meter firing itself (ties before attacks)
 		local auto: Fighter?, autoAt = nil, math.huge
 		for _, c in sides[1] do
@@ -360,12 +518,25 @@ function BattleRules.battle(
 			end
 		end
 		local tap = queue[1]
-		if tap and tap.t <= autoAt and tap.t <= me.next then
+		if rushEvent <= nextAt and rushEvent <= autoAt and (tap == nil or rushEvent < tap.t) then
+			if rushEvent > BattleRules.MAX_SECONDS then
+				break
+			end
+			now = math.max(now, rushEvent)
+			if rushIs == "call" then -- called now: it lands RUSH_WALK later
+				call(rushOf)
+			else
+				landed[rushOf] = true
+				engage()
+			end
+			continue
+		end
+		if tap and tap.t <= autoAt and tap.t <= nextAt then
 			table.remove(queue, 1)
 			local c = sides[1][tap.slot]
 			if tap.slot == 0 and up[tap.t] then
 				shieldTo = tap.t + BattleRules.SHIELD_SECONDS
-			elseif c and c.hp > 0 and full[c] and tap.t >= full[c] then
+			elseif c and c.hp > 0 and full[c] and tap.t >= full[c] and target(foes, tap.t) then
 				if tap.t > BattleRules.MAX_SECONDS then
 					break
 				end
@@ -382,20 +553,29 @@ function BattleRules.battle(
 			end
 			continue
 		end
-		if auto and autoAt <= me.next then
+		if auto and autoAt <= nextAt then
 			if autoAt > BattleRules.MAX_SECONDS then
 				break
 			end
 			now = autoAt
+			if target(foes, now) == nil then -- nobody to hit yet (the next rush is on its way): wait
+				full[auto] = (full[auto] :: number) + 0.5
+				continue
+			end
 			full[auto] = nil
 			auto.energy -= BattleRules.POWER_COST
 			strike(auto, BattleRules.POWER)
 			continue
 		end
-		if me.next > BattleRules.MAX_SECONDS then
+		local me = f :: Fighter
+		if f == nil or me.next > BattleRules.MAX_SECONDS then
 			break
 		end
 		now = me.next
+		if target(sides[3 - me.side], now) == nil then -- nobody to hit yet: it waits a turn
+			me.next = now + me.rest + me.swing
+			continue
+		end
 		local power = 1
 		if held and me.side == 1 then -- fills and holds; the strike comes from a tap or AUTO_FIRE
 			me.energy = math.min(BattleRules.POWER_COST, me.energy + me.gain)

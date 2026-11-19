@@ -1942,8 +1942,16 @@ local function announce(n: number)
 	local mine = announced
 	local boss = n % LevelRules.BOSS_EVERY == 0
 	local names = {}
+	local counts, order = {}, {}
 	for _, e in LevelRules.enemies(n) do
-		table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
+		local name = (if e.elite then "Elite " else "") .. (StationConfig.foe(e.s) :: StationConfig.Foe).name
+		if counts[name] == nil then
+			table.insert(order, name)
+		end
+		counts[name] = (counts[name] or 0) + 1
+	end
+	for _, name in order do
+		table.insert(names, if counts[name] > 1 then `{name} x{counts[name]}` else name)
 	end
 	banner.Text = if boss then `BOSS WAVE {n}` else `WAVE {n}`
 	banner.TextColor3 = if boss then C.bad else C.text
@@ -2428,11 +2436,100 @@ do
 		Debris:AddItem(disc, at - now + 0.5)
 	end
 
+	-- knockouts (decision 0101): a counter that pops, and coins out of each fallen foe to the counter
+	local koText, koEdge, koScale = bigWords(UDim2.new(0.5, 0, 0, 120), 34, C.ink)
+	koText.TextColor3 = C.gold
+	local kos = 0
+	local fallen: { [Model]: boolean } = {}
+	local function knockout(m: Model)
+		kos += 1
+		koText.Text = `{kos} KO!`
+		koText.TextTransparency, koEdge.Transparency, koScale.Scale = 0, 0, 1.4
+		TweenService:Create(koScale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Scale = 1,
+		}):Play()
+		local camera = Workspace.CurrentCamera
+		local at, seen = camera:WorldToViewportPoint(m:GetPivot().Position)
+		if not seen then
+			return
+		end
+		local to = coinsText.AbsolutePosition + Vector2.new(0, coinsText.AbsoluteSize.Y / 2)
+		for i = 1, 3 do
+			local coin = Instance.new("Frame")
+			coin.Size, coin.AnchorPoint, coin.BackgroundColor3 = UDim2.fromOffset(14, 14), Vector2.new(0.5, 0.5), C.gold
+			coin.ZIndex, coin.Position = 12, UDim2.fromOffset(at.X + math.random(-16, 16), at.Y + math.random(-16, 4))
+			Style.round(coin, 7)
+			Style.stroke(coin, C.ink, 2)
+			coin.Parent = screen
+			local fly = TweenService:Create(
+				coin,
+				TweenInfo.new(0.6 + i * 0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+				{ Position = UDim2.fromOffset(to.X, to.Y), Size = UDim2.fromOffset(8, 8) }
+			)
+			fly.Completed:Once(function()
+				coin:Destroy()
+			end)
+			fly:Play()
+		end
+	end
+	-- the power bar: each side's power still standing (its fighters' power x their HP left)
+	local tug = Style.frame(root, UDim2.fromOffset(360, 16), C.bad)
+	tug.AnchorPoint, tug.Position, tug.Visible, tug.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 88), false, 6
+	Style.round(tug, 8)
+	Style.stroke(tug, C.ink, 3)
+	local ourSide = Style.frame(tug, UDim2.fromScale(0.5, 1), C.good)
+	Style.round(ourSide, 8)
+	local tugLabel = Style.text(tug, "", 12, Color3.new(1, 1, 1), UDim2.fromScale(1, 1))
+	tugLabel.TextXAlignment, tugLabel.ZIndex = Enum.TextXAlignment.Center, 8
+	local powerCache: { [Model]: number } = {}
+	local function powerOf(m: Model, side: number): number
+		local got = powerCache[m]
+		if got == nil then
+			local stats = {}
+			for _, stat in StationConfig.STATS do
+				local x = m:GetAttribute(stat)
+				stats[stat] = if type(x) == "number" then x else 0
+			end
+			local id = m:GetAttribute(if side == 1 then "Species" else "FoeId")
+			got = if type(id) == "string" then BattleRules.powerOf({ s = id, stats = stats :: any }, side) else 0
+			powerCache[m] = got
+		end
+		return got :: number
+	end
+
 	local warned: { [Model]: boolean } = {}
 	-- Every tick of the fight (from the plates' loop): hook new enemies' warnings, the boss's bar, the
 	-- shield button, and the music building as the enemies fall.
 	fightTick = function(folder: Instance?, showing: boolean)
 		shieldButton.Visible = showing
+		-- knockouts and the power bar
+		local us, them = 0, 0
+		for _, m in if folder then folder:GetChildren() else {} do
+			local side, hp, max = m:GetAttribute("Side"), m:GetAttribute("Hp"), m:GetAttribute("MaxHp")
+			if m:IsA("Model") and type(side) == "number" and type(hp) == "number" and type(max) == "number" then
+				local left = math.max(0, hp) / math.max(1, max)
+				if side == 1 then
+					us += powerOf(m, 1) * left
+				else
+					them += powerOf(m, 2) * left
+					if hp <= 0 and not fallen[m] then
+						fallen[m] = true
+						knockout(m)
+					end
+				end
+			end
+		end
+		tug.Visible = showing and us + them > 0
+		if us + them > 0 then
+			ourSide.Size = UDim2.fromScale(math.clamp(us / (us + them), 0.02, 0.98), 1)
+			tugLabel.Text = `⚡ {Format.commas(math.floor(us))}  vs  {Format.commas(math.floor(them))}`
+		end
+		if not showing and kos > 0 then -- the fight is over: the count starts again next time
+			kos = 0
+			koText.TextTransparency, koEdge.Transparency = 1, 1
+			table.clear(fallen)
+			table.clear(powerCache)
+		end
 		local boss: Model? = nil
 		local left, total = 0, 0
 		for _, m in if folder then folder:GetChildren() else {} do
@@ -2685,7 +2782,7 @@ task.spawn(function()
 	end
 end)
 
-local function foeCard(e: any)
+local function foeCard(e: any, share: number)
 	local foe = StationConfig.foe(e.s) :: StationConfig.Foe
 	local boss = foe.kind == "dragon"
 	local card = Style.card(waves.body, UDim2.fromOffset(122, 178), if boss then C.bad else C.edge)
@@ -2699,8 +2796,13 @@ local function foeCard(e: any)
 	local name = Style.text(card, foe.name, 14, C.night, UDim2.new(1, -8, 0, 36))
 	name.Position = UDim2.fromOffset(4, 110)
 	name.TextXAlignment = Enum.TextXAlignment.Center
-	local power =
-		Style.text(card, `⚡ {Format.commas(BattleRules.powerOf(e, 2))}`, 14, C.night, UDim2.new(1, -8, 0, 18))
+	local power = Style.text( -- its share of the wave's power, so the cards add up to the match-up
+		card,
+		`⚡ {Format.commas(math.floor(BattleRules.powerOf(e, 2) * share + 0.5))}`,
+		14,
+		C.night,
+		UDim2.new(1, -8, 0, 18)
+	)
 	power.Position, power.TextXAlignment = UDim2.fromOffset(4, 148), Enum.TextXAlignment.Center
 	if boss then
 		local tag = Style.chip(card, "BOSS", C.bad, Color3.new(1, 1, 1))
@@ -2789,7 +2891,7 @@ redraw.waves = function()
 	hint.LayoutOrder, hint.TextXAlignment = nextOrder(), Enum.TextXAlignment.Center
 
 	-- the power match-up (decision 0096): the side with more power nearly always wins
-	local ours, theirs = BattleRules.teamPower(team, 1), BattleRules.teamPower(LevelRules.enemies(wave), 2)
+	local ours, theirs = BattleRules.teamPower(team, 1), LevelRules.power(wave)
 	local odds = if #team == 0
 		then nil
 		elseif ours >= theirs * 1.1 then "good"
@@ -2814,9 +2916,31 @@ redraw.waves = function()
 	Style.list(line, 8, true, true)
 	line.Parent = waves.body
 	local foes = LevelRules.enemies(wave)
+	local raw = BattleRules.teamPower(foes, 2)
+	local groups, kinds = {}, {}
 	for _, e in foes do
-		foeCard(e).Parent = line
+		local key = e.s .. (if e.elite then "*" else "")
+		if groups[key] == nil then
+			groups[key] = { e = e, n = 0 }
+			table.insert(kinds, key)
+		end
+		groups[key].n += 1
 	end
+	for _, key in kinds do
+		local g = groups[key]
+		local card = foeCard(g.e, theirs / math.max(1, raw))
+		card.Parent = line
+		if g.n > 1 then
+			local many = Style.chip(card, `x{g.n}`, C.ink, Color3.new(1, 1, 1))
+			many.AnchorPoint, many.Position, many.ZIndex = Vector2.new(1, 0), UDim2.new(1, -4, 0, 4), 4
+		end
+		if g.e.elite then
+			local gold = Style.chip(card, "ELITE", C.gold, C.ink)
+			gold.Position, gold.ZIndex = UDim2.fromOffset(4, 4), 4
+		end
+	end
+	local row = LevelRules.crowd(wave)
+	section(waves.body, `{#foes} enemies in {row.rushes} {if row.rushes > 1 then "rushes" else "rush"}`, nextOrder())
 
 	section(waves.body, "Clearing it pays", nextOrder())
 	local coinsWon, xpWon, samplesWon = StationProgress.payout(profile, wave)
@@ -3360,9 +3484,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		drops.Visible = payload.won
 		music(if payload.won then "win" else "lose")
 		showStars(payload.stars or 0)
-		local goals = `★ win   ★ nobody knocked out   ★ {if payload.target
-			then `under {string.format("%.1f", payload.target)}s`
-			else "any win"}`
+		local goals = "★ win   ★ nobody knocked out   ★ you fire every power attack"
 		if payload.won then
 			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave} cleared!`, C.good
 			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.commas(payload.mvpDmg or 0)} damage)` else ""

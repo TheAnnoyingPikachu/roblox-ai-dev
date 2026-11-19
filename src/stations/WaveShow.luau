@@ -28,6 +28,9 @@ type Slot = {
 	maxHp: number,
 	version: number, -- counts every change to hp, so a late heal can tell it is stale
 	side: number,
+	front: boolean, -- side 2: stands in the front row (decision 0101)
+	shown: boolean, -- side 2: has walked into the arena
+	stepped: boolean, -- side 2: has stepped up into the front line
 }
 
 local WaveShow = {}
@@ -53,8 +56,8 @@ type Show = {
 	start: number,
 	ours: { Model }, -- the team's models by slot
 	setup: BattleRules.Setup?,
-	par: number?, -- the fight's seconds with nobody tapping, nil when that loses (for the stars)
-	couldTap: boolean, -- whether a meter fills in that fight
+	arrivals: { [number]: number }, -- when each foe is in the fight (BattleRules.battle, decision 0101)
+	engaged: { [number]: number }, -- when each foe joined the front line
 }
 local shows: { [Player]: Show } = {}
 local TAP_AHEAD = FightFx.TAP_AHEAD -- seconds ahead of the show a tap lands
@@ -236,11 +239,8 @@ function WaveShow.run(
 	local foes = LevelRules.enemies(wave)
 	local log: { BattleRules.Hit } = {}
 	local taps: { BattleRules.Tap } = {}
-	local won, actions, seconds, ends = BattleRules.battle(team, foes, log, taps, setup)
-	local couldTap = false
-	for _, e in log do
-		couldTap = couldTap or (e.side == 1 and e.energy >= 1)
-	end
+	local arrivals, engaged = {}, {}
+	local won, actions, seconds, ends = BattleRules.battle(team, foes, log, taps, setup, arrivals, engaged)
 	local show: Show = {
 		token = token,
 		team = team,
@@ -254,8 +254,8 @@ function WaveShow.run(
 		start = math.huge,
 		ours = {},
 		setup = setup,
-		par = if won then seconds else nil,
-		couldTap = couldTap,
+		arrivals = arrivals,
+		engaged = engaged,
 	}
 	shows[player] = show
 	local lineups = { BattleRules.lineup(team, 1, setup), BattleRules.lineup(foes, 2) }
@@ -271,8 +271,22 @@ function WaveShow.run(
 		table.insert(theirSizes, Creatures.foeSize(e.s))
 	end
 	local ourX, ourDeep = across(ourSizes)
-	local theirX, theirDeep = across(theirSizes)
+	-- the foes stand in rows of the front line's size (decision 0101), the first row nearest the team
+	local theirX, rowOf, theirDeep = {}, {}, 0
+	for first = 1, #theirSizes, BattleRules.FRONT do
+		local row = {}
+		for i = first, math.min(#theirSizes, first + BattleRules.FRONT - 1) do
+			table.insert(row, theirSizes[i])
+		end
+		local xs, deep = across(row)
+		for k, x in xs do
+			theirX[first + k - 1] = x
+			rowOf[first + k - 1] = (first - 1) // BattleRules.FRONT
+		end
+		theirDeep = math.max(theirDeep, deep)
+	end
 	local gap = ourDeep / 2 + theirDeep / 2 + 14
+	local rowStep = theirDeep + 5
 	local z0 = stand.Position.Z
 
 	local slots: { { Slot } } = { {}, {} }
@@ -287,8 +301,17 @@ function WaveShow.run(
 		model:SetAttribute("Slot", i) -- the client's power plates tap by slot (decision 0092)
 		model:SetAttribute("MaxHp", fighter.maxHp)
 		model:SetAttribute("Hp", fighter.hp)
-		slots[side][i] =
-			{ model = model, home = home, hp = fighter.hp, maxHp = fighter.maxHp, version = 0, side = side }
+		slots[side][i] = {
+			model = model,
+			home = home,
+			hp = fighter.hp,
+			maxHp = fighter.maxHp,
+			version = 0,
+			side = side,
+			front = side == 2 and (rowOf[i] or 0) == 0,
+			shown = side == 1,
+			stepped = false,
+		}
 	end
 	for i, a in team do
 		local model = Creatures.spawn(Creatures.asset(a.s, a.v), CFrame.new(0, 500, 0), folder, nil, a.rainbow)
@@ -304,8 +327,15 @@ function WaveShow.run(
 			local foe = StationConfig.foe(e.s)
 			model:SetAttribute("Boss", foe ~= nil and foe.kind == "dragon") -- the HUD's bar across the top
 			model:SetAttribute("FoeName", if foe then foe.name else "?")
+			if e.elite then -- an elite glows gold (decision 0101)
+				model:SetAttribute("Elite", true)
+				local aura = Instance.new("Highlight")
+				aura.FillColor, aura.FillTransparency = Color3.fromRGB(255, 200, 60), 0.75
+				aura.OutlineColor, aura.OutlineTransparency = Color3.fromRGB(255, 220, 90), 0
+				aura.Parent = model
+			end
 		end
-		place(2, i, model, theirX[i], z0 - gap, 1)
+		place(2, i, model, theirX[i], z0 - gap - (rowOf[i] or 0) * rowStep, 1)
 	end
 	for side = 1, 2 do
 		for i = 1, #lineups[side] do
@@ -341,9 +371,14 @@ function WaveShow.run(
 	player:SetAttribute("CamRadius", math.max(16, span.Magnitude / 2))
 	local gateZ = if gatePart then gatePart.Position.Z + 6 else z0 - gap - 50
 	local walkFor = 2
-	for _, slot in slots[2] do
+	for i, slot in slots[2] do
 		local root = slot.model.PrimaryPart :: BasePart
 		local from = math.min(gateZ, slot.home.Z - 20)
+		if (show.arrivals[i] or 0) > 0 then -- a later rush: it waits behind the gate until it is called
+			root.CFrame = slot.home + Vector3.new(0, 0, gateZ - 30 - slot.home.Z)
+			continue
+		end
+		slot.shown = true
 		walkFor = math.max(walkFor, (slot.home.Z - from) / WALK_SPEED)
 		if slot.model:GetAttribute("Boss") then -- a dragon drops out of the sky instead (decision 0097)
 			root.CFrame = slot.home + Vector3.new(0, 90, 0)
@@ -354,6 +389,9 @@ function WaveShow.run(
 		end
 	end
 	for _, slot in slots[2] do
+		if not slot.shown then
+			continue
+		end
 		local root = slot.model.PrimaryPart :: BasePart
 		local boss = slot.model:GetAttribute("Boss") == true
 		local info = if boss
@@ -374,7 +412,47 @@ function WaveShow.run(
 		return true, nil
 	end
 	for _, slot in slots[2] do
-		Creatures.play(slot.model, "idle")
+		if slot.shown then
+			Creatures.play(slot.model, "idle")
+		end
+	end
+	-- a later rush runs in from the gate when it is called; a foe that joins the front line steps up into
+	-- a fallen foe's place (decision 0101)
+	local freeSpots: { CFrame } = {}
+	local function rushIn(slot: Slot)
+		slot.shown = true
+		local root = slot.model.PrimaryPart :: BasePart
+		local boss = slot.model:GetAttribute("Boss") == true
+		if boss then
+			root.CFrame = slot.home + Vector3.new(0, 90, 0)
+			Creatures.play(slot.model, "idle")
+			slot.model:SetAttribute("LandAt", Workspace:GetServerTimeNow() + BattleRules.RUSH_WALK)
+		else
+			root.CFrame = slot.home + Vector3.new(0, 0, gateZ - slot.home.Z)
+			Creatures.play(slot.model, "walk")
+		end
+		local info = TweenInfo.new(
+			BattleRules.RUSH_WALK,
+			if boss then Enum.EasingStyle.Quad else Enum.EasingStyle.Linear,
+			Enum.EasingDirection.In
+		)
+		local walk = TweenService:Create(root, info, { CFrame = slot.home })
+		walk.Completed:Once(function()
+			if live() and slot.hp > 0 then
+				Creatures.play(slot.model, "idle")
+			end
+		end)
+		walk:Play()
+	end
+	local function stepUp(slot: Slot)
+		slot.stepped = true
+		local spot = table.remove(freeSpots, 1)
+		if spot == nil or slot.front then
+			return
+		end
+		slot.home, slot.front = spot, true
+		local root = slot.model.PrimaryPart :: BasePart
+		TweenService:Create(root, TweenInfo.new(0.5, Enum.EasingStyle.Quad), { CFrame = spot }):Play()
 	end
 
 	-- replay the log: each attack starts its animation `lead` seconds before it lands. A tap
@@ -455,10 +533,62 @@ function WaveShow.run(
 			end
 			target.hp, target.version = e.hp, target.version + 1
 			target.model:SetAttribute("Hp", math.max(0, e.hp))
+			local function down(who: Slot)
+				fall(who.model)
+				if who.side == 2 and who.front then -- its place in the front line is free
+					table.insert(freeSpots, who.home)
+				end
+			end
 			if e.hp <= 0 then
-				fall(target.model)
+				down(target)
 			elseif not busy(target.model) then
 				Creatures.play(target.model, "hit")
+			end
+			for _, x in e.also or {} do -- splash and a crowd power attack (decision 0101)
+				local other = slots[e.tside][x.slot]
+				if other and other.hp > 0 then
+					other.model:SetAttribute("HitPower", if e.power then 1 else 0)
+					other.model:SetAttribute("HitDmg", x.dmg)
+					other.model:SetAttribute("HitFinal", 0)
+					other.model:SetAttribute("HitCrit", 0)
+					other.model:SetAttribute("HitKo", if x.hp <= 0 then 1 else 0)
+					other.model:SetAttribute("HitAt", now)
+					other.hp, other.version = x.hp, other.version + 1
+					other.model:SetAttribute("Hp", math.max(0, x.hp))
+					if x.hp <= 0 then
+						down(other)
+					elseif not busy(other.model) then
+						Creatures.play(other.model, "hit")
+					end
+				end
+			end
+			if e.power and e.side == 1 and StationRules.role(show.team[e.slot]) == "defense" then
+				local struck = { e.tslot }
+				for _, x in e.also or {} do
+					table.insert(struck, x.slot)
+				end
+				for _, k in struck do -- knocked back a step, then they come again
+					local other = slots[e.tside][k]
+					if other and other.hp > 0 then
+						local r = other.model.PrimaryPart :: BasePart
+						local back = other.home + Vector3.new(0, 0, -6)
+						local push =
+							TweenService:Create(r, TweenInfo.new(0.25, Enum.EasingStyle.Quad), { CFrame = back })
+						push.Completed:Once(function()
+							if live() and other.hp > 0 then
+								TweenService:Create(r, TweenInfo.new(0.7), { CFrame = other.home }):Play()
+							end
+						end)
+						push:Play()
+					end
+				end
+			end
+			for _, x in e.heals or {} do -- a team heal
+				local healed = slots[e.side][x.slot]
+				if healed and healed.hp > 0 then
+					healed.hp, healed.version = x.hp, healed.version + 1
+					healed.model:SetAttribute("Hp", x.hp)
+				end
 			end
 			if lunges and actor.hp > 0 then
 				TweenService:Create(root, TweenInfo.new(0.4, Enum.EasingStyle.Quad), { CFrame = actor.home }):Play()
@@ -486,6 +616,9 @@ function WaveShow.run(
 			down = down or (e.tside == 1 and e.hp <= 0)
 			if e.side == 1 then
 				dealt[e.slot] = (dealt[e.slot] or 0) + e.dmg
+				for _, x in e.also or {} do
+					dealt[e.slot] += x.dmg
+				end
 			end
 		end
 		local mvp = 0
@@ -494,7 +627,6 @@ function WaveShow.run(
 				mvp = slot
 			end
 		end
-		local target = LevelRules.target(show.par, show.couldTap)
 		local best = team[mvp]
 		local va = if best and best.v then StationConfig.variant(best.s, best.v) else nil
 		local sp = if best then StationConfig.species(best.s) else nil
@@ -504,8 +636,8 @@ function WaveShow.run(
 			seconds = show.seconds,
 			attacks = show.actions,
 			foes = table.concat(names, ", "),
-			stars = LevelRules.stars(show.won, down, show.seconds, target),
-			target = target,
+			stars = LevelRules.stars(show.won, down, LevelRules.missed(show.log)),
+			missed = LevelRules.missed(show.log),
 			ends = show.ends,
 			mvp = if va then va.name elseif sp then sp.name else nil,
 			mvpDmg = dealt[mvp] or 0,
@@ -519,6 +651,17 @@ function WaveShow.run(
 			while show.log[nextHit] and start + show.log[nextHit].t - TAP_AHEAD <= now do
 				play(show.log[nextHit])
 				nextHit += 1
+			end
+			-- a rush is called: it runs in; a foe joins the front line: it steps up (decision 0101)
+			for i, slot in slots[2] do
+				local at = show.arrivals[i]
+				if not slot.shown and at and at < math.huge and start + at - BattleRules.RUSH_WALK <= now then
+					rushIn(slot)
+				end
+				local joined = show.engaged[i]
+				if not slot.stepped and joined and joined > 0 and start + joined <= now and slot.hp > 0 then
+					stepUp(slot)
+				end
 			end
 			-- an enemy power attack is coming: warn under the attacker (decision 0097)
 			for _, e in show.log do
@@ -580,7 +723,9 @@ function WaveShow.power(player: Player, slot: number): (boolean, string?)
 	local taps = table.clone(show.taps)
 	table.insert(taps, { slot = slot, t = t })
 	local log: { BattleRules.Hit } = {}
-	local won, actions, seconds, ends = BattleRules.battle(show.team, show.foes, log, taps, show.setup)
+	local arrivals, engaged = {}, {}
+	local won, actions, seconds, ends =
+		BattleRules.battle(show.team, show.foes, log, taps, show.setup, arrivals, engaged)
 	local fired = false
 	for _, e in log do
 		fired = fired or (e.tap == true and e.side == 1 and e.slot == slot and e.t == t)
@@ -589,6 +734,7 @@ function WaveShow.power(player: Player, slot: number): (boolean, string?)
 		return false, "power"
 	end
 	show.taps, show.log, show.won, show.actions, show.seconds, show.ends = taps, log, won, actions, seconds, ends
+	show.arrivals, show.engaged = arrivals, engaged
 	if show.ours[slot] then -- the meter empties at once; the strike lands TAP_AHEAD from now
 		show.ours[slot]:SetAttribute("Power", 0)
 	end
@@ -612,11 +758,14 @@ function WaveShow.shield(player: Player): (boolean, string?)
 		return false, "shield_wait"
 	end
 	local log: { BattleRules.Hit } = {}
-	local won, actions, seconds, ends = BattleRules.battle(show.team, show.foes, log, taps, show.setup)
+	local arrivals, engaged = {}, {}
+	local won, actions, seconds, ends =
+		BattleRules.battle(show.team, show.foes, log, taps, show.setup, arrivals, engaged)
 	if show.won and not won then
 		return false, "shield"
 	end
 	show.taps, show.log, show.won, show.actions, show.seconds, show.ends = taps, log, won, actions, seconds, ends
+	show.arrivals, show.engaged = arrivals, engaged
 	local now = Workspace:GetServerTimeNow()
 	player:SetAttribute("ShieldAt", now + TAP_AHEAD) -- when it rises in the show
 	player:SetAttribute("ShieldReady", now + BattleRules.SHIELD_COOLDOWN)

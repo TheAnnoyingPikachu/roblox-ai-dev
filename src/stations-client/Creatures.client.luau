@@ -1281,11 +1281,30 @@ end
 
 -- Fights (decision 0042): a creature with a "MaxHp" attribute shows a health bar over it, and every
 -- change in its "Hp" floats a number: red for damage, green for healing. The server sets both.
+-- In a crowd (decision 0101) small hits on the same foe merge into one growing number, and at most
+-- MAX_NUMBERS float at once (a power hit always shows).
+local MAX_NUMBERS, MERGE_SECONDS = 12, 0.5
+local floating = 0
+local recent: { [Model]: { text: TextLabel, at: number, total: number } } = setmetatable({}, { __mode = "k" }) :: any
 local function floatNumber(model: Model, change: number)
 	local hit = model:FindFirstChild("Hit") :: BasePart?
 	if hit == nil then
 		return
 	end
+	local small = change < 0 and model:GetAttribute("HitPower") ~= 1
+	local last = recent[model]
+	if small and last and os.clock() - last.at < MERGE_SECONDS and last.text.Parent then
+		last.total += change
+		last.at = os.clock()
+		last.text.Text = tostring(last.total)
+		return
+	elseif small and floating >= MAX_NUMBERS then
+		return
+	end
+	floating += 1
+	task.delay(1.1, function()
+		floating -= 1
+	end)
 	-- a power hit's number is gold and bigger, a Perfect's or a combo's bigger still (decision 0097)
 	local power = change < 0 and model:GetAttribute("HitPower") == 1
 	local crit = power and model:GetAttribute("HitCrit") == 1
@@ -1311,6 +1330,9 @@ local function floatNumber(model: Model, change: number)
 	text.TextStrokeTransparency = 0
 	text.Parent = gui
 	gui.Parent = hit
+	if small then
+		recent[model] = { text = text, at = os.clock(), total = change }
+	end
 	if power then -- it pops in big and settles
 		local size = Instance.new("UIScale")
 		size.Scale = 1.6
