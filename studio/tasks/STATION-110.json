@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-110",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The fight screen: the shield button above the power plates with a shield icon, and the side dock down to the middle of the left edge while a fight is on.",
+  "inputs": [
+    "docs/decisions/0097-animal-stations-fight-feel.md"
+  ],
+  "dependencies": [
+    "STATION-105"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "tools/icons/stations_rewards.py",
+    "assets/stations/icons/shield.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-110.json"
+  ],
+  "tests": [
+    "StationRewards.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The shield button sits above the health bars, showing a shield icon and its F key",
+    "The Menu button and its column sit at the middle of the left edge during a fight and go back after"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-19: in wave 1 the shield (a blue shield with a paw, an F tag) stands above the three plates; the Menu button sits mid-left during the fight. Lune 759/759, selene clean.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-19: \"put the shield button above the health bars and bring the options menu closer to the center and also make the shield button icon a shield\". The options menu was read as the side dock (Menu)."
+}

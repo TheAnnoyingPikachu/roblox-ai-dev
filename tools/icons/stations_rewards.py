@@ -67,6 +67,14 @@ ICONS = {
 <path d="M50 54 L19 72 A36 36 0 0 1 19 36 Z" fill="#b06df2"/><path d="M50 54 L19 36 A36 36 0 0 1 50 18 Z" fill="url(#rainbow)"/>
 <circle cx="50" cy="54" r="36" fill="none" stroke="{INK}" stroke-width="5"/><circle cx="50" cy="54" r="9" fill="#ffb52e" stroke="{INK}" stroke-width="4"/>
 <path d="M42 4 h16 l-8 14z" fill="#e2507a" stroke="{INK}" stroke-width="4" stroke-linejoin="round"/>""",
+    "shield": f"""<ellipse cx="50" cy="93" rx="26" ry="5" fill="{INK}" opacity=".22"/>
+<path d="M50 6 L86 18 L86 46 C86 70 70 84 50 94 C30 84 14 70 14 46 L14 18 Z" fill="#4aa6e8" stroke="{INK}" stroke-width="6" stroke-linejoin="round"/>
+<path d="M50 16 L77 25 L77 46 C77 64 65 76 50 84 C35 76 23 64 23 46 L23 25 Z" fill="#7cc4f2"/>
+<path d="M50 16 L77 25 L77 46 C77 64 65 76 50 84 Z" fill="#3f93d1" opacity=".55"/>
+<g fill="#fff" stroke="{INK}" stroke-width="3">
+<ellipse cx="50" cy="58" rx="11" ry="9"/><ellipse cx="36" cy="44" rx="5" ry="6"/><ellipse cx="45" cy="36" rx="5" ry="6"/>
+<ellipse cx="55" cy="36" rx="5" ry="6"/><ellipse cx="64" cy="44" rx="5" ry="6"/></g>
+<path d="M28 26 l9 -3" stroke="#fff" stroke-width="5" stroke-linecap="round"/>""",
     "gift": f"""<ellipse cx="50" cy="90" rx="34" ry="5" fill="{INK}" opacity=".22"/>
 <g stroke="{INK}" stroke-width="5" stroke-linejoin="round">
 <rect x="18" y="44" width="64" height="42" rx="4" fill="#5cbf4a"/><rect x="14" y="32" width="72" height="15" rx="4" fill="#78d468"/>

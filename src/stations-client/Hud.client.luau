@@ -2172,6 +2172,19 @@ began = function(n: number)
 	music(if n % LevelRules.BOSS_EVERY == 0 then "boss" else "fight")
 end
 
+-- The power plates' column, bottom right (decision 0092), with the shield at its top (decision 0097).
+local plates = Instance.new("Frame")
+plates.Name = "PowerPlates"
+plates.BackgroundTransparency = 1
+plates.AnchorPoint, plates.Position = Vector2.new(1, 1), UDim2.new(1, -14, 1, -20)
+plates.Size, plates.AutomaticSize = UDim2.fromOffset(224, 0), Enum.AutomaticSize.Y
+plates.Visible = false
+plates.ZIndex = 4
+local plateList = Style.list(plates, 12)
+plateList.VerticalAlignment = Enum.VerticalAlignment.Bottom
+plates.Parent = root
+plateList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
 -- Fight feel (decision 0097) ---------------------------------------------------------------------------
 -- Words that pop over the fight (PERFECT!, a combo, BLOCKED!, a power attack's name), a flash and a
 -- shake, the boss's bar across the top, the shield button and the warnings before enemy power attacks,
@@ -2345,10 +2358,17 @@ do
 
 	-- the shield: a round button left of the plates (or F); it pulses while an enemy power attack is coming
 	local tellUntil = 0
-	local shieldButton = Style.button(root, "SHIELD\n[F]", function() end, "ghost", UDim2.fromOffset(104, 104))
-	shieldButton.AnchorPoint, shieldButton.Position = Vector2.new(1, 1), UDim2.new(1, -252, 1, -20)
-	shieldButton.Visible, shieldButton.TextSize, shieldButton.ZIndex = false, 20, 4
-	Style.radius(shieldButton, 52)
+	local shieldButton = Style.button(plates, "", function() end, "ghost", UDim2.fromOffset(96, 96))
+	shieldButton.Name, shieldButton.LayoutOrder = "Shield", 0
+	shieldButton.Visible, shieldButton.TextSize, shieldButton.ZIndex = false, 30, 4
+	Style.radius(shieldButton, 48)
+	local shieldIcon = Instance.new("ImageLabel")
+	shieldIcon.BackgroundTransparency, shieldIcon.Image = 1, "rbxassetid://97488070836179" -- assets/stations/icons/shield.png
+	shieldIcon.AnchorPoint, shieldIcon.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.46)
+	shieldIcon.Size, shieldIcon.ZIndex = UDim2.fromScale(0.72, 0.72), 5
+	shieldIcon.Parent = shieldButton
+	local shieldKey = Style.chip(shieldButton, "F", C.ink, Color3.new(1, 1, 1))
+	shieldKey.AnchorPoint, shieldKey.Position, shieldKey.ZIndex = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, 4), 6
 	local shieldLook = ""
 	local function raiseShield()
 		if not shieldButton.Visible then
@@ -2500,8 +2520,15 @@ do
 	local warned: { [Model]: boolean } = {}
 	-- Every tick of the fight (from the plates' loop): hook new enemies' warnings, the boss's bar, the
 	-- shield button, and the music building as the enemies fall.
+	local docked = false
 	fightTick = function(folder: Instance?, showing: boolean)
 		shieldButton.Visible = showing
+		if showing ~= docked then -- the dock (the Menu button and its column) sits mid-left while a fight is on
+			docked = showing
+			TweenService:Create(nav, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+				Position = if showing then UDim2.new(0, 0, 0.5, -210) else UDim2.new(),
+			}):Play()
+		end
 		-- knockouts and the power bar
 		local us, them = 0, 0
 		for _, m in if folder then folder:GetChildren() else {} do
@@ -2596,7 +2623,8 @@ do
 			else "ready"
 		if look ~= shieldLook then
 			shieldLook = look
-			shieldButton.Text = if wait > 0 then `{math.ceil(wait)}` else "SHIELD\n[F]"
+			shieldButton.Text = if wait > 0 then `{math.ceil(wait)}` else ""
+			shieldIcon.ImageTransparency = if wait > 0 then 0.75 else 0
 			Style.kind(
 				shieldButton,
 				if wait > 0
@@ -2612,16 +2640,6 @@ end
 -- Power attacks in a fight (decision 0092): a plate for each of the team's animals, bottom right, with
 -- its health and its power meter. A full meter glows; tap the plate (or press its number key) to fire.
 -- The server decides: a refused tap does nothing.
-local plates = Instance.new("Frame")
-plates.Name = "PowerPlates"
-plates.BackgroundTransparency = 1
-plates.AnchorPoint, plates.Position = Vector2.new(1, 1), UDim2.new(1, -14, 1, -20)
-plates.Size, plates.AutomaticSize = UDim2.fromOffset(224, 0), Enum.AutomaticSize.Y
-plates.Visible = false
-plates.ZIndex = 4
-local plateList = Style.list(plates, 12)
-plateList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-plates.Parent = root
 
 type Plate = {
 	button: TextButton,
