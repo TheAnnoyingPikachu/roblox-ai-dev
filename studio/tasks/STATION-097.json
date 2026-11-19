@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-097",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0090: a skinned Lion with its own skeleton and clips, made outside ForgeGUI, uploaded to test that Roblox keeps its bones.",
+  "inputs": [
+    "docs/decisions/0090-animal-stations-skinned-creatures-trial.md"
+  ],
+  "dependencies": [
+    "STATION-096"
+  ],
+  "files": [
+    "tools/blender/stations/skin.py",
+    "tools/blender/stations/clips/*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/skin_*",
+    "src/shared/StationAssets.luau",
+    "src/stations/Creatures.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0090-animal-stations-skinned-creatures-trial.md",
+    "studio/tasks/STATION-097.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The uploaded skin_lion loads in Studio with its 19 bones",
+    "Its clips play on the bones in Studio"
+  ],
+  "verification": "Lune 721/721, selene clean. Blender 5.2: 19 bones, 10,210 faces, previews of all seven clips.",
+  "output_artifacts": [
+    "assets/stations/skin_lion.fbx"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "A trial: nothing in the game uses skin_lion yet."
+}

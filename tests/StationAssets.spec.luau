@@ -194,8 +194,9 @@ describe("StationAssets", function()
 				or kind == "kit_"
 				or kind == "home"
 				or kind == "scen"
+				or kind == "skin"
 			then
-				continue -- scenery_: still props (decision 0085)
+				continue -- scenery_: still props (decision 0085); skin_: one skinned mesh (decision 0090)
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do
 				expect(entry.parts[`{name}_{piece}`] == nil).toBe(false)

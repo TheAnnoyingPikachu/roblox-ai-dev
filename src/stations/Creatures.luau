@@ -411,6 +411,7 @@ function Creatures.publishPortraits()
 			or kind == "kit_"
 			or kind == "home"
 			or kind == "scen"
+			or kind == "skin" -- a skinned trial (decision 0090), not in the game yet
 		then -- the pieces of places, and scenery, are never pictured
 			continue
 		end

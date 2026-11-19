@@ -6328,5 +6328,128 @@
       ]
     },
     "joints": {}
+  },
+  "skin_lion": {
+    "fbx": "assets/stations/skin_lion.fbx",
+    "png": "assets/stations/skin_lion.png",
+    "preview": "build/blender/stations/skin/lion_idle.mp4",
+    "size_studs": [
+      5.02,
+      7.45,
+      13.66
+    ],
+    "tris": 10210,
+    "parts": {
+      "skin_lion": 10210
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin.py",
+    "notes": "Skinned Lion (decision 0090, a trial): one ForgeGUI mesh on a 19-bone skeleton; clips in clips/lion.json.",
+    "glow": {},
+    "centres": {
+      "skin_lion": [
+        0.0,
+        3.725,
+        0.0
+      ]
+    },
+    "joints": {},
+    "bones": {
+      "hips": [
+        0.0,
+        4.582,
+        -2.173
+      ],
+      "chest": [
+        0.0,
+        4.582,
+        -0.476
+      ],
+      "neck": [
+        0.0,
+        4.582,
+        1.22
+      ],
+      "head": [
+        0.0,
+        4.635,
+        2.454
+      ],
+      "tail1": [
+        0.024,
+        3.108,
+        -5.214
+      ],
+      "tail2": [
+        0.025,
+        2.697,
+        -5.751
+      ],
+      "tail3": [
+        0.027,
+        2.286,
+        -6.287
+      ],
+      "fl_upper": [
+        0.897,
+        2.793,
+        1.036
+      ],
+      "fl_lower": [
+        0.897,
+        1.592,
+        1.036
+      ],
+      "fl_paw": [
+        0.897,
+        0.391,
+        1.036
+      ],
+      "fr_upper": [
+        -0.876,
+        2.734,
+        1.405
+      ],
+      "fr_lower": [
+        -0.876,
+        1.561,
+        1.405
+      ],
+      "fr_paw": [
+        -0.876,
+        0.389,
+        1.405
+      ],
+      "bl_upper": [
+        0.35,
+        2.834,
+        -2.182
+      ],
+      "bl_lower": [
+        0.35,
+        1.619,
+        -2.182
+      ],
+      "bl_paw": [
+        0.35,
+        0.403,
+        -2.182
+      ],
+      "br_upper": [
+        -0.397,
+        2.854,
+        -2.164
+      ],
+      "br_lower": [
+        -0.397,
+        1.642,
+        -2.164
+      ],
+      "br_paw": [
+        -0.397,
+        0.43,
+        -2.164
+      ]
+    }
   }
 }
