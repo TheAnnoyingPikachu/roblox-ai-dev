@@ -803,5 +803,15 @@
     "model": null,
     "decal": 113869157353737,
     "texture": null
+  },
+  "creature_tortoise_gemshell_forge": {
+    "model": 70813399383672,
+    "decal": 75398740039981,
+    "texture": null
+  },
+  "creature_tortoise_gemshell_forge_rainbow": {
+    "model": null,
+    "decal": 125381856980803,
+    "texture": null
   }
 }
