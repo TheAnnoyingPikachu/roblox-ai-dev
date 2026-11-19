@@ -2347,7 +2347,7 @@ do
 	Style.round(bossBar, 14)
 	Style.stroke(bossBar, C.ink, 3)
 	bossBar.AnchorPoint, bossBar.Position, bossBar.Visible, bossBar.ZIndex =
-		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 34), false, 6
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14), false, 6
 	local bossName = Style.text(bossBar, "", 20, C.hex, UDim2.new(1, -24, 0, 26))
 	bossName.Position, bossName.TextXAlignment = UDim2.fromOffset(12, 6), Enum.TextXAlignment.Center
 	local bossHp, setBossHp = Style.bar(bossBar, UDim2.new(1, -24, 0, 16), C.bad)
@@ -2459,6 +2459,10 @@ do
 	-- knockouts (decision 0101): a counter that pops, and coins out of each fallen foe to the counter
 	local koText, koEdge, koScale = bigWords(UDim2.new(0.5, 0, 0, 120), 34, C.ink)
 	koText.TextColor3 = C.gold
+	-- in the top right corner, out of the fight's way
+	koText.AnchorPoint, koText.Position, koText.Size =
+		Vector2.new(1, 0), UDim2.new(1, -22, 0, 108), UDim2.fromOffset(220, 54)
+	koText.TextXAlignment = Enum.TextXAlignment.Right
 	local kos = 0
 	local fallen: { [Model]: boolean } = {}
 	local function knockout(m: Model)
@@ -2492,10 +2496,10 @@ do
 			fly:Play()
 		end
 	end
-	-- the power bar: each side's power still standing (its fighters' power x their HP left), small, at the
-	-- top of the screen above the boss bar and the KO counter, clear of the fighters' own bars
+	-- the power bar: each side's power still standing (its fighters' power x their HP left), small, low in
+	-- the middle just above where the wave's result panel opens, clear of the fighters' own bars
 	local tug = Style.frame(root, UDim2.fromOffset(280, 13), C.bad)
-	tug.AnchorPoint, tug.Position, tug.Visible, tug.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 12), false, 6
+	tug.AnchorPoint, tug.Position, tug.Visible, tug.ZIndex = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -214), false, 6
 	Style.round(tug, 7)
 	Style.stroke(tug, C.ink, 3)
 	local ourSide = Style.frame(tug, UDim2.fromScale(0.5, 1), C.good)

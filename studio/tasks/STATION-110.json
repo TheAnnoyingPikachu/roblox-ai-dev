@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "The fight screen: the shield button above the power plates with a shield icon, and the side dock down to the middle of the left edge while a fight is on, and the wave result panel (with its three boon cards) centred along the bottom; the dock centred on the left edge so its open column never runs off the screen, and the power bar smaller at the top.",
+  "objective": "The fight screen: the shield button above the power plates with a shield icon; the dock centred on the left edge in a fight, its open column on screen; the wave result panel (with its three boon cards) centred along the bottom; the power bar small, just above the result panel; the KO counter in the top right corner.",
   "inputs": [
     "docs/decisions/0097-animal-stations-fight-feel.md"
   ],
@@ -25,11 +25,12 @@
     "The shield button sits above the health bars, showing a shield icon and its F key",
     "The wave result panel and its three boon cards sit centred along the bottom of the screen, clear of the power plates",
     "During a fight the Menu button and its open column are centred on the left edge and the whole column is on screen",
-    "The power bar is 280 x 13 at the top centre, above the boss bar and the KO counter"
+    "The power bar is 280 x 13, low in the middle, just above where the wave result panel opens",
+    "The KO counter sits in the top right corner, under the Admin button, out of the middle of the screen"
   ],
-  "verification": "Studio, local build, stamp `dev`, 2026-11-19: in wave 1 the shield (a blue shield with a paw, an F tag) stands above the three plates; the Menu button sits mid-left during the fight. Lune 759/759, selene clean.",
+  "verification": "Studio, local build, stamp `dev`, 2026-11-19: wave 1 with jackal, tortoise and meerkat: the dock open in the fight ends above the bottom (Gifts on screen); the power bar sits just above the result panel, which is centred with three boons; \"4 KO!\" shows in the top right. Lune 759/759, selene clean.",
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-19: \"put the shield button above the health bars and bring the options menu closer to the center and also make the shield button icon a shield\". The options menu was read as the side dock (Menu). Then: \"also move the wave clear and three options more to the center of the screen when youre fighting\": the panel was pushed left of the plates; it is now centred and narrower (at most 840 wide, 260 clear each side). Then: \"move the drop down menu up as it seems to sink when youre fighting and also adjust the position of the power level bar and make a bit smaller\": the open column ran off the bottom (Gifts cut); it is now centred from the Menu button to its foot. The power bar was 360 x 16 under the boss bar, crowding the KO counter and the fighters' bars; it is now 280 x 13 at the top, the boss bar under it."
+  "notes": "SHANNON, 2026-11-19: \"put the shield button above the health bars and bring the options menu closer to the center and also make the shield button icon a shield\". The options menu was read as the side dock (Menu). Then: \"also move the wave clear and three options more to the center of the screen when youre fighting\": the panel was pushed left of the plates; it is now centred and narrower (at most 840 wide, 260 clear each side). Then: \"move the drop down menu up as it seems to sink when youre fighting and also adjust the position of the power level bar and make a bit smaller\": the open column ran off the bottom (Gifts cut); it is now centred from the Menu button to its foot. The power bar was 360 x 16 under the boss bar, crowding the KO counter and the fighters' bars; it is now 280 x 13 at the top, the boss bar under it. Then: \"move the power level comparison to be above the wave clear box, also move the KO counter out the middle of the screen to somewhere more convenient\": the power bar now stands 214 above the bottom (the panel, with its boons, is about 185 tall); the KO counter is right-aligned in the top right corner; the boss bar is back at the top."
 }
