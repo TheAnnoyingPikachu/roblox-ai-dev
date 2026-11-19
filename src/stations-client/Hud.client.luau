@@ -2359,7 +2359,7 @@ do
 	-- the shield: a round button left of the plates (or F); it pulses while an enemy power attack is coming
 	local tellUntil = 0
 	local shieldButton = Style.button(plates, "", function() end, "ghost", UDim2.fromOffset(96, 96))
-	shieldButton.Name, shieldButton.LayoutOrder = "Shield", 0
+	shieldButton.Name, shieldButton.LayoutOrder = "Shield", -1
 	shieldButton.Visible, shieldButton.TextSize, shieldButton.ZIndex = false, 30, 4
 	Style.radius(shieldButton, 48)
 	local shieldIcon = Instance.new("ImageLabel")
@@ -2496,10 +2496,10 @@ do
 			fly:Play()
 		end
 	end
-	-- the power bar: each side's power still standing (its fighters' power x their HP left), small, low in
-	-- the middle just above where the wave's result panel opens, clear of the fighters' own bars
-	local tug = Style.frame(root, UDim2.fromOffset(280, 13), C.bad)
-	tug.AnchorPoint, tug.Position, tug.Visible, tug.ZIndex = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -214), false, 6
+	-- the power bar: each side's power still standing (its fighters' power x their HP left), in the plates'
+	-- column between the shield and the team's plates, as wide as a plate
+	local tug = Style.frame(plates, UDim2.fromOffset(224, 13), C.bad)
+	tug.Name, tug.LayoutOrder, tug.Visible, tug.ZIndex = "PowerBar", 0, false, 6
 	Style.round(tug, 7)
 	Style.stroke(tug, C.ink, 3)
 	local ourSide = Style.frame(tug, UDim2.fromScale(0.5, 1), C.good)
