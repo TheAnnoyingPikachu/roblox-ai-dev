@@ -1457,27 +1457,15 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 	},
 	area_track_0_0 = {
-		size = { 138, 1.88, 90.88 },
+		size = { 138, 1.73, 90.88 },
 		parts = { "area_track_0_0_body" },
 		glow = {},
 		centres = {
-			area_track_0_0_body = { 0, 0.94, 5.44 },
+			area_track_0_0_body = { 0, 0.866, 5.44 },
 		},
 		joints = {},
 		model = 99749246386026,
 		decal = 91966135132745,
-		texture = nil,
-	},
-	area_track_0_1 = {
-		size = { 30, 13.75, 1.58 },
-		parts = { "area_track_0_1_body" },
-		glow = {},
-		centres = {
-			area_track_0_1_body = { 0, 6.875, 60.037 },
-		},
-		joints = {},
-		model = 74608676167484,
-		decal = 85365633087073,
 		texture = nil,
 	},
 	area_track_1_5 = {
@@ -1494,13 +1482,13 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.625,
 	},
 	area_track_2_5 = {
-		size = { 146.25, 37.62, 103.08 },
+		size = { 146.25, 28.62, 103.08 },
 		parts = { "area_track_2_5_body", "area_track_2_5_body_glow" },
 		glow = {
 			area_track_2_5_body_glow = { 255, 214, 130 },
 		},
 		centres = {
-			area_track_2_5_body = { 0, 18.812, 11.459 },
+			area_track_2_5_body = { 0, 14.312, 11.459 },
 			area_track_2_5_body_glow = { 0, 11.625, 61 },
 		},
 		joints = {},
@@ -1563,18 +1551,6 @@ local StationAssets: { [string]: Asset } = {
 		decal = 129410763716279,
 		texture = nil,
 	},
-	area_gym_0_1 = {
-		size = { 42.47, 13.75, 101.24 },
-		parts = { "area_gym_0_1_body" },
-		glow = {},
-		centres = {
-			area_gym_0_1_body = { 6.237, 6.875, 10.203 },
-		},
-		joints = {},
-		model = 131191561437255,
-		decal = 96019717118238,
-		texture = nil,
-	},
 	area_gym_0_5 = {
 		size = { 13.85, 11.78, 12.21 },
 		parts = { "area_gym_0_5_body" },
@@ -1602,13 +1578,13 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.625,
 	},
 	area_gym_2_5 = {
-		size = { 134.9, 37.83, 109.25 },
+		size = { 134.9, 28.83, 109.25 },
 		parts = { "area_gym_2_5_body", "area_gym_2_5_body_glow" },
 		glow = {
 			area_gym_2_5_body_glow = { 255, 214, 130 },
 		},
 		centres = {
-			area_gym_2_5_body = { -2.55, 18.916, 8.375 },
+			area_gym_2_5_body = { -2.55, 14.416, 8.375 },
 			area_gym_2_5_body_glow = { 0, 11.833, 61 },
 		},
 		joints = {},
@@ -1665,27 +1641,15 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.625,
 	},
 	area_pool_0_0 = {
-		size = { 114.26, 2.8, 90.88 },
+		size = { 114.26, 3.19, 90.88 },
 		parts = { "area_pool_0_0_body" },
 		glow = {},
 		centres = {
-			area_pool_0_0_body = { -2.487, 1.402, 5.44 },
+			area_pool_0_0_body = { -2.487, 1.593, 5.44 },
 		},
 		joints = {},
 		model = 98423580906953,
 		decal = 95651034436995,
-		texture = nil,
-	},
-	area_pool_0_1 = {
-		size = { 30, 13.75, 1.58 },
-		parts = { "area_pool_0_1_body" },
-		glow = {},
-		centres = {
-			area_pool_0_1_body = { 0, 6.875, 60.037 },
-		},
-		joints = {},
-		model = 126636805387967,
-		decal = 114032080074607,
 		texture = nil,
 	},
 	area_pool_1_5 = {
@@ -1702,20 +1666,20 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.625,
 	},
 	area_pool_2_5 = {
-		size = { 175.72, 37.66, 128.99 },
+		size = { 175.31, 28.66, 127.89 },
 		parts = { "area_pool_2_5_body", "area_pool_2_5_body_glow" },
 		glow = {
 			area_pool_2_5_body_glow = { 255, 214, 130 },
 		},
 		centres = {
-			area_pool_2_5_body = { 0, 18.828, -1.494 },
-			area_pool_2_5_body_glow = { 0, 11.657, 61 },
+			area_pool_2_5_body = { -2.065, 14.329, -0.727 },
+			area_pool_2_5_body_glow = { 0, 11.659, 61 },
 		},
 		joints = {},
 		model = 100858221509774,
 		decal = 101677943104972,
 		texture = nil,
-		lift = 0.593,
+		lift = 0.591,
 	},
 	area_pool_3_5 = {
 		size = { 126.3, 25.88, 76.18 },
@@ -1771,18 +1735,6 @@ local StationAssets: { [string]: Asset } = {
 		decal = 102562661406417,
 		texture = nil,
 	},
-	area_library_0_1 = {
-		size = { 30, 13.75, 1.58 },
-		parts = { "area_library_0_1_body" },
-		glow = {},
-		centres = {
-			area_library_0_1_body = { 0, 6.875, 60.037 },
-		},
-		joints = {},
-		model = 75323269734559,
-		decal = 82152010085098,
-		texture = nil,
-	},
 	area_library_1_5 = {
 		size = { 151.54, 24.06, 110.63 },
 		parts = { "area_library_1_5_body", "area_library_1_5_body_glow" },
@@ -1800,14 +1752,14 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.568,
 	},
 	area_library_2_5 = {
-		size = { 152.25, 37.62, 123.15 },
+		size = { 152.25, 29.5, 123.15 },
 		parts = { "area_library_2_5_body", "area_library_2_5_body_glow", "area_library_2_5_body2_glow" },
 		glow = {
 			area_library_2_5_body_glow = { 255, 214, 130 },
 			area_library_2_5_body2_glow = { 60, 215, 225 },
 		},
 		centres = {
-			area_library_2_5_body = { 0, 18.812, 1.427 },
+			area_library_2_5_body = { 0, 14.75, 1.427 },
 			area_library_2_5_body_glow = { 0, 11.625, 61 },
 			area_library_2_5_body2_glow = { 0, 12.625, 19.375 },
 		},
@@ -1895,29 +1847,17 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.625,
 	},
 	area_spring_0_0 = {
-		size = { 114.26, 14.3, 90.88 },
+		size = { 114.26, 13.99, 90.88 },
 		parts = { "area_spring_0_0_body" },
 		glow = {},
 		centres = {
-			area_spring_0_0_body = { -2.487, 7.152, 5.44 },
+			area_spring_0_0_body = { -2.487, 6.995, 5.44 },
 		},
 		joints = {},
 		model = 118952523577373,
 		decal = 108660846168850,
 		texture = nil,
-		lift = -2.143,
-	},
-	area_spring_0_1 = {
-		size = { 30, 13.75, 1.58 },
-		parts = { "area_spring_0_1_body" },
-		glow = {},
-		centres = {
-			area_spring_0_1_body = { 0, 6.875, 60.037 },
-		},
-		joints = {},
-		model = 122618037795472,
-		decal = 127901483919458,
-		texture = nil,
+		lift = -1.864,
 	},
 	area_spring_1_5 = {
 		size = { 113, 13.91, 113 },
@@ -1949,14 +1889,14 @@ local StationAssets: { [string]: Asset } = {
 		lift = 7.625,
 	},
 	area_spring_2_5 = {
-		size = { 131, 37.62, 127.05 },
+		size = { 131, 28.62, 127.16 },
 		parts = { "area_spring_2_5_body", "area_spring_2_5_body_glow", "area_spring_2_5_body2_glow" },
 		glow = {
 			area_spring_2_5_body_glow = { 150, 240, 226 },
 			area_spring_2_5_body2_glow = { 255, 214, 130 },
 		},
 		centres = {
-			area_spring_2_5_body = { 9.25, 18.812, -0.523 },
+			area_spring_2_5_body = { 9.25, 14.312, -0.581 },
 			area_spring_2_5_body_glow = { 0, 0.625, -2.5 },
 			area_spring_2_5_body2_glow = { 0, 11.625, 61 },
 		},
@@ -2035,18 +1975,6 @@ local StationAssets: { [string]: Asset } = {
 		decal = 84001703555709,
 		texture = nil,
 	},
-	area_guard_0_1 = {
-		size = { 30, 13.75, 1.58 },
-		parts = { "area_guard_0_1_body" },
-		glow = {},
-		centres = {
-			area_guard_0_1_body = { 0, 6.875, 60.037 },
-		},
-		joints = {},
-		model = 88129240635330,
-		decal = 120076193751962,
-		texture = nil,
-	},
 	area_guard_0_5 = {
 		size = { 27.5, 16, 6.5 },
 		parts = { "area_guard_0_5_body" },
@@ -2074,13 +2002,13 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.281,
 	},
 	area_guard_2_5 = {
-		size = { 107.01, 37.97, 96 },
+		size = { 106.62, 28.97, 96 },
 		parts = { "area_guard_2_5_body", "area_guard_2_5_body_glow" },
 		glow = {
 			area_guard_2_5_body_glow = { 255, 214, 130 },
 		},
 		centres = {
-			area_guard_2_5_body = { -23.493, 18.984, 15 },
+			area_guard_2_5_body = { -23.692, 14.484, 15 },
 			area_guard_2_5_body_glow = { 0, 11.969, 61 },
 		},
 		joints = {},
@@ -2729,6 +2657,19 @@ local StationAssets: { [string]: Asset } = {
 		model = 79560426232029,
 		decal = 119688942868167,
 		texture = nil,
+	},
+	area_gym_0_1 = {
+		size = { 16.28, 5.89, 8.07 },
+		parts = { "area_gym_0_1_body" },
+		glow = {},
+		centres = {
+			area_gym_0_1_body = { 20.515, 2.946, -36.704 },
+		},
+		joints = {},
+		model = 131191561437255,
+		decal = 96019717118238,
+		texture = nil,
+		lift = 0.789,
 	},
 }
 

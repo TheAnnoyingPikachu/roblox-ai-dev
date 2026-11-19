@@ -25,6 +25,9 @@
     "tools/blender/stations/uploaded.json",
     "assets/stations/home_*",
     "src/shared/StationAssets.luau",
+    "tools/blender/stations/scenes/training.py",
+    "tools/blender/stations/assets/areas.py",
+    "assets/stations/area_*",
     "studio/tasks/STATION-098.json"
   ],
   "tests": [

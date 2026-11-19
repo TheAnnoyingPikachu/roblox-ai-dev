@@ -289,11 +289,6 @@
     "decal": 91966135132745,
     "texture": null
   },
-  "area_track_0_1": {
-    "model": 74608676167484,
-    "decal": 85365633087073,
-    "texture": null
-  },
   "area_track_1_5": {
     "model": 139528385303635,
     "decal": 116732262439853,
@@ -364,11 +359,6 @@
     "decal": 95651034436995,
     "texture": null
   },
-  "area_pool_0_1": {
-    "model": 126636805387967,
-    "decal": 114032080074607,
-    "texture": null
-  },
   "area_pool_1_5": {
     "model": 79550997997021,
     "decal": 108613381120638,
@@ -399,11 +389,6 @@
     "decal": 102562661406417,
     "texture": null
   },
-  "area_library_0_1": {
-    "model": 75323269734559,
-    "decal": 82152010085098,
-    "texture": null
-  },
   "area_library_1_5": {
     "model": 133152182292749,
     "decal": 104352545703847,
@@ -432,11 +417,6 @@
   "area_spring_0_0": {
     "model": 118952523577373,
     "decal": 108660846168850,
-    "texture": null
-  },
-  "area_spring_0_1": {
-    "model": 122618037795472,
-    "decal": 127901483919458,
     "texture": null
   },
   "area_spring_1_5": {
@@ -472,11 +452,6 @@
   "area_guard_0_0": {
     "model": 118531674548566,
     "decal": 84001703555709,
-    "texture": null
-  },
-  "area_guard_0_1": {
-    "model": 88129240635330,
-    "decal": 120076193751962,
     "texture": null
   },
   "area_guard_0_5": {

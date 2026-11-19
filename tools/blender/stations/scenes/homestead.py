@@ -196,10 +196,10 @@ def greenhouse(x, y, cols, rows, t, rng):
         top = GH_TOP + j * GH_RISE
         yj = front + 1.6 + j * GH_ROW
         box((cols * GH_COL + 0.6, GH_ROW + (0.0 if j < rows - 1 else 0.4), top - 0.6), (x, yj, 0.6), WOOD_WARM, rng)
-        box((cols * GH_COL + 0.4, GH_ROW - 0.2, 0.18), (x, yj, top - 0.18), HAY, rng)
+        box((cols * GH_COL + 0.4, GH_ROW - 0.2, 0.12), (x, yj, top), HAY, rng)  # on the tray, not level with its top (flickered)
         for i in range(cols):
             xi = x - (cols - 1) * GH_COL / 2 + i * GH_COL
-            post(0.85, 0.22, (xi, yj, top - 0.05), HAY, rng, n=8, r2=1.0)
+            post(0.85, 0.22, (xi, yj, top + 0.06), HAY, rng, n=8, r2=1.0)
             if LIVE:
                 egg((xi, yj, top + 0.1), rng, i + j, s=0.6)
     # heat lamps hanging over the trays
