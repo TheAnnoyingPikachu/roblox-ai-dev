@@ -178,12 +178,18 @@ end
 
 -- Small things ---------------------------------------------------------------------------------------
 
--- A short wooden post with a hanging lantern.
+-- A lamp post with a hanging lantern: the same one the buildings' models carry (stage.py `lantern`, its
+-- default height), so every lamp round the middle of the ranch matches: a dark metal post on a round
+-- foot, an arm, and a round glowing lantern with a cap and a base.
+local LAMP_METAL = Color3.fromRGB(40, 36, 48) -- stage.py's INK
 local function lantern(f: Instance, base: Vector3)
-	pillar(f, base, 5.4, 0.28, WOOD_DARK, M.Wood)
-	part(f, V(1.6, 0.3, 0.3), base + V(0.6, 5.1, 0), WOOD_DARK, M.Wood)
-	local light = part(f, V(0.9, 1.2, 0.9), base + V(1.2, 4.2, 0), WARM, M.Neon)
-	part(f, V(1.25, 0.25, 1.25), base + V(1.2, 4.95, 0), INK, M.Metal)
+	local h, top = 6, 0.5 + 6 -- the post's height above its foot, and the post's top
+	pillar(f, base, 0.5, 0.5, LAMP_METAL, M.Metal)
+	pillar(f, base + V(0, 0.5, 0), h, 0.18, LAMP_METAL, M.Metal)
+	part(f, V(1.5, 0.16, 0.16), base + V(0.6, top + 0.3, 0), LAMP_METAL, M.Metal)
+	local light = pillar(f, base + V(1.2, top - 0.8, 0), 0.9, 0.42, WARM, M.Neon)
+	pillar(f, base + V(1.2, top + 0.1, 0), 0.3, 0.56, LAMP_METAL, M.Metal)
+	pillar(f, base + V(1.2, top - 0.9, 0), 0.12, 0.5, LAMP_METAL, M.Metal)
 	glow(light, WARM, 16, 1.1)
 end
 
