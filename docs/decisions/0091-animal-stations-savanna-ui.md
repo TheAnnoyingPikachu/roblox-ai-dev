@@ -20,6 +20,10 @@ artifacts on 2026-11-19):
   game of each tier"); the picture changes as the building does.
 - Eggs: the Eggs menu starts eggs and shows every timer from anywhere; a ready egg opens only at the
   hatchery, as before. The menu's "Show me the way" draws a line to the egg's nest.
+- The Egg Cellar is a hillside burrow (SHANNON, 2026-11-19: "go with the hillside bungalow design"), from
+  the Egg Cellar concepts page: a round door in a grassy hill; then round windows, a step and a chimney;
+  then a stone arch with two doors, lanterns and an egg-shaped skylight. The greenhouse stands beside it at
+  every level, and the Egg Storage pictures show both.
 - Button feel: buttons lift under the pointer, sink onto their shadow when pressed and spring back; a
   greyed-out button shakes. Seven UI sounds made with ForgeGUI, and a ka-ching on every purchase (an egg
   or an upgrade).
