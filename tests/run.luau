@@ -14,6 +14,9 @@ local SPECS = {
 	["StationRewards.spec.luau"] = function()
 		require("./StationRewards.spec")
 	end,
+	["WaveRuns.spec.luau"] = function()
+		require("./WaveRuns.spec")
+	end,
 	["RewardRules.spec.luau"] = function()
 		require("./RewardRules.spec")
 	end,

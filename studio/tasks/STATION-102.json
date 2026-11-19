@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-102",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0096: power scores for every animal and enemy, shown in the menus, with a calculator page.",
+  "inputs": [
+    "docs/decisions/0096-animal-stations-power-scores.md"
+  ],
+  "dependencies": [
+    "STATION-101"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/BattleRules.spec.luau",
+    "docs/decisions/0096-animal-stations-power-scores.md",
+    "studio/tasks/STATION-102.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every animal card and page shows its power",
+    "Every enemy in the Waves menu shows its power, with the team-against-wave match-up",
+    "The side with more power wins at least 95% of the test fights"
+  ],
+  "verification": "",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": ""
+}

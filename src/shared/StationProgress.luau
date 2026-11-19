@@ -63,6 +63,8 @@ export type Profile = {
 	mill: number?, -- when the Windmill was last emptied (os.time); nil without one
 	boosts: Boosts,
 	rewards: Rewards,
+	stars: string, -- the best stars won on each wave (decision 0097): character n is wave n's, "0" to "3"
+	chests: number, -- star chests opened (one is due every CHEST_STARS stars)
 }
 
 StationProgress.VERSION = 1
@@ -82,6 +84,8 @@ StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)
 local MAX_TIME = 1e12
 StationProgress.MAX_WINDOWS = 16 -- boost windows a save keeps (the oldest go)
 StationProgress.MAX_PENDING = 20 -- eggs won that wait for room
+StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
+StationProgress.CHEST_STARS = 15
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
 function StationProgress.defaults(_now: number): Profile
@@ -110,6 +114,8 @@ function StationProgress.defaults(_now: number): Profile
 			pity = 0,
 			pending = {},
 		},
+		stars = "",
+		chests = 0,
 	}
 end
 
@@ -293,6 +299,38 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 				table.insert(w.pending, { egg = e.egg, animal = animal })
 			end
 		end
+	end
+	if type(record.stars) == "string" then
+		p.stars = string.sub(string.gsub(record.stars, "[^0-3]", "0"), 1, StationProgress.MAX_STAR_WAVES)
+	end
+	p.chests = int(record.chests, 0, 1e6, 0)
+	return p
+end
+
+-- Stars (decision 0097): the best won on wave `wave`, all of them, and the star chests due.
+function StationProgress.starsOf(p: Profile, wave: number): number
+	return tonumber(string.sub(p.stars, wave, wave)) or 0
+end
+function StationProgress.starTotal(p: Profile): number
+	local sum = 0
+	for c in string.gmatch(p.stars, "%d") do
+		sum += tonumber(c) :: number
+	end
+	return sum
+end
+function StationProgress.chestsDue(p: Profile): number
+	return math.max(0, StationProgress.starTotal(p) // StationProgress.CHEST_STARS - p.chests)
+end
+
+-- Record `n` stars won on wave `wave`, keeping the best.
+function StationProgress.setStars(p: Profile, wave: number, n: number): Profile
+	if wave < 1 or wave > StationProgress.MAX_STAR_WAVES or wave ~= math.floor(wave) then
+		return p
+	end
+	n = math.clamp(math.floor(n), 0, 3)
+	if n > StationProgress.starsOf(p, wave) then
+		local padded = p.stars .. string.rep("0", math.max(0, wave - #p.stars))
+		p.stars = string.sub(padded, 1, wave - 1) .. tostring(n) .. string.sub(padded, wave + 1)
 	end
 	return p
 end

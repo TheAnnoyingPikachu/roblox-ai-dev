@@ -69,10 +69,36 @@ function LevelRules.enemies(level: number): { Owned }
 	return team
 end
 
--- Whether `team` clears `level`, how many attacks the fight took and how many seconds. With `taps`
--- the player fires the power attacks (BattleRules.battle; `{}` is a fight nobody taps in).
-function LevelRules.fight(team: { Owned }, level: number, taps: { BattleRules.Tap }?): (boolean, number, number)
-	return BattleRules.battle(team, LevelRules.enemies(level), nil, taps)
+-- Whether `team` clears `level`, how many attacks the fight took, how many seconds, and the team's HP
+-- at the end (shares by slot). With `taps` the player fires the power attacks (BattleRules.battle; `{}`
+-- is a fight nobody taps in); `setup` is a run's carried HP and boons.
+function LevelRules.fight(
+	team: { Owned },
+	level: number,
+	taps: { BattleRules.Tap }?,
+	setup: BattleRules.Setup?
+): (boolean, number, number, { number })
+	return BattleRules.battle(team, LevelRules.enemies(level), nil, taps, setup)
+end
+
+-- Stars for a fight (decision 0097): one for the win, one when none of the team was knocked out, one for
+-- a win within `target` seconds (nil: any win). The target is `LevelRules.target`.
+function LevelRules.stars(won: boolean, knockedOut: boolean, seconds: number, target: number?): number
+	if not won then
+		return 0
+	end
+	return 1 + (if knockedOut then 0 else 1) + (if target == nil or seconds <= target then 1 else 0)
+end
+
+-- The time to beat for the third star: STAR_TIME of `par`, the seconds the fight takes with nobody
+-- tapping, or `par` itself when no power attack could be fired in it (`couldTap` false). Nil when nobody
+-- tapping would lose: then any win earns it.
+LevelRules.STAR_TIME = 0.95
+function LevelRules.target(par: number?, couldTap: boolean): number?
+	if par == nil then
+		return nil
+	end
+	return if couldTap then par * LevelRules.STAR_TIME else par
 end
 
 -- Coins for clearing `level` when the player's best cleared level is `best` (0 = none).

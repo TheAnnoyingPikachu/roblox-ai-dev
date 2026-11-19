@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-103",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0097, the rules: Perfect timing, combos, the shield, stars and star chests.",
+  "inputs": [
+    "docs/decisions/0097-animal-stations-fight-feel.md"
+  ],
+  "dependencies": [
+    "STATION-102"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/StationProgress.luau",
+    "src/shared/StationRewards.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/StationRewards.spec.luau",
+    "docs/decisions/0097-animal-stations-fight-feel.md",
+    "studio/tasks/STATION-103.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "StationRewards.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A tap PERFECT_AT after the meter fills is a Perfect power attack",
+    "Power attacks by different animals in quick succession make a combo",
+    "The shield halves enemy power attacks, with a cooldown",
+    "A won wave gives up to three stars, kept per wave, and a star chest every 15 stars"
+  ],
+  "verification": "",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": ""
+}

@@ -21,6 +21,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
@@ -430,6 +431,9 @@ local function animalCard(a: any, order: number)
 		colours.Color = RAINBOW
 		colours.Parent = coat
 	end
+	local power = Style.chip(card, `⚡ {Format.commas(BattleRules.powerOf(live(a)))}`, C.ink, Color3.new(1, 1, 1))
+	power.AnchorPoint, power.Position, power.ZIndex, power.TextSize = Vector2.new(1, 0), UDim2.new(1, -8, 0, 8), 3, 13
+	power.Size = UDim2.fromOffset(0, 22)
 	local name = Style.text(card, nameOf(a), 17, C.text, UDim2.new(1, -16, 0, 22))
 	name.Position, name.TextTruncate = UDim2.fromOffset(8, 138), Enum.TextTruncate.AtEnd
 	local best = Style.text(card, bestTwo(a), 13, C.muted, UDim2.new(1, -16, 0, 18))
@@ -469,6 +473,7 @@ local function animalDetail(a: any)
 	Style.list(chips, 8, true)
 	chips.Parent = head
 	Style.chip(chips, string.upper(rarity), colour)
+	Style.chip(chips, `⚡ {Format.commas(BattleRules.powerOf(live(a)))} power`, C.ink, Color3.new(1, 1, 1))
 	Style.chip(chips, `{ROLE_NAME[role] or "?"} · {GROUP_NAME[if sp then sp.group else ""] or "?"}`)
 	if a.at then
 		Style.chip(chips, "Training", C.info, Color3.new(1, 1, 1))
@@ -1764,10 +1769,10 @@ task.spawn(function()
 	end
 end)
 
-local function foeCard(foeId: string)
-	local foe = StationConfig.foe(foeId) :: StationConfig.Foe
+local function foeCard(e: any)
+	local foe = StationConfig.foe(e.s) :: StationConfig.Foe
 	local boss = foe.kind == "dragon"
-	local card = Style.card(waves.body, UDim2.fromOffset(122, 158), if boss then C.bad else C.edge)
+	local card = Style.card(waves.body, UDim2.fromOffset(122, 178), if boss then C.bad else C.edge)
 	local tint = if foe.tint then Color3.fromRGB(foe.tint[1], foe.tint[2], foe.tint[3]) else nil
 	local view = Portrait.new(
 		card,
@@ -1778,6 +1783,9 @@ local function foeCard(foeId: string)
 	local name = Style.text(card, foe.name, 14, C.night, UDim2.new(1, -8, 0, 36))
 	name.Position = UDim2.fromOffset(4, 110)
 	name.TextXAlignment = Enum.TextXAlignment.Center
+	local power =
+		Style.text(card, `⚡ {Format.commas(BattleRules.powerOf(e, 2))}`, 14, C.night, UDim2.new(1, -8, 0, 18))
+	power.Position, power.TextXAlignment = UDim2.fromOffset(4, 148), Enum.TextXAlignment.Center
 	if boss then
 		local tag = Style.chip(card, "BOSS", C.bad, Color3.new(1, 1, 1))
 		tag.AnchorPoint, tag.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 4)
@@ -1839,6 +1847,23 @@ redraw.waves = function()
 	end, if #team > 0 then "danger" else "off", UDim2.fromOffset(196, 60))
 	go.TextSize, go.LayoutOrder = 24, nextOrder()
 
+	-- the power match-up (decision 0096): the side with more power nearly always wins
+	local ours, theirs = BattleRules.teamPower(team, 1), BattleRules.teamPower(LevelRules.enemies(wave), 2)
+	local odds = if #team == 0
+		then nil
+		elseif ours >= theirs * 1.1 then "good"
+		elseif ours >= theirs then "close"
+		else "bad"
+	local verdict = Style.chip(
+		waves.chips,
+		`⚡ {Format.commas(ours)} vs {Format.commas(theirs)}: {if odds == "good"
+			then "you're stronger"
+			elseif odds == "close" then "a close one"
+			else "they're stronger"}`,
+		if odds == "good" then C.good elseif odds == "close" then C.accent else C.bad,
+		if odds == "close" then C.accentText else Color3.new(1, 1, 1)
+	)
+	verdict.Visible = odds ~= nil
 	section(waves.body, "Enemies", nextOrder())
 	local line = Instance.new("Frame")
 	line.BackgroundTransparency = 1
@@ -1847,8 +1872,9 @@ redraw.waves = function()
 	line.LayoutOrder = nextOrder()
 	Style.list(line, 8, true, true)
 	line.Parent = waves.body
-	for _, e in LevelRules.enemies(wave) do
-		foeCard(e.s).Parent = line
+	local foes = LevelRules.enemies(wave)
+	for _, e in foes do
+		foeCard(e).Parent = line
 	end
 
 	section(waves.body, "Clearing it pays", nextOrder())
@@ -1909,7 +1935,6 @@ end
 -- rarity's colour, role and group, the six stats and a health bar. Every model carries what the
 -- card needs as attributes (the server's `describe`); the cursor finds a model by its unseen
 -- "CreatureHit" box.
-local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local card = Ui.panel(screen, { size = UDim2.fromOffset(236, 132), name = "AnimalCard" })
 card.Visible = false
 card.ZIndex = 20

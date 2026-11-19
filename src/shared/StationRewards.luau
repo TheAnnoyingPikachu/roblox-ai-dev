@@ -343,4 +343,52 @@ function StationRewards.spin(
 	return p, true, nil
 end
 
+-- Star chests (decision 0097): one every StationProgress.CHEST_STARS stars, in this order and round again.
+-- Boss chests (decision 0098): clearing a boss wave in a run, by the boss wave's number.
+StationRewards.CHESTS = {
+	{ pays = 10 },
+	{ egg = "best" },
+	{ pays = 20, samples = 10 },
+	{ egg = "best", boost = "train", seconds = 3600 },
+	{ egg = "golden" },
+} :: { Spec }
+StationRewards.BOSS_CHESTS = {
+	{ egg = "best" },
+	{ boost = "hatch", seconds = 3600 },
+	{ boost = "train", seconds = 3600 },
+} :: { Spec }
+
+-- The next star chest's reward for `p`, or nil and why when none is due.
+function StationRewards.nextChest(p: Profile): (Spec?, string?)
+	if StationProgress.chestsDue(p) <= 0 then
+		return nil, "not_yet"
+	end
+	return StationRewards.CHESTS[p.chests % #StationRewards.CHESTS + 1], nil
+end
+
+-- Open the next star chest.
+function StationRewards.claimChest(
+	p: Profile,
+	items: Items,
+	animals: { StationRules.Owned },
+	now: number
+): (Profile, boolean, string?)
+	local spec, code = StationRewards.nextChest(p)
+	if spec == nil then
+		return p, false, code
+	end
+	local _, ok, why = StationRewards.grant(p, items, animals, nil, now)
+	if not ok then
+		return p, false, why
+	end
+	p.chests += 1
+	return p, true, nil
+end
+
+-- The boss chest for clearing boss wave `wave`.
+function StationRewards.bossChest(wave: number): Spec
+	local n = math.max(1, wave // 10)
+	return StationRewards.BOSS_CHESTS[(n - 1) % #StationRewards.BOSS_CHESTS + 1]
+end
+
 return StationRewards

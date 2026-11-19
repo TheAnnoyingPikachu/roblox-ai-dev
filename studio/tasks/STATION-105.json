@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-105",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decisions 0097 and 0098 in the arena: the ring, the shield and warnings, pops, the camera, the boss, sounds and music, the slow-motion finish, the reward moment and the run's boon pick.",
+  "inputs": [
+    "docs/decisions/0097-animal-stations-fight-feel.md",
+    "docs/decisions/0098-animal-stations-wave-runs.md"
+  ],
+  "dependencies": [
+    "STATION-103",
+    "STATION-104"
+  ],
+  "files": [
+    "src/shared/FightFx.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/ArenaCamera.client.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/Style.luau",
+    "tests/FightFx.spec.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-105.json"
+  ],
+  "tests": [
+    "FightFx.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A ring closes on a full power plate and a tap as it closes shows PERFECT",
+    "A warning ring shows before an enemy power attack and the shield button blocks it",
+    "Power attacks cut the camera in with the move's name; the last hit is slow motion only",
+    "The result shows stars, a coin burst and the MVP; a win offers three boons that start the next wave"
+  ],
+  "verification": "",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": ""
+}

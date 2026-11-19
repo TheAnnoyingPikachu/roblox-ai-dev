@@ -112,6 +112,41 @@ function BattleRules.lineup(team: { Owned }, side: number): { Fighter }
 	return out
 end
 
+-- Power scores (decision 0096): one number for how strong a fighter is in a wave fight, so a team and a
+-- wave can be weighed before they meet. A fighter's is sqrt(effective HP x damage a second) x
+-- POWER_SCALE, and a side's is the sum of its fighters' (with the group bonuses): by Lanchester's square
+-- law two like sides are even when their sums are. A healer counts its heals as HP over HEAL_SECONDS.
+-- Side 1's power attacks are extra strikes (the player's, decision 0092); side 2's replace an attack.
+-- An estimate for the menus: no fight reads it.
+BattleRules.POWER_SCALE, BattleRules.HEAL_SECONDS = 10, 20
+function BattleRules.scoreOf(f: Fighter): number
+	local cycle = f.swing + f.rest
+	local share = math.min(1, f.gain / BattleRules.POWER_COST) -- power attacks per attack
+	local extra = if f.side == 1 then BattleRules.POWER else BattleRules.POWER - 1
+	local per = (1 + extra * share) / cycle -- attacks' worth of damage a second
+	local hp = f.maxHp * (BattleRules.DEF_HALF + f.def) / BattleRules.DEF_HALF
+	if f.role == "defense" then
+		hp /= BattleRules.GUARD
+	elseif f.role == "utility" then
+		hp += f.maxHp * BattleRules.HEAL_PCT / 100 * per * BattleRules.HEAL_SECONDS
+	end
+	return math.floor(math.sqrt(hp * f.dmg * per) * BattleRules.POWER_SCALE + 0.5)
+end
+
+-- One animal's (or foe's) own power: no teammates, so no group bonus.
+function BattleRules.powerOf(animal: Owned, side: number?): number
+	return BattleRules.scoreOf(BattleRules.fighter(animal, side or 1, 1))
+end
+
+-- A whole side's power, group bonuses and all.
+function BattleRules.teamPower(team: { Owned }, side: number?): number
+	local sum = 0
+	for _, f in BattleRules.lineup(team, side or 1) do
+		sum += BattleRules.scoreOf(f)
+	end
+	return sum
+end
+
 local function alive(team: { Fighter }): boolean
 	for _, f in team do
 		if f.hp > 0 then
@@ -150,7 +185,23 @@ end
 -- nothing). A full meter nobody taps fires itself AUTO_FIRE seconds after it filled. A tap changes
 -- nothing before its own time, so the server can replay a fight from the start with each new tap.
 -- Without `taps` every power attack fires itself on the attack that fills the meter.
+--
+-- Fight feel (decision 0097), with taps only:
+-- * Perfect: a tap PERFECT_AT seconds after its meter filled (PERFECT_EARLY before to PERFECT_LATE after)
+--   is a Perfect power attack, x PERFECT on top of POWER.
+-- * Combo: a power attack by a different animal of the team within COMBO_SECONDS of the last one adds
+--   to the combo (up to COMBO_MAX): COMBO_PCT % more damage for each step past the first.
+-- * Shield: a tap on slot 0 raises the team's shield for SHIELD_SECONDS, halving (x SHIELD) every
+--   enemy power attack that lands meanwhile; after a shield goes up the next can come SHIELD_COOLDOWN
+--   seconds later (`BattleRules.shields`), and an earlier tap does nothing.
+-- `setup` (decision 0098: a wave run) starts side 1 hurt or stronger: `hp` its HP by slot as a share of
+-- max HP (0 = knocked out), `energy` its meters' share full, `dmg`, `maxHp` and `tempo` (attack time)
+-- multiplied in after the group bonuses. The fourth result is side 1's HP at the end, as shares by slot.
 BattleRules.AUTO_FIRE = 4
+BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.5, 0.15, 0.4
+BattleRules.PERFECT = 1.5
+BattleRules.COMBO_SECONDS, BattleRules.COMBO_PCT, BattleRules.COMBO_MAX = 3, 25, 4
+BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.2, 6, 0.5
 export type Hit = {
 	t: number,
 	side: number,
@@ -161,12 +212,54 @@ export type Hit = {
 	hp: number,
 	power: boolean,
 	tap: boolean?,
+	perfect: boolean?,
+	combo: number?, -- 2 and up
+	shielded: boolean?,
 	energy: number,
 	heal: { slot: number, hp: number }?,
 }
 export type Tap = { slot: number, t: number }
-function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?, taps: { Tap }?): (boolean, number, number)
+export type Setup = { hp: { number }?, energy: number?, dmg: number?, maxHp: number?, tempo: number? }
+
+-- The times of the shield taps (slot 0) in `taps` that raise the shield, in order.
+function BattleRules.shields(taps: { Tap }): { number }
+	local times = {}
+	for _, tap in taps do
+		if tap.slot == 0 then
+			table.insert(times, tap.t)
+		end
+	end
+	table.sort(times)
+	local out, ready = {}, -math.huge
+	for _, t in times do
+		if t >= ready then
+			table.insert(out, t)
+			ready = t + BattleRules.SHIELD_COOLDOWN
+		end
+	end
+	return out
+end
+
+function BattleRules.battle(
+	one: { Owned },
+	two: { Owned },
+	log: { Hit }?,
+	taps: { Tap }?,
+	setup: Setup?
+): (boolean, number, number, { number })
 	local sides = { BattleRules.lineup(one, 1), BattleRules.lineup(two, 2) }
+	if setup then
+		for i, f in sides[1] do
+			f.dmg = math.max(1, math.floor(f.dmg * (setup.dmg or 1)))
+			f.maxHp = math.max(1, math.floor(f.maxHp * (setup.maxHp or 1)))
+			local share = if setup.hp and setup.hp[i] then setup.hp[i] else 1
+			f.hp = if share <= 0 then 0 else math.max(1, math.floor(f.maxHp * math.min(1, share)))
+			f.swing *= setup.tempo or 1
+			f.rest *= setup.tempo or 1
+			f.next = f.swing
+			f.energy = math.floor(BattleRules.POWER_COST * math.clamp(setup.energy or 0, 0, 0.99))
+		end
+	end
 	local all = table.clone(sides[1])
 	for _, f in sides[2] do
 		table.insert(all, f)
@@ -178,11 +271,33 @@ function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?, taps:
 	end)
 	local full: { [Fighter]: number } = {} -- when each held meter filled
 	local actions, now = 0, 0
+	local up: { [number]: boolean } = {} -- the shield taps that raise it
+	for _, t in BattleRules.shields(queue) do
+		up[t] = true
+	end
+	local shieldTo = -math.huge
+	local combo, comboAt, comboSlot = 0, -math.huge, 0
 
 	-- `me` attacks at `now`; `power` x damage and heal
-	local function strike(me: Fighter, power: number, tapped: boolean?)
+	local function strike(me: Fighter, power: number, tapped: boolean?, perfect: boolean?)
 		local d = target(sides[3 - me.side]) :: Fighter
 		local hit = me.dmg * power
+		local chain = nil
+		if held and me.side == 1 and power > 1 then
+			combo = if me.slot ~= comboSlot and now - comboAt <= BattleRules.COMBO_SECONDS
+				then math.min(BattleRules.COMBO_MAX, combo + 1)
+				else 1
+			comboAt, comboSlot = now, me.slot
+			if perfect then
+				hit *= BattleRules.PERFECT
+			end
+			hit *= 1 + BattleRules.COMBO_PCT * (combo - 1) / 100
+			chain = if combo > 1 then combo else nil
+		end
+		local shielded = me.side == 2 and power > 1 and now <= shieldTo
+		if shielded then
+			hit *= BattleRules.SHIELD
+		end
 		if d.role == "defense" then
 			hit *= BattleRules.GUARD
 		end
@@ -201,6 +316,9 @@ function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?, taps:
 				hp = d.hp,
 				power = power > 1,
 				tap = tapped,
+				perfect = if perfect then true else nil,
+				combo = chain,
+				shielded = if shielded then true else nil,
 				energy = math.min(1, me.energy / BattleRules.POWER_COST),
 			}
 			table.insert(log, entry :: Hit)
@@ -243,14 +361,22 @@ function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?, taps:
 		if tap and tap.t <= autoAt and tap.t <= me.next then
 			table.remove(queue, 1)
 			local c = sides[1][tap.slot]
-			if c and c.hp > 0 and full[c] and tap.t >= full[c] then
+			if tap.slot == 0 and up[tap.t] then
+				shieldTo = tap.t + BattleRules.SHIELD_SECONDS
+			elseif c and c.hp > 0 and full[c] and tap.t >= full[c] then
 				if tap.t > BattleRules.MAX_SECONDS then
 					break
 				end
+				local late = tap.t - full[c] - BattleRules.PERFECT_AT
 				now = math.max(now, tap.t)
 				full[c] = nil
 				c.energy -= BattleRules.POWER_COST
-				strike(c, BattleRules.POWER, true)
+				strike(
+					c,
+					BattleRules.POWER,
+					true,
+					late >= -BattleRules.PERFECT_EARLY and late <= BattleRules.PERFECT_LATE
+				)
 			end
 			continue
 		end
@@ -284,7 +410,11 @@ function BattleRules.battle(one: { Owned }, two: { Owned }, log: { Hit }?, taps:
 		strike(me, power)
 		me.next = now + me.rest + me.swing
 	end
-	return alive(sides[1]) and not alive(sides[2]), actions, now
+	local ends = {}
+	for i, f in sides[1] do
+		ends[i] = math.max(0, f.hp) / f.maxHp
+	end
+	return alive(sides[1]) and not alive(sides[2]), actions, now, ends
 end
 
 return BattleRules

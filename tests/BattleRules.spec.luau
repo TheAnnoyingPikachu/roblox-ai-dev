@@ -372,3 +372,140 @@ describe("BattleRules.battle taps (decision 0092)", function()
 		end
 	end)
 end)
+
+describe("BattleRules power scores (decision 0096)", function()
+	local LevelRules = require("../src/shared/LevelRules")
+	it("grows with every stat, and a side's power is its fighters' with the group bonuses", function()
+		local base = BattleRules.powerOf(custom("lion"))
+		for _, stat in StationConfig.STATS do
+			expect(BattleRules.powerOf(custom("lion", { [stat] = 80 })) > base).toBeTruthy()
+		end
+		local pack = { owned("jackal"), owned("jackal"), owned("jackal") }
+		local alone = 0
+		for _, a in pack do
+			alone += BattleRules.powerOf(a)
+		end
+		expect(BattleRules.teamPower(pack) > alone).toBeTruthy() -- the pack bonus
+	end)
+
+	it("picks the winner of nearly every wave fight", function()
+		local agree, total = 0, 0
+		for _, ids in { { "jackal", "tortoise", "meerkat" }, { "lion", "rhino", "meerkat" } } do
+			for _, seconds in { 0, 3600 * 24 * 5 } do
+				local team = {}
+				for _, id in ids do
+					local a = owned(id)
+					for _, st in StationConfig.STATIONS do
+						a = StationRules.train(a, st.id, seconds)
+					end
+					table.insert(team, a)
+				end
+				local ours = BattleRules.teamPower(team, 1)
+				for wave = 1, 80 do
+					total += 1
+					if
+						(ours >= BattleRules.teamPower(LevelRules.enemies(wave), 2)) == LevelRules.fight(team, wave, {})
+					then
+						agree += 1
+					end
+				end
+			end
+		end
+		expect(agree / total >= 0.95).toBeTruthy()
+	end)
+end)
+
+describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)", function()
+	local one = { owned("lion"), owned("rhino"), owned("flamingo") }
+	local two = { owned("rhino"), owned("rhino"), owned("rhino") }
+	local function filled(log: { BattleRules.Hit }, slot: number): number
+		for _, e in log do
+			if e.side == 1 and e.slot == slot and not e.power and e.energy >= 1 then
+				return e.t
+			end
+		end
+		error("never filled")
+	end
+	local ready = { energy = 0.95 } -- meters fill on the first attack
+	local function tapped(log: { BattleRules.Hit }): BattleRules.Hit
+		for _, e in log do
+			if e.tap then
+				return e
+			end
+		end
+		error("no tap")
+	end
+
+	it("makes a tap PERFECT_AT after the meter filled a Perfect, PERFECT times as strong", function()
+		local one, two = { owned("lion") }, { owned("rhino") } -- alone, so no combo changes the numbers
+		local base = {}
+		BattleRules.battle(one, two, base, {}, ready)
+		local at = filled(base, 1)
+		local plain, perfect = {}, {}
+		BattleRules.battle(one, two, plain, { { slot = 1, t = at + 1 } }, ready)
+		BattleRules.battle(one, two, perfect, { { slot = 1, t = at + BattleRules.PERFECT_AT } }, ready)
+		expect(tapped(plain).perfect).toBeNil()
+		expect(tapped(perfect).perfect).toBe(true)
+		expect(tapped(perfect).dmg > tapped(plain).dmg * 1.4).toBeTruthy()
+		local late = {}
+		BattleRules.battle(
+			one,
+			two,
+			late,
+			{ { slot = 1, t = at + BattleRules.PERFECT_AT + BattleRules.PERFECT_LATE + 0.05 } },
+			ready
+		)
+		expect(tapped(late).perfect).toBeNil()
+	end)
+
+	it("chains power attacks by different animals within COMBO_SECONDS into a combo", function()
+		local base = {}
+		BattleRules.battle(one, two, base, {}, ready)
+		local t = math.max(filled(base, 1), filled(base, 3)) + 0.2
+		local log = {}
+		BattleRules.battle(one, two, log, { { slot = 1, t = t }, { slot = 3, t = t + 1 } }, ready)
+		local combos = {}
+		for _, e in log do
+			if e.tap then
+				table.insert(combos, e.combo or 1)
+			end
+		end
+		expect(combos[2]).toBe(math.min(BattleRules.COMBO_MAX, combos[1] + 1))
+	end)
+
+	it("halves enemy power attacks while the shield is up, with a cooldown between shields", function()
+		expect(#BattleRules.shields({ { slot = 0, t = 1 }, { slot = 0, t = 3 }, { slot = 0, t = 7.5 } })).toBe(2)
+		local base = {}
+		BattleRules.battle(one, two, base, {})
+		local hit: BattleRules.Hit? = nil
+		for _, e in base do
+			if e.side == 2 and e.power then
+				hit = e
+				break
+			end
+		end
+		local h = hit :: BattleRules.Hit
+		local log = {}
+		BattleRules.battle(one, two, log, { { slot = 0, t = h.t - 0.5 } })
+		for _, e in log do
+			if e.t == h.t and e.side == 2 and e.slot == h.slot then
+				expect(e.shielded).toBe(true)
+				expect(e.dmg <= math.ceil(h.dmg / 2) + 1).toBeTruthy()
+			end
+		end
+	end)
+
+	it("starts side 1 hurt, knocked out or stronger, and reports its HP at the end", function()
+		local won, _, _, ends = BattleRules.battle(one, two, nil, {})
+		expect(won).toBe(true)
+		expect(#ends).toBe(3)
+		for _, share in ends do
+			expect(share >= 0 and share <= 1).toBeTruthy()
+		end
+		local lost = BattleRules.battle(one, two, nil, {}, { hp = { 0, 0, 0 } })
+		expect(lost).toBe(false)
+		local _, _, slow = BattleRules.battle(one, two, nil, {})
+		local _, _, fast = BattleRules.battle(one, two, nil, {}, { dmg = 2 })
+		expect(fast < slow).toBeTruthy()
+	end)
+end)
