@@ -248,9 +248,10 @@ REGIONS = {
         "small": 0.06,
         "notes": "Sphinx Jackal: SHANNON's Anubis Statue from ForgeGUI (artifact 54ef40ce), one mesh, skinned to the Stations rig (decision 0102).",
     },
-    # lengths: the Blender models' (StationAssets.creature_tortoise[_island].size)
+    # lengths: the Blender models' (StationAssets.creature_tortoise[_island, _gemshell].size)
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
+    "creature_tortoise_gemshell_forge": tortoise("Gemshell Tortoise", 13.4, (0.15, 0.42), 0.28, 0.33, "now-make-this-in-the-roblox-style.glb", "gem tortoise (downloaded from the ForgeGUI site)"),
     "creature_lion_forge": {
         "length": 13.0,  # the Blender lion's length (StationAssets.creature_lion.size)
         "joints": {

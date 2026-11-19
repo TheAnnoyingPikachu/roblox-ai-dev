@@ -2923,6 +2923,27 @@ local StationAssets: { [string]: Asset } = {
 		skinned = true,
 		root = { 0.117, 4.955, 0 },
 	},
+	creature_tortoise_gemshell_forge = {
+		size = { 9.23, 8.27, 13.4 },
+		parts = { "creature_tortoise_gemshell_forge_body" },
+		glow = {},
+		centres = {
+			creature_tortoise_gemshell_forge_body = { 0, 4.135, 0 },
+		},
+		joints = {
+			creature_tortoise_gemshell_forge_head = { 0.003, 3.724, 4.799 },
+			creature_tortoise_gemshell_forge_leg_fl = { 3.234, 1.758, 3.395 },
+			creature_tortoise_gemshell_forge_leg_fr = { -3.227, 1.758, 3.395 },
+			creature_tortoise_gemshell_forge_leg_bl = { 2.812, 1.758, -3.908 },
+			creature_tortoise_gemshell_forge_leg_br = { -2.805, 1.758, -3.908 },
+			creature_tortoise_gemshell_forge_tail = { 0.003, 1.337, -4.611 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { 0.003, 4.145, 0.024 },
+	},
 }
 
 return StationAssets

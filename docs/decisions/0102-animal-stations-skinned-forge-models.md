@@ -127,9 +127,13 @@ Date: 2026-11-19. Task STATION-109.
 - The Island Tortoise is the 23:27 "Low-Poly Stone Tortoise" (artifact e1ded7d6), a tortoise carrying a
   jungle island (2,933 triangles).
 - One body plan for both: `tortoise_weights` and `tortoise`.
-- No gem tortoise was found among SHANNON's ForgeGUI models (searched "tortoise", "gem", "shell",
-  "turtle"), so the Gemshell Tortoise keeps its Blender model. The 23:31 and 23:32 models, named "Stone
-  Tortoise" and nothing, came out as a meerkat and a green alien creature.
+- No gem tortoise was found among SHANNON's ForgeGUI models at first (searched "tortoise", "gem",
+  "shell", "turtle"). The 23:31 and 23:32 models, named "Stone Tortoise" and nothing, came out as a
+  meerkat and a green alien creature.
+- SHANNON then made one ("Rainbow Gemstone Tortoise" as the reference) and downloaded it as
+  `now-make-this-in-the-roblox-style.glb`: a dark purple tortoise with rainbow gems in gold frames on its
+  shell, crystals along the top and gem bands on its legs, 5,156 triangles. It is the Gemshell Tortoise
+  (`creature_tortoise_gemshell_forge`), on the same tortoise body plan.
 
 ## Facts
 

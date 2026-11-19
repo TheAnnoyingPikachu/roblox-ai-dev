@@ -7596,5 +7596,68 @@
       4.955,
       -0.0
     ]
+  },
+  "creature_tortoise_gemshell_forge": {
+    "fbx": "build/blender/stations/creature_tortoise_gemshell_forge.fbx",
+    "png": "build/blender/stations/creature_tortoise_gemshell_forge.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_gemshell_forge_rest.png",
+    "size_studs": [
+      9.23,
+      8.27,
+      13.4
+    ],
+    "tris": 5156,
+    "parts": {
+      "creature_tortoise_gemshell_forge_body": 5156
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Gemshell Tortoise: SHANNON's gem tortoise (downloaded from the ForgeGUI site) from ForgeGUI (artifact now-make-this-in-the-roblox-style.glb), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_gemshell_forge_body": [
+        0.0,
+        4.135,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_tortoise_gemshell_forge_head": [
+        0.003,
+        3.724,
+        4.799
+      ],
+      "creature_tortoise_gemshell_forge_leg_fl": [
+        3.234,
+        1.758,
+        3.395
+      ],
+      "creature_tortoise_gemshell_forge_leg_fr": [
+        -3.227,
+        1.758,
+        3.395
+      ],
+      "creature_tortoise_gemshell_forge_leg_bl": [
+        2.812,
+        1.758,
+        -3.908
+      ],
+      "creature_tortoise_gemshell_forge_leg_br": [
+        -2.805,
+        1.758,
+        -3.908
+      ],
+      "creature_tortoise_gemshell_forge_tail": [
+        0.003,
+        1.337,
+        -4.611
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.003,
+      4.145,
+      0.024
+    ]
   }
 }
