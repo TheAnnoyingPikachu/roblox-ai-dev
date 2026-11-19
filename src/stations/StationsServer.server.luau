@@ -283,7 +283,9 @@ end
 -- Wave fights (decision 0043). The server picks the team and decides the fight with the pure rules,
 -- pays at once and then replays the fight in the arena (WaveShow), one player at a time. A player
 -- who leaves mid-replay keeps what the fight paid, but the next fight waits until this one's
--- fight time is up, so skipping the replay does not make farming faster.
+-- fight time is up, so skipping the replay does not make farming faster. The player's taps fire
+-- their power attacks during the replay (decision 0092): a fight nobody taps in decides the pay at
+-- once, and a fight the taps turn into a win pays when it ends (a tap never loses a won fight).
 local readyAt: { [Player]: number } = {} -- os.clock() when the player may start another fight
 local function waveFight(player: Player, level: number): (boolean, string?)
 	local p = saves.get(player)
@@ -298,13 +300,18 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 		return false, code
 	end
 	local team = StationProgress.fighters(copy)
-	local won, _, seconds = LevelRules.fight(team :: any, level)
+	local won, _, seconds = LevelRules.fight(team :: any, level, {})
 	readyAt[player] = os.clock() + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
 	local coins, xp, samples = StationProgress.payout(copy, level)
 	local first = level > copy.best
 	local started, why = WaveShow.run(player, level, team :: any, function(result)
+		if result.won and not won then -- the taps won it
+			saves.apply(player, function(q)
+				return (StationProgress.clear(q, level))
+			end)
+		end
 		result.coins, result.xp, result.samples =
-			if won then coins else 0, if won then xp else 0, if won then samples else 0
+			if result.won then coins else 0, if result.won then xp else 0, if result.won then samples else 0
 		result.first = first
 		remotes.fx(player, "wavedone", result)
 	end)
@@ -616,6 +623,11 @@ local router = Router.new({
 		wave = {
 			args = { Payload.int({ min = 1, max = 1e6 }) },
 			handler = waveFight,
+		},
+		-- fire the power attack of the animal in team slot `n` (decision 0092)
+		power = {
+			args = { Payload.int({ min = 1, max = 4 }) },
+			handler = WaveShow.power,
 		},
 		wave_done = {
 			args = {},

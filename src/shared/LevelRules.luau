@@ -69,9 +69,10 @@ function LevelRules.enemies(level: number): { Owned }
 	return team
 end
 
--- Whether `team` clears `level`, how many attacks the fight took and how many seconds.
-function LevelRules.fight(team: { Owned }, level: number): (boolean, number, number)
-	return BattleRules.battle(team, LevelRules.enemies(level))
+-- Whether `team` clears `level`, how many attacks the fight took and how many seconds. With `taps`
+-- the player fires the power attacks (BattleRules.battle; `{}` is a fight nobody taps in).
+function LevelRules.fight(team: { Owned }, level: number, taps: { BattleRules.Tap }?): (boolean, number, number)
+	return BattleRules.battle(team, LevelRules.enemies(level), nil, taps)
 end
 
 -- Coins for clearing `level` when the player's best cleared level is `best` (0 = none).

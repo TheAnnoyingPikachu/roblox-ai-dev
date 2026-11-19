@@ -38,6 +38,24 @@ local RANGED = { foe_archer = true, foe_mage = true } -- these stand and shoot i
 
 local counter = 0
 local runs: { [Player]: number } = {} -- the token of each player's current show
+-- A show's fight as it stands (decision 0092): the player's taps so far and the fight they give.
+-- `start` is os.clock() at the fight's time 0 (math.huge during the walk-in).
+type Show = {
+	token: number,
+	team: { Owned },
+	foes: { Owned },
+	taps: { BattleRules.Tap },
+	log: { BattleRules.Hit },
+	won: boolean,
+	actions: number,
+	seconds: number,
+	start: number,
+	ours: { Model }, -- the team's models by slot
+}
+local shows: { [Player]: Show } = {}
+-- Seconds ahead of the show a tap lands: longer than any attack's wind-up (FightFx.lead), so every
+-- attack that has started to play is before it and a replay with the tap shows the same thing so far.
+local TAP_AHEAD = FightFx.POWER_LEAD + 0.3
 local pending: { [Player]: () -> () } = {} -- the result report, owed once per show
 local active: Player? = nil -- whose show is in the arena (it holds one at a time)
 
@@ -86,6 +104,7 @@ end
 -- Stop the player's show and remove what it made. A result not yet reported is reported now.
 function WaveShow.clear(player: Player)
 	runs[player] = nil
+	shows[player] = nil
 	player:SetAttribute("CamFocus", nil)
 	player:SetAttribute("CamRadius", nil)
 	if active == player then
@@ -203,7 +222,21 @@ function WaveShow.run(
 
 	local foes = LevelRules.enemies(wave)
 	local log: { BattleRules.Hit } = {}
-	local won, actions, seconds = BattleRules.battle(team, foes, log)
+	local taps: { BattleRules.Tap } = {}
+	local won, actions, seconds = BattleRules.battle(team, foes, log, taps)
+	local show: Show = {
+		token = token,
+		team = team,
+		foes = foes,
+		taps = taps,
+		log = log,
+		won = won,
+		actions = actions,
+		seconds = seconds,
+		start = math.huge,
+		ours = {},
+	}
+	shows[player] = show
 	local lineups = { BattleRules.lineup(team, 1), BattleRules.lineup(foes, 2) }
 	local folder = folderOf(player)
 
@@ -230,6 +263,7 @@ function WaveShow.run(
 		local home = CFrame.lookAt(Vector3.new(x, GROUND, z), Vector3.new(x, GROUND, z + face))
 		model:PivotTo(home)
 		model:SetAttribute("Side", side)
+		model:SetAttribute("Slot", i) -- the client's power plates tap by slot (decision 0092)
 		model:SetAttribute("MaxHp", fighter.maxHp)
 		model:SetAttribute("Hp", fighter.maxHp)
 		slots[side][i] =
@@ -302,9 +336,15 @@ function WaveShow.run(
 		Creatures.play(slot.model, "idle")
 	end
 
-	-- replay the log: each attack starts its animation `lead` seconds before it lands
+	-- replay the log: each attack starts its animation `lead` seconds before it lands. A tap
+	-- (WaveShow.power) can swap in a new log at any time; it is the same up to TAP_AHEAD from now.
 	local start = os.clock() + 0.4
-	for _, e in log do
+	show.start = start
+	for i, slot in slots[1] do
+		slot.model:SetAttribute("Power", 0)
+		show.ours[i] = slot.model
+	end
+	local function play(e: BattleRules.Hit)
 		task.spawn(function()
 			local actor, target = slots[e.side][e.slot], slots[e.tside][e.tslot]
 			local kind = actor.model:GetAttribute("Asset") :: string
@@ -346,7 +386,11 @@ function WaveShow.run(
 			end
 			-- what the client needs to dress the hit: set before Hp and HitAt, they arrive in any order
 			local now = Workspace:GetServerTimeNow()
-			local final = e == log[#log] and e.hp <= 0 -- the blow that ends the fight
+			local last = show.log[#show.log]
+			local final = e.hp <= 0 and e.t == last.t and e.side == last.side and e.slot == last.slot -- the blow that ends the fight
+			if e.side == 1 then
+				actor.model:SetAttribute("Power", e.energy)
+			end
 			if not RANGED[kind] then -- a melee attacker freezes with its target; a shooter has nothing to hit
 				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0, final))
 				actor.model:SetAttribute("StopAt", now)
@@ -377,26 +421,44 @@ function WaveShow.run(
 		end)
 	end
 
-	-- the survivors of the winning side celebrate a beat after the last hit, until the show is cleared
-	task.delay(0.4 + seconds + 1.0, function()
-		if not live() then
-			return
-		end
-		for _, slot in slots[if won then 1 else 2] do
-			if slot.hp > 0 then
-				Creatures.play(slot.model, "win")
-			end
-		end
-	end)
-
 	local names = {}
 	for _, e in foes do
 		table.insert(names, (StationConfig.foe(e.s) :: StationConfig.Foe).name)
 	end
 	pending[player] = function()
-		report({ wave = wave, won = won, seconds = seconds, attacks = actions, foes = table.concat(names, ", ") })
+		report({
+			wave = wave,
+			won = show.won,
+			seconds = show.seconds,
+			attacks = show.actions,
+			foes = table.concat(names, ", "),
+		})
 	end
-	task.delay(seconds + 0.4 + 1.6, function()
+	task.spawn(function()
+		local nextHit, cheered = 1, false
+		while live() do
+			local now = os.clock()
+			while show.log[nextHit] and start + show.log[nextHit].t - TAP_AHEAD <= now do
+				play(show.log[nextHit])
+				nextHit += 1
+			end
+			-- the survivors of the winning side celebrate a beat after the last hit, until the show is cleared
+			if not cheered and now >= start + show.seconds + 1.0 then
+				cheered = true
+				for _, slot in slots[if show.won then 1 else 2] do
+					if slot.hp > 0 then
+						Creatures.play(slot.model, "win")
+					end
+				end
+			end
+			if now >= start + show.seconds + 1.6 then
+				for _, slot in slots[1] do -- the fight is over: nothing left to fire
+					slot.model:SetAttribute("Power", 0)
+				end
+				break
+			end
+			task.wait()
+		end
 		if not live() then
 			return
 		end
@@ -410,6 +472,36 @@ function WaveShow.run(
 			WaveShow.clear(player)
 		end
 	end)
+	return true, nil
+end
+
+-- The player taps their animal in team slot `slot` to fire its power attack (decision 0092). The
+-- fight is replayed from the start with the tap TAP_AHEAD seconds from now; refused when its meter
+-- is not full then, the fight is over, or the tap would lose a fight the team was winning.
+function WaveShow.power(player: Player, slot: number): (boolean, string?)
+	local show = shows[player]
+	if show == nil or runs[player] ~= show.token then
+		return false, "no_fight"
+	end
+	local t = os.clock() - show.start + TAP_AHEAD
+	if t < 0 or t >= show.seconds then
+		return false, "power"
+	end
+	local taps = table.clone(show.taps)
+	table.insert(taps, { slot = slot, t = t })
+	local log: { BattleRules.Hit } = {}
+	local won, actions, seconds = BattleRules.battle(show.team, show.foes, log, taps)
+	local fired = false
+	for _, e in log do
+		fired = fired or (e.tap == true and e.side == 1 and e.slot == slot and e.t == t)
+	end
+	if not fired or (show.won and not won) then
+		return false, "power"
+	end
+	show.taps, show.log, show.won, show.actions, show.seconds = taps, log, won, actions, seconds
+	if show.ours[slot] then -- the meter empties at once; the strike lands TAP_AHEAD from now
+		show.ours[slot]:SetAttribute("Power", 0)
+	end
 	return true, nil
 end
 
