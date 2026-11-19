@@ -37,7 +37,7 @@
     "It walks, attacks, flinches and falls with the same clips as every animal",
     "Its rainbow coat works"
   ],
-  "verification": "In progress.",
+  "verification": "Lune 759/759, selene clean. Upload-assets run 44622750333 (creature_lion_forge and its rainbow coat). Studio, local build, stamp `dev`, 2026-11-19: the lion loads as one MeshPart with the seven bones body, head, leg_fl, leg_fr, leg_bl, leg_br, tail at the old lion's size (13 studs long); its walk swings the legs 26 degrees each way and its attack rears and lunges; in wave 1 it fought on the team, was named MVP and did its win pose; no see-through faces. Blender renders of bent poses: the tail and legs bend at their joints, the mane turns with the head.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

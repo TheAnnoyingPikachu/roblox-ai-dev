@@ -149,9 +149,11 @@ end
 
 -- The uploaded model that shows animal `s`, or its variant `v`: a variant "<word>_<species>" is the
 -- asset "creature_<species>_<word>" (StationAssets.spec keeps every one in the table).
+-- A species whose model is a whole ForgeGUI model skinned to the rig (decision 0102) is listed in `FORGE`.
+StationRules.FORGE = { lion = "creature_lion_forge" } :: { [string]: string }
 function StationRules.assetOf(s: string, v: string?): string
 	local word = if v then string.match(v, "^(%l+)_") else nil
-	return if word then `creature_{s}_{word}` else `creature_{s}`
+	return if word then `creature_{s}_{word}` else StationRules.FORGE[s] or `creature_{s}`
 end
 
 -- Display rarity: the variant's tier, or the species' basic rarity.

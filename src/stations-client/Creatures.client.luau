@@ -1098,6 +1098,7 @@ type Rig = {
 	-- a skinned model's bones by joint (decision 0102), and each bone's axes in the Root's: a pose is
 	-- written in the Root's axes, so it is turned into the bone's
 	bones: { [string]: { bone: Bone, turn: CFrame } },
+	boneScan: number, -- os.clock() when its descendants were last searched for bones
 	thud: Sound?, -- the sound of a hit and of a power hit or knockout, made on the first of each
 	boom: Sound?,
 }
@@ -1268,6 +1269,7 @@ local function add(model: Instance)
 		flinch = 1,
 		spark = nil,
 		bones = bones,
+		boneScan = 0,
 		thud = nil,
 		boom = nil,
 	}
@@ -1431,6 +1433,16 @@ end
 RunService.PreSimulation:Connect(function(dt: number)
 	local time = Workspace:GetServerTimeNow()
 	for model, rig in rigs do
+		-- a skinned model's bones can reach this client before its Root does: take them once both are here
+		local base = model.PrimaryPart
+		if next(rig.bones) == nil and next(rig.joints) == nil and base and os.clock() - rig.boneScan > 0.5 then
+			rig.boneScan = os.clock() -- a model with no joints at all is looked at twice a second, no more
+			for _, d in model:GetDescendants() do
+				if d:IsA("Bone") and table.find(JOINTS, d.Name) then
+					rig.bones[d.Name] = { bone = d, turn = base.CFrame.Rotation:Inverse() * d.WorldCFrame.Rotation }
+				end
+			end
+		end
 		if model:GetAttribute("Rainbow") then -- a rainbow animal's Neon pieces turn through the colours
 			for i, d in model:GetChildren() do
 				if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
