@@ -1100,6 +1100,65 @@ local function rewardWords(items: any): string
 	return table.concat(parts, ", ")
 end
 
+-- The reward icons (decision 0100): one picture for each kind of reward, in the Savanna look
+-- (assets/stations/icons, made by tools/icons/stations_rewards.py). Eggs show their own egg.
+local ICON = {
+	coins = "rbxassetid://126839540915586",
+	samples = "rbxassetid://109970824605063",
+	meadow = "rbxassetid://102211226773835",
+	wild = "rbxassetid://108812133520186",
+	safari = "rbxassetid://129564996329142",
+	golden = "rbxassetid://86853923413561",
+	star = "rbxassetid://95586444952247",
+	hatch = "rbxassetid://111148238651019",
+	train = "rbxassetid://92388913223446",
+	rainbow = "rbxassetid://90795860429478",
+	spin = "rbxassetid://112243151972690",
+	gift = "rbxassetid://91667720786022",
+}
+
+-- A reward's main picture and the small one for what comes with it.
+local function iconsOf(items: any): (string, string?)
+	local egg = items.eggs[1]
+	local boost = if items.boost then ICON[items.boost] else nil
+	if items.jackpot or items.rainbow then
+		return ICON.rainbow, nil
+	elseif egg then
+		return ICON[egg] or ICON.meadow, boost
+	elseif items.coins > 0 then
+		return ICON.coins, if items.samples > 0 then ICON.samples else boost
+	elseif boost then
+		return boost, nil
+	elseif items.samples > 0 then
+		return ICON.samples, nil
+	end
+	return ICON.gift, nil
+end
+
+-- The picture of a reward at `size`: its main icon, a small second one at its foot, a gold star on the
+-- player's best egg (`best`).
+local function rewardIcon(parent: Instance, items: any, size: number, best: boolean?): Frame
+	local main, extra = iconsOf(items)
+	local holder = Instance.new("Frame")
+	holder.BackgroundTransparency = 1
+	holder.Size = UDim2.fromOffset(size, size)
+	local function layer(image: string, scale: number, anchor: Vector2, at: UDim2)
+		local p = Instance.new("ImageLabel")
+		p.BackgroundTransparency, p.Image = 1, image
+		p.AnchorPoint, p.Position, p.Size = anchor, at, UDim2.fromScale(scale, scale)
+		p.Parent = holder
+	end
+	layer(main, 1, Vector2.zero, UDim2.new())
+	if extra then
+		layer(extra, 0.5, Vector2.new(1, 1), UDim2.fromScale(1.08, 1.04))
+	end
+	if best then
+		layer(ICON.star, 0.42, Vector2.zero, UDim2.fromScale(-0.08, -0.04))
+	end
+	holder.Parent = parent
+	return holder
+end
+
 local function giftsReady(): (boolean, boolean, boolean)
 	if profile == nil or profile.rewards == nil then
 		return false, false, false
@@ -1136,17 +1195,20 @@ local function weekView()
 	for k, spec in StationRewards.WEEK do
 		local got, ready = k <= r.weekGot, k == r.weekGot + 1 and r.weekGot < r.weekDays
 		local card =
-			Style.card(gifts.body, UDim2.fromOffset(150, 190), if got then C.good elseif k == 7 then C.accent else nil)
+			Style.card(gifts.body, UDim2.fromOffset(150, 228), if got then C.good elseif k == 7 then C.accent else nil)
 		card.LayoutOrder = k
 		local t = Style.text(card, `Day {k}`, 20, C.text, UDim2.new(1, -20, 0, 24))
 		t.Position = UDim2.fromOffset(10, 8)
-		local words =
-			Style.text(card, rewardWords(StationRewards.resolve(profile, spec)), 14, C.muted, UDim2.new(1, -20, 0, 84))
-		words.Position = UDim2.fromOffset(10, 36)
+		local items = StationRewards.resolve(profile, spec)
+		local icon = rewardIcon(card, items, 68, spec.egg == "best")
+		icon.Position = UDim2.fromOffset(41, 34)
+		local words = Style.text(card, rewardWords(items), 14, C.muted, UDim2.new(1, -20, 0, 66))
+		words.Position, words.TextWrapped, words.TextXAlignment =
+			UDim2.fromOffset(10, 106), true, Enum.TextXAlignment.Center
 		local b = Style.button(card, if got then "Claimed" elseif ready then "Claim" else "Log in more", function()
 			send("claim_week")
 		end, if ready then "good" else "off")
-		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 132), UDim2.new(1, -20, 0, 44), 16
+		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 174), UDim2.new(1, -20, 0, 44), 16
 	end
 end
 
@@ -1166,25 +1228,29 @@ local function monthView()
 		local ready = not got and r.monthDays >= d
 		local items = StationRewards.resolve(profile, spec, StationRewards.monthOf(Workspace:GetServerTimeNow()))
 		local card =
-			Style.card(gifts.body, UDim2.fromOffset(150, 190), if got then C.good elseif d == 28 then C.accent else nil)
+			Style.card(gifts.body, UDim2.fromOffset(150, 228), if got then C.good elseif d == 28 then C.accent else nil)
 		card.LayoutOrder = k
 		local t = Style.text(card, `Day {d}`, 20, C.text, UDim2.new(1, -20, 0, 24))
 		t.Position = UDim2.fromOffset(10, 8)
-		if items.rainbow then
+		if items.rainbow then -- the month's own rainbow animal
 			local view = Portrait.new(
 				card,
 				StationRules.assetOf(items.rainbow, nil),
-				{ size = UDim2.fromOffset(72, 64), rainbow = true, background = C.cardHi }
+				{ size = UDim2.fromOffset(84, 68), rainbow = true, background = C.cardHi }
 			)
-			view.Position = UDim2.fromOffset(68, 6)
+			view.Position = UDim2.fromOffset(33, 34)
+		else
+			local icon = rewardIcon(card, items, 68, spec.egg == "best")
+			icon.Position = UDim2.fromOffset(41, 34)
 		end
-		local words = Style.text(card, rewardWords(items), 14, C.muted, UDim2.new(1, -20, 0, 60))
-		words.Position = UDim2.fromOffset(10, 72)
+		local words = Style.text(card, rewardWords(items), 14, C.muted, UDim2.new(1, -20, 0, 66))
+		words.Position, words.TextWrapped, words.TextXAlignment =
+			UDim2.fromOffset(10, 106), true, Enum.TextXAlignment.Center
 		local label = if got then "Claimed" elseif ready then "Claim" else `{d - r.monthDays} more days`
 		local b = Style.button(card, label, function()
 			send("claim_month", d)
 		end, if ready then "good" else "off")
-		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 132), UDim2.new(1, -20, 0, 44), 16
+		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 174), UDim2.new(1, -20, 0, 44), 16
 	end
 end
 
@@ -1244,7 +1310,7 @@ local function wheelView()
 		Color3.fromRGB(201, 238, 176),
 		Color3.fromRGB(166, 216, 245),
 		C.info,
-		C.good,
+		Color3.fromRGB(214, 196, 247), -- lilac, so the green samples stand out
 		Color3.fromRGB(247, 163, 189),
 		C.gold,
 	}
@@ -1256,9 +1322,27 @@ local function wheelView()
 		bubble.Size = UDim2.fromOffset(SIZE * 0.25, SIZE * 0.25)
 		bubble.BackgroundColor3 = colours[k]
 		bubble.Font = Ui.theme.font
-		bubble.Text = slice.name
-		bubble.TextWrapped, bubble.TextSize, bubble.TextColor3 = true, 15, C.ink
+		bubble.Text = ""
 		bubble.Rotation = (k - 1) * 360 / n
+		local prize = slice.prize
+		local items = StationRewards.resolve(profile, prize)
+		local icon = rewardIcon(bubble, items, math.floor(SIZE * 0.15), prize.egg == "best")
+		icon.AnchorPoint, icon.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 6)
+		local caption = Style.text(
+			bubble,
+			if prize.jackpot
+				then "MYTHIC!"
+				elseif prize.pays then `{prize.pays} pays`
+				elseif prize.boost then `x2 {Format.ago(prize.seconds or 0)}`
+				elseif prize.samples then `{prize.samples} samples`
+				elseif prize.egg == "best" then "Best egg"
+				else "Egg",
+			13,
+			C.ink,
+			UDim2.new(1, 0, 0, 16)
+		)
+		caption.AnchorPoint, caption.Position, caption.TextXAlignment =
+			Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -6), Enum.TextXAlignment.Center
 		Style.round(bubble, SIZE * 0.125)
 		Style.stroke(bubble, C.ink, 3)
 		if k == n then
@@ -1353,7 +1437,7 @@ local function landWheel(payload: any)
 			words = `JACKPOT! A Rainbow {if va then va.name else "mythic"}!`
 		end
 		Style.sound("claim")
-		Style.toast(screen, `You won: {words}`, 5, "good")
+		Style.toast(screen, `You won: {words}`, 5, "good", (iconsOf(payload.items)))
 		if openName == "gifts" then
 			redraw.gifts()
 		end
@@ -3300,7 +3384,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			end
 			coinBurst()
 			if payload.chest then
-				Style.toast(screen, `Boss chest! {rewardWords(payload.chest)}`, 5, "good")
+				Style.toast(screen, `Boss chest! {rewardWords(payload.chest)}`, 5, "good", (iconsOf(payload.chest)))
 			end
 			wave = payload.wave + 1
 			again.Text = `Fight wave {wave}`
@@ -3387,7 +3471,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		)
 	elseif kind == "reward" then
 		Style.sound("claim")
-		Style.toast(screen, `You got: {rewardWords(payload.items)}`, 4, "good")
+		Style.toast(screen, `You got: {rewardWords(payload.items)}`, 4, "good", (iconsOf(payload.items)))
 	elseif kind == "spun" then
 		landWheel(payload)
 	elseif kind == "collected" then
