@@ -23,7 +23,13 @@ export type Animal = {
 	rainbow: boolean?,
 	at: string?,
 	since: number?,
+	locked: boolean?, -- its owner locked it: it cannot go in a trade (decision 0099)
 }
+-- A finished trade as the save remembers it (decision 0099): its id (the ledger's), who with, the names
+-- of what went each way and when. `trades.log` keeps the newest TRADE_LOG; a trade whose id is in it
+-- has been applied to this save, which is what makes the ledger's heal safe to run again.
+export type TradeEntry = { id: string, with: string, gave: { string }, got: { string }, at: number }
+export type Trades = { day: number, count: number, total: number, off: boolean, log: { TradeEntry } }
 -- A bought egg: which egg, since when it has been hatching (os.time; nil while it waits in the
 -- egg storage), and the animal the server rolled for it when it was bought. The animal is never
 -- sent to the client (`public`).
@@ -65,6 +71,7 @@ export type Profile = {
 	rewards: Rewards,
 	stars: string, -- the best stars won on each wave (decision 0097): character n is wave n's, "0" to "3"
 	chests: number, -- star chests opened (one is due every CHEST_STARS stars)
+	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
 }
 
 StationProgress.VERSION = 1
@@ -85,6 +92,7 @@ local MAX_TIME = 1e12
 StationProgress.MAX_WINDOWS = 16 -- boost windows a save keeps (the oldest go)
 StationProgress.MAX_PENDING = 20 -- eggs won that wait for room
 StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
+StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu shows the newest 20)
 StationProgress.CHEST_STARS = 15
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
@@ -116,6 +124,7 @@ function StationProgress.defaults(_now: number): Profile
 		},
 		stars = "",
 		chests = 0,
+		trades = { day = 0, count = 0, total = 0, off = false, log = {} },
 	}
 end
 
@@ -213,8 +222,15 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			if own == nil or id == 0 or ids[id] then
 				continue
 			end
-			local animal: Animal =
-				{ id = id, s = own.s, v = own.v, stats = own.stats, trained = own.trained, rainbow = own.rainbow }
+			local animal: Animal = {
+				id = id,
+				s = own.s,
+				v = own.v,
+				stats = own.stats,
+				trained = own.trained,
+				rainbow = own.rainbow,
+				locked = if a.locked == true then true else nil,
+			}
 			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots and not taken[a.at] then
 				taken[a.at] = true
 				animal.at = a.at
@@ -304,6 +320,38 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 		p.stars = string.sub(string.gsub(record.stars, "[^0-3]", "0"), 1, StationProgress.MAX_STAR_WAVES)
 	end
 	p.chests = int(record.chests, 0, 1e6, 0)
+	local stored = if type(record.trades) == "table" then record.trades else {}
+	p.trades.day = int(stored.day, 0, 1e7, 0)
+	p.trades.count = int(stored.count, 0, 1000, 0)
+	p.trades.total = int(stored.total, 0, 1e9, 0)
+	p.trades.off = stored.off == true
+	if type(stored.log) == "table" then
+		for _, e in stored.log do
+			if
+				type(e) == "table"
+				and type(e.id) == "string"
+				and #e.id <= 64
+				and #p.trades.log < StationProgress.TRADE_LOG
+			then
+				local function names(list: any): { string }
+					local out = {}
+					for _, n in if type(list) == "table" then list else {} do
+						if type(n) == "string" and #out < 8 then
+							table.insert(out, string.sub(n, 1, 40))
+						end
+					end
+					return out
+				end
+				table.insert(p.trades.log, {
+					id = e.id,
+					with = if type(e.with) == "string" then string.sub(e.with, 1, 40) else "?",
+					gave = names(e.gave),
+					got = names(e.got),
+					at = int(e.at, 0, MAX_TIME, 0),
+				})
+			end
+		end
+	end
 	return p
 end
 
