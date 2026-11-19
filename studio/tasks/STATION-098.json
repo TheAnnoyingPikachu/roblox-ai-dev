@@ -14,6 +14,7 @@
   "files": [
     "src/stations-client/Style.luau",
     "src/stations-client/Hud.client.luau",
+    "src/stations/Ranch.luau",
     "src/stations/CLAUDE.md",
     "docs/assets/register.md",
     "docs/decisions/0091-animal-stations-savanna-ui.md",
@@ -29,7 +30,7 @@
     "A ready egg opens only at the hatchery; the Eggs menu points the way",
     "Buttons squash when pressed and make sounds"
   ],
-  "verification": "Lune 725/725, selene clean. Studio, local build, stamp `dev`, 2026-11-19: HUD, Animals grid and detail, Eggs, Egg vendor, Ranch (pictures load a moment after opening), Waves, Admin and the folded phone layout (UiSize 430 x 940) seen in screens; no errors in the output.",
+  "verification": "Lune 725/725, selene clean. Studio, local build, stamp `dev`, 2026-11-19: HUD, Animals grid and detail, Eggs, Egg vendor, Ranch (pictures load a moment after opening), Waves, Admin and the folded phone layout (UiSize 430 x 940) seen in screens; no errors in the output. Team pen: flickering surfaces separated (the hay stack's bales no longer overlap, the straw beds and lily pads clear of the grass and water, the ring path's overlapping pieces at alternate heights), seen in Studio.",
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_progress",

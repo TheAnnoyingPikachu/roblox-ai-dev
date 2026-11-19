@@ -211,8 +211,8 @@ local function pond(f: Instance, centre: Vector3, d: number, rng: Random)
 	end
 	for _ = 1, 4 do
 		local p = centre + V(rng:NextNumber(-d / 3, d / 3), 0.55, rng:NextNumber(-d / 3, d / 3))
-		disc(f, p, 1.6, 0.1, Color3.fromRGB(70, 160, 80), M.SmoothPlastic)
-		ball(f, p + V(0.3, 0.15, 0), 0.5, BLOOM[1], M.SmoothPlastic)
+		disc(f, p + V(0, 0.07, 0), 1.6, 0.1, Color3.fromRGB(70, 160, 80), M.SmoothPlastic) -- clear of the water's top
+		ball(f, p + V(0.3, 0.22, 0), 0.5, BLOOM[1], M.SmoothPlastic)
 	end
 	for k = 1, 3 do -- reeds
 		local a = k * 2.1
@@ -696,7 +696,8 @@ function Ranch.render(i: number, levels: { [string]: number })
 	-- the herd's meadow: leafy grass inside a low kerb with a gap at every way, a pond, a shade tree, a
 	-- trough and hay. The ring path lies round it.
 	for k = 0, 29 do -- the ring path, in thirty pieces; the meadow inside it is the valley's own grass
-		local piece = out((RING0 + RING1) / 2, k * 12) * CFrame.new(0, 0.08, 0)
+		-- neighbours overlap at their ends: every other piece a hair higher, so the overlaps do not flicker
+		local piece = out((RING0 + RING1) / 2, k * 12) * CFrame.new(0, 0.08 + (k % 2) * 0.03, 0)
 		local colour = if paved then PATH:Lerp(STONE, rng:NextNumber(0, 0.35)) else DIRT
 		part(f, V(RING1 * rad(12) + 0.3, 0.24, RING1 - RING0), piece, colour, if paved then M.Cobblestone else M.Sand)
 	end
@@ -734,15 +735,16 @@ function Ranch.render(i: number, levels: { [string]: number })
 		0.4
 	)
 	for _, at in { spot(17, 205), spot(22, 300), spot(20, 240) } do -- a bed of straw for each of the three
-		disc(f, at, 3.2, 0.3, HAY, M.Fabric)
+		disc(f, at + V(0, 0.12, 0), 3.2, 0.3, HAY, M.Fabric) -- its top clear of the grass, which would flicker through it
 	end
 	pond(f, spot(11.7, 149), 16, rng)
 	kit.tree(f, spot(13.9, -30), rng, 2.1)
 	local trough = out(19, 71.6, 104)
 	part(f, V(8, 2, 3), trough * CFrame.new(0, 1.1, 0), WOOD, M.Wood)
 	part(f, V(7.2, 0.3, 2.2), trough * CFrame.new(0, 2.05, 0), WATER, M.Glass)
-	for k, o in { V(-2, 1.5, 0.2), V(2.1, 1.5, -0.4), V(0, 4.5, 0) } do
-		hay(f, out(28, 178, 20) * CFrame.new(o) * CFrame.Angles(0, rad(k * 7), 0))
+	-- a stack of three bales: two side by side, a little apart, and one lying on them (not in them)
+	for k, o in { V(-2.3, 1.5, 0.2), V(2.3, 1.5, -0.3), V(0, 4.55, 0) } do
+		hay(f, out(28, 178, 20) * CFrame.new(o) * CFrame.Angles(0, rad((k - 2) * 4), 0))
 	end
 	rock(f, spot(24, 20), 2.6, rng)
 	rock(f, spot(26, 250), 2.2, rng)
