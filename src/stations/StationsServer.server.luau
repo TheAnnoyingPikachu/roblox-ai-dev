@@ -120,6 +120,7 @@ local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
+local StationRewards = require(Shared:WaitForChild("StationRewards"))
 
 local rng = Rng.seed(os.time(), Random.new():NextInteger(1, 2 ^ 30))
 local saves
@@ -132,7 +133,7 @@ local function eggsOf(p: StationProgress.Profile): { { egg: string, since: numbe
 		out[k] = {
 			egg = e.egg,
 			since = e.since,
-			due = if e.since and egg then e.since + StationProgress.hatchSeconds(p, egg) else nil,
+			due = if e.since and egg then StationProgress.dueAt(p, e) else nil,
 		}
 	end
 	return out
@@ -169,6 +170,100 @@ local function apply(
 		return (change(q))
 	end)
 	return true, nil
+end
+
+-- The planners and the daily wheel (decision 0094). What a reward gives is worked out on a copy of the
+-- save with today counted; the animals inside won eggs (and a jackpot's mythic) are rolled here, then the
+-- save is changed with them, so a change that runs twice gives the same.
+local function today(player: Player): StationProgress.Profile?
+	local p = saves.get(player)
+	if p == nil then
+		return nil
+	end
+	return StationRewards.visit(StationProgress.sanitize(p, os.time()), os.time())
+end
+
+local function rollEggs(items: StationRewards.Items): { StationRules.Owned }
+	local animals = {}
+	for _, id in items.eggs do
+		local a
+		a, rng = StationRules.hatch(id, rng)
+		table.insert(animals, a :: StationRules.Owned)
+	end
+	return animals
+end
+
+local function rewardWeek(player: Player): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local spec, code = StationRewards.nextWeek(p)
+	if spec == nil then
+		return false, code
+	end
+	local items = StationRewards.resolve(p, spec)
+	local animals, now = rollEggs(items), os.time()
+	local ok, why = apply(player, function(q)
+		StationRewards.visit(q, now)
+		return StationRewards.claimWeek(q, items, animals, now)
+	end)
+	if ok then
+		remotes.fx(player, "reward", { items = items })
+	end
+	return ok, why
+end
+
+local function rewardMonth(player: Player, d: number): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local can, code = StationRewards.canMonth(p, d)
+	if not can then
+		return false, code
+	end
+	local items = StationRewards.resolve(p, StationRewards.MONTH[d])
+	local animals, now = rollEggs(items), os.time()
+	local ok, why = apply(player, function(q)
+		StationRewards.visit(q, now)
+		return StationRewards.claimMonth(q, d, items, animals, now)
+	end)
+	if ok then
+		remotes.fx(player, "reward", { items = items })
+	end
+	return ok, why
+end
+
+local function spinWheel(player: Player): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local now = os.time()
+	if not StationRewards.canSpin(p, now) then
+		return false, "spun"
+	end
+	local roll
+	roll, rng = Rng.int(rng, 0, 999999)
+	local prize = StationRewards.prizeOf(p, roll)
+	local items = StationRewards.resolve(p, StationRewards.WHEEL[prize].prize)
+	local animals = rollEggs(items)
+	local mythic = nil
+	if items.jackpot then
+		local all = StationRewards.mythics()
+		local k
+		k, rng = Rng.int(rng, 1, #all)
+		mythic = all[k]
+	end
+	local ok, why = apply(player, function(q)
+		StationRewards.visit(q, now)
+		return StationRewards.spin(q, prize, items, animals, mythic, now)
+	end)
+	if ok then
+		remotes.fx(player, "spun", { prize = prize, items = items, mythic = mythic })
+	end
+	return ok, why
 end
 
 local function buy(player: Player, eggId: string): (boolean, string?)
@@ -394,6 +489,19 @@ local router = Router.new({
 			end,
 		},
 		buy = { args = { Payload.enum(ids(StationConfig.EGGS)) }, handler = buy },
+		-- the planners and the daily wheel (decision 0094): count today, claim, spin
+		rewards = {
+			args = {},
+			handler = function(player)
+				local now = os.time()
+				return apply(player, function(q)
+					return StationRewards.visit(q, now), true, nil
+				end)
+			end,
+		},
+		claim_week = { args = {}, handler = rewardWeek },
+		claim_month = { args = { Payload.int({ min = 1, max = 31 }) }, handler = rewardMonth },
+		spin = { args = {}, handler = spinWheel },
 		trade_ask = {
 			args = { Payload.int({ min = 1, max = 1e12 }) },
 			handler = function(player, userId: number)

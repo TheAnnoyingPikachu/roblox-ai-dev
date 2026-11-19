@@ -25,6 +25,7 @@ local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
+local StationRewards = require(Shared:WaitForChild("StationRewards"))
 local UiLayout = require(Shared:WaitForChild("UiLayout"))
 local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
@@ -61,6 +62,10 @@ local RAINBOW = ColorSequence.new({ -- the chip of an animal in a rainbow coat (
 })
 
 local REFUSED: { [string]: string } = {
+	claimed = "You've already claimed that one",
+	not_yet = "Log in on more days to claim that",
+	spun = "You've had today's spin: come back tomorrow",
+	reward = "That reward does not exist",
 	coins = "Not enough coins",
 	trade_unknown = "That animal is not yours any more",
 	trade_training = "That animal is training: stop it first",
@@ -145,7 +150,7 @@ local function live(a: any): any
 	if a.at == nil or a.since == nil then
 		return a
 	end
-	return StationRules.train(a, a.at, StationProgress.trainingSeconds(profile, Workspace:GetServerTimeNow() - a.since))
+	return StationRules.train(a, a.at, StationProgress.trainedBetween(profile, a.since, Workspace:GetServerTimeNow()))
 end
 
 -- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
@@ -204,6 +209,7 @@ local shop = newSheet("shop", "Egg vendor")
 local waves = newSheet("waves", "Endless waves")
 local admin = newSheet("admin", "Admin")
 local trade = newSheet("trade", "Trade")
+local gifts = newSheet("gifts", "Gifts")
 local ranchTab = "animals" -- the group of upgrades the Ranch menu shows
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
@@ -255,7 +261,7 @@ column.Parent = dock
 local DOCK_W = CELL_W + 20
 local function shape()
 	local cols = if root.Size.Y.Offset < 560 then 2 else 1
-	local rows = math.ceil(5 / cols)
+	local rows = math.ceil(6 / cols)
 	DOCK_W = cols * CELL_W + (cols - 1) * GAP + 20
 	dock.Size = UDim2.fromOffset(DOCK_W, rows * CELL_H + (rows - 1) * GAP + 28)
 	dockGrid.FillDirectionMaxCells = cols
@@ -349,6 +355,10 @@ dockButton("Waves", "danger", 4, function()
 end)
 local tradeDot = dockButton("Trade", "primary", 5, function()
 	show("trade")
+end)
+local giftsDot = dockButton("Gifts", "good", 6, function()
+	request:InvokeServer("rewards") -- count today first
+	show("gifts")
 end)
 nav:GetPropertyChangedSignal("Visible"):Connect(function()
 	travel.Visible = false
@@ -651,7 +661,7 @@ local function eggCard(k: number, e: any, order: number)
 	local def = StationConfig.egg(e.egg) :: StationConfig.Egg
 	local now = Workspace:GetServerTimeNow()
 	local need = StationProgress.hatchSeconds(profile, def) -- the Brooder shortens it
-	local ready = e.since ~= nil and now >= e.since + need
+	local ready = e.since ~= nil and now >= (StationProgress.dueAt(profile, e) :: number)
 	local card = Style.card(eggs.body, UDim2.fromOffset(212, 176), if ready then C.good else nil)
 	card.LayoutOrder = order
 	eggArt(card, e.egg, 68).Position = UDim2.fromOffset(10, 10)
@@ -676,7 +686,7 @@ local function eggCard(k: number, e: any, order: number)
 		local b = Style.button(card, "Hatching...", function() end, "off")
 		b.Position, b.Size = UDim2.fromOffset(12, 118), UDim2.new(1, -24, 0, 44)
 		local function tick()
-			local remaining = e.since + need - Workspace:GetServerTimeNow()
+			local remaining = (StationProgress.dueAt(profile, e) :: number) - Workspace:GetServerTimeNow()
 			set(1 - remaining / need)
 			if remaining <= 0 then
 				info.Text, info.TextColor3 = "Ready! Open it at the hatchery", C.good
@@ -709,7 +719,7 @@ redraw.eggs = function()
 		if e.since then
 			table.insert(hatching, k)
 			local def = StationConfig.egg(e.egg)
-			if def and now >= e.since + StationProgress.hatchSeconds(profile, def) then
+			if def and now >= (StationProgress.dueAt(profile, e) :: number) then
 				ready += 1
 			end
 		else
@@ -1021,6 +1031,299 @@ redraw.shop = function()
 		send("buy", def.id)
 	end, if can then "primary" else "off", UDim2.new(1, -12, 0, 56))
 	b.LayoutOrder, b.TextSize = 6, 24
+end
+
+-- Gifts (decision 0094): the weekly planner, the monthly planner and the daily wheel ----------------------
+
+local giftsTab = "week"
+local spinning = false
+
+-- What a reward gives, in words: "930 coins, 2 Meadow Eggs".
+local function rewardWords(items: any): string
+	local parts = {}
+	if items.coins > 0 then
+		table.insert(parts, `{Format.commas(items.coins)} coins`)
+	end
+	if items.samples > 0 then
+		table.insert(parts, `{items.samples} samples`)
+	end
+	local counts, order = {}, {}
+	for _, id in items.eggs do
+		if counts[id] == nil then
+			table.insert(order, id)
+		end
+		counts[id] = (counts[id] or 0) + 1
+	end
+	for _, id in order do
+		local def = StationConfig.egg(id)
+		local name = if def then def.name else id
+		table.insert(parts, if counts[id] > 1 then `{counts[id]} {name}s` else `a {name}`)
+	end
+	if items.boost then
+		local what = if items.boost == "hatch" then "Hatching" else "Training"
+		table.insert(parts, `{what} x2 for {Format.ago(items.seconds)}`)
+	end
+	if items.rainbow then
+		local sp = StationConfig.species(items.rainbow)
+		table.insert(parts, `a Rainbow {if sp then sp.name else items.rainbow}`)
+	end
+	if items.jackpot then
+		table.insert(parts, "a Rainbow mythic!")
+	end
+	return table.concat(parts, ", ")
+end
+
+local function giftsReady(): (boolean, boolean, boolean)
+	if profile == nil or profile.rewards == nil then
+		return false, false, false
+	end
+	local r = profile.rewards
+	local week = r.weekGot < r.weekDays
+	local month = false
+	for _, d in StationRewards.MILESTONES do
+		month = month or (r.monthDays >= d and not table.find(r.monthGot, d))
+	end
+	return week, month, StationRewards.canSpin(profile, Workspace:GetServerTimeNow())
+end
+
+local function boostChips(parent: Instance)
+	local now = Workspace:GetServerTimeNow()
+	for _, b in { { "hatch", "Hatching" }, { "train", "Training" } } do
+		local left = StationProgress.boostLeft(profile, b[1], now)
+		if left > 0 then
+			Style.chip(parent, `{b[2]} x2: {Format.ago(left)}`, C.info, Color3.new(1, 1, 1))
+		end
+	end
+end
+
+local function weekView()
+	local r = profile.rewards
+	local head = Style.text(
+		gifts.body,
+		`Day {math.min(r.weekGot + 1, 7)} of 7 · new rewards every Monday`,
+		18,
+		C.muted,
+		UDim2.new(1, -12, 0, 24)
+	)
+	head.LayoutOrder = 0
+	for k, spec in StationRewards.WEEK do
+		local got, ready = k <= r.weekGot, k == r.weekGot + 1 and r.weekGot < r.weekDays
+		local card =
+			Style.card(gifts.body, UDim2.fromOffset(150, 190), if got then C.good elseif k == 7 then C.accent else nil)
+		card.LayoutOrder = k
+		local t = Style.text(card, `Day {k}`, 20, C.text, UDim2.new(1, -20, 0, 24))
+		t.Position = UDim2.fromOffset(10, 8)
+		local words =
+			Style.text(card, rewardWords(StationRewards.resolve(profile, spec)), 14, C.muted, UDim2.new(1, -20, 0, 84))
+		words.Position = UDim2.fromOffset(10, 36)
+		local b = Style.button(card, if got then "Claimed" elseif ready then "Claim" else "Log in more", function()
+			send("claim_week")
+		end, if ready then "good" else "off")
+		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 132), UDim2.new(1, -20, 0, 44), 16
+	end
+end
+
+local function monthView()
+	local r = profile.rewards
+	local head = Style.text(
+		gifts.body,
+		`Days logged this month: {r.monthDays} · a missed day never resets it`,
+		18,
+		C.muted,
+		UDim2.new(1, -12, 0, 24)
+	)
+	head.LayoutOrder = 0
+	for k, d in StationRewards.MILESTONES do
+		local spec = StationRewards.MONTH[d]
+		local got = table.find(r.monthGot, d) ~= nil
+		local ready = not got and r.monthDays >= d
+		local items = StationRewards.resolve(profile, spec, StationRewards.monthOf(Workspace:GetServerTimeNow()))
+		local card =
+			Style.card(gifts.body, UDim2.fromOffset(150, 190), if got then C.good elseif d == 28 then C.accent else nil)
+		card.LayoutOrder = k
+		local t = Style.text(card, `Day {d}`, 20, C.text, UDim2.new(1, -20, 0, 24))
+		t.Position = UDim2.fromOffset(10, 8)
+		if items.rainbow then
+			local view = Portrait.new(
+				card,
+				StationRules.assetOf(items.rainbow, nil),
+				{ size = UDim2.fromOffset(72, 64), rainbow = true, background = C.cardHi }
+			)
+			view.Position = UDim2.fromOffset(68, 6)
+		end
+		local words = Style.text(card, rewardWords(items), 14, C.muted, UDim2.new(1, -20, 0, 60))
+		words.Position = UDim2.fromOffset(10, 72)
+		local label = if got then "Claimed" elseif ready then "Claim" else `{d - r.monthDays} more days`
+		local b = Style.button(card, label, function()
+			send("claim_month", d)
+		end, if ready then "good" else "off")
+		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 132), UDim2.new(1, -20, 0, 44), 16
+	end
+end
+
+-- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer.
+local wheelTurn = 0
+local function wheelView()
+	local holder = Instance.new("Frame")
+	holder.BackgroundTransparency = 1
+	holder.Size, holder.LayoutOrder = UDim2.new(1, -12, 0, 360), 1
+	holder.Parent = gifts.body
+	local disc = Instance.new("Frame")
+	disc.Name = "Wheel"
+	disc.AnchorPoint, disc.Position, disc.Size =
+		Vector2.new(0, 0.5), UDim2.new(0, 10, 0.5, 0), UDim2.fromOffset(320, 320)
+	disc.BackgroundColor3 = C.sand
+	disc.Rotation = wheelTurn % 360
+	Style.round(disc, 160)
+	Style.stroke(disc, C.ink, 5)
+	disc.Parent = holder
+	local colours = {
+		C.cardHi,
+		C.accent,
+		Color3.fromRGB(201, 238, 176),
+		Color3.fromRGB(166, 216, 245),
+		C.info,
+		C.good,
+		Color3.fromRGB(247, 163, 189),
+		C.gold,
+	}
+	local n = #StationRewards.WHEEL
+	for k, slice in StationRewards.WHEEL do
+		local a = math.rad((k - 1) * 360 / n - 90)
+		local bubble = Instance.new("TextLabel")
+		bubble.AnchorPoint = Vector2.new(0.5, 0.5)
+		bubble.Position = UDim2.new(0.5, math.cos(a) * 112, 0.5, math.sin(a) * 112)
+		bubble.Size = UDim2.fromOffset(78, 78)
+		bubble.BackgroundColor3 = colours[k]
+		bubble.Font = Ui.theme.font
+		bubble.Text = slice.name
+		bubble.TextWrapped, bubble.TextSize, bubble.TextColor3 = true, 13, C.ink
+		bubble.Rotation = (k - 1) * 360 / n
+		Style.round(bubble, 39)
+		Style.stroke(bubble, C.ink, 3)
+		if k == n then
+			local g = Instance.new("UIGradient")
+			g.Color = RAINBOW
+			g.Parent = bubble
+		end
+		bubble.Parent = disc
+	end
+	local hub = Style.text(disc, "SPIN", 22, C.ink, UDim2.fromOffset(84, 84))
+	hub.AnchorPoint, hub.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
+	hub.BackgroundTransparency, hub.BackgroundColor3 = 0, C.accent
+	hub.TextXAlignment = Enum.TextXAlignment.Center
+	Style.round(hub, 42)
+	Style.stroke(hub, C.ink, 4)
+	local pointer = Style.text(holder, "▼", 40, C.bad, UDim2.fromOffset(40, 40))
+	pointer.AnchorPoint, pointer.Position = Vector2.new(0.5, 0), UDim2.fromOffset(170, -6)
+	pointer.TextXAlignment, pointer.ZIndex = Enum.TextXAlignment.Center, 5
+	Style.outline(pointer)
+
+	local side = Instance.new("Frame")
+	side.BackgroundTransparency = 1
+	side.Position, side.Size = UDim2.fromOffset(350, 0), UDim2.new(1, -350, 1, 0)
+	Style.list(side, 6)
+	side.Parent = holder
+	local can = StationRewards.canSpin(profile, Workspace:GetServerTimeNow())
+	local nextIn = (StationRewards.day(Workspace:GetServerTimeNow()) + 1) * 86400 - Workspace:GetServerTimeNow()
+	local status = if can
+		then (if profile.rewards.spins > 0
+			then `Spins ready: {profile.rewards.spins + (if profile.rewards.spinDay
+					< StationRewards.day(Workspace:GetServerTimeNow())
+				then 1
+				else 0)}`
+			else "Your free spin is ready!")
+		else `Next free spin in {Format.ago(nextIn)}`
+	Style.text(side, status, 18, C.text, UDim2.new(1, 0, 0, 26)).LayoutOrder = 1
+	local b = Style.button(side, "Spin it!", function()
+		if spinning then
+			return
+		end
+		spinning = true
+		local ok, code = request:InvokeServer("spin")
+		if not ok then
+			spinning = false
+			Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
+		end
+	end, if can then "primary" else "off", UDim2.new(1, 0, 0, 52))
+	b.LayoutOrder, b.TextSize = 2, 22
+	local odds = Style.text(side, "THE ODDS", 13, C.muted, UDim2.new(1, 0, 0, 18))
+	odds.LayoutOrder = 3
+	for k, slice in StationRewards.WHEEL do
+		local per = slice.ppm / 10000
+		local line =
+			Style.text(side, `{slice.name}: {per}%`, 14, if k == n then C.bad else C.muted, UDim2.new(1, 0, 0, 18))
+		line.LayoutOrder = 3 + k
+	end
+	local pity = Style.text(
+		side,
+		`After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`,
+		13,
+		C.muted,
+		UDim2.new(1, 0, 0, 34)
+	)
+	pity.LayoutOrder = 20
+	return disc
+end
+
+local wheelDisc: Frame? = nil
+redraw.gifts = function()
+	if spinning then
+		return -- the wheel is turning: it redraws when it stops
+	end
+	Style.clear(gifts.body)
+	Style.clear(gifts.chips)
+	Style.clear(gifts.tabs)
+	local week, month, spin = giftsReady()
+	for _, t in { { "week", "This week", week }, { "month", "This month", month }, { "wheel", "Daily wheel", spin } } do
+		Style.tab(gifts, t[2], giftsTab == t[1], function()
+			giftsTab = t[1]
+			redraw.gifts()
+		end, if t[3] then "!" else nil)
+	end
+	boostChips(gifts.chips)
+	Style.chip(gifts.chips, "Resets at midnight UTC")
+	wheelDisc = nil
+	if giftsTab == "week" then
+		weekView()
+	elseif giftsTab == "month" then
+		monthView()
+	else
+		wheelDisc = wheelView()
+	end
+end
+
+-- The wheel stops on the prize the server rolled, then says what it was.
+local function landWheel(payload: any)
+	local n = #StationRewards.WHEEL
+	local slice = 360 / n
+	local target = -((payload.prize - 1) * slice) + math.random(-12, 12)
+	wheelTurn += 360 * 5 + ((target - wheelTurn) % 360)
+	local disc = wheelDisc
+	local function done()
+		spinning = false
+		local words = rewardWords(payload.items)
+		if payload.items.jackpot and payload.mythic then
+			local va = StationConfig.variant(payload.mythic.s, payload.mythic.v)
+			words = `JACKPOT! A Rainbow {if va then va.name else "mythic"}!`
+		end
+		Style.sound("claim")
+		Style.toast(screen, `You won: {words}`, 5, "good")
+		if openName == "gifts" then
+			redraw.gifts()
+		end
+	end
+	if disc and disc.Parent then
+		local t = TweenService:Create(
+			disc,
+			TweenInfo.new(4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+			{ Rotation = wheelTurn }
+		)
+		t.Completed:Connect(done)
+		t:Play()
+	else
+		done()
+	end
 end
 
 -- Trading (decision 0084) ---------------------------------------------------------------------------------
@@ -1986,11 +2289,13 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 			local ready, now = 0, Workspace:GetServerTimeNow()
 			for _, e in profile.eggs do
 				local def = e.since and StationConfig.egg(e.egg)
-				if def and now >= e.since + StationProgress.hatchSeconds(profile, def) then
+				if def and now >= (StationProgress.dueAt(profile, e) :: number) then
 					ready += 1
 				end
 			end
 			eggsDot.Text, eggsDot.Visible = tostring(ready), ready > 0
+			local week, month, spin = giftsReady()
+			giftsDot.Text, giftsDot.Visible = "!", week or month or spin
 		end
 		if openName == "animals" then
 			for _, tick in tickers do
@@ -2029,7 +2334,11 @@ end)
 
 fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	if kind == "profile" then
+		local first = profile == nil
 		profile = payload
+		if first then
+			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
+		end
 		refresh()
 	elseif kind == "hatched" then
 		local lucky = ""
@@ -2106,6 +2415,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if openName == "trade" then
 			redraw.trade()
 		end
+	elseif kind == "reward" then
+		Style.sound("claim")
+		Style.toast(screen, `You got: {rewardWords(payload.items)}`, 4, "good")
+	elseif kind == "spun" then
+		landWheel(payload)
 	elseif kind == "collected" then
 		Style.toast(
 			screen,
