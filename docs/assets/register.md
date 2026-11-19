@@ -507,14 +507,14 @@ ForgeGUI creature models: SHANNON to confirm (checkpoint in STATION-098).
 
 | Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
 |----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
-| 77373980508668 | ForgeGUI sound, button press | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("press")` | In moderation at build |
-| 95674872035214 | ForgeGUI sound, pointer over a button | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("hover")` | In moderation at build |
-| 124276619105004 | ForgeGUI sound, greyed-out button | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("denied")` | In moderation at build |
-| 74792139934627 | ForgeGUI sound, tab change | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("tab")` | In moderation at build |
-| 81025320537756 | ForgeGUI sound, menu opens | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.6 s | Not used: it sounded like the purchase ka-ching (menus use "tab") | Unused |
-| 97509016133658 | ForgeGUI sound, menu closes | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("close")` | Approved |
-| 112913492194575 | ForgeGUI sound, reward claimed | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.2 s | `Style.sound("claim")` | Approved |
-| 122912592356212 | ForgeGUI sound, ka-ching on a purchase | SHANNON's ForgeGUI account | ForgeGUI terms (to confirm) | None known | Owner's experiences | MP3, 1.0 s | `Style.sound("buy")` | Approved |
+| 77373980508668 | ForgeGUI sound, button press | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("press")` | In moderation at build |
+| 95674872035214 | ForgeGUI sound, pointer over a button | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("hover")` | In moderation at build |
+| 124276619105004 | ForgeGUI sound, greyed-out button | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("denied")` | In moderation at build |
+| 74792139934627 | ForgeGUI sound, tab change | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("tab")` | In moderation at build |
+| 81025320537756 | ForgeGUI sound, menu opens | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 0.6 s | Not used: it sounded like the purchase ka-ching (menus use "tab") | Unused |
+| 97509016133658 | ForgeGUI sound, menu closes | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 0.5 s | `Style.sound("close")` | Approved |
+| 112913492194575 | ForgeGUI sound, reward claimed | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 1.2 s | `Style.sound("claim")` | Approved |
+| 122912592356212 | ForgeGUI sound, ka-ching on a purchase | SHANNON's ForgeGUI account | ForgeGUI terms (confirmed by SHANNON, 2026-11-19) | None known | Owner's experiences | MP3, 1.0 s | `Style.sound("buy")` | Approved |
 
 ## Animal Stations Ranch menu pictures (STATION-098)
 
