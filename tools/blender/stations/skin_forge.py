@@ -60,7 +60,79 @@ def lion_weights(p):
     return {k: v for k, v in w.items() if v > 0.001}
 
 
+def jackal_weights(p):
+    """The ForgeGUI jackal (job c93507d6): slim, the head up on a neck at y < -0.26, thin legs leaving the
+    body below z -0.04 (front at y -0.21, x 0.035 and -0.107; hind at y 0.07..0.27, x 0.065 and -0.075),
+    and a bushy tail that hangs down behind the left hind leg from y 0.27."""
+    tail = ramp(0.255, 0.3, p.y)
+    head = ramp(-0.24, -0.31, p.y) * ramp(-0.02, 0.06, p.z)
+    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+    legs, down = (), 0.0
+    if -0.31 < p.y < -0.12:
+        legs, down = (("leg_fl", 0.035), ("leg_fr", -0.107)), ramp(-0.03, -0.09, p.z)
+    elif 0.05 < p.y < 0.28:
+        legs, down = (("leg_bl", 0.065), ("leg_br", -0.075)), ramp(-0.02, -0.08, p.z)
+    for leg, x in legs:
+        if abs(p.x - x) < 0.045 and down > 0:  # the leg's share grows below the body
+            w = {k: v * (1 - down) for k, v in w.items()}
+            w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def tortoise_weights(p):
+    """The ForgeGUI tortoise (job bfdcf1b3): a wide shell, the head out on a neck from y -0.31, short legs
+    under the shell's sides (front y -0.3..0, hind y 0..0.17, |x| 0.07..0.25) leaving it below z -0.07,
+    and a spiky tail along the ground from y 0.22."""
+    head = ramp(-0.30, -0.345, p.y)
+    tail = ramp(0.215, 0.26, p.y) * ramp(0.0, -0.04, p.z)
+    w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
+    leg, down = None, 0.0
+    if 0.07 < abs(p.x) < 0.25:
+        if -0.31 < p.y < 0.0:
+            leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.07, -0.11, p.z)
+        elif -0.02 < p.y < 0.17:  # lower: the shell's underside spans the back half at z -0.1
+            leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.095, -0.13, p.z)
+    if leg and down > 0:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
 REGIONS = {
+    "creature_jackal_forge": {
+        "length": 7.4,  # the Blender jackal's length (StationAssets.creature_jackal.size)
+        "joints": {
+            "body": (-0.035, 0.0, 0.02),
+            "head": (0.03, -0.26, 0.1),
+            "leg_fl": (0.035, -0.21, -0.04),
+            "leg_fr": (-0.107, -0.21, -0.04),
+            "leg_bl": (0.065, 0.15, -0.02),
+            "leg_br": (-0.075, 0.15, -0.02),
+            "tail": (0.04, 0.26, 0.04),
+        },
+        "weights": jackal_weights,
+        "small": 0.06,
+        "shade": "smooth",
+        "turn": False,  # its faces already face out; the ray test misreads the thin ears and neck
+        "notes": "Jackal: the ForgeGUI model (job c93507d6), one mesh, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_tortoise_forge": {
+        "length": 10.1,  # the Blender tortoise's length (StationAssets.creature_tortoise.size)
+        "joints": {
+            "body": (0.0, -0.05, 0.0),
+            "head": (0.0, -0.31, 0.0),
+            "leg_fl": (0.15, -0.17, -0.08),
+            "leg_fr": (-0.15, -0.17, -0.08),
+            "leg_bl": (0.15, 0.07, -0.1),
+            "leg_br": (-0.15, 0.07, -0.1),
+            "tail": (0.0, 0.22, -0.09),
+        },
+        "weights": tortoise_weights,
+        "small": 0.06,
+        "tris": 5000,
+        "shade": "smooth",
+        "notes": "Tortoise: the ForgeGUI model (job bfdcf1b3), one mesh, skinned to the Stations rig (decision 0102).",
+    },
     "creature_lion_forge": {
         "length": 13.0,  # the Blender lion's length (StationAssets.creature_lion.size)
         "joints": {
@@ -80,7 +152,7 @@ REGIONS = {
 }
 
 
-def tidy(me, weld, shade):
+def tidy(me, weld, shade, turn=True):
     """ForgeGUI's faceted models come as thousands of loose pieces that mostly touch, a third of their faces
     turned inwards. Roblox draws only a face's front, so those show as holes. Join the vertices that sit at
     the same spot (`weld`, in the source's units; each face keeps its own UVs), then turn every face out:
@@ -109,7 +181,7 @@ def tidy(me, weld, shade):
                 out += 1 if hit[0] is None else 0
             return out
 
-        if escapes(-1) > escapes(1):
+        if turn and escapes(-1) > escapes(1):
             f.normal_flip()
             flipped += 1
     bm.normal_update()
@@ -155,7 +227,13 @@ def main():
     bpy.context.view_layer.objects.active = body
     body.select_set(True)
     bpy.ops.mesh.customdata_custom_splitnormals_clear()
-    tidy(body.data, spec.get("weld", 0.0005), spec.get("shade", "flat"))
+    tidy(body.data, spec.get("weld", 0.0005), spec.get("shade", "flat"), spec.get("turn", True))
+    have = sum(len(p.vertices) - 2 for p in body.data.polygons)
+    if have > spec.get("tris", have):  # a dense model is thinned, so a crowd of them stays smooth
+        thin = body.modifiers.new("thin", "DECIMATE")
+        thin.ratio = spec["tris"] / have
+        bpy.ops.object.modifier_apply(modifier=thin.name)
+        print("THINNED", have, "->", sum(len(p.vertices) - 2 for p in body.data.polygons))
 
     # each vertex's weights from where it is; a small island takes its average, so it moves whole
     bm = bmesh.new()

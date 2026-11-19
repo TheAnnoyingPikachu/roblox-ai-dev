@@ -2739,6 +2739,48 @@ local StationAssets: { [string]: Asset } = {
 		skinned = true,
 		root = { -0.001, 2.806, 0.343 },
 	},
+	creature_jackal_forge = {
+		size = { 2.08, 5.45, 7.4 },
+		parts = { "creature_jackal_forge_body" },
+		glow = {},
+		centres = {
+			creature_jackal_forge_body = { 0, 2.723, 0 },
+		},
+		joints = {
+			creature_jackal_forge_head = { 0.239, 3.495, 2.022 },
+			creature_jackal_forge_leg_fl = { 0.278, 2.399, 1.631 },
+			creature_jackal_forge_leg_fr = { -0.834, 2.399, 1.631 },
+			creature_jackal_forge_leg_bl = { 0.513, 2.555, -1.188 },
+			creature_jackal_forge_leg_br = { -0.583, 2.555, -1.188 },
+			creature_jackal_forge_tail = { 0.317, 3.025, -2.049 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { -0.27, 2.868, -0.013 },
+	},
+	creature_tortoise_forge = {
+		size = { 5.51, 4.11, 10.1 },
+		parts = { "creature_tortoise_forge_body" },
+		glow = {},
+		centres = {
+			creature_tortoise_forge_body = { 0, 2.057, 0 },
+		},
+		joints = {
+			creature_tortoise_forge_head = { -0.001, 2.047, 3.276 },
+			creature_tortoise_forge_leg_fl = { 1.58, 1.203, 1.8 },
+			creature_tortoise_forge_leg_fr = { -1.582, 1.203, 1.8 },
+			creature_tortoise_forge_leg_bl = { 1.58, 0.992, -0.731 },
+			creature_tortoise_forge_leg_br = { -1.582, 0.992, -0.731 },
+			creature_tortoise_forge_tail = { -0.001, 1.098, -2.312 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { -0.001, 2.047, 0.535 },
+	},
 }
 
 return StationAssets

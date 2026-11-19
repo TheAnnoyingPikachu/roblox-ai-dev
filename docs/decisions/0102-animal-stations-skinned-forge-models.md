@@ -54,7 +54,25 @@ Date: 2026-11-19. Task STATION-109.
 - `Creatures.build` draws a skinned mesh two-sided (`MeshPart.DoubleSided`) in case a thin piece remains.
 - ForgeGUI's own animation (the paid route) stays the fallback if this rig is not good enough.
 
+## The jackal and the tortoise (same day)
+
+- SHANNON asked for as many animals as the credits allowed, base animals first, then varieties, then
+  enemies, and to see each model before it was rigged.
+- Each model at high quality costs 4,000 credits. Three were made (jackal, tortoise, meerkat) before the
+  account ran out (3,476 left). The other prompts were not charged.
+- SHANNON saw them on a preview page and chose the jackal and the tortoise. The meerkat was left out: its
+  dark back bands came out as scattered black triangles in its texture.
+- Both are single pieces with no baseplate. Each has its own weights (`jackal_weights`,
+  `tortoise_weights` in skin_forge.py, from measured leg and tail columns) and smooth shading.
+- The tortoise is thinned to 5,000 triangles. The jackal stays at full detail (14,103): thinned, its
+  smooth shading showed dark patches.
+- The jackal's faces are not re-turned (`turn: False`): they already face out, and the ray test misread its
+  thin ears and neck.
+- `StationRules.FORGE` now lists the jackal, the lion and the tortoise. Their varieties keep the Blender
+  models.
+
 ## Facts
 
-- The source is in `assets/stations/sources/creature_lion_forge.glb` (ForgeGUI artifact 4fffb41e).
+- The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact
+  4fffb41e), the jackal (job c93507d6) and the tortoise (job bfdcf1b3).
 - 2,961 triangles, 1,484 vertices once joined, one piece; one 1024 texture.
