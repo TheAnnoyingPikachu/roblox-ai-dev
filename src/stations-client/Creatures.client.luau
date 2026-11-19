@@ -1943,7 +1943,13 @@ local CUES: { [string]: (Model, Color3, boolean, number) -> () } = {
 
 -- Where a rig's legs are, for keeping its feet on the ground: the body joint's frame on the root, and
 -- for each leg its joint's frame on the body and the corners of its box seen from that joint.
-type Feet = { base: CFrame, legs: { { joint: string, frame: CFrame, points: { Vector3 } } }, ground: number }
+type Feet = {
+	base: CFrame,
+	legs: { { joint: string, frame: CFrame, points: { Vector3 } } },
+	ground: number,
+	body: { Vector3 }, -- the corners of the body's box, seen from its joint
+	floor: number, -- how low the body may go: no lower than it rests (a sitting or rearing pose dips it)
+}
 
 type Rig = {
 	model: Model,
@@ -2015,7 +2021,22 @@ local function feetOf(joints: { [string]: Motor6D }): Feet?
 		end
 		table.insert(legs, { joint = name, frame = frame, points = points })
 	end
-	return { base = body.C0, legs = legs, ground = ground }
+	local trunk, lowest = {}, ground
+	local part = body.Part1
+	if part then
+		local half, back = part.Size / 2, body.C1:Inverse()
+		for i = 0, 7 do
+			local p = back
+				* Vector3.new(
+					if i % 2 == 0 then half.X else -half.X,
+					if i // 2 % 2 == 0 then half.Y else -half.Y,
+					if i // 4 == 0 then half.Z else -half.Z
+				)
+			table.insert(trunk, p)
+			lowest = math.min(lowest, (body.C0 * p).Y)
+		end
+	end
+	return { base = body.C0, legs = legs, ground = ground, body = trunk, floor = lowest }
 end
 
 local function turned(v: { number }, scale: number): CFrame
@@ -2023,8 +2044,9 @@ local function turned(v: { number }, scale: number): CFrame
 		* CFrame.Angles(math.rad(v[1]), math.rad(v[2]), math.rad(v[3]))
 end
 
--- How far (studs) the pose `now` pushes a leg under the ground it stands on: the body is lifted by as
--- much, so no clip has to be fitted to every animal's legs. A leg's box stands in for its mesh.
+-- How far (studs) the pose `now` pushes a leg under the ground it stands on, or the body lower than it
+-- rests (a sit, a rear, a tuck): the body is lifted by as much, so no clip has to be fitted to every
+-- animal. A piece's box stands in for its mesh.
 local function sunk(feet: Feet, now: { [string]: { number } }, scale: number): number
 	local body = feet.base * turned(now.body, scale)
 	local low = math.huge
@@ -2034,7 +2056,11 @@ local function sunk(feet: Feet, now: { [string]: { number } }, scale: number): n
 			low = math.min(low, (at * p).Y)
 		end
 	end
-	return math.max(0, feet.ground - low)
+	local trunk = math.huge
+	for _, p in feet.body do
+		trunk = math.min(trunk, (body * p).Y)
+	end
+	return math.max(0, feet.ground - low, feet.floor - trunk)
 end
 
 -- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,

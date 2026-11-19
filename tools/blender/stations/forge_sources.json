@@ -91,11 +91,12 @@
     "notes": "Rhino (ForgeGUI): heavy grey armour plates, two faceted horns."
   },
   "creature_rhino_crystal": {
-    "plan": "rhino_crystal",
+    "plan": "rhino",
     "height": 11.53,
-    "job": "42dc6ef4-19d9-4734-9abc-c7ab2a6f4ed0",
-    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/42dc6ef4-19d9-4734-9abc-c7ab2a6f4ed0/972d5b537aa15b05a1b0240207eb0c2816d6671bf1b31d459eda53e011cb7f04.glb",
-    "notes": "Crystal Rhino (ForgeGUI, legendary): cracked stone grown through with a crest of rainbow crystals, a glowing cyan nose horn, a crystal mace tail."
+    "job": "9908bb6a-1392-43e3-84eb-21a9e19c726a",
+    "url": "https://azyjlkhpdgafuobyxoax.supabase.co/storage/v1/object/public/asset-models/11cb1c8a-4352-4db8-bc59-0471e1002679/_forgegui-publication/9908bb6a-1392-43e3-84eb-21a9e19c726a/8d2c2db55de0d478e2ce6132563832ea01ad888b6ca3c0caa9f9e61ee304cc98.glb",
+    "notes": "Crystal Rhino (ForgeGUI, legendary): a rhino of faceted grey stone plates studded with cut gems, clear crystals along its back, a crystal horn.",
+    "sweep": true
   },
   "creature_rhino_lava": {
     "plan": "rhino",

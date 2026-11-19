@@ -150,8 +150,62 @@ def _keep_texture(ob):
     ob.data.uv_layers.active = ob.data.uv_layers["UVMap"]
 
 
+# Roblox draws only a face's front, and ForgeGUI builds manes, ears and fins from single open sheets, so
+# kit's bake gives every face a back (`both_sides`) and a piece is kept to half Roblox's 20,000 triangles.
+HALF = 9800
+
+
+def _thin(piece):
+    if len(piece.data.polygons) <= HALF:
+        return
+    mod = piece.modifiers.new("decimate", "DECIMATE")
+    mod.ratio = HALF / len(piece.data.polygons) * 0.98
+    with bpy.context.temp_override(object=piece, active_object=piece, selected_objects=[piece]):
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def _sweep(ob):
+    """Drops loose bits lying on the ground round the feet (gems a model was made with, from its concept):
+    a loose piece that is low and small and touches no other piece."""
+    lo, hi = k._ground_dims([ob])
+    tall, wide = hi.z - lo.z, max(hi.x - lo.x, hi.y - lo.y)
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    seen, litter = set(), []
+    for start in bm.faces:
+        if start.index in seen:
+            continue
+        island, todo = [], [start]
+        seen.add(start.index)
+        while todo:
+            f = todo.pop()
+            island.append(f)
+            for e in f.edges:
+                for g in e.link_faces:
+                    if g.index not in seen:
+                        seen.add(g.index)
+                        todo.append(g)
+        vs = [v.co for f in island for v in f.verts]
+        top = max(v.z for v in vs)
+        span = max(max(v.x for v in vs) - min(v.x for v in vs), max(v.y for v in vs) - min(v.y for v in vs))
+        if top - lo.z < 0.06 * tall and span < 0.08 * wide:
+            litter += island
+    bmesh.ops.delete(bm, geom=litter, context="FACES")
+    bm.to_mesh(ob.data)
+    bm.free()
+
+
+def _smooth(objs):
+    """finalize shades by angle (right for the hand-built facets); a ForgeGUI model is smooth-shaded."""
+    for o in objs:
+        for name in ("sharp_edge", "sharp_face"):
+            if name in o.data.attributes:
+                o.data.attributes.remove(o.data.attributes[name])
+        o.data.polygons.foreach_set("use_smooth", [True] * len(o.data.polygons))
+
+
 def cut(ob, rules):
-    """Splits `ob` into {piece: object} by `rules`, caps every cut and returns (pieces, joints)."""
+    """Splits `ob` into {piece: object} by `rules` and returns (pieces, joints)."""
     lo, hi = k._ground_dims([ob])
     size = hi - lo
     mid = (lo + hi) / 2
@@ -186,12 +240,11 @@ def cut(ob, rules):
         bm = bmesh.new()
         bm.from_mesh(piece.data)
         bm.faces.ensure_lookup_table()
+        # no caps: the models are many loose open pieces, so filling "holes" sprays faces over them
         bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.index not in keep], context="FACES")
-        edges = [e for e in bm.edges if e.is_boundary]
-        if edges:
-            bmesh.ops.holes_fill(bm, edges=edges, sides=0)
         bm.to_mesh(piece.data)
         bm.free()
+        _thin(piece)
         pieces[n] = piece
         if n == "body":
             continue
@@ -207,6 +260,8 @@ def cut(ob, rules):
 def maker(name, src):
     def build():
         ob = _import(_fetch(name, src["url"]))
+        if src.get("sweep"):
+            _sweep(ob)
         lo, hi = k._ground_dims([ob])
         scale = src["height"] / (hi.z - lo.z)
         ob.data.transform(Matrix.Translation(Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))))
@@ -219,10 +274,10 @@ def maker(name, src):
 
 
 # No AO or top light: the ForgeGUI texture already carries its own shading.
-BAKE = dict(ao_samples=1, ao_floor=1.0, toplight=0.0, margin=10, uv_margin=0.006)
+BAKE = dict(ao_samples=1, ao_floor=1.0, toplight=0.0, margin=10, uv_margin=0.006, uv_hook=_smooth)
 
 ASSETS = [
-    dict(name=name, build=maker(name, src), scale=1, budget=20000, finalize=BAKE, joints={}, glow={}, notes=src["notes"])
+    dict(name=name, build=maker(name, src), scale=1, budget=7 * HALF, finalize=BAKE, joints={}, glow={}, notes=src["notes"])
     for name, src in _sources().items()
 ]
 

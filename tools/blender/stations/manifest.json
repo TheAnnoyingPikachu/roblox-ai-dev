@@ -8,17 +8,17 @@
       7.82,
       16.11
     ],
-    "tris": 18830,
+    "tris": 15612,
     "parts": {
-      "creature_rhino_body": 4293,
-      "creature_rhino_head": 5507,
-      "creature_rhino_tail": 560,
-      "creature_rhino_leg_fl": 1770,
-      "creature_rhino_leg_fr": 1824,
-      "creature_rhino_leg_bl": 2418,
-      "creature_rhino_leg_br": 2458
+      "creature_rhino_body": 7030,
+      "creature_rhino_head": 9312,
+      "creature_rhino_tail": 978,
+      "creature_rhino_leg_fl": 2934,
+      "creature_rhino_leg_fr": 2938,
+      "creature_rhino_leg_bl": 4042,
+      "creature_rhino_leg_br": 3990
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Rhino (ForgeGUI): heavy grey armour plates, two faceted horns.",
     "glow": {},
@@ -101,17 +101,17 @@
       11.33,
       19.49
     ],
-    "tris": 18476,
+    "tris": 15323,
     "parts": {
-      "creature_rhino_lava_body": 7041,
-      "creature_rhino_lava_head": 3941,
-      "creature_rhino_lava_tail": 915,
-      "creature_rhino_lava_leg_fl": 1465,
-      "creature_rhino_lava_leg_fr": 1482,
-      "creature_rhino_lava_leg_bl": 1804,
-      "creature_rhino_lava_leg_br": 1828
+      "creature_rhino_lava_body": 11824,
+      "creature_rhino_lava_head": 6428,
+      "creature_rhino_lava_tail": 1434,
+      "creature_rhino_lava_leg_fl": 2482,
+      "creature_rhino_lava_leg_fr": 2520,
+      "creature_rhino_lava_leg_bl": 2960,
+      "creature_rhino_lava_leg_br": 2998
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Lava Rhino (ForgeGUI, mythic): charcoal rock split with glowing lava, a molten horn.",
     "glow": {},
@@ -194,17 +194,17 @@
       4.02,
       5.43
     ],
-    "tris": 19142,
+    "tris": 15666,
     "parts": {
-      "creature_jackal_body": 2412,
-      "creature_jackal_head": 8548,
-      "creature_jackal_tail": 1401,
-      "creature_jackal_leg_fl": 1917,
-      "creature_jackal_leg_fr": 1768,
-      "creature_jackal_leg_bl": 1511,
-      "creature_jackal_leg_br": 1585
+      "creature_jackal_body": 3836,
+      "creature_jackal_head": 13864,
+      "creature_jackal_tail": 2458,
+      "creature_jackal_leg_fl": 3026,
+      "creature_jackal_leg_fr": 2990,
+      "creature_jackal_leg_bl": 2584,
+      "creature_jackal_leg_br": 2574
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Jackal (ForgeGUI): tawny gold, a dark grey saddle, huge ears, a black-tipped tail.",
     "glow": {},
@@ -287,17 +287,17 @@
       5.09,
       6.89
     ],
-    "tris": 18578,
+    "tris": 15432,
     "parts": {
-      "creature_jackal_pharaoh_body": 3167,
-      "creature_jackal_pharaoh_head": 7802,
-      "creature_jackal_pharaoh_tail": 213,
-      "creature_jackal_pharaoh_leg_fl": 2389,
-      "creature_jackal_pharaoh_leg_fr": 2241,
-      "creature_jackal_pharaoh_leg_bl": 1385,
-      "creature_jackal_pharaoh_leg_br": 1381
+      "creature_jackal_pharaoh_body": 5134,
+      "creature_jackal_pharaoh_head": 12700,
+      "creature_jackal_pharaoh_tail": 296,
+      "creature_jackal_pharaoh_leg_fl": 4092,
+      "creature_jackal_pharaoh_leg_fr": 4086,
+      "creature_jackal_pharaoh_leg_bl": 2280,
+      "creature_jackal_pharaoh_leg_br": 2276
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Pharaoh Jackal (ForgeGUI, legendary): black, a gold and lapis headdress, gold bands, turquoise eyes and glyphs.",
     "glow": {},
@@ -380,17 +380,17 @@
       4.62,
       9.14
     ],
-    "tris": 16709,
+    "tris": 14070,
     "parts": {
-      "creature_cheetah_body": 619,
-      "creature_cheetah_head": 6104,
-      "creature_cheetah_tail": 218,
-      "creature_cheetah_leg_fl": 2568,
-      "creature_cheetah_leg_fr": 2686,
-      "creature_cheetah_leg_bl": 2146,
-      "creature_cheetah_leg_br": 2368
+      "creature_cheetah_body": 1022,
+      "creature_cheetah_head": 10162,
+      "creature_cheetah_tail": 314,
+      "creature_cheetah_leg_fl": 4452,
+      "creature_cheetah_leg_fr": 4428,
+      "creature_cheetah_leg_bl": 3908,
+      "creature_cheetah_leg_br": 3854
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Cheetah (ForgeGUI): lean gold with black spots and tear marks, a ringed tail.",
     "glow": {},
@@ -473,17 +473,17 @@
       6.0,
       11.01
     ],
-    "tris": 17494,
+    "tris": 14978,
     "parts": {
-      "creature_cheetah_lightning_body": 4133,
-      "creature_cheetah_lightning_head": 3697,
-      "creature_cheetah_lightning_tail": 297,
-      "creature_cheetah_lightning_leg_fl": 2287,
-      "creature_cheetah_lightning_leg_fr": 2213,
-      "creature_cheetah_lightning_leg_bl": 2421,
-      "creature_cheetah_lightning_leg_br": 2446
+      "creature_cheetah_lightning_body": 7148,
+      "creature_cheetah_lightning_head": 6284,
+      "creature_cheetah_lightning_tail": 472,
+      "creature_cheetah_lightning_leg_fl": 3852,
+      "creature_cheetah_lightning_leg_fr": 3826,
+      "creature_cheetah_lightning_leg_bl": 4226,
+      "creature_cheetah_lightning_leg_br": 4148
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Lightning Cheetah (ForgeGUI, mythic): white and electric blue, glowing bolt-shaped spots.",
     "glow": {},
@@ -566,17 +566,17 @@
       7.45,
       13.66
     ],
-    "tris": 11264,
+    "tris": 10179,
     "parts": {
-      "creature_lion_body": 1367,
-      "creature_lion_head": 5539,
-      "creature_lion_tail": 228,
-      "creature_lion_leg_fl": 972,
-      "creature_lion_leg_fr": 1022,
-      "creature_lion_leg_bl": 1092,
-      "creature_lion_leg_br": 1044
+      "creature_lion_body": 2414,
+      "creature_lion_head": 10340,
+      "creature_lion_tail": 390,
+      "creature_lion_leg_fl": 1716,
+      "creature_lion_leg_fr": 1732,
+      "creature_lion_leg_bl": 1886,
+      "creature_lion_leg_br": 1880
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Lion (ForgeGUI): warm tan, a layered spiky brown mane.",
     "glow": {},
@@ -659,17 +659,17 @@
       9.23,
       15.4
     ],
-    "tris": 19347,
+    "tris": 15714,
     "parts": {
-      "creature_lion_sun_body": 2431,
-      "creature_lion_sun_head": 10919,
-      "creature_lion_sun_tail": 322,
-      "creature_lion_sun_leg_fl": 1418,
-      "creature_lion_sun_leg_fr": 1407,
-      "creature_lion_sun_leg_bl": 1441,
-      "creature_lion_sun_leg_br": 1409
+      "creature_lion_sun_body": 3966,
+      "creature_lion_sun_head": 17490,
+      "creature_lion_sun_tail": 482,
+      "creature_lion_sun_leg_fl": 2360,
+      "creature_lion_sun_leg_fr": 2300,
+      "creature_lion_sun_leg_bl": 2318,
+      "creature_lion_sun_leg_br": 2512
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Sun Lion (ForgeGUI, mythic): a mane of sun rays, a sun emblem on its hip.",
     "glow": {},
@@ -752,17 +752,17 @@
       4.82,
       3.94
     ],
-    "tris": 16589,
+    "tris": 14079,
     "parts": {
-      "creature_meerkat_body": 3106,
-      "creature_meerkat_head": 8098,
-      "creature_meerkat_tail": 339,
-      "creature_meerkat_leg_fl": 446,
-      "creature_meerkat_leg_fr": 417,
-      "creature_meerkat_leg_bl": 2129,
-      "creature_meerkat_leg_br": 2054
+      "creature_meerkat_body": 5096,
+      "creature_meerkat_head": 13886,
+      "creature_meerkat_tail": 652,
+      "creature_meerkat_leg_fl": 674,
+      "creature_meerkat_leg_fr": 644,
+      "creature_meerkat_leg_bl": 3606,
+      "creature_meerkat_leg_br": 3600
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Meerkat (ForgeGUI): an upright sentinel, sandy with dark eye patches.",
     "glow": {},
@@ -845,17 +845,17 @@
       6.7,
       4.51
     ],
-    "tris": 17760,
+    "tris": 15177,
     "parts": {
-      "creature_meerkat_storm_body": 6393,
-      "creature_meerkat_storm_head": 6807,
-      "creature_meerkat_storm_tail": 251,
-      "creature_meerkat_storm_leg_fl": 284,
-      "creature_meerkat_storm_leg_fr": 684,
-      "creature_meerkat_storm_leg_bl": 1664,
-      "creature_meerkat_storm_leg_br": 1677
+      "creature_meerkat_storm_body": 10686,
+      "creature_meerkat_storm_head": 11840,
+      "creature_meerkat_storm_tail": 398,
+      "creature_meerkat_storm_leg_fl": 534,
+      "creature_meerkat_storm_leg_fr": 1206,
+      "creature_meerkat_storm_leg_bl": 2754,
+      "creature_meerkat_storm_leg_br": 2936
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Storm Meerkat (ForgeGUI, legendary): slate blue, goggles, a storm cloud over its head, lightning at its feet.",
     "glow": {},
@@ -938,17 +938,17 @@
       4.33,
       7.29
     ],
-    "tris": 18104,
+    "tris": 14926,
     "parts": {
-      "creature_tortoise_body": 3549,
-      "creature_tortoise_head": 2461,
-      "creature_tortoise_tail": 160,
-      "creature_tortoise_leg_fl": 3500,
-      "creature_tortoise_leg_fr": 3505,
-      "creature_tortoise_leg_bl": 2438,
-      "creature_tortoise_leg_br": 2491
+      "creature_tortoise_body": 5908,
+      "creature_tortoise_head": 4026,
+      "creature_tortoise_tail": 262,
+      "creature_tortoise_leg_fl": 5696,
+      "creature_tortoise_leg_fr": 5748,
+      "creature_tortoise_leg_bl": 4108,
+      "creature_tortoise_leg_br": 4104
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Tortoise (ForgeGUI): a tall olive shell of faceted scutes.",
     "glow": {},
@@ -1031,17 +1031,17 @@
       4.79,
       7.95
     ],
-    "tris": 18552,
+    "tris": 15204,
     "parts": {
-      "creature_tortoise_gemshell_body": 5502,
-      "creature_tortoise_gemshell_head": 2450,
-      "creature_tortoise_gemshell_tail": 389,
-      "creature_tortoise_gemshell_leg_fl": 2464,
-      "creature_tortoise_gemshell_leg_fr": 2522,
-      "creature_tortoise_gemshell_leg_bl": 2549,
-      "creature_tortoise_gemshell_leg_br": 2676
+      "creature_tortoise_gemshell_body": 9122,
+      "creature_tortoise_gemshell_head": 3842,
+      "creature_tortoise_gemshell_tail": 702,
+      "creature_tortoise_gemshell_leg_fl": 4110,
+      "creature_tortoise_gemshell_leg_fr": 4120,
+      "creature_tortoise_gemshell_leg_bl": 4228,
+      "creature_tortoise_gemshell_leg_br": 4284
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Gemshell Tortoise (ForgeGUI, legendary): a shell of cut gems in gold, crystals on its legs.",
     "glow": {},
@@ -1124,17 +1124,17 @@
       8.04,
       4.41
     ],
-    "tris": 17723,
+    "tris": 15080,
     "parts": {
-      "creature_flamingo_body": 1121,
-      "creature_flamingo_head": 4908,
-      "creature_flamingo_leg_fl": 3930,
-      "creature_flamingo_leg_fr": 3867,
-      "creature_flamingo_tail": 490,
-      "creature_flamingo_leg_bl": 1688,
-      "creature_flamingo_leg_br": 1719
+      "creature_flamingo_body": 1946,
+      "creature_flamingo_head": 8568,
+      "creature_flamingo_leg_fl": 6490,
+      "creature_flamingo_leg_fr": 6484,
+      "creature_flamingo_tail": 912,
+      "creature_flamingo_leg_bl": 2886,
+      "creature_flamingo_leg_br": 2874
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Flamingo (ForgeGUI): faceted pink feathers; its wings are the back-leg pieces.",
     "glow": {},
@@ -1217,17 +1217,17 @@
       11.3,
       8.84
     ],
-    "tris": 18814,
+    "tris": 15525,
     "parts": {
-      "creature_flamingo_phoenix_body": 6413,
-      "creature_flamingo_phoenix_head": 4217,
-      "creature_flamingo_phoenix_leg_fl": 2384,
-      "creature_flamingo_phoenix_leg_fr": 2539,
-      "creature_flamingo_phoenix_tail": 327,
-      "creature_flamingo_phoenix_leg_bl": 1570,
-      "creature_flamingo_phoenix_leg_br": 1364
+      "creature_flamingo_phoenix_body": 10644,
+      "creature_flamingo_phoenix_head": 7070,
+      "creature_flamingo_phoenix_leg_fl": 3968,
+      "creature_flamingo_phoenix_leg_fr": 3926,
+      "creature_flamingo_phoenix_tail": 562,
+      "creature_flamingo_phoenix_leg_bl": 2608,
+      "creature_flamingo_phoenix_leg_br": 2272
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Phoenix Flamingo (ForgeGUI, mythic): feathers of flame, burning wings and tail.",
     "glow": {},
@@ -1310,17 +1310,17 @@
       14.14,
       17.85
     ],
-    "tris": 14009,
+    "tris": 12124,
     "parts": {
-      "creature_elephant_body": 2924,
-      "creature_elephant_head": 5882,
-      "creature_elephant_tail": 169,
-      "creature_elephant_leg_fl": 478,
-      "creature_elephant_leg_fr": 514,
-      "creature_elephant_leg_bl": 2023,
-      "creature_elephant_leg_br": 2019
+      "creature_elephant_body": 5194,
+      "creature_elephant_head": 10222,
+      "creature_elephant_tail": 280,
+      "creature_elephant_leg_fl": 870,
+      "creature_elephant_leg_fr": 966,
+      "creature_elephant_leg_bl": 3400,
+      "creature_elephant_leg_br": 3316
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Elephant (ForgeGUI, Titan): massive grey plates, ivory tusks, trunk raised.",
     "glow": {},
@@ -1403,17 +1403,17 @@
       19.4,
       28.99
     ],
-    "tris": 19608,
+    "tris": 15804,
     "parts": {
-      "creature_elephant_frost_body": 7472,
-      "creature_elephant_frost_head": 3358,
-      "creature_elephant_frost_tail": 294,
-      "creature_elephant_frost_leg_fl": 1045,
-      "creature_elephant_frost_leg_fr": 1104,
-      "creature_elephant_frost_leg_bl": 3212,
-      "creature_elephant_frost_leg_br": 3123
+      "creature_elephant_frost_body": 12060,
+      "creature_elephant_frost_head": 5348,
+      "creature_elephant_frost_tail": 552,
+      "creature_elephant_frost_leg_fl": 1774,
+      "creature_elephant_frost_leg_fr": 1740,
+      "creature_elephant_frost_leg_bl": 5060,
+      "creature_elephant_frost_leg_br": 5074
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Frost Mammoth (ForgeGUI, mythic): shaggy white-blue fur, ice tusks, icicles.",
     "glow": {},
@@ -2197,17 +2197,17 @@
       8.48,
       13.75
     ],
-    "tris": 17497,
+    "tris": 14063,
     "parts": {
-      "creature_lion_shadow_body": 2376,
-      "creature_lion_shadow_head": 9812,
-      "creature_lion_shadow_tail": 190,
-      "creature_lion_shadow_leg_fl": 1008,
-      "creature_lion_shadow_leg_fr": 966,
-      "creature_lion_shadow_leg_bl": 1549,
-      "creature_lion_shadow_leg_br": 1596
+      "creature_lion_shadow_body": 3684,
+      "creature_lion_shadow_head": 15932,
+      "creature_lion_shadow_tail": 312,
+      "creature_lion_shadow_leg_fl": 1556,
+      "creature_lion_shadow_leg_fr": 1572,
+      "creature_lion_shadow_leg_bl": 2468,
+      "creature_lion_shadow_leg_br": 2602
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Shadow Lion (ForgeGUI, legendary): purple-black with a violet mane and glowing eyes.",
     "glow": {},
@@ -2290,17 +2290,17 @@
       19.39,
       20.07
     ],
-    "tris": 17422,
+    "tris": 14934,
     "parts": {
-      "creature_elephant_war_body": 10727,
-      "creature_elephant_war_head": 3087,
-      "creature_elephant_war_tail": 75,
-      "creature_elephant_war_leg_fl": 1038,
-      "creature_elephant_war_leg_fr": 1013,
-      "creature_elephant_war_leg_bl": 749,
-      "creature_elephant_war_leg_br": 733
+      "creature_elephant_war_body": 18992,
+      "creature_elephant_war_head": 5186,
+      "creature_elephant_war_tail": 134,
+      "creature_elephant_war_leg_fl": 1552,
+      "creature_elephant_war_leg_fr": 1534,
+      "creature_elephant_war_leg_bl": 1230,
+      "creature_elephant_war_leg_br": 1240
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "War Elephant (ForgeGUI, legendary): red and gold armour, a spiked helm, a howdah with a banner.",
     "glow": {},
@@ -2383,17 +2383,17 @@
       5.37,
       4.53
     ],
-    "tris": 18396,
+    "tris": 15411,
     "parts": {
-      "creature_jackal_sphinx_body": 6685,
-      "creature_jackal_sphinx_head": 2344,
-      "creature_jackal_sphinx_tail": 727,
-      "creature_jackal_sphinx_leg_fl": 1919,
-      "creature_jackal_sphinx_leg_fr": 2020,
-      "creature_jackal_sphinx_leg_bl": 2264,
-      "creature_jackal_sphinx_leg_br": 2437
+      "creature_jackal_sphinx_body": 11466,
+      "creature_jackal_sphinx_head": 4054,
+      "creature_jackal_sphinx_tail": 1280,
+      "creature_jackal_sphinx_leg_fl": 3244,
+      "creature_jackal_sphinx_leg_fr": 3332,
+      "creature_jackal_sphinx_leg_bl": 3670,
+      "creature_jackal_sphinx_leg_br": 3776
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Sphinx Jackal (ForgeGUI, mythic): cracked sandstone blocks, golden wings, an amber forehead mark.",
     "glow": {},
@@ -2476,17 +2476,17 @@
       5.54,
       10.18
     ],
-    "tris": 17758,
+    "tris": 15195,
     "parts": {
-      "creature_cheetah_fire_body": 7282,
-      "creature_cheetah_fire_head": 2436,
-      "creature_cheetah_fire_tail": 844,
-      "creature_cheetah_fire_leg_fl": 1784,
-      "creature_cheetah_fire_leg_fr": 1895,
-      "creature_cheetah_fire_leg_bl": 1756,
-      "creature_cheetah_fire_leg_br": 1761
+      "creature_cheetah_fire_body": 12640,
+      "creature_cheetah_fire_head": 4074,
+      "creature_cheetah_fire_tail": 1504,
+      "creature_cheetah_fire_leg_fl": 3076,
+      "creature_cheetah_fire_leg_fr": 3094,
+      "creature_cheetah_fire_leg_bl": 3004,
+      "creature_cheetah_fire_leg_br": 2998
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Fire Cheetah (ForgeGUI, legendary): ember spots, flames along its spine and tail.",
     "glow": {},
@@ -2569,17 +2569,17 @@
       9.79,
       5.24
     ],
-    "tris": 18099,
+    "tris": 15533,
     "parts": {
-      "creature_flamingo_peacock_body": 6342,
-      "creature_flamingo_peacock_head": 2238,
-      "creature_flamingo_peacock_leg_fl": 688,
-      "creature_flamingo_peacock_leg_fr": 727,
-      "creature_flamingo_peacock_tail": 4477,
-      "creature_flamingo_peacock_leg_bl": 1826,
-      "creature_flamingo_peacock_leg_br": 1801
+      "creature_flamingo_peacock_body": 11044,
+      "creature_flamingo_peacock_head": 3696,
+      "creature_flamingo_peacock_leg_fl": 1234,
+      "creature_flamingo_peacock_leg_fr": 1210,
+      "creature_flamingo_peacock_tail": 7518,
+      "creature_flamingo_peacock_leg_bl": 3188,
+      "creature_flamingo_peacock_leg_br": 3176
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Peacock Flamingo (ForgeGUI, legendary): teal and emerald, a fan of eyed tail feathers, a crest.",
     "glow": {},
@@ -2662,17 +2662,17 @@
       7.46,
       5.89
     ],
-    "tris": 18555,
+    "tris": 15481,
     "parts": {
-      "creature_meerkat_star_body": 2922,
-      "creature_meerkat_star_head": 10604,
-      "creature_meerkat_star_tail": 418,
-      "creature_meerkat_star_leg_fl": 750,
-      "creature_meerkat_star_leg_fr": 672,
-      "creature_meerkat_star_leg_bl": 1564,
-      "creature_meerkat_star_leg_br": 1625
+      "creature_meerkat_star_body": 4712,
+      "creature_meerkat_star_head": 18572,
+      "creature_meerkat_star_tail": 702,
+      "creature_meerkat_star_leg_fl": 1058,
+      "creature_meerkat_star_leg_fr": 1066,
+      "creature_meerkat_star_leg_bl": 2414,
+      "creature_meerkat_star_leg_br": 2438
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Star Meerkat (ForgeGUI, mythic): a night-sky coat of stars and constellations, a gold star on its brow.",
     "glow": {},
@@ -2751,91 +2751,91 @@
     "png": "build/blender/stations/creature_rhino_crystal.png",
     "preview": "build/blender/stations/previews/creature_rhino_crystal.png",
     "size_studs": [
-      7.84,
+      7.7,
       11.53,
-      20.16
+      16.55
     ],
-    "tris": 18030,
+    "tris": 9253,
     "parts": {
-      "creature_rhino_crystal_body": 7436,
-      "creature_rhino_crystal_head": 3177,
-      "creature_rhino_crystal_tail": 66,
-      "creature_rhino_crystal_leg_fl": 1746,
-      "creature_rhino_crystal_leg_fr": 1920,
-      "creature_rhino_crystal_leg_bl": 1841,
-      "creature_rhino_crystal_leg_br": 1844
+      "creature_rhino_crystal_body": 9216,
+      "creature_rhino_crystal_head": 2332,
+      "creature_rhino_crystal_tail": 328,
+      "creature_rhino_crystal_leg_fl": 1220,
+      "creature_rhino_crystal_leg_fr": 1188,
+      "creature_rhino_crystal_leg_bl": 2170,
+      "creature_rhino_crystal_leg_br": 2052
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
-    "notes": "Crystal Rhino (ForgeGUI, legendary): cracked stone grown through with a crest of rainbow crystals, a glowing cyan nose horn, a crystal mace tail.",
+    "notes": "Crystal Rhino (ForgeGUI, legendary): a rhino of faceted grey stone plates studded with cut gems, clear crystals along its back, a crystal horn.",
     "glow": {},
     "centres": {
       "creature_rhino_crystal_body": [
-        0.0,
-        7.403,
-        -1.436
+        0.162,
+        7.161,
+        -1.681
       ],
       "creature_rhino_crystal_head": [
-        0.0,
-        6.55,
-        7.217
+        0.14,
+        5.818,
+        5.747
       ],
       "creature_rhino_crystal_tail": [
-        0.052,
-        3.399,
-        -8.694
+        0.127,
+        5.66,
+        -7.319
       ],
       "creature_rhino_crystal_leg_fl": [
-        1.963,
-        2.071,
-        4.727
+        1.493,
+        2.084,
+        1.571
       ],
       "creature_rhino_crystal_leg_fr": [
-        -1.942,
-        2.066,
-        4.763
+        -1.677,
+        2.075,
+        1.571
       ],
       "creature_rhino_crystal_leg_bl": [
-        1.87,
-        2.092,
-        -4.417
+        1.957,
+        2.675,
+        -3.756
       ],
       "creature_rhino_crystal_leg_br": [
-        -1.751,
-        2.164,
-        -4.226
+        -1.843,
+        2.675,
+        -3.546
       ]
     },
     "joints": {
       "creature_rhino_crystal_head": [
-        0.47,
-        6.374,
-        4.839
+        0.329,
+        6.409,
+        3.947
       ],
       "creature_rhino_crystal_tail": [
-        -0.347,
-        4.065,
-        -8.086
+        0.146,
+        5.446,
+        -7.353
       ],
       "creature_rhino_crystal_leg_fl": [
-        2.812,
-        3.808,
-        1.973
-      ],
-      "creature_rhino_crystal_leg_fr": [
-        -2.84,
-        3.803,
+        1.24,
+        3.751,
         2.038
       ],
+      "creature_rhino_crystal_leg_fr": [
+        -1.048,
+        3.782,
+        2.013
+      ],
       "creature_rhino_crystal_leg_bl": [
-        2.078,
-        3.789,
-        -2.905
+        2.023,
+        3.811,
+        -3.254
       ],
       "creature_rhino_crystal_leg_br": [
-        -1.451,
-        3.795,
-        -4.44
+        -1.765,
+        3.796,
+        -3.163
       ]
     }
   },
@@ -2848,17 +2848,17 @@
       9.85,
       11.26
     ],
-    "tris": 17557,
+    "tris": 12723,
     "parts": {
-      "creature_tortoise_island_body": 13744,
-      "creature_tortoise_island_head": 409,
-      "creature_tortoise_island_tail": 130,
-      "creature_tortoise_island_leg_fl": 622,
-      "creature_tortoise_island_leg_fr": 611,
-      "creature_tortoise_island_leg_bl": 1004,
-      "creature_tortoise_island_leg_br": 1037
+      "creature_tortoise_island_body": 19208,
+      "creature_tortoise_island_head": 694,
+      "creature_tortoise_island_tail": 224,
+      "creature_tortoise_island_leg_fl": 1016,
+      "creature_tortoise_island_leg_fr": 1004,
+      "creature_tortoise_island_leg_bl": 1642,
+      "creature_tortoise_island_leg_br": 1658
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Island Tortoise (ForgeGUI, mythic): a tropical island on its shell, palm, flowers and a waterfall.",
     "glow": {},
@@ -2869,7 +2869,7 @@
         -0.785
       ],
       "creature_tortoise_island_head": [
-        0.0,
+        -0.0,
         2.818,
         4.576
       ],
@@ -5996,17 +5996,17 @@
       23.46,
       16.78
     ],
-    "tris": 12711,
+    "tris": 11366,
     "parts": {
-      "creature_giraffe_body": 2498,
-      "creature_giraffe_head": 6417,
-      "creature_giraffe_tail": 154,
-      "creature_giraffe_leg_fl": 709,
-      "creature_giraffe_leg_fr": 890,
-      "creature_giraffe_leg_bl": 1000,
-      "creature_giraffe_leg_br": 1043
+      "creature_giraffe_body": 4656,
+      "creature_giraffe_head": 11540,
+      "creature_giraffe_tail": 272,
+      "creature_giraffe_leg_fl": 1208,
+      "creature_giraffe_leg_fr": 1396,
+      "creature_giraffe_leg_bl": 1762,
+      "creature_giraffe_leg_br": 1898
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Giraffe (ForgeGUI): golden with brown angular patches.",
     "glow": {},
@@ -6089,17 +6089,17 @@
       24.39,
       16.14
     ],
-    "tris": 17624,
+    "tris": 14949,
     "parts": {
-      "creature_giraffe_diamond_body": 2599,
-      "creature_giraffe_diamond_head": 9210,
-      "creature_giraffe_diamond_tail": 161,
-      "creature_giraffe_diamond_leg_fl": 941,
-      "creature_giraffe_diamond_leg_fr": 907,
-      "creature_giraffe_diamond_leg_bl": 1912,
-      "creature_giraffe_diamond_leg_br": 1894
+      "creature_giraffe_diamond_body": 4540,
+      "creature_giraffe_diamond_head": 15956,
+      "creature_giraffe_diamond_tail": 302,
+      "creature_giraffe_diamond_leg_fl": 1602,
+      "creature_giraffe_diamond_leg_fr": 1592,
+      "creature_giraffe_diamond_leg_bl": 2870,
+      "creature_giraffe_diamond_leg_br": 3036
     },
-    "tris_budget": 20000,
+    "tris_budget": 68600,
     "script": "tools/blender/stations/assets/forge.py",
     "notes": "Diamond Giraffe (ForgeGUI, mythic): pale crystal set with cut diamonds in silver.",
     "glow": {},
