@@ -733,5 +733,10 @@
     "model": 79560426232029,
     "decal": 119688942868167,
     "texture": null
+  },
+  "skin_lion": {
+    "model": 77188549131924,
+    "decal": 110069451472918,
+    "texture": null
   }
 }

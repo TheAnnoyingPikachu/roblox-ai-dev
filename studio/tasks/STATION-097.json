@@ -30,7 +30,7 @@
     "The uploaded skin_lion loads in Studio with its 19 bones",
     "Its clips play on the bones in Studio"
   ],
-  "verification": "Lune 721/721, selene clean. Blender 5.2: 19 bones, 10,210 faces, previews of all seven clips.",
+  "verification": "Lune 721/721, selene clean. Blender 5.2: 19 bones, 10,210 faces, previews of all seven clips. Uploaded by upload-assets run 44435156592 (model 77188549131924). Studio, local build, stamp `dev`, 2026-11-19: LoadAsset gives one MeshPart with HasSkinnedMesh true and all 19 bones in the right hierarchy, 100x too big (FBX centimetres; ScaleTo 0.01 gives 5.02 x 7.45 x 13.66 studs, as built). A trial client player, the same maths as skin.py, played the clips on its bones: the attack's rear-up and the roar seen in screens. Not done: playing them from Creatures in a wave; the tail root's stretch and the low death pose.",
   "output_artifacts": [
     "assets/stations/skin_lion.fbx"
   ],

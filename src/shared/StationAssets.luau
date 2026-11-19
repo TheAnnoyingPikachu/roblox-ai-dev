@@ -2531,8 +2531,8 @@ local StationAssets: { [string]: Asset } = {
 			skin_lion = { 0, 3.725, 0 },
 		},
 		joints = {},
-		model = nil,
-		decal = nil,
+		model = 77188549131924,
+		decal = 110069451472918,
 		texture = nil,
 	},
 }
