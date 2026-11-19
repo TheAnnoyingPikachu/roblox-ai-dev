@@ -528,7 +528,7 @@ SHANNON's Roblox account through Studio. Studio-owned original work. Used as `PI
 | 123119223827948, 75503797264752, 107798905588688 | Ranch House, looks 1 to 3 (retaken with the new name board) | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 101892180349204, 121151105188828, 115965219734238 | Barn, looks 1 to 3 (retaken further back and centred) | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 133902304920898, 124045791914974, 123100005333170 | Hatchery, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
-| 91819947855476, 88205410688105, 113234410949296 | Egg Storage: the hillside burrow cellar and the greenhouse, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
+| 90053421861862, 72531267730211, 133921641057596 | Egg Storage: the hillside burrow cellar and the greenhouse, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 88844343986979, 128424168474378, 125930939253883 | Brooder, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 95016315403212, 71885186151925, 130764990300282 | Windmill, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
 | 89855001205054, 104259688695882, 92288867347305 | Trophy Lodge, looks 1 to 3 | Studio (Claude), 2026-11-19 | Studio-owned | None needed | None | PNG 480 x 270 | Ranch menu | Uploaded |
