@@ -136,8 +136,17 @@ for _leg in LEGS:
     ALLOWED[f"leg_{_leg}"] = (f"{_leg}_upper", f"{_leg}_lower", f"{_leg}_paw", "chest" if _leg[0] == "f" else "hips")
 
 
-def paint(mesh_ob, bones, plan):
-    """Each vertex goes to the bones of its piece by inverse distance (power 4), the two nearest."""
+def paint(mesh_ob, bones, plan, blur=0.06, passes=3):
+    """Weights in three steps, so the mesh never tears. ForgeGUI's meshes are loose triangles laid edge to
+    edge: two corners at one spot are two vertices, and weighted apart they pull apart.
+
+    1. Raw: each vertex goes to the bones of its piece (forge.PLANS) by inverse distance (power 4).
+    2. Blur: each vertex takes the gaussian-weighted mean of every vertex within `blur` of the model's
+       height, `passes` times, so corners at one spot share weights exactly and every change from one
+       bone to the next is gradual (loose mane shards follow the body they sit on).
+    3. Each vertex keeps its four strongest bones (Roblox's most), normalised."""
+    from mathutils import kdtree
+
     lo, hi = k._ground_dims([mesh_ob])
     size, mid = hi - lo, (lo + hi) / 2
     rules = forge.PLANS[plan]
@@ -153,30 +162,51 @@ def paint(mesh_ob, bones, plan):
         for v in face.verts:
             piece_of.setdefault(v.index, piece)
     bm.free()
-    groups = {name: mesh_ob.vertex_groups.new(name=name) for name in bones}
-    for v in mesh_ob.data.vertices:
+    names = list(bones)
+    verts = mesh_ob.data.vertices
+    raw = []
+    for v in verts:
         piece = piece_of.get(v.index, "body")
         if piece == "tail" and "tail1" not in bones:
             piece = "body"
-        near = []
         allowed = ALLOWED[piece]
-        if v.co.z - lo.z < 0.12 * size.z:  # by the ground it is a foot, whatever piece its first face said
-            allowed = [f"{leg}_{part}" for leg in LEGS for part in ("paw", "lower")]
+        if v.co.z - lo.z < 0.12 * size.z:  # by the ground it is a foot (of the nearest leg), whatever its face said
+            leg = min(LEGS, key=lambda g: (bones[f"{g}_paw"][0].xy - v.co.xy).length)
+            allowed = [f"{leg}_paw", f"{leg}_lower"]
+        w = {}
         for name in allowed:
             a, b, _ = bones[name]
-            near.append((_seg(v.co, a, b), name))
-        near.sort()
-        top = near[:2]
-        # a vertex well away from its second bone stays wholly on its nearest (no long stretched faces)
-        if top[1][0] > 2.5 * top[0][0] + 0.3:
-            top = top[:1]
-        ws = [(1.0 / (d * d * d * d + 1e-6), n) for d, n in top]
-        total = sum(w for w, _ in ws)
-        for w, n in ws:
-            if w / total > 0.02:
-                groups[n].add([v.index], w / total, "REPLACE")
-    mod = mesh_ob.modifiers.new("rig", "ARMATURE")
-    return mod
+            w[name] = 1.0 / (_seg(v.co, a, b) ** 4 + 1e-6)
+        total = sum(w.values())
+        raw.append({n: x / total for n, x in w.items()})
+
+    tree = kdtree.KDTree(len(verts))
+    for v in verts:
+        tree.insert(v.co, v.index)
+    tree.balance()
+    radius = blur * size.z
+    near = [tree.find_range(v.co, radius) for v in verts]
+    weights = raw
+    for _ in range(passes):
+        out = []
+        for found in near:
+            acc, total = {}, 0.0
+            for _co, j, d in found:
+                g = math.exp(-((d / (radius * 0.5)) ** 2))
+                total += g
+                for n, x in weights[j].items():
+                    acc[n] = acc.get(n, 0.0) + x * g
+            out.append({n: x / total for n, x in acc.items()})
+        weights = out
+
+    groups = {name: mesh_ob.vertex_groups.new(name=name) for name in names}
+    for v, w in zip(verts, weights):
+        top = sorted(w.items(), key=lambda kv: -kv[1])[:4]
+        total = sum(x for _, x in top)
+        for n, x in top:
+            if x / total > 0.01:
+                groups[n].add([v.index], x / total, "REPLACE")
+    return mesh_ob.modifiers.new("rig", "ARMATURE")
 
 
 # Clips ---------------------------------------------------------------------------------------------
