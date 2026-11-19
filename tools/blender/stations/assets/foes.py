@@ -490,6 +490,76 @@ def dragon():
 # Assets ---------------------------------------------------------------------------------------------
 
 
+# Imp (decision 0101): the swarm's minion, small and quick to fall --------------------------------------
+
+IMP_JOINTS = {
+    "head": (0, 0, 1.62),
+    "leg_fl": (0.4, 0, 1.42),
+    "leg_fr": (-0.4, 0, 1.42),
+    "leg_bl": (0.17, 0, 0.72),
+    "leg_br": (-0.17, 0, 0.72),
+    "tail": (0, 0.3, 0.86),
+}
+
+
+def imp():
+    """A Gloom Imp: a hunched little devil with a pot belly and a hexfire rune on it, a big head with
+    long pointed ears, two short horns, a wide fanged grin and glowing eyes, thin clawed arms, bent
+    legs on clawed feet, small bat wings and a whip tail with a hexfire barb."""
+    skin = k.flat((70, 52, 92))
+    skin2 = k.flat((48, 36, 66))
+    dark = k.flat((26, 22, 34))
+    bone = k.flat(BONE)
+    glow = k.glow(HEX)
+    g = {n: [] for n in ("body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "body_glow", "head_glow", "tail_glow")}
+
+    b = g["body"]
+    b.append(k.sphere(0.36, (0, -0.06, 1.02), m=skin, scale=(1.0, 0.95, 1.05), seg=14, rings=10, name="belly"))
+    b.append(k.sphere(0.3, (0, 0.04, 1.36), m=skin, scale=(1.15, 0.85, 0.8), seg=12, rings=8, name="chest"))
+    b.append(k.sphere(0.2, (0, 0.06, 0.8), m=skin2, scale=(1.3, 1.0, 0.7), seg=10, rings=6, name="hips"))
+    g["body_glow"].append(diamond(0.22, 0.14, (0, -0.42, 1.04), rot=(90, 0, 0), m=glow, name="rune"))
+    for s in (1, -1):  # small bat wings on the back
+        root = Vector((s * 0.14, 0.26, 1.42))
+        tip = Vector((s * 0.78, 0.5, 1.82))
+        b.append(k.horn([root, (root + tip) / 2 + Vector((0, 0.06, 0.12)), tip], [0.05, 0.035, 0.015], dark, n=6, steps=8, name="wing_bone"))
+        mid, low = Vector((s * 0.66, 0.46, 1.32)), Vector((s * 0.3, 0.32, 1.12))
+        b.append(membrane([(root, tip, mid, 0.18), (root, mid, low, 0.12)], skin2, sag=0.06, thick=0.03))
+
+    hz = 1.66
+    h = g["head"]
+    h.append(k.sphere(0.36, (0, -0.04, hz + 0.24), m=skin, scale=(1.1, 0.95, 0.92), seg=14, rings=10, name="skull"))
+    h.append(k.sphere(0.22, (0, -0.28, hz + 0.12), m=skin, scale=(1.3, 0.8, 0.7), seg=12, rings=8, name="jaw"))
+    h.append(k.box((0.42, 0.06, 0.05), (0, -0.46, hz + 0.08), m=dark, bevel=0.02, name="grin"))
+    for i, x in enumerate((-0.15, -0.06, 0.06, 0.15)):  # fangs
+        h.append(shard((x, -0.47, hz + 0.1), (x, -0.5, hz - (0.06 if i in (0, 3) else 0.02)), 0.03, bone))
+    for s in (1, -1):
+        h.append(shard((s * 0.3, -0.02, hz + 0.32), (s * 0.82, 0.12, hz + 0.6), 0.1, skin2))  # long pointed ears
+        h.append(k.horn([(s * 0.14, -0.06, hz + 0.52), (s * 0.2, 0.0, hz + 0.72), (s * 0.16, 0.12, hz + 0.84)], [0.06, 0.04, 0.012], bone, n=6, steps=8, name="horn"))
+        g["head_glow"].append(k.sphere(0.065, (s * 0.13, -0.36, hz + 0.3), m=glow, scale=(1.3, 0.6, 0.9), seg=8, rings=6, name="eye"))
+
+    for s, part in ((1, "leg_fl"), (-1, "leg_fr")):  # thin arms, long claws
+        a, X = g[part], s * 0.4
+        a.append(k.sphere(0.11, (X, 0, 1.42), m=skin, seg=8, rings=6, name="shoulder"))
+        a.append(k.cyl(0.06, 0.42, (X + s * 0.04, -0.04, 1.18), rot=(10, 0, 0), m=skin, n=8, name="arm"))
+        a.append(k.cyl(0.055, 0.36, (X + s * 0.06, -0.12, 0.86), rot=(24, 0, 0), m=skin2, n=8, name="forearm"))
+        a.append(k.sphere(0.08, (X + s * 0.06, -0.2, 0.66), m=skin2, seg=8, rings=6, name="hand"))
+        for c in (-1, 0, 1):
+            a.append(shard((X + s * 0.06 + c * 0.04, -0.24, 0.64), (X + s * 0.06 + c * 0.06, -0.34, 0.5), 0.022, bone))
+
+    for s, part in ((1, "leg_bl"), (-1, "leg_br")):  # bent legs, clawed feet
+        leg, X = g[part], s * 0.17
+        leg.append(k.cyl(0.1, 0.34, (X, 0.04, 0.58), rot=(-18, 0, 0), m=skin2, n=8, name="thigh"))
+        leg.append(k.cyl(0.075, 0.34, (X, 0.06, 0.26), rot=(14, 0, 0), m=skin, n=8, name="shin"))
+        leg.append(k.box((0.16, 0.3, 0.08), (X, -0.06, 0.04), m=dark, bevel=0.03, name="foot"))
+        for c in (-1, 1):
+            leg.append(shard((X + c * 0.05, -0.2, 0.05), (X + c * 0.06, -0.32, 0.02), 0.025, bone))
+
+    tail = [Vector((0, 0.3, 0.86)), Vector((0, 0.62, 0.7)), Vector((0, 0.9, 0.86)), Vector((0, 1.06, 1.18))]
+    g["tail"].append(k.horn(tail, [0.06, 0.045, 0.03, 0.02], skin2, n=6, steps=12, name="whip"))
+    g["tail_glow"].append(shard(tail[-1], tail[-1] + Vector((0, 0.06, 0.24)), 0.09, glow))
+    return g, IMP_JOINTS
+
+
 def asset(name, maker, scale, glow, note, budget):
     joints = {}
 
@@ -506,5 +576,6 @@ ASSETS = [
     asset("foe_mage", mage, 1.6, {"body_glow": HEX, "head_glow": HEX, "leg_fl_glow": HEX, "leg_fr_glow": HEX}, "Hex mages: a hooded, horned caster; eyes, runes, the palm orb and the staff crystal are Neon.", 8000),
     asset("foe_knight", knight, 1.6, {"body_glow": HEX, "head_glow": HEX, "leg_fl_glow": HEX, "leg_fr_glow": HEX}, "Gloom knights: haunted armour with floating pieces; runes, eye slits, shield sigil and sword runes are Neon.", 9000),
     asset("foe_ogre", ogre, 2.5, {"body_glow": HEX, "head_glow": HEX, "leg_fr_glow": HEX}, "Ogres: a hunched brute with a spiked club; cracks, eyes, collar runes and club nails are Neon.", 10000),
+    asset("foe_imp", imp, 1.3, {"body_glow": HEX, "head_glow": HEX, "tail_glow": HEX}, "Gloom imps (decision 0101): the swarm's minion, a hunched little devil; eyes, belly rune and tail barb are Neon.", 6000),
     asset("foe_dragon", dragon, 1.6, {"body_glow": HEX, "head_glow": HEX, "wing_l_glow": HEX, "wing_r_glow": HEX}, "Hexfire dragons: the predator body with wings (wing_l, wing_r joints); eyes, wing veins and alternate spine spikes are Neon.", 14000),
 ]

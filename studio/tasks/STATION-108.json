@@ -1,0 +1,51 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-108",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0101: swarm waves: more enemies in rushes (minions, regulars, elites) at the same wave power, a front line, splash and crowd power attacks, the Gloom Imp model, crowds in the arena, a knockout counter and a power bar.",
+  "inputs": [
+    "docs/decisions/0101-animal-stations-swarm-waves.md"
+  ],
+  "dependencies": [
+    "STATION-105"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/StationAssets.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Creatures.client.luau",
+    "tools/blender/stations/assets/foes.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/foe_imp*",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/WaveRuns.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0101-animal-stations-swarm-waves.md",
+    "studio/tasks/STATION-108.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "LevelRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Waves grow from 4 to 16 enemies by wave, in rushes, with each wave's power within 5% of the three-enemy wave it replaces",
+    "At most 6 enemies attack at once; the rest step up as the front falls",
+    "Attack animals splash, power attacks hit up to 5 enemies, Defence power attacks knock the front back, Utility power attacks heal the team",
+    "The arena shows the crowd walking in by rushes, a knockout counter and a power bar"
+  ],
+  "verification": "In progress.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": ""
+}

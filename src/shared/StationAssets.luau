@@ -2665,6 +2665,53 @@ local StationAssets: { [string]: Asset } = {
 		texture = nil,
 		lift = -0.159,
 	},
+	foe_imp = {
+		size = { 2.13, 3.26, 2.33 },
+		parts = {
+			"foe_imp_body",
+			"foe_imp_head",
+			"foe_imp_leg_fl",
+			"foe_imp_leg_fr",
+			"foe_imp_leg_bl",
+			"foe_imp_leg_br",
+			"foe_imp_tail",
+			"foe_imp_body_glow",
+			"foe_imp_head_glow",
+			"foe_imp_tail_glow",
+		},
+		glow = {
+			foe_imp_body_glow = { 150, 255, 70 },
+			foe_imp_head_glow = { 150, 255, 70 },
+			foe_imp_tail_glow = { 150, 255, 70 },
+		},
+		centres = {
+			foe_imp_body = { 0, 1.609, 0.259 },
+			foe_imp_head = { 0, 2.65, 0.465 },
+			foe_imp_leg_fl = { 0.539, 1.319, 0.482 },
+			foe_imp_leg_fr = { -0.539, 1.319, 0.482 },
+			foe_imp_leg_bl = { 0.221, 0.502, 0.419 },
+			foe_imp_leg_br = { -0.221, 0.502, 0.419 },
+			foe_imp_tail = { 0, 1.201, -0.545 },
+			foe_imp_body_glow = { 0, 1.352, 0.879 },
+			foe_imp_head_glow = { 0, 2.548, 0.801 },
+			foe_imp_tail_glow = { 0, 1.676, -1.059 },
+		},
+		joints = {
+			foe_imp_head = { 0, 2.106, 0.333 },
+			foe_imp_leg_fl = { 0.52, 1.846, 0.333 },
+			foe_imp_leg_fr = { -0.52, 1.846, 0.333 },
+			foe_imp_leg_bl = { 0.221, 0.936, 0.333 },
+			foe_imp_leg_br = { -0.221, 0.936, 0.333 },
+			foe_imp_tail = { 0, 1.118, -0.057 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		eyes = {
+			{ 0.169, 2.548, 0.801, 0.22 },
+			{ -0.169, 2.548, 0.801, 0.22 },
+		},
+	},
 }
 
 return StationAssets
