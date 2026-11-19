@@ -1164,33 +1164,44 @@ end
 -- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer.
 local wheelTurn = 0
 local function wheelView()
-	local SIZE, ODDS_W = 400, 190
+	local SIZE = 380
+	local n = #StationRewards.WHEEL
 	local holder = Instance.new("Frame")
 	holder.BackgroundTransparency = 1
-	holder.Size, holder.LayoutOrder = UDim2.new(1, -12, 0, SIZE + 120), 1
+	holder.Size, holder.LayoutOrder = UDim2.new(1, -12, 0, SIZE + 300), 1
 	holder.Parent = gifts.body
 
-	-- the odds, out of the way on the left
+	-- the odds, below the wheel and its button, in two columns
 	local odds = Instance.new("Frame")
 	odds.BackgroundTransparency = 1
-	odds.Position, odds.Size = UDim2.fromOffset(0, 8), UDim2.new(0, ODDS_W, 1, -8)
-	Style.list(odds, 4)
+	odds.AnchorPoint, odds.Position, odds.Size =
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 130), UDim2.fromOffset(560, 160)
+	local grid = Instance.new("UIGridLayout")
+	grid.CellSize, grid.CellPadding = UDim2.fromOffset(276, 22), UDim2.fromOffset(8, 2)
+	grid.SortOrder = Enum.SortOrder.LayoutOrder
+	grid.Parent = odds
 	odds.Parent = holder
-	Style.text(odds, "THE ODDS", 13, C.muted, UDim2.new(1, 0, 0, 18)).LayoutOrder = 0
-	local n = #StationRewards.WHEEL
+	local title = Style.text(holder, "THE ODDS", 14, C.muted, UDim2.fromOffset(560, 20))
+	title.AnchorPoint, title.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 106)
+	title.TextXAlignment = Enum.TextXAlignment.Center
 	for k, slice in StationRewards.WHEEL do
-		local line = Style.text(odds, `{slice.name}: {slice.ppm / 10000}%`, 14, if k == n then C.bad else C.muted)
+		local line =
+			Style.text(odds, `{slice.name}: {slice.ppm / 10000}%`, 15, if k == n then C.bad else C.muted, UDim2.new())
 		line.LayoutOrder = k
+		line.TextXAlignment = Enum.TextXAlignment.Center
 	end
-	local pity =
-		Style.text(odds, `After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`, 13, C.muted)
-	pity.LayoutOrder = 20
+	local pity = Style.text(
+		holder,
+		`After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`,
+		13,
+		C.muted,
+		UDim2.fromOffset(560, 20)
+	)
+	pity.AnchorPoint, pity.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 238)
+	pity.TextXAlignment = Enum.TextXAlignment.Center
 
-	-- the wheel, big, in the middle of what is left
-	local stage = Instance.new("Frame")
-	stage.BackgroundTransparency = 1
-	stage.Position, stage.Size = UDim2.fromOffset(ODDS_W + 10, 0), UDim2.new(1, -(ODDS_W + 10), 1, 0)
-	stage.Parent = holder
+	local stage = holder
+	-- the wheel, big, in the middle
 	local disc = Instance.new("Frame")
 	disc.Name = "Wheel"
 	disc.AnchorPoint, disc.Position, disc.Size =
@@ -1243,7 +1254,8 @@ local function wheelView()
 	-- under the wheel: the button, which pops while a spin is ready, and when the next one comes
 	local now = Workspace:GetServerTimeNow()
 	local can = StationRewards.canSpin(profile, now)
-	local b = Style.button(stage, if can then "Spin it!" else "Spun today", function()
+	local nextIn = (StationRewards.day(now) + 1) * 86400 - now
+	local b = Style.button(stage, if can then "Spin it!" else `Next spin in {Format.ago(nextIn)}`, function()
 		if spinning then
 			return
 		end
@@ -1268,11 +1280,6 @@ local function wheelView()
 				task.wait(0.5)
 			end
 		end)
-	else
-		local nextIn = (StationRewards.day(now) + 1) * 86400 - now
-		local t = Style.text(stage, `Next free spin in {Format.ago(nextIn)}`, 16, C.muted, UDim2.fromOffset(300, 22))
-		t.AnchorPoint, t.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 106)
-		t.TextXAlignment = Enum.TextXAlignment.Center
 	end
 	return disc
 end
