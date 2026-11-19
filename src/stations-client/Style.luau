@@ -53,13 +53,11 @@ Style.SOUNDS = {
 	hover = "rbxassetid://95674872035214",
 	denied = "rbxassetid://124276619105004",
 	tab = "rbxassetid://74792139934627",
-	open = "rbxassetid://81025320537756",
 	close = "rbxassetid://97509016133658",
 	claim = "rbxassetid://112913492194575",
 	buy = "rbxassetid://122912592356212", -- a ka-ching for anything bought
 }
-local VOLUME =
-	{ buy = 0.55, hover = 0.15, press = 0.5, tab = 0.45, denied = 0.5, open = 0.4, close = 0.35, claim = 0.6 }
+local VOLUME = { buy = 0.55, hover = 0.15, press = 0.5, tab = 0.45, denied = 0.5, close = 0.35, claim = 0.6 }
 local sounds: { [string]: Sound } = {}
 function Style.sound(name: string)
 	local s = sounds[name]
@@ -661,12 +659,13 @@ function Style.tab(sh: Sheet, label: string, selected: boolean, onClick: () -> (
 	return b
 end
 
--- The menu's opening: it pops from a little smaller with a soft "whump".
+-- The menu's opening: it pops from a little smaller with a soft paper flick. (The ForgeGUI "open" sound
+-- came out like a cash register, which belongs to buying only: SHANNON, 2026-11-19.)
 function Style.pop(sh: Sheet)
 	local scale = sh.frame:FindFirstChild("Pop") :: UIScale
 	scale.Scale = 0.9
 	TweenService:Create(scale, SPRING, { Scale = 1 }):Play()
-	Style.sound("open")
+	Style.sound("tab")
 end
 
 -- Empty a container but keep its layout and padding objects.
