@@ -743,5 +743,15 @@
     "model": null,
     "decal": 99560149746453,
     "texture": null
+  },
+  "creature_jackal_pharaoh_forge": {
+    "model": 118840162265064,
+    "decal": 138699331550159,
+    "texture": null
+  },
+  "creature_jackal_pharaoh_forge_rainbow": {
+    "model": null,
+    "decal": 70715356895161,
+    "texture": null
   }
 }
