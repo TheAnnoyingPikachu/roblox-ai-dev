@@ -159,7 +159,10 @@ def paint(mesh_ob, bones, plan):
         if piece == "tail" and "tail1" not in bones:
             piece = "body"
         near = []
-        for name in ALLOWED[piece]:
+        allowed = ALLOWED[piece]
+        if v.co.z - lo.z < 0.12 * size.z:  # by the ground it is a foot, whatever piece its first face said
+            allowed = [f"{leg}_{part}" for leg in LEGS for part in ("paw", "lower")]
+        for name in allowed:
             a, b, _ = bones[name]
             near.append((_seg(v.co, a, b), name))
         near.sort()
