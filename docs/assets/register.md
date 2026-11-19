@@ -502,8 +502,8 @@ Same source, ownership and upload route as STATION-016 above (`tools/blender/sta
 
 Generated with ForgeGUI sound effects on SHANNON's ForgeGUI account on 2026-11-19 and published by ForgeGUI to
 SHANNON's Roblox account (user creator) as Audio assets (decision 0091). Played on the client only, by name,
-through `Style.sound` in `src/stations-client/Style.luau`. Licence: assumption, not checked, as for the
-ForgeGUI creature models: SHANNON to confirm (checkpoint in STATION-098).
+through `Style.sound` in `src/stations-client/Style.luau`. Licence: ForgeGUI's terms, confirmed by
+SHANNON, 2026-11-19.
 
 | Asset ID | Source | Creator / supplier | Licence / permission | Attribution | Restrictions | Format | Used in | Status |
 |----------|--------|--------------------|----------------------|-------------|--------------|--------|---------|--------|
