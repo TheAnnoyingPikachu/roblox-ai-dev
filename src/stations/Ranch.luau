@@ -113,7 +113,7 @@ local SAILS = { { 5.4, 12.2, 18, 4 }, { 5.89, 20.5, 26, 4 }, { 6.55, 26.5, 34, 8
 local LODGE = { {}, { 20, 12, 8 }, { 28, 15, 10 } }
 -- How near a scattered tree, bush or rock may come to each building's middle.
 local ROOM: { [string]: number } =
-	{ house = 30, barn = 34, hatchery = 22, cellar = 28, brooder = 18, windmill = 24, lodge = 23, den = 12 }
+	{ house = 30, barn = 34, hatchery = 22, cellar = 34, brooder = 18, windmill = 24, lodge = 23, den = 12 }
 
 -- When the extras arrive: the sum of all upgrade levels (0 to 44).
 local PAVED, BENCHES, LANTERNS, ORCHARD, FLOWERS, FIELD, WELL, SHELTER, GARDEN, FIRE, HIVES, FLAGS =
@@ -181,15 +181,25 @@ end
 -- A lamp post with a hanging lantern: the same one the buildings' models carry (stage.py `lantern`, its
 -- default height), so every lamp round the middle of the ranch matches: a dark metal post on a round
 -- foot, an arm, and a round glowing lantern with a cap and a base.
+-- `toward`: where its arm reaches (a point; level with the foot), or +x.
 local LAMP_METAL = Color3.fromRGB(40, 36, 48) -- stage.py's INK
-local function lantern(f: Instance, base: Vector3)
+local function lantern(f: Instance, base: Vector3, toward: Vector3?)
+	local dir = if toward then ((toward - base) * V(1, 0, 1)).Unit else V(1, 0, 0)
 	local h, top = 6, 0.5 + 6 -- the post's height above its foot, and the post's top
 	pillar(f, base, 0.5, 0.5, LAMP_METAL, M.Metal)
 	pillar(f, base + V(0, 0.5, 0), h, 0.18, LAMP_METAL, M.Metal)
-	part(f, V(1.5, 0.16, 0.16), base + V(0.6, top + 0.3, 0), LAMP_METAL, M.Metal)
-	local light = pillar(f, base + V(1.2, top - 0.8, 0), 0.9, 0.42, WARM, M.Neon)
-	pillar(f, base + V(1.2, top + 0.1, 0), 0.3, 0.56, LAMP_METAL, M.Metal)
-	pillar(f, base + V(1.2, top - 0.9, 0), 0.12, 0.5, LAMP_METAL, M.Metal)
+	part(
+		f,
+		V(1.5, 0.16, 0.16),
+		CFrame.lookAt(base + dir * 0.6 + V(0, top + 0.3, 0), base + dir * 2 + V(0, top + 0.3, 0))
+			* CFrame.Angles(0, math.pi / 2, 0),
+		LAMP_METAL,
+		M.Metal
+	)
+	local at = base + dir * 1.2
+	local light = pillar(f, at + V(0, top - 0.8, 0), 0.9, 0.42, WARM, M.Neon)
+	pillar(f, at + V(0, top + 0.1, 0), 0.3, 0.56, LAMP_METAL, M.Metal)
+	pillar(f, at + V(0, top - 0.9, 0), 0.12, 0.5, LAMP_METAL, M.Metal)
 	glow(light, WARM, 16, 1.1)
 end
 
@@ -373,26 +383,33 @@ local function nests(f: Instance, b: CFrame, look: number, n: number, home: Home
 	end
 end
 
-local function rackSpot(home: Home, k: number): CFrame -- from the rack's frame: shelves of `cols` eggs
-	return CFrame.new(-(home.cols - 1) * 1.25 + ((k - 1) % home.cols) * 2.5, 1.5 + ((k - 1) // home.cols) * 2.3, 0)
+-- The egg storage greenhouse (decision 0091) is part of the Egg Cellar's model (scenes/homestead.py
+-- `greenhouse`): stepped straw trays, `cols` eggs a row GH_COL apart, row j GH_ROW deeper and GH_RISE
+-- higher, its top GH_TOP + j * GH_RISE up. Change these with homestead.py's.
+local GH_COL, GH_ROW, GH_RISE, GH_TOP = 2.5, 2.0, 1.1, 1.2
+local function ghDepth(rows: number): number
+	return rows * GH_ROW + 3
 end
 
--- The egg storage: a rack of shelves at the Egg Cellar, its front (-z) to the middle. The stored eggs
--- show on it, as many as it has places; the rest are down in the cellar.
+-- Where stored egg `k` stands, from the greenhouse's frame (its middle on the ground, the building's way
+-- round: -z out of the ranch): on its nest on its tray, turned to the middle.
+local function rackSpot(home: Home, k: number): CFrame
+	local i, j = (k - 1) % home.cols, (k - 1) // home.cols
+	local front = -ghDepth(home.rows) / 2 + 1.6 + j * GH_ROW -- Blender's y, its front -y
+	return CFrame.new(-(home.cols - 1) * GH_COL / 2 + i * GH_COL, GH_TOP + j * GH_RISE + 0.1, -front)
+		* CFrame.Angles(0, math.pi, 0)
+end
+
+-- The egg storage: the greenhouse's model shows it; here are what the game needs of it: where its eggs
+-- go (home.rack), the prompt to choose one to hatch, and a solid block over its trays.
 local function eggRack(f: Instance, b: CFrame, home: Home, i: number)
-	local w, top = home.cols * 2.5 + 0.6, 1.2 + home.rows * 2.3
-	part(f, V(w, top - 0.5, 0.4), b * CFrame.new(0, top / 2 + 0.3, 1), WOOD_DARK, M.WoodPlanks)
-	for row = 0, home.rows do
-		part(f, V(w, 0.4, 2.4), b * CFrame.new(0, 1.2 + row * 2.3, 0), WOOD, M.WoodPlanks)
-	end
-	for _, x in { -w / 2, w / 2 } do
-		part(f, V(0.5, top + 0.2, 2.4), b * CFrame.new(x, top / 2 + 0.1, 0), WOOD_DARK, M.Wood)
-	end
-	local board =
-		part(f, V(8, 1.6, 0.3), b * CFrame.new(0, top + 1.2, 0), Color3.fromRGB(150, 110, 80), M.SmoothPlastic)
-	Props.label(board, "Egg Storage", WHITE, 0.3)
-	local shelf = part(f, V(w - 0.6, 0.4, 2), b * CFrame.new(0, 3.5, 0), WOOD, M.WoodPlanks) -- carries the prompt
-	prompt(shelf, "EggStorage", "Choose an egg to hatch", "Egg storage", i)
+	local w, d = home.cols * GH_COL + 3, ghDepth(home.rows)
+	local tall = GH_TOP + (home.rows - 1) * GH_RISE
+	local trays = part(f, V(home.cols * GH_COL + 0.6, tall, d - 3), b * CFrame.new(0, tall / 2, 0.4), WHITE)
+	trays.Transparency, trays.CastShadow, trays.Name = 1, false, "Solid"
+	local front = part(f, V(w - 1, 4, 1), b * CFrame.new(0, 2, d / 2 - 0.5), WHITE) -- carries the prompt
+	front.Transparency, front.CanCollide, front.CastShadow, front.Name = 1, false, false, "EggStorage"
+	prompt(front, "EggStorage", "Choose an egg to hatch", "Egg storage", i)
 	home.rack = b
 end
 
@@ -494,14 +511,13 @@ local function building(f: Instance, cf: CFrame, id: string, level: number, home
 		nests(f, b, look, if level > 0 then u.levels[level].value else u.base, home)
 	elseif id == "cellar" then
 		home.cols, home.rows = if look == 1 then 4 else 6, if look == 1 then 3 else 4
-		local x, y = 0, 0
+		local x, y = 0, 0 -- the greenhouse's middle, in homestead.py's numbers (y to the back)
 		if look >= 2 then
-			local mw, md, mh, fw = CELLAR[look][1], CELLAR[look][2], CELLAR[look][3], CELLAR[look][4]
+			local mw, md, mh = CELLAR[look][1], CELLAR[look][2], CELLAR[look][3]
 			block(f, b, 0, 4, 0, mw * 1.5, md * 1.5, mh * 0.9)
-			x, y = -(fw / 2 + 9), 4 - md * 0.72 - 1 -- on its left, away from the guard yard's path
+			x, y = -(mw + 10), 4 - md * 0.72 - 2.2 + ghDepth(home.rows) / 2 -- on its left, away from the guard yard's path
 		end
-		local rack = cf:ToObjectSpace(b * CFrame.new(x, 0, -y)).Position * V(1, 0, 1)
-		eggRack(f, CFrame.lookAt(cf * rack, cf * (rack * 0.5)), home, i) -- on the ranch's ground, front to the middle
+		eggRack(f, b * CFrame.new(x, 0, -y), home, i)
 	elseif id == "brooder" then
 		block(f, b, 0, 0, 0, BROODER[look][1], BROODER[look][2], 0.75)
 		if look == 3 then
@@ -858,14 +874,45 @@ function Ranch.render(i: number, levels: { [string]: number })
 	end
 
 	-- the extras that come with the ranch's total level
-	if total >= BENCHES then
-		for _, a in if total >= LANTERNS then { 0, 74, 122, 170, 222, 310 } else { 74, 310 } do
-			bench(f, out(RING1 + 3, a, 180))
-		end
+	local benches = if total >= BENCHES
+		then (if total >= LANTERNS then { 0, 74, 122, 170, 222, 310 } else { 74, 310 })
+		else {}
+	for _, a in benches do
+		bench(f, out(RING1 + 3, a, 180))
 	end
 	if total >= LANTERNS then
-		for _, where in PLACE do -- one by each building's path (a second ring of them was too many: STATION-073)
-			lantern(f, spot(RING1 + 2, where[2] + 12))
+		-- twelve lamps evenly round the ring path's outer edge, their arms over the path; one that would
+		-- stand on a path or a bench steps along the ring to the nearest clear spot (decision 0091)
+		local LAMP_R = RING1 + 1.4
+		local busy: { { number } } = { { HUB_WAY, 10 } } -- (angle, width) of everything at the ring's edge
+		for _, g in ValleyMap.GROUNDS do
+			table.insert(busy, { math.deg(math.atan2(g.z, g.x)), 9 })
+		end
+		for _, where in PLACE do
+			table.insert(busy, { where[2], 6 })
+		end
+		table.insert(busy, { MARKET[2], 6 })
+		for _, a in benches do
+			table.insert(busy, { a, 6.5 })
+		end
+		local function clear(deg: number): boolean
+			for _, b in busy do
+				local gap = math.abs((deg - b[1] + 180) % 360 - 180) * math.pi / 180 * LAMP_R -- studs along the ring
+				if gap < b[2] / 2 + 2.5 then
+					return false
+				end
+			end
+			return true
+		end
+		for k = 0, 11 do
+			local want = k * 30 + 15
+			for step = 0, 14 do -- 0, +1, -1, +2, -2... degrees
+				local deg = want + (if step % 2 == 0 then step // 2 else -(step + 1) // 2)
+				if clear(deg) then
+					lantern(f, spot(LAMP_R, deg), spot(RING0, deg))
+					break
+				end
+			end
 		end
 	end
 	if total >= ORCHARD then -- between the windmill and the track's path (the mill's store is on its other side)

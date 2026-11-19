@@ -2177,13 +2177,15 @@ local StationAssets: { [string]: Asset } = {
 	},
 	home_house_1 = {
 		size = { 27.04, 26.14, 24.53 },
-		parts = { "home_house_1_body", "home_house_1_body_glow" },
+		parts = { "home_house_1_body", "home_house_1_body_glow", "home_house_1_body2_glow" },
 		glow = {
 			home_house_1_body_glow = { 255, 226, 150 },
+			home_house_1_body2_glow = { 244, 242, 234 },
 		},
 		centres = {
 			home_house_1_body = { 1.319, 13.069, 3.637 },
 			home_house_1_body_glow = { -1.35, 5.8, 0.25 },
+			home_house_1_body2_glow = { 0.023, 9.063, 13.22 },
 		},
 		joints = {},
 		model = 105200527213246,
@@ -2193,15 +2195,17 @@ local StationAssets: { [string]: Asset } = {
 	},
 	home_house_2 = {
 		size = { 38.8, 30.53, 30.59 },
-		parts = { "home_house_2_body", "home_house_2_body_glow", "home_house_2_body2_glow" },
+		parts = { "home_house_2_body", "home_house_2_body_glow", "home_house_2_body2_glow", "home_house_2_body3_glow" },
 		glow = {
 			home_house_2_body_glow = { 255, 226, 150 },
 			home_house_2_body2_glow = { 255, 214, 130 },
+			home_house_2_body3_glow = { 244, 242, 234 },
 		},
 		centres = {
 			home_house_2_body = { 1.4, 15.266, 4.664 },
 			home_house_2_body_glow = { 0, 10.25, 0.25 },
 			home_house_2_body2_glow = { 1.2, 5.65, 19.4 },
+			home_house_2_body3_glow = { 0.026, 6.757, 16.77 },
 		},
 		joints = {},
 		model = 77401461520643,
@@ -2211,15 +2215,17 @@ local StationAssets: { [string]: Asset } = {
 	},
 	home_house_3 = {
 		size = { 50.01, 36.67, 32.98 },
-		parts = { "home_house_3_body", "home_house_3_body_glow", "home_house_3_body2_glow" },
+		parts = { "home_house_3_body", "home_house_3_body_glow", "home_house_3_body2_glow", "home_house_3_body3_glow" },
 		glow = {
 			home_house_3_body_glow = { 255, 226, 150 },
 			home_house_3_body2_glow = { 255, 214, 130 },
+			home_house_3_body3_glow = { 244, 242, 234 },
 		},
 		centres = {
 			home_house_3_body = { 1.005, 18.337, 4.868 },
 			home_house_3_body_glow = { 0.5, 15.25, 1.525 },
 			home_house_3_body2_glow = { -4.8, 6.05, 20.8 },
+			home_house_3_body3_glow = { -5.971, 6.753, 17.97 },
 		},
 		joints = {},
 		model = 127665408665186,
@@ -2317,11 +2323,14 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.15,
 	},
 	home_cellar_1 = {
-		size = { 14.4, 11.66, 6.58 },
-		parts = { "home_cellar_1_body" },
-		glow = {},
+		size = { 14, 10.16, 11.24 },
+		parts = { "home_cellar_1_body", "home_cellar_1_body_glow" },
+		glow = {
+			home_cellar_1_body_glow = { 255, 160, 70 },
+		},
 		centres = {
-			home_cellar_1_body = { 0, 5.832, 0 },
+			home_cellar_1_body = { 0, 5.082, 0.618 },
+			home_cellar_1_body_glow = { 0, 4.85, -0.6 },
 		},
 		joints = {},
 		model = 111971669988965,
@@ -2330,14 +2339,16 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.15,
 	},
 	home_cellar_2 = {
-		size = { 12.32, 12.89, 13.89 },
-		parts = { "home_cellar_2_body", "home_cellar_2_body_glow" },
+		size = { 34.62, 18.23, 17.5 },
+		parts = { "home_cellar_2_body", "home_cellar_2_body_glow", "home_cellar_2_body2_glow" },
 		glow = {
 			home_cellar_2_body_glow = { 255, 226, 150 },
+			home_cellar_2_body2_glow = { 255, 160, 70 },
 		},
 		centres = {
-			home_cellar_2_body = { -0.047, 6.447, -3.634 },
+			home_cellar_2_body = { -11.192, 9.114, -1.825 },
 			home_cellar_2_body_glow = { 2.9, 7.094, 2.86 },
+			home_cellar_2_body2_glow = { -19, 8.694, -2.14 },
 		},
 		joints = {},
 		model = 117264605295438,
@@ -2346,16 +2357,26 @@ local StationAssets: { [string]: Asset } = {
 		lift = -2.694,
 	},
 	home_cellar_3 = {
-		size = { 18.1, 15.37, 18.44 },
-		parts = { "home_cellar_3_body", "home_cellar_3_body_glow", "home_cellar_3_body2_glow" },
+		size = { 39.5, 19.84, 18.04 },
+		parts = {
+			"home_cellar_3_body",
+			"home_cellar_3_body_glow",
+			"home_cellar_3_body2_glow",
+			"home_cellar_3_body3_glow",
+			"home_cellar_3_body4_glow",
+		},
 		glow = {
 			home_cellar_3_body_glow = { 255, 226, 150 },
-			home_cellar_3_body2_glow = { 255, 214, 130 },
+			home_cellar_3_body2_glow = { 255, 160, 70 },
+			home_cellar_3_body3_glow = { 255, 214, 130 },
+			home_cellar_3_body4_glow = { 255, 200, 70 },
 		},
 		centres = {
-			home_cellar_3_body = { -1.05, 7.684, -2.18 },
+			home_cellar_3_body = { -11.75, 9.922, -2.38 },
 			home_cellar_3_body_glow = { 2.9, 7.767, 3.58 },
-			home_cellar_3_body2_glow = { -8.4, 9.167, 6.48 },
+			home_cellar_3_body2_glow = { -21, 10.367, -1.42 },
+			home_cellar_3_body3_glow = { -19.8, 8.667, 6.08 },
+			home_cellar_3_body4_glow = { -21, 17.887, -0.82 },
 		},
 		joints = {},
 		model = 137165970639254,

@@ -165,6 +165,16 @@ def chimney(x, y, z_top, rng, w=3.6, d=3.0, smoke=True):
             lump((x + k * 0.9, y + k * 0.3, z_top + 3.2 + k * 2.0), 1.0 + k * 0.4, S.WHITE, rng, kind=S.PALE)
 
 
+def name_board(x, y, z, size, rng):
+    """The "RANCH HOUSE" board over the porch steps, its foot at z: sized to its words and hung just in
+    front of the porch posts (it used to cut through them), the letters Neon so they glow evenly (baked,
+    the porch roof's shadow left half of them dark)."""
+    text = "RANCH HOUSE"
+    width = len(text) * size * 0.72 + 1.6
+    box((width, 0.4, size * 1.85), (x, y - 0.6, z), BEAM, rng)
+    neon(words(text, (x, y - 0.6 - 0.32, z + size * 0.92), size, S.WHITE), S.WHITE, 1.0)
+
+
 def porch(wall, x0, x1, depth, floor_z, eave_z, rng, steps=0.0, rail=True, roofed=True, ground=0.0):
     """A porch along a wall from x0 to x1: a deck on stone piers with a stone skirt under it, posts, a rail
     with a gap at the steps, and a roof that leans on the wall. `ground`: how far the ground is below the
@@ -246,8 +256,7 @@ def cottage(rng):
     porch(ws["front"], -4.6, 4.6, 5.0, 0.0, 7.6, rng, steps=0.0, rail=False, ground=foot)
     woodpile((-w / 2 - 2.2, -1.0, GROUND), rng, yaw=90)
     post(1.3, 2.8, (w / 2 - 2, -d / 2 - 2.2, GROUND), BEAM, rng, n=8)  # a rain barrel
-    words("RANCH HOUSE", (0, -d / 2 - 5.6, GROUND + foot + 7.4), 0.95, S.WHITE, glow=0.5)
-    box((9.2, 0.4, 1.7), (0, -d / 2 - 5.3, GROUND + foot + 6.55), BEAM, rng)
+    name_board(0, -d / 2 - 5.3, GROUND + foot + 6.55, 0.95, rng)
 
 
 def farmhouse(rng):
@@ -274,8 +283,7 @@ def farmhouse(rng):
     for sx in (-1, 1):
         lantern((sx * 4.4, -d / 2 - 10.4, GROUND), rng, h=6.0)
     woodpile((w / 2 + 2.4, 3.0, GROUND), rng, yaw=90)
-    words("RANCH HOUSE", (0, -d / 2 - 7.15, GROUND + h - 2.3), 1.1, S.WHITE, glow=0.5)
-    box((11.0, 0.4, 2.0), (0, -d / 2 - 6.85, GROUND + h - 3.3), BEAM, rng)
+    name_board(0, -d / 2 - 6.85, GROUND + h - 3.3, 1.1, rng)
 
 
 def great_house(rng):
@@ -326,8 +334,7 @@ def great_house(rng):
     box((2.6, 0.12, 0.9), (mx + 0.4, 0, top + rise + 7.2), (250, 196, 60), rng)
     woodpile((mx - w / 2 - 2.4, -5.0, GROUND), rng, yaw=90)
     bench((wx + 1.0, wy - wd / 2 - 2.4, GROUND), rng, yaw=180)
-    words("RANCH HOUSE", (mx - 1.0, -d / 2 - 7.35, GROUND + h - 2.3), 1.2, S.WHITE, glow=0.5)
-    box((12.0, 0.4, 2.2), (mx - 1.0, -d / 2 - 7.05, GROUND + h - 3.4), BEAM, rng)
+    name_board(mx - 1.0, -d / 2 - 7.05, GROUND + h - 3.4, 1.2, rng)
 
 
 LOOKS = (cottage, farmhouse, great_house)

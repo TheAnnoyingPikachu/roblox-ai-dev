@@ -5648,8 +5648,9 @@
     ],
     "tris": 4472,
     "parts": {
-      "home_house_1_body": 4404,
-      "home_house_1_body_glow": 68
+      "home_house_1_body": 2252,
+      "home_house_1_body_glow": 68,
+      "home_house_1_body2_glow": 2152
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
@@ -5659,6 +5660,11 @@
         255,
         226,
         150
+      ],
+      "home_house_1_body2_glow": [
+        244,
+        242,
+        234
       ]
     },
     "centres": {
@@ -5671,6 +5677,11 @@
         -1.35,
         5.8,
         0.25
+      ],
+      "home_house_1_body2_glow": [
+        0.023,
+        9.063,
+        13.22
       ]
     },
     "joints": {},
@@ -5687,9 +5698,10 @@
     ],
     "tris": 6068,
     "parts": {
-      "home_house_2_body": 5864,
+      "home_house_2_body": 3712,
       "home_house_2_body_glow": 164,
-      "home_house_2_body2_glow": 40
+      "home_house_2_body2_glow": 40,
+      "home_house_2_body3_glow": 2152
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
@@ -5704,6 +5716,11 @@
         255,
         214,
         130
+      ],
+      "home_house_2_body3_glow": [
+        244,
+        242,
+        234
       ]
     },
     "centres": {
@@ -5721,6 +5738,11 @@
         1.2,
         5.65,
         19.4
+      ],
+      "home_house_2_body3_glow": [
+        0.026,
+        6.757,
+        16.77
       ]
     },
     "joints": {},
@@ -5737,9 +5759,10 @@
     ],
     "tris": 9214,
     "parts": {
-      "home_house_3_body": 8842,
+      "home_house_3_body": 6690,
       "home_house_3_body_glow": 332,
-      "home_house_3_body2_glow": 40
+      "home_house_3_body2_glow": 40,
+      "home_house_3_body3_glow": 2152
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
@@ -5754,6 +5777,11 @@
         255,
         214,
         130
+      ],
+      "home_house_3_body3_glow": [
+        244,
+        242,
+        234
       ]
     },
     "centres": {
@@ -5771,6 +5799,11 @@
         -4.8,
         6.05,
         20.8
+      ],
+      "home_house_3_body3_glow": [
+        -5.971,
+        6.753,
+        17.97
       ]
     },
     "joints": {},
@@ -5990,23 +6023,35 @@
     "png": "build/blender/stations/home_cellar_1.png",
     "preview": "build/blender/stations/previews/home_cellar_1.png",
     "size_studs": [
-      14.4,
-      11.66,
-      6.58
+      14.0,
+      10.16,
+      11.24
     ],
-    "tris": 92,
+    "tris": 4020,
     "parts": {
-      "home_cellar_1_body": 92
+      "home_cellar_1_body": 3964,
+      "home_cellar_1_body_glow": 56
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Egg Cellar: a thatched shelter for the egg rack.",
-    "glow": {},
+    "notes": "The Egg Cellar: the egg storage greenhouse.",
+    "glow": {
+      "home_cellar_1_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
     "centres": {
       "home_cellar_1_body": [
         0.0,
-        5.832,
-        -0.0
+        5.082,
+        0.618
+      ],
+      "home_cellar_1_body_glow": [
+        0.0,
+        4.85,
+        -0.6
       ]
     },
     "joints": {},
@@ -6017,35 +6062,46 @@
     "png": "build/blender/stations/home_cellar_2.png",
     "preview": "build/blender/stations/previews/home_cellar_2.png",
     "size_studs": [
-      12.32,
-      12.89,
-      13.89
+      34.62,
+      18.23,
+      17.5
     ],
-    "tris": 2152,
+    "tris": 6892,
     "parts": {
-      "home_cellar_2_body": 2132,
-      "home_cellar_2_body_glow": 20
+      "home_cellar_2_body": 6788,
+      "home_cellar_2_body_glow": 20,
+      "home_cellar_2_body2_glow": 84
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Egg Cellar: a cellar dug into a grassy mound.",
+    "notes": "The Egg Cellar: a cellar dug into a grassy mound, the greenhouse beside it.",
     "glow": {
       "home_cellar_2_body_glow": [
         255,
         226,
         150
+      ],
+      "home_cellar_2_body2_glow": [
+        255,
+        160,
+        70
       ]
     },
     "centres": {
       "home_cellar_2_body": [
-        -0.047,
-        6.447,
-        -3.634
+        -11.192,
+        9.114,
+        -1.825
       ],
       "home_cellar_2_body_glow": [
         2.9,
         7.094,
         2.86
+      ],
+      "home_cellar_2_body2_glow": [
+        -19.0,
+        8.694,
+        -2.14
       ]
     },
     "joints": {},
@@ -6056,19 +6112,21 @@
     "png": "build/blender/stations/home_cellar_3.png",
     "preview": "build/blender/stations/previews/home_cellar_3.png",
     "size_studs": [
-      18.1,
-      15.37,
-      18.44
+      39.5,
+      19.84,
+      18.04
     ],
-    "tris": 2336,
+    "tris": 7396,
     "parts": {
-      "home_cellar_3_body": 2276,
+      "home_cellar_3_body": 7212,
       "home_cellar_3_body_glow": 40,
-      "home_cellar_3_body2_glow": 20
+      "home_cellar_3_body2_glow": 84,
+      "home_cellar_3_body3_glow": 40,
+      "home_cellar_3_body4_glow": 20
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/homestead.py",
-    "notes": "The Egg Cellar: a bigger mound with two doors.",
+    "notes": "The Egg Cellar: a bigger mound with two doors and a grander greenhouse.",
     "glow": {
       "home_cellar_3_body_glow": [
         255,
@@ -6077,15 +6135,25 @@
       ],
       "home_cellar_3_body2_glow": [
         255,
+        160,
+        70
+      ],
+      "home_cellar_3_body3_glow": [
+        255,
         214,
         130
+      ],
+      "home_cellar_3_body4_glow": [
+        255,
+        200,
+        70
       ]
     },
     "centres": {
       "home_cellar_3_body": [
-        -1.05,
-        7.684,
-        -2.18
+        -11.75,
+        9.922,
+        -2.38
       ],
       "home_cellar_3_body_glow": [
         2.9,
@@ -6093,9 +6161,19 @@
         3.58
       ],
       "home_cellar_3_body2_glow": [
-        -8.4,
-        9.167,
-        6.48
+        -21.0,
+        10.367,
+        -1.42
+      ],
+      "home_cellar_3_body3_glow": [
+        -19.8,
+        8.667,
+        6.08
+      ],
+      "home_cellar_3_body4_glow": [
+        -21.0,
+        17.887,
+        -0.82
       ]
     },
     "joints": {},

@@ -147,6 +147,83 @@ def rack(x, y, cols, rows, rng):
             egg((x - (cols - 1) * 1.3 + i * 2.6, y, 1.3 + j * 2.3), rng, i + j, s=0.7)
 
 
+# The egg storage (decision 0091): a greenhouse of glass and warm wood beside the Egg Cellar, eggs on
+# straw nests on stepped trays under heat lamps. Its egg spots are Ranch.luau's `rackSpot`: change the two
+# together. `cols` eggs a row, 2.5 apart; tray row j (0 at the front) GH_ROW deeper and GH_RISE higher,
+# its top GH_TOP + j * GH_RISE above the ground.
+GH_COL, GH_ROW, GH_RISE, GH_TOP = 2.5, 2.0, 1.1, 1.2
+WOOD_WARM = (176, 118, 70)
+STEAM = (238, 238, 240)
+
+
+def greenhouse(x, y, cols, rows, t, rng):
+    """The egg storage greenhouse, its front (-Y) open, its middle on (x, y); `t` its look (0 to 2): bigger
+    and grander with the Egg Cellar."""
+    w, d = cols * GH_COL + 3.0, rows * GH_ROW + 3.0
+    h = (6.5, 7.5, 8.5)[t]
+    front, back = y - d / 2, y + d / 2
+    box((w + 1.0, d + 1.0, 0.45), (x, y, 0.15), S.STONE, rng, kind=S.PALE)  # its floor
+    # the frame: corner posts and a post every two eggs along the sides and back
+    for sx in (-1, 1):
+        for yy in [front + 0.3 + i * (d - 0.6) / (2 + t) for i in range(3 + t)]:
+            post(0.22, h, (x + sx * (w / 2 - 0.25), yy, 0.6), WOOD_WARM, rng, n=6)
+    for i in range(cols // 2 + 2):
+        post(0.22, h, (x - w / 2 + 0.25 + i * (w - 0.5) / (cols // 2 + 1), back - 0.25, 0.6), WOOD_WARM, rng, n=6)
+    for sy in (front + 0.25, back - 0.25):
+        box((w, 0.4, 0.4), (x, sy, h + 0.4), WOOD_WARM, rng)
+    for sx in (-1, 1):
+        box((0.4, d, 0.4), (x + sx * (w / 2 - 0.25), y, h + 0.4), WOOD_WARM, rng)
+        box((0.4, d, 0.9), (x + sx * (w / 2 - 0.25), y, 0.6), WOOD_WARM, rng)  # a low wall under the glass
+        box((0.12, d - 0.6, h - 1.4), (x + sx * (w / 2 - 0.25), y, 1.5), GLASS, rng, kind=S.PALE)  # side glass
+    box((w - 0.6, 0.12, h - 1.4), (x, back - 0.25, 1.5), GLASS, rng, kind=S.PALE)  # back glass
+    box((w, 0.4, 0.9), (x, back - 0.25, 0.6), WOOD_WARM, rng)
+    # the gabled glass roof, its ridge along x, with wooden ribs
+    rise = d * 0.32
+    slope = math.degrees(math.atan2(rise, d / 2))
+    half = math.hypot(d / 2, rise)
+    for sy in (-1, 1):
+        box((w + 0.8, half + 0.4, 0.14), (x, y + sy * d / 4, h + 0.6 + rise / 2 - 0.1), GLASS, rng, tilt=(-sy * slope, 0), kind=S.PALE)
+        for i in range(cols // 2 + 2):
+            xi = x - w / 2 + i * w / (cols // 2 + 1)
+            box((0.3, half + 0.4, 0.3), (xi, y + sy * d / 4, h + 0.6 + rise / 2 - 0.05), WOOD_WARM, rng, tilt=(-sy * slope, 0))
+    box((w + 1.0, 0.45, 0.45), (x, y, h + 0.6 + rise - 0.15), WOOD_WARM, rng)  # the ridge
+    # the open front: an arch of wood over the middle, the name board on it
+    for sx in (-1, 1):
+        post(0.3, h, (x + sx * 2.6, front - 0.2, 0.6), WOOD_WARM, rng, n=6)
+    sign("EGG STORAGE", (x, front - 0.55, h + 1.1 + 0.2 * t), rng, size=(0.8, 0.9, 1.0)[t], board=S.WOOD_DARK)
+    # the stepped trays of straw, and a nest for every egg the game stands there
+    for j in range(rows):
+        top = GH_TOP + j * GH_RISE
+        yj = front + 1.6 + j * GH_ROW
+        box((cols * GH_COL + 0.6, GH_ROW + (0.0 if j < rows - 1 else 0.4), top - 0.6), (x, yj, 0.6), WOOD_WARM, rng)
+        box((cols * GH_COL + 0.4, GH_ROW - 0.2, 0.18), (x, yj, top - 0.18), HAY, rng)
+        for i in range(cols):
+            xi = x - (cols - 1) * GH_COL / 2 + i * GH_COL
+            post(0.85, 0.22, (xi, yj, top - 0.05), HAY, rng, n=8, r2=1.0)
+            if LIVE:
+                egg((xi, yj, top + 0.1), rng, i + j, s=0.6)
+    # heat lamps hanging over the trays
+    for i in range(cols // 2):
+        xi = x - (cols // 2 - 1) * GH_COL + i * GH_COL * 2
+        post(0.05, 1.6, (xi, y + 0.6, h - 1.0), S.INK, rng, n=4)
+        post(0.55, 0.5, (xi, y + 0.6, h - 1.4), S.INK, rng, n=8, r2=0.25)
+        neon(S.k.cyl(0.42, 0.25, (xi, y + 0.6, h - 1.5), n=8), HEAT)
+    # window boxes of flowers along the front, and more with the bigger looks
+    for sx in (-1, 1):
+        bx = x + sx * (w / 4 + 1.4)
+        box((w / 2 - 4.2, 0.9, 0.7), (bx, front - 0.75, 0.15), BARN_RED, rng)
+        flowers((bx, front - 0.75, 0.85), rng, n=5 + 2 * t, spread=w / 4 - 2.4)
+    if t >= 1:  # a stove pipe puffing steam
+        post(0.45, 3.2, (x + w / 2 - 1.6, back - 1.2, h + 0.4), S.STONE_DARK, rng, n=6)
+        for i in range(3):
+            lump((x + w / 2 - 1.6 + i * 0.4, back - 1.2, h + 4.3 + i * 1.3), 0.7 + i * 0.25, STEAM, rng, kind=S.PALE)
+    if t == 2:  # a lantern either side of the way in, and a weather vane on the ridge
+        for sx in (-1, 1):
+            lantern((x + sx * (w / 2 + 1.0), front - 1.4, 0.15), rng, h=5.5)
+        post(0.08, 1.8, (x, y, h + 0.6 + rise + 0.1), S.INK, rng, n=4)
+        neon(S.k.cyl(0.35, 0.5, (x, y, h + 0.6 + rise + 1.9), n=6), (255, 200, 70), 1.5)
+
+
 def plot(name, w, d):
     """The ground kept for a building that is not bought yet: stakes, a rope, its name on a board."""
 
@@ -276,17 +353,13 @@ def hatchery(t):
 
 
 def cellar(t):
-    """The Egg Cellar (eggs you can store): a thatched shelter over the egg rack, a cellar dug into a
-    grassy mound, a bigger one with two doors. The game stands the rack and the eggs on it."""
+    """The Egg Cellar (eggs you can store): the egg storage greenhouse alone, then a cellar dug into a grassy
+    mound with the greenhouse beside it, then a bigger cellar with two doors and a grander greenhouse. The
+    game stands the stored eggs on the greenhouse's trays."""
 
     def make(rng):
-        if t == 0:
-            for sx in (-1, 1):
-                post(0.4, 11.5, (sx * 6.4, 2.4, 0.15), S.WOOD_DARK, rng, n=6)
-                post(0.4, 10.4, (sx * 6.4, -2.4, 0.15), S.WOOD_DARK, rng, n=6)
-            box((14.4, 6.6, 0.4), (0, 0, 10.9), THATCH, rng, tilt=(-9, 0))
-            if LIVE:
-                rack(0, 0, 4, 3, rng)
+        if t == 0:  # the egg storage greenhouse is the whole building
+            greenhouse(0, 0, 4, 3, 0, rng)
             return
         (mw, md, mh), (fw, fh) = CELLAR[t]
         lump((0, 4, mh * 0.42), (mw, md, mh), (112, 172, 80), rng)  # the mound
@@ -300,11 +373,8 @@ def cellar(t):
             post(0.6, 3.0, (x, y, mh * 1.2), S.STONE_DARK, rng, n=6)
         for a in range(5):
             bush(Vector((0, 4, mh * 0.9)) + polar(mw * 0.5, a * 72 + 20), rng, s=1.2)
-        if t == 2:
-            lantern((-fw / 2 - 1.6, yf - 4, 0.15), rng, h=6)
         sign("EGG CELLAR", (0, yf - 1.15, fh - 0.25), rng, size=(0.9, 1.2)[t - 1])
-        if LIVE:
-            rack(-(fw / 2 + 9), yf - 1, 6, 4, rng)  # on its left, away from the guard yard's path
+        greenhouse(-(mw + 10.0), yf - 2.2 + (4 * GH_ROW + 3.0) / 2, 6, 4, t, rng)  # on its left, away from the guard yard's path
 
     return make
 
