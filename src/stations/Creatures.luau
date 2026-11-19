@@ -208,6 +208,7 @@ local function build(name: string): Model?
 		weld.Part0, weld.Part1 = root, body
 		weld.Parent = body
 		body.Anchored = false
+		body.DoubleSided = true -- a generated model's thin pieces show from behind too
 	elseif head == nil then
 		return model -- a still prop: its pieces stay anchored round the Root
 	end

@@ -6,8 +6,9 @@ The model keeps every face where ForgeGUI made it. What is added is a skeleton w
 (`body` the root, then `head`, `leg_fl`, `leg_fr`, `leg_bl`, `leg_br`, `tail`), each bone standing at
 the point that piece turns on, and the skin: each vertex's weights come from where it is (`REGIONS`, per
 asset, in the model's own measurements), blending across a band at each joint so long pieces (the
-torso, the tail, the legs) bend there. A faceted model is thousands of loose pieces (islands): a small
-one takes its average weights, so it moves whole and no facet stretches. Writes build/blender/stations/<name>.fbx (armature and skinned mesh) and .png
+torso, the tail, the legs) bend there. A loose piece smaller than `small` takes its average weights, so
+it moves whole. First `tidy` joins the vertices that sit at one spot (ForgeGUI exports every facet
+loose), turns every face outwards and sets the shading. Writes build/blender/stations/<name>.fbx (armature and skinned mesh) and .png
 (the model's own texture), the manifest entry (`skinned: true`, `joints` in the manifest's axes) and,
 with --test, renders of a few bent poses to check every piece follows the right bone.
 
@@ -27,6 +28,7 @@ import bmesh  # noqa: E402
 import bpy  # noqa: E402
 import kit  # noqa: E402
 from mathutils import Euler, Matrix, Vector  # noqa: E402
+from mathutils.bvhtree import BVHTree  # noqa: E402
 
 MANIFEST = os.path.join(HERE, "manifest.json")
 
@@ -41,16 +43,18 @@ def ramp(a, b, x):
 
 
 def lion_weights(p):
-    tail = ramp(0.205, 0.245, p.y)
-    head = ramp(-0.13, -0.17, p.y)
+    """The ForgeGUI lion of 2026-11-19 ("Low poly, Game-ready, Stylized roblox lion with NO baseplate"):
+    a big mane from the nose back to y -0.24, short front legs under it (paws at x 0.15, y -0.64), a
+    slender body, staggered hind legs (paws at y 0.02 and 0.15) and a long tail with a big tuft."""
+    tail = ramp(0.25, 0.31, p.y)
+    head = ramp(-0.22, -0.32, p.y)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg = None
-    if p.y < -0.12 and abs(abs(p.x) - 0.078) < 0.075 and abs(p.y + 0.245) < 0.09:
-        leg = "leg_fl" if p.x > 0 else "leg_fr"
-    elif -0.02 < p.y < 0.215 and abs(abs(p.x) - 0.055) < 0.07:
-        leg = "leg_bl" if p.x > 0 else "leg_br"
-    if leg:
-        down = ramp(-0.07, -0.11, p.z)  # the leg's share grows below the body
+    leg, down = None, 0.0
+    if abs(abs(p.x) - 0.14) < 0.12 and abs(p.y + 0.6) < 0.17:
+        leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.19, -0.27, p.z)
+    elif abs(abs(p.x) - 0.1) < 0.12 and -0.11 < p.y < 0.3:
+        leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.14, -0.22, p.z)
+    if leg and down > 0:  # the leg's share grows below the body
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
     return {k: v for k, v in w.items() if v > 0.001}
@@ -60,19 +64,68 @@ REGIONS = {
     "creature_lion_forge": {
         "length": 13.0,  # the Blender lion's length (StationAssets.creature_lion.size)
         "joints": {
-            "body": (0.0, -0.03, -0.07),
-            "head": (0.0, -0.15, 0.02),
-            "leg_fl": (0.078, -0.245, -0.075),
-            "leg_fr": (-0.08, -0.245, -0.075),
-            "leg_bl": (0.05, 0.13, -0.07),
-            "leg_br": (-0.055, 0.13, -0.07),
-            "tail": (0.0, 0.22, -0.06),
+            "body": (0.0, -0.05, -0.1),
+            "head": (0.0, -0.28, 0.0),
+            "leg_fl": (0.14, -0.58, -0.2),
+            "leg_fr": (-0.14, -0.58, -0.2),
+            "leg_bl": (0.1, 0.09, -0.15),
+            "leg_br": (-0.1, 0.09, -0.15),
+            "tail": (0.0, 0.27, -0.07),
         },
         "weights": lion_weights,
         "small": 0.06,
-        "notes": "Lion: the ForgeGUI (Meshy) model, one mesh, skinned to the Stations rig (decision 0102).",
+        "shade": "flat",  # a low-poly model: every facet crisp
+        "notes": "Lion: the ForgeGUI model (Low poly, Game-ready, Stylized roblox lion), one mesh, skinned to the Stations rig (decision 0102).",
     },
 }
+
+
+def tidy(me, weld, shade):
+    """ForgeGUI's faceted models come as thousands of loose pieces that mostly touch, a third of their faces
+    turned inwards. Roblox draws only a face's front, so those show as holes. Join the vertices that sit at
+    the same spot (`weld`, in the source's units; each face keeps its own UVs), then turn every face out:
+    rays from its centre on each side, and the side more of them escape from is outside."""
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    before = len(bm.verts)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=weld)
+    bm.faces.ensure_lookup_table()
+    tree = BVHTree.FromBMesh(bm)
+    flipped = 0
+    for f in bm.faces:
+        n = f.normal
+        if n.length < 0.5:
+            continue
+        c = f.calc_center_median()
+        a = n.orthogonal().normalized()
+        b = n.cross(a)
+        rays = [Vector((0, 0, 0))] + [(a * x + b * y) * 0.6 for x, y in ((1, 0), (-1, 0), (0, 1), (0, -1))]
+
+        def escapes(side):
+            out = 0
+            for r in rays:
+                d = (n * side + r).normalized()
+                hit = tree.ray_cast(c + d * 1e-4, d)
+                out += 1 if hit[0] is None else 0
+            return out
+
+        if escapes(-1) > escapes(1):
+            f.normal_flip()
+            flipped += 1
+    bm.normal_update()
+    # shading: "flat" keeps every facet of a low-poly model crisp, "smooth" runs the light evenly over the
+    # joined surface; the game draws the mesh two-sided (MeshPart.DoubleSided), so a thin piece shows from
+    # behind too
+    for f in bm.faces:
+        f.smooth = shade == "smooth"
+    for e in bm.edges:
+        e.smooth = shade == "smooth"
+    bm.to_mesh(me)
+    bm.free()
+    tris = sum(len(p.vertices) - 2 for p in me.polygons)
+    print("TIDY verts", before, "->", len(me.vertices), "faces turned out", flipped, "tris", tris)
+    if tris > 20000:
+        raise RuntimeError(f"{tris} triangles is over Roblox's 20,000 for one mesh")
 
 
 def roblox(v):
@@ -98,6 +151,11 @@ def main():
     body.parent = None
     body.data.transform(body.matrix_world)
     body.matrix_world = Matrix.Identity(4)
+    # the file's own normals (one per facet, a third of them inward) would override any shading: drop them
+    bpy.context.view_layer.objects.active = body
+    body.select_set(True)
+    bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    tidy(body.data, spec.get("weld", 0.0005), spec.get("shade", "flat"))
 
     # each vertex's weights from where it is; a small island takes its average, so it moves whole
     bm = bmesh.new()
@@ -186,6 +244,8 @@ def main():
     print("TEXTURE", image.size[0], image.size[1])
 
     if test:  # bend it: the head, a front and a hind leg forward, the tail up
+        for mat in body.data.materials:  # draw only fronts, as Roblox does
+            mat.use_backface_culling = True
         scene = bpy.context.scene
         scene.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items] else "BLENDER_EEVEE"
         scene.render.resolution_x, scene.render.resolution_y = 520, 420

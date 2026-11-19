@@ -37,7 +37,24 @@ Date: 2026-11-19. Task STATION-109.
   studs). It has its own rainbow coat. Once it was checked in Studio it became the lion
   (`StationRules.assetOf`); the old jointed `creature_lion` stays uploaded as the fallback.
 
+## The second lion (same day)
+
+- **What was wrong with the first lion:** the first ForgeGUI lion (job 01398b24) looked fractured in game.
+  - It was 3,585 loose shards, and about a third of its faces pointed inward (Roblox draws only fronts,
+    so those showed as holes).
+  - Its texture was a mosaic of about 3,600 tiny pieces, each with its own painted light and dark. At
+    Roblox's 1024 texture size their edges blur into cracks.
+- **The replacement:** SHANNON made a new one on the ForgeGUI site ("Low poly, Game-ready, Stylized
+  roblox lion with NO baseplate", artifact 4fffb41e). It is 2,961 faces, one object, no baseplate, and
+  joins into a single closed piece. It replaces the first as `creature_lion_forge`.
+- **`tidy` in skin_forge.py:**
+  - Joins the vertices ForgeGUI exports loose.
+  - Turns each face outwards (rays from both sides).
+  - Sets the shading: flat for a low-poly model.
+- `Creatures.build` draws a skinned mesh two-sided (`MeshPart.DoubleSided`) in case a thin piece remains.
+- ForgeGUI's own animation (the paid route) stays the fallback if this rig is not good enough.
+
 ## Facts
 
-- The source is in `assets/stations/sources/creature_lion_forge.glb` (ForgeGUI job 01398b24, Meshy).
-- 10,210 triangles, one 1024 texture, 3,585 islands, 2,670 of them moving whole.
+- The source is in `assets/stations/sources/creature_lion_forge.glb` (ForgeGUI artifact 4fffb41e).
+- 2,961 triangles, 1,484 vertices once joined, one piece; one 1024 texture.

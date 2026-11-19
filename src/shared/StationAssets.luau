@@ -2717,19 +2717,19 @@ local StationAssets: { [string]: Asset } = {
 		},
 	},
 	creature_lion_forge = {
-		size = { 4.78, 7.09, 13 },
+		size = { 4.89, 6.96, 13 },
 		parts = { "creature_lion_forge_body" },
 		glow = {},
 		centres = {
-			creature_lion_forge_body = { 0, 3.545, 0 },
+			creature_lion_forge_body = { 0, 3.478, 0 },
 		},
 		joints = {
-			creature_lion_forge_head = { 0.01, 3.83, 2.071 },
-			creature_lion_forge_leg_fl = { 1.073, 2.535, 3.367 },
-			creature_lion_forge_leg_fr = { -1.081, 2.535, 3.367 },
-			creature_lion_forge_leg_bl = { 0.692, 2.604, -1.746 },
-			creature_lion_forge_leg_br = { -0.74, 2.604, -1.746 },
-			creature_lion_forge_tail = { 0.01, 2.74, -2.972 },
+			creature_lion_forge_head = { -0.001, 3.49, 1.916 },
+			creature_lion_forge_leg_fl = { 0.956, 2.122, 3.968 },
+			creature_lion_forge_leg_fr = { -0.959, 2.122, 3.968 },
+			creature_lion_forge_leg_bl = { 0.683, 2.464, -0.614 },
+			creature_lion_forge_leg_br = { -0.685, 2.464, -0.614 },
+			creature_lion_forge_tail = { -0.001, 3.011, -1.845 },
 		},
 		model = 131714232797552,
 		decal = 87248702554805,
@@ -2737,7 +2737,7 @@ local StationAssets: { [string]: Asset } = {
 		rainbowDecal = 76165246491673,
 		rainbowTexture = nil,
 		skinned = true,
-		root = { 0.01, 2.604, 0.436 },
+		root = { -0.001, 2.806, 0.343 },
 	},
 }
 

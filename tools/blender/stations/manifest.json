@@ -7035,62 +7035,62 @@
     "png": "build/blender/stations/creature_lion_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_forge_rest.png",
     "size_studs": [
-      4.78,
-      7.09,
+      4.89,
+      6.96,
       13.0
     ],
-    "tris": 10210,
+    "tris": 2961,
     "parts": {
-      "creature_lion_forge_body": 10210
+      "creature_lion_forge_body": 2961
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Lion: the ForgeGUI (Meshy) model, one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Lion: the ForgeGUI model (Low poly, Game-ready, Stylized roblox lion), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_lion_forge_body": [
         0.0,
-        3.545,
+        3.478,
         -0.0
       ]
     },
     "joints": {
       "creature_lion_forge_head": [
-        0.01,
-        3.83,
-        2.071
+        -0.001,
+        3.49,
+        1.916
       ],
       "creature_lion_forge_leg_fl": [
-        1.073,
-        2.535,
-        3.367
+        0.956,
+        2.122,
+        3.968
       ],
       "creature_lion_forge_leg_fr": [
-        -1.081,
-        2.535,
-        3.367
+        -0.959,
+        2.122,
+        3.968
       ],
       "creature_lion_forge_leg_bl": [
-        0.692,
-        2.604,
-        -1.746
+        0.683,
+        2.464,
+        -0.614
       ],
       "creature_lion_forge_leg_br": [
-        -0.74,
-        2.604,
-        -1.746
+        -0.685,
+        2.464,
+        -0.614
       ],
       "creature_lion_forge_tail": [
-        0.01,
-        2.74,
-        -2.972
+        -0.001,
+        3.011,
+        -1.845
       ]
     },
     "skinned": true,
     "root": [
-      0.01,
-      2.604,
-      0.436
+      -0.001,
+      2.806,
+      0.343
     ]
   }
 }
