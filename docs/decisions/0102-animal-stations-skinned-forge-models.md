@@ -103,6 +103,11 @@ Date: 2026-11-19. Task STATION-109.
   sphinx's face and striped headdress, 5,271 triangles, `creature_jackal_sphinx_forge`.
 - So the three jackals (the Jackal, the Pharaoh and the Sphinx) are all SHANNON's ForgeGUI models, flat
   shaded in the lion's polygon style.
+- Then SHANNON: "do it for the two most recent jackal models, get rid of both of those jackals apart from
+  the middle one", after seeing them ("yes rig these two"). The Jackal is now the "Low-Poly Jackal in
+  Profile" (artifact 0a34fc4d, 23:00): tan with a black saddle, 5,027 triangles. The Sphinx Jackal is the
+  "Low-Poly Anubis Statue" (artifact 54ef40ce, 22:58): a sandstone jackal with a striped headdress, 4,950
+  triangles. The 22:52 jackal and the 22:51 human-faced Sphinx are gone; the Pharaoh (22:49) stays.
 
 ## Facts
 

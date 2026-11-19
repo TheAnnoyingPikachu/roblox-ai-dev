@@ -61,17 +61,17 @@ def lion_weights(p):
 
 
 def jackal_weights(p):
-    """SHANNON's "Low-Poly Anubis with Egyptian Headdress" (ForgeGUI artifact d3835931), the Jackal: sandy,
-    the head and headdress at y < -0.3, front legs at x +-0.095, y -0.25 (apart below z -0.1), wide hind
-    legs at x +-0.135, y 0.12 (apart below z -0.09), and a tail that is a piece of its own behind."""
-    tail = ramp(0.17, 0.22, p.y)
-    head = ramp(-0.29, -0.35, p.y) * ramp(-0.08, 0.0, p.z)
+    """SHANNON's "Low-Poly Jackal in Profile" (ForgeGUI artifact 0a34fc4d), the Jackal: tan with a black
+    saddle, the head at y < -0.32, front legs at x +-0.08, y -0.24 (apart below z -0.12), hind legs at
+    x +-0.135, y 0.13 (apart below z -0.11), and a bushy tail hanging behind them from y 0.21."""
+    tail = ramp(0.2, 0.25, p.y)
+    head = ramp(-0.3, -0.36, p.y) * ramp(0.0, 0.08, p.z)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
     leg, down = None, 0.0
-    if -0.33 < p.y < -0.15 and 0.03 < abs(p.x) < 0.15:
-        leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.07, -0.13, p.z)
-    elif 0.03 < p.y < 0.2 and 0.06 < abs(p.x) < 0.19:
-        leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.06, -0.12, p.z)
+    if -0.31 < p.y < -0.13 and 0.03 < abs(p.x) < 0.14:
+        leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.12, -0.18, p.z)
+    elif 0.02 < p.y < 0.21 and 0.06 < abs(p.x) < 0.2:
+        leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.1, -0.16, p.z)
     if leg and down > 0:
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
@@ -79,18 +79,17 @@ def jackal_weights(p):
 
 
 def sphinx_weights(p):
-    """SHANNON's "Sphinx variant" (ForgeGUI artifact dd7695be), the Sphinx Jackal: a sandy lion's body, the
-    face, beard and striped headdress at y < -0.2, front legs at x +-0.12 with the paws reaching forward
-    (apart below z -0.12), hind legs at x +-0.085, y 0.08 (apart below z -0.1), and a long tail hanging
-    from y 0.18 to a tuft by the ground."""
-    tail = ramp(0.17, 0.21, p.y)
-    head = ramp(-0.17, -0.25, p.y) * ramp(-0.13, -0.06, p.z)
+    """SHANNON's "Low-Poly Anubis Statue" (ForgeGUI artifact 54ef40ce), the Sphinx Jackal: sandstone, the
+    head and striped headdress at y < -0.32, front legs at x +-0.12, y -0.28 (apart below z -0.12), hind
+    legs mid-stride at x +-0.11, y 0.07..0.13 (apart below z -0.11), and a pointed tail from y 0.2."""
+    tail = ramp(0.19, 0.23, p.y)
+    head = ramp(-0.31, -0.37, p.y) * ramp(-0.05, 0.03, p.z)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
     leg, down = None, 0.0
-    if -0.42 < p.y < -0.2 and 0.06 < abs(p.x) < 0.18:
-        leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.12, -0.2, p.z)
-    elif -0.01 < p.y < 0.18 and 0.03 < abs(p.x) < 0.15:
-        leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.1, -0.17, p.z)
+    if -0.36 < p.y < -0.12 and 0.05 < abs(p.x) < 0.18:
+        leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.11, -0.17, p.z)
+    elif -0.01 < p.y < 0.21 and 0.045 < abs(p.x) < 0.18:
+        leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.1, -0.16, p.z)
     if leg and down > 0:
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
@@ -155,32 +154,32 @@ REGIONS = {
     "creature_jackal_forge": {
         "length": 7.4,  # the Blender jackal's length (StationAssets.creature_jackal.size)
         "joints": {
-            "body": (0.0, -0.06, 0.0),
-            "head": (0.0, -0.3, 0.12),
-            "leg_fl": (0.095, -0.25, -0.08),
-            "leg_fr": (-0.095, -0.25, -0.08),
-            "leg_bl": (0.12, 0.12, -0.07),
-            "leg_br": (-0.12, 0.12, -0.07),
-            "tail": (0.0, 0.19, -0.02),
+            "body": (0.0, -0.04, 0.0),
+            "head": (0.0, -0.31, 0.12),
+            "leg_fl": (0.08, -0.22, -0.12),
+            "leg_fr": (-0.08, -0.22, -0.12),
+            "leg_bl": (0.12, 0.13, -0.1),
+            "leg_br": (-0.12, 0.13, -0.1),
+            "tail": (0.0, 0.21, 0.0),
         },
         "weights": jackal_weights,
         "small": 0.06,
-        "notes": "Jackal: SHANNON's Anubis with Egyptian Headdress from ForgeGUI (artifact d3835931), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Jackal: SHANNON's Jackal in Profile from ForgeGUI (artifact 0a34fc4d), one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_jackal_sphinx_forge": {
         "length": 9.6,  # the Blender Sphinx Jackal's length (StationAssets.creature_jackal_sphinx.size)
         "joints": {
-            "body": (0.0, -0.08, 0.0),
-            "head": (0.0, -0.22, 0.05),
-            "leg_fl": (0.12, -0.3, -0.13),
-            "leg_fr": (-0.12, -0.3, -0.13),
-            "leg_bl": (0.085, 0.08, -0.1),
-            "leg_br": (-0.085, 0.08, -0.1),
-            "tail": (0.0, 0.18, 0.0),
+            "body": (0.0, -0.06, 0.0),
+            "head": (0.0, -0.32, 0.1),
+            "leg_fl": (0.12, -0.26, -0.12),
+            "leg_fr": (-0.12, -0.26, -0.12),
+            "leg_bl": (0.11, 0.07, -0.1),
+            "leg_br": (-0.11, 0.13, -0.1),
+            "tail": (0.0, 0.2, -0.02),
         },
         "weights": sphinx_weights,
         "small": 0.06,
-        "notes": "Sphinx Jackal: SHANNON's Sphinx variant from ForgeGUI (artifact dd7695be), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Sphinx Jackal: SHANNON's Anubis Statue from ForgeGUI (artifact 54ef40ce), one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_tortoise_forge": {
         "length": 10.1,  # the Blender tortoise's length (StationAssets.creature_tortoise.size)
