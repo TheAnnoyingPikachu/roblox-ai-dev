@@ -109,6 +109,16 @@ Date: 2026-11-19. Task STATION-109.
   "Low-Poly Anubis Statue" (artifact 54ef40ce, 22:58): a sandstone jackal with a striped headdress, 4,950
   triangles. The 22:52 jackal and the 22:51 human-faced Sphinx are gone; the Pharaoh (22:49) stays.
 
+## The rhinos (same day)
+
+- SHANNON: "now rig the rhinos, the regular one the crystal one and the first lava one".
+- The Rhino is the "Low-Poly Rhino using this reference" (artifact 9f6a531e, 23:06, 3,040 triangles).
+- The Crystal Rhino is the "Rainbow Crystal Rhino" (artifact f70447fd, 23:08, 5,096 triangles).
+- The Lava Rhino is the first "Molten Lava Rhino Warrior" (artifact f93e493b, 23:09, 14,087 triangles).
+  The later lava ones (23:12, 23:20) are not used.
+- The three share one body plan, so one weights function (`rhino_weights`) and one joint layout
+  (`rhino`) serve all three; only the length, the tail's start and the legs' top differ.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

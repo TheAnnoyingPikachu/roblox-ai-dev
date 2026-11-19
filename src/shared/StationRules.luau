@@ -152,9 +152,12 @@ end
 -- A species or variant whose model is a whole ForgeGUI model skinned to the rig (decision 0102) is listed
 -- in `FORGE`, by its id.
 StationRules.FORGE = {
+	crystal_rhino = "creature_rhino_crystal_forge",
 	jackal = "creature_jackal_forge",
+	lava_rhino = "creature_rhino_lava_forge",
 	lion = "creature_lion_forge",
 	pharaoh_jackal = "creature_jackal_pharaoh_forge",
+	rhino = "creature_rhino_forge",
 	sphinx_jackal = "creature_jackal_sphinx_forge",
 	tortoise = "creature_tortoise_forge",
 } :: { [string]: string }

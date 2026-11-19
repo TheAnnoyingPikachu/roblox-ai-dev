@@ -135,7 +135,52 @@ def pharaoh_weights(p):
     return {k: v for k, v in w.items() if v > 0.001}
 
 
+def rhino_weights(tail_from, leg_top):
+    """SHANNON's ForgeGUI rhinos (one reference image, one body plan): the head forward of the shoulders
+    from y -0.21, front legs at x +-0.13, y -0.23..0, hind legs at x +-0.125, y 0..0.32, apart below
+    `leg_top`, and a thin tail from `tail_from`."""
+
+    def weights(p):
+        tail = ramp(tail_from, tail_from + 0.04, p.y)
+        head = ramp(-0.21, -0.26, p.y)
+        w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+        leg, down = None, ramp(leg_top, leg_top - 0.06, p.z)
+        if 0.05 < abs(p.x) < 0.23 and down > 0:
+            if -0.23 < p.y < 0.0:
+                leg = "leg_fl" if p.x > 0 else "leg_fr"
+            elif 0.0 <= p.y < 0.32:
+                leg = "leg_bl" if p.x > 0 else "leg_br"
+        if leg:
+            w = {k: v * (1 - down) for k, v in w.items()}
+            w[leg] = down
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return weights
+
+
+def rhino(name, length, tail_from, tail_z, leg_top, artifact, what):
+    return {
+        "length": length,
+        "joints": {
+            "body": (0.0, 0.0, 0.0),
+            "head": (0.0, -0.22, 0.04),
+            "leg_fl": (0.13, -0.13, -0.09),
+            "leg_fr": (-0.13, -0.13, -0.09),
+            "leg_bl": (0.125, 0.21, -0.09),
+            "leg_br": (-0.125, 0.21, -0.09),
+            "tail": (0.0, tail_from, tail_z),
+        },
+        "weights": rhino_weights(tail_from, leg_top),
+        "small": 0.06,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), one mesh, skinned to the Stations rig (decision 0102).",
+    }
+
+
 REGIONS = {
+    # lengths: the Blender models' (StationAssets.creature_rhino[_lava, _crystal].size)
+    "creature_rhino_forge": rhino("Rhino", 13.9, 0.32, 0.06, -0.09, "9f6a531e", "Low-Poly Rhino"),
+    "creature_rhino_crystal_forge": rhino("Crystal Rhino", 16.0, 0.33, 0.08, -0.1, "f70447fd", "Rainbow Crystal Rhino"),
+    "creature_rhino_lava_forge": rhino("Lava Rhino", 18.5, 0.3, 0.07, -0.09, "f93e493b", "Molten Lava Rhino Warrior"),
     "creature_jackal_pharaoh_forge": {
         "length": 9.1,  # the Blender Pharaoh Jackal's length (StationAssets.creature_jackal_pharaoh.size)
         "joints": {
