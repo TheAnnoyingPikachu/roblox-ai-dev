@@ -715,13 +715,13 @@
     "texture": null
   },
   "creature_lion_forge": {
-    "model": 131714232797552,
-    "decal": 87248702554805,
+    "model": 111599437722318,
+    "decal": 108977530557225,
     "texture": null
   },
   "creature_lion_forge_rainbow": {
     "model": null,
-    "decal": 76165246491673,
+    "decal": 98320930331716,
     "texture": null
   }
 }
