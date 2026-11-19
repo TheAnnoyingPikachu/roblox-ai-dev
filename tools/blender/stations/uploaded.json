@@ -723,5 +723,25 @@
     "model": null,
     "decal": 98320930331716,
     "texture": null
+  },
+  "creature_jackal_forge": {
+    "model": 125784152313964,
+    "decal": 113199947677069,
+    "texture": null
+  },
+  "creature_jackal_forge_rainbow": {
+    "model": null,
+    "decal": 138794653247172,
+    "texture": null
+  },
+  "creature_tortoise_forge": {
+    "model": 131945169265917,
+    "decal": 73956594964225,
+    "texture": null
+  },
+  "creature_tortoise_forge_rainbow": {
+    "model": null,
+    "decal": 99560149746453,
+    "texture": null
   }
 }
