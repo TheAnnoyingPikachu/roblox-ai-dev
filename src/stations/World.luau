@@ -22,6 +22,7 @@ local ValleyMap = require(game:GetService("ReplicatedStorage"):WaitForChild("Sha
 local StationRewards =
 	require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("StationRewards"))
 local StationConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("StationConfig"))
+local StationAssets = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("StationAssets"))
 local part, pillar, label = Props.part, Props.pillar, Props.label
 
 local World = {}
@@ -522,11 +523,14 @@ function World.setFame(best: { { s: string, v: string?, rainbow: boolean?, owner
 		local x, y = x0 + lx * c - ly * s, y0 + lx * s + ly * c
 		local p = onPlaza(x, y, GROUND + 2)
 		task.spawn(function()
+			local asset = Creatures.asset(a.s, a.v)
+			local size = StationAssets[asset] and StationAssets[asset].size or { 4, 4, 4 }
+			local fit = math.min(1, 3.4 / math.max(size[1], size[3], 0.1)) -- small enough for its pedestal
 			local model = Creatures.spawn(
-				Creatures.asset(a.s, a.v),
+				asset,
 				CFrame.lookAt(p, p + Vector3.new(-x, 0, y).Unit),
 				f,
-				nil,
+				{ model = asset, size = fit },
 				a.rainbow
 			)
 			if model then

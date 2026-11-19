@@ -6701,13 +6701,13 @@
     "png": "build/blender/stations/hub_trading.png",
     "preview": "build/blender/stations/previews/hub_trading.png",
     "size_studs": [
-      13.35,
+      11.3,
       9.0,
-      12.59
+      11.61
     ],
-    "tris": 2668,
+    "tris": 2652,
     "parts": {
-      "hub_trading_body": 2668
+      "hub_trading_body": 2652
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/hub.py",
@@ -6715,9 +6715,9 @@
     "glow": {},
     "centres": {
       "hub_trading_body": [
-        26.477,
+        26.639,
         4.5,
-        -26.658
+        -26.792
       ]
     },
     "joints": {},
@@ -6728,13 +6728,13 @@
     "png": "build/blender/stations/hub_gifts.png",
     "preview": "build/blender/stations/previews/hub_gifts.png",
     "size_studs": [
-      13.04,
+      11.27,
       9.0,
-      12.59
+      11.27
     ],
-    "tris": 1818,
+    "tris": 1802,
     "parts": {
-      "hub_gifts_body": 1808,
+      "hub_gifts_body": 1792,
       "hub_gifts_body_glow": 10
     },
     "tris_budget": 20000,
@@ -6749,7 +6749,7 @@
     },
     "centres": {
       "hub_gifts_body": [
-        -26.632,
+        -26.658,
         4.5,
         -26.658
       ],
@@ -6767,7 +6767,7 @@
     "png": "build/blender/stations/hub_fame.png",
     "preview": "build/blender/stations/previews/hub_fame.png",
     "size_studs": [
-      19.38,
+      17.55,
       9.18,
       16.93
     ],
@@ -6781,7 +6781,7 @@
     "glow": {},
     "centres": {
       "hub_fame_body": [
-        27.77,
+        26.854,
         4.588,
         26.584
       ]
@@ -6794,9 +6794,9 @@
     "png": "build/blender/stations/hub_board.png",
     "preview": "build/blender/stations/previews/hub_board.png",
     "size_studs": [
-      8.4,
+      8.55,
       7.64,
-      2.01
+      3.32
     ],
     "tris": 2428,
     "parts": {

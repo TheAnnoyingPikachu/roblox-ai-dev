@@ -121,19 +121,19 @@ def _scale_about(at, sx, sy):
     return t @ Matrix.Diagonal((sx, sy, 1.0, 1.0)) @ t.inverted()
 
 
-def booth(p, rng, stripe, name, sign):
+def booth(p, yaw, rng, stripe, name):
     """A stall with a striped roof, its counter to the front (local -Y), a sign board over it."""
-    box((9.0, 6.0, 0.35), p(0, 0, 0), S.WOOD, rng)
-    box((8.6, 1.4, 2.7), p(0, -2.0, 0.35), S.WOOD_DARK, rng)
-    box((9.0, 1.8, 0.3), p(0, -2.0, 3.05), S.WOOD, rng)
-    box((8.6, 0.4, 5.6), p(0, 2.8, 0.35), S.WOOD_DARK, rng)  # the back wall
+    box((9.0, 6.0, 0.35), p(0, 0, 0), S.WOOD, rng, yaw)
+    box((8.6, 1.4, 2.7), p(0, -2.0, 0.35), S.WOOD_DARK, rng, yaw)
+    box((9.0, 1.8, 0.3), p(0, -2.0, 3.05), S.WOOD, rng, yaw)
+    box((8.6, 0.4, 5.6), p(0, 2.8, 0.35), S.WOOD_DARK, rng, yaw)  # the back wall
     for sx in (-4.2, 4.2):
         for sy in (-2.6, 2.6):
-            box((0.45, 0.45, 6.8), p(sx, sy, 0.35), S.WOOD_DARK, rng)
+            box((0.45, 0.45, 6.8), p(sx, sy, 0.35), S.WOOD_DARK, rng, yaw)
     for i in range(9):
-        box((1.0, 7.0, 0.22), p(-4.0 + i, -0.3, 6.9), stripe if i % 2 else S.WHITE, rng, tilt=(-10, 0))
-    box((len(name) * 0.62 + 1.6, 0.4, 1.6), p(0, -3.6, 7.4), S.WOOD_DARK, rng)
-    words(name, p(0, -3.85, 8.2), 0.9, S.WHITE, glow=0.6)
+        box((1.0, 7.0, 0.22), p(-4.0 + i, -0.3, 6.9), stripe if i % 2 else S.WHITE, rng, yaw, tilt=(-10, 0))
+    box((len(name) * 0.62 + 1.6, 0.4, 1.6), p(0, -3.6, 7.4), S.WOOD_DARK, rng, yaw)
+    words(name, p(0, -3.85, 8.2), 0.9, S.WHITE, glow=0.6, yaw=yaw)
 
 
 def trading(rng):
@@ -141,11 +141,11 @@ def trading(rng):
     prompt here that opens the trade menu."""
     at, yaw = stop("trading")
     p = local(at, yaw)
-    booth(p, rng, (255, 181, 46), "TRADING POST", None)
+    booth(p, yaw, rng, (255, 181, 46), "TRADING POST")
     for sx in (-2.2, 2.2):
         turn([(0.7, 0), (0.55, 0.2), (0.4, 1.4), (0.75, 1.6), (0.75, 1.75)], p(sx, -3.6, 0.0), S.WOOD, rng, n=8)
     for i in range(2):
-        box((1.6, 1.6, 1.4), p(-5.6, -1.0 + i * 1.9, 0.0), (190, 140, 90), rng)
+        box((1.6, 1.6, 1.4), p(-5.6, -1.0 + i * 1.9, 0.0), (190, 140, 90), rng, yaw)
         lump(p(-5.6, -1.0 + i * 1.9, 1.5), (0.8, 0.8, 0.3), (228, 196, 110), rng)
 
 
@@ -154,7 +154,7 @@ def gifts(rng):
     game puts a prompt here that opens Gifts."""
     at, yaw = stop("gifts")
     p = local(at, yaw)
-    booth(p, rng, (92, 191, 74), "DAILY GIFTS", None)
+    booth(p, yaw, rng, (92, 191, 74), "DAILY GIFTS")
     wheel_at = p(0, 2.3, 4.0)
     face = S.k.cyl(2.3, 0.35, wheel_at, n=24, rot=(90, 0, yaw))
     S.paint(face, S.WHITE, rng, kind=S.PALE)
@@ -167,8 +167,8 @@ def gifts(rng):
     neon(S.k.cyl(0.25, 0.6, p(0, 1.85, 6.5), n=6, r2=0.0, rot=(180, 0, 0)), (226, 80, 122), 1.5)  # the pointer
     for i in range(4):
         x = -3.0 + i * 2.0
-        box((1.1, 1.1, 1.0), p(x, -2.0, 3.35), STRIPES[i], rng)
-        box((1.2, 0.2, 0.25), p(x, -2.0, 4.0), S.GOLD, rng)
+        box((1.1, 1.1, 1.0), p(x, -2.0, 3.35), STRIPES[i], rng, yaw)
+        box((1.2, 0.2, 0.25), p(x, -2.0, 4.0), S.GOLD, rng, yaw)
 
 
 def fame(rng):
@@ -180,13 +180,13 @@ def fame(rng):
         x = (i - (FAME - 1) / 2) * 4.4
         y = 0.8 + abs(i - (FAME - 1) / 2) * 0.8
         turn([(1.7, 0), (1.5, 0.3), (1.2, 0.5), (1.1, 1.6), (1.5, 1.8), (1.5, 2.0)], p(x, y, 0.0), S.MARBLE, rng, n=12, kind=S.PALE)
-        box((1.6, 0.25, 0.5), p(x, y - 1.6, 0.9), S.GOLD, rng)
+        box((1.6, 0.25, 0.5), p(x, y - 1.6, 0.9), S.GOLD, rng, yaw)
     for sx in (-9.2, 9.2):
         post(0.5, 7.0, p(sx, 1.4, 0.0), S.MARBLE, rng, n=8, kind=S.PALE)
         lump(p(sx, 1.4, 7.2), 0.7, S.GOLD, rng)
-    box((19.2, 0.6, 1.0), p(0, 1.4, 7.0), S.MARBLE, rng, kind=S.PALE)
-    box((10.4, 0.4, 1.5), p(0, 1.1, 7.6), S.WOOD_DARK, rng)
-    words("HALL OF FAME", p(0, 0.85, 8.35), 0.9, S.GOLD, glow=0.6)
+    box((19.2, 0.6, 1.0), p(0, 1.4, 7.0), S.MARBLE, rng, yaw, kind=S.PALE)
+    box((10.4, 0.4, 1.5), p(0, 1.1, 7.6), S.WOOD_DARK, rng, yaw)
+    words("HALL OF FAME", p(0, 0.85, 8.35), 0.9, S.GOLD, glow=0.6, yaw=yaw)
     for sx in (-1, 1):
         bush(p(sx * 10.6, -0.2, 0.0), rng, s=0.9)
 
@@ -197,11 +197,11 @@ def board(rng):
     p = local(at, yaw)
     for sx in (-3.4, 3.4):
         post(0.3, 7.2, p(sx, 0, 0.0), S.WOOD_DARK, rng, n=6)
-    box((7.4, 0.4, 4.4), p(0, 0, 1.6), S.WOOD, rng)
-    box((6.8, 0.1, 3.8), p(0, -0.25, 1.9), (244, 232, 206), rng, kind=S.PALE)  # the paper the game writes on
-    box((8.4, 1.6, 0.25), p(0, 0, 7.2), S.WOOD_DARK, rng, tilt=(-14, 0))
-    box((5.4, 0.3, 1.0), p(0, -0.3, 6.25), S.WOOD_DARK, rng)
-    words("NOTICE BOARD", p(0, -0.5, 6.75), 0.55, S.WHITE, glow=0.6)
+    box((7.4, 0.4, 4.4), p(0, 0, 1.6), S.WOOD, rng, yaw)
+    box((6.8, 0.1, 3.8), p(0, -0.25, 1.9), (244, 232, 206), rng, yaw, kind=S.PALE)  # the paper the game writes on
+    box((8.4, 1.6, 0.25), p(0, 0, 7.2), S.WOOD_DARK, rng, yaw, tilt=(-14, 0))
+    box((5.4, 0.3, 1.0), p(0, -0.3, 6.25), S.WOOD_DARK, rng, yaw)
+    words("NOTICE BOARD", p(0, -0.5, 6.75), 0.55, S.WHITE, glow=0.6, yaw=yaw)
 
 
 def camp(rng):

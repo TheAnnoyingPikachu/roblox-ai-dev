@@ -668,5 +668,45 @@
     "model": 79560426232029,
     "decal": 119688942868167,
     "texture": null
+  },
+  "hub_ground": {
+    "model": 138288342422615,
+    "decal": 109283581729368,
+    "texture": null
+  },
+  "hub_pond": {
+    "model": 79388069972468,
+    "decal": 96869784468655,
+    "texture": null
+  },
+  "hub_trading": {
+    "model": 106919507949332,
+    "decal": 124406652932591,
+    "texture": null
+  },
+  "hub_gifts": {
+    "model": 94836485171190,
+    "decal": 116727631354938,
+    "texture": null
+  },
+  "hub_fame": {
+    "model": 87241884107299,
+    "decal": 110217997228850,
+    "texture": null
+  },
+  "hub_board": {
+    "model": 129781832668394,
+    "decal": 90768724032995,
+    "texture": null
+  },
+  "hub_camp": {
+    "model": 75748042792042,
+    "decal": 107135646092493,
+    "texture": null
+  },
+  "hub_lights": {
+    "model": 86459315201177,
+    "decal": 72403370047769,
+    "texture": null
   }
 }
