@@ -52,7 +52,8 @@ describe("StationAssets", function()
 			expect(count(asset.joints)).toBe(count(entry.joints))
 			expect(asset.lift or 0).toBe(entry.lift or 0)
 			for part, j in asset.joints do
-				expect(asset.centres[part] == nil).toBe(false)
+				-- a skinned model's joints are bones in its one mesh (decision 0102), not meshes of their own
+				expect(asset.centres[part] == nil).toBe(asset.skinned == true)
 				for i = 1, 3 do
 					expect(j[i]).toBe(entry.joints[part][i])
 				end
@@ -198,7 +199,11 @@ describe("StationAssets", function()
 				continue -- scenery_: still props (decision 0085)
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do
-				expect(entry.parts[`{name}_{piece}`] == nil).toBe(false)
+				-- a skinned model is one mesh: its pieces are bones, named by its joints (decision 0102)
+				local here = if entry.skinned
+					then piece == "body" or entry.joints[`{name}_{piece}`] ~= nil
+					else entry.parts[`{name}_{piece}`] ~= nil
+				expect(here).toBe(true)
 			end
 			for _, tris in entry.parts do
 				expect(tris <= 20000).toBeTruthy()

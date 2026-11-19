@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-109",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0102: the ForgeGUI lion in game as one whole mesh, skinned to the Stations rig and driven by the existing animation code.",
+  "inputs": [
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md"
+  ],
+  "dependencies": [
+    "STATION-108"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/write-assets-module.mjs",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_lion_forge*",
+    "assets/stations/sources/creature_lion_forge.glb",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationRules.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Creatures.client.luau",
+    "tests/StationAssets.spec.luau",
+    "tests/StationRules.spec.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md",
+    "studio/tasks/STATION-109.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The lion is the ForgeGUI model, one mesh, with no baseplate or stray objects",
+    "It walks, attacks, flinches and falls with the same clips as every animal",
+    "Its rainbow coat works"
+  ],
+  "verification": "In progress.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "One paid ForgeGUI rig call was spent (job 6dabe42b); its humanoid rig is not used."
+}

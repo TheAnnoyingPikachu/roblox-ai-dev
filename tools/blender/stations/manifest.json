@@ -7029,5 +7029,68 @@
       ]
     ],
     "lid": null
+  },
+  "creature_lion_forge": {
+    "fbx": "build/blender/stations/creature_lion_forge.fbx",
+    "png": "build/blender/stations/creature_lion_forge.png",
+    "preview": "build/blender/stations/previews/creature_lion_forge_rest.png",
+    "size_studs": [
+      4.78,
+      7.09,
+      13.0
+    ],
+    "tris": 10210,
+    "parts": {
+      "creature_lion_forge_body": 10210
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Lion: the ForgeGUI (Meshy) model, one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_lion_forge_body": [
+        0.0,
+        3.545,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_lion_forge_head": [
+        0.01,
+        3.83,
+        2.071
+      ],
+      "creature_lion_forge_leg_fl": [
+        1.073,
+        2.535,
+        3.367
+      ],
+      "creature_lion_forge_leg_fr": [
+        -1.081,
+        2.535,
+        3.367
+      ],
+      "creature_lion_forge_leg_bl": [
+        0.692,
+        2.604,
+        -1.746
+      ],
+      "creature_lion_forge_leg_br": [
+        -0.74,
+        2.604,
+        -1.746
+      ],
+      "creature_lion_forge_tail": [
+        0.01,
+        2.74,
+        -2.972
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.01,
+      2.604,
+      0.436
+    ]
   }
 }

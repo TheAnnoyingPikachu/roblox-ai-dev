@@ -12,6 +12,8 @@
 -- texture for the same model.
 -- eyes, lid: where its eyes are ({ x, y, z, size }, in the axes of `centres`) and its brow's colour, to close
 -- them (the Titan asleep in its den).
+-- skinned, root: one whole mesh moved by bones named after the joints (decision 0102); root is where
+-- its `body` bone stands.
 
 export type Asset = {
 	size: { number },
@@ -22,6 +24,8 @@ export type Asset = {
 	lift: number?,
 	eyes: { { number } }?,
 	lid: { number }?,
+	skinned: boolean?,
+	root: { number }?,
 	model: number?,
 	decal: number?,
 	texture: number?,
@@ -2711,6 +2715,27 @@ local StationAssets: { [string]: Asset } = {
 			{ 0.169, 2.548, 0.801, 0.22 },
 			{ -0.169, 2.548, 0.801, 0.22 },
 		},
+	},
+	creature_lion_forge = {
+		size = { 4.78, 7.09, 13 },
+		parts = { "creature_lion_forge_body" },
+		glow = {},
+		centres = {
+			creature_lion_forge_body = { 0, 3.545, 0 },
+		},
+		joints = {
+			creature_lion_forge_head = { 0.01, 3.83, 2.071 },
+			creature_lion_forge_leg_fl = { 1.073, 2.535, 3.367 },
+			creature_lion_forge_leg_fr = { -1.081, 2.535, 3.367 },
+			creature_lion_forge_leg_bl = { 0.692, 2.604, -1.746 },
+			creature_lion_forge_leg_br = { -0.74, 2.604, -1.746 },
+			creature_lion_forge_tail = { 0.01, 2.74, -2.972 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { 0.01, 2.604, 0.436 },
 	},
 }
 

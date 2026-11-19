@@ -1095,6 +1095,9 @@ type Rig = {
 	heldFor: number, -- the AnimAt of that clip
 	flinch: number, -- how far the next "hit" clip is stretched
 	spark: ParticleEmitter?, -- the hit sparks, made on the first hit
+	-- a skinned model's bones by joint (decision 0102), and each bone's axes in the Root's: a pose is
+	-- written in the Root's axes, so it is turned into the bone's
+	bones: { [string]: { bone: Bone, turn: CFrame } },
 	thud: Sound?, -- the sound of a hit and of a power hit or knockout, made on the first of each
 	boom: Sound?,
 }
@@ -1239,9 +1242,13 @@ local function add(model: Instance)
 		return
 	end
 	local joints = {}
+	local bones = {}
+	local root = model.PrimaryPart or model:FindFirstChild("Root") :: BasePart?
 	for _, d in model:GetDescendants() do
 		if d:IsA("Motor6D") then
 			joints[d.Name] = d
+		elseif d:IsA("Bone") and table.find(JOINTS, d.Name) and root then
+			bones[d.Name] = { bone = d, turn = (root :: BasePart).CFrame.Rotation:Inverse() * d.WorldCFrame.Rotation }
 		end
 	end
 	local now = {}
@@ -1260,6 +1267,7 @@ local function add(model: Instance)
 		heldFor = 0,
 		flinch = 1,
 		spark = nil,
+		bones = bones,
 		thud = nil,
 		boom = nil,
 	}
@@ -1273,6 +1281,10 @@ local function add(model: Instance)
 		strike(rig)
 	end)
 	model.DescendantAdded:Connect(function(d) -- pieces can arrive after the model
+		local base = model.PrimaryPart
+		if d:IsA("Bone") and rigs[model] and table.find(JOINTS, d.Name) and base then
+			rigs[model].bones[d.Name] = { bone = d, turn = base.CFrame.Rotation:Inverse() * d.WorldCFrame.Rotation }
+		end
 		if d:IsA("Motor6D") and rigs[model] then
 			rigs[model].joints[d.Name] = d
 		end
@@ -1531,9 +1543,12 @@ RunService.PreSimulation:Connect(function(dt: number)
 		end
 		for _, joint in JOINTS do
 			local motor = rig.joints[joint]
+			local bone = rig.bones[joint]
 			if motor then
 				local pose = turned(rig.now[joint], scale)
 				motor.Transform = if joint == "body" then CFrame.new(lift) * pose else pose
+			elseif bone then
+				bone.bone.Transform = bone.turn:Inverse() * turned(rig.now[joint], scale) * bone.turn
 			end
 		end
 	end
