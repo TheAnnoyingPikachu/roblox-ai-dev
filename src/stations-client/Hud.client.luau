@@ -2278,6 +2278,11 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 		show("ranch")
 	elseif CollectionService:HasTag(prompt, "EggStorage") then
 		show("eggs")
+	elseif CollectionService:HasTag(prompt, "HubTrade") then -- the hub's Trading Post
+		show("trade")
+	elseif CollectionService:HasTag(prompt, "HubGifts") then -- the hub's Gift Stand
+		request:InvokeServer("rewards")
+		show("gifts")
 	elseif CollectionService:HasTag(prompt, "WaveGate") then
 		openWaves()
 	elseif CollectionService:HasTag(prompt, "Egg") then

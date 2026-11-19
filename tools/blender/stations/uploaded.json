@@ -484,46 +484,6 @@
     "decal": 111103147837409,
     "texture": null
   },
-  "hub_floor": {
-    "model": 81725570523074,
-    "decal": 95241885939487,
-    "texture": null
-  },
-  "hub_fire": {
-    "model": 107086071745800,
-    "decal": 111780912104543,
-    "texture": null
-  },
-  "hub_market": {
-    "model": 103857009904545,
-    "decal": 131705768686418,
-    "texture": null
-  },
-  "hub_cafe": {
-    "model": 111249013406210,
-    "decal": 130190866110122,
-    "texture": null
-  },
-  "hub_stage": {
-    "model": 130884272478978,
-    "decal": 98703849169557,
-    "texture": null
-  },
-  "hub_green": {
-    "model": 112176876968294,
-    "decal": 130947257808250,
-    "texture": null
-  },
-  "hub_lights": {
-    "model": 83730579662226,
-    "decal": 132842077050793,
-    "texture": null
-  },
-  "hub_signs": {
-    "model": 87839061570804,
-    "decal": 139923546569617,
-    "texture": null
-  },
   "kit_gym_bar": {
     "model": 73319446503448,
     "decal": 114006588812683,

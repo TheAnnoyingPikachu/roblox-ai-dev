@@ -835,6 +835,44 @@ local router = Router.new({
 })
 remotes = Remotes.create("StationsRemotes", router)
 
+-- The Hall of Fame at the hub (decision 0095): the best animals in this server, at most two of any one
+-- player's, rarest first and rainbow coats before plain ones. Worked out again a moment after any change.
+local RANK = { common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6 }
+local fameQueued = false
+local function updateFame()
+	if fameQueued then
+		return
+	end
+	fameQueued = true
+	task.delay(2, function()
+		fameQueued = false
+		local all = {}
+		for _, player in Players:GetPlayers() do
+			local p = saves and saves.get(player)
+			if p then
+				local mine = {}
+				for _, a in p.animals do
+					local score = (RANK[StationRules.rarity(a :: any)] or 0) * 2 + (if a.rainbow then 1 else 0)
+					table.insert(
+						mine,
+						{ s = a.s, v = a.v, rainbow = a.rainbow, owner = player.DisplayName, score = score }
+					)
+				end
+				table.sort(mine, function(x, y)
+					return x.score > y.score
+				end)
+				for k = 1, math.min(2, #mine) do
+					table.insert(all, mine[k])
+				end
+			end
+		end
+		table.sort(all, function(x, y)
+			return x.score > y.score
+		end)
+		World.setFame(all)
+	end)
+end
+
 saves = Saves.start({
 	name = "StationsProfile",
 	defaults = StationProgress.defaults,
@@ -843,6 +881,7 @@ saves = Saves.start({
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
 		remotes.fx(player, "profile", StationProgress.public(profile))
+		updateFame()
 		local i = ranchOf(player)
 		if i then
 			show(i, profile.upgrades)
@@ -864,6 +903,7 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	task.defer(updateFame) -- after the player has gone
 	local t = trades[player]
 	if t then
 		closeTrade(t, "left")
