@@ -26,6 +26,7 @@ local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 local UiLayout = require(Shared:WaitForChild("UiLayout"))
+local StationAssets = require(Shared:WaitForChild("StationAssets"))
 local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 local Portrait = require(script.Parent:WaitForChild("Portrait"))
@@ -34,11 +35,20 @@ local remotes = ReplicatedStorage:WaitForChild("StationsRemotes")
 local request = remotes:WaitForChild("Request") :: RemoteFunction
 local fx = remotes:WaitForChild("Fx") :: RemoteEvent
 
-Ui.setTheme({ font = Enum.Font.FredokaOne, accent = Color3.fromRGB(255, 200, 70) })
+Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and labels
+	font = Enum.Font.FredokaOne,
+	accent = Style.C.accent,
+	accentText = Style.C.ink,
+	text = Style.C.ink,
+	muted = Style.C.muted,
+	panel = Style.C.sand,
+	panelTransparency = 0,
+	danger = Style.C.bad,
+})
 
 local C = Style.C
 local RARITY_COLOUR = Style.RARITY
-local TRAINING = Color3.fromRGB(70, 170, 104) -- the stat button an animal is training at
+local RANK: { [string]: number } = { common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6 }
 local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defence", utility = "Utility", titan = "TITAN" }
 local GROUP_NAME: { [string]: string } = { pack = "Pack", solitary = "Solitary" }
 local STAT_SHORT: { [string]: string } =
@@ -121,7 +131,7 @@ fit()
 local function send(action: string, ...: any)
 	local ok, code = request:InvokeServer(action, ...)
 	if not ok and code then
-		Ui.toast(screen, REFUSED[code] or `Can't do that ({code})`)
+		Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 	end
 end
 
@@ -166,6 +176,9 @@ local openName: string? = nil
 local nav = Instance.new("Frame") -- the bottom bar, hidden while a sheet is open
 
 local function show(name: string?)
+	if name and name ~= openName and sheets[name] then
+		Style.pop(sheets[name])
+	end
 	openName = name
 	for n, sh in sheets do
 		sh.backdrop.Visible = n == name
@@ -191,8 +204,8 @@ local ranch = newSheet("ranch", "Your ranch")
 local shop = newSheet("shop", "Egg vendor")
 local waves = newSheet("waves", "Endless waves")
 local admin = newSheet("admin", "Admin")
-local adminAdd = newSheet("adminadd", "Add animals")
 local trade = newSheet("trade", "Trade")
+local ranchTab = "animals" -- the group of upgrades the Ranch menu shows
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
 end
@@ -232,35 +245,27 @@ Style.list(nav, 8, true)
 nav.Parent = root
 
 local hideResult: () -> () = function() end -- set once the fight panel exists
-local function navButton(label: string, stripe: Color3, order: number, onClick: () -> ()): TextLabel
-	local b = Style.button(nav, label, onClick, "ghost", UDim2.new(1 / 4, -6, 1, 0))
-	b.LayoutOrder, b.TextSize = order, 22
-	Style.stroke(b, C.edge, 2)
-	local line = Style.frame(b, UDim2.new(0.5, 0, 0, 5), stripe)
-	line.AnchorPoint, line.Position = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -7)
-	Style.round(line, 3)
-	local dot = Style.frame(b, UDim2.fromOffset(26, 26), C.bad)
-	dot.AnchorPoint, dot.Position, dot.Visible = Vector2.new(1, 0), UDim2.new(1, 6, 0, -8), false
-	Style.round(dot, 13)
-	Style.stroke(dot, C.panel, 2)
-	local count = Style.text(dot, "", 15, Color3.new(1, 1, 1), UDim2.fromScale(1, 1))
-	count.TextXAlignment = Enum.TextXAlignment.Center
-	return count
+local function navButton(label: string, kind: string, order: number, onClick: () -> ()): TextLabel
+	local b = Style.button(nav, label, onClick, kind, UDim2.new(1 / 4, -8, 1, -6))
+	b.LayoutOrder, b.TextSize = order, 24
+	local dot = Style.dot(b, "")
+	dot.Visible = false
+	return dot
 end
-navButton("Animals", C.good, 1, function()
+navButton("Animals", "good", 1, function()
 	show("animals")
 end)
 local openWaves: () -> () -- below, with the wave sheet
-navButton("Waves", C.bad, 2, function()
+navButton("Waves", "danger", 2, function()
 	openWaves()
 end)
-local tradeDot = navButton("Trade", C.gold, 4, function()
+local tradeDot = navButton("Trade", "primary", 4, function()
 	show("trade")
 end)
-navButton("Home", C.info, 3, function()
+navButton("Home", "info", 3, function()
 	local ok, code = request:InvokeServer("home")
 	if not ok then
-		Ui.toast(screen, REFUSED[code] or `Can't do that ({code})`)
+		Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 	else
 		show(nil)
 		hideResult()
@@ -273,178 +278,336 @@ local adminToggle = Style.button(root, "Admin", function()
 end, "ghost", UDim2.fromOffset(84, 40))
 adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 12)
 adminToggle.TextSize = 16
-local addToggle = Style.button(root, "Add animals", function()
-	show(if openName == "adminadd" then nil else "adminadd")
-end, "ghost", UDim2.fromOffset(120, 40))
-addToggle.AnchorPoint, addToggle.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 58)
-addToggle.TextSize = 16
+-- Animals (decision 0091) ---------------------------------------------------------------------------
+-- Tabs filter one grid of small cards: a portrait, the name, the two best stats and a rarity band.
+-- Tapping a card opens its detail in the same menu: six stat tiles (tap to train or stop) and the team.
 
--- Animals ------------------------------------------------------------------------------------------
+local function darker(colour: Color3): Color3 -- a portrait's background: the rarity, pale
+	return colour:Lerp(C.sand, 0.55)
+end
 
-local function darker(colour: Color3): Color3
-	return colour:Lerp(Color3.fromRGB(26, 24, 42), 0.78)
+local animalsTab = "team"
+local chosen: number? = nil -- the id of the animal whose detail is open
+
+local function corner(parent: Instance, text: string, colour: Color3)
+	local b = Style.chip(parent, text, colour, Color3.new(1, 1, 1))
+	b.Position, b.ZIndex = UDim2.fromOffset(8, 8), 3
+	b.TextSize = 13
+	b.Size = UDim2.fromOffset(0, 22)
+end
+
+local function bestTwo(a: any): string
+	local s = live(a)
+	local order = table.clone(StationConfig.STATS)
+	table.sort(order, function(x, y)
+		return StationRules.stat(s, x) > StationRules.stat(s, y)
+	end)
+	return `{STAT_SHORT[order[1]]} {StationRules.stat(s, order[1])}  {STAT_SHORT[order[2]]} {StationRules.stat(
+		s,
+		order[2]
+	)}`
 end
 
 local function animalCard(a: any, order: number)
+	local rarity = StationRules.rarity(a)
+	local colour = RARITY_COLOUR[rarity] or C.text
+	local inTeam = table.find(profile.team, a.id) ~= nil
+	local card = Style.button(animals.body, "", function()
+		chosen = a.id
+		redraw.animals()
+	end, "ghost", UDim2.fromOffset(150, 206))
+	card.Name, card.LayoutOrder = nameOf(a), order
+	local view = Portrait.new(
+		card,
+		StationRules.assetOf(a.s, a.v),
+		{ size = UDim2.fromOffset(144, 132), background = darker(colour), rainbow = a.rainbow }
+	)
+	view.Position = UDim2.fromOffset(3, 3)
+	Style.round(view, 10)
+	if profile.titan == a.id then
+		corner(card, "Titan", C.accent)
+	elseif inTeam then
+		corner(card, "Team", C.good)
+	elseif a.at then
+		corner(card, "Training", C.info)
+	end
+	if a.rainbow then
+		local coat = Style.chip(card, "RAINBOW", Color3.new(1, 1, 1))
+		coat.Position, coat.ZIndex, coat.TextSize = UDim2.fromOffset(8, 106), 3, 12
+		local colours = Instance.new("UIGradient")
+		colours.Color = RAINBOW
+		colours.Parent = coat
+	end
+	local name = Style.text(card, nameOf(a), 17, C.text, UDim2.new(1, -16, 0, 22))
+	name.Position, name.TextTruncate = UDim2.fromOffset(8, 138), Enum.TextTruncate.AtEnd
+	local best = Style.text(card, bestTwo(a), 13, C.muted, UDim2.new(1, -16, 0, 18))
+	best.Position = UDim2.fromOffset(8, 160)
+	local band = Style.frame(card, UDim2.new(1, -6, 0, 12), colour)
+	band.Position = UDim2.new(0, 3, 1, -15)
+	Style.round(band, 6)
+	local tag = Style.text(band, string.upper(rarity), 10, C.ink, UDim2.fromScale(1, 1))
+	tag.TextXAlignment = Enum.TextXAlignment.Center
+end
+
+local function animalDetail(a: any)
 	local sp = StationConfig.species(a.s)
 	local rarity = StationRules.rarity(a)
 	local colour = RARITY_COLOUR[rarity] or C.text
 	local role = StationRules.role(a)
 	local isTitan = role == StationConfig.TITAN
 	local inTeam = table.find(profile.team, a.id) ~= nil or profile.titan == a.id
-	local station = a.at and StationConfig.station(a.at)
 
-	local card = Style.card(animals.body, UDim2.fromOffset(236, 272), colour)
-	card.LayoutOrder = order
-	local view =
-		Portrait.new(card, StationRules.assetOf(a.s, a.v), { background = darker(colour), rainbow = a.rainbow })
-	view.Position = UDim2.fromOffset(10, 10)
-	if a.rainbow then
-		local coat = Style.chip(card, "RAINBOW", Color3.new(1, 1, 1), C.panel)
-		coat.Position = UDim2.fromOffset(14, 70)
-		local colours = Instance.new("UIGradient")
-		colours.Color = RAINBOW
-		colours.Parent = coat
-	end
-	local name = Style.text(card, nameOf(a), 20, colour, UDim2.new(1, -116, 0, 24))
-	name.Position = UDim2.fromOffset(106, 10)
-	name.TextTruncate = Enum.TextTruncate.AtEnd
-	local tag = Style.chip(card, string.upper(rarity), colour, C.panel)
-	tag.Position = UDim2.fromOffset(106, 36)
-	local kind = Style.text(
-		card,
-		`{ROLE_NAME[role] or "?"}, {GROUP_NAME[if sp then sp.group else ""] or "?"}`,
-		14,
-		C.muted,
-		UDim2.new(1, -116, 0, 18)
+	local head = Instance.new("Frame")
+	head.BackgroundTransparency = 1
+	head.Size, head.LayoutOrder = UDim2.new(1, -8, 0, 176), 1
+	head.Parent = animals.body
+	local view = Portrait.new(
+		head,
+		StationRules.assetOf(a.s, a.v),
+		{ size = UDim2.fromOffset(176, 170), background = darker(colour), rainbow = a.rainbow }
 	)
-	kind.Position = UDim2.fromOffset(106, 64)
-	local status = if station
-		then Style.chip(card, `Training {STAT_SHORT[station.stat]}`, TRAINING, Color3.new(1, 1, 1))
-		elseif inTeam then Style.chip(
-			card,
-			if isTitan then "Your Titan" else "In your team",
-			C.good,
-			Color3.fromRGB(10, 40, 18)
-		)
-		else Style.chip(card, "Resting")
-	status.Position = UDim2.fromOffset(106, 86)
+	Style.round(view, 14)
+	Style.stroke(view, C.ink, 3)
+	local name =
+		Style.text(head, (if a.rainbow then "Rainbow " else "") .. nameOf(a), 30, C.text, UDim2.new(1, -196, 0, 36))
+	name.Position, name.TextTruncate = UDim2.fromOffset(194, 2), Enum.TextTruncate.AtEnd
+	local chips = Instance.new("Frame")
+	chips.BackgroundTransparency = 1
+	chips.Position, chips.Size = UDim2.fromOffset(194, 44), UDim2.new(1, -196, 0, 28)
+	Style.list(chips, 8, true)
+	chips.Parent = head
+	Style.chip(chips, string.upper(rarity), colour)
+	Style.chip(chips, `{ROLE_NAME[role] or "?"} · {GROUP_NAME[if sp then sp.group else ""] or "?"}`)
+	if a.at then
+		Style.chip(chips, "Training", C.info, Color3.new(1, 1, 1))
+	elseif inTeam then
+		Style.chip(chips, if isTitan then "Your Titan" else "In your team", C.good, Color3.new(1, 1, 1))
+	else
+		Style.chip(chips, "Resting")
+	end
+	local buttons = Instance.new("Frame")
+	buttons.BackgroundTransparency = 1
+	buttons.Position, buttons.Size = UDim2.fromOffset(194, 116), UDim2.new(1, -196, 0, 48)
+	Style.list(buttons, 10, true)
+	buttons.Parent = head
+	Style.button(buttons, "‹ Back", function()
+		chosen = nil
+		redraw.animals()
+	end, "ghost", UDim2.fromOffset(100, 46))
+	Style.button(buttons, if inTeam then "Leave team" elseif isTitan then "Join as Titan" else "Join team", function()
+		send("team", a.id)
+	end, if inTeam then "ghost" else "good", UDim2.fromOffset(160, 46))
 
-	-- one button per stat: value and level; tap to train it, tap the green one to stop
 	local grid = Instance.new("Frame")
 	grid.BackgroundTransparency = 1
-	grid.Position, grid.Size = UDim2.fromOffset(10, 120), UDim2.new(1, -20, 0, 92)
+	grid.Size, grid.LayoutOrder = UDim2.new(1, -8, 0, 290), 2
 	local cells = Instance.new("UIGridLayout")
-	cells.CellSize = UDim2.new(1 / 3, -4, 0, 44)
-	cells.CellPadding = UDim2.fromOffset(6, 4)
-	cells.FillDirectionMaxCells = 3
+	cells.CellSize = UDim2.new(1 / 3, -12, 0, 132)
+	cells.CellPadding = UDim2.fromOffset(14, 14)
 	cells.SortOrder = Enum.SortOrder.LayoutOrder
 	cells.Parent = grid
-	grid.Parent = card
+	grid.Parent = animals.body
 	for i, st in StationConfig.STATIONS do
 		local training = a.at == st.id
 		local taken = false -- a ground trains one animal (decision 0066): another's is greyed out
 		for _, other in profile.animals do
 			taken = taken or (other.id ~= a.id and other.at == st.id)
 		end
-		local button = Style.button(grid, statText(live(a), st.stat, training), function()
+		local tile = Style.card(grid, UDim2.new(), if training then C.info else nil)
+		tile.LayoutOrder = i
+		local now = live(a)
+		local level = StationRules.level(now, st.stat :: any)
+		local value = Style.text(
+			tile,
+			`{STAT_SHORT[st.stat]} {StationRules.stat(now, st.stat :: any)}`,
+			22,
+			C.text,
+			UDim2.new(1, -20, 0, 26)
+		)
+		value.Position = UDim2.fromOffset(12, 10)
+		local lv = Style.text(tile, `Lv {level}/{StationConfig.MAX_LEVEL}`, 14, C.muted, UDim2.new(1, -20, 0, 26))
+		lv.Position, lv.TextXAlignment = UDim2.fromOffset(8, 10), Enum.TextXAlignment.Right
+		local bar, set = Style.bar(tile, UDim2.new(1, -24, 0, 12), if training then C.info else C.good)
+		bar.Position = UDim2.fromOffset(12, 44)
+		local into = if a.trained then (a.trained[st.stat] or level) - level else 0
+		set(if level >= StationConfig.MAX_LEVEL then 1 else into)
+		local label = if training then "Stop" elseif taken then "In use" else "Train"
+		local button = Style.button(tile, label, function()
 			if training then
 				send("stop", a.id)
 			else
 				send("train", a.id, st.id) -- a taken ground is refused, and the toast says why
 			end
-		end, if taken then "off" else "stat")
-		button.LayoutOrder, button.TextSize = i, 13
-		if taken then
-			button.Text =
-				`{STAT_SHORT[st.stat]} {StationRules.level(live(a), st.stat :: any)}/{StationConfig.MAX_LEVEL}\nin use`
-			button.AutoButtonColor = false
-		elseif training then
-			button.BackgroundColor3 = TRAINING
+		end, if training then "info" elseif taken then "off" else "primary", UDim2.new(1, -24, 0, 44))
+		button.Position, button.TextSize = UDim2.fromOffset(12, 70), 17
+		if training then
 			table.insert(tickers, function()
-				button.Text = statText(live(a), st.stat, true)
+				local left = string.match(statText(live(a), st.stat, true), "  (.+)$")
+				button.Text = if left then `Stop · {left}` else "Stop"
 			end)
+			tickers[#tickers]()
 		end
 	end
-
-	local team = Style.button(
-		card,
-		if inTeam then "Leave team" elseif isTitan then "Join as Titan" else "Join team",
-		function()
-			send("team", a.id)
-		end,
-		if inTeam then "ghost" else "good"
-	)
-	team.Position = UDim2.fromOffset(10, 218)
-	team.Size = UDim2.new(1, -20, 0, 44)
 end
 
 redraw.animals = function()
 	Style.clear(animals.body)
 	Style.clear(animals.chips)
+	Style.clear(animals.tabs)
 	table.clear(tickers)
-	Style.chip(animals.chips, `{#profile.animals} animals`)
-	Style.chip(animals.chips, `Team {#profile.team}/{StationProgress.TEAM_SIZE}`, C.good, Color3.fromRGB(10, 40, 18))
+	local all, team, training, rainbows = {}, {}, {}, {}
+	for _, a in profile.animals do
+		table.insert(all, a)
+		if table.find(profile.team, a.id) or profile.titan == a.id then
+			table.insert(team, a)
+		end
+		if a.at then
+			table.insert(training, a)
+		end
+		if a.rainbow then
+			table.insert(rainbows, a)
+		end
+	end
+	local LISTS = {
+		{ "team", `Your team  {#profile.team}/{StationProgress.TEAM_SIZE}`, team },
+		{ "all", `All animals  {#all}`, all },
+		{ "training", `Training  {#training}`, training },
+		{ "rainbow", `Rainbows  {#rainbows}`, rainbows },
+	}
+	local shown = all
+	for _, l in LISTS do
+		Style.tab(animals, l[2], animalsTab == l[1], function()
+			animalsTab, chosen = l[1], nil
+			redraw.animals()
+		end)
+		if animalsTab == l[1] then
+			shown = l[3]
+		end
+	end
+	Style.chip(animals.chips, `Barn {#profile.animals}/{StationProgress.value(profile, "barn")}`)
 	Style.chip(
 		animals.chips,
 		if profile.titan then "Titan ready" else "No Titan",
-		if profile.titan then C.gold else C.cardHi,
-		if profile.titan then C.accentText else C.text
+		if profile.titan then C.accent else nil
 	)
-	if #profile.animals == 0 then
-		local empty = Style.card(animals.body, UDim2.new(1, -20, 0, 96))
-		local words =
-			"No animals yet. Buy an egg from the egg vendor on your ranch, hatch it, and your first animal joins your team."
-		local t = Style.text(empty, words, 18, C.muted, UDim2.new(1, -28, 1, -20))
-		t.Position = UDim2.fromOffset(14, 10)
+	if chosen then
+		local _, a = StationProgress.find(profile, chosen)
+		if a then
+			animalDetail(a)
+			return
+		end
+		chosen = nil
 	end
-	for i, a in profile.animals do
+	if #shown == 0 then
+		local empty = Style.card(animals.body, UDim2.new(1, -12, 0, 150))
+		local words = if #profile.animals == 0
+			then "No animals yet. Buy an egg from the egg vendor, hatch it, and your first animal joins your team."
+			else "Nobody here yet."
+		local t = Style.text(empty, words, 19, C.muted, UDim2.new(1, -28, 0, 60))
+		t.Position = UDim2.fromOffset(14, 14)
+		if #profile.animals == 0 then
+			local b = Style.button(empty, "Open the egg vendor", function()
+				show("shop")
+			end, "primary", UDim2.fromOffset(240, 46))
+			b.Position = UDim2.fromOffset(14, 86)
+		end
+	end
+	table.sort(shown, function(x, y)
+		local rx, ry = RANK[StationRules.rarity(x)] or 0, RANK[StationRules.rarity(y)] or 0
+		if rx ~= ry then
+			return rx > ry
+		end
+		return x.id < y.id
+	end)
+	for i, a in shown do
 		animalCard(a, i)
 	end
 end
 
--- Eggs: the storage and what is hatching ----------------------------------------------------------------
+-- Eggs: start an egg and watch its timer from anywhere; open it only at the hatchery (decision 0091) ----
 
 -- A picture of an egg: its own model (decision 0057), `side` units square.
 local function eggArt(parent: Instance, eggId: string, side: number): ViewportFrame
-	return Portrait.new(parent, `egg_{eggId}`, { size = UDim2.fromOffset(side, side) })
+	return Portrait.new(parent, `egg_{eggId}`, { size = UDim2.fromOffset(side, side), background = C.cardHi })
 end
 
-local function eggCard(k: number, e: any)
+local eggsTab = "hatching"
+
+-- A line drawn from the player to the nest of hatching egg `k`, for a few seconds.
+local function wayTo(k: number)
+	local nest: BasePart? = nil
+	for _, prompt in CollectionService:GetTagged("Egg") do
+		if prompt:GetAttribute("Index") == k and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
+			local p = prompt.Parent
+			nest = if p and p:IsA("BasePart")
+				then p
+				elseif p and p:IsA("Model") then p.PrimaryPart or p:FindFirstChildWhichIsA("BasePart", true)
+				else nil
+		end
+	end
+	local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if nest == nil or hrp == nil then
+		Style.toast(screen, "Your egg is in the hatchery's nests on your ranch")
+		return
+	end
+	local a0, a1 = Instance.new("Attachment"), Instance.new("Attachment")
+	a0.Parent, a1.Parent = hrp, nest
+	local beam = Instance.new("Beam")
+	beam.Attachment0, beam.Attachment1 = a0, a1
+	beam.Width0, beam.Width1, beam.FaceCamera = 1.2, 1.2, true
+	beam.Color = ColorSequence.new(C.accent)
+	beam.Texture, beam.TextureMode, beam.TextureLength, beam.TextureSpeed =
+		"rbxasset://textures/particles/sparkles_main.dds", Enum.TextureMode.Wrap, 3, 2
+	beam.LightEmission, beam.Transparency = 0.6, NumberSequence.new(0.1)
+	beam.Parent = hrp
+	for _, x in { a0, a1, beam } do
+		Debris:AddItem(x, 10)
+	end
+end
+
+local function eggCard(k: number, e: any, order: number)
 	local def = StationConfig.egg(e.egg) :: StationConfig.Egg
 	local now = Workspace:GetServerTimeNow()
 	local need = StationProgress.hatchSeconds(profile, def) -- the Brooder shortens it
 	local ready = e.since ~= nil and now >= e.since + need
-	local card = Style.card(eggs.body, UDim2.fromOffset(236, 140), if ready then C.good else C.edge)
-	card.LayoutOrder = k
+	local card = Style.card(eggs.body, UDim2.fromOffset(212, 176), if ready then C.good else nil)
+	card.LayoutOrder = order
 	eggArt(card, e.egg, 68).Position = UDim2.fromOffset(10, 10)
-	local name = Style.text(card, def.name, 19, C.text, UDim2.new(1, -90, 0, 24))
-	name.Position = UDim2.fromOffset(84, 10)
-	name.TextTruncate = Enum.TextTruncate.AtEnd
-	local info = Style.text(card, "", 14, C.muted, UDim2.new(1, -90, 0, 36))
-	info.Position = UDim2.fromOffset(84, 34)
+	local name = Style.text(card, def.name, 19, C.text, UDim2.new(1, -92, 0, 24))
+	name.Position, name.TextTruncate = UDim2.fromOffset(84, 12), Enum.TextTruncate.AtEnd
+	local info = Style.text(card, "", 14, C.muted, UDim2.new(1, -92, 0, 40))
+	info.Position = UDim2.fromOffset(84, 38)
 	if e.since == nil then
 		info.Text = `Takes {Format.ago(need)} to hatch`
-		local b = Style.button(card, "Hatch it", function()
+		local nests = StationProgress.value(profile, "hatchery")
+		local hatching = 0
+		for _, x in profile.eggs do
+			hatching += if x.since then 1 else 0
+		end
+		local b = Style.button(card, if hatching >= nests then "Nests full" else "Hatch it", function()
 			send("hatch", k)
-		end, "primary")
-		b.Position, b.Size = UDim2.fromOffset(10, 90), UDim2.new(1, -20, 0, 40)
+		end, if hatching >= nests then "off" else "primary")
+		b.Position, b.Size = UDim2.fromOffset(12, 118), UDim2.new(1, -24, 0, 44)
 	else
-		local bar, set = Style.bar(card, UDim2.new(1, -20, 0, 14), C.accent)
-		bar.Position = UDim2.fromOffset(10, 90)
-		local left = Style.text(card, "", 15, C.text, UDim2.new(1, -20, 0, 20))
-		left.Position = UDim2.fromOffset(10, 110)
+		local bar, set = Style.bar(card, UDim2.new(1, -24, 0, 14), C.accent)
+		bar.Position = UDim2.fromOffset(12, 88)
+		local b = Style.button(card, "Hatching...", function() end, "off")
+		b.Position, b.Size = UDim2.fromOffset(12, 118), UDim2.new(1, -24, 0, 44)
 		local function tick()
-			local t = Workspace:GetServerTimeNow()
-			local remaining = e.since + need - t
+			local remaining = e.since + need - Workspace:GetServerTimeNow()
 			set(1 - remaining / need)
 			if remaining <= 0 then
-				info.Text = "Ready! Open it at your hatchery."
-				info.TextColor3 = C.good
-				left.Text = ""
+				info.Text, info.TextColor3 = "Ready! Open it at the hatchery", C.good
+				b.Text = "Show me the way"
+				if b:GetAttribute("Kind") ~= "info" then
+					Style.kind(b, "info")
+					b.Activated:Connect(function()
+						show(nil)
+						wayTo(k)
+					end)
+				end
 			else
-				info.Text = "Hatching..."
-				left.Text = `Opens in {Format.ago(remaining)}`
+				info.Text = `Opens in {Format.ago(remaining)}`
 			end
 		end
 		tick()
@@ -455,91 +618,196 @@ end
 redraw.eggs = function()
 	Style.clear(eggs.body)
 	Style.clear(eggs.chips)
+	Style.clear(eggs.tabs)
 	table.clear(eggTickers)
-	local hatching = 0
-	for _, e in profile.eggs do
-		hatching += if e.since then 1 else 0
+	local nests, cellar = StationProgress.value(profile, "hatchery"), StationProgress.value(profile, "cellar")
+	local hatching, ready, stored = {}, 0, {}
+	local now = Workspace:GetServerTimeNow()
+	for k, e in profile.eggs do
+		if e.since then
+			table.insert(hatching, k)
+			local def = StationConfig.egg(e.egg)
+			if def and now >= e.since + StationProgress.hatchSeconds(profile, def) then
+				ready += 1
+			end
+		else
+			table.insert(stored, k)
+		end
 	end
-	Style.chip(eggs.chips, `Hatching {hatching}/{StationProgress.value(profile, "hatchery")}`, C.accent, C.accentText)
-	Style.chip(eggs.chips, `In storage {#profile.eggs - hatching}/{StationProgress.value(profile, "cellar")}`)
-	if #profile.eggs == 0 then
-		local empty = Style.card(eggs.body, UDim2.new(1, -20, 0, 80))
+	Style.tab(eggs, `Hatching  {#hatching}/{nests}`, eggsTab == "hatching", function()
+		eggsTab = "hatching"
+		redraw.eggs()
+	end, if ready > 0 then tostring(ready) else nil)
+	Style.tab(eggs, `In storage  {#stored}/{cellar}`, eggsTab == "storage", function()
+		eggsTab = "storage"
+		redraw.eggs()
+	end)
+	Style.tab(eggs, "Egg vendor  ›", false, function()
+		show("shop")
+	end)
+	Style.chip(eggs.chips, `Brooder: hatching {StationProgress.value(profile, "brooder")}% speed`)
+	local list = if eggsTab == "hatching" then hatching else stored
+	for order, k in list do
+		eggCard(k, profile.eggs[k], order)
+	end
+	if eggsTab == "hatching" then
+		for slot = #hatching + 1, nests do -- free nests
+			local card = Style.card(eggs.body, UDim2.fromOffset(212, 176))
+			card.LayoutOrder = 100 + slot
+			local t = Style.text(card, `Nest {slot} is free`, 19, C.muted, UDim2.new(1, -24, 0, 24))
+			t.Position = UDim2.fromOffset(12, 14)
+			local hint = Style.text(card, "Start an egg from your storage", 14, C.muted, UDim2.new(1, -24, 0, 40))
+			hint.Position = UDim2.fromOffset(12, 44)
+			local b = Style.button(card, "Choose an egg", function()
+				eggsTab = "storage"
+				redraw.eggs()
+			end, if #stored > 0 then "primary" else "off")
+			b.Position, b.Size = UDim2.fromOffset(12, 118), UDim2.new(1, -24, 0, 44)
+		end
+		local hatchery = StationConfig.upgrade("hatchery") :: StationConfig.Upgrade
+		local next = hatchery.levels[(profile.upgrades.hatchery or 0) + 1]
+		if next then -- what the next Hatchery level adds
+			local card = Style.card(eggs.body, UDim2.fromOffset(212, 176))
+			card.LayoutOrder = 200
+			Style.paint(card, C.sand)
+			local t = Style.text(card, `Nest {nests + 1}`, 19, C.muted, UDim2.new(1, -24, 0, 24))
+			t.Position = UDim2.fromOffset(12, 14)
+			local hint = Style.text(
+				card,
+				`The Hatchery's next level hatches {next.value} at once`,
+				14,
+				C.muted,
+				UDim2.new(1, -24, 0, 40)
+			)
+			hint.Position = UDim2.fromOffset(12, 44)
+			local b = Style.button(card, `Upgrade: {Format.short(next.coins)}`, function()
+				ranchTab = "eggs"
+				show("ranch")
+			end, "ghost")
+			b.Position, b.Size = UDim2.fromOffset(12, 118), UDim2.new(1, -24, 0, 44)
+		end
+	elseif #stored == 0 then
+		local empty = Style.card(eggs.body, UDim2.new(1, -12, 0, 130))
 		local t = Style.text(
 			empty,
-			"No eggs. Buy some from the egg vendor on your ranch.",
-			18,
+			"No eggs in storage. Buy some from the egg vendor.",
+			19,
 			C.muted,
-			UDim2.new(1, -28, 1, -20)
+			UDim2.new(1, -28, 0, 30)
 		)
-		t.Position = UDim2.fromOffset(14, 10)
-	end
-	for k, e in profile.eggs do
-		eggCard(k, e)
+		t.Position = UDim2.fromOffset(14, 14)
+		local b = Style.button(empty, "Open the egg vendor", function()
+			show("shop")
+		end, "primary", UDim2.fromOffset(240, 46))
+		b.Position = UDim2.fromOffset(14, 66)
 	end
 end
 
--- Ranch: upgrades ------------------------------------------------------------------------------------
+-- Ranch: upgrades in three groups, each with a picture of its building (decision 0091) -----------------
+
+local GROUPS = {
+	{ id = "animals", name = "Animals", upgrades = { "house", "barn", "grounds" } },
+	{ id = "eggs", name = "Eggs", upgrades = { "hatchery", "cellar", "brooder" } },
+	{ id = "earnings", name = "Earnings", upgrades = { "windmill", "lodge", "den" } },
+}
+
+-- The model that pictures upgrade `u` at `level`: its building's look (as Ranch.luau picks it), or for
+-- the Training Grounds the Speed Track's training area at that level.
+local function buildingAsset(u: StationConfig.Upgrade, level: number): string?
+	if u.id == "grounds" then
+		for name in StationAssets do
+			local first, last = string.match(name, "^area_track_(%d)_(%d)$")
+			if first and level >= tonumber(first) :: number and level <= tonumber(last) :: number then
+				return name
+			end
+		end
+		return nil
+	end
+	local look = math.clamp(1 + math.min(2, level * 3 // (#u.levels + 1)), 1, 3)
+	local name = `home_{u.id}_{look}`
+	return if StationAssets[name] then name else nil
+end
+
+local function canBuy(u: StationConfig.Upgrade): boolean
+	local cost = u.levels[(profile.upgrades[u.id] or 0) + 1]
+	return cost ~= nil and profile.coins >= cost.coins and profile.samples >= cost.samples
+end
 
 local function upgradeCard(u: StationConfig.Upgrade, order: number)
 	local level = profile.upgrades[u.id] or 0
-	local card = Style.card(ranch.body, UDim2.fromOffset(366, 168))
+	local cost = u.levels[level + 1]
+	local card = Style.card(ranch.body, UDim2.fromOffset(204, 330))
 	card.LayoutOrder = order
-	local title = Style.text(card, u.name, 22, C.text, UDim2.new(1, -24, 0, 26))
-	title.Position = UDim2.fromOffset(14, 10)
+	local asset = buildingAsset(u, level)
+	if asset then
+		local view =
+			Portrait.new(card, asset, { size = UDim2.fromOffset(198, 112), background = Color3.fromRGB(191, 230, 247) })
+		view.Position = UDim2.fromOffset(3, 3)
+		Style.round(view, 11)
+	end
+	local title = Style.text(card, u.name, 21, C.text, UDim2.new(1, -24, 0, 26))
+	title.Position = UDim2.fromOffset(12, 122)
 	local pips = Instance.new("Frame")
 	pips.BackgroundTransparency = 1
-	pips.Position, pips.Size = UDim2.fromOffset(14, 40), UDim2.new(1, -28, 0, 14)
+	pips.Position, pips.Size = UDim2.fromOffset(12, 152), UDim2.new(1, -24, 0, 14)
 	Style.list(pips, 4, true)
 	pips.Parent = card
 	for i = 1, #u.levels do
-		local pip = Style.frame(pips, UDim2.fromOffset(22, 12), if i <= level then C.good else C.off)
+		local pip = Style.frame(pips, UDim2.fromOffset(22, 12), if i <= level then C.good else Color3.new(1, 1, 1))
 		Style.round(pip, 4)
+		Style.stroke(pip, C.ink, 2)
 		pip.LayoutOrder = i
 	end
-	local now =
-		Style.text(card, `{StationProgress.value(profile, u.id)} {u.gives}`, 18, C.text, UDim2.new(1, -28, 0, 22))
-	now.Position = UDim2.fromOffset(14, 60)
-	local cost = u.levels[level + 1]
+	local now = StationProgress.value(profile, u.id)
+	local words = if cost then `Now {now} → next {cost.value}\n{u.gives}` else `{now} {u.gives}`
+	local gives = Style.text(card, words, 14, C.muted, UDim2.new(1, -24, 0, 54))
+	gives.Position = UDim2.fromOffset(12, 174)
 	if cost == nil then
-		local done = Style.chip(card, "TOP LEVEL", C.gold, C.accentText)
-		done.Position = UDim2.fromOffset(14, 100)
+		local done = Style.chip(card, "TOP LEVEL", C.accent)
+		done.Position = UDim2.fromOffset(12, 238)
 		return
 	end
 	local price = Instance.new("Frame")
 	price.BackgroundTransparency = 1
-	price.Position, price.Size = UDim2.fromOffset(14, 86), UDim2.new(1, -28, 0, 24)
-	Style.list(price, 14, true)
+	price.Position, price.Size = UDim2.fromOffset(12, 232), UDim2.new(1, -24, 0, 26)
+	Style.list(price, 10, true)
 	price.Parent = card
 	Style.amount(price, "coins", Format.commas(cost.coins))
 	if cost.samples > 0 then
-		Style.amount(price, "samples", `{cost.samples} samples`)
+		Style.amount(price, "samples", tostring(cost.samples))
 	end
-	local can = profile.coins >= cost.coins and profile.samples >= cost.samples
-	local b = Style.button(card, `Upgrade to {cost.value}`, function()
+	local b = Style.button(card, "Upgrade", function()
 		send("upgrade", u.id)
-	end, if can then "good" else "off")
-	b.Position, b.Size = UDim2.fromOffset(14, 114), UDim2.new(1, -28, 0, 44)
+	end, if canBuy(u) then "good" else "off")
+	b.Position, b.Size = UDim2.fromOffset(12, 270), UDim2.new(1, -24, 0, 44)
 end
 
 redraw.ranch = function()
 	Style.clear(ranch.body)
 	Style.clear(ranch.chips)
+	Style.clear(ranch.tabs)
+	for _, g in GROUPS do
+		local any = false
+		for _, id in g.upgrades do
+			any = any or canBuy(StationConfig.upgrade(id) :: StationConfig.Upgrade)
+		end
+		Style.tab(ranch, g.name, ranchTab == g.id, function()
+			ranchTab = g.id
+			redraw.ranch()
+		end, if any then "!" else nil)
+		if ranchTab == g.id then
+			for i, id in g.upgrades do
+				upgradeCard(StationConfig.upgrade(id) :: StationConfig.Upgrade, i)
+			end
+		end
+	end
 	Style.amount(ranch.chips, "coins", Format.commas(profile.coins))
 	Style.amount(ranch.chips, "samples", `{Format.commas(profile.samples)} samples`)
-	for i, u in StationConfig.UPGRADES do
-		upgradeCard(u, i)
-	end
-	local more = Style.card(ranch.body, UDim2.new(1, -20, 0, 70))
-	more.LayoutOrder = 100
-	local b = Style.button(more, "Open your eggs", function()
-		show("eggs")
-	end, "ghost")
-	b.Position, b.Size = UDim2.fromOffset(12, 13), UDim2.new(1, -24, 0, 44)
 	if RunService:IsStudio() then -- a way to try the upgrades without fighting for them
-		local funds = Style.button(ranch.body, "Test funds (Studio only)", function()
+		local funds = Style.button(ranch.chips, "Test funds (Studio)", function()
 			send("funds")
-		end, "ghost", UDim2.new(1, -20, 0, 44))
-		funds.LayoutOrder = 101
+		end, "ghost", UDim2.fromOffset(196, 44))
+		funds.LayoutOrder = -1
 	end
 end
 
@@ -555,73 +823,87 @@ local function animalCell(parent: Instance, order: number, asset: string, label:
 	cell.LayoutOrder = order
 	cell.Parent = parent
 	local view = Portrait.new(cell, asset, { size = UDim2.fromOffset(side, side), background = darker(colour) })
-	Style.stroke(view, colour, if label then 1 else 2)
+	Style.round(view, 10)
+	Style.stroke(view, colour, 3)
 	if label then
-		local t = Style.text(cell, label, 11, C.muted, UDim2.fromOffset(side + 6, 14))
+		local t = Style.text(cell, label, 12, C.muted, UDim2.fromOffset(side + 6, 14))
 		t.Position = UDim2.fromOffset(-3, side + 2)
 		t.TextXAlignment = Enum.TextXAlignment.Center
 		t.TextTruncate = Enum.TextTruncate.AtEnd
 	end
 end
 
-local function cellRow(parent: Instance, y: number, height: number): Frame
-	local f = Instance.new("Frame")
-	f.BackgroundTransparency = 1
-	f.Position, f.Size = UDim2.fromOffset(14, y), UDim2.new(1, -28, 0, height)
-	Style.list(f, 5, true)
-	f.Parent = parent
-	return f
-end
-
+local shopEgg = 1 -- the egg the vendor shows
 redraw.shop = function()
 	Style.clear(shop.body)
 	Style.clear(shop.chips)
-	Style.amount(shop.chips, "coins", Format.commas(profile.coins))
-	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)}`)
-	Style.chip(shop.chips, `Best wave: {profile.best}`)
-	for k, def in StationConfig.EGGS do
-		local locked = def.wave ~= nil and profile.best < def.wave
-		local card = Style.card(shop.body, UDim2.fromOffset(366, 312))
-		card.LayoutOrder = k
-		eggArt(card, def.id, 80).Position = UDim2.fromOffset(14, 12)
-		local name = Style.text(card, def.name, 22, C.text, UDim2.new(1, -110, 0, 26))
-		name.Position = UDim2.fromOffset(106, 12)
-		local price = Instance.new("Frame")
-		price.BackgroundTransparency = 1
-		price.Position, price.Size = UDim2.fromOffset(106, 44), UDim2.new(1, -120, 0, 26)
-		Style.list(price, 8, true)
-		price.Parent = card
-		Style.amount(price, "coins", Format.commas(def.price))
-		Style.chip(price, Format.ago(if profile then StationProgress.hatchSeconds(profile, def) else def.hatch))
-		if locked then
-			local lock = Style.chip(card, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
-			lock.Position = UDim2.fromOffset(106, 74)
+	Style.clear(shop.tabs)
+	for k, d in StationConfig.EGGS do
+		local closed = d.wave ~= nil and profile.best < d.wave
+		local tab = Style.tab(shop, d.name, shopEgg == k, function()
+			shopEgg = k
+			redraw.shop()
+		end)
+		tab.Text = `{d.name}\n{if closed then `Wave {d.wave}` else Format.short(d.price)}`
+		tab.TextSize, tab.TextYAlignment, tab.Size = 17, Enum.TextYAlignment.Center, UDim2.fromOffset(196, 56)
+		if closed then
+			Style.kind(tab, "off")
 		end
-		local hatches = Style.text(card, "HATCHES", 12, C.muted, UDim2.fromOffset(200, 16))
-		hatches.Position = UDim2.fromOffset(14, 100)
-		local basics = cellRow(card, 118, 66)
-		for i, o in def.odds do
-			local sp = StationConfig.species(o.id) :: StationConfig.Species
-			animalCell(basics, i, StationRules.assetOf(o.id, nil), sp.name, RARITY_COLOUR[sp.rarity] or C.text, 50)
-		end
-		local finds = Style.text(card, "RARE FINDS", 12, C.muted, UDim2.fromOffset(200, 16))
-		finds.Position = UDim2.fromOffset(14, 192)
-		local rare = cellRow(card, 210, 44)
-		local side = math.min(44, (338 - 5 * (#def.rare - 1)) // #def.rare) -- one row, however many
-		for i, drop in def.rare do
-			local tier = (StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier
-			animalCell(rare, i, StationRules.assetOf(drop.s, drop.v), nil, RARITY_COLOUR[tier] or C.text, side)
-		end
-		local can = not locked and profile.coins >= def.price
-		local b = Style.button(card, `Buy for {Format.commas(def.price)}`, function()
-			if locked then
-				Ui.toast(screen, `Clear wave {def.wave} to unlock the {def.name}`)
-				return
-			end
-			send("buy", def.id)
-		end, if can then "primary" else "off")
-		b.Position, b.Size = UDim2.fromOffset(14, 266), UDim2.new(1, -28, 0, 36)
 	end
+	Style.amount(shop.chips, "coins", Format.commas(profile.coins))
+	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)} · best wave {profile.best}`)
+
+	local def = StationConfig.EGGS[shopEgg]
+	local locked = def.wave ~= nil and profile.best < def.wave
+	local head = Instance.new("Frame")
+	head.BackgroundTransparency = 1
+	head.Size, head.LayoutOrder = UDim2.new(1, -8, 0, 110), 1
+	head.Parent = shop.body
+	eggArt(head, def.id, 104)
+	local name = Style.text(head, def.name, 34, C.text, UDim2.new(1, -124, 0, 40))
+	name.Position = UDim2.fromOffset(120, 8)
+	local price = Instance.new("Frame")
+	price.BackgroundTransparency = 1
+	price.Position, price.Size = UDim2.fromOffset(120, 54), UDim2.new(1, -124, 0, 28)
+	Style.list(price, 10, true)
+	price.Parent = head
+	Style.amount(price, "coins", Format.commas(def.price))
+	Style.chip(price, `Hatches in {Format.ago(StationProgress.hatchSeconds(profile, def))}`)
+	if locked then
+		Style.chip(price, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
+	end
+	local hatches = Style.text(shop.body, "HATCHES", 14, C.muted, UDim2.new(1, -8, 0, 18))
+	hatches.LayoutOrder = 2
+	local basics = Instance.new("Frame")
+	basics.BackgroundTransparency = 1
+	basics.Size, basics.LayoutOrder = UDim2.new(1, -8, 0, 92), 3
+	Style.list(basics, 8, true)
+	basics.Parent = shop.body
+	for i, o in def.odds do
+		local sp = StationConfig.species(o.id) :: StationConfig.Species
+		animalCell(basics, i, StationRules.assetOf(o.id, nil), sp.name, RARITY_COLOUR[sp.rarity] or C.text, 72)
+	end
+	local finds = Style.text(shop.body, "RARE FINDS", 14, C.muted, UDim2.new(1, -8, 0, 18))
+	finds.LayoutOrder = 4
+	local rare = Instance.new("Frame")
+	rare.BackgroundTransparency = 1
+	rare.Size, rare.LayoutOrder = UDim2.new(1, -8, 0, 64), 5
+	Style.list(rare, 8, true)
+	rare.Parent = shop.body
+	local side = math.min(58, (600 - 8 * (#def.rare - 1)) // math.max(1, #def.rare)) -- one row, however many
+	for i, drop in def.rare do
+		local tier = (StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant).tier
+		animalCell(rare, i, StationRules.assetOf(drop.s, drop.v), nil, RARITY_COLOUR[tier] or C.text, side)
+	end
+	local can = not locked and profile.coins >= def.price
+	local b = Style.button(shop.body, `Buy for {Format.commas(def.price)}`, function()
+		if locked then
+			Style.toast(screen, `Clear wave {def.wave} to unlock the {def.name}`, nil, "bad")
+			return
+		end
+		send("buy", def.id)
+	end, if can then "primary" else "off", UDim2.new(1, -12, 0, 56))
+	b.LayoutOrder, b.TextSize = 6, 24
 end
 
 -- Trading (decision 0084) ---------------------------------------------------------------------------------
@@ -667,7 +949,7 @@ end
 redraw.trade = function()
 	Style.clear(trade.body)
 	Style.clear(trade.chips)
-	tradeDot.Parent.Visible = false
+	tradeDot.Visible = false
 	if tradeState then
 		Style.chip(trade.chips, `Trading with {tradeState.with}`, C.accent, C.accentText)
 		Style.chip(
@@ -752,7 +1034,7 @@ redraw.trade = function()
 			t.Position = UDim2.fromOffset(14, 20)
 			local ask = Style.button(card, "Ask to trade", function()
 				send("trade_ask", other.UserId)
-				Ui.toast(screen, `Asked {other.DisplayName} to trade`, 2)
+				Style.toast(screen, `Asked {other.DisplayName} to trade`, 2)
 			end, "primary")
 			ask.Position, ask.Size = UDim2.new(0.6, 0, 0, 10), UDim2.new(0.4, -12, 0, 44)
 		end
@@ -768,7 +1050,9 @@ end
 -- Waves ---------------------------------------------------------------------------------------------------
 
 local wave = 1
-local result = Style.card(root, UDim2.new(1, -24, 0, 0), C.accent) -- shown over the fight
+local result = Style.frame(root, UDim2.new(1, -24, 0, 0), C.sand) -- shown over the fight
+Style.round(result, 18)
+Style.stroke(result, C.ink, 3)
 result.Name = "WaveResult"
 result.AutomaticSize = Enum.AutomaticSize.Y
 result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -84), false
@@ -776,7 +1060,7 @@ result.ZIndex = 5
 Style.pad(result, 14)
 Style.list(result, 8)
 local resultLimit = Instance.new("UISizeConstraint")
-resultLimit.MaxSize = Vector2.new(440, 1000)
+resultLimit.MaxSize = Vector2.new(400, 1000)
 resultLimit.Parent = result
 local resultTitle = Style.text(result, "", 24, C.text)
 local resultSub = Style.text(result, "", 15, C.muted)
@@ -919,7 +1203,7 @@ end
 fight = function(n: number): boolean
 	local ok, code = request:InvokeServer("wave", n)
 	if not ok then
-		Ui.toast(screen, REFUSED[code] or `Can't do that ({code})`)
+		Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 		return false
 	end
 	wave = n
@@ -933,6 +1217,115 @@ fight = function(n: number): boolean
 	return true
 end
 
+-- Power attacks in a fight (decision 0092): a plate for each of the team's animals, bottom right, with
+-- its health and its power meter. A full meter glows; tap the plate (or press its number key) to fire.
+-- The server decides: a refused tap does nothing.
+local plates = Instance.new("Frame")
+plates.Name = "PowerPlates"
+plates.BackgroundTransparency = 1
+plates.AnchorPoint, plates.Position = Vector2.new(0, 1), UDim2.new(0, 14, 1, -90)
+plates.Size, plates.AutomaticSize = UDim2.fromOffset(224, 0), Enum.AutomaticSize.Y
+plates.Visible = false
+plates.ZIndex = 4
+local plateList = Style.list(plates, 12)
+plateList.VerticalAlignment = Enum.VerticalAlignment.Bottom
+plates.Parent = root
+
+type Plate = { button: TextButton, hp: (number) -> (), power: (number) -> (), name: TextLabel, full: boolean }
+local plateOf: { [number]: Plate } = {}
+
+local function firePower(slot: number)
+	local p = plateOf[slot]
+	if p == nil or not p.full then
+		return
+	end
+	local ok = request:InvokeServer("power", slot)
+	if ok then
+		Style.sound("claim")
+	end
+end
+
+local function plate(slot: number, label: string): Plate
+	local b = Style.button(plates, "", function()
+		firePower(slot)
+	end, "ghost", UDim2.fromOffset(224, 72))
+	b.LayoutOrder = slot
+	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -60, 0, 22))
+	name.Position, name.TextTruncate = UDim2.fromOffset(12, 6), Enum.TextTruncate.AtEnd
+	local key = Style.chip(b, tostring(slot))
+	key.AnchorPoint, key.Position = Vector2.new(1, 0), UDim2.new(1, -8, 0, 6)
+	local hpBar, setHp = Style.bar(b, UDim2.new(1, -24, 0, 12), C.good)
+	hpBar.Position = UDim2.fromOffset(12, 32)
+	local pBar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 10), C.accent)
+	pBar.Position = UDim2.fromOffset(12, 52)
+	return { button = b, hp = setHp, power = setPower, name = name, full = false }
+end
+
+UserInputService.InputBegan:Connect(function(input, used)
+	if used or not plates.Visible then
+		return
+	end
+	local slot = ({
+		[Enum.KeyCode.One] = 1,
+		[Enum.KeyCode.Two] = 2,
+		[Enum.KeyCode.Three] = 3,
+		[Enum.KeyCode.Four] = 4,
+	})[input.KeyCode]
+	if slot then
+		firePower(slot)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(0.1)
+		local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+		local seen: { [number]: boolean } = {}
+		if folder then
+			for _, m in folder:GetChildren() do
+				local slot = m:GetAttribute("Slot")
+				if m:GetAttribute("Side") == 1 and type(slot) == "number" then
+					seen[slot] = true
+					local p = plateOf[slot]
+					if p == nil then
+						local s, v = m:GetAttribute("Species"), m:GetAttribute("Variant")
+						local va = if type(s) == "string" and type(v) == "string"
+							then StationConfig.variant(s, v)
+							else nil
+						local sp = if type(s) == "string" then StationConfig.species(s) else nil
+						p = plate(slot, if va then va.name elseif sp then sp.name else "?")
+						plateOf[slot] = p
+					end
+					local hp, max = m:GetAttribute("Hp"), m:GetAttribute("MaxHp")
+					local alive = type(hp) == "number" and hp > 0
+					if type(hp) == "number" and type(max) == "number" then
+						p.hp(hp / math.max(1, max))
+					end
+					local power = m:GetAttribute("Power")
+					local full = alive and type(power) == "number" and power >= 1
+					p.power(if type(power) == "number" then power else 0)
+					if full ~= p.full then
+						p.full = full
+						Style.kind(p.button, if full then "primary" else if alive then "ghost" else "off")
+						p.name.Text = if full
+							then `POWER! {(string.gsub(p.name.Text, "^POWER! ", ""))}`
+							else (string.gsub(p.name.Text, "^POWER! ", ""))
+					elseif not alive then
+						Style.kind(p.button, "off")
+					end
+				end
+			end
+		end
+		for slot, p in plateOf do
+			if not seen[slot] then
+				p.button:Destroy()
+				plateOf[slot] = nil
+			end
+		end
+		plates.Visible = next(plateOf) ~= nil
+	end
+end)
+
 local function foeCard(foeId: string)
 	local foe = StationConfig.foe(foeId) :: StationConfig.Foe
 	local boss = foe.kind == "dragon"
@@ -944,7 +1337,7 @@ local function foeCard(foeId: string)
 		{ size = UDim2.fromOffset(102, 96), background = Color3.fromRGB(34, 22, 50), tint = tint, zoom = 0.82 }
 	)
 	view.Position = UDim2.fromOffset(10, 10)
-	local name = Style.text(card, foe.name, 14, C.hex, UDim2.new(1, -8, 0, 36))
+	local name = Style.text(card, foe.name, 14, C.night, UDim2.new(1, -8, 0, 36))
 	name.Position = UDim2.fromOffset(4, 110)
 	name.TextXAlignment = Enum.TextXAlignment.Center
 	if boss then
@@ -963,6 +1356,7 @@ end
 redraw.waves = function()
 	Style.clear(waves.body)
 	Style.clear(waves.chips)
+	Style.clear(waves.tabs)
 	wave = math.clamp(wave, 1, profile.best + 1)
 	Style.chip(waves.chips, `Best wave: {profile.best}`)
 	local boss = wave % LevelRules.BOSS_EVERY == 0
@@ -984,9 +1378,9 @@ redraw.waves = function()
 	-- the wave to fight, with arrows to step through the open ones
 	local step = Instance.new("Frame")
 	step.BackgroundTransparency = 1
-	step.Size = UDim2.new(1, -20, 0, 52)
+	step.Size = UDim2.fromOffset(196, 52)
 	step.LayoutOrder = nextOrder()
-	step.Parent = waves.body
+	step.Parent = waves.tabs
 	local prev = Style.button(step, "<", function()
 		wave -= 1
 		redraw.waves()
@@ -997,13 +1391,14 @@ redraw.waves = function()
 		redraw.waves()
 	end, if wave <= profile.best then "ghost" else "off", UDim2.fromOffset(60, 52))
 	nextButton.AnchorPoint, nextButton.Position, nextButton.TextSize = Vector2.new(1, 0), UDim2.fromScale(1, 0), 28
-	local head = Style.text(step, `Wave {wave}`, 34, C.text, UDim2.new(1, -140, 1, 0))
-	head.Position, head.TextXAlignment = UDim2.fromOffset(70, 0), Enum.TextXAlignment.Center
+	prev.Size, nextButton.Size = UDim2.fromOffset(46, 52), UDim2.fromOffset(46, 52)
+	local head = Style.text(step, `Wave {wave}`, 28, C.text, UDim2.new(1, -100, 1, 0))
+	head.Position, head.TextXAlignment = UDim2.fromOffset(50, 0), Enum.TextXAlignment.Center
 
 	local team = StationProgress.fighters(profile)
-	local go = Style.button(waves.body, `Fight wave {wave}`, function()
+	local go = Style.button(waves.tabs, `Fight wave {wave}`, function()
 		fight(wave)
-	end, if #team > 0 then "primary" else "off", UDim2.new(1, -20, 0, 56))
+	end, if #team > 0 then "danger" else "off", UDim2.fromOffset(196, 60))
 	go.TextSize, go.LayoutOrder = 24, nextOrder()
 
 	section(waves.body, "Enemies", nextOrder())
@@ -1059,7 +1454,7 @@ redraw.waves = function()
 			{ size = UDim2.fromOffset(84, 82), background = darker(colour), rainbow = a.rainbow }
 		)
 		view.Position = UDim2.fromOffset(10, 8)
-		local name = Style.text(card, nameOf(a), 14, colour, UDim2.new(1, -6, 0, 34))
+		local name = Style.text(card, nameOf(a), 14, C.text, UDim2.new(1, -6, 0, 34))
 		name.Position = UDim2.fromOffset(3, 94)
 		name.TextXAlignment = Enum.TextXAlignment.Center
 	end
@@ -1088,11 +1483,11 @@ local cardKind = Ui.label(card, "", { size = 14 })
 local cardStats = Ui.label(card, "", { size = 14, muted = true })
 local bar = Instance.new("Frame")
 bar.Size = UDim2.new(1, 0, 0, 16)
-bar.BackgroundColor3 = Color3.fromRGB(40, 36, 46)
+bar.BackgroundColor3 = Color3.new(1, 1, 1)
 bar.BorderSizePixel = 0
 bar.Parent = card
 local fill = Instance.new("Frame")
-fill.BackgroundColor3 = Color3.fromRGB(90, 210, 110)
+fill.BackgroundColor3 = C.good
 fill.BorderSizePixel = 0
 fill.Parent = bar
 local barText = Instance.new("TextLabel")
@@ -1257,13 +1652,25 @@ end
 -- Admin menu (decision 0038): only for players the server marks as admin (the game's owner, or
 -- anyone in Studio). Stands animal and enemy models in front of you to look at, and plays test
 -- waves in the arena; nothing is saved.
+local adminTab = "tests"
+local adminTests = Instance.new("Frame") -- the Tests tab's buttons, made once
+adminTests.BackgroundTransparency = 1
+adminTests.Size, adminTests.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
+Style.list(adminTests, 10)
+adminTests.Parent = admin.body
+local adminAdd = { body = Instance.new("Frame") } -- the Add animals tab's tiles
+adminAdd.body.BackgroundTransparency = 1
+adminAdd.body.Size, adminAdd.body.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
+Style.list(adminAdd.body, 10, true, true)
+adminAdd.body.Visible = false
+adminAdd.body.Parent = admin.body
 do
 	local n = 0
 	local function add(text: string, action: string, value: any?)
 		n += 1
-		Style.button(admin.body, text, function()
+		Style.button(adminTests, text, function()
 			send(action, value)
-		end, "ghost", UDim2.new(1, -20, 0, 44)).LayoutOrder =
+		end, "ghost", UDim2.new(1, 0, 0, 44)).LayoutOrder =
 			n
 	end
 	add("Spawn every animal and enemy in a row", "look", 0)
@@ -1283,17 +1690,17 @@ do
 		}
 	do
 		n += 1
-		Style.button(admin.body, test[3] :: string, function()
+		Style.button(adminTests, test[3] :: string, function()
 			local ok, code = request:InvokeServer("testwave", test[1], test[2])
 			if not ok then
-				Ui.toast(
+				Style.toast(
 					screen,
 					if code == "models" then "An enemy model is not uploaded yet" else REFUSED[code] or `Can't ({code})`
 				)
 			else
 				show(nil)
 			end
-		end, "ghost", UDim2.new(1, -20, 0, 44)).LayoutOrder =
+		end, "ghost", UDim2.new(1, 0, 0, 44)).LayoutOrder =
 			n
 	end
 	local k = 0 -- the server lists them in this order too
@@ -1357,7 +1764,7 @@ do
 				local said = if ok
 					then `Added a {if rainbow then "Rainbow " else ""}{name}, level {level}`
 					else REFUSED[code] or `Can't do that ({code})`
-				Ui.toast(screen, said, 2)
+				Style.toast(screen, said, 2)
 			end, "ghost", UDim2.fromOffset(116, 146))
 			tile.Name, tile.LayoutOrder = name, k
 			Style.stroke(tile, colour, 2)
@@ -1373,8 +1780,16 @@ do
 		end
 	end
 	local drawn = false
-	redraw.adminadd = function() -- drawn once, when first opened: a new profile must not scroll it back up
-		if not drawn then
+	redraw.admin = function() -- the tiles are drawn once, when first opened: a new profile must not scroll it back up
+		Style.clear(admin.tabs)
+		for _, t in { { "tests", "Tests" }, { "add", "Add animals" } } do
+			Style.tab(admin, t[2], adminTab == t[1], function()
+				adminTab = t[1]
+				redraw.admin()
+			end)
+		end
+		adminTests.Visible, adminAdd.body.Visible = adminTab == "tests", adminTab == "add"
+		if adminTab == "add" and not drawn then
 			drawn = true
 			draw()
 		end
@@ -1382,8 +1797,7 @@ do
 end
 local function showAdmin()
 	adminToggle.Visible = player:GetAttribute("Admin") == true
-	addToggle.Visible = adminToggle.Visible
-	if not adminToggle.Visible and (openName == "admin" or openName == "adminadd") then
+	if not adminToggle.Visible and openName == "admin" then
 		show(nil)
 	end
 end
@@ -1428,7 +1842,7 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 		or CollectionService:HasTag(prompt, "Egg")
 		or CollectionService:HasTag(prompt, "Mill")
 	if owners and not mine then
-		Ui.toast(screen, "This is not your ranch")
+		Style.toast(screen, "This is not your ranch")
 	elseif CollectionService:HasTag(prompt, "RanchMenu") then
 		show("ranch")
 	elseif CollectionService:HasTag(prompt, "EggStorage") then
@@ -1443,7 +1857,7 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
 		if prompt:GetAttribute("Kind") == "eggs" then
 			show("shop")
 		else
-			Ui.toast(screen, "The gear vendor is still unpacking. Gear is coming soon!")
+			Style.toast(screen, "The gear vendor is still unpacking. Gear is coming soon!")
 		end
 	end
 end)
@@ -1502,13 +1916,14 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		end
 		showRarity(payload)
 		if lucky ~= "" then
-			Ui.toast(screen, lucky, 4)
+			Style.toast(screen, lucky, 4)
 		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.0f", payload.seconds)
 		Style.clear(drops)
 		if payload.won then
 			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave} cleared!`, C.good
+			Style.sound("claim")
 			resultSub.Text = `Your team won in {took}s.{if payload.first then " First clear!" else ""}`
 			Style.amount(drops, "coins", `+{Format.commas(payload.coins)}`)
 			Style.amount(drops, "xp", `+{payload.xp} XP`)
@@ -1528,15 +1943,15 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		result.Visible = true
 	elseif kind == "waveshow" then
 		local took = string.format("%.0f", payload.seconds)
-		Ui.toast(
+		Style.toast(
 			screen,
 			`Wave {payload.wave}: {if payload.won then "your team won" else "your team lost"} in {took}s ({payload.attacks} attacks) against {payload.foes}`,
 			7
 		)
 	elseif kind == "trade_invite" then
 		invite = { from = payload.from, name = payload.name, at = os.clock() }
-		Ui.toast(screen, `{payload.name} wants to trade: open Trade`, 5)
-		tradeDot.Text, tradeDot.Parent.Visible = "!", true
+		Style.toast(screen, `{payload.name} wants to trade: open Trade`, 5)
+		tradeDot.Text, tradeDot.Visible = "!", true
 		if openName == "trade" then
 			redraw.trade()
 		end
@@ -1551,7 +1966,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				failed = "The trade could not finish",
 			})[payload.closed]
 			if said then
-				Ui.toast(screen, said, 4)
+				Style.toast(screen, said, 4)
 			end
 		else
 			local opening = tradeState == nil
@@ -1565,7 +1980,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			redraw.trade()
 		end
 	elseif kind == "collected" then
-		Ui.toast(
+		Style.toast(
 			screen,
 			`Collected {Format.commas(payload)} {if payload == 1 then "coin" else "coins"} from your windmill`,
 			4
@@ -1573,15 +1988,15 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "bought" then
 		local egg = StationConfig.egg(payload)
 		if egg then
-			Ui.toast(screen, `{egg.name} bought. It is in your egg storage.`, 3)
+			Style.toast(screen, `{egg.name} bought. It is in your egg storage.`, 3)
 		end
 	elseif kind == "upgraded" then
 		local u = StationConfig.upgrade(payload)
 		if u and profile then
-			Ui.toast(screen, `{u.name} upgraded: {StationProgress.value(profile, u.id)} {u.gives}`, 4)
+			Style.toast(screen, `{u.name} upgraded: {StationProgress.value(profile, u.id)} {u.gives}`, 4)
 		end
 	elseif kind == "refused" then
-		Ui.toast(screen, REFUSED[payload] or `Can't do that ({payload})`)
+		Style.toast(screen, REFUSED[payload] or `Can't do that ({payload})`, nil, "bad")
 	end
 end)
 

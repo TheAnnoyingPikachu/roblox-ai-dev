@@ -1,0 +1,38 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-098",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0091: every menu in the Savanna look and the shared menu frame, with button motion and ForgeGUI UI sounds.",
+  "inputs": [
+    "docs/decisions/0091-animal-stations-savanna-ui.md"
+  ],
+  "dependencies": [
+    "STATION-097"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Portrait.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md",
+    "docs/decisions/0091-animal-stations-savanna-ui.md",
+    "studio/tasks/STATION-098.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every menu opens in the shared frame with its tabs on the left",
+    "Ranch upgrades show in three tabs with building pictures",
+    "A ready egg opens only at the hatchery; the Eggs menu points the way",
+    "Buttons squash when pressed and make sounds"
+  ],
+  "verification": "Lune 725/725, selene clean. Studio, local build, stamp `dev`, 2026-11-19: HUD, Animals grid and detail, Eggs, Egg vendor, Ranch (pictures load a moment after opening), Waves, Admin and the folded phone layout (UiSize 430 x 940) seen in screens; no errors in the output.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON: (1) five of the seven sounds were still in Roblox moderation when built; (2) the ForgeGUI audio licence, as for the models (STATION-095); (3) the onboarding and planners are a separate task, with economy values to approve."
+}
