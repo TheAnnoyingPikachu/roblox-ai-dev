@@ -106,7 +106,7 @@ local HOUSE = {
 	},
 }
 local BARN = { { 18, 14, 8 }, { 26, 20, 11 }, { 34, 24, 14 } }
-local CELLAR = { {}, { 9, 8, 6, 11 }, { 11, 9, 7.5, 16 } } -- the mound's half sizes, its front's width
+local CELLAR = { { 7, 6, 5 }, { 9, 8, 6.5 }, { 11, 9, 8 } } -- the burrow's hill: half width, depth, height (homestead.py BURROW)
 local BROODER = { { 10, 7 }, { 15, 9 }, { 20, 11 } }
 local MILL = { { 4.5, 15 }, { 6.5, 22 }, { 7.5, 28 } } -- (foot radius, height)
 local SAILS = { { 5.4, 12.2, 18, 4 }, { 5.89, 20.5, 26, 4 }, { 6.55, 26.5, 34, 8 } } -- their hub (in front, high), span, arms
@@ -511,12 +511,10 @@ local function building(f: Instance, cf: CFrame, id: string, level: number, home
 		nests(f, b, look, if level > 0 then u.levels[level].value else u.base, home)
 	elseif id == "cellar" then
 		home.cols, home.rows = if look == 1 then 4 else 6, if look == 1 then 3 else 4
-		local x, y = 0, 0 -- the greenhouse's middle, in homestead.py's numbers (y to the back)
-		if look >= 2 then
-			local mw, md, mh = CELLAR[look][1], CELLAR[look][2], CELLAR[look][3]
-			block(f, b, 0, 4, 0, mw * 1.5, md * 1.5, mh * 0.9)
-			x, y = -(mw + 10), 4 - md * 0.72 - 2.2 + ghDepth(home.rows) / 2 -- on its left, away from the guard yard's path
-		end
+		-- the burrow's hill, and the greenhouse on its left (homestead.py `cellar`), in its numbers (y to the back)
+		local mw, md, mh = CELLAR[look][1], CELLAR[look][2], CELLAR[look][3]
+		block(f, b, 0, 4, 0, mw * 1.5, md * 1.5, mh * 0.9)
+		local x, y = -(mw + 10), 4 - md * 0.78 - 2.2 + ghDepth(home.rows) / 2
 		eggRack(f, b * CFrame.new(x, 0, -y), home, i)
 	elseif id == "brooder" then
 		block(f, b, 0, 0, 0, BROODER[look][1], BROODER[look][2], 0.75)

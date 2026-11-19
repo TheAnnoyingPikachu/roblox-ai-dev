@@ -5861,13 +5861,13 @@
     "png": "build/blender/stations/home_cellar_1.png",
     "preview": "build/blender/stations/previews/home_cellar_1.png",
     "size_studs": [
-      14.0,
-      10.16,
-      11.24
+      28.96,
+      12.56,
+      13.1
     ],
-    "tris": 4020,
+    "tris": 6468,
     "parts": {
-      "home_cellar_1_body": 3964,
+      "home_cellar_1_body": 6412,
       "home_cellar_1_body_glow": 56
     },
     "tris_budget": 20000,
@@ -5882,32 +5882,32 @@
     },
     "centres": {
       "home_cellar_1_body": [
-        0.0,
-        5.082,
-        0.618
+        -9.521,
+        6.279,
+        -2.381
       ],
       "home_cellar_1_body_glow": [
-        0.0,
-        4.85,
-        -0.6
+        -17.0,
+        7.245,
+        -2.22
       ]
     },
     "joints": {},
-    "lift": 0.15
+    "lift": -2.245
   },
   "home_cellar_2": {
     "fbx": "build/blender/stations/home_cellar_2.fbx",
     "png": "build/blender/stations/home_cellar_2.png",
     "preview": "build/blender/stations/previews/home_cellar_2.png",
     "size_studs": [
-      34.62,
-      18.23,
-      17.5
+      34.95,
+      18.53,
+      17.41
     ],
-    "tris": 6892,
+    "tris": 7700,
     "parts": {
-      "home_cellar_2_body": 6788,
-      "home_cellar_2_body_glow": 20,
+      "home_cellar_2_body": 7528,
+      "home_cellar_2_body_glow": 88,
       "home_cellar_2_body2_glow": 84
     },
     "tris_budget": 20000,
@@ -5927,39 +5927,39 @@
     },
     "centres": {
       "home_cellar_2_body": [
-        -11.192,
-        9.114,
-        -1.825
+        -11.025,
+        9.266,
+        -1.872
       ],
       "home_cellar_2_body_glow": [
-        2.9,
-        7.094,
-        2.86
+        0.0,
+        5.918,
+        1.99
       ],
       "home_cellar_2_body2_glow": [
         -19.0,
-        8.694,
-        -2.14
+        8.918,
+        -1.66
       ]
     },
     "joints": {},
-    "lift": -2.694
+    "lift": -2.918
   },
   "home_cellar_3": {
     "fbx": "build/blender/stations/home_cellar_3.fbx",
     "png": "build/blender/stations/home_cellar_3.png",
     "preview": "build/blender/stations/previews/home_cellar_3.png",
     "size_studs": [
-      39.5,
-      19.84,
-      18.04
+      41.78,
+      20.13,
+      19.48
     ],
-    "tris": 7396,
+    "tris": 8840,
     "parts": {
-      "home_cellar_3_body": 7212,
-      "home_cellar_3_body_glow": 40,
-      "home_cellar_3_body2_glow": 84,
-      "home_cellar_3_body3_glow": 40,
+      "home_cellar_3_body": 8548,
+      "home_cellar_3_body_glow": 108,
+      "home_cellar_3_body2_glow": 80,
+      "home_cellar_3_body3_glow": 84,
       "home_cellar_3_body4_glow": 20
     },
     "tris_budget": 20000,
@@ -5973,13 +5973,13 @@
       ],
       "home_cellar_3_body2_glow": [
         255,
-        160,
-        70
+        214,
+        130
       ],
       "home_cellar_3_body3_glow": [
         255,
-        214,
-        130
+        160,
+        70
       ],
       "home_cellar_3_body4_glow": [
         255,
@@ -5989,33 +5989,33 @@
     },
     "centres": {
       "home_cellar_3_body": [
-        -11.75,
-        9.922,
-        -2.38
+        -10.608,
+        10.065,
+        -1.66
       ],
       "home_cellar_3_body_glow": [
-        2.9,
-        7.767,
-        3.58
+        0.0,
+        9.255,
+        -0.865
       ],
       "home_cellar_3_body2_glow": [
-        -21.0,
-        10.367,
-        -1.42
+        -10.0,
+        8.892,
+        6.02
       ],
       "home_cellar_3_body3_glow": [
-        -19.8,
-        8.667,
-        6.08
+        -21.0,
+        10.592,
+        -0.88
       ],
       "home_cellar_3_body4_glow": [
         -21.0,
-        17.887,
-        -0.82
+        18.112,
+        -0.28
       ]
     },
     "joints": {},
-    "lift": -3.367
+    "lift": -3.592
   },
   "home_brooder_1": {
     "fbx": "build/blender/stations/home_brooder_1.fbx",

@@ -46,7 +46,6 @@ RING = (37.0, 45.0)  # the path round the meadow
 BARN = ((18, 14, 8), (26, 20, 11), (34, 24, 14))
 BARN_DOOR = ((7, 6), (10, 8.5), (13, 10.5))
 HATCHERY = ((None, None), (11.5, 8), (14.0, 10))  # (radius, posts) of the round ones
-CELLAR = (None, ((9, 8, 6), (11, 7.5)), ((11, 9, 7.5), (16, 9)))  # the mound's half sizes, its stone front
 BROODER = ((10, 7, 6.5), (15, 9, 7.5), (20, 11, 8.5))
 MILL = (None, (6.5, 22.0, 26.0), (7.5, 28.0, 34.0))  # (foot radius, height, the sails' span) of the towers
 LODGE = (None, (20, 12, 8), (28, 15, 10))
@@ -352,29 +351,70 @@ def hatchery(t):
     return make
 
 
+# The Egg Cellar's hillside burrow (decision 0091): the hill's half sizes (width, depth, height) and the
+# round door's radius at each look. Ranch.luau's CELLAR holds the same numbers: change the two together.
+BURROW = (((7.0, 6.0, 5.0), 2.0), ((9.0, 8.0, 6.5), 2.4), ((11.0, 9.0, 8.0), 2.2))
+HILL = (124, 184, 86)
+DOOR = (120, 78, 44)
+
+
+def grounded(ob, z=0.15):
+    """Flattens whatever of `ob` is below the ground onto it (a round stone face that would dig under)."""
+    for v in ob.data.vertices:
+        v.co.z = max(v.co.z, z)
+    return ob
+
+
+def round_door(x, y, r, rng):
+    """A round wooden door facing -Y, its middle r + 0.15 up: a stone ring, planks, a brass knob."""
+    z = r + 0.15
+    S.paint(grounded(S.k.cyl(r + 0.7, 1.4, (x, y - 0.2, z), n=16, rot=(90, 0, 0))), S.STONE, rng, surface="rock", kind=S.COOL)
+    S.paint(S.k.cyl(r, 0.3, (x, y - 0.95, z), n=16, rot=(90, 0, 0)), DOOR, rng)
+    for k in (-1, 0, 1):  # plank lines
+        box((0.12, 0.1, 1.7 * r * (1 - abs(k) * 0.3)), (x + k * r * 0.45, y - 1.12, z - 0.85 * r * (1 - abs(k) * 0.3)), S.WOOD_DARK, rng)
+    lump((x + r * 0.55, y - 1.25, z), 0.22, S.GOLD, rng)
+
+
+def round_window(x, y, z, r, rng):
+    S.paint(S.k.cyl(r + 0.35, 0.8, (x, y - 0.1, z), n=12, rot=(90, 0, 0)), S.WOOD_DARK, rng)
+    neon(S.k.cyl(r, 0.3, (x, y - 0.55, z), n=12, rot=(90, 0, 0)), LIT, 1.3)
+    box((r * 2, 0.12, 0.14), (x, y - 0.72, z - 0.07), S.WOOD_DARK, rng)
+    box((0.14, 0.12, r * 2), (x, y - 0.72, z - r), S.WOOD_DARK, rng)
+
+
 def cellar(t):
-    """The Egg Cellar (eggs you can store): the egg storage greenhouse alone, then a cellar dug into a grassy
-    mound with the greenhouse beside it, then a bigger cellar with two doors and a grander greenhouse. The
-    game stands the stored eggs on the greenhouse's trays."""
+    """The Egg Cellar (eggs you can store): a burrow dug into a grassy hill, its round door in front, the
+    egg storage greenhouse beside it on its left. The burrow grows: a little door with flowers; a bigger hill
+    with round windows, a step and a chimney; a great hill with a stone arch, two doors, lanterns and an
+    egg-shaped skylight. The game stands the stored eggs on the greenhouse's trays."""
 
     def make(rng):
-        if t == 0:  # the egg storage greenhouse is the whole building
-            greenhouse(0, 0, 4, 3, 0, rng)
-            return
-        (mw, md, mh), (fw, fh) = CELLAR[t]
-        lump((0, 4, mh * 0.42), (mw, md, mh), (112, 172, 80), rng)  # the mound
-        yf = 4 - md * 0.72
-        box((fw, 1.6, fh), (0, yf, 0.15), S.STONE, rng, surface="rock", kind=S.COOL)
-        for x in ((0,), (-4, 4))[t - 1]:
-            box((4.2, 0.5, 5.4), (x, yf - 0.9, 0.15), S.WOOD_DARK, rng)
-            box((5.2, 0.7, 0.7), (x, yf - 0.95, 5.55), S.STONE_DARK, rng)
-            neon(S.k.cyl(0.4, 0.7, (x + 2.9, yf - 1.1, 4.4), n=6), LIT)
-        for x, y in ((2.6, 6), (-3.4, 4.6))[:t]:  # air pipes
-            post(0.6, 3.0, (x, y, mh * 1.2), S.STONE_DARK, rng, n=6)
-        for a in range(5):
-            bush(Vector((0, 4, mh * 0.9)) + polar(mw * 0.5, a * 72 + 20), rng, s=1.2)
-        sign("EGG CELLAR", (0, yf - 1.15, fh - 0.25), rng, size=(0.9, 1.2)[t - 1])
-        greenhouse(-(mw + 10.0), yf - 2.2 + (4 * GH_ROW + 3.0) / 2, 6, 4, t, rng)  # on its left, away from the guard yard's path
+        (mw, md, mh), r = BURROW[t]
+        lump((0, 4, mh * 0.42), (mw, md, mh), HILL, rng)  # the hill
+        yf = 4 - md * 0.78  # its front, where the doors are
+        doors = ((0.0,), (0.0,), (-3.0, 3.0))[t]
+        if t == 2:  # the stone arch the two doors stand in
+            S.paint(grounded(S.k.cyl(7.2, 1.8, (0, yf + 0.2, 2.6), n=20, rot=(90, 0, 0))), S.STONE, rng, surface="rock", kind=S.COOL)
+        for x in doors:
+            round_door(x, yf - (0.9 if t == 2 else 0.0), r, rng)
+        if t >= 1:
+            for sx in (-1, 1):
+                round_window(sx * (mw * 0.55), yf + 0.8, r + 0.6, 1.0 + 0.15 * t, rng)
+            box((3.4 + 2.6 * (t == 2), 1.4, 0.35), (0, yf - 1.9, 0.15), S.STONE, rng, kind=S.PALE)  # the step
+            post(0.75, 3.4, (mw * 0.45, 5.5, mh * 1.05), S.STONE_DARK, rng, n=8, surface="rock", kind=S.COOL)  # chimney
+            for k in range(3):
+                lump((mw * 0.45 + k * 0.4, 5.5, mh * 1.05 + 4.2 + k * 1.3), 0.6 + k * 0.25, STEAM, rng, kind=S.PALE)
+        if t == 2:
+            for sx in (-1, 1):
+                lantern((sx * 8.6, yf - 2.4, 0.15), rng, h=5.5)
+            neon(lump((-mw * 0.25, 3.5, mh * 1.05), (1.4, 1.4, 1.9), LIT, rng), LIT, 1.4)  # the egg skylight
+        sign("EGG CELLAR", (0, yf - 1.3 - (0.9 if t == 2 else 0.0), 2 * r + 1.6 + 0.6 * (t == 2)), rng, size=(0.75, 0.9, 1.0)[t])
+        for a in range(4 + t):  # bushes and flowers round the hill
+            bush(Vector((0, 4, mh * 0.85)) + polar(mw * 0.55, a * (360 / (4 + t)) + 40), rng, s=1.0 + 0.15 * t)
+        for sx in (-1, 1):
+            flowers((sx * (r + 2.4 + 2 * (t == 2)), yf - 1.2, 0.15), rng, n=4 + 2 * t, spread=1.0)
+        cols, rows = (4, 3) if t == 0 else (6, 4)  # as Ranch.luau's home.cols, home.rows
+        greenhouse(-(mw + 10.0), yf - 2.2 + (rows * GH_ROW + 3.0) / 2, cols, rows, t, rng)  # on its left, away from the guard yard's path
 
     return make
 
