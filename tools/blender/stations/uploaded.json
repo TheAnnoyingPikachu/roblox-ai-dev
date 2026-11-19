@@ -725,13 +725,13 @@
     "texture": null
   },
   "creature_jackal_forge": {
-    "model": 137675353257640,
-    "decal": 110413410107441,
+    "model": 87363284132347,
+    "decal": 88853090199462,
     "texture": null
   },
   "creature_jackal_forge_rainbow": {
     "model": null,
-    "decal": 98519432003588,
+    "decal": 82658028249221,
     "texture": null
   },
   "creature_tortoise_forge": {
@@ -755,13 +755,13 @@
     "texture": null
   },
   "creature_jackal_sphinx_forge": {
-    "model": 86454719482505,
-    "decal": 112323932361445,
+    "model": 106896364285248,
+    "decal": 103184462847059,
     "texture": null
   },
   "creature_jackal_sphinx_forge_rainbow": {
     "model": null,
-    "decal": 78399348391242,
+    "decal": 80202657347282,
     "texture": null
   }
 }
