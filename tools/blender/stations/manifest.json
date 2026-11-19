@@ -5861,13 +5861,13 @@
     "png": "build/blender/stations/home_cellar_1.png",
     "preview": "build/blender/stations/previews/home_cellar_1.png",
     "size_studs": [
-      28.96,
+      29.27,
       12.56,
-      13.1
+      13.54
     ],
-    "tris": 6468,
+    "tris": 6488,
     "parts": {
-      "home_cellar_1_body": 6412,
+      "home_cellar_1_body": 6432,
       "home_cellar_1_body_glow": 56
     },
     "tris_budget": 20000,
@@ -5882,9 +5882,9 @@
     },
     "centres": {
       "home_cellar_1_body": [
-        -9.521,
+        -9.367,
         6.279,
-        -2.381
+        -2.165
       ],
       "home_cellar_1_body_glow": [
         -17.0,
@@ -5901,12 +5901,12 @@
     "preview": "build/blender/stations/previews/home_cellar_2.png",
     "size_studs": [
       34.95,
-      18.53,
-      17.41
+      18.5,
+      17.71
     ],
-    "tris": 7700,
+    "tris": 7720,
     "parts": {
-      "home_cellar_2_body": 7528,
+      "home_cellar_2_body": 7548,
       "home_cellar_2_body_glow": 88,
       "home_cellar_2_body2_glow": 84
     },
@@ -5928,8 +5928,8 @@
     "centres": {
       "home_cellar_2_body": [
         -11.025,
-        9.266,
-        -1.872
+        9.248,
+        -1.72
       ],
       "home_cellar_2_body_glow": [
         0.0,
@@ -5951,12 +5951,12 @@
     "preview": "build/blender/stations/previews/home_cellar_3.png",
     "size_studs": [
       41.78,
-      20.13,
-      19.48
+      21.84,
+      19.77
     ],
-    "tris": 8840,
+    "tris": 8860,
     "parts": {
-      "home_cellar_3_body": 8548,
+      "home_cellar_3_body": 8568,
       "home_cellar_3_body_glow": 108,
       "home_cellar_3_body2_glow": 80,
       "home_cellar_3_body3_glow": 84,
@@ -5990,32 +5990,32 @@
     "centres": {
       "home_cellar_3_body": [
         -10.608,
-        10.065,
-        -1.66
+        10.922,
+        -1.648
       ],
       "home_cellar_3_body_glow": [
         0.0,
-        9.255,
-        -0.865
+        11.056,
+        -0.903
       ],
       "home_cellar_3_body2_glow": [
         -10.0,
-        8.892,
+        10.67,
         6.02
       ],
       "home_cellar_3_body3_glow": [
         -21.0,
-        10.592,
+        12.37,
         -0.88
       ],
       "home_cellar_3_body4_glow": [
         -21.0,
-        18.112,
+        19.89,
         -0.28
       ]
     },
     "joints": {},
-    "lift": -3.592
+    "lift": -5.37
   },
   "home_brooder_1": {
     "fbx": "build/blender/stations/home_brooder_1.fbx",

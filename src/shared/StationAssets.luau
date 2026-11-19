@@ -2251,13 +2251,13 @@ local StationAssets: { [string]: Asset } = {
 		lift = 0.15,
 	},
 	home_cellar_1 = {
-		size = { 28.96, 12.56, 13.1 },
+		size = { 29.27, 12.56, 13.54 },
 		parts = { "home_cellar_1_body", "home_cellar_1_body_glow" },
 		glow = {
 			home_cellar_1_body_glow = { 255, 160, 70 },
 		},
 		centres = {
-			home_cellar_1_body = { -9.521, 6.279, -2.381 },
+			home_cellar_1_body = { -9.367, 6.279, -2.165 },
 			home_cellar_1_body_glow = { -17, 7.245, -2.22 },
 		},
 		joints = {},
@@ -2267,14 +2267,14 @@ local StationAssets: { [string]: Asset } = {
 		lift = -2.245,
 	},
 	home_cellar_2 = {
-		size = { 34.95, 18.53, 17.41 },
+		size = { 34.95, 18.5, 17.71 },
 		parts = { "home_cellar_2_body", "home_cellar_2_body_glow", "home_cellar_2_body2_glow" },
 		glow = {
 			home_cellar_2_body_glow = { 255, 226, 150 },
 			home_cellar_2_body2_glow = { 255, 160, 70 },
 		},
 		centres = {
-			home_cellar_2_body = { -11.025, 9.266, -1.872 },
+			home_cellar_2_body = { -11.025, 9.248, -1.72 },
 			home_cellar_2_body_glow = { 0, 5.918, 1.99 },
 			home_cellar_2_body2_glow = { -19, 8.918, -1.66 },
 		},
@@ -2285,7 +2285,7 @@ local StationAssets: { [string]: Asset } = {
 		lift = -2.918,
 	},
 	home_cellar_3 = {
-		size = { 41.78, 20.13, 19.48 },
+		size = { 41.78, 21.84, 19.77 },
 		parts = {
 			"home_cellar_3_body",
 			"home_cellar_3_body_glow",
@@ -2300,17 +2300,17 @@ local StationAssets: { [string]: Asset } = {
 			home_cellar_3_body4_glow = { 255, 200, 70 },
 		},
 		centres = {
-			home_cellar_3_body = { -10.608, 10.065, -1.66 },
-			home_cellar_3_body_glow = { 0, 9.255, -0.865 },
-			home_cellar_3_body2_glow = { -10, 8.892, 6.02 },
-			home_cellar_3_body3_glow = { -21, 10.592, -0.88 },
-			home_cellar_3_body4_glow = { -21, 18.112, -0.28 },
+			home_cellar_3_body = { -10.608, 10.922, -1.648 },
+			home_cellar_3_body_glow = { 0, 11.056, -0.903 },
+			home_cellar_3_body2_glow = { -10, 10.67, 6.02 },
+			home_cellar_3_body3_glow = { -21, 12.37, -0.88 },
+			home_cellar_3_body4_glow = { -21, 19.89, -0.28 },
 		},
 		joints = {},
 		model = 117497122462905,
 		decal = 85373315692415,
 		texture = nil,
-		lift = -3.592,
+		lift = -5.37,
 	},
 	home_brooder_1 = {
 		size = { 11.5, 10.1, 8.75 },

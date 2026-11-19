@@ -393,6 +393,9 @@ def cellar(t):
         lump((0, 4, mh * 0.42), (mw, md, mh), HILL, rng)  # the hill
         yf = 4 - md * 0.78  # its front, where the doors are
         doors = ((0.0,), (0.0,), (-3.0, 3.0))[t]
+        # a bank of the hill hugging the stone face from behind, so no gap shows between the two
+        ring, mid = (r + 0.7, r + 0.15) if t < 2 else (7.2, 2.6)
+        lump((0, yf + 1.6, mid), (ring + 1.6, 2.6, ring + 1.0), HILL, rng)
         if t == 2:  # the stone arch the two doors stand in
             S.paint(grounded(S.k.cyl(7.2, 1.8, (0, yf + 0.2, 2.6), n=20, rot=(90, 0, 0))), S.STONE, rng, surface="rock", kind=S.COOL)
         for x in doors:
