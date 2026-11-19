@@ -1,0 +1,47 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-028",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Eggs stay at the ranch (the bottom bar has Animals and Waves), the Safari Egg unlocks at player level 10, and the battle arena overhaul: a dressed pit, a dais, the Hexbound's gate, closer lines, a fight camera and a wave title.",
+  "inputs": [
+    "docs/decisions/0045-animal-stations-eggs-at-ranch-safari-level-arena.md"
+  ],
+  "dependencies": [
+    "STATION-027"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/UiLayout.luau",
+    "tests/StationRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "tests/UiLayout.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0044-animal-stations-ui-overhaul.md",
+    "docs/decisions/0045-animal-stations-eggs-at-ranch-safari-level-arena.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationProgress.spec.luau",
+    "UiLayout.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Safari Egg cannot be bought below player level 10 and the Golden Egg not below 15; both can at their level",
+    "The bottom bar has no Eggs button and the egg storage still opens from the ranch",
+    "In Studio play a wave is fought on the new dais with the enemies walking out of the gate, the camera frames both teams and returns to the player afterwards, and the wave title shows"
+  ],
+  "verification": "2026-11-14: lune 677/677 (2 new tests; the egg-lock tests changed to the new levels), stylua and selene clean. Studio play (stations.rbxl, synced from source): the arena looked at from the mouth and in two admin test waves (wave 6 and wave 10 with the starter team: ogres and a whelp) with the camera framing the dais and the gate; the camera went Scriptable at 55 degrees field of view for the fight and back to Custom at 70 after Leave; the egg shop showed Unlocks at level 10 and 15; the bottom bar showed two buttons. No script errors. Not checked: a real phone or tablet (framing on an upright screen is tested as a number only), the wave title in a screenshot, a fight with a Drake or the big Dragon in the new frame, two players (the arena-busy refusal), a fight from the Waves sheet's button in the new arena (the same code path as the admin test wave).",
+  "output_artifacts": [
+    "src/stations/World.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations-client/ArenaCamera.client.luau",
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The camera drifts a little and cannot be turned off. The old red spawn strip is still at the canyon's far end."
+}

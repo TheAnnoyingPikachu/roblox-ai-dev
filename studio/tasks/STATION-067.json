@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-067",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The open homestead in the game (decision 0072): no fence or square plot; the herd's meadow in the middle inside a ring path; the eight buildings round it as models in the look for their level, or a staked plot; the Hatchery's nests and the egg rack by level; the windmill's sails turning; the Titan standing in its den; every way out starting at the ring path.",
+  "inputs": [
+    "docs/decisions/0070-animal-stations-ranch-valley-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-065",
+    "STATION-066"
+  ],
+  "files": [
+    "src/stations/Ranch.luau",
+    "src/stations/World.luau",
+    "src/stations/Areas.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/shared/ValleyMap.luau",
+    "src/stations/CLAUDE.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-067.json"
+  ],
+  "tests": [
+    "ValleyMap.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A ranch has no fence: its buildings stand round a ring path with the meadow in the middle",
+    "Each of the eight buildings shows the look for its level, and a plot while it is not bought",
+    "The Hatchery has as many nests as its level gives, and eggs sit in them",
+    "Every way out and the road in are clear of anything solid",
+    "Nothing shown decides or delays anything"
+  ],
+  "verification": "Lune 715/715, stylua and selene clean, the place builds and matches its project. Studio: local build, stamp `dev` (no CI stamp), 2026-11-17, with rays and the game's own requests; no player walked it. A new ranch: no error in the server log; the cabin, the shed, the canvas hatchery and the egg shelter stood as models, four plots carried their names, and the prompts were there (ranch menu, egg storage, two vendors, teleport). With everything bought: the eight top looks stood (`home_*_3`), ten nests held the ten hatching eggs and the rack the stored ones, the sails' hub turned 71 degrees a second, the Titan stood in its den 85 studs from the middle playing its idle clip, and the herd walked the meadow (a lion 22 studs from the middle, a jackal 6). All seven ways were clear of solid blocks 3.5 studs either side of their middles from the ring path to the lawn's edge; along each door path the first solid thing was that building. 1,901 parts on a full ranch with its areas, 12,309 in the world. Seen in screens: a new ranch and a full one from above, in at the gate, the egg corner, the Titan's den, the cellar from behind. Three things were changed after looking: the egg rack, the brooder and the orchard moved to the free side of their buildings (a building's right is the other way round in the game than on the first card); a lawn plate, which showed far darker than the valley's grass, was taken out. Not checked: a player walking in or using a prompt by hand, the middle looks (2) by eye, the dirt-to-paved change by eye, a phone, two players, the frame rate.",
+  "output_artifacts": [
+    "src/stations/Ranch.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'do all those buildings, do all your suggested drafts, the area doesnt need to be bigger just needs to fit everything'. Read as: the homestead of decision 0071 at the size that fits the valley (224 studs across). The square plot's parts-built house, barn, courts, windmill, pavilion and fountain are gone with it."
+}

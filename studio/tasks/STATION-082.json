@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-082",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Three gentle giraffe concepts (decision 0082): round eyes with lashes, soft horn tufts, a fluffy mane, in golden, savanna and gem colourings. Concept only.",
+  "inputs": [
+    "docs/decisions/0076-animal-stations-giraffe-concept.md"
+  ],
+  "dependencies": [
+    "STATION-081"
+  ],
+  "files": [
+    "tools/blender/stations/assets/giraffes.py",
+    "docs/concepts/giraffe-sunny-card.png",
+    "docs/concepts/giraffe-savanna-card.png",
+    "docs/concepts/giraffe-gem-card.png",
+    "docs/decisions/0082-animal-stations-gentle-giraffe-concepts.md",
+    "studio/tasks/STATION-082.json",
+    "tools/blender/stations/manifest.json",
+    "src/shared/StationAssets.luau"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Three cards, each the giraffe large and from the front, side and back",
+    "The game's giraffes, models and uploads unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: the three cards rendered (`build.py --beauty`) and looked at twice; after the first look the mane's spikes became tufts, the eyes were made a third bigger and a blush was added. The game's two giraffes are built by the same maker with `gentle` off, so they are unchanged. Not checked: the game engine, a phone. The game's Giraffe rebuilt to check: identical but for the eye positions the build now records (its manifest and StationAssets gain `eyes` and `lid`).",
+  "output_artifacts": [
+    "docs/concepts/giraffe-sunny-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'can you redo me some giraffe concepts, dont make them scary looking or anything just make them look good'. Checkpoint for SHANNON: the two items of decision 0082."
+}

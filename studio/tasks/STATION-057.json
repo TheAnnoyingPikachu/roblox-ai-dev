@@ -1,0 +1,53 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-057",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The gathering place of decision 0063 built on the hub's plaza in place of the first centre (decision 0064): the fire pit and its benches, the market with the egg seller's cart, the cafe, the stage, the green with its meeting tree and pond, strings of flags, finger posts and the arch, with a few animals standing about.",
+  "inputs": [
+    "docs/decisions/0063-animal-stations-hub-commons-concept.md",
+    "docs/decisions/0060-animal-stations-hub-centre-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-055"
+  ],
+  "files": [
+    "assets/stations/hub_*",
+    "tools/blender/stations/assets/hub.py",
+    "tools/blender/stations/scenes/hub_commons.py",
+    "tools/blender/stations/stage.py",
+    "tools/blender/stations/build.py",
+    "tools/blender/write-assets-module.mjs",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/World.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0064-animal-stations-hub-commons-in-game.md",
+    "docs/decisions/0063-animal-stations-hub-commons-concept.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-057.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The plaza in the game matches the approved concept card: every piece stands where the concept has it",
+    "The Golden Egg sits on the egg seller's cart among three smaller eggs",
+    "A player cannot walk through a stall, the stage, the cafe's counter, the tree or a bench",
+    "The animals that stand about are the game's own models, idling",
+    "The first centre's models are no longer built or loaded"
+  ],
+  "verification": "Lune 695/695, stylua and selene clean. CI run 43921019172 passed on pull request 25. Blender 5.2: the eight models built and baked (1,724 to 11,848 triangles; the piece of lights and signs was split in two when it came to 19,398 in one mesh). Uploaded in upload-assets run 43919130920 (succeeded; an earlier run of the same upload, 43912635442, sat in GitHub's queue for over an hour, could not be cancelled, and then ran too: its eight models and eight images are unused duplicates, listed in the register). Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. All eight models, the four eggs and the nine animals loaded; every mesh of the hub's models measured within 0.002 studs of where the manifest puts it; all their textures load (checked with ContentProvider). Screens from the concept card's camera places show the same plaza: floor, fire and benches, market with the Golden Egg on the cart among three small eggs, cafe, stage, green, flags, finger posts, the arch reading ANIMAL STATIONS. Walked by script: stopped by a market stall, the meeting tree and a bench; up onto the stage; down an aisle to the fire's stones; in under the arch. Not checked: phones, two players, frame rate, the cursor's card on a plaza animal.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16, to the four questions of the last report (which hub centre, the training looks, room for the clearings, the tortoises): 'go on all four'. Read for the hub as: build the gathering place. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

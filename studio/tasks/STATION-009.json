@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-009",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Rename the stats to speed, strength, stamina and mana (swim to stamina, smarts to mana) across rules, tests, world signs, HUD and living docs, and rename the Puzzle Library to the Magic Library.",
+  "inputs": ["docs/decisions/0026-animal-stations-stats-stamina-mana.md"],
+  "dependencies": ["STATION-008"],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/StationProgress.luau",
+    "tests/StationRules.spec.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0026-animal-stations-stats-stamina-mana.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": ["StationRules.spec.luau", "BattleRules.spec.luau", "LevelRules.spec.luau", "StationProgress.spec.luau"],
+  "acceptance_criteria": [
+    "StationConfig.STATS is speed, strength, stamina, mana and no game 7 code names swim or smarts as a stat",
+    "All specs pass with the new names and unchanged numbers",
+    "Station boards read Trains STAMINA and Trains MANA; the HUD shows STA and MANA"
+  ],
+  "verification": "lune run tests/run.luau 625/625 after the rename; selene and stylua clean; place builds and check-place passes; grep finds no swim or smarts stat names in the game 7 files",
+  "output_artifacts": ["src/shared/StationConfig.luau"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Pure rename; battle formulas unchanged. Old decisions 0019 to 0025 keep their wording."
+}

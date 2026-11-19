@@ -1,0 +1,6972 @@
+{
+  "creature_rhino": {
+    "fbx": "build/blender/stations/creature_rhino.fbx",
+    "png": "build/blender/stations/creature_rhino.png",
+    "preview": "build/blender/stations/previews/creature_rhino.png",
+    "size_studs": [
+      5.38,
+      7.82,
+      13.87
+    ],
+    "tris": 3016,
+    "parts": {
+      "creature_rhino_body": 756,
+      "creature_rhino_head": 636,
+      "creature_rhino_tail": 56,
+      "creature_rhino_leg_fl": 392,
+      "creature_rhino_leg_fr": 392,
+      "creature_rhino_leg_bl": 392,
+      "creature_rhino_leg_br": 392
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/rhinos.py",
+    "notes": "Rhino: a massive slate war rhino, armour plates with bone studs, a scimitar horn.",
+    "glow": {},
+    "centres": {
+      "creature_rhino_body": [
+        -0.003,
+        4.725,
+        -1.199
+      ],
+      "creature_rhino_head": [
+        0.006,
+        5.171,
+        4.894
+      ],
+      "creature_rhino_tail": [
+        0.0,
+        3.106,
+        -6.232
+      ],
+      "creature_rhino_leg_fl": [
+        1.455,
+        1.801,
+        1.488
+      ],
+      "creature_rhino_leg_fr": [
+        -1.456,
+        1.811,
+        1.488
+      ],
+      "creature_rhino_leg_bl": [
+        1.454,
+        1.806,
+        -3.57
+      ],
+      "creature_rhino_leg_br": [
+        -1.454,
+        1.815,
+        -3.57
+      ]
+    },
+    "joints": {
+      "creature_rhino_head": [
+        0.0,
+        4.383,
+        3.096
+      ],
+      "creature_rhino_leg_fl": [
+        1.454,
+        3.171,
+        1.48
+      ],
+      "creature_rhino_leg_fr": [
+        -1.454,
+        3.171,
+        1.48
+      ],
+      "creature_rhino_leg_bl": [
+        1.454,
+        3.171,
+        -3.57
+      ],
+      "creature_rhino_leg_br": [
+        -1.454,
+        3.171,
+        -3.57
+      ],
+      "creature_rhino_tail": [
+        0.0,
+        4.787,
+        -5.691
+      ]
+    }
+  },
+  "creature_rhino_lava": {
+    "fbx": "build/blender/stations/creature_rhino_lava.fbx",
+    "png": "build/blender/stations/creature_rhino_lava.png",
+    "preview": "build/blender/stations/previews/creature_rhino_lava.png",
+    "size_studs": [
+      6.89,
+      11.33,
+      18.52
+    ],
+    "tris": 3352,
+    "parts": {
+      "creature_rhino_lava_body": 616,
+      "creature_rhino_lava_head": 352,
+      "creature_rhino_lava_tail": 32,
+      "creature_rhino_lava_leg_fl": 392,
+      "creature_rhino_lava_leg_fr": 392,
+      "creature_rhino_lava_leg_bl": 392,
+      "creature_rhino_lava_leg_br": 392,
+      "creature_rhino_lava_body_glow": 324,
+      "creature_rhino_lava_head_glow": 276,
+      "creature_rhino_lava_tail_glow": 40,
+      "creature_rhino_lava_leg_fl_glow": 36,
+      "creature_rhino_lava_leg_fr_glow": 36,
+      "creature_rhino_lava_leg_bl_glow": 36,
+      "creature_rhino_lava_leg_br_glow": 36
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/rhinos.py",
+    "notes": "Lava Rhino (mythic): obsidian plates with lava in their cracks, Neon lava in the folds and round the knees, molten horns, a burning tail.",
+    "glow": {
+      "creature_rhino_lava_body_glow": [
+        255,
+        84,
+        12
+      ],
+      "creature_rhino_lava_head_glow": [
+        255,
+        84,
+        12
+      ],
+      "creature_rhino_lava_tail_glow": [
+        255,
+        84,
+        12
+      ],
+      "creature_rhino_lava_leg_fl_glow": [
+        255,
+        84,
+        12
+      ],
+      "creature_rhino_lava_leg_fr_glow": [
+        255,
+        84,
+        12
+      ],
+      "creature_rhino_lava_leg_bl_glow": [
+        255,
+        84,
+        12
+      ],
+      "creature_rhino_lava_leg_br_glow": [
+        255,
+        84,
+        12
+      ]
+    },
+    "centres": {
+      "creature_rhino_lava_body": [
+        0.014,
+        6.89,
+        -1.158
+      ],
+      "creature_rhino_lava_head": [
+        -0.006,
+        5.853,
+        6.574
+      ],
+      "creature_rhino_lava_tail": [
+        0.0,
+        4.737,
+        -7.563
+      ],
+      "creature_rhino_lava_leg_fl": [
+        1.859,
+        2.321,
+        2.275
+      ],
+      "creature_rhino_lava_leg_fr": [
+        -1.862,
+        2.324,
+        2.275
+      ],
+      "creature_rhino_lava_leg_bl": [
+        1.865,
+        2.308,
+        -4.21
+      ],
+      "creature_rhino_lava_leg_br": [
+        -1.865,
+        2.32,
+        -4.21
+      ],
+      "creature_rhino_lava_body_glow": [
+        0.002,
+        5.339,
+        -1.102
+      ],
+      "creature_rhino_lava_head_glow": [
+        0.001,
+        7.539,
+        7.488
+      ],
+      "creature_rhino_lava_tail_glow": [
+        0.0,
+        4.122,
+        -8.677
+      ],
+      "creature_rhino_lava_leg_fl_glow": [
+        1.865,
+        2.366,
+        2.265
+      ],
+      "creature_rhino_lava_leg_fr_glow": [
+        -1.865,
+        2.366,
+        2.265
+      ],
+      "creature_rhino_lava_leg_bl_glow": [
+        1.865,
+        2.366,
+        -4.21
+      ],
+      "creature_rhino_lava_leg_br_glow": [
+        -1.865,
+        2.366,
+        -4.21
+      ]
+    },
+    "joints": {
+      "creature_rhino_lava_head": [
+        0.0,
+        5.617,
+        4.337
+      ],
+      "creature_rhino_lava_leg_fl": [
+        1.865,
+        4.063,
+        2.265
+      ],
+      "creature_rhino_lava_leg_fr": [
+        -1.865,
+        4.063,
+        2.265
+      ],
+      "creature_rhino_lava_leg_bl": [
+        1.865,
+        4.063,
+        -4.21
+      ],
+      "creature_rhino_lava_leg_br": [
+        -1.865,
+        4.063,
+        -4.21
+      ],
+      "creature_rhino_lava_tail": [
+        0.0,
+        6.135,
+        -6.929
+      ]
+    }
+  },
+  "creature_jackal": {
+    "fbx": "build/blender/stations/creature_jackal.fbx",
+    "png": "build/blender/stations/creature_jackal.png",
+    "preview": "build/blender/stations/previews/creature_jackal.png",
+    "size_studs": [
+      1.3,
+      4.02,
+      7.38
+    ],
+    "tris": 1368,
+    "parts": {
+      "creature_jackal_body": 224,
+      "creature_jackal_head": 328,
+      "creature_jackal_tail": 48,
+      "creature_jackal_leg_fl": 160,
+      "creature_jackal_leg_bl": 224,
+      "creature_jackal_leg_fr": 160,
+      "creature_jackal_leg_br": 224
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/jackals.py",
+    "notes": "Jackal: a lean faceted pack hunter with a dark saddle and a bushy tail.",
+    "glow": {},
+    "centres": {
+      "creature_jackal_body": [
+        -0.001,
+        2.103,
+        0.27
+      ],
+      "creature_jackal_head": [
+        -0.001,
+        2.982,
+        2.603
+      ],
+      "creature_jackal_tail": [
+        0.035,
+        1.528,
+        -2.433
+      ],
+      "creature_jackal_leg_fl": [
+        0.389,
+        1.039,
+        1.358
+      ],
+      "creature_jackal_leg_bl": [
+        0.389,
+        1.127,
+        -0.901
+      ],
+      "creature_jackal_leg_fr": [
+        -0.39,
+        1.038,
+        1.358
+      ],
+      "creature_jackal_leg_br": [
+        -0.389,
+        1.124,
+        -0.901
+      ]
+    },
+    "joints": {
+      "creature_jackal_head": [
+        -0.001,
+        2.478,
+        1.795
+      ],
+      "creature_jackal_leg_fl": [
+        0.389,
+        1.77,
+        1.299
+      ],
+      "creature_jackal_leg_fr": [
+        -0.39,
+        1.77,
+        1.299
+      ],
+      "creature_jackal_leg_bl": [
+        0.389,
+        1.77,
+        -0.943
+      ],
+      "creature_jackal_leg_br": [
+        -0.39,
+        1.77,
+        -0.943
+      ],
+      "creature_jackal_tail": [
+        -0.001,
+        2.301,
+        -1.32
+      ]
+    }
+  },
+  "creature_jackal_pharaoh": {
+    "fbx": "build/blender/stations/creature_jackal_pharaoh.fbx",
+    "png": "build/blender/stations/creature_jackal_pharaoh.png",
+    "preview": "build/blender/stations/previews/creature_jackal_pharaoh.png",
+    "size_studs": [
+      1.6,
+      5.09,
+      9.07
+    ],
+    "tris": 1536,
+    "parts": {
+      "creature_jackal_pharaoh_body": 224,
+      "creature_jackal_pharaoh_head": 352,
+      "creature_jackal_pharaoh_head_glow": 32,
+      "creature_jackal_pharaoh_tail": 48,
+      "creature_jackal_pharaoh_leg_fl": 188,
+      "creature_jackal_pharaoh_leg_bl": 252,
+      "creature_jackal_pharaoh_leg_fr": 188,
+      "creature_jackal_pharaoh_leg_br": 252
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/jackals.py",
+    "notes": "Pharaoh Jackal (legendary): black with gold bands; eyes and brow gem are Neon.",
+    "glow": {
+      "creature_jackal_pharaoh_head_glow": [
+        60,
+        230,
+        220
+      ]
+    },
+    "centres": {
+      "creature_jackal_pharaoh_body": [
+        0.0,
+        2.585,
+        0.327
+      ],
+      "creature_jackal_pharaoh_head": [
+        0.0,
+        3.736,
+        3.198
+      ],
+      "creature_jackal_pharaoh_head_glow": [
+        0.001,
+        3.986,
+        3.292
+      ],
+      "creature_jackal_pharaoh_tail": [
+        0.044,
+        1.877,
+        -2.99
+      ],
+      "creature_jackal_pharaoh_leg_fl": [
+        0.478,
+        1.275,
+        1.664
+      ],
+      "creature_jackal_pharaoh_leg_bl": [
+        0.479,
+        1.384,
+        -1.108
+      ],
+      "creature_jackal_pharaoh_leg_fr": [
+        -0.478,
+        1.274,
+        1.667
+      ],
+      "creature_jackal_pharaoh_leg_br": [
+        -0.479,
+        1.385,
+        -1.108
+      ]
+    },
+    "joints": {
+      "creature_jackal_pharaoh_head": [
+        0.0,
+        3.045,
+        2.206
+      ],
+      "creature_jackal_pharaoh_leg_fl": [
+        0.479,
+        2.175,
+        1.597
+      ],
+      "creature_jackal_pharaoh_leg_fr": [
+        -0.479,
+        2.175,
+        1.597
+      ],
+      "creature_jackal_pharaoh_leg_bl": [
+        0.479,
+        2.175,
+        -1.158
+      ],
+      "creature_jackal_pharaoh_leg_br": [
+        -0.479,
+        2.175,
+        -1.158
+      ],
+      "creature_jackal_pharaoh_tail": [
+        0.0,
+        2.828,
+        -1.622
+      ]
+    }
+  },
+  "creature_cheetah": {
+    "fbx": "build/blender/stations/creature_cheetah.fbx",
+    "png": "build/blender/stations/creature_cheetah.png",
+    "preview": "build/blender/stations/previews/creature_cheetah.png",
+    "size_studs": [
+      1.54,
+      4.62,
+      10.85
+    ],
+    "tris": 2428,
+    "parts": {
+      "creature_cheetah_body": 744,
+      "creature_cheetah_head": 564,
+      "creature_cheetah_tail": 88,
+      "creature_cheetah_leg_fl": 220,
+      "creature_cheetah_leg_bl": 296,
+      "creature_cheetah_leg_fr": 220,
+      "creature_cheetah_leg_br": 296
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/cheetahs.py",
+    "notes": "Cheetah: a slender faceted sprinter with black spots and tear marks.",
+    "glow": {},
+    "centres": {
+      "creature_cheetah_body": [
+        -0.001,
+        2.861,
+        1.931
+      ],
+      "creature_cheetah_head": [
+        0.004,
+        3.676,
+        4.565
+      ],
+      "creature_cheetah_tail": [
+        0.022,
+        2.659,
+        -2.786
+      ],
+      "creature_cheetah_leg_fl": [
+        0.449,
+        1.419,
+        3.36
+      ],
+      "creature_cheetah_leg_bl": [
+        0.46,
+        1.527,
+        0.286
+      ],
+      "creature_cheetah_leg_fr": [
+        -0.442,
+        1.418,
+        3.36
+      ],
+      "creature_cheetah_leg_br": [
+        -0.456,
+        1.528,
+        0.286
+      ]
+    },
+    "joints": {
+      "creature_cheetah_head": [
+        0.004,
+        3.335,
+        3.882
+      ],
+      "creature_cheetah_leg_fl": [
+        0.439,
+        2.393,
+        3.273
+      ],
+      "creature_cheetah_leg_fr": [
+        -0.431,
+        2.393,
+        3.273
+      ],
+      "creature_cheetah_leg_bl": [
+        0.439,
+        2.393,
+        0.228
+      ],
+      "creature_cheetah_leg_br": [
+        -0.431,
+        2.393,
+        0.228
+      ],
+      "creature_cheetah_tail": [
+        0.004,
+        3.263,
+        -0.207
+      ]
+    }
+  },
+  "creature_cheetah_lightning": {
+    "fbx": "build/blender/stations/creature_cheetah_lightning.fbx",
+    "png": "build/blender/stations/creature_cheetah_lightning.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_lightning.png",
+    "size_studs": [
+      1.99,
+      6.0,
+      13.86
+    ],
+    "tris": 2500,
+    "parts": {
+      "creature_cheetah_lightning_body": 720,
+      "creature_cheetah_lightning_head": 516,
+      "creature_cheetah_lightning_head_glow": 48,
+      "creature_cheetah_lightning_body_glow": 96,
+      "creature_cheetah_lightning_tail": 80,
+      "creature_cheetah_lightning_tail_glow": 8,
+      "creature_cheetah_lightning_leg_fl": 220,
+      "creature_cheetah_lightning_leg_bl": 296,
+      "creature_cheetah_lightning_leg_fr": 220,
+      "creature_cheetah_lightning_leg_br": 296
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/cheetahs.py",
+    "notes": "Lightning Cheetah (mythic): storm coat, Neon bolts down the flanks, a zigzag tail.",
+    "glow": {
+      "creature_cheetah_lightning_head_glow": [
+        90,
+        190,
+        255
+      ],
+      "creature_cheetah_lightning_body_glow": [
+        90,
+        190,
+        255
+      ],
+      "creature_cheetah_lightning_tail_glow": [
+        90,
+        190,
+        255
+      ]
+    },
+    "centres": {
+      "creature_cheetah_lightning_body": [
+        0.009,
+        3.7,
+        2.404
+      ],
+      "creature_cheetah_lightning_head": [
+        0.004,
+        4.766,
+        5.817
+      ],
+      "creature_cheetah_lightning_head_glow": [
+        0.005,
+        5.379,
+        5.431
+      ],
+      "creature_cheetah_lightning_body_glow": [
+        0.002,
+        4.062,
+        2.407
+      ],
+      "creature_cheetah_lightning_tail": [
+        0.027,
+        3.834,
+        -3.095
+      ],
+      "creature_cheetah_lightning_tail_glow": [
+        0.004,
+        3.875,
+        -6.298
+      ],
+      "creature_cheetah_lightning_leg_fl": [
+        0.583,
+        1.838,
+        4.255
+      ],
+      "creature_cheetah_lightning_leg_bl": [
+        0.595,
+        1.981,
+        0.269
+      ],
+      "creature_cheetah_lightning_leg_fr": [
+        -0.574,
+        1.84,
+        4.255
+      ],
+      "creature_cheetah_lightning_leg_br": [
+        -0.591,
+        1.981,
+        0.269
+      ]
+    },
+    "joints": {
+      "creature_cheetah_lightning_head": [
+        0.004,
+        4.324,
+        4.931
+      ],
+      "creature_cheetah_lightning_leg_fl": [
+        0.568,
+        3.102,
+        4.142
+      ],
+      "creature_cheetah_lightning_leg_fr": [
+        -0.56,
+        3.102,
+        4.142
+      ],
+      "creature_cheetah_lightning_leg_bl": [
+        0.568,
+        3.102,
+        0.194
+      ],
+      "creature_cheetah_lightning_leg_br": [
+        -0.56,
+        3.102,
+        0.194
+      ],
+      "creature_cheetah_lightning_tail": [
+        0.004,
+        4.23,
+        -0.37
+      ]
+    }
+  },
+  "creature_lion": {
+    "fbx": "build/blender/stations/creature_lion.fbx",
+    "png": "build/blender/stations/creature_lion.png",
+    "preview": "build/blender/stations/previews/creature_lion.png",
+    "size_studs": [
+      5.22,
+      7.45,
+      13.0
+    ],
+    "tris": 1584,
+    "parts": {
+      "creature_lion_body": 76,
+      "creature_lion_head": 880,
+      "creature_lion_tail": 84,
+      "creature_lion_leg_fl": 120,
+      "creature_lion_leg_bl": 152,
+      "creature_lion_leg_fr": 120,
+      "creature_lion_leg_br": 152
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/lions.py",
+    "notes": "Lion: a chunky low-poly tawny cat with a mane of big brown shards.",
+    "glow": {},
+    "centres": {
+      "creature_lion_body": [
+        0.113,
+        3.134,
+        1.51
+      ],
+      "creature_lion_head": [
+        0.0,
+        3.956,
+        3.647
+      ],
+      "creature_lion_tail": [
+        0.113,
+        2.432,
+        -3.865
+      ],
+      "creature_lion_leg_fl": [
+        0.895,
+        1.668,
+        3.344
+      ],
+      "creature_lion_leg_bl": [
+        0.895,
+        1.811,
+        -0.301
+      ],
+      "creature_lion_leg_fr": [
+        -0.669,
+        1.668,
+        3.344
+      ],
+      "creature_lion_leg_br": [
+        -0.669,
+        1.811,
+        -0.301
+      ]
+    },
+    "joints": {
+      "creature_lion_head": [
+        0.113,
+        3.622,
+        4.184
+      ],
+      "creature_lion_leg_fl": [
+        0.895,
+        2.76,
+        3.321
+      ],
+      "creature_lion_leg_fr": [
+        -0.669,
+        2.76,
+        3.321
+      ],
+      "creature_lion_leg_bl": [
+        0.895,
+        2.76,
+        -0.359
+      ],
+      "creature_lion_leg_br": [
+        -0.669,
+        2.76,
+        -0.359
+      ],
+      "creature_lion_tail": [
+        0.113,
+        3.392,
+        -1.336
+      ]
+    }
+  },
+  "creature_lion_sun": {
+    "fbx": "build/blender/stations/creature_lion_sun.fbx",
+    "png": "build/blender/stations/creature_lion_sun.png",
+    "preview": "build/blender/stations/previews/creature_lion_sun.png",
+    "size_studs": [
+      6.33,
+      9.23,
+      16.05
+    ],
+    "tris": 1808,
+    "parts": {
+      "creature_lion_sun_body": 76,
+      "creature_lion_sun_head": 832,
+      "creature_lion_sun_head_glow": 24,
+      "creature_lion_sun_tail": 84,
+      "creature_lion_sun_leg_fl": 120,
+      "creature_lion_sun_leg_bl": 276,
+      "creature_lion_sun_leg_fr": 120,
+      "creature_lion_sun_leg_br": 276
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/lions.py",
+    "notes": "Sun Lion (mythic): golden, a mane of big yellow shards, a sun on each haunch, glowing eyes.",
+    "glow": {
+      "creature_lion_sun_head_glow": [
+        255,
+        222,
+        90
+      ]
+    },
+    "centres": {
+      "creature_lion_sun_body": [
+        0.024,
+        3.869,
+        1.864
+      ],
+      "creature_lion_sun_head": [
+        0.0,
+        4.902,
+        4.596
+      ],
+      "creature_lion_sun_head_glow": [
+        0.024,
+        5.333,
+        7.013
+      ],
+      "creature_lion_sun_tail": [
+        0.024,
+        3.003,
+        -4.772
+      ],
+      "creature_lion_sun_leg_fl": [
+        0.99,
+        2.059,
+        4.129
+      ],
+      "creature_lion_sun_leg_bl": [
+        1.011,
+        2.237,
+        -0.372
+      ],
+      "creature_lion_sun_leg_fr": [
+        -0.941,
+        2.059,
+        4.129
+      ],
+      "creature_lion_sun_leg_br": [
+        -0.963,
+        2.237,
+        -0.372
+      ]
+    },
+    "joints": {
+      "creature_lion_sun_head": [
+        0.024,
+        4.473,
+        5.166
+      ],
+      "creature_lion_sun_leg_fl": [
+        0.99,
+        3.408,
+        4.101
+      ],
+      "creature_lion_sun_leg_fr": [
+        -0.941,
+        3.408,
+        4.101
+      ],
+      "creature_lion_sun_leg_bl": [
+        0.99,
+        3.408,
+        -0.443
+      ],
+      "creature_lion_sun_leg_br": [
+        -0.941,
+        3.408,
+        -0.443
+      ],
+      "creature_lion_sun_tail": [
+        0.024,
+        4.189,
+        -1.65
+      ]
+    }
+  },
+  "creature_meerkat": {
+    "fbx": "build/blender/stations/creature_meerkat.fbx",
+    "png": "build/blender/stations/creature_meerkat.png",
+    "preview": "build/blender/stations/previews/creature_meerkat.png",
+    "size_studs": [
+      1.97,
+      4.82,
+      4.93
+    ],
+    "tris": 1692,
+    "parts": {
+      "creature_meerkat_body": 720,
+      "creature_meerkat_head": 496,
+      "creature_meerkat_tail": 52,
+      "creature_meerkat_leg_fl": 64,
+      "creature_meerkat_leg_fr": 64,
+      "creature_meerkat_leg_bl": 148,
+      "creature_meerkat_leg_br": 148
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/meerkats.py",
+    "notes": "Meerkat: an upright sentinel, sandy with dark bands and eye patches.",
+    "glow": {},
+    "centres": {
+      "creature_meerkat_body": [
+        -0.0,
+        2.186,
+        0.934
+      ],
+      "creature_meerkat_head": [
+        0.0,
+        4.131,
+        1.586
+      ],
+      "creature_meerkat_tail": [
+        0.0,
+        0.721,
+        -0.993
+      ],
+      "creature_meerkat_leg_fl": [
+        0.592,
+        2.531,
+        1.637
+      ],
+      "creature_meerkat_leg_fr": [
+        -0.592,
+        2.531,
+        1.637
+      ],
+      "creature_meerkat_leg_bl": [
+        0.63,
+        0.761,
+        1.251
+      ],
+      "creature_meerkat_leg_br": [
+        -0.63,
+        0.761,
+        1.249
+      ]
+    },
+    "joints": {
+      "creature_meerkat_head": [
+        0.0,
+        3.675,
+        1.192
+      ],
+      "creature_meerkat_leg_fl": [
+        0.6,
+        3.15,
+        1.267
+      ],
+      "creature_meerkat_leg_fr": [
+        -0.6,
+        3.15,
+        1.267
+      ],
+      "creature_meerkat_leg_bl": [
+        0.63,
+        1.125,
+        0.817
+      ],
+      "creature_meerkat_leg_br": [
+        -0.63,
+        1.125,
+        0.817
+      ],
+      "creature_meerkat_tail": [
+        0.0,
+        1.17,
+        0.367
+      ]
+    }
+  },
+  "creature_meerkat_storm": {
+    "fbx": "build/blender/stations/creature_meerkat_storm.fbx",
+    "png": "build/blender/stations/creature_meerkat_storm.png",
+    "preview": "build/blender/stations/previews/creature_meerkat_storm.png",
+    "size_studs": [
+      3.48,
+      6.7,
+      6.29
+    ],
+    "tris": 2000,
+    "parts": {
+      "creature_meerkat_storm_body": 708,
+      "creature_meerkat_storm_head": 448,
+      "creature_meerkat_storm_tail": 44,
+      "creature_meerkat_storm_leg_fl": 64,
+      "creature_meerkat_storm_leg_fr": 64,
+      "creature_meerkat_storm_leg_bl": 148,
+      "creature_meerkat_storm_leg_br": 148,
+      "creature_meerkat_storm_body_glow": 288,
+      "creature_meerkat_storm_head_glow": 48,
+      "creature_meerkat_storm_tail_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/meerkats.py",
+    "notes": "Storm Meerkat (legendary): thundercloud coat, Neon lightning down the back, a charged tail.",
+    "glow": {
+      "creature_meerkat_storm_head_glow": [
+        60,
+        210,
+        255
+      ],
+      "creature_meerkat_storm_body_glow": [
+        60,
+        210,
+        255
+      ],
+      "creature_meerkat_storm_tail_glow": [
+        60,
+        210,
+        255
+      ]
+    },
+    "centres": {
+      "creature_meerkat_storm_body": [
+        0.013,
+        2.824,
+        1.342
+      ],
+      "creature_meerkat_storm_head": [
+        0.0,
+        5.094,
+        1.998
+      ],
+      "creature_meerkat_storm_tail": [
+        0.0,
+        0.889,
+        -0.879
+      ],
+      "creature_meerkat_storm_leg_fl": [
+        0.73,
+        3.122,
+        2.064
+      ],
+      "creature_meerkat_storm_leg_fr": [
+        -0.73,
+        3.122,
+        2.064
+      ],
+      "creature_meerkat_storm_leg_bl": [
+        0.777,
+        0.939,
+        1.589
+      ],
+      "creature_meerkat_storm_leg_br": [
+        -0.777,
+        0.939,
+        1.591
+      ],
+      "creature_meerkat_storm_body_glow": [
+        0.0,
+        3.71,
+        1.656
+      ],
+      "creature_meerkat_storm_head_glow": [
+        0.0,
+        6.031,
+        1.655
+      ],
+      "creature_meerkat_storm_tail_glow": [
+        0.019,
+        1.388,
+        -2.757
+      ]
+    },
+    "joints": {
+      "creature_meerkat_storm_head": [
+        0.0,
+        4.533,
+        1.516
+      ],
+      "creature_meerkat_storm_leg_fl": [
+        0.74,
+        3.885,
+        1.609
+      ],
+      "creature_meerkat_storm_leg_fr": [
+        -0.74,
+        3.885,
+        1.609
+      ],
+      "creature_meerkat_storm_leg_bl": [
+        0.777,
+        1.388,
+        1.054
+      ],
+      "creature_meerkat_storm_leg_br": [
+        -0.777,
+        1.388,
+        1.054
+      ],
+      "creature_meerkat_storm_tail": [
+        0.0,
+        1.443,
+        0.499
+      ]
+    }
+  },
+  "creature_tortoise": {
+    "fbx": "build/blender/stations/creature_tortoise.fbx",
+    "png": "build/blender/stations/creature_tortoise.png",
+    "preview": "build/blender/stations/previews/creature_tortoise.png",
+    "size_studs": [
+      6.2,
+      4.33,
+      10.11
+    ],
+    "tris": 3596,
+    "parts": {
+      "creature_tortoise_body": 1932,
+      "creature_tortoise_head": 592,
+      "creature_tortoise_tail": 16,
+      "creature_tortoise_leg_fl": 344,
+      "creature_tortoise_leg_fr": 344,
+      "creature_tortoise_leg_bl": 184,
+      "creature_tortoise_leg_br": 184
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/tortoises.py",
+    "notes": "Tortoise: a war tortoise, a high shell of horn plates with a spiked rim.",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_body": [
+        -0.008,
+        2.551,
+        -0.674
+      ],
+      "creature_tortoise_head": [
+        0.002,
+        1.853,
+        3.229
+      ],
+      "creature_tortoise_tail": [
+        0.0,
+        0.982,
+        -4.08
+      ],
+      "creature_tortoise_leg_fl": [
+        1.994,
+        0.808,
+        1.313
+      ],
+      "creature_tortoise_leg_fr": [
+        -1.994,
+        0.812,
+        1.313
+      ],
+      "creature_tortoise_leg_bl": [
+        1.994,
+        0.818,
+        -2.618
+      ],
+      "creature_tortoise_leg_br": [
+        -1.994,
+        0.817,
+        -2.618
+      ]
+    },
+    "joints": {
+      "creature_tortoise_head": [
+        0.0,
+        1.376,
+        1.65
+      ],
+      "creature_tortoise_leg_fl": [
+        1.425,
+        1.406,
+        0.825
+      ],
+      "creature_tortoise_leg_fr": [
+        -1.425,
+        1.406,
+        0.825
+      ],
+      "creature_tortoise_leg_bl": [
+        1.425,
+        1.406,
+        -2.175
+      ],
+      "creature_tortoise_leg_br": [
+        -1.425,
+        1.406,
+        -2.175
+      ],
+      "creature_tortoise_tail": [
+        0.0,
+        1.376,
+        -3.375
+      ]
+    }
+  },
+  "creature_tortoise_gemshell": {
+    "fbx": "build/blender/stations/creature_tortoise_gemshell.fbx",
+    "png": "build/blender/stations/creature_tortoise_gemshell.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_gemshell.png",
+    "size_studs": [
+      8.27,
+      4.79,
+      13.48
+    ],
+    "tris": 4912,
+    "parts": {
+      "creature_tortoise_gemshell_body": 3052,
+      "creature_tortoise_gemshell_head": 544,
+      "creature_tortoise_gemshell_tail": 16,
+      "creature_tortoise_gemshell_leg_fl": 344,
+      "creature_tortoise_gemshell_leg_fr": 344,
+      "creature_tortoise_gemshell_leg_bl": 184,
+      "creature_tortoise_gemshell_leg_br": 184,
+      "creature_tortoise_gemshell_body_glow": 220,
+      "creature_tortoise_gemshell_head_glow": 24
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/tortoises.py",
+    "notes": "Gemshell Tortoise (legendary): cut rose gems in gold settings, the spine's Neon.",
+    "glow": {
+      "creature_tortoise_gemshell_head_glow": [
+        255,
+        60,
+        190
+      ],
+      "creature_tortoise_gemshell_body_glow": [
+        255,
+        60,
+        190
+      ]
+    },
+    "centres": {
+      "creature_tortoise_gemshell_body": [
+        0.005,
+        2.808,
+        -0.898
+      ],
+      "creature_tortoise_gemshell_head": [
+        -0.003,
+        2.48,
+        4.307
+      ],
+      "creature_tortoise_gemshell_tail": [
+        0.0,
+        1.318,
+        -5.44
+      ],
+      "creature_tortoise_gemshell_leg_fl": [
+        2.659,
+        1.089,
+        1.751
+      ],
+      "creature_tortoise_gemshell_leg_fr": [
+        -2.659,
+        1.096,
+        1.751
+      ],
+      "creature_tortoise_gemshell_leg_bl": [
+        2.659,
+        1.086,
+        -3.491
+      ],
+      "creature_tortoise_gemshell_leg_br": [
+        -2.659,
+        1.092,
+        -3.491
+      ],
+      "creature_tortoise_gemshell_body_glow": [
+        0.0,
+        4.207,
+        -0.902
+      ],
+      "creature_tortoise_gemshell_head_glow": [
+        0.003,
+        3.149,
+        5.216
+      ]
+    },
+    "joints": {
+      "creature_tortoise_gemshell_head": [
+        0.0,
+        1.843,
+        2.2
+      ],
+      "creature_tortoise_gemshell_leg_fl": [
+        1.9,
+        1.883,
+        1.1
+      ],
+      "creature_tortoise_gemshell_leg_fr": [
+        -1.9,
+        1.883,
+        1.1
+      ],
+      "creature_tortoise_gemshell_leg_bl": [
+        1.9,
+        1.883,
+        -2.9
+      ],
+      "creature_tortoise_gemshell_leg_br": [
+        -1.9,
+        1.883,
+        -2.9
+      ],
+      "creature_tortoise_gemshell_tail": [
+        0.0,
+        1.843,
+        -4.5
+      ]
+    }
+  },
+  "creature_flamingo": {
+    "fbx": "build/blender/stations/creature_flamingo.fbx",
+    "png": "build/blender/stations/creature_flamingo.png",
+    "preview": "build/blender/stations/previews/creature_flamingo.png",
+    "size_studs": [
+      2.03,
+      8.04,
+      5.86
+    ],
+    "tris": 1350,
+    "parts": {
+      "creature_flamingo_body": 264,
+      "creature_flamingo_head": 478,
+      "creature_flamingo_tail": 24,
+      "creature_flamingo_leg_fl": 108,
+      "creature_flamingo_leg_fr": 108,
+      "creature_flamingo_leg_bl": 184,
+      "creature_flamingo_leg_br": 184
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/flamingos.py",
+    "notes": "Flamingo: two legs; its wings are the back-leg pieces.",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_body": [
+        0.0,
+        4.396,
+        -0.324
+      ],
+      "creature_flamingo_head": [
+        -0.002,
+        6.215,
+        1.841
+      ],
+      "creature_flamingo_tail": [
+        0.0,
+        4.335,
+        -1.94
+      ],
+      "creature_flamingo_leg_fl": [
+        0.364,
+        1.99,
+        0.17
+      ],
+      "creature_flamingo_leg_fr": [
+        -0.364,
+        1.99,
+        0.164
+      ],
+      "creature_flamingo_leg_bl": [
+        0.744,
+        4.42,
+        -1.028
+      ],
+      "creature_flamingo_leg_br": [
+        -0.744,
+        4.42,
+        -1.024
+      ]
+    },
+    "joints": {
+      "creature_flamingo_head": [
+        0.0,
+        4.673,
+        0.985
+      ],
+      "creature_flamingo_leg_fl": [
+        0.364,
+        3.828,
+        -0.185
+      ],
+      "creature_flamingo_leg_fr": [
+        -0.364,
+        3.828,
+        -0.185
+      ],
+      "creature_flamingo_leg_bl": [
+        0.78,
+        4.933,
+        0.595
+      ],
+      "creature_flamingo_leg_br": [
+        -0.78,
+        4.933,
+        0.595
+      ],
+      "creature_flamingo_tail": [
+        0.0,
+        4.517,
+        -1.68
+      ]
+    }
+  },
+  "creature_flamingo_phoenix": {
+    "fbx": "build/blender/stations/creature_flamingo_phoenix.fbx",
+    "png": "build/blender/stations/creature_flamingo_phoenix.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_phoenix.png",
+    "size_studs": [
+      3.52,
+      11.3,
+      10.29
+    ],
+    "tris": 1486,
+    "parts": {
+      "creature_flamingo_phoenix_body": 320,
+      "creature_flamingo_phoenix_head": 430,
+      "creature_flamingo_phoenix_tail": 8,
+      "creature_flamingo_phoenix_leg_fl": 108,
+      "creature_flamingo_phoenix_leg_fr": 108,
+      "creature_flamingo_phoenix_leg_bl": 152,
+      "creature_flamingo_phoenix_leg_br": 152,
+      "creature_flamingo_phoenix_head_glow": 64,
+      "creature_flamingo_phoenix_tail_glow": 80,
+      "creature_flamingo_phoenix_leg_bl_glow": 32,
+      "creature_flamingo_phoenix_leg_br_glow": 32
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/flamingos.py",
+    "notes": "Phoenix Flamingo (mythic): Neon crest, flight feathers and tail streamers of flame.",
+    "glow": {
+      "creature_flamingo_phoenix_head_glow": [
+        255,
+        110,
+        20
+      ],
+      "creature_flamingo_phoenix_tail_glow": [
+        255,
+        110,
+        20
+      ],
+      "creature_flamingo_phoenix_leg_bl_glow": [
+        255,
+        110,
+        20
+      ],
+      "creature_flamingo_phoenix_leg_br_glow": [
+        255,
+        110,
+        20
+      ]
+    },
+    "centres": {
+      "creature_flamingo_phoenix_body": [
+        0.0,
+        5.413,
+        1.218
+      ],
+      "creature_flamingo_phoenix_head": [
+        0.0,
+        7.649,
+        3.81
+      ],
+      "creature_flamingo_phoenix_tail": [
+        0.0,
+        5.508,
+        -0.723
+      ],
+      "creature_flamingo_phoenix_leg_fl": [
+        0.448,
+        2.45,
+        1.752
+      ],
+      "creature_flamingo_phoenix_leg_fr": [
+        -0.448,
+        2.45,
+        1.741
+      ],
+      "creature_flamingo_phoenix_leg_bl": [
+        0.916,
+        5.599,
+        0.993
+      ],
+      "creature_flamingo_phoenix_leg_br": [
+        -0.916,
+        5.599,
+        0.994
+      ],
+      "creature_flamingo_phoenix_head_glow": [
+        0.001,
+        10.408,
+        2.99
+      ],
+      "creature_flamingo_phoenix_tail_glow": [
+        0.0,
+        4.959,
+        -2.715
+      ],
+      "creature_flamingo_phoenix_leg_bl_glow": [
+        0.88,
+        5.015,
+        -0.931
+      ],
+      "creature_flamingo_phoenix_leg_br_glow": [
+        -0.88,
+        5.015,
+        -0.931
+      ]
+    },
+    "joints": {
+      "creature_flamingo_phoenix_head": [
+        0.0,
+        5.751,
+        2.757
+      ],
+      "creature_flamingo_phoenix_leg_fl": [
+        0.448,
+        4.711,
+        1.317
+      ],
+      "creature_flamingo_phoenix_leg_fr": [
+        -0.448,
+        4.711,
+        1.317
+      ],
+      "creature_flamingo_phoenix_leg_bl": [
+        0.96,
+        6.071,
+        2.277
+      ],
+      "creature_flamingo_phoenix_leg_br": [
+        -0.96,
+        6.071,
+        2.277
+      ],
+      "creature_flamingo_phoenix_tail": [
+        0.0,
+        5.559,
+        -0.523
+      ]
+    }
+  },
+  "creature_elephant": {
+    "fbx": "build/blender/stations/creature_elephant.fbx",
+    "png": "build/blender/stations/creature_elephant.png",
+    "preview": "build/blender/stations/previews/creature_elephant.png",
+    "size_studs": [
+      14.24,
+      14.14,
+      24.51
+    ],
+    "tris": 1704,
+    "parts": {
+      "creature_elephant_body": 200,
+      "creature_elephant_head": 580,
+      "creature_elephant_tail": 44,
+      "creature_elephant_leg_fl": 220,
+      "creature_elephant_leg_bl": 220,
+      "creature_elephant_leg_fr": 220,
+      "creature_elephant_leg_br": 220
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/elephants.py",
+    "notes": "Elephant, the Titan: a faceted blue-grey elephant with flared ears and pale tusks.",
+    "glow": {},
+    "centres": {
+      "creature_elephant_body": [
+        0.0,
+        8.676,
+        -3.343
+      ],
+      "creature_elephant_head": [
+        0.0,
+        7.764,
+        6.972
+      ],
+      "creature_elephant_tail": [
+        0.0,
+        6.461,
+        -11.16
+      ],
+      "creature_elephant_leg_fl": [
+        2.345,
+        3.676,
+        0.568
+      ],
+      "creature_elephant_leg_bl": [
+        2.346,
+        3.673,
+        -7.298
+      ],
+      "creature_elephant_leg_fr": [
+        -2.346,
+        3.661,
+        0.568
+      ],
+      "creature_elephant_leg_br": [
+        -2.346,
+        3.653,
+        -7.298
+      ]
+    },
+    "joints": {
+      "creature_elephant_head": [
+        0.0,
+        9.725,
+        2.597
+      ],
+      "creature_elephant_leg_fl": [
+        2.346,
+        6.413,
+        0.389
+      ],
+      "creature_elephant_leg_fr": [
+        -2.346,
+        6.413,
+        0.389
+      ],
+      "creature_elephant_leg_bl": [
+        2.346,
+        6.413,
+        -7.477
+      ],
+      "creature_elephant_leg_br": [
+        -2.346,
+        6.413,
+        -7.477
+      ],
+      "creature_elephant_tail": [
+        0.0,
+        8.897,
+        -10.375
+      ]
+    },
+    "eyes": [
+      [
+        2.311,
+        10.653,
+        6.667,
+        1.243
+      ],
+      [
+        -2.313,
+        10.653,
+        6.669,
+        1.241
+      ]
+    ],
+    "lid": [
+      94,
+      100,
+      118
+    ]
+  },
+  "creature_elephant_frost": {
+    "fbx": "build/blender/stations/creature_elephant_frost.fbx",
+    "png": "build/blender/stations/creature_elephant_frost.png",
+    "preview": "build/blender/stations/previews/creature_elephant_frost.png",
+    "size_studs": [
+      12.23,
+      19.4,
+      29.97
+    ],
+    "tris": 2008,
+    "parts": {
+      "creature_elephant_frost_body": 424,
+      "creature_elephant_frost_head": 528,
+      "creature_elephant_frost_head_glow": 84,
+      "creature_elephant_frost_body_glow": 48,
+      "creature_elephant_frost_tail": 44,
+      "creature_elephant_frost_leg_fl": 220,
+      "creature_elephant_frost_leg_bl": 220,
+      "creature_elephant_frost_leg_fr": 220,
+      "creature_elephant_frost_leg_br": 220
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/elephants.py",
+    "notes": "Frost Mammoth (mythic Titan): pale and shaggy, Neon ice tusks and back spikes.",
+    "glow": {
+      "creature_elephant_frost_head_glow": [
+        120,
+        220,
+        255
+      ],
+      "creature_elephant_frost_body_glow": [
+        120,
+        220,
+        255
+      ]
+    },
+    "centres": {
+      "creature_elephant_frost_body": [
+        -0.005,
+        9.539,
+        -5.017
+      ],
+      "creature_elephant_frost_head": [
+        0.0,
+        9.002,
+        5.528
+      ],
+      "creature_elephant_frost_head_glow": [
+        0.0,
+        9.373,
+        10.04
+      ],
+      "creature_elephant_frost_body_glow": [
+        -0.043,
+        15.993,
+        -4.587
+      ],
+      "creature_elephant_frost_tail": [
+        0.0,
+        7.244,
+        -13.763
+      ],
+      "creature_elephant_frost_leg_fl": [
+        2.618,
+        4.121,
+        -0.675
+      ],
+      "creature_elephant_frost_leg_bl": [
+        2.618,
+        4.102,
+        -9.453
+      ],
+      "creature_elephant_frost_leg_fr": [
+        -2.618,
+        4.124,
+        -0.675
+      ],
+      "creature_elephant_frost_leg_br": [
+        -2.617,
+        4.112,
+        -9.453
+      ]
+    },
+    "joints": {
+      "creature_elephant_frost_head": [
+        0.0,
+        10.886,
+        1.589
+      ],
+      "creature_elephant_frost_leg_fl": [
+        2.618,
+        7.19,
+        -0.875
+      ],
+      "creature_elephant_frost_leg_fr": [
+        -2.618,
+        7.19,
+        -0.875
+      ],
+      "creature_elephant_frost_leg_bl": [
+        2.618,
+        7.19,
+        -9.653
+      ],
+      "creature_elephant_frost_leg_br": [
+        -2.618,
+        7.19,
+        -9.653
+      ],
+      "creature_elephant_frost_tail": [
+        0.0,
+        9.962,
+        -12.887
+      ]
+    },
+    "eyes": [
+      [
+        2.594,
+        11.924,
+        6.147,
+        1.403
+      ],
+      [
+        -2.596,
+        11.925,
+        6.149,
+        1.401
+      ]
+    ],
+    "lid": [
+      106,
+      135,
+      185
+    ]
+  },
+  "foe_archer": {
+    "fbx": "build/blender/stations/foe_archer.fbx",
+    "png": "build/blender/stations/foe_archer.png",
+    "preview": "build/blender/stations/previews/foe_archer.png",
+    "size_studs": [
+      2.71,
+      6.59,
+      2.86
+    ],
+    "tris": 2070,
+    "parts": {
+      "foe_archer_body": 644,
+      "foe_archer_head": 180,
+      "foe_archer_leg_fl": 416,
+      "foe_archer_leg_fr": 280,
+      "foe_archer_leg_bl": 180,
+      "foe_archer_leg_br": 180,
+      "foe_archer_tail": 36,
+      "foe_archer_body_glow": 60,
+      "foe_archer_head_glow": 52,
+      "foe_archer_leg_fl_glow": 12,
+      "foe_archer_leg_fr_glow": 30
+    },
+    "tris_budget": 7000,
+    "script": "tools/blender/stations/assets/foes.py",
+    "notes": "Shade archers: a hooded bowman; eyes, bowstring, arrow head and quiver fletching are Neon.",
+    "glow": {
+      "foe_archer_body_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_archer_head_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_archer_leg_fl_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_archer_leg_fr_glow": [
+        150,
+        255,
+        70
+      ]
+    },
+    "centres": {
+      "foe_archer_body": [
+        0.008,
+        3.491,
+        -0.469
+      ],
+      "foe_archer_head": [
+        0.0,
+        5.792,
+        -0.451
+      ],
+      "foe_archer_leg_fl": [
+        0.992,
+        2.76,
+        -0.411
+      ],
+      "foe_archer_leg_fr": [
+        -0.992,
+        3.496,
+        0.109
+      ],
+      "foe_archer_leg_bl": [
+        0.352,
+        1.16,
+        -0.251
+      ],
+      "foe_archer_leg_br": [
+        -0.352,
+        1.16,
+        -0.251
+      ],
+      "foe_archer_tail": [
+        0.0,
+        3.213,
+        -1.208
+      ],
+      "foe_archer_body_glow": [
+        0.432,
+        5.12,
+        -1.115
+      ],
+      "foe_archer_head_glow": [
+        0.0,
+        5.126,
+        -0.147
+      ],
+      "foe_archer_leg_fl_glow": [
+        0.992,
+        2.76,
+        -0.635
+      ],
+      "foe_archer_leg_fr_glow": [
+        -1.003,
+        2.428,
+        0.285
+      ]
+    },
+    "joints": {
+      "foe_archer_head": [
+        0.0,
+        4.8,
+        -0.411
+      ],
+      "foe_archer_leg_fl": [
+        0.992,
+        4.448,
+        -0.411
+      ],
+      "foe_archer_leg_fr": [
+        -0.992,
+        4.448,
+        -0.411
+      ],
+      "foe_archer_leg_bl": [
+        0.352,
+        2.32,
+        -0.411
+      ],
+      "foe_archer_leg_br": [
+        -0.352,
+        2.32,
+        -0.411
+      ],
+      "foe_archer_tail": [
+        0.0,
+        4.56,
+        -1.051
+      ]
+    }
+  },
+  "foe_mage": {
+    "fbx": "build/blender/stations/foe_mage.fbx",
+    "png": "build/blender/stations/foe_mage.png",
+    "preview": "build/blender/stations/previews/foe_mage.png",
+    "size_studs": [
+      3.39,
+      7.68,
+      2.71
+    ],
+    "tris": 2618,
+    "parts": {
+      "foe_mage_body": 580,
+      "foe_mage_head": 368,
+      "foe_mage_leg_fl": 80,
+      "foe_mage_leg_fr": 242,
+      "foe_mage_leg_bl": 306,
+      "foe_mage_leg_br": 306,
+      "foe_mage_tail": 36,
+      "foe_mage_body_glow": 60,
+      "foe_mage_head_glow": 64,
+      "foe_mage_leg_fl_glow": 340,
+      "foe_mage_leg_fr_glow": 236
+    },
+    "tris_budget": 8000,
+    "script": "tools/blender/stations/assets/foes.py",
+    "notes": "Hex mages: a hooded, horned caster; eyes, runes, the palm orb and the staff crystal are Neon.",
+    "glow": {
+      "foe_mage_body_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_mage_head_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_mage_leg_fl_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_mage_leg_fr_glow": [
+        150,
+        255,
+        70
+      ]
+    },
+    "centres": {
+      "foe_mage_body": [
+        -0.035,
+        3.384,
+        0.235
+      ],
+      "foe_mage_head": [
+        -0.035,
+        6.004,
+        0.115
+      ],
+      "foe_mage_leg_fl": [
+        0.957,
+        3.684,
+        0.235
+      ],
+      "foe_mage_leg_fr": [
+        -0.921,
+        3.864,
+        0.372
+      ],
+      "foe_mage_leg_bl": [
+        0.381,
+        1.24,
+        0.475
+      ],
+      "foe_mage_leg_br": [
+        -0.451,
+        1.24,
+        0.475
+      ],
+      "foe_mage_tail": [
+        -0.035,
+        3.129,
+        -0.604
+      ],
+      "foe_mage_body_glow": [
+        0.046,
+        3.367,
+        -0.2
+      ],
+      "foe_mage_head_glow": [
+        -0.035,
+        5.408,
+        0.499
+      ],
+      "foe_mage_leg_fl_glow": [
+        0.957,
+        3.36,
+        0.427
+      ],
+      "foe_mage_leg_fr_glow": [
+        -1.028,
+        7.2,
+        0.395
+      ]
+    },
+    "joints": {
+      "foe_mage_head": [
+        -0.035,
+        4.96,
+        0.235
+      ],
+      "foe_mage_leg_fl": [
+        0.957,
+        4.64,
+        0.235
+      ],
+      "foe_mage_leg_fr": [
+        -1.027,
+        4.64,
+        0.235
+      ],
+      "foe_mage_leg_bl": [
+        0.365,
+        2.4,
+        0.235
+      ],
+      "foe_mage_leg_br": [
+        -0.435,
+        2.4,
+        0.235
+      ],
+      "foe_mage_tail": [
+        -0.035,
+        4.72,
+        -0.437
+      ]
+    }
+  },
+  "foe_knight": {
+    "fbx": "build/blender/stations/foe_knight.fbx",
+    "png": "build/blender/stations/foe_knight.png",
+    "preview": "build/blender/stations/previews/foe_knight.png",
+    "size_studs": [
+      4.98,
+      7.52,
+      5.28
+    ],
+    "tris": 3588,
+    "parts": {
+      "foe_knight_body": 760,
+      "foe_knight_head": 588,
+      "foe_knight_leg_fl": 652,
+      "foe_knight_leg_fr": 652,
+      "foe_knight_leg_bl": 358,
+      "foe_knight_leg_br": 358,
+      "foe_knight_tail": 40,
+      "foe_knight_body_glow": 24,
+      "foe_knight_head_glow": 52,
+      "foe_knight_leg_fl_glow": 40,
+      "foe_knight_leg_fr_glow": 64
+    },
+    "tris_budget": 9000,
+    "script": "tools/blender/stations/assets/foes.py",
+    "notes": "Gloom knights: haunted armour with floating pieces; runes, eye slits, shield sigil and sword runes are Neon.",
+    "glow": {
+      "foe_knight_body_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_knight_head_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_knight_leg_fl_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_knight_leg_fr_glow": [
+        150,
+        255,
+        70
+      ]
+    },
+    "centres": {
+      "foe_knight_body": [
+        -0.18,
+        3.464,
+        -1.504
+      ],
+      "foe_knight_head": [
+        -0.18,
+        6.464,
+        -1.318
+      ],
+      "foe_knight_leg_fl": [
+        1.472,
+        3.748,
+        -1.416
+      ],
+      "foe_knight_leg_fr": [
+        -1.652,
+        3.92,
+        0.2
+      ],
+      "foe_knight_leg_bl": [
+        0.3,
+        1.36,
+        -0.992
+      ],
+      "foe_knight_leg_br": [
+        -0.66,
+        1.36,
+        -0.992
+      ],
+      "foe_knight_tail": [
+        -0.18,
+        3.375,
+        -2.372
+      ],
+      "foe_knight_body_glow": [
+        -0.18,
+        3.996,
+        -0.676
+      ],
+      "foe_knight_head_glow": [
+        -0.18,
+        5.396,
+        -1.116
+      ],
+      "foe_knight_leg_fl_glow": [
+        1.524,
+        2.936,
+        -1.12
+      ],
+      "foe_knight_leg_fr_glow": [
+        -1.652,
+        2.44,
+        -0.008
+      ]
+    },
+    "joints": {
+      "foe_knight_head": [
+        -0.18,
+        5.12,
+        -1.36
+      ],
+      "foe_knight_leg_fl": [
+        1.292,
+        4.8,
+        -1.36
+      ],
+      "foe_knight_leg_fr": [
+        -1.652,
+        4.8,
+        -1.36
+      ],
+      "foe_knight_leg_bl": [
+        0.3,
+        2.48,
+        -1.36
+      ],
+      "foe_knight_leg_br": [
+        -0.66,
+        2.48,
+        -1.36
+      ],
+      "foe_knight_tail": [
+        -0.18,
+        4.88,
+        -2.16
+      ]
+    }
+  },
+  "foe_ogre": {
+    "fbx": "build/blender/stations/foe_ogre.fbx",
+    "png": "build/blender/stations/foe_ogre.png",
+    "preview": "build/blender/stations/previews/foe_ogre.png",
+    "size_studs": [
+      11.98,
+      13.44,
+      9.45
+    ],
+    "tris": 9324,
+    "parts": {
+      "foe_ogre_body": 2932,
+      "foe_ogre_head": 2004,
+      "foe_ogre_leg_fl": 1054,
+      "foe_ogre_leg_fr": 1418,
+      "foe_ogre_leg_bl": 594,
+      "foe_ogre_leg_br": 594,
+      "foe_ogre_tail": 36,
+      "foe_ogre_body_glow": 444,
+      "foe_ogre_head_glow": 140,
+      "foe_ogre_leg_fr_glow": 108
+    },
+    "tris_budget": 10000,
+    "script": "tools/blender/stations/assets/foes.py",
+    "notes": "Ogres: a hunched brute with a spiked club; cracks, eyes, collar runes and club nails are Neon.",
+    "glow": {
+      "foe_ogre_body_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_ogre_head_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_ogre_leg_fr_glow": [
+        150,
+        255,
+        70
+      ]
+    },
+    "centres": {
+      "foe_ogre_body": [
+        1.019,
+        6.574,
+        -1.391
+      ],
+      "foe_ogre_head": [
+        1.018,
+        10.922,
+        0.64
+      ],
+      "foe_ogre_leg_fl": [
+        4.527,
+        5.805,
+        0.101
+      ],
+      "foe_ogre_leg_fr": [
+        -3.509,
+        6.097,
+        1.421
+      ],
+      "foe_ogre_leg_bl": [
+        2.475,
+        2.53,
+        -1.408
+      ],
+      "foe_ogre_leg_br": [
+        -0.437,
+        2.53,
+        -1.408
+      ],
+      "foe_ogre_tail": [
+        1.018,
+        3.568,
+        -4.193
+      ],
+      "foe_ogre_body_glow": [
+        1.09,
+        6.879,
+        0.764
+      ],
+      "foe_ogre_head_glow": [
+        1.019,
+        11.122,
+        1.957
+      ],
+      "foe_ogre_leg_fr_glow": [
+        -3.511,
+        8.133,
+        2.846
+      ]
+    },
+    "joints": {
+      "foe_ogre_head": [
+        1.018,
+        9.56,
+        -0.424
+      ],
+      "foe_ogre_leg_fl": [
+        4.018,
+        9.06,
+        -0.674
+      ],
+      "foe_ogre_leg_fr": [
+        -1.982,
+        9.06,
+        -0.674
+      ],
+      "foe_ogre_leg_bl": [
+        2.468,
+        3.935,
+        -1.924
+      ],
+      "foe_ogre_leg_br": [
+        -0.432,
+        3.935,
+        -1.924
+      ],
+      "foe_ogre_tail": [
+        1.018,
+        5.06,
+        -3.924
+      ]
+    }
+  },
+  "foe_dragon": {
+    "fbx": "build/blender/stations/foe_dragon.fbx",
+    "png": "build/blender/stations/foe_dragon.png",
+    "preview": "build/blender/stations/previews/foe_dragon.png",
+    "size_studs": [
+      24.32,
+      10.29,
+      27.51
+    ],
+    "tris": 8974,
+    "parts": {
+      "foe_dragon_body": 1960,
+      "foe_dragon_head": 2662,
+      "foe_dragon_leg_fl": 594,
+      "foe_dragon_leg_fr": 594,
+      "foe_dragon_leg_bl": 590,
+      "foe_dragon_leg_br": 594,
+      "foe_dragon_tail": 350,
+      "foe_dragon_head_glow": 140,
+      "foe_dragon_body_glow": 54,
+      "foe_dragon_wing_l": 486,
+      "foe_dragon_wing_l_glow": 232,
+      "foe_dragon_wing_r": 486,
+      "foe_dragon_wing_r_glow": 232
+    },
+    "tris_budget": 14000,
+    "script": "tools/blender/stations/assets/foes.py",
+    "notes": "Hexfire dragons: the predator body with wings (wing_l, wing_r joints); eyes, wing veins and alternate spine spikes are Neon.",
+    "glow": {
+      "foe_dragon_body_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_dragon_head_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_dragon_wing_l_glow": [
+        150,
+        255,
+        70
+      ],
+      "foe_dragon_wing_r_glow": [
+        150,
+        255,
+        70
+      ]
+    },
+    "centres": {
+      "foe_dragon_body": [
+        0.001,
+        4.491,
+        3.601
+      ],
+      "foe_dragon_head": [
+        0.0,
+        6.222,
+        9.835
+      ],
+      "foe_dragon_leg_fl": [
+        1.125,
+        2.397,
+        6.127
+      ],
+      "foe_dragon_leg_fr": [
+        -1.115,
+        2.393,
+        6.127
+      ],
+      "foe_dragon_leg_bl": [
+        0.996,
+        2.39,
+        1.341
+      ],
+      "foe_dragon_leg_br": [
+        -0.995,
+        2.382,
+        1.34
+      ],
+      "foe_dragon_tail": [
+        0.0,
+        4.464,
+        -7.085
+      ],
+      "foe_dragon_head_glow": [
+        -0.008,
+        7.206,
+        11.309
+      ],
+      "foe_dragon_body_glow": [
+        0.0,
+        6.315,
+        3.606
+      ],
+      "foe_dragon_wing_l": [
+        6.578,
+        7.547,
+        4.248
+      ],
+      "foe_dragon_wing_l_glow": [
+        7.68,
+        7.331,
+        4.225
+      ],
+      "foe_dragon_wing_r": [
+        -6.578,
+        7.547,
+        4.248
+      ],
+      "foe_dragon_wing_r_glow": [
+        -7.68,
+        7.331,
+        4.225
+      ]
+    },
+    "joints": {
+      "foe_dragon_head": [
+        0.0,
+        4.994,
+        7.438
+      ],
+      "foe_dragon_leg_fl": [
+        1.12,
+        3.893,
+        5.825
+      ],
+      "foe_dragon_leg_fr": [
+        -1.12,
+        3.893,
+        5.825
+      ],
+      "foe_dragon_leg_bl": [
+        1.0,
+        3.893,
+        1.025
+      ],
+      "foe_dragon_leg_br": [
+        -1.0,
+        3.893,
+        1.025
+      ],
+      "foe_dragon_tail": [
+        0.0,
+        4.753,
+        -0.475
+      ],
+      "foe_dragon_wing_l": [
+        1.28,
+        6.133,
+        5.345
+      ],
+      "foe_dragon_wing_r": [
+        -1.28,
+        6.133,
+        5.345
+      ]
+    }
+  },
+  "creature_lion_shadow": {
+    "fbx": "build/blender/stations/creature_lion_shadow.fbx",
+    "png": "build/blender/stations/creature_lion_shadow.png",
+    "preview": "build/blender/stations/previews/creature_lion_shadow.png",
+    "size_studs": [
+      5.93,
+      8.48,
+      15.03
+    ],
+    "tris": 1656,
+    "parts": {
+      "creature_lion_shadow_body": 108,
+      "creature_lion_shadow_head": 752,
+      "creature_lion_shadow_head_glow": 120,
+      "creature_lion_shadow_body_glow": 48,
+      "creature_lion_shadow_tail": 76,
+      "creature_lion_shadow_tail_glow": 8,
+      "creature_lion_shadow_leg_fl": 120,
+      "creature_lion_shadow_leg_bl": 152,
+      "creature_lion_shadow_leg_fr": 120,
+      "creature_lion_shadow_leg_br": 152
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/lions.py",
+    "notes": "Shadow Lion (legendary): ink black, a bone mask and spine, glowing green ribs and shards.",
+    "glow": {
+      "creature_lion_shadow_head_glow": [
+        110,
+        255,
+        90
+      ],
+      "creature_lion_shadow_body_glow": [
+        110,
+        255,
+        90
+      ],
+      "creature_lion_shadow_tail_glow": [
+        110,
+        255,
+        90
+      ]
+    },
+    "centres": {
+      "creature_lion_shadow_body": [
+        -0.036,
+        3.99,
+        1.746
+      ],
+      "creature_lion_shadow_head": [
+        0.016,
+        4.508,
+        4.352
+      ],
+      "creature_lion_shadow_head_glow": [
+        -0.292,
+        4.66,
+        4.038
+      ],
+      "creature_lion_shadow_body_glow": [
+        -0.036,
+        3.724,
+        1.782
+      ],
+      "creature_lion_shadow_tail": [
+        -0.036,
+        2.898,
+        -4.231
+      ],
+      "creature_lion_shadow_tail_glow": [
+        -0.036,
+        2.008,
+        -6.028
+      ],
+      "creature_lion_shadow_leg_fl": [
+        0.869,
+        1.929,
+        3.868
+      ],
+      "creature_lion_shadow_leg_bl": [
+        0.869,
+        2.095,
+        -0.348
+      ],
+      "creature_lion_shadow_leg_fr": [
+        -0.94,
+        1.929,
+        3.868
+      ],
+      "creature_lion_shadow_leg_br": [
+        -0.94,
+        2.095,
+        -0.348
+      ]
+    },
+    "joints": {
+      "creature_lion_shadow_head": [
+        -0.036,
+        4.19,
+        4.839
+      ],
+      "creature_lion_shadow_leg_fl": [
+        0.869,
+        3.192,
+        3.841
+      ],
+      "creature_lion_shadow_leg_fr": [
+        -0.94,
+        3.192,
+        3.841
+      ],
+      "creature_lion_shadow_leg_bl": [
+        0.869,
+        3.192,
+        -0.415
+      ],
+      "creature_lion_shadow_leg_br": [
+        -0.94,
+        3.192,
+        -0.415
+      ],
+      "creature_lion_shadow_tail": [
+        -0.036,
+        3.924,
+        -1.545
+      ]
+    }
+  },
+  "creature_elephant_war": {
+    "fbx": "build/blender/stations/creature_elephant_war.fbx",
+    "png": "build/blender/stations/creature_elephant_war.png",
+    "preview": "build/blender/stations/previews/creature_elephant_war.png",
+    "size_studs": [
+      15.43,
+      19.39,
+      27.0
+    ],
+    "tris": 2080,
+    "parts": {
+      "creature_elephant_war_body": 496,
+      "creature_elephant_war_head": 600,
+      "creature_elephant_war_head_glow": 24,
+      "creature_elephant_war_body_glow": 36,
+      "creature_elephant_war_tail": 44,
+      "creature_elephant_war_leg_fl": 220,
+      "creature_elephant_war_leg_bl": 220,
+      "creature_elephant_war_leg_fr": 220,
+      "creature_elephant_war_leg_br": 220
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/elephants.py",
+    "notes": "War Elephant (legendary Titan): war gear and a cannon on its back, a glowing muzzle.",
+    "glow": {
+      "creature_elephant_war_head_glow": [
+        255,
+        150,
+        40
+      ],
+      "creature_elephant_war_body_glow": [
+        255,
+        150,
+        40
+      ]
+    },
+    "centres": {
+      "creature_elephant_war_body": [
+        0.0,
+        12.068,
+        -3.426
+      ],
+      "creature_elephant_war_head": [
+        0.0,
+        8.461,
+        7.553
+      ],
+      "creature_elephant_war_head_glow": [
+        0.002,
+        11.578,
+        7.005
+      ],
+      "creature_elephant_war_body_glow": [
+        0.0,
+        18.063,
+        -0.41
+      ],
+      "creature_elephant_war_tail": [
+        0.0,
+        7.037,
+        -12.314
+      ],
+      "creature_elephant_war_leg_fl": [
+        2.542,
+        3.969,
+        0.391
+      ],
+      "creature_elephant_war_leg_bl": [
+        2.542,
+        3.997,
+        -8.131
+      ],
+      "creature_elephant_war_leg_fr": [
+        -2.542,
+        3.995,
+        0.391
+      ],
+      "creature_elephant_war_leg_br": [
+        -2.542,
+        3.992,
+        -8.131
+      ]
+    },
+    "joints": {
+      "creature_elephant_war_head": [
+        0.0,
+        10.573,
+        2.589
+      ],
+      "creature_elephant_war_leg_fl": [
+        2.542,
+        6.985,
+        0.197
+      ],
+      "creature_elephant_war_leg_fr": [
+        -2.542,
+        6.985,
+        0.197
+      ],
+      "creature_elephant_war_leg_bl": [
+        2.542,
+        6.985,
+        -8.325
+      ],
+      "creature_elephant_war_leg_br": [
+        -2.542,
+        6.985,
+        -8.325
+      ],
+      "creature_elephant_war_tail": [
+        0.0,
+        9.676,
+        -11.464
+      ]
+    },
+    "eyes": [
+      [
+        2.513,
+        11.578,
+        7.007,
+        1.369
+      ],
+      [
+        -2.511,
+        11.577,
+        7.004,
+        1.371
+      ]
+    ],
+    "lid": [
+      80,
+      78,
+      87
+    ]
+  },
+  "creature_jackal_sphinx": {
+    "fbx": "build/blender/stations/creature_jackal_sphinx.fbx",
+    "png": "build/blender/stations/creature_jackal_sphinx.png",
+    "preview": "build/blender/stations/previews/creature_jackal_sphinx.png",
+    "size_studs": [
+      2.34,
+      5.37,
+      9.57
+    ],
+    "tris": 1880,
+    "parts": {
+      "creature_jackal_sphinx_body": 320,
+      "creature_jackal_sphinx_head": 692,
+      "creature_jackal_sphinx_head_glow": 52,
+      "creature_jackal_sphinx_tail": 48,
+      "creature_jackal_sphinx_leg_fl": 160,
+      "creature_jackal_sphinx_leg_bl": 224,
+      "creature_jackal_sphinx_leg_fr": 160,
+      "creature_jackal_sphinx_leg_br": 224
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/jackals.py",
+    "notes": "Sphinx Jackal (mythic): sandstone, a blue and gold headdress, folded wings, a Neon sun disc.",
+    "glow": {
+      "creature_jackal_sphinx_head_glow": [
+        255,
+        208,
+        90
+      ]
+    },
+    "centres": {
+      "creature_jackal_sphinx_body": [
+        0.0,
+        3.037,
+        0.344
+      ],
+      "creature_jackal_sphinx_head": [
+        0.0,
+        3.928,
+        3.375
+      ],
+      "creature_jackal_sphinx_head_glow": [
+        0.002,
+        4.49,
+        3.45
+      ],
+      "creature_jackal_sphinx_tail": [
+        0.046,
+        1.981,
+        -3.155
+      ],
+      "creature_jackal_sphinx_leg_fl": [
+        0.505,
+        1.347,
+        1.758
+      ],
+      "creature_jackal_sphinx_leg_bl": [
+        0.505,
+        1.461,
+        -1.169
+      ],
+      "creature_jackal_sphinx_leg_fr": [
+        -0.505,
+        1.348,
+        1.76
+      ],
+      "creature_jackal_sphinx_leg_br": [
+        -0.505,
+        1.459,
+        -1.169
+      ]
+    },
+    "joints": {
+      "creature_jackal_sphinx_head": [
+        0.0,
+        3.213,
+        2.327
+      ],
+      "creature_jackal_sphinx_leg_fl": [
+        0.505,
+        2.295,
+        1.685
+      ],
+      "creature_jackal_sphinx_leg_fr": [
+        -0.505,
+        2.295,
+        1.685
+      ],
+      "creature_jackal_sphinx_leg_bl": [
+        0.505,
+        2.295,
+        -1.222
+      ],
+      "creature_jackal_sphinx_leg_br": [
+        -0.505,
+        2.295,
+        -1.222
+      ],
+      "creature_jackal_sphinx_tail": [
+        0.0,
+        2.984,
+        -1.712
+      ]
+    }
+  },
+  "creature_cheetah_fire": {
+    "fbx": "build/blender/stations/creature_cheetah_fire.fbx",
+    "png": "build/blender/stations/creature_cheetah_fire.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_fire.png",
+    "size_studs": [
+      1.92,
+      5.54,
+      13.51
+    ],
+    "tris": 2620,
+    "parts": {
+      "creature_cheetah_fire_body": 760,
+      "creature_cheetah_fire_head": 588,
+      "creature_cheetah_fire_head_glow": 64,
+      "creature_cheetah_fire_body_glow": 72,
+      "creature_cheetah_fire_tail": 120,
+      "creature_cheetah_fire_tail_glow": 40,
+      "creature_cheetah_fire_leg_fl": 208,
+      "creature_cheetah_fire_leg_bl": 280,
+      "creature_cheetah_fire_leg_fr": 208,
+      "creature_cheetah_fire_leg_br": 280
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/cheetahs.py",
+    "notes": "Fire Cheetah (legendary): a coat graded from scorched black to orange, painted flames, a Neon mane of flame.",
+    "glow": {
+      "creature_cheetah_fire_head_glow": [
+        255,
+        150,
+        40
+      ],
+      "creature_cheetah_fire_body_glow": [
+        255,
+        150,
+        40
+      ],
+      "creature_cheetah_fire_tail_glow": [
+        255,
+        150,
+        40
+      ]
+    },
+    "centres": {
+      "creature_cheetah_fire_body": [
+        -0.009,
+        3.702,
+        2.758
+      ],
+      "creature_cheetah_fire_head": [
+        -0.009,
+        4.293,
+        5.662
+      ],
+      "creature_cheetah_fire_head_glow": [
+        -0.008,
+        4.642,
+        5.553
+      ],
+      "creature_cheetah_fire_body_glow": [
+        -0.002,
+        4.305,
+        2.738
+      ],
+      "creature_cheetah_fire_tail": [
+        0.028,
+        3.539,
+        -3.113
+      ],
+      "creature_cheetah_fire_tail_glow": [
+        0.019,
+        3.729,
+        -5.432
+      ],
+      "creature_cheetah_fire_leg_fl": [
+        0.493,
+        1.583,
+        4.105
+      ],
+      "creature_cheetah_fire_leg_bl": [
+        0.556,
+        1.705,
+        0.679
+      ],
+      "creature_cheetah_fire_leg_fr": [
+        -0.513,
+        1.585,
+        4.105
+      ],
+      "creature_cheetah_fire_leg_br": [
+        -0.564,
+        1.706,
+        0.679
+      ]
+    },
+    "joints": {
+      "creature_cheetah_fire_head": [
+        -0.009,
+        3.726,
+        5.029
+      ],
+      "creature_cheetah_fire_leg_fl": [
+        0.477,
+        2.673,
+        4.348
+      ],
+      "creature_cheetah_fire_leg_fr": [
+        -0.495,
+        2.673,
+        4.348
+      ],
+      "creature_cheetah_fire_leg_bl": [
+        0.477,
+        2.673,
+        0.946
+      ],
+      "creature_cheetah_fire_leg_br": [
+        -0.495,
+        2.673,
+        0.946
+      ],
+      "creature_cheetah_fire_tail": [
+        -0.009,
+        3.645,
+        0.46
+      ]
+    }
+  },
+  "creature_flamingo_peacock": {
+    "fbx": "build/blender/stations/creature_flamingo_peacock.fbx",
+    "png": "build/blender/stations/creature_flamingo_peacock.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_peacock.png",
+    "size_studs": [
+      5.62,
+      9.79,
+      7.02
+    ],
+    "tris": 1614,
+    "parts": {
+      "creature_flamingo_peacock_body": 264,
+      "creature_flamingo_peacock_head": 454,
+      "creature_flamingo_peacock_tail": 176,
+      "creature_flamingo_peacock_leg_fl": 108,
+      "creature_flamingo_peacock_leg_fr": 108,
+      "creature_flamingo_peacock_leg_bl": 184,
+      "creature_flamingo_peacock_leg_br": 184,
+      "creature_flamingo_peacock_head_glow": 48,
+      "creature_flamingo_peacock_tail_glow": 88
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/flamingos.py",
+    "notes": "Peacock Flamingo (legendary): a fan of tail feathers with Neon eyes, a beaded crest.",
+    "glow": {
+      "creature_flamingo_peacock_head_glow": [
+        40,
+        235,
+        190
+      ],
+      "creature_flamingo_peacock_tail_glow": [
+        40,
+        235,
+        190
+      ]
+    },
+    "centres": {
+      "creature_flamingo_peacock_body": [
+        0.0,
+        4.907,
+        -0.127
+      ],
+      "creature_flamingo_peacock_head": [
+        0.0,
+        7.259,
+        2.298
+      ],
+      "creature_flamingo_peacock_tail": [
+        0.0,
+        6.854,
+        -2.537
+      ],
+      "creature_flamingo_peacock_leg_fl": [
+        0.406,
+        2.22,
+        0.417
+      ],
+      "creature_flamingo_peacock_leg_fr": [
+        -0.406,
+        2.22,
+        0.412
+      ],
+      "creature_flamingo_peacock_leg_bl": [
+        0.83,
+        4.929,
+        -0.897
+      ],
+      "creature_flamingo_peacock_leg_br": [
+        -0.83,
+        4.929,
+        -0.902
+      ],
+      "creature_flamingo_peacock_head_glow": [
+        0.0,
+        9.208,
+        2.001
+      ],
+      "creature_flamingo_peacock_tail_glow": [
+        0.0,
+        6.681,
+        -2.885
+      ]
+    },
+    "joints": {
+      "creature_flamingo_peacock_head": [
+        0.0,
+        5.212,
+        1.343
+      ],
+      "creature_flamingo_peacock_leg_fl": [
+        0.406,
+        4.269,
+        0.038
+      ],
+      "creature_flamingo_peacock_leg_fr": [
+        -0.406,
+        4.269,
+        0.038
+      ],
+      "creature_flamingo_peacock_leg_bl": [
+        0.87,
+        5.502,
+        0.908
+      ],
+      "creature_flamingo_peacock_leg_br": [
+        -0.87,
+        5.502,
+        0.908
+      ],
+      "creature_flamingo_peacock_tail": [
+        0.0,
+        5.038,
+        -1.629
+      ]
+    }
+  },
+  "creature_meerkat_star": {
+    "fbx": "build/blender/stations/creature_meerkat_star.fbx",
+    "png": "build/blender/stations/creature_meerkat_star.png",
+    "preview": "build/blender/stations/previews/creature_meerkat_star.png",
+    "size_studs": [
+      2.69,
+      7.46,
+      6.77
+    ],
+    "tris": 2132,
+    "parts": {
+      "creature_meerkat_star_body": 528,
+      "creature_meerkat_star_head": 448,
+      "creature_meerkat_star_tail": 44,
+      "creature_meerkat_star_leg_fl": 64,
+      "creature_meerkat_star_leg_fr": 64,
+      "creature_meerkat_star_leg_bl": 148,
+      "creature_meerkat_star_leg_br": 148,
+      "creature_meerkat_star_body_glow": 428,
+      "creature_meerkat_star_head_glow": 220,
+      "creature_meerkat_star_tail_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/meerkats.py",
+    "notes": "Star Meerkat (mythic): a coat of night sky, Neon stars and constellations, a comet tail.",
+    "glow": {
+      "creature_meerkat_star_head_glow": [
+        255,
+        206,
+        70
+      ],
+      "creature_meerkat_star_body_glow": [
+        255,
+        206,
+        70
+      ],
+      "creature_meerkat_star_tail_glow": [
+        255,
+        206,
+        70
+      ]
+    },
+    "centres": {
+      "creature_meerkat_star_body": [
+        0.001,
+        3.0,
+        1.329
+      ],
+      "creature_meerkat_star_head": [
+        0.0,
+        5.643,
+        2.184
+      ],
+      "creature_meerkat_star_tail": [
+        0.0,
+        0.985,
+        -1.011
+      ],
+      "creature_meerkat_star_leg_fl": [
+        0.809,
+        3.459,
+        2.251
+      ],
+      "creature_meerkat_star_leg_fr": [
+        -0.809,
+        3.459,
+        2.251
+      ],
+      "creature_meerkat_star_leg_bl": [
+        0.861,
+        1.041,
+        1.72
+      ],
+      "creature_meerkat_star_leg_br": [
+        -0.861,
+        1.041,
+        1.724
+      ],
+      "creature_meerkat_star_body_glow": [
+        0.016,
+        3.122,
+        1.329
+      ],
+      "creature_meerkat_star_head_glow": [
+        -0.009,
+        6.702,
+        1.842
+      ],
+      "creature_meerkat_star_tail_glow": [
+        0.0,
+        0.834,
+        -2.881
+      ]
+    },
+    "joints": {
+      "creature_meerkat_star_head": [
+        0.0,
+        5.023,
+        1.644
+      ],
+      "creature_meerkat_star_leg_fl": [
+        0.82,
+        4.305,
+        1.746
+      ],
+      "creature_meerkat_star_leg_fr": [
+        -0.82,
+        4.305,
+        1.746
+      ],
+      "creature_meerkat_star_leg_bl": [
+        0.861,
+        1.537,
+        1.131
+      ],
+      "creature_meerkat_star_leg_br": [
+        -0.861,
+        1.537,
+        1.131
+      ],
+      "creature_meerkat_star_tail": [
+        0.0,
+        1.599,
+        0.516
+      ]
+    }
+  },
+  "creature_rhino_crystal": {
+    "fbx": "build/blender/stations/creature_rhino_crystal.fbx",
+    "png": "build/blender/stations/creature_rhino_crystal.png",
+    "preview": "build/blender/stations/previews/creature_rhino_crystal.png",
+    "size_studs": [
+      7.69,
+      11.53,
+      16.04
+    ],
+    "tris": 6440,
+    "parts": {
+      "creature_rhino_crystal_body": 3400,
+      "creature_rhino_crystal_head": 712,
+      "creature_rhino_crystal_tail": 120,
+      "creature_rhino_crystal_leg_fl": 502,
+      "creature_rhino_crystal_leg_fr": 502,
+      "creature_rhino_crystal_leg_bl": 502,
+      "creature_rhino_crystal_leg_br": 502,
+      "creature_rhino_crystal_body_glow": 44,
+      "creature_rhino_crystal_head_glow": 46,
+      "creature_rhino_crystal_tail_glow": 22,
+      "creature_rhino_crystal_leg_fl_glow": 22,
+      "creature_rhino_crystal_leg_fr_glow": 22,
+      "creature_rhino_crystal_leg_bl_glow": 22,
+      "creature_rhino_crystal_leg_br_glow": 22
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/rhinos.py",
+    "notes": "Crystal Rhino (legendary): living rock grown through with gemstones of every colour, Neon crystal horns.",
+    "glow": {
+      "creature_rhino_crystal_head_glow": [
+        40,
+        190,
+        255
+      ],
+      "creature_rhino_crystal_body_glow": [
+        160,
+        60,
+        255
+      ],
+      "creature_rhino_crystal_tail_glow": [
+        30,
+        235,
+        120
+      ],
+      "creature_rhino_crystal_leg_fl_glow": [
+        255,
+        40,
+        90
+      ],
+      "creature_rhino_crystal_leg_fr_glow": [
+        50,
+        110,
+        255
+      ],
+      "creature_rhino_crystal_leg_bl_glow": [
+        255,
+        170,
+        20
+      ],
+      "creature_rhino_crystal_leg_br_glow": [
+        255,
+        70,
+        190
+      ]
+    },
+    "centres": {
+      "creature_rhino_crystal_body": [
+        0.055,
+        6.157,
+        -0.579
+      ],
+      "creature_rhino_crystal_head": [
+        0.007,
+        4.91,
+        5.757
+      ],
+      "creature_rhino_crystal_tail": [
+        -0.192,
+        3.539,
+        -6.693
+      ],
+      "creature_rhino_crystal_leg_fl": [
+        2.027,
+        1.972,
+        2.127
+      ],
+      "creature_rhino_crystal_leg_fr": [
+        -1.853,
+        2.109,
+        2.115
+      ],
+      "creature_rhino_crystal_leg_bl": [
+        2.003,
+        2.043,
+        -3.319
+      ],
+      "creature_rhino_crystal_leg_br": [
+        -1.939,
+        2.063,
+        -3.294
+      ],
+      "creature_rhino_crystal_body_glow": [
+        0.056,
+        8.962,
+        -0.481
+      ],
+      "creature_rhino_crystal_head_glow": [
+        -0.004,
+        6.476,
+        6.442
+      ],
+      "creature_rhino_crystal_tail_glow": [
+        -0.004,
+        2.297,
+        -6.828
+      ],
+      "creature_rhino_crystal_leg_fl_glow": [
+        3.065,
+        3.384,
+        2.469
+      ],
+      "creature_rhino_crystal_leg_fr_glow": [
+        -3.043,
+        3.399,
+        2.442
+      ],
+      "creature_rhino_crystal_leg_bl_glow": [
+        3.143,
+        3.405,
+        -3.661
+      ],
+      "creature_rhino_crystal_leg_br_glow": [
+        -3.142,
+        3.406,
+        -3.641
+      ]
+    },
+    "joints": {
+      "creature_rhino_crystal_head": [
+        -0.004,
+        4.733,
+        3.816
+      ],
+      "creature_rhino_crystal_leg_fl": [
+        1.544,
+        3.443,
+        2.096
+      ],
+      "creature_rhino_crystal_leg_fr": [
+        -1.552,
+        3.443,
+        2.096
+      ],
+      "creature_rhino_crystal_leg_bl": [
+        1.544,
+        3.443,
+        -3.279
+      ],
+      "creature_rhino_crystal_leg_br": [
+        -1.552,
+        3.443,
+        -3.279
+      ],
+      "creature_rhino_crystal_tail": [
+        -0.004,
+        5.163,
+        -5.536
+      ]
+    }
+  },
+  "creature_tortoise_island": {
+    "fbx": "build/blender/stations/creature_tortoise_island.fbx",
+    "png": "build/blender/stations/creature_tortoise_island.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_island.png",
+    "size_studs": [
+      9.1,
+      9.85,
+      14.83
+    ],
+    "tris": 4468,
+    "parts": {
+      "creature_tortoise_island_body": 2684,
+      "creature_tortoise_island_head": 560,
+      "creature_tortoise_island_tail": 24,
+      "creature_tortoise_island_leg_fl": 344,
+      "creature_tortoise_island_leg_fr": 344,
+      "creature_tortoise_island_leg_bl": 184,
+      "creature_tortoise_island_leg_br": 184,
+      "creature_tortoise_island_body_glow": 120,
+      "creature_tortoise_island_head_glow": 24
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/tortoises.py",
+    "notes": "Island Tortoise (mythic): mossy stone carrying an island, an acacia with Neon fruit.",
+    "glow": {
+      "creature_tortoise_island_head_glow": [
+        255,
+        206,
+        80
+      ],
+      "creature_tortoise_island_body_glow": [
+        255,
+        206,
+        80
+      ]
+    },
+    "centres": {
+      "creature_tortoise_island_body": [
+        0.006,
+        5.467,
+        -0.991
+      ],
+      "creature_tortoise_island_head": [
+        -0.005,
+        2.874,
+        4.739
+      ],
+      "creature_tortoise_island_tail": [
+        0.0,
+        1.455,
+        -5.984
+      ],
+      "creature_tortoise_island_leg_fl": [
+        2.925,
+        1.209,
+        1.926
+      ],
+      "creature_tortoise_island_leg_fr": [
+        -2.925,
+        1.209,
+        1.926
+      ],
+      "creature_tortoise_island_leg_bl": [
+        2.925,
+        1.204,
+        -3.84
+      ],
+      "creature_tortoise_island_leg_br": [
+        -2.925,
+        1.198,
+        -3.84
+      ],
+      "creature_tortoise_island_body_glow": [
+        -0.027,
+        6.761,
+        -1.509
+      ],
+      "creature_tortoise_island_head_glow": [
+        0.002,
+        3.472,
+        5.739
+      ]
+    },
+    "joints": {
+      "creature_tortoise_island_head": [
+        0.0,
+        2.033,
+        2.42
+      ],
+      "creature_tortoise_island_leg_fl": [
+        2.09,
+        2.077,
+        1.21
+      ],
+      "creature_tortoise_island_leg_fr": [
+        -2.09,
+        2.077,
+        1.21
+      ],
+      "creature_tortoise_island_leg_bl": [
+        2.09,
+        2.077,
+        -3.19
+      ],
+      "creature_tortoise_island_leg_br": [
+        -2.09,
+        2.077,
+        -3.19
+      ],
+      "creature_tortoise_island_tail": [
+        0.0,
+        2.033,
+        -4.95
+      ]
+    }
+  },
+  "egg_meadow": {
+    "fbx": "build/blender/stations/egg_meadow.fbx",
+    "png": "build/blender/stations/egg_meadow.png",
+    "preview": "build/blender/stations/previews/egg_meadow.png",
+    "size_studs": [
+      3.23,
+      3.35,
+      3.34
+    ],
+    "tris": 5224,
+    "parts": {
+      "egg_meadow_body": 5224
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Meadow Egg: cream dappled green, in a nest of grass and daisies, a flowering vine, a butterfly.",
+    "glow": {},
+    "centres": {
+      "egg_meadow_body": [
+        0.0,
+        1.673,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "egg_wild": {
+    "fbx": "build/blender/stations/egg_wild.fbx",
+    "png": "build/blender/stations/egg_wild.png",
+    "preview": "build/blender/stations/previews/egg_wild.png",
+    "size_studs": [
+      3.52,
+      3.0,
+      3.55
+    ],
+    "tris": 4490,
+    "parts": {
+      "egg_wild_body": 4350,
+      "egg_wild_body_glow": 140
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Wild Egg: leaf-green with bark spots, bound in thorned vines, ferns and Neon mushrooms at its foot.",
+    "glow": {
+      "egg_wild_body_glow": [
+        90,
+        255,
+        200
+      ]
+    },
+    "centres": {
+      "egg_wild_body": [
+        0.0,
+        1.502,
+        -0.0
+      ],
+      "egg_wild_body_glow": [
+        0.049,
+        0.517,
+        -0.022
+      ]
+    },
+    "joints": {}
+  },
+  "egg_safari": {
+    "fbx": "build/blender/stations/egg_safari.fbx",
+    "png": "build/blender/stations/egg_safari.png",
+    "preview": "build/blender/stations/previews/egg_safari.png",
+    "size_studs": [
+      3.37,
+      3.49,
+      3.43
+    ],
+    "tris": 5416,
+    "parts": {
+      "egg_safari_body": 5416
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Safari Egg: sand-gold, spotted and painted, roped and strapped, hung with feathers and a tooth.",
+    "glow": {},
+    "centres": {
+      "egg_safari_body": [
+        0.0,
+        1.745,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "egg_golden": {
+    "fbx": "build/blender/stations/egg_golden.fbx",
+    "png": "build/blender/stations/egg_golden.png",
+    "preview": "build/blender/stations/previews/egg_golden.png",
+    "size_studs": [
+      2.55,
+      3.54,
+      2.67
+    ],
+    "tris": 6548,
+    "parts": {
+      "egg_golden_body": 6188,
+      "egg_golden_body_glow": 360
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/eggs.py",
+    "notes": "Golden Egg: beaten gold, hooped and ribbed, set with Neon violet gems, crowned, on a clawed stand.",
+    "glow": {
+      "egg_golden_body_glow": [
+        170,
+        70,
+        255
+      ]
+    },
+    "centres": {
+      "egg_golden_body": [
+        0.0,
+        1.75,
+        0.036
+      ],
+      "egg_golden_body_glow": [
+        -0.001,
+        2.307,
+        -0.063
+      ]
+    },
+    "joints": {}
+  },
+  "hub_floor": {
+    "fbx": "build/blender/stations/hub_floor.fbx",
+    "png": "build/blender/stations/hub_floor.png",
+    "preview": "build/blender/stations/previews/hub_floor.png",
+    "size_studs": [
+      97.0,
+      0.8,
+      97.0
+    ],
+    "tris": 4180,
+    "parts": {
+      "hub_floor_body": 4180
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The plaza's floor: warm cobbles in rings, a round of pale flags, a band of brick.",
+    "glow": {},
+    "centres": {
+      "hub_floor_body": [
+        0.0,
+        0.4,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": -0.3
+  },
+  "hub_fire": {
+    "fbx": "build/blender/stations/hub_fire.fbx",
+    "png": "build/blender/stations/hub_fire.png",
+    "preview": "build/blender/stations/previews/hub_fire.png",
+    "size_studs": [
+      27.0,
+      5.45,
+      27.0
+    ],
+    "tris": 2244,
+    "parts": {
+      "hub_fire_body": 2204,
+      "hub_fire_body_glow": 10,
+      "hub_fire_body2_glow": 10,
+      "hub_fire_body3_glow": 10,
+      "hub_fire_body4_glow": 10
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The fire pit and the two rows of curved benches round it. Its flames are the glow.",
+    "glow": {
+      "hub_fire_body_glow": [
+        255,
+        150,
+        40
+      ],
+      "hub_fire_body2_glow": [
+        255,
+        200,
+        70
+      ],
+      "hub_fire_body3_glow": [
+        255,
+        110,
+        40
+      ],
+      "hub_fire_body4_glow": [
+        255,
+        220,
+        110
+      ]
+    },
+    "centres": {
+      "hub_fire_body": [
+        0.0,
+        1.888,
+        -0.0
+      ],
+      "hub_fire_body_glow": [
+        0.0,
+        3.15,
+        -0.0
+      ],
+      "hub_fire_body2_glow": [
+        0.7,
+        2.45,
+        -0.3
+      ],
+      "hub_fire_body3_glow": [
+        -0.6,
+        2.55,
+        -0.5
+      ],
+      "hub_fire_body4_glow": [
+        0.1,
+        2.25,
+        0.7
+      ]
+    },
+    "joints": {},
+    "lift": 0.05
+  },
+  "hub_market": {
+    "fbx": "build/blender/stations/hub_market.fbx",
+    "png": "build/blender/stations/hub_market.png",
+    "preview": "build/blender/stations/previews/hub_market.png",
+    "size_studs": [
+      34.7,
+      8.2,
+      36.66
+    ],
+    "tris": 2322,
+    "parts": {
+      "hub_market_body": 2322
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The market: five striped stalls, crates and barrels, the egg seller's cart.",
+    "glow": {},
+    "centres": {
+      "hub_market_body": [
+        -23.744,
+        4.1,
+        22.292
+      ]
+    },
+    "joints": {},
+    "lift": 0.3
+  },
+  "hub_cafe": {
+    "fbx": "build/blender/stations/hub_cafe.fbx",
+    "png": "build/blender/stations/hub_cafe.png",
+    "preview": "build/blender/stations/previews/hub_cafe.png",
+    "size_studs": [
+      28.98,
+      11.2,
+      27.48
+    ],
+    "tris": 1988,
+    "parts": {
+      "hub_cafe_body": 1988
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The cafe: an open hut with a counter and an awning, four tables under parasols.",
+    "glow": {},
+    "centres": {
+      "hub_cafe_body": [
+        -25.588,
+        5.6,
+        -26.338
+      ]
+    },
+    "joints": {},
+    "lift": 0.3
+  },
+  "hub_stage": {
+    "fbx": "build/blender/stations/hub_stage.fbx",
+    "png": "build/blender/stations/hub_stage.png",
+    "preview": "build/blender/stations/previews/hub_stage.png",
+    "size_studs": [
+      31.59,
+      14.6,
+      31.59
+    ],
+    "tris": 1724,
+    "parts": {
+      "hub_stage_body": 1584,
+      "hub_stage_body_glow": 140
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The stage: a roofed platform with a painted back, lamps along its front, three rows of benches.",
+    "glow": {
+      "hub_stage_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_stage_body": [
+        26.404,
+        7.3,
+        -26.404
+      ],
+      "hub_stage_body_glow": [
+        26.747,
+        2.0,
+        -26.747
+      ]
+    },
+    "joints": {},
+    "lift": 0.3
+  },
+  "hub_green": {
+    "fbx": "build/blender/stations/hub_green.fbx",
+    "png": "build/blender/stations/hub_green.png",
+    "preview": "build/blender/stations/previews/hub_green.png",
+    "size_studs": [
+      38.91,
+      28.56,
+      39.83
+    ],
+    "tris": 2444,
+    "parts": {
+      "hub_green_body": 2264,
+      "hub_green_body_glow": 180
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The green: the meeting tree with its bench, swing and lanterns, a pond with a pier, a trough, picnic tables.",
+    "glow": {
+      "hub_green_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_green_body": [
+        24.32,
+        14.278,
+        22.284
+      ],
+      "hub_green_body_glow": [
+        24.263,
+        14.411,
+        25.543
+      ]
+    },
+    "joints": {},
+    "lift": -0.311
+  },
+  "hub_lights": {
+    "fbx": "build/blender/stations/hub_lights.fbx",
+    "png": "build/blender/stations/hub_lights.png",
+    "preview": "build/blender/stations/previews/hub_lights.png",
+    "size_studs": [
+      89.11,
+      10.25,
+      88.51
+    ],
+    "tris": 9504,
+    "parts": {
+      "hub_lights_body": 9344,
+      "hub_lights_body_glow": 160
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "Lamps on the kerb, strings of flags from a ring of poles, planters.",
+    "glow": {
+      "hub_lights_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_lights_body": [
+        0.183,
+        5.126,
+        -0.069
+      ],
+      "hub_lights_body_glow": [
+        0.0,
+        6.618,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.132
+  },
+  "hub_signs": {
+    "fbx": "build/blender/stations/hub_signs.fbx",
+    "png": "build/blender/stations/hub_signs.png",
+    "preview": "build/blender/stations/previews/hub_signs.png",
+    "size_studs": [
+      93.12,
+      10.7,
+      98.22
+    ],
+    "tris": 11848,
+    "parts": {
+      "hub_signs_body": 11808,
+      "hub_signs_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "A finger post at each road, the notice board, the arch over the south walk.",
+    "glow": {
+      "hub_signs_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_signs_body": [
+        0.0,
+        5.35,
+        2.55
+      ],
+      "hub_signs_body_glow": [
+        0.0,
+        5.05,
+        51.1
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_track_0_0": {
+    "fbx": "build/blender/stations/area_track_0_0.fbx",
+    "png": "build/blender/stations/area_track_0_0.png",
+    "preview": "build/blender/stations/previews/area_track_0_0.png",
+    "size_studs": [
+      138.0,
+      1.88,
+      90.88
+    ],
+    "tris": 552,
+    "parts": {
+      "area_track_0_0_body": 552
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at level 0 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_track_0_0_body": [
+        0.0,
+        0.94,
+        5.44
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_track_0_1": {
+    "fbx": "build/blender/stations/area_track_0_1.fbx",
+    "png": "build/blender/stations/area_track_0_1.png",
+    "preview": "build/blender/stations/previews/area_track_0_1.png",
+    "size_studs": [
+      30.0,
+      13.75,
+      1.58
+    ],
+    "tris": 1940,
+    "parts": {
+      "area_track_0_1_body": 1940
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at levels 0 to 1 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_track_0_1_body": [
+        0.0,
+        6.875,
+        60.037
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_track_1_5": {
+    "fbx": "build/blender/stations/area_track_1_5.fbx",
+    "png": "build/blender/stations/area_track_1_5.png",
+    "preview": "build/blender/stations/previews/area_track_1_5.png",
+    "size_studs": [
+      162.45,
+      17.48,
+      97.47
+    ],
+    "tris": 1724,
+    "parts": {
+      "area_track_1_5_body": 1724
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at levels 1 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_track_1_5_body": [
+        -0.077,
+        8.739,
+        -12.234
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_track_2_5": {
+    "fbx": "build/blender/stations/area_track_2_5.fbx",
+    "png": "build/blender/stations/area_track_2_5.png",
+    "preview": "build/blender/stations/previews/area_track_2_5.png",
+    "size_studs": [
+      146.25,
+      37.62,
+      103.08
+    ],
+    "tris": 3536,
+    "parts": {
+      "area_track_2_5_body": 3496,
+      "area_track_2_5_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at levels 2 to 5 of the Training Grounds.",
+    "glow": {
+      "area_track_2_5_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "area_track_2_5_body": [
+        0.0,
+        18.812,
+        11.459
+      ],
+      "area_track_2_5_body_glow": [
+        -0.0,
+        11.625,
+        61.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_track_3_5": {
+    "fbx": "build/blender/stations/area_track_3_5.fbx",
+    "png": "build/blender/stations/area_track_3_5.png",
+    "preview": "build/blender/stations/previews/area_track_3_5.png",
+    "size_studs": [
+      109.42,
+      6.49,
+      60.51
+    ],
+    "tris": 1384,
+    "parts": {
+      "area_track_3_5_body": 1384
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at levels 3 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_track_3_5_body": [
+        -15.039,
+        3.245,
+        -20.382
+      ]
+    },
+    "joints": {},
+    "lift": 0.434
+  },
+  "area_track_4_5": {
+    "fbx": "build/blender/stations/area_track_4_5.fbx",
+    "png": "build/blender/stations/area_track_4_5.png",
+    "preview": "build/blender/stations/previews/area_track_4_5.png",
+    "size_studs": [
+      55.0,
+      25.58,
+      23.74
+    ],
+    "tris": 196,
+    "parts": {
+      "area_track_4_5_body": 196
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at levels 4 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_track_4_5_body": [
+        -10.0,
+        12.79,
+        -51.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_track_5_5": {
+    "fbx": "build/blender/stations/area_track_5_5.fbx",
+    "png": "build/blender/stations/area_track_5_5.png",
+    "preview": "build/blender/stations/previews/area_track_5_5.png",
+    "size_studs": [
+      150.07,
+      38.38,
+      114.12
+    ],
+    "tris": 1318,
+    "parts": {
+      "area_track_5_5_body": 1198,
+      "area_track_5_5_body_glow": 120
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The track's training area: what stands at level 5 of the Training Grounds.",
+    "glow": {
+      "area_track_5_5_body_glow": [
+        60,
+        150,
+        255
+      ]
+    },
+    "centres": {
+      "area_track_5_5_body": [
+        0.0,
+        19.188,
+        2.063
+      ],
+      "area_track_5_5_body_glow": [
+        0.0,
+        0.587,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_gym_0_0": {
+    "fbx": "build/blender/stations/area_gym_0_0.fbx",
+    "png": "build/blender/stations/area_gym_0_0.png",
+    "preview": "build/blender/stations/previews/area_gym_0_0.png",
+    "size_studs": [
+      114.26,
+      0.62,
+      90.88
+    ],
+    "tris": 120,
+    "parts": {
+      "area_gym_0_0_body": 120
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at level 0 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_gym_0_0_body": [
+        -2.487,
+        0.312,
+        5.44
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_gym_0_1": {
+    "fbx": "build/blender/stations/area_gym_0_1.fbx",
+    "png": "build/blender/stations/area_gym_0_1.png",
+    "preview": "build/blender/stations/previews/area_gym_0_1.png",
+    "size_studs": [
+      42.47,
+      13.75,
+      101.24
+    ],
+    "tris": 2028,
+    "parts": {
+      "area_gym_0_1_body": 2028
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at levels 0 to 1 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_gym_0_1_body": [
+        6.237,
+        6.875,
+        10.203
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_gym_0_5": {
+    "fbx": "build/blender/stations/area_gym_0_5.fbx",
+    "png": "build/blender/stations/area_gym_0_5.png",
+    "preview": "build/blender/stations/previews/area_gym_0_5.png",
+    "size_studs": [
+      13.85,
+      11.78,
+      12.21
+    ],
+    "tris": 20,
+    "parts": {
+      "area_gym_0_5_body": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at levels 0 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_gym_0_5_body": [
+        -20.62,
+        5.89,
+        33.16
+      ]
+    },
+    "joints": {},
+    "lift": 0.941
+  },
+  "area_gym_1_5": {
+    "fbx": "build/blender/stations/area_gym_1_5.fbx",
+    "png": "build/blender/stations/area_gym_1_5.png",
+    "preview": "build/blender/stations/previews/area_gym_1_5.png",
+    "size_studs": [
+      100.0,
+      10.6,
+      37.12
+    ],
+    "tris": 568,
+    "parts": {
+      "area_gym_1_5_body": 568
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at levels 1 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_gym_1_5_body": [
+        -17.5,
+        5.3,
+        20.562
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_gym_2_5": {
+    "fbx": "build/blender/stations/area_gym_2_5.fbx",
+    "png": "build/blender/stations/area_gym_2_5.png",
+    "preview": "build/blender/stations/previews/area_gym_2_5.png",
+    "size_studs": [
+      134.9,
+      37.83,
+      109.25
+    ],
+    "tris": 2872,
+    "parts": {
+      "area_gym_2_5_body": 2832,
+      "area_gym_2_5_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at levels 2 to 5 of the Training Grounds.",
+    "glow": {
+      "area_gym_2_5_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "area_gym_2_5_body": [
+        -2.55,
+        18.916,
+        8.375
+      ],
+      "area_gym_2_5_body_glow": [
+        -0.0,
+        11.833,
+        61.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.417
+  },
+  "area_gym_3_5": {
+    "fbx": "build/blender/stations/area_gym_3_5.fbx",
+    "png": "build/blender/stations/area_gym_3_5.png",
+    "preview": "build/blender/stations/previews/area_gym_3_5.png",
+    "size_studs": [
+      132.68,
+      15.0,
+      82.65
+    ],
+    "tris": 1124,
+    "parts": {
+      "area_gym_3_5_body": 1104,
+      "area_gym_3_5_body_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at levels 3 to 5 of the Training Grounds.",
+    "glow": {
+      "area_gym_3_5_body_glow": [
+        255,
+        210,
+        60
+      ]
+    },
+    "centres": {
+      "area_gym_3_5_body": [
+        -2.839,
+        7.5,
+        -1.824
+      ],
+      "area_gym_3_5_body_glow": [
+        32.5,
+        12.625,
+        32.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_gym_4_5": {
+    "fbx": "build/blender/stations/area_gym_4_5.fbx",
+    "png": "build/blender/stations/area_gym_4_5.png",
+    "preview": "build/blender/stations/previews/area_gym_4_5.png",
+    "size_studs": [
+      143.5,
+      29.25,
+      60.07
+    ],
+    "tris": 650,
+    "parts": {
+      "area_gym_4_5_body": 650
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at levels 4 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_gym_4_5_body": [
+        0.5,
+        14.625,
+        -24.785
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_gym_5_5": {
+    "fbx": "build/blender/stations/area_gym_5_5.fbx",
+    "png": "build/blender/stations/area_gym_5_5.png",
+    "preview": "build/blender/stations/previews/area_gym_5_5.png",
+    "size_studs": [
+      154.66,
+      35.0,
+      113.0
+    ],
+    "tris": 1968,
+    "parts": {
+      "area_gym_5_5_body": 1804,
+      "area_gym_5_5_body_glow": 144,
+      "area_gym_5_5_body2_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The gym's training area: what stands at level 5 of the Training Grounds.",
+    "glow": {
+      "area_gym_5_5_body_glow": [
+        255,
+        150,
+        50
+      ],
+      "area_gym_5_5_body2_glow": [
+        255,
+        210,
+        60
+      ]
+    },
+    "centres": {
+      "area_gym_5_5_body": [
+        0.203,
+        16.562,
+        -0.625
+      ],
+      "area_gym_5_5_body_glow": [
+        0.037,
+        8.875,
+        -0.686
+      ],
+      "area_gym_5_5_body2_glow": [
+        54.0,
+        33.625,
+        -43.75
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_pool_0_0": {
+    "fbx": "build/blender/stations/area_pool_0_0.fbx",
+    "png": "build/blender/stations/area_pool_0_0.png",
+    "preview": "build/blender/stations/previews/area_pool_0_0.png",
+    "size_studs": [
+      114.26,
+      2.8,
+      90.88
+    ],
+    "tris": 552,
+    "parts": {
+      "area_pool_0_0_body": 552
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at level 0 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_pool_0_0_body": [
+        -2.487,
+        1.402,
+        5.44
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_pool_0_1": {
+    "fbx": "build/blender/stations/area_pool_0_1.fbx",
+    "png": "build/blender/stations/area_pool_0_1.png",
+    "preview": "build/blender/stations/previews/area_pool_0_1.png",
+    "size_studs": [
+      30.0,
+      13.75,
+      1.58
+    ],
+    "tris": 1664,
+    "parts": {
+      "area_pool_0_1_body": 1664
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at levels 0 to 1 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_pool_0_1_body": [
+        0.0,
+        6.875,
+        60.037
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_pool_1_5": {
+    "fbx": "build/blender/stations/area_pool_1_5.fbx",
+    "png": "build/blender/stations/area_pool_1_5.png",
+    "preview": "build/blender/stations/previews/area_pool_1_5.png",
+    "size_studs": [
+      148.25,
+      7.16,
+      86.88
+    ],
+    "tris": 2916,
+    "parts": {
+      "area_pool_1_5_body": 2916
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at levels 1 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_pool_1_5_body": [
+        -2.75,
+        3.582,
+        5.062
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_pool_2_5": {
+    "fbx": "build/blender/stations/area_pool_2_5.fbx",
+    "png": "build/blender/stations/area_pool_2_5.png",
+    "preview": "build/blender/stations/previews/area_pool_2_5.png",
+    "size_studs": [
+      175.72,
+      37.66,
+      128.99
+    ],
+    "tris": 6040,
+    "parts": {
+      "area_pool_2_5_body": 6000,
+      "area_pool_2_5_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at levels 2 to 5 of the Training Grounds.",
+    "glow": {
+      "area_pool_2_5_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "area_pool_2_5_body": [
+        -0.0,
+        18.828,
+        -1.494
+      ],
+      "area_pool_2_5_body_glow": [
+        -0.0,
+        11.657,
+        61.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.593
+  },
+  "area_pool_3_5": {
+    "fbx": "build/blender/stations/area_pool_3_5.fbx",
+    "png": "build/blender/stations/area_pool_3_5.png",
+    "preview": "build/blender/stations/previews/area_pool_3_5.png",
+    "size_studs": [
+      126.3,
+      25.88,
+      76.18
+    ],
+    "tris": 750,
+    "parts": {
+      "area_pool_3_5_body": 750
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at levels 3 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_pool_3_5_body": [
+        -1.402,
+        12.938,
+        0.912
+      ]
+    },
+    "joints": {},
+    "lift": 3.5
+  },
+  "area_pool_4_5": {
+    "fbx": "build/blender/stations/area_pool_4_5.fbx",
+    "png": "build/blender/stations/area_pool_4_5.png",
+    "preview": "build/blender/stations/previews/area_pool_4_5.png",
+    "size_studs": [
+      149.88,
+      31.0,
+      86.75
+    ],
+    "tris": 908,
+    "parts": {
+      "area_pool_4_5_body": 908
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at levels 4 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_pool_4_5_body": [
+        2.188,
+        15.5,
+        -3.125
+      ]
+    },
+    "joints": {},
+    "lift": 4.375
+  },
+  "area_pool_5_5": {
+    "fbx": "build/blender/stations/area_pool_5_5.fbx",
+    "png": "build/blender/stations/area_pool_5_5.png",
+    "preview": "build/blender/stations/previews/area_pool_5_5.png",
+    "size_studs": [
+      54.54,
+      37.5,
+      35.79
+    ],
+    "tris": 1170,
+    "parts": {
+      "area_pool_5_5_body": 1170
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The pool's training area: what stands at level 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_pool_5_5_body": [
+        11.956,
+        18.75,
+        -32.857
+      ]
+    },
+    "joints": {},
+    "lift": 4.375
+  },
+  "area_library_0_0": {
+    "fbx": "build/blender/stations/area_library_0_0.fbx",
+    "png": "build/blender/stations/area_library_0_0.png",
+    "preview": "build/blender/stations/previews/area_library_0_0.png",
+    "size_studs": [
+      114.26,
+      13.38,
+      90.88
+    ],
+    "tris": 608,
+    "parts": {
+      "area_library_0_0_body": 588,
+      "area_library_0_0_body_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at level 0 of the Training Grounds.",
+    "glow": {
+      "area_library_0_0_body_glow": [
+        255,
+        200,
+        90
+      ]
+    },
+    "centres": {
+      "area_library_0_0_body": [
+        -2.487,
+        6.688,
+        5.44
+      ],
+      "area_library_0_0_body_glow": [
+        8.0,
+        3.625,
+        -2.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_library_0_1": {
+    "fbx": "build/blender/stations/area_library_0_1.fbx",
+    "png": "build/blender/stations/area_library_0_1.png",
+    "preview": "build/blender/stations/previews/area_library_0_1.png",
+    "size_studs": [
+      30.0,
+      13.75,
+      1.58
+    ],
+    "tris": 2244,
+    "parts": {
+      "area_library_0_1_body": 2244
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at levels 0 to 1 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_library_0_1_body": [
+        0.0,
+        6.875,
+        60.037
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_library_1_5": {
+    "fbx": "build/blender/stations/area_library_1_5.fbx",
+    "png": "build/blender/stations/area_library_1_5.png",
+    "preview": "build/blender/stations/previews/area_library_1_5.png",
+    "size_studs": [
+      151.54,
+      24.06,
+      110.63
+    ],
+    "tris": 1916,
+    "parts": {
+      "area_library_1_5_body": 1876,
+      "area_library_1_5_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at levels 1 to 5 of the Training Grounds.",
+    "glow": {
+      "area_library_1_5_body_glow": [
+        255,
+        200,
+        90
+      ]
+    },
+    "centres": {
+      "area_library_1_5_body": [
+        1.25,
+        12.028,
+        -4.386
+      ],
+      "area_library_1_5_body_glow": [
+        3.375,
+        8.682,
+        23.125
+      ]
+    },
+    "joints": {},
+    "lift": 0.568
+  },
+  "area_library_2_5": {
+    "fbx": "build/blender/stations/area_library_2_5.fbx",
+    "png": "build/blender/stations/area_library_2_5.png",
+    "preview": "build/blender/stations/previews/area_library_2_5.png",
+    "size_studs": [
+      152.25,
+      37.62,
+      123.15
+    ],
+    "tris": 10296,
+    "parts": {
+      "area_library_2_5_body": 10208,
+      "area_library_2_5_body_glow": 40,
+      "area_library_2_5_body2_glow": 48
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at levels 2 to 5 of the Training Grounds.",
+    "glow": {
+      "area_library_2_5_body_glow": [
+        255,
+        214,
+        130
+      ],
+      "area_library_2_5_body2_glow": [
+        60,
+        215,
+        225
+      ]
+    },
+    "centres": {
+      "area_library_2_5_body": [
+        0.0,
+        18.812,
+        1.427
+      ],
+      "area_library_2_5_body_glow": [
+        -0.0,
+        11.625,
+        61.0
+      ],
+      "area_library_2_5_body2_glow": [
+        0.0,
+        12.625,
+        19.375
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_library_3_5": {
+    "fbx": "build/blender/stations/area_library_3_5.fbx",
+    "png": "build/blender/stations/area_library_3_5.png",
+    "preview": "build/blender/stations/previews/area_library_3_5.png",
+    "size_studs": [
+      106.43,
+      15.98,
+      73.38
+    ],
+    "tris": 1332,
+    "parts": {
+      "area_library_3_5_body": 1176,
+      "area_library_3_5_body_glow": 136,
+      "area_library_3_5_body2_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at levels 3 to 5 of the Training Grounds.",
+    "glow": {
+      "area_library_3_5_body_glow": [
+        60,
+        215,
+        225
+      ],
+      "area_library_3_5_body2_glow": [
+        255,
+        200,
+        90
+      ]
+    },
+    "centres": {
+      "area_library_3_5_body": [
+        -10.712,
+        7.99,
+        6.691
+      ],
+      "area_library_3_5_body_glow": [
+        35.0,
+        10.425,
+        36.25
+      ],
+      "area_library_3_5_body2_glow": [
+        -52.5,
+        10.875,
+        25.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_library_4_5": {
+    "fbx": "build/blender/stations/area_library_4_5.fbx",
+    "png": "build/blender/stations/area_library_4_5.png",
+    "preview": "build/blender/stations/previews/area_library_4_5.png",
+    "size_studs": [
+      106.33,
+      38.0,
+      89.75
+    ],
+    "tris": 1732,
+    "parts": {
+      "area_library_4_5_body": 1212,
+      "area_library_4_5_body_glow": 24,
+      "area_library_4_5_body2_glow": 24,
+      "area_library_4_5_body3_glow": 376,
+      "area_library_4_5_body4_glow": 36,
+      "area_library_4_5_body5_glow": 24,
+      "area_library_4_5_body6_glow": 36
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at levels 4 to 5 of the Training Grounds.",
+    "glow": {
+      "area_library_4_5_body_glow": [
+        255,
+        120,
+        170
+      ],
+      "area_library_4_5_body2_glow": [
+        120,
+        150,
+        255
+      ],
+      "area_library_4_5_body3_glow": [
+        60,
+        215,
+        225
+      ],
+      "area_library_4_5_body4_glow": [
+        190,
+        130,
+        255
+      ],
+      "area_library_4_5_body5_glow": [
+        255,
+        210,
+        110
+      ],
+      "area_library_4_5_body6_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "area_library_4_5_body": [
+        3.085,
+        18.625,
+        -13.625
+      ],
+      "area_library_4_5_body_glow": [
+        0.0,
+        17.0,
+        -57.0
+      ],
+      "area_library_4_5_body2_glow": [
+        -2.625,
+        11.375,
+        -57.0
+      ],
+      "area_library_4_5_body3_glow": [
+        0.0,
+        21.95,
+        -22.557
+      ],
+      "area_library_4_5_body4_glow": [
+        0.0,
+        19.812,
+        -57.0
+      ],
+      "area_library_4_5_body5_glow": [
+        2.625,
+        25.75,
+        -57.0
+      ],
+      "area_library_4_5_body6_glow": [
+        52.5,
+        2.625,
+        27.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_library_5_5": {
+    "fbx": "build/blender/stations/area_library_5_5.fbx",
+    "png": "build/blender/stations/area_library_5_5.png",
+    "preview": "build/blender/stations/previews/area_library_5_5.png",
+    "size_studs": [
+      94.95,
+      37.67,
+      68.0
+    ],
+    "tris": 1354,
+    "parts": {
+      "area_library_5_5_body": 158,
+      "area_library_5_5_body_glow": 48,
+      "area_library_5_5_body2_glow": 308,
+      "area_library_5_5_body3_glow": 840
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The library's training area: what stands at level 5 of the Training Grounds.",
+    "glow": {
+      "area_library_5_5_body_glow": [
+        255,
+        214,
+        130
+      ],
+      "area_library_5_5_body2_glow": [
+        60,
+        215,
+        225
+      ],
+      "area_library_5_5_body3_glow": [
+        150,
+        120,
+        255
+      ]
+    },
+    "centres": {
+      "area_library_5_5_body": [
+        55.635,
+        18.729,
+        -33.653
+      ],
+      "area_library_5_5_body_glow": [
+        53.605,
+        12.875,
+        -28.874
+      ],
+      "area_library_5_5_body2_glow": [
+        8.97,
+        19.225,
+        -5.0
+      ],
+      "area_library_5_5_body3_glow": [
+        -0.001,
+        25.625,
+        -5.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_spring_0_0": {
+    "fbx": "build/blender/stations/area_spring_0_0.fbx",
+    "png": "build/blender/stations/area_spring_0_0.png",
+    "preview": "build/blender/stations/previews/area_spring_0_0.png",
+    "size_studs": [
+      114.26,
+      14.3,
+      90.88
+    ],
+    "tris": 1220,
+    "parts": {
+      "area_spring_0_0_body": 1220
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at level 0 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_spring_0_0_body": [
+        -2.487,
+        7.152,
+        5.44
+      ]
+    },
+    "joints": {},
+    "lift": -2.143
+  },
+  "area_spring_0_1": {
+    "fbx": "build/blender/stations/area_spring_0_1.fbx",
+    "png": "build/blender/stations/area_spring_0_1.png",
+    "preview": "build/blender/stations/previews/area_spring_0_1.png",
+    "size_studs": [
+      30.0,
+      13.75,
+      1.58
+    ],
+    "tris": 2192,
+    "parts": {
+      "area_spring_0_1_body": 2192
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at levels 0 to 1 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_spring_0_1_body": [
+        0.0,
+        6.875,
+        60.037
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_spring_1_5": {
+    "fbx": "build/blender/stations/area_spring_1_5.fbx",
+    "png": "build/blender/stations/area_spring_1_5.png",
+    "preview": "build/blender/stations/previews/area_spring_1_5.png",
+    "size_studs": [
+      113.0,
+      13.91,
+      113.0
+    ],
+    "tris": 1160,
+    "parts": {
+      "area_spring_1_5_body": 1136,
+      "area_spring_1_5_body_glow": 24
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at levels 1 to 5 of the Training Grounds.",
+    "glow": {
+      "area_spring_1_5_body_glow": [
+        150,
+        240,
+        226
+      ]
+    },
+    "centres": {
+      "area_spring_1_5_body": [
+        0.0,
+        6.954,
+        -2.5
+      ],
+      "area_spring_1_5_body_glow": [
+        0.0,
+        2.317,
+        13.197
+      ]
+    },
+    "joints": {},
+    "lift": -1.067
+  },
+  "area_spring_2_3": {
+    "fbx": "build/blender/stations/area_spring_2_3.fbx",
+    "png": "build/blender/stations/area_spring_2_3.png",
+    "preview": "build/blender/stations/previews/area_spring_2_3.png",
+    "size_studs": [
+      14.53,
+      22.24,
+      13.83
+    ],
+    "tris": 100,
+    "parts": {
+      "area_spring_2_3_body": 100
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at levels 2 to 3 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_spring_2_3_body": [
+        0.576,
+        11.119,
+        -2.259
+      ]
+    },
+    "joints": {},
+    "lift": 7.625
+  },
+  "area_spring_2_5": {
+    "fbx": "build/blender/stations/area_spring_2_5.fbx",
+    "png": "build/blender/stations/area_spring_2_5.png",
+    "preview": "build/blender/stations/previews/area_spring_2_5.png",
+    "size_studs": [
+      131.0,
+      37.62,
+      127.05
+    ],
+    "tris": 9260,
+    "parts": {
+      "area_spring_2_5_body": 9196,
+      "area_spring_2_5_body_glow": 24,
+      "area_spring_2_5_body2_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at levels 2 to 5 of the Training Grounds.",
+    "glow": {
+      "area_spring_2_5_body_glow": [
+        150,
+        240,
+        226
+      ],
+      "area_spring_2_5_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "area_spring_2_5_body": [
+        9.25,
+        18.812,
+        -0.523
+      ],
+      "area_spring_2_5_body_glow": [
+        0.0,
+        0.625,
+        -2.5
+      ],
+      "area_spring_2_5_body2_glow": [
+        -0.0,
+        11.625,
+        61.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_spring_3_5": {
+    "fbx": "build/blender/stations/area_spring_3_5.fbx",
+    "png": "build/blender/stations/area_spring_3_5.png",
+    "preview": "build/blender/stations/previews/area_spring_3_5.png",
+    "size_studs": [
+      160.7,
+      20.18,
+      103.85
+    ],
+    "tris": 1740,
+    "parts": {
+      "area_spring_3_5_body": 1716,
+      "area_spring_3_5_body_glow": 24
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at levels 3 to 5 of the Training Grounds.",
+    "glow": {
+      "area_spring_3_5_body_glow": [
+        150,
+        240,
+        226
+      ]
+    },
+    "centres": {
+      "area_spring_3_5_body": [
+        0.23,
+        10.089,
+        6.853
+      ],
+      "area_spring_3_5_body_glow": [
+        0.0,
+        0.625,
+        -18.197
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_spring_4_5": {
+    "fbx": "build/blender/stations/area_spring_4_5.fbx",
+    "png": "build/blender/stations/area_spring_4_5.png",
+    "preview": "build/blender/stations/previews/area_spring_4_5.png",
+    "size_studs": [
+      141.44,
+      43.7,
+      74.81
+    ],
+    "tris": 1466,
+    "parts": {
+      "area_spring_4_5_body": 1466
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at levels 4 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_spring_4_5_body": [
+        9.281,
+        21.849,
+        -25.366
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_spring_5_5": {
+    "fbx": "build/blender/stations/area_spring_5_5.fbx",
+    "png": "build/blender/stations/area_spring_5_5.png",
+    "preview": "build/blender/stations/previews/area_spring_5_5.png",
+    "size_studs": [
+      153.53,
+      30.5,
+      93.42
+    ],
+    "tris": 2128,
+    "parts": {
+      "area_spring_5_5_body": 1796,
+      "area_spring_5_5_body_glow": 48,
+      "area_spring_5_5_body2_glow": 60,
+      "area_spring_5_5_body3_glow": 200,
+      "area_spring_5_5_body4_glow": 24
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The spring's training area: what stands at level 5 of the Training Grounds.",
+    "glow": {
+      "area_spring_5_5_body_glow": [
+        170,
+        240,
+        220
+      ],
+      "area_spring_5_5_body2_glow": [
+        255,
+        220,
+        150
+      ],
+      "area_spring_5_5_body3_glow": [
+        150,
+        255,
+        170
+      ],
+      "area_spring_5_5_body4_glow": [
+        70,
+        205,
+        120
+      ]
+    },
+    "centres": {
+      "area_spring_5_5_body": [
+        -1.737,
+        15.25,
+        -12.417
+      ],
+      "area_spring_5_5_body_glow": [
+        -68.5,
+        6.875,
+        -32.5
+      ],
+      "area_spring_5_5_body2_glow": [
+        0.0,
+        8.0,
+        -10.854
+      ],
+      "area_spring_5_5_body3_glow": [
+        -3.245,
+        25.0,
+        -3.102
+      ],
+      "area_spring_5_5_body4_glow": [
+        0.001,
+        5.25,
+        3.813
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_guard_0_0": {
+    "fbx": "build/blender/stations/area_guard_0_0.fbx",
+    "png": "build/blender/stations/area_guard_0_0.png",
+    "preview": "build/blender/stations/previews/area_guard_0_0.png",
+    "size_studs": [
+      114.26,
+      0.62,
+      90.88
+    ],
+    "tris": 120,
+    "parts": {
+      "area_guard_0_0_body": 120
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at level 0 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_guard_0_0_body": [
+        -2.487,
+        0.312,
+        5.44
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_guard_0_1": {
+    "fbx": "build/blender/stations/area_guard_0_1.fbx",
+    "png": "build/blender/stations/area_guard_0_1.png",
+    "preview": "build/blender/stations/previews/area_guard_0_1.png",
+    "size_studs": [
+      30.0,
+      13.75,
+      1.58
+    ],
+    "tris": 2068,
+    "parts": {
+      "area_guard_0_1_body": 2068
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at levels 0 to 1 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_guard_0_1_body": [
+        0.0,
+        6.875,
+        60.037
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "area_guard_0_5": {
+    "fbx": "build/blender/stations/area_guard_0_5.fbx",
+    "png": "build/blender/stations/area_guard_0_5.png",
+    "preview": "build/blender/stations/previews/area_guard_0_5.png",
+    "size_studs": [
+      27.5,
+      16.0,
+      6.5
+    ],
+    "tris": 336,
+    "parts": {
+      "area_guard_0_5_body": 336
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at levels 0 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_guard_0_5_body": [
+        0.0,
+        8.0,
+        31.75
+      ]
+    },
+    "joints": {},
+    "lift": 0.625
+  },
+  "area_guard_1_5": {
+    "fbx": "build/blender/stations/area_guard_1_5.fbx",
+    "png": "build/blender/stations/area_guard_1_5.png",
+    "preview": "build/blender/stations/previews/area_guard_1_5.png",
+    "size_studs": [
+      124.75,
+      24.35,
+      87.25
+    ],
+    "tris": 1114,
+    "parts": {
+      "area_guard_1_5_body": 1114
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at levels 1 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_guard_1_5_body": [
+        0.0,
+        12.177,
+        5.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.281
+  },
+  "area_guard_2_5": {
+    "fbx": "build/blender/stations/area_guard_2_5.fbx",
+    "png": "build/blender/stations/area_guard_2_5.png",
+    "preview": "build/blender/stations/previews/area_guard_2_5.png",
+    "size_studs": [
+      107.01,
+      37.97,
+      96.0
+    ],
+    "tris": 3226,
+    "parts": {
+      "area_guard_2_5_body": 3186,
+      "area_guard_2_5_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at levels 2 to 5 of the Training Grounds.",
+    "glow": {
+      "area_guard_2_5_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "area_guard_2_5_body": [
+        -23.493,
+        18.984,
+        15.0
+      ],
+      "area_guard_2_5_body_glow": [
+        -0.0,
+        11.969,
+        61.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.281
+  },
+  "area_guard_3_5": {
+    "fbx": "build/blender/stations/area_guard_3_5.fbx",
+    "png": "build/blender/stations/area_guard_3_5.png",
+    "preview": "build/blender/stations/previews/area_guard_3_5.png",
+    "size_studs": [
+      149.25,
+      18.98,
+      93.78
+    ],
+    "tris": 1260,
+    "parts": {
+      "area_guard_3_5_body": 1260
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at levels 3 to 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_guard_3_5_body": [
+        1.375,
+        9.492,
+        -4.359
+      ]
+    },
+    "joints": {},
+    "lift": 0.392
+  },
+  "area_guard_4_5": {
+    "fbx": "build/blender/stations/area_guard_4_5.fbx",
+    "png": "build/blender/stations/area_guard_4_5.png",
+    "preview": "build/blender/stations/previews/area_guard_4_5.png",
+    "size_studs": [
+      154.25,
+      46.09,
+      115.38
+    ],
+    "tris": 1234,
+    "parts": {
+      "area_guard_4_5_body": 1138,
+      "area_guard_4_5_body_glow": 96
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at levels 4 to 5 of the Training Grounds.",
+    "glow": {
+      "area_guard_4_5_body_glow": [
+        255,
+        150,
+        50
+      ]
+    },
+    "centres": {
+      "area_guard_4_5_body": [
+        0.0,
+        23.047,
+        -1.812
+      ],
+      "area_guard_4_5_body_glow": [
+        0.037,
+        9.219,
+        7.439
+      ]
+    },
+    "joints": {},
+    "lift": 0.281
+  },
+  "area_guard_5_5": {
+    "fbx": "build/blender/stations/area_guard_5_5.fbx",
+    "png": "build/blender/stations/area_guard_5_5.png",
+    "preview": "build/blender/stations/previews/area_guard_5_5.png",
+    "size_studs": [
+      123.33,
+      52.25,
+      27.97
+    ],
+    "tris": 720,
+    "parts": {
+      "area_guard_5_5_body": 720
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The guard's training area: what stands at level 5 of the Training Grounds.",
+    "glow": {},
+    "centres": {
+      "area_guard_5_5_body": [
+        2.584,
+        26.125,
+        -33.862
+      ]
+    },
+    "joints": {},
+    "lift": 4.5
+  },
+  "kit_gym_bar": {
+    "fbx": "build/blender/stations/kit_gym_bar.fbx",
+    "png": "build/blender/stations/kit_gym_bar.png",
+    "preview": "build/blender/stations/previews/kit_gym_bar.png",
+    "size_studs": [
+      42.5,
+      13.0,
+      13.0
+    ],
+    "tris": 380,
+    "parts": {
+      "kit_gym_bar_body": 380
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The Strength Gym's barbell, on its stands: the animal under it lifts it.",
+    "glow": {},
+    "centres": {
+      "kit_gym_bar_body": [
+        -42.5,
+        6.5,
+        -30.0
+      ]
+    },
+    "joints": {},
+    "lift": 7.875
+  },
+  "kit_library_crystal": {
+    "fbx": "build/blender/stations/kit_library_crystal.fbx",
+    "png": "build/blender/stations/kit_library_crystal.png",
+    "preview": "build/blender/stations/previews/kit_library_crystal.png",
+    "size_studs": [
+      11.7,
+      25.38,
+      10.95
+    ],
+    "tris": 146,
+    "parts": {
+      "kit_library_crystal_body": 66,
+      "kit_library_crystal_body_glow": 48,
+      "kit_library_crystal_body2_glow": 32
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "The Magic Library's great crystal in its gold band: it turns over the open book.",
+    "glow": {
+      "kit_library_crystal_body_glow": [
+        60,
+        215,
+        225
+      ],
+      "kit_library_crystal_body2_glow": [
+        150,
+        120,
+        255
+      ]
+    },
+    "centres": {
+      "kit_library_crystal_body": [
+        0.0,
+        9.05,
+        -5.0
+      ],
+      "kit_library_crystal_body_glow": [
+        -1.418,
+        12.688,
+        -6.276
+      ],
+      "kit_library_crystal_body2_glow": [
+        2.852,
+        11.25,
+        -3.849
+      ]
+    },
+    "joints": {},
+    "lift": 12.125
+  },
+  "kit_guard_ram": {
+    "fbx": "build/blender/stations/kit_guard_ram.fbx",
+    "png": "build/blender/stations/kit_guard_ram.png",
+    "preview": "build/blender/stations/previews/kit_guard_ram.png",
+    "size_studs": [
+      6.5,
+      6.5,
+      24.5
+    ],
+    "tris": 112,
+    "parts": {
+      "kit_guard_ram_body": 112
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/areas.py",
+    "notes": "A Guard Yard ram's log with its padded head: it swings at the animal on the pad.",
+    "glow": {},
+    "centres": {
+      "kit_guard_ram_body": [
+        0.0,
+        3.25,
+        -17.75
+      ]
+    },
+    "joints": {},
+    "lift": 5.75
+  },
+  "home_house_1": {
+    "fbx": "build/blender/stations/home_house_1.fbx",
+    "png": "build/blender/stations/home_house_1.png",
+    "preview": "build/blender/stations/previews/home_house_1.png",
+    "size_studs": [
+      27.04,
+      26.14,
+      24.53
+    ],
+    "tris": 4472,
+    "parts": {
+      "home_house_1_body": 4404,
+      "home_house_1_body_glow": 68
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Ranch House: a timber cottage on a fieldstone footing, with a stone chimney and a stoop.",
+    "glow": {
+      "home_house_1_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_house_1_body": [
+        1.319,
+        13.069,
+        3.637
+      ],
+      "home_house_1_body_glow": [
+        -1.35,
+        5.8,
+        0.25
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_house_2": {
+    "fbx": "build/blender/stations/home_house_2.fbx",
+    "png": "build/blender/stations/home_house_2.png",
+    "preview": "build/blender/stations/previews/home_house_2.png",
+    "size_studs": [
+      38.8,
+      30.53,
+      30.59
+    ],
+    "tris": 6068,
+    "parts": {
+      "home_house_2_body": 5864,
+      "home_house_2_body_glow": 164,
+      "home_house_2_body2_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Ranch House: a farmhouse, fieldstone below and timber above, two dormers, a porch the length of its front.",
+    "glow": {
+      "home_house_2_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_house_2_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_house_2_body": [
+        1.4,
+        15.266,
+        4.664
+      ],
+      "home_house_2_body_glow": [
+        0.0,
+        10.25,
+        0.25
+      ],
+      "home_house_2_body2_glow": [
+        1.2,
+        5.65,
+        19.4
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_house_3": {
+    "fbx": "build/blender/stations/home_house_3.fbx",
+    "png": "build/blender/stations/home_house_3.png",
+    "preview": "build/blender/stations/previews/home_house_3.png",
+    "size_studs": [
+      50.01,
+      36.67,
+      32.98
+    ],
+    "tris": 9214,
+    "parts": {
+      "home_house_3_body": 8842,
+      "home_house_3_body_glow": 332,
+      "home_house_3_body2_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Ranch House: a great farmhouse with a cross wing, two chimneys, a cupola and a long porch.",
+    "glow": {
+      "home_house_3_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_house_3_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_house_3_body": [
+        1.005,
+        18.337,
+        4.868
+      ],
+      "home_house_3_body_glow": [
+        0.5,
+        15.25,
+        1.525
+      ],
+      "home_house_3_body2_glow": [
+        -4.8,
+        6.05,
+        20.8
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_barn_1": {
+    "fbx": "build/blender/stations/home_barn_1.fbx",
+    "png": "build/blender/stations/home_barn_1.png",
+    "preview": "build/blender/stations/previews/home_barn_1.png",
+    "size_studs": [
+      28.88,
+      13.11,
+      17.0
+    ],
+    "tris": 1084,
+    "parts": {
+      "home_barn_1_body": 1084
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Barn: a shed with its hay.",
+    "glow": {},
+    "centres": {
+      "home_barn_1_body": [
+        -3.942,
+        6.555,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_barn_2": {
+    "fbx": "build/blender/stations/home_barn_2.fbx",
+    "png": "build/blender/stations/home_barn_2.png",
+    "preview": "build/blender/stations/previews/home_barn_2.png",
+    "size_studs": [
+      46.14,
+      22.2,
+      23.0
+    ],
+    "tris": 1216,
+    "parts": {
+      "home_barn_2_body": 1216
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Barn: a barn with a silo.",
+    "glow": {},
+    "centres": {
+      "home_barn_2_body": [
+        0.685,
+        11.1,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_barn_3": {
+    "fbx": "build/blender/stations/home_barn_3.fbx",
+    "png": "build/blender/stations/home_barn_3.png",
+    "preview": "build/blender/stations/previews/home_barn_3.png",
+    "size_studs": [
+      55.66,
+      27.03,
+      34.29
+    ],
+    "tris": 1428,
+    "parts": {
+      "home_barn_3_body": 1428
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Barn: a great barn with two silos, a weather vane and a hay cart.",
+    "glow": {},
+    "centres": {
+      "home_barn_3_body": [
+        -0.072,
+        13.515,
+        3.643
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_hatchery_1": {
+    "fbx": "build/blender/stations/home_hatchery_1.fbx",
+    "png": "build/blender/stations/home_hatchery_1.png",
+    "preview": "build/blender/stations/previews/home_hatchery_1.png",
+    "size_studs": [
+      19.97,
+      11.05,
+      12.8
+    ],
+    "tris": 1628,
+    "parts": {
+      "home_hatchery_1_body": 1608,
+      "home_hatchery_1_body_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Hatchery: an open shed under a gabled canvas, over a bed of straw.",
+    "glow": {
+      "home_hatchery_1_body_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_hatchery_1_body": [
+        0.487,
+        5.525,
+        -0.0
+      ],
+      "home_hatchery_1_body_glow": [
+        -7.8,
+        5.15,
+        5.8
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_hatchery_2": {
+    "fbx": "build/blender/stations/home_hatchery_2.fbx",
+    "png": "build/blender/stations/home_hatchery_2.png",
+    "preview": "build/blender/stations/previews/home_hatchery_2.png",
+    "size_studs": [
+      27.6,
+      19.6,
+      27.6
+    ],
+    "tris": 1284,
+    "parts": {
+      "home_hatchery_2_body": 1276,
+      "home_hatchery_2_body_glow": 8
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Hatchery: a round pavilion.",
+    "glow": {
+      "home_hatchery_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_hatchery_2_body": [
+        0.0,
+        8.3,
+        -0.0
+      ],
+      "home_hatchery_2_body_glow": [
+        0.0,
+        17.95,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_hatchery_3": {
+    "fbx": "build/blender/stations/home_hatchery_3.fbx",
+    "png": "build/blender/stations/home_hatchery_3.png",
+    "preview": "build/blender/stations/previews/home_hatchery_3.png",
+    "size_studs": [
+      32.6,
+      28.0,
+      32.6
+    ],
+    "tris": 1892,
+    "parts": {
+      "home_hatchery_3_body": 1804,
+      "home_hatchery_3_body_glow": 80,
+      "home_hatchery_3_body2_glow": 8
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Hatchery: a great pavilion under a two-tiered roof, with lanterns.",
+    "glow": {
+      "home_hatchery_3_body_glow": [
+        255,
+        214,
+        130
+      ],
+      "home_hatchery_3_body2_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_hatchery_3_body": [
+        0.0,
+        12.5,
+        -0.0
+      ],
+      "home_hatchery_3_body_glow": [
+        1.2,
+        6.15,
+        -0.0
+      ],
+      "home_hatchery_3_body2_glow": [
+        0.0,
+        26.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_cellar_1": {
+    "fbx": "build/blender/stations/home_cellar_1.fbx",
+    "png": "build/blender/stations/home_cellar_1.png",
+    "preview": "build/blender/stations/previews/home_cellar_1.png",
+    "size_studs": [
+      14.4,
+      11.66,
+      6.58
+    ],
+    "tris": 92,
+    "parts": {
+      "home_cellar_1_body": 92
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Egg Cellar: a thatched shelter for the egg rack.",
+    "glow": {},
+    "centres": {
+      "home_cellar_1_body": [
+        0.0,
+        5.832,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_cellar_2": {
+    "fbx": "build/blender/stations/home_cellar_2.fbx",
+    "png": "build/blender/stations/home_cellar_2.png",
+    "preview": "build/blender/stations/previews/home_cellar_2.png",
+    "size_studs": [
+      12.32,
+      12.89,
+      13.89
+    ],
+    "tris": 2152,
+    "parts": {
+      "home_cellar_2_body": 2132,
+      "home_cellar_2_body_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Egg Cellar: a cellar dug into a grassy mound.",
+    "glow": {
+      "home_cellar_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_cellar_2_body": [
+        -0.047,
+        6.447,
+        -3.634
+      ],
+      "home_cellar_2_body_glow": [
+        2.9,
+        7.094,
+        2.86
+      ]
+    },
+    "joints": {},
+    "lift": -2.694
+  },
+  "home_cellar_3": {
+    "fbx": "build/blender/stations/home_cellar_3.fbx",
+    "png": "build/blender/stations/home_cellar_3.png",
+    "preview": "build/blender/stations/previews/home_cellar_3.png",
+    "size_studs": [
+      18.1,
+      15.37,
+      18.44
+    ],
+    "tris": 2336,
+    "parts": {
+      "home_cellar_3_body": 2276,
+      "home_cellar_3_body_glow": 40,
+      "home_cellar_3_body2_glow": 20
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Egg Cellar: a bigger mound with two doors.",
+    "glow": {
+      "home_cellar_3_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_cellar_3_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_cellar_3_body": [
+        -1.05,
+        7.684,
+        -2.18
+      ],
+      "home_cellar_3_body_glow": [
+        2.9,
+        7.767,
+        3.58
+      ],
+      "home_cellar_3_body2_glow": [
+        -8.4,
+        9.167,
+        6.48
+      ]
+    },
+    "joints": {},
+    "lift": -3.367
+  },
+  "home_brooder_1": {
+    "fbx": "build/blender/stations/home_brooder_1.fbx",
+    "png": "build/blender/stations/home_brooder_1.png",
+    "preview": "build/blender/stations/previews/home_brooder_1.png",
+    "size_studs": [
+      11.5,
+      10.1,
+      8.75
+    ],
+    "tris": 2408,
+    "parts": {
+      "home_brooder_1_body": 2368,
+      "home_brooder_1_body_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Brooder: two warm beds under heat lamps and a glass roof.",
+    "glow": {
+      "home_brooder_1_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
+    "centres": {
+      "home_brooder_1_body": [
+        0.0,
+        5.05,
+        0.125
+      ],
+      "home_brooder_1_body_glow": [
+        0.0,
+        5.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_brooder_2": {
+    "fbx": "build/blender/stations/home_brooder_2.fbx",
+    "png": "build/blender/stations/home_brooder_2.png",
+    "preview": "build/blender/stations/previews/home_brooder_2.png",
+    "size_studs": [
+      16.5,
+      11.1,
+      10.75
+    ],
+    "tris": 2536,
+    "parts": {
+      "home_brooder_2_body": 2456,
+      "home_brooder_2_body_glow": 80
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Brooder: four warm beds.",
+    "glow": {
+      "home_brooder_2_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
+    "centres": {
+      "home_brooder_2_body": [
+        0.0,
+        5.55,
+        0.125
+      ],
+      "home_brooder_2_body_glow": [
+        0.0,
+        6.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_brooder_3": {
+    "fbx": "build/blender/stations/home_brooder_3.fbx",
+    "png": "build/blender/stations/home_brooder_3.png",
+    "preview": "build/blender/stations/previews/home_brooder_3.png",
+    "size_studs": [
+      27.3,
+      18.62,
+      12.75
+    ],
+    "tris": 2812,
+    "parts": {
+      "home_brooder_3_body": 2692,
+      "home_brooder_3_body_glow": 120
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Brooder: six warm beds and a boiler.",
+    "glow": {
+      "home_brooder_3_body_glow": [
+        255,
+        160,
+        70
+      ]
+    },
+    "centres": {
+      "home_brooder_3_body": [
+        -2.901,
+        9.311,
+        0.125
+      ],
+      "home_brooder_3_body_glow": [
+        0.0,
+        7.35,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_windmill_1": {
+    "fbx": "build/blender/stations/home_windmill_1.fbx",
+    "png": "build/blender/stations/home_windmill_1.png",
+    "preview": "build/blender/stations/previews/home_windmill_1.png",
+    "size_studs": [
+      10.5,
+      19.0,
+      10.85
+    ],
+    "tris": 528,
+    "parts": {
+      "home_windmill_1_body": 528
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Windmill: a post mill, without its sails.",
+    "glow": {},
+    "centres": {
+      "home_windmill_1_body": [
+        0.0,
+        9.5,
+        0.175
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_windmill_2": {
+    "fbx": "build/blender/stations/home_windmill_2.fbx",
+    "png": "build/blender/stations/home_windmill_2.png",
+    "preview": "build/blender/stations/previews/home_windmill_2.png",
+    "size_studs": [
+      12.36,
+      28.0,
+      13.0
+    ],
+    "tris": 540,
+    "parts": {
+      "home_windmill_2_body": 528,
+      "home_windmill_2_body_glow": 12
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Windmill: a stone tower mill, without its sails.",
+    "glow": {
+      "home_windmill_2_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_windmill_2_body": [
+        0.0,
+        14.0,
+        -0.0
+      ],
+      "home_windmill_2_body_glow": [
+        0.0,
+        11.37,
+        5.46
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_windmill_3": {
+    "fbx": "build/blender/stations/home_windmill_3.fbx",
+    "png": "build/blender/stations/home_windmill_3.png",
+    "preview": "build/blender/stations/previews/home_windmill_3.png",
+    "size_studs": [
+      30.85,
+      39.29,
+      19.2
+    ],
+    "tris": 860,
+    "parts": {
+      "home_windmill_3_body": 848,
+      "home_windmill_3_body_glow": 12
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Windmill: a tall tower mill with a gallery and a store, without its sails.",
+    "glow": {
+      "home_windmill_3_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_windmill_3_body": [
+        -6.075,
+        19.643,
+        -0.0
+      ],
+      "home_windmill_3_body_glow": [
+        0.0,
+        14.416,
+        6.3
+      ]
+    },
+    "joints": {},
+    "lift": -0.136
+  },
+  "home_lodge_1": {
+    "fbx": "build/blender/stations/home_lodge_1.fbx",
+    "png": "build/blender/stations/home_lodge_1.png",
+    "preview": "build/blender/stations/previews/home_lodge_1.png",
+    "size_studs": [
+      11.6,
+      11.0,
+      4.6
+    ],
+    "tris": 2344,
+    "parts": {
+      "home_lodge_1_body": 2344
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Trophy Lodge: a first cup between two banners.",
+    "glow": {},
+    "centres": {
+      "home_lodge_1_body": [
+        0.0,
+        5.5,
+        0.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_lodge_2": {
+    "fbx": "build/blender/stations/home_lodge_2.fbx",
+    "png": "build/blender/stations/home_lodge_2.png",
+    "preview": "build/blender/stations/previews/home_lodge_2.png",
+    "size_studs": [
+      23.0,
+      15.6,
+      15.0
+    ],
+    "tris": 2756,
+    "parts": {
+      "home_lodge_2_body": 2756
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Trophy Lodge: a hall of three cups.",
+    "glow": {},
+    "centres": {
+      "home_lodge_2_body": [
+        0.0,
+        7.8,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_lodge_3": {
+    "fbx": "build/blender/stations/home_lodge_3.fbx",
+    "png": "build/blender/stations/home_lodge_3.png",
+    "preview": "build/blender/stations/previews/home_lodge_3.png",
+    "size_studs": [
+      37.6,
+      18.6,
+      20.3
+    ],
+    "tris": 3244,
+    "parts": {
+      "home_lodge_3_body": 3228,
+      "home_lodge_3_body_glow": 16
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Trophy Lodge: a great hall with the great cup in the middle.",
+    "glow": {
+      "home_lodge_3_body_glow": [
+        255,
+        150,
+        60
+      ]
+    },
+    "centres": {
+      "home_lodge_3_body": [
+        0.0,
+        9.3,
+        1.15
+      ],
+      "home_lodge_3_body_glow": [
+        0.0,
+        5.45,
+        9.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.15
+  },
+  "home_den_1": {
+    "fbx": "build/blender/stations/home_den_1.fbx",
+    "png": "build/blender/stations/home_den_1.png",
+    "preview": "build/blender/stations/previews/home_den_1.png",
+    "size_studs": [
+      39.0,
+      19.72,
+      36.67
+    ],
+    "tris": 1232,
+    "parts": {
+      "home_den_1_body": 1172,
+      "home_den_1_body_glow": 60
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Titan's Den: a timber frame in the mouth of a cave in a hill.",
+    "glow": {
+      "home_den_1_body_glow": [
+        255,
+        226,
+        150
+      ]
+    },
+    "centres": {
+      "home_den_1_body": [
+        0.0,
+        9.859,
+        -13.164
+      ],
+      "home_den_1_body_glow": [
+        0.0,
+        9.4,
+        -30.5
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "home_den_2": {
+    "fbx": "build/blender/stations/home_den_2.fbx",
+    "png": "build/blender/stations/home_den_2.png",
+    "preview": "build/blender/stations/previews/home_den_2.png",
+    "size_studs": [
+      57.0,
+      26.3,
+      34.66
+    ],
+    "tris": 1460,
+    "parts": {
+      "home_den_2_body": 1360,
+      "home_den_2_body_glow": 60,
+      "home_den_2_body2_glow": 40
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Titan's Den: a stone gate into a hall dug into a hill.",
+    "glow": {
+      "home_den_2_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_den_2_body2_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "home_den_2_body": [
+        0.0,
+        13.15,
+        -14.17
+      ],
+      "home_den_2_body_glow": [
+        0.0,
+        9.4,
+        -30.5
+      ],
+      "home_den_2_body2_glow": [
+        1.2,
+        8.8,
+        2.6
+      ]
+    },
+    "joints": {},
+    "lift": 0.0
+  },
+  "home_den_3": {
+    "fbx": "build/blender/stations/home_den_3.fbx",
+    "png": "build/blender/stations/home_den_3.png",
+    "preview": "build/blender/stations/previews/home_den_3.png",
+    "size_studs": [
+      57.4,
+      26.9,
+      41.3
+    ],
+    "tris": 1776,
+    "parts": {
+      "home_den_3_body": 1660,
+      "home_den_3_body_glow": 60,
+      "home_den_3_body2_glow": 40,
+      "home_den_3_body3_glow": 16
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/homestead.py",
+    "notes": "The Titan's Den: a great stone gate with tusks, banners and braziers.",
+    "glow": {
+      "home_den_3_body_glow": [
+        255,
+        226,
+        150
+      ],
+      "home_den_3_body2_glow": [
+        255,
+        214,
+        130
+      ],
+      "home_den_3_body3_glow": [
+        255,
+        150,
+        60
+      ]
+    },
+    "centres": {
+      "home_den_3_body": [
+        0.0,
+        13.45,
+        -10.85
+      ],
+      "home_den_3_body_glow": [
+        0.0,
+        10.0,
+        -30.5
+      ],
+      "home_den_3_body2_glow": [
+        1.2,
+        9.4,
+        2.6
+      ],
+      "home_den_3_body3_glow": [
+        0.0,
+        6.2,
+        8.0
+      ]
+    },
+    "joints": {},
+    "lift": -0.6
+  },
+  "creature_giraffe": {
+    "fbx": "build/blender/stations/creature_giraffe.fbx",
+    "png": "build/blender/stations/creature_giraffe.png",
+    "preview": "build/blender/stations/previews/creature_giraffe.png",
+    "size_studs": [
+      4.3,
+      23.46,
+      14.98
+    ],
+    "tris": 3160,
+    "parts": {
+      "creature_giraffe_body": 1184,
+      "creature_giraffe_head": 1012,
+      "creature_giraffe_tail": 52,
+      "creature_giraffe_leg_fl": 212,
+      "creature_giraffe_leg_bl": 244,
+      "creature_giraffe_leg_fr": 212,
+      "creature_giraffe_leg_br": 244
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/giraffes.py",
+    "notes": "Giraffe: a faceted cream giraffe under chestnut patches, a dark mane and sharp horns.",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_body": [
+        0.007,
+        9.545,
+        -2.585
+      ],
+      "creature_giraffe_head": [
+        0.0,
+        16.573,
+        3.077
+      ],
+      "creature_giraffe_tail": [
+        0.0,
+        6.202,
+        -6.91
+      ],
+      "creature_giraffe_leg_fl": [
+        0.906,
+        4.505,
+        -0.16
+      ],
+      "creature_giraffe_leg_bl": [
+        0.914,
+        4.363,
+        -5.276
+      ],
+      "creature_giraffe_leg_fr": [
+        -0.907,
+        4.512,
+        -0.16
+      ],
+      "creature_giraffe_leg_br": [
+        -0.914,
+        4.358,
+        -5.276
+      ]
+    },
+    "joints": {
+      "creature_giraffe_head": [
+        0.0,
+        10.005,
+        -0.059
+      ],
+      "creature_giraffe_leg_fl": [
+        0.87,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_leg_fr": [
+        -0.87,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_leg_bl": [
+        0.87,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_leg_br": [
+        -0.87,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_tail": [
+        0.0,
+        9.28,
+        -6.497
+      ]
+    },
+    "eyes": [
+      [
+        0.991,
+        20.299,
+        4.327,
+        0.695
+      ],
+      [
+        -0.993,
+        20.301,
+        4.328,
+        0.695
+      ]
+    ],
+    "lid": [
+      236,
+      212,
+      171
+    ]
+  },
+  "creature_giraffe_diamond": {
+    "fbx": "build/blender/stations/creature_giraffe_diamond.fbx",
+    "png": "build/blender/stations/creature_giraffe_diamond.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_diamond.png",
+    "size_studs": [
+      5.44,
+      24.39,
+      14.98
+    ],
+    "tris": 3672,
+    "parts": {
+      "creature_giraffe_diamond_body": 1352,
+      "creature_giraffe_diamond_head": 908,
+      "creature_giraffe_diamond_tail": 52,
+      "creature_giraffe_diamond_head_glow": 208,
+      "creature_giraffe_diamond_body_glow": 128,
+      "creature_giraffe_diamond_leg_fl": 244,
+      "creature_giraffe_diamond_leg_bl": 268,
+      "creature_giraffe_diamond_leg_fr": 244,
+      "creature_giraffe_diamond_leg_br": 268
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/giraffes.py",
+    "notes": "Diamond Giraffe: diamond ore, grey stone set with diamonds all over, glowing diamond horns, crest and eyes (decision 0083).",
+    "glow": {
+      "creature_giraffe_diamond_head_glow": [
+        90,
+        215,
+        255
+      ],
+      "creature_giraffe_diamond_body_glow": [
+        90,
+        215,
+        255
+      ]
+    },
+    "centres": {
+      "creature_giraffe_diamond_body": [
+        0.016,
+        9.639,
+        -2.383
+      ],
+      "creature_giraffe_diamond_head": [
+        0.071,
+        15.965,
+        3.077
+      ],
+      "creature_giraffe_diamond_tail": [
+        0.071,
+        6.202,
+        -6.91
+      ],
+      "creature_giraffe_diamond_head_glow": [
+        0.469,
+        17.51,
+        1.659
+      ],
+      "creature_giraffe_diamond_body_glow": [
+        -0.174,
+        10.464,
+        -2.224
+      ],
+      "creature_giraffe_diamond_leg_fl": [
+        1.305,
+        4.506,
+        -0.16
+      ],
+      "creature_giraffe_diamond_leg_bl": [
+        1.286,
+        4.362,
+        -5.274
+      ],
+      "creature_giraffe_diamond_leg_fr": [
+        -1.152,
+        4.504,
+        -0.16
+      ],
+      "creature_giraffe_diamond_leg_br": [
+        -1.048,
+        4.363,
+        -5.275
+      ]
+    },
+    "joints": {
+      "creature_giraffe_diamond_head": [
+        0.071,
+        10.005,
+        -0.059
+      ],
+      "creature_giraffe_diamond_leg_fl": [
+        0.941,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_diamond_leg_fr": [
+        -0.799,
+        8.7,
+        -0.204
+      ],
+      "creature_giraffe_diamond_leg_bl": [
+        0.941,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_diamond_leg_br": [
+        -0.799,
+        8.41,
+        -5.279
+      ],
+      "creature_giraffe_diamond_tail": [
+        0.071,
+        9.28,
+        -6.497
+      ]
+    },
+    "eyes": [
+      [
+        1.071,
+        20.3,
+        4.329,
+        0.697
+      ],
+      [
+        -0.931,
+        20.303,
+        4.331,
+        0.698
+      ]
+    ],
+    "lid": [
+      118,
+      119,
+      134
+    ]
+  },
+  "scenery_tree_1": {
+    "fbx": "build/blender/stations/scenery_tree_1.fbx",
+    "png": "build/blender/stations/scenery_tree_1.png",
+    "preview": "build/blender/stations/previews/scenery_tree_1.png",
+    "size_studs": [
+      12.42,
+      16.05,
+      10.51
+    ],
+    "tris": 152,
+    "parts": {
+      "scenery_tree_1_body": 152
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A broad faceted tree, mid green.",
+    "glow": {},
+    "centres": {
+      "scenery_tree_1_body": [
+        0.0,
+        8.027,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_tree_2": {
+    "fbx": "build/blender/stations/scenery_tree_2.fbx",
+    "png": "build/blender/stations/scenery_tree_2.png",
+    "preview": "build/blender/stations/previews/scenery_tree_2.png",
+    "size_studs": [
+      12.92,
+      16.17,
+      10.55
+    ],
+    "tris": 152,
+    "parts": {
+      "scenery_tree_2_body": 152
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A broad faceted tree, light green.",
+    "glow": {},
+    "centres": {
+      "scenery_tree_2_body": [
+        0.0,
+        8.084,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_tree_3": {
+    "fbx": "build/blender/stations/scenery_tree_3.fbx",
+    "png": "build/blender/stations/scenery_tree_3.png",
+    "preview": "build/blender/stations/previews/scenery_tree_3.png",
+    "size_studs": [
+      7.6,
+      16.53,
+      6.82
+    ],
+    "tris": 100,
+    "parts": {
+      "scenery_tree_3_body": 100
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A tall narrow faceted tree, cool green.",
+    "glow": {},
+    "centres": {
+      "scenery_tree_3_body": [
+        0.0,
+        8.263,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_pine_1": {
+    "fbx": "build/blender/stations/scenery_pine_1.fbx",
+    "png": "build/blender/stations/scenery_pine_1.png",
+    "preview": "build/blender/stations/previews/scenery_pine_1.png",
+    "size_studs": [
+      7.67,
+      14.03,
+      7.86
+    ],
+    "tris": 68,
+    "parts": {
+      "scenery_pine_1_body": 68
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A faceted pine, four tiers.",
+    "glow": {},
+    "centres": {
+      "scenery_pine_1_body": [
+        0.0,
+        7.014,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_pine_2": {
+    "fbx": "build/blender/stations/scenery_pine_2.fbx",
+    "png": "build/blender/stations/scenery_pine_2.png",
+    "preview": "build/blender/stations/previews/scenery_pine_2.png",
+    "size_studs": [
+      7.84,
+      11.62,
+      7.77
+    ],
+    "tris": 56,
+    "parts": {
+      "scenery_pine_2_body": 56
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A faceted pine, three tiers.",
+    "glow": {},
+    "centres": {
+      "scenery_pine_2_body": [
+        0.0,
+        5.812,
+        -0.0
+      ]
+    },
+    "joints": {}
+  },
+  "scenery_bush_1": {
+    "fbx": "build/blender/stations/scenery_bush_1.fbx",
+    "png": "build/blender/stations/scenery_bush_1.png",
+    "preview": "build/blender/stations/previews/scenery_bush_1.png",
+    "size_studs": [
+      4.62,
+      2.59,
+      3.73
+    ],
+    "tris": 180,
+    "parts": {
+      "scenery_bush_1_body": 180
+    },
+    "tris_budget": 6000,
+    "script": "tools/blender/stations/assets/scenery.py",
+    "notes": "A low faceted bush with a few flowers.",
+    "glow": {},
+    "centres": {
+      "scenery_bush_1_body": [
+        0.0,
+        1.297,
+        -0.0
+      ]
+    },
+    "joints": {}
+  }
+}

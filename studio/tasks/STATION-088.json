@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-088",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for a visual overhaul of the map and landscape (decision 0085): before and after screens of the game with a new look (terrain and part colours, grass, lighting) applied live, and a list of the deeper work. Concept only.",
+  "inputs": [
+    "docs/game-design/game7-polish-plan.md"
+  ],
+  "dependencies": [
+    "STATION-087"
+  ],
+  "files": [
+    "docs/concepts/visual-overhaul-card.png",
+    "docs/decisions/0085-animal-stations-visual-overhaul-concept.md",
+    "studio/tasks/STATION-088.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The card shows the same views before and after",
+    "Every setting of the after is written down",
+    "No game file changed"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-18: the settings applied in a Play session from the server (terrain colours, Decoration, lighting and effects; 538 mountain parts, 150 path parts, about 1,650 foliage parts, 260 snowcaps recoloured), screens taken from two fixed cameras before and after, and the session stopped so nothing was kept. The card was composed from the four screens. Not checked: the hub, the arena, a phone, frame rate.",
+  "output_artifacts": [
+    "docs/concepts/visual-overhaul-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'can you make a concept for a visual overhaul of the map and landscape to make the game look more polished?'. Checkpoint for SHANNON: the two items of decision 0085."
+}

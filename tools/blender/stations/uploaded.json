@@ -1,0 +1,737 @@
+{
+  "creature_rhino": {
+    "model": 76549371458447,
+    "decal": 140476843057340,
+    "texture": null
+  },
+  "creature_rhino_lava": {
+    "model": 122352849729122,
+    "decal": 140072610273836,
+    "texture": null
+  },
+  "creature_jackal": {
+    "model": 134165595027982,
+    "decal": 102689800561942,
+    "texture": null
+  },
+  "creature_jackal_pharaoh": {
+    "model": 75452633506717,
+    "decal": 83327504233843,
+    "texture": null
+  },
+  "creature_cheetah": {
+    "model": 136222492678063,
+    "decal": 71432202009375,
+    "texture": null
+  },
+  "creature_cheetah_lightning": {
+    "model": 109207546284029,
+    "decal": 129607729735952,
+    "texture": null
+  },
+  "creature_lion": {
+    "model": 119352423442764,
+    "decal": 90187080883676,
+    "texture": null
+  },
+  "creature_lion_sun": {
+    "model": 75354072041359,
+    "decal": 103996188639805,
+    "texture": null
+  },
+  "creature_meerkat": {
+    "model": 139346470766592,
+    "decal": 105444891165997,
+    "texture": null
+  },
+  "creature_meerkat_storm": {
+    "model": 74887176629141,
+    "decal": 72264938315040,
+    "texture": null
+  },
+  "creature_tortoise": {
+    "model": 73982073844574,
+    "decal": 101678919701446,
+    "texture": null
+  },
+  "creature_tortoise_gemshell": {
+    "model": 103989126594272,
+    "decal": 131034752542008,
+    "texture": null
+  },
+  "creature_flamingo": {
+    "model": 84475583271429,
+    "decal": 75133722125261,
+    "texture": null
+  },
+  "creature_flamingo_phoenix": {
+    "model": 123413892267664,
+    "decal": 90932908315622,
+    "texture": null
+  },
+  "creature_elephant": {
+    "model": 75935305767377,
+    "decal": 106308552014919,
+    "texture": null
+  },
+  "creature_elephant_frost": {
+    "model": 76201899217815,
+    "decal": 84952892150281,
+    "texture": null
+  },
+  "foe_archer": {
+    "model": 106670895681049,
+    "decal": 128781795042597,
+    "texture": 111266171780821
+  },
+  "foe_mage": {
+    "model": 140217762320240,
+    "decal": 132764107277009,
+    "texture": 76772744158895
+  },
+  "foe_knight": {
+    "model": 113125543550946,
+    "decal": 70602162647114,
+    "texture": 121031381188327
+  },
+  "foe_ogre": {
+    "model": 82770174632710,
+    "decal": 140539859595937,
+    "texture": 131699630558750
+  },
+  "foe_dragon": {
+    "model": 79434671365622,
+    "decal": 107048042960848,
+    "texture": 87545615844296
+  },
+  "creature_lion_shadow": {
+    "model": 84330657139211,
+    "decal": 96709137028260,
+    "texture": null
+  },
+  "creature_elephant_war": {
+    "model": 87558446601190,
+    "decal": 136181197990894,
+    "texture": null
+  },
+  "creature_jackal_sphinx": {
+    "model": 121824721955985,
+    "decal": 109191769703070,
+    "texture": null
+  },
+  "creature_cheetah_fire": {
+    "model": 84637522481024,
+    "decal": 91148467592505,
+    "texture": null
+  },
+  "creature_flamingo_peacock": {
+    "model": 123295968510330,
+    "decal": 95238347000685,
+    "texture": null
+  },
+  "creature_meerkat_star": {
+    "model": 106026915030650,
+    "decal": 133122768964836,
+    "texture": null
+  },
+  "creature_rhino_crystal": {
+    "model": 81910035120108,
+    "decal": 106216783042683,
+    "texture": null
+  },
+  "creature_tortoise_island": {
+    "model": 108682537854085,
+    "decal": 72097970487305,
+    "texture": null
+  },
+  "egg_meadow": {
+    "model": 86159010376482,
+    "decal": 86786888313176,
+    "texture": null
+  },
+  "egg_wild": {
+    "model": 85535547879897,
+    "decal": 85175222554732,
+    "texture": null
+  },
+  "egg_safari": {
+    "model": 108612089352225,
+    "decal": 138472957530180,
+    "texture": null
+  },
+  "egg_golden": {
+    "model": 102266706260443,
+    "decal": 113123737601036,
+    "texture": null
+  },
+  "creature_cheetah_fire_rainbow": {
+    "model": null,
+    "decal": 71750186648345,
+    "texture": null
+  },
+  "creature_cheetah_lightning_rainbow": {
+    "model": null,
+    "decal": 70577399905893,
+    "texture": null
+  },
+  "creature_cheetah_rainbow": {
+    "model": null,
+    "decal": 78896724471023,
+    "texture": null
+  },
+  "creature_elephant_frost_rainbow": {
+    "model": null,
+    "decal": 136262845457745,
+    "texture": null
+  },
+  "creature_elephant_rainbow": {
+    "model": null,
+    "decal": 108728257611042,
+    "texture": null
+  },
+  "creature_elephant_war_rainbow": {
+    "model": null,
+    "decal": 127949184851551,
+    "texture": null
+  },
+  "creature_flamingo_peacock_rainbow": {
+    "model": null,
+    "decal": 113367855197254,
+    "texture": null
+  },
+  "creature_flamingo_phoenix_rainbow": {
+    "model": null,
+    "decal": 102322258529239,
+    "texture": null
+  },
+  "creature_flamingo_rainbow": {
+    "model": null,
+    "decal": 120310437187499,
+    "texture": null
+  },
+  "creature_jackal_pharaoh_rainbow": {
+    "model": null,
+    "decal": 105135521026667,
+    "texture": null
+  },
+  "creature_jackal_rainbow": {
+    "model": null,
+    "decal": 101896062344441,
+    "texture": null
+  },
+  "creature_jackal_sphinx_rainbow": {
+    "model": null,
+    "decal": 131828677849707,
+    "texture": null
+  },
+  "creature_lion_rainbow": {
+    "model": null,
+    "decal": 137718915644204,
+    "texture": null
+  },
+  "creature_lion_shadow_rainbow": {
+    "model": null,
+    "decal": 115760230582829,
+    "texture": null
+  },
+  "creature_lion_sun_rainbow": {
+    "model": null,
+    "decal": 135094054978037,
+    "texture": null
+  },
+  "creature_meerkat_rainbow": {
+    "model": null,
+    "decal": 116064783475813,
+    "texture": null
+  },
+  "creature_meerkat_star_rainbow": {
+    "model": null,
+    "decal": 136233384155506,
+    "texture": null
+  },
+  "creature_meerkat_storm_rainbow": {
+    "model": null,
+    "decal": 111482771458387,
+    "texture": null
+  },
+  "creature_rhino_crystal_rainbow": {
+    "model": null,
+    "decal": 79748155802315,
+    "texture": null
+  },
+  "creature_rhino_lava_rainbow": {
+    "model": null,
+    "decal": 107981238686200,
+    "texture": null
+  },
+  "creature_rhino_rainbow": {
+    "model": null,
+    "decal": 93929317033246,
+    "texture": null
+  },
+  "creature_tortoise_gemshell_rainbow": {
+    "model": null,
+    "decal": 89908655086558,
+    "texture": null
+  },
+  "creature_tortoise_island_rainbow": {
+    "model": null,
+    "decal": 133822523309866,
+    "texture": null
+  },
+  "creature_tortoise_rainbow": {
+    "model": null,
+    "decal": 134212717949957,
+    "texture": null
+  },
+  "area_track_0_0": {
+    "model": 99749246386026,
+    "decal": 91966135132745,
+    "texture": null
+  },
+  "area_track_0_1": {
+    "model": 74608676167484,
+    "decal": 85365633087073,
+    "texture": null
+  },
+  "area_track_1_5": {
+    "model": 139528385303635,
+    "decal": 116732262439853,
+    "texture": null
+  },
+  "area_track_2_5": {
+    "model": 82972522854293,
+    "decal": 135255537502789,
+    "texture": null
+  },
+  "area_track_3_5": {
+    "model": 76926863222767,
+    "decal": 76533044780941,
+    "texture": null
+  },
+  "area_track_4_5": {
+    "model": 97778563381111,
+    "decal": 77953895578616,
+    "texture": null
+  },
+  "area_track_5_5": {
+    "model": 84094939236104,
+    "decal": 124969670784710,
+    "texture": null
+  },
+  "area_gym_0_0": {
+    "model": 99184274508796,
+    "decal": 129410763716279,
+    "texture": null
+  },
+  "area_gym_0_1": {
+    "model": 131191561437255,
+    "decal": 96019717118238,
+    "texture": null
+  },
+  "area_gym_0_5": {
+    "model": 74804482843235,
+    "decal": 71397337624379,
+    "texture": null
+  },
+  "area_gym_1_5": {
+    "model": 122604258909748,
+    "decal": 109592011025536,
+    "texture": null
+  },
+  "area_gym_2_5": {
+    "model": 74570276157920,
+    "decal": 74645294214722,
+    "texture": null
+  },
+  "area_gym_3_5": {
+    "model": 73719957756390,
+    "decal": 103061535944159,
+    "texture": null
+  },
+  "area_gym_4_5": {
+    "model": 119905094512834,
+    "decal": 111482696338540,
+    "texture": null
+  },
+  "area_gym_5_5": {
+    "model": 135916911043706,
+    "decal": 114940898868373,
+    "texture": null
+  },
+  "area_pool_0_0": {
+    "model": 98423580906953,
+    "decal": 95651034436995,
+    "texture": null
+  },
+  "area_pool_0_1": {
+    "model": 126636805387967,
+    "decal": 114032080074607,
+    "texture": null
+  },
+  "area_pool_1_5": {
+    "model": 79550997997021,
+    "decal": 108613381120638,
+    "texture": null
+  },
+  "area_pool_2_5": {
+    "model": 100858221509774,
+    "decal": 101677943104972,
+    "texture": null
+  },
+  "area_pool_3_5": {
+    "model": 97457132012242,
+    "decal": 91222259535603,
+    "texture": null
+  },
+  "area_pool_4_5": {
+    "model": 130014415967988,
+    "decal": 94822710388617,
+    "texture": null
+  },
+  "area_pool_5_5": {
+    "model": 105062797075018,
+    "decal": 114675122471885,
+    "texture": null
+  },
+  "area_library_0_0": {
+    "model": 99713694551491,
+    "decal": 102562661406417,
+    "texture": null
+  },
+  "area_library_0_1": {
+    "model": 75323269734559,
+    "decal": 82152010085098,
+    "texture": null
+  },
+  "area_library_1_5": {
+    "model": 133152182292749,
+    "decal": 104352545703847,
+    "texture": null
+  },
+  "area_library_2_5": {
+    "model": 85519987485533,
+    "decal": 116476826490747,
+    "texture": null
+  },
+  "area_library_3_5": {
+    "model": 74330588387634,
+    "decal": 75720876527592,
+    "texture": null
+  },
+  "area_library_4_5": {
+    "model": 139030848054772,
+    "decal": 102529474103814,
+    "texture": null
+  },
+  "area_library_5_5": {
+    "model": 71862218205108,
+    "decal": 88667685142248,
+    "texture": null
+  },
+  "area_spring_0_0": {
+    "model": 118952523577373,
+    "decal": 108660846168850,
+    "texture": null
+  },
+  "area_spring_0_1": {
+    "model": 122618037795472,
+    "decal": 127901483919458,
+    "texture": null
+  },
+  "area_spring_1_5": {
+    "model": 104336947966389,
+    "decal": 90674313189763,
+    "texture": null
+  },
+  "area_spring_2_3": {
+    "model": 140565072058913,
+    "decal": 110468747266573,
+    "texture": null
+  },
+  "area_spring_2_5": {
+    "model": 140588501713981,
+    "decal": 74837553162334,
+    "texture": null
+  },
+  "area_spring_3_5": {
+    "model": 89567907725378,
+    "decal": 122942308857409,
+    "texture": null
+  },
+  "area_spring_4_5": {
+    "model": 110116033513001,
+    "decal": 74168239002270,
+    "texture": null
+  },
+  "area_spring_5_5": {
+    "model": 78444761678990,
+    "decal": 87614425350491,
+    "texture": null
+  },
+  "area_guard_0_0": {
+    "model": 118531674548566,
+    "decal": 84001703555709,
+    "texture": null
+  },
+  "area_guard_0_1": {
+    "model": 88129240635330,
+    "decal": 120076193751962,
+    "texture": null
+  },
+  "area_guard_0_5": {
+    "model": 126345048057061,
+    "decal": 116326337758651,
+    "texture": null
+  },
+  "area_guard_1_5": {
+    "model": 76228218616098,
+    "decal": 102149674583638,
+    "texture": null
+  },
+  "area_guard_2_5": {
+    "model": 136378507117839,
+    "decal": 130180333607302,
+    "texture": null
+  },
+  "area_guard_3_5": {
+    "model": 97746333009528,
+    "decal": 111662004868867,
+    "texture": null
+  },
+  "area_guard_4_5": {
+    "model": 134126191010409,
+    "decal": 74300486382048,
+    "texture": null
+  },
+  "area_guard_5_5": {
+    "model": 75545725899063,
+    "decal": 111103147837409,
+    "texture": null
+  },
+  "hub_floor": {
+    "model": 81725570523074,
+    "decal": 95241885939487,
+    "texture": null
+  },
+  "hub_fire": {
+    "model": 107086071745800,
+    "decal": 111780912104543,
+    "texture": null
+  },
+  "hub_market": {
+    "model": 103857009904545,
+    "decal": 131705768686418,
+    "texture": null
+  },
+  "hub_cafe": {
+    "model": 111249013406210,
+    "decal": 130190866110122,
+    "texture": null
+  },
+  "hub_stage": {
+    "model": 130884272478978,
+    "decal": 98703849169557,
+    "texture": null
+  },
+  "hub_green": {
+    "model": 112176876968294,
+    "decal": 130947257808250,
+    "texture": null
+  },
+  "hub_lights": {
+    "model": 83730579662226,
+    "decal": 132842077050793,
+    "texture": null
+  },
+  "hub_signs": {
+    "model": 87839061570804,
+    "decal": 139923546569617,
+    "texture": null
+  },
+  "kit_gym_bar": {
+    "model": 73319446503448,
+    "decal": 114006588812683,
+    "texture": null
+  },
+  "kit_library_crystal": {
+    "model": 76042269217378,
+    "decal": 93094718722133,
+    "texture": null
+  },
+  "kit_guard_ram": {
+    "model": 116906159720919,
+    "decal": 134881696278512,
+    "texture": null
+  },
+  "home_house_1": {
+    "model": 105200527213246,
+    "decal": 70931460278358,
+    "texture": null
+  },
+  "home_house_2": {
+    "model": 77401461520643,
+    "decal": 93519198627425,
+    "texture": null
+  },
+  "home_house_3": {
+    "model": 127665408665186,
+    "decal": 101564279492538,
+    "texture": null
+  },
+  "home_barn_1": {
+    "model": 87882436394274,
+    "decal": 83100068129582,
+    "texture": null
+  },
+  "home_barn_2": {
+    "model": 114666492162928,
+    "decal": 80941398131558,
+    "texture": null
+  },
+  "home_barn_3": {
+    "model": 136466984914127,
+    "decal": 76519872389922,
+    "texture": null
+  },
+  "home_hatchery_1": {
+    "model": 122399847354548,
+    "decal": 119455201141491,
+    "texture": null
+  },
+  "home_hatchery_2": {
+    "model": 101589355942289,
+    "decal": 100582961669853,
+    "texture": null
+  },
+  "home_hatchery_3": {
+    "model": 97606004335898,
+    "decal": 80278581751333,
+    "texture": null
+  },
+  "home_cellar_1": {
+    "model": 111971669988965,
+    "decal": 110594967132834,
+    "texture": null
+  },
+  "home_cellar_2": {
+    "model": 117264605295438,
+    "decal": 137597745241423,
+    "texture": null
+  },
+  "home_cellar_3": {
+    "model": 137165970639254,
+    "decal": 83703877454673,
+    "texture": null
+  },
+  "home_brooder_1": {
+    "model": 108712066423388,
+    "decal": 130553334000589,
+    "texture": null
+  },
+  "home_brooder_2": {
+    "model": 117282215833889,
+    "decal": 133329065290239,
+    "texture": null
+  },
+  "home_brooder_3": {
+    "model": 72098489838682,
+    "decal": 116770421582727,
+    "texture": null
+  },
+  "home_windmill_1": {
+    "model": 128381817062964,
+    "decal": 95852165370319,
+    "texture": null
+  },
+  "home_windmill_2": {
+    "model": 75748542753589,
+    "decal": 95910787567366,
+    "texture": null
+  },
+  "home_windmill_3": {
+    "model": 102564953282684,
+    "decal": 131795349807625,
+    "texture": null
+  },
+  "home_lodge_1": {
+    "model": 84680252386324,
+    "decal": 106471854205262,
+    "texture": null
+  },
+  "home_lodge_2": {
+    "model": 111902647774732,
+    "decal": 139511708206003,
+    "texture": null
+  },
+  "home_lodge_3": {
+    "model": 93922095631737,
+    "decal": 93475399699217,
+    "texture": null
+  },
+  "home_den_1": {
+    "model": 106380801780710,
+    "decal": 116006398449078,
+    "texture": null
+  },
+  "home_den_2": {
+    "model": 93773826299811,
+    "decal": 103388903939875,
+    "texture": null
+  },
+  "home_den_3": {
+    "model": 99886161992941,
+    "decal": 88090433828199,
+    "texture": null
+  },
+  "creature_giraffe": {
+    "model": 108072948790082,
+    "decal": 107802290674973,
+    "texture": null
+  },
+  "creature_giraffe_diamond": {
+    "model": 121848951803762,
+    "decal": 79793837205123,
+    "texture": null
+  },
+  "creature_giraffe_diamond_rainbow": {
+    "model": null,
+    "decal": 75338716323031,
+    "texture": null
+  },
+  "creature_giraffe_rainbow": {
+    "model": null,
+    "decal": 136160077733155,
+    "texture": null
+  },
+  "scenery_tree_1": {
+    "model": 123292686051219,
+    "decal": 102931409612427,
+    "texture": null
+  },
+  "scenery_tree_2": {
+    "model": 132456625973878,
+    "decal": 92275867250120,
+    "texture": null
+  },
+  "scenery_tree_3": {
+    "model": 82578502607922,
+    "decal": 126813226530256,
+    "texture": null
+  },
+  "scenery_pine_1": {
+    "model": 108637925565998,
+    "decal": 81193929209993,
+    "texture": null
+  },
+  "scenery_pine_2": {
+    "model": 105744035188546,
+    "decal": 88217429109801,
+    "texture": null
+  },
+  "scenery_bush_1": {
+    "model": 79560426232029,
+    "decal": 119688942868167,
+    "texture": null
+  }
+}

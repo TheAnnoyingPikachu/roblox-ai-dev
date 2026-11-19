@@ -1,0 +1,48 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-025",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Hexbound enemies in the game: baked, uploaded and rigged models with evil auras, two-legged and winged animations with hit and defeat reactions, a replayable fight log, and an admin-only test wave in the arena with health bars and damage numbers.",
+  "inputs": [
+    "docs/decisions/0042-animal-stations-hexbound-in-game-auras-test-wave.md"
+  ],
+  "dependencies": [
+    "STATION-024"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/StationAssets.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "tools/blender/stations/**",
+    "assets/stations/**",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/assets/register.md",
+    "docs/decisions/0042-animal-stations-hexbound-in-game-auras-test-wave.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-enemies.md"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "BattleRules.battle with a log gives the same result as without, and the log is one entry per attack, in time order, and replays to the same hit points",
+    "Every foe has a model of its kind in StationAssets (uploaded), and a sane size and tint",
+    "In Studio play the admin menu spawns every enemy with no script errors and the test wave plays to its end, with health bars, damage numbers, deaths and a result toast",
+    "The auras cost nothing measurable on a desktop with a large crowd"
+  ],
+  "verification": "2026-11-14: lune 666/666 (3 new fight-log tests, 1 new foe asset test), stylua and selene clean. Blender full bake of the 5 models (2,070 to 9,324 triangles); upload-assets run 43536103082 succeeded. Studio play (stations.rbxl, synced from source): all 14 enemies spawned from the admin menu; test waves 1 (starter team, won in 22 s), 6 (starters) and 10 (starters lost in 19 s to the first dragon, as the balance probe predicted; the best team won wave 10 in 1 s) ran to their ends with health bars falling, floating numbers, deaths and the result toast, and no script errors. Poses checked as held frames: sword chop, bow aim, spell thrust, power attack arms-up, fall onto the back. Aura measured with 42 enemies on screen (about 2,200 particles): 16.7 ms a frame with it on and off. Not checked: a real client other than Studio, phones, a dragon's wing flap in motion, drake and dragon tiers in a fight, the 'mine' team option.",
+  "output_artifacts": [
+    "src/stations/WaveShow.luau",
+    "src/stations-client/Creatures.client.luau",
+    "tools/blender/stations/assets/foes.py"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The test wave is admin-only and Studio-or-owner only; nothing in it is saved. Wave fights for ordinary players are still not wired up. The Ogre and Dragon sizes in the config are first guesses."
+}

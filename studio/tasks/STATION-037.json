@@ -1,0 +1,44 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-037",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Concepts for the jackals in the faceted, textured style (decision 0052): the Jackal, the Pharaoh Jackal and a new Sphinx Jackal variant, each with a presentation card. The helpers the faceted families share move into one module. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "inputs": [
+    "docs/decisions/0051-animal-stations-faceted-elephants.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "dependencies": [
+    "STATION-036"
+  ],
+  "files": [
+    "tools/blender/stations/assets/jackals.py",
+    "tools/blender/stations/assets/animals.py",
+    "tools/blender/stations/assets/lions.py",
+    "tools/blender/stations/assets/elephants.py",
+    "tools/blender/stations/facet.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0052-animal-stations-faceted-jackals.md",
+    "docs/decisions/0051-animal-stations-faceted-elephants.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-037.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The three jackals read as one family in the style of the lions and elephants",
+    "Each builds, bakes and exports through the normal build with the usual rig pieces and joints",
+    "The lions and the elephants build exactly as before the helpers moved; the other animals build as before",
+    "StationConfig, StationAssets and the manifest are untouched until SHANNON approves"
+  ],
+  "verification": "Blender 5.2 on 2026-11-15: full build (bake and export) of creature_jackal (1368 tris, 4.0 tall x 7.4 long), creature_jackal_pharaoh (1536, 5.1 x 9.1) and creature_jackal_sphinx (1880, 5.4 x 9.6; it replaced a first proposal, the Moon Jackal) passed with the usual pieces and the glow pieces; the cards were inspected. After the helpers moved to facet.py the three lions and the three elephants build to the same triangles, sizes, joints, centres, parts and glow as the manifest. Cheetah and meerkat draft builds give the same triangle counts as before the jackals moved out of animals.py. The manifest was restored after the test builds, so the game is unchanged. Not done: the upload, the StationConfig variant, the clips on the new shapes.",
+  "output_artifacts": [
+    "docs/concepts/jackal-family.png",
+    "docs/concepts/jackal-card.png",
+    "docs/concepts/pharaoh-jackal-card.png",
+    "docs/concepts/sphinx-jackal-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the three looks and the Sphinx Jackal (mythic, twist speed). On approval the next step is the build for upload, the upload workflow, the StationConfig variant and a look at the clips, as for the lions and elephants. Still open from STATION-036: the lions in the game carry the vertex-colour fault and need a rebuild and a new upload."
+}

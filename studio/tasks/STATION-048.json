@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-048",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Fix the lions' shade: the Lion, Sun Lion and Shadow Lion were uploaded with their face colours left on the meshes as vertex colours, which Roblox multiplies the texture by, so they came out darker and harsher than their cards. Export them again without (kit.py drops the attribute since decision 0053) and upload them again.",
+  "inputs": [
+    "docs/decisions/0050-animal-stations-faceted-lion-style.md"
+  ],
+  "dependencies": [
+    "STATION-045"
+  ],
+  "files": [
+    "assets/stations/creature_lion*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-048.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The three lions show in the game in the colours of their cards",
+    "Their rig (sizes, centres, joints) is unchanged, so every animation fits as before"
+  ],
+  "verification": "Lune 692/692, stylua and selene clean. CI run 43809671430 passed on pull request 25. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. Rebuilt with the current kit: the manifest entries of the three lions did not change (same sizes, centres and joints) and their textures came out byte for byte the same; only the FBX files changed. Uploaded in upload-assets run 43804783464 (the four eggs, the three lions and 24 rainbow coats, all succeeded). In Studio, each stood alone in daylight on the hub's plaza: the Lion is tawny with a brown mane, the Sun Lion orange with a yellow mane, the Shadow Lion ink black with its green glow, as on their cards (before, every colour was darker and harsher). On a ranch at close range other animals' coloured lights still tint them, as they tint everything. Not checked: a fight with the new lions.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'fix the lions shade', then 'archive them'. The three replaced decals (87858491746017, 92765121784934, 100442030209221) were archived on 2026-11-16 (upload-assets run 43809452120, after a dry run that listed them, 43809370535). The three replaced models (130586378174171, 74186882513776, 72212451895565) stay on the account: Roblox's API archives decals only."
+}

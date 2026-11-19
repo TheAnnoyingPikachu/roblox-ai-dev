@@ -1,0 +1,49 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-031",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The fight presentation pass: impact effects (hit-stop, sparks, camera punch, bigger flinch, power-attack charge and landing), visible arrows and spell bolts for archers and mages, per-species animal attacks with a win pose and a defeat reaction, and fight rhythm (a slow-motion beat on the killing blow, a power-attack camera cut-in, a skip button). Display only: no result, payout or log may change.",
+  "inputs": [
+    "docs/production/game7-fight-presentation-handoff.md"
+  ],
+  "dependencies": [
+    "STATION-030"
+  ],
+  "files": [
+    "docs/production/game7-fight-presentation-handoff.md",
+    "src/stations/WaveShow.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/ArenaCamera.client.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/shared/FightFx.luau",
+    "tests/FightFx.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0048-animal-stations-fight-presentation.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md"
+  ],
+  "tests": [
+    "FightFx.spec.luau",
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A fight's result, payout and replay log are unchanged for the same wave and team (BattleRules and LevelRules specs still pass; won and seconds match before and after in Studio)",
+    "A hit shows a spark, a bigger flinch on the target and a camera punch, a power attack a charge and a landing effect, with a short hit-stop that never changes the server timing",
+    "Archers and mages fire a visible arrow or spell bolt that lands when the log says",
+    "Every animal and variant has its own attack clip (with a fallback), and the surviving team shows a win pose",
+    "A slow-motion beat on the killing blow and a power-attack camera cut-in, and a skip button that leaves the fight through wave_done",
+    "No script errors, effects cleaned up after a fight, and desktop frame time not noticeably worse with 3 vs 3 fighters"
+  ],
+  "verification": "All three slices built and checked in Studio on 2026-11-14: lune 687/687, selene and stylua clean, admin test waves 2, 3 and 6 with no script errors, effects cleaned up, wave 6 unchanged (won, 32s, 65 attacks), camera cut-ins and the killing blow measured on a wave 6 fight, flamingo legs measured planted. Not measured: frame time before/after, phones, wave 10 and bosses, two players. Not judged by eye: the clips in motion at full speed, the slow motion.",
+  "output_artifacts": [
+    "src/stations/WaveShow.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/ArenaCamera.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Slices 1 (impact, shots, skip), 2 (per-species attacks, win pose, defeat knock-up) and 3 (slow-motion killing blow, camera cut-ins), plus a power attack for every base animal, done (decision 0048). Open: per-variant attacks and power attacks (a variant adds its own clip under its asset name); phones, a Drake or Dragon in the arena, two players, frame time."
+}

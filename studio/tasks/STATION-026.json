@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-026",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Real wave fights: a wave gate at the arena, the server deciding and paying a fight with the player's own team (coins, XP, samples), the arena replaying it with a result panel, one fight at a time and no faster farming by skipping; and a dark glow instead of the green aura.",
+  "inputs": [
+    "docs/decisions/0043-animal-stations-real-wave-fights.md"
+  ],
+  "dependencies": [
+    "STATION-025"
+  ],
+  "files": [
+    "src/shared/LevelRules.luau",
+    "src/shared/StationProgress.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0043-animal-stations-real-wave-fights.md",
+    "docs/decisions/0042-animal-stations-hexbound-in-game-auras-test-wave.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-enemies.md"
+  ],
+  "tests": [
+    "LevelRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Waves open one at a time up to one past the best cleared, and a fight needs an animal on the team",
+    "A win pays coins, XP and samples once, records the best, and a replay pays a quarter; a loss pays nothing",
+    "In Studio play a player can hatch a team, open the wave gate, fight wave 1 with the button, see the replay and the result panel, and be paid; a loss, a wave that is not open, a second fight at once and leaving the arena behave as described",
+    "The Hexbound have a dark glow and no green disc"
+  ],
+  "verification": "2026-11-14: lune 670/670 (4 new tests), stylua clean, selene clean on src (one old shadowing warning in tests/StationRules.spec.luau, not touched). Studio play (stations.rbxl, synced from source): wave 1 won through the gate prompt and the Fight button (+40 coins, +14 XP, result panel with Fight wave 2); wave 3 refused as not open; a one-animal team lost wave 2 and was paid nothing; a second fight at once and a fight after leaving early were refused as busy; Leave the arena put the player back at the arena's entrance and cleared the show; no script errors. Not checked: a second player (the arena-busy refusal between two players), phones, waves above 2, samples in play (drop numbers are tested, not seen), the dark glow's cost (the same emitter count as 0042 less the sparks).",
+  "output_artifacts": [
+    "src/stations/StationsServer.server.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The fight is paid when it starts and replayed after, so the coin counter jumps early. Drop and cooldown numbers are first guesses."
+}

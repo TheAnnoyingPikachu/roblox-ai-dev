@@ -1,0 +1,44 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-053",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Second round of concepts for the training areas (decision 0061): each area in a clearing of its own beyond the ranch's mountains, large enough for six animals at their real size, with a look for each of the six Training Grounds levels; new designs for the Healing Spring and the Guard Yard; a map of a ranch with its six clearings. Concept only.",
+  "inputs": [
+    "docs/decisions/0059-animal-stations-hub-and-training-concepts.md"
+  ],
+  "dependencies": [
+    "STATION-051"
+  ],
+  "files": [
+    "tools/blender/stations/stage.py",
+    "tools/blender/stations/scenes/training.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0061-animal-stations-training-clearings.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-053.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Each area's card shows it at upgrade levels 0 to 5 from one view, so the growth can be compared",
+    "Animals stand in every area at their real size, at least five in each finished area",
+    "The four areas SHANNON liked keep their designs; the Healing Spring and the Guard Yard are new ones",
+    "The map shows the ranch, its pass to the hub and a pass to each of six clearings",
+    "The game and its assets are unchanged"
+  ],
+  "verification": "CI run 43910022080 passed on pull request 25. Blender 5.2 on 2026-11-16: `stage.py` built and rendered the six areas (28,404 to 41,002 triangles, 7 to 10 s each) and the ranch map (277,364 triangles, about 6 minutes) with no error. Every card was looked at. Fixed after looking: the first view hid a third of an area behind its own gateway and foreground trees (camera raised, the view's sector kept clear), the level frames were too small (tighter lens), the ball throwers pointed away from their shields, the map's last close shot stood inside a mountain (mountains now keep out of the passes). No game file changed. Not checked: the places in the game engine's light, on a phone, against a triangle budget; whether animals overlap a piece of kit in every area (looked at on the cards only); whether a layout like the map fits between the hub and the other ranches (decision 0061 says it does not as the world stands).",
+  "output_artifacts": [
+    "docs/concepts/ranch-map-card.png",
+    "docs/concepts/training-family.png",
+    "docs/concepts/speed-track-card.png",
+    "docs/concepts/strength-gym-card.png",
+    "docs/concepts/swim-pool-card.png",
+    "docs/concepts/magic-library-card.png",
+    "docs/concepts/healing-spring-card.png",
+    "docs/concepts/guard-yard-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'concepts make the training areas have upgrading looks and make them all splinter off from the main ranch, make them large enough for multiple animals to fit in at once. i like the speed track the strength gym the swimming pool magic libarary, try again with the healing spring and guard yard', then 'make the training areas splinter off into different open areas around the ranch through the mountains if you get what i mean'. Checkpoint for SHANNON: the five decisions listed in 0061 (looks, size, where the ranches go, one upgrade or six, animals seen training)."
+}

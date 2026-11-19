@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-030",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Breach: a large ruined portal behind the arena's gate with a scorched road to it; a detailed demon head on the entrance, the gate and the ring; carved columns for the gate, the obelisks, the entrance towers and the braziers; and a fix for the fight camera missing its first fight.",
+  "inputs": [
+    "docs/decisions/0047-animal-stations-the-breach-heads-and-columns.md"
+  ],
+  "dependencies": [
+    "STATION-029"
+  ],
+  "files": [
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0046-animal-stations-full-arena-and-home.md",
+    "docs/decisions/0047-animal-stations-the-breach-heads-and-columns.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Breach builds with no script errors and the ring, its energy and the road show beyond the gate",
+    "The entrance, the gate and the ring carry the detailed demon head and the gate and obelisks carved columns",
+    "A wave shows with the camera engaged on the first fight of a session, with the Breach's glow over the gate"
+  ],
+  "verification": "2026-11-14: lune 677/677, stylua and selene clean. Studio play (stations.rbxl, synced from source): the arena built about 1,830 parts (the Breach 452); looked at in screenshots from in front of the entrance (the big head, the towers with their gargoyles, slits and columns), down the pit to the gate and the ring, and in an admin test wave 10 and wave 6 with the camera Scriptable at 55 degrees field of view; the camera missed one fight when the radius reached the client after the focus, which was fixed (it now waits for it) and checked on the first fight of a fresh session. No script errors. Not checked: a real phone or tablet (1,800 parts, about 30 lights and emitters), the ring's energy at dusk from the fight camera at full size, two players, the Dragon and Drake in the new frame.",
+  "output_artifacts": [
+    "src/stations/Breach.luau",
+    "src/stations/ArenaKit.luau",
+    "src/stations/Arena.luau",
+    "src/stations-client/ArenaCamera.client.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The arena is about 1,800 parts: measure on a phone before publishing, and trim the Breach's debris and the columns' flutes first if needed."
+}

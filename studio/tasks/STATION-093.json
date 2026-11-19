@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-093",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Build decision 0087: stone ledges with grass on the steep rock round the training grounds and grass where that rock lies flat; cut the flower clumps from the areas' border. Then, as SHANNON asked: no grass blades anywhere on the homestead, and far fewer tufts along its dirt paths.",
+  "inputs": [
+    "docs/decisions/0087-animal-stations-training-ledges-concept.md"
+  ],
+  "dependencies": [
+    "STATION-092"
+  ],
+  "files": [
+    "src/stations/Valley.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0087-animal-stations-training-ledges-concept.md",
+    "studio/tasks/STATION-093.json"
+  ],
+  "tests": [
+    "ValleyMap.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Ledges stand on the rock faces round the grounds, set into the face, none on a path, water or another ground",
+    "No flower clumps in the areas' border",
+    "No grass blades through anything on the homestead; few tufts along its paths",
+    "The world builds with no error in the Output"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-18: Valley, World and Ranch synced into the place, Play with no error in the Output. 641 ledges for the three ranches (1,307 at first, so the chance was halved); seen from the gym's yard: set into the face with pines and bushes on them, grass on the flatter rock. The homestead from above, before and after: no blades through the stalls, the plots or the paths, about a quarter of the tufts. The world counted 23,221 parts with ranch 1's areas at level 5. lune 721/721, selene 0 warnings. Not checked: a phone, frame rate.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'go for it and cut flower clumps now', then 'can you make the centre of the ranch have short grass so its not poking through floors and also cut down on the bushes on either side of each path'."
+}

@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-076",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Ranch House's porch stands on the ground: the cottage's stoop was built at its door's height with nothing under it, and the farmhouses' porches had an open gap under the deck. Every porch now has piers and a fieldstone skirt down to the ground, and its steps reach the ground.",
+  "inputs": [
+    "docs/decisions/0075-animal-stations-den-hill-farmhouse-signs.md"
+  ],
+  "dependencies": [
+    "STATION-075"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/ranch_house.py",
+    "assets/stations/home_house_*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-076.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "No porch or stoop of the three looks has a gap under it",
+    "Its steps reach the ground"
+  ],
+  "verification": "Cause, seen in Studio (local build, stamp `dev`, 2026-11-17): the cottage's stoop deck sat at the door's sill, 1.6 studs up on the footing, its piers and steps measured from there. Blender 5.2: the three looks drafted and looked at from the side and front, then built and exported (4,472, 6,068 and 9,214 triangles). Uploaded by upload-assets run 44184947829; the replaced decals archived after. Studio after the upload (stamp `dev`): the cottage's stoop stands on its stone skirt with its steps to the ground. Not checked: the two bigger looks in Studio, a phone.",
+  "output_artifacts": [
+    "assets/stations/home_house_1.fbx"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'the porch of the ranch house is floating slightly, go ahead and make the regular giraffe and make a diamond varient concept then pull up the animal pen concept'."
+}

@@ -1,0 +1,26 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-003",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Animal Stations hub world: plaza with the Hatchery fountain and egg market, paths, the four themed stations with tagged work slots, scenery, lighting and the spawn, built from code in a new stations place.",
+  "inputs": ["docs/game-design/game7-gdd.md", "docs/decisions/0020-animal-stations-variants.md"],
+  "dependencies": ["STATION-002"],
+  "files": [
+    "src/stations/**",
+    "stations.project.json",
+    ".github/workflows/ci.yml"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "rojo build stations.project.json succeeds and node tools/check-place.mjs passes (CI)",
+    "In Studio play the server builds the hub with no script errors, 32 tagged StationSlot pads, and the player spawns on the south lawn",
+    "selene and stylua pass on src/stations"
+  ],
+  "verification": "CI place build and check; Studio play check on 2026-11-13 with a local build (about 2,700 parts, 32 slots, spawn at the south walk)",
+  "output_artifacts": ["src/stations/World.luau", "stations.project.json"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "World code only; no rules, so no new specs. Props is shared from src/relay as Garden does."
+}

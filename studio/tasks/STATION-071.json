@@ -1,0 +1,53 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-071",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The Titan's Den dug into a hill behind it, the farmhouse as the Ranch House's three looks, and the homestead's signs moved where they can be read (decision 0075).",
+  "inputs": [
+    "docs/decisions/0074-animal-stations-ranch-house-farmhouse-concept.md"
+  ],
+  "dependencies": [
+    "STATION-069",
+    "STATION-070"
+  ],
+  "files": [
+    "src/shared/ValleyMap.luau",
+    "tests/ValleyMap.spec.luau",
+    "src/stations/Valley.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "tools/blender/stations/scenes/homestead.py",
+    "tools/blender/stations/scenes/ranch_house.py",
+    "tools/blender/stations/assets/homestead.py",
+    "assets/stations/home_*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/concepts/ranch-homestead-card.png",
+    "docs/concepts/ranch-house-card.png",
+    "docs/assets/register.md",
+    "docs/decisions/0075-animal-stations-den-hill-farmhouse-signs.md",
+    "docs/decisions/0074-animal-stations-ranch-house-farmhouse-concept.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-071.json"
+  ],
+  "tests": [
+    "ValleyMap.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The den's hall is a cave in a hill, with the Titan inside, and its gate is the model",
+    "The Ranch House is the farmhouse in each of its three looks, its door opens the ranch menu",
+    "The Trophy Lodge's, Hatchery's, den's and house's names can be read from the front",
+    "With every upgrade bought, no 'Buy it in the ranch menu' board is left"
+  ],
+  "verification": "Lune 716/716 (a new ValleyMap case for the den's hill), stylua and selene clean. Blender: ten models rebuilt (house 1 to 3, hatchery 2 and 3, lodge 2 and 3, den 1 to 3), uploaded by runs 44154381612 and 44155538333 (the first failed on home_lodge_3 with Roblox's 'Unknown Error'; the second uploaded it). Studio: local build, stamp `dev`, 2026-11-17. A new ranch had 8 'Buy it' boards; with every level bought (house 4, the rest 5) it had none, and one `Built` folder. Seen in screens: the den's timber frame in its cave on a new ranch, the great stone gate with the War Elephant inside at the top level, the Trophy Lodge's name under its cornice, the great farmhouse with its name over the porch. A tree that stood in the den's doorway was moved off its way. Not checked: the middle looks in the game, a phone, walking into the den.",
+  "output_artifacts": [
+    "src/stations/Valley.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'rebuild the titan den into the hill thats behind it and fix the sings ...', then 'go ahead with the farm house as well'."
+}

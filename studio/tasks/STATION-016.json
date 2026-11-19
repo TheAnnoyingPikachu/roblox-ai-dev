@@ -1,0 +1,49 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-016",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The first creature models: a jointed Blender Rhino (body, head, four legs, tail) and its mythic Lava Rhino variant, dangerous-looking and big, uploaded through the asset workflow, rigged and animated in game (idle, walk, horn attack, magic attack) with a showcase at the ranch.",
+  "inputs": [
+    "docs/decisions/0033-animal-stations-creature-models.md"
+  ],
+  "dependencies": [
+    "STATION-015"
+  ],
+  "files": [
+    "tools/blender/stations/**",
+    "tools/blender/upload-assets.mjs",
+    "tools/blender/write-assets-module.mjs",
+    ".github/workflows/upload-assets.yml",
+    "assets/stations/**",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "tests/StationAssets.spec.luau",
+    "tests/run.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/assets/register.md",
+    "docs/decisions/0033-animal-stations-creature-models.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "tools/blender/stations/build.py builds creature_rhino and creature_rhino_lava under their triangle budgets and records each mesh centre and joint in the manifest",
+    "StationAssets.luau matches the manifest (assets, sizes, parts, joints)",
+    "In Studio play the Rhino and the Lava Rhino pace the ranch paddock with moving legs and play the horn attack and the magic attack with no script errors",
+    "The Lava Rhino is larger than the Rhino and both read as dangerous, not cute"
+  ],
+  "verification": "2026-11-13: build.py built both (11,128 and 11,866 triangles, budgets 13,000 and 17,000); upload-assets run 43513757278 succeeded; lune 647/647, stylua and selene clean. Studio play (stations.rbxl, synced from source): six creatures spawn, no script errors or manifest warnings; screenshots show both walking mid-stride, the rear-up with the horn orb, and the spike line on the slam. Not checked: an online server (the showcase tweens on the server), phones.",
+  "output_artifacts": [
+    "assets/stations/creature_rhino.fbx",
+    "assets/stations/creature_rhino_lava.fbx",
+    "src/shared/StationAssets.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Extends the shared upload tooling with a `stations` game; the other games' generated modules are unchanged. Uploads go through the Upload Blender assets workflow (environment assets), never from a developer machine. Stat progress from waves was asked for and withdrawn by SHANNON the same day: not built. The mythic Thunder Rhino became the Lava Rhino (twist Strength)."
+}

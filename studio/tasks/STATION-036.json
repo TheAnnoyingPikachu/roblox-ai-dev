@@ -1,0 +1,48 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-036",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The new elephants in the game: the Elephant and the Frost Mammoth get the faceted, textured models of decision 0051, and the War Elephant joins as the Elephant's legendary variant (twist strength).",
+  "inputs": [
+    "docs/decisions/0051-animal-stations-faceted-elephants.md"
+  ],
+  "dependencies": [
+    "STATION-035"
+  ],
+  "files": [
+    "assets/stations/creature_elephant*",
+    "docs/assets/register.md",
+    "docs/decisions/0051-animal-stations-faceted-elephants.md",
+    "docs/game-design/game7-animals.md",
+    "docs/game-design/game7-gdd.md",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-036.json",
+    "tests/StationRules.spec.luau",
+    "tools/blender/stations/kit.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Elephant, the Frost Mammoth and the War Elephant load in the game with the new models, rigged and animated like every creature",
+    "A legendary roll on a Titan hatches a War Elephant; a mythic roll still hatches a Frost Mammoth; no other odds change",
+    "The elephants' clips fit the new models",
+    "Old saves load unchanged"
+  ],
+  "verification": "2026-11-15: upload-assets run 43749504282 succeeded (three models, three textures), after a first run (43748916603) whose models came out too dark in the game because they carried vertex colours; kit.py now drops them after the bake. Lune 687/687, selene and stylua clean. In Studio (local build): the Elephant, the Frost Mammoth and the War Elephant load with the new models and match the concept cards; the attack slam, the power wind-up and the defeat were frozen and looked at on the models and fit without changes; a test wave 6 with a Lion and the Elephant as the Titan was won with no script errors. Not checked: the walk and the win pose by eye, phones, two players, a War Elephant from a real hatch, the War Elephant in a fight.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON chose the textured elephants on 2026-11-15 and asked to continue. The upload runs in GitHub (environment assets), never with a key on this machine. Open for SHANNON: the three lions (STATION-034) carry the same vertex-colour fault and look darker in the game than approved; the fix is a rebuild and one more upload run for them."
+}

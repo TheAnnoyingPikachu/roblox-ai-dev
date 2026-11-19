@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-049",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A cleaner admin menu for adding animals (decision 0049): a grid of pictures in place of the list of buttons, with the stat level and the rainbow coat chosen on one row at the top.",
+  "inputs": [
+    "docs/decisions/0049-animal-stations-admin-add-animals.md"
+  ],
+  "dependencies": [
+    "STATION-050"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0058-animal-stations-rainbow.md",
+    "studio/tasks/STATION-049.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every animal and variant is one tile: its picture, its name in its rarity's colour",
+    "The stat level (1, 10, 35, 70) and the rainbow coat are picked on a row at the top",
+    "Tapping a tile adds that animal and says so; the list does not jump back to the top",
+    "Admins only, as before: the server checks"
+  ],
+  "verification": "Lune 692/692, stylua and selene clean. CI run 43809671430 passed on pull request 25. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. In Studio: the sheet opens as a grid of 24 tiles, six across, each with its picture filled and its name in its rarity's colour, under one row with the stat levels 1, 10, 35, 70 and the rainbow coat switch (screens). `admin_add` with three arguments added a Lion at level 10, a rainbow Sun Lion at level 35 and a rainbow Meerkat at level 1; the old two-argument call is refused by the payload check. With real clicks: level 35 picked, the coat switch turned on (every picture changed to its rainbow coat, screen) and the Fire Cheetah's tile tapped, which added a rainbow Fire Cheetah at level 35. Not checked: phones, the list keeping its place after an add from the bottom rows.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'make a new add animals menu thats a bit cleaner'."
+}

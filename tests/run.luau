@@ -77,6 +77,36 @@ local SPECS = {
 	["WheelRules.spec.luau"] = function()
 		require("./WheelRules.spec")
 	end,
+	["StationRules.spec.luau"] = function()
+		require("./StationRules.spec")
+	end,
+	["TrainFx.spec.luau"] = function()
+		require("./TrainFx.spec")
+	end,
+	["ValleyMap.spec.luau"] = function()
+		require("./ValleyMap.spec")
+	end,
+	["LevelRules.spec.luau"] = function()
+		require("./LevelRules.spec")
+	end,
+	["BattleRules.spec.luau"] = function()
+		require("./BattleRules.spec")
+	end,
+	["StationProgress.spec.luau"] = function()
+		require("./StationProgress.spec")
+	end,
+	["StationTrade.spec.luau"] = function()
+		require("./StationTrade.spec")
+	end,
+	["StationAssets.spec.luau"] = function()
+		require("./StationAssets.spec")
+	end,
+	["UiLayout.spec.luau"] = function()
+		require("./UiLayout.spec")
+	end,
+	["FightFx.spec.luau"] = function()
+		require("./FightFx.spec")
+	end,
 	["NightAssets.spec.luau"] = function()
 		require("./NightAssets.spec")
 	end,

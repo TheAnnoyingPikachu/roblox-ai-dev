@@ -1,0 +1,51 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-010",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Three roles in a rock paper scissors loop set by species, Titans as a separate legendary category in a fourth team slot, and the African beta pool of 15 species replacing the first roster.",
+  "inputs": [
+    "docs/decisions/0027-animal-stations-three-roles-titans-africa.md"
+  ],
+  "dependencies": [
+    "STATION-009"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/StationProgress.luau",
+    "tests/StationRules.spec.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/CLAUDE.md",
+    "src/stations-client/**",
+    "docs/decisions/0027-animal-stations-three-roles-titans-africa.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "BattleRules.spec.luau",
+    "LevelRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Four species per team role; Titans are legendary, have no variants and out-stat every basic animal",
+    "Each role beats exactly one and loses to one; Titans are neutral; equal animals follow the loop from either side",
+    "One of each role beats three of any one role with equal stats",
+    "A Titan sits in its own slot, never in the team of three, and carries a team further through the levels",
+    "In Studio play: eggs hatch the new animals and the Animals panel shows their roles"
+  ],
+  "verification": "lune run tests/run.luau 629/629; selene and stylua clean; place builds and check-place passes; Studio play check of buying and the Animals panel on 2026-11-13",
+  "output_artifacts": [
+    "src/shared/StationConfig.luau",
+    "docs/game-design/game7-animals.md"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Titans at 4% from the Safari Egg is a placeholder. No published saves exist, so old species in a profile are simply dropped by sanitize."
+}

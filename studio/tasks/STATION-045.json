@@ -1,0 +1,54 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-045",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The rhinos, meerkats, tortoises and flamingos in the game with the models of decisions 0054 and 0055, and their four new variants: Crystal Rhino (legendary, twist defence), Star Meerkat (mythic, twist speed), Island Tortoise (mythic, twist health), Peacock Flamingo (legendary, twist stamina).",
+  "inputs": [
+    "docs/decisions/0054-animal-stations-rhinos.md",
+    "docs/decisions/0055-animal-stations-meerkats-tortoises-flamingos.md"
+  ],
+  "dependencies": [
+    "STATION-042",
+    "STATION-043",
+    "STATION-044"
+  ],
+  "files": [
+    "assets/stations/creature_rhino*",
+    "assets/stations/creature_meerkat*",
+    "assets/stations/creature_tortoise*",
+    "assets/stations/creature_flamingo*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Creatures.client.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0054-animal-stations-rhinos.md",
+    "docs/decisions/0055-animal-stations-meerkats-tortoises-flamingos.md",
+    "docs/game-design/game7-animals.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-045.json",
+    "tools/blender/stations/assets/flamingos.py"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The twelve animals load in the game with the new models, rigged and animated like every creature, in the colours of their cards",
+    "The four new variants exist in StationConfig and hatch from the eggs that list them (decision 0056)",
+    "The clips fit the new shapes, the upright meerkat's above all",
+    "Old saves load unchanged"
+  ],
+  "verification": "2026-11-16: upload-assets runs 43776507935 (twelve models and textures) and 43777267570 (the Phoenix Flamingo again, with a painted tail piece) succeeded. Lune 688/688 (StationAssets: every animal and variant has its model, jointed, in step with the manifest), stylua clean, selene has its one old warning. In Studio (local build, stamp `dev`: no CI stamp): the twelve load with the new models in the colours of their cards (screens of the meerkats, flamingos, tortoises and rhinos; the Crystal Rhino shows its separate Neon colours), the meerkats stand upright with `Biped` and scale by their hips, and their portraits are published. Each piece's lowest point was sampled against the ground through idle, walk, attack, power attack, hit and win for the twelve and for the three lions: before the feet rule the rhinos' feet sank 0.2 to 0.8 studs and the meerkats' 0.3 to 0.45; after it no leg goes under its standing height in any of them, and the meerkats' and tortoises' tails stay above the ground. No script errors. Left as it is: the shared hit flinch drops the lions' tails 0.4 to 0.8 studs for a moment. Not checked: phones, two players, a new variant from a real hatch, a real wave fight with the new models, the jackals, cheetahs, elephants and Hexbound after the feet rule (it can only lift a body), the die clip on an upright meerkat.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-15: 'looks is go variants are go eggs are go'. The upload runs in GitHub (environment assets), never with a key on this machine. The replaced models and images of the eight old animals stay on the account (Roblox will not archive them through the API); their decals and the first Phoenix upload's (82668050665994) could be archived by the workflow."
+}

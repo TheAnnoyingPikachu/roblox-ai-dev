@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-006",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Pivot to training and endless levels: stations train a stat instead of paying coins, an endless line of seeded enemy teams with variant bosses, a deterministic team auto-battle, level rewards, and lobbies of 3 with one ranch per road.",
+  "inputs": ["docs/decisions/0023-animal-stations-training-levels.md"],
+  "dependencies": ["STATION-005"],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/LevelRules.luau",
+    "tests/StationRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/run.luau",
+    "src/stations/**",
+    "docs/decisions/0021-animal-stations-vision-ranches.md",
+    "docs/decisions/0023-animal-stations-training-levels.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": ["StationRules.spec.luau", "LevelRules.spec.luau"],
+  "acceptance_criteria": [
+    "Training adds one point per TRAIN_SECONDS, keeps part points, and stops at double the hatched stat or STAT_MAX",
+    "Enemy teams are the same for the same level, grow without a cap, and every 10th level has a variant boss",
+    "Battles always end; trained teams and variant teams clear more levels than starters",
+    "The world builds three ranches and a player spawns at theirs in Studio play"
+  ],
+  "verification": "lune run tests/run.luau 610/610; selene and stylua clean; Studio play on 2026-11-13: player got ranch 1 and spawned at its gate, level reach starters 4, trained 16, rares 18, legendary team 35",
+  "output_artifacts": ["src/shared/LevelRules.luau", "src/shared/StationRules.luau", "src/stations/World.luau"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Removes StationRules.rate, bestStation and income (idle coins). Battles are rules only; no UI yet."
+}

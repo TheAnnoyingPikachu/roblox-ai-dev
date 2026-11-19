@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-065",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Six new ranch upgrades in the rules (decision 0072): the Hatchery (eggs hatching at once), the Egg Cellar (eggs stored), the Brooder (hatching speed), the Windmill (coins an hour, also while away), the Trophy Lodge (coins from waves) and the Titan's Den (the Titan's stats in a wave), with draft levels and prices.",
+  "inputs": [
+    "docs/decisions/0071-animal-stations-homestead-concept.md"
+  ],
+  "dependencies": [
+    "STATION-064"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "src/shared/StationRules.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0072-animal-stations-open-homestead.md",
+    "docs/decisions/0071-animal-stations-homestead-concept.md",
+    "studio/tasks/STATION-065.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each new upgrade is data in StationConfig.UPGRADES and its effect is read only through StationProgress.value",
+    "A new ranch has three nests and room for eight stored eggs; a save from before keeps every egg it holds",
+    "The Windmill pays whole coins by the hour, for at most eight hours of time away",
+    "The Titan's boost is never stored on the animal",
+    "Every rule has a test"
+  ],
+  "verification": "Lune 715/715 (seven new cases in StationProgress.spec: the new bases and the save's limits, nests and storage by level with an old save kept whole, the Brooder's time, the Windmill's pay and its cap, the Trophy Lodge's coins, the Titan's boost). stylua and selene clean. Studio: local build, stamp `dev` (no CI stamp), 2026-11-17, through the game's own requests: a new ranch bought three Meadow eggs with its 300 coins and started them, and a fourth was refused `nests_full`; every level of all nine upgrades was then bought (five each, the house four) and the fourth egg started. The Windmill at level 5 paid 46 coins in 67 seconds (2,500 an hour). With the Brooder at 200% the four hatching Meadow eggs were due 30 seconds after they started (60 without). Not checked: a wave's pay with the Trophy Lodge and a fight with the Titan's boost in the arena (unit tests only), the message after time away, the ranch menu's nine rows by eye.",
+  "output_artifacts": [
+    "src/shared/StationProgress.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'do all those buildings, do all your suggested drafts, the area doesnt need to be bigger just needs to fit everything'. Read as: all six new upgrades of decision 0071 with the draft numbers, and prices set as drafts by the studio. Checkpoint for SHANNON: the four items at the end of decision 0072."
+}

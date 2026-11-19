@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-075",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for an animal pen behind the Barn, so the herd is not in the homestead's middle (decision 0077). Concept only.",
+  "inputs": [
+    "docs/decisions/0072-animal-stations-open-homestead.md"
+  ],
+  "dependencies": [
+    "STATION-074"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/animal_pen.py",
+    "tools/blender/stations/scenes/homestead.py",
+    "docs/concepts/animal-pen-card.png",
+    "docs/decisions/0077-animal-stations-animal-pen-concept.md",
+    "studio/tasks/STATION-075.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The card shows the pen in the ranch as it is now, from above, on the plan, at three stages and at its gate",
+    "The homestead's own card and the building models are unchanged (the pen is behind a switch that is off by default)"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: `stage.py -- animal_pen` rendered with no error (139,744 triangles, 56 seconds). The card was looked at twice; after the first look the giraffe was moved off the gate to the hay rack and the views were moved back. Not checked: the land's slope (the card's ground is flat), the game engine, a phone.",
+  "output_artifacts": [
+    "docs/concepts/animal-pen-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'please get rid of the excess lanterns around the centre area of the barn and then make a giraffe concept art and also make a concept for an animal pen fit into the current ranch so the animals arent in the center'. Checkpoint for SHANNON: the three items of decision 0077."
+}

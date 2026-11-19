@@ -1,0 +1,35 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-091",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Build decision 0086's look round the training grounds: the track's floor without grass blades, every floor but the pool's frayed into the land, a border of bushes, rocks and flowers on each rim and woods up the slopes behind. Also fix `calm` in World.luau, whose last row had no width and stopped the world build (STATION-089).",
+  "inputs": [
+    "docs/decisions/0086-animal-stations-training-grounds-concept.md"
+  ],
+  "dependencies": [
+    "STATION-090"
+  ],
+  "files": [
+    "src/stations/Valley.luau",
+    "src/stations/World.luau",
+    "src/shared/ValleyMap.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0086-animal-stations-training-grounds-concept.md",
+    "studio/tasks/STATION-091.json"
+  ],
+  "tests": [
+    "ValleyMap.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "No grass blades through the track",
+    "Each area but the pool has a frayed edge, a border and woods round it, none on a path, the water, another ground or the den's hill",
+    "The world builds with no error in the Output"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-18: the three files synced into the place, Play started with no error in the Output (before the fix, `calm` threw 'Region cannot be empty' and the build stopped after ranch 1's valley); ranch 2's track ground is LeafyGrass; ranch 1's areas stood at Training Grounds level 5 and the track and the gym looked at from the concept's cameras: frayed edges, the border and the woods as on the card. lune 721/721, selene 0 warnings. Not checked: a phone, frame rate (the world went from about 9,300 parts to about 19,800 in this session, with the areas at level 5).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'go for the after look its awesome!'."
+}

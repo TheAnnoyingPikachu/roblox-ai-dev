@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-033",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "The three lions (Lion, Sun Lion and a new legendary Shadow Lion, twist speed) rebuilt from scratch as faceted low-poly cats after the Sun Lion reference card from SHANNON (decision 0050), with a presentation render of each. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "inputs": [
+    "docs/game-design/game7-animals.md"
+  ],
+  "dependencies": [
+    "STATION-032"
+  ],
+  "files": [
+    "docs/concepts/*.png",
+    "docs/decisions/0050-animal-stations-faceted-lion-style.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-033.json",
+    "tools/blender/stations/assets/animals.py",
+    "tools/blender/stations/assets/lions.py",
+    "tools/blender/stations/build.py",
+    "tools/blender/stations/kit.py"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The three lions read as one family in the style of the reference: faceted bodies, a mane of crystal shards, paws with toes, slit eyes",
+    "Each builds, bakes and exports through the normal build with the usual rig pieces and joints",
+    "The other animals build as before",
+    "StationConfig, StationAssets and the manifest are untouched until SHANNON approves and the models are uploaded"
+  ],
+  "verification": "Blender 5.2 on 2026-11-15, after the pass to match the reference card (a fuller mane, a chunkier body and legs, the sun with rays, a bigger tail flame, the face): full build (bake and export) of creature_lion (1584 tris, 7.5 tall x 13.0 long), creature_lion_sun (1808, 9.2 x 16.1) and creature_lion_shadow (1656, 8.5 x 15.0), with the mane swept back passed, with body, head, four legs and tail pieces and the glow pieces; the hero render was compared side by side with the reference. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the new shapes under the walk and attack clips in the game.",
+  "output_artifacts": [
+    "docs/concepts/lion-family.png",
+    "docs/concepts/lion-card.png",
+    "docs/concepts/sun-lion-card.png",
+    "docs/concepts/shadow-lion-concept.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the faceted lions and the Shadow Lion, then the next step is the build for upload, the Upload Blender assets workflow and the StationConfig variant. Open: whether the other animals follow the style; an aura effect in the game for the Sun Lion; a look at the clips on the new legs. Generator trial on 2026-11-15 (SHANNON asked): Studio's mesh generator from a text description gave a plain low-poly lion (lumpy mane with holes where the head was cut from the body, a thin tail with no flame, no glowing eyes) and published asset 83393387271349 to SHANNON's account; the block generator fed the reference image gave a crude block lion with a flat yellow starburst for a mane. Neither is nearer the reference than the Blender lions. The generated asset is not used in the game and not in the asset register; both trial models sit only in the local Studio session (Workspace.LionTrial)."
+}

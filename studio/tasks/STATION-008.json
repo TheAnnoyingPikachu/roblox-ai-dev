@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-008",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Saves and buying: a saved profile (coins, animals, team, training), egg buying at the market stalls, team and training requests through the kit router, and a first HUD with coins and an Animals panel.",
+  "inputs": ["docs/decisions/0025-animal-stations-saves-eggs-direction.md"],
+  "dependencies": ["STATION-007"],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "tests/StationProgress.spec.luau",
+    "tests/run.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "stations.project.json",
+    "docs/decisions/0025-animal-stations-saves-eggs-direction.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": ["StationProgress.spec.luau"],
+  "acceptance_criteria": [
+    "sanitize turns any stored record into a valid profile and is stable",
+    "Buying charges the price, refuses unknown eggs, too few coins and a full collection, and fills the team to three",
+    "Training settles from timestamps without double counting, caps offline time and the number training",
+    "In Studio play: three Meadow eggs can be bought, the fourth is refused for coins, train and team requests answer correctly, and the HUD shows coins and the animals"
+  ],
+  "verification": "lune run tests/run.luau 625/625; selene and stylua clean; Studio play 2026-11-13: buy x3 ok, 4th refused coins, bad egg refused payload, train ok, team refused while training, HUD showed Coins 0 and 3 animals, three stall prompts present. DataStores are unavailable in an unpublished place, so the session ran offline; store writes are covered by the kit's SaveStore spec only",
+  "output_artifacts": ["src/shared/StationProgress.luau", "src/stations/StationsServer.server.luau", "src/stations-client/Hud.client.luau"],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "New store StationsProfile (studio/staging suffixes until a production release is approved). No battle screen yet, so coins cannot be earned in play."
+}

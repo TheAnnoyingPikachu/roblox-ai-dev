@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-092",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for ledges and grassy tops on the rock round the training grounds (decision 0087): three areas now and with them, and a close-up, applied live in the game. Concept only.",
+  "inputs": [
+    "docs/decisions/0086-animal-stations-training-grounds-concept.md"
+  ],
+  "dependencies": [
+    "STATION-091"
+  ],
+  "files": [
+    "docs/concepts/training-ledges-card.png",
+    "docs/decisions/0087-animal-stations-training-ledges-concept.md",
+    "studio/tasks/STATION-092.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The card shows the same views now and with the ledges, and one from the ground",
+    "Every change is written down",
+    "No game file changed"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-18, with STATION-091 synced: ranch 1's areas stood at Training Grounds level 5, the gym, library and spring taken from decision 0086's cameras, then 229 ledges and 350 grassy tops applied from the server (raycasts on the terrain) and the same cameras taken again, plus one from the gym's yard. The session was stopped, so nothing was kept. Not checked: the track, the pool and the guard yard close up, a phone, frame rate.",
+  "output_artifacts": [
+    "docs/concepts/training-ledges-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'then show me what the ledges and grassy tops would look like'. Checkpoint for SHANNON: the items of decision 0087."
+}

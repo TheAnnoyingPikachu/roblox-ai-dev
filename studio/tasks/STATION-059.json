@@ -1,0 +1,43 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-059",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A training ground trains one animal at a time, and that animal is seen at its work in the ground's area: six looping training animations (run, heave, swim, study, soak, brace) that every animal plays (decision 0066).",
+  "inputs": [
+    "docs/decisions/0065-animal-stations-training-clearings-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-058"
+  ],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "src/stations/Areas.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0066-animal-stations-training-seen.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-059.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The server refuses to start or move an animal to a station where another is training, and says why; the station is free again when that animal stops, moves or finishes",
+    "A stored save with two animals at one station keeps the first training and loses no levels",
+    "An animal that trains is seen in its station's area playing that station's animation, and is back in the roaming field when it stops",
+    "Upgrading the Training Grounds stands the training animals again in the new area",
+    "Nothing shown decides or delays any training"
+  ],
+  "verification": "CI run 43932773957 passed on pull request 25. Lune 697/697 (three new cases: one animal a station, the station freed on stop and on move, a stored save with two at one station), stylua and selene clean. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16, driven through the game's own requests from the client. Six animals (lion, jackal, elephant, meerkat, flamingo, tortoise) were sent to the six stations: each was accepted, and each stood in its area with its clip (run, brace, heave, study, soak, swim). A second animal sent to a taken station was refused with `station_busy`; after its animal was stopped the station took another. The stopped animal left the area and stood in the roaming field (one model of it before and after). The Training Grounds were bought from 0 to 5 while all six trained: all six were standing in the upgraded areas afterwards. Measured: the lion ran 272 studs in 22 s round the track, its feet rising from 23.1 to 28.7 over the hurdles; the tortoise swam 19 studs in 5 s; the elephant's body rose and fell 0.49 studs a heave. Looked at in screens: a cheetah and a lion on the track, the elephant under the bar and at the boulder, the tortoise in its lane, a rhino on its pad against the ram, the meerkat reading (looking up 31 degrees at the great book), the flamingo in the bath. Fixed after looking: heads pitched the wrong way in two clips, the flamingo's legs stuck out of the bath (it now stands), a meerkat stared at the plinth (readers now look at the book). Not checked: the soak and brace clips on a meerkat, an animal reaching level 70 while seen, two players, a slow connection, phones.",
+  "output_artifacts": [
+    "src/stations/Areas.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'now make animations for each animal being trained and make it so each training ground can have 1 animal training at a time'. Read as: an animation for each training activity that every animal plays, not a separate one for each species. Checkpoint for SHANNON: one animal a station slows training in a single stat (decision 0066); the level times were not changed."
+}

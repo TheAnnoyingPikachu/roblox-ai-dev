@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-070",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Fix: a ranch could be built several times over, one copy on top of another, so a training animal walked through a barbell that did not move. The ranch's rebuild no longer waits for a model to load.",
+  "inputs": [
+    "docs/decisions/0072-animal-stations-open-homestead.md"
+  ],
+  "dependencies": [
+    "STATION-067"
+  ],
+  "files": [
+    "src/stations/Ranch.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-070.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "However fast upgrades are bought, a ranch has one set of everything",
+    "An animal at the Strength Gym works at one barbell, which follows it"
+  ],
+  "verification": "Cause, found in Studio (local build, stamp `dev`, 2026-11-17): STATION-067's `Ranch.render` stood each building's model in line, which waits the first time a model loads; an upgrade bought meanwhile started a second rebuild beside the first, and each left its own `Built` folder. With upgrades bought 0.35 seconds apart at the start of a session, the gym held four of each barbell (12 `kit_gym_bar` meshes): the server marked only the first folder's, so three great barbells stayed on their stands and the elephant stood through them (seen in a screen, and again with the moving one hidden). After the fix (the models are stood by `task.spawn`, and every old `Built` folder is removed) the same run gave one `Built` folder, one of each barbell, one set of sails, one till and eight building models, and a screen showed the elephant under a single barbell. Lune 715/715, selene clean. Not checked: two players upgrading at once, a slow connection.",
+  "output_artifacts": [
+    "src/stations/Ranch.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: '1 is good 2 is good 3 is good and make collecting money from the windmill, also make a new concept for the ranch house. make it a classic looking wood and stone farm house', then 'continue, then when youre done when creatures are training they are phasing through the old barbell, could you fix that please'. The fault came in with STATION-067 on 2026-11-17; before that the rebuild did not wait."
+}

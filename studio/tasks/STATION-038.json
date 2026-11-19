@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-038",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The new jackals in the game: the Jackal and the Pharaoh Jackal get the faceted, textured models of decision 0052, and the Sphinx Jackal joins as the Jackal's mythic variant (twist speed).",
+  "inputs": [
+    "docs/decisions/0052-animal-stations-faceted-jackals.md"
+  ],
+  "dependencies": [
+    "STATION-037"
+  ],
+  "files": [
+    "assets/stations/creature_jackal*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations-client/Creatures.client.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0052-animal-stations-faceted-jackals.md",
+    "docs/game-design/game7-animals.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-038.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Jackal, the Pharaoh Jackal and the Sphinx Jackal load in the game with the new models, rigged and animated like every creature, in the colours of the concept cards",
+    "A mythic roll on a Jackal hatches a Sphinx Jackal; a legendary roll still hatches a Pharaoh Jackal; no other odds change",
+    "The jackals' clips fit the new models",
+    "Old saves load unchanged"
+  ],
+  "verification": "2026-11-15: upload-assets run 43752043982 succeeded (three models, three textures, exported without vertex colours). Lune 687/687, selene and stylua clean. In Studio (local build): the Jackal, the Pharaoh Jackal and the Sphinx Jackal load with the new models in the colours of the concept cards, and their portraits are published; the attack crouch and snap, the walk, the defeat, the win pose and the power attack's howl and slam were frozen and looked at on the models; the howl (head down) and the win pose (tail on the ground) were fixed and looked at again, and so was the Elephant's trumpet; a test wave 6 with the three jackals as the team was won with no script errors. Not checked: phones, two players, a Sphinx Jackal from a real hatch (1 in 20,000), the clips in motion at full speed.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON approved the three jackals on 2026-11-15 and asked for them in the game like the lions and elephants. The upload runs in GitHub (environment assets), never with a key on this machine. Still open for SHANNON from STATION-036: the three lions carry the vertex-colour fault and look darker in the game than approved; the fix is a rebuild and one more upload run for them."
+}

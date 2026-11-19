@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-014",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Replace the Titan-only Legendary Egg with an egg that unlocks at player level 15 and drops the legendary as a rare hatch among other animals.",
+  "inputs": [
+    "docs/decisions/0031-animal-stations-no-legendary-only-egg.md"
+  ],
+  "dependencies": [
+    "STATION-013"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/stations/World.luau",
+    "tests/StationRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0031-animal-stations-no-legendary-only-egg.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every egg drops ordinary animals; no egg hatches only the Titan",
+    "Exactly one egg has an unlock level (15), and only that egg can drop the Titan, at 10% or less",
+    "The locked egg is still refused below player level 15 whatever the coins"
+  ],
+  "verification": "lune run tests/run.luau passes with the updated egg tests (40,000 seeded Golden Egg hatches give about 5% Titans, all plain Elephants); selene and stylua clean; place builds and check-place passes",
+  "output_artifacts": [
+    "src/shared/StationConfig.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Config and test change only; the stall is built from the egg list, so it was not re-checked in Studio. Eggs are placeholders until the planned overhaul."
+}

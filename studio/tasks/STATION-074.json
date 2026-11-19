@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-074",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for a Giraffe in the faceted style of the other animals (decision 0076). Concept only.",
+  "inputs": [
+    "docs/decisions/0051-animal-stations-faceted-elephants.md"
+  ],
+  "dependencies": [
+    "STATION-073"
+  ],
+  "files": [
+    "tools/blender/stations/assets/giraffes.py",
+    "docs/concepts/giraffe-card.png",
+    "docs/decisions/0076-animal-stations-giraffe-concept.md",
+    "studio/tasks/STATION-074.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "One card shows the giraffe large and from the front, side and back",
+    "Nothing in the game changes; no upload"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: drafted three times (3,160 triangles); after the first look its head was made 1.4 times bigger, the patches denser and the mane shorter; then the presentation card (`build.py --beauty`). Not built, exported or uploaded; its clips not tried.",
+  "output_artifacts": [
+    "docs/concepts/giraffe-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'please get rid of the excess lanterns around the centre area of the barn and then make a giraffe concept art and also make a concept for an animal pen fit into the current ranch so the animals arent in the center'. Checkpoint for SHANNON: the three items of decision 0076."
+}

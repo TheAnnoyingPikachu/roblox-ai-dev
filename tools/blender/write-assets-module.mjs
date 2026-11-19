@@ -2,13 +2,21 @@
 // glow colours) and tools/blender/<game>/uploaded.json (asset ids from upload-assets.mjs; optional:
 // without it every id is nil and the game keeps its current visuals).
 //
-//   node tools/blender/write-assets-module.mjs <night|spire|garden>
+//   node tools/blender/write-assets-module.mjs <night|spire|garden|stations>
+//
+// stations assets are jointed creatures: their entries also carry `glow`, and the rig as
+// `centres` and `joints` (see tools/blender/stations/build.py).
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const GAMES = { night: ["NightAssets", "Hundred Demon Night"], spire: ["SpireAssets", "Neon Spire"], garden: ["GardenAssets", "Egg Garden"] };
+const GAMES = {
+	night: ["NightAssets", "Hundred Demon Night"],
+	spire: ["SpireAssets", "Neon Spire"],
+	garden: ["GardenAssets", "Egg Garden"],
+	stations: ["StationAssets", "Animal Stations"],
+};
 const game = process.argv[2] ?? "night";
 if (!GAMES[game]) throw new Error(`unknown game ${game}; use ${Object.keys(GAMES).join(", ")}`);
 const [moduleName, label] = GAMES[game];
@@ -32,8 +40,22 @@ const lines = [
 	...(game === "night" ? ["-- root: blade root relative to the `_blade` mesh centre, in studs, for lining up swapped blades."] : []),
 	"-- A nil model id means not uploaded yet: the game keeps its current visual for that asset.",
 	...(game === "spire" ? ["-- glow: sRGB Neon colour per glow mesh (left untextured, set to Neon by Models.luau)."] : []),
+	...(game === "stations"
+		? [
+				"-- glow: sRGB Neon colour per glow mesh (left untextured, set to Neon by Creatures.luau).",
+				"-- centres, joints: the rig, in studs from the point on the ground under the model's middle",
+				"-- lift: for a piece of a place, built where it stands: how far above the place's ground its lowest point is",
+				"-- (x right, y up, z towards the head): where each mesh's centre is, and where each piece turns.",
+				"-- rainbowDecal / rainbowTexture: the Decal and Image ids of its rainbow coat (decision 0058), a second",
+				"-- texture for the same model.",
+				"-- eyes, lid: where its eyes are ({ x, y, z, size }, in the axes of `centres`) and its brow's colour, to close",
+				"-- them (the Titan asleep in its den).",
+			]
+		: []),
 	"",
-	game === "spire"
+	game === "stations"
+		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tcentres: { [string]: { number } },\n\tjoints: { [string]: { number } },\n\tlift: number?,\n\teyes: { { number } }?,\n\tlid: { number }?,\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n\trainbowDecal: number?,\n\trainbowTexture: number?,\n}"
+		: game === "spire"
 		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n}"
 		: game === "night"
 			? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n\troot: { number }?,\n}"
@@ -46,17 +68,30 @@ for (const [name, entry] of Object.entries(manifest)) {
 	const parts = Object.keys(entry.parts).map((p) => `"${p}"`).join(", ");
 	lines.push(`\t${name} = {`);
 	lines.push(`\t\tsize = { ${entry.size_studs.join(", ")} },`);
-	lines.push(`\t\tparts = { ${parts} },`);
-	if (game === "spire") {
-		lines.push("\t\tglow = {");
-		for (const [p, c] of Object.entries(entry.glow ?? {})) lines.push(`\t\t\t${p} = { ${c.join(", ")} },`);
+	const oneLine = `\t\tparts = { ${parts} },`;
+	// stylua wraps a line over 120 columns (a tab counts 4): write it wrapped, so the file needs no formatting
+	if (oneLine.length + 6 <= 120) lines.push(oneLine);
+	else lines.push("\t\tparts = {", ...Object.keys(entry.parts).map((q) => `\t\t\t"${q}",`), "\t\t},");
+	for (const field of game === "spire" ? ["glow"] : game === "stations" ? ["glow", "centres", "joints"] : []) {
+		const rows = Object.entries(entry[field] ?? {});
+		if (rows.length === 0) {
+			lines.push(`\t\t${field} = {},`);
+			continue;
+		}
+		lines.push(`\t\t${field} = {`);
+		for (const [p, c] of rows) lines.push(`\t\t\t${p} = { ${c.join(", ")} },`);
 		lines.push("\t\t},");
 	}
 	// A decal-only asset (the Clover pad) keeps its uploaded carrier model out of the game.
 	lines.push(`\t\tmodel = ${entry.decal_only ? "nil" : id(u.model)},`);
 	lines.push(`\t\tdecal = ${id(u.decal)},`);
 	lines.push(`\t\ttexture = ${id(u.texture)},`);
+	const coat = uploaded[`${name}_rainbow`];
+	if (coat) lines.push(`\t\trainbowDecal = ${id(coat.decal)},`, `\t\trainbowTexture = ${id(coat.texture)},`);
 	if (entry.root) lines.push(`\t\troot = { ${entry.root.join(", ")} },`);
+	if (entry.lift) lines.push(`\t\tlift = ${entry.lift},`);
+	if (entry.eyes) lines.push("\t\teyes = {", ...entry.eyes.map((e) => `\t\t\t{ ${e.join(", ")} },`), "\t\t},");
+	if (entry.lid) lines.push(`\t\tlid = { ${entry.lid.join(", ")} },`);
 	lines.push("\t},");
 }
 lines.push("}", "", `return ${moduleName}`, "");

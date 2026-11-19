@@ -69,8 +69,9 @@ function Props.pillar(
 end
 local pillar = Props.pillar
 
--- Text on both faces of a board, scaled per stud so it never stretches.
-function Props.label(board: BasePart, text: string, colour: Color3?)
+-- Text on both faces of a board, scaled per stud so it never stretches. `inset`: studs kept
+-- clear at each end (for posts or a frame over the board's ends), with a little off top and bottom.
+function Props.label(board: BasePart, text: string, colour: Color3?, inset: number?)
 	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
 		local gui = Instance.new("SurfaceGui")
 		gui.Face = face
@@ -79,7 +80,9 @@ function Props.label(board: BasePart, text: string, colour: Color3?)
 		gui.PixelsPerStud = 40
 		gui.Parent = board
 		local l = Instance.new("TextLabel")
-		l.Size = UDim2.fromScale(1, 1)
+		l.AnchorPoint = Vector2.new(0.5, 0.5)
+		l.Position = UDim2.fromScale(0.5, 0.5)
+		l.Size = UDim2.new(1, -80 * (inset or 0), 1, if inset then -16 else 0)
 		l.BackgroundTransparency = 1
 		l.TextColor3 = colour or WHITE
 		l.TextScaled = true

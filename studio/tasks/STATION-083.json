@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-083",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for the Diamond Giraffe as diamond ore: mean again, its whole body stone set with diamonds (decision 0083). Concept only.",
+  "inputs": [
+    "docs/decisions/0082-animal-stations-gentle-giraffe-concepts.md"
+  ],
+  "dependencies": [
+    "STATION-082"
+  ],
+  "files": [
+    "tools/blender/stations/assets/giraffes.py",
+    "docs/concepts/diamond-ore-giraffe-card.png",
+    "docs/decisions/0083-animal-stations-diamond-ore-giraffe-concept.md",
+    "studio/tasks/STATION-083.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "One card shows it large and from the front, side and back",
+    "The game's giraffes and uploads unchanged"
+  ],
+  "verification": "Blender 5.2 on 2026-11-17: the card rendered (`build.py --beauty`) and looked at twice; after the first look the big hexagon patches became small chips and the diamonds breaking out were made bigger, bluer and more. The game's giraffes pass no `hide` surface, so they build as before. Not checked: the game engine, a phone.",
+  "output_artifacts": [
+    "docs/concepts/diamond-ore-giraffe-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'make it meaner looking again and make it look like a diamond ore, like the entire body'. Checkpoint for SHANNON: the two items of decision 0083."
+}

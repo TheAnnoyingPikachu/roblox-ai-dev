@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-054",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A proposal for better-looking tortoises (decision 0062): a shell of plates that share their edges, a spiked keel, a horned head with a hooked beak, armoured forelegs, for the Tortoise, the Gemshell Tortoise and the Island Tortoise. Cards only: the game's three models are not rebuilt or uploaded.",
+  "inputs": [
+    "docs/decisions/0057-animal-stations-detailed-eggs.md"
+  ],
+  "dependencies": [
+    "STATION-052"
+  ],
+  "files": [
+    "tools/blender/stations/assets/tortoises.py",
+    "docs/concepts/tortoise-rework.png",
+    "docs/decisions/0062-animal-stations-tortoise-rework.md",
+    "studio/tasks/STATION-054.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "A card shows the three tortoises before and after",
+    "The joints are where they were, so the game's animations would fit the new models",
+    "The manifest, the uploaded models and the game are unchanged"
+  ],
+  "verification": "CI run 43910022080 passed on pull request 25. Blender 5.2 on 2026-11-16: `build.py --beauty` rendered the three tortoises from the new build with no error; the cards were looked at and adjusted once (rim plates shortened, rim spikes and leg scales toned down, the brow drawn in). `docs/concepts/tortoise-rework.png` sets the old cards over the new. The joints in `tortoise_model` are the same line as before (read in the diff). `--beauty` writes no manifest: `manifest.json`, `uploaded.json` and `assets/stations/creature_tortoise*` are untouched. Lune 694/694. Not checked: a full build and bake of the new models, their triangle counts against the budget, their look in the game engine, their rainbow coats, the concept scenes that stand a tortoise in them (they would now show the new one).",
+  "output_artifacts": [
+    "docs/concepts/tortoise-rework.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'after that could you try improve on the turtles looks?'. Checkpoint for SHANNON: approve the new look to have the three models rebuilt and uploaded (six files), or ask for changes. Until then do not rebuild the tortoises: the asset file holds the proposal."
+}

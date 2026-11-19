@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-023",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The waves' enemies are the Hexbound, evil magic knights, ogres and dragons, instead of animals: a foe roster the existing fight rules use, dragons as the boss of every 10th wave, tests, and a look-test of the three models as Blender previews.",
+  "inputs": [
+    "docs/decisions/0040-animal-stations-the-hexbound-enemies.md"
+  ],
+  "dependencies": [
+    "STATION-022"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "tests/StationRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tools/blender/stations/assets/foes.py",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0040-animal-stations-the-hexbound-enemies.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-enemies.md"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "LevelRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A foe has the six stats, a role, a group and a kind, is never a species, and fights through BattleRules by its role and group",
+    "Wave enemies are foes: knights only for waves 1 to 4, ogres from 5, the warlord from 15; every 10th wave ends with a dragon, a stronger one from waves 30 and 60; no other wave has a dragon",
+    "The waves stay about as hard as before: starters, trained starters, a Titan and mythics reach roughly the waves they did",
+    "tools/blender/stations/build.py --draft renders the knight, ogre and dragon"
+  ],
+  "verification": "2026-11-14: lune 662/662 (3 new tests; the wave tests rewritten for foes), stylua and selene clean. Balance probed before the tests were written: fresh starters clear waves 1 to 9 and meet the first dragon at 10, maxed starters reach 28 (was 29), fresh uncommons 17 (17), starters with a Titan 29 (36), maxed starters with a Titan 49 (63), maxed mythics with a maxed mythic Titan 79 (79). Blender: --draft rendered all three (3,588, 9,324 and 8,990 triangles); I looked at the four-view sheets. Not done: baking, upload, rig, biped animations, in-game models.",
+  "output_artifacts": [
+    "tools/blender/stations/assets/foes.py",
+    "src/shared/LevelRules.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The animal enemies and their boss variants are gone from the waves. Wave fights are not wired to the server yet, so nothing in play changes. foes.py is not built by anything but --draft: a full build with no names would also build it into the manifest."
+}

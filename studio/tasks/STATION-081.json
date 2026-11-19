@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-081",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The team's pen in the game (decision 0080): a rail fence round the meadow with one gate under a 'Your Team' board, and only the team in it; the rest of the herd is off the ranch unless it trains.",
+  "inputs": [
+    "docs/decisions/0080-animal-stations-team-pen-concept.md"
+  ],
+  "dependencies": [
+    "STATION-080"
+  ],
+  "files": [
+    "src/stations/Ranch.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0080-animal-stations-team-pen-concept.md",
+    "studio/tasks/STATION-081.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Only the team (and the Titan in its den) is shown on the homestead",
+    "An animal taken off the team leaves the pen",
+    "The fence has one gate, towards the road in"
+  ],
+  "verification": "Lune 716/716, stylua and selene clean. Studio: local build, stamp `dev`, 2026-11-17. The first try failed to start: the removed kerb's loop also made the list of ways the rim's bushes keep off; put back. Then, with five animals given (a Lion, a Cheetah, a Rhino, a Jackal, a Meerkat), only the three on the team stood on the ranch, inside the fence (seen in a screen with the gate's board); taking the Lion off the team removed it within two seconds. Not checked: an animal that trains (its area shows it as before; the code for it did not change), two players, a phone.",
+  "output_artifacts": [
+    "src/stations/Ranch.luau"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-17: 'leave them off the ranch unless theyre training and go ahead and build it'."
+}

@@ -1,0 +1,29 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-002",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "First lot of Animal Stations animals: 16 species, each with an easy basic version and three super-rare variants (epic, legendary, mythic), with an art brief for every version.",
+  "inputs": ["docs/decisions/0020-animal-stations-variants.md"],
+  "dependencies": ["STATION-001"],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "docs/decisions/0020-animal-stations-variants.md",
+    "docs/game-design/game7-animals.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": ["StationRules.spec.luau"],
+  "acceptance_criteria": [
+    "Every species has exactly one variant per tier with unique ids (StationRules.spec.luau)",
+    "Basic versions are common to rare and variants are 1 in 200 or rarer (StationRules.spec.luau)",
+    "Every variant out-earns its basic version at the basic's best station (StationRules.spec.luau)",
+    "20,000 seeded hatches give about 1 variant in 180 and keep stats in variance (StationRules.spec.luau)"
+  ],
+  "verification": "CI runs StationRules.spec.luau and Purity.spec.luau; SHANNON reviews the draft values at the first checkpoint",
+  "output_artifacts": ["src/shared/StationConfig.luau", "docs/game-design/game7-animals.md"],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Replaces the 11 placeholder animals from STATION-001."
+}

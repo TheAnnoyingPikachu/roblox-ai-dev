@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-056",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The reworked tortoises of decision 0062 in the game: the Tortoise, the Gemshell Tortoise and the Island Tortoise rebuilt, with their rainbow coats, uploaded and switched in.",
+  "inputs": [
+    "docs/decisions/0062-animal-stations-tortoise-rework.md"
+  ],
+  "dependencies": [
+    "STATION-054"
+  ],
+  "files": [
+    "assets/stations/creature_tortoise*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/decisions/0062-animal-stations-tortoise-rework.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-056.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The three tortoises in the game are the new models, standing, walking and attacking as before",
+    "Each has its rainbow coat",
+    "The tortoise on the hub's plaza and the tortoise's pictures in the menus use the new model"
+  ],
+  "verification": "Lune 695/695, stylua and selene clean. CI run 43921019172 passed on pull request 25. Blender 5.2: the three models built and baked (3,596, 4,912 and 4,468 triangles) and their coats painted. Uploaded in upload-assets run 43911773850 (three models, three coats; succeeded). Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. The Tortoise stood on the hub's plaza as one of its animals; a Gemshell Tortoise, an Island Tortoise and a rainbow Tortoise and Gemshell Tortoise were spawned beside the south walk: all loaded with no rig warning, textured, the Gemshell's spine glowing, the rainbow coats on. An attack clip was started on the Gemshell and its head dipped. Not checked: a tortoise in a wave fight, its power attack, its pictures in the menus, the card under the cursor.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16, to the four questions of the last report (which hub centre, the training looks, room for the clearings, the tortoises): 'go on all four'. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-090",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "A concept for the six training grounds in the look of the visual overhaul (decision 0086): each area now and after, at Training Grounds level 5, with the after applied live in the game. Concept only.",
+  "inputs": [
+    "docs/decisions/0085-animal-stations-visual-overhaul-concept.md"
+  ],
+  "dependencies": [
+    "STATION-089"
+  ],
+  "files": [
+    "docs/concepts/training-grounds-card.png",
+    "docs/decisions/0086-animal-stations-training-grounds-concept.md",
+    "studio/tasks/STATION-090.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The card shows all six areas from the same camera now and after",
+    "Every change of the after is written down",
+    "No game file changed"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-18: in a Play session the server stood ranch 1's areas at Training Grounds level 5, screens were taken from one fixed camera per area (from the homestead's side, 120 studs back, 75 up), then the after was applied from the server (LeafyGrass under the track, a frayed floor edge, 744 bushes, rocks, flower clumps, trees and pines through `World.kit`) and the same cameras taken again. The session was stopped, so nothing was kept. Not checked: levels 0 to 4, ground level, a phone, frame rate.",
+  "output_artifacts": [
+    "docs/concepts/training-grounds-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-18: 'can you do some concepts forthe training grounds following the updated map detail?'. Checkpoint for SHANNON: the items of decision 0086."
+}

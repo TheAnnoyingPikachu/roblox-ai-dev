@@ -1,0 +1,44 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-042",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Concepts for the next animal set, the rhinos (decision 0054): the Rhino, the Lava Rhino and a new Crystal Rhino variant, in a rounder build with surface textures, each with a presentation card. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "inputs": [
+    "docs/decisions/0053-animal-stations-faceted-cheetahs.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "dependencies": [
+    "STATION-041"
+  ],
+  "files": [
+    "tools/blender/stations/assets/rhinos.py",
+    "tools/blender/stations/assets/creatures.py",
+    "tools/blender/stations/facet.py",
+    "tools/blender/stations/kit.py",
+    "tools/blender/stations/build.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0054-animal-stations-rhinos.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-042.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The three rhinos read as one family and sit with the families before",
+    "Second round (SHANNON, 2026-11-15): a much shorter snout, surface textures on all three, the Crystal Rhino a body of rock with gemstones of many colours",
+    "Each builds, bakes and exports through the normal build with the usual rig pieces and joints",
+    "The families already in the game build exactly as before",
+    "StationConfig, StationAssets and the manifest are untouched until SHANNON approves"
+  ],
+  "verification": "Blender 5.2 on 2026-11-15, second round: full build (bake and export) of creature_rhino (3016 tris, 5.38 x 7.82 x 13.87 studs), creature_rhino_lava (3352, 6.89 x 11.33 x 18.52) and creature_rhino_crystal (6440, 7.69 x 11.53 x 16.04) passed with the usual pieces, and glow pieces on the head, body, tail and each leg for the two variants; the cards and the baked previews were inspected (the textures survive the bake). The twelve lions, elephants, jackals and cheetahs were rebuilt after the facet.py change: their manifest entries (triangles, sizes, pieces, joints) are identical to the committed ones; their baked textures were not compared pixel by pixel. The manifest was restored after the test builds, so the game is unchanged. Lune 687/687. Not done: the upload, the StationConfig variant, the clips on the new shapes, seven Neon colours on one model in Studio.",
+  "output_artifacts": [
+    "docs/concepts/rhino-family.png",
+    "docs/concepts/rhino-card.png",
+    "docs/concepts/lava-rhino-card.png",
+    "docs/concepts/crystal-rhino-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the three looks (second round), the Crystal Rhino (legendary, twist defence), and say whether the new surface textures should go onto the families already in the game. On approval the next step is the build for upload, the upload workflow, the StationConfig variant and a look at the clips, as for the other families. Still open from STATION-036: the lions in the game carry the vertex-colour fault and need a rebuild and a new upload."
+}

@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-019",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "No upgrade pads: a basic ranch menu opened at the Ranch House door. Bought eggs go to an egg storage; the player chooses which to hatch (six at once), eggs take time, and a finished egg is opened by interacting with it. The hub's egg stands are replaced by an egg vendor and a gear vendor on every ranch.",
+  "inputs": [
+    "docs/decisions/0036-animal-stations-ranch-menu-eggs-vendors.md"
+  ],
+  "dependencies": [
+    "STATION-018"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0036-animal-stations-ranch-menu-eggs-vendors.md",
+    "docs/game-design/game7-gdd.md"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Buying an egg puts it in the egg storage: it is not hatching and no animal is added",
+    "Only the egg the player chooses starts hatching, at most six at once; nothing starts or opens by itself",
+    "A finished egg opens only when asked and only with room in the Barn; an unfinished or stored egg is refused",
+    "The client never receives the animal inside an egg",
+    "In Studio play there are no upgrade pads or hub egg stands; the house door, the egg storage, a finished egg and the two vendors each respond to their prompt"
+  ],
+  "verification": "2026-11-13: lune 659/659 (the egg tests rewritten: storage, choosing, six places, opening, Barn full, sanitize, the client copy), stylua and selene clean. Studio play (stations.rbxl, synced from source), through the real prompts: the house door opened the ranch menu, the egg vendor its list, the egg storage its list; 14 upgrades bought through the menu's action (0 pads in the world); 5 eggs bought into storage, 2 chosen to hatch; opening early was refused; after 60 s the Meadow egg's prompt read Open with sparkles and pressing it hatched a Tortoise. No script errors. Not checked: an online server, phones, the gear vendor beyond its message.",
+  "output_artifacts": [
+    "src/stations/Ranch.luau",
+    "src/stations-client/Hud.client.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Saved data shape changed (eggs list in the profile); no published saves exist. Gear is not designed: the gear vendor is a stall with a message. The Studio-only test funds moved from a world pad to a menu button."
+}

@@ -2,7 +2,8 @@
 # artifact to the chosen environment through Roblox Open Cloud.
 #
 # Repo setup (done by a human, never by an agent):
-#   Environments "staging", "production", "relay-staging", "night-staging" and "garden-staging", each with:
+#   Environments "staging", "production", "relay-staging", "night-staging", "garden-staging" and
+#   "stations-staging", each with:
 #     variables  ROBLOX_UNIVERSE_ID, ROBLOX_PLACE_ID
 #     secret     ROBLOX_API_KEY  (Open Cloud key scoped to that experience, universe-places:write)
 #   "production" must have required reviewers (SHANNON) and be limited to tags v*.
@@ -12,7 +13,7 @@
 #   servers after a verified publish, so nobody joins an old server. Otherwise restart them by hand:
 #   Creator Hub > the experience > Servers > restart.
 #   Garden places: set Max Players to 6 in the place settings (a place file cannot carry it;
-#   docs/architecture/garden.md section 7).
+#   docs/architecture/garden.md section 7). Animal Stations places (stations-*): Max Players 3, one a ranch.
 name: Publish
 
 on:
@@ -21,7 +22,7 @@ on:
       environment:
         description: "Target environment"
         type: choice
-        options: [staging, production, relay-staging, night-staging, garden-staging]
+        options: [staging, production, relay-staging, night-staging, garden-staging, stations-staging]
         required: true
 
 permissions:
@@ -100,6 +101,7 @@ jobs:
             relay-*) project=relay.project.json ;;
             night-*) project=night.project.json ;;
             garden-*) project=garden.project.json ;;
+            stations-*) project=stations.project.json ;;
             *) project=default.project.json ;;
           esac
           rojo build "$project" --output build/place.rbxl

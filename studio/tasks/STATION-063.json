@@ -1,0 +1,56 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-063",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The ranch valley in the game (decision 0070): each ranch is one valley of Roblox terrain written from a pure height function, with the homestead in the middle, the six training grounds set into the land round it (four up the mountainside, two on a beach by a lake), a path to each, a stream, and the road down to the hub. The areas stand on the land with no floor or fence of their own.",
+  "inputs": [
+    "docs/decisions/0068-animal-stations-ranch-valley-concept.md",
+    "docs/decisions/0065-animal-stations-training-clearings-in-game.md"
+  ],
+  "dependencies": [
+    "STATION-061",
+    "STATION-062"
+  ],
+  "files": [
+    "src/shared/ValleyMap.luau",
+    "src/stations/Valley.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "src/stations/Areas.luau",
+    "tests/ValleyMap.spec.luau",
+    "tests/run.luau",
+    "assets/stations/area_*",
+    "tools/blender/stations/assets/areas.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/decisions/0070-animal-stations-ranch-valley-in-game.md",
+    "docs/decisions/0068-animal-stations-ranch-valley-concept.md",
+    "docs/decisions/0065-animal-stations-training-clearings-in-game.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-063.json"
+  ],
+  "tests": [
+    "ValleyMap.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each ranch is a valley of terrain with its homestead, six level training grounds, a path to each and the road to the hub",
+    "The land stands where ValleyMap says: the homestead and every ground exactly level",
+    "A valley is closed all round but for the road to the hub",
+    "An animal sent to each station trains on its ground as before, with its kit",
+    "Nothing shown decides or delays any training"
+  ],
+  "verification": "Lune 708/708 (six new cases for ValleyMap), stylua and selene clean. Studio: local build, stamp `dev` (no CI stamp), 2026-11-16, all with rays and the game's own requests; no player walked it. Land against the plan, on all three ranches: the homestead and five grounds stand exactly at their heights (0.00 off at the middle and 85 studs out), the library within 0.21; of 809 other points on each ranch the worst is 7 to 8 studs off, on the steepest rock, where 4-stud voxels cannot follow. Paths, plot to ground's middle: the land's biggest step is 1.2 studs in 1 (track), under 1.2 on the others; the only things over a path are its name board and a bridge. The road to the hub: biggest step 0.7 in 4 studs, down to height 0.0. Closed: every one of 360 rays from each homestead meets an unseen wall within 470 studs but for 7 degrees towards the hub, and that way is clear through into the hub; no mountain stands over any of 2,093 points inside each wall; the nearest big rock to the middle of a pass's road is 16 studs (the road is 9 each side). Training at Training Grounds 5: lion to the track, elephant to the gym, tortoise to the pool, meerkat to the library, flamingo to the spring, jackal to the guard yard were all accepted, stood 0.3 to 3.7 studs above their ground's land and played run, heave, swim, study, soak and brace, with `bar3`, `tome` and `ram` in use. No error in the server log; 11,738 parts. Seen in screens: a valley from above, from the plot both ways (level 0 and level 5), the pool's beach, the library, the hub's south road and the hub from above. Not checked: a player walking a path or the pass, levels 1 to 4 by eye, a phone, how long the server takes to write three valleys (the world was up within 8 seconds of Play starting), the frame rate.",
+  "output_artifacts": [
+    "src/shared/ValleyMap.luau",
+    "src/stations/Valley.luau"
+  ],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16: 'go on the ranch vallet and i take your recommendation, go with the size fitted animation, fix the unused uploads'. Read as: build the valley of decision 0068 with Roblox terrain (the recommendation of its question 2). Checkpoint for SHANNON, each with a recommendation in decision 0070: (1) the homestead keeps its square plot for now; (2) ranches are 900 studs from the hub, not 840; (3) all three ranches have the same valley. Upload run 43954205121 (the twelve area models without floors and fences). The unused uploads: a dry run (upload-assets run 43957464342) listed 60 decals, every one an Animal Stations texture that no uploaded.json lists, and run 43957653869 archived 60 of 60; each row of docs/assets/register.md says so. Their models and images stay on the account: Roblox's API archives decals only."
+}

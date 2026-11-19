@@ -1,0 +1,51 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-058",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The training areas of decision 0061 in the game (decision 0065): six clearings round each ranch, each at the end of a pass through the mountains, with its area standing in it as far on as the ranch's Training Grounds level. The ranches move out to make room. The six small courts leave the plot.",
+  "inputs": [
+    "docs/decisions/0061-animal-stations-training-clearings.md"
+  ],
+  "dependencies": [
+    "STATION-053",
+    "STATION-057"
+  ],
+  "files": [
+    "assets/stations/area_*",
+    "tools/blender/stations/assets/areas.py",
+    "tools/blender/stations/scenes/training.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/stations/Areas.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0065-animal-stations-training-clearings-in-game.md",
+    "docs/decisions/0061-animal-stations-training-clearings.md",
+    "docs/assets/register.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-058.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each ranch has six clearings, each reached on foot from the plot by a path through a gap in its fence and a pass between mountains",
+    "Each clearing holds its station's area as it looks at the owner's Training Grounds level, and it changes when the upgrade is bought",
+    "No walkable way leads out of a plot, a pass or a clearing except the passes themselves",
+    "The yard floors and the raised decks can be walked on",
+    "The hub, the arena, the passes from the hub and the ranch plots work as before"
+  ],
+  "verification": "Lune 695/695, stylua and selene clean. CI run 43921019172 passed on pull request 25. Blender 5.2: the 45 models built and baked (the largest mesh 10,208 triangles). Uploaded in upload-assets run 43914407694 (all 45 succeeded); `area_spring_2_5` again in run 43920326143, because Roblox would not serve its first texture (HTTP 504, still failing an hour on). Studio: local build, stamp `dev` (no CI stamp), 2026-11-16. Layout: the world built with 379 mountains and 535 unseen walls. For all 18 paths (three ranches, six areas) rays down every 4 studs from the plot's gap to the clearing's middle all hit ground at one height, and a level ray at chest height from end to end met nothing. From every plot and every clearing, 180 rays against the unseen walls alone all met one: nothing is open but the passes. One ranch's nearest clearing and the next ranch's measure 360.7 studs apart. Areas: a ranch was rendered at each Training Grounds level 0 to 5 with no error, standing 14, 14, 15, 21, 26 and 32 models: the stretches that hold each level. At level 5 all the areas' and the hub's 52 textures load, and every mesh of the area models measured within 0.002 studs of where the manifest puts it. Screens of the Speed Track, the Swim Pool, the Magic Library, the Healing Spring and the Guard Yard at level 5 match their cards, and of the Healing Spring at level 2 its level-2 frame. Walked by script: in at the pool's gate, up its steps onto the deck. Not checked: the Strength Gym by eye in the game, levels 1, 3 and 4 by eye, buying the upgrade as a player (the render was called directly), walking a whole pass on foot, phones, two players, frame rate with three ranches at the top level.",
+  "output_artifacts": [
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/uploaded.json"
+  ],
+  "risk_level": "high",
+  "status": "in_review",
+  "notes": "SHANNON on 2026-11-16, to the four questions of the last report (which hub centre, the training looks, room for the clearings, the tortoises): 'go on all four'. Read for the areas as: the looks are approved, build them, fanned out on the side away from the hub with the ranches moved back out as recommended. The upload runs in GitHub (environment assets), never with a key on this machine."
+}

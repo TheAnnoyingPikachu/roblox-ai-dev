@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-046",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "design",
+  "objective": "Concepts for detailed eggs (decision 0057): the Meadow, Wild, Safari and Golden Eggs as Blender models in the build of the animals, each with a presentation card. Concept only: nothing is uploaded or wired into the game until SHANNON approves.",
+  "inputs": [
+    "docs/decisions/0056-animal-stations-egg-overhaul.md"
+  ],
+  "dependencies": [
+    "STATION-044"
+  ],
+  "files": [
+    "tools/blender/stations/assets/eggs.py",
+    "tools/blender/stations/facet.py",
+    "docs/concepts/*.png",
+    "docs/decisions/0057-animal-stations-detailed-eggs.md",
+    "docs/game-design/game7-animals.md",
+    "studio/tasks/STATION-046.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Each egg keeps its colours, reads as its egg at a glance and is far richer than the plain shell",
+    "Each builds, bakes and exports through the normal build",
+    "StationAssets and the manifest are untouched until SHANNON approves"
+  ],
+  "verification": "Blender 5.2 on 2026-11-16: full build (bake and export) of egg_meadow (5224 tris), egg_wild (4490, with body_glow), egg_safari (5416) and egg_golden (6548, with body_glow) passed; the cards were inspected (two rounds). The manifest was restored after the test build, so the game is unchanged. Not done: the upload, the game's egg models, pictures and hatching animation.",
+  "output_artifacts": [
+    "docs/concepts/egg-family.png",
+    "docs/concepts/meadow-egg-card.png",
+    "docs/concepts/wild-egg-card.png",
+    "docs/concepts/safari-egg-card.png",
+    "docs/concepts/golden-egg-card.png"
+  ],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Checkpoint for SHANNON: approve the four looks; on approval, whether the menus' egg pictures change too or only the world models (the smaller option)."
+}

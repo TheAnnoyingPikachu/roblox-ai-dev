@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-012",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Framework pass: a small 8-species roster with pack and solitary group bonuses, the Titan as a legendary-only hatch from an egg that unlocks at player level 15, a Defence stat, stat levels 0 to 70, training moved to the ranch, the hub reduced to vendors, and ranches as detached islands reached by teleport.",
+  "inputs": ["docs/decisions/0029-animal-stations-framework-ranch-base-hub-vendors.md"],
+  "dependencies": ["STATION-011"],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/StationProgress.luau",
+    "tests/StationRules.spec.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/**",
+    "src/stations-client/**",
+    "docs/decisions/0029-animal-stations-framework-ranch-base-hub-vendors.md",
+    "docs/game-design/game7-gdd.md",
+    "docs/game-design/game7-animals.md"
+  ],
+  "tests": ["StationRules.spec.luau", "BattleRules.spec.luau", "LevelRules.spec.luau", "StationProgress.spec.luau"],
+  "acceptance_criteria": [
+    "The roster is 8 species: Lion, Jackal, Meerkat, Flamingo and the Titan Elephant are pack; Cheetah, Rhino and Tortoise are solitary",
+    "A pack animal gains 10% attack and HP per other pack animal; a solitary animal gains 25% when no teammate shares its role",
+    "The Titan hatches only from the Legendary Egg, which is refused below player level 15 whatever the coins",
+    "Every stat levels from 0 to 70 at its station and is doubled at 70; Defence cuts incoming damage",
+    "sanitize repairs an animal with missing stats instead of dropping it",
+    "In Studio play: a player spawns on their ranch island, the teleport pads work both ways, the hub has four egg stalls and no training stations"
+  ],
+  "verification": "lune run tests/run.luau 641/641; selene and stylua clean; place builds and check-place passes; Studio play 2026-11-13: spawn on the ranch island, both teleport prompts triggered and moved the player, four stall prompts present, Legendary Egg refused as locked, training ticked live in the Animals panel, no script errors",
+  "output_artifacts": ["src/shared/StationConfig.luau", "src/stations/World.luau", "src/stations-client/Hud.client.luau"],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Removes the five hub training stations built in STATION-003 and STATION-011 (kept in git history). DataStores are unavailable in an unpublished place, so the session ran offline. No battle screen yet."
+}
