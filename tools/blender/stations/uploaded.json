@@ -565,18 +565,18 @@
     "texture": null
   },
   "home_house_1": {
-    "model": 105200527213246,
-    "decal": 70931460278358,
+    "model": 71487177473504,
+    "decal": 109540763797437,
     "texture": null
   },
   "home_house_2": {
-    "model": 77401461520643,
-    "decal": 93519198627425,
+    "model": 97779632767179,
+    "decal": 83614151230007,
     "texture": null
   },
   "home_house_3": {
-    "model": 127665408665186,
-    "decal": 101564279492538,
+    "model": 106905574838754,
+    "decal": 90940125405516,
     "texture": null
   },
   "home_barn_1": {
@@ -610,18 +610,18 @@
     "texture": null
   },
   "home_cellar_1": {
-    "model": 111971669988965,
-    "decal": 110594967132834,
+    "model": 111944996453680,
+    "decal": 140016019267723,
     "texture": null
   },
   "home_cellar_2": {
-    "model": 117264605295438,
-    "decal": 137597745241423,
+    "model": 103183720484345,
+    "decal": 74299040269299,
     "texture": null
   },
   "home_cellar_3": {
-    "model": 137165970639254,
-    "decal": 83703877454673,
+    "model": 104413496439978,
+    "decal": 123144511733143,
     "texture": null
   },
   "home_brooder_1": {

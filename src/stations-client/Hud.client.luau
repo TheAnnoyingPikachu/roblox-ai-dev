@@ -713,10 +713,10 @@ local GROUPS = {
 -- Pictures of the buildings as they stand in game (decision 0091): each building's three looks, and
 -- the Training Grounds (the Speed Track) at each level. Screenshots from Studio, uploaded as images.
 local PICTURES: { [string]: { string } } = {
-	house = { "122892423784720", "89884999603333", "107816557818671" },
+	house = { "123119223827948", "75503797264752", "107798905588688" },
 	barn = { "88047589982655", "78376584365704", "119626553415957" },
 	hatchery = { "133902304920898", "124045791914974", "123100005333170" },
-	cellar = { "116655952825221", "112627395195029", "105504026002055" },
+	cellar = { "72932407989739", "72296349252417", "119475108003660" },
 	brooder = { "88844343986979", "128424168474378", "125930939253883" },
 	windmill = { "95016315403212", "71885186151925", "130764990300282" },
 	lodge = { "89855001205054", "104259688695882", "92288867347305" },
