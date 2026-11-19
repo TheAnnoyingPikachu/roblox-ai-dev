@@ -1,82 +1,82 @@
 {
   "creature_rhino": {
-    "model": 82903110343847,
-    "decal": 134847323205372,
+    "model": 130059672877135,
+    "decal": 116667602217945,
     "texture": null
   },
   "creature_rhino_lava": {
-    "model": 79526110245706,
-    "decal": 89665889843717,
+    "model": 99681690102762,
+    "decal": 100238480340285,
     "texture": null
   },
   "creature_jackal": {
-    "model": 109537206868109,
-    "decal": 100775157461268,
+    "model": 98765610437965,
+    "decal": 127675915604495,
     "texture": null
   },
   "creature_jackal_pharaoh": {
-    "model": 88573479749679,
-    "decal": 89971728725334,
+    "model": 78126703755793,
+    "decal": 102238987783550,
     "texture": null
   },
   "creature_cheetah": {
-    "model": 140039656397806,
-    "decal": 118609357299464,
+    "model": 112412102330562,
+    "decal": 133570146589073,
     "texture": null
   },
   "creature_cheetah_lightning": {
-    "model": 95456549103268,
-    "decal": 112654156328704,
+    "model": 117111038692789,
+    "decal": 74103347969184,
     "texture": null
   },
   "creature_lion": {
-    "model": 73969690567468,
-    "decal": 105565044474558,
+    "model": 95591394419844,
+    "decal": 74695790021400,
     "texture": null
   },
   "creature_lion_sun": {
-    "model": 112392780303252,
-    "decal": 121287768657169,
+    "model": 70929178325177,
+    "decal": 128711501058305,
     "texture": null
   },
   "creature_meerkat": {
-    "model": 104635264316886,
-    "decal": 122087720047318,
+    "model": 124592386820042,
+    "decal": 97100166958995,
     "texture": null
   },
   "creature_meerkat_storm": {
-    "model": 114792951461584,
-    "decal": 133793676050742,
+    "model": 112318230500008,
+    "decal": 124351852694474,
     "texture": null
   },
   "creature_tortoise": {
-    "model": 105729969224533,
-    "decal": 136340183922953,
+    "model": 108422363647262,
+    "decal": 97035494717202,
     "texture": null
   },
   "creature_tortoise_gemshell": {
-    "model": 87577314600665,
-    "decal": 122782943102889,
+    "model": 99624740009668,
+    "decal": 120336878588478,
     "texture": null
   },
   "creature_flamingo": {
-    "model": 111179453058319,
-    "decal": 103031344899757,
+    "model": 81017327357997,
+    "decal": 139773571757196,
     "texture": null
   },
   "creature_flamingo_phoenix": {
-    "model": 104234293478716,
-    "decal": 70881471776564,
+    "model": 98425882242364,
+    "decal": 111632757945127,
     "texture": null
   },
   "creature_elephant": {
-    "model": 110244562121028,
-    "decal": 93479357179322,
+    "model": 118366564333052,
+    "decal": 135546520870689,
     "texture": null
   },
   "creature_elephant_frost": {
-    "model": 138051433525659,
-    "decal": 89234182819299,
+    "model": 72902172576666,
+    "decal": 94728568999798,
     "texture": null
   },
   "foe_archer": {
@@ -105,43 +105,43 @@
     "texture": 87545615844296
   },
   "creature_lion_shadow": {
-    "model": 129388173498008,
-    "decal": 128354075568708,
+    "model": 78463495674424,
+    "decal": 75741542496344,
     "texture": null
   },
   "creature_elephant_war": {
-    "model": 137444571446089,
-    "decal": 91942942282786,
+    "model": 104287795063188,
+    "decal": 119853394996529,
     "texture": null
   },
   "creature_jackal_sphinx": {
-    "model": 99125164883892,
-    "decal": 130669169052866,
+    "model": 128331211152872,
+    "decal": 132371814220674,
     "texture": null
   },
   "creature_cheetah_fire": {
-    "model": 91649203524734,
-    "decal": 73330076135011,
+    "model": 130383465854741,
+    "decal": 140340304568608,
     "texture": null
   },
   "creature_flamingo_peacock": {
-    "model": 104781279787248,
-    "decal": 84244333889053,
+    "model": 100725891747436,
+    "decal": 74593871266763,
     "texture": null
   },
   "creature_meerkat_star": {
-    "model": 98671693642986,
-    "decal": 93610625213498,
+    "model": 134673659681224,
+    "decal": 140644339314256,
     "texture": null
   },
   "creature_rhino_crystal": {
-    "model": 71119346555183,
-    "decal": 113558087083992,
+    "model": 77802077511686,
+    "decal": 96119305600006,
     "texture": null
   },
   "creature_tortoise_island": {
-    "model": 77208017140974,
-    "decal": 115767013664834,
+    "model": 129552839668526,
+    "decal": 85628364299492,
     "texture": null
   },
   "egg_meadow": {
@@ -685,13 +685,13 @@
     "texture": null
   },
   "creature_giraffe": {
-    "model": 127782942667341,
-    "decal": 73331141459371,
+    "model": 76669726253802,
+    "decal": 77292487489898,
     "texture": null
   },
   "creature_giraffe_diamond": {
-    "model": 137604444919534,
-    "decal": 120114539250542,
+    "model": 79845653126343,
+    "decal": 127393473563162,
     "texture": null
   },
   "creature_giraffe_diamond_rainbow": {
