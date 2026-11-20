@@ -3212,81 +3212,66 @@ local function hatchEffect(nest: CFrame, eggId: string, body: Color3, spot: Colo
 	Debris:AddItem(flash, 1.3)
 end
 
--- Admin menu (decision 0038): only for players the server marks as admin (the game's owner, or
--- anyone in Studio). Stands animal and enemy models in front of you to look at, and plays test
--- waves in the arena; nothing is saved.
-local adminTab = "tests"
-local adminTests = Instance.new("Frame") -- the Tests tab's buttons, made once
+-- Admin menu (decisions 0038, 0049): only for players the server marks as admin (the game's owner, or
+-- anyone in Studio). Its first tab lists every animal and variant: a tap adds it to your own ranch. Its
+-- second spawns animals in front of you and plays their animations; nothing there is saved.
+local adminTab = "add"
+local adminTests = Instance.new("Frame") -- the Spawn tab, made once
 adminTests.BackgroundTransparency = 1
 adminTests.Size, adminTests.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
 Style.list(adminTests, 10)
+adminTests.Visible = false
 adminTests.Parent = admin.body
-local adminAdd = { body = Instance.new("Frame") } -- the Add animals tab's tiles
+local adminAdd = { body = Instance.new("Frame") } -- the Add animals tab's rows
 adminAdd.body.BackgroundTransparency = 1
 adminAdd.body.Size, adminAdd.body.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
-Style.list(adminAdd.body, 10, true, true)
-adminAdd.body.Visible = false
+Style.list(adminAdd.body, 8)
 adminAdd.body.Parent = admin.body
 do
-	local n = 0
-	local function add(text: string, action: string, value: any?)
-		n += 1
-		Style.button(adminTests, text, function()
-			send(action, value)
+	-- the animations play on whatever is spawned
+	local anims = Instance.new("Frame")
+	anims.BackgroundTransparency = 1
+	anims.Size, anims.AutomaticSize, anims.LayoutOrder = UDim2.fromScale(1, 0), Enum.AutomaticSize.Y, 0
+	Style.list(anims, 6, true, true)
+	anims.Parent = adminTests
+	local CLIPS = {
+		{ "idle", "Idle" },
+		{ "walk", "Walk" },
+		{ "attack", "Attack" },
+		{ "magic", "Power" },
+		{ "hit", "Hit" },
+		{ "die", "Fall" },
+	}
+	for i, clip in CLIPS do
+		Style.button(anims, clip[2], function()
+			send("look_anim", clip[1])
+		end, "ghost", UDim2.fromOffset(86, 44)).LayoutOrder =
+			i
+	end
+	Style.button(anims, "Clear", function()
+		send("look_clear")
+	end, "ghost", UDim2.fromOffset(86, 44)).LayoutOrder = #CLIPS
+		+ 1
+	local k = 0 -- the server lists them in this order too (LOOKS: a species, then its variants)
+	local function spawnButton(name: string)
+		k += 1
+		local index = k
+		Style.button(adminTests, `Spawn {name}`, function()
+			send("look", index)
 		end, "ghost", UDim2.new(1, 0, 0, 44)).LayoutOrder =
-			n
+			index
 	end
-	add("Spawn every animal and enemy in a row", "look", 0)
-	add("Clear them", "look_clear")
-	for _, anim in { "idle", "walk", "attack", "magic", "hit", "die" } do
-		add(`All play: {anim}`, "look_anim", anim)
-	end
-	for _, test in
-		{
-			{ 1, "starters", "Test wave 1 (starter team)" },
-			{ 6, "starters", "Test wave 6 (starter team, mages)" },
-			{ 10, "starters", "Test wave 10 (starter team, first dragon)" },
-			{ 10, "mythics", "Test wave 10 (best team)" },
-			{ 30, "mythics", "Test wave 30 (best team, a Drake)" },
-			{ 60, "mythics", "Test wave 60 (best team, the Dragon)" },
-			{ 12, "mine", "Test wave 12 (my own team)" },
-		}
-	do
-		n += 1
-		Style.button(adminTests, test[3] :: string, function()
-			local ok, code = request:InvokeServer("testwave", test[1], test[2])
-			if not ok then
-				Style.toast(
-					screen,
-					if code == "models" then "An enemy model is not uploaded yet" else REFUSED[code] or `Can't ({code})`
-				)
-			else
-				show(nil)
-			end
-		end, "ghost", UDim2.new(1, 0, 0, 44)).LayoutOrder =
-			n
-	end
-	local k = 0 -- the server lists them in this order too
 	for _, sp in StationConfig.SPECIES do
-		k += 1
-		add(`Spawn {sp.name}`, "look", k)
+		spawnButton(sp.name)
 		for _, va in sp.variants do
-			k += 1
-			add(`Spawn {va.name} ({va.tier})`, "look", k)
+			spawnButton(`{va.name} ({va.tier})`)
 		end
-	end
-	for _, foe in StationConfig.FOES do
-		k += 1
-		add(`Spawn {foe.name} (Hexbound {foe.kind})`, "look", k)
 	end
 end
 
--- Admin menu 2 (decisions 0049, 0058): add an animal of any species or variant to your own ranch by
--- tapping its picture. The row on top sets the level of every stat of the new animal and whether it
--- wears the rainbow coat. The server checks the admin and the numbers.
+-- The Add animals tab (decisions 0049, 0058): one row per species and variant; a tap adds it to your own
+-- ranch, every stat at level 1. The server checks the admin.
 do
-	local LEVELS = { 1, 10, 35, StationConfig.MAX_LEVEL }
-	local level, rainbow = 1, false
 	local list: { { s: string, v: string? } } = {} -- in the server's order (LOOKS: a species, then its variants)
 	for _, sp in StationConfig.SPECIES do
 		table.insert(list, { s = sp.id })
@@ -3296,56 +3281,38 @@ do
 	end
 	local function draw()
 		Style.clear(adminAdd.body)
-		local row = Instance.new("Frame")
-		row.BackgroundTransparency = 1
-		row.Size, row.AutomaticSize = UDim2.new(1, -20, 0, 0), Enum.AutomaticSize.Y
-		row.LayoutOrder = 0
-		Style.list(row, 6, true, true)
-		row.Parent = adminAdd.body
-		local words = Style.text(row, "Stat level", 16, C.muted, UDim2.fromOffset(80, 40))
-		words.LayoutOrder = 0
-		local picks: { [number]: TextButton } = {}
-		for i, n in LEVELS do
-			picks[n] = Style.button(row, tostring(n), function()
-				level = n
-				for m, b in picks do
-					Style.kind(b, if m == level then "primary" else "ghost")
-				end
-			end, if n == level then "primary" else "ghost", UDim2.fromOffset(52, 40))
-			picks[n].LayoutOrder = i
-		end
-		local coat = Style.button(row, if rainbow then "Rainbow coat: on" else "Rainbow coat: off", function()
-			rainbow = not rainbow
-			draw() -- every picture changes its coat
-		end, if rainbow then "good" else "ghost", UDim2.fromOffset(170, 40))
-		coat.LayoutOrder = #LEVELS + 1
 		for k, a in list do
 			local colour = RARITY_COLOUR[StationRules.rarity(a :: any)] or C.text
 			local name = nameOf(a)
-			local tile = Style.button(adminAdd.body, "", function()
-				local ok, code = request:InvokeServer("admin_add", k, level, rainbow)
-				local said = if ok
-					then `Added a {if rainbow then "Rainbow " else ""}{name}, level {level}`
-					else REFUSED[code] or `Can't do that ({code})`
-				Style.toast(screen, said, 2)
-			end, "ghost", UDim2.fromOffset(116, 146))
-			tile.Name, tile.LayoutOrder = name, k
-			Style.stroke(tile, colour, 2)
+			local va = if a.v then StationConfig.variant(a.s, a.v) else nil
+			local row = Style.button(adminAdd.body, "", function()
+				local ok, code = request:InvokeServer("admin_add", k, 1, false)
+				Style.toast(
+					screen,
+					if ok then `Added a {name} to your ranch` else REFUSED[code] or `Can't do that ({code})`,
+					2
+				)
+			end, "ghost", UDim2.new(1, 0, 0, 64))
+			row.Name, row.LayoutOrder = name, k
+			Style.stroke(row, colour, 2)
 			local view = Portrait.new(
-				tile,
+				row,
 				StationRules.assetOf(a.s, a.v),
-				{ size = UDim2.fromOffset(96, 96), background = darker(colour), rainbow = rainbow }
+				{ size = UDim2.fromOffset(52, 52), background = darker(colour) }
 			)
-			view.Position = UDim2.fromOffset(10, 8)
-			local label = Style.text(tile, name, 14, colour, UDim2.new(1, -8, 0, 34))
-			label.Position = UDim2.fromOffset(4, 108)
-			label.TextXAlignment = Enum.TextXAlignment.Center
+			view.Position = UDim2.fromOffset(6, 6)
+			local label =
+				Style.text(row, if va then `{name} ({va.tier})` else name, 18, colour, UDim2.new(1, -220, 1, 0))
+			label.Position = UDim2.fromOffset(70, 0)
+			local hint = Style.text(row, "Add to my ranch", 14, C.muted, UDim2.fromOffset(140, 64))
+			hint.AnchorPoint, hint.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 0)
+			hint.TextXAlignment = Enum.TextXAlignment.Right
 		end
 	end
 	local drawn = false
-	redraw.admin = function() -- the tiles are drawn once, when first opened: a new profile must not scroll it back up
+	redraw.admin = function() -- the rows are drawn once, when first opened: a new profile must not scroll it back up
 		Style.clear(admin.tabs)
-		for _, t in { { "tests", "Tests" }, { "add", "Add animals" } } do
+		for _, t in { { "add", "Add animals" }, { "tests", "Spawn" } } do
 			Style.tab(admin, t[2], adminTab == t[1], function()
 				adminTab = t[1]
 				redraw.admin()
