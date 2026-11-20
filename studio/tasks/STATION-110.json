@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "The fight screen: the shield button above the power plates with a shield icon; the dock centred on the left edge in a fight, its open column on screen; the wave result panel (with its three boon cards) centred along the bottom; the power bar in the plates' column between the shield and the team's plates, as wide as a plate; the KO counter in the top right corner.",
+  "objective": "The fight screen: the shield button above the power plates with a shield icon; the dock centred on the left edge in a fight, its open column on screen; the wave result panel (with its three boon cards) centred along the bottom; the power bar in the plates' column between the shield and the team's plates, as wide as a plate; the KO counter in the top right corner; no grass blades growing up through the wave arena's floor.",
   "inputs": [
     "docs/decisions/0097-animal-stations-fight-feel.md"
   ],
@@ -16,7 +16,8 @@
     "tools/icons/stations_rewards.py",
     "assets/stations/icons/shield.png",
     "docs/assets/register.md",
-    "studio/tasks/STATION-110.json"
+    "studio/tasks/STATION-110.json",
+    "src/stations/World.luau"
   ],
   "tests": [
     "StationRewards.spec.luau"
@@ -26,11 +27,12 @@
     "The wave result panel and its three boon cards sit centred along the bottom of the screen, clear of the power plates",
     "During a fight the Menu button and its open column are centred on the left edge and the whole column is on screen",
     "The KO counter sits in the top right corner, under the Admin button, out of the middle of the screen",
-    "The power bar is 224 x 13 (a plate's width) in the plates' column, under the shield and above the team's plates"
+    "The power bar is 224 x 13 (a plate's width) in the plates' column, under the shield and above the team's plates",
+    "No grass blades show in the wave arena: the terrain under it is LeafyGrass"
   ],
   "verification": "Studio, local build, stamp `dev`, 2026-11-19: wave 1 with jackal, tortoise and meerkat: the dock open in the fight ends above the bottom (Gifts on screen); the power bar sits just above the result panel, which is centred with three boons; \"4 KO!\" shows in the top right. Lune 759/759, selene clean.",
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-19: \"put the shield button above the health bars and bring the options menu closer to the center and also make the shield button icon a shield\". The options menu was read as the side dock (Menu). Then: \"also move the wave clear and three options more to the center of the screen when youre fighting\": the panel was pushed left of the plates; it is now centred and narrower (at most 840 wide, 260 clear each side). Then: \"move the drop down menu up as it seems to sink when youre fighting and also adjust the position of the power level bar and make a bit smaller\": the open column ran off the bottom (Gifts cut); it is now centred from the Menu button to its foot. The power bar was 360 x 16 under the boss bar, crowding the KO counter and the fighters' bars; it is now 280 x 13 at the top, the boss bar under it. Then: \"move the power level comparison to be above the wave clear box, also move the KO counter out the middle of the screen to somewhere more convenient\": the power bar now stands 214 above the bottom (the panel, with its boons, is about 185 tall); the KO counter is right-aligned in the top right corner; the boss bar is back at the top. Then: \"move the power level comparison bar to be above your animals health bars and below the shield button, make it the same length as well\": it is now in the plates' column (LayoutOrder 0; the shield -1), 224 wide."
+  "notes": "SHANNON, 2026-11-19: \"put the shield button above the health bars and bring the options menu closer to the center and also make the shield button icon a shield\". The options menu was read as the side dock (Menu). Then: \"also move the wave clear and three options more to the center of the screen when youre fighting\": the panel was pushed left of the plates; it is now centred and narrower (at most 840 wide, 260 clear each side). Then: \"move the drop down menu up as it seems to sink when youre fighting and also adjust the position of the power level bar and make a bit smaller\": the open column ran off the bottom (Gifts cut); it is now centred from the Menu button to its foot. The power bar was 360 x 16 under the boss bar, crowding the KO counter and the fighters' bars; it is now 280 x 13 at the top, the boss bar under it. Then: \"move the power level comparison to be above the wave clear box, also move the KO counter out the middle of the screen to somewhere more convenient\": the power bar now stands 214 above the bottom (the panel, with its boons, is about 185 tall); the KO counter is right-aligned in the top right corner; the boss bar is back at the top. Then: \"move the power level comparison bar to be above your animals health bars and below the shield button, make it the same length as well\": it is now in the plates' column (LayoutOrder 0; the shield -1), 224 wide. Then: \"get rid of the grass in the arena\": the arena floor lay on Grass terrain, whose blades grow through anything flat on it; the terrain under the arena and its way in is now LeafyGrass (as under the plaza and the homesteads, decision 0085)."
 }

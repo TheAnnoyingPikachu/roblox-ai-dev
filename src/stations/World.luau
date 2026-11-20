@@ -397,6 +397,11 @@ local function terrain()
 		t:ReplaceMaterial(region, 4, M.Grass, M.LeafyGrass)
 	end
 	calm(t, Vector3.zero, World.PLAZA + 6) -- the hub's plaza floor
+	-- the wave arena (SHANNON: "get rid of the grass in the arena"): no blades up through its floor or the
+	-- way in, so the fight is clear to see
+	local near, far =
+		Vector3.new(-(ARENA_HALF + 12), -10, -(ARENA_FAR + 16)), Vector3.new(ARENA_HALF + 12, 4, -(ARENA_NEAR - 40))
+	t:ReplaceMaterial(Region3.new(near, far):ExpandToGrid(4), 4, M.Grass, M.LeafyGrass)
 end
 
 -- Plaza ----------------------------------------------------------------------------------------------
