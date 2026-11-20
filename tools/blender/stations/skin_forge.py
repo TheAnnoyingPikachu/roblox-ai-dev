@@ -198,7 +198,53 @@ def rhino(name, length, tail_from, tail_z, leg_top, artifact, what):
     }
 
 
+def meerkat_weights(hip, belly, shoulder, neck):
+    """SHANNON's ForgeGUI meerkats, standing upright (one body plan): the legs below the hips (z `hip`),
+    short arms hanging in front of the belly (ahead of y `belly`, up to the shoulders at z `shoulder`), the
+    head above the neck (z `neck`) and the tail out behind the rump (y > 0)."""
+
+    def weights(p):
+        head = ramp(neck, neck + 0.05, p.z)
+        # the tail stops at the shoulders: above them, whatever hangs down the back is the head's (a crest)
+        tail = ramp(0.0, 0.06, p.y) * (1 - ramp(shoulder + 0.05, neck, p.z)) * (1 - head)
+        w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
+        leg, share = None, 0.0
+        if p.z < hip + 0.03 and p.y < 0.02:
+            leg, share = ("leg_bl" if p.x > 0 else "leg_br"), ramp(hip + 0.03, hip - 0.03, p.z)
+        elif hip + 0.08 < p.z < shoulder and p.y < belly + 0.01:
+            leg = "leg_fl" if p.x > 0 else "leg_fr"
+            share = ramp(belly + 0.01, belly - 0.03, p.y) * (1 - ramp(shoulder - 0.05, shoulder, p.z))
+        if leg and share > 0:
+            w = {k: v * (1 - share) for k, v in w.items()}
+            w[leg] = share
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return weights
+
+
+def meerkat(name, height, hip, belly, shoulder, neck, artifact, what):
+    return {
+        "height": height,  # an upright animal is scaled by its height
+        "joints": {
+            "body": (0.0, -0.12, hip + 0.05),
+            "head": (0.0, -0.15, neck),
+            "leg_fl": (0.08, -0.2, shoulder),
+            "leg_fr": (-0.08, -0.2, shoulder),
+            "leg_bl": (0.09, -0.14, hip),
+            "leg_br": (-0.09, -0.14, hip),
+            "tail": (0.0, 0.0, hip),
+        },
+        "weights": meerkat_weights(hip, belly, shoulder, neck),
+        "small": 0.06,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), one mesh, skinned to the Stations rig (decision 0102).",
+    }
+
+
 REGIONS = {
+    # heights: the Blender models' (StationAssets.creature_meerkat[_star, _storm].size)
+    "creature_meerkat_forge": meerkat("Meerkat", 4.8, -0.25, -0.235, 0.13, 0.24, "836fe118", "meerkat (now do it again following this reference)"),
+    "creature_meerkat_star_forge": meerkat("Star Meerkat", 7.5, -0.27, -0.225, 0.1, 0.22, "5d3b0709", "star meerkat"),
+    "creature_meerkat_storm_forge": meerkat("Storm Meerkat", 6.7, -0.25, -0.262, 0.1, 0.21, "1f8645af", "Alien Meerkat with UFO Tail"),
     # lengths: the Blender models' (StationAssets.creature_rhino[_lava, _crystal].size)
     "creature_rhino_forge": rhino("Rhino", 13.9, 0.32, 0.06, -0.09, "9f6a531e", "Low-Poly Rhino"),
     "creature_rhino_crystal_forge": rhino("Crystal Rhino", 16.0, 0.33, 0.08, -0.1, "f70447fd", "Rainbow Crystal Rhino"),
@@ -395,7 +441,7 @@ def main():
     # to studs, standing on the ground under its middle
     lo = Vector((min(v.co[k] for v in body.data.vertices) for k in range(3)))
     hi = Vector((max(v.co[k] for v in body.data.vertices) for k in range(3)))
-    scale = spec["length"] / (hi.y - lo.y)
+    scale = spec["height"] / (hi.z - lo.z) if "height" in spec else spec["length"] / (hi.y - lo.y)
     offset = Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))
     place = Matrix.Scale(scale, 4) @ Matrix.Translation(offset)
     body.data.transform(place)

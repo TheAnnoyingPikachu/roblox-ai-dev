@@ -135,6 +135,22 @@ Date: 2026-11-19. Task STATION-109.
   shell, crystals along the top and gem bands on its legs, 5,156 triangles. It is the Gemshell Tortoise
   (`creature_tortoise_gemshell_forge`), on the same tortoise body plan.
 
+## The meerkats (2026-11-20)
+
+- SHANNON: "now rig the three most recent meerkat models, show me what models first as well", then "yes
+  rig these three models please".
+- The Meerkat is the 23:47 model (artifact 836fe118): tan with dark stripes and a ringed tail, 15,187
+  triangles.
+- The Star Meerkat is the 23:46 model (artifact 5d3b0709): its prompt asked for the alien meerkat, but it
+  came out as a star meerkat (purple with gold stars, a gold crest, a comet tail), 4,983 triangles.
+- The Storm Meerkat's place takes the 23:45 Alien Meerkat with UFO Tail (artifact 1f8645af), 14,552
+  triangles. Its name stays "Storm Meerkat" (SHANNON was asked and said to rig the three as shown).
+- They stand upright: `meerkat_weights` gives the legs everything below the hips, the arms what hangs in
+  front of the belly between the hips and the shoulders, the head everything above the neck, and the
+  tail what is behind the rump below the shoulders (a crest down the back is the head's). They are
+  scaled by height (`height`), not length. `Creatures.build` makes them upright (Biped) because their
+  shoulder joints stand more than twice as high as their hips.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact
