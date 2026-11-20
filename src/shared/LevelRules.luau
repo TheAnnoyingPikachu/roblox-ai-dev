@@ -1,7 +1,7 @@
 --!strict
 -- Pure Animal Stations wave rules (decisions 0023, 0032, 0040): an endless line of waves ("levels"
--- in this file), each an enemy team of three Hexbound (StationConfig.FOES: evil magic knights,
--- ogres and dragons) that grows stronger, fought by the player's team (BattleRules). Clearing one
+-- in this file), each an enemy team of three of the Shadow Legion (StationConfig.FOES: knights,
+-- archers, mages, ogres, cavalry, golems and dragons) that grows stronger, fought by the player's team (BattleRules). Clearing one
 -- pays coins. Draft numbers; balance comes later.
 
 local BattleRules = require("./BattleRules")
@@ -70,16 +70,17 @@ function LevelRules.classic(level: number): { Owned }
 end
 
 -- Swarm waves (decision 0101): how many foes a wave sends, in how many rushes, how many of them are elites
--- (a regular x ELITE in every stat, shown in gold) and how many minions (Gloom Imps). The row with the
+-- (a regular x ELITE in every stat, shown in gold) and how many minions (none since the Gloom Imp left
+-- with the Hexbound, decision 0104: the crowd is all regulars). The row with the
 -- highest `from` the wave has reached applies. `power` is the swarm's power over the classic wave's: a
 -- crowd's power sum is worth less against the team's splash, crowd power attacks and the front line, so
 -- bigger crowds carry more to stay as hard (set so 98% of test fights end as against the classic waves).
 LevelRules.CROWDS = {
-	{ from = 1, count = 4, rushes = 1, elites = 0, minions = 1, power = 1 },
-	{ from = 5, count = 6, rushes = 1, elites = 0, minions = 3, power = 1.1 },
-	{ from = 10, count = 8, rushes = 2, elites = 0, minions = 4, power = 1.4 },
-	{ from = 20, count = 12, rushes = 2, elites = 1, minions = 6, power = 1.75 },
-	{ from = 40, count = 16, rushes = 3, elites = 2, minions = 8, power = 2.1 },
+	{ from = 1, count = 4, rushes = 1, elites = 0, minions = 0, power = 1 },
+	{ from = 5, count = 6, rushes = 1, elites = 0, minions = 0, power = 1.1 },
+	{ from = 10, count = 8, rushes = 2, elites = 0, minions = 0, power = 1.4 },
+	{ from = 20, count = 12, rushes = 2, elites = 1, minions = 0, power = 1.75 },
+	{ from = 40, count = 16, rushes = 3, elites = 2, minions = 0, power = 2.1 },
 }
 LevelRules.ELITE = 1.6
 LevelRules.CROWD_POWER = 1 -- a swarm wave's power over the classic wave's

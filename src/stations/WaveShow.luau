@@ -37,7 +37,10 @@ local WaveShow = {}
 
 local GROUND = 0.45 -- the arena floor's top is at 0.4
 local WALK_SPEED = 13 -- studs a second the enemies walk out of the gate at
-local RANGED = { foe_archer = true, foe_mage = true } -- these stand and shoot instead of lunging
+-- archers and mages (any of their models, decision 0104) stand and shoot instead of lunging
+local function ranged(asset: string): boolean
+	return string.find(asset, "^foe_archer") ~= nil or string.find(asset, "^foe_mage") ~= nil
+end
 
 local counter = 0
 local runs: { [Player]: number } = {} -- the token of each player's current show
@@ -134,7 +137,7 @@ local function busy(model: Model): boolean -- is an attack or a spell still play
 	return length ~= nil and anim ~= "hit" and type(at) == "number" and Workspace:GetServerTimeNow() - at < length
 end
 
--- The fallen stop glowing and sink out of sight a moment later.
+-- The fallen stop glowing and sink out of sight a moment later (unless raised again first).
 local function fall(model: Model)
 	Creatures.play(model, "die")
 	for _, d in model:GetDescendants() do
@@ -143,21 +146,34 @@ local function fall(model: Model)
 		end
 	end
 	task.delay(2.2, function()
-		if model.Parent == nil then
+		if model.Parent == nil or model:GetAttribute("Anim") ~= "die" then
 			return
 		end
 		for _, d in model:GetDescendants() do
 			if d:IsA("BasePart") and d.Transparency < 1 then
+				d:SetAttribute("Shown", d.Transparency)
 				TweenService:Create(d, TweenInfo.new(1.2), { Transparency = 1 }):Play()
 			end
 		end
 	end)
 end
 
+-- A fallen foe the Necromancer raises (decision 0104): seen again, glowing, standing.
+local function rise(model: Model)
+	for _, d in model:GetDescendants() do
+		if d:IsA("ParticleEmitter") or d:IsA("PointLight") then
+			d.Enabled = true
+		elseif d:IsA("BasePart") and d:GetAttribute("Shown") ~= nil then
+			d.Transparency = d:GetAttribute("Shown") :: number
+		end
+	end
+	Creatures.play(model, "idle")
+end
+
 -- An arrow (archer) or a spell bolt (mage) that flies from `from` to `to` in `seconds`. Show only:
 -- the rules have no range. It lives in the player's show folder, so `clear` removes it too.
 local function shoot(folder: Folder, kind: string, from: Vector3, to: Vector3, seconds: number)
-	local arrow = kind == "foe_archer"
+	local arrow = string.find(kind, "^foe_archer") ~= nil
 	local p = Instance.new("Part")
 	p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch, p.CastShadow = true, false, false, false, false
 	p.Material = Enum.Material.Neon
@@ -470,7 +486,7 @@ function WaveShow.run(
 			local from, to =
 				actor.model:FindFirstChild("Hit") :: BasePart?, target.model:FindFirstChild("Hit") :: BasePart?
 			local flight = if not e.power
-					and RANGED[kind]
+					and ranged(kind)
 					and from
 					and to
 				then FightFx.flightTime((to.Position - from.Position).Magnitude)
@@ -482,7 +498,7 @@ function WaveShow.run(
 			end
 			Creatures.play(actor.model, if e.power then "magic" else "attack")
 			local root = actor.model.PrimaryPart :: BasePart
-			local lunges = not e.power and not RANGED[kind]
+			local lunges = not e.power and not ranged(kind)
 			if lunges then
 				local dir = if e.side == 1 then -1 else 1
 				TweenService:Create(root, TweenInfo.new(lead * 0.9, Enum.EasingStyle.Quad), {
@@ -508,7 +524,7 @@ function WaveShow.run(
 				actor.model:SetAttribute("Power", e.energy)
 			end
 			local ko = e.hp <= 0
-			if not RANGED[kind] then -- a melee attacker freezes with its target; a shooter has nothing to hit
+			if not ranged(kind) then -- a melee attacker freezes with its target; a shooter has nothing to hit
 				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0, final, ko))
 				actor.model:SetAttribute("StopAt", now)
 			end
@@ -581,6 +597,14 @@ function WaveShow.run(
 						end)
 						push:Play()
 					end
+				end
+			end
+			if e.revive then -- a fallen ally raised by the Necromancer's power attack
+				local back = slots[e.side][e.revive.slot]
+				if back then
+					back.hp, back.version = e.revive.hp, back.version + 1
+					back.model:SetAttribute("Hp", e.revive.hp)
+					rise(back.model)
 				end
 			end
 			for _, x in e.heals or {} do -- a team heal

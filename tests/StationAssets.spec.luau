@@ -220,7 +220,8 @@ describe("StationAssets", function()
 
 	it("has a model for every Hexbound foe, of its kind, with a sane size and tint", function()
 		for _, f in StationConfig.FOES do
-			expect(f.model == `foe_{f.kind}` or f.model == `foe_{f.kind}_forge`).toBe(true)
+			-- SHANNON's ForgeGUI model of its kind (decision 0104)
+			expect(string.find(f.model, `^foe_{f.kind}`) ~= nil and string.find(f.model, "_forge$") ~= nil).toBe(true)
 			expect(StationAssets[f.model] == nil).toBe(false)
 			expect(StationAssets[f.model].model == nil).toBe(false) -- uploaded
 			expect(f.size == nil or (f.size >= 0.5 and f.size <= 2)).toBeTruthy()
@@ -231,8 +232,12 @@ describe("StationAssets", function()
 				end
 			end
 		end
-		for _, kind in StationConfig.FOE_KINDS do
-			expect(StationAssets[`foe_{kind}`] == nil).toBe(false)
+		for _, kind in StationConfig.FOE_KINDS do -- every kind has an enemy
+			local any = false
+			for _, f in StationConfig.FOES do
+				any = any or f.kind == kind
+			end
+			expect(any).toBe(true)
 		end
 	end)
 

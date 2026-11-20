@@ -33,8 +33,8 @@ export type Species = {
 export type Foe = {
 	id: string,
 	name: string,
-	kind: string, -- "knight" | "archer" | "mage" | "ogre" | "dragon" | "imp"
-	model: string, -- the asset that shows it ("foe_<kind>"): a tier of a kind is the same model
+	kind: string, -- "knight" | "archer" | "mage" | "ogre" | "golem" | "cavalry" | "dragon"
+	model: string, -- the asset that shows it ("foe_<kind>[_<word>]_forge", decision 0104)
 	size: number?, -- scaled by this (default 1) ...
 	tint: { number }?, -- ... and tinted this colour, r g b 0 to 255 (default: as built)
 	role: string, -- "attack" | "defense" | "utility"
@@ -43,6 +43,7 @@ export type Foe = {
 	from: number?, -- the first wave it can appear in the normal line (nil: never)
 	boss: number?, -- the first wave it can be the dragon that ends a boss wave (nil: never)
 	minion: boolean?, -- a swarm's minion (decision 0101): never drawn as a regular
+	ability: string?, -- "revive": its power attack raises a fallen ally (decision 0104)
 }
 export type Tier = { tier: string, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
@@ -249,19 +250,20 @@ StationConfig.SPECIES = {
 	},
 } :: { Species }
 
--- The Hexbound (decisions 0040, 0041): evil magic knights, archers, mages, ogres and dragons, the
--- enemies of the endless waves. Knights are haunted armour and fight from the first wave; after that
--- something new turns up every few waves: archers at 3, ogres at 5, mages from 6 (a healer at 8, a
--- warden at 12), a crossbowman at 9 and the ogre warlord at 15. A dragon ends every 10th wave: the
--- strongest one the wave allows. Archers are fast and fragile, mages hit hard through their Mana,
--- heal or ward. Draft numbers, set to the strength of the animals the waves used before, so the
--- waves are as hard. Their model is the asset "foe_<kind>", or "foe_<kind>_forge" for SHANNON's
--- ForgeGUI model of it (the knight, decision 0102); tiers within a kind differ by tint and size.
-StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "dragon", "imp" }
+-- The Shadow Legion (decision 0104, replacing the Hexbound of decisions 0040 and 0041): SHANNON's ForgeGUI
+-- enemies of the endless waves, each its own model. Knights, heavy knights and battle priests (they heal
+-- the enemies) fight from the first wave, one of each role; something new turns up every wave or few after
+-- that: archers at 3, shieldbearers at 4, the ogre enforcer at 5, the darkcaster (a damage mage) at 6, the
+-- berserker at 7, crossbows at 9, cavalry at 11, the necromancer (raises a fallen enemy, once each) at 12, the ogre
+-- commander at 15, the shieldbearer commander at 18, the siege golem at 22 and the cavalry commander at
+-- 26. A dragon ends every 10th wave: the strongest one the wave allows (the dark drake from 10, the
+-- shadow dragon from 30, the ancient alpha dragon from 60). Draft numbers: the ones that replace an old
+-- enemy keep its stats, so the waves stay as hard. Their model is "foe_<kind>[_<word>]_forge".
+StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "golem", "cavalry", "dragon" }
 StationConfig.FOES = {
 	{
-		id = "gloom_squire",
-		name = "Gloom Squire",
+		id = "shadow_knight",
+		name = "Shadow Knight",
 		kind = "knight",
 		model = "foe_knight_forge",
 		role = "attack",
@@ -270,163 +272,175 @@ StationConfig.FOES = {
 		from = 1,
 	},
 	{
-		id = "gloom_bulwark",
-		name = "Gloom Bulwark",
+		id = "heavy_knight",
+		name = "Heavy Knight",
 		kind = "knight",
-		model = "foe_knight_forge",
-		size = 1.2,
-		tint = { 150, 175, 215 },
+		model = "foe_knight_heavy_forge",
 		role = "defense",
 		group = "solitary",
 		stats = s(8, 26, 48, 12, 58, 58),
 		from = 1,
 	},
 	{
-		id = "gloom_banner",
-		name = "Gloom Banner",
-		kind = "knight",
-		model = "foe_knight_forge",
-		tint = { 255, 160, 160 },
-		role = "utility",
-		group = "pack",
-		stats = s(28, 8, 16, 44, 28, 10),
-		from = 1,
-	},
-	{
-		id = "shade_archer",
-		name = "Shade Archer",
+		id = "shadow_archer",
+		name = "Shadow Archer",
 		kind = "archer",
-		model = "foe_archer",
+		model = "foe_archer_forge",
 		role = "attack",
 		group = "pack",
 		stats = s(46, 24, 14, 14, 26, 8),
 		from = 3,
 	},
 	{
-		id = "shade_crossbowman",
-		name = "Shade Crossbowman",
-		kind = "archer",
-		model = "foe_archer",
-		size = 1.15,
-		tint = { 200, 175, 140 },
-		role = "attack",
-		group = "solitary",
-		stats = s(16, 70, 26, 14, 50, 16),
-		from = 9,
+		id = "shieldbearer",
+		name = "Shieldbearer",
+		kind = "knight",
+		model = "foe_knight_shield_forge",
+		role = "defense",
+		group = "pack",
+		stats = s(12, 16, 44, 10, 54, 66),
+		from = 4,
 	},
 	{
-		id = "ogre_brute",
-		name = "Ogre Brute",
+		id = "ogre_enforcer",
+		name = "Ogre Enforcer",
 		kind = "ogre",
-		model = "foe_ogre",
+		model = "foe_ogre_forge",
 		role = "attack",
 		group = "solitary",
 		stats = s(24, 80, 28, 8, 76, 22),
 		from = 5,
 	},
 	{
-		id = "ogre_shaman",
-		name = "Ogre Shaman",
-		kind = "ogre",
-		model = "foe_ogre",
-		size = 0.9,
-		tint = { 185, 160, 240 },
-		role = "utility",
-		group = "pack",
-		stats = s(28, 12, 28, 60, 50, 12),
-		from = 5,
-	},
-	{
-		id = "ogre_warlord",
-		name = "Ogre Warlord",
-		kind = "ogre",
-		model = "foe_ogre",
-		size = 1.25,
-		tint = { 165, 125, 125 },
-		role = "attack",
-		group = "pack",
-		stats = s(46, 92, 40, 20, 84, 28),
-		from = 15,
-	},
-	{
-		id = "hexcaster",
-		name = "Hexcaster",
+		id = "darkcaster",
+		name = "Darkcaster",
 		kind = "mage",
-		model = "foe_mage",
+		model = "foe_mage_forge",
 		role = "attack",
 		group = "solitary",
 		stats = s(26, 56, 14, 72, 38, 8),
 		from = 6,
 	},
 	{
-		id = "hexweaver",
-		name = "Hexweaver",
-		kind = "mage",
-		model = "foe_mage",
-		size = 0.95,
-		tint = { 190, 255, 215 },
-		role = "utility",
-		group = "pack",
-		stats = s(28, 10, 20, 58, 36, 10),
-		from = 8,
+		id = "berserker",
+		name = "Berserker",
+		kind = "knight",
+		model = "foe_knight_berserker_forge",
+		role = "attack",
+		group = "solitary",
+		stats = s(52, 60, 22, 20, 44, 10),
+		from = 7,
 	},
 	{
-		id = "hexwarden",
-		name = "Hexwarden",
+		id = "battle_priest",
+		name = "Battle Priest",
 		kind = "mage",
-		model = "foe_mage",
-		size = 1.2,
-		tint = { 130, 130, 190 },
-		role = "defense",
+		model = "foe_mage_priest_forge",
+		role = "utility",
+		group = "pack",
+		stats = s(28, 8, 16, 44, 28, 10),
+		from = 1,
+	},
+	{
+		id = "crossbow_troop",
+		name = "Crossbow Troop",
+		kind = "archer",
+		model = "foe_archer_crossbow_forge",
+		role = "attack",
 		group = "solitary",
-		stats = s(10, 24, 46, 42, 62, 56),
+		stats = s(16, 70, 26, 14, 50, 16),
+		from = 9,
+	},
+	{
+		id = "cavalry",
+		name = "Cavalry",
+		kind = "cavalry",
+		model = "foe_cavalry_forge",
+		role = "attack",
+		group = "pack",
+		stats = s(72, 40, 30, 14, 48, 24),
+		from = 11,
+	},
+	{
+		id = "necromancer",
+		name = "Necromancer",
+		kind = "mage",
+		model = "foe_mage_necromancer_forge",
+		role = "attack",
+		group = "solitary",
+		stats = s(20, 30, 30, 70, 46, 20),
+		ability = "revive",
 		from = 12,
 	},
 	{
-		id = "hexfire_whelp",
-		name = "Hexfire Whelp",
+		id = "ogre_commander",
+		name = "Ogre Commander",
+		kind = "ogre",
+		model = "foe_ogre_commander_forge",
+		role = "attack",
+		group = "pack",
+		stats = s(46, 92, 40, 20, 84, 28),
+		from = 15,
+	},
+	{
+		id = "shieldbearer_commander",
+		name = "Shieldbearer Commander",
+		kind = "knight",
+		model = "foe_knight_shield_commander_forge",
+		role = "defense",
+		group = "solitary",
+		stats = s(14, 30, 56, 24, 80, 90),
+		from = 18,
+	},
+	{
+		id = "siege_golem",
+		name = "Siege Golem",
+		kind = "golem",
+		model = "foe_golem_forge",
+		role = "defense",
+		group = "solitary",
+		stats = s(6, 60, 64, 10, 110, 96),
+		from = 22,
+	},
+	{
+		id = "cavalry_commander",
+		name = "Cavalry Commander",
+		kind = "cavalry",
+		model = "foe_cavalry_commander_forge",
+		role = "attack",
+		group = "solitary",
+		stats = s(82, 84, 44, 24, 90, 40),
+		from = 26,
+	},
+	{
+		id = "dark_drake",
+		name = "Dark Drake",
 		kind = "dragon",
-		model = "foe_dragon",
-		size = 0.85,
-		tint = { 200, 200, 240 },
+		model = "foe_dragon_drake_forge",
 		role = "attack",
 		group = "solitary",
 		stats = s(46, 70, 36, 46, 108, 38),
 		boss = 10,
 	},
 	{
-		id = "hexfire_drake",
-		name = "Hexfire Drake",
+		id = "shadow_dragon",
+		name = "Shadow Dragon",
 		kind = "dragon",
-		model = "foe_dragon",
+		model = "foe_dragon_forge",
 		role = "attack",
 		group = "solitary",
 		stats = s(70, 130, 70, 80, 200, 90),
 		boss = 30,
 	},
 	{
-		id = "hexfire_dragon",
-		name = "Hexfire Dragon",
+		id = "ancient_alpha_dragon",
+		name = "Ancient Alpha Dragon",
 		kind = "dragon",
-		model = "foe_dragon",
-		size = 1.45,
-		tint = { 160, 135, 180 },
+		model = "foe_dragon_alpha_forge",
 		role = "attack",
 		group = "solitary",
 		stats = s(100, 200, 100, 120, 320, 160),
 		boss = 60,
-	},
-	-- the swarm's minion (decision 0101): fast and frail, falls in a hit or two
-	{
-		id = "gloom_imp",
-		name = "Gloom Imp",
-		kind = "imp",
-		model = "foe_imp",
-		role = "attack",
-		group = "pack",
-		stats = s(44, 12, 24, 8, 12, 4),
-		from = 1,
-		minion = true,
 	},
 } :: { Foe }
 

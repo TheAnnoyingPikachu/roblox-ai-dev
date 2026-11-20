@@ -48,11 +48,11 @@ describe("LevelRules.enemies", function()
 	end)
 
 	it(
-		"opens with knights, adds a new foe every few waves, never before its first wave, and gets stronger without end",
+		"opens with the wave-1 foes (knights and battle priests), adds a new foe every few waves, never before its first wave, and gets stronger without end",
 		function()
 			for level = 1, 2 do
 				for _, e in LevelRules.enemies(level) do
-					expect(kindOf(e) == "knight" or kindOf(e) == "imp").toBeTruthy()
+					expect((StationConfig.foe(e.s) :: StationConfig.Foe).from).toBe(1)
 				end
 			end
 			local seen = {}
@@ -78,12 +78,12 @@ describe("LevelRules.enemies", function()
 		expect(LevelRules.boss(9)).toBeNil()
 		for _, c in
 			{
-				{ 10, "hexfire_whelp" },
-				{ 20, "hexfire_whelp" },
-				{ 30, "hexfire_drake" },
-				{ 50, "hexfire_drake" },
-				{ 60, "hexfire_dragon" },
-				{ 120, "hexfire_dragon" },
+				{ 10, "dark_drake" },
+				{ 20, "dark_drake" },
+				{ 30, "shadow_dragon" },
+				{ 50, "shadow_dragon" },
+				{ 60, "ancient_alpha_dragon" },
+				{ 120, "ancient_alpha_dragon" },
 			}
 		do
 			expect((LevelRules.boss(c[1] :: number) :: StationConfig.Foe).id).toBe(c[2])
@@ -117,7 +117,6 @@ describe("LevelRules.enemies", function()
 			expect(minions).toBe(row.minions)
 			expect(elites).toBe(row.elites)
 			expect(lastRush).toBe(row.rushes)
-			expect(StationConfig.foe(wave[1].s).minion).toBe(true) -- a rush opens with its minions
 			local want = LevelRules.power(level) * (row.power or 1)
 			local got = BattleRules.teamPower(wave, 2)
 			expect(math.abs(got - want) <= want * LevelRules.MATCH).toBeTruthy()
@@ -126,12 +125,12 @@ describe("LevelRules.enemies", function()
 	end)
 
 	it("fights a foe by its role and group, like an animal", function()
-		local bulwark = StationConfig.foe("gloom_bulwark") :: StationConfig.Foe
+		local bulwark = StationConfig.foe("heavy_knight") :: StationConfig.Foe
 		local f = BattleRules.fighter({ s = bulwark.id, stats = bulwark.stats }, 2, 1)
 		expect(f.role).toBe("defense")
 		expect(f.group).toBe("solitary")
-		local squire = StationConfig.foe("gloom_squire") :: StationConfig.Foe
-		local banner = StationConfig.foe("gloom_banner") :: StationConfig.Foe
+		local squire = StationConfig.foe("shadow_knight") :: StationConfig.Foe
+		local banner = StationConfig.foe("battle_priest") :: StationConfig.Foe
 		local pair =
 			BattleRules.lineup({ { s = squire.id, stats = squire.stats }, { s = banner.id, stats = banner.stats } }, 2)
 		local alone = BattleRules.fighter({ s = squire.id, stats = squire.stats }, 2, 1)

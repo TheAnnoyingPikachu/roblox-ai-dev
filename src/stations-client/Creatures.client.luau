@@ -1507,11 +1507,11 @@ RunService.PreSimulation:Connect(function(dt: number)
 		elseif anim and TRAIN[anim] then
 			target = TRAIN[anim](time, (model:GetAttribute("Stride") :: number?) or 1.5, biped, model)
 		elseif anim == "attack" and t < ATTACK.length then
-			local kind = model:GetAttribute("Asset")
+			local kind = (model:GetAttribute("Asset") :: string?) or ""
 			local clip = if not biped
 				then pick(ATTACKS, model, ATTACK)
-				elseif kind == "foe_archer" then ARCHER_ATTACK
-				elseif kind == "foe_mage" then MAGE_ATTACK
+				elseif string.find(kind, "^foe_archer") then ARCHER_ATTACK
+				elseif string.find(kind, "^foe_mage") then MAGE_ATTACK
 				else pick(ATTACKS, model, BIPED_ATTACK) -- an upright animal has its own
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then

@@ -252,14 +252,19 @@ local function build(name: string): Model?
 	-- the leg length the poses scale by: the front legs' joint on an animal, the hips' on a Hexbound
 	-- (their front "legs" are arms, hung from the shoulders)
 	local hexbound = string.sub(name, 1, 4) == "foe_"
+	local winged = string.find(name, "^foe_dragon") ~= nil
+	local mounted = string.find(name, "^foe_cavalry") ~= nil -- a rider on a horse: four-legged (decision 0104)
 	-- an animal that stands upright is the same (the meerkats, decision 0055): its arms hang far above its hips
-	local upright = hexbound or entry.joints[`{name}_leg_fl`][2] > 2 * entry.joints[`{name}_leg_bl`][2]
+	local upright = (hexbound and not mounted)
+		or entry.joints[`{name}_leg_fl`][2] > 2 * entry.joints[`{name}_leg_bl`][2]
 	local unit = entry.joints[if upright then `{name}_leg_bl` else `{name}_leg_fl`][2] / POSE_LEGS
 	model:SetAttribute("Scale", unit)
 	model:SetAttribute("Stride", STRIDE / math.sqrt(unit))
 	if hexbound then
 		model:SetAttribute("Hexbound", true)
-		model:SetAttribute(if name == "foe_dragon" then "Winged" else "Biped", true)
+		if not mounted then
+			model:SetAttribute(if winged then "Winged" else "Biped", true)
+		end
 		aura(model, root, rootFrame, entry.size, unit)
 	elseif upright then
 		model:SetAttribute("Biped", true) -- it stands, walks and falls like one; its attacks are its own

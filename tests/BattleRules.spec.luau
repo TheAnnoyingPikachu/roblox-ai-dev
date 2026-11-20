@@ -222,6 +222,42 @@ describe("BattleRules.battle", function()
 	end)
 end)
 
+describe("BattleRules revive (decision 0104)", function()
+	it("lets the Necromancer's power attacks raise each fallen ally once, at REVIVE_PCT of its HP", function()
+		local function foe(id: string, mult: number): StationRules.Owned
+			local stats = {} :: any
+			for k, v in (StationConfig.foe(id) :: StationConfig.Foe).stats :: any do
+				stats[k] = math.max(1, math.floor(v * mult))
+			end
+			return { s = id, stats = stats } :: any
+		end
+		local log = {}
+		BattleRules.battle(three("lion"), { foe("shadow_knight", 0.3), foe("necromancer", 4) }, log)
+		local raised, seen = {}, false
+		for _, h in log do
+			if h.revive then
+				seen = true
+				expect(h.side).toBe(2)
+				expect(h.power).toBe(true)
+				raised[h.revive.slot] = (raised[h.revive.slot] or 0) + 1
+				local max = BattleRules.lineup({ foe("shadow_knight", 0.3), foe("necromancer", 4) }, 2)[1].maxHp
+				expect(h.revive.hp).toBe(math.max(1, math.floor(max * BattleRules.REVIVE_PCT / 100)))
+			end
+		end
+		expect(seen).toBe(true)
+		expect(raised[1]).toBe(1) -- once, and only the knight (the Necromancer never raises itself)
+		expect(raised[2]).toBeNil()
+	end)
+
+	it("never raises anyone for a team of animals", function()
+		local log = {}
+		BattleRules.battle(three("lion"), three("jackal"), log)
+		for _, h in log do
+			expect(h.revive).toBeNil()
+		end
+	end)
+end)
+
 describe("BattleRules.battle log", function()
 	local function team(ids: { string }): { StationRules.Owned }
 		local out = {}

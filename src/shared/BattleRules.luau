@@ -10,7 +10,8 @@
 --   Mana      energy per attack towards the power attack
 -- Roles come from the species (or the foe): Attack hits harder, Defence draws every hit and takes less,
 -- Utility also heals the most hurt teammate with every attack. The Titan (the team's fourth
--- slot) has no special job. Pack and solitary animals get group bonuses.
+-- slot) has no special job. Pack and solitary animals get group bonuses. A foe with the "revive"
+-- ability (the Necromancer, decision 0104) raises a fallen ally with each power attack.
 -- Deterministic: same teams, same result, so the server can decide and replay any fight.
 
 local StationConfig = require("./StationConfig")
@@ -36,6 +37,8 @@ export type Fighter = {
 	rush: number, -- which rush of its wave it comes in (decision 0101); 1 for the team
 	arrive: number, -- when it is in the fight (math.huge while its rush has not been called)
 	engaged: boolean, -- side 2: in the front line (only the front line attacks)
+	revive: boolean?, -- its power attack raises a fallen ally (decision 0104)
+	revived: boolean?, -- raised once already: it stays down next time
 }
 
 BattleRules.HP_BASE, BattleRules.HP_PER_HEALTH = 20, 1.5
@@ -51,6 +54,7 @@ BattleRules.ATTACK_BONUS = 1.3 -- Attack: damage x this
 BattleRules.GUARD = 0.8 -- Defence: enemies must target it while it stands, and it takes damage x this
 BattleRules.HEAL_PCT = 8 -- Utility: each attack also heals the most hurt teammate by this % of the healer's own max HP
 BattleRules.MAX_SECONDS = 300 -- a fight this long is a loss for side 1 (heals could stall it)
+BattleRules.REVIVE_PCT = 50 -- a raised ally stands up with this % of its max HP, once per fight
 BattleRules.MAX_ACTIONS = 5000 -- backstop for absurd stats; also a loss for side 1
 
 -- A run's carried HP and boons for side 1 (decision 0098; see `battle`).
@@ -58,7 +62,8 @@ export type Setup = { hp: { number }?, energy: number?, dmg: number?, maxHp: num
 
 -- One animal's battle numbers before group bonuses. Each stat feeds exactly one of them.
 function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
-	local sp = StationConfig.species(animal.s) or StationConfig.foe(animal.s)
+	local foe = StationConfig.foe(animal.s)
+	local sp = StationConfig.species(animal.s) or foe
 	local role = StationRules.role(animal)
 	local function stat(name: StationConfig.Stat): number
 		return StationRules.stat(animal, name)
@@ -87,6 +92,7 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 		rush = math.max(1, (animal :: any).rush or 1),
 		arrive = 0,
 		engaged = side == 1,
+		revive = if foe and foe.ability == "revive" then true else nil,
 	}
 end
 
@@ -146,6 +152,9 @@ function BattleRules.scoreOf(f: Fighter): number
 	local extra = if f.side == 1 then BattleRules.POWER else BattleRules.POWER - 1
 	local per = (1 + extra * share) / cycle -- attacks' worth of damage a second
 	local hp = f.maxHp * (BattleRules.DEF_HALF + f.def) / BattleRules.DEF_HALF
+	if f.revive then -- an ally raised at REVIVE_PCT now and then: about a quarter more HP on the side
+		hp *= 1 + BattleRules.REVIVE_PCT / 200
+	end
 	if f.role == "defense" then
 		hp /= BattleRules.GUARD
 	elseif f.role == "utility" then
@@ -254,6 +263,7 @@ export type Hit = {
 	heal: { slot: number, hp: number }?,
 	heals: { { slot: number, hp: number } }?,
 	also: { { slot: number, dmg: number, hp: number } }?,
+	revive: { slot: number, hp: number }?, -- the ally its power attack raised (decision 0104)
 }
 export type Tap = { slot: number, t: number }
 
@@ -450,6 +460,19 @@ function BattleRules.battle(
 				also = also,
 			}
 			table.insert(log, entry :: Hit)
+		end
+		if me.revive and power > 1 then -- the first fallen ally not raised before stands up again
+			for _, m in sides[me.side] do
+				if m.hp <= 0 and not m.revived and m.arrive <= now then
+					m.revived = true
+					m.hp = math.max(1, math.floor(m.maxHp * BattleRules.REVIVE_PCT / 100))
+					m.next = now + m.swing
+					if entry then
+						entry.revive = { slot = m.slot, hp = m.hp }
+					end
+					break
+				end
+			end
 		end
 		if me.role == "utility" then
 			local heal = math.floor(me.maxHp * BattleRules.HEAL_PCT * power / 100)
