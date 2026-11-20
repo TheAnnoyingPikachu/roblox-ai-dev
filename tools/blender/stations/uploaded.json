@@ -1020,13 +1020,13 @@
     "texture": null
   },
   "foe_cavalry_forge": {
-    "model": 138319104867885,
-    "decal": 75989773266246,
+    "model": 95633659921681,
+    "decal": 82885967861775,
     "texture": null
   },
   "foe_cavalry_commander_forge": {
-    "model": 121149669277647,
-    "decal": 126749271683283,
+    "model": 96942514776708,
+    "decal": 128323362539306,
     "texture": null
   },
   "foe_dragon_drake_forge": {
