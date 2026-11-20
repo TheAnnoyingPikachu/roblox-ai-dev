@@ -873,5 +873,35 @@
     "model": null,
     "decal": 94633690503455,
     "texture": null
+  },
+  "creature_flamingo_forge": {
+    "model": 104908576853430,
+    "decal": 117268092667503,
+    "texture": null
+  },
+  "creature_flamingo_forge_rainbow": {
+    "model": null,
+    "decal": 130945049856793,
+    "texture": null
+  },
+  "creature_flamingo_peacock_forge": {
+    "model": 76868167666508,
+    "decal": 113878734093677,
+    "texture": null
+  },
+  "creature_flamingo_peacock_forge_rainbow": {
+    "model": null,
+    "decal": 125168877806455,
+    "texture": null
+  },
+  "creature_flamingo_phoenix_forge": {
+    "model": 76736815444855,
+    "decal": 128896193537319,
+    "texture": null
+  },
+  "creature_flamingo_phoenix_forge_rainbow": {
+    "model": null,
+    "decal": 114074139701187,
+    "texture": null
   }
 }
