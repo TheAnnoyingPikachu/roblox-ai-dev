@@ -169,8 +169,9 @@ StationConfig.SPECIES = {
 		rarity = "common",
 		stats = s(30, 8, 15, 42, 25, 8),
 		variants = {
-			v("storm_meerkat", "Storm Meerkat", "legendary", "mana"),
-			v("star_meerkat", "Star Meerkat", "mythic", "speed"),
+			-- the ids stay so saves and eggs keep them; SHANNON renamed them to fit their models (decision 0102)
+			v("storm_meerkat", "Alien Meerkat", "legendary", "mana"),
+			v("star_meerkat", "Comet Meerkat", "mythic", "speed"),
 		},
 	},
 	{

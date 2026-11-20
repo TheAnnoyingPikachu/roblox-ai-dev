@@ -145,6 +145,9 @@ Date: 2026-11-19. Task STATION-109.
   came out as a star meerkat (purple with gold stars, a gold crest, a comet tail), 4,983 triangles.
 - The Storm Meerkat's place takes the 23:45 Alien Meerkat with UFO Tail (artifact 1f8645af), 14,552
   triangles. Its name stays "Storm Meerkat" (SHANNON was asked and said to rig the three as shown).
+- Then SHANNON: "can you quickly rename the alien meerkat and commet meerkat as well". The Storm Meerkat
+  is now the Alien Meerkat and the Star Meerkat the Comet Meerkat. Their ids (`storm_meerkat`,
+  `star_meerkat`) stay, so saves, eggs and odds are unchanged.
 - They stand upright: `meerkat_weights` gives the legs everything below the hips, the arms what hangs in
   front of the belly between the hips and the shoulders, the head everything above the neck, and the
   tail what is behind the rump below the shoulders (a crest down the back is the head's). They are
