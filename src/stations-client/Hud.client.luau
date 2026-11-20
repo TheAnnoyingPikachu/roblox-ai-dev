@@ -3214,26 +3214,31 @@ end
 
 -- Admin menu (decisions 0038, 0049): only for players the server marks as admin (the game's owner, or
 -- anyone in Studio). Its first tab lists every animal and variant: a tap adds it to your own ranch. Its
--- second spawns animals in front of you and plays their animations; nothing there is saved.
+-- second spawns animals in front of you and plays their animations, its third the same for the
+-- Hexbound enemies; nothing there is saved.
 local adminTab = "add"
-local adminTests = Instance.new("Frame") -- the Spawn tab, made once
-adminTests.BackgroundTransparency = 1
-adminTests.Size, adminTests.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
-Style.list(adminTests, 10)
-adminTests.Visible = false
-adminTests.Parent = admin.body
+local adminTabs: { [string]: Frame } = {} -- the Spawn ("tests") and Enemies ("foes") tabs, made once
+for _, key in { "tests", "foes" } do
+	local tab = Instance.new("Frame")
+	tab.BackgroundTransparency = 1
+	tab.Size, tab.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
+	Style.list(tab, 10)
+	tab.Visible = false
+	tab.Parent = admin.body
+	adminTabs[key] = tab
+end
 local adminAdd = { body = Instance.new("Frame") } -- the Add animals tab's rows
 adminAdd.body.BackgroundTransparency = 1
 adminAdd.body.Size, adminAdd.body.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
 Style.list(adminAdd.body, 8)
 adminAdd.body.Parent = admin.body
-do
+for _, tab in adminTabs do
 	-- the animations play on whatever is spawned
 	local anims = Instance.new("Frame")
 	anims.BackgroundTransparency = 1
 	anims.Size, anims.AutomaticSize, anims.LayoutOrder = UDim2.fromScale(1, 0), Enum.AutomaticSize.Y, 0
 	Style.list(anims, 6, true, true)
-	anims.Parent = adminTests
+	anims.Parent = tab
 	local CLIPS = {
 		{ "idle", "Idle" },
 		{ "walk", "Walk" },
@@ -3252,20 +3257,26 @@ do
 		send("look_clear")
 	end, "ghost", UDim2.fromOffset(86, 44)).LayoutOrder = #CLIPS
 		+ 1
-	local k = 0 -- the server lists them in this order too (LOOKS: a species, then its variants)
-	local function spawnButton(name: string)
+end
+do
+	-- the server lists them in this order too (LOOKS: a species, then its variants; the foes after them all)
+	local k = 0
+	local function spawnButton(tab: Frame, name: string)
 		k += 1
 		local index = k
-		Style.button(adminTests, `Spawn {name}`, function()
+		Style.button(tab, `Spawn {name}`, function()
 			send("look", index)
 		end, "ghost", UDim2.new(1, 0, 0, 44)).LayoutOrder =
 			index
 	end
 	for _, sp in StationConfig.SPECIES do
-		spawnButton(sp.name)
+		spawnButton(adminTabs.tests, sp.name)
 		for _, va in sp.variants do
-			spawnButton(`{va.name} ({va.tier})`)
+			spawnButton(adminTabs.tests, `{va.name} ({va.tier})`)
 		end
+	end
+	for _, f in StationConfig.FOES do
+		spawnButton(adminTabs.foes, f.name)
 	end
 end
 
@@ -3312,13 +3323,14 @@ do
 	local drawn = false
 	redraw.admin = function() -- the rows are drawn once, when first opened: a new profile must not scroll it back up
 		Style.clear(admin.tabs)
-		for _, t in { { "add", "Add animals" }, { "tests", "Spawn" } } do
+		for _, t in { { "add", "Add animals" }, { "tests", "Spawn" }, { "foes", "Enemies" } } do
 			Style.tab(admin, t[2], adminTab == t[1], function()
 				adminTab = t[1]
 				redraw.admin()
 			end)
 		end
-		adminTests.Visible, adminAdd.body.Visible = adminTab == "tests", adminTab == "add"
+		adminTabs.tests.Visible, adminTabs.foes.Visible = adminTab == "tests", adminTab == "foes"
+		adminAdd.body.Visible = adminTab == "add"
 		if adminTab == "add" and not drawn then
 			drawn = true
 			draw()

@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "A simpler admin menu: the first tab is a plain list of every animal and variant, a tap adds it to the admin's own ranch; the second tab only spawns each animal and plays their animations (no test waves, no enemies).",
+  "objective": "A simpler admin menu: the first tab is a plain list of every animal and variant, a tap adds it to the admin's own ranch; the second tab only spawns each animal and plays their animations (no test waves, no enemies). A third tab, Enemies, does the same for every Hexbound enemy.",
   "inputs": [
     "docs/decisions/0049-animal-stations-admin-add-animals.md"
   ],
@@ -20,11 +20,12 @@
   ],
   "acceptance_criteria": [
     "The admin menu opens on Add animals: one row per animal and variant, with its picture, name and tier; a tap adds it to the admin's ranch",
-    "The Spawn tab has the animation buttons and Clear on top, then one Spawn button per animal and variant, and nothing else"
+    "The Spawn tab has the animation buttons and Clear on top, then one Spawn button per animal and variant, and nothing else",
+    "The Enemies tab has the animation buttons and Clear on top, then one Spawn button per enemy in StationConfig.FOES"
   ],
   "verification": "Studio, local build, stamp `dev`: open the admin menu and check both tabs; Lune and selene clean.",
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-20: \"update the admin menu to just be a list of animals you can add to my ranch, dumb down the other menu to just spawn each animal and play their animations\". The server keeps its actions (look, look_anim, look_clear, admin_add, testwave); only the menu changed."
+  "notes": "SHANNON, 2026-11-20: \"update the admin menu to just be a list of animals you can add to my ranch, dumb down the other menu to just spawn each animal and play their animations\". The server keeps its actions (look, look_anim, look_clear, admin_add, testwave); only the menu changed. SHANNON, 2026-11-20: \"add another menu to the admin screen that can spawn every enemy, just like the spawn menu but for enemies only\"."
 }
