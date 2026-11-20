@@ -743,18 +743,24 @@ def main():
             "rest": {},
             "bent": {"head": (0, 0, 35), "leg_fl": (40, 0, 0), "leg_br": (-40, 0, 0), "tail": (50, 0, 0)},
             "crouch": {"head": (-25, 0, 0), "leg_fr": (-35, 0, 0), "leg_bl": (35, 0, 0), "tail": (0, 0, -60)},
+            # the Titan's den (Creatures.client `sleep`): a loaf, the body down 0.75 of the front legs' height;
+            # here a head's x turn is the game's pitch the other way round (the game's 30 is -30)
+            "den": {"head": (-30, 0, 0), "leg_fl": (80, 0, 0), "leg_fr": (80, 0, 0), "leg_bl": (72, 0, 0), "leg_br": (72, 0, 0)},
         }
-        for pose_name, pose in poses.items():
+        front = joints["leg_fl"].z  # the front legs' joint above the ground (the model stands at z 0)
+        for pose_name, pose in poses.items() if name.startswith("creature_elephant") else list(poses.items())[:3]:
             for pb in arm.pose.bones:
                 r = pose.get(pb.name, (0, 0, 0))
                 pb.rotation_mode = "XYZ"
                 # bones point up: pose rotations are in the bone's own axes (x across, y up, z back)
                 pb.rotation_euler = Euler([math.radians(a) for a in r], "XYZ")
+                pb.location = (0, -0.75 * front, 0) if pose_name == "den" and pb.name == "body" else (0, 0, 0)
             bpy.context.view_layer.update()
             scene.render.filepath = os.path.join(out, "previews", f"{name}_{pose_name}.png")
             bpy.ops.render.render(write_still=True)
         for pb in arm.pose.bones:
             pb.rotation_euler = Euler((0, 0, 0))
+            pb.location = (0, 0, 0)
         bpy.context.view_layer.update()
 
     fbx = os.path.join(out, f"{name}.fbx")

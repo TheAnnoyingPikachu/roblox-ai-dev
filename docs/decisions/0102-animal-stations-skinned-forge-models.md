@@ -228,6 +228,13 @@ Date: 2026-11-19. Task STATION-109.
 - The head takes everything ahead of the shoulders: ears, trunk, tusks, the War Elephant's trunk axe.
 - The sleeping Titan's eyelids come from eye pieces the Blender model recorded (decision 0079); a skinned
   model has none, so it sleeps without them (its "Zzz" still shows).
+- SHANNON: "give all the titans better resting positions/animations for being in the titan den". The
+  den pose (`sleep` in Creatures.client, four-legged branch) is now a loaf: front legs out along the
+  floor, hind legs tucked under the belly, the body down 0.75 of the front legs' height, the head up 30
+  degrees so the trunk, tusks and the War Elephant's axe lie forward on the floor instead of through it.
+  It breathes slowly, sighs every 13 s (head and body lift a little and settle) and flicks its tail.
+  The old pose splayed the legs straight out front and back. skin_forge.py's test renders show it as
+  `den` for the elephants.
 
 ## Facts
 

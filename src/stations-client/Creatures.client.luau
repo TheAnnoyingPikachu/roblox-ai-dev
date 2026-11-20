@@ -856,14 +856,21 @@ local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 				head = { 30 + 2 * breath, 0, 0 },
 			}
 		end
+		-- a Titan lies down like a loaf (SHANNON: "better resting positions"): its front legs out along the
+		-- ground, its hind legs tucked under its belly, its belly down near the floor (the body down 0.75 of
+		-- the front legs' height: Scale is that height / 1.45), its head up a little so its trunk and tusks
+		-- lie forward on the floor, not through it; it breathes slowly, sighs now and then (the head and
+		-- body lift a little and settle) and flicks its tail
+		local sigh = math.max(0, math.sin(t % 13 / 13 * TAU)) ^ 3
+		local flick = math.max(0, math.sin(t * TAU / 5)) ^ 6
 		return {
-			leg_fl = { 84 },
-			leg_fr = { 84 },
-			leg_bl = { -84 },
-			leg_br = { -84 },
-			body = { 0, 0, 0, 0, -0.68 + 0.015 * breath, 0 },
-			head = { -14 + 1.5 * breath, 0, 6 },
-			tail = { 0, 0, 0 },
+			leg_fl = { 80 },
+			leg_fr = { 80 },
+			leg_bl = { 72 },
+			leg_br = { 72 },
+			body = { -1 + 1.5 * sigh, 0, 0, 0, -1.09 + 0.02 * breath + 0.04 * sigh, 0 },
+			head = { 30 + 1.5 * breath + 6 * sigh, 4 * math.sin(t * TAU / 9), 0 },
+			tail = { 0, 25 * flick, 0 },
 		}
 	end,
 	-- the guard yard: set low against the blow, thrown back as it lands, set again
