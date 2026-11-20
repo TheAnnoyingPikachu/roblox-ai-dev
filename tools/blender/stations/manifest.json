@@ -7917,62 +7917,125 @@
     "png": "build/blender/stations/creature_cheetah_lightning_forge.png",
     "preview": "build/blender/stations/previews/creature_cheetah_lightning_forge_rest.png",
     "size_studs": [
-      5.81,
-      9.04,
+      4.06,
+      8.3,
       13.86
     ],
-    "tris": 14869,
+    "tris": 1991,
     "parts": {
-      "creature_cheetah_lightning_forge_body": 14869
+      "creature_cheetah_lightning_forge_body": 1991
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Lightning Cheetah: SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Lightning Cheetah: the big cheetah of SHANNON's ForgeGUI concept sheet (artifact d4747ca8), cut out and turned straight, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_cheetah_lightning_forge_body": [
         0.0,
-        4.521,
+        4.149,
         -0.0
       ]
     },
     "joints": {
       "creature_cheetah_lightning_forge_head": [
-        -0.469,
-        6.247,
-        4.764
+        -0.099,
+        5.957,
+        5.661
       ],
       "creature_cheetah_lightning_forge_leg_fl": [
-        1.845,
-        3.064,
-        4.185
+        0.87,
+        3.253,
+        5.436
       ],
       "creature_cheetah_lightning_forge_leg_fr": [
-        -1.916,
-        3.064,
-        4.185
+        -1.271,
+        3.253,
+        4.76
       ],
       "creature_cheetah_lightning_forge_leg_bl": [
-        1.845,
-        3.064,
-        -2.181
+        1.343,
+        3.253,
+        0.703
       ],
       "creature_cheetah_lightning_forge_leg_br": [
-        -1.916,
-        3.064,
-        -2.181
+        -1.001,
+        3.253,
+        -1.325
       ],
       "creature_cheetah_lightning_forge_tail": [
-        -0.469,
-        5.668,
-        -3.772
+        0.126,
+        4.154,
+        -2.452
       ]
     },
     "skinned": true,
     "root": [
-      -0.035,
-      5.234,
-      0.713
+      0.013,
+      4.83,
+      2.055
+    ]
+  },
+  "creature_cheetah_thunder_forge": {
+    "fbx": "build/blender/stations/creature_cheetah_thunder_forge.fbx",
+    "png": "build/blender/stations/creature_cheetah_thunder_forge.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_thunder_forge_rest.png",
+    "size_studs": [
+      5.66,
+      8.81,
+      13.5
+    ],
+    "tris": 14869,
+    "parts": {
+      "creature_cheetah_thunder_forge_body": 14869
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Thunder Cheetah (the Fire Cheetah's place): SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_cheetah_thunder_forge_body": [
+        0.0,
+        4.404,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_cheetah_thunder_forge_head": [
+        -0.457,
+        6.084,
+        4.64
+      ],
+      "creature_cheetah_thunder_forge_leg_fl": [
+        1.798,
+        2.984,
+        4.076
+      ],
+      "creature_cheetah_thunder_forge_leg_fr": [
+        -1.866,
+        2.984,
+        4.076
+      ],
+      "creature_cheetah_thunder_forge_leg_bl": [
+        1.798,
+        2.984,
+        -2.124
+      ],
+      "creature_cheetah_thunder_forge_leg_br": [
+        -1.866,
+        2.984,
+        -2.124
+      ],
+      "creature_cheetah_thunder_forge_tail": [
+        -0.457,
+        5.521,
+        -3.674
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.034,
+      5.098,
+      0.694
     ]
   }
 }

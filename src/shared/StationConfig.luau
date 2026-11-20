@@ -182,7 +182,8 @@ StationConfig.SPECIES = {
 		stats = s(70, 35, 20, 20, 45, 15),
 		variants = {
 			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
-			v("fire_cheetah", "Fire Cheetah", "legendary", "strength"),
+			-- the id stays "fire_cheetah" so saves and eggs keep it; SHANNON made it the Thunder Cheetah (decision 0102)
+			v("fire_cheetah", "Thunder Cheetah", "legendary", "strength"),
 		},
 	},
 	{

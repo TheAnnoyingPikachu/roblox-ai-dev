@@ -154,6 +154,7 @@ end
 StationRules.FORGE = {
 	cheetah = "creature_cheetah_forge",
 	crystal_rhino = "creature_rhino_crystal_forge",
+	fire_cheetah = "creature_cheetah_thunder_forge", -- shown as the Thunder Cheetah (StationConfig)
 	gemshell_tortoise = "creature_tortoise_gemshell_forge",
 	island_tortoise = "creature_tortoise_island_forge",
 	jackal = "creature_jackal_forge",

@@ -263,6 +263,25 @@ def quad_weights(head_y, head_z, tail_y, front, back, front_top, back_top, inner
     return weights
 
 
+def feet_weights(feet, top, head_y, head_z, tail_y):
+    """A four-legged model whose legs stand close under it: each vertex below `top` near a foot (`feet`,
+    {leg: (x, y)}) follows that leg; the head is ahead of `head_y` above `head_z`, the tail behind
+    `tail_y`."""
+
+    def weights(p):
+        tail = ramp(tail_y, tail_y + 0.05, p.y)
+        head = ramp(head_y, head_y - 0.05, p.y) * ramp(head_z, head_z + 0.06, p.z)
+        w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+        leg, near = min(((k, (p.x - x) ** 2 + (p.y - y) ** 2) for k, (x, y) in feet.items()), key=lambda t: t[1])
+        down = ramp(top, top - 0.05, p.z) if near < 0.055**2 else 0.0
+        if down > 0:
+            w = {k: v * (1 - down) for k, v in w.items()}
+            w[leg] = down
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return weights
+
+
 REGIONS = {
     "creature_cheetah_forge": {
         "length": 10.85,  # the Blender cheetah's length (StationAssets.creature_cheetah.size)
@@ -280,8 +299,8 @@ REGIONS = {
         "small": 0.06,
         "notes": "Cheetah: SHANNON's Angular Roblox-Style Cheetah from ForgeGUI (artifact 1a08317f), one mesh, skinned to the Stations rig (decision 0102).",
     },
-    "creature_cheetah_lightning_forge": {
-        "length": 13.86,  # the Blender Lightning Cheetah's length (StationAssets.creature_cheetah_lightning.size)
+    "creature_cheetah_thunder_forge": {
+        "length": 13.5,  # the Blender Fire Cheetah's length (StationAssets.creature_cheetah_fire.size), whose place it takes
         "joints": {
             "body": (0.0, -0.05, 0.05),
             "head": (-0.03, -0.33, 0.12),
@@ -295,7 +314,27 @@ REGIONS = {
         # below z -0.08, and a tail ending in a cloud
         "weights": quad_weights(-0.31, -0.05, 0.25, (-0.39, -0.15), (0.03, 0.3), -0.08, -0.08, 0.055, 0.21),
         "small": 0.06,
-        "notes": "Lightning Cheetah: SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Thunder Cheetah (the Fire Cheetah's place): SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_cheetah_lightning_forge": {
+        "length": 13.86,  # the Blender Lightning Cheetah's length (StationAssets.creature_cheetah_lightning.size)
+        "joints": {
+            "body": (-0.065, 0.1, 0.03),
+            "head": (-0.07, -0.06, 0.08),
+            "leg_fl": (-0.027, -0.05, -0.04),
+            "leg_fr": (-0.122, -0.02, -0.04),
+            "leg_bl": (-0.006, 0.16, -0.04),
+            "leg_br": (-0.11, 0.25, -0.04),
+            "tail": (-0.06, 0.3, 0.0),
+        },
+        # cut from the concept sheet and turned straight (the big cheetah of artifact d4747ca8): legs close
+        # under the body, left of the middle line at x -0.065 being +x, apart below z -0.06
+        "weights": feet_weights(
+            {"leg_fl": (-0.027, -0.06), "leg_fr": (-0.122, -0.029), "leg_bl": (-0.006, 0.16), "leg_br": (-0.11, 0.257)},
+            -0.03, -0.04, -0.02, 0.29,
+        ),
+        "small": 0.06,
+        "notes": "Lightning Cheetah: the big cheetah of SHANNON's ForgeGUI concept sheet (artifact d4747ca8), cut out and turned straight, skinned to the Stations rig (decision 0102).",
     },
     # heights: the Blender models' (StationAssets.creature_meerkat[_star, _storm].size)
     "creature_meerkat_forge": meerkat("Meerkat", 4.8, -0.25, -0.235, 0.13, 0.24, "836fe118", "meerkat (now do it again following this reference)"),

@@ -86,7 +86,7 @@ player is about 5 tall).
 | Island Tortoise | | mythic | twist health | Mossy stone carrying an island: an acacia with glowing fruit, rocks, grass and glowing flowers, vines from the rim, a sprout on its head. Card: `docs/concepts/island-tortoise-card.png`. | 10 x 14 |
 | Cheetah | Attack | uncommon | 70 / 35 / 20 / 20 / 45 / 15 | Faceted (decision 0053): a slender golden sprinter on very long legs, black diamond spots and tear marks, a very long ringed tail. Card: `docs/concepts/cheetah-card.png`. | 5 x 11 |
 | Lightning Cheetah | | mythic | twist speed | Storm-dark coat, electric blue spots, glowing bolts down both flanks and a crest of them on the neck, a zigzag tail with a glowing tip. Card: `docs/concepts/lightning-cheetah-card.png`. | 6 x 14 |
-| Fire Cheetah | | legendary | twist strength | A coat burning from scorched black legs through red to an orange back, flames painted up the flanks and legs, a glowing mane of flame from brow to tail, flames at the heels and for a tail tip, glowing eyes. Card: `docs/concepts/fire-cheetah-card.png`. | about 6 x 14 |
+| Thunder Cheetah (id `fire_cheetah`; it was the Fire Cheetah until decision 0102) | | legendary | twist strength | Built of blue storm clouds: a spiky cloud mane, lightning down its legs, a bolt on its chest and a storm cloud for a tail tip. SHANNON's ForgeGUI model. | about 9 x 13.5 |
 
 | Rhino | Defence | uncommon | 25 / 50 / 60 / 10 / 70 / 55 | Textured faceted model (decision 0054): a massive slate war rhino slung low on pillar legs under sleeves of armour, a short deep head, a scimitar of a bone horn, bone studs on the shoulder plate, claw scars. Card: `docs/concepts/rhino-card.png`. | 8 x 14 |
 | Lava Rhino | | mythic | twist strength | Obsidian plates with lava in their cracks, glowing lava in the folds between them and round the knees, molten horns, rock spikes with hot tips, a burning tail. Card: `docs/concepts/lava-rhino-card.png`. | 11 x 19 |
@@ -102,8 +102,8 @@ rare drops first, then a basic animal.
 | Egg | Price | Unlocks | Basic animals | Legendary drops | Mythic drops |
 |---|---|---|---|---|---|
 | Meadow Egg | 100 | from the start | Jackal, Tortoise or Meerkat | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 5,000 each | none |
-| Wild Egg | 1,500 | from the start | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 2,000 each; Fire Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 4,000 each | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 20,000 each |
-| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Fire Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
+| Wild Egg | 1,500 | from the start | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Storm Meerkat: 1 in 2,000 each; Thunder Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 4,000 each | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 20,000 each |
+| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Thunder Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Star Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
 | Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion 1 in 400; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
 
 There is no legendary-only egg (decision 0031). The four eggs are detailed models (decision 0057,

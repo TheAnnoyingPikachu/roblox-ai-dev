@@ -162,6 +162,17 @@ Date: 2026-11-19. Task STATION-109.
   (209 loose pieces) and is not used. No fire cheetah was made, so the Fire Cheetah keeps its Blender
   model.
 - Both use `quad_weights`, a four-legged layout built from each model's measurements.
+- Then SHANNON: "the three cheetahs should all be the new models, get rid of the fire cheetah for
+  whatever lightning or thunder cheetah isnt in yet", and of the 23:51 model's big cheetah: "yes thats the
+  lightning cheetah".
+  - The Lightning Cheetah is now the big cheetah of the 23:51 concept sheet (artifact d4747ca8): cut out
+    on its own (the small views beside it left out) and turned 69.4 degrees to stand straight. Golden
+    with black spots and spiky lightning shards, 1,991 triangles. Its legs stand close under it, so
+    `feet_weights` gives each leg what lies near its own foot.
+  - The storm-cloud cheetah (23:54) takes the Fire Cheetah's place as the Thunder Cheetah
+    (`creature_cheetah_thunder_forge`). The variant keeps its id `fire_cheetah` (saves, eggs and their
+    odds are unchanged); only its name is now "Thunder Cheetah" (`StationConfig`, the roster in
+    `game7-animals.md`).
 
 ## Facts
 
