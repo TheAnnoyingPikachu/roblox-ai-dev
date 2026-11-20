@@ -151,6 +151,18 @@ Date: 2026-11-19. Task STATION-109.
   scaled by height (`height`), not length. `Creatures.build` makes them upright (Biped) because their
   shoulder joints stand more than twice as high as their hips.
 
+## The cheetahs (2026-11-20)
+
+- SHANNON: "ok now rig the cheetahs".
+- The Cheetah is the 23:40 "Angular Roblox-Style Cheetah with Glowing Eyes" (artifact 1a08317f): golden
+  with square spots and a ringed tail, 5,102 triangles.
+- The Lightning Cheetah is the 23:54 storm-cloud cheetah (artifact 91e6733c): blue clouds, a spiky cloud
+  mane, lightning down its legs and a storm cloud for a tail tip, 14,869 triangles.
+- The 23:51 model (the same prompt as 23:40) came out as a cluster of several small cheetahs in one model
+  (209 loose pieces) and is not used. No fire cheetah was made, so the Fire Cheetah keeps its Blender
+  model.
+- Both use `quad_weights`, a four-legged layout built from each model's measurements.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

@@ -240,7 +240,63 @@ def meerkat(name, height, hip, belly, shoulder, neck, artifact, what):
     }
 
 
+def quad_weights(head_y, head_z, tail_y, front, back, front_top, back_top, inner, outer):
+    """A four-legged ForgeGUI model, from its measurements: the head ahead of `head_y` and above
+    `head_z`, the tail behind `tail_y`, legs between |x| `inner` and `outer` (front ones at y `front`,
+    hind ones at y `back`) that leave the body below `front_top` and `back_top`."""
+
+    def weights(p):
+        tail = ramp(tail_y, tail_y + 0.05, p.y)
+        head = ramp(head_y, head_y - 0.06, p.y) * ramp(head_z, head_z + 0.06, p.z)
+        w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+        leg, down = None, 0.0
+        if inner < abs(p.x) < outer:
+            if front[0] < p.y < front[1]:
+                leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(front_top, front_top - 0.06, p.z)
+            elif back[0] < p.y < back[1]:
+                leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(back_top, back_top - 0.06, p.z)
+        if leg and down > 0:
+            w = {k: v * (1 - down) for k, v in w.items()}
+            w[leg] = down
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return weights
+
+
 REGIONS = {
+    "creature_cheetah_forge": {
+        "length": 10.85,  # the Blender cheetah's length (StationAssets.creature_cheetah.size)
+        "joints": {
+            "body": (0.0, -0.05, 0.03),
+            "head": (-0.02, -0.32, 0.1),
+            "leg_fl": (0.115, -0.29, -0.06),
+            "leg_fr": (-0.115, -0.29, -0.06),
+            "leg_bl": (0.1, 0.08, -0.06),
+            "leg_br": (-0.115, 0.11, -0.06),
+            "tail": (-0.02, 0.19, 0.0),
+        },
+        # slim: head at y < -0.3, legs at |x| 0.06..0.17 leaving the body below z -0.05, a long ringed tail
+        "weights": quad_weights(-0.3, -0.02, 0.17, (-0.37, -0.2), (0.0, 0.2), -0.04, -0.04, 0.055, 0.18),
+        "small": 0.06,
+        "notes": "Cheetah: SHANNON's Angular Roblox-Style Cheetah from ForgeGUI (artifact 1a08317f), one mesh, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_cheetah_lightning_forge": {
+        "length": 13.86,  # the Blender Lightning Cheetah's length (StationAssets.creature_cheetah_lightning.size)
+        "joints": {
+            "body": (0.0, -0.05, 0.05),
+            "head": (-0.03, -0.33, 0.12),
+            "leg_fl": (0.13, -0.29, -0.1),
+            "leg_fr": (-0.13, -0.29, -0.1),
+            "leg_bl": (0.13, 0.15, -0.1),
+            "leg_br": (-0.13, 0.15, -0.1),
+            "tail": (-0.03, 0.26, 0.08),
+        },
+        # storm clouds: head at y < -0.31 under a spiky cloud mane, legs at |x| 0.06..0.2 leaving the body
+        # below z -0.08, and a tail ending in a cloud
+        "weights": quad_weights(-0.31, -0.05, 0.25, (-0.39, -0.15), (0.03, 0.3), -0.08, -0.08, 0.055, 0.21),
+        "small": 0.06,
+        "notes": "Lightning Cheetah: SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+    },
     # heights: the Blender models' (StationAssets.creature_meerkat[_star, _storm].size)
     "creature_meerkat_forge": meerkat("Meerkat", 4.8, -0.25, -0.235, 0.13, 0.24, "836fe118", "meerkat (now do it again following this reference)"),
     "creature_meerkat_star_forge": meerkat("Star Meerkat", 7.5, -0.27, -0.225, 0.1, 0.22, "5d3b0709", "star meerkat"),

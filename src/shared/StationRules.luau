@@ -152,11 +152,13 @@ end
 -- A species or variant whose model is a whole ForgeGUI model skinned to the rig (decision 0102) is listed
 -- in `FORGE`, by its id.
 StationRules.FORGE = {
+	cheetah = "creature_cheetah_forge",
 	crystal_rhino = "creature_rhino_crystal_forge",
 	gemshell_tortoise = "creature_tortoise_gemshell_forge",
 	island_tortoise = "creature_tortoise_island_forge",
 	jackal = "creature_jackal_forge",
 	lava_rhino = "creature_rhino_lava_forge",
+	lightning_cheetah = "creature_cheetah_lightning_forge",
 	lion = "creature_lion_forge",
 	meerkat = "creature_meerkat_forge",
 	pharaoh_jackal = "creature_jackal_pharaoh_forge",

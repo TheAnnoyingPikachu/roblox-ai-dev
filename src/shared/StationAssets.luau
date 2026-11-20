@@ -3015,6 +3015,48 @@ local StationAssets: { [string]: Asset } = {
 		skinned = true,
 		root = { 0.003, 1.941, 0.838 },
 	},
+	creature_cheetah_forge = {
+		size = { 3.76, 4.52, 10.85 },
+		parts = { "creature_cheetah_forge_body" },
+		glow = {},
+		centres = {
+			creature_cheetah_forge_body = { 0, 2.259, 0 },
+		},
+		joints = {
+			creature_cheetah_forge_head = { -0.218, 3.397, 3.632 },
+			creature_cheetah_forge_leg_fl = { 1.311, 1.585, 3.293 },
+			creature_cheetah_forge_leg_fr = { -1.294, 1.585, 3.293 },
+			creature_cheetah_forge_leg_bl = { 1.141, 1.585, -0.898 },
+			creature_cheetah_forge_leg_br = { -1.294, 1.585, -1.238 },
+			creature_cheetah_forge_tail = { -0.218, 2.265, -2.144 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { 0.008, 2.604, 0.575 },
+	},
+	creature_cheetah_lightning_forge = {
+		size = { 5.81, 9.04, 13.86 },
+		parts = { "creature_cheetah_lightning_forge_body" },
+		glow = {},
+		centres = {
+			creature_cheetah_lightning_forge_body = { 0, 4.521, 0 },
+		},
+		joints = {
+			creature_cheetah_lightning_forge_head = { -0.469, 6.247, 4.764 },
+			creature_cheetah_lightning_forge_leg_fl = { 1.845, 3.064, 4.185 },
+			creature_cheetah_lightning_forge_leg_fr = { -1.916, 3.064, 4.185 },
+			creature_cheetah_lightning_forge_leg_bl = { 1.845, 3.064, -2.181 },
+			creature_cheetah_lightning_forge_leg_br = { -1.916, 3.064, -2.181 },
+			creature_cheetah_lightning_forge_tail = { -0.469, 5.668, -3.772 },
+		},
+		model = nil,
+		decal = nil,
+		texture = nil,
+		skinned = true,
+		root = { -0.035, 5.234, 0.713 },
+	},
 }
 
 return StationAssets
