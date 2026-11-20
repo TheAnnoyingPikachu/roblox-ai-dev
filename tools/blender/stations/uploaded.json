@@ -953,5 +953,35 @@
     "model": null,
     "decal": 99672135145169,
     "texture": null
+  },
+  "creature_elephant_forge": {
+    "model": 106319267913727,
+    "decal": 106975902603310,
+    "texture": null
+  },
+  "creature_elephant_forge_rainbow": {
+    "model": null,
+    "decal": 133613520000731,
+    "texture": null
+  },
+  "creature_elephant_frost_forge": {
+    "model": 100989683742707,
+    "decal": 99542524767159,
+    "texture": null
+  },
+  "creature_elephant_frost_forge_rainbow": {
+    "model": null,
+    "decal": 76763736594047,
+    "texture": null
+  },
+  "creature_elephant_war_forge": {
+    "model": 111971045849834,
+    "decal": 108096260885399,
+    "texture": null
+  },
+  "creature_elephant_war_forge_rainbow": {
+    "model": null,
+    "decal": 95048097284468,
+    "texture": null
   }
 }
