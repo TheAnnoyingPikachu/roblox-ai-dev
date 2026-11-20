@@ -715,13 +715,13 @@
     "texture": null
   },
   "creature_lion_forge": {
-    "model": 111599437722318,
-    "decal": 108977530557225,
+    "model": 114461348923771,
+    "decal": 90999280513226,
     "texture": null
   },
   "creature_lion_forge_rainbow": {
     "model": null,
-    "decal": 98320930331716,
+    "decal": 110138550232672,
     "texture": null
   },
   "creature_jackal_forge": {
@@ -902,6 +902,26 @@
   "creature_flamingo_phoenix_forge_rainbow": {
     "model": null,
     "decal": 114074139701187,
+    "texture": null
+  },
+  "creature_lion_shadow_forge": {
+    "model": 127140611419509,
+    "decal": 136247606774989,
+    "texture": null
+  },
+  "creature_lion_shadow_forge_rainbow": {
+    "model": null,
+    "decal": 102784328141561,
+    "texture": null
+  },
+  "creature_lion_sun_forge": {
+    "model": 81876474528921,
+    "decal": 86649895327070,
+    "texture": null
+  },
+  "creature_lion_sun_forge_rainbow": {
+    "model": null,
+    "decal": 105866595882403,
     "texture": null
   }
 }
