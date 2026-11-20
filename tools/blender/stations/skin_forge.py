@@ -409,26 +409,31 @@ def hexbound(name, height, cx, neck, shoulder, hip, arm, artifact, what, reach=0
     return spec
 
 
-def mount(name, height, cx, cy, half, leg_top, artifact, what):
-    """A Shadow Legion rider on a horse (decision 0104), facing -Y: four-legged. Only the horse's legs move
-    (below z `leg_top`, front ones ahead of y `cy`); horse and rider are the body, so a lance or banner
-    never bends. The legs' joints are `half` ahead of and behind `cy`."""
+def mount(name, height, cx, cy, half, leg_top, head_y, tail_y, artifact, what):
+    """A Shadow Legion rider on a horse (decision 0104), facing -Y: four-legged. The horse's legs move (below z
+    `leg_top`, front ones ahead of y `cy`), its head (ahead of `head_y`) and tail (behind `tail_y`), both only
+    below the rider (Roblox drops a bone nothing follows, and the game needs the head). Horse and rider are
+    the body, so a lance, sword or banner never bends. The legs' joints are `half` ahead of and behind `cy`."""
 
     def weights(p):
         leg = ramp(leg_top, leg_top - 0.05, p.z)
+        low = (1 - leg) * ramp(leg_top + 0.32, leg_top + 0.26, p.z)  # the horse, not the rider
+        head = low * ramp(head_y, head_y - 0.04, p.y)
+        tail = low * ramp(tail_y, tail_y + 0.04, p.y)
         bone = "leg_" + ("f" if p.y < cy else "b") + ("l" if p.x > cx else "r")
-        return {k: v for k, v in {"body": 1 - leg, bone: leg}.items() if v > 0.001}
+        w = {"body": 1 - leg - head - tail, bone: leg, "head": head, "tail": tail}
+        return {k: v for k, v in w.items() if v > 0.001}
 
     return {
         "height": height,
         "joints": {
             "body": (cx, cy, leg_top + 0.08),
-            "head": (cx, cy - 2 * half, leg_top + 0.15),
+            "head": (cx, head_y, leg_top + 0.12),
             "leg_fl": (cx + 0.06, cy - half, leg_top),
             "leg_fr": (cx - 0.06, cy - half, leg_top),
             "leg_bl": (cx + 0.06, cy + half, leg_top),
             "leg_br": (cx - 0.06, cy + half, leg_top),
-            "tail": (cx, cy + 2 * half, leg_top + 0.1),
+            "tail": (cx, tail_y, leg_top + 0.15),
         },
         "weights": weights,
         "small": 0.0,
@@ -727,8 +732,10 @@ REGIONS = {
     "foe_knight_shield_commander_forge": hexbound(
         "Shieldbearer Commander", 9.5, -0.295, 0.18, 0.13, 0.03, 0.07, "0b26e3c4", "Shieldbearer Commander (02:01)", reach=0.1
     ),
-    "foe_cavalry_forge": mount("Cavalry", 11.0, -0.125, 0.06, 0.15, -0.17, "62f553d0", "Cavalry (01:45)"),
-    "foe_cavalry_commander_forge": mount("Cavalry Commander", 14.0, 0.0, -0.03, 0.28, -0.33, "69969c83", "Cavalry Commander (01:48)"),
+    "foe_cavalry_forge": mount("Cavalry", 11.0, -0.125, 0.06, 0.15, -0.17, -0.17, 0.3, "62f553d0", "Cavalry (01:45)"),
+    "foe_cavalry_commander_forge": mount(
+        "Cavalry Commander", 14.0, 0.0, -0.03, 0.28, -0.33, -0.38, 0.33, "69969c83", "Cavalry Commander (01:48)"
+    ),
     "foe_dragon_drake_forge": dragon("Dark Drake", 9.0, -0.14, 0.1, 0.0, 0.02, 0.22, -0.09, 0.1, 0.0, "b91a8625", "Dark Drake (01:49)"),
     "foe_dragon_forge": dragon("Shadow Dragon", 13.0, -0.08, 0.12, -0.03, 0.02, 0.25, -0.08, 0.12, 0.05, "435d1dd3", "Shadow Dragon (01:50)"),
     "foe_dragon_alpha_forge": dragon("Ancient Alpha Dragon", 16.0, 0.0, 0.15, 0.08, 0.08, 0.3, -0.05, 0.1, 0.05, "f52635f1", "Ancient Alpha Dragon (01:54)"),

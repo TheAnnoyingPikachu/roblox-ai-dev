@@ -8734,8 +8734,8 @@
     "joints": {
       "foe_cavalry_forge_head": [
         -0.37,
-        5.158,
-        6.026
+        4.645,
+        4.829
       ],
       "foe_cavalry_forge_leg_fl": [
         0.656,
@@ -8759,8 +8759,8 @@
       ],
       "foe_cavalry_forge_tail": [
         -0.37,
-        4.303,
-        -4.237
+        5.158,
+        -3.211
       ]
     },
     "skinned": true,
@@ -8797,8 +8797,8 @@
     "joints": {
       "foe_cavalry_commander_forge_head": [
         0.129,
-        4.367,
-        8.614
+        3.927,
+        5.534
       ],
       "foe_cavalry_commander_forge_leg_fl": [
         1.009,
@@ -8822,8 +8822,8 @@
       ],
       "foe_cavalry_commander_forge_tail": [
         0.129,
-        3.634,
-        -7.812
+        4.367,
+        -4.879
       ]
     },
     "skinned": true,
