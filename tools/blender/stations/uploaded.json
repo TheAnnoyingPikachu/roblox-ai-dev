@@ -923,5 +923,35 @@
     "model": null,
     "decal": 105866595882403,
     "texture": null
+  },
+  "creature_giraffe_forge": {
+    "model": 114470887867018,
+    "decal": 117722785985151,
+    "texture": null
+  },
+  "creature_giraffe_forge_rainbow": {
+    "model": null,
+    "decal": 115702424637705,
+    "texture": null
+  },
+  "creature_giraffe_diamond_forge": {
+    "model": 107593614400418,
+    "decal": 113082645831379,
+    "texture": null
+  },
+  "creature_giraffe_diamond_forge_rainbow": {
+    "model": null,
+    "decal": 98051144312564,
+    "texture": null
+  },
+  "creature_giraffe_acacia_forge": {
+    "model": 120395570714080,
+    "decal": 114380546201860,
+    "texture": null
+  },
+  "creature_giraffe_acacia_forge_rainbow": {
+    "model": null,
+    "decal": 99672135145169,
+    "texture": null
   }
 }
