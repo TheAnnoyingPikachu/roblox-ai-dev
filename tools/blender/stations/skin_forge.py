@@ -1,6 +1,6 @@
 """Skins a whole ForgeGUI creature model (one mesh, never cut) to the Animal Stations rig (decision 0102).
 
-blender --background --factory-startup --python tools/blender/stations/skin_forge.py -- <name> <source.glb> [--test]
+blender --background --factory-startup --python tools/blender/stations/skin_forge.py -- <name> <source.glb> [--test] [--stretch]
 
 The model keeps every face where ForgeGUI made it. What is added is a skeleton with our joints' names
 (`body` the root, then `head`, `leg_fl`, `leg_fr`, `leg_bl`, `leg_br`, `tail`), each bone standing at
@@ -10,7 +10,8 @@ torso, the tail, the legs) bend there. A loose piece smaller than `small` takes 
 it moves whole. First `tidy` joins the vertices that sit at one spot (ForgeGUI exports every facet
 loose), turns every face outwards and sets the shading. Writes build/blender/stations/<name>.fbx (armature and skinned mesh) and .png
 (the model's own texture), the manifest entry (`skinned: true`, `joints` in the manifest's axes) and,
-with --test, renders of a few bent poses to check every piece follows the right bone.
+with --test, renders of a few bent poses to check every piece follows the right bone; with --stretch, the
+game's strongest poses with every face stretched by a quarter drawn red, and how much of it there is.
 
 Facing: the source looks along Blender -Y with +X its left, as every Stations creature does.
 """
@@ -332,6 +333,38 @@ def lion(name, length, tail_x, artifact, what):
     }
 
 
+# The Shadow Legion never stretches (`cut` in main): ForgeGUI grows its arms, capes and weapons onto the body,
+# and skin blended across a joint smeared them. A loose piece moves whole on the bone holding `WHOLE` of its
+# weight; the rest is cut apart where one bone's faces meet another's, each part whole on its bone.
+WHOLE = 0.8
+
+
+def legion(name, height, artifact, what, joints, boxes, ground=None, how="cut from its sheet"):
+    """A Shadow Legion figure rigged by hand (decision 0104), facing -Y: `joints` where each bone turns
+    (`leg_fr` is the arm a chop raises, the weapon arm), and `boxes`, (bone, (x0, x1, y0, y1, z0, z1)) in
+    the source's units: a vertex follows the bone of the first box it is in, else the body. Read the boxes
+    off the --stretch bones view. A cape or cloak stays on the body: grown onto the back, it tore when it
+    swung."""
+
+    def weights(p):
+        for bone, (x0, x1, y0, y1, z0, z1) in boxes:
+            if x0 <= p.x <= x1 and y0 <= p.y <= y1 and z0 <= p.z <= z1:
+                return {bone: 1.0}
+        return {"body": 1.0}
+
+    spec = {
+        "height": height,
+        "joints": joints,
+        "weights": weights,
+        "small": 0.03,
+        "cut": True,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), {how}, skinned to the Stations rig in whole parts (decision 0104).",
+    }
+    if ground is not None:
+        spec["ground"] = ground
+    return spec
+
+
 def knight_pieces(lo, hi):
     """SHANNON's ForgeGUI Shadow Knight is separate rigid pieces of armour: each follows one bone, by
     where its box is (lo, hi). It faces -Y, its sword in its right hand (-X), its shield on its left."""
@@ -347,134 +380,6 @@ def knight_pieces(lo, hi):
     if c.z < -0.08:
         return {"leg_bl" if c.x > -0.24 else "leg_br": 1.0}
     return {"body": 1.0}  # torso, belt, tassets and tabard
-
-
-def hexbound(name, height, cx, neck, shoulder, hip, arm, artifact, what, reach=0.17, back=None, robe=False,
-             swap=False, extra=None, ground=None):
-    """SHANNON's ForgeGUI Shadow Legion (decision 0104): standing figures of separate pieces, facing -Y. A
-    piece follows one bone by where its box is (`extra(lo, hi)` first, for a model's odd pieces): the head
-    above the neck (z `neck`), the arms out to the sides past `arm` from the middle (x `cx`) above the hips
-    (z `hip`), anything held out past `reach` (a weapon to the ground), the cape behind y `back`, the
-    legs below the hips. A big piece (torso, robe, cloak) goes by its vertices instead: the head above the
-    neck, the legs below the hips, unless it is a `robe` (it stays with the body, the feet walk under it).
-    `swap`: the weapon is in the left (+X) hand, so that arm is `leg_fr`, the one a chop raises."""
-    left, right = ("leg_fr", "leg_fl") if swap else ("leg_fl", "leg_fr")
-
-    def pieces(lo, hi):
-        if extra:
-            w = extra(lo, hi)
-            if w:
-                return w
-        c = (lo + hi) / 2
-        dx = c.x - cx
-        if lo.z > neck - 0.005 and abs(dx) < arm:
-            return {"head": 1.0}
-        if back is not None and lo.y > back and c.z < shoulder and hi.z - lo.z > 0.1:
-            return {"tail": 1.0}
-        if (c.z > hip and abs(dx) > arm) or abs(dx) > reach:
-            return {left if dx > 0 else right: 1.0}
-        if hi.z < hip + 0.03 and (not robe or hi.z < hip - 0.08):
-            return {"leg_bl" if dx > 0 else "leg_br": 1.0}
-        return None
-
-    def weights(p):
-        dx = p.x - cx
-        hand = ramp(arm - 0.01, arm + 0.03, abs(dx)) * ramp(hip - 0.02, hip + 0.04, p.z)  # an arm grown on
-        rest = 1 - hand
-        head = rest * ramp(neck - 0.01, neck + 0.015, p.z)
-        leg = 0.0 if robe else (rest - head) * ramp(hip + 0.02, hip - 0.03, p.z)
-        w = {"body": rest - head - leg, "head": head, (left if dx > 0 else right): hand}
-        if leg > 0:
-            w["leg_bl" if dx > 0 else "leg_br"] = leg
-        return {k: v for k, v in w.items() if v > 0.001}
-
-    spec = {
-        "height": height,
-        "joints": {
-            "body": (cx, 0.0, hip + 0.03),
-            "head": (cx, 0.0, neck),
-            left: (cx + arm, 0.0, shoulder),
-            right: (cx - arm, 0.0, shoulder),
-            "leg_bl": (cx + arm * 0.6, 0.0, hip),
-            "leg_br": (cx - arm * 0.6, 0.0, hip),
-            "tail": (cx, back if back is not None else 0.06, shoulder),
-        },
-        "weights": weights,
-        "pieces": pieces,
-        "small": 0.05,
-        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), cut from its sheet, skinned to the Stations rig (decision 0104).",
-    }
-    if ground is not None:
-        spec["ground"] = ground
-    return spec
-
-
-def mount(name, height, cx, cy, half, leg_top, head_y, tail_y, artifact, what):
-    """A Shadow Legion rider on a horse (decision 0104), facing -Y: four-legged. The horse's legs move (below z
-    `leg_top`, front ones ahead of y `cy`), its head (ahead of `head_y`) and tail (behind `tail_y`), both only
-    below the rider (Roblox drops a bone nothing follows, and the game needs the head). Horse and rider are
-    the body, so a lance, sword or banner never bends. The legs' joints are `half` ahead of and behind `cy`."""
-
-    def weights(p):
-        leg = ramp(leg_top, leg_top - 0.05, p.z)
-        low = (1 - leg) * ramp(leg_top + 0.32, leg_top + 0.26, p.z)  # the horse, not the rider
-        head = low * ramp(head_y, head_y - 0.04, p.y)
-        tail = low * ramp(tail_y, tail_y + 0.04, p.y)
-        bone = "leg_" + ("f" if p.y < cy else "b") + ("l" if p.x > cx else "r")
-        w = {"body": 1 - leg - head - tail, bone: leg, "head": head, "tail": tail}
-        return {k: v for k, v in w.items() if v > 0.001}
-
-    return {
-        "height": height,
-        "joints": {
-            "body": (cx, cy, leg_top + 0.08),
-            "head": (cx, head_y, leg_top + 0.12),
-            "leg_fl": (cx + 0.06, cy - half, leg_top),
-            "leg_fr": (cx - 0.06, cy - half, leg_top),
-            "leg_bl": (cx + 0.06, cy + half, leg_top),
-            "leg_br": (cx - 0.06, cy + half, leg_top),
-            "tail": (cx, tail_y, leg_top + 0.15),
-        },
-        "weights": weights,
-        "small": 0.0,
-        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), turned to face forward, skinned to the Stations rig as a four-legged mount (decision 0104).",
-    }
-
-
-def dragon(name, height, cx, cy, head_y, head_z, tail_y, leg_top, wing_x, wing_z, artifact, what):
-    """A Shadow Legion dragon (decision 0104), facing -Y, with the old dragon's two wing bones: the wings out
-    past `wing_x` from the middle (x `cx`) above z `wing_z` (`wing_l` on +X), the head ahead of y `head_y`
-    above `head_z`, the tail behind `tail_y`, the legs below `leg_top` (front ones ahead of `cy`)."""
-
-    def weights(p):
-        dx = p.x - cx
-        wing = ramp(wing_x, wing_x + 0.04, abs(dx)) * ramp(wing_z - 0.02, wing_z + 0.03, p.z)
-        rest = 1 - wing
-        head = rest * ramp(head_y, head_y - 0.04, p.y) * ramp(head_z - 0.02, head_z + 0.03, p.z)
-        tail = (rest - head) * ramp(tail_y, tail_y + 0.04, p.y)
-        leg = (rest - head - tail) * ramp(leg_top, leg_top - 0.04, p.z)
-        w = {"body": rest - head - tail - leg, "head": head, "tail": tail, ("wing_l" if dx > 0 else "wing_r"): wing}
-        if leg > 0:
-            w["leg_" + ("f" if p.y < cy else "b") + ("l" if dx > 0 else "r")] = leg
-        return {k: v for k, v in w.items() if v > 0.001}
-
-    return {
-        "height": height,
-        "joints": {
-            "body": (cx, cy, leg_top + 0.06),
-            "head": (cx, head_y, head_z),
-            "leg_fl": (cx + 0.06, cy - 0.07, leg_top),
-            "leg_fr": (cx - 0.06, cy - 0.07, leg_top),
-            "leg_bl": (cx + 0.06, cy + 0.07, leg_top),
-            "leg_br": (cx - 0.06, cy + 0.07, leg_top),
-            "tail": (cx, tail_y, leg_top + 0.06),
-            "wing_l": (cx + wing_x, cy - 0.02, wing_z),
-            "wing_r": (cx - wing_x, cy - 0.02, wing_z),
-        },
-        "weights": weights,
-        "small": 0.03,
-        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), cut from its sheet and turned to face forward, skinned to the Stations rig with wings (decision 0104).",
-    }
 
 
 REGIONS = {
@@ -708,37 +613,293 @@ REGIONS = {
         "small": 0.0,
         "notes": "Hexbound Knight: SHANNON's Shadow Knight from ForgeGUI (artifact 59c956fa), cut out of a whole-concept-sheet model, one mesh of rigid armour pieces skinned to the Stations rig (decision 0102).",
     },
-    # the Shadow Legion (decision 0104): heights in studs from the feet up; `swap` for a weapon in the left hand
-    "foe_knight_heavy_forge": hexbound("Heavy Knight", 9.0, 0.02, 0.09, 0.08, -0.09, 0.09, "49ffb084", "heavy knight (01:27)"),
-    "foe_archer_forge": hexbound("Shadow Archer", 7.4, 0.0, 0.1, 0.11, -0.1, 0.09, "b23e1fe8", "Shadow Archer (01:29)", reach=0.15, back=0.06),
-    "foe_archer_crossbow_forge": hexbound(
-        "Crossbow Troop", 7.6, -0.205, 0.06, 0.08, -0.08, 0.08, "eec5a523", "Crossbow Troop (01:31)", back=0.05,
-        extra=lambda lo, hi: {"body": 1.0} if lo.y > 0.05 and hi.z > 0.15 else None,  # the quiver on its back
+    # the Shadow Legion (decision 0104), rigged by hand: heights in studs from the feet up, each hip where it
+    # was (a figure's walk is timed by it); a robe's feet stay under it
+    "foe_knight_heavy_forge": legion(
+        "Heavy Knight", 9.0, "49ffb084", "heavy knight (01:27)",
+        joints={
+            "body": (0.02, 0.0, -0.06), "head": (0.03, -0.04, 0.07), "tail": (0.02, 0.08, 0.1),
+            "leg_fr": (-0.1, 0.0, 0.08), "leg_fl": (0.14, 0.0, 0.08), "leg_bl": (0.08, 0.0, -0.09), "leg_br": (-0.06, 0.0, -0.09),
+        },
+        boxes=[
+            ("head", (-0.06, 0.1, -1, 1, 0.07, 1)),
+            ("leg_fr", (-1, -0.08, -1, 1, -0.1, 0.25)),  # the hammer arm and its pad
+            ("leg_fr", (-1, -0.145, -1, 1, -1, -0.1)),  # the hammer
+            ("leg_fl", (0.08, 1, -1, -0.11, -1, 1)),  # the shield, in front of the leg
+            ("leg_fl", (0.1, 1, -1, 1, -0.1, 0.25)),
+            ("body", (-0.03, 0.08, -1, -0.02, -1, 0.0)),  # the tabard
+            ("leg_bl", (0.02, 1, -1, 1, -1, -0.11)),
+            ("leg_br", (-1, 0.02, -1, 1, -1, -0.11)),
+        ],
     ),
-    "foe_mage_forge": hexbound("Darkcaster", 8.0, -0.16, 0.077, 0.06, -0.12, 0.08, "fd99f263", "Darkcaster (01:32)", back=0.04, robe=True),
-    "foe_mage_necromancer_forge": hexbound("Necromancer", 8.4, -0.22, 0.045, 0.035, -0.12, 0.08, "8d373a50", "Necromancer (01:34)", reach=0.16, back=0.1, robe=True),
-    "foe_mage_priest_forge": hexbound("Battle Priest", 8.0, -0.21, 0.07, 0.05, -0.1, 0.09, "b78f38cc", "Battle Priest (01:36)", back=0.08, robe=True),
-    "foe_knight_berserker_forge": hexbound("Berserker", 8.6, -0.22, 0.06, 0.05, -0.1, 0.1, "e4ece9c5", "Berserk Assault (01:40)", back=0.05, swap=True),
-    "foe_ogre_forge": hexbound(
-        "Ogre Enforcer", 10.5, -0.2, 0.035, 0.08, -0.12, 0.11, "01343e85", "Ogre Enforcer (01:41)", reach=0.2, swap=True,
-        extra=lambda lo, hi: {"leg_fr": 1.0} if lo.z > 0.05 and hi.x - lo.x > 0.2 else None,  # the club over its shoulder
+    # the bow in its left (+X) hand; its right draws across its chest; quiver and cloak on its back and side
+    "foe_archer_forge": legion(
+        "Shadow Archer", 7.4, "b23e1fe8", "Shadow Archer (01:29)",
+        joints={
+            "body": (0.0, 0.0, -0.06), "head": (0.0, -0.04, 0.1), "tail": (0.0, 0.08, 0.11),
+            "leg_fl": (0.08, 0.0, 0.1), "leg_fr": (-0.1, 0.0, 0.1), "leg_bl": (0.06, 0.0, -0.1), "leg_br": (-0.08, 0.0, -0.1),
+        },
+        boxes=[
+            ("body", (-0.28, -0.14, -1, 1, 0.12, 1)),  # the quiver
+            ("leg_fl", (0.085, 1, -1, -0.08, -1, 1)),  # the bow, in front of the leg
+            ("leg_fl", (0.08, 1, -1, 1, -0.05, 0.12)),
+            ("head", (-0.13, 0.1, -1, 1, 0.1, 1)),
+            ("leg_fr", (-0.13, 0.03, -1, -0.06, -0.03, 0.12)),  # the drawing arm, across its chest
+            ("leg_fr", (-0.2, -0.1, -1, 0.0, 0.0, 0.16)),
+            ("leg_bl", (-0.01, 0.085, -1, 1, -1, -0.12)),
+            ("leg_br", (-0.2, -0.01, -0.09, 0.05, -1, -0.12)),
+        ],
     ),
-    "foe_ogre_commander_forge": hexbound(
-        "Ogre Commander", 12.5, -0.005, 0.03, 0.06, -0.17, 0.12, "a5fe2fe0", "Ogre Commander (01:42)", reach=0.2, back=0.07, swap=True,
-        extra=lambda lo, hi: {"body": 1.0} if lo.y > 0.04 and hi.z > 0.15 else None,  # the banner on its back
+    # the crossbow held out in both hands, the left (+X) one under it; quiver and cloak on its right
+    "foe_archer_crossbow_forge": legion(
+        "Crossbow Troop", 7.6, "eec5a523", "Crossbow Troop (01:31)",
+        joints={
+            "body": (-0.205, 0.0, -0.05), "head": (-0.22, -0.04, 0.09), "tail": (-0.205, 0.07, 0.08),
+            "leg_fl": (-0.12, 0.0, 0.08), "leg_fr": (-0.3, 0.0, 0.08), "leg_bl": (-0.14, 0.0, -0.08), "leg_br": (-0.28, 0.0, -0.08),
+        },
+        boxes=[
+            ("body", (-0.42, -0.29, -1, 1, 0.09, 1)),  # the quiver
+            ("leg_fl", (-0.23, 1, -1, -0.03, 0.02, 0.13)),  # the crossbow and both forearms on it
+            ("leg_fl", (-0.14, 1, -1, 1, 0.0, 0.12)),
+            ("head", (-0.32, -0.11, -1, 1, 0.09, 1)),
+            ("leg_fr", (-0.38, -0.26, -1, 0.02, 0.02, 0.13)),
+            ("leg_bl", (-0.205, 1, -1, 1, -1, -0.09)),
+            ("leg_br", (-0.33, -0.205, -1, 1, -1, -0.09)),
+        ],
     ),
-    "foe_golem_forge": hexbound("Siege Golem", 12.0, -0.18, 0.1, 0.06, -0.13, 0.13, "0446aea7", "Siege Golem (01:56)", reach=0.22),
-    "foe_knight_shield_forge": hexbound("Shieldbearer", 8.0, -0.37, 0.08, 0.05, -0.125, 0.07, "23742e89", "Shieldbearer (02:00)", reach=0.07),
-    "foe_knight_shield_commander_forge": hexbound(
-        "Shieldbearer Commander", 9.5, -0.295, 0.18, 0.13, 0.03, 0.07, "0b26e3c4", "Shieldbearer Commander (02:01)", reach=0.1
+    # the staff in its left (+X) hand, a flame in its right; the robe and cloak stay with the body
+    "foe_mage_forge": legion(
+        "Darkcaster", 8.0, "fd99f263", "Darkcaster (01:32)",
+        joints={
+            "body": (-0.16, 0.0, -0.05), "head": (-0.16, -0.04, 0.09), "tail": (-0.16, 0.06, 0.08),
+            "leg_fr": (-0.04, 0.0, 0.07), "leg_fl": (-0.28, 0.0, 0.07), "leg_bl": (-0.1, 0.0, -0.12), "leg_br": (-0.22, 0.0, -0.12),
+        },
+        boxes=[
+            ("leg_fr", (-0.06, 1, -1, 1, -0.2, 1)),  # the staff and the hand on it
+            ("leg_fr", (-0.025, 1, -1, 1, -1, -0.2)),
+            ("head", (-0.28, -0.05, -1, 1, 0.09, 1)),
+            ("leg_fl", (-1, -0.3, -1, 1, 0.11, 1)),  # the flame
+            ("leg_fl", (-1, -0.24, -1, 1, -0.07, 0.11)),
+            ("leg_fl", (-1, -0.25, -1, 0.02, -0.13, -0.07)),  # its cuff
+        ],
     ),
-    "foe_cavalry_forge": mount("Cavalry", 11.0, -0.125, 0.06, 0.15, -0.17, -0.17, 0.3, "62f553d0", "Cavalry (01:45)"),
-    "foe_cavalry_commander_forge": mount(
-        "Cavalry Commander", 14.0, 0.0, -0.03, 0.28, -0.33, -0.38, 0.33, "69969c83", "Cavalry Commander (01:48)"
+    "foe_mage_necromancer_forge": legion(
+        "Necromancer", 8.4, "8d373a50", "Necromancer (01:34)",
+        joints={
+            "body": (-0.22, 0.0, -0.08), "head": (-0.22, -0.04, 0.045), "tail": (-0.22, 0.08, 0.04),
+            "leg_fr": (-0.12, 0.0, 0.04), "leg_fl": (-0.32, 0.0, 0.04), "leg_bl": (-0.17, 0.0, -0.12), "leg_br": (-0.27, 0.0, -0.12),
+        },
+        boxes=[
+            ("leg_fr", (-0.125, 1, -1, 1, -0.02, 1)),  # the staff, its lanterns and the hand on it
+            ("leg_fr", (-0.125, -0.03, 0.07, 1, -1, -0.02)),
+            ("head", (-0.31, -0.14, -1, 1, 0.045, 1)),
+            ("leg_fl", (-1, -0.3, -1, 1, -0.08, 1)),  # the skull in its flame
+        ],
     ),
-    "foe_dragon_drake_forge": dragon("Dark Drake", 9.0, -0.14, 0.1, 0.0, 0.02, 0.22, -0.09, 0.1, 0.0, "b91a8625", "Dark Drake (01:49)"),
-    "foe_dragon_forge": dragon("Shadow Dragon", 13.0, -0.08, 0.12, -0.03, 0.02, 0.25, -0.08, 0.12, 0.05, "435d1dd3", "Shadow Dragon (01:50)"),
-    "foe_dragon_alpha_forge": dragon("Ancient Alpha Dragon", 16.0, 0.0, 0.15, 0.08, 0.08, 0.3, -0.05, 0.1, 0.05, "f52635f1", "Ancient Alpha Dragon (01:54)"),
+    "foe_mage_priest_forge": legion(
+        "Battle Priest", 8.0, "b78f38cc", "Battle Priest (01:36)",
+        joints={
+            "body": (-0.21, 0.0, -0.08), "head": (-0.24, -0.04, 0.07), "tail": (-0.21, 0.08, 0.06),
+            "leg_fr": (-0.12, 0.0, 0.06), "leg_fl": (-0.32, 0.0, 0.06), "leg_bl": (-0.16, 0.0, -0.1), "leg_br": (-0.26, 0.0, -0.1),
+        },
+        boxes=[
+            ("leg_fr", (-0.12, 1, -1, 1, -0.07, 1)),  # the staff and the hand on it
+            ("leg_fr", (-0.1, -0.02, -0.03, 0.07, -1, -0.07)),
+            ("head", (-0.35, -0.13, -1, 1, 0.06, 1)),
+            ("leg_fl", (-1, -0.31, -1, 1, -0.07, 0.07)),  # the book
+        ],
+    ),
+    # the axe in its left (+X) hand; fur over its shoulders and a cape behind
+    "foe_knight_berserker_forge": legion(
+        "Berserker", 8.6, "e4ece9c5", "Berserk Assault (01:40)",
+        joints={
+            "body": (-0.22, 0.0, -0.06), "head": (-0.24, -0.04, 0.08), "tail": (-0.22, 0.08, 0.08),
+            "leg_fr": (-0.12, 0.0, 0.05), "leg_fl": (-0.36, 0.0, 0.05), "leg_bl": (-0.16, 0.0, -0.1), "leg_br": (-0.3, 0.0, -0.1),
+        },
+        boxes=[
+            ("head", (-0.37, -0.13, -1, 0.0, 0.18, 1)),  # the horns
+            ("head", (-0.31, -0.18, -1, 0.0, 0.09, 0.18)),  # the helmet, inside its fur collar
+            ("leg_fr", (-0.15, 1, -1, 1, -0.08, 1)),  # the axe and its arm
+            ("leg_fl", (-1, -0.33, -1, 0.07, -0.15, 0.12)),
+            ("body", (-0.28, -0.2, -1, 0.0, -1, -0.04)),  # the tabard
+            ("leg_bl", (-0.22, 1, -1, 0.07, -1, -0.1)),
+            ("leg_br", (-1, -0.22, -1, 0.07, -1, -0.1)),
+        ],
+    ),
+    # the club rests over its shoulders, held in its left (+X) fist; its right arm hangs to the knee
+    "foe_ogre_forge": legion(
+        "Ogre Enforcer", 10.5, "01343e85", "Ogre Enforcer (01:41)",
+        joints={
+            "body": (-0.2, 0.0, -0.08), "head": (-0.18, -0.1, 0.06), "tail": (-0.2, 0.08, 0.1),
+            "leg_fr": (-0.1, 0.0, 0.1), "leg_fl": (-0.36, 0.0, 0.1), "leg_bl": (-0.12, 0.0, -0.12), "leg_br": (-0.28, 0.0, -0.12),
+        },
+        boxes=[
+            ("head", (-0.28, -0.08, -1, -0.06, 0.03, 0.2)),
+            ("leg_fr", (-0.5, 0.0, -0.1, 1, 0.14, 1)),  # the club
+            ("leg_fr", (-0.12, 1, -1, 1, -0.06, 0.2)),  # the left arm and fist
+            ("leg_fr", (-0.06, 1, -1, 1, -0.12, 0.2)),  # its spiked cuff
+            ("leg_fl", (-1, -0.34, -1, 1, -0.18, 0.17)),
+            ("leg_bl", (-0.2, 1, -1, 1, -1, -0.12)),
+            ("leg_br", (-1, -0.2, -1, 1, -1, -0.12)),
+        ],
+    ),
+    # the axe in its left (+X) fist, a banner on its back
+    "foe_ogre_commander_forge": legion(
+        "Ogre Commander", 12.5, "a5fe2fe0", "Ogre Commander (01:42)",
+        joints={
+            "body": (0.0, 0.0, -0.1), "head": (-0.02, -0.04, 0.06), "tail": (0.0, 0.08, 0.08),
+            "leg_fr": (0.1, 0.0, 0.08), "leg_fl": (-0.15, 0.0, 0.08), "leg_bl": (0.08, 0.0, -0.17), "leg_br": (-0.1, 0.0, -0.17),
+        },
+        boxes=[
+            ("body", (-0.2, -0.02, 0.04, 1, 0.1, 1)),  # the banner
+            ("head", (-0.1, 0.05, -1, 0.04, 0.05, 1)),
+            ("leg_fr", (0.08, 1, -1, 1, -0.15, 1)),  # the axe and its arm
+            ("leg_fr", (0.185, 1, -1, 1, -1, -0.15)),  # the shaft's foot
+            ("leg_fl", (-1, -0.13, -1, 0.04, -0.15, 1)),
+            ("leg_bl", (0.0, 1, -1, 0.06, -1, -0.17)),
+            ("leg_br", (-1, 0.0, -1, 0.06, -1, -0.17)),
+        ],
+    ),
+    # a castle on its back; fists hanging beside its legs
+    "foe_golem_forge": legion(
+        "Siege Golem", 12.0, "0446aea7", "Siege Golem (01:56)",
+        joints={
+            "body": (-0.18, 0.0, -0.05), "head": (-0.19, -0.05, 0.04), "tail": (-0.18, 0.08, 0.1),
+            "leg_fr": (-0.32, 0.0, 0.07), "leg_fl": (-0.05, 0.0, 0.07), "leg_bl": (-0.08, 0.0, -0.13), "leg_br": (-0.28, 0.0, -0.13),
+        },
+        boxes=[
+            ("head", (-0.24, -0.13, -1, 1, 0.03, 0.15)),
+            ("leg_fr", (-1, -0.3, -1, 1, -0.12, 0.11)),
+            ("leg_fr", (-1, -0.36, -1, 1, -0.2, -0.12)),
+            ("leg_fr", (-1, -0.3, -1, -0.03, -0.22, -0.12)),  # its knuckles, ahead of the leg
+            ("leg_fl", (-0.1, 1, -1, 1, -0.12, 0.12)),
+            ("leg_fl", (0.04, 1, -1, 1, 0.12, 0.2)),  # its little standard
+            ("leg_fl", (0.0, 1, -1, 1, -0.2, -0.12)),
+            ("body", (-0.22, -0.14, -1, 0.0, -1, -0.08)),  # the tabard
+            ("leg_bl", (-0.18, 1, -1, 1, -1, -0.13)),
+            ("leg_br", (-1, -0.18, -1, 1, -1, -0.13)),
+        ],
+    ),
+    # behind a tower shield (its left arm, hidden), the sword in its right hand pointing down ahead
+    "foe_knight_shield_forge": legion(
+        "Shieldbearer", 8.0, "23742e89", "Shieldbearer (02:00)",
+        joints={
+            "body": (-0.32, 0.1, -0.05), "head": (-0.3, 0.06, 0.09), "tail": (-0.32, 0.17, 0.08),
+            "leg_fr": (-0.39, 0.1, 0.07), "leg_fl": (-0.24, 0.08, 0.07), "leg_bl": (-0.27, 0.1, -0.125), "leg_br": (-0.36, 0.1, -0.125),
+        },
+        boxes=[
+            ("leg_fl", (-0.28, 1, -1, 0.045, -1, 1)),  # the shield
+            ("head", (-0.36, -0.24, 0.0, 1, 0.08, 1)),
+            ("leg_fr", (-1, -0.35, -1, 1, -0.24, 0.12)),  # the sword and its arm
+            ("leg_bl", (-0.31, -0.2, 0.045, 1, -1, -0.125)),
+            ("leg_br", (-0.36, -0.31, 0.045, 1, -1, -0.125)),
+        ],
+    ),
+    # its shield held out at its left (+X), the sword in its right; a long cape behind
+    "foe_knight_shield_commander_forge": legion(
+        "Shieldbearer Commander", 9.5, "0b26e3c4", "Shieldbearer Commander (02:01)",
+        joints={
+            "body": (-0.3, 0.0, 0.06), "head": (-0.25, -0.03, 0.16), "tail": (-0.3, 0.08, 0.2),
+            "leg_fr": (-0.36, 0.0, 0.17), "leg_fl": (-0.2, 0.0, 0.17), "leg_bl": (-0.25, 0.0, 0.03), "leg_br": (-0.35, 0.0, 0.03),
+        },
+        boxes=[
+            ("leg_fl", (-0.19, 1, -1, 0.06, -1, 1)),  # the shield (the cape hangs behind it)
+            ("head", (-0.42, -0.19, -1, 0.04, 0.2, 1)),  # helmet, crown and plume
+            ("head", (-0.3, -0.19, -1, 0.04, 0.16, 0.2)),
+            ("leg_fr", (-0.4, -0.27, -1, 0.02, 0.03, 0.2)),  # the sword arm
+            ("leg_fr", (-0.4, -0.25, -1, -0.12, -0.15, 0.03)),  # the sword, ahead of the legs
+            ("leg_fr", (-0.4, -0.25, -1, -0.04, -0.03, 0.03)),  # the hand on its hilt
+            ("leg_bl", (-0.3, -0.19, -1, 0.05, -1, 0.03)),
+            ("leg_br", (-0.4, -0.3, -1, 0.05, -1, 0.03)),
+        ],
+    ),
+    # riders: the horse's head, legs and tail move; the rider, lance, sword and banner ride the body
+    "foe_cavalry_forge": legion(
+        "Cavalry", 11.0, "62f553d0", "Cavalry (01:45)", how="turned to face forward",
+        joints={
+            "body": (-0.125, 0.06, -0.09), "head": (-0.125, -0.09, 0.0), "tail": (-0.125, 0.3, -0.03),
+            "leg_fl": (-0.065, -0.09, -0.17), "leg_fr": (-0.185, -0.09, -0.17), "leg_bl": (-0.065, 0.21, -0.17), "leg_br": (-0.185, 0.21, -0.17),
+        },
+        boxes=[
+            ("head", (-1, 1, -1, -0.09, -0.12, 0.15)),
+            ("leg_fl", (-0.125, 1, -1, 0.06, -1, -0.17)),
+            ("leg_fr", (-1, -0.125, -1, 0.06, -1, -0.17)),
+            ("leg_bl", (-0.125, 1, 0.06, 1, -1, -0.17)),
+            ("leg_br", (-1, -0.125, 0.06, 1, -1, -0.17)),
+            ("tail", (-1, 1, 0.33, 1, -1, 0.0)),
+        ],
+    ),
+    "foe_cavalry_commander_forge": legion(
+        "Cavalry Commander", 14.0, "69969c83", "Cavalry Commander (01:48)", how="turned to face forward",
+        joints={
+            "body": (0.0, -0.03, -0.22), "head": (0.0, -0.28, 0.0), "tail": (0.0, 0.3, -0.05),
+            "leg_fl": (0.06, -0.24, -0.33), "leg_fr": (-0.06, -0.24, -0.33), "leg_bl": (0.06, 0.18, -0.33), "leg_br": (-0.06, 0.18, -0.33),
+        },
+        boxes=[
+            ("head", (-1, 1, -1, -0.29, -0.15, 0.15)),
+            ("leg_fl", (0.0, 1, -1, -0.03, -1, -0.33)),
+            ("leg_fr", (-1, 0.0, -1, -0.03, -1, -0.33)),
+            ("leg_bl", (0.0, 1, -0.03, 1, -1, -0.33)),
+            ("leg_br", (-1, 0.0, -0.03, 1, -1, -0.33)),
+            ("tail", (-0.08, 0.08, 0.3, 1, -0.25, 0.02)),
+        ],
+    ),
+    # dragons: wings (`wing_l` on +X), head, tail and legs from the elbow and knee down
+    "foe_dragon_drake_forge": legion(
+        "Dark Drake", 9.0, "b91a8625", "Dark Drake (01:49)", how="cut from its sheet and turned to face forward",
+        joints={
+            "body": (-0.14, 0.12, 0.0), "head": (-0.14, 0.0, 0.07), "tail": (-0.14, 0.28, -0.02),
+            "leg_fl": (-0.06, 0.03, -0.04), "leg_fr": (-0.22, 0.03, -0.04), "leg_bl": (-0.06, 0.24, -0.05), "leg_br": (-0.22, 0.24, -0.05),
+            "wing_l": (-0.08, 0.1, 0.1), "wing_r": (-0.2, 0.1, 0.1),
+        },
+        boxes=[
+            ("head", (-0.25, -0.03, -1, 0.0, 0.03, 1)),
+            ("wing_l", (-0.06, 1, -0.05, 1, 0.0, 1)),
+            ("wing_r", (-1, -0.22, -0.05, 1, 0.0, 1)),
+            ("leg_fl", (-0.14, 1, -1, 0.13, -1, -0.04)),
+            ("leg_fr", (-1, -0.14, -1, 0.13, -1, -0.04)),
+            ("leg_bl", (-0.14, 1, 0.13, 0.33, -1, -0.05)),
+            ("leg_br", (-1, -0.14, 0.13, 0.33, -1, -0.05)),
+            ("tail", (-1, 1, 0.28, 1, -1, 1)),
+        ],
+    ),
+    "foe_dragon_forge": legion(
+        "Shadow Dragon", 13.0, "435d1dd3", "Shadow Dragon (01:50)", how="cut from its sheet and turned to face forward",
+        joints={
+            "body": (-0.05, 0.05, 0.02), "head": (-0.06, -0.06, 0.15), "tail": (-0.05, 0.22, 0.0),
+            "leg_fl": (0.04, -0.07, 0.0), "leg_fr": (-0.16, -0.07, 0.0), "leg_bl": (0.04, 0.15, -0.02), "leg_br": (-0.16, 0.15, -0.02),
+            "wing_l": (0.04, 0.0, 0.16), "wing_r": (-0.12, 0.0, 0.16),
+        },
+        boxes=[
+            ("tail", (-1, 1, -1, 1, -1, -0.125)),  # its tail curls under it, below the claws
+            ("head", (-0.12, 0.02, -1, -0.04, 0.14, 1)),
+            ("wing_l", (0.05, 1, -1, 1, 0.06, 1)),
+            ("wing_r", (-1, -0.11, -1, 1, 0.06, 1)),
+            ("leg_fl", (-0.05, 1, -1, 0.04, -1, 0.0)),
+            ("leg_fr", (-1, -0.05, -1, 0.04, -1, 0.0)),
+            ("leg_bl", (-0.05, 1, 0.04, 0.22, -1, -0.02)),
+            ("leg_br", (-1, -0.05, 0.04, 0.22, -1, -0.02)),
+            ("tail", (-1, 1, 0.22, 1, -1, 0.06)),
+        ],
+    ),
+    "foe_dragon_alpha_forge": legion(
+        "Ancient Alpha Dragon", 16.0, "f52635f1", "Ancient Alpha Dragon (01:54)", how="cut from its sheet and turned to face forward",
+        joints={
+            "body": (0.0, 0.15, 0.08), "head": (0.0, 0.06, 0.15), "tail": (0.0, 0.3, 0.05),
+            "leg_fl": (0.06, 0.04, 0.0), "leg_fr": (-0.08, 0.04, 0.0), "leg_bl": (0.06, 0.22, 0.0), "leg_br": (-0.06, 0.22, 0.0),
+            "wing_l": (0.12, 0.15, 0.15), "wing_r": (-0.08, 0.05, 0.18),
+        },
+        boxes=[
+            ("head", (-0.06, 0.06, -1, 0.1, 0.12, 0.3)),
+            ("wing_l", (0.13, 1, -1, 1, 0.0, 1)),
+            ("wing_r", (-1, -0.08, -1, 1, 0.15, 1)),
+            ("leg_fl", (0.0, 1, -1, 0.13, -1, -0.03)),
+            ("leg_fr", (-1, 0.0, -1, 0.13, -1, -0.03)),
+            ("leg_bl", (0.0, 1, 0.13, 0.3, -1, -0.03)),
+            ("leg_br", (-1, 0.0, 0.13, 0.3, -1, -0.03)),
+            ("tail", (-1, 1, 0.29, 1, -1, 0.1)),
+        ],
+    ),
     # lengths: the Blender models' (StationAssets.creature_tortoise[_island, _gemshell].size)
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
@@ -798,10 +959,160 @@ def roblox(v):
     return [round(v.x, 3), round(v.z, 3), round(-v.y, 3)]
 
 
+# --stretch: the game's strongest poses (the clips' peaks in Creatures.client; keep them in step), as its
+# degrees (pitch, yaw, roll) about the model's Roblox axes: its x is our -x, its y our z, its z our y. The
+# body's own turn moves everything alike, so it is left out.
+QUAD_POSES = {
+    "walk": {"leg_fl": (27, 0, 0), "leg_br": (27, 0, 0), "leg_fr": (-27, 0, 0), "leg_bl": (-27, 0, 0), "tail": (0, 16, 0)},
+    "attack": {"head": (30, 0, 0), "leg_fl": (-26, 0, 0), "leg_fr": (-26, 0, 0), "leg_bl": (-22, 0, 0), "leg_br": (-22, 0, 0), "tail": (22, 0, 0)},
+    "power": {"head": (16, 0, 0), "leg_fl": (40, 0, 0), "leg_fr": (58, 0, 0), "leg_bl": (-30, 0, 0), "leg_br": (-30, 0, 0), "tail": (-28, 0, 0)},
+    "fall": {"head": (26, 0, 0), "leg_fl": (30, 0, 0), "leg_fr": (24, 0, 0), "leg_bl": (-20, 0, 0), "leg_br": (-24, 0, 0), "tail": (14, 0, 0)},
+}
+BIPED_POSES = {
+    "walk": {"leg_bl": (26, 0, 0), "leg_br": (-26, 0, 0), "leg_fl": (-18, 0, 0), "leg_fr": (18, 0, 0), "tail": (10, 0, 0)},
+    "chop": {"leg_fr": (165, 0, 0), "leg_fl": (25, 0, 0), "head": (-8, 0, 0), "leg_bl": (-8, 0, 0), "leg_br": (8, 0, 0), "tail": (-10, 0, 0)},
+    "swing": {"leg_fr": (15, 0, 0), "leg_fl": (50, 0, 0), "head": (10, 0, 0), "leg_bl": (16, 0, 0), "leg_br": (-12, 0, 0), "tail": (14, 0, 0)},
+    "power": {"leg_fl": (172, 0, 0), "leg_fr": (166, 0, 0), "head": (-22, 0, 0), "leg_bl": (-8, 0, 0), "leg_br": (8, 0, 0), "tail": (-20, 0, 0)},
+    "fall": {"head": (-30, 0, 0), "leg_fl": (70, 0, 0), "leg_fr": (20, 0, 0), "leg_bl": (12, 0, 0), "leg_br": (-10, 0, 0), "tail": (30, 0, 0)},
+}
+ATTACK_OF = {  # an archer draws, a mage casts (in place of the chop and its swing down)
+    "foe_archer": {"leg_fl": (92, 0, 0), "leg_fr": (72, 0, 0), "head": (-4, 0, 0), "tail": (-6, 0, 0)},
+    "foe_mage": {"leg_fl": (112, 0, 0), "leg_fr": (50, 0, 0), "head": (-12, 0, 0), "tail": (-8, 0, 0)},
+}
+STRETCHED = math.log(1.25)
+BONE_COLOURS = {  # the bones view: which bone a face follows
+    "body": (0.55, 0.55, 0.55), "head": (1.0, 0.85, 0.1), "leg_fl": (0.9, 0.15, 0.15), "leg_fr": (0.15, 0.35, 1.0),
+    "leg_bl": (1.0, 0.5, 0.0), "leg_br": (0.0, 0.85, 0.9), "tail": (0.1, 0.75, 0.2), "wing_l": (0.9, 0.2, 0.9),
+    "wing_r": (0.5, 0.2, 1.0),
+}  # a face whose edge grows or shrinks by a quarter is drawn red
+
+
+def game_poses(name):
+    if name.startswith("foe_dragon"):  # a dragon walks and strikes on four legs, and beats its wings hardest then
+        poses = dict(QUAD_POSES)
+        poses["wings up"] = {"wing_l": (0, 0, -38), "wing_r": (0, 0, 38)}
+        poses["wings down"] = {"wing_l": (0, 0, 38), "wing_r": (0, 0, -38)}
+        return poses
+    if not name.startswith("foe_") or name.startswith("foe_cavalry"):
+        return QUAD_POSES
+    poses = dict(BIPED_POSES)
+    for kind, attack in ATTACK_OF.items():
+        if name.startswith(kind):
+            del poses["swing"]
+            poses["chop"] = attack
+    return poses
+
+
+def set_pose(arm, pose):
+    for pb in arm.pose.bones:
+        a, b, c = pose.get(pb.name, (0, 0, 0))
+        turn = Matrix.Rotation(math.radians(-a), 4, "X") @ Matrix.Rotation(math.radians(b), 4, "Z") @ Matrix.Rotation(math.radians(c), 4, "Y")
+        rest = pb.bone.matrix_local.to_3x3().to_4x4()
+        pb.matrix_basis = rest.inverted() @ turn @ rest  # the turn about its joint, in the model's axes
+    bpy.context.view_layer.update()
+
+
+def stretch(name, arm, body, scene, out, place):
+    """Pose the model as the game does at each clip's peak and measure every face against its rest: the
+    share of the surface stretched or squashed by a quarter, which two bones pull those faces apart, and a
+    render from either front corner with them red."""
+    import numpy as np
+
+    me = body.data
+    n = len(me.vertices)
+    rest = np.empty(n * 3)
+    me.vertices.foreach_get("co", rest)
+    rest = rest.reshape(n, 3)
+    edges = np.empty(len(me.edges) * 2, dtype=np.int64)
+    me.edges.foreach_get("vertices", edges)
+    edges = edges.reshape(-1, 2)
+    rest_len = np.linalg.norm(rest[edges[:, 0]] - rest[edges[:, 1]], axis=1)
+    edge_of = {tuple(sorted(e)): i for i, e in enumerate(edges.tolist())}
+    face_edges = [[edge_of[tuple(sorted(k))] for k in p.edge_keys] for p in me.polygons]
+    area = np.array([p.area for p in me.polygons])
+    names = [g.name for g in body.vertex_groups]
+    main = []  # each vertex's strongest bone
+    for v in me.vertices:
+        ws = sorted(((g.weight, names[g.group]) for g in v.groups), reverse=True)
+        main.append(ws[0][1] if ws else "?")
+    def paint(colour):
+        mat = bpy.data.materials.new("paint")
+        mat.use_nodes = True
+        mat.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (*colour, 1)
+        me.materials.append(mat)
+        return len(me.materials) - 1
+
+    def shoot(label, views):
+        for side, view in views:
+            scene.camera.location = mid + view.normalized() * size.length * 1.2
+            scene.camera.rotation_euler = (mid - scene.camera.location).to_track_quat("-Z", "Y").to_euler()
+            scene.render.filepath = os.path.join(out, "previews", f"{name}_stretch_{label}_{side}.png")
+            bpy.ops.render.render(write_still=True)
+
+    size = Vector(body.dimensions)
+    mid = Vector((0, 0, size.z / 2))
+    # flat views from the front and each side, square: their grid in the source's units is printed. First
+    # as it is, then which bone each face follows (the most of its corners'), with a white ball on each joint
+    views = (("l", Vector((0.0, -1.0, 0.0))), ("r", Vector((1.0, 0.0, 0.0))), ("s", Vector((-1.0, 0.0, 0.0))))
+    cam, res = scene.camera.data, (scene.render.resolution_x, scene.render.resolution_y)
+    cam.type, cam.ortho_scale = "ORTHO", max(size) * 1.1
+    scene.render.resolution_x = scene.render.resolution_y = 640
+    shoot("tex", views)
+    slots = {k: paint(c) for k, c in BONE_COLOURS.items()}
+    for f in me.polygons:
+        tops = [main[v] for v in f.vertices]
+        f.material_index = slots.get(max(set(tops), key=tops.count), 0)
+    balls = []
+    for b in arm.data.bones:
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=size.z * 0.015, location=b.head_local)
+        balls.append(bpy.context.object)
+    shoot("bones", views)
+    print("BONES VIEW scale", place[0][0], "offset", *(place.col[3][k] / place[0][0] for k in range(3)), "mid", mid.z, "span", cam.ortho_scale)
+    cam.type, (scene.render.resolution_x, scene.render.resolution_y) = "PERSP", res
+    for ball in balls:
+        bpy.data.objects.remove(ball, do_unlink=True)
+    for _ in slots:
+        me.materials.pop(index=len(me.materials) - 1)
+    red_slot = paint((1, 0, 0))
+    deps = bpy.context.evaluated_depsgraph_get()
+    worst = 0.0
+    for pose_name, pose in game_poses(name).items():
+        set_pose(arm, pose)
+        ev = body.evaluated_get(deps)
+        posed_me = ev.to_mesh()
+        posed = np.empty(n * 3)
+        posed_me.vertices.foreach_get("co", posed)
+        ev.to_mesh_clear()
+        posed = posed.reshape(n, 3)
+        posed_len = np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1)
+        ok = rest_len > 1e-4
+        change = np.zeros(len(edges))
+        change[ok] = np.abs(np.log(np.maximum(posed_len[ok], 1e-6) / rest_len[ok]))
+        bad = np.array([max(change[i] for i in fe) for fe in face_edges]) > STRETCHED
+        share = area[bad].sum() / area.sum() * 100
+        worst = max(worst, share)
+        pairs = {}
+        for f in np.nonzero(bad)[0]:
+            bones = sorted({main[v] for v in me.polygons[f].vertices})
+            key = "/".join(bones)
+            pairs[key] = pairs.get(key, 0) + area[f]
+        top = sorted(pairs.items(), key=lambda kv: -kv[1])[:4]
+        print(f"STRETCH {pose_name:10s} {share:5.2f}% " + "  ".join(f"{k} {v / area.sum() * 100:.2f}%" for k, v in top))
+        for f, b in zip(me.polygons, bad):
+            f.material_index = red_slot if b else 0
+        shoot(pose_name.replace(" ", "_"), (("l", Vector((0.9, -1.0, 0.3))), ("r", Vector((-0.9, -1.0, 0.3)))))
+    for f in me.polygons:
+        f.material_index = 0
+    me.materials.pop(index=red_slot)
+    set_pose(arm, {})
+    print(f"STRETCH WORST {name} {worst:.2f}%")
+
+
 def main():
     args = sys.argv[sys.argv.index("--") + 1 :]
     name, src = args[0], args[1]
     test = "--test" in args
+    check = "--stretch" in args
     spec = REGIONS[name]
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=src)
@@ -857,6 +1168,21 @@ def main():
             for i in island:
                 weights[i] = w
             print("PIECE", max(w, key=w.get), [round(x, 3) for x in (*ilo, *ihi)])
+        elif spec.get("cut"):  # no piece stretches: it moves whole, or in whole parts cut apart at the joints
+            total = {}
+            for i in island:
+                for k, w in weights[i].items():
+                    total[k] = total.get(k, 0) + w
+            top = max(total, key=total.get)
+            # (never the body's own piece whole: its arms, legs and head grow from it)
+            if (top != "body" and total[top] >= WHOLE * len(island)) or (ihi - ilo).length < spec["small"]:
+                whole += 1
+                for i in island:
+                    weights[i] = {top: 1.0}
+                continue
+            for i in island:
+                weights[i] = {max(weights[i], key=weights[i].get): 1.0}
+            print("CUT", {k: round(x / len(island), 2) for k, x in total.items()}, len(island), [round(x, 3) for x in (*ilo, *ihi)])
         elif (ihi - ilo).length < spec["small"]:
             whole += 1
             mean = {}
@@ -865,6 +1191,29 @@ def main():
                     mean[k] = mean.get(k, 0) + w / len(island)
             for i in island:
                 weights[i] = mean
+    if spec.get("cut"):  # each face goes with most of its corners' bone; the skin is cut where two bones' faces meet
+        bones = sorted({k for w in weights for k in w})
+        layer = bm.faces.layers.int.new("bone")
+        for f in bm.faces:
+            tops = [max(weights[v.index], key=weights[v.index].get) for v in f.verts]
+            f[layer] = bones.index(max(set(tops), key=tops.count))
+        for _ in range(3):  # straighten the cut: a face goes with its neighbours when most of them agree
+            turn = {}
+            for f in bm.faces:
+                near = [g[layer] for e in f.edges for g in e.link_faces if g is not f]
+                best = max(set(near), key=near.count) if near else f[layer]
+                if best != f[layer] and near.count(best) * 2 > len(near):
+                    turn[f] = best
+            for f, b in turn.items():
+                f[layer] = b
+        seams = [e for e in bm.edges if len({f[layer] for f in e.link_faces}) > 1]
+        bmesh.ops.split_edges(bm, edges=seams)
+        for v in [v for v in bm.verts if len({f[layer] for f in v.link_faces}) > 1]:
+            bmesh.utils.vert_separate(v, list(v.link_edges))  # two bones' faces meeting at a point, not an edge
+        bm.verts.ensure_lookup_table()
+        weights = [{bones[v.link_faces[0][layer]] if v.link_faces else "body": 1.0} for v in bm.verts]
+        bm.to_mesh(body.data)
+        print("CUT APART", len(seams), "edges")
     bm.free()
     counts = {}
     for w in weights:
@@ -921,9 +1270,7 @@ def main():
     image.save()
     print("TEXTURE", image.size[0], image.size[1])
 
-    if test:  # bend it: the head, a front and a hind leg forward, the tail up
-        for mat in body.data.materials:  # draw only fronts, as Roblox does
-            mat.use_backface_culling = True
+    if test or check:  # a stage to render it on
         scene = bpy.context.scene
         scene.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items] else "BLENDER_EEVEE"
         scene.render.resolution_x, scene.render.resolution_y = 520, 420
@@ -941,6 +1288,11 @@ def main():
         mid = Vector((0, 0, size.z / 2))
         cam.location = mid + Vector((1.0, -0.35, 0.25)).normalized() * size.length * 1.25
         cam.rotation_euler = (mid - cam.location).to_track_quat("-Z", "Y").to_euler()
+    if check:
+        stretch(name, arm, body, scene, out, place)
+    if test:  # bend it: the head, a front and a hind leg forward, the tail up
+        for mat in body.data.materials:  # draw only fronts, as Roblox does
+            mat.use_backface_culling = True
         poses = {
             "rest": {},
             "bent": {"head": (0, 0, 35), "leg_fl": (40, 0, 0), "leg_br": (-40, 0, 0), "tail": (50, 0, 0)},

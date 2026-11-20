@@ -57,10 +57,18 @@ Date: 2026-11-20. Tasks STATION-113, STATION-114.
 ## The models
 
 - Each is cut from SHANNON's sheet (bases, signs, second copies and back views dropped) and skinned by
-  `tools/blender/stations/skin_forge.py`: standing ones (`hexbound`) piece by piece, the Cavalry and
-  Cavalry Commander as four-legged mounts (`mount`: only the horse's legs move, the rider rides), the
-  three dragons with the old dragon's wing bones (`dragon`). The dragons and the Cavalry that stood at an
-  angle were turned to face forward.
+  `tools/blender/stations/skin_forge.py`. The dragons and the Cavalry that stood at an angle were turned to
+  face forward.
+- **Rigged in whole parts** (SHANNON, 2026-11-20: "many of the models have warping parts"; "go for method
+  one now"). ForgeGUI grows arms, capes and weapons onto the body, so skin blended across a joint smeared
+  them. Each model's joints and parts are placed by hand (`legion`: boxes read off the `--stretch` bones
+  view), and the skin is cut apart where two bones' parts meet, so every part moves whole. That is the
+  look of a Roblox rig with separate limbs: a joint bent far can open a small gap, but nothing stretches.
+  Capes, cloaks, robes, quivers and banners stay on the body. Riders: the horse's head, legs and tail
+  move; the rider and what it holds ride the body. Dragons: wings, head, tail and legs from the elbow and
+  knee down.
+- `skin_forge.py --stretch` poses a model at the peak of each of the game's clips and draws every face
+  stretched by a quarter red: all 18 are at 0% (the first rigs reached 36%).
 - Creatures: a `foe_dragon*` model is Winged, a `foe_cavalry*` one four-legged, any other foe Biped; the
   attack clip comes from the kind (archers draw, mages cast, the rest chop).
 

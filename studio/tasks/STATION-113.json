@@ -19,6 +19,7 @@
     "assets/stations/sources/foe_*_forge.glb",
     "src/shared/StationAssets.luau",
     "docs/assets/register.md",
+    "docs/decisions/0104-animal-stations-shadow-legion.md",
     "studio/tasks/STATION-113.json",
     "tests/StationAssets.spec.luau"
   ],
@@ -27,12 +28,13 @@
   ],
   "acceptance_criteria": [
     "Every one of the 17 models is one mesh with no base, sign, title or second copy from its sheet",
-    "Standing ones walk, attack and fall with the biped clips, each armour piece on one bone; the dragons flap their wings; the mounted ones move as four-legged",
+    "Standing ones walk, attack and fall with the biped clips; the dragons flap their wings; the mounted ones move as four-legged",
+    "No part stretches: every face follows one bone (the skin is cut apart where two bones' parts meet), and `skin_forge.py --stretch` finds no face stretched by a quarter in any of the game's strongest poses",
     "Each is uploaded and in StationAssets"
   ],
-  "verification": "Blender test poses per model; Studio, local build, stamp `dev`: each spawned from the admin Enemies tab.",
+  "verification": "skin_forge.py --stretch per model (0% stretched in every pose, and its bones view checked by eye); Studio, local build, stamp `dev`: each spawned from the admin Enemies tab.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-20: \"begin rigging for everything from the heavy knight onwards\", then \"there should be 17 models now, rig them all please\". Models 01:27 to 02:01; the 01:26 Shadow Knight sheet is not used (the knight is in, STATION-112)."
+  "notes": "SHANNON, 2026-11-20: \"begin rigging for everything from the heavy knight onwards\", then \"there should be 17 models now, rig them all please\". Models 01:27 to 02:01; the 01:26 Shadow Knight sheet is not used (the knight is in, STATION-112). SHANNON, 2026-11-20: \"many of the models have warping parts\", then \"go for method one now\" (fix the rigs, no new models). The first rigs blended each vertex between bones by rough regions, and ForgeGUI grows arms, capes and weapons onto the body, so parts smeared (up to 36% of a model's surface stretched by a quarter in its power move) and some were on the wrong bone (the Shieldbearer's whole body on its shield arm, the Ogre's club on its head, capes on an arm or a leg). Now each model's joints and parts are placed by hand (`legion`, boxes read off the --stretch bones view) and the skin is cut apart at the joints: 0% stretched in every pose for all 18."
 }

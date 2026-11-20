@@ -7966,7 +7966,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Heavy Knight: SHANNON's heavy knight (01:27) from ForgeGUI (artifact 49ffb084), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Heavy Knight: SHANNON's heavy knight (01:27) from ForgeGUI (artifact 49ffb084), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_knight_heavy_forge_body": [
@@ -7977,34 +7977,34 @@
     },
     "joints": {
       "foe_knight_heavy_forge_head": [
-        0.239,
-        5.925,
-        -0.011
+        0.394,
+        5.614,
+        0.61
       ],
-      "foe_knight_heavy_forge_leg_fl": [
-        1.637,
+      "foe_knight_heavy_forge_tail": [
+        0.239,
+        6.081,
+        -1.255
+      ],
+      "foe_knight_heavy_forge_leg_fr": [
+        -1.626,
         5.77,
         -0.011
       ],
-      "foe_knight_heavy_forge_leg_fr": [
-        -1.16,
+      "foe_knight_heavy_forge_leg_fl": [
+        2.104,
         5.77,
         -0.011
       ],
       "foe_knight_heavy_forge_leg_bl": [
-        1.078,
+        1.171,
         3.128,
         -0.011
       ],
       "foe_knight_heavy_forge_leg_br": [
-        -0.601,
+        -1.005,
         3.128,
         -0.011
-      ],
-      "foe_knight_heavy_forge_tail": [
-        0.239,
-        5.77,
-        -0.944
       ]
     },
     "skinned": true,
@@ -8029,7 +8029,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Shadow Archer: SHANNON's Shadow Archer (01:29) from ForgeGUI (artifact b23e1fe8), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Shadow Archer: SHANNON's Shadow Archer (01:29) from ForgeGUI (artifact b23e1fe8), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_archer_forge_body": [
@@ -8042,38 +8042,38 @@
       "foe_archer_forge_head": [
         0.012,
         4.933,
-        0.012
-      ],
-      "foe_archer_forge_leg_fl": [
-        1.095,
-        5.054,
-        0.012
-      ],
-      "foe_archer_forge_leg_fr": [
-        -1.072,
-        5.054,
-        0.012
-      ],
-      "foe_archer_forge_leg_bl": [
-        0.662,
-        2.526,
-        0.012
-      ],
-      "foe_archer_forge_leg_br": [
-        -0.638,
-        2.526,
-        0.012
+        0.493
       ],
       "foe_archer_forge_tail": [
         0.012,
         5.054,
-        -0.71
+        -0.951
+      ],
+      "foe_archer_forge_leg_fl": [
+        0.975,
+        4.933,
+        0.012
+      ],
+      "foe_archer_forge_leg_fr": [
+        -1.192,
+        4.933,
+        0.012
+      ],
+      "foe_archer_forge_leg_bl": [
+        0.734,
+        2.526,
+        0.012
+      ],
+      "foe_archer_forge_leg_br": [
+        -0.951,
+        2.526,
+        0.012
       ]
     },
     "skinned": true,
     "root": [
       0.012,
-      2.887,
+      3.007,
       0.012
     ]
   },
@@ -8092,7 +8092,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Crossbow Troop: SHANNON's Crossbow Troop (01:31) from ForgeGUI (artifact eec5a523), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Crossbow Troop: SHANNON's Crossbow Troop (01:31) from ForgeGUI (artifact eec5a523), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_archer_crossbow_forge_body": [
@@ -8103,34 +8103,34 @@
     },
     "joints": {
       "foe_archer_crossbow_forge_head": [
-        -0.169,
-        4.349,
-        -0.793
-      ],
-      "foe_archer_crossbow_forge_leg_fl": [
-        1.04,
-        4.651,
-        -0.793
-      ],
-      "foe_archer_crossbow_forge_leg_fr": [
-        -1.377,
-        4.651,
-        -0.793
-      ],
-      "foe_archer_crossbow_forge_leg_bl": [
-        0.557,
-        2.233,
-        -0.793
-      ],
-      "foe_archer_crossbow_forge_leg_br": [
-        -0.894,
-        2.233,
-        -0.793
+        -0.395,
+        4.802,
+        -0.189
       ],
       "foe_archer_crossbow_forge_tail": [
         -0.169,
         4.651,
-        -1.549
+        -1.851
+      ],
+      "foe_archer_crossbow_forge_leg_fl": [
+        1.116,
+        4.651,
+        -0.793
+      ],
+      "foe_archer_crossbow_forge_leg_fr": [
+        -1.604,
+        4.651,
+        -0.793
+      ],
+      "foe_archer_crossbow_forge_leg_bl": [
+        0.814,
+        2.233,
+        -0.793
+      ],
+      "foe_archer_crossbow_forge_leg_br": [
+        -1.302,
+        2.233,
+        -0.793
       ]
     },
     "skinned": true,
@@ -8155,7 +8155,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Darkcaster: SHANNON's Darkcaster (01:32) from ForgeGUI (artifact fd99f263), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Darkcaster: SHANNON's Darkcaster (01:32) from ForgeGUI (artifact fd99f263), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_mage_forge_body": [
@@ -8167,39 +8167,39 @@
     "joints": {
       "foe_mage_forge_head": [
         -0.065,
-        4.944,
+        5.1,
+        0.486
+      ],
+      "foe_mage_forge_tail": [
+        -0.065,
+        4.98,
+        -0.714
+      ],
+      "foe_mage_forge_leg_fr": [
+        1.374,
+        4.86,
         0.006
       ],
       "foe_mage_forge_leg_fl": [
-        0.894,
-        4.74,
-        0.006
-      ],
-      "foe_mage_forge_leg_fr": [
-        -1.025,
-        4.74,
+        -1.505,
+        4.86,
         0.006
       ],
       "foe_mage_forge_leg_bl": [
-        0.51,
+        0.654,
         2.581,
         0.006
       ],
       "foe_mage_forge_leg_br": [
-        -0.641,
+        -0.785,
         2.581,
         0.006
-      ],
-      "foe_mage_forge_tail": [
-        -0.065,
-        4.74,
-        -0.474
       ]
     },
     "skinned": true,
     "root": [
       -0.065,
-      2.941,
+      3.421,
       0.006
     ]
   },
@@ -8218,7 +8218,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Necromancer: SHANNON's Necromancer (01:34) from ForgeGUI (artifact 8d373a50), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Necromancer: SHANNON's Necromancer (01:34) from ForgeGUI (artifact 8d373a50), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_mage_necromancer_forge_body": [
@@ -8231,38 +8231,38 @@
       "foe_mage_necromancer_forge_head": [
         -0.325,
         4.643,
+        1.207
+      ],
+      "foe_mage_necromancer_forge_tail": [
+        -0.325,
+        4.579,
+        -0.311
+      ],
+      "foe_mage_necromancer_forge_leg_fr": [
+        0.94,
+        4.579,
         0.701
       ],
       "foe_mage_necromancer_forge_leg_fl": [
-        0.687,
-        4.516,
-        0.701
-      ],
-      "foe_mage_necromancer_forge_leg_fr": [
-        -1.337,
-        4.516,
+        -1.59,
+        4.579,
         0.701
       ],
       "foe_mage_necromancer_forge_leg_bl": [
-        0.283,
+        0.308,
         2.555,
         0.701
       ],
       "foe_mage_necromancer_forge_leg_br": [
-        -0.932,
+        -0.957,
         2.555,
         0.701
-      ],
-      "foe_mage_necromancer_forge_tail": [
-        -0.325,
-        4.516,
-        -0.564
       ]
     },
     "skinned": true,
     "root": [
       -0.325,
-      2.935,
+      3.061,
       0.701
     ]
   },
@@ -8281,7 +8281,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Battle Priest: SHANNON's Battle Priest (01:36) from ForgeGUI (artifact b78f38cc), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Battle Priest: SHANNON's Battle Priest (01:36) from ForgeGUI (artifact b78f38cc), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_mage_priest_forge_body": [
@@ -8292,40 +8292,40 @@
     },
     "joints": {
       "foe_mage_priest_forge_head": [
-        -0.289,
+        -0.701,
         5.026,
+        0.936
+      ],
+      "foe_mage_priest_forge_tail": [
+        -0.289,
+        4.888,
+        -0.714
+      ],
+      "foe_mage_priest_forge_leg_fr": [
+        0.948,
+        4.888,
         0.386
       ],
       "foe_mage_priest_forge_leg_fl": [
-        0.948,
-        4.751,
-        0.386
-      ],
-      "foe_mage_priest_forge_leg_fr": [
-        -1.526,
-        4.751,
+        -1.801,
+        4.888,
         0.386
       ],
       "foe_mage_priest_forge_leg_bl": [
-        0.453,
+        0.398,
         2.689,
         0.386
       ],
       "foe_mage_priest_forge_leg_br": [
-        -1.031,
+        -0.976,
         2.689,
         0.386
-      ],
-      "foe_mage_priest_forge_tail": [
-        -0.289,
-        4.751,
-        -0.714
       ]
     },
     "skinned": true,
     "root": [
       -0.289,
-      3.102,
+      2.964,
       0.386
     ]
   },
@@ -8344,7 +8344,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Berserker: SHANNON's Berserk Assault (01:40) from ForgeGUI (artifact e4ece9c5), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Berserker: SHANNON's Berserk Assault (01:40) from ForgeGUI (artifact e4ece9c5), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_knight_berserker_forge_body": [
@@ -8355,9 +8355,14 @@
     },
     "joints": {
       "foe_knight_berserker_forge_head": [
+        -0.768,
+        5.755,
+        0.655
+      ],
+      "foe_knight_berserker_forge_tail": [
         -0.43,
-        5.417,
-        -0.021
+        5.755,
+        -1.373
       ],
       "foe_knight_berserker_forge_leg_fr": [
         1.261,
@@ -8365,7 +8370,7 @@
         -0.021
       ],
       "foe_knight_berserker_forge_leg_fl": [
-        -2.12,
+        -2.796,
         5.248,
         -0.021
       ],
@@ -8375,20 +8380,15 @@
         -0.021
       ],
       "foe_knight_berserker_forge_leg_br": [
-        -1.444,
+        -1.782,
         2.713,
         -0.021
-      ],
-      "foe_knight_berserker_forge_tail": [
-        -0.43,
-        5.248,
-        -0.866
       ]
     },
     "skinned": true,
     "root": [
       -0.43,
-      3.22,
+      3.389,
       -0.021
     ]
   },
@@ -8407,7 +8407,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Ogre Enforcer: SHANNON's Ogre Enforcer (01:41) from ForgeGUI (artifact 01343e85), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Ogre Enforcer: SHANNON's Ogre Enforcer (01:41) from ForgeGUI (artifact 01343e85), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_ogre_forge_body": [
@@ -8418,40 +8418,40 @@
     },
     "joints": {
       "foe_ogre_forge_head": [
+        0.232,
+        6.123,
+        1.551
+      ],
+      "foe_ogre_forge_tail": [
         -0.109,
-        5.697,
-        -0.154
+        6.805,
+        -1.518
       ],
       "foe_ogre_forge_leg_fr": [
-        1.767,
-        6.464,
+        1.596,
+        6.805,
         -0.154
       ],
       "foe_ogre_forge_leg_fl": [
-        -1.985,
-        6.464,
+        -2.838,
+        6.805,
         -0.154
       ],
       "foe_ogre_forge_leg_bl": [
-        1.016,
+        1.255,
         3.054,
         -0.154
       ],
       "foe_ogre_forge_leg_br": [
-        -1.235,
+        -1.473,
         3.054,
         -0.154
-      ],
-      "foe_ogre_forge_tail": [
-        -0.109,
-        6.464,
-        -1.177
       ]
     },
     "skinned": true,
     "root": [
       -0.109,
-      3.565,
+      3.736,
       -0.154
     ]
   },
@@ -8470,7 +8470,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Ogre Commander: SHANNON's Ogre Commander (01:42) from ForgeGUI (artifact a5fe2fe0), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Ogre Commander: SHANNON's Ogre Commander (01:42) from ForgeGUI (artifact a5fe2fe0), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_ogre_commander_forge_body": [
@@ -8481,40 +8481,40 @@
     },
     "joints": {
       "foe_ogre_commander_forge_head": [
-        -0.021,
-        6.865,
-        -0.152
+        -0.312,
+        7.447,
+        0.624
+      ],
+      "foe_ogre_commander_forge_tail": [
+        0.076,
+        7.835,
+        -1.703
       ],
       "foe_ogre_commander_forge_leg_fr": [
-        2.306,
-        7.447,
+        2.015,
+        7.835,
         -0.152
       ],
       "foe_ogre_commander_forge_leg_fl": [
-        -2.348,
-        7.447,
+        -2.833,
+        7.835,
         -0.152
       ],
       "foe_ogre_commander_forge_leg_bl": [
-        1.375,
+        1.627,
         2.986,
         -0.152
       ],
       "foe_ogre_commander_forge_leg_br": [
-        -1.418,
+        -1.864,
         2.986,
         -0.152
-      ],
-      "foe_ogre_commander_forge_tail": [
-        -0.021,
-        7.447,
-        -1.509
       ]
     },
     "skinned": true,
     "root": [
-      -0.021,
-      3.568,
+      0.076,
+      4.344,
       -0.152
     ]
   },
@@ -8533,7 +8533,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Siege Golem: SHANNON's Siege Golem (01:56) from ForgeGUI (artifact 0446aea7), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Siege Golem: SHANNON's Siege Golem (01:56) from ForgeGUI (artifact 0446aea7), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_golem_forge_body": [
@@ -8544,40 +8544,40 @@
     },
     "joints": {
       "foe_golem_forge_head": [
+        -0.234,
+        6.845,
+        1.019
+      ],
+      "foe_golem_forge_tail": [
         -0.035,
         8.039,
+        -1.568
+      ],
+      "foe_golem_forge_leg_fr": [
+        -2.821,
+        7.442,
         0.024
       ],
       "foe_golem_forge_leg_fl": [
         2.552,
-        7.243,
-        0.024
-      ],
-      "foe_golem_forge_leg_fr": [
-        -2.622,
-        7.243,
+        7.442,
         0.024
       ],
       "foe_golem_forge_leg_bl": [
-        1.517,
+        1.955,
         3.462,
         0.024
       ],
       "foe_golem_forge_leg_br": [
-        -1.588,
+        -2.025,
         3.462,
         0.024
-      ],
-      "foe_golem_forge_tail": [
-        -0.035,
-        7.243,
-        -1.17
       ]
     },
     "skinned": true,
     "root": [
       -0.035,
-      4.059,
+      5.054,
       0.024
     ]
   },
@@ -8596,7 +8596,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Shieldbearer: SHANNON's Shieldbearer (02:00) from ForgeGUI (artifact 23742e89), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Shieldbearer: SHANNON's Shieldbearer (02:00) from ForgeGUI (artifact 23742e89), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_knight_shield_forge_body": [
@@ -8607,41 +8607,41 @@
     },
     "joints": {
       "foe_knight_shield_forge_head": [
-        -1.644,
-        5.264,
-        -0.015
-      ],
-      "foe_knight_shield_forge_leg_fl": [
         -0.542,
-        4.792,
-        -0.015
-      ],
-      "foe_knight_shield_forge_leg_fr": [
-        -2.747,
-        4.792,
-        -0.015
-      ],
-      "foe_knight_shield_forge_leg_bl": [
-        -0.983,
-        2.035,
-        -0.015
-      ],
-      "foe_knight_shield_forge_leg_br": [
-        -2.306,
-        2.035,
-        -0.015
+        5.422,
+        -0.961
       ],
       "foe_knight_shield_forge_tail": [
-        -1.644,
-        4.792,
-        -0.961
+        -0.857,
+        5.264,
+        -2.694
+      ],
+      "foe_knight_shield_forge_leg_fr": [
+        -1.959,
+        5.107,
+        -1.591
+      ],
+      "foe_knight_shield_forge_leg_fl": [
+        0.404,
+        5.107,
+        -1.276
+      ],
+      "foe_knight_shield_forge_leg_bl": [
+        -0.069,
+        2.035,
+        -1.591
+      ],
+      "foe_knight_shield_forge_leg_br": [
+        -1.487,
+        2.035,
+        -1.591
       ]
     },
     "skinned": true,
     "root": [
-      -1.644,
-      2.507,
-      -0.015
+      -0.857,
+      3.216,
+      -1.591
     ]
   },
   "foe_knight_shield_commander_forge": {
@@ -8659,7 +8659,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Shieldbearer Commander: SHANNON's Shieldbearer Commander (02:01) from ForgeGUI (artifact 0b26e3c4), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    "notes": "Shieldbearer Commander: SHANNON's Shieldbearer Commander (02:01) from ForgeGUI (artifact 0b26e3c4), cut from its sheet, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_knight_shield_commander_forge_body": [
@@ -8670,39 +8670,39 @@
     },
     "joints": {
       "foe_knight_shield_commander_forge_head": [
-        -1.303,
-        6.505,
+        -0.398,
+        6.103,
+        0.545
+      ],
+      "foe_knight_shield_commander_forge_tail": [
+        -1.404,
+        6.907,
+        -1.669
+      ],
+      "foe_knight_shield_commander_forge_leg_fr": [
+        -2.611,
+        6.304,
         -0.059
       ],
       "foe_knight_shield_commander_forge_leg_fl": [
-        0.105,
-        5.499,
-        -0.059
-      ],
-      "foe_knight_shield_commander_forge_leg_fr": [
-        -2.712,
-        5.499,
+        0.608,
+        6.304,
         -0.059
       ],
       "foe_knight_shield_commander_forge_leg_bl": [
-        -0.458,
+        -0.398,
         3.487,
         -0.059
       ],
       "foe_knight_shield_commander_forge_leg_br": [
-        -2.148,
+        -2.41,
         3.487,
         -0.059
-      ],
-      "foe_knight_shield_commander_forge_tail": [
-        -1.303,
-        5.499,
-        -1.266
       ]
     },
     "skinned": true,
     "root": [
-      -1.303,
+      -1.404,
       4.091,
       -0.059
     ]
@@ -8722,7 +8722,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Cavalry: SHANNON's Cavalry (01:45) from ForgeGUI (artifact 62f553d0), turned to face forward, skinned to the Stations rig as a four-legged mount (decision 0104).",
+    "notes": "Cavalry: SHANNON's Cavalry (01:45) from ForgeGUI (artifact 62f553d0), turned to face forward, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_cavalry_forge_body": [
@@ -8734,8 +8734,13 @@
     "joints": {
       "foe_cavalry_forge_head": [
         -0.37,
-        4.645,
-        4.829
+        5.5,
+        3.461
+      ],
+      "foe_cavalry_forge_tail": [
+        -0.37,
+        4.987,
+        -3.211
       ],
       "foe_cavalry_forge_leg_fl": [
         0.656,
@@ -8756,11 +8761,6 @@
         -1.396,
         2.592,
         -1.671
-      ],
-      "foe_cavalry_forge_tail": [
-        -0.37,
-        5.158,
-        -3.211
       ]
     },
     "skinned": true,
@@ -8785,7 +8785,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Cavalry Commander: SHANNON's Cavalry Commander (01:48) from ForgeGUI (artifact 69969c83), turned to face forward, skinned to the Stations rig as a four-legged mount (decision 0104).",
+    "notes": "Cavalry Commander: SHANNON's Cavalry Commander (01:48) from ForgeGUI (artifact 69969c83), turned to face forward, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_cavalry_commander_forge_body": [
@@ -8797,39 +8797,39 @@
     "joints": {
       "foe_cavalry_commander_forge_head": [
         0.129,
-        3.927,
-        5.534
+        7.007,
+        4.067
+      ],
+      "foe_cavalry_commander_forge_tail": [
+        0.129,
+        6.274,
+        -4.439
       ],
       "foe_cavalry_commander_forge_leg_fl": [
         1.009,
         2.167,
-        4.507
+        3.48
       ],
       "foe_cavalry_commander_forge_leg_fr": [
         -0.751,
         2.167,
-        4.507
+        3.48
       ],
       "foe_cavalry_commander_forge_leg_bl": [
         1.009,
         2.167,
-        -3.706
+        -2.679
       ],
       "foe_cavalry_commander_forge_leg_br": [
         -0.751,
         2.167,
-        -3.706
-      ],
-      "foe_cavalry_commander_forge_tail": [
-        0.129,
-        4.367,
-        -4.879
+        -2.679
       ]
     },
     "skinned": true,
     "root": [
       0.129,
-      3.341,
+      3.781,
       0.401
     ]
   },
@@ -8848,7 +8848,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Dark Drake: SHANNON's Dark Drake (01:49) from ForgeGUI (artifact b91a8625), cut from its sheet and turned to face forward, skinned to the Stations rig with wings (decision 0104).",
+    "notes": "Dark Drake: SHANNON's Dark Drake (01:49) from ForgeGUI (artifact b91a8625), cut from its sheet and turned to face forward, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_dragon_drake_forge_body": [
@@ -8860,50 +8860,50 @@
     "joints": {
       "foe_dragon_drake_forge_head": [
         -0.729,
-        5.121,
+        6.356,
         4.939
-      ],
-      "foe_dragon_drake_forge_leg_fl": [
-        0.753,
-        2.403,
-        4.198
-      ],
-      "foe_dragon_drake_forge_leg_fr": [
-        -2.212,
-        2.403,
-        4.198
-      ],
-      "foe_dragon_drake_forge_leg_bl": [
-        0.753,
-        2.403,
-        0.739
-      ],
-      "foe_dragon_drake_forge_leg_br": [
-        -2.212,
-        2.403,
-        0.739
       ],
       "foe_dragon_drake_forge_tail": [
         -0.729,
-        3.885,
-        -0.496
+        4.133,
+        -1.979
+      ],
+      "foe_dragon_drake_forge_leg_fl": [
+        1.247,
+        3.638,
+        4.198
+      ],
+      "foe_dragon_drake_forge_leg_fr": [
+        -2.706,
+        3.638,
+        4.198
+      ],
+      "foe_dragon_drake_forge_leg_bl": [
+        1.247,
+        3.391,
+        -0.991
+      ],
+      "foe_dragon_drake_forge_leg_br": [
+        -2.706,
+        3.391,
+        -0.991
       ],
       "foe_dragon_drake_forge_wing_l": [
-        1.742,
-        4.627,
-        2.963
+        0.753,
+        7.097,
+        2.469
       ],
       "foe_dragon_drake_forge_wing_r": [
-        -3.2,
-        4.627,
-        2.963
+        -2.212,
+        7.097,
+        2.469
       ]
     },
     "skinned": true,
     "root": [
       -0.729,
-      3.885,
-      2.469
+      4.627,
+      1.974
     ]
   },
   "foe_dragon_forge": {
@@ -8921,7 +8921,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Shadow Dragon: SHANNON's Shadow Dragon (01:50) from ForgeGUI (artifact 435d1dd3), cut from its sheet and turned to face forward, skinned to the Stations rig with wings (decision 0104).",
+    "notes": "Shadow Dragon: SHANNON's Shadow Dragon (01:50) from ForgeGUI (artifact 435d1dd3), cut from its sheet and turned to face forward, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_dragon_forge_body": [
@@ -8932,51 +8932,51 @@
     },
     "joints": {
       "foe_dragon_forge_head": [
-        -4.141,
-        6.363,
-        5.403
-      ],
-      "foe_dragon_forge_leg_fl": [
-        -2.541,
-        3.695,
-        3.269
-      ],
-      "foe_dragon_forge_leg_fr": [
-        -5.742,
-        3.695,
-        3.269
-      ],
-      "foe_dragon_forge_leg_bl": [
-        -2.541,
-        3.695,
-        -0.466
-      ],
-      "foe_dragon_forge_leg_br": [
-        -5.742,
-        3.695,
-        -0.466
+        -3.608,
+        9.831,
+        6.204
       ],
       "foe_dragon_forge_tail": [
-        -4.141,
+        -3.341,
+        5.829,
+        -1.266
+      ],
+      "foe_dragon_forge_leg_fl": [
+        -0.94,
+        5.829,
+        6.47
+      ],
+      "foe_dragon_forge_leg_fr": [
+        -6.276,
+        5.829,
+        6.47
+      ],
+      "foe_dragon_forge_leg_bl": [
+        -0.94,
         5.296,
-        -2.066
+        0.601
+      ],
+      "foe_dragon_forge_leg_br": [
+        -6.276,
+        5.296,
+        0.601
       ],
       "foe_dragon_forge_wing_l": [
         -0.94,
-        7.163,
-        1.935
+        10.098,
+        4.603
       ],
       "foe_dragon_forge_wing_r": [
-        -7.343,
-        7.163,
-        1.935
+        -5.209,
+        10.098,
+        4.603
       ]
     },
     "skinned": true,
     "root": [
-      -4.141,
-      5.296,
-      1.402
+      -3.341,
+      6.363,
+      3.269
     ]
   },
   "foe_dragon_alpha_forge": {
@@ -8994,7 +8994,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Ancient Alpha Dragon: SHANNON's Ancient Alpha Dragon (01:54) from ForgeGUI (artifact f52635f1), cut from its sheet and turned to face forward, skinned to the Stations rig with wings (decision 0104).",
+    "notes": "Ancient Alpha Dragon: SHANNON's Ancient Alpha Dragon (01:54) from ForgeGUI (artifact f52635f1), cut from its sheet and turned to face forward, skinned to the Stations rig in whole parts (decision 0104).",
     "glow": {},
     "centres": {
       "foe_dragon_alpha_forge_body": [
@@ -9006,49 +9006,49 @@
     "joints": {
       "foe_dragon_alpha_forge_head": [
         -3.843,
-        7.569,
-        3.313
+        10.073,
+        4.028
+      ],
+      "foe_dragon_alpha_forge_tail": [
+        -3.843,
+        6.496,
+        -4.557
       ],
       "foe_dragon_alpha_forge_leg_fl": [
         -1.696,
-        2.919,
-        3.313
+        4.707,
+        4.744
       ],
       "foe_dragon_alpha_forge_leg_fr": [
-        -5.989,
-        2.919,
-        3.313
+        -6.705,
+        4.707,
+        4.744
       ],
       "foe_dragon_alpha_forge_leg_bl": [
         -1.696,
-        2.919,
+        4.707,
         -1.695
       ],
       "foe_dragon_alpha_forge_leg_br": [
         -5.989,
-        2.919,
+        4.707,
         -1.695
       ],
-      "foe_dragon_alpha_forge_tail": [
-        -3.843,
-        5.065,
-        -4.557
-      ],
       "foe_dragon_alpha_forge_wing_l": [
-        -0.265,
-        6.496,
-        1.524
+        0.45,
+        10.073,
+        0.809
       ],
       "foe_dragon_alpha_forge_wing_r": [
-        -7.42,
-        6.496,
-        1.524
+        -6.705,
+        11.147,
+        4.386
       ]
     },
     "skinned": true,
     "root": [
       -3.843,
-      5.065,
+      7.569,
       0.809
     ]
   }
