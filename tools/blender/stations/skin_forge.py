@@ -332,6 +332,23 @@ def lion(name, length, tail_x, artifact, what):
     }
 
 
+def knight_pieces(lo, hi):
+    """SHANNON's ForgeGUI Shadow Knight is separate rigid pieces of armour: each follows one bone, by
+    where its box is (lo, hi). It faces -Y, its sword in its right hand (-X), its shield on its left."""
+    c = (lo + hi) / 2
+    if lo.z < -0.23:
+        return {"tail": 1.0}  # the cape: the only piece hanging past the feet
+    if lo.z > 0.1:
+        return {"head": 1.0}  # helmet, visor, horns and plume
+    if lo.y < -0.2 or (c.x < -0.31 and c.z > -0.1):
+        return {"leg_fr": 1.0}  # the sword (its blade reaches forward) and the arm holding it
+    if c.x > -0.17 and c.z > -0.05:
+        return {"leg_fl": 1.0}  # the shield and the arm behind it
+    if c.z < -0.08:
+        return {"leg_bl" if c.x > -0.24 else "leg_br": 1.0}
+    return {"body": 1.0}  # torso, belt, tassets and tabard
+
+
 REGIONS = {
     # the elephants (lengths: StationAssets.creature_elephant[_frost, _war].size); the head takes all ahead
     # of the shoulders: the ears, the trunk and the tusks (and the War Elephant's trunk axe)
@@ -543,6 +560,26 @@ REGIONS = {
         "small": 0.06,
         "notes": "Sphinx Jackal: SHANNON's Anubis Statue from ForgeGUI (artifact 54ef40ce), one mesh, skinned to the Stations rig (decision 0102).",
     },
+    # the Hexbound knight (a foe): cut out of the 01:18 model, which made SHANNON's whole concept sheet in
+    # 3D (the rock base, the title and the small detail pieces dropped); 7.52 studs from its feet up, as
+    # the Blender knight
+    "foe_knight_forge": {
+        "height": 7.9,
+        "ground": -0.219,  # its feet: the cape's tip hangs a little lower, into the floor
+        "joints": {
+            "body": (-0.24, 0.03, -0.03),
+            "head": (-0.245, 0.05, 0.11),
+            "leg_fl": (-0.15, 0.08, 0.1),  # the shield arm's shoulder
+            "leg_fr": (-0.33, -0.01, 0.11),  # the sword arm's
+            "leg_bl": (-0.165, 0.05, -0.04),
+            "leg_br": (-0.3, -0.01, -0.04),
+            "tail": (-0.3, 0.1, 0.12),  # the cape hangs from the shoulders
+        },
+        "weights": lambda p: {"body": 1.0},
+        "pieces": knight_pieces,
+        "small": 0.0,
+        "notes": "Hexbound Knight: SHANNON's Shadow Knight from ForgeGUI (artifact 59c956fa), cut out of a whole-concept-sheet model, one mesh of rigid armour pieces skinned to the Stations rig (decision 0102).",
+    },
     # lengths: the Blender models' (StationAssets.creature_tortoise[_island, _gemshell].size)
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
@@ -656,7 +693,12 @@ def main():
         islands += 1
         ilo = Vector((min(bm.verts[i].co[k] for i in island) for k in range(3)))
         ihi = Vector((max(bm.verts[i].co[k] for i in island) for k in range(3)))
-        if (ihi - ilo).length < spec["small"]:
+        if "pieces" in spec:  # a model of separate rigid pieces: each follows one bone, by where it is
+            w = spec["pieces"](ilo, ihi)
+            for i in island:
+                weights[i] = w
+            print("PIECE", max(w, key=w.get), [round(x, 3) for x in (*ilo, *ihi)])
+        elif (ihi - ilo).length < spec["small"]:
             whole += 1
             mean = {}
             for i in island:
@@ -675,7 +717,8 @@ def main():
     lo = Vector((min(v.co[k] for v in body.data.vertices) for k in range(3)))
     hi = Vector((max(v.co[k] for v in body.data.vertices) for k in range(3)))
     scale = spec["height"] / (hi.z - lo.z) if "height" in spec else spec["length"] / (hi.y - lo.y)
-    offset = Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))
+    ground = spec.get("ground", lo.z)  # where it stands: its lowest point, or its feet if something hangs lower
+    offset = Vector((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -ground))
     place = Matrix.Scale(scale, 4) @ Matrix.Translation(offset)
     body.data.transform(place)
     joints = {k: place @ Vector(j) for k, j in spec["joints"].items()}
@@ -788,7 +831,7 @@ def main():
     )
     tris = sum(len(p.vertices) - 2 for p in body.data.polygons)
     size = (hi - lo) * scale
-    centre = Vector((0, 0, size.z / 2))
+    centre = Vector((0, 0, ((lo.z + hi.z) / 2 - ground) * scale))
     with open(MANIFEST, encoding="utf-8") as f:
         manifest = json.load(f)
     manifest[name] = {

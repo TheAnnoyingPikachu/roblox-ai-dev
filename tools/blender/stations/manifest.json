@@ -8730,5 +8730,68 @@
       8.268,
       -3.373
     ]
+  },
+  "foe_knight_forge": {
+    "fbx": "build/blender/stations/foe_knight_forge.fbx",
+    "png": "build/blender/stations/foe_knight_forge.png",
+    "preview": "build/blender/stations/previews/foe_knight_forge_rest.png",
+    "size_studs": [
+      6.47,
+      7.9,
+      7.59
+    ],
+    "tris": 560,
+    "parts": {
+      "foe_knight_forge_body": 560
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Hexbound Knight: SHANNON's Shadow Knight from ForgeGUI (artifact 59c956fa), cut out of a whole-concept-sheet model, one mesh of rigid armour pieces skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "foe_knight_forge_body": [
+        0.0,
+        3.576,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_knight_forge_head": [
+        0.075,
+        4.947,
+        -1.115
+      ],
+      "foe_knight_forge_leg_fl": [
+        1.504,
+        4.797,
+        -1.566
+      ],
+      "foe_knight_forge_leg_fr": [
+        -1.203,
+        4.947,
+        -0.213
+      ],
+      "foe_knight_forge_leg_bl": [
+        1.278,
+        2.692,
+        -1.115
+      ],
+      "foe_knight_forge_leg_br": [
+        -0.752,
+        2.692,
+        -0.213
+      ],
+      "foe_knight_forge_tail": [
+        -0.752,
+        5.097,
+        -1.867
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.15,
+      2.842,
+      -0.815
+    ]
   }
 }

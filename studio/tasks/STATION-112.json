@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-112",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0102: the Hexbound Knight (the Gloom Squire, Bulwark and Banner) is SHANNON's ForgeGUI Shadow Knight, cut out of its concept-sheet model and skinned to the Stations rig, in place of the Blender knight.",
+  "inputs": [
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md"
+  ],
+  "dependencies": [
+    "STATION-109"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/foe_knight_forge*",
+    "assets/stations/sources/foe_knight_forge.glb",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md",
+    "studio/tasks/STATION-112.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The three knight foes use foe_knight_forge: one mesh, no base, title or detail pieces from the sheet",
+    "It walks, chops with its sword arm, raises its shield arm and falls with the existing biped clips; its cape is the tail",
+    "Its feet stand on the floor"
+  ],
+  "verification": "Studio, local build, stamp `dev`: spawn the knight foes, check it stands on its feet, walks, chops and falls with its pieces together; Lune and selene clean.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-20: \"rig it and replace the old knight\" (the 01:18 Shadow Knight, made from the Shadow Knight Concept Sheet). The Blender foe_knight asset stays in the asset table, unused, so going back is one line per foe."
+}

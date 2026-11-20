@@ -236,6 +236,23 @@ Date: 2026-11-19. Task STATION-109.
   The old pose splayed the legs straight out front and back. skin_forge.py's test renders show it as
   `den` for the elephants.
 
+## The Hexbound Knight (2026-11-20, STATION-112)
+
+- SHANNON: "can you take that shadow knight gui render and rig it into the game? or should i regen it
+  without the baseplate", then "rig it and replace the old knight".
+- The 01:18 model (artifact 59c956fa, "roblox style enemy following this reference", made from
+  SHANNON's Shadow Knight Concept Sheet) is the whole sheet in 3D: the knight on a rock base, the title
+  banner, a small banner by its head and the detail and variant pieces. The knight is its own 29 pieces,
+  so it is cut out (everything right of it and the rock dropped), 560 triangles; no regenerate needed.
+- It is rigid armour, not one skin: each piece follows one bone by where it is (`knight_pieces`): the
+  sword and the arm holding it the right arm (`leg_fr`, the chop arm), the shield and the arm behind it
+  the left (`leg_fl`), the helmet and plume the head, the cape the tail, the greaves the legs.
+- The cape's tip hangs below the feet, so the model stands on its feet (`ground`), the tip a little
+  into the floor. It is 7.52 studs from its feet up, as the Blender knight.
+- The Gloom Squire, Bulwark and Banner (every `knight` foe) now use `foe_knight_forge`. Their tints are
+  still set; a textured mesh may not show them (checked in Studio). The Blender `foe_knight` stays in
+  the asset table, unused.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact
