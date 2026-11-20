@@ -813,5 +813,35 @@
     "model": null,
     "decal": 125381856980803,
     "texture": null
+  },
+  "creature_meerkat_forge": {
+    "model": 129485626937800,
+    "decal": 139223000980349,
+    "texture": null
+  },
+  "creature_meerkat_forge_rainbow": {
+    "model": null,
+    "decal": 86506127898144,
+    "texture": null
+  },
+  "creature_meerkat_star_forge": {
+    "model": 82829591091078,
+    "decal": 104001008604021,
+    "texture": null
+  },
+  "creature_meerkat_star_forge_rainbow": {
+    "model": null,
+    "decal": 104822336959337,
+    "texture": null
+  },
+  "creature_meerkat_storm_forge": {
+    "model": 131367649584676,
+    "decal": 124123036384838,
+    "texture": null
+  },
+  "creature_meerkat_storm_forge_rainbow": {
+    "model": null,
+    "decal": 134636308610030,
+    "texture": null
   }
 }
