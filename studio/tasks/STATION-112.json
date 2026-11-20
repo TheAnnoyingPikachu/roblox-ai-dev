@@ -32,7 +32,7 @@
     "It walks, chops with its sword arm, raises its shield arm and falls with the existing biped clips; its cape is the tail",
     "Its feet stand on the floor"
   ],
-  "verification": "Studio, local build, stamp `dev`: spawn the knight foes, check it stands on its feet, walks, chops and falls with its pieces together; Lune and selene clean.",
+  "verification": "Lune 759/759, selene clean. Upload-assets run 44654149796 (foe_knight_forge: model 140600414698054). Studio, local build, stamp `dev`, 2026-11-20: the Gloom Squire, Bulwark (1.2x) and Banner spawn as foe_knight_forge, one textured MeshPart each, feet on the floor; walk, sword chop (arm overhead), power pose (sword and shield raised) and fall all keep every armour piece together. Their tints do not show on the textured mesh; the Blender knight's textured armour did not show them either.",
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_progress",

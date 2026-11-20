@@ -220,7 +220,7 @@ describe("StationAssets", function()
 
 	it("has a model for every Hexbound foe, of its kind, with a sane size and tint", function()
 		for _, f in StationConfig.FOES do
-			expect(f.model).toBe(`foe_{f.kind}`)
+			expect(f.model == `foe_{f.kind}` or f.model == `foe_{f.kind}_forge`).toBe(true)
 			expect(StationAssets[f.model] == nil).toBe(false)
 			expect(StationAssets[f.model].model == nil).toBe(false) -- uploaded
 			expect(f.size == nil or (f.size >= 0.5 and f.size <= 2)).toBeTruthy()

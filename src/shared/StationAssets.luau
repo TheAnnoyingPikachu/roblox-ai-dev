@@ -3337,6 +3337,27 @@ local StationAssets: { [string]: Asset } = {
 		skinned = true,
 		root = { 0, 8.268, -3.373 },
 	},
+	foe_knight_forge = {
+		size = { 6.47, 7.9, 7.59 },
+		parts = { "foe_knight_forge_body" },
+		glow = {},
+		centres = {
+			foe_knight_forge_body = { 0, 3.576, 0 },
+		},
+		joints = {
+			foe_knight_forge_head = { 0.075, 4.947, -1.115 },
+			foe_knight_forge_leg_fl = { 1.504, 4.797, -1.566 },
+			foe_knight_forge_leg_fr = { -1.203, 4.947, -0.213 },
+			foe_knight_forge_leg_bl = { 1.278, 2.692, -1.115 },
+			foe_knight_forge_leg_br = { -0.752, 2.692, -0.213 },
+			foe_knight_forge_tail = { -0.752, 5.097, -1.867 },
+		},
+		model = 140600414698054,
+		decal = 135675593673104,
+		texture = nil,
+		skinned = true,
+		root = { 0.15, 2.842, -0.815 },
+	},
 }
 
 return StationAssets

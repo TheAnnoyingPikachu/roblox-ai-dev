@@ -983,5 +983,10 @@
     "model": null,
     "decal": 95048097284468,
     "texture": null
+  },
+  "foe_knight_forge": {
+    "model": 140600414698054,
+    "decal": 135675593673104,
+    "texture": null
   }
 }

@@ -255,15 +255,15 @@ StationConfig.SPECIES = {
 -- warden at 12), a crossbowman at 9 and the ogre warlord at 15. A dragon ends every 10th wave: the
 -- strongest one the wave allows. Archers are fast and fragile, mages hit hard through their Mana,
 -- heal or ward. Draft numbers, set to the strength of the animals the waves used before, so the
--- waves are as hard. Their model is the asset "foe_<kind>"; tiers within a kind differ by tint
--- and size.
+-- waves are as hard. Their model is the asset "foe_<kind>", or "foe_<kind>_forge" for SHANNON's
+-- ForgeGUI model of it (the knight, decision 0102); tiers within a kind differ by tint and size.
 StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "dragon", "imp" }
 StationConfig.FOES = {
 	{
 		id = "gloom_squire",
 		name = "Gloom Squire",
 		kind = "knight",
-		model = "foe_knight",
+		model = "foe_knight_forge",
 		role = "attack",
 		group = "pack",
 		stats = s(38, 24, 16, 14, 32, 14),
@@ -273,7 +273,7 @@ StationConfig.FOES = {
 		id = "gloom_bulwark",
 		name = "Gloom Bulwark",
 		kind = "knight",
-		model = "foe_knight",
+		model = "foe_knight_forge",
 		size = 1.2,
 		tint = { 150, 175, 215 },
 		role = "defense",
@@ -285,7 +285,7 @@ StationConfig.FOES = {
 		id = "gloom_banner",
 		name = "Gloom Banner",
 		kind = "knight",
-		model = "foe_knight",
+		model = "foe_knight_forge",
 		tint = { 255, 160, 160 },
 		role = "utility",
 		group = "pack",
