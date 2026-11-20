@@ -72,6 +72,7 @@ player is about 5 tall).
 | Shadow Lion | | legendary | twist speed | Ink black, a bone mask, spine and fangs, a mane of big black crystal shards with a few glowing green ones, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 8 x 15 |
 | Giraffe | Utility | rare | 50 / 60 / 45 / 55 / 80 / 25 | Faceted low-poly (decision 0076): cream under chestnut patches, a short dark mane, a heavy brow, sharp dark-tipped horns, long legs with dark hooves. Card: `docs/concepts/giraffe-card.png`. | 23 x 15 |
 | Diamond Giraffe | | mythic | twist defence | Silver-blue under diamond plates, glowing diamond horns, a crest of glowing crystal down the neck, diamonds out of its shoulders, glowing eyes. Card: `docs/concepts/diamond-giraffe-card.png`. | about 23 x 15 |
+| Acacia Giraffe (decision 0103) | | legendary | twist health | A giraffe with acacia trees growing up its neck and along its back, vines and leaves round its legs and a leafy tail tuft. SHANNON's ForgeGUI model. | about 24 x 26 |
 | Elephant (Titan) | Titan | legendary | 30 / 160 / 180 / 60 / 200 / 120 | Faceted low-poly (decision 0051): blue-grey, flared ears, a heavy brow, a ringed trunk, curved pale tusks, amber slit eyes. Card: `docs/concepts/elephant-card.png`. | 14 x 25 |
 | Frost Mammoth | | mythic | twist health | Icy blue and shaggy with a hump, small ears, huge curved tusks of glowing ice, ice spikes down its back, glowing eyes. Card: `docs/concepts/frost-mammoth-card.png`. | 19 x 30 |
 | War Elephant | | legendary | twist strength | Dark elephant in war gear with a cannon on its back, ember eyes, a glowing muzzle. Card: `docs/concepts/war-elephant-card.png`. | about 19 x 27 |
@@ -103,8 +104,8 @@ rare drops first, then a basic animal.
 |---|---|---|---|---|---|
 | Meadow Egg | 100 | from the start | Jackal, Tortoise or Meerkat | Pharaoh Jackal, Gemshell Tortoise, Alien Meerkat: 1 in 5,000 each | none |
 | Wild Egg | 1,500 | from the start | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Alien Meerkat: 1 in 2,000 each; Thunder Cheetah, Crystal Rhino, King Flamingo: 1 in 4,000 each | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 20,000 each |
-| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Thunder Cheetah, Crystal Rhino, King Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
-| Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion 1 in 400; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
+| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Thunder Cheetah, Crystal Rhino, King Flamingo: 1 in 500 each; Shadow Lion, Acacia Giraffe: 1 in 2,000 each | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
+| Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion, Acacia Giraffe: 1 in 400 each; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
 
 There is no legendary-only egg (decision 0031). The four eggs are detailed models (decision 0057,
 `docs/concepts/egg-family.png`): in the hatchery, on the storage rack and the vendor's counter, on the

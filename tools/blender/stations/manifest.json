@@ -8352,5 +8352,194 @@
       5.604,
       1.348
     ]
+  },
+  "creature_giraffe_forge": {
+    "fbx": "build/blender/stations/creature_giraffe_forge.fbx",
+    "png": "build/blender/stations/creature_giraffe_forge.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_forge_rest.png",
+    "size_studs": [
+      7.92,
+      23.46,
+      19.58
+    ],
+    "tris": 5192,
+    "parts": {
+      "creature_giraffe_forge_body": 5192
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Giraffe: SHANNON's giraffe from ForgeGUI (artifact c2e4bf29), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_forge_body": [
+        0.0,
+        11.73,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_giraffe_forge_head": [
+        0.0,
+        13.196,
+        3.688
+      ],
+      "creature_giraffe_forge_leg_fl": [
+        1.724,
+        9.255,
+        3.195
+      ],
+      "creature_giraffe_forge_leg_fr": [
+        -1.724,
+        9.255,
+        3.195
+      ],
+      "creature_giraffe_forge_leg_bl": [
+        1.847,
+        9.255,
+        -3.946
+      ],
+      "creature_giraffe_forge_leg_br": [
+        -1.847,
+        9.255,
+        -3.946
+      ],
+      "creature_giraffe_forge_tail": [
+        0.0,
+        11.718,
+        -5.178
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      10.487,
+      -0.006
+    ]
+  },
+  "creature_giraffe_diamond_forge": {
+    "fbx": "build/blender/stations/creature_giraffe_diamond_forge.fbx",
+    "png": "build/blender/stations/creature_giraffe_diamond_forge.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_diamond_forge_rest.png",
+    "size_studs": [
+      8.64,
+      24.39,
+      25.17
+    ],
+    "tris": 3152,
+    "parts": {
+      "creature_giraffe_diamond_forge_body": 3152
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Diamond Giraffe: SHANNON's diamond giraffe from ForgeGUI (artifact f1abf347), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_diamond_forge_body": [
+        0.0,
+        12.195,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_giraffe_diamond_forge_head": [
+        0.026,
+        13.76,
+        5.78
+      ],
+      "creature_giraffe_diamond_forge_leg_fl": [
+        2.656,
+        9.815,
+        6.306
+      ],
+      "creature_giraffe_diamond_forge_leg_fr": [
+        -2.605,
+        9.815,
+        6.306
+      ],
+      "creature_giraffe_diamond_forge_leg_bl": [
+        2.656,
+        9.815,
+        -3.689
+      ],
+      "creature_giraffe_diamond_forge_leg_br": [
+        -2.605,
+        9.815,
+        -3.689
+      ],
+      "creature_giraffe_diamond_forge_tail": [
+        0.026,
+        12.182,
+        -5.004
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.026,
+      11.393,
+      1.309
+    ]
+  },
+  "creature_giraffe_acacia_forge": {
+    "fbx": "build/blender/stations/creature_giraffe_acacia_forge.fbx",
+    "png": "build/blender/stations/creature_giraffe_acacia_forge.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_acacia_forge_rest.png",
+    "size_studs": [
+      11.23,
+      24.0,
+      25.85
+    ],
+    "tris": 15066,
+    "parts": {
+      "creature_giraffe_acacia_forge_body": 15066
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Acacia Giraffe: SHANNON's giraffe with acacias growing on it, from ForgeGUI (artifact 6e93bd49), one mesh, skinned to the Stations rig (decisions 0102, 0103).",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_acacia_forge_body": [
+        0.0,
+        12.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_giraffe_acacia_forge_head": [
+        0.0,
+        13.634,
+        4.877
+      ],
+      "creature_giraffe_acacia_forge_leg_fl": [
+        2.567,
+        9.311,
+        4.877
+      ],
+      "creature_giraffe_acacia_forge_leg_fr": [
+        -2.567,
+        9.311,
+        4.877
+      ],
+      "creature_giraffe_acacia_forge_leg_bl": [
+        2.567,
+        9.311,
+        -3.094
+      ],
+      "creature_giraffe_acacia_forge_leg_br": [
+        -2.567,
+        9.311,
+        -3.094
+      ],
+      "creature_giraffe_acacia_forge_tail": [
+        0.0,
+        12.013,
+        -6.202
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      11.203,
+      0.013
+    ]
   }
 }

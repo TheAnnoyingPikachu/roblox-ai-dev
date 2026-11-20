@@ -333,6 +333,54 @@ def lion(name, length, tail_x, artifact, what):
 
 
 REGIONS = {
+    # giraffes stand tall: scaled by height (StationAssets.creature_giraffe[_diamond].size); the head joint
+    # is the neck's foot, so the head swings the whole neck, as the Blender giraffe's did
+    "creature_giraffe_forge": {
+        "height": 23.46,
+        "joints": {
+            "body": (0.0, 0.0, -0.05),
+            "head": (0.0, -0.15, 0.06),
+            "leg_fl": (0.07, -0.13, -0.1),
+            "leg_fr": (-0.07, -0.13, -0.1),
+            "leg_bl": (0.075, 0.16, -0.1),
+            "leg_br": (-0.075, 0.16, -0.1),
+            "tail": (0.0, 0.21, 0.0),
+        },
+        "weights": quad_weights(0.0, 0.04, 0.2, (-0.2, -0.05), (0.1, 0.23), -0.1, -0.1, 0.02, 0.16),
+        "small": 0.06,
+        "notes": "Giraffe: SHANNON's giraffe from ForgeGUI (artifact c2e4bf29), one mesh, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_giraffe_acacia_forge": {
+        "height": 24.0,  # a new variety (decision 0103): between the giraffe and the Diamond Giraffe
+        "joints": {
+            "body": (0.0, 0.0, -0.03),
+            "head": (0.0, -0.18, 0.06),
+            "leg_fl": (0.095, -0.18, -0.1),
+            "leg_fr": (-0.095, -0.18, -0.1),
+            "leg_bl": (0.095, 0.115, -0.1),
+            "leg_br": (-0.095, 0.115, -0.1),
+            "tail": (0.0, 0.23, 0.0),
+        },
+        # acacias grow on its back (they ride the body) and up its neck (they ride the head)
+        "weights": quad_weights(-0.06, 0.04, 0.23, (-0.26, -0.08), (0.04, 0.2), -0.1, -0.1, 0.03, 0.18),
+        "small": 0.1,  # its leaves are loose pieces: each moves whole
+        "notes": "Acacia Giraffe: SHANNON's giraffe with acacias growing on it, from ForgeGUI (artifact 6e93bd49), one mesh, skinned to the Stations rig (decisions 0102, 0103).",
+    },
+    "creature_giraffe_diamond_forge": {
+        "height": 24.39,
+        "joints": {
+            "body": (0.0, -0.05, -0.03),
+            "head": (0.0, -0.22, 0.06),
+            "leg_fl": (0.1, -0.24, -0.09),
+            "leg_fr": (-0.1, -0.24, -0.09),
+            "leg_bl": (0.1, 0.14, -0.09),
+            "leg_br": (-0.1, 0.14, -0.09),
+            "tail": (0.0, 0.19, 0.0),
+        },
+        "weights": quad_weights(-0.06, 0.04, 0.19, (-0.32, -0.15), (0.06, 0.21), -0.09, -0.09, 0.03, 0.17),
+        "small": 0.06,
+        "notes": "Diamond Giraffe: SHANNON's diamond giraffe from ForgeGUI (artifact f1abf347), one mesh, skinned to the Stations rig (decision 0102).",
+    },
     # lengths: the Blender models' (StationAssets.creature_lion[_shadow, _sun].size)
     "creature_lion_forge": lion("Lion", 13.0, 0.0, "c46416c2", "lion (now do it again following this reference)"),
     "creature_lion_shadow_forge": lion("Shadow Lion", 15.03, -0.05, "68e2e5b5", "Shadowfang Purple Lion"),

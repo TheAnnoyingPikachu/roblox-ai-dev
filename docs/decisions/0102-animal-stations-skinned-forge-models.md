@@ -205,6 +205,16 @@ Date: 2026-11-19. Task STATION-109.
   3,156 triangles.
 - One body plan: `lion` (with `quad_weights`).
 
+## The giraffes (2026-11-20)
+
+- SHANNON: "rig the giraffes as well", then "make a new spot for the acacia giraffe and add it to the
+  eggs and such" (decision 0103).
+- The Giraffe is the 00:24 giraffe (artifact c2e4bf29, 5,192 triangles); the Diamond Giraffe the 00:26
+  one (artifact f1abf347, 3,152 triangles); the new Acacia Giraffe the 00:31 one with acacias growing on
+  it (artifact 6e93bd49, 15,066 triangles, its 300 loose leaves moving whole).
+- Giraffes stand tall, so they are scaled by height. Their head joint is the neck's foot, as on the
+  Blender giraffe, so the head swings the whole neck (and the acacias on it).
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

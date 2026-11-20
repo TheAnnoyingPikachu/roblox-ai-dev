@@ -232,6 +232,7 @@ StationConfig.SPECIES = {
 		stats = s(50, 60, 45, 55, 80, 25),
 		variants = {
 			v("diamond_giraffe", "Diamond Giraffe", "mythic", "defence"),
+			v("acacia_giraffe", "Acacia Giraffe", "legendary", "health"), -- decision 0103
 		},
 	},
 	{
@@ -498,6 +499,7 @@ StationConfig.EGGS = {
 		},
 		rare = {
 			r("lion", "shadow_lion", 2000),
+			r("giraffe", "acacia_giraffe", 2000), -- decision 0103: the Shadow Lion's odds
 			r("giraffe", "diamond_giraffe", 10000),
 			r("cheetah", "fire_cheetah", 1000),
 			r("rhino", "crystal_rhino", 1000),
@@ -530,6 +532,7 @@ StationConfig.EGGS = {
 			r("rhino", "lava_rhino", 2000),
 			r("flamingo", "phoenix_flamingo", 2000),
 			r("lion", "shadow_lion", 400),
+			r("giraffe", "acacia_giraffe", 400),
 			r("elephant", "war_elephant", 2000),
 		},
 	},

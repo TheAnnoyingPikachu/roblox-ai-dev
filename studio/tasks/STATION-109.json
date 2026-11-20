@@ -28,7 +28,8 @@
     "docs/decisions/0102-animal-stations-skinned-forge-models.md",
     "studio/tasks/STATION-109.json",
     "src/shared/StationConfig.luau",
-    "docs/game-design/game7-animals.md"
+    "docs/game-design/game7-animals.md",
+    "docs/decisions/0103-animal-stations-acacia-giraffe.md"
   ],
   "tests": [
     "StationAssets.spec.luau",

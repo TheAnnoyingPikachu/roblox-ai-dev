@@ -184,9 +184,8 @@ describe("StationAssets", function()
 		end
 		for id in StationRules.FORGE do -- the jointed model a ForgeGUI one replaced keeps its coat as the fallback
 			local word, s = string.match(id, "^(%l+)_(%l+)$") -- a variant's id is "<word>_<species>"
-			coats += if StationAssets[if word then `creature_{s}_{word}` else `creature_{id}`].rainbowDecal
-				then 1
-				else 0
+			local old = StationAssets[if word then `creature_{s}_{word}` else `creature_{id}`] -- none for a new variety
+			coats += if old and old.rainbowDecal then 1 else 0
 		end
 		expect(coats).toBe(0)
 	end)
