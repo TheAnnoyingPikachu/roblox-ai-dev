@@ -208,7 +208,7 @@ StationConfig.SPECIES = {
 		stats = s(30, 10, 30, 65, 50, 15),
 		variants = {
 			v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "mana"),
-			v("peacock_flamingo", "Peacock Flamingo", "legendary", "stamina"),
+			v("peacock_flamingo", "King Flamingo", "legendary", "stamina"), -- renamed by SHANNON (decision 0102); the id stays
 		},
 	},
 	{

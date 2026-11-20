@@ -66,7 +66,7 @@ player is about 5 tall).
 | Comet Meerkat (id `star_meerkat`; it was the Star Meerkat until decision 0102) | | mythic | twist speed | Deep purple with gold stars and a moon, a gold crest and a comet for a tail. SHANNON's ForgeGUI model. | about 5.2 x 7.5 |
 | Flamingo | Utility | uncommon | 30 / 10 / 30 / 65 / 50 / 15 | Textured faceted model (decision 0055): tall and pink on two stilts, coral wings with black flight feathers, a pale beak with a black hook, a hard stare. Two legs: its wings are built as the back legs. Card: `docs/concepts/flamingo-card.png`. | 8 x 6 |
 | Phoenix Flamingo | | mythic | twist mana | Fire-red with a gold neck, a glowing crest, flight feathers and long tail streamers of flame, gold flames up the breast. Card: `docs/concepts/phoenix-flamingo-card.png`. | 11 x 10 |
-| Peacock Flamingo | | legendary | twist stamina | Teal with a royal blue neck, emerald wings, a great fan of tail feathers with glowing eyes, a beaded crest. Card: `docs/concepts/peacock-flamingo-card.png`. | 10 x 7 |
+| King Flamingo (id `peacock_flamingo`; it was the Peacock Flamingo until decision 0102) | | legendary | twist stamina | A royal blue flamingo with green-and-gold feathers, a great upright fan of peacock tail feathers and a little crown. SHANNON's ForgeGUI model. | about 7 x 9.8 |
 | Lion | Attack | rare | 55 / 90 / 40 / 25 / 70 / 30 | Faceted low-poly (decision 0050): a chunky tawny cat, a mane of big brown crystal shards, pale paws and muzzle, amber slit eyes, a tufted tail. Card: `docs/concepts/lion-card.png`. | 7 x 13 |
 | Sun Lion | | mythic | twist strength | Golden, a mane of big yellow crystal shards, a sun with twelve rays on each haunch, glowing eyes, a flame of a tail. Card: `docs/concepts/sun-lion-card.png`. | 9 x 16 |
 | Shadow Lion | | legendary | twist speed | Ink black, a bone mask, spine and fangs, a mane of big black crystal shards with a few glowing green ones, green ribs and eyes. Card: `docs/concepts/shadow-lion-concept.png`; the model is `creature_lion_shadow` in `tools/blender/stations/assets/lions.py`. | about 8 x 15 |
@@ -102,8 +102,8 @@ rare drops first, then a basic animal.
 | Egg | Price | Unlocks | Basic animals | Legendary drops | Mythic drops |
 |---|---|---|---|---|---|
 | Meadow Egg | 100 | from the start | Jackal, Tortoise or Meerkat | Pharaoh Jackal, Gemshell Tortoise, Alien Meerkat: 1 in 5,000 each | none |
-| Wild Egg | 1,500 | from the start | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Alien Meerkat: 1 in 2,000 each; Thunder Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 4,000 each | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 20,000 each |
-| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Thunder Cheetah, Crystal Rhino, Peacock Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
+| Wild Egg | 1,500 | from the start | commons 54%, uncommons 46% | Pharaoh Jackal, Gemshell Tortoise, Alien Meerkat: 1 in 2,000 each; Thunder Cheetah, Crystal Rhino, King Flamingo: 1 in 4,000 each | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 20,000 each |
+| Safari Egg | 15,000 | wave 10 cleared | uncommons 80%, the Lion 20% | Thunder Cheetah, Crystal Rhino, King Flamingo: 1 in 500 each; Shadow Lion 1 in 2,000 | Sphinx Jackal, Island Tortoise, Comet Meerkat: 1 in 5,000 each; Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 10,000 each |
 | Golden Egg | 50,000 | wave 20 cleared | the Lion 50%, uncommons 45%, the Titan Elephant 5% | Shadow Lion 1 in 400; War Elephant 1 in 2,000 | Lightning Cheetah, Lava Rhino, Phoenix Flamingo: 1 in 2,000 each; Sun Lion 1 in 4,000; Frost Mammoth 1 in 20,000 |
 
 There is no legendary-only egg (decision 0031). The four eggs are detailed models (decision 0057,

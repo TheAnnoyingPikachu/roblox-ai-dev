@@ -282,7 +282,59 @@ def feet_weights(feet, top, head_y, head_z, tail_y):
     return weights
 
 
+def flamingo_weights(leg_top, legs, head_z, head_y, tail_y, wing):
+    """SHANNON's ForgeGUI flamingos (one body plan): two thin legs (`legs`, {leg: (x, y)} where each
+    stands, up to `leg_top`; the feet below z -0.4 go by side), the wing feathers on the body's sides
+    (|x| from `wing`[0] to `wing`[1]: the game builds a flamingo's wings as its back legs), the neck and
+    head rising from the front of the body (above `head_z`, ahead of `head_y`) and the tail feathers
+    behind `tail_y` (a fan or flames)."""
+    middle = sum(x for x, _ in legs.values()) / 2
+
+    def weights(p):
+        head = ramp(head_z, head_z + 0.05, p.z) * (1 - ramp(head_y, head_y + 0.08, p.y))
+        tail = ramp(tail_y, tail_y + 0.06, p.y) * (1 - head)
+        w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
+        part, share = None, 0.0
+        if p.z < leg_top + 0.03:
+            leg, near = min(((k, (p.x - x) ** 2 + (p.y - y) ** 2) for k, (x, y) in legs.items()), key=lambda t: t[1])
+            if p.z < -0.4:  # a foot
+                part = "leg_fl" if p.x > middle else "leg_fr"
+            elif near < 0.045**2:
+                part = leg
+            share = ramp(leg_top + 0.03, leg_top - 0.03, p.z) if part else 0.0
+        if part is None and leg_top < p.z < head_z and p.y < tail_y + 0.06:
+            part, share = ("leg_bl" if p.x > 0 else "leg_br"), ramp(wing[0], wing[1], abs(p.x))
+        if part and share > 0:
+            w = {k: v * (1 - share) for k, v in w.items()}
+            w[part] = share
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return weights
+
+
+def flamingo(name, height, body_z, top_z, neck_y, leg_top, legs, head_y, tail_y, wing, small, artifact, what):
+    return {
+        "height": height,  # it stands tall: scaled by its height
+        "joints": {
+            "body": (0.0, 0.0, body_z),
+            "head": (0.0, neck_y, top_z),  # the neck's foot: the head joint swings the neck
+            "leg_fl": (*legs["leg_fl"], leg_top),
+            "leg_fr": (*legs["leg_fr"], leg_top),
+            "leg_bl": (wing[0], -0.07, top_z - 0.04),  # the wings
+            "leg_br": (-wing[0], -0.07, top_z - 0.04),
+            "tail": (0.0, tail_y, body_z),
+        },
+        "weights": flamingo_weights(leg_top, legs, top_z, head_y, tail_y, wing),
+        "small": small,  # loose feathers and flames this size move whole, so none stretches
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), one mesh, skinned to the Stations rig (decision 0102).",
+    }
+
+
 REGIONS = {
+    # heights: the Blender models' (StationAssets.creature_flamingo[_peacock, _phoenix].size)
+    "creature_flamingo_forge": flamingo("Flamingo", 8.0, 0.0, 0.12, -0.17, -0.12, {"leg_fl": (0.06, 0.035), "leg_fr": (-0.069, 0.09)}, 0.0, 0.13, (0.09, 0.13), 0.06, "c9dca2cc", "pink flamingo"),
+    "creature_flamingo_peacock_forge": flamingo("King Flamingo", 9.8, -0.06, 0.06, -0.18, -0.17, {"leg_fl": (0.05, 0.04), "leg_fr": (-0.05, 0.04)}, -0.06, 0.12, (0.1, 0.15), 0.12, "a84542a7", "peacock flamingo with a crown"),
+    "creature_flamingo_phoenix_forge": flamingo("Phoenix Flamingo", 11.3, -0.03, 0.12, -0.2, -0.2, {"leg_fl": (0.088, -0.02), "leg_fr": (-0.088, -0.02)}, -0.08, 0.12, (0.11, 0.17), 0.25, "675a6361", "Flamingo of Fire"),
     "creature_cheetah_forge": {
         "length": 10.85,  # the Blender cheetah's length (StationAssets.creature_cheetah.size)
         "joints": {

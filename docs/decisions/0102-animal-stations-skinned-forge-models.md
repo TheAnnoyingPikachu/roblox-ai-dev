@@ -177,6 +177,21 @@ Date: 2026-11-19. Task STATION-109.
     odds are unchanged); only its name is now "Thunder Cheetah" (`StationConfig`, the roster in
     `game7-animals.md`).
 
+## The flamingos (2026-11-20)
+
+- SHANNON: "ok now rig the flamingos and rename them if necessary for example king flamingo for peacock
+  flamingo, dont change the pheonix flamingo".
+- The Flamingo is the 00:02 pink flamingo (artifact c9dca2cc, 5,001 triangles).
+- The King Flamingo (the Peacock Flamingo renamed; id `peacock_flamingo` kept, so saves, eggs and odds
+  are unchanged) is the 00:03 peacock flamingo with a crown (artifact a84542a7, 14,686 triangles).
+- The Phoenix Flamingo (name unchanged) is the 00:04 Flamingo of Fire (artifact 675a6361, 15,029
+  triangles).
+- `flamingo_weights`: the game builds a flamingo's wings as its back legs, so the wing feathers on the
+  body's sides follow `leg_bl` / `leg_br`; each leg follows the column it stands on (the pink one stands
+  with its right leg further back); the neck and head follow the head joint at the neck's foot; the
+  fan or flames behind are the tail. Loose feathers and flames under `small` move whole (0.12 for the
+  King, 0.25 for the Phoenix), so they do not stretch. Scaled by height, as they stand tall.
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

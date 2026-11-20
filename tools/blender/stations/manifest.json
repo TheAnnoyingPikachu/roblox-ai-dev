@@ -8037,5 +8037,194 @@
       5.098,
       0.694
     ]
+  },
+  "creature_flamingo_forge": {
+    "fbx": "build/blender/stations/creature_flamingo_forge.fbx",
+    "png": "build/blender/stations/creature_flamingo_forge.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_forge_rest.png",
+    "size_studs": [
+      2.7,
+      8.0,
+      6.28
+    ],
+    "tris": 5001,
+    "parts": {
+      "creature_flamingo_forge_body": 5001
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Flamingo: SHANNON's pink flamingo from ForgeGUI (artifact c9dca2cc), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_forge_body": [
+        0.0,
+        4.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_flamingo_forge_head": [
+        -0.002,
+        5.006,
+        1.422
+      ],
+      "creature_flamingo_forge_leg_fl": [
+        0.502,
+        2.99,
+        -0.3
+      ],
+      "creature_flamingo_forge_leg_fr": [
+        -0.582,
+        2.99,
+        -0.762
+      ],
+      "creature_flamingo_forge_leg_bl": [
+        0.754,
+        4.67,
+        0.582
+      ],
+      "creature_flamingo_forge_leg_br": [
+        -0.758,
+        4.67,
+        0.582
+      ],
+      "creature_flamingo_forge_tail": [
+        -0.002,
+        3.998,
+        -1.098
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.002,
+      3.998,
+      -0.006
+    ]
+  },
+  "creature_flamingo_peacock_forge": {
+    "fbx": "build/blender/stations/creature_flamingo_peacock_forge.fbx",
+    "png": "build/blender/stations/creature_flamingo_peacock_forge.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_peacock_forge_rest.png",
+    "size_studs": [
+      8.72,
+      9.8,
+      6.96
+    ],
+    "tris": 14686,
+    "parts": {
+      "creature_flamingo_peacock_forge_body": 14686
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "King Flamingo: SHANNON's peacock flamingo with a crown from ForgeGUI (artifact a84542a7), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_peacock_forge_body": [
+        0.0,
+        4.9,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_flamingo_peacock_forge_head": [
+        0.0,
+        5.518,
+        1.861
+      ],
+      "creature_flamingo_peacock_forge_leg_fl": [
+        0.515,
+        3.149,
+        -0.404
+      ],
+      "creature_flamingo_peacock_forge_leg_fr": [
+        -0.515,
+        3.149,
+        -0.404
+      ],
+      "creature_flamingo_peacock_forge_leg_bl": [
+        1.03,
+        5.106,
+        0.728
+      ],
+      "creature_flamingo_peacock_forge_leg_br": [
+        -1.03,
+        5.106,
+        0.728
+      ],
+      "creature_flamingo_peacock_forge_tail": [
+        0.0,
+        4.282,
+        -1.228
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      4.282,
+      0.008
+    ]
+  },
+  "creature_flamingo_phoenix_forge": {
+    "fbx": "build/blender/stations/creature_flamingo_phoenix_forge.fbx",
+    "png": "build/blender/stations/creature_flamingo_phoenix_forge.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_phoenix_forge_rest.png",
+    "size_studs": [
+      6.49,
+      11.3,
+      9.94
+    ],
+    "tris": 15029,
+    "parts": {
+      "creature_flamingo_phoenix_forge_body": 15029
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Phoenix Flamingo: SHANNON's Flamingo of Fire from ForgeGUI (artifact 675a6361), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_phoenix_forge_body": [
+        0.0,
+        5.65,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_flamingo_phoenix_forge_head": [
+        0.0,
+        7.075,
+        2.334
+      ],
+      "creature_flamingo_phoenix_forge_leg_fl": [
+        1.045,
+        3.275,
+        0.197
+      ],
+      "creature_flamingo_phoenix_forge_leg_fr": [
+        -1.045,
+        3.275,
+        0.197
+      ],
+      "creature_flamingo_phoenix_forge_leg_bl": [
+        1.306,
+        6.6,
+        0.791
+      ],
+      "creature_flamingo_phoenix_forge_leg_br": [
+        -1.306,
+        6.6,
+        0.791
+      ],
+      "creature_flamingo_phoenix_forge_tail": [
+        0.0,
+        5.294,
+        -1.465
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.294,
+      -0.041
+    ]
   }
 }
