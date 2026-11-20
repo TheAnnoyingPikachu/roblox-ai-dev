@@ -855,13 +855,23 @@
     "texture": null
   },
   "creature_cheetah_lightning_forge": {
-    "model": 127647284219049,
-    "decal": 86775633867230,
+    "model": 117031150558013,
+    "decal": 102658956224889,
     "texture": null
   },
   "creature_cheetah_lightning_forge_rainbow": {
     "model": null,
-    "decal": 111223515093508,
+    "decal": 111631984612006,
+    "texture": null
+  },
+  "creature_cheetah_thunder_forge": {
+    "model": 116196805660799,
+    "decal": 132511917673487,
+    "texture": null
+  },
+  "creature_cheetah_thunder_forge_rainbow": {
+    "model": null,
+    "decal": 94633690503455,
     "texture": null
   }
 }
