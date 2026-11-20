@@ -349,6 +349,66 @@ def knight_pieces(lo, hi):
     return {"body": 1.0}  # torso, belt, tassets and tabard
 
 
+def hexbound(name, height, cx, neck, shoulder, hip, arm, artifact, what, reach=0.17, back=None, robe=False,
+             swap=False, extra=None, ground=None):
+    """SHANNON's ForgeGUI Shadow Legion (decision 0104): standing figures of separate pieces, facing -Y. A
+    piece follows one bone by where its box is (`extra(lo, hi)` first, for a model's odd pieces): the head
+    above the neck (z `neck`), the arms out to the sides past `arm` from the middle (x `cx`) above the hips
+    (z `hip`), anything held out past `reach` (a weapon to the ground), the cape behind y `back`, the
+    legs below the hips. A big piece (torso, robe, cloak) goes by its vertices instead: the head above the
+    neck, the legs below the hips, unless it is a `robe` (it stays with the body, the feet walk under it).
+    `swap`: the weapon is in the left (+X) hand, so that arm is `leg_fr`, the one a chop raises."""
+    left, right = ("leg_fr", "leg_fl") if swap else ("leg_fl", "leg_fr")
+
+    def pieces(lo, hi):
+        if extra:
+            w = extra(lo, hi)
+            if w:
+                return w
+        c = (lo + hi) / 2
+        dx = c.x - cx
+        if lo.z > neck - 0.005 and abs(dx) < arm:
+            return {"head": 1.0}
+        if back is not None and lo.y > back and c.z < shoulder and hi.z - lo.z > 0.1:
+            return {"tail": 1.0}
+        if (c.z > hip and abs(dx) > arm) or abs(dx) > reach:
+            return {left if dx > 0 else right: 1.0}
+        if hi.z < hip + 0.03 and (not robe or hi.z < hip - 0.08):
+            return {"leg_bl" if dx > 0 else "leg_br": 1.0}
+        return None
+
+    def weights(p):
+        dx = p.x - cx
+        hand = ramp(arm - 0.01, arm + 0.03, abs(dx)) * ramp(hip - 0.02, hip + 0.04, p.z)  # an arm grown on
+        rest = 1 - hand
+        head = rest * ramp(neck - 0.01, neck + 0.015, p.z)
+        leg = 0.0 if robe else (rest - head) * ramp(hip + 0.02, hip - 0.03, p.z)
+        w = {"body": rest - head - leg, "head": head, (left if dx > 0 else right): hand}
+        if leg > 0:
+            w["leg_bl" if dx > 0 else "leg_br"] = leg
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    spec = {
+        "height": height,
+        "joints": {
+            "body": (cx, 0.0, hip + 0.03),
+            "head": (cx, 0.0, neck),
+            left: (cx + arm, 0.0, shoulder),
+            right: (cx - arm, 0.0, shoulder),
+            "leg_bl": (cx + arm * 0.6, 0.0, hip),
+            "leg_br": (cx - arm * 0.6, 0.0, hip),
+            "tail": (cx, back if back is not None else 0.06, shoulder),
+        },
+        "weights": weights,
+        "pieces": pieces,
+        "small": 0.05,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), cut from its sheet, skinned to the Stations rig (decision 0104).",
+    }
+    if ground is not None:
+        spec["ground"] = ground
+    return spec
+
+
 REGIONS = {
     # the elephants (lengths: StationAssets.creature_elephant[_frost, _war].size); the head takes all ahead
     # of the shoulders: the ears, the trunk and the tusks (and the War Elephant's trunk axe)
@@ -580,6 +640,25 @@ REGIONS = {
         "small": 0.0,
         "notes": "Hexbound Knight: SHANNON's Shadow Knight from ForgeGUI (artifact 59c956fa), cut out of a whole-concept-sheet model, one mesh of rigid armour pieces skinned to the Stations rig (decision 0102).",
     },
+    # the Shadow Legion (decision 0104): heights in studs from the feet up; `swap` for a weapon in the left hand
+    "foe_knight_heavy_forge": hexbound("Heavy Knight", 9.0, 0.02, 0.09, 0.08, -0.09, 0.09, "49ffb084", "heavy knight (01:27)"),
+    "foe_archer_forge": hexbound("Shadow Archer", 7.4, 0.0, 0.1, 0.11, -0.1, 0.09, "b23e1fe8", "Shadow Archer (01:29)", reach=0.15, back=0.06),
+    "foe_archer_crossbow_forge": hexbound(
+        "Crossbow Troop", 7.6, -0.205, 0.06, 0.08, -0.08, 0.08, "eec5a523", "Crossbow Troop (01:31)", back=0.05,
+        extra=lambda lo, hi: {"body": 1.0} if lo.y > 0.05 and hi.z > 0.15 else None,  # the quiver on its back
+    ),
+    "foe_mage_forge": hexbound("Darkcaster", 8.0, -0.16, 0.077, 0.06, -0.12, 0.08, "fd99f263", "Darkcaster (01:32)", back=0.04, robe=True),
+    "foe_mage_necromancer_forge": hexbound("Necromancer", 8.4, -0.22, 0.045, 0.035, -0.12, 0.08, "8d373a50", "Necromancer (01:34)", reach=0.16, back=0.1, robe=True),
+    "foe_mage_priest_forge": hexbound("Battle Priest", 8.0, -0.21, 0.07, 0.05, -0.1, 0.09, "b78f38cc", "Battle Priest (01:36)", back=0.08, robe=True),
+    "foe_knight_berserker_forge": hexbound("Berserker", 8.6, -0.22, 0.06, 0.05, -0.1, 0.1, "e4ece9c5", "Berserk Assault (01:40)", back=0.05, swap=True),
+    "foe_ogre_forge": hexbound(
+        "Ogre Enforcer", 10.5, -0.2, 0.035, 0.08, -0.12, 0.11, "01343e85", "Ogre Enforcer (01:41)", reach=0.2, swap=True,
+        extra=lambda lo, hi: {"leg_fr": 1.0} if lo.z > 0.05 and hi.x - lo.x > 0.2 else None,  # the club over its shoulder
+    ),
+    "foe_ogre_commander_forge": hexbound(
+        "Ogre Commander", 12.5, -0.005, 0.03, 0.06, -0.17, 0.12, "a5fe2fe0", "Ogre Commander (01:42)", reach=0.2, back=0.07, swap=True,
+        extra=lambda lo, hi: {"body": 1.0} if lo.y > 0.04 and hi.z > 0.15 else None,  # the banner on its back
+    ),
     # lengths: the Blender models' (StationAssets.creature_tortoise[_island, _gemshell].size)
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
@@ -693,8 +772,8 @@ def main():
         islands += 1
         ilo = Vector((min(bm.verts[i].co[k] for i in island) for k in range(3)))
         ihi = Vector((max(bm.verts[i].co[k] for i in island) for k in range(3)))
-        if "pieces" in spec:  # a model of separate rigid pieces: each follows one bone, by where it is
-            w = spec["pieces"](ilo, ihi)
+        w = spec["pieces"](ilo, ihi) if "pieces" in spec else None  # rigid pieces: each follows one bone
+        if w is not None:
             for i in island:
                 weights[i] = w
             print("PIECE", max(w, key=w.get), [round(x, 3) for x in (*ilo, *ihi)])
