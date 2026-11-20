@@ -333,6 +333,54 @@ def lion(name, length, tail_x, artifact, what):
 
 
 REGIONS = {
+    # the elephants (lengths: StationAssets.creature_elephant[_frost, _war].size); the head takes all ahead
+    # of the shoulders: the ears, the trunk and the tusks (and the War Elephant's trunk axe)
+    "creature_elephant_forge": {
+        "length": 24.51,
+        "joints": {
+            "body": (0.0, 0.03, 0.05),
+            "head": (0.0, -0.22, 0.1),
+            "leg_fl": (0.1, -0.12, -0.07),
+            "leg_fr": (-0.1, -0.12, -0.07),
+            "leg_bl": (0.104, 0.21, -0.07),
+            "leg_br": (-0.104, 0.21, -0.07),
+            "tail": (0.0, 0.33, 0.05),
+        },
+        "weights": quad_weights(-0.18, -0.5, 0.32, (-0.2, -0.02), (0.15, 0.31), -0.07, -0.07, 0.03, 0.17),
+        "small": 0.06,
+        "notes": "Elephant (the Titan): SHANNON's second regular elephant from ForgeGUI (artifact fc30d94a), one mesh, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_elephant_frost_forge": {
+        "length": 29.97,
+        "joints": {
+            "body": (0.0, 0.08, 0.05),
+            "head": (0.0, -0.2, 0.1),
+            "leg_fl": (0.09, -0.05, -0.12),
+            "leg_fr": (-0.09, -0.05, -0.12),
+            "leg_bl": (0.09, 0.255, -0.12),
+            "leg_br": (-0.09, 0.255, -0.12),
+            "tail": (0.0, 0.34, 0.03),
+        },
+        # shaggy: the fur hanging round the legs moves with them
+        "weights": quad_weights(-0.18, -0.5, 0.33, (-0.15, 0.06), (0.15, 0.34), -0.12, -0.12, 0.03, 0.17),
+        "small": 0.06,
+        "notes": "Frost Mammoth: SHANNON's Frostfur Mammoth with Crystal Tusks from ForgeGUI (artifact 29d6a1a2), one mesh, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_elephant_war_forge": {
+        "length": 27.0,
+        "joints": {
+            "body": (0.0, 0.12, 0.05),
+            "head": (0.0, -0.12, 0.08),
+            "leg_fl": (0.078, 0.0, -0.09),
+            "leg_fr": (-0.078, 0.0, -0.09),
+            "leg_bl": (0.082, 0.286, -0.09),
+            "leg_br": (-0.082, 0.286, -0.09),
+            "tail": (0.0, 0.35, 0.05),
+        },
+        "weights": quad_weights(-0.1, -0.5, 0.34, (-0.07, 0.07), (0.2, 0.35), -0.09, -0.09, 0.03, 0.15),
+        "small": 0.06,
+        "notes": "War Elephant: SHANNON's armoured war mammoth with a trunk axe from ForgeGUI (artifact 90a97f25), one mesh, skinned to the Stations rig (decision 0102).",
+    },
     # giraffes stand tall: scaled by height (StationAssets.creature_giraffe[_diamond].size); the head joint
     # is the neck's foot, so the head swings the whole neck, as the Blender giraffe's did
     "creature_giraffe_forge": {

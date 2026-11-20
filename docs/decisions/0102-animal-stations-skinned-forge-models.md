@@ -215,6 +215,20 @@ Date: 2026-11-19. Task STATION-109.
 - Giraffes stand tall, so they are scaled by height. Their head joint is the neck's foot, as on the
   Blender giraffe, so the head swings the whole neck (and the acacias on it).
 
+## The elephants (2026-11-20)
+
+- SHANNON: "rig the elephants, do the second regular elephant model the only snow mammoth one and the
+  last war elephant that was generated".
+- Of the models made 00:41 to 00:57: 00:41 the Frostfur Mammoth (the only snow one); 00:43, 00:46 and
+  00:51 armoured war mammoths; 00:50 an axe on its own; 00:56 and 00:57 plain elephants (asked for as
+  armoured mammoths, made from the "Faceted Elephant" picture).
+- The Elephant (the Titan) is 00:57, the second plain one (artifact fc30d94a, 4,817 triangles). The Frost
+  Mammoth is 00:41 (artifact 29d6a1a2, 5,316 triangles). The War Elephant is 00:51, the last war one
+  (artifact 90a97f25, 5,298 triangles).
+- The head takes everything ahead of the shoulders: ears, trunk, tusks, the War Elephant's trunk axe.
+- The sleeping Titan's eyelids come from eye pieces the Blender model recorded (decision 0079); a skinned
+  model has none, so it sleeps without them (its "Zzz" still shows).
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact
