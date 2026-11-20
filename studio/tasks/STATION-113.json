@@ -19,7 +19,8 @@
     "assets/stations/sources/foe_*_forge.glb",
     "src/shared/StationAssets.luau",
     "docs/assets/register.md",
-    "studio/tasks/STATION-113.json"
+    "studio/tasks/STATION-113.json",
+    "tests/StationAssets.spec.luau"
   ],
   "tests": [
     "StationAssets.spec.luau"

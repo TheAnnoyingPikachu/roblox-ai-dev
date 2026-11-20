@@ -409,6 +409,69 @@ def hexbound(name, height, cx, neck, shoulder, hip, arm, artifact, what, reach=0
     return spec
 
 
+def mount(name, height, cx, cy, half, leg_top, artifact, what):
+    """A Shadow Legion rider on a horse (decision 0104), facing -Y: four-legged. Only the horse's legs move
+    (below z `leg_top`, front ones ahead of y `cy`); horse and rider are the body, so a lance or banner
+    never bends. The legs' joints are `half` ahead of and behind `cy`."""
+
+    def weights(p):
+        leg = ramp(leg_top, leg_top - 0.05, p.z)
+        bone = "leg_" + ("f" if p.y < cy else "b") + ("l" if p.x > cx else "r")
+        return {k: v for k, v in {"body": 1 - leg, bone: leg}.items() if v > 0.001}
+
+    return {
+        "height": height,
+        "joints": {
+            "body": (cx, cy, leg_top + 0.08),
+            "head": (cx, cy - 2 * half, leg_top + 0.15),
+            "leg_fl": (cx + 0.06, cy - half, leg_top),
+            "leg_fr": (cx - 0.06, cy - half, leg_top),
+            "leg_bl": (cx + 0.06, cy + half, leg_top),
+            "leg_br": (cx - 0.06, cy + half, leg_top),
+            "tail": (cx, cy + 2 * half, leg_top + 0.1),
+        },
+        "weights": weights,
+        "small": 0.0,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), turned to face forward, skinned to the Stations rig as a four-legged mount (decision 0104).",
+    }
+
+
+def dragon(name, height, cx, cy, head_y, head_z, tail_y, leg_top, wing_x, wing_z, artifact, what):
+    """A Shadow Legion dragon (decision 0104), facing -Y, with the old dragon's two wing bones: the wings out
+    past `wing_x` from the middle (x `cx`) above z `wing_z` (`wing_l` on +X), the head ahead of y `head_y`
+    above `head_z`, the tail behind `tail_y`, the legs below `leg_top` (front ones ahead of `cy`)."""
+
+    def weights(p):
+        dx = p.x - cx
+        wing = ramp(wing_x, wing_x + 0.04, abs(dx)) * ramp(wing_z - 0.02, wing_z + 0.03, p.z)
+        rest = 1 - wing
+        head = rest * ramp(head_y, head_y - 0.04, p.y) * ramp(head_z - 0.02, head_z + 0.03, p.z)
+        tail = (rest - head) * ramp(tail_y, tail_y + 0.04, p.y)
+        leg = (rest - head - tail) * ramp(leg_top, leg_top - 0.04, p.z)
+        w = {"body": rest - head - tail - leg, "head": head, "tail": tail, ("wing_l" if dx > 0 else "wing_r"): wing}
+        if leg > 0:
+            w["leg_" + ("f" if p.y < cy else "b") + ("l" if dx > 0 else "r")] = leg
+        return {k: v for k, v in w.items() if v > 0.001}
+
+    return {
+        "height": height,
+        "joints": {
+            "body": (cx, cy, leg_top + 0.06),
+            "head": (cx, head_y, head_z),
+            "leg_fl": (cx + 0.06, cy - 0.07, leg_top),
+            "leg_fr": (cx - 0.06, cy - 0.07, leg_top),
+            "leg_bl": (cx + 0.06, cy + 0.07, leg_top),
+            "leg_br": (cx - 0.06, cy + 0.07, leg_top),
+            "tail": (cx, tail_y, leg_top + 0.06),
+            "wing_l": (cx + wing_x, cy - 0.02, wing_z),
+            "wing_r": (cx - wing_x, cy - 0.02, wing_z),
+        },
+        "weights": weights,
+        "small": 0.03,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), cut from its sheet and turned to face forward, skinned to the Stations rig with wings (decision 0104).",
+    }
+
+
 REGIONS = {
     # the elephants (lengths: StationAssets.creature_elephant[_frost, _war].size); the head takes all ahead
     # of the shoulders: the ears, the trunk and the tusks (and the War Elephant's trunk axe)
@@ -659,6 +722,16 @@ REGIONS = {
         "Ogre Commander", 12.5, -0.005, 0.03, 0.06, -0.17, 0.12, "a5fe2fe0", "Ogre Commander (01:42)", reach=0.2, back=0.07, swap=True,
         extra=lambda lo, hi: {"body": 1.0} if lo.y > 0.04 and hi.z > 0.15 else None,  # the banner on its back
     ),
+    "foe_golem_forge": hexbound("Siege Golem", 12.0, -0.18, 0.1, 0.06, -0.13, 0.13, "0446aea7", "Siege Golem (01:56)", reach=0.22),
+    "foe_knight_shield_forge": hexbound("Shieldbearer", 8.0, -0.37, 0.08, 0.05, -0.125, 0.07, "23742e89", "Shieldbearer (02:00)", reach=0.07),
+    "foe_knight_shield_commander_forge": hexbound(
+        "Shieldbearer Commander", 9.5, -0.295, 0.18, 0.13, 0.03, 0.07, "0b26e3c4", "Shieldbearer Commander (02:01)", reach=0.1
+    ),
+    "foe_cavalry_forge": mount("Cavalry", 11.0, -0.125, 0.06, 0.15, -0.17, "62f553d0", "Cavalry (01:45)"),
+    "foe_cavalry_commander_forge": mount("Cavalry Commander", 14.0, 0.0, -0.03, 0.28, -0.33, "69969c83", "Cavalry Commander (01:48)"),
+    "foe_dragon_drake_forge": dragon("Dark Drake", 9.0, -0.14, 0.1, 0.0, 0.02, 0.22, -0.09, 0.1, 0.0, "b91a8625", "Dark Drake (01:49)"),
+    "foe_dragon_forge": dragon("Shadow Dragon", 13.0, -0.08, 0.12, -0.03, 0.02, 0.25, -0.08, 0.12, 0.05, "435d1dd3", "Shadow Dragon (01:50)"),
+    "foe_dragon_alpha_forge": dragon("Ancient Alpha Dragon", 16.0, 0.0, 0.15, 0.08, 0.08, 0.3, -0.05, 0.1, 0.05, "f52635f1", "Ancient Alpha Dragon (01:54)"),
     # lengths: the Blender models' (StationAssets.creature_tortoise[_island, _gemshell].size)
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),

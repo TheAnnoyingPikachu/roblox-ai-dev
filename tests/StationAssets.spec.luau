@@ -214,7 +214,7 @@ describe("StationAssets", function()
 				expect(tris <= 20000).toBeTruthy()
 			end
 			-- every piece but the body turns on a joint; a dragon's two wings are two more
-			expect(count(entry.joints)).toBe(if name == "foe_dragon" then 8 else 6)
+			expect(count(entry.joints)).toBe(if string.find(name, "^foe_dragon") then 8 else 6)
 		end
 	end)
 
