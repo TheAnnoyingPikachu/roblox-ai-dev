@@ -79,31 +79,6 @@
     "decal": 84952892150281,
     "texture": null
   },
-  "foe_archer": {
-    "model": 106670895681049,
-    "decal": 128781795042597,
-    "texture": 111266171780821
-  },
-  "foe_mage": {
-    "model": 140217762320240,
-    "decal": 132764107277009,
-    "texture": 76772744158895
-  },
-  "foe_knight": {
-    "model": 113125543550946,
-    "decal": 70602162647114,
-    "texture": 121031381188327
-  },
-  "foe_ogre": {
-    "model": 82770174632710,
-    "decal": 140539859595937,
-    "texture": 131699630558750
-  },
-  "foe_dragon": {
-    "model": 79434671365622,
-    "decal": 107048042960848,
-    "texture": 87545615844296
-  },
   "creature_lion_shadow": {
     "model": 84330657139211,
     "decal": 96709137028260,
@@ -709,11 +684,6 @@
     "decal": 72403370047769,
     "texture": null
   },
-  "foe_imp": {
-    "model": 84731133206631,
-    "decal": 133656573450079,
-    "texture": null
-  },
   "creature_lion_forge": {
     "model": 114461348923771,
     "decal": 90999280513226,
@@ -987,6 +957,91 @@
   "foe_knight_forge": {
     "model": 140600414698054,
     "decal": 135675593673104,
+    "texture": null
+  },
+  "foe_knight_heavy_forge": {
+    "model": 139943912913799,
+    "decal": 114188768756719,
+    "texture": null
+  },
+  "foe_archer_forge": {
+    "model": 102986958835531,
+    "decal": 75454675228376,
+    "texture": null
+  },
+  "foe_archer_crossbow_forge": {
+    "model": 123505833264939,
+    "decal": 87682253196769,
+    "texture": null
+  },
+  "foe_mage_forge": {
+    "model": 113836522474974,
+    "decal": 124385308300527,
+    "texture": null
+  },
+  "foe_mage_necromancer_forge": {
+    "model": 74942580362584,
+    "decal": 128883405462171,
+    "texture": null
+  },
+  "foe_mage_priest_forge": {
+    "model": 122153852413214,
+    "decal": 84932186893884,
+    "texture": null
+  },
+  "foe_knight_berserker_forge": {
+    "model": 76643259589772,
+    "decal": 76846485277350,
+    "texture": null
+  },
+  "foe_ogre_forge": {
+    "model": 92783395430543,
+    "decal": 72335865836335,
+    "texture": null
+  },
+  "foe_ogre_commander_forge": {
+    "model": 94454569763838,
+    "decal": 91937609359090,
+    "texture": null
+  },
+  "foe_golem_forge": {
+    "model": 72060610713040,
+    "decal": 74168046820774,
+    "texture": null
+  },
+  "foe_knight_shield_forge": {
+    "model": 117192951186458,
+    "decal": 126703900877929,
+    "texture": null
+  },
+  "foe_knight_shield_commander_forge": {
+    "model": 109470605137171,
+    "decal": 86308633229514,
+    "texture": null
+  },
+  "foe_cavalry_forge": {
+    "model": 138319104867885,
+    "decal": 75989773266246,
+    "texture": null
+  },
+  "foe_cavalry_commander_forge": {
+    "model": 121149669277647,
+    "decal": 126749271683283,
+    "texture": null
+  },
+  "foe_dragon_drake_forge": {
+    "model": 112160994131522,
+    "decal": 91041925719052,
+    "texture": null
+  },
+  "foe_dragon_forge": {
+    "model": 115994306746130,
+    "decal": 124959025425159,
+    "texture": null
+  },
+  "foe_dragon_alpha_forge": {
+    "model": 121233078023261,
+    "decal": 75651433434827,
     "texture": null
   }
 }
