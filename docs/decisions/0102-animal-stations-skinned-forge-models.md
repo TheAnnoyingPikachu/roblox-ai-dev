@@ -192,6 +192,19 @@ Date: 2026-11-19. Task STATION-109.
   fan or flames behind are the tail. Loose feathers and flames under `small` move whole (0.12 for the
   King, 0.25 for the Phoenix), so they do not stretch. Scaled by height, as they stand tall.
 
+## The lions (2026-11-20)
+
+- SHANNON: "rig the lions and make sure you use the second model for the shadow and sun lion and the
+  latest regular lion model", then, after seeing the picks, "yes rig those lions".
+- The Lion is the 00:19 regular lion (artifact c46416c2): tawny with a red-brown spiky mane, 5,222
+  triangles. It replaces the 22:03 lion (artifact 4fffb41e) and its `lion_weights`.
+- The Shadow Lion is the 00:13 Shadowfang Purple Lion (artifact 68e2e5b5), the second of the two
+  crescent shadow lions (00:11, 00:13): near-black, purple mane, a crescent on the tail, 15,063 triangles.
+- The Sun Lion is the 00:17 Sunmane (artifact efa580ee), the second of the two sun lions (the 00:15 one
+  was asked for as "Shadowfang" but came out a sun lion): golden, a flame mane, a sun on the tail tip,
+  3,156 triangles.
+- One body plan: `lion` (with `quad_weights`).
+
 ## Facts
 
 - The sources are in `assets/stations/sources/creature_<animal>_forge.glb`: the lion (ForgeGUI artifact

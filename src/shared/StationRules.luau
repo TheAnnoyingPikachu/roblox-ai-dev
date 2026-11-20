@@ -167,9 +167,11 @@ StationRules.FORGE = {
 	phoenix_flamingo = "creature_flamingo_phoenix_forge",
 	pharaoh_jackal = "creature_jackal_pharaoh_forge",
 	rhino = "creature_rhino_forge",
+	shadow_lion = "creature_lion_shadow_forge",
 	sphinx_jackal = "creature_jackal_sphinx_forge",
 	star_meerkat = "creature_meerkat_star_forge",
 	storm_meerkat = "creature_meerkat_storm_forge",
+	sun_lion = "creature_lion_sun_forge",
 	tortoise = "creature_tortoise_forge",
 } :: { [string]: string }
 function StationRules.assetOf(s: string, v: string?): string

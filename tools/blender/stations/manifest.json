@@ -7035,62 +7035,62 @@
     "png": "build/blender/stations/creature_lion_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_forge_rest.png",
     "size_studs": [
-      4.89,
-      6.96,
+      5.01,
+      7.63,
       13.0
     ],
-    "tris": 2961,
+    "tris": 5222,
     "parts": {
-      "creature_lion_forge_body": 2961
+      "creature_lion_forge_body": 5222
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Lion: the ForgeGUI model (Low poly, Game-ready, Stylized roblox lion), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Lion: SHANNON's lion (now do it again following this reference) from ForgeGUI (artifact c46416c2), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_lion_forge_body": [
         0.0,
-        3.478,
+        3.816,
         -0.0
       ]
     },
     "joints": {
       "creature_lion_forge_head": [
-        -0.001,
-        3.49,
-        1.916
+        -0.003,
+        5.19,
+        4.095
       ],
       "creature_lion_forge_leg_fl": [
-        0.956,
-        2.122,
-        3.968
+        1.357,
+        3.285,
+        3.686
       ],
       "creature_lion_forge_leg_fr": [
-        -0.959,
-        2.122,
-        3.968
+        -1.364,
+        3.285,
+        3.686
       ],
       "creature_lion_forge_leg_bl": [
-        0.683,
-        2.464,
-        -0.614
+        1.357,
+        3.421,
+        -1.755
       ],
       "creature_lion_forge_leg_br": [
-        -0.685,
-        2.464,
-        -0.614
+        -1.364,
+        3.421,
+        -1.755
       ],
       "creature_lion_forge_tail": [
-        -0.001,
-        3.011,
-        -1.845
+        -0.003,
+        4.102,
+        -3.388
       ]
     },
     "skinned": true,
     "root": [
-      -0.001,
-      2.806,
-      0.343
+      -0.003,
+      4.51,
+      1.102
     ]
   },
   "creature_jackal_forge": {
@@ -8225,6 +8225,132 @@
       0.0,
       5.294,
       -0.041
+    ]
+  },
+  "creature_lion_shadow_forge": {
+    "fbx": "build/blender/stations/creature_lion_shadow_forge.fbx",
+    "png": "build/blender/stations/creature_lion_shadow_forge.png",
+    "preview": "build/blender/stations/previews/creature_lion_shadow_forge_rest.png",
+    "size_studs": [
+      6.12,
+      8.62,
+      15.03
+    ],
+    "tris": 15063,
+    "parts": {
+      "creature_lion_shadow_forge_body": 15063
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shadow Lion: SHANNON's Shadowfang Purple Lion from ForgeGUI (artifact 68e2e5b5), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_lion_shadow_forge_body": [
+        0.0,
+        4.312,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_lion_shadow_forge_head": [
+        0.0,
+        5.862,
+        4.758
+      ],
+      "creature_lion_shadow_forge_leg_fl": [
+        1.577,
+        3.654,
+        4.285
+      ],
+      "creature_lion_shadow_forge_leg_fr": [
+        -1.577,
+        3.654,
+        4.285
+      ],
+      "creature_lion_shadow_forge_leg_bl": [
+        1.577,
+        3.812,
+        -2.023
+      ],
+      "creature_lion_shadow_forge_leg_br": [
+        -1.577,
+        3.812,
+        -2.023
+      ],
+      "creature_lion_shadow_forge_tail": [
+        -0.788,
+        4.6,
+        -3.915
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.073,
+      1.288
+    ]
+  },
+  "creature_lion_sun_forge": {
+    "fbx": "build/blender/stations/creature_lion_sun_forge.fbx",
+    "png": "build/blender/stations/creature_lion_sun_forge.png",
+    "preview": "build/blender/stations/previews/creature_lion_sun_forge_rest.png",
+    "size_studs": [
+      6.61,
+      9.49,
+      16.05
+    ],
+    "tris": 3156,
+    "parts": {
+      "creature_lion_sun_forge_body": 3156
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Sun Lion: SHANNON's Fierce Low-Poly Sunmane Lion from ForgeGUI (artifact efa580ee), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_lion_sun_forge_body": [
+        0.0,
+        4.747,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_lion_sun_forge_head": [
+        0.0,
+        6.444,
+        5.046
+      ],
+      "creature_lion_sun_forge_leg_fl": [
+        1.68,
+        4.091,
+        4.541
+      ],
+      "creature_lion_sun_forge_leg_fr": [
+        -1.68,
+        4.091,
+        4.541
+      ],
+      "creature_lion_sun_forge_leg_bl": [
+        1.68,
+        4.259,
+        -2.181
+      ],
+      "creature_lion_sun_forge_leg_br": [
+        -1.68,
+        4.259,
+        -2.181
+      ],
+      "creature_lion_sun_forge_tail": [
+        0.0,
+        5.099,
+        -4.197
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.604,
+      1.348
     ]
   }
 }

@@ -42,24 +42,6 @@ def ramp(a, b, x):
     return t * t * (3 - 2 * t)
 
 
-def lion_weights(p):
-    """The ForgeGUI lion of 2026-11-19 ("Low poly, Game-ready, Stylized roblox lion with NO baseplate"):
-    a big mane from the nose back to y -0.24, short front legs under it (paws at x 0.15, y -0.64), a
-    slender body, staggered hind legs (paws at y 0.02 and 0.15) and a long tail with a big tuft."""
-    tail = ramp(0.25, 0.31, p.y)
-    head = ramp(-0.22, -0.32, p.y)
-    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg, down = None, 0.0
-    if abs(abs(p.x) - 0.14) < 0.12 and abs(p.y + 0.6) < 0.17:
-        leg, down = ("leg_fl" if p.x > 0 else "leg_fr"), ramp(-0.19, -0.27, p.z)
-    elif abs(abs(p.x) - 0.1) < 0.12 and -0.11 < p.y < 0.3:
-        leg, down = ("leg_bl" if p.x > 0 else "leg_br"), ramp(-0.14, -0.22, p.z)
-    if leg and down > 0:  # the leg's share grows below the body
-        w = {k: v * (1 - down) for k, v in w.items()}
-        w[leg] = down
-    return {k: v for k, v in w.items() if v > 0.001}
-
-
 def jackal_weights(p):
     """SHANNON's "Low-Poly Jackal in Profile" (ForgeGUI artifact 0a34fc4d), the Jackal: tan with a black
     saddle, the head at y < -0.32, front legs at x +-0.08, y -0.24 (apart below z -0.12), hind legs at
@@ -330,7 +312,31 @@ def flamingo(name, height, body_z, top_z, neck_y, leg_top, legs, head_y, tail_y,
     }
 
 
+def lion(name, length, tail_x, artifact, what):
+    """SHANNON's ForgeGUI lions (one body plan, one reference): a big mane round the head, front paws at
+    x +-0.08..0.13, y -0.3, hind paws at y 0.14, legs apart below z -0.03, a tail rising from the rump."""
+    return {
+        "length": length,
+        "joints": {
+            "body": (0.0, -0.08, 0.05),
+            "head": (0.0, -0.3, 0.1),
+            "leg_fl": (0.1, -0.27, -0.04),
+            "leg_fr": (-0.1, -0.27, -0.04),
+            "leg_bl": (0.1, 0.13, -0.03),
+            "leg_br": (-0.1, 0.13, -0.03),
+            "tail": (tail_x, 0.25, 0.02),
+        },
+        "weights": quad_weights(-0.28, -0.1, 0.24, (-0.37, -0.14), (0.02, 0.26), -0.03, -0.02, 0.04, 0.2),
+        "small": 0.06,
+        "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), one mesh, skinned to the Stations rig (decision 0102).",
+    }
+
+
 REGIONS = {
+    # lengths: the Blender models' (StationAssets.creature_lion[_shadow, _sun].size)
+    "creature_lion_forge": lion("Lion", 13.0, 0.0, "c46416c2", "lion (now do it again following this reference)"),
+    "creature_lion_shadow_forge": lion("Shadow Lion", 15.03, -0.05, "68e2e5b5", "Shadowfang Purple Lion"),
+    "creature_lion_sun_forge": lion("Sun Lion", 16.05, 0.0, "efa580ee", "Fierce Low-Poly Sunmane Lion"),
     # heights: the Blender models' (StationAssets.creature_flamingo[_peacock, _phoenix].size)
     "creature_flamingo_forge": flamingo("Flamingo", 8.0, 0.0, 0.12, -0.17, -0.12, {"leg_fl": (0.06, 0.035), "leg_fr": (-0.069, 0.09)}, 0.0, 0.13, (0.09, 0.13), 0.06, "c9dca2cc", "pink flamingo"),
     "creature_flamingo_peacock_forge": flamingo("King Flamingo", 9.8, -0.06, 0.06, -0.18, -0.17, {"leg_fl": (0.05, 0.04), "leg_fr": (-0.05, 0.04)}, -0.06, 0.12, (0.1, 0.15), 0.12, "a84542a7", "peacock flamingo with a crown"),
@@ -445,22 +451,6 @@ REGIONS = {
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
     "creature_tortoise_gemshell_forge": tortoise("Gemshell Tortoise", 13.4, (0.15, 0.42), 0.28, 0.33, "now-make-this-in-the-roblox-style.glb", "gem tortoise (downloaded from the ForgeGUI site)"),
-    "creature_lion_forge": {
-        "length": 13.0,  # the Blender lion's length (StationAssets.creature_lion.size)
-        "joints": {
-            "body": (0.0, -0.05, -0.1),
-            "head": (0.0, -0.28, 0.0),
-            "leg_fl": (0.14, -0.58, -0.2),
-            "leg_fr": (-0.14, -0.58, -0.2),
-            "leg_bl": (0.1, 0.09, -0.15),
-            "leg_br": (-0.1, 0.09, -0.15),
-            "tail": (0.0, 0.27, -0.07),
-        },
-        "weights": lion_weights,
-        "small": 0.06,
-        "shade": "flat",  # a low-poly model: every facet crisp
-        "notes": "Lion: the ForgeGUI model (Low poly, Game-ready, Stylized roblox lion), one mesh, skinned to the Stations rig (decision 0102).",
-    },
 }
 
 
