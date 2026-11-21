@@ -8049,9 +8049,9 @@
     "png": "build/blender/stations/foe_archer_forge.png",
     "preview": "build/blender/stations/previews/foe_archer_forge_rest.png",
     "size_studs": [
-      8.29,
+      5.84,
       7.4,
-      4.62
+      4.65
     ],
     "tris": 6618,
     "parts": {
@@ -8070,51 +8070,56 @@
     },
     "joints": {
       "foe_archer_forge_head": [
-        1.245,
-        5.266,
-        -0.118
+        0.0,
+        5.252,
+        -0.119
       ],
       "foe_archer_forge_tail": [
-        1.245,
-        4.88,
-        -0.889
+        0.0,
+        4.864,
+        -0.895
       ],
       "foe_archer_forge_leg_fl": [
-        2.556,
-        4.88,
-        -0.272
+        1.319,
+        4.864,
+        -0.274
       ],
       "foe_archer_forge_leg_fr": [
-        -0.066,
-        4.88,
-        -0.272
+        -1.319,
+        4.864,
+        -0.274
       ],
       "foe_archer_forge_leg_bl": [
-        1.862,
-        2.721,
-        -0.272
+        0.621,
+        2.691,
+        -0.274
       ],
       "foe_archer_forge_leg_br": [
-        0.628,
-        2.721,
-        -0.272
+        -0.621,
+        2.691,
+        -0.274
+      ],
+      "foe_archer_forge_arrow": [
+        -1.901,
+        6.594,
+        -1.166
       ],
       "foe_archer_forge_elbow_l": [
-        2.858,
-        3.821,
-        -0.137
+        1.623,
+        3.798,
+        -0.138
       ],
       "foe_archer_forge_elbow_r": [
-        -0.367,
-        3.821,
-        -0.137
+        -1.623,
+        3.798,
+        -0.138
       ]
     },
     "skinned": true,
     "root": [
-      1.245,
-      3.338,
-      -0.272
+      0.0,
+      3.312,
+      -0.274
     ]
   },
   "foe_archer_crossbow_forge": {

@@ -80,6 +80,9 @@ Date: 2026-11-20. Tasks STATION-113, STATION-114.
   `elbow_r` (children of `leg_fl` and `leg_fr`; `elbows` in skin_forge, in `JOINTS` in Creatures.client), so an
   arm bends: a clip that does not name them leaves the arm straight. The Battle Priest's arms and the Shadow
   Archer's arrow arm rest bent. A held weapon can carry `tip` and `neck` bones for a trail (`tips`).
+  Each can have an idle pose of its own (`STANCES` in Creatures.client, SHANNON's picks): a held stance with a
+  slow breath, which its attack, power move and flinch start from and settle back into. The Shadow Archer's
+  arrow sits in its quiver on an `arrow` bone and is brought to the string only for a shot.
 - `skin_forge.py --stretch` poses a model at the peak of each of the game's clips and draws every face
   stretched by a quarter red: all 18 are at 0% (the first rigs reached 36%).
 - Creatures: a `foe_dragon*` model is Winged, a `foe_cavalry*` one four-legged, any other foe Biped; the

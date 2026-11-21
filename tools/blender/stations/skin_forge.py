@@ -652,7 +652,9 @@ REGIONS = {
         blend=2,  # arms clear of the body: their shoulders bend
         # from the A-pose to arms by its sides, the arrow arm bent so the arrow in its fist points ahead and down
         rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25), "elbow_r": (50, 0, 0)},
-        held={"split": 0.8, "+x": "leg_fl", "-x": "leg_fr"},  # the bow, and the arrow in its drawing hand (job 6c0eeb1e)
+        # the bow in its hand, and an arrow (job 6c0eeb1e) in its quiver on a bone of its own, at its nock: the
+        # shot brings it to the string (Creatures.client)
+        held={"split": 0.8, "+x": "leg_fl", "-x": "leg_fr", "stowed": {"bone": "arrow", "behind": 0.05, "left_of": 0.15, "at": (-0.245, 0.115, 0.373)}},
         elbows={"leg_fl": (0.357, -0.035, -0.066), "leg_fr": (-0.357, -0.035, -0.066)},
         turn=False,
     ),
@@ -1213,6 +1215,11 @@ def main():
             if us and sum(1 for u in us if u > spec["held"]["split"]) >= 0.9 * len(us):
                 side = sum(bm.verts[i].co.x for i in island) / len(island) - spec["held"].get("cx", 0.0)
                 bone = spec["held"]["+x" if side > 0 else "-x"]
+                stowed = spec["held"].get("stowed")  # a prop kept on its back (an arrow in its quiver) has a bone of its own
+                mid = sum((bm.verts[i].co for i in island), Vector()) / len(island)
+                if stowed and mid.y > stowed["behind"] and mid.x < stowed["left_of"]:
+                    bone = stowed["bone"]
+                    spec["joints"][bone] = stowed["at"]
                 for i in island:
                     weights[i] = {bone: 1.0}
                 held_verts.update(island)

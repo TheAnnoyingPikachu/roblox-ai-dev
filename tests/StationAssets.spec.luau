@@ -221,6 +221,7 @@ describe("StationAssets", function()
 					string.find(part, "_tip$") == nil
 					and string.find(part, "_neck$") == nil
 					and string.find(part, "_elbow_[lr]$") == nil
+					and string.find(part, "_arrow$") == nil -- (nor a stowed arrow's)
 				then
 					turning += 1
 				end

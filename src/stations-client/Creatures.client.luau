@@ -24,8 +24,20 @@ type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
 
 -- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them)
-local JOINTS =
-	{ "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "wing_l", "wing_r", "elbow_l", "elbow_r" }
+local JOINTS = {
+	"body",
+	"head",
+	"leg_fl",
+	"leg_fr",
+	"leg_bl",
+	"leg_br",
+	"tail",
+	"wing_l",
+	"wing_r",
+	"elbow_l",
+	"elbow_r",
+	"arrow",
+}
 local TAU = math.pi * 2
 local MAGIC_IMPACT = 0.92 -- seconds into "magic" when the front feet land
 
@@ -360,6 +372,7 @@ local ATTACKS: { [string]: Clip } = {
 				leg_fl = { -50, 1, -76 },
 				leg_fr = { 62, 45, 32 },
 				elbow_r = { 43, 89, 46 },
+				arrow = { 0, 0, -56.3, -0.652, -0.84, -0.97 },
 			},
 		},
 		{
@@ -372,6 +385,20 @@ local ATTACKS: { [string]: Clip } = {
 				elbow_r = { 58, 89, 46 },
 				leg_bl = { 0, 0, -8 },
 				leg_br = { 0, 0, 8 },
+				arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+			},
+		},
+		{
+			0.42,
+			{
+				body = { 2, -88, 0, 0, 0, 0.1 },
+				head = { 0, 78, 0 },
+				leg_fl = { -65, 1, -98 },
+				leg_fr = { 49, 14, 60 },
+				elbow_r = { 58, 89, 46 },
+				leg_bl = { 0, 0, -8 },
+				leg_br = { 0, 0, 8 },
+				arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
 			},
 		},
 		{
@@ -752,26 +779,61 @@ local MAGICS: { [string]: Clip } = {
 	),
 	-- the Shadow Archer (elbows): a volley, side-on with the bow tipped up at the sky, the arrow drawn back
 	-- and loosed at the impact
-	foe_archer_forge = powerClip({
-		body = { 0, -88, -30 },
-		head = { 0, 78, 0 },
-		leg_fl = { -65, 1, -98 },
-		leg_fr = { 56, 38, 40 },
-		elbow_r = { 49, 89, 46 },
-	}, {
-		body = { 0, -88, -38, 0, 0.04, 0.1 },
-		head = { 0, 78, 0 },
-		leg_fl = { -65, 1, -98 },
-		leg_fr = { 49, 14, 58 },
-		elbow_r = { 58, 89, 46 },
-	}, {
-		body = { 0, -86, -34, 0, 0, 0.3 },
-		head = { 0, 76, 0 },
-		leg_fl = { -65, 1, -98 },
-		leg_fr = { 47, 14, 70 },
-		elbow_r = { 40, 89, 46 },
-		tail = { 12 },
-	}),
+	foe_archer_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.40,
+				{
+					body = { 0, -88, -30 },
+					head = { 0, 78, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 56, 38, 40 },
+					elbow_r = { 49, 89, 46 },
+					arrow = { 0, 0, -56.3, -0.568, -0.84, -0.97 },
+				},
+			},
+			{
+				0.78,
+				{
+					body = { 0, -88, -38, 0, 0.04, 0.1 },
+					head = { 0, 78, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 49, 14, 58 },
+					elbow_r = { 58, 89, 46 },
+					arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+				},
+			},
+			{
+				0.90,
+				{
+					body = { 0, -88, -38, 0, 0.04, 0.1 },
+					head = { 0, 78, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 49, 14, 60 },
+					elbow_r = { 58, 89, 46 },
+					arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+				},
+			},
+			{
+				MAGIC_IMPACT,
+				{
+					body = { 0, -86, -34, 0, 0, 0.3 },
+					head = { 0, 76, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 47, 14, 70 },
+					elbow_r = { 40, 89, 46 },
+					tail = { 12 },
+				},
+			},
+			{
+				1.12,
+				{ body = { 0, -60, -10 }, head = { 0, 52, 0 }, leg_fl = { -50, 1, -76 }, leg_fr = { 30, 10, 40 } },
+			},
+			{ 1.60, {} },
+		},
+	},
 }
 
 -- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
@@ -867,6 +929,68 @@ local function idleBiped(t: number): Pose
 		leg_fr = { -3 * math.sin(t * TAU / 3.4) },
 		tail = { 5 * math.sin(t * TAU / 2.6), 0, 0 },
 	}
+end
+
+-- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
+-- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
+local STANCES: { [string]: Pose } = {
+	-- at ease: weight on one leg, the sword's point lowered, the shield hanging easy, head turned
+	foe_knight_forge = {
+		body = { 0, 6, 2 },
+		head = { 0, -22, 0 },
+		leg_fl = { 4 },
+		elbow_l = { 18, 0, 8 },
+		leg_fr = { -28, 0, 4 },
+		leg_bl = { -4 },
+		leg_br = { 6 },
+	},
+	-- at ease: the bow low before it, head turned to watch (its arrow is in its quiver)
+	foe_archer_forge = {
+		body = { 0, -10, 0 },
+		head = { -2, 28, 0 },
+		leg_fl = { 12, 0, 4 },
+		elbow_l = { 20 },
+		leg_bl = { 6 },
+		leg_br = { -5 },
+	},
+	-- the hammer's head resting on the ground before it, the shield arm bent at its side
+	foe_knight_heavy_forge = {
+		body = { -3, -6, 0 },
+		head = { 3, 6, 0 },
+		leg_fr = { -14, 16, 0 },
+		leg_fl = { 8 },
+		elbow_l = { 28, 0, 12 },
+		leg_bl = { 6 },
+		leg_br = { -5 },
+	},
+	-- reading: its arms rest bent (the staff planted, the book open before it), head bowed to the pages
+	foe_mage_priest_forge = { head = { -12, 10, 0 } },
+}
+
+local function stanceAt(stance: Pose, t: number): Pose
+	local out = table.clone(stance)
+	local b, h = stance.body or {}, stance.head or {}
+	local breath = math.sin(t * TAU / 3.4)
+	out.body = { (b[1] or 0) + breath, b[2] or 0, b[3] or 0, b[4] or 0, (b[5] or 0) + 0.02 * breath, b[6] or 0 }
+	out.head = { (h[1] or 0) + 1.5 * math.sin(t * TAU / 3.4 + 0.8), (h[2] or 0) + 2 * math.sin(t * TAU / 6), h[3] or 0 }
+	return out
+end
+
+-- `a` and `b` mixed joint by joint: all `a` at w = 0, all `b` at 1 (and past 1 `b` laid over `a` whole: w = 2)
+local function mixed(a: Pose, b: Pose, w: number): Pose
+	local out: Pose = {}
+	for _, joint in JOINTS do
+		local x, y = a[joint], b[joint]
+		if x or y then
+			local v = table.create(6, 0)
+			for k = 1, 6 do
+				local p, q = if x then x[k] or 0 else 0, if y then y[k] or 0 else 0
+				v[k] = if w > 1 then p + q else p + (q - p) * w
+			end
+			out[joint] = v
+		end
+	end
+	return out
 end
 
 -- An upright animal (a meerkat) has long feet: it takes short steps, or their ends dig in.
@@ -1889,6 +2013,18 @@ RunService.PreSimulation:Connect(function(dt: number)
 		else
 			target = if biped then idleBiped(time) else idle(time)
 		end
+		local stance = STANCES[(model:GetAttribute("Asset") :: string?) or ""]
+		if stance then
+			local length = if anim == "attack" then ATTACK.length elseif anim == "magic" then MAGIC.length else 0
+			if anim == "hit" and t < HIT.length then
+				target = mixed(stanceAt(stance, time), target, 2) -- a flinch on top of its stance
+			elseif t < length then
+				-- out of its stance into the move, and back into it at the end
+				target = mixed(stanceAt(stance, time), target, math.clamp(math.min(t / 0.12, (length - t) / 0.2), 0, 1))
+			elseif anim == nil or anim == "idle" or anim == "attack" or anim == "magic" or anim == "hit" then
+				target = stanceAt(stance, time)
+			end
+		end
 		local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
 		if own then
 			weaponFx(model, own, anim, at, t)
@@ -1915,7 +2051,8 @@ RunService.PreSimulation:Connect(function(dt: number)
 		for _, joint in JOINTS do
 			local goal, v = target[joint], rig.now[joint]
 			for k = 1, 6 do
-				v[k] += ((if goal then goal[k] or 0 else 0) - v[k]) * blend
+				-- (an arrow is in the quiver or on the string, never seen between: it does not ease)
+				v[k] += ((if goal then goal[k] or 0 else 0) - v[k]) * (if joint == "arrow" then 1 else blend)
 			end
 		end
 		local lift = Vector3.zero -- feet stay on the ground, except in a fall
