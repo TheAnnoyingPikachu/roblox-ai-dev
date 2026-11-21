@@ -975,8 +975,8 @@
     "texture": null
   },
   "foe_mage_forge": {
-    "model": 70958351214685,
-    "decal": 98420547005885,
+    "model": 130466015457065,
+    "decal": 87973049714209,
     "texture": null
   },
   "foe_mage_necromancer_forge": {
@@ -995,8 +995,8 @@
     "texture": null
   },
   "foe_ogre_forge": {
-    "model": 132869653245093,
-    "decal": 117717609115425,
+    "model": 102762004854888,
+    "decal": 83835154165331,
     "texture": null
   },
   "foe_ogre_commander_forge": {
