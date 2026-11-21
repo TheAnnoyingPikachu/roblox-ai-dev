@@ -308,6 +308,121 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Ogre Enforcer's haymaker sweep (SHANNON's pick), out of dragging its club: twists its forearm so the club sticks
+	-- out sideways from its fist, winds back, then turns through and sweeps the club's spiked side across at the contact
+	-- (0.44 s), and lets it drop back to the ground
+	foe_ogre_forge = attack({
+		{
+			0.00,
+			{
+				leg_fr = { -20, 10 },
+				elbow_r = { 10 },
+			},
+		},
+		{
+			0.16,
+			{
+				body = { 4, -45, 0, 0, 0.02, 0.15 },
+				head = { 0, 35 },
+				leg_fl = { 20, 0, -10 },
+				leg_fr = { 10, -20, 40 },
+				elbow_r = { 20, -90 },
+				leg_bl = { 8 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 6, -55, 0, 0, 0.03, 0.2 },
+				head = { 0, 40 },
+				leg_fl = { 24, 0, -12 },
+				leg_fr = { 10, -30, 45 },
+				elbow_r = { 20, -95 },
+				leg_bl = { 10 },
+				leg_br = { -8 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -8, 25, 0, 0, -0.05, -0.6 },
+				head = { 0, -15 },
+				leg_fl = { 16, 0, -8 },
+				leg_fr = { 25, 30, 40 },
+				elbow_r = { 15, -90 },
+				leg_bl = { 20 },
+				leg_br = { -14 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { -8, 45, 0, 0, -0.05, -0.55 },
+				head = { 0, -30 },
+				leg_fl = { 14, 0, -6 },
+				leg_fr = { 25, 60, 35 },
+				elbow_r = { 15, -85 },
+				leg_bl = { 18 },
+				leg_br = { -12 },
+			},
+		},
+		{
+			0.95,
+			{
+				leg_fr = { -20, 10 },
+				elbow_r = { 10 },
+			},
+		},
+	}),
+	-- the Darkcaster's staff thump (SHANNON's pick), out of its orb in its palm: lifts its staff upright and slams its
+	-- foot into the ground before it at the contact (0.44 s), leaning in
+	foe_mage_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 6, -6, 0, 0, 0.05, 0.15 },
+				head = { 8, -6 },
+				leg_fr = { 45 },
+				elbow_r = { -45 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 8, -8, 0, 0, 0.08, 0.2 },
+				head = { 10, -8 },
+				leg_fr = { 60 },
+				elbow_r = { -58 },
+				leg_bl = { -4 },
+				leg_br = { 4 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -14, -10, 0, 0, -0.06, -0.5 },
+				head = { -6, -6 },
+				leg_fr = { 8 },
+				elbow_r = { -6 },
+				leg_bl = { 16 },
+				leg_br = { -10 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -12, -8, 0, 0, -0.05, -0.45 },
+				head = { -4, -6 },
+				leg_fr = { 8 },
+				elbow_r = { -6 },
+				leg_bl = { 14 },
+				leg_br = { -8 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Shieldbearer's Bash + chop (SHANNON's pick): shoves its huge shield forward while raising the sword
 	-- overhead (0.26 s), then chops down past the shield's edge at the contact (0.44 s)
 	foe_knight_shield_forge = attack({
@@ -1146,6 +1261,24 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Ogre Enforcer dragging its club (SHANNON's pick): hunched, the club held at the end of its handle, its head on
+	-- the ground ahead
+	foe_ogre_forge = {
+		body = { -8, -6, 0, 0, -0.03 },
+		head = { 12, 6 },
+		leg_fl = { 10, 0, 6 },
+		elbow_l = { 30 },
+		leg_fr = { -20, 10 },
+		elbow_r = { 10 },
+		leg_bl = { 10 },
+		leg_br = { -6 },
+	},
+	-- the Darkcaster with its orb in its palm (SHANNON's pick): its arms rest bent, the staff in its fist and the orb
+	-- floating over its upturned palm; its head tilts toward the orb
+	foe_mage_forge = {
+		body = { 0, 4 },
+		head = { -10, 14 },
+	},
 	-- at ease: weight on one leg, the sword's point lowered, the shield hanging easy, head turned
 	foe_knight_forge = {
 		body = { 0, 6, 2 },
