@@ -308,6 +308,141 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Berserker's wild overhead chop (SHANNON's pick), out of dragging its axe: heaves the axe up overhead in both hands
+	-- and brings it crashing down before it at the contact (0.44 s), then lets it drop back to the ground
+	foe_knight_berserker_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 10, -10, 0, 0, 0.08, 0.3 },
+				head = { 10 },
+				leg_fl = { 160, 0, -15 },
+				elbow_l = { 40 },
+				leg_fr = { 180 },
+				elbow_r = { 40 },
+				leg_bl = { 4 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 14, -12, 0, 0, 0.12, 0.35 },
+				head = { 12 },
+				leg_fl = { 195, 0, -20 },
+				elbow_l = { 20 },
+				leg_fr = { 210, 0, 6 },
+				elbow_r = { 20 },
+				leg_bl = { 8 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -30, 4, 0, 0, -0.15, -1.0 },
+				head = { -14 },
+				leg_fl = { 25, 0, -25 },
+				leg_fr = { 15, 15 },
+				leg_bl = { 38 },
+				leg_br = { -14 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { -26, 4, 0, 0, -0.12, -0.9 },
+				head = { -10 },
+				leg_fl = { 28, 0, -24 },
+				leg_fr = { 18, 15 },
+				leg_bl = { 34 },
+				leg_br = { -12 },
+			},
+		},
+		{ 0.95, {} },
+	}),
+	-- the Crossbow Troop's raise and fire (SHANNON's pick), out of its crossbow at its hip: straightens its arm out at the
+	-- target, the crossbow held pistol-like along its forearm, holds the aim, looses with a kick at the release (0.46 s),
+	-- and brings it back to its hip
+	foe_archer_crossbow_forge = attack({
+		{
+			0.00,
+			{
+				leg_fr = { 5 },
+				elbow_r = { 85 },
+			},
+		},
+		{
+			0.14,
+			{
+				body = { 0, -12 },
+				head = { -2, 12 },
+				leg_fl = { 30, 0, 6 },
+				elbow_l = { 30 },
+				leg_fr = { 55, 4 },
+				elbow_r = { 40 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 0, -18 },
+				head = { -4, 18 },
+				leg_fl = { 20, 0, 6 },
+				elbow_l = { 20 },
+				leg_fr = { 88, 10 },
+				elbow_r = { 0 },
+				leg_bl = { 10 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.42,
+			{
+				body = { 0, -18 },
+				head = { -4, 18 },
+				leg_fl = { 20, 0, 6 },
+				elbow_l = { 20 },
+				leg_fr = { 88, 10 },
+				elbow_r = { 0 },
+				leg_bl = { 10 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.46,
+			{
+				body = { 5, -16, 0, 0, 0.02, 0.3 },
+				head = { 2, 16 },
+				leg_fl = { 16, 0, 6 },
+				elbow_l = { 20 },
+				leg_fr = { 104, 10 },
+				elbow_r = { 6 },
+				leg_bl = { 10 },
+				leg_br = { -6 },
+				tail = { 12 },
+			},
+		},
+		{
+			0.66,
+			{
+				body = { 2, -10 },
+				head = { 0, 10 },
+				leg_fl = { 24, 0, 4 },
+				elbow_l = { 26 },
+				leg_fr = { 50, 4 },
+				elbow_r = { 40 },
+			},
+		},
+		{
+			0.95,
+			{
+				leg_fr = { 5 },
+				elbow_r = { 85 },
+			},
+		},
+	}),
 	-- the Ogre Enforcer's haymaker sweep (SHANNON's pick), out of dragging its club: twists its forearm so the club sticks
 	-- out sideways from its fist, winds back, then turns through and sweeps the club's spiked side across at the contact
 	-- (0.44 s), and lets it drop back to the ground
@@ -1261,6 +1396,28 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Berserker dragging its axe (SHANNON's pick): hunched, the axe's head on the ground ahead
+	foe_knight_berserker_forge = {
+		body = { -8, -6, 0, 0, -0.03 },
+		head = { 12, 6 },
+		leg_fl = { 10, 0, 6 },
+		elbow_l = { 30 },
+		leg_fr = { -15, 10 },
+		elbow_r = { 10 },
+		leg_bl = { 10 },
+		leg_br = { -6 },
+	},
+	-- the Crossbow Troop with its crossbow at its hip (SHANNON's pick): its forearm level, the crossbow pointing ahead
+	foe_archer_crossbow_forge = {
+		body = { 0, -6 },
+		head = { 0, 10 },
+		leg_fl = { 20, 0, 4 },
+		elbow_l = { 30 },
+		leg_fr = { 5 },
+		elbow_r = { 85 },
+		leg_bl = { 6 },
+		leg_br = { -4 },
+	},
 	-- the Ogre Enforcer dragging its club (SHANNON's pick): hunched, the club held at the end of its handle, its head on
 	-- the ground ahead
 	foe_ogre_forge = {
