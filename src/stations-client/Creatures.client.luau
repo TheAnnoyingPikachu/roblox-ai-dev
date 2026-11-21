@@ -482,18 +482,27 @@ local ATTACKS: { [string]: Clip } = {
 		},
 		{ 0.95, {} },
 	}),
-	-- the Heavy Knight's Overhead Crush (SHANNON's pick of three): leans back with the hammer behind its head
-	-- and the shield up, then steps in and drives the hammer head straight down into the ground at the
-	-- contact (0.44 s); the arm's twist there keeps the head pointing ahead, not out to the side
+	-- the Heavy Knight's Overhead Crush (SHANNON's pick), from its hammer on its shoulder: heaves the hammer straight up
+	-- off its shoulder and overhead, drives the head down into the ground at the contact (0.44 s), the arm's twist
+	-- keeping the head pointing ahead, then swings the hammer back up onto its shoulder
 	foe_knight_heavy_forge = attack({
-		{ 0.00, {} },
+		{
+			0.00,
+			{
+				leg_fl = { 6, 0, 4 },
+				elbow_l = { 24, 0, 10 },
+				leg_fr = { 9, -39, -41 },
+				elbow_r = { 99, -25, -78 },
+			},
+		},
 		{
 			0.16,
 			{
 				body = { 8, -12, 0, 0, 0.06, 0.25 },
-				leg_fr = { 205, 0, 10 },
-				leg_fl = { 35, 0, -10 },
 				head = { 8 },
+				leg_fl = { 35, 0, -10 },
+				leg_fr = { 150 },
+				elbow_r = { 70 },
 				leg_bl = { 6 },
 				leg_br = { -4 },
 			},
@@ -502,9 +511,10 @@ local ATTACKS: { [string]: Clip } = {
 			0.32,
 			{
 				body = { 12, -16, 0, 0, 0.1, 0.3 },
-				leg_fr = { 218, 0, 8 },
-				leg_fl = { 45, 0, -12 },
 				head = { 10 },
+				leg_fl = { 45, 0, -12 },
+				leg_fr = { 210, 0, 8 },
+				elbow_r = { 15 },
 				leg_bl = { 10 },
 				leg_br = { -6 },
 			},
@@ -513,9 +523,9 @@ local ATTACKS: { [string]: Clip } = {
 			0.44,
 			{
 				body = { -26, 0, 0, 0, -0.12, -0.95 },
-				leg_fr = { 0, 20, 0 },
-				leg_fl = { 10, 0, -20 },
 				head = { -14 },
+				leg_fl = { 10, 0, -20 },
+				leg_fr = { 0, 20 },
 				leg_bl = { 36 },
 				leg_br = { -12 },
 			},
@@ -524,14 +534,22 @@ local ATTACKS: { [string]: Clip } = {
 			0.58,
 			{
 				body = { -22, 0, 0, 0, -0.1, -0.85 },
-				leg_fr = { 4, 18, 0 },
-				leg_fl = { 12, 0, -18 },
 				head = { -10 },
+				leg_fl = { 12, 0, -18 },
+				leg_fr = { 4, 18 },
 				leg_bl = { 32 },
 				leg_br = { -10 },
 			},
 		},
-		{ 0.95, {} },
+		{
+			0.95,
+			{
+				leg_fl = { 6, 0, 4 },
+				elbow_l = { 24, 0, 10 },
+				leg_fr = { 9, -39, -41 },
+				elbow_r = { 99, -25, -78 },
+			},
+		},
 	}),
 	-- the Shadow Archer (elbows; an arrow fixed in its drawing fist, set for this draw): turns side-on and
 	-- holds the bow out at the target, brings the arrow to the string, draws it back along its chest, looses
@@ -750,19 +768,28 @@ local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
 	}
 end
 local MAGICS: { [string]: Clip } = {
-	-- the Heavy Knight's Leaping Slam (SHANNON's pick of three): crouches with the hammer swung low behind,
-	-- leaps with the hammer overhead and the shield up, lands in a slam at the impact (0.92 s), hops back
+	-- the Heavy Knight's Leaping Slam (SHANNON's pick), from its hammer on its shoulder: crouches with the hammer
+	-- still shouldered, raises it overhead as it leaps, slams on landing at the impact (0.92 s), shoulders it again
 	foe_knight_heavy_forge = {
 		length = 1.6,
 		keys = {
-			{ 0.00, {} },
+			{
+				0.00,
+				{
+					leg_fl = { 6, 0, 4 },
+					elbow_l = { 24, 0, 10 },
+					leg_fr = { 9, -39, -41 },
+					elbow_r = { 99, -25, -78 },
+				},
+			},
 			{
 				0.30,
 				{
 					body = { -12, 0, 0, 0, -0.1, 0.1 },
-					leg_fr = { -30, 0, 15 },
-					leg_fl = { -20, 0, -15 },
 					head = { -6 },
+					leg_fl = { -20, 0, -15 },
+					leg_fr = { 9, -39, -41 },
+					elbow_r = { 99, -25, -78 },
 					leg_bl = { 24 },
 					leg_br = { 24 },
 				},
@@ -771,9 +798,10 @@ local MAGICS: { [string]: Clip } = {
 				0.55,
 				{
 					body = { 10, 0, 0, 0, 1.2, -0.4 },
-					leg_fr = { 190, 0, 10 },
-					leg_fl = { 150, 0, -10 },
 					head = { 10 },
+					leg_fl = { 150, 0, -10 },
+					leg_fr = { 190, 0, 10 },
+					elbow_r = { 30 },
 					leg_bl = { 30 },
 					leg_br = { -20 },
 				},
@@ -782,9 +810,10 @@ local MAGICS: { [string]: Clip } = {
 				0.78,
 				{
 					body = { 14, 0, 0, 0, 1.5, -0.8 },
-					leg_fr = { 215, 0, 8 },
-					leg_fl = { 165, 0, -8 },
 					head = { 8 },
+					leg_fl = { 165, 0, -8 },
+					leg_fr = { 215, 0, 8 },
+					elbow_r = { 10 },
 					leg_bl = { 45 },
 					leg_br = { 40 },
 				},
@@ -793,9 +822,9 @@ local MAGICS: { [string]: Clip } = {
 				MAGIC_IMPACT,
 				{
 					body = { -28, 0, 0, 0, -0.1, -1.4 },
-					leg_fr = { 0, 20, 0 },
-					leg_fl = { 40, 0, -30 },
 					head = { -16 },
+					leg_fl = { 40, 0, -30 },
+					leg_fr = { 0, 20 },
 					leg_bl = { 38 },
 					leg_br = { -18 },
 				},
@@ -804,9 +833,9 @@ local MAGICS: { [string]: Clip } = {
 				1.12,
 				{
 					body = { -24, 0, 0, 0, -0.08, -1.3 },
-					leg_fr = { 4, 18, 0 },
-					leg_fl = { 38, 0, -28 },
 					head = { -12 },
+					leg_fl = { 38, 0, -28 },
+					leg_fr = { 4, 18 },
 					leg_bl = { 34 },
 					leg_br = { -16 },
 				},
@@ -815,13 +844,22 @@ local MAGICS: { [string]: Clip } = {
 				1.36,
 				{
 					body = { -4, 0, 0, 0, 0.35, -0.6 },
-					leg_fr = { 20 },
 					leg_fl = { 14, 0, -10 },
+					leg_fr = { 30, -20, -20 },
+					elbow_r = { 99, -12, -40 },
 					leg_bl = { 12 },
 					leg_br = { 8 },
 				},
 			},
-			{ 1.60, {} },
+			{
+				1.60,
+				{
+					leg_fl = { 6, 0, 4 },
+					elbow_l = { 24, 0, 10 },
+					leg_fr = { 9, -39, -41 },
+					elbow_r = { 99, -25, -78 },
+				},
+			},
 		},
 	},
 	-- throws its head back in a howl (a positive pitch lifts the nose), then drives down on the target
@@ -1127,15 +1165,17 @@ local STANCES: { [string]: Pose } = {
 		leg_bl = { 6 },
 		leg_br = { -5 },
 	},
-	-- the hammer's head resting on the ground before it, the shield arm bent at its side
+	-- the hammer on its shoulder (SHANNON's pick): gripped a third of the way up its shaft, the fist before its chest,
+	-- the handle across its shoulder plate and the head at its shoulder; its shield arm hangs easy
 	foe_knight_heavy_forge = {
-		body = { -3, -6, 0 },
-		head = { 3, 6, 0 },
-		leg_fr = { -14, 16, 0 },
-		leg_fl = { 8 },
-		elbow_l = { 28, 0, 12 },
-		leg_bl = { 6 },
-		leg_br = { -5 },
+		body = { 2, 6 },
+		head = { 4, -8 },
+		leg_fl = { 6, 0, 4 },
+		elbow_l = { 24, 0, 10 },
+		leg_fr = { 9, -39, -41 },
+		elbow_r = { 99, -25, -78 },
+		leg_bl = { 0, 0, -6 },
+		leg_br = { 0, 0, 6 },
 	},
 	-- shield wall: turned behind its huge shield, held before it, the sword raised at its side, one foot forward
 	foe_knight_shield_forge = {
