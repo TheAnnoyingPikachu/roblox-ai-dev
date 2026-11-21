@@ -36,5 +36,5 @@
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-20: \"rig it and replace the old knight\" (the 01:18 Shadow Knight, made from the Shadow Knight Concept Sheet). The Blender foe_knight asset stays in the asset table, unused, so going back is one line per foe."
+  "notes": "SHANNON, 2026-11-20: \"rig it and replace the old knight\" (the 01:18 Shadow Knight, made from the Shadow Knight Concept Sheet). The Blender foe_knight asset stays in the asset table, unused, so going back is one line per foe. SHANNON, 2026-11-21: every enemy redone like the A-pose Archer, one at a time for sign-off. The Shadow Knight first: ForgeGUI made it in an A-pose from a description (standard quality, 5,300 triangles) and its sword and shield in one model, split apart; the sword is held ahead in its right hand and the shield on its left arm (6,700 triangles), skinned with blended joints and its arms lowered to rest. Its old piece-by-piece rig (knight_pieces) is gone."
 }
