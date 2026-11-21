@@ -345,20 +345,32 @@ local ATTACKS: { [string]: Clip } = {
 		},
 		{ 0.95, {} },
 	}),
-	-- the Shadow Archer (its bow held low ahead at rest): squares up, raises the bow straight at the target
-	-- and reaches for the string, draws it back past its face, looses at the contact (0.44 s) and recoils
+	-- the Shadow Archer (an arrow fixed in its drawing hand, set for its nocked pose): raises the bow at the
+	-- target and brings the arrow to it, twists back to draw, looses at the contact (0.44 s), lowers
 	foe_archer_forge = attack({
 		{ 0.00, {} },
-		{ 0.14, { head = { -4 }, leg_fl = { 88 }, leg_fr = { 82, 0, -18 }, tail = { -6 } } },
+		{ 0.14, { body = { 0, -8, 0 }, head = { 0, 8, 0 }, leg_fl = { 80, 0, 24 }, leg_fr = { 74, 0, -50 } } },
 		{
 			0.32,
-			{ body = { 2, 0, 0, 0, 0, 0.12 }, head = { -2 }, leg_fl = { 92 }, leg_fr = { 96, 0, 22 }, tail = { -10 } },
+			{
+				body = { 2, -16, 0, 0, 0, 0.12 },
+				head = { -2, 16, 0 },
+				leg_fl = { 86, 0, 30 },
+				leg_fr = { 84, 0, -72 },
+				tail = { -10 },
+			},
 		},
 		{
 			0.44,
-			{ body = { 4, 0, 0, 0, 0.02, 0.35 }, head = { 2 }, leg_fl = { 90 }, leg_fr = { 60, 0, 40 }, tail = { 12 } },
+			{
+				body = { 4, -6, 0, 0, 0.02, 0.35 },
+				head = { 2, 6, 0 },
+				leg_fl = { 86, 0, 30 },
+				leg_fr = { 66, 0, -38 },
+				tail = { 12 },
+			},
 		},
-		{ 0.64, { leg_fl = { 64 }, leg_fr = { 26, 0, 14 } } },
+		{ 0.64, { leg_fl = { 60, 0, 18 }, leg_fr = { 30, 0, -14 } } },
 		{ 0.95, {} },
 	}),
 	-- a lunge and a snap, then a shake of the head
@@ -715,9 +727,21 @@ local MAGICS: { [string]: Clip } = {
 	-- the Shadow Archer (an A-pose model, its bow held low ahead): a volley, the bow raised to the sky,
 	-- drawn full, loosed at the impact (the shared biped clip would turn its bow over behind its head)
 	foe_archer_forge = powerClip(
-		{ body = { 8 }, head = { 18 }, leg_fl = { 128 }, leg_fr = { 118 }, tail = { -8 } },
-		{ body = { 10, 0, 0, 0, 0.04, 0.1 }, head = { 22 }, leg_fl = { 132 }, leg_fr = { 104 }, tail = { -12 } },
-		{ body = { -4, 0, 0, 0, -0.04, -0.3 }, head = { 10 }, leg_fl = { 120 }, leg_fr = { 40 }, tail = { 12 } }
+		{ body = { 8 }, head = { 18 }, leg_fl = { 128, 0, 30 }, leg_fr = { 122, 0, -66 }, tail = { -8 } },
+		{
+			body = { 10, 0, 0, 0, 0.04, 0.1 },
+			head = { 22 },
+			leg_fl = { 132, 0, 30 },
+			leg_fr = { 128, 0, -72 },
+			tail = { -12 },
+		},
+		{
+			body = { -4, 0, 0, 0, -0.04, -0.3 },
+			head = { 10 },
+			leg_fl = { 120, 0, 26 },
+			leg_fr = { 100, 0, -40 },
+			tail = { 12 },
+		}
 	),
 }
 
