@@ -970,8 +970,8 @@
     "texture": null
   },
   "foe_archer_crossbow_forge": {
-    "model": 89484250655446,
-    "decal": 124884443248968,
+    "model": 75635708568020,
+    "decal": 80775063590171,
     "texture": null
   },
   "foe_mage_forge": {
@@ -990,8 +990,8 @@
     "texture": null
   },
   "foe_knight_berserker_forge": {
-    "model": 99366565597365,
-    "decal": 71270930252937,
+    "model": 135870448786696,
+    "decal": 131293107519394,
     "texture": null
   },
   "foe_ogre_forge": {
