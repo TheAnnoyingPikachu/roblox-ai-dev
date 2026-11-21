@@ -8316,7 +8316,7 @@
     "png": "build/blender/stations/foe_mage_priest_forge.png",
     "preview": "build/blender/stations/previews/foe_mage_priest_forge_rest.png",
     "size_studs": [
-      6.47,
+      5.26,
       8.0,
       7.72
     ],
@@ -8337,51 +8337,51 @@
     },
     "joints": {
       "foe_mage_priest_forge_head": [
-        -0.581,
+        -0.002,
         5.68,
-        0.575
+        0.592
       ],
       "foe_mage_priest_forge_tail": [
-        -0.581,
+        -0.002,
         5.26,
-        -0.265
+        -0.248
       ],
       "foe_mage_priest_forge_leg_fl": [
-        0.847,
+        1.426,
         5.26,
-        0.407
+        0.424
       ],
       "foe_mage_priest_forge_leg_fr": [
-        -2.008,
+        -1.43,
         5.26,
-        0.407
+        0.424
       ],
       "foe_mage_priest_forge_leg_bl": [
-        -0.077,
+        0.502,
         2.32,
-        0.407
+        0.424
       ],
       "foe_mage_priest_forge_leg_br": [
-        -1.085,
+        -0.506,
         2.32,
-        0.407
+        0.424
       ],
       "foe_mage_priest_forge_elbow_l": [
-        1.14,
+        1.719,
         4.517,
-        0.832
+        0.849
       ],
       "foe_mage_priest_forge_elbow_r": [
-        -2.375,
+        -1.796,
         4.51,
-        0.756
+        0.773
       ]
     },
     "skinned": true,
     "root": [
-      -0.581,
+      -0.002,
       3.58,
-      0.407
+      0.424
     ]
   },
   "foe_knight_berserker_forge": {
