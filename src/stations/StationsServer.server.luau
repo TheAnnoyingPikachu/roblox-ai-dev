@@ -313,6 +313,8 @@ local function lookSize(look: Look): Vector3
 	return Vector3.new(size[1], size[2], size[3])
 end
 
+local lookRuns: { [Player]: number } = {} -- the admin's latest animation button press, so a looping move knows to stop
+
 local function looks(player: Player): Instance
 	local name = `AdminShow{player.UserId}`
 	local f = workspace:FindFirstChild(name)
@@ -1029,8 +1031,28 @@ local router = Router.new({
 				if not isAdmin(player) then
 					return false, "admin"
 				end
-				for _, model in looks(player):GetChildren() do
-					Creatures.play(model :: Model, anim)
+				-- an attack or power move replays until another button is pressed, to watch it again and again
+				local run = (lookRuns[player] or 0) + 1
+				lookRuns[player] = run
+				local function playAll()
+					for _, model in looks(player):GetChildren() do
+						Creatures.play(model :: Model, anim)
+					end
+				end
+				playAll()
+				if anim == "attack" or anim == "magic" then
+					task.spawn(function()
+						while true do
+							task.wait(Creatures.LENGTH[anim] + 0.4)
+							if player.Parent == nil then
+								lookRuns[player] = nil
+								return
+							elseif lookRuns[player] ~= run then
+								return
+							end
+							playAll()
+						end
+					end)
 				end
 				return true, nil
 			end,
@@ -1041,6 +1063,7 @@ local router = Router.new({
 				if not isAdmin(player) then
 					return false, "admin"
 				end
+				lookRuns[player] = (lookRuns[player] or 0) + 1 -- stops a looping move
 				looks(player):ClearAllChildren()
 				WaveShow.clear(player)
 				return true, nil

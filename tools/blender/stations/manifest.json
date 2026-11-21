@@ -7956,13 +7956,13 @@
     "png": "build/blender/stations/foe_knight_heavy_forge.png",
     "preview": "build/blender/stations/previews/foe_knight_heavy_forge_rest.png",
     "size_studs": [
-      8.6,
+      9.03,
       9.0,
-      5.28
+      6.97
     ],
-    "tris": 6748,
+    "tris": 6948,
     "parts": {
-      "foe_knight_heavy_forge_body": 6748
+      "foe_knight_heavy_forge_body": 6948
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
@@ -7977,41 +7977,41 @@
     },
     "joints": {
       "foe_knight_heavy_forge_head": [
-        -0.341,
+        -0.127,
         6.582,
-        -0.997
+        -1.838
       ],
       "foe_knight_heavy_forge_tail": [
-        -0.341,
+        -0.127,
         5.92,
-        -1.942
+        -2.783
       ],
       "foe_knight_heavy_forge_leg_fl": [
-        1.549,
+        1.764,
         5.92,
-        -1.186
+        -2.027
       ],
       "foe_knight_heavy_forge_leg_fr": [
-        -2.231,
+        -2.017,
         5.92,
-        -1.186
+        -2.027
       ],
       "foe_knight_heavy_forge_leg_bl": [
-        0.51,
+        0.724,
         3.084,
-        -1.186
+        -2.027
       ],
       "foe_knight_heavy_forge_leg_br": [
-        -1.192,
+        -0.978,
         3.084,
-        -1.186
+        -2.027
       ]
     },
     "skinned": true,
     "root": [
-      -0.341,
+      -0.127,
       4.03,
-      -1.186
+      -2.027
     ]
   },
   "foe_archer_forge": {

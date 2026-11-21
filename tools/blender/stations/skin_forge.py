@@ -616,7 +616,7 @@ REGIONS = {
         boxes=[
             ("leg_fl", (0.21, 1, -1, -0.06, -0.4, 0.3)),  # the shield, on the left forearm
             ("leg_fl", (0.21, 1, -1, 1, -0.22, 0.3)),
-            ("leg_fr", (-1, -0.28, -1, 1, -0.25, 0.0)),  # the hammer, held ahead in the right hand
+            ("leg_fr", (-1, -0.25, -1, -0.1, -0.42, 0.0)),  # the hammer, held ahead in the right hand, head down
             ("leg_fr", (-1, -0.21, -1, 1, -0.22, 0.3)),
             ("head", (-0.12, 0.12, -1, 1, 0.22, 1)),
             ("body", (-0.06, 0.06, -1, -0.08, -0.4, -0.08)),  # the tabard
