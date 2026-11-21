@@ -308,6 +308,77 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Shieldbearer's Bash + chop (SHANNON's pick): shoves its huge shield forward while raising the sword
+	-- overhead (0.26 s), then chops down past the shield's edge at the contact (0.44 s)
+	foe_knight_shield_forge = attack({
+		{ 0.00, {} },
+		{
+			0.12,
+			{
+				body = { -2, -34, 0, 0, -0.03, 0.2 },
+				head = { 0, 28 },
+				leg_fl = { 10 },
+				elbow_l = { 25, 0, 18 },
+				leg_fr = { 60, 0, 8 },
+				elbow_r = { 40 },
+				leg_bl = { -6 },
+				leg_br = { 10 },
+			},
+		},
+		{
+			0.26,
+			{
+				body = { -12, -30, 0, 0, -0.07, -0.9 },
+				head = { -4, 26 },
+				leg_fl = { 42, 0, -5 },
+				elbow_l = { 5, 0, 5 },
+				leg_fr = { 150, 0, 10 },
+				elbow_r = { 45 },
+				leg_bl = { 30 },
+				leg_br = { -14 },
+			},
+		},
+		{
+			0.36,
+			{
+				body = { -6, -26, 0, 0, -0.04, -0.95 },
+				head = { 0, 22 },
+				leg_fl = { 36, 0, -2 },
+				elbow_l = { 8, 0, 8 },
+				leg_fr = { 165, 0, 10 },
+				elbow_r = { 55 },
+				leg_bl = { 30 },
+				leg_br = { -14 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -20, -14, 0, 0, -0.1, -1.1 },
+				head = { -8, 12 },
+				leg_fl = { 30 },
+				elbow_l = { 10, 0, 10 },
+				leg_fr = { 50, 0, 8 },
+				elbow_r = { 10 },
+				leg_bl = { 34 },
+				leg_br = { -14 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { -16, -12, 0, 0, -0.08, -1.0 },
+				head = { -6, 10 },
+				leg_fl = { 28 },
+				elbow_l = { 10, 0, 10 },
+				leg_fr = { 44, 0, 8 },
+				elbow_r = { 10 },
+				leg_bl = { 30 },
+				leg_br = { -12 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Shadow Knight's Cleave (SHANNON's pick): sword swung up behind its head on a bent arm, shield
 	-- forward, then a step in and a cut down at the contact (0.44 s)
 	foe_knight_forge = attack({
