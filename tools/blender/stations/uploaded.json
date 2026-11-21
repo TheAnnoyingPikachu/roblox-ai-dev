@@ -955,18 +955,18 @@
     "texture": null
   },
   "foe_knight_forge": {
-    "model": 129337240584376,
-    "decal": 131689139104424,
+    "model": 104226486501479,
+    "decal": 100367259027767,
     "texture": null
   },
   "foe_knight_heavy_forge": {
-    "model": 80555888938468,
-    "decal": 117960276852550,
+    "model": 91577176274718,
+    "decal": 87246854995963,
     "texture": null
   },
   "foe_archer_forge": {
-    "model": 129844305086402,
-    "decal": 72477625994356,
+    "model": 133265672797738,
+    "decal": 127035514362713,
     "texture": null
   },
   "foe_archer_crossbow_forge": {
@@ -985,8 +985,8 @@
     "texture": null
   },
   "foe_mage_priest_forge": {
-    "model": 106904245983724,
-    "decal": 102994551902386,
+    "model": 117638641673665,
+    "decal": 89840483484039,
     "texture": null
   },
   "foe_knight_berserker_forge": {
@@ -1010,8 +1010,8 @@
     "texture": null
   },
   "foe_knight_shield_forge": {
-    "model": 107769831476788,
-    "decal": 118171491519868,
+    "model": 124805246570796,
+    "decal": 74348734856589,
     "texture": null
   },
   "foe_knight_shield_commander_forge": {
