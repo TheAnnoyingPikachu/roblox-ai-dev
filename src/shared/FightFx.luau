@@ -15,6 +15,11 @@ FightFx.PUNCH_SECONDS = 0.6
 FightFx.TAP_AHEAD = FightFx.POWER_LEAD + 0.3
 FightFx.TELL = 2.8 -- seconds before an enemy power attack lands that its warning shows (decision 0097)
 FightFx.SHAKE_SECONDS = 0.45
+-- Mages whose shot is a magic bolt cast from their hand (the client draws it; decision 0104), and its
+-- colour (red, green, blue). Every mage joins as it is remade.
+FightFx.BOLTS = {
+	foe_mage_priest_forge = { 190, 110, 255 },
+} :: { [string]: { number } }
 
 -- Seconds a projectile flies over `distance` studs: quick, but long enough to be seen.
 function FightFx.flightTime(distance: number): number

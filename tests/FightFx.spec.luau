@@ -23,6 +23,18 @@ describe("FightFx.lead and flightTime", function()
 	end)
 end)
 
+describe("FightFx.BOLTS", function()
+	it("names only mages, each with a colour", function()
+		for asset, rgb in FightFx.BOLTS do
+			expect(string.find(asset, "^foe_mage") ~= nil).toBe(true)
+			expect(#rgb).toBe(3)
+			for _, c in rgb do
+				expect(c >= 0 and c <= 255).toBe(true)
+			end
+		end
+	end)
+end)
+
 describe("FightFx rhythm", function()
 	it("holds the killing blow for 0.2 s", function()
 		expect(FightFx.hitStop(0, true)).toBe(0.2)

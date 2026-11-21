@@ -308,6 +308,109 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Shadow Knight's Cleave (SHANNON's pick): sword swung up behind its head on a bent arm, shield
+	-- forward, then a step in and a cut down at the contact (0.44 s)
+	foe_knight_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 6, -14, 0, 0, 0.04, 0.2 },
+				head = { 4, 10 },
+				leg_fl = { 20 },
+				elbow_l = { 25, 0, 30 },
+				leg_fr = { 140, 0, 8 },
+				elbow_r = { 35 },
+				leg_bl = { 6 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 9, -18, 0, 0, 0.06, 0.25 },
+				head = { 6, 14 },
+				leg_fl = { 24 },
+				elbow_l = { 28, 0, 32 },
+				leg_fr = { 152, 0, 8 },
+				elbow_r = { 45 },
+				leg_bl = { 8 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -22, 12, 0, 0, -0.1, -0.85 },
+				head = { -8, -8 },
+				leg_fl = { 10 },
+				elbow_l = { 20, 0, 20 },
+				leg_fr = { 32 },
+				elbow_r = { 0 },
+				leg_bl = { 32 },
+				leg_br = { -12 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { -18, 10, 0, 0, -0.08, -0.75 },
+				head = { -6 },
+				leg_fl = { 10 },
+				elbow_l = { 20, 0, 20 },
+				leg_fr = { 22 },
+				leg_bl = { 28 },
+				leg_br = { -10 },
+			},
+		},
+		{ 0.95, {} },
+	}),
+	-- the Battle Priest's Scripture cast (SHANNON's pick): the open book drawn in to its chest, then
+	-- thrust out at the enemy as its magic bolt leaves it (boltFx, FightFx.BOLTS)
+	foe_mage_priest_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 5, 8, 0, 0, 0.02, 0.1 },
+				head = { -10 },
+				leg_fl = { -12 },
+				elbow_l = { 18 },
+				leg_fr = { 6 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 7, 10, 0, 0, 0.03, 0.15 },
+				head = { -12 },
+				leg_fl = { -16 },
+				elbow_l = { 22 },
+				leg_fr = { 8 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -12, -14, 0, 0, -0.03, -0.6 },
+				head = { 12 },
+				leg_fl = { 62, 0, -14 },
+				elbow_l = { -58 },
+				leg_fr = { 18 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -10, -12, 0, 0, -0.02, -0.5 },
+				head = { 10 },
+				leg_fl = { 58, 0, -14 },
+				elbow_l = { -54 },
+				leg_fr = { 16 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Heavy Knight's Overhead Crush (SHANNON's pick of three): leans back with the hammer behind its head
 	-- and the shield up, then steps in and drives the hammer head straight down into the ground at the
 	-- contact (0.44 s); the arm's twist there keeps the head pointing ahead, not out to the side
@@ -1556,6 +1659,82 @@ local function weaponFx(model: Model, fx: WeaponFx, anim: string?, at: number, t
 	end
 end
 
+-- A mage's magic bolt (FightFx.BOLTS; the Battle Priest's first, then every mage's): a flash where it is
+-- cast, a glowing orb with a white core, sparkles and a trail flying on a low arc, and a burst where it lands.
+local function bolt(from: Vector3, to: Vector3, seconds: number, colour: Color3, size: number)
+	local flash = fxPart(Vector3.one * 0.6 * size, CFrame.new(from), Color3.fromRGB(255, 240, 255), Enum.Material.Neon)
+	flash.Shape = Enum.PartType.Ball
+	tween(flash, 0.15, { Size = Vector3.one * 2.2 * size, Transparency = 1 })
+	Debris:AddItem(flash, 0.2)
+	local orb = fxPart(Vector3.one * 1.1 * size, CFrame.new(from), colour, Enum.Material.Neon)
+	orb.Shape, orb.Transparency = Enum.PartType.Ball, 0.35
+	local core = fxPart(Vector3.one * 0.5 * size, CFrame.new(from), Color3.new(1, 1, 1), Enum.Material.Neon)
+	core.Shape = Enum.PartType.Ball
+	local a0, a1 = Instance.new("Attachment"), Instance.new("Attachment")
+	a0.Position, a1.Position = Vector3.new(0, 0.4 * size, 0), Vector3.new(0, -0.4 * size, 0)
+	a0.Parent, a1.Parent = orb, orb
+	local trail = Instance.new("Trail")
+	trail.Attachment0, trail.Attachment1, trail.Lifetime = a0, a1, 0.25
+	trail.Color, trail.LightEmission = ColorSequence.new(colour), 1
+	trail.Transparency = NumberSequence.new(0.2, 1)
+	trail.Parent = orb
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = colour, 8 * size, 2, false
+	light.Parent = orb
+	local sparks = Instance.new("ParticleEmitter")
+	sparks.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	sparks.Color, sparks.LightEmission, sparks.Rate = ColorSequence.new(colour), 1, 40
+	sparks.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35 * size), NumberSequenceKeypoint.new(1, 0) })
+	sparks.Lifetime, sparks.Speed = NumberRange.new(0.2, 0.4), NumberRange.new(1, 3)
+	sparks.SpreadAngle = Vector2.new(180, 180)
+	sparks.Parent = orb
+	local arc = math.min(3, (to - from).Magnitude * 0.08)
+	local started = os.clock()
+	local fly
+	fly = RunService.RenderStepped:Connect(function()
+		local u = math.min(1, (os.clock() - started) / seconds)
+		local at = from:Lerp(to, u) + Vector3.yAxis * arc * math.sin(u * math.pi)
+		orb.CFrame, core.CFrame = CFrame.new(at), CFrame.new(at)
+		if u < 1 then
+			return
+		end
+		fly:Disconnect()
+		orb:Destroy()
+		core:Destroy()
+		local burst = fxPart(Vector3.one * 0.8 * size, CFrame.new(to), colour, Enum.Material.Neon)
+		burst.Shape, burst.Transparency = Enum.PartType.Ball, 0.1
+		tween(burst, 0.25, { Size = Vector3.one * 4 * size, Transparency = 1 })
+		Debris:AddItem(burst, 0.3)
+		local bits = sparks:Clone()
+		bits.Rate, bits.Speed = 0, NumberRange.new(6 * size, 12 * size)
+		bits.Lifetime = NumberRange.new(0.3, 0.6)
+		bits.Parent = burst
+		bits:Emit(24)
+	end)
+	Debris:AddItem(orb, seconds + 1) -- a bolt whose model went away must not stay
+	Debris:AddItem(core, seconds + 1)
+end
+
+-- Casts a mage's bolt at its attack's release: at where the server aims it (BoltTo, BoltFor, set before the
+-- attack plays), or straight ahead when nothing is (the admin's look at it).
+local function boltFx(model: Model, rgb: { number }, anim: string?, at: number, t: number)
+	local done = weaponDone[model] or {}
+	weaponDone[model] = done
+	if anim ~= "attack" or t < FightFx.RELEASE or done.bolt == at then
+		return
+	end
+	done.bolt = at
+	local tip = model:FindFirstChild("tip", true) :: Attachment?
+	local from = if tip then tip.WorldPosition else model:GetPivot().Position + Vector3.new(0, 3, 0)
+	local to = model:GetAttribute("BoltTo") :: Vector3?
+	local seconds = (model:GetAttribute("BoltFor") :: number?) or FightFx.flightTime(30)
+	if to == nil then
+		to = from + model:GetPivot().LookVector * 30
+	end
+	local s = (model:GetAttribute("Scale") :: number?) or 1
+	bolt(from, to :: Vector3, seconds, Color3.fromRGB(rgb[1], rgb[2], rgb[3]), math.clamp(s * 0.5, 0.6, 1.6))
+end
+
 local function magicColour(model: Model): (Color3, boolean)
 	for _, d in model:GetChildren() do -- a glowing variant casts in its own colour
 		if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
@@ -1993,12 +2172,13 @@ RunService.PreSimulation:Connect(function(dt: number)
 			local clip = if not biped
 				then pick(ATTACKS, model, ATTACK)
 				elseif string.find(kind, "^foe_archer") then pick(ATTACKS, model, ARCHER_ATTACK)
-				elseif string.find(kind, "^foe_mage") then MAGE_ATTACK
+				elseif string.find(kind, "^foe_mage") then pick(ATTACKS, model, MAGE_ATTACK)
 				else pick(ATTACKS, model, BIPED_ATTACK) -- an upright animal has its own
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
 			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
-			if WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""] then
+			local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
+			if own and own.power then
 				-- its own effects (weaponFx, below) in place of the shared ones
 				rig.magicAt, rig.impactAt = at, at
 			end
@@ -2028,6 +2208,10 @@ RunService.PreSimulation:Connect(function(dt: number)
 		local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
 		if own then
 			weaponFx(model, own, anim, at, t)
+		end
+		local boltRgb = FightFx.BOLTS[(model:GetAttribute("Asset") :: string?) or ""]
+		if boltRgb then
+			boltFx(model, boltRgb, anim, at, t)
 		end
 		if model:GetAttribute("Winged") == true then
 			target = table.clone(target)

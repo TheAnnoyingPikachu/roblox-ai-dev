@@ -721,6 +721,7 @@ REGIONS = {
         rest={"leg_fl": (25, 0, 15), "elbow_l": (75, 0, 55), "leg_fr": (20, 0, -10), "elbow_r": (60, 0, 0)},
         held={"split": 0.72, "+x": "leg_fl", "-x": "leg_fr"},
         elbows={"leg_fl": (0.29, -0.017, -0.028), "leg_fr": (-0.29, -0.017, -0.028)},
+        tips="leg_fl",  # the book's far end: its magic bolt is cast from there (Creatures.client boltFx)
         turn=False,
     ),
     # the axe in its left (+X) hand; fur over its shoulders and a cape behind

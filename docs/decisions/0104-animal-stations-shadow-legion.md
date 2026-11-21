@@ -83,6 +83,11 @@ Date: 2026-11-20. Tasks STATION-113, STATION-114.
   Each can have an idle pose of its own (`STANCES` in Creatures.client, SHANNON's picks): a held stance with a
   slow breath, which its attack, power move and flinch start from and settle back into. The Shadow Archer's
   arrow sits in its quiver on an `arrow` bone and is brought to the string only for a shot.
+- **A mage's shot is a magic bolt cast from its hand** (2026-11-21, the Battle Priest first; the others as they
+  are remade): `FightFx.BOLTS` names the mages and their bolt's colour. For those, the wave show does not
+  throw its ball; it sets `BoltTo` (where the shot lands) and `BoltFor` (its flight, seconds) on the caster
+  before its attack plays, and the client casts the bolt at the clip's release from the `tip` bone in its
+  book or staff. Display only, as decision 0048: the hit and its timing are the server's as before.
 - `skin_forge.py --stretch` poses a model at the peak of each of the game's clips and draws every face
   stretched by a quarter red: all 18 are at 0% (the first rigs reached 36%).
 - Creatures: a `foe_dragon*` model is Winged, a `foe_cavalry*` one four-legged, any other foe Biped; the

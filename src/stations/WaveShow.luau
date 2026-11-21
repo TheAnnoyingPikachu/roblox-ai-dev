@@ -498,6 +498,10 @@ function WaveShow.run(
 			if not live() or actor.hp <= 0 then
 				return
 			end
+			if flight and to and FightFx.BOLTS[kind] then -- the client casts its bolt from its hand to here
+				actor.model:SetAttribute("BoltTo", to.Position)
+				actor.model:SetAttribute("BoltFor", flight)
+			end
 			Creatures.play(actor.model, if e.power then "magic" else "attack")
 			local root = actor.model.PrimaryPart :: BasePart
 			local lunges = not e.power and not ranged(kind)
@@ -512,7 +516,9 @@ function WaveShow.run(
 				if not live() then
 					return
 				end
-				shoot(folder, kind, from.Position, to.Position, math.max(0.05, start + e.t - os.clock()))
+				if not FightFx.BOLTS[kind] then
+					shoot(folder, kind, from.Position, to.Position, math.max(0.05, start + e.t - os.clock()))
+				end
 			end
 			task.wait(math.max(0, start + e.t - os.clock()))
 			if not live() then

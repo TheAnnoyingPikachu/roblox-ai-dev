@@ -3206,6 +3206,8 @@ local StationAssets: { [string]: Asset } = {
 			foe_mage_priest_forge_leg_fr = { -1.43, 5.26, 0.424 },
 			foe_mage_priest_forge_leg_bl = { 0.502, 2.32, 0.424 },
 			foe_mage_priest_forge_leg_br = { -0.506, 2.32, 0.424 },
+			foe_mage_priest_forge_tip = { 0.451, 5.362, 1.692 },
+			foe_mage_priest_forge_neck = { 0.471, 4.529, 1.777 },
 			foe_mage_priest_forge_elbow_l = { 1.719, 4.517, 0.849 },
 			foe_mage_priest_forge_elbow_r = { -1.796, 4.51, 0.773 },
 		},
