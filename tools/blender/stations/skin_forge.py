@@ -625,6 +625,7 @@ REGIONS = {
         ],
         blend=2,
         rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25)},
+        tips="leg_fr",  # the hammer's head: a trail and a glow follow it (Creatures.client WEAPON_FX)
         turn=False,
     ),
     # the bow in its left (+X) hand; its right draws across its chest; quiver and cloak on its back and side
@@ -1275,6 +1276,18 @@ def main():
         top = max(w, key=w.get)
         counts[top] = counts.get(top, 0) + 1
     print("ISLANDS", islands, "moving whole", whole, "VERTS BY MAIN BONE", counts)
+    if spec.get("tips"):  # two bones in the held weapon's far end, children of its arm: the game hangs a trail between them
+        arm_bone = spec["tips"]
+        joint = Vector(spec["joints"][arm_bone])
+        own = [i for i, w in enumerate(weights) if w.get(arm_bone, 0) > 0.99]
+        reach = {i: (body.data.vertices[i].co - joint).length for i in own}
+        far = max(reach.values())
+        for part, lo_, hi_ in (("tip", 0.93, 1.01), ("neck", 0.84, 0.88)):
+            idx = [i for i in own if lo_ * far < reach[i] <= hi_ * far]
+            spec["joints"][part] = tuple(sum((body.data.vertices[i].co for i in idx), Vector()) / len(idx))
+            for i in idx:
+                weights[i] = {part: 1.0}  # a bone Roblox keeps must have a vertex
+            print("TIP", part, len(idx))
 
     # to studs, standing on the ground under its middle
     lo = Vector((min(v.co[k] for v in body.data.vertices) for k in range(3)))
@@ -1299,7 +1312,7 @@ def main():
             continue
         b = arm_data.edit_bones.new(k)
         b.head, b.tail, b.roll = j, j + Vector((0, 0, 1)), 0
-        b.parent = root
+        b.parent = arm_data.edit_bones[spec["tips"]] if k in ("tip", "neck") else root
     bpy.ops.object.mode_set(mode="OBJECT")
 
     # the skin

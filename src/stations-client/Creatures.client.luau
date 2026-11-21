@@ -1222,6 +1222,163 @@ local function impact(model: Model, colour: Color3, molten: boolean)
 	end
 end
 
+-- Weapon effects, by asset (SHANNON's picks for the Heavy Knight). A model built with "tip" and "neck"
+-- bones in its weapon's far end (skin_forge `tips`) gets a trail between them as it swings; its attack
+-- lands a small shockwave where the weapon strikes, its power move charges the weapon with light and
+-- lands a big shockwave with crystal spikes erupting round it. Each replaces the shared power effects.
+local ATTACK_CONTACT = 0.44 -- seconds into "attack" when the blow lands (as the server times it)
+type WeaponFx = { attack: string, power: string, colour: Color3 }
+local WEAPON_FX: { [string]: WeaponFx } = {
+	foe_knight_heavy_forge = { attack = "shockwave", power = "eruption", colour = Color3.fromRGB(170, 70, 255) },
+}
+local weaponDone: { [Model]: { [string]: number } } = setmetatable({}, { __mode = "k" }) :: any
+
+local function weaponBones(model: Model): (Attachment?, Attachment?)
+	return model:FindFirstChild("tip", true) :: Attachment?, model:FindFirstChild("neck", true) :: Attachment?
+end
+
+local function trailOf(model: Model, colour: Color3): Trail?
+	local tip, neck = weaponBones(model)
+	if tip == nil or neck == nil then
+		return nil
+	end
+	local trail = tip:FindFirstChild("WeaponTrail") :: Trail?
+	if trail == nil then
+		local t = Instance.new("Trail")
+		t.Name = "WeaponTrail"
+		t.Attachment0, t.Attachment1 = tip, neck
+		t.Color = ColorSequence.new(colour)
+		t.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(1, 1) })
+		t.LightEmission, t.Lifetime, t.Enabled = 0.8, 0.16, false
+		t.Parent = tip
+		trail = t
+	end
+	return trail
+end
+
+-- Where the weapon strikes: the ground under its tip (creatures left out of the ray).
+local function strikePoint(model: Model): CFrame?
+	local tip = weaponBones(model)
+	local root = model.PrimaryPart
+	if tip == nil or root == nil then
+		return nil
+	end
+	local p = tip.WorldPosition
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = CollectionService:GetTagged("Creature")
+	local hit = Workspace:Raycast(p + Vector3.new(0, 4, 0), Vector3.new(0, -16, 0), params)
+	local y = if hit then hit.Position.Y else p.Y
+	return CFrame.new(p.X, y + 0.08, p.Z) * root.CFrame.Rotation
+end
+
+-- A flash, a ring of light rolling out across the ground and cracks; `glowing` cracks shine.
+local function shockwave(ground: CFrame, colour: Color3, radius: number, glowing: boolean)
+	local flash = fxPart(Vector3.one * radius * 0.25, ground, Color3.fromRGB(235, 210, 255), Enum.Material.Neon)
+	flash.Shape = Enum.PartType.Ball
+	flash.Transparency = 0.1
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = colour, radius * 1.5, 3, false
+	light.Parent = flash
+	tween(flash, 0.16, { Size = Vector3.one * radius * 0.8, Transparency = 1 })
+	tween(light, 0.3, { Brightness = 0 })
+	Debris:AddItem(flash, 0.35)
+	local ring = fxPart(Vector3.new(0.25, 1, 1), ground * CFrame.Angles(0, 0, math.pi / 2), colour, Enum.Material.Neon)
+	ring.Shape = Enum.PartType.Cylinder
+	ring.Transparency = 0.15
+	tween(ring, 0.45, { Size = Vector3.new(0.25, radius * 2, radius * 2), Transparency = 1 })
+	Debris:AddItem(ring, 0.5)
+	for k = 1, 9 do
+		local length = radius * (0.35 + 0.25 * math.random())
+		local angle = k / 9 * math.pi * 2 + (math.random() - 0.5) * 0.5
+		local crack = fxPart(
+			Vector3.new(length, 0.06, radius * 0.05),
+			ground * CFrame.Angles(0, angle, 0) * CFrame.new(length / 2, 0, 0),
+			if glowing then colour else Color3.fromRGB(18, 14, 24),
+			if glowing then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		)
+		task.delay(0.9, tween, crack, 0.6, { Transparency = 1 })
+		Debris:AddItem(crack, 1.6)
+	end
+end
+
+-- The big blow: a shockwave with glowing cracks, and a ring of crystal spikes thrust up round the
+-- impact that sink again.
+local function eruption(ground: CFrame, colour: Color3, radius: number)
+	shockwave(ground, colour, radius, true)
+	for k = 1, 8 do
+		local angle = k / 8 * math.pi * 2 + (math.random() - 0.5) * 0.4
+		local height = radius * (0.28 + 0.12 * math.random())
+		local width = radius * 0.11
+		local lean = CFrame.Angles(0, 0, -math.rad(18)) -- tipped outwards
+		local base = ground * CFrame.Angles(0, angle, 0) * CFrame.new(radius * 0.32, 0, 0)
+		local low, high = base * CFrame.new(0, -height * 1.1, 0) * lean, base * CFrame.new(0, -height * 0.1, 0) * lean
+		local spike = fxPart(Vector3.one * 0.2, low, colour, Enum.Material.Neon)
+		spike.Transparency = 1
+		pyramid(spike, width, height, colour, Enum.Material.Neon)
+		tween(spike, 0.14, { CFrame = high }, Enum.EasingStyle.Back)
+		task.delay(0.6, tween, spike, 0.3, { CFrame = low })
+		Debris:AddItem(spike, 1)
+	end
+end
+
+-- The weapon gathers light until the blow.
+local function chargeWeapon(model: Model, colour: Color3, seconds: number, size: number)
+	local tip = weaponBones(model)
+	if tip == nil then
+		return
+	end
+	local orb = fxPart(Vector3.one * 0.3 * size, CFrame.new(tip.WorldPosition), colour, Enum.Material.Neon)
+	orb.Shape = Enum.PartType.Ball
+	orb.Transparency = 0.4
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = colour, 4, 0.5, false
+	light.Parent = orb
+	tween(orb, seconds, { Size = Vector3.one * 1.4 * size }, Enum.EasingStyle.Sine)
+	tween(light, seconds, { Range = 10 * size, Brightness = 3 }, Enum.EasingStyle.Sine)
+	local started = os.clock()
+	local follow
+	follow = RunService.RenderStepped:Connect(function()
+		if os.clock() - started > seconds or tip.Parent == nil then
+			follow:Disconnect()
+			orb:Destroy()
+			return
+		end
+		orb.CFrame = CFrame.new(tip.WorldPosition)
+	end)
+end
+
+-- Plays a model's weapon effects for the clip it is in (`at` tells one playing of a clip from the next).
+local function weaponFx(model: Model, fx: WeaponFx, anim: string?, at: number, t: number)
+	local done = weaponDone[model] or {}
+	weaponDone[model] = done
+	local s = (model:GetAttribute("Scale") :: number?) or 1
+	local trail = trailOf(model, fx.colour)
+	if trail then
+		trail.Enabled = (anim == "attack" and t > 0.28 and t < ATTACK_CONTACT + 0.05)
+			or (anim == "magic" and t > 0.8 and t < MAGIC_IMPACT + 0.05)
+	end
+	if anim == "attack" and t >= ATTACK_CONTACT and done.attack ~= at then
+		done.attack = at
+		local ground = strikePoint(model)
+		if ground then
+			shockwave(ground, fx.colour, 5 * s, false)
+		end
+	elseif anim == "magic" then
+		if done.charge ~= at and t < MAGIC_IMPACT then
+			done.charge = at
+			chargeWeapon(model, fx.colour, MAGIC_IMPACT - t, s)
+		end
+		if t >= MAGIC_IMPACT and done.power ~= at then
+			done.power = at
+			local ground = strikePoint(model)
+			if ground then
+				eruption(ground, fx.colour, 9 * s)
+			end
+		end
+	end
+end
+
 local function magicColour(model: Model): (Color3, boolean)
 	for _, d in model:GetChildren() do -- a glowing variant casts in its own colour
 		if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
@@ -1664,6 +1821,10 @@ RunService.PreSimulation:Connect(function(dt: number)
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
 			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
+			if WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""] then
+				-- its own effects (weaponFx, below) in place of the shared ones
+				rig.magicAt, rig.impactAt = at, at
+			end
 			if rig.magicAt ~= at then
 				rig.magicAt = at
 				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
@@ -1674,6 +1835,10 @@ RunService.PreSimulation:Connect(function(dt: number)
 			end
 		else
 			target = if biped then idleBiped(time) else idle(time)
+		end
+		local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
+		if own then
+			weaponFx(model, own, anim, at, t)
 		end
 		if model:GetAttribute("Winged") == true then
 			target = table.clone(target)

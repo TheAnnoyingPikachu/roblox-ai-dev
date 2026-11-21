@@ -8005,6 +8005,16 @@
         -0.978,
         3.084,
         -2.027
+      ],
+      "foe_knight_heavy_forge_tip": [
+        -3.694,
+        1.447,
+        2.861
+      ],
+      "foe_knight_heavy_forge_neck": [
+        -3.615,
+        1.935,
+        2.374
       ]
     },
     "skinned": true,

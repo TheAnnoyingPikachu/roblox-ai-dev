@@ -213,8 +213,15 @@ describe("StationAssets", function()
 			for _, tris in entry.parts do
 				expect(tris <= 20000).toBeTruthy()
 			end
-			-- every piece but the body turns on a joint; a dragon's two wings are two more
-			expect(count(entry.joints)).toBe(if string.find(name, "^foe_dragon") then 8 else 6)
+			-- every piece but the body turns on a joint; a dragon's two wings are two more. A held weapon's
+			-- "tip" and "neck" bones (for its trail) ride on its arm and do not count
+			local turning = 0
+			for part in entry.joints do
+				if string.find(part, "_tip$") == nil and string.find(part, "_neck$") == nil then
+					turning += 1
+				end
+			end
+			expect(turning).toBe(if string.find(name, "^foe_dragon") then 8 else 6)
 		end
 	end)
 
