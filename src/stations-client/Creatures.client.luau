@@ -571,6 +571,13 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
 		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
 	),
+	-- the Shadow Archer (an A-pose model, its bow held low ahead): a volley, the bow raised to the sky,
+	-- drawn full, loosed at the impact (the shared biped clip would turn its bow over behind its head)
+	foe_archer_forge = powerClip(
+		{ body = { 8 }, head = { 18 }, leg_fl = { 128 }, leg_fr = { 118 }, tail = { -8 } },
+		{ body = { 10, 0, 0, 0, 0.04, 0.1 }, head = { 22 }, leg_fl = { 132 }, leg_fr = { 104 }, tail = { -12 } },
+		{ body = { -4, 0, 0, 0, -0.04, -0.3 }, head = { 10 }, leg_fl = { 120 }, leg_fr = { 40 }, tail = { 12 } }
+	),
 }
 
 -- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
