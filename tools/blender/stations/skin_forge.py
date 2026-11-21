@@ -601,6 +601,7 @@ REGIONS = {
         ],
         blend=2,
         rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25)},
+        elbows={"leg_fl": (0.35, -0.025, -0.101), "leg_fr": (-0.35, -0.025, -0.101)},
         turn=False,
     ),
         "weights": lambda p: {"body": 1.0},
@@ -626,6 +627,7 @@ REGIONS = {
         blend=2,
         rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25)},
         tips="leg_fr",  # the hammer's head: a trail and a glow follow it (Creatures.client WEAPON_FX)
+        elbows={"leg_fl": (0.378, -0.038, -0.118), "leg_fr": (-0.378, -0.038, -0.118)},
         turn=False,
     ),
     # the bow in its left (+X) hand; its right draws across its chest; quiver and cloak on its back and side
@@ -648,8 +650,10 @@ REGIONS = {
             ("leg_br", (-0.19, 0.0, -1, 0.05, -1, -0.13)),
         ],
         blend=2,  # arms clear of the body: their shoulders bend
-        rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25)},  # from the A-pose to arms hanging by its sides
+        # from the A-pose to arms by its sides, the arrow arm bent so the arrow in its fist points ahead and down
+        rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25), "elbow_r": (50, 0, 0)},
         held={"split": 0.8, "+x": "leg_fl", "-x": "leg_fr"},  # the bow, and the arrow in its drawing hand (job 6c0eeb1e)
+        elbows={"leg_fl": (0.357, -0.035, -0.066), "leg_fr": (-0.357, -0.035, -0.066)},
         turn=False,
     ),
     # the crossbow held out in both hands, the left (+X) one under it; quiver and cloak on its right
@@ -711,8 +715,10 @@ REGIONS = {
             ("head", (-0.15, 0.15, -1, 1, 0.2, 1)),
         ],
         blend=2,
-        rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -18)},  # the staff hand rests a little out, the staff upright
+        # its arms rest bent: the staff upright in its right fist, out to its side, the open book before its chest
+        rest={"leg_fl": (25, 0, 15), "elbow_l": (75, 0, 55), "leg_fr": (20, 0, -10), "elbow_r": (60, 0, 0)},
         held={"split": 0.72, "+x": "leg_fl", "-x": "leg_fr"},
+        elbows={"leg_fl": (0.29, -0.017, -0.028), "leg_fr": (-0.29, -0.017, -0.028)},
         turn=False,
     ),
     # the axe in its left (+X) hand; fur over its shoulders and a cape behind
@@ -805,6 +811,7 @@ REGIONS = {
         blend=2,
         rest={"leg_fl": (0, 0, 25), "leg_fr": (0, 0, -25)},
         held={"split": 0.72, "+x": "leg_fl", "-x": "leg_fr"},
+        elbows={"leg_fl": (0.297, -0.027, -0.109), "leg_fr": (-0.297, -0.027, -0.109)},
         turn=False,
     ),
     # its shield held out at its left (+X), the sword in its right; a long cape behind
@@ -1008,9 +1015,9 @@ OWN_POSES = {  # a model's own attack and power clips (ATTACKS, MAGICS in Creatu
         "swing": {"leg_fr": (0, 20, 0), "leg_fl": (10, 0, -20), "head": (-14, 0, 0), "leg_bl": (36, 0, 0), "leg_br": (-12, 0, 0)},
         "power": {"leg_fr": (215, 0, 8), "leg_fl": (165, 0, -8), "head": (8, 0, 0), "leg_bl": (45, 0, 0), "leg_br": (40, 0, 0)},
     },
-    "foe_archer_forge": {
-        "chop": {"leg_fl": (86, 0, 30), "leg_fr": (84, 0, -72), "head": (-2, 16, 0), "tail": (-10, 0, 0)},
-        "power": {"leg_fl": (132, 0, 30), "leg_fr": (128, 0, -72), "head": (22, 0, 0), "tail": (-12, 0, 0)},
+    "foe_archer_forge": {  # its draw, side-on (the volley is the same draw, its body tipped back)
+        "chop": {"leg_fl": (-65, 1, -98), "leg_fr": (49, 14, 58), "elbow_r": (58, 89, 46), "head": (0, 78, 0)},
+        "power": {"leg_fl": (-65, 1, -98), "leg_fr": (49, 14, 58), "elbow_r": (58, 89, 46), "head": (0, 78, 0)},
     },
 }
 STRETCHED = math.log(1.25)
@@ -1180,6 +1187,8 @@ def main():
     bm.from_mesh(body.data)
     bm.verts.ensure_lookup_table()
     weights = [spec["weights"](v.co) for v in bm.verts]
+    held_verts = set()  # the vertices of props joined in a hand
+    parents = {}  # bones that hang from another than the body
     seen = set()
     whole, islands = 0, 0
     for v in bm.verts:
@@ -1206,6 +1215,7 @@ def main():
                 bone = spec["held"]["+x" if side > 0 else "-x"]
                 for i in island:
                     weights[i] = {bone: 1.0}
+                held_verts.update(island)
                 whole += 1
                 continue
         w = spec["pieces"](ilo, ihi) if "pieces" in spec else None  # rigid pieces: each follows one bone
@@ -1288,7 +1298,30 @@ def main():
             spec["joints"][part] = tuple(sum((body.data.vertices[i].co for i in idx), Vector()) / len(idx))
             for i in idx:
                 weights[i] = {part: 1.0}  # a bone Roblox keeps must have a vertex
+            parents[part] = arm_bone
             print("TIP", part, len(idx))
+    if spec.get("elbows"):  # an elbow halfway down each arm (to its hand, given): the forearm, and what it holds, bend there
+        for arm_bone, hand in spec["elbows"].items():
+            elbow = "elbow_l" if arm_bone == "leg_fl" else "elbow_r"
+            joint = Vector(spec["joints"][arm_bone])
+            at = joint + (Vector(hand) - joint) * 0.5
+            along = (Vector(hand) - joint).normalized()
+            moved = 0
+            for i, w in enumerate(weights):
+                a = w.get(arm_bone, 0)
+                if a <= 0:
+                    continue
+                f = 1.0 if i in held_verts else ramp(-0.03, 0.03, (body.data.vertices[i].co - at).dot(along))
+                w = dict(w)
+                w[arm_bone], w[elbow] = a * (1 - f), a * f
+                weights[i] = {k: x for k, x in w.items() if x > 0.001}
+                moved += f > 0.5
+            spec["joints"][elbow] = tuple(at)
+            parents[elbow] = arm_bone
+            for part in ("tip", "neck"):
+                if parents.get(part) == arm_bone:
+                    parents[part] = elbow
+            print("ELBOW", elbow, moved)
 
     # to studs, standing on the ground under its middle
     lo = Vector((min(v.co[k] for v in body.data.vertices) for k in range(3)))
@@ -1313,7 +1346,9 @@ def main():
             continue
         b = arm_data.edit_bones.new(k)
         b.head, b.tail, b.roll = j, j + Vector((0, 0, 1)), 0
-        b.parent = arm_data.edit_bones[spec["tips"]] if k in ("tip", "neck") else root
+    for k in joints:
+        if k != "body":
+            arm_data.edit_bones[k].parent = arm_data.edit_bones[parents[k]] if k in parents else root
     bpy.ops.object.mode_set(mode="OBJECT")
 
     # the skin
@@ -1331,6 +1366,22 @@ def main():
         set_pose(arm, {})
         mod = body.modifiers.new("rig", "ARMATURE")
         mod.object = arm
+        # the bones hanging from a lowered arm (elbow, weapon tips) go where the arm took their part of the mesh
+        bpy.context.view_layer.objects.active = arm
+        bpy.ops.object.mode_set(mode="EDIT")
+        before = dict(joints)
+        for k in list(joints):
+            at, up = before[k], parents.get(k)
+            while up:  # each bone above it turned its part about its own joint, the nearest first
+                if up in spec["rest"]:
+                    a, b, c = spec["rest"][up]
+                    turn = Matrix.Rotation(math.radians(-a), 3, "X") @ Matrix.Rotation(math.radians(b), 3, "Z") @ Matrix.Rotation(math.radians(c), 3, "Y")
+                    at = before[up] + turn @ (at - before[up])
+                up = parents.get(up)
+            joints[k] = at
+            eb = arm_data.edit_bones[k]
+            eb.head, eb.tail = at, at + Vector((0, 0, 1))
+        bpy.ops.object.mode_set(mode="OBJECT")
 
     out = kit.OUT
     os.makedirs(out, exist_ok=True)

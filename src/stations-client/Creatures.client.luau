@@ -23,7 +23,9 @@ local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForCh
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
 
-local JOINTS = { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "wing_l", "wing_r" }
+-- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them)
+local JOINTS =
+	{ "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "wing_l", "wing_r", "elbow_l", "elbow_r" }
 local TAU = math.pi * 2
 local MAGIC_IMPACT = 0.92 -- seconds into "magic" when the front feet land
 
@@ -345,32 +347,56 @@ local ATTACKS: { [string]: Clip } = {
 		},
 		{ 0.95, {} },
 	}),
-	-- the Shadow Archer (an arrow fixed in its drawing hand, set for its nocked pose): raises the bow at the
-	-- target and brings the arrow to it, twists back to draw, looses at the contact (0.44 s), lowers
+	-- the Shadow Archer (elbows; an arrow fixed in its drawing fist, set for this draw): turns side-on and
+	-- holds the bow out at the target, brings the arrow to the string, draws it back along its chest, looses
+	-- at the contact (0.44 s), then turns back
 	foe_archer_forge = attack({
 		{ 0.00, {} },
-		{ 0.14, { body = { 0, -8, 0 }, head = { 0, 8, 0 }, leg_fl = { 80, 0, 24 }, leg_fr = { 74, 0, -50 } } },
+		{
+			0.14,
+			{
+				body = { 0, -60, 0 },
+				head = { 0, 52, 0 },
+				leg_fl = { -50, 1, -76 },
+				leg_fr = { 62, 45, 32 },
+				elbow_r = { 43, 89, 46 },
+			},
+		},
 		{
 			0.32,
 			{
-				body = { 2, -16, 0, 0, 0, 0.12 },
-				head = { -2, 16, 0 },
-				leg_fl = { 86, 0, 30 },
-				leg_fr = { 84, 0, -72 },
-				tail = { -10 },
+				body = { 2, -88, 0, 0, 0, 0.1 },
+				head = { 0, 78, 0 },
+				leg_fl = { -65, 1, -98 },
+				leg_fr = { 49, 14, 58 },
+				elbow_r = { 58, 89, 46 },
+				leg_bl = { 0, 0, -8 },
+				leg_br = { 0, 0, 8 },
 			},
 		},
 		{
 			0.44,
 			{
-				body = { 4, -6, 0, 0, 0.02, 0.35 },
-				head = { 2, 6, 0 },
-				leg_fl = { 86, 0, 30 },
-				leg_fr = { 66, 0, -38 },
+				body = { 3, -84, 0, 0, 0.02, 0.3 },
+				head = { 0, 76, 0 },
+				leg_fl = { -65, 1, -98 },
+				leg_fr = { 47, 14, 70 },
+				elbow_r = { 40, 89, 46 },
+				leg_bl = { 0, 0, -8 },
+				leg_br = { 0, 0, 8 },
 				tail = { 12 },
 			},
 		},
-		{ 0.64, { leg_fl = { 60, 0, 18 }, leg_fr = { 30, 0, -14 } } },
+		{
+			0.64,
+			{
+				body = { 0, -40, 0 },
+				head = { 0, 34, 0 },
+				leg_fl = { -30, 0, -45 },
+				leg_fr = { 20, 8, 25 },
+				elbow_r = { 20, 40, 20 },
+			},
+		},
 		{ 0.95, {} },
 	}),
 	-- a lunge and a snap, then a shake of the head
@@ -724,25 +750,28 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
 		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
 	),
-	-- the Shadow Archer (an A-pose model, its bow held low ahead): a volley, the bow raised to the sky,
-	-- drawn full, loosed at the impact (the shared biped clip would turn its bow over behind its head)
-	foe_archer_forge = powerClip(
-		{ body = { 8 }, head = { 18 }, leg_fl = { 128, 0, 30 }, leg_fr = { 122, 0, -66 }, tail = { -8 } },
-		{
-			body = { 10, 0, 0, 0, 0.04, 0.1 },
-			head = { 22 },
-			leg_fl = { 132, 0, 30 },
-			leg_fr = { 128, 0, -72 },
-			tail = { -12 },
-		},
-		{
-			body = { -4, 0, 0, 0, -0.04, -0.3 },
-			head = { 10 },
-			leg_fl = { 120, 0, 26 },
-			leg_fr = { 100, 0, -40 },
-			tail = { 12 },
-		}
-	),
+	-- the Shadow Archer (elbows): a volley, side-on with the bow tipped up at the sky, the arrow drawn back
+	-- and loosed at the impact
+	foe_archer_forge = powerClip({
+		body = { 0, -88, -30 },
+		head = { 0, 78, 0 },
+		leg_fl = { -65, 1, -98 },
+		leg_fr = { 56, 38, 40 },
+		elbow_r = { 49, 89, 46 },
+	}, {
+		body = { 0, -88, -38, 0, 0.04, 0.1 },
+		head = { 0, 78, 0 },
+		leg_fl = { -65, 1, -98 },
+		leg_fr = { 49, 14, 58 },
+		elbow_r = { 58, 89, 46 },
+	}, {
+		body = { 0, -86, -34, 0, 0, 0.3 },
+		head = { 0, 76, 0 },
+		leg_fl = { -65, 1, -98 },
+		leg_fr = { 47, 14, 70 },
+		elbow_r = { 40, 89, 46 },
+		tail = { 12 },
+	}),
 }
 
 -- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
@@ -1313,7 +1342,7 @@ local function shockwave(ground: CFrame, colour: Color3, radius: number, glowing
 	tween(ring, 0.45, { Size = Vector3.new(0.25, radius * 2, radius * 2), Transparency = 1 })
 	Debris:AddItem(ring, 0.5)
 	for k = 1, 9 do
-		local length = radius * (0.35 + 0.25 * math.random())
+		local length = radius * (0.22 + 0.24 * math.random())
 		local angle = k / 9 * math.pi * 2 + (math.random() - 0.5) * 0.5
 		local crack = fxPart(
 			Vector3.new(length, 0.06, radius * 0.05),
@@ -1386,7 +1415,7 @@ local function weaponFx(model: Model, fx: WeaponFx, anim: string?, at: number, t
 		done.attack = at
 		local ground = strikePoint(model)
 		if ground then
-			shockwave(ground, fx.colour, 5 * s, false)
+			shockwave(ground, fx.colour, 3.3 * s, false)
 		end
 	elseif anim == "magic" then
 		if done.charge ~= at and t < MAGIC_IMPACT then
@@ -1397,7 +1426,7 @@ local function weaponFx(model: Model, fx: WeaponFx, anim: string?, at: number, t
 			done.power = at
 			local ground = strikePoint(model)
 			if ground then
-				eruption(ground, fx.colour, 9 * s)
+				eruption(ground, fx.colour, 5.9 * s)
 			end
 		end
 	end

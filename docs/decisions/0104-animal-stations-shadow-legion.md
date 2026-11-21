@@ -73,6 +73,13 @@ Date: 2026-11-20. Tasks STATION-113, STATION-114.
   Capes, cloaks, robes, quivers and banners stay on the body. Riders: the horse's head, legs and tail
   move; the rider and what it holds ride the body. Dragons: wings, head, tail and legs from the elbow and
   knee down.
+- **Remade in an A-pose, one or two at a time for SHANNON's sign-off** (2026-11-21, the Shadow Knight, Heavy
+  Knight, Shadow Archer, Battle Priest and Shieldbearer so far): ForgeGUI makes the figure from a description,
+  arms out and hands empty, and its weapons apart (several in one model); they are joined in its hands and it is
+  skinned with blended joints, its arms lowered to rest (`rest`). These rigs have two more bones, `elbow_l` and
+  `elbow_r` (children of `leg_fl` and `leg_fr`; `elbows` in skin_forge, in `JOINTS` in Creatures.client), so an
+  arm bends: a clip that does not name them leaves the arm straight. The Battle Priest's arms and the Shadow
+  Archer's arrow arm rest bent. A held weapon can carry `tip` and `neck` bones for a trail (`tips`).
 - `skin_forge.py --stretch` poses a model at the peak of each of the game's clips and draws every face
   stretched by a quarter red: all 18 are at 0% (the first rigs reached 36%).
 - Creatures: a `foe_dragon*` model is Winged, a `foe_cavalry*` one four-legged, any other foe Biped; the
