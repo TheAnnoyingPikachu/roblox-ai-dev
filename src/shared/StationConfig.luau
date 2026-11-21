@@ -35,7 +35,8 @@ export type Foe = {
 	name: string,
 	kind: string, -- "knight" | "archer" | "mage" | "ogre" | "golem" | "cavalry" | "dragon"
 	model: string, -- the asset that shows it ("foe_<kind>[_<word>]_forge", decision 0104)
-	size: number?, -- scaled by this (default 1) ...
+	size: number?, -- scaled by this (default 1; the stronger ones stand bigger, and a dragon's wings must still
+	-- pass the arena gate, 42 studs wide: Arena.luau) ...
 	tint: { number }?, -- ... and tinted this colour, r g b 0 to 255 (default: as built)
 	role: string, -- "attack" | "defense" | "utility"
 	group: string, -- "pack" | "solitary"
@@ -306,6 +307,7 @@ StationConfig.FOES = {
 		name = "Ogre Enforcer",
 		kind = "ogre",
 		model = "foe_ogre_forge",
+		size = 1.15,
 		role = "attack",
 		group = "solitary",
 		stats = s(24, 80, 28, 8, 76, 22),
@@ -326,6 +328,7 @@ StationConfig.FOES = {
 		name = "Berserker",
 		kind = "knight",
 		model = "foe_knight_berserker_forge",
+		size = 1.1,
 		role = "attack",
 		group = "solitary",
 		stats = s(52, 60, 22, 20, 44, 10),
@@ -356,6 +359,7 @@ StationConfig.FOES = {
 		name = "Cavalry",
 		kind = "cavalry",
 		model = "foe_cavalry_forge",
+		size = 1.1,
 		role = "attack",
 		group = "pack",
 		stats = s(72, 40, 30, 14, 48, 24),
@@ -366,6 +370,7 @@ StationConfig.FOES = {
 		name = "Necromancer",
 		kind = "mage",
 		model = "foe_mage_necromancer_forge",
+		size = 1.15,
 		role = "attack",
 		group = "solitary",
 		stats = s(20, 30, 30, 70, 46, 20),
@@ -377,6 +382,7 @@ StationConfig.FOES = {
 		name = "Ogre Commander",
 		kind = "ogre",
 		model = "foe_ogre_commander_forge",
+		size = 1.3,
 		role = "attack",
 		group = "pack",
 		stats = s(46, 92, 40, 20, 84, 28),
@@ -387,6 +393,7 @@ StationConfig.FOES = {
 		name = "Shieldbearer Commander",
 		kind = "knight",
 		model = "foe_knight_shield_commander_forge",
+		size = 1.3,
 		role = "defense",
 		group = "solitary",
 		stats = s(14, 30, 56, 24, 80, 90),
@@ -397,6 +404,7 @@ StationConfig.FOES = {
 		name = "Siege Golem",
 		kind = "golem",
 		model = "foe_golem_forge",
+		size = 1.45,
 		role = "defense",
 		group = "solitary",
 		stats = s(6, 60, 64, 10, 110, 96),
@@ -407,6 +415,7 @@ StationConfig.FOES = {
 		name = "Cavalry Commander",
 		kind = "cavalry",
 		model = "foe_cavalry_commander_forge",
+		size = 1.3,
 		role = "attack",
 		group = "solitary",
 		stats = s(82, 84, 44, 24, 90, 40),
@@ -417,6 +426,7 @@ StationConfig.FOES = {
 		name = "Dark Drake",
 		kind = "dragon",
 		model = "foe_dragon_drake_forge",
+		size = 1.9,
 		role = "attack",
 		group = "solitary",
 		stats = s(46, 70, 36, 46, 108, 38),
@@ -427,6 +437,7 @@ StationConfig.FOES = {
 		name = "Shadow Dragon",
 		kind = "dragon",
 		model = "foe_dragon_forge",
+		size = 2.0,
 		role = "attack",
 		group = "solitary",
 		stats = s(70, 130, 70, 80, 200, 90),
@@ -437,6 +448,7 @@ StationConfig.FOES = {
 		name = "Ancient Alpha Dragon",
 		kind = "dragon",
 		model = "foe_dragon_alpha_forge",
+		size = 1.8,
 		role = "attack",
 		group = "solitary",
 		stats = s(100, 200, 100, 120, 320, 160),

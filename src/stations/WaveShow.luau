@@ -204,14 +204,16 @@ local function shoot(folder: Folder, kind: string, from: Vector3, to: Vector3, s
 end
 
 -- A line of `sizes` (studs, x by z) across the arena, centred on x = 0: where each one's middle goes.
+local ROW_MAX = 96 -- the pit is 104 studs wide between its walls: a wider row closes up, its creatures overlapping
 local function across(sizes: { Vector3 }): ({ number }, number)
 	local total = 0
 	for _, s in sizes do
 		total += s.X + 6
 	end
+	local squeeze = math.min(1, ROW_MAX / total)
 	local out, x, deepest = {}, -total / 2, 0
 	for _, s in sizes do
-		table.insert(out, x + (s.X + 6) / 2)
+		table.insert(out, (x + (s.X + 6) / 2) * squeeze)
 		x += s.X + 6
 		deepest = math.max(deepest, s.Z)
 	end

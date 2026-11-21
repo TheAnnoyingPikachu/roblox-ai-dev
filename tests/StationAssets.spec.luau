@@ -224,7 +224,9 @@ describe("StationAssets", function()
 			expect(string.find(f.model, `^foe_{f.kind}`) ~= nil and string.find(f.model, "_forge$") ~= nil).toBe(true)
 			expect(StationAssets[f.model] == nil).toBe(false)
 			expect(StationAssets[f.model].model == nil).toBe(false) -- uploaded
-			expect(f.size == nil or (f.size >= 0.5 and f.size <= 2)).toBeTruthy()
+			expect(f.size == nil or f.size >= 0.5).toBeTruthy()
+			-- as big as it likes, but its wings pass the arena gate's 42-stud opening (Arena.luau)
+			expect(StationAssets[f.model].size[1] * (f.size or 1) <= 42).toBe(true)
 			if f.tint then
 				expect(#f.tint).toBe(3)
 				for _, c in f.tint do

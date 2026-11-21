@@ -41,5 +41,5 @@
   ],
   "verification": "Lune and selene clean; Studio, local build, stamp `dev`: every enemy from the admin Enemies tab, and a wave with a Necromancer.",
   "risk_level": "medium",
-  "notes": "SHANNON, 2026-11-20: \"get rid of every old enemy and add every new model as a new enemy with stats and power numbers and such. after they are all spread them across the waves accordingly\"; \"battle preists heal enemies, necromancers revive dead enemies and darkcaster is just a damage dealing mage\". Checkpoint: the draft stats and first waves (decision 0104) are Claude's, to confirm; the swarm power multipliers were tuned with minions and are to recheck."
+  "notes": "SHANNON, 2026-11-20: \"get rid of every old enemy and add every new model as a new enemy with stats and power numbers and such. after they are all spread them across the waves accordingly\"; \"battle preists heal enemies, necromancers revive dead enemies and darkcaster is just a damage dealing mage\". Checkpoint: the draft stats and first waves (decision 0104) are Claude's, to confirm; the swarm power multipliers were tuned with minions and are to recheck. SHANNON, 2026-11-21: \"make the dragons BIG, infact make all powerful enemies a bit or a lot bigger\": sizes in FOES (decision 0104), rows closed up to the pit in WaveShow."
 }

@@ -51,6 +51,12 @@ Date: 2026-11-20. Tasks STATION-113, STATION-114.
   once a fight, so a fight still ends. Its power score counts it as a quarter more HP. The replay shows the
   fallen enemy standing up again, glowing, with its health bar back.
 - **The Darkcaster** is a plain damage mage (attack role).
+- **The stronger, the bigger** (SHANNON, 2026-11-21: "make the dragons BIG, infact make all powerful enemies
+  a bit or a lot bigger"; `size` in `StationConfig.FOES`): x1.1 to 1.15 for the Berserker, Ogre Enforcer,
+  Cavalry and Necromancer, x1.3 for the three commanders, x1.45 for the Siege Golem, and the dragons x1.8 to 2:
+  the Dark Drake 17 studs tall, the Shadow Dragon 26 and the Ancient Alpha Dragon 29, its 42-stud wings as wide
+  as the arena gate lets through (a spec checks every enemy's width against the gate). A row of enemies wider
+  than the pit closes up, its creatures overlapping (`WaveShow`). Display only: no stat changes.
 - **Swarm waves have no minions** now (the Gloom Imp is gone): their crowd is all regulars, still matched
   to the classic wave's power (`LevelRules.CROWDS`, minions 0).
 
