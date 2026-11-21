@@ -1066,6 +1066,17 @@ local STANCES: { [string]: Pose } = {
 		leg_bl = { 6 },
 		leg_br = { -5 },
 	},
+	-- shield wall: turned behind its huge shield, held before it, the sword raised at its side, one foot forward
+	foe_knight_shield_forge = {
+		body = { -4, -22, 0 },
+		head = { 2, 20, 0 },
+		leg_fl = { 6 },
+		elbow_l = { 8, 0, 10 },
+		leg_fr = { -10, 0, 8 },
+		elbow_r = { 50 },
+		leg_bl = { 12 },
+		leg_br = { -8 },
+	},
 	-- reading: its arms rest bent (the staff planted, the book open before it), head bowed to the pages
 	foe_mage_priest_forge = { head = { -12, 10, 0 } },
 }
