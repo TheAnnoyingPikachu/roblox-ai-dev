@@ -965,8 +965,8 @@
     "texture": null
   },
   "foe_archer_forge": {
-    "model": 139040315754408,
-    "decal": 85585247503324,
+    "model": 117848082767145,
+    "decal": 91196425148472,
     "texture": null
   },
   "foe_archer_crossbow_forge": {
@@ -980,8 +980,8 @@
     "texture": null
   },
   "foe_mage_necromancer_forge": {
-    "model": 92051958340296,
-    "decal": 72952017809982,
+    "model": 112980933740820,
+    "decal": 91036788854983,
     "texture": null
   },
   "foe_mage_priest_forge": {
@@ -995,8 +995,8 @@
     "texture": null
   },
   "foe_ogre_forge": {
-    "model": 87057584913858,
-    "decal": 126860687447398,
+    "model": 132869653245093,
+    "decal": 117717609115425,
     "texture": null
   },
   "foe_ogre_commander_forge": {
