@@ -985,8 +985,8 @@
     "texture": null
   },
   "foe_mage_priest_forge": {
-    "model": 102927251930594,
-    "decal": 92439977360595,
+    "model": 87953528203429,
+    "decal": 133085071256747,
     "texture": null
   },
   "foe_knight_berserker_forge": {
@@ -1010,8 +1010,8 @@
     "texture": null
   },
   "foe_knight_shield_forge": {
-    "model": 118712843204300,
-    "decal": 134202502123489,
+    "model": 104197671101494,
+    "decal": 74192124380872,
     "texture": null
   },
   "foe_knight_shield_commander_forge": {
