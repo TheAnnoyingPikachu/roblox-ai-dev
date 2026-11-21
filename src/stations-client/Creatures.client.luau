@@ -294,6 +294,57 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Heavy Knight's Overhead Crush (SHANNON's pick of three): leans back with the hammer behind its head
+	-- and the shield up, then steps in and drives the hammer head straight down into the ground at the
+	-- contact (0.44 s); the arm's twist there keeps the head pointing ahead, not out to the side
+	foe_knight_heavy_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 8, -12, 0, 0, 0.06, 0.25 },
+				leg_fr = { 205, 0, 10 },
+				leg_fl = { 35, 0, -10 },
+				head = { 8 },
+				leg_bl = { 6 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 12, -16, 0, 0, 0.1, 0.3 },
+				leg_fr = { 218, 0, 8 },
+				leg_fl = { 45, 0, -12 },
+				head = { 10 },
+				leg_bl = { 10 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -26, 0, 0, 0, -0.12, -0.95 },
+				leg_fr = { 0, 20, 0 },
+				leg_fl = { 10, 0, -20 },
+				head = { -14 },
+				leg_bl = { 36 },
+				leg_br = { -12 },
+			},
+		},
+		{
+			0.58,
+			{
+				body = { -22, 0, 0, 0, -0.1, -0.85 },
+				leg_fr = { 4, 18, 0 },
+				leg_fl = { 12, 0, -18 },
+				head = { -10 },
+				leg_bl = { 32 },
+				leg_br = { -10 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Shadow Archer (its bow held low ahead at rest): squares up, raises the bow straight at the target
 	-- and reaches for the string, draws it back past its face, looses at the contact (0.44 s) and recoils
 	foe_archer_forge = attack({
@@ -460,6 +511,80 @@ local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
 	}
 end
 local MAGICS: { [string]: Clip } = {
+	-- the Heavy Knight's Leaping Slam (SHANNON's pick of three): crouches with the hammer swung low behind,
+	-- leaps with the hammer overhead and the shield up, lands in a slam at the impact (0.92 s), hops back
+	foe_knight_heavy_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.30,
+				{
+					body = { -12, 0, 0, 0, -0.1, 0.1 },
+					leg_fr = { -30, 0, 15 },
+					leg_fl = { -20, 0, -15 },
+					head = { -6 },
+					leg_bl = { 24 },
+					leg_br = { 24 },
+				},
+			},
+			{
+				0.55,
+				{
+					body = { 10, 0, 0, 0, 1.2, -0.4 },
+					leg_fr = { 190, 0, 10 },
+					leg_fl = { 150, 0, -10 },
+					head = { 10 },
+					leg_bl = { 30 },
+					leg_br = { -20 },
+				},
+			},
+			{
+				0.78,
+				{
+					body = { 14, 0, 0, 0, 1.5, -0.8 },
+					leg_fr = { 215, 0, 8 },
+					leg_fl = { 165, 0, -8 },
+					head = { 8 },
+					leg_bl = { 45 },
+					leg_br = { 40 },
+				},
+			},
+			{
+				MAGIC_IMPACT,
+				{
+					body = { -28, 0, 0, 0, -0.1, -1.4 },
+					leg_fr = { 0, 20, 0 },
+					leg_fl = { 40, 0, -30 },
+					head = { -16 },
+					leg_bl = { 38 },
+					leg_br = { -18 },
+				},
+			},
+			{
+				1.12,
+				{
+					body = { -24, 0, 0, 0, -0.08, -1.3 },
+					leg_fr = { 4, 18, 0 },
+					leg_fl = { 38, 0, -28 },
+					head = { -12 },
+					leg_bl = { 34 },
+					leg_br = { -16 },
+				},
+			},
+			{
+				1.36,
+				{
+					body = { -4, 0, 0, 0, 0.35, -0.6 },
+					leg_fr = { 20 },
+					leg_fl = { 14, 0, -10 },
+					leg_bl = { 12 },
+					leg_br = { 8 },
+				},
+			},
+			{ 1.60, {} },
+		},
+	},
 	-- throws its head back in a howl (a positive pitch lifts the nose), then drives down on the target
 	jackal = powerClip(
 		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { 36 }, tail = { -20 } },
