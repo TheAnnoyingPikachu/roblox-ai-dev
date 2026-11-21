@@ -4,6 +4,7 @@
 -- loads saves (kit Saves), shows each ranch as its owner has built it and the eggs in its hatchery
 -- (Ranch.luau), and routes every request (kit Router): buying eggs, starting one hatching and
 -- opening it, ranch upgrades, the team and training. The client only names an action; prices, hatches and timings are decided here.
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -120,6 +121,8 @@ local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
+local StationRewards = require(Shared:WaitForChild("StationRewards"))
+local WaveRuns = require(Shared:WaitForChild("WaveRuns"))
 
 local rng = Rng.seed(os.time(), Random.new():NextInteger(1, 2 ^ 30))
 local saves
@@ -132,7 +135,7 @@ local function eggsOf(p: StationProgress.Profile): { { egg: string, since: numbe
 		out[k] = {
 			egg = e.egg,
 			since = e.since,
-			due = if e.since and egg then e.since + StationProgress.hatchSeconds(p, egg) else nil,
+			due = if e.since and egg then StationProgress.dueAt(p, e) else nil,
 		}
 	end
 	return out
@@ -171,6 +174,100 @@ local function apply(
 	return true, nil
 end
 
+-- The planners and the daily wheel (decision 0094). What a reward gives is worked out on a copy of the
+-- save with today counted; the animals inside won eggs (and a jackpot's mythic) are rolled here, then the
+-- save is changed with them, so a change that runs twice gives the same.
+local function today(player: Player): StationProgress.Profile?
+	local p = saves.get(player)
+	if p == nil then
+		return nil
+	end
+	return StationRewards.visit(StationProgress.sanitize(p, os.time()), os.time())
+end
+
+local function rollEggs(items: StationRewards.Items): { StationRules.Owned }
+	local animals = {}
+	for _, id in items.eggs do
+		local a
+		a, rng = StationRules.hatch(id, rng)
+		table.insert(animals, a :: StationRules.Owned)
+	end
+	return animals
+end
+
+local function rewardWeek(player: Player): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local spec, code = StationRewards.nextWeek(p)
+	if spec == nil then
+		return false, code
+	end
+	local items = StationRewards.resolve(p, spec)
+	local animals, now = rollEggs(items), os.time()
+	local ok, why = apply(player, function(q)
+		StationRewards.visit(q, now)
+		return StationRewards.claimWeek(q, items, animals, now)
+	end)
+	if ok then
+		remotes.fx(player, "reward", { items = items })
+	end
+	return ok, why
+end
+
+local function rewardMonth(player: Player, d: number): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local can, code = StationRewards.canMonth(p, d)
+	if not can then
+		return false, code
+	end
+	local items = StationRewards.resolve(p, StationRewards.MONTH[d])
+	local animals, now = rollEggs(items), os.time()
+	local ok, why = apply(player, function(q)
+		StationRewards.visit(q, now)
+		return StationRewards.claimMonth(q, d, items, animals, now)
+	end)
+	if ok then
+		remotes.fx(player, "reward", { items = items })
+	end
+	return ok, why
+end
+
+local function spinWheel(player: Player): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local now = os.time()
+	if not StationRewards.canSpin(p, now) then
+		return false, "spun"
+	end
+	local roll
+	roll, rng = Rng.int(rng, 0, 999999)
+	local prize = StationRewards.prizeOf(p, roll)
+	local items = StationRewards.resolve(p, StationRewards.WHEEL[prize].prize)
+	local animals = rollEggs(items)
+	local mythic = nil
+	if items.jackpot then
+		local all = StationRewards.mythics()
+		local k
+		k, rng = Rng.int(rng, 1, #all)
+		mythic = all[k]
+	end
+	local ok, why = apply(player, function(q)
+		StationRewards.visit(q, now)
+		return StationRewards.spin(q, prize, items, animals, mythic, now)
+	end)
+	if ok then
+		remotes.fx(player, "spun", { prize = prize, items = items, mythic = mythic })
+	end
+	return ok, why
+end
+
 local function buy(player: Player, eggId: string): (boolean, string?)
 	local p = saves.get(player)
 	if p == nil then
@@ -195,6 +292,7 @@ end
 -- animal, then its variant, then every foe, in the order the client's menu shows them.
 local StationAssets = require(Shared:WaitForChild("StationAssets"))
 local WaveShow = require(script.Parent:WaitForChild("WaveShow"))
+local TradeLedger = require(script.Parent:WaitForChild("TradeLedger"))
 type Look = { s: string?, v: string?, foe: string?, asset: string }
 local LOOKS: { Look } = {}
 for _, sp in StationConfig.SPECIES do
@@ -214,6 +312,8 @@ local function lookSize(look: Look): Vector3
 	local size = StationAssets[look.asset].size
 	return Vector3.new(size[1], size[2], size[3])
 end
+
+local lookRuns: { [Player]: number } = {} -- the admin's latest animation button press, so a looping move knows to stop
 
 local function looks(player: Player): Instance
 	local name = `AdminShow{player.UserId}`
@@ -271,8 +371,29 @@ end
 -- fight time is up, so skipping the replay does not make farming faster. The player's taps fire
 -- their power attacks during the replay (decision 0092): a fight nobody taps in decides the pay at
 -- once, and a fight the taps turn into a win pays when it ends (a tap never loses a won fight).
+-- Every fight is part of a wave run (decision 0098): HP carries over, a win offers three boons (picking
+-- one starts the next wave), and the run's pot is banked when the player leaves (half after a loss).
+-- Stars (decision 0097) are kept per wave.
 local readyAt: { [Player]: number } = {} -- os.clock() when the player may start another fight
-local function waveFight(player: Player, level: number): (boolean, string?)
+local waveRuns: { [Player]: WaveRuns.Run } = {}
+
+-- End the player's run, if any, and pay its pot: all of it, or WaveRuns.LOSS_KEEP % after a loss.
+local function bankRun(player: Player, lost: boolean)
+	local run = waveRuns[player]
+	waveRuns[player] = nil
+	if run == nil then
+		return
+	end
+	local coins, samples = WaveRuns.bank(run, lost)
+	if coins > 0 or samples > 0 then
+		saves.apply(player, function(q)
+			return StationProgress.earn(q, coins, samples)
+		end)
+	end
+	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = run.streak })
+end
+
+local function waveFight(player: Player, level: number, continuing: boolean?): (boolean, string?)
 	local p = saves.get(player)
 	if p == nil then
 		return false, "loading"
@@ -285,7 +406,18 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 		return false, code
 	end
 	local team = StationProgress.fighters(copy)
-	local won, _, seconds = LevelRules.fight(team :: any, level, {})
+	if not continuing then -- a new run: the old one (if any) is banked
+		bankRun(player, false)
+		local seed
+		seed, rng = Rng.int(rng, 1, 2 ^ 30)
+		waveRuns[player] = WaveRuns.new(level, #team, seed)
+	end
+	local run = waveRuns[player]
+	if run == nil or run.wave ~= level then
+		return false, "wave"
+	end
+	local setup = WaveRuns.setup(run)
+	local won, _, seconds = LevelRules.fight(team :: any, level, {}, setup)
 	readyAt[player] = os.clock() + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
 	local coins, xp, samples = StationProgress.payout(copy, level)
 	local first = level > copy.best
@@ -295,13 +427,44 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 				return (StationProgress.clear(q, level))
 			end)
 		end
+		saves.apply(player, function(q)
+			return StationProgress.setStars(q, level, result.stars)
+		end)
 		result.coins, result.xp, result.samples =
 			if result.won then coins else 0, if result.won then xp else 0, if result.won then samples else 0
 		result.first = first
+		if waveRuns[player] == run then
+			if result.won then
+				local after = WaveRuns.won(run, result.ends, coins, samples)
+				waveRuns[player] = after
+				result.offer, result.streak, result.pot = after.offer, after.streak, after.pot
+				if level % LevelRules.BOSS_EVERY == 0 then -- the boss chest
+					local q = saves.get(player)
+					local items = if q
+						then StationRewards.resolve(
+							StationProgress.sanitize(q, os.time()),
+							StationRewards.bossChest(level)
+						)
+						else nil
+					if items then
+						local animals, now = rollEggs(items), os.time()
+						local given = apply(player, function(r)
+							return StationRewards.grant(r, items, animals, nil, now)
+						end)
+						result.chest = if given then items else nil
+					end
+				end
+			else
+				bankRun(player, true)
+			end
+		end
 		remotes.fx(player, "wavedone", result)
-	end)
+	end, setup)
 	if not started then
 		readyAt[player] = nil
+		if not continuing then
+			waveRuns[player] = nil
+		end
 	elseif won then
 		saves.apply(player, function(q)
 			return (StationProgress.clear(q, level))
@@ -310,12 +473,74 @@ local function waveFight(player: Player, level: number): (boolean, string?)
 	return started, why
 end
 
--- Trading (decision 0084): two players in this server swap animals. A trade lives here, not in the
--- saves: each side puts in up to StationTrade.MAX animals, any change makes both unready, and when both
--- are ready the server checks both saves again and swaps.
-type Trade = { a: Player, b: Player, offer: { [Player]: { number } }, ready: { [Player]: boolean } }
+-- Pick boon `id` from the run's offer and fight the run's next wave (decision 0098).
+local function pickBoon(player: Player, id: string): (boolean, string?)
+	local run = waveRuns[player]
+	if run == nil or run.offer == nil then
+		return false, "boon"
+	elseif os.clock() < (readyAt[player] or 0) then
+		return false, "busy"
+	end
+	local p = saves.get(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local can, code = StationProgress.canFight(StationProgress.sanitize(p, os.time()), run.wave)
+	if not can then
+		return false, code
+	end
+	local picked, ok, why = WaveRuns.pick(run, id)
+	if not ok then
+		return false, why
+	end
+	waveRuns[player] = picked
+	return waveFight(player, picked.wave, true)
+end
+
+-- Open the next star chest (decision 0097).
+local function openChest(player: Player): (boolean, string?)
+	local p = today(player)
+	if p == nil then
+		return false, "loading"
+	end
+	local spec, code = StationRewards.nextChest(p)
+	if spec == nil then
+		return false, code
+	end
+	local items = StationRewards.resolve(p, spec)
+	local animals, now = rollEggs(items), os.time()
+	local ok, why = apply(player, function(q)
+		return StationRewards.claimChest(q, items, animals, now)
+	end)
+	if ok then
+		remotes.fx(player, "reward", { items = items })
+	end
+	return ok, why
+end
+
+-- Trading (decisions 0084, 0099): two players in this server swap animals. A trade lives here, not in the
+-- saves. Each side puts in up to StationTrade.MAX of its own animals (not training, not locked). Any change
+-- makes both unready, flashes the changed slot and holds Ready for StationTrade.READY_DELAY seconds. When
+-- both are ready the window locks and both Confirm after StationTrade.CONFIRM_SECONDS. Then the server
+-- checks both saves again, writes both sides to the ledger (TradeLedger), checks once more and applies both
+-- with no yield between them. Trading opens at player level StationTrade.MIN_LEVEL, with at most
+-- StationTrade.PER_DAY trades a day; a player can turn requests off or block someone for the session.
+type Trade = {
+	a: Player,
+	b: Player,
+	offer: { [Player]: { number } },
+	ready: { [Player]: boolean },
+	stage: string, -- "build" | "confirm"
+	changedAt: number, -- os.clock() of the last change
+	confirmAt: number, -- os.clock() from which Confirm is allowed
+	confirmed: { [Player]: boolean },
+	flash: { by: Player, id: number, at: number }?,
+	committing: boolean,
+}
 local trades: { [Player]: Trade } = {}
 local invites: { [Player]: { from: Player, at: number } } = {} -- by the player who was asked
+local asked: { [Player]: { [Player]: number } } = {} -- when each player last asked each other one
+local blocked: { [Player]: { [number]: boolean } } = {} -- UserIds each player has blocked this session
 local INVITE_SECONDS = 30
 
 local function partner(t: Trade, player: Player): Player
@@ -323,21 +548,38 @@ local function partner(t: Trade, player: Player): Player
 end
 
 local function pushTrade(t: Trade)
+	local now = os.clock()
 	for _, me in { t.a, t.b } do
 		local them = partner(t, me)
 		local theirs = {}
 		local pt = saves.get(them)
 		if pt then
 			for _, a in StationTrade.copies(pt, t.offer[them]) do
-				table.insert(theirs, { s = a.s, v = a.v, rainbow = a.rainbow, stats = a.stats, trained = a.trained })
+				table.insert(
+					theirs,
+					{ id = a.id, s = a.s, v = a.v, rainbow = a.rainbow, stats = a.stats, trained = a.trained }
+				)
 			end
 		end
+		local flash = t.flash
+		local mine = saves.get(me)
 		remotes.fx(me, "trade", {
 			with = them.DisplayName,
+			level = if pt then StationProgress.playerLevel(pt) else 0,
+			traded = if pt then pt.trades.total else 0,
 			mine = t.offer[me],
 			theirs = theirs,
 			ready = t.ready[me] == true,
 			theyReady = t.ready[them] == true,
+			stage = t.stage,
+			readyIn = math.max(0, t.changedAt + StationTrade.READY_DELAY - now),
+			confirmIn = math.max(0, t.confirmAt - now),
+			confirmed = t.confirmed[me] == true,
+			theyConfirmed = t.confirmed[them] == true,
+			flash = if flash and now - flash.at < 5
+				then { mine = flash.by == me, id = flash.id, left = 5 - (now - flash.at) }
+				else nil,
+			left = if mine then StationTrade.left(mine, os.time()) else 0,
 		})
 	end
 end
@@ -351,6 +593,21 @@ local function closeTrade(t: Trade, why: string)
 	end
 end
 
+-- Back to building: both unready, and Ready held a moment (after any change, or a failed confirm).
+local function changed(t: Trade)
+	t.ready[t.a], t.ready[t.b] = false, false
+	t.stage, t.confirmed = "build", {}
+	t.changedAt = os.clock()
+end
+
+local function names(list: { StationRules.Owned }): { string }
+	local out = {}
+	for _, a in list do
+		table.insert(out, StationTrade.nameOf(a))
+	end
+	return out
+end
+
 local function finishTrade(t: Trade): (boolean, string?)
 	local pa, pb = saves.get(t.a), saves.get(t.b)
 	if pa == nil or pb == nil then
@@ -359,25 +616,113 @@ local function finishTrade(t: Trade): (boolean, string?)
 	end
 	local giveA, giveB = table.clone(t.offer[t.a]), table.clone(t.offer[t.b])
 	local getA, getB = StationTrade.copies(pb, giveB), StationTrade.copies(pa, giveA)
-	-- dry runs on copies first: neither save changes unless both can
-	local _, okA, codeA = StationTrade.swap(StationProgress.sanitize(pa, os.time()), giveA, getA)
-	local _, okB, codeB = StationTrade.swap(StationProgress.sanitize(pb, os.time()), giveB, getB)
-	if not (okA and okB) then
-		t.ready[t.a], t.ready[t.b] = false, false
-		pushTrade(t)
-		return false, codeA or codeB
+	local id = HttpService:GenerateGUID(false)
+	local now = os.time()
+	local sideA: StationTrade.Side =
+		{ id = id, with = t.b.DisplayName, give = giveA, get = getA, gave = names(getB), got = names(getA) }
+	local sideB: StationTrade.Side =
+		{ id = id, with = t.a.DisplayName, give = giveB, get = getB, gave = names(getA), got = names(getB) }
+	-- every check on copies first: neither save changes unless both can
+	local function check(): string?
+		local qa, qb = saves.get(t.a), saves.get(t.b)
+		if qa == nil or qb == nil or trades[t.a] ~= t then
+			return "trade_none"
+		end
+		for _, q in { qa, qb } do
+			local can, code = StationTrade.canTrade(StationProgress.sanitize(q, now), now)
+			if not can then
+				return code
+			end
+		end
+		local _, okA, codeA = StationTrade.commit(StationProgress.sanitize(qa, now), sideA, now)
+		local _, okB, codeB = StationTrade.commit(StationProgress.sanitize(qb, now), sideB, now)
+		return if okA and okB then nil else (codeA or codeB)
 	end
-	-- shortcut: the two saves are written separately, so a server crash or a failed write between them
-	-- could duplicate or lose an animal; add Egg Garden's ledger and heal (src/garden/Trades.luau) before
-	-- a public release (decision 0084).
+	local code = check()
+	if code then
+		changed(t)
+		pushTrade(t)
+		return false, code
+	end
+	-- the ledger, so a crash between the two saves is finished at the next login (decision 0099). With
+	-- both saves offline (Studio) nothing persists, so there is nothing to protect; a mix is refused.
+	local onlineA, onlineB = saves.isOnline(t.a), saves.isOnline(t.b)
+	if onlineA ~= onlineB then
+		changed(t)
+		pushTrade(t)
+		return false, "trade_saving"
+	end
+	t.committing = true
+	if onlineA then
+		local wroteA = TradeLedger.write(t.a.UserId, sideA, now)
+		local wroteB = wroteA and TradeLedger.write(t.b.UserId, sideB, now)
+		code = if wroteA and wroteB then check() else "trade_store"
+		if code then
+			t.committing = false
+			if wroteA then -- best effort: a side left in the ledger is never applied once cancelled
+				task.spawn(TradeLedger.cancel, t.a.UserId, id)
+			end
+			if wroteB then
+				task.spawn(TradeLedger.cancel, t.b.UserId, id)
+			end
+			if trades[t.a] == t then
+				changed(t)
+				pushTrade(t)
+			end
+			return false, code
+		end
+	end
+	-- both applies, with no yield between them
 	saves.apply(t.a, function(q)
-		return (StationTrade.swap(q, giveA, getA))
+		return (StationTrade.commit(q, sideA, now))
 	end)
 	saves.apply(t.b, function(q)
-		return (StationTrade.swap(q, giveB, getB))
+		return (StationTrade.commit(q, sideB, now))
 	end)
 	closeTrade(t, "done")
+	remotes.fx(t.a, "trade_done", { got = sideA.got, gave = sideA.gave, with = sideA.with })
+	remotes.fx(t.b, "trade_done", { got = sideB.got, gave = sideB.gave, with = sideB.with })
 	return true, nil
+end
+
+-- At login: finish any trade the ledger has for the player that their save never got (decision 0099).
+local function healTrades(player: Player)
+	if not saves.isOnline(player) then
+		return
+	end
+	local list = TradeLedger.read(player.UserId)
+	local now = os.time()
+	for _, e in list or {} do
+		local at = if type(e) == "table" and type(e.at) == "number" then e.at else 0
+		local p = saves.get(player)
+		if p == nil then
+			return
+		end
+		if
+			type(e.id) == "string"
+			and not e.cancelled
+			and now - at < StationTrade.HEAL_SECONDS
+			and not StationTrade.has(p, e.id)
+		then
+			local side: StationTrade.Side = {
+				id = e.id,
+				with = tostring(e.with or "?"),
+				give = if type(e.give) == "table" then e.give else {},
+				get = if type(e.get) == "table" then e.get else {},
+				gave = if type(e.gave) == "table" then e.gave else {},
+				got = if type(e.got) == "table" then e.got else {},
+			}
+			local _, ok, code = StationTrade.commit(StationProgress.sanitize(p, now), side, at)
+			if ok then
+				saves.apply(player, function(q)
+					return (StationTrade.commit(q, side, at))
+				end)
+				print(`[TradeLedger] finished trade {e.id} for {player.UserId}`)
+			else
+				warn(`[TradeLedger] trade {e.id} for {player.UserId} cannot be finished ({code}); check it by hand`)
+			end
+		end
+	end
 end
 
 local router = Router.new({
@@ -394,15 +739,43 @@ local router = Router.new({
 			end,
 		},
 		buy = { args = { Payload.enum(ids(StationConfig.EGGS)) }, handler = buy },
+		-- the planners and the daily wheel (decision 0094): count today, claim, spin
+		rewards = {
+			args = {},
+			handler = function(player)
+				local now = os.time()
+				return apply(player, function(q)
+					return StationRewards.visit(q, now), true, nil
+				end)
+			end,
+		},
+		claim_week = { args = {}, handler = rewardWeek },
+		claim_month = { args = { Payload.int({ min = 1, max = 31 }) }, handler = rewardMonth },
+		spin = { args = {}, handler = spinWheel },
 		trade_ask = {
 			args = { Payload.int({ min = 1, max = 1e12 }) },
 			handler = function(player, userId: number)
 				local target = Players:GetPlayerByUserId(userId)
-				if target == nil or target == player or not saves.isLoaded(target) then
+				local mine, theirs = saves.get(player), if target then saves.get(target) else nil
+				if target == nil or target == player or mine == nil or theirs == nil then
 					return false, "trade_nobody"
+				end
+				local can, code = StationTrade.canTrade(mine, os.time())
+				if not can then
+					return false, code
+				elseif not (StationTrade.canTrade(theirs, os.time())) then
+					return false, "trade_their_level"
+				elseif theirs.trades.off or (blocked[target] and blocked[target][player.UserId]) then
+					return false, "trade_off"
 				elseif trades[player] or trades[target] then
 					return false, "trade_busy"
 				end
+				asked[player] = asked[player] or {}
+				local last = asked[player][target]
+				if last and os.clock() - last < StationTrade.ASK_GAP then
+					return false, "trade_ask_wait"
+				end
+				asked[player][target] = os.clock()
 				invites[target] = { from = player, at = os.clock() }
 				remotes.fx(target, "trade_invite", { from = player.UserId, name = player.DisplayName })
 				return true, nil
@@ -427,8 +800,23 @@ local router = Router.new({
 				elseif trades[player] or trades[invite.from] then
 					return false, "trade_busy"
 				end
-				local t: Trade =
-					{ a = invite.from, b = player, offer = { [invite.from] = {}, [player] = {} }, ready = {} }
+				local mine = saves.get(player)
+				local can, code = if mine then StationTrade.canTrade(mine, os.time()) else false, "loading"
+				if not can then
+					return false, code
+				end
+				local t: Trade = {
+					a = invite.from,
+					b = player,
+					offer = { [invite.from] = {}, [player] = {} },
+					ready = {},
+					stage = "build",
+					changedAt = os.clock(),
+					confirmAt = 0,
+					confirmed = {},
+					flash = nil,
+					committing = false,
+				}
 				trades[t.a], trades[t.b] = t, t
 				pushTrade(t)
 				return true, nil
@@ -440,13 +828,16 @@ local router = Router.new({
 				local t, p = trades[player], saves.get(player)
 				if t == nil or p == nil then
 					return false, "trade_none"
+				elseif t.stage ~= "build" or t.committing then
+					return false, "trade_confirming"
 				end
 				local offer, ok, code = StationTrade.toggle(p, t.offer[player], id)
 				if not ok then
 					return false, code
 				end
 				t.offer[player] = offer
-				t.ready[t.a], t.ready[t.b] = false, false -- any change: both look again
+				t.flash = { by = player, id = id, at = os.clock() }
+				changed(t) -- any change: both look again
 				pushTrade(t)
 				return true, nil
 			end,
@@ -457,11 +848,34 @@ local router = Router.new({
 				local t = trades[player]
 				if t == nil then
 					return false, "trade_none"
+				elseif t.stage ~= "build" or t.committing then
+					return false, "trade_confirming"
 				elseif #t.offer[t.a] + #t.offer[t.b] == 0 then
 					return false, "trade_empty"
+				elseif not t.ready[player] and os.clock() < t.changedAt + StationTrade.READY_DELAY then
+					return false, "trade_wait"
 				end
 				t.ready[player] = not t.ready[player]
-				if t.ready[t.a] and t.ready[t.b] then
+				if t.ready[t.a] and t.ready[t.b] then -- the window locks: both look at the summary first
+					t.stage, t.confirmAt, t.confirmed = "confirm", os.clock() + StationTrade.CONFIRM_SECONDS, {}
+				end
+				pushTrade(t)
+				return true, nil
+			end,
+		},
+		trade_confirm = {
+			args = {},
+			handler = function(player)
+				local t = trades[player]
+				if t == nil then
+					return false, "trade_none"
+				elseif t.stage ~= "confirm" or t.committing then
+					return false, "trade_none"
+				elseif os.clock() < t.confirmAt then
+					return false, "trade_wait"
+				end
+				t.confirmed[player] = true
+				if t.confirmed[t.a] and t.confirmed[t.b] then
 					return finishTrade(t)
 				end
 				pushTrade(t)
@@ -472,10 +886,40 @@ local router = Router.new({
 			args = {},
 			handler = function(player)
 				local t = trades[player]
-				if t then
+				if t and not t.committing then
 					closeTrade(t, "cancelled")
 				end
 				return true, nil
+			end,
+		},
+		-- requests off or on (saved), and blocking a player for this session (decision 0099)
+		trade_off = {
+			args = { Payload.boolean() },
+			handler = function(player, off: boolean)
+				return apply(player, function(p)
+					return StationTrade.setOff(p, off)
+				end)
+			end,
+		},
+		trade_block = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, userId: number)
+				blocked[player] = blocked[player] or {}
+				blocked[player][userId] = true
+				local invite = invites[player]
+				if invite and invite.from.UserId == userId then
+					invites[player] = nil
+				end
+				return true, nil
+			end,
+		},
+		-- lock an animal so it can never go in a trade, or unlock it
+		lock = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, id: number)
+				return apply(player, function(p)
+					return StationTrade.lock(p, id)
+				end)
 			end,
 		},
 		team = {
@@ -587,8 +1031,28 @@ local router = Router.new({
 				if not isAdmin(player) then
 					return false, "admin"
 				end
-				for _, model in looks(player):GetChildren() do
-					Creatures.play(model :: Model, anim)
+				-- an attack or power move replays until another button is pressed, to watch it again and again
+				local run = (lookRuns[player] or 0) + 1
+				lookRuns[player] = run
+				local function playAll()
+					for _, model in looks(player):GetChildren() do
+						Creatures.play(model :: Model, anim)
+					end
+				end
+				playAll()
+				if anim == "attack" or anim == "magic" then
+					task.spawn(function()
+						while true do
+							task.wait(Creatures.LENGTH[anim] + 0.4)
+							if player.Parent == nil then
+								lookRuns[player] = nil
+								return
+							elseif lookRuns[player] ~= run then
+								return
+							end
+							playAll()
+						end
+					end)
 				end
 				return true, nil
 			end,
@@ -599,6 +1063,7 @@ local router = Router.new({
 				if not isAdmin(player) then
 					return false, "admin"
 				end
+				lookRuns[player] = (lookRuns[player] or 0) + 1 -- stops a looping move
 				looks(player):ClearAllChildren()
 				WaveShow.clear(player)
 				return true, nil
@@ -614,10 +1079,19 @@ local router = Router.new({
 			args = { Payload.int({ min = 1, max = 4 }) },
 			handler = WaveShow.power,
 		},
+		-- raise the team's shield (decision 0097)
+		shield = { args = {}, handler = WaveShow.shield },
+		-- pick a boon after a won wave in a run; it starts the next wave (decision 0098)
+		boon = {
+			args = { Payload.enum({ "claws", "hide", "quick", "charged", "mend", "revive", "lucky", "gold" }) },
+			handler = pickBoon,
+		},
+		claim_chest = { args = {}, handler = openChest },
 		wave_done = {
 			args = {},
 			handler = function(player)
-				WaveShow.clear(player)
+				WaveShow.clear(player) -- reports a fight still on, then the run is banked
+				bankRun(player, false)
 				if player.Character then
 					player.Character:PivotTo(World.arenaGate())
 				end
@@ -633,6 +1107,7 @@ local router = Router.new({
 					return false, "ranch"
 				end
 				WaveShow.clear(player)
+				bankRun(player, false)
 				local to = World.ranchSpawn(i)
 				pcall(player.RequestStreamAroundAsync, player, to.Position)
 				player.Character:PivotTo(to)
@@ -648,6 +1123,7 @@ local router = Router.new({
 					return false, "loading"
 				end
 				WaveShow.clear(player)
+				bankRun(player, false)
 				local to = if where == "hub" then World.hubSpawn() else World.arenaGate()
 				pcall(player.RequestStreamAroundAsync, player, to.Position)
 				player.Character:PivotTo(to)
@@ -727,6 +1203,44 @@ local router = Router.new({
 })
 remotes = Remotes.create("StationsRemotes", router)
 
+-- The Hall of Fame at the hub (decision 0095): the best animals in this server, at most two of any one
+-- player's, rarest first and rainbow coats before plain ones. Worked out again a moment after any change.
+local RANK = { common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6 }
+local fameQueued = false
+local function updateFame()
+	if fameQueued then
+		return
+	end
+	fameQueued = true
+	task.delay(2, function()
+		fameQueued = false
+		local all = {}
+		for _, player in Players:GetPlayers() do
+			local p = saves and saves.get(player)
+			if p then
+				local mine = {}
+				for _, a in p.animals do
+					local score = (RANK[StationRules.rarity(a :: any)] or 0) * 2 + (if a.rainbow then 1 else 0)
+					table.insert(
+						mine,
+						{ s = a.s, v = a.v, rainbow = a.rainbow, owner = player.DisplayName, score = score }
+					)
+				end
+				table.sort(mine, function(x, y)
+					return x.score > y.score
+				end)
+				for k = 1, math.min(2, #mine) do
+					table.insert(all, mine[k])
+				end
+			end
+		end
+		table.sort(all, function(x, y)
+			return x.score > y.score
+		end)
+		World.setFame(all)
+	end)
+end
+
 saves = Saves.start({
 	name = "StationsProfile",
 	defaults = StationProgress.defaults,
@@ -735,6 +1249,7 @@ saves = Saves.start({
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
 		remotes.fx(player, "profile", StationProgress.public(profile))
+		updateFame()
 		local i = ranchOf(player)
 		if i then
 			show(i, profile.upgrades)
@@ -746,23 +1261,30 @@ saves = Saves.start({
 	end,
 })
 
+local function load(player: Player)
+	saves.load(player)
+	healTrades(player) -- a trade a crash cut short (decision 0099)
+end
 Players.PlayerAdded:Connect(function(player)
 	join(player)
-	saves.load(player)
+	load(player)
 end)
 for _, p in Players:GetPlayers() do
 	join(p)
-	task.spawn(saves.load, p)
+	task.spawn(load, p)
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	task.defer(updateFame) -- after the player has gone
 	local t = trades[player]
 	if t then
 		closeTrade(t, "left")
 	end
 	invites[player] = nil
+	asked[player], blocked[player] = nil, nil
 	looks(player):Destroy()
 	WaveShow.clear(player)
+	bankRun(player, false)
 	readyAt[player] = nil
 	local i = ranchOf(player)
 	if i then

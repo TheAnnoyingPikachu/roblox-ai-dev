@@ -1,5 +1,5 @@
 """Helpers of the first Animal Stations models (decision 0037), on the smooth body kit: `shard`, `ring`,
-`leg`, `eyes` and the four-legged `predator` body. The enemies (foes.py) are still built on them. The
+`leg`, `eyes` and the four-legged `predator` body. (The old Hexbound enemies, foes.py, were built on them too; decision 0104 replaced them.) The
 animals themselves have all moved to the faceted kit (lions.py, elephants.py, jackals.py, cheetahs.py,
 rhinos.py, meerkats.py, tortoises.py, flamingos.py), so this file builds nothing of its own.
 """

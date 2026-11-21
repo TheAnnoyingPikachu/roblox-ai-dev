@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "output_artifacts": [],
+  "status": "in_progress",
+  "task_id": "STATION-115",
+  "objective": "Decision 0104: the old Hexbound Blender models (knight, archer, mage, ogre, dragon, imp) are removed from the game, the build and the asset table.",
+  "inputs": [
+    "docs/decisions/0104-animal-stations-shadow-legion.md"
+  ],
+  "dependencies": [
+    "STATION-114"
+  ],
+  "files": [
+    "tools/blender/stations/assets/foes.py",
+    "tools/blender/stations/assets/animals.py",
+    "assets/stations/foe_*",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-115.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "No foe_knight, foe_archer, foe_mage, foe_ogre, foe_dragon or foe_imp in the manifest, the uploads or StationAssets, and no build script for them",
+    "Their register rows say removed"
+  ],
+  "verification": "Lune: StationAssets matches the manifest; no enemy names an old model.",
+  "risk_level": "low",
+  "notes": "SHANNON, 2026-11-20: \"you can get rid of all the old ones\". The uploaded Roblox assets themselves stay on Roblox (unused); deleting them is not done."
+}

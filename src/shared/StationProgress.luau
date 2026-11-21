@@ -23,11 +23,37 @@ export type Animal = {
 	rainbow: boolean?,
 	at: string?,
 	since: number?,
+	locked: boolean?, -- its owner locked it: it cannot go in a trade (decision 0099)
 }
+-- A finished trade as the save remembers it (decision 0099): its id (the ledger's), who with, the names
+-- of what went each way and when. `trades.log` keeps the newest TRADE_LOG; a trade whose id is in it
+-- has been applied to this save, which is what makes the ledger's heal safe to run again.
+export type TradeEntry = { id: string, with: string, gave: { string }, got: { string }, at: number }
+export type Trades = { day: number, count: number, total: number, off: boolean, log: { TradeEntry } }
 -- A bought egg: which egg, since when it has been hatching (os.time; nil while it waits in the
 -- egg storage), and the animal the server rolled for it when it was bought. The animal is never
 -- sent to the client (`public`).
 export type HeldEgg = { egg: string, since: number?, animal: StationRules.Owned }
+-- A boost (decision 0094): from `from` to `to` (os.time), eggs hatch (or animals train) twice as fast.
+export type Window = { from: number, to: number }
+export type Boosts = { hatch: { Window }, train: { Window } }
+-- The planners and the daily wheel (decision 0094, StationRewards): `day` the last UTC day counted (days
+-- since 1970), the week and month being counted (the Monday's day; year * 12 + month - 1), days logged and
+-- rewards claimed in each, the last free spin's day, extra spins, spins since a jackpot, and eggs won
+-- while the egg storage was full, waiting for room.
+export type Rewards = {
+	day: number,
+	week: number,
+	weekDays: number,
+	weekGot: number,
+	month: number,
+	monthDays: number,
+	monthGot: { number },
+	spinDay: number,
+	spins: number,
+	pity: number,
+	pending: { HeldEgg },
+}
 export type Profile = {
 	version: number,
 	coins: number,
@@ -41,6 +67,11 @@ export type Profile = {
 	upgrades: { [string]: number }, -- level of each ranch upgrade (StationConfig.UPGRADES), 0 = not bought
 	eggs: { HeldEgg }, -- bought eggs, oldest first: some hatching (the Hatchery says how many), the rest in the egg storage
 	mill: number?, -- when the Windmill was last emptied (os.time); nil without one
+	boosts: Boosts,
+	rewards: Rewards,
+	stars: string, -- the best stars won on each wave (decision 0097): character n is wave n's, "0" to "3"
+	chests: number, -- star chests opened (one is due every CHEST_STARS stars)
+	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
 }
 
 StationProgress.VERSION = 1
@@ -58,6 +89,12 @@ StationProgress.MAX_XP = 1e12
 StationProgress.XP_STEP = 25 -- total XP for player level n is XP_STEP x (n - 1)^2
 
 local MAX_TIME = 1e12
+StationProgress.MAX_WINDOWS = 16 -- boost windows a save keeps (the oldest go)
+StationProgress.MAX_PENDING = 20 -- eggs won that wait for room
+StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
+StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu shows the newest 20)
+StationProgress.CHEST_STARS = 15
+local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
 function StationProgress.defaults(_now: number): Profile
 	return {
@@ -71,6 +108,23 @@ function StationProgress.defaults(_now: number): Profile
 		samples = 0,
 		upgrades = {},
 		eggs = {},
+		boosts = { hatch = {}, train = {} },
+		rewards = {
+			day = 0,
+			week = 0,
+			weekDays = 0,
+			weekGot = 0,
+			month = 0,
+			monthDays = 0,
+			monthGot = {},
+			spinDay = 0,
+			spins = 0,
+			pity = 0,
+			pending = {},
+		},
+		stars = "",
+		chests = 0,
+		trades = { day = 0, count = 0, total = 0, off = false, log = {} },
 	}
 end
 
@@ -168,8 +222,15 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			if own == nil or id == 0 or ids[id] then
 				continue
 			end
-			local animal: Animal =
-				{ id = id, s = own.s, v = own.v, stats = own.stats, trained = own.trained, rainbow = own.rainbow }
+			local animal: Animal = {
+				id = id,
+				s = own.s,
+				v = own.v,
+				stats = own.stats,
+				trained = own.trained,
+				rainbow = own.rainbow,
+				locked = if a.locked == true then true else nil,
+			}
 			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots and not taken[a.at] then
 				taken[a.at] = true
 				animal.at = a.at
@@ -211,7 +272,149 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	if t and t.at == nil and StationProgress.isTitan(t) then
 		p.titan = t.id
 	end
+	local boosts = if type(record.boosts) == "table" then record.boosts else {}
+	for _, kind in { "hatch", "train" } do
+		local list = boosts[kind]
+		local kept = (p.boosts :: any)[kind]
+		if type(list) == "table" then
+			for _, w in list do
+				local from = if type(w) == "table" then int(w.from, 0, MAX_TIME, -1) else -1
+				local to = if type(w) == "table" then int(w.to, 0, MAX_TIME, -1) else -1
+				if from >= 0 and to > from and to - from <= KEEP and to >= (now or 0) - KEEP then
+					table.insert(kept, { from = from, to = to })
+				end
+			end
+		end
+		while #kept > StationProgress.MAX_WINDOWS do
+			table.remove(kept, 1)
+		end
+	end
+	local r = if type(record.rewards) == "table" then record.rewards else {}
+	local w = p.rewards
+	w.day = int(r.day, 0, 1e7, 0)
+	w.week = int(r.week, 0, 1e7, 0)
+	w.weekDays = int(r.weekDays, 0, 7, 0)
+	w.weekGot = int(r.weekGot, 0, w.weekDays, 0)
+	w.month = int(r.month, 0, 1e6, 0)
+	w.monthDays = int(r.monthDays, 0, 31, 0)
+	if type(r.monthGot) == "table" then
+		for _, d in r.monthGot do
+			if type(d) == "number" and d == math.floor(d) and d >= 1 and d <= 31 and not table.find(w.monthGot, d) then
+				table.insert(w.monthGot, d)
+			end
+		end
+	end
+	w.spinDay = int(r.spinDay, 0, 1e7, 0)
+	w.spins = int(r.spins, 0, 1000, 0)
+	w.pity = int(r.pity, 0, 1e6, 0)
+	if type(r.pending) == "table" then
+		for _, e in r.pending do
+			local animal = if type(e) == "table" then owned(e.animal) else nil
+			local room = #w.pending < StationProgress.MAX_PENDING
+			if animal and type(e.egg) == "string" and StationConfig.egg(e.egg) and room then
+				table.insert(w.pending, { egg = e.egg, animal = animal })
+			end
+		end
+	end
+	if type(record.stars) == "string" then
+		p.stars = string.sub(string.gsub(record.stars, "[^0-3]", "0"), 1, StationProgress.MAX_STAR_WAVES)
+	end
+	p.chests = int(record.chests, 0, 1e6, 0)
+	local stored = if type(record.trades) == "table" then record.trades else {}
+	p.trades.day = int(stored.day, 0, 1e7, 0)
+	p.trades.count = int(stored.count, 0, 1000, 0)
+	p.trades.total = int(stored.total, 0, 1e9, 0)
+	p.trades.off = stored.off == true
+	if type(stored.log) == "table" then
+		for _, e in stored.log do
+			if
+				type(e) == "table"
+				and type(e.id) == "string"
+				and #e.id <= 64
+				and #p.trades.log < StationProgress.TRADE_LOG
+			then
+				local function names(list: any): { string }
+					local out = {}
+					for _, n in if type(list) == "table" then list else {} do
+						if type(n) == "string" and #out < 8 then
+							table.insert(out, string.sub(n, 1, 40))
+						end
+					end
+					return out
+				end
+				table.insert(p.trades.log, {
+					id = e.id,
+					with = if type(e.with) == "string" then string.sub(e.with, 1, 40) else "?",
+					gave = names(e.gave),
+					got = names(e.got),
+					at = int(e.at, 0, MAX_TIME, 0),
+				})
+			end
+		end
+	end
 	return p
+end
+
+-- Stars (decision 0097): the best won on wave `wave`, all of them, and the star chests due.
+function StationProgress.starsOf(p: Profile, wave: number): number
+	return tonumber(string.sub(p.stars, wave, wave)) or 0
+end
+function StationProgress.starTotal(p: Profile): number
+	local sum = 0
+	for c in string.gmatch(p.stars, "%d") do
+		sum += tonumber(c) :: number
+	end
+	return sum
+end
+function StationProgress.chestsDue(p: Profile): number
+	return math.max(0, StationProgress.starTotal(p) // StationProgress.CHEST_STARS - p.chests)
+end
+
+-- Record `n` stars won on wave `wave`, keeping the best.
+function StationProgress.setStars(p: Profile, wave: number, n: number): Profile
+	if wave < 1 or wave > StationProgress.MAX_STAR_WAVES or wave ~= math.floor(wave) then
+		return p
+	end
+	n = math.clamp(math.floor(n), 0, 3)
+	if n > StationProgress.starsOf(p, wave) then
+		local padded = p.stars .. string.rep("0", math.max(0, wave - #p.stars))
+		p.stars = string.sub(padded, 1, wave - 1) .. tostring(n) .. string.sub(padded, wave + 1)
+	end
+	return p
+end
+
+-- Seconds of `windows` that fall between `from` and `to`.
+local function overlap(windows: { Window }, from: number, to: number): number
+	local sum = 0
+	for _, w in windows do
+		sum += math.max(0, math.min(to, w.to) - math.max(from, w.from))
+	end
+	return sum
+end
+
+-- Add `seconds` of the boost `kind` ("hatch" or "train") from `now`: it runs on from the end of one still
+-- running, so two make twice as long, never twice as strong.
+function StationProgress.addBoost(p: Profile, kind: string, seconds: number, now: number): Profile
+	local list = (p.boosts :: any)[kind] :: { Window }
+	local last = list[#list]
+	if last and last.to >= now then
+		list[#list] = { from = last.from, to = last.to + seconds }
+	else
+		table.insert(list, { from = now, to = now + seconds })
+	end
+	while #list > StationProgress.MAX_WINDOWS do
+		table.remove(list, 1)
+	end
+	return p
+end
+
+-- Seconds of boost `kind` left at `now` (0 when none runs).
+function StationProgress.boostLeft(p: Profile, kind: string, now: number): number
+	local left = 0
+	for _, w in (p.boosts :: any)[kind] :: { Window } do
+		left = math.max(left, w.to - math.max(now, w.from))
+	end
+	return math.max(0, left)
 end
 
 function StationProgress.find(p: Profile, id: number): (number?, Animal?)
@@ -292,10 +495,42 @@ function StationProgress.hatchSeconds(p: Profile, egg: StationConfig.Egg): numbe
 	return math.ceil(egg.hatch * 100 / StationProgress.value(p, "brooder"))
 end
 
+-- When `p`'s egg `e` can be opened (os.time; nil while it waits in storage): its hatch time from when it
+-- started, but twice as fast during a hatching boost (decision 0094).
+function StationProgress.dueAt(p: Profile, e: { egg: string, since: number? }): number?
+	local egg = StationConfig.egg(e.egg)
+	if egg == nil or e.since == nil then
+		return nil
+	end
+	local t, left = e.since :: number, StationProgress.hatchSeconds(p, egg)
+	local windows = table.clone(p.boosts.hatch)
+	table.sort(windows, function(a, b)
+		return a.from < b.from
+	end)
+	for _, w in windows do
+		if w.to > t then
+			if w.from > t then -- plain time before the boost
+				if left <= w.from - t then
+					return t + left
+				end
+				left -= w.from - t
+				t = w.from
+			end
+			local fast = w.to - t -- twice as fast in here
+			if left <= 2 * fast then
+				return t + math.ceil(left / 2)
+			end
+			left -= 2 * fast
+			t = w.to
+		end
+	end
+	return t + left
+end
+
 -- True when `p`'s egg `e` is hatching and has waited its hatch time: it can be opened.
 function StationProgress.due(p: Profile, e: { egg: string, since: number? }, now: number): boolean
-	local egg = StationConfig.egg(e.egg)
-	return egg ~= nil and e.since ~= nil and now >= e.since + StationProgress.hatchSeconds(p, egg)
+	local at = StationProgress.dueAt(p, e)
+	return at ~= nil and now >= at
 end
 
 -- Open the `k`th egg: it must have finished hatching and the Barn must have room. Its animal
@@ -375,12 +610,26 @@ function StationProgress.public(p: Profile): any
 	for k, e in p.eggs do
 		copy.eggs[k] = { egg = e.egg, since = e.since }
 	end
+	copy.rewards = table.clone(p.rewards)
+	copy.rewards.pending = {}
+	for k, e in p.rewards.pending do
+		copy.rewards.pending[k] = { egg = e.egg }
+	end
 	return copy
 end
 
 -- Training seconds earned in `seconds` of real time: the Training Grounds make it go faster.
 function StationProgress.trainingSeconds(p: Profile, seconds: number): number
 	return math.max(0, seconds) * StationProgress.value(p, "grounds") / 100
+end
+
+-- Training seconds earned from `from` to `to`: as trainingSeconds, and twice as fast during a training
+-- boost (decision 0094).
+function StationProgress.trainedBetween(p: Profile, from: number, to: number): number
+	if to <= from then
+		return 0
+	end
+	return StationProgress.trainingSeconds(p, (to - from) + overlap(p.boosts.train, from, to))
 end
 
 -- How many coins the Windmill holds for `p` at `now`: its coins an hour for the time since it was last
@@ -417,7 +666,7 @@ function StationProgress.settle(p: Profile, now: number): Profile
 	for i, a in p.animals do
 		if a.at and a.since then
 			local st = StationConfig.station(a.at) :: StationConfig.Station
-			local t = StationRules.train(a :: any, a.at, StationProgress.trainingSeconds(p, now - a.since))
+			local t = StationRules.train(a :: any, a.at, StationProgress.trainedBetween(p, a.since, now))
 			local copy = table.clone(a)
 			copy.trained = t.trained
 			copy.since = math.max(a.since, now)
@@ -587,6 +836,13 @@ function StationProgress.clear(p: Profile, level: number): (Profile, boolean, st
 	p.samples = math.min(p.samples + samples, StationProgress.MAX_SAMPLES)
 	p.best = math.max(p.best, level)
 	return p, true, nil
+end
+
+-- Add `coins` and `samples` the server has decided to pay (a wave run's pot, decision 0098).
+function StationProgress.earn(p: Profile, coins: number, samples: number): Profile
+	p.coins = math.min(p.coins + math.max(0, math.floor(coins)), StationProgress.MAX_COINS)
+	p.samples = math.min(p.samples + math.max(0, math.floor(samples)), StationProgress.MAX_SAMPLES)
+	return p
 end
 
 -- The animals that fight: the team in order, then the Titan, with the stats its Den gives it.

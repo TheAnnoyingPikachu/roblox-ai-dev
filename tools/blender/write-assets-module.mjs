@@ -50,11 +50,13 @@ const lines = [
 				"-- texture for the same model.",
 				"-- eyes, lid: where its eyes are ({ x, y, z, size }, in the axes of `centres`) and its brow's colour, to close",
 				"-- them (the Titan asleep in its den).",
+				"-- skinned, root: one whole mesh moved by bones named after the joints (decision 0102); root is where",
+				"-- its `body` bone stands.",
 			]
 		: []),
 	"",
 	game === "stations"
-		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tcentres: { [string]: { number } },\n\tjoints: { [string]: { number } },\n\tlift: number?,\n\teyes: { { number } }?,\n\tlid: { number }?,\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n\trainbowDecal: number?,\n\trainbowTexture: number?,\n}"
+		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tcentres: { [string]: { number } },\n\tjoints: { [string]: { number } },\n\tlift: number?,\n\teyes: { { number } }?,\n\tlid: { number }?,\n\tskinned: boolean?,\n\troot: { number }?,\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n\trainbowDecal: number?,\n\trainbowTexture: number?,\n}"
 		: game === "spire"
 		? "export type Asset = {\n\tsize: { number },\n\tparts: { string },\n\tglow: { [string]: { number } },\n\tmodel: number?,\n\tdecal: number?,\n\ttexture: number?,\n}"
 		: game === "night"
@@ -88,6 +90,7 @@ for (const [name, entry] of Object.entries(manifest)) {
 	lines.push(`\t\ttexture = ${id(u.texture)},`);
 	const coat = uploaded[`${name}_rainbow`];
 	if (coat) lines.push(`\t\trainbowDecal = ${id(coat.decal)},`, `\t\trainbowTexture = ${id(coat.texture)},`);
+	if (entry.skinned) lines.push("\t\tskinned = true,");
 	if (entry.root) lines.push(`\t\troot = { ${entry.root.join(", ")} },`);
 	if (entry.lift) lines.push(`\t\tlift = ${entry.lift},`);
 	if (entry.eyes) lines.push("\t\teyes = {", ...entry.eyes.map((e) => `\t\t\t{ ${e.join(", ")} },`), "\t\t},");

@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-104",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0098: wave runs with carried HP, boons, a streak pot and boss chests.",
+  "inputs": [
+    "docs/decisions/0098-animal-stations-wave-runs.md"
+  ],
+  "dependencies": [
+    "STATION-103"
+  ],
+  "files": [
+    "src/shared/WaveRuns.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/StationRewards.luau",
+    "tests/WaveRuns.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0098-animal-stations-wave-runs.md",
+    "studio/tasks/STATION-104.json"
+  ],
+  "tests": [
+    "WaveRuns.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A win offers three boons; picking one starts the next wave with HP carried over",
+    "Leaving banks the pot and a loss banks half",
+    "Clearing a boss wave in a run gives its boss chest"
+  ],
+  "verification": "Lune 754/754, selene clean. Studio, local build, stamp `dev`, 2026-11-19: wave 1 won offered three boons; a pick started wave 2 in the same run, which was won and offered three new boons; the result shows the streak and pot.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": ""
+}

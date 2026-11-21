@@ -164,7 +164,22 @@ local function build(name: string): Model?
 	local body, head = parts[`{name}_body`], parts[`{name}_head`] :: MeshPart?
 	local cb = vec(entry.centres[body.Name])
 	local yaw = STILL_YAW
-	if head then
+	local bones: { [string]: Bone } = {} -- a skinned model's (decision 0102), by joint
+	if entry.skinned then
+		for _, d in body:GetDescendants() do
+			if d:IsA("Bone") then
+				bones[d.Name] = d
+			end
+		end
+		local headBone, rootBone = bones.head, bones.body
+		if headBone == nil or rootBone == nil or entry.root == nil then
+			warn(`[Creatures] {name}: its bones are missing from model {entry.model}`)
+			return nil
+		end
+		local want = (vec(entry.joints[`{name}_head`]) - vec(entry.root :: { number })) * FLAT
+		local have = (headBone.WorldPosition - rootBone.WorldPosition) * FLAT
+		yaw = math.atan2(have.X, have.Z) - math.atan2(want.X, want.Z)
+	elseif head then
 		local want, have = (vec(entry.centres[head.Name]) - cb) * FLAT, (head.Position - body.Position) * FLAT
 		yaw = math.atan2(have.X, have.Z) - math.atan2(want.X, want.Z)
 	end
@@ -188,7 +203,13 @@ local function build(name: string): Model?
 	root.CanCollide, root.CanQuery, root.CanTouch = false, false, false
 	root.Parent = model
 	model.PrimaryPart = root
-	if head == nil then
+	if entry.skinned then -- one whole mesh: it rides on the Root, and its bones are its joints
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0, weld.Part1 = root, body
+		weld.Parent = body
+		body.Anchored = false
+		body.DoubleSided = true -- a generated model's thin pieces show from behind too
+	elseif head == nil then
 		return model -- a still prop: its pieces stay anchored round the Root
 	end
 
@@ -202,9 +223,11 @@ local function build(name: string): Model?
 		m.C1 = part1.CFrame:Inverse() * j
 		m.Parent = part0
 	end
-	joint("body", root, body, frame * cb)
-	for partName, j in entry.joints do
-		joint(string.sub(partName, #name + 2), body, parts[partName], frame * vec(j)) -- "head", "leg_fl", ...
+	if not entry.skinned then
+		joint("body", root, body, frame * cb)
+		for partName, j in entry.joints do
+			joint(string.sub(partName, #name + 2), body, parts[partName], frame * vec(j)) -- "head", "leg_fl", ...
+		end
 	end
 	for partName in entry.glow do -- "<asset>_<piece>_glow" rides on "<asset>_<piece>"
 		local weld = Instance.new("WeldConstraint")
@@ -229,14 +252,19 @@ local function build(name: string): Model?
 	-- the leg length the poses scale by: the front legs' joint on an animal, the hips' on a Hexbound
 	-- (their front "legs" are arms, hung from the shoulders)
 	local hexbound = string.sub(name, 1, 4) == "foe_"
+	local winged = string.find(name, "^foe_dragon") ~= nil
+	local mounted = string.find(name, "^foe_cavalry") ~= nil -- a rider on a horse: four-legged (decision 0104)
 	-- an animal that stands upright is the same (the meerkats, decision 0055): its arms hang far above its hips
-	local upright = hexbound or entry.joints[`{name}_leg_fl`][2] > 2 * entry.joints[`{name}_leg_bl`][2]
+	local upright = (hexbound and not mounted)
+		or entry.joints[`{name}_leg_fl`][2] > 2 * entry.joints[`{name}_leg_bl`][2]
 	local unit = entry.joints[if upright then `{name}_leg_bl` else `{name}_leg_fl`][2] / POSE_LEGS
 	model:SetAttribute("Scale", unit)
 	model:SetAttribute("Stride", STRIDE / math.sqrt(unit))
 	if hexbound then
 		model:SetAttribute("Hexbound", true)
-		model:SetAttribute(if name == "foe_dragon" then "Winged" else "Biped", true)
+		if not mounted then
+			model:SetAttribute(if winged then "Winged" else "Biped", true)
+		end
 		aura(model, root, rootFrame, entry.size, unit)
 	elseif upright then
 		model:SetAttribute("Biped", true) -- it stands, walks and falls like one; its attacks are its own

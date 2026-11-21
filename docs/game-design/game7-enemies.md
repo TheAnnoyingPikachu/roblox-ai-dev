@@ -1,5 +1,10 @@
 # Animal Stations: the Hexbound (enemy bestiary and art brief)
 
+> **Replaced by the Shadow Legion (decision 0104, 2026-11-20).** SHANNON's 18 ForgeGUI enemies, each its
+> own model, are the enemies now; the roster, roles, first waves and the Necromancer's revive are in
+> `docs/decisions/0104-animal-stations-shadow-legion.md` and `StationConfig.FOES`. The rest of this page
+> describes the old Hexbound line and its Blender models, which are gone.
+
 Status: draft (decisions 0040 to 0042). All five models are in the game. Names, roles and numbers are in `src/shared/StationConfig.luau`
 (`FOES`, the source of truth). This page adds the look.
 

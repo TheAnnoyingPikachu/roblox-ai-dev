@@ -451,7 +451,8 @@ end
 -- A message at the top of the screen: a sand pill with an icon, berry for a refusal (`kind` "bad"),
 -- leaf for done ("good"), sky for anything else.
 local toasts = 0
-function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: string?)
+-- `image` (an uploaded picture, e.g. a reward icon) takes the place of the round sign.
+function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: string?, image: string?)
 	toasts += 1
 	local mine = toasts
 	local colour = if kind == "bad" then C.bad elseif kind == "good" then C.good else C.info
@@ -484,6 +485,19 @@ function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: st
 	Style.round(icon, 17)
 	Style.stroke(icon, INK, 2)
 	icon.Parent = f
+	if image then
+		icon.BackgroundTransparency, icon.Text = 1, ""
+		icon.Size = UDim2.fromOffset(44, 44)
+		for _, d in icon:GetChildren() do
+			if d:IsA("UIStroke") then
+				d.Enabled = false
+			end
+		end
+		local picture = Instance.new("ImageLabel")
+		picture.BackgroundTransparency, picture.Image = 1, image
+		picture.Size, picture.ZIndex = UDim2.fromScale(1, 1), 42
+		picture.Parent = icon
+	end
 	local scale = Instance.new("UIScale")
 	scale.Scale = 0.6
 	scale.Parent = f

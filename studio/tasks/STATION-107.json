@@ -1,0 +1,38 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-107",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0100: reward icons on the planners, the wheel and the reward toasts.",
+  "inputs": [
+    "docs/decisions/0100-animal-stations-reward-icons.md"
+  ],
+  "dependencies": [
+    "STATION-100"
+  ],
+  "files": [
+    "tools/icons/stations_rewards.py",
+    "assets/stations/icons/*.png",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Style.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0100-animal-stations-reward-icons.md",
+    "studio/tasks/STATION-107.json"
+  ],
+  "tests": [
+    "StationRewards.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every planner card shows its reward's icon",
+    "The wheel's slices show icons",
+    "A reward toast shows the reward's icon"
+  ],
+  "verification": "Studio, local build, stamp `dev`, 2026-11-19: the weekly planner's seven cards show coins, the Meadow and Wild Eggs (the best with its star), training x2, coins with samples, and the egg with hatching x2; the wheel's eight slices show their icons and captions. Lune 758/758, selene clean.",
+  "output_artifacts": [
+    "assets/stations/icons"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": ""
+}

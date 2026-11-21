@@ -1,0 +1,48 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-109",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0102: the ForgeGUI lion in game as one whole mesh, skinned to the Stations rig and driven by the existing animation code.",
+  "inputs": [
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md"
+  ],
+  "dependencies": [
+    "STATION-108"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/write-assets-module.mjs",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_*_forge*",
+    "assets/stations/sources/creature_*_forge.glb",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationRules.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Creatures.client.luau",
+    "tests/StationAssets.spec.luau",
+    "tests/StationRules.spec.luau",
+    "docs/assets/register.md",
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md",
+    "studio/tasks/STATION-109.json",
+    "src/shared/StationConfig.luau",
+    "docs/game-design/game7-animals.md",
+    "docs/decisions/0103-animal-stations-acacia-giraffe.md"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The lion is the ForgeGUI model, one mesh, with no baseplate or stray objects",
+    "It walks, attacks, flinches and falls with the same clips as every animal",
+    "Its rainbow coat works"
+  ],
+  "verification": "Lune 759/759, selene clean. Upload-assets run 44622750333 (creature_lion_forge and its rainbow coat). Studio, local build, stamp `dev`, 2026-11-19: the lion loads as one MeshPart with the seven bones body, head, leg_fl, leg_fr, leg_bl, leg_br, tail at the old lion's size (13 studs long); its walk swings the legs 26 degrees each way and its attack rears and lunges; in wave 1 it fought on the team, was named MVP and did its win pose; no see-through faces. Blender renders of bent poses: the tail and legs bend at their joints, the mane turns with the head.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "One paid ForgeGUI rig call was spent (job 6dabe42b); its humanoid rig is not used."
+}

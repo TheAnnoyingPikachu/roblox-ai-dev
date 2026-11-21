@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "output_artifacts": [],
+  "status": "in_progress",
+  "task_id": "STATION-114",
+  "objective": "Decision 0104: the Shadow Legion replaces the Hexbound: 18 enemies, each SHANNON's ForgeGUI model, with stats, roles and first waves; the Battle Priest heals, the Necromancer raises a fallen enemy once each, the Darkcaster deals damage; dragons end every 10th wave; swarms have no minions.",
+  "inputs": [
+    "docs/decisions/0104-animal-stations-shadow-legion.md"
+  ],
+  "dependencies": [
+    "STATION-113"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/WaveShow.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "docs/decisions/0104-animal-stations-shadow-legion.md",
+    "docs/game-design/game7-enemies.md",
+    "studio/tasks/STATION-114.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "LevelRules.spec.luau",
+    "StationAssets.spec.luau",
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "StationConfig.FOES is the 18 Shadow Legion enemies, each with its own forge model; none of the old Hexbound is left",
+    "Each power attack of a Necromancer raises the first fallen ally not raised before, at REVIVE_PCT of its HP, once per enemy per fight; the replay shows it stand up",
+    "Dragons end every 10th wave (Dark Drake from 10, Shadow Dragon from 30, Ancient Alpha Dragon from 60); every role fights from wave 1",
+    "Dragons fly with wings, the cavalry move on four legs, archers and mages shoot"
+  ],
+  "verification": "Lune and selene clean; Studio, local build, stamp `dev`: every enemy from the admin Enemies tab, and a wave with a Necromancer.",
+  "risk_level": "medium",
+  "notes": "SHANNON, 2026-11-20: \"get rid of every old enemy and add every new model as a new enemy with stats and power numbers and such. after they are all spread them across the waves accordingly\"; \"battle preists heal enemies, necromancers revive dead enemies and darkcaster is just a damage dealing mage\". Checkpoint: the draft stats and first waves (decision 0104) are Claude's, to confirm; the swarm power multipliers were tuned with minions and are to recheck. SHANNON, 2026-11-21: \"make the dragons BIG, infact make all powerful enemies a bit or a lot bigger\": sizes in FOES (decision 0104), rows closed up to the pit in WaveShow."
+}

@@ -10,6 +10,11 @@ FightFx.POWER_LEAD = 0.92 -- and a power attack's (its slam is 0.92 s into the c
 FightFx.RELEASE = 0.46 -- seconds into an archer's or mage's clip when the arrow or bolt is let go
 FightFx.SPEED = 70 -- studs a second a projectile flies at
 FightFx.PUNCH_SECONDS = 0.6
+-- A tap lands this far ahead of the show (decision 0092): longer than any attack's wind-up, so every
+-- attack that has started to play is before it and a replay with the tap shows the same thing so far.
+FightFx.TAP_AHEAD = FightFx.POWER_LEAD + 0.3
+FightFx.TELL = 2.8 -- seconds before an enemy power attack lands that its warning shows (decision 0097)
+FightFx.SHAKE_SECONDS = 0.45
 
 -- Seconds a projectile flies over `distance` studs: quick, but long enough to be seen.
 function FightFx.flightTime(distance: number): number
@@ -28,12 +33,23 @@ function FightFx.lead(power: boolean, flight: number?): number
 end
 
 -- Seconds a fighter's animation holds still on a hit: 0.06 for a normal one, 0.1 for a power one,
--- 0.2 for the killing blow of the fight.
-function FightFx.hitStop(power: number, final: boolean?): number
+-- 0.14 for a knockout, 0.2 for the killing blow of the fight.
+function FightFx.hitStop(power: number, final: boolean?, ko: boolean?): number
 	if final then
 		return 0.2
+	elseif ko then
+		return 0.14
 	end
 	return 0.06 + 0.04 * math.clamp(power, 0, 1)
+end
+
+-- How far (studs) the camera shakes `age` seconds after a jolt of `strength` (0 to 1): a Perfect, a
+-- combo, a boss landing. Fades to nothing by SHAKE_SECONDS.
+function FightFx.shake(age: number, strength: number): number
+	if age < 0 or age >= FightFx.SHAKE_SECONDS then
+		return 0
+	end
+	return strength * 0.9 * (1 - age / FightFx.SHAKE_SECONDS) ^ 2
 end
 
 -- How much the target's flinch is stretched: a power hit and a big share of its health both add.

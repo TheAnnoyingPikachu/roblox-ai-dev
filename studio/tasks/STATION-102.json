@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-102",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0096: power scores for every animal and enemy, shown in the menus, with a calculator page.",
+  "inputs": [
+    "docs/decisions/0096-animal-stations-power-scores.md"
+  ],
+  "dependencies": [
+    "STATION-101"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/BattleRules.spec.luau",
+    "docs/decisions/0096-animal-stations-power-scores.md",
+    "studio/tasks/STATION-102.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every animal card and page shows its power",
+    "Every enemy in the Waves menu shows its power, with the team-against-wave match-up",
+    "The side with more power wins at least 95% of the test fights"
+  ],
+  "verification": "Lune 754/754, selene clean. Studio, local build, stamp `dev`, 2026-11-19: power on the Waves menu's enemy cards and the match-up chip (3,590 vs 503: you're stronger). The calculator page's numbers match the game for every animal version and waves 1 to 150 (176 checks).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": ""
+}

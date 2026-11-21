@@ -52,7 +52,8 @@ describe("StationAssets", function()
 			expect(count(asset.joints)).toBe(count(entry.joints))
 			expect(asset.lift or 0).toBe(entry.lift or 0)
 			for part, j in asset.joints do
-				expect(asset.centres[part] == nil).toBe(false)
+				-- a skinned model's joints are bones in its one mesh (decision 0102), not meshes of their own
+				expect(asset.centres[part] == nil).toBe(asset.skinned == true)
 				for i = 1, 3 do
 					expect(j[i]).toBe(entry.joints[part][i])
 				end
@@ -181,6 +182,11 @@ describe("StationAssets", function()
 		for _, asset in StationAssets do
 			coats -= if asset.rainbowDecal then 1 else 0
 		end
+		for id in StationRules.FORGE do -- the jointed model a ForgeGUI one replaced keeps its coat as the fallback
+			local word, s = string.match(id, "^(%l+)_(%l+)$") -- a variant's id is "<word>_<species>"
+			local old = StationAssets[if word then `creature_{s}_{word}` else `creature_{id}`] -- none for a new variety
+			coats += if old and old.rainbowDecal then 1 else 0
+		end
 		expect(coats).toBe(0)
 	end)
 
@@ -198,22 +204,41 @@ describe("StationAssets", function()
 				continue -- scenery_: still props (decision 0085)
 			end
 			for _, piece in { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail" } do
-				expect(entry.parts[`{name}_{piece}`] == nil).toBe(false)
+				-- a skinned model is one mesh: its pieces are bones, named by its joints (decision 0102)
+				local here = if entry.skinned
+					then piece == "body" or entry.joints[`{name}_{piece}`] ~= nil
+					else entry.parts[`{name}_{piece}`] ~= nil
+				expect(here).toBe(true)
 			end
 			for _, tris in entry.parts do
 				expect(tris <= 20000).toBeTruthy()
 			end
-			-- every piece but the body turns on a joint; a dragon's two wings are two more
-			expect(count(entry.joints)).toBe(if name == "foe_dragon" then 8 else 6)
+			-- every piece but the body turns on a joint; a dragon's two wings are two more. A held weapon's
+			-- "tip" and "neck" bones (for its trail) ride on its arm and do not count, nor do an arm's elbow bones
+			local turning = 0
+			for part in entry.joints do
+				if
+					string.find(part, "_tip$") == nil
+					and string.find(part, "_neck$") == nil
+					and string.find(part, "_elbow_[lr]$") == nil
+					and string.find(part, "_arrow$") == nil -- (nor a stowed arrow's)
+				then
+					turning += 1
+				end
+			end
+			expect(turning).toBe(if string.find(name, "^foe_dragon") then 8 else 6)
 		end
 	end)
 
 	it("has a model for every Hexbound foe, of its kind, with a sane size and tint", function()
 		for _, f in StationConfig.FOES do
-			expect(f.model).toBe(`foe_{f.kind}`)
+			-- SHANNON's ForgeGUI model of its kind (decision 0104)
+			expect(string.find(f.model, `^foe_{f.kind}`) ~= nil and string.find(f.model, "_forge$") ~= nil).toBe(true)
 			expect(StationAssets[f.model] == nil).toBe(false)
 			expect(StationAssets[f.model].model == nil).toBe(false) -- uploaded
-			expect(f.size == nil or (f.size >= 0.5 and f.size <= 2)).toBeTruthy()
+			expect(f.size == nil or f.size >= 0.5).toBeTruthy()
+			-- as big as it likes, but its wings pass the arena gate's 42-stud opening (Arena.luau)
+			expect(StationAssets[f.model].size[1] * (f.size or 1) <= 42).toBe(true)
 			if f.tint then
 				expect(#f.tint).toBe(3)
 				for _, c in f.tint do
@@ -221,8 +246,12 @@ describe("StationAssets", function()
 				end
 			end
 		end
-		for _, kind in StationConfig.FOE_KINDS do
-			expect(StationAssets[`foe_{kind}`] == nil).toBe(false)
+		for _, kind in StationConfig.FOE_KINDS do -- every kind has an enemy
+			local any = false
+			for _, f in StationConfig.FOES do
+				any = any or f.kind == kind
+			end
+			expect(any).toBe(true)
 		end
 	end)
 

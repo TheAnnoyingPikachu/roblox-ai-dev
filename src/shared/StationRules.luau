@@ -14,7 +14,17 @@ type Stats = StationConfig.Stats
 -- rainbow = true: it wears the rainbow coat (decision 0058), which adds to every stat (`stat`); absent
 -- on every other animal.
 -- `boost` is never stored: StationProgress.fighters sets it on the Titan for a wave (the Titan's Den).
-export type Owned = { s: string, v: string?, stats: Stats, trained: Stats?, rainbow: boolean?, boost: number? }
+-- `rush` and `elite` are a wave foe's (decision 0101): which rush it comes in, and whether it is an elite.
+export type Owned = {
+	s: string,
+	v: string?,
+	stats: Stats,
+	trained: Stats?,
+	rainbow: boolean?,
+	boost: number?,
+	rush: number?,
+	elite: boolean?,
+}
 
 StationRules.PPM = 1_000_000
 -- The share of the base level roll that gives `level`: BASE_TOP at BASE_MAX, BASE_STEP more for
@@ -139,7 +149,42 @@ end
 
 -- The uploaded model that shows animal `s`, or its variant `v`: a variant "<word>_<species>" is the
 -- asset "creature_<species>_<word>" (StationAssets.spec keeps every one in the table).
+-- A species or variant whose model is a whole ForgeGUI model skinned to the rig (decision 0102) is listed
+-- in `FORGE`, by its id.
+StationRules.FORGE = {
+	acacia_giraffe = "creature_giraffe_acacia_forge",
+	cheetah = "creature_cheetah_forge",
+	crystal_rhino = "creature_rhino_crystal_forge",
+	diamond_giraffe = "creature_giraffe_diamond_forge",
+	elephant = "creature_elephant_forge",
+	fire_cheetah = "creature_cheetah_thunder_forge", -- shown as the Thunder Cheetah (StationConfig)
+	gemshell_tortoise = "creature_tortoise_gemshell_forge",
+	island_tortoise = "creature_tortoise_island_forge",
+	jackal = "creature_jackal_forge",
+	lava_rhino = "creature_rhino_lava_forge",
+	lightning_cheetah = "creature_cheetah_lightning_forge",
+	lion = "creature_lion_forge",
+	flamingo = "creature_flamingo_forge",
+	frost_elephant = "creature_elephant_frost_forge",
+	giraffe = "creature_giraffe_forge",
+	meerkat = "creature_meerkat_forge",
+	peacock_flamingo = "creature_flamingo_peacock_forge",
+	phoenix_flamingo = "creature_flamingo_phoenix_forge",
+	pharaoh_jackal = "creature_jackal_pharaoh_forge",
+	rhino = "creature_rhino_forge",
+	shadow_lion = "creature_lion_shadow_forge",
+	sphinx_jackal = "creature_jackal_sphinx_forge",
+	star_meerkat = "creature_meerkat_star_forge",
+	storm_meerkat = "creature_meerkat_storm_forge",
+	sun_lion = "creature_lion_sun_forge",
+	tortoise = "creature_tortoise_forge",
+	war_elephant = "creature_elephant_war_forge",
+} :: { [string]: string }
 function StationRules.assetOf(s: string, v: string?): string
+	local forge = StationRules.FORGE[v or s]
+	if forge then
+		return forge
+	end
 	local word = if v then string.match(v, "^(%l+)_") else nil
 	return if word then `creature_{s}_{word}` else `creature_{s}`
 end

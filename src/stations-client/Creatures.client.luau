@@ -23,7 +23,21 @@ local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForCh
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
 
-local JOINTS = { "body", "head", "leg_fl", "leg_fr", "leg_bl", "leg_br", "tail", "wing_l", "wing_r" }
+-- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them)
+local JOINTS = {
+	"body",
+	"head",
+	"leg_fl",
+	"leg_fr",
+	"leg_bl",
+	"leg_br",
+	"tail",
+	"wing_l",
+	"wing_r",
+	"elbow_l",
+	"elbow_r",
+	"arrow",
+}
 local TAU = math.pi * 2
 local MAGIC_IMPACT = 0.92 -- seconds into "magic" when the front feet land
 
@@ -294,6 +308,124 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Heavy Knight's Overhead Crush (SHANNON's pick of three): leans back with the hammer behind its head
+	-- and the shield up, then steps in and drives the hammer head straight down into the ground at the
+	-- contact (0.44 s); the arm's twist there keeps the head pointing ahead, not out to the side
+	foe_knight_heavy_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 8, -12, 0, 0, 0.06, 0.25 },
+				leg_fr = { 205, 0, 10 },
+				leg_fl = { 35, 0, -10 },
+				head = { 8 },
+				leg_bl = { 6 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 12, -16, 0, 0, 0.1, 0.3 },
+				leg_fr = { 218, 0, 8 },
+				leg_fl = { 45, 0, -12 },
+				head = { 10 },
+				leg_bl = { 10 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -26, 0, 0, 0, -0.12, -0.95 },
+				leg_fr = { 0, 20, 0 },
+				leg_fl = { 10, 0, -20 },
+				head = { -14 },
+				leg_bl = { 36 },
+				leg_br = { -12 },
+			},
+		},
+		{
+			0.58,
+			{
+				body = { -22, 0, 0, 0, -0.1, -0.85 },
+				leg_fr = { 4, 18, 0 },
+				leg_fl = { 12, 0, -18 },
+				head = { -10 },
+				leg_bl = { 32 },
+				leg_br = { -10 },
+			},
+		},
+		{ 0.95, {} },
+	}),
+	-- the Shadow Archer (elbows; an arrow fixed in its drawing fist, set for this draw): turns side-on and
+	-- holds the bow out at the target, brings the arrow to the string, draws it back along its chest, looses
+	-- at the contact (0.44 s), then turns back
+	foe_archer_forge = attack({
+		{ 0.00, {} },
+		{
+			0.14,
+			{
+				body = { 0, -60, 0 },
+				head = { 0, 52, 0 },
+				leg_fl = { -50, 1, -76 },
+				leg_fr = { 62, 45, 32 },
+				elbow_r = { 43, 89, 46 },
+				arrow = { 0, 0, -56.3, -0.652, -0.84, -0.97 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 2, -88, 0, 0, 0, 0.1 },
+				head = { 0, 78, 0 },
+				leg_fl = { -65, 1, -98 },
+				leg_fr = { 49, 14, 58 },
+				elbow_r = { 58, 89, 46 },
+				leg_bl = { 0, 0, -8 },
+				leg_br = { 0, 0, 8 },
+				arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+			},
+		},
+		{
+			0.42,
+			{
+				body = { 2, -88, 0, 0, 0, 0.1 },
+				head = { 0, 78, 0 },
+				leg_fl = { -65, 1, -98 },
+				leg_fr = { 49, 14, 60 },
+				elbow_r = { 58, 89, 46 },
+				leg_bl = { 0, 0, -8 },
+				leg_br = { 0, 0, 8 },
+				arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { 3, -84, 0, 0, 0.02, 0.3 },
+				head = { 0, 76, 0 },
+				leg_fl = { -65, 1, -98 },
+				leg_fr = { 47, 14, 70 },
+				elbow_r = { 40, 89, 46 },
+				leg_bl = { 0, 0, -8 },
+				leg_br = { 0, 0, 8 },
+				tail = { 12 },
+			},
+		},
+		{
+			0.64,
+			{
+				body = { 0, -40, 0 },
+				head = { 0, 34, 0 },
+				leg_fl = { -30, 0, -45 },
+				leg_fr = { 20, 8, 25 },
+				elbow_r = { 20, 40, 20 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- a lunge and a snap, then a shake of the head
 	jackal = attack({
 		{ 0.00, {} },
@@ -444,6 +576,80 @@ local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
 	}
 end
 local MAGICS: { [string]: Clip } = {
+	-- the Heavy Knight's Leaping Slam (SHANNON's pick of three): crouches with the hammer swung low behind,
+	-- leaps with the hammer overhead and the shield up, lands in a slam at the impact (0.92 s), hops back
+	foe_knight_heavy_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.30,
+				{
+					body = { -12, 0, 0, 0, -0.1, 0.1 },
+					leg_fr = { -30, 0, 15 },
+					leg_fl = { -20, 0, -15 },
+					head = { -6 },
+					leg_bl = { 24 },
+					leg_br = { 24 },
+				},
+			},
+			{
+				0.55,
+				{
+					body = { 10, 0, 0, 0, 1.2, -0.4 },
+					leg_fr = { 190, 0, 10 },
+					leg_fl = { 150, 0, -10 },
+					head = { 10 },
+					leg_bl = { 30 },
+					leg_br = { -20 },
+				},
+			},
+			{
+				0.78,
+				{
+					body = { 14, 0, 0, 0, 1.5, -0.8 },
+					leg_fr = { 215, 0, 8 },
+					leg_fl = { 165, 0, -8 },
+					head = { 8 },
+					leg_bl = { 45 },
+					leg_br = { 40 },
+				},
+			},
+			{
+				MAGIC_IMPACT,
+				{
+					body = { -28, 0, 0, 0, -0.1, -1.4 },
+					leg_fr = { 0, 20, 0 },
+					leg_fl = { 40, 0, -30 },
+					head = { -16 },
+					leg_bl = { 38 },
+					leg_br = { -18 },
+				},
+			},
+			{
+				1.12,
+				{
+					body = { -24, 0, 0, 0, -0.08, -1.3 },
+					leg_fr = { 4, 18, 0 },
+					leg_fl = { 38, 0, -28 },
+					head = { -12 },
+					leg_bl = { 34 },
+					leg_br = { -16 },
+				},
+			},
+			{
+				1.36,
+				{
+					body = { -4, 0, 0, 0, 0.35, -0.6 },
+					leg_fr = { 20 },
+					leg_fl = { 14, 0, -10 },
+					leg_bl = { 12 },
+					leg_br = { 8 },
+				},
+			},
+			{ 1.60, {} },
+		},
+	},
 	-- throws its head back in a howl (a positive pitch lifts the nose), then drives down on the target
 	jackal = powerClip(
 		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { 36 }, tail = { -20 } },
@@ -571,6 +777,63 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
 		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
 	),
+	-- the Shadow Archer (elbows): a volley, side-on with the bow tipped up at the sky, the arrow drawn back
+	-- and loosed at the impact
+	foe_archer_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.40,
+				{
+					body = { 0, -88, -30 },
+					head = { 0, 78, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 56, 38, 40 },
+					elbow_r = { 49, 89, 46 },
+					arrow = { 0, 0, -56.3, -0.568, -0.84, -0.97 },
+				},
+			},
+			{
+				0.78,
+				{
+					body = { 0, -88, -38, 0, 0.04, 0.1 },
+					head = { 0, 78, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 49, 14, 58 },
+					elbow_r = { 58, 89, 46 },
+					arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+				},
+			},
+			{
+				0.90,
+				{
+					body = { 0, -88, -38, 0, 0.04, 0.1 },
+					head = { 0, 78, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 49, 14, 60 },
+					elbow_r = { 58, 89, 46 },
+					arrow = { 0, 0, -56.3, -0.33, -0.84, -0.97 },
+				},
+			},
+			{
+				MAGIC_IMPACT,
+				{
+					body = { 0, -86, -34, 0, 0, 0.3 },
+					head = { 0, 76, 0 },
+					leg_fl = { -65, 1, -98 },
+					leg_fr = { 47, 14, 70 },
+					elbow_r = { 40, 89, 46 },
+					tail = { 12 },
+				},
+			},
+			{
+				1.12,
+				{ body = { 0, -60, -10 }, head = { 0, 52, 0 }, leg_fl = { -50, 1, -76 }, leg_fr = { 30, 10, 40 } },
+			},
+			{ 1.60, {} },
+		},
+	},
 }
 
 -- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
@@ -666,6 +929,68 @@ local function idleBiped(t: number): Pose
 		leg_fr = { -3 * math.sin(t * TAU / 3.4) },
 		tail = { 5 * math.sin(t * TAU / 2.6), 0, 0 },
 	}
+end
+
+-- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
+-- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
+local STANCES: { [string]: Pose } = {
+	-- at ease: weight on one leg, the sword's point lowered, the shield hanging easy, head turned
+	foe_knight_forge = {
+		body = { 0, 6, 2 },
+		head = { 0, -22, 0 },
+		leg_fl = { 4 },
+		elbow_l = { 18, 0, 8 },
+		leg_fr = { -28, 0, 4 },
+		leg_bl = { -4 },
+		leg_br = { 6 },
+	},
+	-- at ease: the bow low before it, head turned to watch (its arrow is in its quiver)
+	foe_archer_forge = {
+		body = { 0, -10, 0 },
+		head = { -2, 28, 0 },
+		leg_fl = { 12, 0, 4 },
+		elbow_l = { 20 },
+		leg_bl = { 6 },
+		leg_br = { -5 },
+	},
+	-- the hammer's head resting on the ground before it, the shield arm bent at its side
+	foe_knight_heavy_forge = {
+		body = { -3, -6, 0 },
+		head = { 3, 6, 0 },
+		leg_fr = { -14, 16, 0 },
+		leg_fl = { 8 },
+		elbow_l = { 28, 0, 12 },
+		leg_bl = { 6 },
+		leg_br = { -5 },
+	},
+	-- reading: its arms rest bent (the staff planted, the book open before it), head bowed to the pages
+	foe_mage_priest_forge = { head = { -12, 10, 0 } },
+}
+
+local function stanceAt(stance: Pose, t: number): Pose
+	local out = table.clone(stance)
+	local b, h = stance.body or {}, stance.head or {}
+	local breath = math.sin(t * TAU / 3.4)
+	out.body = { (b[1] or 0) + breath, b[2] or 0, b[3] or 0, b[4] or 0, (b[5] or 0) + 0.02 * breath, b[6] or 0 }
+	out.head = { (h[1] or 0) + 1.5 * math.sin(t * TAU / 3.4 + 0.8), (h[2] or 0) + 2 * math.sin(t * TAU / 6), h[3] or 0 }
+	return out
+end
+
+-- `a` and `b` mixed joint by joint: all `a` at w = 0, all `b` at 1 (and past 1 `b` laid over `a` whole: w = 2)
+local function mixed(a: Pose, b: Pose, w: number): Pose
+	local out: Pose = {}
+	for _, joint in JOINTS do
+		local x, y = a[joint], b[joint]
+		if x or y then
+			local v = table.create(6, 0)
+			for k = 1, 6 do
+				local p, q = if x then x[k] or 0 else 0, if y then y[k] or 0 else 0
+				v[k] = if w > 1 then p + q else p + (q - p) * w
+			end
+			out[joint] = v
+		end
+	end
+	return out
 end
 
 -- An upright animal (a meerkat) has long feet: it takes short steps, or their ends dig in.
@@ -856,14 +1181,21 @@ local TRAIN: { [string]: (number, number, boolean, Model) -> Pose } = {
 				head = { 30 + 2 * breath, 0, 0 },
 			}
 		end
+		-- a Titan lies down like a loaf (SHANNON: "better resting positions"): its front legs out along the
+		-- ground, its hind legs tucked under its belly, its belly down near the floor (the body down 0.75 of
+		-- the front legs' height: Scale is that height / 1.45), its head up a little so its trunk and tusks
+		-- lie forward on the floor, not through it; it breathes slowly, sighs now and then (the head and
+		-- body lift a little and settle) and flicks its tail
+		local sigh = math.max(0, math.sin(t % 13 / 13 * TAU)) ^ 3
+		local flick = math.max(0, math.sin(t * TAU / 5)) ^ 6
 		return {
-			leg_fl = { 84 },
-			leg_fr = { 84 },
-			leg_bl = { -84 },
-			leg_br = { -84 },
-			body = { 0, 0, 0, 0, -0.68 + 0.015 * breath, 0 },
-			head = { -14 + 1.5 * breath, 0, 6 },
-			tail = { 0, 0, 0 },
+			leg_fl = { 80 },
+			leg_fr = { 80 },
+			leg_bl = { 72 },
+			leg_br = { 72 },
+			body = { -1 + 1.5 * sigh, 0, 0, 0, -1.09 + 0.02 * breath + 0.04 * sigh, 0 },
+			head = { 30 + 1.5 * breath + 6 * sigh, 4 * math.sin(t * TAU / 9), 0 },
+			tail = { 0, 25 * flick, 0 },
 		}
 	end,
 	-- the guard yard: set low against the blow, thrown back as it lands, set again
@@ -1067,6 +1399,163 @@ local function impact(model: Model, colour: Color3, molten: boolean)
 	end
 end
 
+-- Weapon effects, by asset (SHANNON's picks for the Heavy Knight). A model built with "tip" and "neck"
+-- bones in its weapon's far end (skin_forge `tips`) gets a trail between them as it swings; its attack
+-- lands a small shockwave where the weapon strikes, its power move charges the weapon with light and
+-- lands a big shockwave with crystal spikes erupting round it. Each replaces the shared power effects.
+local ATTACK_CONTACT = 0.44 -- seconds into "attack" when the blow lands (as the server times it)
+type WeaponFx = { attack: string, power: string, colour: Color3 }
+local WEAPON_FX: { [string]: WeaponFx } = {
+	foe_knight_heavy_forge = { attack = "shockwave", power = "eruption", colour = Color3.fromRGB(170, 70, 255) },
+}
+local weaponDone: { [Model]: { [string]: number } } = setmetatable({}, { __mode = "k" }) :: any
+
+local function weaponBones(model: Model): (Attachment?, Attachment?)
+	return model:FindFirstChild("tip", true) :: Attachment?, model:FindFirstChild("neck", true) :: Attachment?
+end
+
+local function trailOf(model: Model, colour: Color3): Trail?
+	local tip, neck = weaponBones(model)
+	if tip == nil or neck == nil then
+		return nil
+	end
+	local trail = tip:FindFirstChild("WeaponTrail") :: Trail?
+	if trail == nil then
+		local t = Instance.new("Trail")
+		t.Name = "WeaponTrail"
+		t.Attachment0, t.Attachment1 = tip, neck
+		t.Color = ColorSequence.new(colour)
+		t.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(1, 1) })
+		t.LightEmission, t.Lifetime, t.Enabled = 0.8, 0.16, false
+		t.Parent = tip
+		trail = t
+	end
+	return trail
+end
+
+-- Where the weapon strikes: the ground under its tip (creatures left out of the ray).
+local function strikePoint(model: Model): CFrame?
+	local tip = weaponBones(model)
+	local root = model.PrimaryPart
+	if tip == nil or root == nil then
+		return nil
+	end
+	local p = tip.WorldPosition
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = CollectionService:GetTagged("Creature")
+	local hit = Workspace:Raycast(p + Vector3.new(0, 4, 0), Vector3.new(0, -16, 0), params)
+	local y = if hit then hit.Position.Y else p.Y
+	return CFrame.new(p.X, y + 0.08, p.Z) * root.CFrame.Rotation
+end
+
+-- A flash, a ring of light rolling out across the ground and cracks; `glowing` cracks shine.
+local function shockwave(ground: CFrame, colour: Color3, radius: number, glowing: boolean)
+	local flash = fxPart(Vector3.one * radius * 0.25, ground, Color3.fromRGB(235, 210, 255), Enum.Material.Neon)
+	flash.Shape = Enum.PartType.Ball
+	flash.Transparency = 0.1
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = colour, radius * 1.5, 3, false
+	light.Parent = flash
+	tween(flash, 0.16, { Size = Vector3.one * radius * 0.8, Transparency = 1 })
+	tween(light, 0.3, { Brightness = 0 })
+	Debris:AddItem(flash, 0.35)
+	local ring = fxPart(Vector3.new(0.25, 1, 1), ground * CFrame.Angles(0, 0, math.pi / 2), colour, Enum.Material.Neon)
+	ring.Shape = Enum.PartType.Cylinder
+	ring.Transparency = 0.15
+	tween(ring, 0.45, { Size = Vector3.new(0.25, radius * 2, radius * 2), Transparency = 1 })
+	Debris:AddItem(ring, 0.5)
+	for k = 1, 9 do
+		local length = radius * (0.22 + 0.24 * math.random())
+		local angle = k / 9 * math.pi * 2 + (math.random() - 0.5) * 0.5
+		local crack = fxPart(
+			Vector3.new(length, 0.06, radius * 0.05),
+			ground * CFrame.Angles(0, angle, 0) * CFrame.new(length / 2, 0, 0),
+			if glowing then colour else Color3.fromRGB(18, 14, 24),
+			if glowing then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		)
+		task.delay(0.9, tween, crack, 0.6, { Transparency = 1 })
+		Debris:AddItem(crack, 1.6)
+	end
+end
+
+-- The big blow: a shockwave with glowing cracks, and a ring of crystal spikes thrust up round the
+-- impact that sink again.
+local function eruption(ground: CFrame, colour: Color3, radius: number)
+	shockwave(ground, colour, radius, true)
+	for k = 1, 8 do
+		local angle = k / 8 * math.pi * 2 + (math.random() - 0.5) * 0.4
+		local height = radius * (0.28 + 0.12 * math.random())
+		local width = radius * 0.11
+		local lean = CFrame.Angles(0, 0, -math.rad(18)) -- tipped outwards
+		local base = ground * CFrame.Angles(0, angle, 0) * CFrame.new(radius * 0.32, 0, 0)
+		local low, high = base * CFrame.new(0, -height * 1.1, 0) * lean, base * CFrame.new(0, -height * 0.1, 0) * lean
+		local spike = fxPart(Vector3.one * 0.2, low, colour, Enum.Material.Neon)
+		spike.Transparency = 1
+		pyramid(spike, width, height, colour, Enum.Material.Neon)
+		tween(spike, 0.14, { CFrame = high }, Enum.EasingStyle.Back)
+		task.delay(0.6, tween, spike, 0.3, { CFrame = low })
+		Debris:AddItem(spike, 1)
+	end
+end
+
+-- The weapon gathers light until the blow.
+local function chargeWeapon(model: Model, colour: Color3, seconds: number, size: number)
+	local tip = weaponBones(model)
+	if tip == nil then
+		return
+	end
+	local orb = fxPart(Vector3.one * 0.3 * size, CFrame.new(tip.WorldPosition), colour, Enum.Material.Neon)
+	orb.Shape = Enum.PartType.Ball
+	orb.Transparency = 0.4
+	local light = Instance.new("PointLight")
+	light.Color, light.Range, light.Brightness, light.Shadows = colour, 4, 0.5, false
+	light.Parent = orb
+	tween(orb, seconds, { Size = Vector3.one * 1.4 * size }, Enum.EasingStyle.Sine)
+	tween(light, seconds, { Range = 10 * size, Brightness = 3 }, Enum.EasingStyle.Sine)
+	local started = os.clock()
+	local follow
+	follow = RunService.RenderStepped:Connect(function()
+		if os.clock() - started > seconds or tip.Parent == nil then
+			follow:Disconnect()
+			orb:Destroy()
+			return
+		end
+		orb.CFrame = CFrame.new(tip.WorldPosition)
+	end)
+end
+
+-- Plays a model's weapon effects for the clip it is in (`at` tells one playing of a clip from the next).
+local function weaponFx(model: Model, fx: WeaponFx, anim: string?, at: number, t: number)
+	local done = weaponDone[model] or {}
+	weaponDone[model] = done
+	local s = (model:GetAttribute("Scale") :: number?) or 1
+	local trail = trailOf(model, fx.colour)
+	if trail then
+		trail.Enabled = (anim == "attack" and t > 0.28 and t < ATTACK_CONTACT + 0.05)
+			or (anim == "magic" and t > 0.8 and t < MAGIC_IMPACT + 0.05)
+	end
+	if anim == "attack" and t >= ATTACK_CONTACT and done.attack ~= at then
+		done.attack = at
+		local ground = strikePoint(model)
+		if ground then
+			shockwave(ground, fx.colour, 3.3 * s, false)
+		end
+	elseif anim == "magic" then
+		if done.charge ~= at and t < MAGIC_IMPACT then
+			done.charge = at
+			chargeWeapon(model, fx.colour, MAGIC_IMPACT - t, s)
+		end
+		if t >= MAGIC_IMPACT and done.power ~= at then
+			done.power = at
+			local ground = strikePoint(model)
+			if ground then
+				eruption(ground, fx.colour, 5.9 * s)
+			end
+		end
+	end
+end
+
 local function magicColour(model: Model): (Color3, boolean)
 	for _, d in model:GetChildren() do -- a glowing variant casts in its own colour
 		if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
@@ -1095,6 +1584,12 @@ type Rig = {
 	heldFor: number, -- the AnimAt of that clip
 	flinch: number, -- how far the next "hit" clip is stretched
 	spark: ParticleEmitter?, -- the hit sparks, made on the first hit
+	-- a skinned model's bones by joint (decision 0102), and each bone's axes in the Root's: a pose is
+	-- written in the Root's axes, so it is turned into the bone's
+	bones: { [string]: { bone: Bone, turn: CFrame } },
+	boneScan: number, -- os.clock() when its descendants were last searched for bones
+	thud: Sound?, -- the sound of a hit and of a power hit or knockout, made on the first of each
+	boom: Sound?,
 }
 
 local rigs: { [Model]: Rig } = {}
@@ -1169,7 +1664,7 @@ local function strike(rig: Rig)
 	local hot = power > 0 or final
 	local colour = if hot then Color3.fromRGB(255, 120, 70) else Color3.fromRGB(255, 220, 160)
 	rig.flinch = FightFx.flinch(power, dmg / math.max(1, (model:GetAttribute("MaxHp") :: number?) or 1))
-	rig.stopUntil = os.clock() + FightFx.hitStop(power, final)
+	rig.stopUntil = os.clock() + FightFx.hitStop(power, final, model:GetAttribute("HitKo") == 1)
 	local spark = rig.spark
 	if spark == nil then
 		spark = Instance.new("ParticleEmitter")
@@ -1202,13 +1697,34 @@ local function strike(rig: Rig)
 	player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
 	player:SetAttribute("CamPunchAt", os.clock())
 	if final then
-		slowAt = os.clock()
+		slowAt = os.clock() -- the finish is the slow motion alone (decision 0097)
 	end
-	-- only the killing blow cuts the camera in on its target (ArenaCamera reads these)
-	if final then
+	-- the team's power attacks cut the camera in on their target (ArenaCamera reads these)
+	if power > 0 and not final and model:GetAttribute("Side") == 2 then
 		player:SetAttribute("CamCut", hit.Position)
 		player:SetAttribute("CamCutAt", os.clock())
 	end
+	-- and every hit is heard: a thud, a slam for a power hit or a knockout
+	local ko = model:GetAttribute("HitKo") == 1
+	local sound = if hot or ko then rig.boom else rig.thud
+	if sound == nil then
+		sound = Instance.new("Sound")
+		local made = sound :: Sound
+		made.SoundId = if hot or ko
+			then "rbxasset://sounds/impact_explosion_03.mp3"
+			else "rbxasset://sounds/action_jump_land.mp3"
+		made.RollOffMaxDistance, made.RollOffMinDistance = 300, 30
+		made.Parent = hit
+		if hot or ko then
+			rig.boom = made
+		else
+			rig.thud = made
+		end
+	end
+	local s2 = sound :: Sound
+	s2.Volume = if final then 0.9 elseif hot or ko then 0.55 else 0.4
+	s2.PlaybackSpeed = (if ko then 0.8 else 1) * (0.92 + math.random() * 0.16)
+	s2:Play()
 end
 
 local function add(model: Instance)
@@ -1216,9 +1732,13 @@ local function add(model: Instance)
 		return
 	end
 	local joints = {}
+	local bones = {}
+	local root = model.PrimaryPart or model:FindFirstChild("Root") :: BasePart?
 	for _, d in model:GetDescendants() do
 		if d:IsA("Motor6D") then
 			joints[d.Name] = d
+		elseif d:IsA("Bone") and table.find(JOINTS, d.Name) and root then
+			bones[d.Name] = { bone = d, turn = (root :: BasePart).CFrame.Rotation:Inverse() * d.WorldCFrame.Rotation }
 		end
 	end
 	local now = {}
@@ -1237,6 +1757,10 @@ local function add(model: Instance)
 		heldFor = 0,
 		flinch = 1,
 		spark = nil,
+		bones = bones,
+		boneScan = 0,
+		thud = nil,
+		boom = nil,
 	}
 	rigs[model] = rig
 	-- the server sets StopAt on a melee attacker and HitAt on whoever is struck; both arrive after
@@ -1248,6 +1772,10 @@ local function add(model: Instance)
 		strike(rig)
 	end)
 	model.DescendantAdded:Connect(function(d) -- pieces can arrive after the model
+		local base = model.PrimaryPart
+		if d:IsA("Bone") and rigs[model] and table.find(JOINTS, d.Name) and base then
+			rigs[model].bones[d.Name] = { bone = d, turn = base.CFrame.Rotation:Inverse() * d.WorldCFrame.Rotation }
+		end
 		if d:IsA("Motor6D") and rigs[model] then
 			rigs[model].joints[d.Name] = d
 		end
@@ -1256,13 +1784,36 @@ end
 
 -- Fights (decision 0042): a creature with a "MaxHp" attribute shows a health bar over it, and every
 -- change in its "Hp" floats a number: red for damage, green for healing. The server sets both.
+-- In a crowd (decision 0101) small hits on the same foe merge into one growing number, and at most
+-- MAX_NUMBERS float at once (a power hit always shows).
+local MAX_NUMBERS, MERGE_SECONDS = 12, 0.5
+local floating = 0
+local recent: { [Model]: { text: TextLabel, at: number, total: number } } = setmetatable({}, { __mode = "k" }) :: any
 local function floatNumber(model: Model, change: number)
 	local hit = model:FindFirstChild("Hit") :: BasePart?
 	if hit == nil then
 		return
 	end
+	local small = change < 0 and model:GetAttribute("HitPower") ~= 1
+	local last = recent[model]
+	if small and last and os.clock() - last.at < MERGE_SECONDS and last.text.Parent then
+		last.total += change
+		last.at = os.clock()
+		last.text.Text = tostring(last.total)
+		return
+	elseif small and floating >= MAX_NUMBERS then
+		return
+	end
+	floating += 1
+	task.delay(1.1, function()
+		floating -= 1
+	end)
+	-- a power hit's number is gold and bigger, a Perfect's or a combo's bigger still (decision 0097)
+	local power = change < 0 and model:GetAttribute("HitPower") == 1
+	local crit = power and model:GetAttribute("HitCrit") == 1
+	local scale = if crit then 2.1 elseif power then 1.6 else 1
 	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromOffset(120, 40)
+	gui.Size = UDim2.fromOffset(120 * scale, 40 * scale)
 	gui.Adornee = hit
 	gui.AlwaysOnTop = true
 	gui.LightInfluence = 0
@@ -1274,11 +1825,24 @@ local function floatNumber(model: Model, change: number)
 	text.BackgroundTransparency = 1
 	text.Font = Enum.Font.FredokaOne
 	text.TextScaled = true
-	text.Text = if change < 0 then tostring(change) else `+{change}`
-	text.TextColor3 = if change < 0 then Color3.fromRGB(255, 90, 80) else Color3.fromRGB(110, 255, 140)
+	text.Text = if change >= 0 then `+{change}` elseif crit then `{change}!` else tostring(change)
+	text.TextColor3 = if change >= 0
+		then Color3.fromRGB(110, 255, 140)
+		elseif power then Color3.fromRGB(255, 200, 60)
+		else Color3.fromRGB(255, 90, 80)
 	text.TextStrokeTransparency = 0
 	text.Parent = gui
 	gui.Parent = hit
+	if small then
+		recent[model] = { text = text, at = os.clock(), total = change }
+	end
+	if power then -- it pops in big and settles
+		local size = Instance.new("UIScale")
+		size.Scale = 1.6
+		size.Parent = text
+		TweenService:Create(size, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+			:Play()
+	end
 	TweenService:Create(gui, TweenInfo.new(1.0, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 		StudsOffset = gui.StudsOffset + Vector3.new(0, 4, 0),
 	}):Play()
@@ -1358,6 +1922,16 @@ end
 RunService.PreSimulation:Connect(function(dt: number)
 	local time = Workspace:GetServerTimeNow()
 	for model, rig in rigs do
+		-- a skinned model's bones can reach this client before its Root does: take them once both are here
+		local base = model.PrimaryPart
+		if next(rig.bones) == nil and next(rig.joints) == nil and base and os.clock() - rig.boneScan > 0.5 then
+			rig.boneScan = os.clock() -- a model with no joints at all is looked at twice a second, no more
+			for _, d in model:GetDescendants() do
+				if d:IsA("Bone") and table.find(JOINTS, d.Name) then
+					rig.bones[d.Name] = { bone = d, turn = base.CFrame.Rotation:Inverse() * d.WorldCFrame.Rotation }
+				end
+			end
+		end
 		if model:GetAttribute("Rainbow") then -- a rainbow animal's Neon pieces turn through the colours
 			for i, d in model:GetChildren() do
 				if d:IsA("MeshPart") and d.Material == Enum.Material.Neon then
@@ -1415,15 +1989,19 @@ RunService.PreSimulation:Connect(function(dt: number)
 		elseif anim and TRAIN[anim] then
 			target = TRAIN[anim](time, (model:GetAttribute("Stride") :: number?) or 1.5, biped, model)
 		elseif anim == "attack" and t < ATTACK.length then
-			local kind = model:GetAttribute("Asset")
+			local kind = (model:GetAttribute("Asset") :: string?) or ""
 			local clip = if not biped
 				then pick(ATTACKS, model, ATTACK)
-				elseif kind == "foe_archer" then ARCHER_ATTACK
-				elseif kind == "foe_mage" then MAGE_ATTACK
+				elseif string.find(kind, "^foe_archer") then pick(ATTACKS, model, ARCHER_ATTACK)
+				elseif string.find(kind, "^foe_mage") then MAGE_ATTACK
 				else pick(ATTACKS, model, BIPED_ATTACK) -- an upright animal has its own
 			target = sample(clip, t)
 		elseif anim == "magic" and t < MAGIC.length then
 			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
+			if WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""] then
+				-- its own effects (weaponFx, below) in place of the shared ones
+				rig.magicAt, rig.impactAt = at, at
+			end
 			if rig.magicAt ~= at then
 				rig.magicAt = at
 				charge(model, (magicColour(model)), math.max(0.1, MAGIC_IMPACT - t))
@@ -1434,6 +2012,22 @@ RunService.PreSimulation:Connect(function(dt: number)
 			end
 		else
 			target = if biped then idleBiped(time) else idle(time)
+		end
+		local stance = STANCES[(model:GetAttribute("Asset") :: string?) or ""]
+		if stance then
+			local length = if anim == "attack" then ATTACK.length elseif anim == "magic" then MAGIC.length else 0
+			if anim == "hit" and t < HIT.length then
+				target = mixed(stanceAt(stance, time), target, 2) -- a flinch on top of its stance
+			elseif t < length then
+				-- out of its stance into the move, and back into it at the end
+				target = mixed(stanceAt(stance, time), target, math.clamp(math.min(t / 0.12, (length - t) / 0.2), 0, 1))
+			elseif anim == nil or anim == "idle" or anim == "attack" or anim == "magic" or anim == "hit" then
+				target = stanceAt(stance, time)
+			end
+		end
+		local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
+		if own then
+			weaponFx(model, own, anim, at, t)
 		end
 		if model:GetAttribute("Winged") == true then
 			target = table.clone(target)
@@ -1457,7 +2051,8 @@ RunService.PreSimulation:Connect(function(dt: number)
 		for _, joint in JOINTS do
 			local goal, v = target[joint], rig.now[joint]
 			for k = 1, 6 do
-				v[k] += ((if goal then goal[k] or 0 else 0) - v[k]) * blend
+				-- (an arrow is in the quiver or on the string, never seen between: it does not ease)
+				v[k] += ((if goal then goal[k] or 0 else 0) - v[k]) * (if joint == "arrow" then 1 else blend)
 			end
 		end
 		local lift = Vector3.zero -- feet stay on the ground, except in a fall
@@ -1470,9 +2065,12 @@ RunService.PreSimulation:Connect(function(dt: number)
 		end
 		for _, joint in JOINTS do
 			local motor = rig.joints[joint]
+			local bone = rig.bones[joint]
 			if motor then
 				local pose = turned(rig.now[joint], scale)
 				motor.Transform = if joint == "body" then CFrame.new(lift) * pose else pose
+			elseif bone then
+				bone.bone.Transform = bone.turn:Inverse() * turned(rig.now[joint], scale) * bone.turn
 			end
 		end
 	end
