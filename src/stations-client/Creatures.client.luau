@@ -1149,7 +1149,7 @@ local STANCES: { [string]: Pose } = {
 		leg_br = { -8 },
 	},
 	-- reading: its arms rest bent (the staff planted, the book open before it), head bowed to the pages
-	foe_mage_priest_forge = { head = { -12, 10, 0 } },
+	foe_mage_priest_forge = { head = { -18, 8, 0 } }, -- (bowed lower: its book is held low on its palm)
 }
 
 local function stanceAt(stance: Pose, t: number): Pose
