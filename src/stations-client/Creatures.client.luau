@@ -294,41 +294,20 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
-	-- the Shadow Archer (its bow held low ahead at rest): turns side-on, raises the bow at the target and
-	-- reaches for the string, draws to its cheek, looses at the contact (0.44 s) and recoils, then lowers
+	-- the Shadow Archer (its bow held low ahead at rest): squares up, raises the bow straight at the target
+	-- and reaches for the string, draws it back past its face, looses at the contact (0.44 s) and recoils
 	foe_archer_forge = attack({
 		{ 0.00, {} },
-		{
-			0.14,
-			{
-				body = { 0, -22, 0 },
-				head = { 0, 18, 0 },
-				leg_fl = { 84, 0, 24 },
-				leg_fr = { 76, 0, -22 },
-				tail = { -6 },
-			},
-		},
+		{ 0.14, { head = { -4 }, leg_fl = { 88 }, leg_fr = { 82, 0, -18 }, tail = { -6 } } },
 		{
 			0.32,
-			{
-				body = { 2, -30, 0, 0, 0, 0.12 },
-				head = { -2, 26, 0 },
-				leg_fl = { 92, 0, 28 },
-				leg_fr = { 104, 0, -6 },
-				tail = { -10 },
-			},
+			{ body = { 2, 0, 0, 0, 0, 0.12 }, head = { -2 }, leg_fl = { 92 }, leg_fr = { 96, 0, 22 }, tail = { -10 } },
 		},
 		{
 			0.44,
-			{
-				body = { 4, -30, 0, 0, 0.02, 0.35 },
-				head = { 2, 24, 0 },
-				leg_fl = { 90, 0, 26 },
-				leg_fr = { 52, 0, 26 },
-				tail = { 12 },
-			},
+			{ body = { 4, 0, 0, 0, 0.02, 0.35 }, head = { 2 }, leg_fl = { 90 }, leg_fr = { 60, 0, 40 }, tail = { 12 } },
 		},
-		{ 0.64, { body = { 0, -16, 0 }, head = { 0, 12, 0 }, leg_fl = { 64, 0, 14 }, leg_fr = { 24, 0, 10 } } },
+		{ 0.64, { leg_fl = { 64 }, leg_fr = { 26, 0, 14 } } },
 		{ 0.95, {} },
 	}),
 	-- a lunge and a snap, then a shake of the head
