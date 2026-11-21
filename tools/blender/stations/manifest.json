@@ -8339,59 +8339,59 @@
       "foe_mage_priest_forge_head": [
         -0.002,
         5.68,
-        0.592
+        0.542
       ],
       "foe_mage_priest_forge_tail": [
         -0.002,
         5.26,
-        -0.248
+        -0.298
       ],
       "foe_mage_priest_forge_leg_fl": [
         1.426,
         5.26,
-        0.424
+        0.374
       ],
       "foe_mage_priest_forge_leg_fr": [
         -1.43,
         5.26,
-        0.424
+        0.374
       ],
       "foe_mage_priest_forge_leg_bl": [
         0.502,
         2.32,
-        0.424
+        0.374
       ],
       "foe_mage_priest_forge_leg_br": [
         -0.506,
         2.32,
-        0.424
+        0.374
       ],
       "foe_mage_priest_forge_tip": [
-        0.451,
-        5.362,
-        1.692
+        0.174,
+        5.523,
+        1.618
       ],
       "foe_mage_priest_forge_neck": [
-        0.471,
-        4.529,
-        1.777
+        0.311,
+        4.933,
+        1.695
       ],
       "foe_mage_priest_forge_elbow_l": [
         1.719,
         4.517,
-        0.849
+        0.799
       ],
       "foe_mage_priest_forge_elbow_r": [
         -1.796,
         4.51,
-        0.773
+        0.722
       ]
     },
     "skinned": true,
     "root": [
       -0.002,
       3.58,
-      0.424
+      0.374
     ]
   },
   "foe_knight_berserker_forge": {
