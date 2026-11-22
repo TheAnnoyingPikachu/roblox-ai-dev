@@ -79,31 +79,6 @@
     "decal": 84952892150281,
     "texture": null
   },
-  "foe_archer": {
-    "model": 106670895681049,
-    "decal": 128781795042597,
-    "texture": 111266171780821
-  },
-  "foe_mage": {
-    "model": 140217762320240,
-    "decal": 132764107277009,
-    "texture": 76772744158895
-  },
-  "foe_knight": {
-    "model": 113125543550946,
-    "decal": 70602162647114,
-    "texture": 121031381188327
-  },
-  "foe_ogre": {
-    "model": 82770174632710,
-    "decal": 140539859595937,
-    "texture": 131699630558750
-  },
-  "foe_dragon": {
-    "model": 79434671365622,
-    "decal": 107048042960848,
-    "texture": 87545615844296
-  },
   "creature_lion_shadow": {
     "model": 84330657139211,
     "decal": 96709137028260,
@@ -484,46 +459,6 @@
     "decal": 111103147837409,
     "texture": null
   },
-  "hub_floor": {
-    "model": 81725570523074,
-    "decal": 95241885939487,
-    "texture": null
-  },
-  "hub_fire": {
-    "model": 107086071745800,
-    "decal": 111780912104543,
-    "texture": null
-  },
-  "hub_market": {
-    "model": 103857009904545,
-    "decal": 131705768686418,
-    "texture": null
-  },
-  "hub_cafe": {
-    "model": 111249013406210,
-    "decal": 130190866110122,
-    "texture": null
-  },
-  "hub_stage": {
-    "model": 130884272478978,
-    "decal": 98703849169557,
-    "texture": null
-  },
-  "hub_green": {
-    "model": 112176876968294,
-    "decal": 130947257808250,
-    "texture": null
-  },
-  "hub_lights": {
-    "model": 83730579662226,
-    "decal": 132842077050793,
-    "texture": null
-  },
-  "hub_signs": {
-    "model": 87839061570804,
-    "decal": 139923546569617,
-    "texture": null
-  },
   "kit_gym_bar": {
     "model": 73319446503448,
     "decal": 114006588812683,
@@ -707,6 +642,406 @@
   "scenery_bush_1": {
     "model": 79560426232029,
     "decal": 119688942868167,
+    "texture": null
+  },
+  "hub_ground": {
+    "model": 138288342422615,
+    "decal": 109283581729368,
+    "texture": null
+  },
+  "hub_pond": {
+    "model": 79388069972468,
+    "decal": 96869784468655,
+    "texture": null
+  },
+  "hub_trading": {
+    "model": 118350359423901,
+    "decal": 87344364430341,
+    "texture": null
+  },
+  "hub_gifts": {
+    "model": 84487294492183,
+    "decal": 81756680735133,
+    "texture": null
+  },
+  "hub_fame": {
+    "model": 134230310657328,
+    "decal": 134164750283084,
+    "texture": null
+  },
+  "hub_board": {
+    "model": 139727565962397,
+    "decal": 79460240631136,
+    "texture": null
+  },
+  "hub_camp": {
+    "model": 75748042792042,
+    "decal": 107135646092493,
+    "texture": null
+  },
+  "hub_lights": {
+    "model": 86459315201177,
+    "decal": 72403370047769,
+    "texture": null
+  },
+  "creature_lion_forge": {
+    "model": 114461348923771,
+    "decal": 90999280513226,
+    "texture": null
+  },
+  "creature_lion_forge_rainbow": {
+    "model": null,
+    "decal": 110138550232672,
+    "texture": null
+  },
+  "creature_jackal_forge": {
+    "model": 87363284132347,
+    "decal": 88853090199462,
+    "texture": null
+  },
+  "creature_jackal_forge_rainbow": {
+    "model": null,
+    "decal": 82658028249221,
+    "texture": null
+  },
+  "creature_tortoise_forge": {
+    "model": 122971514199545,
+    "decal": 93546567021536,
+    "texture": null
+  },
+  "creature_tortoise_forge_rainbow": {
+    "model": null,
+    "decal": 89790640839692,
+    "texture": null
+  },
+  "creature_jackal_pharaoh_forge": {
+    "model": 126901381768094,
+    "decal": 124436597650582,
+    "texture": null
+  },
+  "creature_jackal_pharaoh_forge_rainbow": {
+    "model": null,
+    "decal": 84132895172566,
+    "texture": null
+  },
+  "creature_jackal_sphinx_forge": {
+    "model": 106896364285248,
+    "decal": 103184462847059,
+    "texture": null
+  },
+  "creature_jackal_sphinx_forge_rainbow": {
+    "model": null,
+    "decal": 80202657347282,
+    "texture": null
+  },
+  "creature_rhino_forge": {
+    "model": 94949274052298,
+    "decal": 104193759173754,
+    "texture": null
+  },
+  "creature_rhino_forge_rainbow": {
+    "model": null,
+    "decal": 92978013273871,
+    "texture": null
+  },
+  "creature_rhino_crystal_forge": {
+    "model": 103003682948001,
+    "decal": 94681487576976,
+    "texture": null
+  },
+  "creature_rhino_crystal_forge_rainbow": {
+    "model": null,
+    "decal": 81473813942864,
+    "texture": null
+  },
+  "creature_rhino_lava_forge": {
+    "model": 138265266226163,
+    "decal": 129836025302131,
+    "texture": null
+  },
+  "creature_rhino_lava_forge_rainbow": {
+    "model": null,
+    "decal": 73444848894800,
+    "texture": null
+  },
+  "creature_tortoise_island_forge": {
+    "model": 92151239170912,
+    "decal": 99559541015671,
+    "texture": null
+  },
+  "creature_tortoise_island_forge_rainbow": {
+    "model": null,
+    "decal": 113869157353737,
+    "texture": null
+  },
+  "creature_tortoise_gemshell_forge": {
+    "model": 70813399383672,
+    "decal": 75398740039981,
+    "texture": null
+  },
+  "creature_tortoise_gemshell_forge_rainbow": {
+    "model": null,
+    "decal": 125381856980803,
+    "texture": null
+  },
+  "creature_meerkat_forge": {
+    "model": 129485626937800,
+    "decal": 139223000980349,
+    "texture": null
+  },
+  "creature_meerkat_forge_rainbow": {
+    "model": null,
+    "decal": 86506127898144,
+    "texture": null
+  },
+  "creature_meerkat_star_forge": {
+    "model": 82829591091078,
+    "decal": 104001008604021,
+    "texture": null
+  },
+  "creature_meerkat_star_forge_rainbow": {
+    "model": null,
+    "decal": 104822336959337,
+    "texture": null
+  },
+  "creature_meerkat_storm_forge": {
+    "model": 131367649584676,
+    "decal": 124123036384838,
+    "texture": null
+  },
+  "creature_meerkat_storm_forge_rainbow": {
+    "model": null,
+    "decal": 134636308610030,
+    "texture": null
+  },
+  "creature_cheetah_forge": {
+    "model": 72277952355150,
+    "decal": 80239905411430,
+    "texture": null
+  },
+  "creature_cheetah_forge_rainbow": {
+    "model": null,
+    "decal": 111077284531297,
+    "texture": null
+  },
+  "creature_cheetah_lightning_forge": {
+    "model": 117031150558013,
+    "decal": 102658956224889,
+    "texture": null
+  },
+  "creature_cheetah_lightning_forge_rainbow": {
+    "model": null,
+    "decal": 111631984612006,
+    "texture": null
+  },
+  "creature_cheetah_thunder_forge": {
+    "model": 116196805660799,
+    "decal": 132511917673487,
+    "texture": null
+  },
+  "creature_cheetah_thunder_forge_rainbow": {
+    "model": null,
+    "decal": 94633690503455,
+    "texture": null
+  },
+  "creature_flamingo_forge": {
+    "model": 104908576853430,
+    "decal": 117268092667503,
+    "texture": null
+  },
+  "creature_flamingo_forge_rainbow": {
+    "model": null,
+    "decal": 130945049856793,
+    "texture": null
+  },
+  "creature_flamingo_peacock_forge": {
+    "model": 76868167666508,
+    "decal": 113878734093677,
+    "texture": null
+  },
+  "creature_flamingo_peacock_forge_rainbow": {
+    "model": null,
+    "decal": 125168877806455,
+    "texture": null
+  },
+  "creature_flamingo_phoenix_forge": {
+    "model": 76736815444855,
+    "decal": 128896193537319,
+    "texture": null
+  },
+  "creature_flamingo_phoenix_forge_rainbow": {
+    "model": null,
+    "decal": 114074139701187,
+    "texture": null
+  },
+  "creature_lion_shadow_forge": {
+    "model": 127140611419509,
+    "decal": 136247606774989,
+    "texture": null
+  },
+  "creature_lion_shadow_forge_rainbow": {
+    "model": null,
+    "decal": 102784328141561,
+    "texture": null
+  },
+  "creature_lion_sun_forge": {
+    "model": 81876474528921,
+    "decal": 86649895327070,
+    "texture": null
+  },
+  "creature_lion_sun_forge_rainbow": {
+    "model": null,
+    "decal": 105866595882403,
+    "texture": null
+  },
+  "creature_giraffe_forge": {
+    "model": 114470887867018,
+    "decal": 117722785985151,
+    "texture": null
+  },
+  "creature_giraffe_forge_rainbow": {
+    "model": null,
+    "decal": 115702424637705,
+    "texture": null
+  },
+  "creature_giraffe_diamond_forge": {
+    "model": 107593614400418,
+    "decal": 113082645831379,
+    "texture": null
+  },
+  "creature_giraffe_diamond_forge_rainbow": {
+    "model": null,
+    "decal": 98051144312564,
+    "texture": null
+  },
+  "creature_giraffe_acacia_forge": {
+    "model": 120395570714080,
+    "decal": 114380546201860,
+    "texture": null
+  },
+  "creature_giraffe_acacia_forge_rainbow": {
+    "model": null,
+    "decal": 99672135145169,
+    "texture": null
+  },
+  "creature_elephant_forge": {
+    "model": 106319267913727,
+    "decal": 106975902603310,
+    "texture": null
+  },
+  "creature_elephant_forge_rainbow": {
+    "model": null,
+    "decal": 133613520000731,
+    "texture": null
+  },
+  "creature_elephant_frost_forge": {
+    "model": 100989683742707,
+    "decal": 99542524767159,
+    "texture": null
+  },
+  "creature_elephant_frost_forge_rainbow": {
+    "model": null,
+    "decal": 76763736594047,
+    "texture": null
+  },
+  "creature_elephant_war_forge": {
+    "model": 111971045849834,
+    "decal": 108096260885399,
+    "texture": null
+  },
+  "creature_elephant_war_forge_rainbow": {
+    "model": null,
+    "decal": 95048097284468,
+    "texture": null
+  },
+  "foe_knight_forge": {
+    "model": 104226486501479,
+    "decal": 100367259027767,
+    "texture": null
+  },
+  "foe_knight_heavy_forge": {
+    "model": 133333016376708,
+    "decal": 117078377988108,
+    "texture": null
+  },
+  "foe_archer_forge": {
+    "model": 100210189139717,
+    "decal": 98757655834910,
+    "texture": null
+  },
+  "foe_archer_crossbow_forge": {
+    "model": 75635708568020,
+    "decal": 80775063590171,
+    "texture": null
+  },
+  "foe_mage_forge": {
+    "model": 130466015457065,
+    "decal": 87973049714209,
+    "texture": null
+  },
+  "foe_mage_necromancer_forge": {
+    "model": 75219789337407,
+    "decal": 136752922042855,
+    "texture": null
+  },
+  "foe_mage_priest_forge": {
+    "model": 100801162442514,
+    "decal": 83377399479287,
+    "texture": null
+  },
+  "foe_knight_berserker_forge": {
+    "model": 135870448786696,
+    "decal": 131293107519394,
+    "texture": null
+  },
+  "foe_ogre_forge": {
+    "model": 102762004854888,
+    "decal": 83835154165331,
+    "texture": null
+  },
+  "foe_ogre_commander_forge": {
+    "model": 115917441575984,
+    "decal": 117646279074665,
+    "texture": null
+  },
+  "foe_golem_forge": {
+    "model": 95422994801004,
+    "decal": 91831031720908,
+    "texture": null
+  },
+  "foe_knight_shield_forge": {
+    "model": 124805246570796,
+    "decal": 74348734856589,
+    "texture": null
+  },
+  "foe_knight_shield_commander_forge": {
+    "model": 79205601772467,
+    "decal": 98687358649040,
+    "texture": null
+  },
+  "foe_cavalry_forge": {
+    "model": 139194713457659,
+    "decal": 128712217752639,
+    "texture": null
+  },
+  "foe_cavalry_commander_forge": {
+    "model": 88406267646103,
+    "decal": 102119814760490,
+    "texture": null
+  },
+  "foe_dragon_drake_forge": {
+    "model": 118921063383337,
+    "decal": 114843343235720,
+    "texture": null
+  },
+  "foe_dragon_forge": {
+    "model": 74327939211144,
+    "decal": 135945652986806,
+    "texture": null
+  },
+  "foe_dragon_alpha_forge": {
+    "model": 105768611281295,
+    "decal": 77455630577645,
     "texture": null
   }
 }

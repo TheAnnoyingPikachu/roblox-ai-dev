@@ -102,3 +102,70 @@ describe("StationTrade", function()
 		expect(b2.titan).toBe(2)
 	end)
 end)
+
+describe("StationTrade safety (decision 0099)", function()
+	local DAY = 86400
+	it("opens at player level MIN_LEVEL and stops after PER_DAY trades in a UTC day", function()
+		local p = save({ "jackal" })
+		local ok, code = StationTrade.canTrade(p, DAY * 10)
+		expect(ok).toBe(false)
+		expect(code).toBe("trade_level")
+		p.xp = StationProgress.xpFor(StationTrade.MIN_LEVEL)
+		expect((StationTrade.canTrade(p, DAY * 10))).toBe(true)
+		p.trades.day, p.trades.count = 10, StationTrade.PER_DAY
+		local _, limit = StationTrade.canTrade(p, DAY * 10 + 5)
+		expect(limit).toBe("trade_limit")
+		expect((StationTrade.canTrade(p, DAY * 11))).toBe(true) -- a new day
+		expect(StationTrade.left(p, DAY * 11)).toBe(StationTrade.PER_DAY)
+	end)
+
+	it("keeps a locked animal out of trades, and a traded copy arrives unlocked", function()
+		local p = save({ "jackal", "lion" })
+		StationTrade.lock(p, 1)
+		local ok, code = StationTrade.canOffer(p, 1)
+		expect(ok).toBe(false)
+		expect(code).toBe("trade_locked")
+		StationTrade.lock(p, 1)
+		expect((StationTrade.canOffer(p, 1))).toBe(true)
+		p.animals[2].locked = true
+		local copy = StationTrade.copies(p, { 2 })[1]
+		expect(copy.locked).toBeNil()
+		local back = StationProgress.sanitize(p, 0)
+		expect(back.animals[2].locked).toBe(true)
+	end)
+
+	it("commits a side once: the swap, the count and the history, and a second run changes nothing", function()
+		local a, b = save({ "jackal", "lion" }), save({ "rhino" })
+		local side = {
+			id = "t1",
+			with = "B",
+			give = { 1 },
+			get = StationTrade.copies(b, { 1 }),
+			gave = { "Jackal" },
+			got = { "Rhino" },
+		}
+		local _, ok = StationTrade.commit(a, side, DAY * 3)
+		expect(ok).toBe(true)
+		expect(#a.animals).toBe(2)
+		expect(a.trades.count).toBe(1)
+		expect(a.trades.total).toBe(1)
+		expect(a.trades.log[1].id).toBe("t1")
+		local _, again = StationTrade.commit(a, side, DAY * 3)
+		expect(again).toBe(true)
+		expect(a.trades.count).toBe(1)
+		expect(#a.animals).toBe(2)
+		local stored = StationProgress.sanitize(a, 0)
+		expect(StationTrade.has(stored, "t1")).toBe(true)
+	end)
+
+	it("weighs both sides on the fairness meter and warns when one is far behind", function()
+		local p = save({ "jackal", "jackal", "lion" })
+		local mythic = { s = "lion", v = "sun_lion", stats = p.animals[3].stats, rainbow = true }
+		local even, warnEven = StationTrade.balance({ p.animals[1] }, { p.animals[2] })
+		expect(math.abs(even - 0.5) < 0.01).toBeTruthy()
+		expect(warnEven).toBe(false)
+		local tilt, warn = StationTrade.balance({ p.animals[1] }, { mythic :: any })
+		expect(tilt > 0.9).toBeTruthy()
+		expect(warn).toBe(true)
+	end)
+end)

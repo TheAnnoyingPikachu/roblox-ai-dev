@@ -222,6 +222,126 @@ describe("BattleRules.battle", function()
 	end)
 end)
 
+local function foeAt(id: string, mult: number): StationRules.Owned
+	local stats = {} :: any
+	for k, v in (StationConfig.foe(id) :: StationConfig.Foe).stats :: any do
+		stats[k] = math.max(1, math.floor(v * mult))
+	end
+	return { s = id, stats = stats } :: any
+end
+
+describe("BattleRules revive (decisions 0104, 0105)", function()
+	it("lets the Necromancer's power attacks raise each fallen ally once, at REVIVE_PCT of its HP", function()
+		local log = {}
+		BattleRules.battle(three("lion"), { foeAt("shadow_knight", 0.3), foeAt("necromancer", 4) }, log)
+		local raised, seen = {}, false
+		for _, h in log do
+			for _, r in h.revives or {} do
+				seen = true
+				expect(h.side).toBe(2)
+				expect(h.power).toBe(true)
+				raised[r.slot] = (raised[r.slot] or 0) + 1
+				local max = BattleRules.lineup({ foeAt("shadow_knight", 0.3), foeAt("necromancer", 4) }, 2)[1].maxHp
+				expect(r.hp).toBe(math.max(1, math.floor(max * BattleRules.REVIVE_PCT / 100)))
+			end
+		end
+		expect(seen).toBe(true)
+		expect(raised[1]).toBe(1) -- once, and only the knight (the Necromancer never raises itself)
+		expect(raised[2]).toBeNil()
+	end)
+
+	it("raises several fallen allies with one power attack, never more than REVIVE_MAX", function()
+		local wave = {
+			foeAt("shadow_knight", 0.2),
+			foeAt("shadow_knight", 0.2),
+			foeAt("shadow_knight", 0.2),
+			foeAt("shadow_knight", 0.2),
+		}
+		table.insert(wave, foeAt("necromancer", 6))
+		local log = {}
+		BattleRules.battle(three("lion"), wave, log)
+		local most, raised = 0, {}
+		for _, h in log do
+			local n = #(h.revives or {})
+			most = math.max(most, n)
+			for _, r in h.revives or {} do
+				raised[r.slot] = (raised[r.slot] or 0) + 1
+				expect(raised[r.slot]).toBe(1) -- each still only once
+			end
+		end
+		expect(most > 1).toBe(true)
+		expect(most <= BattleRules.REVIVE_MAX).toBe(true)
+	end)
+
+	it("never raises anyone for a team of animals", function()
+		local log = {}
+		BattleRules.battle(three("lion"), three("jackal"), log)
+		for _, h in log do
+			expect(h.revives).toBeNil()
+		end
+	end)
+end)
+
+describe("BattleRules sweep and the Battle Priest (decision 0105)", function()
+	it("gives the dragons and the Siege Golem a power attack that strikes every animal standing", function()
+		for _, id in { "siege_golem", "dark_drake", "shadow_dragon", "ancient_alpha_dragon" } do
+			expect((StationConfig.foe(id) :: StationConfig.Foe).ability).toBe("sweep")
+		end
+		local log = {}
+		BattleRules.battle(three("lion"), { foeAt("dark_drake", 2) }, log)
+		local hp, seen = {}, false
+		for slot, f in BattleRules.lineup(three("lion"), 1) do
+			hp[slot] = f.maxHp
+		end
+		for _, h in log do
+			if h.side == 2 then
+				local up = 0
+				for _, v in hp do
+					up += if v > 0 then 1 else 0
+				end
+				-- a power attack strikes every lion still up, a normal attack one
+				expect(1 + #(h.also or {})).toBe(if h.power then up else 1)
+				seen = seen or (h.power and up > 1)
+				hp[h.tslot] = h.hp
+				for _, x in h.also or {} do
+					hp[x.slot] = x.hp
+				end
+			end
+		end
+		expect(seen).toBe(true)
+	end)
+
+	it("keeps every other foe's power attack on one animal", function()
+		local log = {}
+		BattleRules.battle(three("lion"), { foeAt("ogre_enforcer", 1), foeAt("darkcaster", 1) }, log)
+		for _, h in log do
+			if h.side == 2 then
+				expect(h.also).toBeNil()
+			end
+		end
+	end)
+
+	it("heals the Battle Priest's whole side with its power attack", function()
+		local log = {}
+		BattleRules.battle(
+			three("lion"),
+			{ foeAt("shadow_knight", 1), foeAt("shadow_knight", 1), foeAt("battle_priest", 3) },
+			log
+		)
+		local seen = false
+		for _, h in log do
+			if h.side == 2 and h.slot == 3 and h.power then
+				seen = true
+				expect(h.heals == nil).toBe(false)
+				expect(h.heal).toBeNil()
+			elseif h.side == 2 and h.slot == 3 then
+				expect(h.heals).toBeNil() -- its normal attacks heal the one most hurt
+			end
+		end
+		expect(seen).toBe(true)
+	end)
+end)
+
 describe("BattleRules.battle log", function()
 	local function team(ids: { string }): { StationRules.Owned }
 		local out = {}
@@ -271,8 +391,16 @@ describe("BattleRules.battle log", function()
 			expect(hp[e.tside][e.tslot] > 0).toBeTruthy()
 			hp[e.tside][e.tslot] -= e.dmg
 			expect(hp[e.tside][e.tslot]).toBe(e.hp)
+			for _, x in e.also or {} do -- splash and crowd power attacks (decision 0101)
+				expect(hp[e.tside][x.slot] > 0).toBeTruthy()
+				hp[e.tside][x.slot] -= x.dmg
+				expect(hp[e.tside][x.slot]).toBe(x.hp)
+			end
 			if e.heal then
 				hp[e.side][e.heal.slot] = e.heal.hp
+			end
+			for _, x in e.heals or {} do
+				hp[e.side][x.slot] = x.hp
 			end
 		end
 		for _, h in hp[2] do
@@ -370,5 +498,142 @@ describe("BattleRules.battle taps (decision 0092)", function()
 				expect(e.energy < 1).toBeTruthy()
 			end
 		end
+	end)
+end)
+
+describe("BattleRules power scores (decision 0096)", function()
+	local LevelRules = require("../src/shared/LevelRules")
+	it("grows with every stat, and a side's power is its fighters' with the group bonuses", function()
+		local base = BattleRules.powerOf(custom("lion"))
+		for _, stat in StationConfig.STATS do
+			expect(BattleRules.powerOf(custom("lion", { [stat] = 80 })) > base).toBeTruthy()
+		end
+		local pack = { owned("jackal"), owned("jackal"), owned("jackal") }
+		local alone = 0
+		for _, a in pack do
+			alone += BattleRules.powerOf(a)
+		end
+		expect(BattleRules.teamPower(pack) > alone).toBeTruthy() -- the pack bonus
+	end)
+
+	it("picks the winner of nearly every wave fight", function()
+		local agree, total = 0, 0
+		for _, ids in { { "jackal", "tortoise", "meerkat" }, { "lion", "rhino", "meerkat" } } do
+			for _, seconds in { 0, 3600 * 24 * 5 } do
+				local team = {}
+				for _, id in ids do
+					local a = owned(id)
+					for _, st in StationConfig.STATIONS do
+						a = StationRules.train(a, st.id, seconds)
+					end
+					table.insert(team, a)
+				end
+				local ours = BattleRules.teamPower(team, 1)
+				for wave = 1, 80 do
+					total += 1
+					if (ours >= LevelRules.power(wave)) == LevelRules.fight(team, wave, {}) then
+						agree += 1
+					end
+				end
+			end
+		end
+		expect(agree / total >= 0.95).toBeTruthy()
+	end)
+end)
+
+describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)", function()
+	local one = { owned("lion"), owned("rhino"), owned("flamingo") }
+	local two = { owned("rhino"), owned("rhino"), owned("rhino") }
+	local function filled(log: { BattleRules.Hit }, slot: number): number
+		for _, e in log do
+			if e.side == 1 and e.slot == slot and not e.power and e.energy >= 1 then
+				return e.t
+			end
+		end
+		error("never filled")
+	end
+	local ready = { energy = 0.95 } -- meters fill on the first attack
+	local function tapped(log: { BattleRules.Hit }): BattleRules.Hit
+		for _, e in log do
+			if e.tap then
+				return e
+			end
+		end
+		error("no tap")
+	end
+
+	it("makes a tap PERFECT_AT after the meter filled a Perfect, PERFECT times as strong", function()
+		local solo, foe = { owned("lion") }, { owned("rhino") } -- alone, so no combo changes the numbers
+		local base = {}
+		BattleRules.battle(solo, foe, base, {}, ready)
+		local at = filled(base, 1)
+		local plain, perfect = {}, {}
+		BattleRules.battle(solo, foe, plain, { { slot = 1, t = at + 1 } }, ready)
+		BattleRules.battle(solo, foe, perfect, { { slot = 1, t = at + BattleRules.PERFECT_AT } }, ready)
+		expect(tapped(plain).perfect).toBeNil()
+		expect(tapped(perfect).perfect).toBe(true)
+		expect(tapped(perfect).dmg > tapped(plain).dmg * 1.4).toBeTruthy()
+		local late = {}
+		BattleRules.battle(
+			solo,
+			foe,
+			late,
+			{ { slot = 1, t = at + BattleRules.PERFECT_AT + BattleRules.PERFECT_LATE + 0.05 } },
+			ready
+		)
+		expect(tapped(late).perfect).toBeNil()
+	end)
+
+	it("chains power attacks by different animals within COMBO_SECONDS into a combo", function()
+		local base = {}
+		BattleRules.battle(one, two, base, {}, ready)
+		local t = math.max(filled(base, 1), filled(base, 3)) + 0.2
+		local log = {}
+		BattleRules.battle(one, two, log, { { slot = 1, t = t }, { slot = 3, t = t + 1 } }, ready)
+		local combos = {}
+		for _, e in log do
+			if e.tap then
+				table.insert(combos, e.combo or 1)
+			end
+		end
+		expect(combos[2]).toBe(math.min(BattleRules.COMBO_MAX, combos[1] + 1))
+	end)
+
+	it("halves enemy power attacks while the shield is up, with a cooldown between shields", function()
+		expect(#BattleRules.shields({ { slot = 0, t = 1 }, { slot = 0, t = 3 }, { slot = 0, t = 7.5 } })).toBe(2)
+		local tanks = { owned("tortoise"), owned("tortoise"), owned("meerkat") } -- a long fight with enemy power attacks
+		local fast = { owned("cheetah"), owned("cheetah"), owned("cheetah") }
+		local base = {}
+		BattleRules.battle(tanks, fast, base, {})
+		local hit: BattleRules.Hit? = nil
+		for _, e in base do
+			if e.side == 2 and e.power then
+				hit = e
+				break
+			end
+		end
+		local h = hit :: BattleRules.Hit
+		local log = {}
+		BattleRules.battle(tanks, fast, log, { { slot = 0, t = h.t - 0.5 } })
+		for _, e in log do
+			if e.t == h.t and e.side == 2 and e.slot == h.slot then
+				expect(e.shielded).toBe(true)
+				expect(e.dmg <= math.ceil(h.dmg / 2) + 1).toBeTruthy()
+			end
+		end
+	end)
+
+	it("starts side 1 hurt, knocked out or stronger, and reports its HP at the end", function()
+		local won, _, _, ends = BattleRules.battle(one, two, nil, {})
+		expect(won).toBe(true)
+		expect(#ends).toBe(3)
+		for _, share in ends do
+			expect(share >= 0 and share <= 1).toBeTruthy()
+		end
+		local lost = BattleRules.battle(one, two, nil, {}, { hp = { 0, 0, 0 } })
+		expect(lost).toBe(false)
+		local _, _, slow = BattleRules.battle(one, two, nil, {})
+		local _, _, fast = BattleRules.battle(one, two, nil, {}, { dmg = 2 })
+		expect(fast < slow).toBeTruthy()
 	end)
 end)

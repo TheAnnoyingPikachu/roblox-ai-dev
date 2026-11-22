@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-100",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0094: the weekly and monthly planners, the daily wheel and hatching and training boosts.",
+  "inputs": [
+    "docs/decisions/0094-animal-stations-planners-and-wheel.md"
+  ],
+  "dependencies": [
+    "STATION-098"
+  ],
+  "files": [
+    "src/shared/StationRewards.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/StationRewards.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0094-animal-stations-planners-and-wheel.md",
+    "studio/tasks/STATION-100.json"
+  ],
+  "tests": [
+    "StationRewards.spec.luau",
+    "StationProgress.spec.luau",
+    "SaveStore.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "One weekly reward per day logged, claimed in order, starting again on Monday",
+    "Monthly milestones by days logged, day 28 the month's rainbow animal",
+    "One free wheel spin a day with the odds shown; the server picks the prize",
+    "Hatching and training boosts make eggs hatch and animals train twice as fast while they run"
+  ],
+  "verification": "Lune 739/739 (14 new), selene clean. Studio, local build, stamp `dev`, 2026-11-19: Gifts opened from the dock; weekly day 1 claimed (200 coins), a second claim refused (`claimed`); monthly day 1 claimed, day 3 refused (`not_yet`); the wheel spun to 2 wave pays (80 coins) and the next spin waits for tomorrow.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Save schema change: new fields default empty on load, nothing is migrated. Balance hypotheses are in decision 0094."
+}

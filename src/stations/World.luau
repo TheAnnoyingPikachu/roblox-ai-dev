@@ -19,6 +19,10 @@ local Arena = require(script.Parent:WaitForChild("Arena"))
 local Creatures = require(script.Parent:WaitForChild("Creatures"))
 local Valley = require(script.Parent:WaitForChild("Valley"))
 local ValleyMap = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ValleyMap"))
+local StationRewards =
+	require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("StationRewards"))
+local StationConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("StationConfig"))
+local StationAssets = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("StationAssets"))
 local part, pillar, label = Props.part, Props.pillar, Props.label
 
 local World = {}
@@ -384,8 +388,20 @@ local function terrain()
 		Valley.den(t, frame)
 		Valley.tops(t, frame)
 		calm(t, frame.Position, ValleyMap.HOME) -- the whole homestead: no blades up through a floor or path
+		-- and the road up to it from the hub (its pass is straight along an axis, so one box covers it)
+		local a = rad(RANCH_ANGLE[i])
+		local dir, side = Vector3.new(math.cos(a), 0, math.sin(a)), Vector3.new(-math.sin(a), 0, math.cos(a))
+		local from = dir * (World.HUB_RADIUS - 8) - side * 13 - Vector3.new(0, 10, 0)
+		local to = dir * (World.RANCH_DIST - World.RANCH_GATE + 4) + side * 13 + Vector3.new(0, World.RANCH_Y + 8, 0)
+		local region = Region3.new(from:Min(to), from:Max(to)):ExpandToGrid(4)
+		t:ReplaceMaterial(region, 4, M.Grass, M.LeafyGrass)
 	end
 	calm(t, Vector3.zero, World.PLAZA + 6) -- the hub's plaza floor
+	-- the wave arena (SHANNON: "get rid of the grass in the arena"): no blades up through its floor or the
+	-- way in, so the fight is clear to see
+	local near, far =
+		Vector3.new(-(ARENA_HALF + 12), -10, -(ARENA_FAR + 16)), Vector3.new(ARENA_HALF + 12, 4, -(ARENA_NEAR - 40))
+	t:ReplaceMaterial(Region3.new(near, far):ExpandToGrid(4), 4, M.Grass, M.LeafyGrass)
 end
 
 -- Plaza ----------------------------------------------------------------------------------------------
@@ -396,20 +412,32 @@ end
 -- tools/blender/stations/scenes/hub_commons.py, in its own numbers (x east, y north, in studs from the
 -- plaza's middle): change the two together.
 local Y0 = 0.25 -- the plaza's ground
-local PAVING = 0.3 -- and how far above it the paving's top is
+local GROUND = 0.05 -- and how far above it the lawn's top is (watering_hole.py GROUND)
 local CENTRE =
-	{ "hub_floor", "hub_fire", "hub_market", "hub_cafe", "hub_stage", "hub_green", "hub_lights", "hub_signs" }
+	{ "hub_ground", "hub_pond", "hub_trading", "hub_gifts", "hub_fame", "hub_board", "hub_camp", "hub_lights" }
+-- watering_hole.py's numbers: each stop's (radius, angle), the statue's rock, the acacia, the ring path
+local STOPS = {
+	trading = { 38, 45 },
+	gifts = { 38, 135 },
+	camp = { 38, 225 },
+	fame = { 38, 315 },
+	board = { 37, 258 },
+}
+local ROCK = { 0, -12.5, 3.6, 3.52 } -- middle x, y; radius; the top the statue stands on
+local ACACIA = { -10.5, 10.5 }
+local RING_OUT = 30
+local FAME = 4
 -- who stands about: species, variant, where, and its yaw there
 local VISITORS: { { any } } = {
-	{ "lion", nil, -11.5, 0, 0, 90 }, -- by the fire
-	{ "cheetah", nil, 0.5, -21.5, 0, 180 },
-	{ "jackal", nil, -14, -27, 0, 300 }, -- at the market
-	{ "tortoise", nil, -23, 9, 0, 100 },
-	{ "flamingo", nil, 30.5, -5, 0, 200 }, -- at the pond
-	{ "rhino", nil, 9.5, -29, 0, 0 }, -- at the trough
-	{ "elephant", nil, -6, 37.5, 0, 100 }, -- coming in from the arena road
-	{ "meerkat", nil, 30.7, 28.6, 1.6, 315 }, -- on the stage
-	{ "meerkat", "star_meerkat", 28.9, 31.8, 1.6, 335 },
+	{ "flamingo", nil, 3, 5, 0.1, 200 }, -- in the shallows
+	{ "elephant", nil, 16.5, 3, 0, 270 }, -- drinking on the east bank
+	{ "giraffe", nil, -15, 14, 0, 120 }, -- under the acacia
+	{ "rhino", nil, -16.5, -1, 0, 80 }, -- on the west bank
+	{ "tortoise", nil, 8, -10, 0, 160 },
+	{ "meerkat", nil, -23.5, -31, 0, 40 }, -- at the campfire
+	{ "meerkat", "star_meerkat", -31, -23.5, 0, 60 },
+	{ "jackal", nil, 21, 33.5, 0, 220 }, -- by the trading post
+	{ "cheetah", nil, 26, -6, 0.1, 10 }, -- on the ring path
 }
 
 -- A point on the plaza: `x` studs east and `y` north of its middle, `up` above its ground.
@@ -434,15 +462,129 @@ local function solid(p: Part): Part
 	return p
 end
 
-local function plaza(root: Instance, rng: Random)
+-- A stop's middle (x, y) and the yaw that turns its front (local -y) to the plaza's middle.
+local function stopAt(name: string): (number, number, number)
+	local s = STOPS[name]
+	return s[1] * math.cos(rad(s[2])), s[1] * math.sin(rad(s[2])), s[2] - 90
+end
+
+local statueFolder: Instance? = nil
+local statueMonth = -1
+local fameFolder: Instance? = nil
+local boardText: TextLabel? = nil
+
+-- The statue on the rock by the pond: the month's rainbow animal (StationRewards.rainbowOf), twice size,
+-- facing the south road where players come in. Stood again when the month changes.
+local function standStatue()
+	local month = StationRewards.monthOf(os.time())
+	if month == statueMonth or statueFolder == nil then
+		return
+	end
+	statueMonth = month
+	local f = statueFolder :: Instance
+	f:ClearAllChildren()
+	local s = StationRewards.rainbowOf(month)
+	local p = onPlaza(ROCK[1], ROCK[2], ROCK[4])
+	local model = Creatures.spawn(
+		Creatures.asset(s, nil),
+		CFrame.lookAt(p, p + Vector3.new(0, 0, 1)),
+		f,
+		{ model = Creatures.asset(s, nil), size = 2 },
+		true
+	)
+	if model then
+		Creatures.describe(model, s, nil)
+		model:SetAttribute("Statue", true)
+	end
+	local sp = StationConfig.species(s)
+	if boardText then
+		(boardText :: TextLabel).Text = table.concat({
+			"RAINBOW OF THE MONTH",
+			`The Rainbow {if sp then sp.name else s}!`,
+			"Log in on 28 days this month to win it (Gifts, This month).",
+			"",
+			"DAILY WHEEL: one free spin a day.",
+			"1 in 400 wins a Rainbow mythic.",
+			"",
+			"WAVES: every 10th wave is a boss.",
+		}, "\n")
+	end
+end
+
+-- The Hall of Fame (decision 0095): the best animals in this server on its pedestals, each with its
+-- owner's name. `best` is a list of { s, v, rainbow, owner }, best first (StationsServer chooses).
+function World.setFame(best: { { s: string, v: string?, rainbow: boolean?, owner: string } })
+	local f = fameFolder
+	if f == nil then
+		return
+	end
+	f:ClearAllChildren()
+	local x0, y0, yaw = stopAt("fame")
+	local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
+	for i = 1, math.min(FAME, #best) do
+		local a = best[i]
+		local lx = (i - (FAME + 1) / 2) * 4.4
+		local ly = 0.8 + math.abs(i - (FAME + 1) / 2) * 0.8
+		local x, y = x0 + lx * c - ly * s, y0 + lx * s + ly * c
+		local p = onPlaza(x, y, GROUND + 2)
+		task.spawn(function()
+			local asset = Creatures.asset(a.s, a.v)
+			local size = StationAssets[asset] and StationAssets[asset].size or { 4, 4, 4 }
+			local fit = math.min(1, 3.4 / math.max(size[1], size[3], 0.1)) -- small enough for its pedestal
+			local model = Creatures.spawn(
+				asset,
+				CFrame.lookAt(p, p + Vector3.new(-x, 0, y).Unit),
+				f,
+				{ model = asset, size = fit },
+				a.rainbow
+			)
+			if model then
+				Creatures.describe(model, a.s, a.v)
+			end
+		end)
+		local plate = part(
+			f,
+			Vector3.new(1.6, 0.5, 0.25),
+			CFrame.lookAt(onPlaza(x, y, GROUND + 0.9), onPlaza(0, 0, GROUND + 0.9)) * CFrame.new(0, 0, -1.7),
+			WHITE
+		)
+		plate.Transparency, plate.CanCollide = 1, false
+		local gui = Instance.new("BillboardGui")
+		gui.Size, gui.StudsOffset, gui.MaxDistance = UDim2.fromOffset(160, 30), Vector3.new(0, 0.6, 0), 60
+		local t = Instance.new("TextLabel")
+		t.Size, t.BackgroundTransparency, t.Font, t.TextScaled = UDim2.fromScale(1, 1), 1, Enum.Font.FredokaOne, true
+		t.TextColor3, t.TextStrokeTransparency, t.Text = Color3.fromRGB(255, 225, 120), 0.3, a.owner
+		t.Parent = gui
+		gui.Parent = plate
+	end
+end
+
+-- A prompt at a stop's counter, tagged so the HUD opens its menu.
+local function counterPrompt(f: Instance, name: string, tag: string, action: string, object: string)
+	local x, y, yaw = stopAt(name)
+	local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
+	local lx, ly = 0, -3.6
+	local at = onPlaza(x + lx * c - ly * s, y + lx * s + ly * c, GROUND + 1.5)
+	local spot = part(f, Vector3.new(4, 3, 1), CFrame.new(at), WHITE)
+	spot.Transparency, spot.CanCollide, spot.CastShadow, spot.Name = 1, false, false, tag
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.ActionText, prompt.ObjectText = action, object
+	prompt.HoldDuration, prompt.MaxActivationDistance, prompt.RequiresLineOfSight = 0.2, 12, false
+	prompt.Parent = spot
+	CollectionService:AddTag(prompt, tag)
+end
+
+local function plaza(root: Instance, _rng: Random)
 	local f = folder(root, "Plaza")
-	-- a plain floor under the paving: what feet stand on, and what shows if a model does not load
-	disc(f, Vector3.new(0, Y0 + PAVING - 0.02, 0), World.PLAZA * 2 + 1, 0.8, Color3.fromRGB(112, 106, 100), M.Concrete)
+	-- an unseen floor under the lawn: what feet stand on
+	local floor =
+		disc(f, Vector3.new(0, Y0 + GROUND - 0.4, 0), World.PLAZA * 2 + 1, 0.8, Color3.fromRGB(128, 184, 86), M.Grass)
+	floor.Transparency = 1
 	for _, name in CENTRE do
 		task.spawn(Creatures.still, name, CFrame.new(0, Y0, 0) * CFrame.Angles(0, math.pi, 0), 1, f) -- each has to load
 	end
 	-- An unseen block of a piece that stands on (px, py) turned `yaw`: `w` by `d` and `h` tall, its
-	-- middle at (x, y) of the piece, its foot `from` above the paving.
+	-- middle at (x, y) of the piece, its foot `from` above the lawn.
 	local function block(
 		px: number,
 		py: number,
@@ -455,110 +597,102 @@ local function plaza(root: Instance, rng: Random)
 		from: number?
 	)
 		local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
-		local where = onPlaza(px + x * c - y * s, py + x * s + y * c, PAVING + (from or 0) + h / 2)
+		local where = onPlaza(px + x * c - y * s, py + x * s + y * c, GROUND + (from or 0) + h / 2)
 		solid(part(f, Vector3.new(w, h, d), CFrame.new(where) * CFrame.Angles(0, rad(yaw), 0), WHITE))
 	end
 	local function column(x: number, y: number, radius: number, h: number, from: number?)
-		solid(pillar(f, onPlaza(x, y, PAVING + (from or 0)), h, radius, WHITE))
+		solid(pillar(f, onPlaza(x, y, GROUND + (from or 0)), h, radius, WHITE))
 	end
 
-	-- the fire and its two rows of benches
-	column(0, 0, 4.2, 1)
-	for q = 0, 3 do
-		for k = 0, 3 do
-			local front, back = q * 90 + 14 + (k + 0.5) * 15.5, q * 90 + 12 + (k + 0.5) * 16.5
-			local function arc(r: number, deg: number, w: number, d: number, h: number)
-				solid(
-					part(
-						f,
-						Vector3.new(w, h, d),
-						CFrame.lookAt(around(r, deg, PAVING + h / 2), around(0, deg, PAVING + h / 2)),
-						WHITE
-					)
-				)
-			end
-			arc(9, front, 2.7, 1.6, 1.15)
-			arc(10.9, back, 3.4, 1.8, 0.85)
-			arc(12.85, back, 4, 1.9, 3.3)
+	-- the statue's rock and the acacia's trunk
+	column(ROCK[1], ROCK[2], ROCK[3] + 0.9, ROCK[4])
+	column(ACACIA[1], ACACIA[2], 1.1, 9)
+	-- the two stalls: floor, counter, back wall, posts
+	for _, name in { "trading", "gifts" } do
+		local x, y, yaw = stopAt(name)
+		block(x, y, yaw, 0, 0, 9, 6, 0.35)
+		block(x, y, yaw, 0, -2, 8.6, 1.4, 3.05)
+		block(x, y, yaw, 0, 2.8, 8.6, 0.4, 5.95)
+	end
+	-- the Hall of Fame's pedestals and its arch's two columns
+	do
+		local x0, y0, yaw = stopAt("fame")
+		local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
+		for i = 1, FAME do
+			local lx = (i - (FAME + 1) / 2) * 4.4
+			local ly = 0.8 + math.abs(i - (FAME + 1) / 2) * 0.8
+			column(x0 + lx * c - ly * s, y0 + lx * s + ly * c, 1.5, 2)
+		end
+		for _, lx in { -9.2, 9.2 } do
+			column(x0 + lx * c - 1.4 * s, y0 + lx * s + 1.4 * c, 0.5, 7)
+		end
+	end
+	-- the notice board, and the writing on it
+	do
+		local x, y, yaw = stopAt("board")
+		block(x, y, yaw, 0, 0, 7.4, 0.4, 4.4, 1.6)
+		for _, lx in { -3.4, 3.4 } do
+			block(x, y, yaw, lx, 0, 0.6, 0.6, 7.2)
+		end
+		local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
+		local at = onPlaza(x - -0.32 * s, y + -0.32 * c, GROUND + 3.8)
+		local paper = part(f, Vector3.new(6.8, 3.8, 0.1), CFrame.lookAt(at, onPlaza(0, 0, GROUND + 3.8)), WHITE)
+		paper.Transparency, paper.CanCollide, paper.CastShadow, paper.Name = 1, false, false, "NoticePaper"
+		local gui = Instance.new("SurfaceGui")
+		gui.Face, gui.PixelsPerStud, gui.LightInfluence = Enum.NormalId.Front, 40, 0.3
+		local t = Instance.new("TextLabel")
+		t.Size, t.BackgroundTransparency = UDim2.fromScale(1, 1), 1
+		t.Font, t.TextScaled, t.TextColor3 = Enum.Font.FredokaOne, true, Color3.fromRGB(58, 36, 18)
+		local pad = Instance.new("UIPadding")
+		pad.PaddingTop, pad.PaddingBottom, pad.PaddingLeft, pad.PaddingRight =
+			UDim.new(0, 12), UDim.new(0, 12), UDim.new(0, 16), UDim.new(0, 16)
+		pad.Parent = t
+		t.Parent = gui
+		gui.Parent = paper
+		boardText = t
+	end
+	-- the campfire's stone ring and its four logs
+	do
+		local x, y = stopAt("camp")
+		column(x, y, 3, 0.9)
+		for i = 0, 3 do
+			local a = rad(i * 90 + 45)
+			local cx, cy = x + math.cos(a) * 6.2, y + math.sin(a) * 6.2
+			block(cx, cy, i * 90 + 45, 0, 0, 1.2, 4.8, 1.2)
+		end
+	end
+	-- the lamps round the ring path (as watering_hole.py `lights`)
+	local taken = { 0, 90, 180, 270 }
+	for _, st in STOPS do
+		table.insert(taken, st[2])
+	end
+	for i = 0, 15 do
+		local a = i * 22.5 + 11.25
+		local near = 360
+		for _, t in taken do
+			near = math.min(near, math.abs((a - t + 180) % 360 - 180))
+		end
+		if near >= 9 then
+			solid(pillar(f, around(RING_OUT + 1.6, a, GROUND), 6.5, 0.3, WHITE))
 		end
 	end
 
-	-- the market: five stalls, and the egg seller's cart with the Golden Egg on it
-	for _, a in { 193, 208, 223, 238, 253 } do
-		solid(
-			part(
-				f,
-				Vector3.new(8, 3.3, 5),
-				CFrame.lookAt(around(38.5, a, PAVING + 1.65), around(0, a, PAVING + 1.65)),
-				WHITE
-			)
-		)
-	end
-	block(-20, -17, 215, 0, 0, 7, 4.2, 2.8)
-	local h = folder(f, "Hatchery")
-	local great = eggModel(h, standing(-20, -17, PAVING + 2.5, 35), 4.5, "golden", rng)
-	great.Name = "GreatEgg"
-	glow(great, Color3.fromRGB(255, 225, 160), 14, 0.7)
-	local sparkle = Instance.new("ParticleEmitter")
-	sparkle.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-	sparkle.Rate, sparkle.Lifetime = 4, NumberRange.new(1.5, 2.5)
-	sparkle.Speed = NumberRange.new(1, 2)
-	sparkle.SpreadAngle = Vector2.new(180, 180)
-	sparkle.Size = NumberSequence.new(0.4)
-	sparkle.Color = ColorSequence.new(Color3.fromRGB(255, 240, 180))
-	sparkle.LightEmission = 1
-	sparkle.Parent = great
-	for i, kind in { "meadow", "wild", "safari" } do
-		local x, y = -2.4 + (i - 1) * 0.3, -1.4 + (i - 1) * 1.4 -- on the cart, which is turned 215 degrees
-		local c, s = math.cos(rad(215)), math.sin(rad(215))
-		eggModel(h, standing(-20 + x * c - y * s, -17 + x * s + y * c, PAVING + 2.2, 35), 1.65, kind, rng)
-	end
+	-- the prompts at the two stalls
+	counterPrompt(f, "trading", "HubTrade", "Trade", "Trading Post")
+	counterPrompt(f, "gifts", "HubGifts", "Open", "Daily Gifts")
 
-	-- the cafe: its floor, counter and back wall, four tables
-	block(-30, 30, 45, 0, 0, 15, 9, 0.4)
-	block(-30, 30, 45, 0, -2.6, 13, 1.6, 3.2, 0.4)
-	block(-30, 30, 45, 0, 4, 14.6, 0.5, 6.8, 0.4)
-	for _, t in { { -21, 17.5 }, { -14.5, 24.5 }, { -17.5, 34.5 }, { -36, 16 } } do
-		column(t[1], t[2], 1.7, 2.5)
-	end
-
-	-- the stage: its platform, steps and back, three rows of benches
-	block(30, 30, 135, 0, 0, 19, 10, 1.6)
-	block(30, 30, 135, 0, -4.4, 18.4, 0.5, 8.6, 1.6)
-	for i = 0, 2 do
-		block(30, 30, 135, 0, 5.5 + i, 6, 1, 1.2 - 0.4 * i)
-		for _, dx in { -5.6, 0, 5.6 } do
-			block(30, 30, 135, dx, 11.5 + i * 3.6, 4.4, 1.8, 1.3)
+	-- the statue, the Hall of Fame's animals (StationsServer fills it), and the animals that stand about
+	statueFolder = folder(f, "Statue")
+	fameFolder = folder(f, "HallOfFame")
+	task.spawn(function()
+		while true do
+			standStatue()
+			task.wait(600)
 		end
-	end
-
-	-- the green: the tree's mound, bench and trunk, the pier, the trough, two picnic tables
-	column(25, -25, 11, 0.5)
-	column(25, -25, 6.2, 1.2, 0.5)
-	column(25, -25, 2.3, 12, 1.7)
-	block(31.9, -10.5, 0, 0, 0, 7, 3, 0.9)
-	block(9.5, -37.5, 8, 0, 0, 9, 2.6, 1.6)
-	block(12, -14, 20, 0, 0, 5.4, 4.8, 2.5)
-	block(38, -28, -30, 0, 0, 5.4, 4.8, 2.5)
-
-	-- poles, lamps and planters; finger posts, the notice board, the arch's two trunks
-	for i = 0, 7 do
-		local a = 22.5 + i * 45
-		solid(pillar(f, around(18.2, a, PAVING), 9.5, 0.3, WHITE))
-		solid(pillar(f, around(45.4, a, PAVING), 7, 0.3, WHITE))
-		solid(pillar(f, around(44, a + 9, PAVING), 1.3, 1.3, WHITE))
-	end
-	for _, a in { 13, 103, 193, 283 } do
-		solid(pillar(f, around(44.5, a, PAVING), 7.6, 0.3, WHITE))
-	end
-	block(-41.6, 5.8, -82, 0, 0, 6.6, 0.5, 6)
-	column(-9.4, -50.5, 0.9, 10, -PAVING)
-	column(9.4, -50.5, 0.9, 10, -PAVING)
-
-	-- the animals that stand about
+	end)
 	for _, v in VISITORS do
 		task.spawn(function()
-			local model = Creatures.spawn(Creatures.asset(v[1], v[2]), standing(v[3], v[4], PAVING + v[5], v[6]), f)
+			local model = Creatures.spawn(Creatures.asset(v[1], v[2]), standing(v[3], v[4], GROUND + v[5], v[6]), f)
 			if model then
 				Creatures.describe(model, v[1], v[2])
 			end

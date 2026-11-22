@@ -18,7 +18,10 @@ local STEP = "StationsArenaCamera"
 local FOV = 55
 local PITCH = math.rad(31) -- high enough to look over the arena walls and the gallows
 local CUT_IN = 0.62 -- how far towards the target a cut-in takes the camera
-local LOWER = 0.28 -- of the radius: aim low so the fight sits above the result panel
+-- Behind the team (decision 0097): low and only a little to the side, so the team fills the front; the
+-- fight opens with a sweep in from wide and high over ENTRANCE seconds.
+local YAW, LOW_PITCH, ENTRANCE = math.rad(16), math.rad(22), 2.6
+local LOWER = 0.36 -- of the radius: aim low so the fight sits above the panel along the bottom
 local active = false
 local started = 0
 local normalFov = 70
@@ -31,8 +34,13 @@ local function aim(camera: Camera): CFrame?
 	end
 	local size = camera.ViewportSize
 	local away = UiLayout.fightDistance(radius, FOV, size.X / math.max(1, size.Y))
-	local yaw = math.rad(34) + math.sin((os.clock() - started) * 0.3) * math.rad(6) -- from the dais side
-	local dir = Vector3.new(math.sin(yaw) * math.cos(PITCH), math.sin(PITCH), math.cos(yaw) * math.cos(PITCH))
+	local age = os.clock() - started
+	local u = math.clamp(age / ENTRANCE, 0, 1)
+	local sweep = 1 - u * u * (3 - 2 * u) -- 1 at the start of the entrance, 0 once it is done
+	local yaw = YAW + math.sin(age * 0.3) * math.rad(4) + sweep * math.rad(70)
+	local pitch = LOW_PITCH + sweep * (PITCH - LOW_PITCH + math.rad(8))
+	away *= 1 + sweep * 0.7
+	local dir = Vector3.new(math.sin(yaw) * math.cos(pitch), math.sin(pitch), math.cos(yaw) * math.cos(pitch))
 	local look = focus - Vector3.new(0, radius * LOWER, 0)
 	return CFrame.lookAt(look + dir * away, look)
 end
@@ -83,7 +91,13 @@ local function start()
 			want = want:Lerp(CFrame.lookAt(want.Position:Lerp(target, CUT_IN), target), cut)
 		end
 		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * (2.5 + 7 * cut)))
-		cam.CFrame = current :: CFrame
+		-- a jolt shakes it for a moment: a Perfect, a combo, a boss landing (the HUD sets these)
+		local jolt, joltAt = player:GetAttribute("CamShake"), player:GetAttribute("CamShakeAt")
+		local amount = if type(jolt) == "number" and type(joltAt) == "number"
+			then FightFx.shake(os.clock() - joltAt, jolt)
+			else 0
+		local t = os.clock() * 40
+		cam.CFrame = (current :: CFrame) * CFrame.new(math.sin(t) * amount, math.cos(t * 1.3) * amount, 0)
 		-- a hit punches the view in for a moment (Creatures.client sets these on this player only)
 		local strength, at = player:GetAttribute("CamPunch"), player:GetAttribute("CamPunchAt")
 		local punch = if type(strength) == "number" and type(at) == "number"

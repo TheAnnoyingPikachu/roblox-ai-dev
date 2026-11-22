@@ -23,6 +23,18 @@ describe("FightFx.lead and flightTime", function()
 	end)
 end)
 
+describe("FightFx.BOLTS", function()
+	it("names only mages, each with a colour", function()
+		for asset, rgb in FightFx.BOLTS do
+			expect(string.find(asset, "^foe_mage") ~= nil).toBe(true)
+			expect(#rgb).toBe(3)
+			for _, c in rgb do
+				expect(c >= 0 and c <= 255).toBe(true)
+			end
+		end
+	end)
+end)
+
 describe("FightFx rhythm", function()
 	it("holds the killing blow for 0.2 s", function()
 		expect(FightFx.hitStop(0, true)).toBe(0.2)
@@ -73,5 +85,16 @@ describe("FightFx hit feel", function()
 		expect(FightFx.punch(0.2, 1) < FightFx.punch(0.1, 1)).toBeTruthy()
 		expect(FightFx.punch(FightFx.PUNCH_SECONDS + 0.01, 1)).toBe(0)
 		expect(FightFx.punch(-1, 1)).toBe(0)
+	end)
+
+	it("holds a knockout longer than a power hit and shorter than the killing blow (decision 0097)", function()
+		expect(FightFx.hitStop(1, false, true) > FightFx.hitStop(1)).toBeTruthy()
+		expect(FightFx.hitStop(1, false, true) < FightFx.hitStop(0, true)).toBeTruthy()
+	end)
+
+	it("shakes hardest at once and fades to nothing, and taps land after any wind-up", function()
+		expect(FightFx.shake(0, 1) > FightFx.shake(0.2, 1)).toBeTruthy()
+		expect(FightFx.shake(FightFx.SHAKE_SECONDS, 1)).toBe(0)
+		expect(FightFx.TAP_AHEAD > FightFx.POWER_LEAD).toBeTruthy()
 	end)
 end)

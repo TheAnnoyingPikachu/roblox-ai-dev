@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-101",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0095: the hub as a watering hole, with the month's rainbow statue, a Trading Post, a Gift Stand, a Hall of Fame and a notice board.",
+  "inputs": [
+    "docs/decisions/0095-animal-stations-watering-hole-hub.md"
+  ],
+  "dependencies": [
+    "STATION-100"
+  ],
+  "files": [
+    "tools/blender/stations/scenes/watering_hole.py",
+    "tools/blender/stations/assets/hub.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/hub_*",
+    "src/shared/StationAssets.luau",
+    "src/stations/World.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0095-animal-stations-watering-hole-hub.md",
+    "studio/tasks/STATION-101.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The hub is the watering hole: pond, acacia, ring path and five stops",
+    "The month's rainbow animal stands as a statue on the rock by the pond",
+    "The Trading Post and the Gift Stand open their menus",
+    "The Hall of Fame shows this server's best animals with their owners' names"
+  ],
+  "verification": "Lune 739/739, selene clean. Upload-assets runs 44556600125 and 44558157713. Studio, local build, stamp `dev`, 2026-11-19: the watering hole seen from above and from the south road; the Rainbow Cheetah statue on its rock; Hall of Fame animals sized to their pedestals with their owner's name; the stall signs read the right way.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": ""
+}

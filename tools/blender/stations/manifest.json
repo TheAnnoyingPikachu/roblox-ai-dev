@@ -1786,707 +1786,6 @@
       185
     ]
   },
-  "foe_archer": {
-    "fbx": "build/blender/stations/foe_archer.fbx",
-    "png": "build/blender/stations/foe_archer.png",
-    "preview": "build/blender/stations/previews/foe_archer.png",
-    "size_studs": [
-      2.71,
-      6.59,
-      2.86
-    ],
-    "tris": 2070,
-    "parts": {
-      "foe_archer_body": 644,
-      "foe_archer_head": 180,
-      "foe_archer_leg_fl": 416,
-      "foe_archer_leg_fr": 280,
-      "foe_archer_leg_bl": 180,
-      "foe_archer_leg_br": 180,
-      "foe_archer_tail": 36,
-      "foe_archer_body_glow": 60,
-      "foe_archer_head_glow": 52,
-      "foe_archer_leg_fl_glow": 12,
-      "foe_archer_leg_fr_glow": 30
-    },
-    "tris_budget": 7000,
-    "script": "tools/blender/stations/assets/foes.py",
-    "notes": "Shade archers: a hooded bowman; eyes, bowstring, arrow head and quiver fletching are Neon.",
-    "glow": {
-      "foe_archer_body_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_archer_head_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_archer_leg_fl_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_archer_leg_fr_glow": [
-        150,
-        255,
-        70
-      ]
-    },
-    "centres": {
-      "foe_archer_body": [
-        0.008,
-        3.491,
-        -0.469
-      ],
-      "foe_archer_head": [
-        0.0,
-        5.792,
-        -0.451
-      ],
-      "foe_archer_leg_fl": [
-        0.992,
-        2.76,
-        -0.411
-      ],
-      "foe_archer_leg_fr": [
-        -0.992,
-        3.496,
-        0.109
-      ],
-      "foe_archer_leg_bl": [
-        0.352,
-        1.16,
-        -0.251
-      ],
-      "foe_archer_leg_br": [
-        -0.352,
-        1.16,
-        -0.251
-      ],
-      "foe_archer_tail": [
-        0.0,
-        3.213,
-        -1.208
-      ],
-      "foe_archer_body_glow": [
-        0.432,
-        5.12,
-        -1.115
-      ],
-      "foe_archer_head_glow": [
-        0.0,
-        5.126,
-        -0.147
-      ],
-      "foe_archer_leg_fl_glow": [
-        0.992,
-        2.76,
-        -0.635
-      ],
-      "foe_archer_leg_fr_glow": [
-        -1.003,
-        2.428,
-        0.285
-      ]
-    },
-    "joints": {
-      "foe_archer_head": [
-        0.0,
-        4.8,
-        -0.411
-      ],
-      "foe_archer_leg_fl": [
-        0.992,
-        4.448,
-        -0.411
-      ],
-      "foe_archer_leg_fr": [
-        -0.992,
-        4.448,
-        -0.411
-      ],
-      "foe_archer_leg_bl": [
-        0.352,
-        2.32,
-        -0.411
-      ],
-      "foe_archer_leg_br": [
-        -0.352,
-        2.32,
-        -0.411
-      ],
-      "foe_archer_tail": [
-        0.0,
-        4.56,
-        -1.051
-      ]
-    }
-  },
-  "foe_mage": {
-    "fbx": "build/blender/stations/foe_mage.fbx",
-    "png": "build/blender/stations/foe_mage.png",
-    "preview": "build/blender/stations/previews/foe_mage.png",
-    "size_studs": [
-      3.39,
-      7.68,
-      2.71
-    ],
-    "tris": 2618,
-    "parts": {
-      "foe_mage_body": 580,
-      "foe_mage_head": 368,
-      "foe_mage_leg_fl": 80,
-      "foe_mage_leg_fr": 242,
-      "foe_mage_leg_bl": 306,
-      "foe_mage_leg_br": 306,
-      "foe_mage_tail": 36,
-      "foe_mage_body_glow": 60,
-      "foe_mage_head_glow": 64,
-      "foe_mage_leg_fl_glow": 340,
-      "foe_mage_leg_fr_glow": 236
-    },
-    "tris_budget": 8000,
-    "script": "tools/blender/stations/assets/foes.py",
-    "notes": "Hex mages: a hooded, horned caster; eyes, runes, the palm orb and the staff crystal are Neon.",
-    "glow": {
-      "foe_mage_body_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_mage_head_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_mage_leg_fl_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_mage_leg_fr_glow": [
-        150,
-        255,
-        70
-      ]
-    },
-    "centres": {
-      "foe_mage_body": [
-        -0.035,
-        3.384,
-        0.235
-      ],
-      "foe_mage_head": [
-        -0.035,
-        6.004,
-        0.115
-      ],
-      "foe_mage_leg_fl": [
-        0.957,
-        3.684,
-        0.235
-      ],
-      "foe_mage_leg_fr": [
-        -0.921,
-        3.864,
-        0.372
-      ],
-      "foe_mage_leg_bl": [
-        0.381,
-        1.24,
-        0.475
-      ],
-      "foe_mage_leg_br": [
-        -0.451,
-        1.24,
-        0.475
-      ],
-      "foe_mage_tail": [
-        -0.035,
-        3.129,
-        -0.604
-      ],
-      "foe_mage_body_glow": [
-        0.046,
-        3.367,
-        -0.2
-      ],
-      "foe_mage_head_glow": [
-        -0.035,
-        5.408,
-        0.499
-      ],
-      "foe_mage_leg_fl_glow": [
-        0.957,
-        3.36,
-        0.427
-      ],
-      "foe_mage_leg_fr_glow": [
-        -1.028,
-        7.2,
-        0.395
-      ]
-    },
-    "joints": {
-      "foe_mage_head": [
-        -0.035,
-        4.96,
-        0.235
-      ],
-      "foe_mage_leg_fl": [
-        0.957,
-        4.64,
-        0.235
-      ],
-      "foe_mage_leg_fr": [
-        -1.027,
-        4.64,
-        0.235
-      ],
-      "foe_mage_leg_bl": [
-        0.365,
-        2.4,
-        0.235
-      ],
-      "foe_mage_leg_br": [
-        -0.435,
-        2.4,
-        0.235
-      ],
-      "foe_mage_tail": [
-        -0.035,
-        4.72,
-        -0.437
-      ]
-    }
-  },
-  "foe_knight": {
-    "fbx": "build/blender/stations/foe_knight.fbx",
-    "png": "build/blender/stations/foe_knight.png",
-    "preview": "build/blender/stations/previews/foe_knight.png",
-    "size_studs": [
-      4.98,
-      7.52,
-      5.28
-    ],
-    "tris": 3588,
-    "parts": {
-      "foe_knight_body": 760,
-      "foe_knight_head": 588,
-      "foe_knight_leg_fl": 652,
-      "foe_knight_leg_fr": 652,
-      "foe_knight_leg_bl": 358,
-      "foe_knight_leg_br": 358,
-      "foe_knight_tail": 40,
-      "foe_knight_body_glow": 24,
-      "foe_knight_head_glow": 52,
-      "foe_knight_leg_fl_glow": 40,
-      "foe_knight_leg_fr_glow": 64
-    },
-    "tris_budget": 9000,
-    "script": "tools/blender/stations/assets/foes.py",
-    "notes": "Gloom knights: haunted armour with floating pieces; runes, eye slits, shield sigil and sword runes are Neon.",
-    "glow": {
-      "foe_knight_body_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_knight_head_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_knight_leg_fl_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_knight_leg_fr_glow": [
-        150,
-        255,
-        70
-      ]
-    },
-    "centres": {
-      "foe_knight_body": [
-        -0.18,
-        3.464,
-        -1.504
-      ],
-      "foe_knight_head": [
-        -0.18,
-        6.464,
-        -1.318
-      ],
-      "foe_knight_leg_fl": [
-        1.472,
-        3.748,
-        -1.416
-      ],
-      "foe_knight_leg_fr": [
-        -1.652,
-        3.92,
-        0.2
-      ],
-      "foe_knight_leg_bl": [
-        0.3,
-        1.36,
-        -0.992
-      ],
-      "foe_knight_leg_br": [
-        -0.66,
-        1.36,
-        -0.992
-      ],
-      "foe_knight_tail": [
-        -0.18,
-        3.375,
-        -2.372
-      ],
-      "foe_knight_body_glow": [
-        -0.18,
-        3.996,
-        -0.676
-      ],
-      "foe_knight_head_glow": [
-        -0.18,
-        5.396,
-        -1.116
-      ],
-      "foe_knight_leg_fl_glow": [
-        1.524,
-        2.936,
-        -1.12
-      ],
-      "foe_knight_leg_fr_glow": [
-        -1.652,
-        2.44,
-        -0.008
-      ]
-    },
-    "joints": {
-      "foe_knight_head": [
-        -0.18,
-        5.12,
-        -1.36
-      ],
-      "foe_knight_leg_fl": [
-        1.292,
-        4.8,
-        -1.36
-      ],
-      "foe_knight_leg_fr": [
-        -1.652,
-        4.8,
-        -1.36
-      ],
-      "foe_knight_leg_bl": [
-        0.3,
-        2.48,
-        -1.36
-      ],
-      "foe_knight_leg_br": [
-        -0.66,
-        2.48,
-        -1.36
-      ],
-      "foe_knight_tail": [
-        -0.18,
-        4.88,
-        -2.16
-      ]
-    }
-  },
-  "foe_ogre": {
-    "fbx": "build/blender/stations/foe_ogre.fbx",
-    "png": "build/blender/stations/foe_ogre.png",
-    "preview": "build/blender/stations/previews/foe_ogre.png",
-    "size_studs": [
-      11.98,
-      13.44,
-      9.45
-    ],
-    "tris": 9324,
-    "parts": {
-      "foe_ogre_body": 2932,
-      "foe_ogre_head": 2004,
-      "foe_ogre_leg_fl": 1054,
-      "foe_ogre_leg_fr": 1418,
-      "foe_ogre_leg_bl": 594,
-      "foe_ogre_leg_br": 594,
-      "foe_ogre_tail": 36,
-      "foe_ogre_body_glow": 444,
-      "foe_ogre_head_glow": 140,
-      "foe_ogre_leg_fr_glow": 108
-    },
-    "tris_budget": 10000,
-    "script": "tools/blender/stations/assets/foes.py",
-    "notes": "Ogres: a hunched brute with a spiked club; cracks, eyes, collar runes and club nails are Neon.",
-    "glow": {
-      "foe_ogre_body_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_ogre_head_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_ogre_leg_fr_glow": [
-        150,
-        255,
-        70
-      ]
-    },
-    "centres": {
-      "foe_ogre_body": [
-        1.019,
-        6.574,
-        -1.391
-      ],
-      "foe_ogre_head": [
-        1.018,
-        10.922,
-        0.64
-      ],
-      "foe_ogre_leg_fl": [
-        4.527,
-        5.805,
-        0.101
-      ],
-      "foe_ogre_leg_fr": [
-        -3.509,
-        6.097,
-        1.421
-      ],
-      "foe_ogre_leg_bl": [
-        2.475,
-        2.53,
-        -1.408
-      ],
-      "foe_ogre_leg_br": [
-        -0.437,
-        2.53,
-        -1.408
-      ],
-      "foe_ogre_tail": [
-        1.018,
-        3.568,
-        -4.193
-      ],
-      "foe_ogre_body_glow": [
-        1.09,
-        6.879,
-        0.764
-      ],
-      "foe_ogre_head_glow": [
-        1.019,
-        11.122,
-        1.957
-      ],
-      "foe_ogre_leg_fr_glow": [
-        -3.511,
-        8.133,
-        2.846
-      ]
-    },
-    "joints": {
-      "foe_ogre_head": [
-        1.018,
-        9.56,
-        -0.424
-      ],
-      "foe_ogre_leg_fl": [
-        4.018,
-        9.06,
-        -0.674
-      ],
-      "foe_ogre_leg_fr": [
-        -1.982,
-        9.06,
-        -0.674
-      ],
-      "foe_ogre_leg_bl": [
-        2.468,
-        3.935,
-        -1.924
-      ],
-      "foe_ogre_leg_br": [
-        -0.432,
-        3.935,
-        -1.924
-      ],
-      "foe_ogre_tail": [
-        1.018,
-        5.06,
-        -3.924
-      ]
-    }
-  },
-  "foe_dragon": {
-    "fbx": "build/blender/stations/foe_dragon.fbx",
-    "png": "build/blender/stations/foe_dragon.png",
-    "preview": "build/blender/stations/previews/foe_dragon.png",
-    "size_studs": [
-      24.32,
-      10.29,
-      27.51
-    ],
-    "tris": 8974,
-    "parts": {
-      "foe_dragon_body": 1960,
-      "foe_dragon_head": 2662,
-      "foe_dragon_leg_fl": 594,
-      "foe_dragon_leg_fr": 594,
-      "foe_dragon_leg_bl": 590,
-      "foe_dragon_leg_br": 594,
-      "foe_dragon_tail": 350,
-      "foe_dragon_head_glow": 140,
-      "foe_dragon_body_glow": 54,
-      "foe_dragon_wing_l": 486,
-      "foe_dragon_wing_l_glow": 232,
-      "foe_dragon_wing_r": 486,
-      "foe_dragon_wing_r_glow": 232
-    },
-    "tris_budget": 14000,
-    "script": "tools/blender/stations/assets/foes.py",
-    "notes": "Hexfire dragons: the predator body with wings (wing_l, wing_r joints); eyes, wing veins and alternate spine spikes are Neon.",
-    "glow": {
-      "foe_dragon_body_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_dragon_head_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_dragon_wing_l_glow": [
-        150,
-        255,
-        70
-      ],
-      "foe_dragon_wing_r_glow": [
-        150,
-        255,
-        70
-      ]
-    },
-    "centres": {
-      "foe_dragon_body": [
-        0.001,
-        4.491,
-        3.601
-      ],
-      "foe_dragon_head": [
-        0.0,
-        6.222,
-        9.835
-      ],
-      "foe_dragon_leg_fl": [
-        1.125,
-        2.397,
-        6.127
-      ],
-      "foe_dragon_leg_fr": [
-        -1.115,
-        2.393,
-        6.127
-      ],
-      "foe_dragon_leg_bl": [
-        0.996,
-        2.39,
-        1.341
-      ],
-      "foe_dragon_leg_br": [
-        -0.995,
-        2.382,
-        1.34
-      ],
-      "foe_dragon_tail": [
-        0.0,
-        4.464,
-        -7.085
-      ],
-      "foe_dragon_head_glow": [
-        -0.008,
-        7.206,
-        11.309
-      ],
-      "foe_dragon_body_glow": [
-        0.0,
-        6.315,
-        3.606
-      ],
-      "foe_dragon_wing_l": [
-        6.578,
-        7.547,
-        4.248
-      ],
-      "foe_dragon_wing_l_glow": [
-        7.68,
-        7.331,
-        4.225
-      ],
-      "foe_dragon_wing_r": [
-        -6.578,
-        7.547,
-        4.248
-      ],
-      "foe_dragon_wing_r_glow": [
-        -7.68,
-        7.331,
-        4.225
-      ]
-    },
-    "joints": {
-      "foe_dragon_head": [
-        0.0,
-        4.994,
-        7.438
-      ],
-      "foe_dragon_leg_fl": [
-        1.12,
-        3.893,
-        5.825
-      ],
-      "foe_dragon_leg_fr": [
-        -1.12,
-        3.893,
-        5.825
-      ],
-      "foe_dragon_leg_bl": [
-        1.0,
-        3.893,
-        1.025
-      ],
-      "foe_dragon_leg_br": [
-        -1.0,
-        3.893,
-        1.025
-      ],
-      "foe_dragon_tail": [
-        0.0,
-        4.753,
-        -0.475
-      ],
-      "foe_dragon_wing_l": [
-        1.28,
-        6.133,
-        5.345
-      ],
-      "foe_dragon_wing_r": [
-        -1.28,
-        6.133,
-        5.345
-      ]
-    }
-  },
   "creature_lion_shadow": {
     "fbx": "build/blender/stations/creature_lion_shadow.fbx",
     "png": "build/blender/stations/creature_lion_shadow.png",
@@ -3639,254 +2938,23 @@
     },
     "joints": {}
   },
-  "hub_floor": {
-    "fbx": "build/blender/stations/hub_floor.fbx",
-    "png": "build/blender/stations/hub_floor.png",
-    "preview": "build/blender/stations/previews/hub_floor.png",
-    "size_studs": [
-      97.0,
-      0.8,
-      97.0
-    ],
-    "tris": 4180,
-    "parts": {
-      "hub_floor_body": 4180
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "The plaza's floor: warm cobbles in rings, a round of pale flags, a band of brick.",
-    "glow": {},
-    "centres": {
-      "hub_floor_body": [
-        0.0,
-        0.4,
-        -0.0
-      ]
-    },
-    "joints": {},
-    "lift": -0.3
-  },
-  "hub_fire": {
-    "fbx": "build/blender/stations/hub_fire.fbx",
-    "png": "build/blender/stations/hub_fire.png",
-    "preview": "build/blender/stations/previews/hub_fire.png",
-    "size_studs": [
-      27.0,
-      5.45,
-      27.0
-    ],
-    "tris": 2244,
-    "parts": {
-      "hub_fire_body": 2204,
-      "hub_fire_body_glow": 10,
-      "hub_fire_body2_glow": 10,
-      "hub_fire_body3_glow": 10,
-      "hub_fire_body4_glow": 10
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "The fire pit and the two rows of curved benches round it. Its flames are the glow.",
-    "glow": {
-      "hub_fire_body_glow": [
-        255,
-        150,
-        40
-      ],
-      "hub_fire_body2_glow": [
-        255,
-        200,
-        70
-      ],
-      "hub_fire_body3_glow": [
-        255,
-        110,
-        40
-      ],
-      "hub_fire_body4_glow": [
-        255,
-        220,
-        110
-      ]
-    },
-    "centres": {
-      "hub_fire_body": [
-        0.0,
-        1.888,
-        -0.0
-      ],
-      "hub_fire_body_glow": [
-        0.0,
-        3.15,
-        -0.0
-      ],
-      "hub_fire_body2_glow": [
-        0.7,
-        2.45,
-        -0.3
-      ],
-      "hub_fire_body3_glow": [
-        -0.6,
-        2.55,
-        -0.5
-      ],
-      "hub_fire_body4_glow": [
-        0.1,
-        2.25,
-        0.7
-      ]
-    },
-    "joints": {},
-    "lift": 0.05
-  },
-  "hub_market": {
-    "fbx": "build/blender/stations/hub_market.fbx",
-    "png": "build/blender/stations/hub_market.png",
-    "preview": "build/blender/stations/previews/hub_market.png",
-    "size_studs": [
-      34.7,
-      8.2,
-      36.66
-    ],
-    "tris": 2322,
-    "parts": {
-      "hub_market_body": 2322
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "The market: five striped stalls, crates and barrels, the egg seller's cart.",
-    "glow": {},
-    "centres": {
-      "hub_market_body": [
-        -23.744,
-        4.1,
-        22.292
-      ]
-    },
-    "joints": {},
-    "lift": 0.3
-  },
-  "hub_cafe": {
-    "fbx": "build/blender/stations/hub_cafe.fbx",
-    "png": "build/blender/stations/hub_cafe.png",
-    "preview": "build/blender/stations/previews/hub_cafe.png",
-    "size_studs": [
-      28.98,
-      11.2,
-      27.48
-    ],
-    "tris": 1988,
-    "parts": {
-      "hub_cafe_body": 1988
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "The cafe: an open hut with a counter and an awning, four tables under parasols.",
-    "glow": {},
-    "centres": {
-      "hub_cafe_body": [
-        -25.588,
-        5.6,
-        -26.338
-      ]
-    },
-    "joints": {},
-    "lift": 0.3
-  },
-  "hub_stage": {
-    "fbx": "build/blender/stations/hub_stage.fbx",
-    "png": "build/blender/stations/hub_stage.png",
-    "preview": "build/blender/stations/previews/hub_stage.png",
-    "size_studs": [
-      31.59,
-      14.6,
-      31.59
-    ],
-    "tris": 1724,
-    "parts": {
-      "hub_stage_body": 1584,
-      "hub_stage_body_glow": 140
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "The stage: a roofed platform with a painted back, lamps along its front, three rows of benches.",
-    "glow": {
-      "hub_stage_body_glow": [
-        255,
-        214,
-        130
-      ]
-    },
-    "centres": {
-      "hub_stage_body": [
-        26.404,
-        7.3,
-        -26.404
-      ],
-      "hub_stage_body_glow": [
-        26.747,
-        2.0,
-        -26.747
-      ]
-    },
-    "joints": {},
-    "lift": 0.3
-  },
-  "hub_green": {
-    "fbx": "build/blender/stations/hub_green.fbx",
-    "png": "build/blender/stations/hub_green.png",
-    "preview": "build/blender/stations/previews/hub_green.png",
-    "size_studs": [
-      38.91,
-      28.56,
-      39.83
-    ],
-    "tris": 2444,
-    "parts": {
-      "hub_green_body": 2264,
-      "hub_green_body_glow": 180
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "The green: the meeting tree with its bench, swing and lanterns, a pond with a pier, a trough, picnic tables.",
-    "glow": {
-      "hub_green_body_glow": [
-        255,
-        214,
-        130
-      ]
-    },
-    "centres": {
-      "hub_green_body": [
-        24.32,
-        14.278,
-        22.284
-      ],
-      "hub_green_body_glow": [
-        24.263,
-        14.411,
-        25.543
-      ]
-    },
-    "joints": {},
-    "lift": -0.311
-  },
   "hub_lights": {
     "fbx": "build/blender/stations/hub_lights.fbx",
     "png": "build/blender/stations/hub_lights.png",
     "preview": "build/blender/stations/previews/hub_lights.png",
     "size_studs": [
-      89.11,
-      10.25,
-      88.51
+      64.17,
+      6.65,
+      63.11
     ],
-    "tris": 9504,
+    "tris": 6656,
     "parts": {
-      "hub_lights_body": 9344,
-      "hub_lights_body_glow": 160
+      "hub_lights_body": 6356,
+      "hub_lights_body_glow": 300
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/hub.py",
-    "notes": "Lamps on the kerb, strings of flags from a ring of poles, planters.",
+    "notes": "Lamps round the ring path with strings of flags, flowers on the lawn.",
     "glow": {
       "hub_lights_body_glow": [
         255,
@@ -3896,53 +2964,14 @@
     },
     "centres": {
       "hub_lights_body": [
-        0.183,
-        5.126,
-        -0.069
+        0.592,
+        3.324,
+        -0.0
       ],
       "hub_lights_body_glow": [
-        0.0,
-        6.618,
+        1.2,
+        5.65,
         -0.0
-      ]
-    },
-    "joints": {},
-    "lift": 0.132
-  },
-  "hub_signs": {
-    "fbx": "build/blender/stations/hub_signs.fbx",
-    "png": "build/blender/stations/hub_signs.png",
-    "preview": "build/blender/stations/previews/hub_signs.png",
-    "size_studs": [
-      93.12,
-      10.7,
-      98.22
-    ],
-    "tris": 11848,
-    "parts": {
-      "hub_signs_body": 11808,
-      "hub_signs_body_glow": 40
-    },
-    "tris_budget": 20000,
-    "script": "tools/blender/stations/assets/hub.py",
-    "notes": "A finger post at each road, the notice board, the arch over the south walk.",
-    "glow": {
-      "hub_signs_body_glow": [
-        255,
-        214,
-        130
-      ]
-    },
-    "centres": {
-      "hub_signs_body": [
-        0.0,
-        5.35,
-        2.55
-      ],
-      "hub_signs_body_glow": [
-        0.0,
-        5.05,
-        51.1
       ]
     },
     "joints": {},
@@ -6911,5 +5940,3381 @@
     },
     "joints": {},
     "lift": 0.789
+  },
+  "hub_ground": {
+    "fbx": "build/blender/stations/hub_ground.fbx",
+    "png": "build/blender/stations/hub_ground.png",
+    "preview": "build/blender/stations/previews/hub_ground.png",
+    "size_studs": [
+      96.8,
+      0.85,
+      96.8
+    ],
+    "tris": 2252,
+    "parts": {
+      "hub_ground_body": 2252
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The lawn, the ring path of cobbles, the four roads in, the stone kerb.",
+    "glow": {},
+    "centres": {
+      "hub_ground_body": [
+        0.0,
+        0.425,
+        -0.0
+      ]
+    },
+    "joints": {},
+    "lift": -0.4
+  },
+  "hub_pond": {
+    "fbx": "build/blender/stations/hub_pond.fbx",
+    "png": "build/blender/stations/hub_pond.png",
+    "preview": "build/blender/stations/previews/hub_pond.png",
+    "size_studs": [
+      34.91,
+      13.83,
+      35.31
+    ],
+    "tris": 4568,
+    "parts": {
+      "hub_pond_body": 4568
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The watering hole: water in a sandy rim, stones, lily pads, reeds, the acacia, and the rock the month's rainbow statue stands on.",
+    "glow": {},
+    "centres": {
+      "hub_pond_body": [
+        -1.871,
+        6.914,
+        -0.085
+      ]
+    },
+    "joints": {},
+    "lift": -0.322
+  },
+  "hub_trading": {
+    "fbx": "build/blender/stations/hub_trading.fbx",
+    "png": "build/blender/stations/hub_trading.png",
+    "preview": "build/blender/stations/previews/hub_trading.png",
+    "size_studs": [
+      11.3,
+      9.0,
+      11.61
+    ],
+    "tris": 2652,
+    "parts": {
+      "hub_trading_body": 2652
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The Trading Post: a striped stall with two stools at its counter.",
+    "glow": {},
+    "centres": {
+      "hub_trading_body": [
+        26.639,
+        4.5,
+        -26.792
+      ]
+    },
+    "joints": {},
+    "lift": 0.05
+  },
+  "hub_gifts": {
+    "fbx": "build/blender/stations/hub_gifts.fbx",
+    "png": "build/blender/stations/hub_gifts.png",
+    "preview": "build/blender/stations/previews/hub_gifts.png",
+    "size_studs": [
+      11.27,
+      9.0,
+      11.27
+    ],
+    "tris": 1802,
+    "parts": {
+      "hub_gifts_body": 1792,
+      "hub_gifts_body_glow": 10
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The Gift Stand: a striped stall with a prize wheel on its back wall and gift boxes.",
+    "glow": {
+      "hub_gifts_body_glow": [
+        226,
+        80,
+        122
+      ]
+    },
+    "centres": {
+      "hub_gifts_body": [
+        -26.658,
+        4.5,
+        -26.658
+      ],
+      "hub_gifts_body_glow": [
+        -28.178,
+        6.5,
+        -28.178
+      ]
+    },
+    "joints": {},
+    "lift": 0.05
+  },
+  "hub_fame": {
+    "fbx": "build/blender/stations/hub_fame.fbx",
+    "png": "build/blender/stations/hub_fame.png",
+    "preview": "build/blender/stations/previews/hub_fame.png",
+    "size_studs": [
+      17.55,
+      9.18,
+      16.93
+    ],
+    "tris": 1576,
+    "parts": {
+      "hub_fame_body": 1576
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The Hall of Fame: four marble pedestals under an arch.",
+    "glow": {},
+    "centres": {
+      "hub_fame_body": [
+        26.854,
+        4.588,
+        26.584
+      ]
+    },
+    "joints": {},
+    "lift": -0.026
+  },
+  "hub_board": {
+    "fbx": "build/blender/stations/hub_board.fbx",
+    "png": "build/blender/stations/hub_board.png",
+    "preview": "build/blender/stations/previews/hub_board.png",
+    "size_studs": [
+      8.55,
+      7.64,
+      3.32
+    ],
+    "tris": 2428,
+    "parts": {
+      "hub_board_body": 2428
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The notice board: a roofed board the game writes on.",
+    "glow": {},
+    "centres": {
+      "hub_board_body": [
+        -7.693,
+        3.82,
+        36.191
+      ]
+    },
+    "joints": {},
+    "lift": 0.05
+  },
+  "hub_camp": {
+    "fbx": "build/blender/stations/hub_camp.fbx",
+    "png": "build/blender/stations/hub_camp.png",
+    "preview": "build/blender/stations/previews/hub_camp.png",
+    "size_studs": [
+      18.22,
+      5.66,
+      16.42
+    ],
+    "tris": 862,
+    "parts": {
+      "hub_camp_body": 772,
+      "hub_camp_body_glow": 10,
+      "hub_camp_body2_glow": 10,
+      "hub_camp_body3_glow": 10,
+      "hub_camp_body4_glow": 60
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/assets/hub.py",
+    "notes": "The campfire where players arrive: a stone ring, flames, four logs, lanterns.",
+    "glow": {
+      "hub_camp_body_glow": [
+        255,
+        150,
+        40
+      ],
+      "hub_camp_body2_glow": [
+        255,
+        200,
+        70
+      ],
+      "hub_camp_body3_glow": [
+        255,
+        110,
+        40
+      ],
+      "hub_camp_body4_glow": [
+        255,
+        214,
+        130
+      ]
+    },
+    "centres": {
+      "hub_camp_body": [
+        -25.461,
+        2.829,
+        28.478
+      ],
+      "hub_camp_body_glow": [
+        -26.87,
+        2.359,
+        26.87
+      ],
+      "hub_camp_body2_glow": [
+        -26.37,
+        1.859,
+        26.67
+      ],
+      "hub_camp_body3_glow": [
+        -27.27,
+        1.959,
+        26.47
+      ],
+      "hub_camp_body4_glow": [
+        -24.854,
+        4.809,
+        28.478
+      ]
+    },
+    "joints": {},
+    "lift": -0.159
+  },
+  "creature_lion_forge": {
+    "fbx": "build/blender/stations/creature_lion_forge.fbx",
+    "png": "build/blender/stations/creature_lion_forge.png",
+    "preview": "build/blender/stations/previews/creature_lion_forge_rest.png",
+    "size_studs": [
+      5.01,
+      7.63,
+      13.0
+    ],
+    "tris": 5222,
+    "parts": {
+      "creature_lion_forge_body": 5222
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Lion: SHANNON's lion (now do it again following this reference) from ForgeGUI (artifact c46416c2), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_lion_forge_body": [
+        0.0,
+        3.816,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_lion_forge_head": [
+        -0.003,
+        5.19,
+        4.095
+      ],
+      "creature_lion_forge_leg_fl": [
+        1.357,
+        3.285,
+        3.686
+      ],
+      "creature_lion_forge_leg_fr": [
+        -1.364,
+        3.285,
+        3.686
+      ],
+      "creature_lion_forge_leg_bl": [
+        1.357,
+        3.421,
+        -1.755
+      ],
+      "creature_lion_forge_leg_br": [
+        -1.364,
+        3.421,
+        -1.755
+      ],
+      "creature_lion_forge_tail": [
+        -0.003,
+        4.102,
+        -3.388
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.003,
+      4.51,
+      1.102
+    ]
+  },
+  "creature_jackal_forge": {
+    "fbx": "build/blender/stations/creature_jackal_forge.fbx",
+    "png": "build/blender/stations/creature_jackal_forge.png",
+    "preview": "build/blender/stations/previews/creature_jackal_forge_rest.png",
+    "size_studs": [
+      2.81,
+      5.18,
+      7.4
+    ],
+    "tris": 5027,
+    "parts": {
+      "creature_jackal_forge_body": 5027
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Jackal: SHANNON's Jackal in Profile from ForgeGUI (artifact 0a34fc4d), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_jackal_forge_body": [
+        0.0,
+        2.591,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_jackal_forge_head": [
+        0.0,
+        3.524,
+        2.393
+      ],
+      "creature_jackal_forge_leg_fl": [
+        0.618,
+        1.67,
+        1.697
+      ],
+      "creature_jackal_forge_leg_fr": [
+        -0.618,
+        1.67,
+        1.697
+      ],
+      "creature_jackal_forge_leg_bl": [
+        0.927,
+        1.824,
+        -1.006
+      ],
+      "creature_jackal_forge_leg_br": [
+        -0.927,
+        1.824,
+        -1.006
+      ],
+      "creature_jackal_forge_tail": [
+        0.0,
+        2.597,
+        -1.624
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      2.597,
+      0.307
+    ]
+  },
+  "creature_tortoise_forge": {
+    "fbx": "build/blender/stations/creature_tortoise_forge.fbx",
+    "png": "build/blender/stations/creature_tortoise_forge.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_forge_rest.png",
+    "size_studs": [
+      7.06,
+      6.33,
+      10.1
+    ],
+    "tris": 3047,
+    "parts": {
+      "creature_tortoise_forge_body": 3047
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Tortoise: SHANNON's Low-Poly Stone Tortoise from ForgeGUI (artifact ea214a64), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_forge_body": [
+        0.0,
+        3.165,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_tortoise_forge_head": [
+        0.0,
+        2.858,
+        3.584
+      ],
+      "creature_tortoise_forge_leg_fl": [
+        2.43,
+        1.379,
+        2.528
+      ],
+      "creature_tortoise_forge_leg_fr": [
+        -2.43,
+        1.379,
+        2.528
+      ],
+      "creature_tortoise_forge_leg_bl": [
+        2.113,
+        1.379,
+        -3.388
+      ],
+      "creature_tortoise_forge_leg_br": [
+        -2.113,
+        1.379,
+        -3.388
+      ],
+      "creature_tortoise_forge_tail": [
+        0.0,
+        1.062,
+        -4.233
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      3.175,
+      -0.008
+    ]
+  },
+  "creature_jackal_pharaoh_forge": {
+    "fbx": "build/blender/stations/creature_jackal_pharaoh_forge.fbx",
+    "png": "build/blender/stations/creature_jackal_pharaoh_forge.png",
+    "preview": "build/blender/stations/previews/creature_jackal_pharaoh_forge_rest.png",
+    "size_studs": [
+      3.09,
+      5.7,
+      9.1
+    ],
+    "tris": 3135,
+    "parts": {
+      "creature_jackal_pharaoh_forge_body": 3135
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Pharaoh Jackal: SHANNON's Anubis Guardian from ForgeGUI (artifact 518bf4a5), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_jackal_pharaoh_forge_body": [
+        0.0,
+        2.849,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_jackal_pharaoh_forge_head": [
+        0.0,
+        3.828,
+        2.862
+      ],
+      "creature_jackal_pharaoh_forge_leg_fl": [
+        1.039,
+        1.939,
+        2.485
+      ],
+      "creature_jackal_pharaoh_forge_leg_fr": [
+        -1.039,
+        1.939,
+        2.485
+      ],
+      "creature_jackal_pharaoh_forge_leg_bl": [
+        0.944,
+        2.223,
+        -0.725
+      ],
+      "creature_jackal_pharaoh_forge_leg_br": [
+        -0.944,
+        2.223,
+        -0.725
+      ],
+      "creature_jackal_pharaoh_forge_tail": [
+        0.0,
+        2.506,
+        -1.481
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      2.884,
+      0.785
+    ]
+  },
+  "creature_jackal_sphinx_forge": {
+    "fbx": "build/blender/stations/creature_jackal_sphinx_forge.fbx",
+    "png": "build/blender/stations/creature_jackal_sphinx_forge.png",
+    "preview": "build/blender/stations/previews/creature_jackal_sphinx_forge_rest.png",
+    "size_studs": [
+      3.42,
+      6.11,
+      9.6
+    ],
+    "tris": 4950,
+    "parts": {
+      "creature_jackal_sphinx_forge_body": 4950
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Sphinx Jackal: SHANNON's Anubis Statue from ForgeGUI (artifact 54ef40ce), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_jackal_sphinx_forge_body": [
+        0.0,
+        3.055,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_jackal_sphinx_forge_head": [
+        0.01,
+        4.068,
+        3.239
+      ],
+      "creature_jackal_sphinx_forge_leg_fl": [
+        1.22,
+        1.85,
+        2.634
+      ],
+      "creature_jackal_sphinx_forge_leg_fr": [
+        -1.2,
+        1.85,
+        2.634
+      ],
+      "creature_jackal_sphinx_forge_leg_bl": [
+        1.119,
+        2.051,
+        -0.693
+      ],
+      "creature_jackal_sphinx_forge_leg_br": [
+        -1.099,
+        2.051,
+        -1.298
+      ],
+      "creature_jackal_sphinx_forge_tail": [
+        0.01,
+        2.858,
+        -2.004
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.01,
+      3.06,
+      0.617
+    ]
+  },
+  "creature_rhino_forge": {
+    "fbx": "build/blender/stations/creature_rhino_forge.fbx",
+    "png": "build/blender/stations/creature_rhino_forge.png",
+    "preview": "build/blender/stations/previews/creature_rhino_forge_rest.png",
+    "size_studs": [
+      5.72,
+      6.11,
+      13.9
+    ],
+    "tris": 3040,
+    "parts": {
+      "creature_rhino_forge_body": 3040
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Rhino: SHANNON's Low-Poly Rhino from ForgeGUI (artifact 9f6a531e), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_rhino_forge_body": [
+        0.0,
+        3.056,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_rhino_forge_head": [
+        0.0,
+        3.654,
+        3.193
+      ],
+      "creature_rhino_forge_leg_fl": [
+        1.877,
+        1.778,
+        1.894
+      ],
+      "creature_rhino_forge_leg_fr": [
+        -1.877,
+        1.778,
+        1.894
+      ],
+      "creature_rhino_forge_leg_bl": [
+        1.804,
+        1.778,
+        -3.014
+      ],
+      "creature_rhino_forge_leg_br": [
+        -1.804,
+        1.778,
+        -3.014
+      ],
+      "creature_rhino_forge_tail": [
+        0.0,
+        3.943,
+        -4.602
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      3.077,
+      0.018
+    ]
+  },
+  "creature_rhino_crystal_forge": {
+    "fbx": "build/blender/stations/creature_rhino_crystal_forge.fbx",
+    "png": "build/blender/stations/creature_rhino_crystal_forge.png",
+    "preview": "build/blender/stations/previews/creature_rhino_crystal_forge_rest.png",
+    "size_studs": [
+      7.31,
+      8.24,
+      16.0
+    ],
+    "tris": 5096,
+    "parts": {
+      "creature_rhino_crystal_forge_body": 5096
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Crystal Rhino: SHANNON's Rainbow Crystal Rhino from ForgeGUI (artifact f70447fd), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_rhino_crystal_forge_body": [
+        0.0,
+        4.12,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_rhino_crystal_forge_head": [
+        0.0,
+        4.825,
+        3.641
+      ],
+      "creature_rhino_crystal_forge_leg_fl": [
+        2.161,
+        2.664,
+        2.145
+      ],
+      "creature_rhino_crystal_forge_leg_fr": [
+        -2.161,
+        2.664,
+        2.145
+      ],
+      "creature_rhino_crystal_forge_leg_bl": [
+        2.078,
+        2.664,
+        -3.507
+      ],
+      "creature_rhino_crystal_forge_leg_br": [
+        -2.078,
+        2.664,
+        -3.507
+      ],
+      "creature_rhino_crystal_forge_tail": [
+        0.0,
+        5.49,
+        -5.503
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      4.16,
+      -0.016
+    ]
+  },
+  "creature_rhino_lava_forge": {
+    "fbx": "build/blender/stations/creature_rhino_lava_forge.fbx",
+    "png": "build/blender/stations/creature_rhino_lava_forge.png",
+    "preview": "build/blender/stations/previews/creature_rhino_lava_forge_rest.png",
+    "size_studs": [
+      7.85,
+      8.74,
+      18.5
+    ],
+    "tris": 14087,
+    "parts": {
+      "creature_rhino_lava_forge_body": 14087
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Lava Rhino: SHANNON's Molten Lava Rhino Warrior from ForgeGUI (artifact f93e493b), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_rhino_lava_forge_body": [
+        0.0,
+        4.372,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_rhino_lava_forge_head": [
+        0.024,
+        5.175,
+        4.24
+      ],
+      "creature_rhino_lava_forge_leg_fl": [
+        2.54,
+        2.658,
+        2.498
+      ],
+      "creature_rhino_lava_forge_leg_fr": [
+        -2.493,
+        2.658,
+        2.498
+      ],
+      "creature_rhino_lava_forge_leg_bl": [
+        2.444,
+        2.658,
+        -4.085
+      ],
+      "creature_rhino_lava_forge_leg_br": [
+        -2.396,
+        2.658,
+        -4.085
+      ],
+      "creature_rhino_lava_forge_tail": [
+        0.024,
+        5.756,
+        -5.827
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.024,
+      4.4,
+      -0.019
+    ]
+  },
+  "creature_tortoise_island_forge": {
+    "fbx": "build/blender/stations/creature_tortoise_island_forge.fbx",
+    "png": "build/blender/stations/creature_tortoise_island_forge.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_island_forge_rest.png",
+    "size_studs": [
+      10.34,
+      9.84,
+      14.8
+    ],
+    "tris": 2933,
+    "parts": {
+      "creature_tortoise_island_forge_body": 2933
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Island Tortoise: SHANNON's Low-Poly Stone Tortoise (with an island) from ForgeGUI (artifact e1ded7d6), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_island_forge_body": [
+        0.0,
+        4.921,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_tortoise_island_forge_head": [
+        0.117,
+        4.491,
+        5.255
+      ],
+      "creature_tortoise_island_forge_leg_fl": [
+        3.672,
+        2.327,
+        3.71
+      ],
+      "creature_tortoise_island_forge_leg_fr": [
+        -3.438,
+        2.327,
+        3.71
+      ],
+      "creature_tortoise_island_forge_leg_bl": [
+        3.208,
+        2.327,
+        -4.328
+      ],
+      "creature_tortoise_island_forge_leg_br": [
+        -2.974,
+        2.327,
+        -4.328
+      ],
+      "creature_tortoise_island_forge_tail": [
+        0.117,
+        1.863,
+        -5.41
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.117,
+      4.955,
+      -0.0
+    ]
+  },
+  "creature_tortoise_gemshell_forge": {
+    "fbx": "build/blender/stations/creature_tortoise_gemshell_forge.fbx",
+    "png": "build/blender/stations/creature_tortoise_gemshell_forge.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_gemshell_forge_rest.png",
+    "size_studs": [
+      9.23,
+      8.27,
+      13.4
+    ],
+    "tris": 5156,
+    "parts": {
+      "creature_tortoise_gemshell_forge_body": 5156
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Gemshell Tortoise: SHANNON's gem tortoise (downloaded from the ForgeGUI site) from ForgeGUI (artifact now-make-this-in-the-roblox-style.glb), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_gemshell_forge_body": [
+        0.0,
+        4.135,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_tortoise_gemshell_forge_head": [
+        0.003,
+        3.724,
+        4.799
+      ],
+      "creature_tortoise_gemshell_forge_leg_fl": [
+        3.234,
+        1.758,
+        3.395
+      ],
+      "creature_tortoise_gemshell_forge_leg_fr": [
+        -3.227,
+        1.758,
+        3.395
+      ],
+      "creature_tortoise_gemshell_forge_leg_bl": [
+        2.812,
+        1.758,
+        -3.908
+      ],
+      "creature_tortoise_gemshell_forge_leg_br": [
+        -2.805,
+        1.758,
+        -3.908
+      ],
+      "creature_tortoise_gemshell_forge_tail": [
+        0.003,
+        1.337,
+        -4.611
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.003,
+      4.145,
+      0.024
+    ]
+  },
+  "creature_meerkat_forge": {
+    "fbx": "build/blender/stations/creature_meerkat_forge.fbx",
+    "png": "build/blender/stations/creature_meerkat_forge.png",
+    "preview": "build/blender/stations/previews/creature_meerkat_forge_rest.png",
+    "size_studs": [
+      1.78,
+      4.8,
+      3.04
+    ],
+    "tris": 15187,
+    "parts": {
+      "creature_meerkat_forge_body": 15187
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Meerkat: SHANNON's meerkat (now do it again following this reference) from ForgeGUI (artifact 836fe118), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_meerkat_forge_body": [
+        0.0,
+        2.4,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_meerkat_forge_head": [
+        0.0,
+        3.61,
+        0.753
+      ],
+      "creature_meerkat_forge_leg_fl": [
+        0.404,
+        3.055,
+        1.006
+      ],
+      "creature_meerkat_forge_leg_fr": [
+        -0.404,
+        3.055,
+        1.006
+      ],
+      "creature_meerkat_forge_leg_bl": [
+        0.454,
+        1.137,
+        0.703
+      ],
+      "creature_meerkat_forge_leg_br": [
+        -0.454,
+        1.137,
+        0.703
+      ],
+      "creature_meerkat_forge_tail": [
+        0.0,
+        1.137,
+        -0.004
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      1.389,
+      0.602
+    ]
+  },
+  "creature_meerkat_star_forge": {
+    "fbx": "build/blender/stations/creature_meerkat_star_forge.fbx",
+    "png": "build/blender/stations/creature_meerkat_star_forge.png",
+    "preview": "build/blender/stations/previews/creature_meerkat_star_forge_rest.png",
+    "size_studs": [
+      2.96,
+      7.5,
+      5.23
+    ],
+    "tris": 4983,
+    "parts": {
+      "creature_meerkat_star_forge_body": 4983
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Star Meerkat: SHANNON's star meerkat from ForgeGUI (artifact 5d3b0709), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_meerkat_star_forge_body": [
+        0.0,
+        3.75,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_meerkat_star_forge_head": [
+        -0.021,
+        5.484,
+        1.196
+      ],
+      "creature_meerkat_star_forge_leg_fl": [
+        0.609,
+        4.538,
+        1.59
+      ],
+      "creature_meerkat_star_forge_leg_fr": [
+        -0.652,
+        4.538,
+        1.59
+      ],
+      "creature_meerkat_star_forge_leg_bl": [
+        0.688,
+        1.622,
+        1.117
+      ],
+      "creature_meerkat_star_forge_leg_br": [
+        -0.73,
+        1.622,
+        1.117
+      ],
+      "creature_meerkat_star_forge_tail": [
+        -0.021,
+        1.622,
+        0.013
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.021,
+      2.016,
+      0.959
+    ]
+  },
+  "creature_meerkat_storm_forge": {
+    "fbx": "build/blender/stations/creature_meerkat_storm_forge.fbx",
+    "png": "build/blender/stations/creature_meerkat_storm_forge.png",
+    "preview": "build/blender/stations/previews/creature_meerkat_storm_forge_rest.png",
+    "size_studs": [
+      2.23,
+      6.7,
+      4.5
+    ],
+    "tris": 14552,
+    "parts": {
+      "creature_meerkat_storm_forge_body": 14552
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Storm Meerkat: SHANNON's Alien Meerkat with UFO Tail from ForgeGUI (artifact 1f8645af), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_meerkat_storm_forge_body": [
+        0.0,
+        3.35,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_meerkat_storm_forge_head": [
+        0.003,
+        4.826,
+        1.049
+      ],
+      "creature_meerkat_storm_forge_leg_fl": [
+        0.566,
+        4.052,
+        1.4
+      ],
+      "creature_meerkat_storm_forge_leg_fr": [
+        -0.56,
+        4.052,
+        1.4
+      ],
+      "creature_meerkat_storm_forge_leg_bl": [
+        0.637,
+        1.589,
+        0.978
+      ],
+      "creature_meerkat_storm_forge_leg_br": [
+        -0.63,
+        1.589,
+        0.978
+      ],
+      "creature_meerkat_storm_forge_tail": [
+        0.003,
+        1.589,
+        -0.007
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.003,
+      1.941,
+      0.838
+    ]
+  },
+  "creature_cheetah_forge": {
+    "fbx": "build/blender/stations/creature_cheetah_forge.fbx",
+    "png": "build/blender/stations/creature_cheetah_forge.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_forge_rest.png",
+    "size_studs": [
+      3.76,
+      4.52,
+      10.85
+    ],
+    "tris": 5102,
+    "parts": {
+      "creature_cheetah_forge_body": 5102
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Cheetah: SHANNON's Angular Roblox-Style Cheetah from ForgeGUI (artifact 1a08317f), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_cheetah_forge_body": [
+        0.0,
+        2.259,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_cheetah_forge_head": [
+        -0.218,
+        3.397,
+        3.632
+      ],
+      "creature_cheetah_forge_leg_fl": [
+        1.311,
+        1.585,
+        3.293
+      ],
+      "creature_cheetah_forge_leg_fr": [
+        -1.294,
+        1.585,
+        3.293
+      ],
+      "creature_cheetah_forge_leg_bl": [
+        1.141,
+        1.585,
+        -0.898
+      ],
+      "creature_cheetah_forge_leg_br": [
+        -1.294,
+        1.585,
+        -1.238
+      ],
+      "creature_cheetah_forge_tail": [
+        -0.218,
+        2.265,
+        -2.144
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.008,
+      2.604,
+      0.575
+    ]
+  },
+  "creature_cheetah_lightning_forge": {
+    "fbx": "build/blender/stations/creature_cheetah_lightning_forge.fbx",
+    "png": "build/blender/stations/creature_cheetah_lightning_forge.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_lightning_forge_rest.png",
+    "size_studs": [
+      4.06,
+      8.3,
+      13.86
+    ],
+    "tris": 1991,
+    "parts": {
+      "creature_cheetah_lightning_forge_body": 1991
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Lightning Cheetah: the big cheetah of SHANNON's ForgeGUI concept sheet (artifact d4747ca8), cut out and turned straight, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_cheetah_lightning_forge_body": [
+        0.0,
+        4.149,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_cheetah_lightning_forge_head": [
+        -0.099,
+        5.957,
+        5.661
+      ],
+      "creature_cheetah_lightning_forge_leg_fl": [
+        0.87,
+        3.253,
+        5.436
+      ],
+      "creature_cheetah_lightning_forge_leg_fr": [
+        -1.271,
+        3.253,
+        4.76
+      ],
+      "creature_cheetah_lightning_forge_leg_bl": [
+        1.343,
+        3.253,
+        0.703
+      ],
+      "creature_cheetah_lightning_forge_leg_br": [
+        -1.001,
+        3.253,
+        -1.325
+      ],
+      "creature_cheetah_lightning_forge_tail": [
+        0.126,
+        4.154,
+        -2.452
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.013,
+      4.83,
+      2.055
+    ]
+  },
+  "creature_cheetah_thunder_forge": {
+    "fbx": "build/blender/stations/creature_cheetah_thunder_forge.fbx",
+    "png": "build/blender/stations/creature_cheetah_thunder_forge.png",
+    "preview": "build/blender/stations/previews/creature_cheetah_thunder_forge_rest.png",
+    "size_studs": [
+      5.66,
+      8.81,
+      13.5
+    ],
+    "tris": 14869,
+    "parts": {
+      "creature_cheetah_thunder_forge_body": 14869
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Thunder Cheetah (the Fire Cheetah's place): SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_cheetah_thunder_forge_body": [
+        0.0,
+        4.404,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_cheetah_thunder_forge_head": [
+        -0.457,
+        6.084,
+        4.64
+      ],
+      "creature_cheetah_thunder_forge_leg_fl": [
+        1.798,
+        2.984,
+        4.076
+      ],
+      "creature_cheetah_thunder_forge_leg_fr": [
+        -1.866,
+        2.984,
+        4.076
+      ],
+      "creature_cheetah_thunder_forge_leg_bl": [
+        1.798,
+        2.984,
+        -2.124
+      ],
+      "creature_cheetah_thunder_forge_leg_br": [
+        -1.866,
+        2.984,
+        -2.124
+      ],
+      "creature_cheetah_thunder_forge_tail": [
+        -0.457,
+        5.521,
+        -3.674
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.034,
+      5.098,
+      0.694
+    ]
+  },
+  "creature_flamingo_forge": {
+    "fbx": "build/blender/stations/creature_flamingo_forge.fbx",
+    "png": "build/blender/stations/creature_flamingo_forge.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_forge_rest.png",
+    "size_studs": [
+      2.7,
+      8.0,
+      6.28
+    ],
+    "tris": 5001,
+    "parts": {
+      "creature_flamingo_forge_body": 5001
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Flamingo: SHANNON's pink flamingo from ForgeGUI (artifact c9dca2cc), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_forge_body": [
+        0.0,
+        4.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_flamingo_forge_head": [
+        -0.002,
+        5.006,
+        1.422
+      ],
+      "creature_flamingo_forge_leg_fl": [
+        0.502,
+        2.99,
+        -0.3
+      ],
+      "creature_flamingo_forge_leg_fr": [
+        -0.582,
+        2.99,
+        -0.762
+      ],
+      "creature_flamingo_forge_leg_bl": [
+        0.754,
+        4.67,
+        0.582
+      ],
+      "creature_flamingo_forge_leg_br": [
+        -0.758,
+        4.67,
+        0.582
+      ],
+      "creature_flamingo_forge_tail": [
+        -0.002,
+        3.998,
+        -1.098
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.002,
+      3.998,
+      -0.006
+    ]
+  },
+  "creature_flamingo_peacock_forge": {
+    "fbx": "build/blender/stations/creature_flamingo_peacock_forge.fbx",
+    "png": "build/blender/stations/creature_flamingo_peacock_forge.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_peacock_forge_rest.png",
+    "size_studs": [
+      8.72,
+      9.8,
+      6.96
+    ],
+    "tris": 14686,
+    "parts": {
+      "creature_flamingo_peacock_forge_body": 14686
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "King Flamingo: SHANNON's peacock flamingo with a crown from ForgeGUI (artifact a84542a7), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_peacock_forge_body": [
+        0.0,
+        4.9,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_flamingo_peacock_forge_head": [
+        0.0,
+        5.518,
+        1.861
+      ],
+      "creature_flamingo_peacock_forge_leg_fl": [
+        0.515,
+        3.149,
+        -0.404
+      ],
+      "creature_flamingo_peacock_forge_leg_fr": [
+        -0.515,
+        3.149,
+        -0.404
+      ],
+      "creature_flamingo_peacock_forge_leg_bl": [
+        1.03,
+        5.106,
+        0.728
+      ],
+      "creature_flamingo_peacock_forge_leg_br": [
+        -1.03,
+        5.106,
+        0.728
+      ],
+      "creature_flamingo_peacock_forge_tail": [
+        0.0,
+        4.282,
+        -1.228
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      4.282,
+      0.008
+    ]
+  },
+  "creature_flamingo_phoenix_forge": {
+    "fbx": "build/blender/stations/creature_flamingo_phoenix_forge.fbx",
+    "png": "build/blender/stations/creature_flamingo_phoenix_forge.png",
+    "preview": "build/blender/stations/previews/creature_flamingo_phoenix_forge_rest.png",
+    "size_studs": [
+      6.49,
+      11.3,
+      9.94
+    ],
+    "tris": 15029,
+    "parts": {
+      "creature_flamingo_phoenix_forge_body": 15029
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Phoenix Flamingo: SHANNON's Flamingo of Fire from ForgeGUI (artifact 675a6361), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_flamingo_phoenix_forge_body": [
+        0.0,
+        5.65,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_flamingo_phoenix_forge_head": [
+        0.0,
+        7.075,
+        2.334
+      ],
+      "creature_flamingo_phoenix_forge_leg_fl": [
+        1.045,
+        3.275,
+        0.197
+      ],
+      "creature_flamingo_phoenix_forge_leg_fr": [
+        -1.045,
+        3.275,
+        0.197
+      ],
+      "creature_flamingo_phoenix_forge_leg_bl": [
+        1.306,
+        6.6,
+        0.791
+      ],
+      "creature_flamingo_phoenix_forge_leg_br": [
+        -1.306,
+        6.6,
+        0.791
+      ],
+      "creature_flamingo_phoenix_forge_tail": [
+        0.0,
+        5.294,
+        -1.465
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.294,
+      -0.041
+    ]
+  },
+  "creature_lion_shadow_forge": {
+    "fbx": "build/blender/stations/creature_lion_shadow_forge.fbx",
+    "png": "build/blender/stations/creature_lion_shadow_forge.png",
+    "preview": "build/blender/stations/previews/creature_lion_shadow_forge_rest.png",
+    "size_studs": [
+      6.12,
+      8.62,
+      15.03
+    ],
+    "tris": 15063,
+    "parts": {
+      "creature_lion_shadow_forge_body": 15063
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shadow Lion: SHANNON's Shadowfang Purple Lion from ForgeGUI (artifact 68e2e5b5), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_lion_shadow_forge_body": [
+        0.0,
+        4.312,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_lion_shadow_forge_head": [
+        0.0,
+        5.862,
+        4.758
+      ],
+      "creature_lion_shadow_forge_leg_fl": [
+        1.577,
+        3.654,
+        4.285
+      ],
+      "creature_lion_shadow_forge_leg_fr": [
+        -1.577,
+        3.654,
+        4.285
+      ],
+      "creature_lion_shadow_forge_leg_bl": [
+        1.577,
+        3.812,
+        -2.023
+      ],
+      "creature_lion_shadow_forge_leg_br": [
+        -1.577,
+        3.812,
+        -2.023
+      ],
+      "creature_lion_shadow_forge_tail": [
+        -0.788,
+        4.6,
+        -3.915
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.073,
+      1.288
+    ]
+  },
+  "creature_lion_sun_forge": {
+    "fbx": "build/blender/stations/creature_lion_sun_forge.fbx",
+    "png": "build/blender/stations/creature_lion_sun_forge.png",
+    "preview": "build/blender/stations/previews/creature_lion_sun_forge_rest.png",
+    "size_studs": [
+      6.61,
+      9.49,
+      16.05
+    ],
+    "tris": 3156,
+    "parts": {
+      "creature_lion_sun_forge_body": 3156
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Sun Lion: SHANNON's Fierce Low-Poly Sunmane Lion from ForgeGUI (artifact efa580ee), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_lion_sun_forge_body": [
+        0.0,
+        4.747,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_lion_sun_forge_head": [
+        0.0,
+        6.444,
+        5.046
+      ],
+      "creature_lion_sun_forge_leg_fl": [
+        1.68,
+        4.091,
+        4.541
+      ],
+      "creature_lion_sun_forge_leg_fr": [
+        -1.68,
+        4.091,
+        4.541
+      ],
+      "creature_lion_sun_forge_leg_bl": [
+        1.68,
+        4.259,
+        -2.181
+      ],
+      "creature_lion_sun_forge_leg_br": [
+        -1.68,
+        4.259,
+        -2.181
+      ],
+      "creature_lion_sun_forge_tail": [
+        0.0,
+        5.099,
+        -4.197
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.604,
+      1.348
+    ]
+  },
+  "creature_giraffe_forge": {
+    "fbx": "build/blender/stations/creature_giraffe_forge.fbx",
+    "png": "build/blender/stations/creature_giraffe_forge.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_forge_rest.png",
+    "size_studs": [
+      7.92,
+      23.46,
+      19.58
+    ],
+    "tris": 5192,
+    "parts": {
+      "creature_giraffe_forge_body": 5192
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Giraffe: SHANNON's giraffe from ForgeGUI (artifact c2e4bf29), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_forge_body": [
+        0.0,
+        11.73,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_giraffe_forge_head": [
+        0.0,
+        13.196,
+        3.688
+      ],
+      "creature_giraffe_forge_leg_fl": [
+        1.724,
+        9.255,
+        3.195
+      ],
+      "creature_giraffe_forge_leg_fr": [
+        -1.724,
+        9.255,
+        3.195
+      ],
+      "creature_giraffe_forge_leg_bl": [
+        1.847,
+        9.255,
+        -3.946
+      ],
+      "creature_giraffe_forge_leg_br": [
+        -1.847,
+        9.255,
+        -3.946
+      ],
+      "creature_giraffe_forge_tail": [
+        0.0,
+        11.718,
+        -5.178
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      10.487,
+      -0.006
+    ]
+  },
+  "creature_giraffe_diamond_forge": {
+    "fbx": "build/blender/stations/creature_giraffe_diamond_forge.fbx",
+    "png": "build/blender/stations/creature_giraffe_diamond_forge.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_diamond_forge_rest.png",
+    "size_studs": [
+      8.64,
+      24.39,
+      25.17
+    ],
+    "tris": 3152,
+    "parts": {
+      "creature_giraffe_diamond_forge_body": 3152
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Diamond Giraffe: SHANNON's diamond giraffe from ForgeGUI (artifact f1abf347), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_diamond_forge_body": [
+        0.0,
+        12.195,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_giraffe_diamond_forge_head": [
+        0.026,
+        13.76,
+        5.78
+      ],
+      "creature_giraffe_diamond_forge_leg_fl": [
+        2.656,
+        9.815,
+        6.306
+      ],
+      "creature_giraffe_diamond_forge_leg_fr": [
+        -2.605,
+        9.815,
+        6.306
+      ],
+      "creature_giraffe_diamond_forge_leg_bl": [
+        2.656,
+        9.815,
+        -3.689
+      ],
+      "creature_giraffe_diamond_forge_leg_br": [
+        -2.605,
+        9.815,
+        -3.689
+      ],
+      "creature_giraffe_diamond_forge_tail": [
+        0.026,
+        12.182,
+        -5.004
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.026,
+      11.393,
+      1.309
+    ]
+  },
+  "creature_giraffe_acacia_forge": {
+    "fbx": "build/blender/stations/creature_giraffe_acacia_forge.fbx",
+    "png": "build/blender/stations/creature_giraffe_acacia_forge.png",
+    "preview": "build/blender/stations/previews/creature_giraffe_acacia_forge_rest.png",
+    "size_studs": [
+      11.23,
+      24.0,
+      25.85
+    ],
+    "tris": 15066,
+    "parts": {
+      "creature_giraffe_acacia_forge_body": 15066
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Acacia Giraffe: SHANNON's giraffe with acacias growing on it, from ForgeGUI (artifact 6e93bd49), one mesh, skinned to the Stations rig (decisions 0102, 0103).",
+    "glow": {},
+    "centres": {
+      "creature_giraffe_acacia_forge_body": [
+        0.0,
+        12.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_giraffe_acacia_forge_head": [
+        0.0,
+        13.634,
+        4.877
+      ],
+      "creature_giraffe_acacia_forge_leg_fl": [
+        2.567,
+        9.311,
+        4.877
+      ],
+      "creature_giraffe_acacia_forge_leg_fr": [
+        -2.567,
+        9.311,
+        4.877
+      ],
+      "creature_giraffe_acacia_forge_leg_bl": [
+        2.567,
+        9.311,
+        -3.094
+      ],
+      "creature_giraffe_acacia_forge_leg_br": [
+        -2.567,
+        9.311,
+        -3.094
+      ],
+      "creature_giraffe_acacia_forge_tail": [
+        0.0,
+        12.013,
+        -6.202
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      11.203,
+      0.013
+    ]
+  },
+  "creature_elephant_forge": {
+    "fbx": "build/blender/stations/creature_elephant_forge.fbx",
+    "png": "build/blender/stations/creature_elephant_forge.png",
+    "preview": "build/blender/stations/previews/creature_elephant_forge_rest.png",
+    "size_studs": [
+      20.42,
+      14.82,
+      24.51
+    ],
+    "tris": 4817,
+    "parts": {
+      "creature_elephant_forge_body": 4817
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Elephant (the Titan): SHANNON's second regular elephant from ForgeGUI (artifact fc30d94a), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_elephant_forge_body": [
+        0.0,
+        7.411,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_elephant_forge_head": [
+        -0.013,
+        9.993,
+        5.705
+      ],
+      "creature_elephant_forge_leg_fl": [
+        2.558,
+        5.624,
+        3.134
+      ],
+      "creature_elephant_forge_leg_fr": [
+        -2.583,
+        5.624,
+        3.134
+      ],
+      "creature_elephant_forge_leg_bl": [
+        2.66,
+        5.624,
+        -5.347
+      ],
+      "creature_elephant_forge_leg_br": [
+        -2.686,
+        5.624,
+        -5.347
+      ],
+      "creature_elephant_forge_tail": [
+        -0.013,
+        8.708,
+        -8.432
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.013,
+      8.708,
+      -0.721
+    ]
+  },
+  "creature_elephant_frost_forge": {
+    "fbx": "build/blender/stations/creature_elephant_frost_forge.fbx",
+    "png": "build/blender/stations/creature_elephant_frost_forge.png",
+    "preview": "build/blender/stations/previews/creature_elephant_frost_forge_rest.png",
+    "size_studs": [
+      18.81,
+      17.04,
+      29.97
+    ],
+    "tris": 5316,
+    "parts": {
+      "creature_elephant_frost_forge_body": 5316
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Frost Mammoth: SHANNON's Frostfur Mammoth with Crystal Tusks from ForgeGUI (artifact 29d6a1a2), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_elephant_frost_forge_body": [
+        0.0,
+        8.519,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_elephant_frost_forge_head": [
+        0.008,
+        11.623,
+        6.238
+      ],
+      "creature_elephant_frost_forge_leg_fl": [
+        2.822,
+        4.744,
+        1.548
+      ],
+      "creature_elephant_frost_forge_leg_fr": [
+        -2.806,
+        4.744,
+        1.548
+      ],
+      "creature_elephant_frost_forge_leg_bl": [
+        2.822,
+        4.744,
+        -7.989
+      ],
+      "creature_elephant_frost_forge_leg_br": [
+        -2.806,
+        4.744,
+        -7.989
+      ],
+      "creature_elephant_frost_forge_tail": [
+        0.008,
+        9.434,
+        -10.646
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.008,
+      10.06,
+      -2.517
+    ]
+  },
+  "creature_elephant_war_forge": {
+    "fbx": "build/blender/stations/creature_elephant_war_forge.fbx",
+    "png": "build/blender/stations/creature_elephant_war_forge.png",
+    "preview": "build/blender/stations/previews/creature_elephant_war_forge_rest.png",
+    "size_studs": [
+      12.86,
+      13.96,
+      27.0
+    ],
+    "tris": 5298,
+    "parts": {
+      "creature_elephant_war_forge_body": 5298
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "War Elephant: SHANNON's armoured war mammoth with a trunk axe from ForgeGUI (artifact 90a97f25), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_elephant_war_forge_body": [
+        0.0,
+        6.981,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_elephant_war_forge_head": [
+        0.0,
+        9.115,
+        3.401
+      ],
+      "creature_elephant_war_forge_leg_fl": [
+        2.202,
+        4.316,
+        0.014
+      ],
+      "creature_elephant_war_forge_leg_fr": [
+        -2.202,
+        4.316,
+        0.014
+      ],
+      "creature_elephant_war_forge_leg_bl": [
+        2.315,
+        4.316,
+        -8.059
+      ],
+      "creature_elephant_war_forge_leg_br": [
+        -2.315,
+        4.316,
+        -8.059
+      ],
+      "creature_elephant_war_forge_tail": [
+        0.0,
+        8.268,
+        -9.866
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      8.268,
+      -3.373
+    ]
+  },
+  "foe_knight_forge": {
+    "fbx": "build/blender/stations/foe_knight_forge.fbx",
+    "png": "build/blender/stations/foe_knight_forge.png",
+    "preview": "build/blender/stations/previews/foe_knight_forge_rest.png",
+    "size_studs": [
+      6.97,
+      7.9,
+      4.94
+    ],
+    "tris": 6658,
+    "parts": {
+      "foe_knight_forge_body": 6658
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shadow Knight: SHANNON's Shadow Knight (01:18) from ForgeGUI (artifact f9bf1baf), regenerated by ForgeGUI in an A-pose, its sword and shield made apart (job 519ef8b1) and put in its hands, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_knight_forge_body": [
+        0.0,
+        3.95,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_knight_forge_head": [
+        -0.43,
+        5.78,
+        -1.226
+      ],
+      "foe_knight_forge_tail": [
+        -0.43,
+        5.199,
+        -2.056
+      ],
+      "foe_knight_forge_leg_fl": [
+        1.064,
+        5.199,
+        -1.392
+      ],
+      "foe_knight_forge_leg_fr": [
+        -1.925,
+        5.199,
+        -1.392
+      ],
+      "foe_knight_forge_leg_bl": [
+        0.234,
+        2.709,
+        -1.392
+      ],
+      "foe_knight_forge_leg_br": [
+        -1.094,
+        2.709,
+        -1.392
+      ],
+      "foe_knight_forge_elbow_l": [
+        1.263,
+        3.957,
+        -1.288
+      ],
+      "foe_knight_forge_elbow_r": [
+        -2.124,
+        3.957,
+        -1.288
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.43,
+      3.539,
+      -1.392
+    ]
+  },
+  "foe_knight_heavy_forge": {
+    "fbx": "build/blender/stations/foe_knight_heavy_forge.fbx",
+    "png": "build/blender/stations/foe_knight_heavy_forge.png",
+    "preview": "build/blender/stations/previews/foe_knight_heavy_forge_rest.png",
+    "size_studs": [
+      9.03,
+      9.0,
+      5.5
+    ],
+    "tris": 6948,
+    "parts": {
+      "foe_knight_heavy_forge_body": 6948
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Heavy Knight: SHANNON's heavy knight (01:27) from ForgeGUI (artifact 2f5329e8), regenerated by ForgeGUI in an A-pose, its hammer and shield made apart (job 2f5329e8) and put in its hands, the hammer gripped a third of the way up its shaft, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_knight_heavy_forge_body": [
+        0.0,
+        4.5,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_knight_heavy_forge_head": [
+        -0.126,
+        6.582,
+        -0.793
+      ],
+      "foe_knight_heavy_forge_tail": [
+        -0.126,
+        5.92,
+        -1.738
+      ],
+      "foe_knight_heavy_forge_leg_fl": [
+        1.765,
+        5.92,
+        -0.982
+      ],
+      "foe_knight_heavy_forge_leg_fr": [
+        -2.016,
+        5.92,
+        -0.982
+      ],
+      "foe_knight_heavy_forge_leg_bl": [
+        0.725,
+        3.084,
+        -0.982
+      ],
+      "foe_knight_heavy_forge_leg_br": [
+        -0.977,
+        3.084,
+        -0.982
+      ],
+      "foe_knight_heavy_forge_tip": [
+        -1.804,
+        1.595,
+        2.033
+      ],
+      "foe_knight_heavy_forge_neck": [
+        -1.971,
+        1.9,
+        1.428
+      ],
+      "foe_knight_heavy_forge_elbow_l": [
+        1.992,
+        4.417,
+        -0.803
+      ],
+      "foe_knight_heavy_forge_elbow_r": [
+        -2.243,
+        4.417,
+        -0.803
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.126,
+      4.03,
+      -0.982
+    ]
+  },
+  "foe_archer_forge": {
+    "fbx": "build/blender/stations/foe_archer_forge.fbx",
+    "png": "build/blender/stations/foe_archer_forge.png",
+    "preview": "build/blender/stations/previews/foe_archer_forge_rest.png",
+    "size_studs": [
+      5.84,
+      7.4,
+      4.65
+    ],
+    "tris": 6618,
+    "parts": {
+      "foe_archer_forge_body": 6618
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shadow Archer: SHANNON's Shadow Archer (01:29) from ForgeGUI (artifact 6a06f2d8), regenerated by ForgeGUI in an A-pose, its bow made apart (job 7633fd67) and put in its left hand, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_archer_forge_body": [
+        0.0,
+        3.7,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_archer_forge_head": [
+        0.0,
+        5.252,
+        -0.119
+      ],
+      "foe_archer_forge_tail": [
+        0.0,
+        4.864,
+        -0.895
+      ],
+      "foe_archer_forge_leg_fl": [
+        1.319,
+        4.864,
+        -0.274
+      ],
+      "foe_archer_forge_leg_fr": [
+        -1.319,
+        4.864,
+        -0.274
+      ],
+      "foe_archer_forge_leg_bl": [
+        0.621,
+        2.691,
+        -0.274
+      ],
+      "foe_archer_forge_leg_br": [
+        -0.621,
+        2.691,
+        -0.274
+      ],
+      "foe_archer_forge_arrow": [
+        -1.901,
+        6.594,
+        -1.166
+      ],
+      "foe_archer_forge_elbow_l": [
+        1.623,
+        3.798,
+        -0.138
+      ],
+      "foe_archer_forge_elbow_r": [
+        -1.623,
+        3.798,
+        -0.138
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      3.312,
+      -0.274
+    ]
+  },
+  "foe_archer_crossbow_forge": {
+    "fbx": "build/blender/stations/foe_archer_crossbow_forge.fbx",
+    "png": "build/blender/stations/foe_archer_crossbow_forge.png",
+    "preview": "build/blender/stations/previews/foe_archer_crossbow_forge_rest.png",
+    "size_studs": [
+      6.78,
+      7.6,
+      2.34
+    ],
+    "tris": 6331,
+    "parts": {
+      "foe_archer_crossbow_forge_body": 6331
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Crossbow Troop: SHANNON's Crossbow Troop (01:31) from ForgeGUI (artifact c9727742), regenerated by ForgeGUI in an A-pose with empty fists, its crossbow made apart (job 9b1947e6) and put in its right fist, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_archer_crossbow_forge_body": [
+        0.0,
+        3.8,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_archer_crossbow_forge_head": [
+        0.797,
+        5.454,
+        0.155
+      ],
+      "foe_archer_crossbow_forge_tail": [
+        0.797,
+        4.677,
+        -0.777
+      ],
+      "foe_archer_crossbow_forge_leg_fl": [
+        2.272,
+        4.91,
+        -0.0
+      ],
+      "foe_archer_crossbow_forge_leg_fr": [
+        -0.679,
+        4.91,
+        -0.0
+      ],
+      "foe_archer_crossbow_forge_leg_bl": [
+        1.496,
+        2.657,
+        -0.0
+      ],
+      "foe_archer_crossbow_forge_leg_br": [
+        0.098,
+        2.657,
+        -0.0
+      ],
+      "foe_archer_crossbow_forge_elbow_l": [
+        2.172,
+        3.821,
+        0.027
+      ],
+      "foe_archer_crossbow_forge_elbow_r": [
+        -0.574,
+        3.819,
+        0.023
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.797,
+      3.512,
+      -0.0
+    ]
+  },
+  "foe_mage_forge": {
+    "fbx": "build/blender/stations/foe_mage_forge.fbx",
+    "png": "build/blender/stations/foe_mage_forge.png",
+    "preview": "build/blender/stations/previews/foe_mage_forge_rest.png",
+    "size_studs": [
+      6.8,
+      8.0,
+      7.24
+    ],
+    "tris": 6072,
+    "parts": {
+      "foe_mage_forge_body": 6072
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Darkcaster: SHANNON's Darkcaster (01:32) from ForgeGUI (artifact 021c5f3e), regenerated by ForgeGUI in an A-pose with a fist and an open palm, its staff and orb made apart (job e034e544) and put in its hands, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_mage_forge_body": [
+        0.0,
+        4.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_mage_forge_head": [
+        0.267,
+        5.854,
+        -0.21
+      ],
+      "foe_mage_forge_tail": [
+        0.267,
+        5.265,
+        -1.051
+      ],
+      "foe_mage_forge_leg_fl": [
+        1.948,
+        5.433,
+        -0.378
+      ],
+      "foe_mage_forge_leg_fr": [
+        -1.414,
+        5.433,
+        -0.378
+      ],
+      "foe_mage_forge_leg_bl": [
+        0.939,
+        2.575,
+        -0.378
+      ],
+      "foe_mage_forge_leg_br": [
+        -0.406,
+        2.575,
+        -0.378
+      ],
+      "foe_mage_forge_elbow_l": [
+        2.671,
+        4.46,
+        0.059
+      ],
+      "foe_mage_forge_elbow_r": [
+        -1.766,
+        4.266,
+        -0.426
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.267,
+      3.584,
+      -0.378
+    ]
+  },
+  "foe_mage_necromancer_forge": {
+    "fbx": "build/blender/stations/foe_mage_necromancer_forge.fbx",
+    "png": "build/blender/stations/foe_mage_necromancer_forge.png",
+    "preview": "build/blender/stations/previews/foe_mage_necromancer_forge_rest.png",
+    "size_studs": [
+      6.59,
+      8.4,
+      7.32
+    ],
+    "tris": 5952,
+    "parts": {
+      "foe_mage_necromancer_forge_body": 5952
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Necromancer: SHANNON's Necromancer (01:34) from ForgeGUI (artifact 01b71c4c), regenerated by ForgeGUI in an A-pose with a fist and an open clawed hand, its staff and skull made apart (job a7455633) and put in its hands, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_mage_necromancer_forge_body": [
+        0.0,
+        4.2,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_mage_necromancer_forge_head": [
+        0.207,
+        6.138,
+        0.084
+      ],
+      "foe_mage_necromancer_forge_tail": [
+        0.207,
+        5.521,
+        -0.797
+      ],
+      "foe_mage_necromancer_forge_leg_fl": [
+        1.881,
+        5.697,
+        -0.092
+      ],
+      "foe_mage_necromancer_forge_leg_fr": [
+        -1.466,
+        5.697,
+        -0.092
+      ],
+      "foe_mage_necromancer_forge_leg_bl": [
+        0.824,
+        2.438,
+        -0.092
+      ],
+      "foe_mage_necromancer_forge_leg_br": [
+        -0.409,
+        2.438,
+        -0.092
+      ],
+      "foe_mage_necromancer_forge_elbow_l": [
+        2.442,
+        4.479,
+        0.189
+      ],
+      "foe_mage_necromancer_forge_elbow_r": [
+        -1.669,
+        4.542,
+        -0.174
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.207,
+      3.76,
+      -0.092
+    ]
+  },
+  "foe_mage_priest_forge": {
+    "fbx": "build/blender/stations/foe_mage_priest_forge.fbx",
+    "png": "build/blender/stations/foe_mage_priest_forge.png",
+    "preview": "build/blender/stations/previews/foe_mage_priest_forge_rest.png",
+    "size_studs": [
+      6.63,
+      8.0,
+      7.72
+    ],
+    "tris": 6526,
+    "parts": {
+      "foe_mage_priest_forge_body": 6526
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Battle Priest: SHANNON's Battle Priest (01:36) from ForgeGUI (artifact ad1de0c6), regenerated by ForgeGUI in an A-pose with a fist and an open palm, its staff (job 0ad35017) in its fist and its half-open book (job 6c0eeb1e) open on its palm, set for its idle pose, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_mage_priest_forge_body": [
+        0.0,
+        4.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_mage_priest_forge_head": [
+        -0.009,
+        5.68,
+        0.131
+      ],
+      "foe_mage_priest_forge_tail": [
+        -0.009,
+        5.26,
+        -0.709
+      ],
+      "foe_mage_priest_forge_leg_fl": [
+        1.419,
+        5.26,
+        -0.037
+      ],
+      "foe_mage_priest_forge_leg_fr": [
+        -1.437,
+        5.26,
+        -0.037
+      ],
+      "foe_mage_priest_forge_leg_bl": [
+        0.495,
+        2.32,
+        -0.037
+      ],
+      "foe_mage_priest_forge_leg_br": [
+        -0.513,
+        2.32,
+        -0.037
+      ],
+      "foe_mage_priest_forge_tip": [
+        0.774,
+        5.281,
+        1.873
+      ],
+      "foe_mage_priest_forge_neck": [
+        1.179,
+        4.789,
+        1.8
+      ],
+      "foe_mage_priest_forge_elbow_l": [
+        1.432,
+        4.177,
+        0.31
+      ],
+      "foe_mage_priest_forge_elbow_r": [
+        -1.716,
+        4.499,
+        0.584
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.009,
+      3.58,
+      -0.037
+    ]
+  },
+  "foe_knight_berserker_forge": {
+    "fbx": "build/blender/stations/foe_knight_berserker_forge.fbx",
+    "png": "build/blender/stations/foe_knight_berserker_forge.png",
+    "preview": "build/blender/stations/previews/foe_knight_berserker_forge_rest.png",
+    "size_studs": [
+      7.26,
+      8.6,
+      7.19
+    ],
+    "tris": 6372,
+    "parts": {
+      "foe_knight_berserker_forge_body": 6372
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Berserker: SHANNON's Berserk Assault (01:40) from ForgeGUI (artifact ad969636), regenerated by ForgeGUI in an A-pose with empty fists, its great axe made apart (job 9b1947e6) and put in its right fist, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_knight_berserker_forge_body": [
+        0.0,
+        4.3,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_knight_berserker_forge_head": [
+        -0.011,
+        7.005,
+        -1.782
+      ],
+      "foe_knight_berserker_forge_tail": [
+        -0.011,
+        5.653,
+        -2.864
+      ],
+      "foe_knight_berserker_forge_leg_fl": [
+        1.883,
+        5.923,
+        -1.963
+      ],
+      "foe_knight_berserker_forge_leg_fr": [
+        -1.905,
+        5.923,
+        -1.963
+      ],
+      "foe_knight_berserker_forge_leg_bl": [
+        0.891,
+        2.677,
+        -1.963
+      ],
+      "foe_knight_berserker_forge_leg_br": [
+        -0.913,
+        2.677,
+        -1.963
+      ],
+      "foe_knight_berserker_forge_elbow_l": [
+        2.06,
+        4.821,
+        -1.588
+      ],
+      "foe_knight_berserker_forge_elbow_r": [
+        -2.086,
+        4.819,
+        -1.588
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.011,
+      3.849,
+      -1.963
+    ]
+  },
+  "foe_ogre_forge": {
+    "fbx": "build/blender/stations/foe_ogre_forge.fbx",
+    "png": "build/blender/stations/foe_ogre_forge.png",
+    "preview": "build/blender/stations/previews/foe_ogre_forge_rest.png",
+    "size_studs": [
+      11.25,
+      10.5,
+      8.05
+    ],
+    "tris": 6375,
+    "parts": {
+      "foe_ogre_forge_body": 6375
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Ogre Enforcer: SHANNON's Ogre Enforcer (01:41) from ForgeGUI (artifact 559185f5), regenerated by ForgeGUI in an A-pose with empty fists, its club made apart (job e034e544) and put in its right fist, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_ogre_forge_body": [
+        0.0,
+        5.25,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_ogre_forge_head": [
+        0.009,
+        8.551,
+        -1.28
+      ],
+      "foe_ogre_forge_tail": [
+        0.009,
+        7.021,
+        -2.692
+      ],
+      "foe_ogre_forge_leg_fl": [
+        3.069,
+        7.374,
+        -1.515
+      ],
+      "foe_ogre_forge_leg_fr": [
+        -3.052,
+        7.374,
+        -1.515
+      ],
+      "foe_ogre_forge_leg_bl": [
+        1.421,
+        3.373,
+        -1.515
+      ],
+      "foe_ogre_forge_leg_br": [
+        -1.404,
+        3.373,
+        -1.515
+      ],
+      "foe_ogre_forge_elbow_l": [
+        3.502,
+        5.126,
+        -1.662
+      ],
+      "foe_ogre_forge_elbow_r": [
+        -3.359,
+        5.044,
+        -1.58
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.009,
+      4.667,
+      -1.515
+    ]
+  },
+  "foe_ogre_commander_forge": {
+    "fbx": "build/blender/stations/foe_ogre_commander_forge.fbx",
+    "png": "build/blender/stations/foe_ogre_commander_forge.png",
+    "preview": "build/blender/stations/previews/foe_ogre_commander_forge_rest.png",
+    "size_studs": [
+      10.34,
+      12.5,
+      12.79
+    ],
+    "tris": 6514,
+    "parts": {
+      "foe_ogre_commander_forge_body": 6514
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Ogre Commander: SHANNON's Ogre Commander (01:42) from ForgeGUI (artifact 33ba2278), regenerated by ForgeGUI in an A-pose with empty fists, its great axe made apart (job ad7e7c71) and put in its right fist, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_ogre_commander_forge_body": [
+        0.0,
+        6.25,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_ogre_commander_forge_head": [
+        0.102,
+        8.478,
+        -0.747
+      ],
+      "foe_ogre_commander_forge_tail": [
+        0.102,
+        4.284,
+        -2.582
+      ],
+      "foe_ogre_commander_forge_leg_fl": [
+        2.986,
+        7.561,
+        -1.009
+      ],
+      "foe_ogre_commander_forge_leg_fr": [
+        -2.782,
+        7.561,
+        -1.009
+      ],
+      "foe_ogre_commander_forge_leg_bl": [
+        1.413,
+        3.628,
+        -1.009
+      ],
+      "foe_ogre_commander_forge_leg_br": [
+        -1.209,
+        3.628,
+        -1.009
+      ],
+      "foe_ogre_commander_forge_elbow_l": [
+        1.499,
+        6.897,
+        0.174
+      ],
+      "foe_ogre_commander_forge_elbow_r": [
+        -1.408,
+        6.868,
+        0.314
+      ],
+      "foe_ogre_commander_forge_weapon": [
+        -0.087,
+        7.182,
+        1.495
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.102,
+      4.939,
+      -1.009
+    ]
+  },
+  "foe_golem_forge": {
+    "fbx": "build/blender/stations/foe_golem_forge.fbx",
+    "png": "build/blender/stations/foe_golem_forge.png",
+    "preview": "build/blender/stations/previews/foe_golem_forge_rest.png",
+    "size_studs": [
+      11.75,
+      12.0,
+      6.35
+    ],
+    "tris": 5111,
+    "parts": {
+      "foe_golem_forge_body": 5111
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Siege Golem: SHANNON's Siege Golem (01:56) from ForgeGUI (artifact b06296c3), regenerated by ForgeGUI with empty fists, its siege castle on its back, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_golem_forge_body": [
+        0.0,
+        6.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_golem_forge_head": [
+        0.0,
+        7.004,
+        1.007
+      ],
+      "foe_golem_forge_tail": [
+        0.0,
+        7.256,
+        -1.265
+      ],
+      "foe_golem_forge_leg_fl": [
+        3.156,
+        7.509,
+        0.249
+      ],
+      "foe_golem_forge_leg_fr": [
+        -3.156,
+        7.509,
+        0.249
+      ],
+      "foe_golem_forge_leg_bl": [
+        1.262,
+        4.1,
+        0.249
+      ],
+      "foe_golem_forge_leg_br": [
+        -1.262,
+        4.1,
+        0.249
+      ],
+      "foe_golem_forge_elbow_l": [
+        4.102,
+        5.489,
+        0.628
+      ],
+      "foe_golem_forge_elbow_r": [
+        -4.102,
+        5.489,
+        0.628
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.363,
+      -0.003
+    ]
+  },
+  "foe_knight_shield_forge": {
+    "fbx": "build/blender/stations/foe_knight_shield_forge.fbx",
+    "png": "build/blender/stations/foe_knight_shield_forge.png",
+    "preview": "build/blender/stations/previews/foe_knight_shield_forge_rest.png",
+    "size_studs": [
+      6.87,
+      8.0,
+      5.86
+    ],
+    "tris": 6508,
+    "parts": {
+      "foe_knight_shield_forge_body": 6508
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shieldbearer: SHANNON's Shieldbearer (02:00) from ForgeGUI (artifact ce83b327), regenerated by ForgeGUI in an A-pose, its huge tower shield and sword made apart (job 0ad35017) and put in its hands, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_knight_shield_forge_body": [
+        0.0,
+        4.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_knight_shield_forge_head": [
+        -0.756,
+        5.845,
+        -1.813
+      ],
+      "foe_knight_shield_forge_tail": [
+        -0.756,
+        5.257,
+        -2.652
+      ],
+      "foe_knight_shield_forge_leg_fl": [
+        0.671,
+        5.257,
+        -1.981
+      ],
+      "foe_knight_shield_forge_leg_fr": [
+        -2.183,
+        5.257,
+        -1.981
+      ],
+      "foe_knight_shield_forge_leg_bl": [
+        -0.085,
+        2.739,
+        -1.981
+      ],
+      "foe_knight_shield_forge_leg_br": [
+        -1.428,
+        2.739,
+        -1.981
+      ],
+      "foe_knight_shield_forge_elbow_l": [
+        0.694,
+        4.047,
+        -1.867
+      ],
+      "foe_knight_shield_forge_elbow_r": [
+        -2.207,
+        4.047,
+        -1.867
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.756,
+      3.578,
+      -1.981
+    ]
+  },
+  "foe_knight_shield_commander_forge": {
+    "fbx": "build/blender/stations/foe_knight_shield_commander_forge.fbx",
+    "png": "build/blender/stations/foe_knight_shield_commander_forge.png",
+    "preview": "build/blender/stations/previews/foe_knight_shield_commander_forge_rest.png",
+    "size_studs": [
+      7.78,
+      9.5,
+      6.84
+    ],
+    "tris": 6673,
+    "parts": {
+      "foe_knight_shield_commander_forge_body": 6673
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shieldbearer Commander: SHANNON's Shieldbearer Commander (02:01) from ForgeGUI (artifact 8a326fc8), regenerated by ForgeGUI in an A-pose with empty fists, its tower shield and longsword made apart (job ad7e7c71) and put in its hands, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_knight_shield_commander_forge_body": [
+        0.0,
+        4.75,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_knight_shield_commander_forge_head": [
+        -0.77,
+        6.851,
+        -1.523
+      ],
+      "foe_knight_shield_commander_forge_tail": [
+        -0.77,
+        6.552,
+        -2.221
+      ],
+      "foe_knight_shield_commander_forge_leg_fl": [
+        0.827,
+        6.252,
+        -1.623
+      ],
+      "foe_knight_shield_commander_forge_leg_fr": [
+        -2.367,
+        6.252,
+        -1.623
+      ],
+      "foe_knight_shield_commander_forge_leg_bl": [
+        -0.071,
+        3.557,
+        -1.623
+      ],
+      "foe_knight_shield_commander_forge_leg_br": [
+        -1.469,
+        3.557,
+        -1.623
+      ],
+      "foe_knight_shield_commander_forge_elbow_l": [
+        0.797,
+        4.889,
+        -1.348
+      ],
+      "foe_knight_shield_commander_forge_elbow_r": [
+        -2.337,
+        4.889,
+        -1.348
+      ],
+      "foe_knight_shield_commander_forge_weapon": [
+        -2.308,
+        3.526,
+        -1.073
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.77,
+      4.256,
+      -1.623
+    ]
+  },
+  "foe_cavalry_forge": {
+    "fbx": "build/blender/stations/foe_cavalry_forge.fbx",
+    "png": "build/blender/stations/foe_cavalry_forge.png",
+    "preview": "build/blender/stations/previews/foe_cavalry_forge_rest.png",
+    "size_studs": [
+      5.66,
+      11.0,
+      11.69
+    ],
+    "tris": 5939,
+    "parts": {
+      "foe_cavalry_forge_body": 5939
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Cavalry: SHANNON's Cavalry (01:45) from ForgeGUI (artifact 8c814c64), regenerated by ForgeGUI as a rider on its horse, the rider's right arm out, its lance made apart (job a7455633) and put in its fist, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_cavalry_forge_body": [
+        0.0,
+        5.5,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_cavalry_forge_head": [
+        0.012,
+        5.494,
+        2.971
+      ],
+      "foe_cavalry_forge_tail": [
+        0.012,
+        5.494,
+        -4.961
+      ],
+      "foe_cavalry_forge_leg_fl": [
+        0.722,
+        3.718,
+        2.379
+      ],
+      "foe_cavalry_forge_leg_fr": [
+        -0.699,
+        3.718,
+        2.379
+      ],
+      "foe_cavalry_forge_leg_bl": [
+        0.722,
+        3.718,
+        -3.304
+      ],
+      "foe_cavalry_forge_leg_br": [
+        -0.699,
+        3.718,
+        -3.304
+      ],
+      "foe_cavalry_forge_elbow_r": [
+        -1.527,
+        7.862,
+        -0.581
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.012,
+      4.902,
+      -0.226
+    ]
+  },
+  "foe_cavalry_commander_forge": {
+    "fbx": "build/blender/stations/foe_cavalry_commander_forge.fbx",
+    "png": "build/blender/stations/foe_cavalry_commander_forge.png",
+    "preview": "build/blender/stations/previews/foe_cavalry_commander_forge_rest.png",
+    "size_studs": [
+      7.75,
+      14.0,
+      15.98
+    ],
+    "tris": 6069,
+    "parts": {
+      "foe_cavalry_commander_forge_body": 6069
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Cavalry Commander: SHANNON's Cavalry Commander (01:48) from ForgeGUI (artifact a7939882), regenerated by ForgeGUI as a rider on its horse standing square, the rider's sword arm out, its cavalry sword made apart (job ad7e7c71) and put in its fist, skinned to the Stations rig in whole parts (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_cavalry_commander_forge_body": [
+        0.0,
+        7.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_cavalry_commander_forge_head": [
+        0.509,
+        6.976,
+        4.499
+      ],
+      "foe_cavalry_commander_forge_tail": [
+        0.509,
+        6.976,
+        -5.508
+      ],
+      "foe_cavalry_commander_forge_leg_fl": [
+        1.509,
+        4.14,
+        2.998
+      ],
+      "foe_cavalry_commander_forge_leg_fr": [
+        -0.575,
+        4.14,
+        2.998
+      ],
+      "foe_cavalry_commander_forge_leg_bl": [
+        2.01,
+        4.14,
+        -4.174
+      ],
+      "foe_cavalry_commander_forge_leg_br": [
+        -0.659,
+        4.14,
+        -4.174
+      ],
+      "foe_cavalry_commander_forge_elbow_r": [
+        -1.493,
+        9.644,
+        -0.338
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.509,
+      6.142,
+      -0.004
+    ]
+  },
+  "foe_dragon_drake_forge": {
+    "fbx": "build/blender/stations/foe_dragon_drake_forge.fbx",
+    "png": "build/blender/stations/foe_dragon_drake_forge.png",
+    "preview": "build/blender/stations/previews/foe_dragon_drake_forge_rest.png",
+    "size_studs": [
+      19.78,
+      9.0,
+      18.88
+    ],
+    "tris": 5138,
+    "parts": {
+      "foe_dragon_drake_forge_body": 5138
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Dark Drake: SHANNON's Dark Drake (01:49) from ForgeGUI (artifact b49fe23f), regenerated standing square with its wings spread flat, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_dragon_drake_forge_body": [
+        0.0,
+        4.5,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_dragon_drake_forge_neck_base": [
+        0.0,
+        4.937,
+        6.477
+      ],
+      "foe_dragon_drake_forge_head": [
+        0.0,
+        6.707,
+        7.414
+      ],
+      "foe_dragon_drake_forge_jaw": [
+        0.0,
+        6.353,
+        7.831
+      ],
+      "foe_dragon_drake_forge_wing_l": [
+        1.666,
+        6.291,
+        5.227
+      ],
+      "foe_dragon_drake_forge_hand_l": [
+        4.165,
+        6.561,
+        5.227
+      ],
+      "foe_dragon_drake_forge_wing_r": [
+        -1.666,
+        6.291,
+        5.227
+      ],
+      "foe_dragon_drake_forge_hand_r": [
+        -4.165,
+        6.561,
+        5.227
+      ],
+      "foe_dragon_drake_forge_leg_fl": [
+        1.25,
+        3.896,
+        6.06
+      ],
+      "foe_dragon_drake_forge_leg_fr": [
+        -1.25,
+        3.896,
+        6.06
+      ],
+      "foe_dragon_drake_forge_leg_bl": [
+        1.25,
+        3.687,
+        1.478
+      ],
+      "foe_dragon_drake_forge_leg_br": [
+        -1.25,
+        3.687,
+        1.478
+      ],
+      "foe_dragon_drake_forge_tail": [
+        0.0,
+        3.271,
+        0.02
+      ],
+      "foe_dragon_drake_forge_tail_mid": [
+        0.0,
+        2.854,
+        -3.104
+      ],
+      "foe_dragon_drake_forge_tail_end": [
+        0.0,
+        2.542,
+        -6.228
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      3.896,
+      3.144
+    ]
+  },
+  "foe_dragon_forge": {
+    "fbx": "build/blender/stations/foe_dragon_forge.fbx",
+    "png": "build/blender/stations/foe_dragon_forge.png",
+    "preview": "build/blender/stations/previews/foe_dragon_forge_rest.png",
+    "size_studs": [
+      20.99,
+      12.0,
+      17.98
+    ],
+    "tris": 5250,
+    "parts": {
+      "foe_dragon_forge_body": 5250
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Shadow Dragon: SHANNON's Shadow Dragon (01:50) from ForgeGUI (artifact c37c9006), regenerated standing square with its wings spread flat, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_dragon_forge_body": [
+        0.0,
+        6.0,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_dragon_forge_neck_base": [
+        0.0,
+        7.096,
+        6.01
+      ],
+      "foe_dragon_forge_head": [
+        0.0,
+        9.288,
+        7.326
+      ],
+      "foe_dragon_forge_jaw": [
+        0.0,
+        8.631,
+        7.764
+      ],
+      "foe_dragon_forge_wing_l": [
+        2.192,
+        7.096,
+        4.256
+      ],
+      "foe_dragon_forge_hand_l": [
+        4.165,
+        9.069,
+        4.256
+      ],
+      "foe_dragon_forge_wing_r": [
+        -2.192,
+        7.096,
+        4.256
+      ],
+      "foe_dragon_forge_hand_r": [
+        -4.165,
+        9.069,
+        4.256
+      ],
+      "foe_dragon_forge_leg_fl": [
+        1.644,
+        4.685,
+        6.01
+      ],
+      "foe_dragon_forge_leg_fr": [
+        -1.644,
+        4.685,
+        6.01
+      ],
+      "foe_dragon_forge_leg_bl": [
+        1.535,
+        4.685,
+        0.091
+      ],
+      "foe_dragon_forge_leg_br": [
+        -1.535,
+        4.685,
+        0.091
+      ],
+      "foe_dragon_forge_tail": [
+        0.0,
+        4.246,
+        -1.444
+      ],
+      "foe_dragon_forge_tail_mid": [
+        0.0,
+        3.808,
+        -4.294
+      ],
+      "foe_dragon_forge_tail_end": [
+        0.0,
+        3.588,
+        -6.924
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      4.904,
+      2.283
+    ]
+  },
+  "foe_dragon_alpha_forge": {
+    "fbx": "build/blender/stations/foe_dragon_alpha_forge.fbx",
+    "png": "build/blender/stations/foe_dragon_alpha_forge.png",
+    "preview": "build/blender/stations/previews/foe_dragon_alpha_forge_rest.png",
+    "size_studs": [
+      23.09,
+      17.4,
+      22.76
+    ],
+    "tris": 5088,
+    "parts": {
+      "foe_dragon_alpha_forge_body": 5088
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Ancient Alpha Dragon: SHANNON's Ancient Alpha Dragon (01:51) from ForgeGUI (artifact 865f4999), regenerated standing square, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail along its curl, its wings resting raised (decision 0104).",
+    "glow": {},
+    "centres": {
+      "foe_dragon_alpha_forge_body": [
+        0.869,
+        8.698,
+        -0.0
+      ]
+    },
+    "joints": {
+      "foe_dragon_alpha_forge_neck_base": [
+        0.0,
+        8.351,
+        6.818
+      ],
+      "foe_dragon_alpha_forge_head": [
+        0.0,
+        10.758,
+        8.709
+      ],
+      "foe_dragon_alpha_forge_jaw": [
+        0.0,
+        10.001,
+        8.949
+      ],
+      "foe_dragon_alpha_forge_wing_l": [
+        3.438,
+        8.351,
+        2.692
+      ],
+      "foe_dragon_alpha_forge_hand_l": [
+        5.413,
+        13.815,
+        2.909
+      ],
+      "foe_dragon_alpha_forge_wing_r": [
+        -3.438,
+        8.351,
+        2.692
+      ],
+      "foe_dragon_alpha_forge_hand_r": [
+        -5.413,
+        13.815,
+        2.909
+      ],
+      "foe_dragon_alpha_forge_leg_fl": [
+        2.407,
+        4.569,
+        7.849
+      ],
+      "foe_dragon_alpha_forge_leg_fr": [
+        -2.407,
+        4.569,
+        7.849
+      ],
+      "foe_dragon_alpha_forge_leg_bl": [
+        1.891,
+        4.569,
+        1.317
+      ],
+      "foe_dragon_alpha_forge_leg_br": [
+        -1.891,
+        4.569,
+        1.317
+      ],
+      "foe_dragon_alpha_forge_tail": [
+        0.0,
+        5.6,
+        -1.09
+      ],
+      "foe_dragon_alpha_forge_tail_mid": [
+        3.438,
+        4.569,
+        -5.216
+      ],
+      "foe_dragon_alpha_forge_tail_end": [
+        7.564,
+        3.537,
+        -8.311
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      5.944,
+      3.379
+    ]
   }
 }

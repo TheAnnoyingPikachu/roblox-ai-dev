@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-106",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0099: safe trading (level 5, 20 a day, locks, ready delay, confirm step, change flashes, fairness meter, history, request limits and blocking, the trade ledger and its heal) and power on the hover card.",
+  "inputs": [
+    "docs/decisions/0099-animal-stations-safe-trading.md",
+    "docs/decisions/0096-animal-stations-power-scores.md"
+  ],
+  "dependencies": [
+    "STATION-105"
+  ],
+  "files": [
+    "src/shared/StationTrade.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/TradeLedger.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/CLAUDE.md",
+    "src/stations-client/Hud.client.luau",
+    "tests/StationTrade.spec.luau",
+    "docs/decisions/0099-animal-stations-safe-trading.md",
+    "studio/tasks/STATION-106.json"
+  ],
+  "tests": [
+    "StationTrade.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Trading opens at player level 5 and stops after 20 trades a day",
+    "A locked animal cannot go in a trade",
+    "Any change unreadies both sides, flashes the slot and holds Ready 3 s; once both are ready the window locks and Confirm opens after 5 s",
+    "Both sides are written to the ledger before either save changes, and a cut-short trade is finished at login exactly once",
+    "Hovering an animal or enemy shows its power"
+  ],
+  "verification": "Lune 758/758, selene clean. Studio, local build, stamp `dev`, 2026-11-19: the Trade menu shows the safety line, the level 5 gate, Requests on/off (saved: trades.off true) and 20 trades left today; Lock saved on an animal (locked true); the hover card shows the Island Tortoise's 2,201 power. A two-player trade and the ledger were not run (single-player Studio, no DataStores).",
+  "output_artifacts": [],
+  "risk_level": "high",
+  "status": "in_progress",
+  "notes": "The ledger and heal need a published test place to prove (SHANNON's approval)."
+}
