@@ -308,6 +308,128 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Necromancer's staff drive (SHANNON's pick), out of its skull in its palm: raises the skull staff high, its
+	-- clawed hand up, and drives the staff's foot into the ground before it at the contact (0.44 s), leaning in
+	foe_mage_necromancer_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 6, -6, 0, 0, 0.05, 0.15 },
+				head = { 10, -6 },
+				leg_fl = { 60 },
+				elbow_l = { 20 },
+				leg_fr = { 45 },
+				elbow_r = { -45 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 10, -8, 0, 0, 0.1, 0.2 },
+				head = { 14, -8 },
+				leg_fl = { 90 },
+				elbow_l = { 25 },
+				leg_fr = { 60 },
+				elbow_r = { -58 },
+				leg_bl = { -4 },
+				leg_br = { 4 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -16, -10, 0, 0, -0.08, -0.5 },
+				head = { -8, -6 },
+				leg_fl = { 30, 0, -10 },
+				elbow_l = { -20 },
+				leg_fr = { 8 },
+				elbow_r = { -6 },
+				leg_bl = { 16 },
+				leg_br = { -10 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -14, -8, 0, 0, -0.07, -0.45 },
+				head = { -6, -6 },
+				leg_fl = { 28, 0, -10 },
+				elbow_l = { -18 },
+				leg_fr = { 8 },
+				elbow_r = { -6 },
+				leg_bl = { 14 },
+				leg_br = { -8 },
+			},
+		},
+		{ 0.95, {} },
+	}),
+	-- the Cavalry's charging thrust (SHANNON's pick), out of its lance held upright: lowers the lance into the couch
+	-- as its horse gathers, lunges and drives it home at the contact (0.44 s), then raises it upright again
+	foe_cavalry_forge = attack({
+		{
+			0.00,
+			{
+				head = { -4 },
+				elbow_r = { 88 },
+			},
+		},
+		{
+			0.16,
+			{
+				body = { 8, 0, 0, 0, 0.05, 0.4 },
+				head = { 14 },
+				leg_fl = { -25 },
+				leg_fr = { -20 },
+				elbow_r = { 50, 0, 0, 0, 0, 0.3 },
+				leg_bl = { 10 },
+				leg_br = { 12 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 10, 0, 0, 0, 0.06, 0.5 },
+				head = { 16 },
+				leg_fl = { -30 },
+				leg_fr = { -24 },
+				elbow_r = { 14, 0, 0, 0, 0, 0.4 },
+				leg_bl = { 12 },
+				leg_br = { 14 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -8, 0, 0, 0, -0.04, -1.6 },
+				head = { -14 },
+				leg_fl = { 35 },
+				leg_fr = { 30 },
+				elbow_r = { -8, 0, 0, 0, 0, -0.6 },
+				leg_bl = { -28 },
+				leg_br = { -24 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -6, 0, 0, 0, -0.03, -1.4 },
+				head = { -10 },
+				leg_fl = { 28 },
+				leg_fr = { 24 },
+				elbow_r = { -6, 0, 0, 0, 0, -0.5 },
+				leg_bl = { -22 },
+				leg_br = { -20 },
+			},
+		},
+		{
+			0.95,
+			{
+				head = { -4 },
+				elbow_r = { 88 },
+			},
+		},
+	}),
 	-- the Berserker's wild overhead chop (SHANNON's pick), out of dragging its axe: heaves the axe up overhead in both hands
 	-- and brings it crashing down before it at the contact (0.44 s), then lets it drop back to the ground
 	foe_knight_berserker_forge = attack({
@@ -1396,6 +1518,17 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Necromancer with a skull floating over its palm (SHANNON's pick): its arms rest bent, the staff in its fist;
+	-- its head tilts toward the skull
+	foe_mage_necromancer_forge = {
+		body = { 0, 4 },
+		head = { -10, 14 },
+	},
+	-- the Cavalry with its lance held upright (SHANNON's pick)
+	foe_cavalry_forge = {
+		head = { -4 },
+		elbow_r = { 88 },
+	},
 	-- the Berserker dragging its axe (SHANNON's pick): hunched, the axe's head on the ground ahead
 	foe_knight_berserker_forge = {
 		body = { -8, -6, 0, 0, -0.03 },
