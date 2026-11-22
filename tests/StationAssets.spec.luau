@@ -214,7 +214,8 @@ describe("StationAssets", function()
 				expect(tris <= 20000).toBeTruthy()
 			end
 			-- every piece but the body turns on a joint; a dragon's two wings are two more. A held weapon's
-			-- "tip" and "neck" bones (for its trail) ride on its arm and do not count, nor do an arm's elbow bones
+			-- "tip" and "neck" bones (for its trail) ride on its arm and do not count, nor do an arm's elbow bones,
+			-- nor the more a chain has (the Dark Drake's neck base, jaw, wing hands and its tail's middle and end)
 			local turning = 0
 			for part in entry.joints do
 				if
@@ -222,6 +223,11 @@ describe("StationAssets", function()
 					and string.find(part, "_neck$") == nil
 					and string.find(part, "_elbow_[lr]$") == nil
 					and string.find(part, "_arrow$") == nil -- (nor a stowed arrow's)
+					and string.find(part, "_neck_base$") == nil
+					and string.find(part, "_jaw$") == nil
+					and string.find(part, "_hand_[lr]$") == nil
+					and string.find(part, "_tail_mid$") == nil
+					and string.find(part, "_tail_end$") == nil
 				then
 					turning += 1
 				end

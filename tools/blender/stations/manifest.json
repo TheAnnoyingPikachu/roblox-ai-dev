@@ -8978,17 +8978,17 @@
     "png": "build/blender/stations/foe_dragon_drake_forge.png",
     "preview": "build/blender/stations/previews/foe_dragon_drake_forge_rest.png",
     "size_studs": [
-      18.17,
+      19.7,
       9.0,
-      14.81
+      18.88
     ],
-    "tris": 3020,
+    "tris": 5147,
     "parts": {
-      "foe_dragon_drake_forge_body": 3020
+      "foe_dragon_drake_forge_body": 5147
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Dark Drake: SHANNON's Dark Drake (01:49) from ForgeGUI (artifact b91a8625), cut from its sheet and turned to face forward, skinned to the Stations rig in whole parts (decision 0104).",
+    "notes": "Dark Drake: SHANNON's Dark Drake (01:49) from ForgeGUI (artifact b49fe23f), regenerated standing square with its wings spread flat, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail (decision 0104).",
     "glow": {},
     "centres": {
       "foe_dragon_drake_forge_body": [
@@ -8998,52 +8998,82 @@
       ]
     },
     "joints": {
+      "foe_dragon_drake_forge_neck_base": [
+        -0.041,
+        4.937,
+        6.477
+      ],
       "foe_dragon_drake_forge_head": [
-        -0.729,
-        6.356,
-        4.939
+        -0.041,
+        6.707,
+        7.414
       ],
-      "foe_dragon_drake_forge_tail": [
-        -0.729,
-        4.133,
-        -1.979
-      ],
-      "foe_dragon_drake_forge_leg_fl": [
-        1.247,
-        3.638,
-        4.198
-      ],
-      "foe_dragon_drake_forge_leg_fr": [
-        -2.706,
-        3.638,
-        4.198
-      ],
-      "foe_dragon_drake_forge_leg_bl": [
-        1.247,
-        3.391,
-        -0.991
-      ],
-      "foe_dragon_drake_forge_leg_br": [
-        -2.706,
-        3.391,
-        -0.991
+      "foe_dragon_drake_forge_jaw": [
+        -0.041,
+        6.353,
+        7.831
       ],
       "foe_dragon_drake_forge_wing_l": [
-        0.753,
-        7.097,
-        2.469
+        1.625,
+        6.291,
+        5.227
+      ],
+      "foe_dragon_drake_forge_hand_l": [
+        4.125,
+        6.561,
+        5.227
       ],
       "foe_dragon_drake_forge_wing_r": [
-        -2.212,
-        7.097,
-        2.469
+        -1.707,
+        6.291,
+        5.227
+      ],
+      "foe_dragon_drake_forge_hand_r": [
+        -4.206,
+        6.561,
+        5.227
+      ],
+      "foe_dragon_drake_forge_leg_fl": [
+        1.209,
+        3.896,
+        6.06
+      ],
+      "foe_dragon_drake_forge_leg_fr": [
+        -1.29,
+        3.896,
+        6.06
+      ],
+      "foe_dragon_drake_forge_leg_bl": [
+        1.209,
+        3.687,
+        1.478
+      ],
+      "foe_dragon_drake_forge_leg_br": [
+        -1.29,
+        3.687,
+        1.478
+      ],
+      "foe_dragon_drake_forge_tail": [
+        -0.041,
+        3.271,
+        0.02
+      ],
+      "foe_dragon_drake_forge_tail_mid": [
+        -0.041,
+        2.854,
+        -3.104
+      ],
+      "foe_dragon_drake_forge_tail_end": [
+        -0.041,
+        2.542,
+        -6.228
       ]
     },
     "skinned": true,
     "root": [
-      -0.729,
-      4.627,
-      1.974
+      -0.041,
+      3.896,
+      3.144
     ]
   },
   "foe_dragon_forge": {

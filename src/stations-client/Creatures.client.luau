@@ -23,7 +23,9 @@ local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForCh
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
 
--- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them)
+-- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them. The Dark
+-- Drake's neck_base carries its head and jaw, its wing_l and wing_r bend at hand_l and hand_r, and its tail goes on
+-- through tail_mid to tail_end: each child's turn is on top of its parent's)
 local JOINTS = {
 	"body",
 	"head",
@@ -37,7 +39,14 @@ local JOINTS = {
 	"elbow_l",
 	"elbow_r",
 	"arrow",
+	"neck_base",
+	"jaw",
+	"hand_l",
+	"hand_r",
+	"tail_mid",
+	"tail_end",
 }
+local WING_JOINTS = { "wing_l", "wing_r", "hand_l", "hand_r" }
 local TAU = math.pi * 2
 local MAGIC_IMPACT = 0.92 -- seconds into "magic" when the front feet land
 
@@ -308,6 +317,133 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Dark Drake's lunge bite (SHANNON's pick), out of its prowl: coils back with its neck reared, jaws gaping and
+	-- wings flared high, then lunges as the wings sweep down and forward; its jaws snap shut on the contact (0.44 s)
+	-- and it shakes its prey once each way
+	foe_dragon_drake_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 10, 0, 0, 0, 0.08, 0.45 },
+				neck_base = { 22 },
+				head = { -14 },
+				jaw = { -10 },
+				leg_fl = { -16 },
+				leg_fr = { -12 },
+				leg_bl = { 8 },
+				leg_br = { 10 },
+				tail = { -8 },
+				tail_mid = { -6 },
+				tail_end = { -8 },
+				wing_l = { 0, 10, -26 },
+				hand_l = { 0, -4, -10 },
+				wing_r = { 0, -10, 26 },
+				hand_r = { 0, 4, 10 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 14, 0, 0, 0, 0.12, 0.6 },
+				neck_base = { 30 },
+				head = { -22 },
+				jaw = { -24 },
+				leg_fl = { -20 },
+				leg_fr = { -16 },
+				leg_bl = { 12 },
+				leg_br = { 14 },
+				tail = { -12 },
+				tail_mid = { -8 },
+				tail_end = { -10 },
+				wing_l = { 0, 14, -38 },
+				hand_l = { 0, -6, -16 },
+				wing_r = { 0, -14, 38 },
+				hand_r = { 0, 6, 16 },
+			},
+		},
+		{
+			0.40,
+			{
+				body = { -8, 0, 0, 0, -0.12, -1.2 },
+				neck_base = { -10 },
+				head = { 4 },
+				jaw = { -26 },
+				leg_fl = { 26 },
+				leg_fr = { 22 },
+				leg_bl = { -18 },
+				leg_br = { -16 },
+				tail = { -4 },
+				tail_mid = { -4 },
+				tail_end = { -6 },
+				wing_l = { 0, -8, 14 },
+				hand_l = { 0, 0, 10 },
+				wing_r = { 0, 8, -14 },
+				hand_r = { 0, 0, -10 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -14, 0, 0, 0, -0.18, -1.7 },
+				neck_base = { -22 },
+				head = { 12 },
+				jaw = { 12 },
+				leg_fl = { 34 },
+				leg_fr = { 28 },
+				leg_bl = { -24 },
+				leg_br = { -20 },
+				tail = { 10 },
+				tail_mid = { 8 },
+				tail_end = { 10 },
+				wing_l = { 0, -12, 30 },
+				hand_l = { 0, -4, 22 },
+				wing_r = { 0, 12, -30 },
+				hand_r = { 0, 4, -22 },
+			},
+		},
+		{
+			0.56,
+			{
+				body = { -12, 4, 0, 0, -0.16, -1.55 },
+				neck_base = { -20, 10 },
+				head = { 10, 12, -10 },
+				jaw = { 10 },
+				leg_fl = { 30 },
+				leg_fr = { 24 },
+				leg_bl = { -20 },
+				leg_br = { -18 },
+				tail = { 6, -10 },
+				tail_mid = { 4, -8 },
+				tail_end = { 6, -10 },
+				wing_l = { 0, -8, 20 },
+				hand_l = { 0, 0, 16 },
+				wing_r = { 0, 8, -20 },
+				hand_r = { 0, 0, -16 },
+			},
+		},
+		{
+			0.68,
+			{
+				body = { -10, -4, 0, 0, -0.14, -1.4 },
+				neck_base = { -18, -10 },
+				head = { 8, -12, 10 },
+				jaw = { 8 },
+				leg_fl = { 26 },
+				leg_fr = { 22 },
+				leg_bl = { -18 },
+				leg_br = { -16 },
+				tail = { 4, 10 },
+				tail_mid = { 2, 8 },
+				tail_end = { 4, 10 },
+				wing_l = { 0, -4, 14 },
+				hand_l = { 0, 0, 12 },
+				wing_r = { 0, 4, -14 },
+				hand_r = { 0, 0, -12 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Ogre Commander's overhead cleave (SHANNON's pick), out of its axe planted at its side: heaves the axe up
 	-- and over until its head hangs down its back, then brings it over and into the ground before it edge-first at the
 	-- contact (0.44 s), stooping into the blow
@@ -1577,6 +1713,25 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Dark Drake prowling (SHANNON's pick): neck low and forward, jaws just apart, wings folded back along its
+	-- flanks, tail swept to one side
+	foe_dragon_drake_forge = {
+		body = { -4 },
+		neck_base = { -18 },
+		head = { 14, 6 },
+		jaw = { -6 },
+		leg_fl = { 8 },
+		leg_fr = { -4 },
+		leg_bl = { -4 },
+		leg_br = { 4 },
+		tail = { 4, 10 },
+		tail_mid = { 0, 12 },
+		tail_end = { 0, 16 },
+		wing_l = { 0, 45, 12 },
+		hand_l = { 0, 60, 8 },
+		wing_r = { 0, -45, -12 },
+		hand_r = { 0, -60, -8 },
+	},
 	-- the Ogre Commander with its great axe planted upright at its side (SHANNON's pick): its forearm turned
 	-- so the blades face out
 	foe_ogre_commander_forge = {
@@ -2828,8 +2983,16 @@ RunService.PreSimulation:Connect(function(dt: number)
 		end
 		if model:GetAttribute("Winged") == true then
 			target = table.clone(target)
-			for joint, v in wings(time, anim) do
-				target[joint] = v
+			if stance and anim ~= "magic" then
+				-- a dragon with a stance of its own poses its wings itself: as its move sets them, else as it stands
+				-- (folded, when it walks, falls or wins)
+				for _, joint in WING_JOINTS do
+					target[joint] = target[joint] or stance[joint]
+				end
+			else
+				for joint, v in wings(time, anim) do
+					target[joint] = v
+				end
 			end
 		end
 		if biped and model:GetAttribute("Hexbound") ~= true then
