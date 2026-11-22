@@ -847,9 +847,9 @@ REGIONS = {
         held={"split": 0.72, "+x": "leg_fl", "-x": "leg_fr"},
         # it rests holding its great axe up before it in both hands, the right above the left on the haft (the turns
         # solved so the haft runs through both fists); a swing turns both arms alike about its shoulders' line, so
-        # the hands stay on the haft
+        # the hands stay on the haft (its axe turned about the haft so its blades face front and back, edge-on to the chop)
         rest={
-            "leg_fr": (81.6, 25.4, -67.5), "elbow_r": (44.8, -26.4, 0), "weapon": (0.7, 5.0, 134.8),
+            "leg_fr": (81.6, 25.4, -67.5), "elbow_r": (44.8, -26.4, 0), "weapon": (-23.7, 25.5, -98.0),
             "leg_fl": (90.4, -28.7, 75.7), "elbow_l": (-0.4, 30.4, 0),
         },
         elbows={"leg_fl": (0.333, -0.019, -0.185), "leg_fr": (-0.334, -0.022, -0.187)},
