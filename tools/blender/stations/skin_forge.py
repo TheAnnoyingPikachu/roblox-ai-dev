@@ -339,32 +339,65 @@ def lion(name, length, tail_x, artifact, what):
 WHOLE = 0.8
 
 
-def drake_parts(p):
-    """SHANNON's Dark Drake regenerated standing square (ForgeGUI job b49fe23f), as its source measures
-    (x -0.471..0.475, y -0.452..0.454, z -0.217..0.215, facing -Y): the head ahead of y -0.355, its big horn
-    sweeping back over the neck; the lower jaw, open, below the mouth's line from (y -0.432, z 0.08) to its hinge
-    at (-0.368, 0.093); the neck a short column down to the chest at y -0.29; flat wings spread out sideways at
-    y -0.29..-0.19 from shoulders at x +-0.08, their wrists at +-0.2; legs below z -0.05 outside the chest
-    and belly (front ahead of y -0.24, hind at -0.17..0); the tail behind y 0 in three. Each vertex follows one bone."""
-    ax, side = abs(p.x), "l" if p.x > 0 else "r"
-    if -0.433 < p.y < -0.368 and ax < 0.04 and 0.04 < p.z < 0.08 + 0.21 * (p.y + 0.432):
-        return {"jaw": 1.0}
-    if (p.y < -0.355 and p.z > 0.04 and ax < 0.07) or (p.y < -0.27 and p.z > 0.155 and ax < 0.07):
-        return {"head": 1.0}
-    if p.y < -0.285 and p.z > 0.0 and ax < 0.065:
-        return {"neck_base": 1.0}
-    if -0.3 < p.y < -0.18 and ((ax > 0.075 and p.z > 0.03) or (ax > 0.12 and p.z > -0.1)):
-        return {("hand_" if ax > 0.2 else "wing_") + side: 1.0}
-    # (the chest hangs in a keel between the front legs to z -0.14, the belly between the hind ones to -0.125:
-    # a leg is what is outside them, or below them)
-    if p.y < -0.24 and ((p.z < -0.05 and ax > 0.04) or p.z < -0.145):
-        return {"leg_f" + side: 1.0}
-    if -0.17 < p.y < 0.0 and ((p.z < -0.05 and ax > 0.04) or p.z < -0.13):
-        return {"leg_b" + side: 1.0}
-    if p.y > 0.0:
-        return {"tail_end" if p.y > 0.3 else "tail_mid" if p.y > 0.15 else "tail": 1.0}
-    return {"body": 1.0}
+def dragon_parts(jaw, head, neck, wings, legs, tail):
+    """A dragon regenerated standing square (wings spread flat, jaws apart, tail straight), each vertex on one
+    bone, as its source measures: the lower jaw `jaw` (y0, y1, half width, lowest z, and the mouth's line: z at
+    y_ref and its slope), the head `head` (ahead of y above z within half width x, and its horns: behind that,
+    ahead of horn_y above horn_z), the neck `neck` (ahead of y above z within half width x), the wings `wings`
+    (their band of y, the root: beyond x above z near the back and beyond x2 above z2 further out, the hand
+    beyond the wrist's x), the legs `legs` (front ahead of y, hind between two y; a leg is outside |x| above z,
+    or below its keel or belly) and the tail `tail` (behind y, then its middle and end)."""
+    jy0, jy1, jx, jz, jz0, jslope, jyref = jaw
+    hy, hz, hx, horn_y, horn_z = head
+    ny, nz, nx = neck
+    (wy0, wy1), (rx, rz, rx2, rz2), wrist = wings
+    fy, (hy0, hy1), (lz, lx), keel, belly = legs
+    t0, t1, t2 = tail
 
+    def parts(p):
+        ax, side = abs(p.x), "l" if p.x > 0 else "r"
+        if jy0 < p.y < jy1 and ax < jx and jz < p.z < jz0 + jslope * (p.y - jyref):
+            return {"jaw": 1.0}
+        if (p.y < hy and p.z > hz and ax < hx) or (p.y < horn_y and p.z > horn_z and ax < hx):
+            return {"head": 1.0}
+        if p.y < ny and p.z > nz and ax < nx:
+            return {"neck_base": 1.0}
+        if wy0 < p.y < wy1 and ((ax > rx and p.z > rz) or (ax > rx2 and p.z > rz2)):
+            return {("hand_" if ax > wrist else "wing_") + side: 1.0}
+        # (a keel hangs between the front legs, a belly between the hind ones: a leg is what is outside them, or below)
+        if p.y < fy and ((p.z < lz and ax > lx) or p.z < keel):
+            return {"leg_f" + side: 1.0}
+        if hy0 < p.y < hy1 and ((p.z < lz and ax > lx) or p.z < belly):
+            return {"leg_b" + side: 1.0}
+        if p.y > t0:
+            return {"tail_end" if p.y > t2 else "tail_mid" if p.y > t1 else "tail": 1.0}
+        return {"body": 1.0}
+
+    return parts
+
+
+# SHANNON's Dark Drake regenerated standing square (ForgeGUI job b49fe23f): x -0.471..0.475, y -0.452..0.454,
+# z -0.217..0.215, facing -Y
+drake_parts = dragon_parts(
+    jaw=(-0.433, -0.368, 0.04, 0.04, 0.08, 0.21, -0.432),
+    head=(-0.355, 0.04, 0.07, -0.27, 0.155),
+    neck=(-0.285, 0.0, 0.065),
+    wings=((-0.3, -0.18), (0.075, 0.03, 0.12, -0.1), 0.2),
+    legs=(-0.24, (-0.17, 0.0), (-0.05, 0.04), -0.145, -0.13),
+    tail=(0.0, 0.15, 0.3),
+)
+
+
+# SHANNON's Shadow Dragon regenerated standing square (ForgeGUI job c37c9006): x -0.479..0.479, y -0.406..0.414,
+# z -0.274..0.274, facing -Y
+shadow_dragon_parts = dragon_parts(
+    jaw=(-0.402, -0.348, 0.04, 0.07, 0.112, 0.24, -0.4),
+    head=(-0.335, 0.07, 0.09, -0.26, 0.19),
+    neck=(-0.24, 0.0, 0.08),
+    wings=((-0.245, -0.12), (0.1, 0.0, 0.15, -0.12), 0.19),
+    legs=(-0.19, (-0.08, 0.07), (-0.05, 0.04), -0.16, -0.165),
+    tail=(0.07, 0.2, 0.32),
+)
 
 def legion(name, height, artifact, what, joints, boxes, ground=None, how="cut from its sheet", **extra):
     """A Shadow Legion figure rigged by hand (decision 0104), facing -Y: `joints` where each bone turns
@@ -857,25 +890,27 @@ REGIONS = {
         wield={"side": "-x", "bone": "weapon", "at": (-0.33, -0.0175, -0.17)},
         turn=False,
     ),
-    # a castle on its back; fists hanging beside its legs
+    # its arms and great fists swing from its shoulders and bend at the elbows; its siege castle, the castle's banners
+    # and the banner at its belt stay with its body
     "foe_golem_forge": legion(
-        "Siege Golem", 12.0, "0446aea7", "Siege Golem (01:56)",
+        "Siege Golem", 12.0, "b06296c3", "Siege Golem (01:56)",
+        how="regenerated by ForgeGUI with empty fists, its siege castle on its back",
         joints={
-            "body": (-0.18, 0.0, -0.05), "head": (-0.19, -0.05, 0.04), "tail": (-0.18, 0.08, 0.1),
-            "leg_fr": (-0.32, 0.0, 0.07), "leg_fl": (-0.05, 0.0, 0.07), "leg_bl": (-0.08, 0.0, -0.13), "leg_br": (-0.28, 0.0, -0.13),
+            "body": (0.0, 0.0, -0.05), "head": (0.0, -0.08, 0.08), "tail": (0.0, 0.1, 0.1),
+            "leg_fl": (0.25, -0.02, 0.12), "leg_fr": (-0.25, -0.02, 0.12), "leg_bl": (0.1, -0.02, -0.15), "leg_br": (-0.1, -0.02, -0.15),
         },
         boxes=[
-            ("head", (-0.24, -0.13, -1, 1, 0.03, 0.15)),
-            ("leg_fr", (-1, -0.3, -1, 1, -0.12, 0.11)),
-            ("leg_fr", (-1, -0.36, -1, 1, -0.2, -0.12)),
-            ("leg_fr", (-1, -0.3, -1, -0.03, -0.22, -0.12)),  # its knuckles, ahead of the leg
-            ("leg_fl", (-0.1, 1, -1, 1, -0.12, 0.12)),
-            ("leg_fl", (0.04, 1, -1, 1, 0.12, 0.2)),  # its little standard
-            ("leg_fl", (0.0, 1, -1, 1, -0.2, -0.12)),
-            ("body", (-0.22, -0.14, -1, 0.0, -1, -0.08)),  # the tabard
-            ("leg_bl", (-0.18, 1, -1, 1, -1, -0.13)),
-            ("leg_br", (-1, -0.18, -1, 1, -1, -0.13)),
+            ("leg_fl", (0.18, 1, -1, 0.07, -0.08, 0.21)),  # the shoulder, upper arm and elbow, in front of the castle, below its banners
+            ("leg_fl", (0.27, 1, -1, 0.07, -0.36, -0.08)),  # the forearm and the fist, beside the leg
+            ("leg_fr", (-1, -0.18, -1, 0.07, -0.08, 0.21)),
+            ("leg_fr", (-1, -0.27, -1, 0.07, -0.36, -0.08)),
+            ("head", (-0.09, 0.09, -1, -0.02, 0.04, 0.26)),
+            ("leg_bl", (0.05, 1, -1, 1, -1, -0.17)),  # below its hips, either side of the belt's banner
+            ("leg_br", (-1, -0.05, -1, 1, -1, -0.17)),
         ],
+        blend=2,
+        elbows={"leg_fl": (0.4, -0.08, -0.2), "leg_fr": (-0.4, -0.08, -0.2)},
+        turn=False,
     ),
     # behind a tower shield (its left arm, hidden), the sword in its right hand pointing down ahead
     "foe_knight_shield_forge": legion(
@@ -985,25 +1020,24 @@ REGIONS = {
         "blend": 2,
         "notes": "Dark Drake: SHANNON's Dark Drake (01:49) from ForgeGUI (artifact b49fe23f), regenerated standing square with its wings spread flat, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail (decision 0104).",
     },
-    "foe_dragon_forge": legion(
-        "Shadow Dragon", 13.0, "435d1dd3", "Shadow Dragon (01:50)", how="cut from its sheet and turned to face forward",
-        joints={
-            "body": (-0.05, 0.05, 0.02), "head": (-0.06, -0.06, 0.15), "tail": (-0.05, 0.22, 0.0),
-            "leg_fl": (0.04, -0.07, 0.0), "leg_fr": (-0.16, -0.07, 0.0), "leg_bl": (0.04, 0.15, -0.02), "leg_br": (-0.16, 0.15, -0.02),
-            "wing_l": (0.04, 0.0, 0.16), "wing_r": (-0.12, 0.0, 0.16),
+    # regenerated standing square for rigging: a neck, a jaw that opens, wings that bend at the wrist, a tail in three
+    "foe_dragon_forge": {
+        "height": 12.0,  # its wings spread flat make it 22.7 wide at 13: at its size (2.0) it must pass the arena gate's 42 studs
+        "joints": {
+            "body": (0.0, -0.1, -0.05), "neck_base": (0.0, -0.27, 0.05), "head": (0.0, -0.33, 0.15), "jaw": (0.0, -0.35, 0.12),
+            "wing_l": (0.1, -0.19, 0.05), "hand_l": (0.19, -0.19, 0.14), "wing_r": (-0.1, -0.19, 0.05), "hand_r": (-0.19, -0.19, 0.14),
+            "leg_fl": (0.075, -0.27, -0.06), "leg_fr": (-0.075, -0.27, -0.06), "leg_bl": (0.07, 0.0, -0.06), "leg_br": (-0.07, 0.0, -0.06),
+            "tail": (0.0, 0.07, -0.08), "tail_mid": (0.0, 0.2, -0.1), "tail_end": (0.0, 0.32, -0.11),
         },
-        boxes=[
-            ("tail", (-1, 1, -1, 1, -1, -0.125)),  # its tail curls under it, below the claws
-            ("head", (-0.12, 0.02, -1, -0.04, 0.14, 1)),
-            ("wing_l", (0.05, 1, -1, 1, 0.06, 1)),
-            ("wing_r", (-1, -0.11, -1, 1, 0.06, 1)),
-            ("leg_fl", (-0.05, 1, -1, 0.04, -1, 0.0)),
-            ("leg_fr", (-1, -0.05, -1, 0.04, -1, 0.0)),
-            ("leg_bl", (-0.05, 1, 0.04, 0.22, -1, -0.02)),
-            ("leg_br", (-1, -0.05, 0.04, 0.22, -1, -0.02)),
-            ("tail", (-1, 1, 0.22, 1, -1, 0.06)),
-        ],
-    ),
+        "parents": {
+            "head": "neck_base", "jaw": "head", "hand_l": "wing_l", "hand_r": "wing_r", "tail_mid": "tail", "tail_end": "tail_mid",
+        },
+        "weights": shadow_dragon_parts,
+        "small": 0.03,
+        "cut": True,
+        "blend": 2,
+        "notes": "Shadow Dragon: SHANNON's Shadow Dragon (01:50) from ForgeGUI (artifact c37c9006), regenerated standing square with its wings spread flat, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail (decision 0104).",
+    },
     "foe_dragon_alpha_forge": legion(
         "Ancient Alpha Dragon", 16.0, "f52635f1", "Ancient Alpha Dragon (01:54)", how="cut from its sheet and turned to face forward",
         joints={
@@ -1132,6 +1166,7 @@ OWN_POSES = {  # a model's own attack and power clips (ATTACKS, MAGICS in Creatu
         "power": {"leg_fl": (-65, 1, -98), "leg_fr": (49, 14, 58), "elbow_r": (58, 89, 46), "head": (0, 78, 0)},
     },
 }
+OWN_POSES["foe_dragon_forge"] = OWN_POSES["foe_dragon_drake_forge"]  # (the same joints, the same moves asked of them)
 STRETCHED = math.log(1.25)
 BONE_COLOURS = {  # the bones view: which bone a face follows
     "body": (0.55, 0.55, 0.55), "head": (1.0, 0.85, 0.1), "leg_fl": (0.9, 0.15, 0.15), "leg_fr": (0.15, 0.35, 1.0),

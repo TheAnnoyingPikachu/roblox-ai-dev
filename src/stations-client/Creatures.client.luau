@@ -320,6 +320,142 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Shadow Dragon's pounce (SHANNON's pick), out of its mantle: crouches, springs forward with its wings
+	-- beating, and lands on both forefeet at the contact (0.44 s), its jaws snapping shut
+	foe_dragon_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { -8, 0, 0, 0, -0.2, 0.3 },
+				neck_base = { -10 },
+				head = { 8 },
+				jaw = { -6 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 16 },
+				leg_br = { 16 },
+				tail = { -6 },
+				wing_l = { 0, 20, -30 },
+				hand_l = { 0, 10, -14 },
+				wing_r = { 0, -20, 30 },
+				hand_r = { 0, -10, 14 },
+			},
+		},
+		{
+			0.30,
+			{
+				body = { 10, 0, 0, 0, 0.55, -0.6 },
+				neck_base = { 10 },
+				head = { -6 },
+				jaw = { -24 },
+				leg_fl = { -50 },
+				leg_fr = { -45 },
+				leg_bl = { -30 },
+				leg_br = { -28 },
+				tail = { -12 },
+				wing_l = { 0, 0, -45 },
+				hand_l = { 0, 0, -20 },
+				wing_r = { 0, 0, 45 },
+				hand_r = { 0, 0, 20 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -14, 0, 0, 0, -0.12, -1.5 },
+				neck_base = { -20 },
+				head = { 12 },
+				jaw = { 12 },
+				leg_fl = { 40 },
+				leg_fr = { 36 },
+				leg_bl = { -24 },
+				leg_br = { -22 },
+				tail = { 10 },
+				wing_l = { 0, -10, 32 },
+				hand_l = { 0, -4, 22 },
+				wing_r = { 0, 10, -32 },
+				hand_r = { 0, 4, -22 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -12, 0, 0, 0, -0.1, -1.4 },
+				neck_base = { -16 },
+				head = { 8 },
+				jaw = { 6 },
+				leg_fl = { 34 },
+				leg_fr = { 32 },
+				leg_bl = { -20 },
+				leg_br = { -18 },
+				tail = { 8 },
+				wing_l = { 0, -6, 22 },
+				hand_l = { 0, -2, 14 },
+				wing_r = { 0, 6, -22 },
+				hand_r = { 0, 2, -14 },
+			},
+		},
+		{ 0.95, {} },
+	}),
+	-- the Siege Golem's haymaker (SHANNON's pick), out of its knuckles down: twists away with its right fist drawn
+	-- back, then swings it across in a huge hook at the contact (0.44 s), its body turning into the punch
+	foe_golem_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 4, -20, 0, 0, 0.02, 0.2 },
+				head = { 0, 16 },
+				leg_fl = { 30, 0, -6 },
+				elbow_l = { 50 },
+				leg_fr = { 50, -50 },
+				elbow_r = { 70 },
+				leg_bl = { 6 },
+				leg_br = { -8 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 6, -32, 0, 0, 0.03, 0.3 },
+				head = { 0, 24 },
+				leg_fl = { 34, 0, -8 },
+				elbow_l = { 55 },
+				leg_fr = { 60, -75 },
+				elbow_r = { 80 },
+				leg_bl = { 8 },
+				leg_br = { -10 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -10, 26, 0, 0, -0.06, -0.8 },
+				head = { -6, -16 },
+				leg_fl = { 10, 0, -6 },
+				elbow_l = { 40 },
+				leg_fr = { 80, 30 },
+				elbow_r = { 20 },
+				leg_bl = { -14 },
+				leg_br = { 30 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -8, 22, 0, 0, -0.05, -0.7 },
+				head = { -4, -14 },
+				leg_fl = { 12 },
+				elbow_l = { 40 },
+				leg_fr = { 74, 26 },
+				elbow_r = { 24 },
+				leg_bl = { -12 },
+				leg_br = { 26 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Cavalry Commander's charging slash (SHANNON's pick), out of its sword aloft: the horse gathers as the rider
 	-- swings its sword up and back, then lunges forward as the sword sweeps down across its neck at the contact (0.44 s)
 	foe_cavalry_commander_forge = attack({
@@ -1835,6 +1971,33 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Shadow Dragon mantling (SHANNON's pick): wings raised high over its back, head lowered at its prey
+	foe_dragon_forge = {
+		body = { -4 },
+		neck_base = { -14 },
+		head = { 6 },
+		jaw = { -8 },
+		leg_fl = { 6 },
+		leg_fr = { -4 },
+		tail = { 4, 14 },
+		tail_mid = { 0, 12 },
+		tail_end = { 0, 16 },
+		wing_l = { 0, 15, -30 },
+		hand_l = { 0, 10, -10 },
+		wing_r = { 0, -15, 30 },
+		hand_r = { 0, -10, 10 },
+	},
+	-- the Siege Golem with its knuckles down (SHANNON's pick): stooped forward, its great fists low
+	foe_golem_forge = {
+		body = { -16, 0, 0, 0, -0.12 },
+		head = { 10 },
+		leg_fl = { 24, 0, 4 },
+		elbow_l = { -10 },
+		leg_fr = { 24, 0, -4 },
+		elbow_r = { -10 },
+		leg_bl = { 16 },
+		leg_br = { 16 },
+	},
 	-- the Cavalry Commander with its sword aloft (SHANNON's pick): the rider holds its cavalry sword high, the horse
 	-- standing proud
 	foe_cavalry_commander_forge = {
