@@ -23,7 +23,8 @@ local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForCh
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
 
--- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them. The Dark
+-- (elbow_l bends leg_fl's forearm, elbow_r leg_fr's: only the A-pose Shadow Legion models have them; a "weapon" turns
+-- in a fist, on its forearm (the Ogre Commander's great axe). The Dark
 -- Drake's neck_base carries its head and jaw, its wing_l and wing_r bend at hand_l and hand_r, and its tail goes on
 -- through tail_mid to tail_end: each child's turn is on top of its parent's)
 local JOINTS = {
@@ -45,8 +46,10 @@ local JOINTS = {
 	"hand_r",
 	"tail_mid",
 	"tail_end",
+	"weapon",
 }
 local WING_JOINTS = { "wing_l", "wing_r", "hand_l", "hand_r" }
+local TWO_HANDED = { foe_ogre_commander_forge = true } -- (both its fists hold its great axe)
 local TAU = math.pi * 2
 local MAGIC_IMPACT = 0.92 -- seconds into "magic" when the front feet land
 
@@ -444,21 +447,19 @@ local ATTACKS: { [string]: Clip } = {
 		},
 		{ 0.95, {} },
 	}),
-	-- the Ogre Commander's overhead cleave (SHANNON's pick), out of its axe planted at its side: heaves the axe up
-	-- overhead on a straight arm, turned a little in over its head, the axe lying back over its shoulders; swings it
-	-- over the top and into the ground before it edge-first at the contact (0.44 s), stooping into the blow. The arm
-	-- stays straight throughout (its elbow undoes the rest bend), so the axe and the arm go round as one
+	-- the Ogre Commander's two-handed overhead chop (SHANNON's pick), out of its great axe held up before it: both arms
+	-- heave the axe up and back over its head, then swing it over the top and down into the ground before it at the
+	-- contact (0.44 s), stooping into the blow. Both arms always turn alike (its rest holds the haft in both fists and
+	-- its shoulders lie on one line), so its hands stay on the haft and nothing bends
 	foe_ogre_commander_forge = attack({
 		{ 0.00, {} },
 		{
 			0.16,
 			{
-				body = { 10, -8, 0, 0, 0.08, 0.3 },
-				head = { 10 },
-				leg_fl = { 150, 0, -10 },
-				elbow_l = { 40 },
-				leg_fr = { 190, 0, -10 },
-				elbow_r = { -100 },
+				body = { 10, 0, 0, 0, 0.08, 0.3 },
+				head = { 8 },
+				leg_fl = { 95 },
+				leg_fr = { 95 },
 				leg_bl = { 4 },
 				leg_br = { -4 },
 			},
@@ -466,25 +467,32 @@ local ATTACKS: { [string]: Clip } = {
 		{
 			0.32,
 			{
-				body = { 14, -10, 0, 0, 0.12, 0.35 },
+				body = { 16, 0, 0, 0, 0.12, 0.4 },
 				head = { 12 },
-				leg_fl = { 170, 0, -15 },
-				elbow_l = { 30 },
-				leg_fr = { 205, 0, -10 },
-				elbow_r = { -100 },
+				leg_fl = { 125 },
+				leg_fr = { 125 },
 				leg_bl = { 8 },
 				leg_br = { -6 },
 			},
 		},
 		{
+			0.40,
+			{
+				body = { -12, 0, 0, 0, -0.06, -0.6 },
+				head = { -6 },
+				leg_fl = { 40 },
+				leg_fr = { 40 },
+				leg_bl = { 24 },
+				leg_br = { -10 },
+			},
+		},
+		{
 			0.44,
 			{
-				body = { -30, 4, 0, 0, -0.15, -1 },
+				body = { -30, 0, 0, 0, -0.15, -1 },
 				head = { -14 },
-				leg_fl = { 30, 0, -20 },
-				elbow_l = { 10 },
-				leg_fr = { 35, 0, -10 },
-				elbow_r = { -100 },
+				leg_fl = { -40 },
+				leg_fr = { -40 },
 				leg_bl = { 38 },
 				leg_br = { -14 },
 			},
@@ -492,12 +500,10 @@ local ATTACKS: { [string]: Clip } = {
 		{
 			0.60,
 			{
-				body = { -26, 4, 0, 0, -0.12, -0.9 },
+				body = { -26, 0, 0, 0, -0.12, -0.9 },
 				head = { -10 },
-				leg_fl = { 32, 0, -20 },
-				elbow_l = { 10 },
-				leg_fr = { 38, 0, -10 },
-				elbow_r = { -100 },
+				leg_fl = { -36 },
+				leg_fr = { -36 },
 				leg_bl = { 34 },
 				leg_br = { -12 },
 			},
@@ -1733,14 +1739,10 @@ local STANCES: { [string]: Pose } = {
 		wing_r = { 0, -45, -12 },
 		hand_r = { 0, -60, -8 },
 	},
-	-- the Ogre Commander with its great axe planted upright at its side (SHANNON's pick): its forearm turned
-	-- so the blades face out
+	-- the Ogre Commander holding its great axe up before it in both hands (SHANNON's pick: the arms are as it rests)
 	foe_ogre_commander_forge = {
 		body = { -4, 0, 0, 0, -0.02 },
-		head = { -6, 10 },
-		leg_fl = { 6, 0, 4 },
-		elbow_l = { 20 },
-		elbow_r = { 0, -70 },
+		head = { -4, 8 },
 	},
 	-- the Necromancer with a skull floating over its palm (SHANNON's pick): its arms rest bent, the staff in its fist;
 	-- its head tilts toward the skull
@@ -2934,6 +2936,10 @@ RunService.PreSimulation:Connect(function(dt: number)
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
 			target = if biped then walkBiped(time, rate, model:GetAttribute("Hexbound") ~= true) else walk(time, rate)
+			if TWO_HANDED[(model:GetAttribute("Asset") :: string?) or ""] then
+				target = table.clone(target)
+				target.leg_fl = target.leg_fr -- its arms hold one weapon: they swing together
+			end
 		elseif anim and TRAIN[anim] then
 			target = TRAIN[anim](time, (model:GetAttribute("Stride") :: number?) or 1.5, biped, model)
 		elseif anim == "attack" and t < ATTACK.length then

@@ -8575,13 +8575,13 @@
     "png": "build/blender/stations/foe_ogre_commander_forge.png",
     "preview": "build/blender/stations/previews/foe_ogre_commander_forge_rest.png",
     "size_studs": [
-      10.25,
+      10.34,
       12.5,
-      8.52
+      12.79
     ],
-    "tris": 6328,
+    "tris": 6514,
     "parts": {
-      "foe_ogre_commander_forge_body": 6328
+      "foe_ogre_commander_forge_body": 6514
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
@@ -8596,51 +8596,56 @@
     },
     "joints": {
       "foe_ogre_commander_forge_head": [
-        0.061,
+        0.102,
         8.478,
-        0.756
+        -0.747
       ],
       "foe_ogre_commander_forge_tail": [
-        0.061,
+        0.102,
         4.284,
-        -1.079
+        -2.582
       ],
       "foe_ogre_commander_forge_leg_fl": [
-        2.945,
+        2.986,
         7.561,
-        0.493
+        -1.009
       ],
       "foe_ogre_commander_forge_leg_fr": [
-        -2.822,
+        -2.782,
         7.561,
-        0.493
+        -1.009
       ],
       "foe_ogre_commander_forge_leg_bl": [
-        1.372,
+        1.413,
         3.628,
-        0.493
+        -1.009
       ],
       "foe_ogre_commander_forge_leg_br": [
-        -1.249,
+        -1.209,
         3.628,
-        0.493
+        -1.009
       ],
       "foe_ogre_commander_forge_elbow_l": [
-        3.35,
-        5.593,
-        0.618
+        1.499,
+        6.897,
+        0.174
       ],
       "foe_ogre_commander_forge_elbow_r": [
-        -3.231,
-        5.703,
-        -0.214
+        -1.408,
+        6.868,
+        0.314
+      ],
+      "foe_ogre_commander_forge_weapon": [
+        -0.087,
+        7.182,
+        1.495
       ]
     },
     "skinned": true,
     "root": [
-      0.061,
+      0.102,
       4.939,
-      0.493
+      -1.009
     ]
   },
   "foe_golem_forge": {

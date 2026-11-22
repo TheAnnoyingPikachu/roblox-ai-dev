@@ -228,6 +228,7 @@ describe("StationAssets", function()
 					and string.find(part, "_hand_[lr]$") == nil
 					and string.find(part, "_tail_mid$") == nil
 					and string.find(part, "_tail_end$") == nil
+					and string.find(part, "_weapon$") == nil -- (nor a weapon turning in its fist)
 				then
 					turning += 1
 				end
