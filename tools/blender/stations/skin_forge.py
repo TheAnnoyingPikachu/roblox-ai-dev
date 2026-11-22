@@ -890,8 +890,8 @@ REGIONS = {
             ("tail", (-0.12, 0.12, 0.38, 1, -0.4, 0.15)),
             ("leg_fl", (0.0, 1, -1, -0.05, -1, -0.27)),  # below the barding
             ("leg_fr", (-1, 0.0, -1, -0.05, -1, -0.27)),
-            ("leg_bl", (0.0, 1, 0.05, 1, -1, -0.27)),
-            ("leg_br", (-1, 0.0, 0.05, 1, -1, -0.27)),
+            ("leg_bl", (0.046, 1, 0.05, 1, -1, -0.27)),  # its hind legs are staggered: the right one stands under its middle
+            ("leg_br", (-1, 0.046, 0.05, 1, -1, -0.27)),
         ],
         blend=2,
         held={"split": 0.72, "+x": "body", "-x": "elbow_r"},
