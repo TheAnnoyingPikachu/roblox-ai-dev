@@ -308,6 +308,65 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Ogre Commander's overhead cleave (SHANNON's pick), out of its axe planted at its side: heaves the axe up
+	-- and over until its head hangs down its back, then brings it over and into the ground before it edge-first at the
+	-- contact (0.44 s), stooping into the blow
+	foe_ogre_commander_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 10, -8, 0, 0, 0.08, 0.3 },
+				head = { 10 },
+				leg_fl = { 150, 0, -10 },
+				elbow_l = { 40 },
+				leg_fr = { 200 },
+				elbow_r = { -50 },
+				leg_bl = { 4 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 14, -10, 0, 0, 0.12, 0.35 },
+				head = { 12 },
+				leg_fl = { 170, 0, -15 },
+				elbow_l = { 30 },
+				leg_fr = { 215, 0, 4 },
+				elbow_r = { -60 },
+				leg_bl = { 8 },
+				leg_br = { -6 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -30, 4, 0, 0, -0.15, -1 },
+				head = { -14 },
+				leg_fl = { 30, 0, -20 },
+				elbow_l = { 10 },
+				leg_fr = { 35, 10 },
+				elbow_r = { -100 },
+				leg_bl = { 38 },
+				leg_br = { -14 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { -26, 4, 0, 0, -0.12, -0.9 },
+				head = { -10 },
+				leg_fl = { 32, 0, -20 },
+				elbow_l = { 10 },
+				leg_fr = { 38, 10 },
+				elbow_r = { -100 },
+				leg_bl = { 34 },
+				leg_br = { -12 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Necromancer's staff drive (SHANNON's pick), out of its skull in its palm: raises the skull staff high, its
 	-- clawed hand up, and drives the staff's foot into the ground before it at the contact (0.44 s), leaning in
 	foe_mage_necromancer_forge = attack({
@@ -1518,6 +1577,15 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Ogre Commander with its great axe planted upright at its side (SHANNON's pick): its forearm turned
+	-- so the blades face out
+	foe_ogre_commander_forge = {
+		body = { -4, 0, 0, 0, -0.02 },
+		head = { -6, 10 },
+		leg_fl = { 6, 0, 4 },
+		elbow_l = { 20 },
+		elbow_r = { 0, -70 },
+	},
 	-- the Necromancer with a skull floating over its palm (SHANNON's pick): its arms rest bent, the staff in its fist;
 	-- its head tilts toward the skull
 	foe_mage_necromancer_forge = {
