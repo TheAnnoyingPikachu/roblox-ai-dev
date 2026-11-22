@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "output_artifacts": [],
+  "status": "in_progress",
+  "task_id": "STATION-116",
+  "objective": "SHANNON's picked animal moves in the game: each base animal's own idle, attack and power attack (a spell), each variant's own spell, the War Elephant's War Axe; spells drawn on the client by Spells (stations-client); skinned animals' feet kept on the ground in those moves (AnimalRig).",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/AnimalMoves.luau",
+    "src/shared/AnimalRig.luau",
+    "src/stations-client/Spells/**",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/CLAUDE.md",
+    "tests/AnimalMoves.spec.luau",
+    "tests/run.luau",
+    "tools/blender/stations/moves/**",
+    "studio/tasks/STATION-116.json"
+  ],
+  "tests": [
+    "AnimalMoves.spec.luau",
+    "Purity.spec.luau",
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every species idles, attacks and casts with SHANNON's pick (AnimalMoves); every variant casts its own spell; the War Elephant swings the War Axe",
+    "A power attack in the arena lands its spell on the target WaveShow aims it at (AimAt, AimHeight); without one (the admin's preview) it lands ahead of the animal",
+    "A skinned animal's feet stay on the ground through its idle, attack, power attack and flinch; its training clips and the Titan's sleep look as before",
+    "Every spell runs through its whole clip without an error (Spells.step catches one and warns once)"
+  ],
+  "verification": "Lune: AnimalMoves, Purity, StationAssets. Every spell was run through its whole clip on Lune's Roblox instances (a one-off harness in the session, not in CI): no error, NaN or bad size, at most 284 parts in a frame. Not yet seen in Studio: a wave fight with each animal and variant, build stamp to record.",
+  "risk_level": "medium",
+  "notes": "SHANNON, 2026-11-21 (picks on the concept page, artifact 4urUK1aXPUgDzr86eAamJX): jackal idle A attack B power B; tortoise A A B; meerkat B A A; cheetah A A A; rhino B A A; flamingo B B A; lion A A A; giraffe A A B; elephant A A A; every variant spell but the War Elephant's volley. 2026-11-22: \"the new to pick war axe concept absolutely goes in just tone down the effects a little maybe\": toned down (thinner, fainter fire sheet, less glow, fewer embers, a smaller burst). The concepts and the scripts that render them and write AnimalMoves and AnimalRig are in tools/blender/stations/moves (README). Checkpoint: the spells' looks in Roblox (Neon parts for the concepts' bloom) are to be seen in Studio; the old physical power clips and the shared charge and slam no longer play for animals."
+}
