@@ -68,6 +68,33 @@ Spells.RAINBOW = {
 	rgb(0.85, 0.3, 1),
 }
 
+-- The Hot core look (SHANNON's pick, 2026-11-22; fxkit.HOT in the concepts): glowing balls and beams in layers, a
+-- white-hot core in a coloured body in a soft glowing edge (ForceField material); glowing lines, spikes and gems with
+-- a white-hot core; rings closing in on where the spell comes from as it charges; a star flash and a crisp shock ring
+-- on the hit. By asset: where its charge gathers (an anchor, or "paws" between them) and in what colour. A spell not
+-- listed keeps the plain look.
+local C = Spells.C
+Spells.HOT = {
+	creature_jackal_forge = { "nose", C.AQUA },
+	creature_jackal_pharaoh_forge = { "crown", C.TURQ },
+	creature_jackal_sphinx_forge = { "crown", C.SAND },
+	creature_tortoise_forge = { "back", C.JADE },
+	creature_tortoise_gemshell_forge = { "back", C.AQUA },
+	creature_tortoise_island_forge = { "chest", C.SEA },
+	creature_meerkat_forge = { "paws", C.SUN },
+	creature_meerkat_star_forge = { "paw_r", C.STAR },
+	creature_meerkat_storm_forge = { "paw_r", C.ALIEN },
+	creature_cheetah_forge = { "paw_r", C.MINT },
+	creature_cheetah_lightning_forge = { "tail", C.ELEC },
+	creature_cheetah_thunder_forge = { "back", C.STORM },
+	creature_rhino_forge = { "horn", C.AMBER },
+	creature_rhino_lava_forge = { "horn", C.LAVA },
+	creature_rhino_crystal_forge = { "horn", C.DIAMOND },
+	creature_flamingo_forge = { "back", C.PINK },
+	creature_flamingo_peacock_forge = { "tail", C.GOLD },
+} :: { [string]: { any } }
+local WHITE = Color3.new(1, 1, 1)
+
 -- Timing helpers (fxkit.py's) ------------------------------------------------------------------------------------
 
 local function ease(u: number): number
@@ -149,13 +176,14 @@ type KitData = {
 	ghostUsed: { [string]: boolean },
 	highlight: Highlight?,
 	auraOn: boolean, -- (Kit.aura was called this frame)
+	hot: boolean, -- drawn in the Hot core look
 }
 
 local Kit = {}
 Kit.__index = Kit
 export type Kit = typeof(setmetatable({} :: KitData, Kit))
 
-local function newKit(caster: Model, right: Vector3, fwd: Vector3): Kit
+local function newKit(caster: Model, right: Vector3, fwd: Vector3, hot: boolean): Kit
 	local folder = Instance.new("Folder")
 	folder.Name = "Spell"
 	folder.Parent = Workspace
@@ -173,6 +201,7 @@ local function newKit(caster: Model, right: Vector3, fwd: Vector3): Kit
 		ghostUsed = {},
 		highlight = nil,
 		auraOn = false,
+		hot = hot,
 	}
 	return setmetatable(kit, Kit)
 end
@@ -204,7 +233,10 @@ function Kit.part(self: Kit, kind: string, colour: Color3, glow: number, alpha: 
 		p = made
 	end
 	p.Color = colour
-	p.Material = if glow >= 1 then Enum.Material.Neon else Enum.Material.SmoothPlastic
+	p.Material = if glow < 0
+		then Enum.Material.ForceField
+		elseif glow >= 1 then Enum.Material.Neon
+		else Enum.Material.SmoothPlastic
 	p.Transparency = 1 - math.clamp(alpha, 0, 1)
 	return p
 end
@@ -265,7 +297,17 @@ function Kit.orb(
 	light: number?
 )
 	local g, a = glow or 6, alpha or 1
-	if core ~= false then
+	if self.hot and g >= 3 and a > 0.01 then
+		if core ~= false then -- a ball of energy: a white-hot core, a coloured body, a glowing edge
+			local inner = self:part("ball", WHITE, g * 1.3, a)
+			inner.CFrame, inner.Size = CFrame.new(p), Vector3.one * 0.84 * r
+			local body = self:part("ball", colour, g, a * 0.5)
+			body.CFrame, body.Size = CFrame.new(p), Vector3.one * 1.6 * r
+			self:shell(p, r * 1.35, colour, a * 0.8)
+		else -- a dome or a glow: its edge glows
+			self:shell(p, r, colour, math.min(1, a * 1.3))
+		end
+	elseif core ~= false then
 		local outer = self:part("ball", colour, g, a * 0.55)
 		outer.CFrame, outer.Size = CFrame.new(p), Vector3.one * 2 * r
 		local inner = self:part("ball", Color3.new(1, 1, 1), g * 1.6, a)
@@ -277,6 +319,12 @@ function Kit.orb(
 	if light and light > 0 then
 		self:light(p, colour, light * r * r)
 	end
+end
+
+-- a soft glowing edge round a shape (the Hot core look's): a ForceField ball
+function Kit.shell(self: Kit, p: Vector3, r: number, colour: Color3, alpha: number)
+	local b = self:part("ball", colour, -1, alpha)
+	b.CFrame, b.Size = CFrame.new(p), Vector3.one * 2 * r
 end
 
 -- a plain ball (a rock, a puff of cloud)
@@ -348,6 +396,15 @@ function Kit.beam(
 	end
 	local g, al = glow or 6, alpha or 1
 	local frame = along((a + b) / 2, d)
+	if self.hot and g >= 3 then -- a white-hot core, a coloured body, a glowing edge
+		local inner = self:part("cyl", WHITE, g * 1.3, al)
+		inner.CFrame, inner.Size = frame, Vector3.new(n, 0.64 * r, 0.64 * r)
+		local body = self:part("cyl", colour, g, al * 0.5)
+		body.CFrame, body.Size = frame, Vector3.new(n, 1.5 * r, 1.5 * r)
+		local edge = self:part("cyl", colour, -1, al * 0.8)
+		edge.CFrame, edge.Size = frame, Vector3.new(n, 2.6 * r, 2.6 * r)
+		return
+	end
 	local outer = self:part("cyl", colour, g, al * (if core ~= false then 0.5 else 1))
 	outer.CFrame, outer.Size = frame, Vector3.new(n, 2 * r, 2 * r)
 	if core ~= false then
@@ -384,6 +441,9 @@ end
 
 function Kit.spike(self: Kit, base: Vector3, tip: Vector3, r: number, colour: Color3, glow: number?, alpha: number?)
 	pyramid(self, base, tip, r, colour, glow or 0, alpha or 1)
+	if self.hot and (glow or 0) >= 4 then
+		pyramid(self, base, base:Lerp(tip, 0.75), r * 0.38, WHITE, (glow or 0) * 1.3, alpha or 1)
+	end
 end
 
 -- a flat triangle `thick` thick: two wedges (the concepts' filled shapes, as a fan of them)
@@ -437,10 +497,30 @@ function Kit.diamond(
 	local d = (axis or UP).Unit * h / 2
 	pyramid(self, p, p + d, r, colour, glow or 4, alpha or 1, spin)
 	pyramid(self, p, p - d, r, colour, glow or 4, alpha or 1, spin)
+	if self.hot and (glow or 4) >= 4 then
+		pyramid(self, p, p + d * 0.6, r * 0.45, WHITE, (glow or 4) * 1.3, alpha or 1, spin)
+		pyramid(self, p, p - d * 0.6, r * 0.45, WHITE, (glow or 4) * 1.3, alpha or 1, spin)
+	end
 end
 
--- a round tube along points (radius r, or r * taper(i / (n - 1)) along it)
+-- a round tube along points (radius r, or r * taper(i / (n - 1)) along it); hot, a white core runs inside
 function Kit.tube(
+	self: Kit,
+	pts: { Vector3 },
+	r: number,
+	colour: Color3,
+	glow: number?,
+	alpha: number?,
+	closed: boolean?,
+	taper: ((number) -> number)?
+)
+	self:rawTube(pts, r, colour, glow, alpha, closed, taper)
+	if self.hot and (glow or 4) >= 4 and (alpha or 1) > 0.05 then
+		self:rawTube(pts, r * 0.38, WHITE, (glow or 4) * 1.3, math.min(1, (alpha or 1) * 1.2), closed, taper)
+	end
+end
+
+function Kit.rawTube(
 	self: Kit,
 	pts: { Vector3 },
 	r: number,
@@ -616,8 +696,15 @@ function Kit.bolt(
 	end
 end
 
--- a flat ribbon through pts (newest first) facing the camera, thinning toward its end
+-- a flat ribbon through pts (newest first) facing the camera, thinning toward its end; hot, a white streak in it
 function Kit.trail(self: Kit, pts: { Vector3 }, w: number, colour: Color3, glow: number?, alpha: number?)
+	self:rawTrail(pts, w, colour, glow, alpha)
+	if self.hot and (glow or 4) >= 4 then
+		self:rawTrail(pts, w * 0.3, WHITE, (glow or 4) * 1.3, math.min(1, (alpha or 0.6) * 1.4))
+	end
+end
+
+function Kit.rawTrail(self: Kit, pts: { Vector3 }, w: number, colour: Color3, glow: number?, alpha: number?)
 	local n = #pts
 	if n < 2 then
 		return
@@ -679,6 +766,69 @@ function Kit.cloud(self: Kit, p: Vector3, R: number, colour: Color3, seed: numbe
 	for _ = 1, 9 do
 		local q = p + (x * rng:NextNumber(-1, 1) + y * rng:NextNumber(-0.6, 0.6) + UP * rng:NextNumber(-0.25, 0.3)) * R
 		self:ball(q, R * rng:NextNumber(0.35, 0.6), colour, glow or 0.3, alpha or 1)
+	end
+end
+
+-- a closed ring for the Hot core look's own rings (no core of its own)
+function Kit.rawRing(
+	self: Kit,
+	p: Vector3,
+	R: number,
+	w: number,
+	colour: Color3,
+	glow: number,
+	alpha: number,
+	normal: Vector3
+)
+	local nrm = normal.Unit
+	local a = nrm:Cross(if math.abs(nrm.X) < 0.9 then Vector3.xAxis else Vector3.yAxis).Unit
+	local b = nrm:Cross(a)
+	local pts = {}
+	for i = 0, 23 do
+		local ang = i / 24 * TAU
+		table.insert(pts, p + (a * math.cos(ang) + b * math.sin(ang)) * R)
+	end
+	self:rawTube(pts, w, colour, glow, alpha, true)
+end
+
+-- an impact flash: thin streaks out from p, facing the camera, long and short in turn
+function Kit.star(self: Kit, p: Vector3, R: number, colour: Color3, alpha: number)
+	if alpha <= 0.01 then
+		return
+	end
+	local camera = Workspace.CurrentCamera
+	local view = ((if camera then camera.CFrame.Position else p + UP * 20) - p).Unit
+	local a = view:Cross(if math.abs(view.X) < 0.9 then Vector3.xAxis else Vector3.yAxis).Unit
+	local b = view:Cross(a)
+	for i = 0, 7 do
+		local ang = 0.3 + i / 8 * TAU
+		local d = a * math.cos(ang) + b * math.sin(ang)
+		local L = R * (if i % 2 == 0 then 1 else 0.5)
+		pyramid(self, p, p + d * L, 0.05 * R, WHITE, 11, alpha)
+		pyramid(self, p, p + d * L * 0.85, 0.11 * R, colour, 7, 0.55 * alpha)
+	end
+end
+
+-- a crisp shock ring: a bright leading edge with a fainter wash behind it
+function Kit.shock(self: Kit, p: Vector3, R: number, w: number, colour: Color3, alpha: number)
+	if alpha <= 0.01 then
+		return
+	end
+	self:rawRing(p, R, w, WHITE, 9, alpha, UP)
+	self:rawRing(p, R * 0.94, w * 2, colour, 6, 0.55 * alpha, UP)
+	self:rawRing(p, R * 0.8, w * 0.7, colour, 4, 0.25 * alpha, UP)
+end
+
+-- rings closing in on p as it charges (u 0 -> 1), facing the camera
+function Kit.converge(self: Kit, p: Vector3, R: number, colour: Color3, u: number?)
+	if u == nil then
+		return
+	end
+	local camera = Workspace.CurrentCamera
+	local view = (if camera then camera.CFrame.Position else p + UP * 20) - p
+	for i = 0, 2 do
+		local v = (u * 2.2 + i / 3) % 1
+		self:rawRing(p, R * (1 - v) + 0.05, 0.05 * R * (0.6 + v), colour, 7, v * 0.9, view)
 	end
 end
 
@@ -890,7 +1040,7 @@ local function begin(model: Model, at: number, bones: { [string]: { bone: Bone, 
 		else root.CFrame.Position + UP * H / 2
 	local frame: Frame = {
 		t = 0,
-		kit = newKit(model, right, fwd),
+		kit = newKit(model, right, fwd, Spells.HOT[(model:GetAttribute("Asset") :: string?) or ""] ~= nil),
 		model = model,
 		A = {},
 		T = T,
@@ -949,7 +1099,15 @@ function Spells.step(model: Model, bones: { [string]: { bone: Bone, turn: CFrame
 	c.frame.t = t
 	anchor(c, model, bones)
 	c.frame.kit:begin()
-	local ok, err = pcall(draw, c.frame)
+	local hot = Spells.HOT[(model:GetAttribute("Asset") :: string?) or ""]
+	local ok, err = pcall(function()
+		local f = c.frame
+		draw(f)
+		if hot then -- rings close in on where it casts from as it charges
+			local from = if hot[1] == "paws" then (f.A.paw_l + f.A.paw_r) / 2 + UP * 0.5 * f.k else f.A[hot[1]]
+			f.kit:converge(from, 2.4 * f.k, hot[2], Spells.seg(t, 0.25, 0.84))
+		end
+	end)
 	c.frame.kit:finish()
 	if not ok and not c.warned then
 		c.warned = true
@@ -979,6 +1137,17 @@ function Spells.impact(f: Frame, colour: Color3, R: number?, seed: number?, ring
 		return
 	end
 	local k = f.kit
+	if k.hot then -- a star flash and crisp rings
+		if flash ~= false then
+			k:star(f.TC, 4 * f.k * (0.6 + 0.4 * ease(math.min(1, u * 4))), colour, (1 - u) ^ 1.5)
+			k:light(f.TC, colour, 8 * (1 - u) * f.k * f.k)
+		end
+		if ring ~= false then
+			k:shock(f.T + UP * 0.08, (0.6 + (R or 3) * 1.4 * ease(u)) * f.k, 0.09 * f.k, colour, 1 - u)
+		end
+		k:burst(f.TC, u, 12, 4 * f.k, colour, seed or 1, 0.12 * f.k)
+		return
+	end
 	if flash ~= false then
 		k:orb(f.TC + f.V(0, 0.6, 0) * f.k, (0.4 + ease(math.min(1, u * 3))) * f.k, colour, 6, 0.75 * (1 - u) ^ 2)
 		k:light(f.TC, colour, 8 * (1 - u) * f.k * f.k)
