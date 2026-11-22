@@ -23,7 +23,25 @@ NEW = set()  # the War Axe was new on 2026-11-21 and picked on the 22nd
 DROPPED = {"creature_elephant_war_forge_m_volley"}
 KIND = {"idle": ("Idle", "loops"), "attack": ("Attack", "hit at 0.44 s"), "power": ("Magic power attack", "impact at 0.92 s"),
         "variant": ("Variant power attacks", "one spell each")}
-sections, nav = [], []
+VISUALS = [("creature_meerkat_forge", "m_sunorb", "Meerkat", "Sun Orb"), ("creature_rhino_forge", "m_lance", "Rhino", "Horn Lance"),
+           ("creature_lion_shadow_forge", "m_claws", "Shadow Lion", "Shadow Claws")]
+DIRECTIONS = [("v1_core", "1", "Hot core", "Energy in layers: a white-hot core in a coloured body in a soft glowing edge. Rings close in as it charges; a sharp star flash and a crisp shock ring on the hit."),
+              ("v2_element", "2", "Elemental", "The magic as what it is made of: flame tongues, a molten banded beam and embers, ink tendrils and obsidian blades. The ground cracks and glows."),
+              ("v3_arcane", "3", "Arcane", "Detailed magic circles with rune marks and turning polygons that the spell passes through; a sigil and a pillar of light pin the target.")]
+vrows = []
+for asset, now, who, spell in VISUALS:
+    figs = [f'''<figure class="now"><img src="gifs/{asset}_{now}.webp" alt="{who}: {spell} as it is now" loading="lazy" width="480" height="352">
+          <figcaption><span class="opt now">Now</span><b>{spell}</b> as it is in the game.</figcaption></figure>''']
+    for key, n, label, text in DIRECTIONS:
+        figs.append(f'''<figure><img src="gifs/{asset}_{key}.webp" alt="{who}: {spell}, {label}" loading="lazy" width="480" height="352">
+          <figcaption><span class="opt dir">{n}</span><b>{label}</b> {text}</figcaption></figure>''')
+    vrows.append(f'''<div class="row variant"><h3>{who}: {spell}<span>now, then directions 1, 2 and 3</span></h3><div class="pair">{"".join(figs)}</div></div>''')
+visuals = f'''<section id="visuals">
+      <h2>Better visuals: three directions</h2>
+      <p class="lead">New looks for the spells with no particle effects, each shown on the same three spells beside how they look now. Pick a direction, or parts of several, and it goes onto every spell. All of it is buildable in Roblox: Neon parts in layers, a ForceField-material glow round them, beams, rings and glowing cracks. The circles standing across a spell's path are turned toward this camera so you can see them; in the game they face along the path.</p>
+      {"".join(vrows)}
+    </section>'''
+sections, nav = [visuals], ['<a href="#visuals">Better visuals</a>']
 for a in ORDER:
     fit = json.load(open(os.path.join(OUT, a, "fit_full.json"), encoding="utf-8"))
     magic = json.load(open(os.path.join(OUTM, a, "fit_magic_full.json"), encoding="utf-8"))
@@ -107,6 +125,10 @@ figure.picked {{ border-color: var(--idle); box-shadow: 0 0 0 1px var(--idle); }
 figure.new {{ border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }}
 .badge {{ position: absolute; top: 16px; right: 16px; z-index: 1; font-size: .74rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; color: #fff; background: var(--idle); }}
 .badge.new {{ background: var(--accent); }}
+#visuals figure {{ opacity: 1; }}
+#visuals figure.now {{ border-style: dashed; }}
+.lead {{ margin: 0; max-width: 72ch; color: var(--muted); }}
+.opt.now {{ width: auto; padding: 0 6px; background: var(--muted); }} .opt.dir {{ background: var(--magic); }}
 .note {{ display: block; margin-top: 6px; font-size: .84rem; color: var(--muted); }}
 footer {{ color: var(--muted); font-size: .88rem; max-width: 70ch; }}
 @media (prefers-reduced-motion: reduce) {{ html {{ scroll-behavior: auto; }} }}
@@ -123,7 +145,7 @@ footer {{ color: var(--muted); font-size: .88rem; max-width: 70ch; }}
   </header>
   <nav aria-label="Animals">{"".join(nav)}</nav>
   {"".join(sections)}
-  <footer>Ask for changes to any picked move once you have seen it in Studio.</footer>
+  <footer>Pick a direction for the spells' visuals (1, 2 or 3, or a mix such as "2's cracks with 1's flashes"), or ask for changes to any picked move.</footer>
 </div>
 '''
 open(PAGE, "w", encoding="utf-8").write(page)

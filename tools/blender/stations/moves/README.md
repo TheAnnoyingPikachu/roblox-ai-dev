@@ -21,3 +21,5 @@ match fxkit's). Change a spell in both. After a model is rebuilt, run `rigdata.p
 Check the game's spells after changing one (runs each through its whole clip, no Studio needed):
 
     lune run tools/blender/stations/moves/check_spells
+
+`magicv.py` (with `render_v.py`): three directions for better-looking spells (hot core, elemental, arcane) on Sun Orb, Horn Lance and Shadow Claws, for SHANNON to pick one before it goes onto every spell.
