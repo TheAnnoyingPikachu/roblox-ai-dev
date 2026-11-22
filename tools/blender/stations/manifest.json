@@ -8978,13 +8978,13 @@
     "png": "build/blender/stations/foe_dragon_drake_forge.png",
     "preview": "build/blender/stations/previews/foe_dragon_drake_forge_rest.png",
     "size_studs": [
-      19.7,
+      19.78,
       9.0,
       18.88
     ],
-    "tris": 5147,
+    "tris": 5138,
     "parts": {
-      "foe_dragon_drake_forge_body": 5147
+      "foe_dragon_drake_forge_body": 5138
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
@@ -8999,79 +8999,79 @@
     },
     "joints": {
       "foe_dragon_drake_forge_neck_base": [
-        -0.041,
+        0.0,
         4.937,
         6.477
       ],
       "foe_dragon_drake_forge_head": [
-        -0.041,
+        0.0,
         6.707,
         7.414
       ],
       "foe_dragon_drake_forge_jaw": [
-        -0.041,
+        0.0,
         6.353,
         7.831
       ],
       "foe_dragon_drake_forge_wing_l": [
-        1.625,
+        1.666,
         6.291,
         5.227
       ],
       "foe_dragon_drake_forge_hand_l": [
-        4.125,
+        4.165,
         6.561,
         5.227
       ],
       "foe_dragon_drake_forge_wing_r": [
-        -1.707,
+        -1.666,
         6.291,
         5.227
       ],
       "foe_dragon_drake_forge_hand_r": [
-        -4.206,
+        -4.165,
         6.561,
         5.227
       ],
       "foe_dragon_drake_forge_leg_fl": [
-        1.209,
+        1.25,
         3.896,
         6.06
       ],
       "foe_dragon_drake_forge_leg_fr": [
-        -1.29,
+        -1.25,
         3.896,
         6.06
       ],
       "foe_dragon_drake_forge_leg_bl": [
-        1.209,
+        1.25,
         3.687,
         1.478
       ],
       "foe_dragon_drake_forge_leg_br": [
-        -1.29,
+        -1.25,
         3.687,
         1.478
       ],
       "foe_dragon_drake_forge_tail": [
-        -0.041,
+        0.0,
         3.271,
         0.02
       ],
       "foe_dragon_drake_forge_tail_mid": [
-        -0.041,
+        0.0,
         2.854,
         -3.104
       ],
       "foe_dragon_drake_forge_tail_end": [
-        -0.041,
+        0.0,
         2.542,
         -6.228
       ]
     },
     "skinned": true,
     "root": [
-      -0.041,
+      0.0,
       3.896,
       3.144
     ]
