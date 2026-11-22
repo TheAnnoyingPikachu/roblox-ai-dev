@@ -35,6 +35,16 @@ local collection = {
 	RemoveTag = function() end,
 }
 local Anchors = luau.load(fs.readFile("src/stations-client/FoeAnchors.luau"), { debugName = "FoeAnchors" })()
+local Assets = luau.load(fs.readFile("src/shared/StationAssets.luau"), { debugName = "StationAssets" })()
+local function finder(name: string?)
+	return {
+		name = name,
+		WaitForChild = function(_, child)
+			return finder(child)
+		end,
+	}
+end
+collection.WaitForChild = finder().WaitForChild
 local FoePowers = luau.load(fs.readFile("src/stations-client/FoePowers.luau"), {
 	debugName = "FoePowers",
 	environment = {
@@ -49,13 +59,9 @@ local FoePowers = luau.load(fs.readFile("src/stations-client/FoePowers.luau"), {
 				return if name == "Workspace" then workspace else collection
 			end,
 		},
-		script = { Parent = {
-			WaitForChild = function()
-				return {}
-			end,
-		} },
-		require = function()
-			return Anchors
+		script = { Parent = finder() },
+		require = function(m)
+			return if m.name == "FoeAnchors" then Anchors else Assets
 		end,
 		warn = function(...)
 			table.insert(warnings, table.concat({ ... }, " "))
@@ -114,7 +120,8 @@ for asset, anchors in Anchors do
 	local bones = { head = { bone = { WorldCFrame = CF.new(0, 8, -4), TransformedWorldCFrame = CF.new(0, 8, -4) } } }
 	for _, a in anchors do
 		local cf = CF.new(0, 4, 0)
-		bones[a[1]] = { bone = { WorldCFrame = cf, TransformedWorldCFrame = cf, Transform = CF.identity } }
+		bones[a[1]] =
+			{ bone = { WorldCFrame = cf, TransformedWorldCFrame = cf, Transform = CF.identity }, turn = CF.identity }
 	end
 	for _, named in { "1", "1,2,3,4", "" } do -- one animal, all four, and nothing named (it aims ahead)
 		local aim = if named ~= "" then named else nil

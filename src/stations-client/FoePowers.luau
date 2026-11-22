@@ -7,9 +7,11 @@
 -- Sizes are studs, times seconds into the clip; the hit lands at HIT, as FightFx.POWER_LEAD.
 
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
 local FoeAnchors = require(script.Parent:WaitForChild("FoeAnchors"))
+local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
 
 local FoePowers = {}
 
@@ -97,7 +99,7 @@ local function newKit(floor: number): Kit
 	}
 end
 
--- `power` is the concepts' glow: 1 and over is Neon
+-- `power` is the concepts' glow: 1.5 and over is Neon (a softer light is plain, so it does not glare)
 local function part(k: Kit, kind: string, colour: Color3, power: number, alpha: number): BasePart
 	local pool = k.pools[kind]
 	if pool == nil then
@@ -122,7 +124,7 @@ local function part(k: Kit, kind: string, colour: Color3, power: number, alpha: 
 	p.Color = colour
 	p.Material = if kind == "rock"
 		then Enum.Material.Slate
-		elseif power >= 1 then Enum.Material.Neon
+		elseif power >= 1.5 then Enum.Material.Neon
 		else Enum.Material.SmoothPlastic
 	p.Transparency = 1 - math.clamp(alpha, 0, 1)
 	return p
@@ -490,8 +492,8 @@ local function ghosts(k: Kit, model: Model, bones: Bones, n: number): { Model }
 				d.Enabled = false
 			elseif d:IsA("MeshPart") then
 				d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch, d.CastShadow = true, false, false, false, false
-				d.TextureID, d.Material, d.Color = "", Enum.Material.Neon, HEX
-				d.Transparency = 0.84 + 0.04 * (i - 1)
+				d.TextureID, d.Material, d.Color = "", Enum.Material.ForceField, HEX -- (see-through, its edges lit)
+				d.Transparency = 0.1 + 0.15 * (i - 1)
 			elseif d:IsA("BasePart") then
 				d.Anchored, d.CanCollide, d.CanQuery, d.CanTouch = true, false, false, false
 			end
@@ -665,7 +667,7 @@ FX.foe_mage_priest_forge = function(k, c, A, F) -- Benediction
 				end
 			end
 			if c <= HIT + 0.6 then
-				sphere(k, ground(k, e.home) + UP * e.h * 0.5, math.max(e.w, e.h) * 0.62, GOLD, 2.0, 0.07 * (1 - u))
+				sphere(k, ground(k, e.home) + UP * e.h * 0.5, math.max(e.w, e.h) * 0.62, GOLD, 2.0, 0.035 * (1 - u))
 			end
 		end
 	end
@@ -1017,16 +1019,25 @@ function FoePowers.step(model: Model, bones: Bones, anim: string?, at: number, t
 	for _, m in c.allies or {} do
 		table.insert(F.allies, spotOf(m))
 	end
-	-- where each anchor is now: its rest offset carried by its bone as posed
+	-- where each anchor is now: its rest offset (Root axes) carried by its bone as posed. A bone's `turn` is its rest
+	-- frame in the Root's (Creatures.client takes it before any pose); its WorldCFrame will not do, as that already
+	-- holds its parents' poses. Sizes are over the built size (GetScale also holds the importer's unit).
 	local A: Anchors = {}
-	local size, turn = model:GetScale(), cf.Rotation
+	local built = StationAssets[asset]
+	local size, rot = if built then me.h / built.size[2] else 1, cf.Rotation
 	for name, a in FoeAnchors[asset] or {} do
+		local v = a[2] :: { number }
+		local off = Vector3.new(v[1], v[2], v[3]) * size
 		local b = bones[a[1]]
+		local key = `bone {a[1]}`
+		if b == nil and c.S[key] == nil then -- a bone no pose moves (a weapon's "tip"): found once
+			c.S[key] = model:FindFirstChild(a[1], true) or false
+		end
 		if b then
-			local now, rest = b.bone.TransformedWorldCFrame, b.bone.WorldCFrame
-			local v = a[2] :: { number }
-			A[name] = now.Position
-				+ (now.Rotation * rest.Rotation:Inverse()) * (turn * (Vector3.new(v[1], v[2], v[3]) * size))
+			local now = b.bone.TransformedWorldCFrame
+			A[name] = now.Position + now.Rotation * (b.turn:Inverse() * off)
+		elseif c.S[key] then -- (as it stands: its offset is none)
+			A[name] = (c.S[key] :: Bone).TransformedWorldCFrame.Position + rot * off
 		else
 			A[name] = me.chest
 		end
