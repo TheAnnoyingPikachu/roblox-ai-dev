@@ -222,26 +222,27 @@ describe("BattleRules.battle", function()
 	end)
 end)
 
-describe("BattleRules revive (decision 0104)", function()
+local function foeAt(id: string, mult: number): StationRules.Owned
+	local stats = {} :: any
+	for k, v in (StationConfig.foe(id) :: StationConfig.Foe).stats :: any do
+		stats[k] = math.max(1, math.floor(v * mult))
+	end
+	return { s = id, stats = stats } :: any
+end
+
+describe("BattleRules revive (decisions 0104, 0105)", function()
 	it("lets the Necromancer's power attacks raise each fallen ally once, at REVIVE_PCT of its HP", function()
-		local function foe(id: string, mult: number): StationRules.Owned
-			local stats = {} :: any
-			for k, v in (StationConfig.foe(id) :: StationConfig.Foe).stats :: any do
-				stats[k] = math.max(1, math.floor(v * mult))
-			end
-			return { s = id, stats = stats } :: any
-		end
 		local log = {}
-		BattleRules.battle(three("lion"), { foe("shadow_knight", 0.3), foe("necromancer", 4) }, log)
+		BattleRules.battle(three("lion"), { foeAt("shadow_knight", 0.3), foeAt("necromancer", 4) }, log)
 		local raised, seen = {}, false
 		for _, h in log do
-			if h.revive then
+			for _, r in h.revives or {} do
 				seen = true
 				expect(h.side).toBe(2)
 				expect(h.power).toBe(true)
-				raised[h.revive.slot] = (raised[h.revive.slot] or 0) + 1
-				local max = BattleRules.lineup({ foe("shadow_knight", 0.3), foe("necromancer", 4) }, 2)[1].maxHp
-				expect(h.revive.hp).toBe(math.max(1, math.floor(max * BattleRules.REVIVE_PCT / 100)))
+				raised[r.slot] = (raised[r.slot] or 0) + 1
+				local max = BattleRules.lineup({ foeAt("shadow_knight", 0.3), foeAt("necromancer", 4) }, 2)[1].maxHp
+				expect(r.hp).toBe(math.max(1, math.floor(max * BattleRules.REVIVE_PCT / 100)))
 			end
 		end
 		expect(seen).toBe(true)
@@ -249,12 +250,95 @@ describe("BattleRules revive (decision 0104)", function()
 		expect(raised[2]).toBeNil()
 	end)
 
+	it("raises several fallen allies with one power attack, never more than REVIVE_MAX", function()
+		local wave = {
+			foeAt("shadow_knight", 0.2),
+			foeAt("shadow_knight", 0.2),
+			foeAt("shadow_knight", 0.2),
+			foeAt("shadow_knight", 0.2),
+		}
+		table.insert(wave, foeAt("necromancer", 6))
+		local log = {}
+		BattleRules.battle(three("lion"), wave, log)
+		local most, raised = 0, {}
+		for _, h in log do
+			local n = #(h.revives or {})
+			most = math.max(most, n)
+			for _, r in h.revives or {} do
+				raised[r.slot] = (raised[r.slot] or 0) + 1
+				expect(raised[r.slot]).toBe(1) -- each still only once
+			end
+		end
+		expect(most > 1).toBe(true)
+		expect(most <= BattleRules.REVIVE_MAX).toBe(true)
+	end)
+
 	it("never raises anyone for a team of animals", function()
 		local log = {}
 		BattleRules.battle(three("lion"), three("jackal"), log)
 		for _, h in log do
-			expect(h.revive).toBeNil()
+			expect(h.revives).toBeNil()
 		end
+	end)
+end)
+
+describe("BattleRules sweep and the Battle Priest (decision 0105)", function()
+	it("gives the dragons and the Siege Golem a power attack that strikes every animal standing", function()
+		for _, id in { "siege_golem", "dark_drake", "shadow_dragon", "ancient_alpha_dragon" } do
+			expect((StationConfig.foe(id) :: StationConfig.Foe).ability).toBe("sweep")
+		end
+		local log = {}
+		BattleRules.battle(three("lion"), { foeAt("dark_drake", 2) }, log)
+		local hp, seen = {}, false
+		for slot, f in BattleRules.lineup(three("lion"), 1) do
+			hp[slot] = f.maxHp
+		end
+		for _, h in log do
+			if h.side == 2 then
+				local up = 0
+				for _, v in hp do
+					up += if v > 0 then 1 else 0
+				end
+				-- a power attack strikes every lion still up, a normal attack one
+				expect(1 + #(h.also or {})).toBe(if h.power then up else 1)
+				seen = seen or (h.power and up > 1)
+				hp[h.tslot] = h.hp
+				for _, x in h.also or {} do
+					hp[x.slot] = x.hp
+				end
+			end
+		end
+		expect(seen).toBe(true)
+	end)
+
+	it("keeps every other foe's power attack on one animal", function()
+		local log = {}
+		BattleRules.battle(three("lion"), { foeAt("ogre_enforcer", 1), foeAt("darkcaster", 1) }, log)
+		for _, h in log do
+			if h.side == 2 then
+				expect(h.also).toBeNil()
+			end
+		end
+	end)
+
+	it("heals the Battle Priest's whole side with its power attack", function()
+		local log = {}
+		BattleRules.battle(
+			three("lion"),
+			{ foeAt("shadow_knight", 1), foeAt("shadow_knight", 1), foeAt("battle_priest", 3) },
+			log
+		)
+		local seen = false
+		for _, h in log do
+			if h.side == 2 and h.slot == 3 and h.power then
+				seen = true
+				expect(h.heals == nil).toBe(false)
+				expect(h.heal).toBeNil()
+			elseif h.side == 2 and h.slot == 3 then
+				expect(h.heals).toBeNil() -- its normal attacks heal the one most hurt
+			end
+		end
+		expect(seen).toBe(true)
 	end)
 end)
 

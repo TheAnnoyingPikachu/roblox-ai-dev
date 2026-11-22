@@ -44,7 +44,8 @@ export type Foe = {
 	from: number?, -- the first wave it can appear in the normal line (nil: never)
 	boss: number?, -- the first wave it can be the dragon that ends a boss wave (nil: never)
 	minion: boolean?, -- a swarm's minion (decision 0101): never drawn as a regular
-	ability: string?, -- "revive": its power attack raises a fallen ally (decision 0104)
+	ability: string?, -- "revive": its power attack raises fallen allies (decision 0104); "sweep": it strikes the
+	-- whole team (decision 0105)
 }
 export type Tier = { tier: string, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
@@ -408,6 +409,7 @@ StationConfig.FOES = {
 		role = "defense",
 		group = "solitary",
 		stats = s(6, 60, 64, 10, 110, 96),
+		ability = "sweep",
 		from = 22,
 	},
 	{
@@ -430,6 +432,7 @@ StationConfig.FOES = {
 		role = "attack",
 		group = "solitary",
 		stats = s(46, 70, 36, 46, 108, 38),
+		ability = "sweep",
 		boss = 10,
 	},
 	{
@@ -441,6 +444,7 @@ StationConfig.FOES = {
 		role = "attack",
 		group = "solitary",
 		stats = s(70, 130, 70, 80, 200, 90),
+		ability = "sweep",
 		boss = 30,
 	},
 	{
@@ -452,6 +456,7 @@ StationConfig.FOES = {
 		role = "attack",
 		group = "solitary",
 		stats = s(100, 200, 100, 120, 320, 160),
+		ability = "sweep",
 		boss = 60,
 	},
 } :: { Foe }

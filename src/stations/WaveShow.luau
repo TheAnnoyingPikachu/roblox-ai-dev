@@ -607,11 +607,11 @@ function WaveShow.run(
 					end
 				end
 			end
-			if e.revive then -- a fallen ally raised by the Necromancer's power attack
-				local back = slots[e.side][e.revive.slot]
+			for _, x in e.revives or {} do -- the fallen allies raised by the Necromancer's power attack
+				local back = slots[e.side][x.slot]
 				if back then
-					back.hp, back.version = e.revive.hp, back.version + 1
-					back.model:SetAttribute("Hp", e.revive.hp)
+					back.hp, back.version = x.hp, back.version + 1
+					back.model:SetAttribute("Hp", x.hp)
 					rise(back.model)
 				end
 			end

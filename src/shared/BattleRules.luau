@@ -11,7 +11,8 @@
 -- Roles come from the species (or the foe): Attack hits harder, Defence draws every hit and takes less,
 -- Utility also heals the most hurt teammate with every attack. The Titan (the team's fourth
 -- slot) has no special job. Pack and solitary animals get group bonuses. A foe with the "revive"
--- ability (the Necromancer, decision 0104) raises a fallen ally with each power attack.
+-- ability (the Necromancer, decision 0104) raises up to REVIVE_MAX fallen allies with each power attack, and
+-- one with "sweep" (the dragons and the Siege Golem, decision 0105) strikes the whole team with it.
 -- Deterministic: same teams, same result, so the server can decide and replay any fight.
 
 local StationConfig = require("./StationConfig")
@@ -37,8 +38,9 @@ export type Fighter = {
 	rush: number, -- which rush of its wave it comes in (decision 0101); 1 for the team
 	arrive: number, -- when it is in the fight (math.huge while its rush has not been called)
 	engaged: boolean, -- side 2: in the front line (only the front line attacks)
-	revive: boolean?, -- its power attack raises a fallen ally (decision 0104)
+	revive: boolean?, -- its power attack raises fallen allies (decision 0104)
 	revived: boolean?, -- raised once already: it stays down next time
+	sweep: boolean?, -- its power attack strikes every animal of the team that stands (decision 0105)
 }
 
 BattleRules.HP_BASE, BattleRules.HP_PER_HEALTH = 20, 1.5
@@ -55,6 +57,7 @@ BattleRules.GUARD = 0.8 -- Defence: enemies must target it while it stands, and 
 BattleRules.HEAL_PCT = 8 -- Utility: each attack also heals the most hurt teammate by this % of the healer's own max HP
 BattleRules.MAX_SECONDS = 300 -- a fight this long is a loss for side 1 (heals could stall it)
 BattleRules.REVIVE_PCT = 50 -- a raised ally stands up with this % of its max HP, once per fight
+BattleRules.REVIVE_MAX = 3 -- the most one power attack raises (decision 0105)
 BattleRules.MAX_ACTIONS = 5000 -- backstop for absurd stats; also a loss for side 1
 
 -- A run's carried HP and boons for side 1 (decision 0098; see `battle`).
@@ -93,6 +96,7 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 		arrive = 0,
 		engaged = side == 1,
 		revive = if foe and foe.ability == "revive" then true else nil,
+		sweep = if foe and foe.ability == "sweep" then true else nil,
 	}
 end
 
@@ -242,7 +246,8 @@ BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.
 -- * an Attack animal's normal hit also strikes the next foe for SPLASH of its damage;
 -- * a power attack also strikes up to CROWD - 1 more foes for CROWD_SHARE of its damage;
 -- * a Defence animal's power attack knocks every foe it strikes back KNOCKBACK seconds;
--- * a Utility animal's power attack heals the whole team, not only the most hurt.
+-- * a Utility animal's power attack heals the whole team, not only the most hurt (a Battle Priest's heals its
+--   whole side too, decision 0105).
 -- Extra strikes are in their hit's `also` ({ slot, dmg, hp }), a team heal in `heals` ({ slot, hp }).
 BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 BattleRules.SPLASH, BattleRules.CROWD, BattleRules.CROWD_SHARE, BattleRules.KNOCKBACK = 0.5, 5, 0.6, 1
@@ -263,7 +268,7 @@ export type Hit = {
 	heal: { slot: number, hp: number }?,
 	heals: { { slot: number, hp: number } }?,
 	also: { { slot: number, dmg: number, hp: number } }?,
-	revive: { slot: number, hp: number }?, -- the ally its power attack raised (decision 0104)
+	revives: { { slot: number, hp: number } }?, -- the allies its power attack raised (decisions 0104, 0105)
 }
 export type Tap = { slot: number, t: number }
 
@@ -440,6 +445,14 @@ function BattleRules.battle(
 					end
 				end
 			end
+		elseif me.sweep and power > 1 then -- every animal that stands takes the whole blow (decision 0105)
+			for _, o in enemies do
+				if o ~= d and o.hp > 0 and o.arrive <= now then
+					local got = hurt(o, hit)
+					also = also or {}
+					table.insert(also :: any, { slot = o.slot, dmg = got, hp = o.hp })
+				end
+			end
 		end
 		local entry: Hit? = nil
 		if log then
@@ -461,25 +474,29 @@ function BattleRules.battle(
 			}
 			table.insert(log, entry :: Hit)
 		end
-		if me.revive and power > 1 then -- the first fallen ally not raised before stands up again
+		if me.revive and power > 1 then -- the first fallen allies not raised before stand up again
+			local raised = 0
 			for _, m in sides[me.side] do
-				if m.hp <= 0 and not m.revived and m.arrive <= now then
+				if raised >= BattleRules.REVIVE_MAX then
+					break
+				elseif m.hp <= 0 and not m.revived and m.arrive <= now then
+					raised += 1
 					m.revived = true
 					m.hp = math.max(1, math.floor(m.maxHp * BattleRules.REVIVE_PCT / 100))
 					m.next = now + m.swing
 					if entry then
-						entry.revive = { slot = m.slot, hp = m.hp }
+						entry.revives = entry.revives or {}
+						table.insert(entry.revives :: any, { slot = m.slot, hp = m.hp })
 					end
-					break
 				end
 			end
 		end
 		if me.role == "utility" then
 			local heal = math.floor(me.maxHp * BattleRules.HEAL_PCT * power / 100)
-			if me.side == 1 and power > 1 then -- the whole team
+			if power > 1 then -- its whole side
 				local heals = {}
-				for _, m in sides[1] do
-					if m.hp > 0 then
+				for _, m in sides[me.side] do
+					if m.hp > 0 and m.arrive <= now then
 						m.hp = math.min(m.maxHp, m.hp + heal)
 						table.insert(heals, { slot = m.slot, hp = m.hp })
 					end

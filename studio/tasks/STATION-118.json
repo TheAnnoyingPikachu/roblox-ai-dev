@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-118",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0105: the effect pass. Each Shadow Legion enemy's power attack does what SHANNON asked (the Necromancer raises up to three, the Battle Priest heals its whole side, the dragons and the Siege Golem strike the whole team) and gets a power move and effects of its own.",
+  "inputs": [
+    "docs/decisions/0104-animal-stations-shadow-legion.md",
+    "docs/decisions/0105-animal-stations-enemy-power-attacks.md"
+  ],
+  "dependencies": [
+    "STATION-113",
+    "STATION-114"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/shared/StationConfig.luau",
+    "src/stations/WaveShow.luau",
+    "tests/BattleRules.spec.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/shared/FightFx.luau",
+    "tests/FightFx.spec.luau",
+    "docs/decisions/0105-animal-stations-enemy-power-attacks.md",
+    "studio/tasks/STATION-118.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A Necromancer's power attack raises up to REVIVE_MAX fallen allies, each once a fight",
+    "A Battle Priest's power attack heals every ally standing; its normal attacks heal the one most hurt",
+    "A dragon's or the Siege Golem's power attack strikes every animal still standing; every other enemy's strikes one",
+    "Each enemy has its own power move and effects, picked by SHANNON from the concepts"
+  ],
+  "verification": "lune run tests/run (BattleRules); the power moves in Studio once picked.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-22: \"the necromancer power move will be raising a few enemies from the dead at 50% the battle priest power move will heal enemies and the darkcaster is just magic dps so he will actually have a power move, please make concepts for all these power moves now on the concept site. oh and make it so the much harder enemies like dragons and siege golems can hit all your animals with their power attack\". Rules done first (decision 0105); power-move concepts for all 17 enemies on the concept page (the Heavy Knight's Leaping Slam is already in). Checkpoint: see decision 0105 (up to 3 raised; only the dragons and the Siege Golem sweep; power scores left alone so those waves are harder)."
+}
