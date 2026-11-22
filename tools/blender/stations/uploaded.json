@@ -1015,8 +1015,8 @@
     "texture": null
   },
   "foe_knight_shield_commander_forge": {
-    "model": 88056675300428,
-    "decal": 139764951671744,
+    "model": 79205601772467,
+    "decal": 98687358649040,
     "texture": null
   },
   "foe_cavalry_forge": {
@@ -1025,8 +1025,8 @@
     "texture": null
   },
   "foe_cavalry_commander_forge": {
-    "model": 138333665465325,
-    "decal": 76435941598124,
+    "model": 88406267646103,
+    "decal": 102119814760490,
     "texture": null
   },
   "foe_dragon_drake_forge": {
