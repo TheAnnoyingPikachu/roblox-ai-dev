@@ -980,8 +980,8 @@
     "texture": null
   },
   "foe_mage_necromancer_forge": {
-    "model": 112980933740820,
-    "decal": 91036788854983,
+    "model": 75219789337407,
+    "decal": 136752922042855,
     "texture": null
   },
   "foe_mage_priest_forge": {
@@ -1020,8 +1020,8 @@
     "texture": null
   },
   "foe_cavalry_forge": {
-    "model": 107368687611275,
-    "decal": 116110813756820,
+    "model": 90709814358663,
+    "decal": 92972585421909,
     "texture": null
   },
   "foe_cavalry_commander_forge": {
