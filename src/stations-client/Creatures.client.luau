@@ -320,6 +320,121 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Cavalry Commander's charging slash (SHANNON's pick), out of its sword aloft: the horse gathers as the rider
+	-- swings its sword up and back, then lunges forward as the sword sweeps down across its neck at the contact (0.44 s)
+	foe_cavalry_commander_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 8, 0, 0, 0, 0.05, 0.4 },
+				head = { 14 },
+				leg_fl = { -25 },
+				leg_fr = { -20 },
+				elbow_r = { 20, 0, 20 },
+				leg_bl = { 10 },
+				leg_br = { 12 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 10, 0, 0, 0, 0.06, 0.5 },
+				head = { 16 },
+				leg_fl = { -30 },
+				leg_fr = { -24 },
+				elbow_r = { 30, 0, 30 },
+				leg_bl = { 12 },
+				leg_br = { 14 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -8, 0, 0, 0, -0.04, -1.6 },
+				head = { -14 },
+				leg_fl = { 35 },
+				leg_fr = { 30 },
+				elbow_r = { -80, -20, -10 },
+				leg_bl = { -28 },
+				leg_br = { -24 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -6, 0, 0, 0, -0.03, -1.4 },
+				head = { -10 },
+				leg_fl = { 28 },
+				leg_fr = { 24 },
+				elbow_r = { -70, -15, -10 },
+				leg_bl = { -22 },
+				leg_br = { -20 },
+			},
+		},
+		{ 0.95, {} },
+	}),
+	-- the Shieldbearer Commander's lunge thrust (SHANNON's pick), out of its sword on its shoulder: draws the sword
+	-- down to its hip behind its raised shield, then lunges and drives the blade straight out along its arm at the
+	-- contact (0.44 s) (the sword turns in its fist, its "weapon" joint, to point along the arm)
+	foe_knight_shield_commander_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 4, -10, 0, 0, 0.02, 0.25 },
+				leg_fl = { 45, 0, 12 },
+				elbow_l = { -45 },
+				leg_fr = { -30 },
+				elbow_r = { 100 },
+				weapon = { -70 },
+				leg_bl = { 4 },
+				leg_br = { -3 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 6, -14, 0, 0, 0.03, 0.35 },
+				leg_fl = { 45, 0, 12 },
+				elbow_l = { -45 },
+				leg_fr = { -40 },
+				elbow_r = { 105 },
+				weapon = { -65 },
+				leg_bl = { 6 },
+				leg_br = { -4 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -12, 10, 0, 0, -0.1, -1.2 },
+				head = { -4, -8 },
+				leg_fl = { 30, 0, 15 },
+				elbow_l = { -30 },
+				leg_fr = { 85 },
+				elbow_r = { 0 },
+				weapon = { -85 },
+				leg_bl = { -12 },
+				leg_br = { 38 },
+			},
+		},
+		{
+			0.60,
+			{
+				body = { -10, 8, 0, 0, -0.08, -1.05 },
+				head = { -3, -6 },
+				leg_fl = { 30, 0, 15 },
+				elbow_l = { -30 },
+				leg_fr = { 80 },
+				elbow_r = { 0 },
+				weapon = { -80 },
+				leg_bl = { -10 },
+				leg_br = { 34 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Dark Drake's lunge bite (SHANNON's pick), out of its prowl: coils back with its neck reared, jaws gaping and
 	-- wings flared high, then lunges as the wings sweep down and forward; its jaws snap shut on the contact (0.44 s)
 	-- and it shakes its prey once each way
@@ -1720,6 +1835,27 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Cavalry Commander with its sword aloft (SHANNON's pick): the rider holds its cavalry sword high, the horse
+	-- standing proud
+	foe_cavalry_commander_forge = {
+		body = { 4 },
+		head = { 16 },
+		leg_fl = { 8 },
+		elbow_r = { 0, 0, 55 },
+	},
+	-- the Shieldbearer Commander with its sword on its shoulder (SHANNON's pick): the blade resting back over its right
+	-- shoulder, its tower shield at its side
+	foe_knight_shield_commander_forge = {
+		body = { 2, 8 },
+		head = { 4, -10 },
+		leg_fl = { 8 },
+		elbow_l = { 10 },
+		leg_fr = { 25 },
+		elbow_r = { 115 },
+		weapon = { 20 },
+		leg_bl = { -4 },
+		leg_br = { 6 },
+	},
 	-- the Dark Drake prowling (SHANNON's pick): neck low and forward, jaws just apart, wings folded back along its
 	-- flanks, tail swept to one side
 	foe_dragon_drake_forge = {
