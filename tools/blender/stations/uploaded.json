@@ -1005,8 +1005,8 @@
     "texture": null
   },
   "foe_golem_forge": {
-    "model": 84479762086374,
-    "decal": 116223339860105,
+    "model": 95422994801004,
+    "decal": 91831031720908,
     "texture": null
   },
   "foe_knight_shield_forge": {
@@ -1035,8 +1035,8 @@
     "texture": null
   },
   "foe_dragon_forge": {
-    "model": 96648572604719,
-    "decal": 119430759836775,
+    "model": 74327939211144,
+    "decal": 135945652986806,
     "texture": null
   },
   "foe_dragon_alpha_forge": {
