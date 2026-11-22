@@ -178,6 +178,9 @@ local function wallsOf(f: Folder, c: { half: number, zAt: (number) -> number, rn
 			local base = V(sx * (c.half - 1.4), 0.4, c.zAt(d))
 			column(f, base, 7.4, 1.3, STONE, true)
 			local bowl = pillar(f, base + V(0, 7.5, 0), 1, 2.5, IRON, M.Metal)
+			bowl.Name = "Brazier"
+			bowl:SetAttribute("D", d) -- its distance into the canyon: the gate wakes them from the far end (decision 0106)
+			CollectionService:AddTag(bowl, "Brazier")
 			flame(bowl, hot, cold, 4)
 			glow(bowl, hot, 30, 1.2)
 		end
@@ -306,6 +309,7 @@ local function gate(f: Folder, c: { half: number, zAt: (number) -> number })
 		end
 		local eye = ball(f, V(sx * 26, 24, gz + 5.6), 1.8, EYE, M.Neon) -- an eye in each column
 		eye.Name = "GateEye"
+		CollectionService:AddTag(eye, "GateEye")
 	end
 	part(f, V(60, 8, 9), V(0, 38, gz), STONE, M.Slate)
 	part(f, V(52, 2, 10), V(0, 43, gz), DARK, M.Slate)
@@ -322,6 +326,8 @@ local function gate(f: Folder, c: { half: number, zAt: (number) -> number })
 	local brow = box(f, V(12, 1.6, 3), V(0, 41.6, gz + 5.4), DARK, M.Slate)
 	brow.Name = "Brow"
 	local eye = ball(f, V(0, 38.4, gz + 5.2), 5.2, VIOLET, M.Neon)
+	eye.Name = "BigEye"
+	CollectionService:AddTag(eye, "GateBigEye")
 	glow(eye, VIOLET, 44, 2)
 	for _, sx in { -1, 1 } do -- the walls either side; the way behind the portal stays open to the breach
 		part(f, V(c.half - 30.8, 50, 3), V(sx * (c.half + 30.8) / 2, 25, gz - 5), Color3.fromRGB(26, 22, 36), M.Slate)

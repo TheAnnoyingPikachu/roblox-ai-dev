@@ -4176,10 +4176,13 @@ local function strike(rig: Rig)
 	local dmg = (model:GetAttribute("HitDmg") :: number?) or 0
 	local s = ((model:GetAttribute("Scale") :: number?) or 1)
 	local final = model:GetAttribute("HitFinal") == 1
+	local click = not final and model:GetAttribute("HitClick") == 1 -- a click's strike: light, many a second (0106)
 	local hot = power > 0 or final
 	local colour = if hot then Color3.fromRGB(255, 120, 70) else Color3.fromRGB(255, 220, 160)
 	rig.flinch = FightFx.flinch(power, dmg / math.max(1, (model:GetAttribute("MaxHp") :: number?) or 1))
-	rig.stopUntil = os.clock() + FightFx.hitStop(power, final, model:GetAttribute("HitKo") == 1)
+	if not click then
+		rig.stopUntil = os.clock() + FightFx.hitStop(power, final, model:GetAttribute("HitKo") == 1)
+	end
 	local spark = rig.spark
 	if spark == nil then
 		spark = Instance.new("ParticleEmitter")
@@ -4194,7 +4197,7 @@ local function strike(rig: Rig)
 	end
 	local e = spark :: ParticleEmitter
 	e.Color = ColorSequence.new(colour)
-	e:Emit(if final then 44 elseif hot then 28 else 10)
+	e:Emit(if final then 44 elseif hot then 28 elseif click then 5 else 10)
 	local camera = Workspace.CurrentCamera
 	local face = if camera then camera.CFrame.Position else hit.Position + Vector3.new(0, 0, 10)
 	if (face - hit.Position).Magnitude > 0.1 then
@@ -4205,12 +4208,14 @@ local function strike(rig: Rig)
 			Enum.Material.Neon
 		)
 		disc.Shape, disc.Transparency = Enum.PartType.Cylinder, 0.25
-		local r = (if final then 14 elseif hot then 9 else 5) * s
+		local r = (if final then 14 elseif hot then 9 elseif click then 3 else 5) * s
 		tween(disc, 0.35, { Size = Vector3.new(0.2, r, r), Transparency = 1 })
 		Debris:AddItem(disc, 0.45)
 	end
-	player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
-	player:SetAttribute("CamPunchAt", os.clock())
+	if not click then
+		player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
+		player:SetAttribute("CamPunchAt", os.clock())
+	end
 	if final then
 		slowAt = os.clock() -- the finish is the slow motion alone (decision 0097)
 	end
@@ -4237,7 +4242,7 @@ local function strike(rig: Rig)
 		end
 	end
 	local s2 = sound :: Sound
-	s2.Volume = if final then 0.9 elseif hot or ko then 0.55 else 0.4
+	s2.Volume = if final then 0.9 elseif hot or ko then 0.55 elseif click then 0.18 else 0.4
 	s2.PlaybackSpeed = (if ko then 0.8 else 1) * (0.92 + math.random() * 0.16)
 	s2:Play()
 end

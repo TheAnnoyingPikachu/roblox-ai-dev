@@ -13,6 +13,8 @@
 -- slot) has no special job. Pack and solitary animals get group bonuses. A foe with the "revive"
 -- ability (the Necromancer, decision 0104) raises up to REVIVE_MAX fallen allies with each power attack, and
 -- one with "sweep" (the dragons and the Siege Golem, decision 0105) strikes the whole team with it.
+-- In the pit fight (decision 0106) clicks add strikes and each animal's power attack has a quick press
+-- (`pressOf`, `perfect`); see `battle`.
 -- Deterministic: same teams, same result, so the server can decide and replay any fight.
 
 local StationConfig = require("./StationConfig")
@@ -41,6 +43,8 @@ export type Fighter = {
 	revive: boolean?, -- its power attack raises fallen allies (decision 0104)
 	revived: boolean?, -- raised once already: it stays down next time
 	sweep: boolean?, -- its power attack strikes every animal of the team that stands (decision 0105)
+	press: string, -- its power attack's quick press (decision 0106): "ring", "chain", "needle" or "mash"
+	click: number, -- a click strike's share of a normal hit (decision 0106); 0 when clicks do not strike
 }
 
 BattleRules.HP_BASE, BattleRules.HP_PER_HEALTH = 20, 1.5
@@ -61,7 +65,40 @@ BattleRules.REVIVE_MAX = 3 -- the most one power attack raises (decision 0105)
 BattleRules.MAX_ACTIONS = 5000 -- backstop for absurd stats; also a loss for side 1
 
 -- A run's carried HP and boons for side 1 (decision 0098; see `battle`).
-export type Setup = { hp: { number }?, energy: number?, dmg: number?, maxHp: number?, tempo: number? }
+-- `clicks` (decision 0106): the team's own attacks are CLICK_SLOW times slower and clicks add strikes.
+export type Setup = {
+	hp: { number }?,
+	energy: number?,
+	dmg: number?,
+	maxHp: number?,
+	tempo: number?,
+	clicks: boolean?,
+}
+
+-- Quick presses (decision 0106): what the spell does picks the press; a Titan always mashes.
+BattleRules.PRESSES = {
+	lion = "ring",
+	rhino = "ring",
+	giraffe = "ring",
+	jackal = "needle",
+	tortoise = "needle",
+	meerkat = "needle",
+	cheetah = "chain",
+	flamingo = "chain",
+	elephant = "mash",
+} :: { [string]: string }
+BattleRules.PRESS_VARIANTS = { -- variants whose spell works differently from their species'
+	star_meerkat = "ring", -- Comet Strike
+	lava_rhino = "needle", -- Magma Eruption
+	phoenix_flamingo = "needle", -- Firebird
+	gemshell_tortoise = "chain", -- Gem Barrage
+} :: { [string]: string }
+function BattleRules.pressOf(animal: Owned): string
+	if StationRules.role(animal) == "titan" then
+		return "mash"
+	end
+	return (if animal.v then BattleRules.PRESS_VARIANTS[animal.v] else nil) or BattleRules.PRESSES[animal.s] or "ring"
+end
 
 -- One animal's battle numbers before group bonuses. Each stat feeds exactly one of them.
 function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
@@ -97,6 +134,8 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 		engaged = side == 1,
 		revive = if foe and foe.ability == "revive" then true else nil,
 		sweep = if foe and foe.ability == "sweep" then true else nil,
+		press = BattleRules.pressOf(animal),
+		click = 0,
 	}
 end
 
@@ -136,6 +175,11 @@ function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fig
 			f.hp = if share <= 0 then 0 else math.max(1, math.floor(f.maxHp * math.min(1, share)))
 			f.swing *= setup.tempo or 1
 			f.rest *= setup.tempo or 1
+			if setup.clicks then -- a strike is STRIKE_SECONDS of its attacking; its own attacks slow down
+				f.click = BattleRules.STRIKE_SECONDS / (f.swing + f.rest)
+				f.swing *= BattleRules.CLICK_SLOW
+				f.rest *= BattleRules.CLICK_SLOW
+			end
 			f.next = f.swing
 			f.energy = math.floor(BattleRules.POWER_COST * math.clamp(setup.energy or 0, 0, 0.99))
 		end
@@ -250,6 +294,19 @@ BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.
 --   whole side too, decision 0105).
 -- Extra strikes are in their hit's `also` ({ slot, dmg, hp }), a team heal in `heals` ({ slot, hp }).
 BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
+--
+-- The pit fight (decision 0106), with taps and a setup with `clicks`:
+-- * The team's own attacks are CLICK_SLOW times slower.
+-- * A tap on slot STRIKE is a click: the next standing animal of the team in turn strikes the usual target
+--   with STRIKE_SECONDS of its attacking (its `click` share of a normal hit, splash and heal included), and
+--   its meter gains the same share of its energy. Its log entry is a normal hit marked `click`. A strike
+--   less than STRIKE_GAP after the last one does nothing.
+-- * A power tap is a Perfect by its animal's press (`perfect`): the ring's window; the needle's, at
+--   PERFECT_AT and every NEEDLE_EVERY after; a chain finished by PERFECT_AT + PERFECT_LATE; a mash that
+--   brings MASH_COUNT presses (the tap's `presses`) by MASH_BY + PERFECT_LATE.
+BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 2.4, 0.6, 1 / 12
+BattleRules.NEEDLE_EVERY = 1.2
+BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 10, 3.2, 12
 BattleRules.SPLASH, BattleRules.CROWD, BattleRules.CROWD_SHARE, BattleRules.KNOCKBACK = 0.5, 5, 0.6, 1
 export type Hit = {
 	t: number,
@@ -269,8 +326,25 @@ export type Hit = {
 	heals: { { slot: number, hp: number } }?,
 	also: { { slot: number, dmg: number, hp: number } }?,
 	revives: { { slot: number, hp: number } }?, -- the allies its power attack raised (decisions 0104, 0105)
+	click: boolean?, -- a click's strike (decision 0106)
 }
-export type Tap = { slot: number, t: number }
+export type Tap = { slot: number, t: number, presses: number? }
+
+-- Whether a power tap `since` seconds after its meter filled is a Perfect for an animal whose press is
+-- `press` (decisions 0097, 0106); `presses` is a mash's count.
+function BattleRules.perfect(press: string, since: number, presses: number?): boolean
+	local late = since - BattleRules.PERFECT_AT
+	if press == "chain" then
+		return late <= BattleRules.PERFECT_LATE
+	elseif press == "mash" then
+		return (presses or 0) >= BattleRules.MASH_COUNT and since <= BattleRules.MASH_BY + BattleRules.PERFECT_LATE
+	elseif press == "needle" then
+		return late >= -BattleRules.PERFECT_EARLY
+			and (late + BattleRules.PERFECT_EARLY) % BattleRules.NEEDLE_EVERY
+				<= BattleRules.PERFECT_EARLY + BattleRules.PERFECT_LATE
+	end
+	return late >= -BattleRules.PERFECT_EARLY and late <= BattleRules.PERFECT_LATE
+end
 
 -- The times of the shield taps (slot 0) in `taps` that raise the shield, in order.
 function BattleRules.shields(taps: { Tap }): { number }
@@ -331,6 +405,7 @@ function BattleRules.battle(
 	end
 	local shieldTo = -math.huge
 	local combo, comboAt, comboSlot = 0, -math.huge, 0
+	local strikes, strikeReady = 0, -math.huge -- clicks so far, and when the next may strike (decision 0106)
 
 	-- the front line: the first FRONT standing foes that have arrived; one that joins after the start
 	-- swings from then
@@ -400,7 +475,7 @@ function BattleRules.battle(
 	end
 
 	-- `me` attacks at `now`; `power` x damage and heal
-	local function strike(me: Fighter, power: number, tapped: boolean?, perfect: boolean?)
+	local function strike(me: Fighter, power: number, tapped: boolean?, perfect: boolean?, click: boolean?)
 		local enemies = sides[3 - me.side]
 		local d = target(enemies, now) :: Fighter
 		local hit = me.dmg * power
@@ -471,6 +546,7 @@ function BattleRules.battle(
 				shielded = if shielded then true else nil,
 				energy = math.min(1, me.energy / BattleRules.POWER_COST),
 				also = also,
+				click = click,
 			}
 			table.insert(log, entry :: Hit)
 		end
@@ -519,7 +595,9 @@ function BattleRules.battle(
 				end
 			end
 		end
-		actions += 1
+		if not click then -- clicks are bounded by STRIKE_GAP, not counted as attacks
+			actions += 1
+		end
 		for _, o in struck do
 			if o.hp <= 0 and o.side == 2 then
 				fell()
@@ -576,20 +654,36 @@ function BattleRules.battle(
 			local c = sides[1][tap.slot]
 			if tap.slot == 0 and up[tap.t] then
 				shieldTo = tap.t + BattleRules.SHIELD_SECONDS
+			elseif tap.slot == BattleRules.STRIKE then -- a click (decision 0106)
+				if tap.t >= strikeReady and tap.t <= BattleRules.MAX_SECONDS and target(foes, tap.t) then
+					local me: Fighter? = nil
+					for _ = 1, #sides[1] do -- the next standing animal in turn
+						strikes += 1
+						local m = sides[1][(strikes - 1) % #sides[1] + 1]
+						if m.hp > 0 and m.click > 0 then
+							me = m
+							break
+						end
+					end
+					if me then
+						now = math.max(now, tap.t)
+						strikeReady = tap.t + BattleRules.STRIKE_GAP
+						me.energy = math.min(BattleRules.POWER_COST, me.energy + me.gain * me.click)
+						if me.energy >= BattleRules.POWER_COST and full[me] == nil then
+							full[me] = now
+						end
+						strike(me, me.click, nil, nil, true)
+					end
+				end
 			elseif c and c.hp > 0 and full[c] and tap.t >= full[c] and target(foes, tap.t) then
 				if tap.t > BattleRules.MAX_SECONDS then
 					break
 				end
-				local late = tap.t - full[c] - BattleRules.PERFECT_AT
+				local since = tap.t - full[c]
 				now = math.max(now, tap.t)
 				full[c] = nil
 				c.energy -= BattleRules.POWER_COST
-				strike(
-					c,
-					BattleRules.POWER,
-					true,
-					late >= -BattleRules.PERFECT_EARLY and late <= BattleRules.PERFECT_LATE
-				)
+				strike(c, BattleRules.POWER, true, BattleRules.perfect(c.press, since, tap.presses))
 			end
 			continue
 		end

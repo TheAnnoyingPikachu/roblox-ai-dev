@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-119",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0106, display only: stages of ten waves ending on the boss wave, shown at the top of the fight, and the Hexbound's gate waking up as a stage goes on (eyes, braziers, the big eye, a red portal), in the fighting player's view only.",
+  "inputs": [
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "docs/decisions/0046-animal-stations-full-arena-and-home.md"
+  ],
+  "dependencies": [
+    "STATION-118"
+  ],
+  "files": [
+    "src/shared/LevelRules.luau",
+    "tests/LevelRules.spec.luau",
+    "src/stations/Arena.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations-client/GateWake.client.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "studio/tasks/STATION-119.json",
+    "src/stations/CLAUDE.md"
+  ],
+  "tests": [
+    "LevelRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "LevelRules.stage gives every wave its stage of STAGE waves, ending on a boss wave, with its name",
+    "During a fight the HUD shows the stage, its name and ten pips (cleared, this wave, the boss), under the boss's bar when there is one",
+    "The gate wakes by the wave's place in its stage: eyes shut 1 to 3, column eyes open 4 to 6, braziers violet a pair more each wave 7 to 9, the big eye open and the portal red at 10; as built when no fight is on",
+    "Only the fighting player's view changes (WaveShow's FightWave attribute, GateWake.client)"
+  ],
+  "verification": "lune run tests/run (LevelRules); waves 1, 4, 7, 9 and 10 fought in Studio, the gate and the stage strip looked at.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-22, on the concept canvas's Pit boards: \"i like this pit concept with the multipl QTE can you implement stages and the gate waking up the four press types\"; \"it should be a tapping fight where you click to attack and do QTEs and stuff\" (picked: clicks add strikes, board first); \"clicking should only target the front lane not any specific target\"; \"please implement it into the game\". Checkpoint: the stage names and where the gate's steps fall are Claude's draft (decision 0106)."
+}

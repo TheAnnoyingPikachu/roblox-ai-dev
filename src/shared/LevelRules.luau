@@ -27,6 +27,21 @@ function LevelRules.scale(level: number): number
 	return LevelRules.SCALE_START * LevelRules.SCALE_GROWTH ^ (level - 1)
 end
 
+-- Stages (decision 0106, display only): STAGE waves each, so every stage ends on a boss wave. Stage 6 and
+-- every one after it is The Ancient.
+LevelRules.STAGE = LevelRules.BOSS_EVERY
+LevelRules.STAGE_NAMES = { "The Vanguard", "The Charge", "The Siege", "The Dark Host", "The Dark Host" }
+export type Stage = { n: number, name: string, first: number, last: number }
+function LevelRules.stage(level: number): Stage
+	local n = (math.max(1, level) - 1) // LevelRules.STAGE + 1
+	return {
+		n = n,
+		name = LevelRules.STAGE_NAMES[n] or "The Ancient",
+		first = (n - 1) * LevelRules.STAGE + 1,
+		last = n * LevelRules.STAGE,
+	}
+end
+
 -- The dragon that ends boss level `level`: the one with the highest `boss` threshold the level has
 -- reached. Nil before the first dragon.
 function LevelRules.boss(level: number): StationConfig.Foe?

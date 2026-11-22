@@ -1,0 +1,44 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-120",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0106, rules: in a run's fight clicks add strikes (the team's own attacks slower, a click is the next animal's strike on the front line) and each animal's power attack has a quick press (ring, needle, chain, mash) that decides its Perfect; the HUD answers clicks at once and draws each press.",
+  "inputs": [
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "docs/decisions/0092-animal-stations-tap-power-attacks.md",
+    "docs/decisions/0097-animal-stations-fight-feel.md"
+  ],
+  "dependencies": [
+    "STATION-119"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "tests/BattleRules.spec.luau",
+    "src/shared/WaveRuns.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Creatures.client.luau",
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "studio/tasks/STATION-120.json",
+    "src/stations/CLAUDE.md"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "WaveRuns.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "With Setup.clicks the team's own attacks are CLICK_SLOW times slower and a tap on BattleRules.STRIKE strikes with the next standing animal in turn, at most once per STRIKE_GAP, filling its meter by the same share",
+    "BattleRules.pressOf gives each species and variant its press (a Titan mashes) and BattleRules.perfect judges ring, needle, chain and mash",
+    "A strike changes nothing before its time, so the fight still replays from the start with each click",
+    "The strike remote takes a batch of clicks (cost 0.5) and lays them from TAP_AHEAD ahead; power takes a mash's presses, capped by MASH_RATE on the server's clock",
+    "The HUD answers a click at once (a slash, a tick, the hit count) and draws the needle, the chain's marks and the mash's count on the plates; click hits are drawn lighter"
+  ],
+  "verification": "lune run tests/run (BattleRules, WaveRuns); a run fought in Studio clicking, with each press tried.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-22, on the concept canvas's Pit boards: \"i like this pit concept with the multipl QTE can you implement stages and the gate waking up the four press types\"; \"it should be a tapping fight where you click to attack and do QTEs and stuff\" (picked: clicks add strikes, board first); \"clicking should only target the front lane not any specific target\"; \"please implement it into the game\". Checkpoint (decision 0106): CLICK_SLOW 2.4 and STRIKE_SECONDS 0.6 (about 4 clicks a second matches the old damage), NEEDLE_EVERY 1.2, MASH_COUNT 10 by MASH_BY 3.2, which variants press differently. Known: a strike lands TAP_AHEAD after its click, like every tap (decision 0092)."
+}

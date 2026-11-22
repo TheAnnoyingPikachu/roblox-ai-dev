@@ -418,10 +418,13 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 	end
 	local setup = WaveRuns.setup(run)
 	local won, _, seconds = LevelRules.fight(team :: any, level, {}, setup)
-	readyAt[player] = os.clock() + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
+	local began = os.clock()
+	readyAt[player] = began + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
 	local coins, xp, samples = StationProgress.payout(copy, level)
 	local first = level > copy.best
 	local started, why = WaveShow.run(player, level, team :: any, function(result)
+		-- clicks shorten a fight (decision 0106): the next may start once this one's own time is up
+		readyAt[player] = math.min(readyAt[player] or 0, began + math.min(result.seconds, BattleRules.MAX_SECONDS) + 4)
 		if result.won and not won then -- the taps won it
 			saves.apply(player, function(q)
 				return (StationProgress.clear(q, level))
@@ -1074,10 +1077,17 @@ local router = Router.new({
 			args = { Payload.int({ min = 1, max = 1e6 }) },
 			handler = waveFight,
 		},
-		-- fire the power attack of the animal in team slot `n` (decision 0092)
+		-- fire the power attack of the animal in team slot `n` (decision 0092), with a mash's presses (0106)
 		power = {
-			args = { Payload.int({ min = 1, max = 4 }) },
+			args = { Payload.int({ min = 1, max = 4 }), Payload.optional(Payload.int({ min = 0, max = 30 })) },
 			handler = WaveShow.power,
+		},
+		-- the clicks since the client last sent: each a strike (decision 0106); half a token, so clicking
+		-- never starves power and shield
+		strike = {
+			args = { Payload.int({ min = 1, max = 20 }) },
+			cost = 0.5,
+			handler = WaveShow.strike,
 		},
 		-- raise the team's shield (decision 0097)
 		shield = { args = {}, handler = WaveShow.shield },

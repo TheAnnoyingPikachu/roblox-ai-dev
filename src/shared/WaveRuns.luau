@@ -78,6 +78,7 @@ function WaveRuns.setup(run: Run): BattleRules.Setup
 		dmg = 1.2 ^ count(run, "claws"),
 		maxHp = 1.2 ^ count(run, "hide"),
 		tempo = 0.88 ^ count(run, "quick"),
+		clicks = true, -- a run's fight is the pit fight: clicks add strikes (decision 0106)
 	}
 end
 
