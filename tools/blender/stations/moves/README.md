@@ -17,3 +17,7 @@ The game's spells are `src/stations-client/Spells`, translated from `magic.py` c
 match fxkit's). Change a spell in both. After a model is rebuilt, run `rigdata.py` again:
 
     blender --background --factory-startup --python rigdata.py -- <repo> <repo with build/> <asset>...
+
+Check the game's spells after changing one (runs each through its whole clip, no Studio needed):
+
+    lune run tools/blender/stations/moves/check_spells

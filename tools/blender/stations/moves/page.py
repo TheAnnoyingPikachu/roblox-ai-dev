@@ -19,7 +19,7 @@ PICKS = {  # SHANNON's picks, 2026-11-21: the base rows by letter, every variant
     "jackal": ("1_prowl", "b_leap", "m_pack"), "tortoise": ("1_ancient", "a_snap", "m_nova"), "meerkat": ("2_boxer", "a_combo", "m_sunorb"),
     "cheetah": ("1_stalk", "a_trip", "m_blades"), "rhino": ("2_whet", "a_gore", "m_lance"), "flamingo": ("2_preen", "b_lash", "m_darts"),
     "lion": ("1_king", "a_maul", "m_roar"), "giraffe": ("1_browse", "a_neck", "m_lance"), "elephant": ("1_sway", "a_tusk", "m_orb")}
-NEW = {"creature_elephant_war_forge_m_axe"}
+NEW = set()  # the War Axe was new on 2026-11-21 and picked on the 22nd
 DROPPED = {"creature_elephant_war_forge_m_volley"}
 KIND = {"idle": ("Idle", "loops"), "attack": ("Attack", "hit at 0.44 s"), "power": ("Magic power attack", "impact at 0.92 s"),
         "variant": ("Variant power attacks", "one spell each")}
@@ -119,11 +119,11 @@ footer {{ color: var(--muted); font-size: .88rem; max-width: 70ch; }}
     <p>Every effect is made of things Roblox has: glowing Neon parts, beams, rings, particles, and a Highlight round the body for the glow while it charges. A variant keeps its species' idle and attack.</p>
     <div class="facts"><span>Attack: <b>0.95 s</b>, the hit lands at <b>0.44 s</b></span><span>Power attack: <b>1.6 s</b>, the impact at <b>0.92 s</b></span><span>Idles loop every <b>4.8 s</b></span><span>Variants: <b>18</b>, one spell each</span></div>
     <p>Each clip starts and ends with half a second of today's idle; in the game it will start from whichever idle you pick. The game's own hit sparks and flinch come on top.</p>
-    <p><b>Picked</b> marks your choices, which are going into the game. New: the War Elephant's <b>War Axe</b>, the axe in its trunk grown huge (under Elephant, Variant power attacks), for you to keep or change.</p>
+    <p><b>Picked</b> marks your choices, all of them now in the game (task STATION-116), with the War Elephant's <b>War Axe</b>: the axe in its trunk grown huge, its effects toned down a little.</p>
   </header>
   <nav aria-label="Animals">{"".join(nav)}</nav>
   {"".join(sections)}
-  <footer>Say whether the War Axe is a keeper, or ask for changes to it or to any picked move.</footer>
+  <footer>Ask for changes to any picked move once you have seen it in Studio.</footer>
 </div>
 '''
 open(PAGE, "w", encoding="utf-8").write(page)
