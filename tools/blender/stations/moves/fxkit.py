@@ -9,6 +9,10 @@ from mathutils import Matrix, Vector
 
 UP = Vector((0, 0, 1))
 GAIN = 0.4  # emission strength per unit of `glow` (the compositor's bloom picks up what passes 1.2)
+# "Hot core" (SHANNON's pick, 2026-11-22): glowing shapes in layers, a white-hot core in a coloured body in a soft
+# glowing edge (a ForceField-material shell in Roblox), and a star flash with a crisp shock ring on every hit
+HOT = False
+WHITE = (1.0, 1.0, 1.0)
 
 
 def ease(u):
@@ -158,8 +162,55 @@ class Kit:
             bpy.data.meshes.remove(me)
 
     # -- effects (sizes in studs) ---------------------------------------------------------------------------
+    def shell(self, p, r, rgb, glow, alpha):
+        """a soft glowing edge (a ForceField-material shell in Roblox)"""
+        ob = self._obj("sphere", rgb, glow, alpha, p, scale=(r * self.U,) * 3)
+        if ob:
+            ob.material_slots[0].material = self.rim(rgb, glow, alpha)
+
+    def star(self, p, R, rgb, alpha, n=8, spin=0.3):
+        """an impact flash: thin streaks out from p, facing the camera, long and short in turn"""
+        if alpha <= 0.01:
+            return
+        view = (self.cam_from - p).normalized()
+        a = view.cross(Vector((1, 0, 0)) if abs(view.x) < 0.9 else Vector((0, 1, 0))).normalized()
+        b = view.cross(a)
+        for i in range(n):
+            ang = spin + i / n * math.tau
+            d = a * math.cos(ang) + b * math.sin(ang)
+            L = R * (1.0 if i % 2 == 0 else 0.5)
+            self._spike(p, p + d * L, 0.05 * R, WHITE, 11, alpha)
+            self._spike(p, p + d * L * 0.85, 0.11 * R, rgb, 7, 0.55 * alpha)
+
+    def shock(self, p, R, w, rgb, alpha, normal=UP):
+        """a crisp shock ring: a bright leading edge with a fainter wash behind it"""
+        if alpha <= 0.01:
+            return
+        self._ring(p, R, w, WHITE, 9, alpha, normal)
+        self._ring(p, R * 0.94, w * 2.0, rgb, 6, 0.55 * alpha, normal)
+        self._ring(p, R * 0.8, w * 0.7, rgb, 4, 0.25 * alpha, normal)
+
+    def converge(self, p, R, rgb, u0, n=3):
+        """rings closing in on p as it charges (u0 0 -> 1), facing the camera"""
+        if u0 is None:
+            return
+        view = (self.cam_from - p).normalized()
+        for i in range(n):
+            u = (u0 * 2.2 + i / n) % 1
+            self._ring(p, R * (1 - u) + 0.05, 0.05 * R * (0.6 + u), rgb, 7, u * 0.9, view)
+
     def orb(self, p, r, rgb, glow=6, alpha=1.0, core=True, light=0.0):
         U = self.U
+        if HOT and glow >= 3 and alpha > 0.01:
+            if core:  # a ball of energy: core, body, edge
+                self._obj("sphere", WHITE, glow * 1.3, alpha, p, scale=(r * 0.42 * U,) * 3)
+                self._obj("sphere", rgb, glow, alpha * 0.5, p, scale=(r * 0.8 * U,) * 3)
+                self.shell(p, r * 1.35, rgb, glow * 0.7, alpha * 0.8)
+            else:  # a dome or a glow: a soft glowing edge
+                self.shell(p, r, rgb, glow, min(1.0, alpha * 1.3))
+            if light:
+                self.light(p, rgb, light * r * r)
+            return
         self._obj("sphere", rgb, glow, alpha * 0.55 if core else alpha, p, scale=(r * U,) * 3)
         if core:
             self._obj("sphere", (1, 1, 1), glow * 1.6, alpha, p, scale=(r * 0.5 * U,) * 3)
@@ -186,6 +237,11 @@ class Kit:
         self._obj("cube", rgb, glow, alpha, p, rot=rot, scale=tuple(s * self.U for s in size))
 
     def diamond(self, p, r, h, rgb, glow=4, alpha=1.0, spin=0.0, axis=None):
+        self._diamond(p, r, h, rgb, glow, alpha, spin, axis)
+        if HOT and glow >= 4:
+            self._diamond(p, r * 0.45, h * 0.6, WHITE, glow * 1.3, alpha, spin, axis)
+
+    def _diamond(self, p, r, h, rgb, glow=4, alpha=1.0, spin=0.0, axis=None):
         rot = None
         if axis is not None:
             rot = axis.normalized().to_track_quat("Z", "Y")
@@ -200,18 +256,42 @@ class Kit:
         mid, q, n = self._along(a, b)
         if n < 1e-4:
             return
+        if HOT and glow >= 3:  # core, body, edge
+            self._obj("cyl", WHITE, glow * 1.3, alpha, mid, rot=q, scale=(r * 0.32 * self.U, r * 0.32 * self.U, n))
+            self._obj("cyl", rgb, glow, alpha * 0.5, mid, rot=q, scale=(r * 0.75 * self.U, r * 0.75 * self.U, n))
+            ob = self._obj("cyl", rgb, glow, alpha, mid, rot=q, scale=(r * 1.3 * self.U, r * 1.3 * self.U, n))
+            if ob:
+                ob.material_slots[0].material = self.rim(rgb, glow * 0.7, alpha * 0.8)
+            return
         self._obj("cyl", rgb, glow, alpha * (0.5 if core else 1), mid, rot=q, scale=(r * self.U, r * self.U, n))
         if core:
             self._obj("cyl", (1, 1, 1), glow * 1.5, alpha, mid, rot=q, scale=(r * 0.4 * self.U, r * 0.4 * self.U, n))
 
     def spike(self, base, tip, r, rgb, glow=0.0, alpha=1.0):
+        self._spike(base, tip, r, rgb, glow, alpha)
+        if HOT and glow >= 4:
+            self._spike(base, base.lerp(tip, 0.75), r * 0.38, WHITE, glow * 1.3, alpha)
+
+    def _spike(self, base, tip, r, rgb, glow=0.0, alpha=1.0):
         mid, q, n = self._along(base, tip)
         if n < 1e-4:
             return
         self._obj("cone", rgb, glow, alpha, mid, rot=q, scale=(r * self.U, r * self.U, n))
 
     def tube(self, pts, r, rgb, glow=4, alpha=1.0, closed=False, sides=6, taper=None):
-        """a round tube along points (radius r, or r * taper(i/n) along it)"""
+        """a round tube along points (radius r, or r * taper(i/n) along it); hot, a white core runs inside"""
+        self._tube(pts, r, rgb, glow, alpha, closed, sides, taper)
+        if HOT and glow >= 4 and alpha > 0.05:
+            self._tube(pts, r * 0.38, WHITE, glow * 1.3, min(1.0, alpha * 1.2), closed, 5, taper)
+
+    def _ring(self, p, R, w, rgb, glow, alpha, normal):
+        normal = normal.normalized()
+        a = normal.cross(Vector((1, 0, 0)) if abs(normal.x) < 0.9 else Vector((0, 1, 0))).normalized()
+        b = normal.cross(a)
+        pts = [p + (a * math.cos(i / 36 * math.tau) + b * math.sin(i / 36 * math.tau)) * R * self.U for i in range(36)]
+        self._tube(pts, w, rgb, glow, alpha, closed=True)
+
+    def _tube(self, pts, r, rgb, glow=4, alpha=1.0, closed=False, sides=6, taper=None):
         n = len(pts)
         if n < 2:
             return
@@ -297,6 +377,11 @@ class Kit:
 
     def trail(self, pts, w, rgb, glow=4, alpha=0.6):
         """a flat ribbon through pts (newest first) facing the camera, thinning toward its end"""
+        self._trail(pts, w, rgb, glow, alpha)
+        if HOT and glow >= 4:
+            self._trail(pts, w * 0.3, WHITE, glow * 1.3, min(1.0, alpha * 1.4))
+
+    def _trail(self, pts, w, rgb, glow=4, alpha=0.6):
         if len(pts) < 2:
             return
         verts, faces = [], []

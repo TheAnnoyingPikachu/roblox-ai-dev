@@ -6,6 +6,7 @@ import math
 from mathutils import Vector
 
 from concepts import P, crouch
+import fxkit
 from fxkit import bez, ease, env, mix, seg
 
 IMPACT = 0.92
@@ -21,11 +22,19 @@ RAINBOW = [(1, 0.2, 0.2), (1, 0.55, 0.1), (1, 0.95, 0.2), (0.3, 1, 0.3), (0.2, 0
 
 
 def impact(f, rgb, R=3.0, seed=1, ring=True, flash=True):
-    """the hit at the dummy: a flash, a ring rolling out on the ground, sparks"""
+    """the hit at the dummy: a flash, a ring rolling out on the ground, sparks (hot: a star flash and crisp rings)"""
     u = seg(f.t, IMPACT, IMPACT + 0.5)
     if u is None:
         return
     k = f.k
+    if fxkit.HOT:
+        if flash:
+            f.kit.star(f.TC, 4 * k * (0.6 + 0.4 * ease(min(1, u * 4))), rgb, (1 - u) ** 1.5)
+            f.kit.light(f.TC, rgb, 8 * (1 - u) * k * k)
+        if ring:
+            f.kit.shock(f.T + Z(0.08), (0.6 + R * 1.4 * ease(u)) * k, 0.09 * k, rgb, 1 - u)
+        f.kit.burst(f.TC, u, 12, 4 * k, rgb, seed, 0.12 * k)
+        return
     if flash:
         f.kit.orb(f.TC + Vector((0, 0.6, 0)) * k, (0.4 + 1.0 * ease(min(1, u * 3))) * k, rgb, 6, 0.75 * (1 - u) ** 2)
         f.kit.light(f.TC, rgb, 8 * (1 - u) * k * k)

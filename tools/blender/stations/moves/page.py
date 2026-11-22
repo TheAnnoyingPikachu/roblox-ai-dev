@@ -33,7 +33,7 @@ for asset, now, who, spell in VISUALS:
     figs = [f'''<figure class="now"><img src="gifs/{asset}_{now}.webp" alt="{who}: {spell} as it is now" loading="lazy" width="480" height="352">
           <figcaption><span class="opt now">Now</span><b>{spell}</b> as it is in the game.</figcaption></figure>''']
     for key, n, label, text in DIRECTIONS:
-        figs.append(f'''<figure><img src="gifs/{asset}_{key}.webp" alt="{who}: {spell}, {label}" loading="lazy" width="480" height="352">
+        figs.append(f'''<figure{' class="picked"><span class="badge picked">Picked</span' if key == "v1_core" else ''}><img src="gifs/{asset}_{key}.webp" alt="{who}: {spell}, {label}" loading="lazy" width="480" height="352">
           <figcaption><span class="opt dir">{n}</span><b>{label}</b> {text}</figcaption></figure>''')
     vrows.append(f'''<div class="row variant"><h3>{who}: {spell}<span>now, then directions 1, 2 and 3</span></h3><div class="pair">{"".join(figs)}</div></div>''')
 visuals = f'''<section id="visuals">
@@ -41,7 +41,30 @@ visuals = f'''<section id="visuals">
       <p class="lead">New looks for the spells with no particle effects, each shown on the same three spells beside how they look now. Pick a direction, or parts of several, and it goes onto every spell. All of it is buildable in Roblox: Neon parts in layers, a ForceField-material glow round them, beams, rings and glowing cracks. The circles standing across a spell's path are turned toward this camera so you can see them; in the game they face along the path.</p>
       {"".join(vrows)}
     </section>'''
-sections, nav = [visuals], ['<a href="#visuals">Better visuals</a>']
+HOT = [  # species: (asset, its picked spell, who, the spell)
+    ("Jackal", [("creature_jackal_forge", "m_pack", "Jackal", "Spirit Pack"), ("creature_jackal_pharaoh_forge", "m_anubis", "Pharaoh Jackal", "Judgement of Anubis"), ("creature_jackal_sphinx_forge", "m_sand", "Sphinx Jackal", "Sandstorm Riddle")]),
+    ("Tortoise", [("creature_tortoise_forge", "m_nova", "Tortoise", "Shell Nova"), ("creature_tortoise_gemshell_forge", "m_gems", "Gemshell Tortoise", "Gem Barrage"), ("creature_tortoise_island_forge", "m_surge", "Island Tortoise", "Island Surge")]),
+    ("Meerkat", [("creature_meerkat_forge", "m_sunorb", "Meerkat", "Sun Orb"), ("creature_meerkat_star_forge", "m_comet", "Comet Meerkat", "Comet Strike"), ("creature_meerkat_storm_forge", "m_ufo", "Alien Meerkat", "Abduction Beam")]),
+    ("Cheetah", [("creature_cheetah_forge", "m_blades", "Cheetah", "Wind Blades"), ("creature_cheetah_lightning_forge", "m_chain", "Lightning Cheetah", "Chain Lightning"), ("creature_cheetah_thunder_forge", "m_thunder", "Thunder Cheetah", "Thunderhead")]),
+    ("Rhino", [("creature_rhino_forge", "m_lance", "Rhino", "Horn Lance"), ("creature_rhino_lava_forge", "m_magma", "Lava Rhino", "Magma Eruption"), ("creature_rhino_crystal_forge", "m_prism", "Crystal Rhino", "Prism Beam")]),
+    ("Flamingo", [("creature_flamingo_forge", "m_darts", "Flamingo", "Feather Darts"), ("creature_flamingo_peacock_forge", "m_fan", "King Flamingo", "Royal Fan"), ("creature_flamingo_phoenix_forge", "m_firebird", "Phoenix Flamingo", "Firebird")]),
+    ("Lion", [("creature_lion_forge", "m_roar", "Lion", "Golden Roar"), ("creature_lion_sun_forge", "m_solar", "Sun Lion", "Solar Flare"), ("creature_lion_shadow_forge", "m_claws", "Shadow Lion", "Shadow Claws")]),
+    ("Giraffe", [("creature_giraffe_forge", "m_lance", "Giraffe", "Sky Lance"), ("creature_giraffe_acacia_forge", "m_thorns", "Acacia Giraffe", "Thorn Grove"), ("creature_giraffe_diamond_forge", "m_prison", "Diamond Giraffe", "Diamond Prison")]),
+    ("Elephant", [("creature_elephant_forge", "m_orb", "Elephant", "Titan Orb"), ("creature_elephant_frost_forge", "m_tomb", "Frost Mammoth", "Frozen Tomb"), ("creature_elephant_war_forge", "m_axe", "War Elephant", "War Axe")]),
+]
+hrows = []
+for species, cards in HOT:
+    figs = []
+    for asset, key, who, spell in cards:
+        figs.append(f'''<figure><img src="gifs/{asset}_h_{key}.webp" alt="{who}: {spell} in the Hot core look" loading="lazy" width="480" height="352">
+          <figcaption><span class="who">{who}</span><b>{spell}</b></figcaption></figure>''')
+    hrows.append(f'''<div class="row variant"><h3>{species}<span>the species' spell, then its two variants'</span></h3><div class="pair">{"".join(figs)}</div></div>''')
+hot = f'''<section id="hot">
+      <h2>Hot core on every spell</h2>
+      <p class="lead">Your pick of the three directions, on all 27 spells. Glowing balls and beams have a white-hot core in a coloured body in a soft glowing edge; glowing lines, spikes and gems have a white-hot core; rings close in on where each spell comes from (horn, trunk, paws, tail) as it charges; every hit lands with a star flash and a crisp shock ring. Each animal's section further down shows its spell as it is now.</p>
+      {"".join(hrows)}
+    </section>'''
+sections, nav = [hot, visuals], ['<a href="#hot">Hot core</a>', '<a href="#visuals">Better visuals</a>']
 for a in ORDER:
     fit = json.load(open(os.path.join(OUT, a, "fit_full.json"), encoding="utf-8"))
     magic = json.load(open(os.path.join(OUTM, a, "fit_magic_full.json"), encoding="utf-8"))
@@ -125,7 +148,7 @@ figure.picked {{ border-color: var(--idle); box-shadow: 0 0 0 1px var(--idle); }
 figure.new {{ border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }}
 .badge {{ position: absolute; top: 16px; right: 16px; z-index: 1; font-size: .74rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; color: #fff; background: var(--idle); }}
 .badge.new {{ background: var(--accent); }}
-#visuals figure {{ opacity: 1; }}
+#visuals figure, #hot figure {{ opacity: 1; }}
 #visuals figure.now {{ border-style: dashed; }}
 .lead {{ margin: 0; max-width: 72ch; color: var(--muted); }}
 .opt.now {{ width: auto; padding: 0 6px; background: var(--muted); }} .opt.dir {{ background: var(--magic); }}
@@ -145,7 +168,7 @@ footer {{ color: var(--muted); font-size: .88rem; max-width: 70ch; }}
   </header>
   <nav aria-label="Animals">{"".join(nav)}</nav>
   {"".join(sections)}
-  <footer>Pick a direction for the spells' visuals (1, 2 or 3, or a mix such as "2's cracks with 1's flashes"), or ask for changes to any picked move.</footer>
+  <footer>Say if the Hot core look is right on every spell, or which ones need changes, and it goes into the game.</footer>
 </div>
 '''
 open(PAGE, "w", encoding="utf-8").write(page)

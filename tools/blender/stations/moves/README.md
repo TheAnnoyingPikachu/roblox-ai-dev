@@ -23,3 +23,5 @@ Check the game's spells after changing one (runs each through its whole clip, no
     lune run tools/blender/stations/moves/check_spells
 
 `magicv.py` (with `render_v.py`): three directions for better-looking spells (hot core, elemental, arcane) on Sun Orb, Horn Lance and Shadow Claws, for SHANNON to pick one before it goes onto every spell.
+
+`render_h.py`: each animal's picked spell in the Hot core look (SHANNON's pick of the three; `fxkit.HOT`), rings closing in on where it casts from.
