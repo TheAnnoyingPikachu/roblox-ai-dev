@@ -320,6 +320,94 @@ local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
 local ATTACKS: { [string]: Clip } = {
+	-- the Ancient Alpha Dragon's breath sweep (SHANNON's pick), out of its coil: rears its head back on its neck, then
+	-- thrusts it forward with its jaws wide at the contact (0.44 s) and sweeps them from one side to the other (the breath
+	-- itself comes with the effect pass)
+	foe_dragon_alpha_forge = attack({
+		{ 0.00, {} },
+		{
+			0.16,
+			{
+				body = { 8, 0, 0, 0, 0.05, 0.3 },
+				neck_base = { 26 },
+				head = { -20 },
+				jaw = { -10 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 6 },
+				leg_br = { 6 },
+				wing_l = { 0, -10, -8 },
+				wing_r = { 0, 10, 8 },
+			},
+		},
+		{
+			0.32,
+			{
+				body = { 10, 0, 0, 0, 0.06, 0.35 },
+				neck_base = { 30 },
+				head = { -24 },
+				jaw = { -16 },
+				leg_fl = { -12 },
+				leg_fr = { -12 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				wing_l = { 0, -14, -12 },
+				wing_r = { 0, 14, 12 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -4, 0, 0, 0, -0.04, -0.3 },
+				neck_base = { -10 },
+				head = { 6, -28 },
+				jaw = { -28 },
+				leg_fl = { 14 },
+				leg_fr = { 10 },
+				leg_bl = { -8 },
+				leg_br = { -8 },
+				wing_l = { 0, -15 },
+				hand_l = { 0, -10 },
+				wing_r = { 0, 15 },
+				hand_r = { 0, 10 },
+			},
+		},
+		{
+			0.62,
+			{
+				body = { -4, 0, 0, 0, -0.04, -0.3 },
+				neck_base = { -10 },
+				head = { 6 },
+				jaw = { -28 },
+				leg_fl = { 14 },
+				leg_fr = { 10 },
+				leg_bl = { -8 },
+				leg_br = { -8 },
+				wing_l = { 0, -15 },
+				hand_l = { 0, -10 },
+				wing_r = { 0, 15 },
+				hand_r = { 0, 10 },
+			},
+		},
+		{
+			0.80,
+			{
+				body = { -4, 0, 0, 0, -0.04, -0.3 },
+				neck_base = { -10 },
+				head = { 6, 28 },
+				jaw = { -28 },
+				leg_fl = { 14 },
+				leg_fr = { 10 },
+				leg_bl = { -8 },
+				leg_br = { -8 },
+				wing_l = { 0, -15 },
+				hand_l = { 0, -10 },
+				wing_r = { 0, 15 },
+				hand_r = { 0, 10 },
+			},
+		},
+		{ 0.95, {} },
+	}),
 	-- the Shadow Dragon's pounce (SHANNON's pick), out of its mantle: crouches, springs forward with its wings
 	-- beating, and lands on both forefeet at the contact (0.44 s), its jaws snapping shut
 	foe_dragon_forge = attack({
@@ -1971,6 +2059,23 @@ end
 -- Idle poses, by asset (SHANNON's picks, decision 0104): a held stance with a slow breath on top, in place
 -- of the shared sway. An attack, a power move and a flinch start from it and settle back into it.
 local STANCES: { [string]: Pose } = {
+	-- the Ancient Alpha Dragon coiled (SHANNON's pick): low, its neck snaking forward and its jaws in a snarl, its
+	-- wings folded down its flanks (on top of the wings it rests with raised and swept back)
+	foe_dragon_alpha_forge = {
+		body = { -6, 0, 0, 0, -0.05 },
+		neck_base = { -18 },
+		head = { 12, -10 },
+		jaw = { -12 },
+		leg_fl = { 8 },
+		leg_fr = { -4 },
+		tail = { 0, 20 },
+		tail_mid = { 0, 20 },
+		tail_end = { 0, 25 },
+		wing_l = { 22, 27.2, 38.8 },
+		hand_l = { 42.6, 19, -6.7 },
+		wing_r = { 22, -27.2, -38.8 },
+		hand_r = { 42.6, -19, 6.7 },
+	},
 	-- the Shadow Dragon mantling (SHANNON's pick): wings raised high over its back, head lowered at its prey
 	foe_dragon_forge = {
 		body = { -4 },

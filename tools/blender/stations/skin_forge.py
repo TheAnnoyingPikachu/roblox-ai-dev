@@ -339,20 +339,37 @@ def lion(name, length, tail_x, artifact, what):
 WHOLE = 0.8
 
 
-def dragon_parts(jaw, head, neck, wings, legs, tail):
+def dragon_parts(jaw, head, neck, wings, legs, tail, tail_line=None):
     """A dragon regenerated standing square (wings spread flat, jaws apart, tail straight), each vertex on one
     bone, as its source measures: the lower jaw `jaw` (y0, y1, half width, lowest z, and the mouth's line: z at
     y_ref and its slope), the head `head` (ahead of y above z within half width x, and its horns: behind that,
     ahead of horn_y above horn_z), the neck `neck` (ahead of y above z within half width x), the wings `wings`
     (their band of y, the root: beyond x above z near the back and beyond x2 above z2 further out, the hand
     beyond the wrist's x), the legs `legs` (front ahead of y, hind between two y; a leg is outside |x| above z,
-    or below its keel or belly) and the tail `tail` (behind y, then its middle and end)."""
+    or below its keel or belly) and the tail `tail` (behind y, then its middle and end). A tail that curves aside
+    gives `tail_line`, (radius, [(x, y), ...] down its middle): it is what lies within the radius of that line behind
+    y, and its middle and end are the shares of the way along it (`tail`'s second and third numbers)."""
     jy0, jy1, jx, jz, jz0, jslope, jyref = jaw
     hy, hz, hx, horn_y, horn_z = head
     ny, nz, nx = neck
     (wy0, wy1), (rx, rz, rx2, rz2), wrist = wings
     fy, (hy0, hy1), (lz, lx), keel, belly = legs
     t0, t1, t2 = tail
+    if tail_line:
+        radius, line = tail_line
+        steps = list(zip(line, line[1:]))
+        total = sum(math.dist(a, b) for a, b in steps)
+
+    def along(p):  # how far along the tail's line, as a share of it, and how far from it
+        best, done = (9.0, 0.0), 0.0
+        for a, b in steps:
+            seg = math.dist(a, b)
+            u = max(0.0, min(1.0, ((p.x - a[0]) * (b[0] - a[0]) + (p.y - a[1]) * (b[1] - a[1])) / (seg * seg)))
+            d = math.dist((p.x, p.y), (a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u))
+            if d < best[0]:
+                best = (d, (done + seg * u) / total)
+            done += seg
+        return best[1], best[0]
 
     def parts(p):
         ax, side = abs(p.x), "l" if p.x > 0 else "r"
@@ -370,7 +387,11 @@ def dragon_parts(jaw, head, neck, wings, legs, tail):
         if hy0 < p.y < hy1 and ((p.z < lz and ax > lx) or p.z < belly):
             return {"leg_b" + side: 1.0}
         if p.y > t0:
-            return {"tail_end" if p.y > t2 else "tail_mid" if p.y > t1 else "tail": 1.0}
+            if not tail_line:
+                return {"tail_end" if p.y > t2 else "tail_mid" if p.y > t1 else "tail": 1.0}
+            share, off = along(p)
+            if off < radius:
+                return {"tail_end" if share > t2 else "tail_mid" if share > t1 else "tail": 1.0}
         return {"body": 1.0}
 
     return parts
@@ -397,6 +418,18 @@ shadow_dragon_parts = dragon_parts(
     wings=((-0.245, -0.12), (0.1, 0.0, 0.15, -0.12), 0.19),
     legs=(-0.19, (-0.08, 0.07), (-0.05, 0.04), -0.16, -0.165),
     tail=(0.07, 0.2, 0.32),
+)
+
+# SHANNON's Ancient Alpha Dragon regenerated standing square (ForgeGUI job 865f4999): x -0.479..0.479, y -0.333..0.329,
+# z -0.203..0.198, facing -Y; its tail curls away to its left (+X) behind it
+alpha_dragon_parts = dragon_parts(
+    jaw=(-0.327, -0.258, 0.04, 0.045, 0.087, 0.05, -0.33),
+    head=(-0.255, 0.045, 0.08, -0.19, 0.15),
+    neck=(-0.18, 0.0, 0.08),
+    wings=((-0.165, 0.05), (0.1, 0.0, 0.15, -0.12), 0.24),
+    legs=(-0.15, (-0.12, 0.03), (-0.05, 0.035), -0.13, -0.12),
+    tail=(0.03, 0.33, 0.66),
+    tail_line=(0.075, [(0.0, 0.03), (0.04, 0.09), (0.1, 0.15), (0.18, 0.21), (0.27, 0.27), (0.36, 0.32)]),
 )
 
 def legion(name, height, artifact, what, joints, boxes, ground=None, how="cut from its sheet", **extra):
@@ -1038,24 +1071,26 @@ REGIONS = {
         "blend": 2,
         "notes": "Shadow Dragon: SHANNON's Shadow Dragon (01:50) from ForgeGUI (artifact c37c9006), regenerated standing square with its wings spread flat, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail (decision 0104).",
     },
-    "foe_dragon_alpha_forge": legion(
-        "Ancient Alpha Dragon", 16.0, "f52635f1", "Ancient Alpha Dragon (01:54)", how="cut from its sheet and turned to face forward",
-        joints={
-            "body": (0.0, 0.15, 0.08), "head": (0.0, 0.06, 0.15), "tail": (0.0, 0.3, 0.05),
-            "leg_fl": (0.06, 0.04, 0.0), "leg_fr": (-0.08, 0.04, 0.0), "leg_bl": (0.06, 0.22, 0.0), "leg_br": (-0.06, 0.22, 0.0),
-            "wing_l": (0.12, 0.15, 0.15), "wing_r": (-0.08, 0.05, 0.18),
+    # regenerated standing square for rigging: a neck, a jaw that opens, wings that bend at the wrist, a tail in three
+    # along its curl; its wings rest raised and swept back (spread flat it would not pass the arena gate)
+    "foe_dragon_alpha_forge": {
+        "height": 13.8,  # its raised wings make it 23.1 wide: at its size (1.8) it must pass the arena gate's 42 studs
+        "joints": {
+            "body": (0.0, -0.1, -0.03), "neck_base": (0.0, -0.2, 0.04), "head": (0.0, -0.255, 0.11), "jaw": (0.0, -0.262, 0.088),
+            "wing_l": (0.1, -0.08, 0.04), "hand_l": (0.24, -0.11, 0.13), "wing_r": (-0.1, -0.08, 0.04), "hand_r": (-0.24, -0.11, 0.13),
+            "leg_fl": (0.07, -0.23, -0.07), "leg_fr": (-0.07, -0.23, -0.07), "leg_bl": (0.055, -0.04, -0.07), "leg_br": (-0.055, -0.04, -0.07),
+            "tail": (0.0, 0.03, -0.04), "tail_mid": (0.1, 0.15, -0.07), "tail_end": (0.22, 0.24, -0.1),
         },
-        boxes=[
-            ("head", (-0.06, 0.06, -1, 0.1, 0.12, 0.3)),
-            ("wing_l", (0.13, 1, -1, 1, 0.0, 1)),
-            ("wing_r", (-1, -0.08, -1, 1, 0.15, 1)),
-            ("leg_fl", (0.0, 1, -1, 0.13, -1, -0.03)),
-            ("leg_fr", (-1, 0.0, -1, 0.13, -1, -0.03)),
-            ("leg_bl", (0.0, 1, 0.13, 0.3, -1, -0.03)),
-            ("leg_br", (-1, 0.0, 0.13, 0.3, -1, -0.03)),
-            ("tail", (-1, 1, 0.29, 1, -1, 0.1)),
-        ],
-    ),
+        "parents": {
+            "head": "neck_base", "jaw": "head", "hand_l": "wing_l", "hand_r": "wing_r", "tail_mid": "tail", "tail_end": "tail_mid",
+        },
+        "weights": alpha_dragon_parts,
+        "small": 0.03,
+        "cut": True,
+        "blend": 2,
+        "rest": {"wing_l": (0, 25, -40), "hand_l": (0, 20, -15), "wing_r": (0, -25, 40), "hand_r": (0, -20, 15)},
+        "notes": "Ancient Alpha Dragon: SHANNON's Ancient Alpha Dragon (01:54) from ForgeGUI (artifact 865f4999), regenerated standing square, skinned to the Stations rig in whole parts with a neck, a jaw, wing hands and a three-part tail along its curl, its wings resting raised (decision 0104).",
+    },
     # lengths: the Blender models' (StationAssets.creature_tortoise[_island, _gemshell].size)
     "creature_tortoise_forge": tortoise("Tortoise", 10.1, (0.18, 0.46), 0.32, 0.4, "ea214a64", "Low-Poly Stone Tortoise"),
     "creature_tortoise_island_forge": tortoise("Island Tortoise", 14.8, (0.14, 0.45), 0.28, 0.35, "e1ded7d6", "Low-Poly Stone Tortoise (with an island)"),
@@ -1166,7 +1201,7 @@ OWN_POSES = {  # a model's own attack and power clips (ATTACKS, MAGICS in Creatu
         "power": {"leg_fl": (-65, 1, -98), "leg_fr": (49, 14, 58), "elbow_r": (58, 89, 46), "head": (0, 78, 0)},
     },
 }
-OWN_POSES["foe_dragon_forge"] = OWN_POSES["foe_dragon_drake_forge"]  # (the same joints, the same moves asked of them)
+OWN_POSES["foe_dragon_forge"] = OWN_POSES["foe_dragon_alpha_forge"] = OWN_POSES["foe_dragon_drake_forge"]  # (the same joints, the same moves asked of them)
 STRETCHED = math.log(1.25)
 BONE_COLOURS = {  # the bones view: which bone a face follows
     "body": (0.55, 0.55, 0.55), "head": (1.0, 0.85, 0.1), "leg_fl": (0.9, 0.15, 0.15), "leg_fr": (0.15, 0.35, 1.0),
@@ -1635,6 +1670,11 @@ def main():
     tris = sum(len(p.vertices) - 2 for p in body.data.polygons)
     size = (hi - lo) * scale
     centre = Vector((0, 0, ((lo.z + hi.z) / 2 - ground) * scale))
+    if spec.get("rest"):  # a rest baked in moved the mesh (raised wings, an axe in two hands): measure it as built
+        pts = [v.co for v in body.data.vertices]
+        built_lo = Vector((min(p[k] for p in pts) for k in range(3)))
+        built_hi = Vector((max(p[k] for p in pts) for k in range(3)))
+        size, centre = built_hi - built_lo, (built_lo + built_hi) / 2
     with open(MANIFEST, encoding="utf-8") as f:
         manifest = json.load(f)
     manifest[name] = {
