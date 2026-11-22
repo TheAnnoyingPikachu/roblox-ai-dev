@@ -445,8 +445,9 @@ local ATTACKS: { [string]: Clip } = {
 		{ 0.95, {} },
 	}),
 	-- the Ogre Commander's overhead cleave (SHANNON's pick), out of its axe planted at its side: heaves the axe up
-	-- and over until its head hangs down its back, then brings it over and into the ground before it edge-first at the
-	-- contact (0.44 s), stooping into the blow
+	-- overhead on a straight arm, turned a little in over its head, the axe lying back over its shoulders; swings it
+	-- over the top and into the ground before it edge-first at the contact (0.44 s), stooping into the blow. The arm
+	-- stays straight throughout (its elbow undoes the rest bend), so the axe and the arm go round as one
 	foe_ogre_commander_forge = attack({
 		{ 0.00, {} },
 		{
@@ -456,8 +457,8 @@ local ATTACKS: { [string]: Clip } = {
 				head = { 10 },
 				leg_fl = { 150, 0, -10 },
 				elbow_l = { 40 },
-				leg_fr = { 200 },
-				elbow_r = { -50 },
+				leg_fr = { 190, 0, -10 },
+				elbow_r = { -100 },
 				leg_bl = { 4 },
 				leg_br = { -4 },
 			},
@@ -469,8 +470,8 @@ local ATTACKS: { [string]: Clip } = {
 				head = { 12 },
 				leg_fl = { 170, 0, -15 },
 				elbow_l = { 30 },
-				leg_fr = { 215, 0, 4 },
-				elbow_r = { -60 },
+				leg_fr = { 205, 0, -10 },
+				elbow_r = { -100 },
 				leg_bl = { 8 },
 				leg_br = { -6 },
 			},
@@ -482,7 +483,7 @@ local ATTACKS: { [string]: Clip } = {
 				head = { -14 },
 				leg_fl = { 30, 0, -20 },
 				elbow_l = { 10 },
-				leg_fr = { 35, 10 },
+				leg_fr = { 35, 0, -10 },
 				elbow_r = { -100 },
 				leg_bl = { 38 },
 				leg_br = { -14 },
@@ -495,7 +496,7 @@ local ATTACKS: { [string]: Clip } = {
 				head = { -10 },
 				leg_fl = { 32, 0, -20 },
 				elbow_l = { 10 },
-				leg_fr = { 38, 10 },
+				leg_fr = { 38, 0, -10 },
 				elbow_r = { -100 },
 				leg_bl = { 34 },
 				leg_br = { -12 },
