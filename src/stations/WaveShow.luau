@@ -505,6 +505,10 @@ function WaveShow.run(
 				actor.model:SetAttribute("BoltTo", to.Position)
 				actor.model:SetAttribute("BoltFor", flight)
 			end
+			if e.power and to then -- where its spell lands: the ground under its target, and how tall that is
+				actor.model:SetAttribute("AimAt", to.Position - Vector3.new(0, to.Size.Y / 2, 0))
+				actor.model:SetAttribute("AimHeight", to.Size.Y)
+			end
 			if not e.click then -- a click's strike is quick: no clip, no lunge (decision 0106)
 				Creatures.play(actor.model, if e.power then "magic" else "attack")
 			end
