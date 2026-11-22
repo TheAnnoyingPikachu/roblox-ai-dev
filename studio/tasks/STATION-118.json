@@ -22,7 +22,12 @@
     "src/shared/FightFx.luau",
     "tests/FightFx.spec.luau",
     "docs/decisions/0105-animal-stations-enemy-power-attacks.md",
-    "studio/tasks/STATION-118.json"
+    "studio/tasks/STATION-118.json",
+    "src/stations-client/FoePowers.luau",
+    "src/stations-client/FoeAnchors.luau",
+    "tools/blender/stations/foe_anchors.py",
+    "tools/blender/stations/check_foe_powers.luau",
+    "src/stations/CLAUDE.md"
   ],
   "tests": [
     "BattleRules.spec.luau"
@@ -33,9 +38,9 @@
     "A dragon's or the Siege Golem's power attack strikes every animal still standing; every other enemy's strikes one",
     "Each enemy has its own power move and effects, picked by SHANNON from the concepts"
   ],
-  "verification": "lune run tests/run (BattleRules); the power moves in Studio once picked.",
+  "verification": "lune run tests/run (BattleRules); lune run tools/blender/stations/check_foe_powers (every power move through its clip); the power moves in Studio.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-22: \"the necromancer power move will be raising a few enemies from the dead at 50% the battle priest power move will heal enemies and the darkcaster is just magic dps so he will actually have a power move, please make concepts for all these power moves now on the concept site. oh and make it so the much harder enemies like dragons and siege golems can hit all your animals with their power attack\". Rules done first (decision 0105); power-move concepts for all 17 enemies on the concept page (the Heavy Knight's Leaping Slam is already in). Checkpoint: see decision 0105 (up to 3 raised; only the dragons and the Siege Golem sweep; power scores left alone so those waves are harder)."
+  "notes": "SHANNON, 2026-11-22: \"the necromancer power move will be raising a few enemies from the dead at 50% the battle priest power move will heal enemies and the darkcaster is just magic dps so he will actually have a power move, please make concepts for all these power moves now on the concept site. oh and make it so the much harder enemies like dragons and siege golems can hit all your animals with their power attack\". Rules done first (decision 0105); power-move concepts for all 17 enemies on the concept page (the Heavy Knight's Leaping Slam is already in). Checkpoint: see decision 0105 (up to 3 raised; only the dragons and the Siege Golem sweep; power scores left alone so those waves are harder). 2026-11-22, SHANNON: \"go ahead and implement all these power attack concepts\": all 17 are in (MAGICS clips in Creatures.client from the concepts' specs; effects in FoePowers, translated call for call from the concept renderer; anchors measured by foe_anchors.py). Two timings differ from the concepts: the charge starts with the clip, not in the warning, and the Dark Drake's four spits come sooner so every fireball lands by the hit."
 }

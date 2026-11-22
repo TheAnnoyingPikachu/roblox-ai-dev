@@ -505,6 +505,17 @@ function WaveShow.run(
 			Creatures.play(actor.model, if e.power then "magic" else "attack")
 			local root = actor.model.PrimaryPart :: BasePart
 			local lunges = not e.power and not ranged(kind)
+			if e.power then -- who it reaches, for its power move's effects (FoePowers): slots on the other side, its own
+				local aim, allies = { e.tslot }, {}
+				for _, x in e.also or {} do
+					table.insert(aim, x.slot)
+				end
+				for _, x in e.revives or e.heals or {} do
+					table.insert(allies, x.slot)
+				end
+				actor.model:SetAttribute("PowerAim", table.concat(aim, ","))
+				actor.model:SetAttribute("PowerAllies", table.concat(allies, ","))
+			end
 			if lunges then
 				local dir = if e.side == 1 then -1 else 1
 				TweenService:Create(root, TweenInfo.new(lead * 0.9, Enum.EasingStyle.Quad), {

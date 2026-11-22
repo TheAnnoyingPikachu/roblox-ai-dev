@@ -19,6 +19,7 @@ local Workspace = game:GetService("Workspace")
 local FightFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("FightFx"))
 local TrainFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("TrainFx"))
 local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
+local FoePowers = require(script.Parent:WaitForChild("FoePowers"))
 
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
@@ -1902,17 +1903,87 @@ local MAGICS: { [string]: Clip } = {
 		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
 		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
 	),
-	-- the Shadow Archer (elbows): a volley, side-on with the bow tipped up at the sky, the arrow drawn back
-	-- and loosed at the impact
+	-- the Shadow Legion's power moves, from SHANNON's concepts (FoePowers draws their effects)
+	-- Marked Shot: aimed the whole wind-up (a red line and rings), then one fast bolt (decision 0105)
+	foe_archer_crossbow_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.2,
+				{
+					head = { -2, 12 },
+					body = { 0, -12 },
+					leg_fl = { 30, 0, 6 },
+					elbow_l = { 30 },
+					leg_fr = { 55, 4 },
+					elbow_r = { 40 },
+				},
+			},
+			{
+				0.35,
+				{
+					head = { -4, 18 },
+					body = { 0, -18 },
+					leg_fl = { 20, 0, 6 },
+					elbow_l = { 20 },
+					leg_fr = { 88, 10 },
+					elbow_r = {},
+					leg_bl = { 10 },
+					leg_br = { -6 },
+				},
+			},
+			{
+				0.86,
+				{
+					head = { -4, 18 },
+					body = { 0, -18 },
+					leg_fl = { 20, 0, 6 },
+					elbow_l = { 20 },
+					leg_fr = { 88, 10 },
+					elbow_r = {},
+					leg_bl = { 10 },
+					leg_br = { -6 },
+				},
+			},
+			{
+				MAGIC_IMPACT,
+				{
+					head = { 2, 16 },
+					body = { 5, -16, 0, 0, 0.02, 0.3 },
+					leg_fl = { 16, 0, 6 },
+					elbow_l = { 20 },
+					leg_fr = { 104, 10 },
+					elbow_r = { 6 },
+					leg_bl = { 10 },
+					leg_br = { -6 },
+					tail = { 12 },
+				},
+			},
+			{
+				1.2,
+				{
+					head = { 0, 10 },
+					body = { 2, -10 },
+					leg_fl = { 24, 0, 4 },
+					elbow_l = { 26 },
+					leg_fr = { 50, 4 },
+					elbow_r = { 40 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Shadow Volley: one arrow loosed at the sky (0.55 s) splits into five that rain on its target (decision 0105)
 	foe_archer_forge = {
 		length = 1.6,
 		keys = {
 			{ 0.00, {} },
 			{
-				0.40,
+				0.25,
 				{
+					head = { 0, 78 },
 					body = { 0, -88, -30 },
-					head = { 0, 78, 0 },
 					leg_fl = { -65, 1, -98 },
 					leg_fr = { 56, 38, 40 },
 					elbow_r = { 49, 89, 46 },
@@ -1920,10 +1991,10 @@ local MAGICS: { [string]: Clip } = {
 				},
 			},
 			{
-				0.78,
+				0.45,
 				{
+					head = { 0, 78 },
 					body = { 0, -88, -38, 0, 0.04, 0.1 },
-					head = { 0, 78, 0 },
 					leg_fl = { -65, 1, -98 },
 					leg_fr = { 49, 14, 58 },
 					elbow_r = { 58, 89, 46 },
@@ -1931,10 +2002,10 @@ local MAGICS: { [string]: Clip } = {
 				},
 			},
 			{
-				0.90,
+				0.52,
 				{
+					head = { 0, 78 },
 					body = { 0, -88, -38, 0, 0.04, 0.1 },
-					head = { 0, 78, 0 },
 					leg_fl = { -65, 1, -98 },
 					leg_fr = { 49, 14, 60 },
 					elbow_r = { 58, 89, 46 },
@@ -1942,21 +2013,1111 @@ local MAGICS: { [string]: Clip } = {
 				},
 			},
 			{
-				MAGIC_IMPACT,
+				0.55,
 				{
+					head = { 0, 76 },
 					body = { 0, -86, -34, 0, 0, 0.3 },
-					head = { 0, 76, 0 },
 					leg_fl = { -65, 1, -98 },
 					leg_fr = { 47, 14, 70 },
 					elbow_r = { 40, 89, 46 },
 					tail = { 12 },
 				},
 			},
+			{ 0.8, { head = { 0, 52 }, body = { 0, -60, -10 }, leg_fl = { -50, 1, -76 }, leg_fr = { 30, 10, 40 } } },
+			{ 1.6, {} },
+		},
+	},
+	-- Royal Charge: three ghost riders charge its target (decision 0105)
+	foe_cavalry_commander_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 16.1 },
+					body = { 9.2, 0, 0, 0, 0.057, 0.46 },
+					leg_fl = { -28.75 },
+					leg_fr = { -23 },
+					elbow_r = { 23, 0, 23 },
+					leg_bl = { 11.5 },
+					leg_br = { 13.8 },
+				},
+			},
+			{
+				0.55,
+				{
+					head = { 18.4 },
+					body = { 11.5, 0, 0, 0, 0.069, 0.575 },
+					leg_fl = { -34.5 },
+					leg_fr = { -27.6 },
+					elbow_r = { 34.5, 0, 34.5 },
+					leg_bl = { 13.8 },
+					leg_br = { 16.1 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { 18.4 },
+					body = { 11.5, 0, 0, 0, 0.069, 0.575 },
+					leg_fl = { -34.5 },
+					leg_fr = { -27.6 },
+					elbow_r = { 34.5, 0, 34.5 },
+					leg_bl = { 13.8 },
+					leg_br = { 16.1 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -16.1 },
+					body = { -9.2, 0, 0, 0, -0.046, -1.84 },
+					leg_fl = { 40.25 },
+					leg_fr = { 34.5 },
+					elbow_r = { -92, -23, -11.5 },
+					leg_bl = { -32.2 },
+					leg_br = { -27.6 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -11.5 },
+					body = { -6.9, 0, 0, 0, -0.034, -1.61 },
+					leg_fl = { 32.2 },
+					leg_fr = { 27.6 },
+					elbow_r = { -80.5, -17.25, -11.5 },
+					leg_bl = { -25.3 },
+					leg_br = { -23 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Lance Charge: its thrust sends a lance of light (decision 0105)
+	foe_cavalry_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 16.1 },
+					body = { 9.2, 0, 0, 0, 0.057, 0.46 },
+					leg_fl = { -28.75 },
+					leg_fr = { -23 },
+					elbow_r = { 57.5, 0, 0, 0, 0, 0.345 },
+					leg_bl = { 11.5 },
+					leg_br = { 13.8 },
+				},
+			},
+			{
+				0.55,
+				{
+					head = { 18.4 },
+					body = { 11.5, 0, 0, 0, 0.069, 0.575 },
+					leg_fl = { -34.5 },
+					leg_fr = { -27.6 },
+					elbow_r = { 16.1, 0, 0, 0, 0, 0.46 },
+					leg_bl = { 13.8 },
+					leg_br = { 16.1 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { 18.4 },
+					body = { 11.5, 0, 0, 0, 0.069, 0.575 },
+					leg_fl = { -34.5 },
+					leg_fr = { -27.6 },
+					elbow_r = { 16.1, 0, 0, 0, 0, 0.46 },
+					leg_bl = { 13.8 },
+					leg_br = { 16.1 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -16.1 },
+					body = { -9.2, 0, 0, 0, -0.046, -1.84 },
+					leg_fl = { 40.25 },
+					leg_fr = { 34.5 },
+					elbow_r = { -9.2, 0, 0, 0, 0, -0.69 },
+					leg_bl = { -32.2 },
+					leg_br = { -27.6 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -11.5 },
+					body = { -6.9, 0, 0, 0, -0.034, -1.61 },
+					leg_fl = { 32.2 },
+					leg_fr = { 27.6 },
+					elbow_r = { -6.9, 0, 0, 0, 0, -0.575 },
+					leg_bl = { -25.3 },
+					leg_br = { -23 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Ancient Flame: a flame torrent swept across the team (decision 0105)
+	foe_dragon_alpha_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { -24 },
+					neck_base = { 31.2 },
+					body = { 9.6, 0, 0, 0, 0.06, 0.36 },
+					jaw = { -12 },
+					leg_fl = { -12 },
+					leg_fr = { -12 },
+					leg_bl = { 7.2 },
+					leg_br = { 7.2 },
+					wing_l = { 0, -12, -9.6 },
+					wing_r = { 0, 12, 9.6 },
+				},
+			},
+			{
+				0.62,
+				{
+					head = { -31.2 },
+					neck_base = { 39 },
+					body = { 13, 0, 0, 0, 0.078, 0.455 },
+					jaw = { -20.8 },
+					leg_fl = { -15.6 },
+					leg_fr = { -15.6 },
+					leg_bl = { 10.4 },
+					leg_br = { 10.4 },
+					wing_l = { 0, -18.2, -15.6 },
+					wing_r = { 0, 18.2, 15.6 },
+				},
+			},
+			{
+				0.78,
+				{
+					head = { 6, 28 },
+					neck_base = { -10, 15 },
+					body = { -4, 0, 0, 0, -0.04, -0.3 },
+					jaw = { -32 },
+					leg_fl = { 14 },
+					leg_fr = { 10 },
+					leg_bl = { -8 },
+					leg_br = { -8 },
+					wing_l = { 0, -15 },
+					hand_l = { 0, -10 },
+					wing_r = { 0, 15 },
+					hand_r = { 0, 10 },
+				},
+			},
+			{
+				1.06,
+				{
+					head = { 6, -28 },
+					neck_base = { -10, -15 },
+					body = { -4, 0, 0, 0, -0.04, -0.3 },
+					jaw = { -32 },
+					leg_fl = { 14 },
+					leg_fr = { 10 },
+					leg_bl = { -8 },
+					leg_br = { -8 },
+					wing_l = { 0, -15 },
+					hand_l = { 0, -10 },
+					wing_r = { 0, 15 },
+					hand_r = { 0, 10 },
+				},
+			},
+			{
+				1.2,
+				{
+					head = { 6 },
+					neck_base = { -10 },
+					body = { -4, 0, 0, 0, -0.04, -0.3 },
+					jaw = { -28 },
+					leg_fl = { 14 },
+					leg_fr = { 10 },
+					leg_bl = { -8 },
+					leg_br = { -8 },
+					wing_l = { 0, -15 },
+					hand_l = { 0, -10 },
+					wing_r = { 0, 15 },
+					hand_r = { 0, 10 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Shadow Volley: a fireball spat at each animal (re-timed in game so all land by the hit) (decision 0105)
+	foe_dragon_drake_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.25,
+				{
+					head = { -15.4 },
+					neck_base = { 24.2 },
+					body = { 11, 0, 0, 0, 0.088, 0.495 },
+					jaw = { -11 },
+					leg_fl = { -17.6 },
+					leg_fr = { -13.2 },
+					leg_bl = { 8.8 },
+					leg_br = { 11 },
+					tail = { -8.8 },
+					tail_mid = { -6.6 },
+					tail_end = { -8.8 },
+					wing_l = { 0, 11, -28.6 },
+					hand_l = { 0, -4.4, -11 },
+					wing_r = { 0, -11, 28.6 },
+					hand_r = { 0, 4.4, 11 },
+				},
+			},
+			{
+				0.42,
+				{
+					head = { -26.4 },
+					neck_base = { 36 },
+					body = { 16.8, 0, 0, 0, 0.144, 0.72 },
+					jaw = { -28.8 },
+					leg_fl = { -24 },
+					leg_fr = { -19.2 },
+					leg_bl = { 14.4 },
+					leg_br = { 16.8 },
+					tail = { -14.4 },
+					tail_mid = { -9.6 },
+					tail_end = { -12 },
+					wing_l = { 0, 16.8, -45.6 },
+					hand_l = { 0, -7.2, -19.2 },
+					wing_r = { 0, -16.8, 45.6 },
+					hand_r = { 0, 7.2, 19.2 },
+				},
+			},
+			{
+				0.5,
+				{
+					head = { 2, 18 },
+					neck_base = { -8, 10 },
+					body = { -6, 0, 0, 0, -0.06, -0.4 },
+					jaw = { -26 },
+					leg_fl = { 16 },
+					leg_fr = { 12 },
+					leg_bl = { -10 },
+					leg_br = { -8 },
+					wing_l = { 0, 10, -30 },
+					hand_l = { 0, 0, -10 },
+					wing_r = { 0, -10, 30 },
+					hand_r = { 0, 0, 10 },
+				},
+			},
+			{
+				0.56,
+				{
+					head = { 2, 6 },
+					neck_base = { -8, 3 },
+					body = { -6, 0, 0, 0, -0.06, -0.4 },
+					jaw = { -26 },
+					leg_fl = { 16 },
+					leg_fr = { 12 },
+					leg_bl = { -10 },
+					leg_br = { -8 },
+					wing_l = { 0, 10, -30 },
+					hand_l = { 0, 0, -10 },
+					wing_r = { 0, -10, 30 },
+					hand_r = { 0, 0, 10 },
+				},
+			},
+			{
+				0.62,
+				{
+					head = { 2, -6 },
+					neck_base = { -8, -3 },
+					body = { -6, 0, 0, 0, -0.06, -0.4 },
+					jaw = { -26 },
+					leg_fl = { 16 },
+					leg_fr = { 12 },
+					leg_bl = { -10 },
+					leg_br = { -8 },
+					wing_l = { 0, 10, -30 },
+					hand_l = { 0, 0, -10 },
+					wing_r = { 0, -10, 30 },
+					hand_r = { 0, 0, 10 },
+				},
+			},
+			{
+				0.68,
+				{
+					head = { 2, -18 },
+					neck_base = { -8, -10 },
+					body = { -6, 0, 0, 0, -0.06, -0.4 },
+					jaw = { -26 },
+					leg_fl = { 16 },
+					leg_fr = { 12 },
+					leg_bl = { -10 },
+					leg_br = { -8 },
+					wing_l = { 0, 10, -30 },
+					hand_l = { 0, 0, -10 },
+					wing_r = { 0, -10, 30 },
+					hand_r = { 0, 0, 10 },
+				},
+			},
+			{
+				1,
+				{
+					head = { 7.2 },
+					neck_base = { -13.2 },
+					body = { -8.4, 0, 0, 0, -0.108, -1.02 },
+					jaw = { 7.2 },
+					leg_fl = { 20.4 },
+					leg_fr = { 16.8 },
+					leg_bl = { -14.4 },
+					leg_br = { -12 },
+					tail = { 6 },
+					tail_mid = { 4.8 },
+					tail_end = { 6 },
+					wing_l = { 0, -7.2, 18 },
+					hand_l = { 0, -2.4, 13.2 },
+					wing_r = { 0, 7.2, -18 },
+					hand_r = { 0, 2.4, -13.2 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Eclipse Pounce: in a dark mantle, a shockwave from its landing reaches every animal (decision 0105)
+	foe_dragon_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.35,
+				{
+					head = { 9.6 },
+					neck_base = { -12 },
+					body = { -9.6, 0, 0, 0, -0.24, 0.36 },
+					jaw = { -7.2 },
+					leg_fl = { -12 },
+					leg_fr = { -12 },
+					leg_bl = { 19.2 },
+					leg_br = { 19.2 },
+					tail = { -7.2 },
+					wing_l = { 0, 24, -36 },
+					hand_l = { 0, 12, -16.8 },
+					wing_r = { 0, -24, 36 },
+					hand_r = { 0, -12, 16.8 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { -7.2 },
+					neck_base = { 12 },
+					body = { 12, 0, 0, 0, 0.66, -0.72 },
+					jaw = { -28.8 },
+					leg_fl = { -60 },
+					leg_fr = { -54 },
+					leg_bl = { -36 },
+					leg_br = { -33.6 },
+					tail = { -14.4 },
+					wing_l = { 0, 0, -54 },
+					hand_l = { 0, 0, -24 },
+					wing_r = { 0, 0, 54 },
+					hand_r = { 0, 0, 24 },
+				},
+			},
+			{
+				0.8,
+				{
+					head = { 13.2 },
+					neck_base = { -22 },
+					body = { -15.4, 0, 0, 0, -0.132, -1.65 },
+					jaw = { 13.2 },
+					leg_fl = { 44 },
+					leg_fr = { 39.6 },
+					leg_bl = { -26.4 },
+					leg_br = { -24.2 },
+					tail = { 11 },
+					wing_l = { 0, -11, 35.2 },
+					hand_l = { 0, -4.4, 24.2 },
+					wing_r = { 0, 11, -35.2 },
+					hand_r = { 0, 4.4, -24.2 },
+				},
+			},
+			{
+				1.05,
+				{
+					head = { 8 },
+					neck_base = { -16 },
+					body = { -12, 0, 0, 0, -0.1, -1.4 },
+					jaw = { 6 },
+					leg_fl = { 34 },
+					leg_fr = { 32 },
+					leg_bl = { -20 },
+					leg_br = { -18 },
+					tail = { 8 },
+					wing_l = { 0, -6, 22 },
+					hand_l = { 0, -2, 14 },
+					wing_r = { 0, 6, -22 },
+					hand_r = { 0, 2, -14 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Siege Barrage: boulders from its castle land on every animal as its fists pound (decision 0105)
+	foe_golem_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 6 },
+					body = { 6, 0, 0, 0, 0.04, 0.2 },
+					leg_fl = { 90, 0, 10 },
+					elbow_l = { 40 },
+					leg_fr = { 90, 0, -10 },
+					elbow_r = { 40 },
+					leg_bl = { 6 },
+					leg_br = { 6 },
+				},
+			},
+			{
+				0.62,
+				{
+					head = { 10 },
+					body = { 10, 0, 0, 0, 0.08, 0.3 },
+					leg_fl = { 140, 0, 12 },
+					elbow_l = { 30 },
+					leg_fr = { 140, 0, -12 },
+					elbow_r = { 30 },
+					leg_bl = { 10 },
+					leg_br = { 10 },
+				},
+			},
+			{
+				MAGIC_IMPACT,
+				{
+					head = { -10 },
+					body = { -26, 0, 0, 0, -0.16, -0.6 },
+					leg_fl = { 20, 0, 6 },
+					elbow_l = {},
+					leg_fr = { 20, 0, -6 },
+					elbow_r = {},
+					leg_bl = { 30 },
+					leg_br = { 30 },
+				},
+			},
 			{
 				1.12,
-				{ body = { 0, -60, -10 }, head = { 0, 52, 0 }, leg_fl = { -50, 1, -76 }, leg_fr = { 30, 10, 40 } },
+				{
+					head = { -10 },
+					body = { -22, 0, 0, 0, -0.14, -0.55 },
+					leg_fl = { 20, 0, 6 },
+					elbow_l = {},
+					leg_fr = { 20, 0, -6 },
+					elbow_r = {},
+					leg_bl = { 30 },
+					leg_br = { 30 },
+				},
 			},
-			{ 1.60, {} },
+			{ 1.6, {} },
+		},
+	},
+	-- Frenzy: three slashes thrown, the last two blades together (decision 0105)
+	foe_knight_berserker_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.25,
+				{
+					head = { 10 },
+					body = { 10, -10, 0, 0, 0.08, 0.3 },
+					leg_fl = { 170, 0, -15 },
+					elbow_l = { 30 },
+					leg_fr = { 190 },
+					elbow_r = { 30 },
+					leg_bl = { 4 },
+					leg_br = { -4 },
+				},
+			},
+			{
+				0.42,
+				{
+					head = { -8 },
+					body = { -18, 14, 0, 0, -0.08, -0.5 },
+					leg_fl = { 30, 0, -25 },
+					elbow_l = { 10 },
+					leg_fr = { 190 },
+					elbow_r = { 30 },
+					leg_bl = { 30 },
+					leg_br = { -10 },
+				},
+			},
+			{
+				0.56,
+				{
+					head = { -8 },
+					body = { -18, -14, 0, 0, -0.08, -0.6 },
+					leg_fl = { 150, 0, -15 },
+					elbow_l = { 30 },
+					leg_fr = { 20, 15 },
+					elbow_r = {},
+					leg_bl = { -10 },
+					leg_br = { 30 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -14 },
+					body = { -30, 4, 0, 0, -0.15, -1 },
+					leg_fl = { 25, 0, -25 },
+					elbow_l = {},
+					leg_fr = { 15, 15 },
+					elbow_r = {},
+					leg_bl = { 38 },
+					leg_br = { -14 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -10 },
+					body = { -26, 4, 0, 0, -0.12, -0.9 },
+					leg_fl = { 28, 0, -24 },
+					leg_fr = { 18, 15 },
+					leg_bl = { 34 },
+					leg_br = { -12 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Dark Cleave: its swing, slower, sends a violet crescent at its target (decision 0105)
+	foe_knight_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 4.6, 11.5 },
+					body = { 6.9, -16.1, 0, 0, 0.046, 0.23 },
+					leg_fl = { 23 },
+					elbow_l = { 28.75, 0, 34.5 },
+					leg_fr = { 161, 0, 9.2 },
+					elbow_r = { 40.25 },
+					leg_bl = { 6.9 },
+					leg_br = { -4.6 },
+				},
+			},
+			{
+				0.55,
+				{
+					head = { 6.9, 16.1 },
+					body = { 10.35, -20.7, 0, 0, 0.069, 0.287 },
+					leg_fl = { 27.6 },
+					elbow_l = { 32.2, 0, 36.8 },
+					leg_fr = { 174.8, 0, 9.2 },
+					elbow_r = { 51.75 },
+					leg_bl = { 9.2 },
+					leg_br = { -6.9 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { 6.9, 16.1 },
+					body = { 10.35, -20.7, 0, 0, 0.069, 0.287 },
+					leg_fl = { 27.6 },
+					elbow_l = { 32.2, 0, 36.8 },
+					leg_fr = { 174.8, 0, 9.2 },
+					elbow_r = { 51.75 },
+					leg_bl = { 9.2 },
+					leg_br = { -6.9 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -9.2, -9.2 },
+					body = { -25.3, 13.8, 0, 0, -0.115, -0.977 },
+					leg_fl = { 11.5 },
+					elbow_l = { 23, 0, 23 },
+					leg_fr = { 36.8 },
+					elbow_r = {},
+					leg_bl = { 36.8 },
+					leg_br = { -13.8 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -6.9 },
+					body = { -20.7, 11.5, 0, 0, -0.092, -0.862 },
+					leg_fl = { 11.5 },
+					elbow_l = { 23, 0, 23 },
+					leg_fr = { 25.3 },
+					leg_bl = { 32.2 },
+					leg_br = { -11.5 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Lance of Light: its sword thrust sends a beam (decision 0105)
+	foe_knight_shield_commander_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					body = { 4, -10, 0, 0, 0.02, 0.25 },
+					leg_fl = { 45, 0, 12 },
+					elbow_l = { -45 },
+					leg_fr = { -30 },
+					elbow_r = { 100 },
+					leg_bl = { 4 },
+					leg_br = { -3 },
+					weapon = { -70 },
+				},
+			},
+			{
+				0.55,
+				{
+					body = { 6, -14, 0, 0, 0.03, 0.35 },
+					leg_fl = { 45, 0, 12 },
+					elbow_l = { -45 },
+					leg_fr = { -40 },
+					elbow_r = { 105 },
+					leg_bl = { 6 },
+					leg_br = { -4 },
+					weapon = { -65 },
+				},
+			},
+			{
+				0.6,
+				{
+					body = { 6, -14, 0, 0, 0.03, 0.35 },
+					leg_fl = { 45, 0, 12 },
+					elbow_l = { -45 },
+					leg_fr = { -40 },
+					elbow_r = { 105 },
+					leg_bl = { 6 },
+					leg_br = { -4 },
+					weapon = { -65 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -4, -8 },
+					body = { -12, 10, 0, 0, -0.1, -1.2 },
+					leg_fl = { 30, 0, 15 },
+					elbow_l = { -30 },
+					leg_fr = { 85 },
+					elbow_r = {},
+					leg_bl = { -12 },
+					leg_br = { 38 },
+					weapon = { -85 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -3, -6 },
+					body = { -10, 8, 0, 0, -0.08, -1.05 },
+					leg_fl = { 30, 0, 15 },
+					elbow_l = { -30 },
+					leg_fr = { 80 },
+					elbow_r = {},
+					leg_bl = { -10 },
+					leg_br = { 34 },
+					weapon = { -80 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Shield Slam: its shield punched out sends a ring of force (decision 0105)
+	foe_knight_shield_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 2, 34 },
+					body = { -4, -40, 0, 0, -0.06, 0.3 },
+					leg_fl = { 30, 0, -6 },
+					elbow_l = { 40, 0, 10 },
+					leg_fr = { -20, 0, 8 },
+					elbow_r = { 40 },
+					leg_bl = { -8 },
+					leg_br = { 14 },
+				},
+			},
+			{
+				0.58,
+				{
+					head = { 2, 34 },
+					body = { -2, -46, 0, 0, -0.08, 0.4 },
+					leg_fl = { 30, 0, -6 },
+					elbow_l = { 40, 0, 10 },
+					leg_fr = { -20, 0, 8 },
+					elbow_r = { 40 },
+					leg_bl = { -8 },
+					leg_br = { 14 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -6, 16 },
+					body = { -16, -20, 0, 0, -0.1, -1.3 },
+					leg_fl = { 85, 0, -10 },
+					elbow_l = { 0, 0, 6 },
+					leg_fr = { -30, 0, 10 },
+					elbow_r = { 30 },
+					leg_bl = { 36 },
+					leg_br = { -14 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -6, 16 },
+					body = { -12, -22, 0, 0, -0.08, -1.1 },
+					leg_fl = { 85, 0, -10 },
+					elbow_l = { 0, 0, 6 },
+					leg_fr = { -30, 0, 10 },
+					elbow_r = { 30 },
+					leg_bl = { 36 },
+					leg_br = { -14 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Hex Bolt: a bolt from its staff's head that implodes on its target (decision 0105)
+	foe_mage_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 8, -8 },
+					body = { 4, -10, 0, 0, 0.04, 0.2 },
+					leg_fl = { 45, 0, -14 },
+					elbow_l = { -50 },
+					leg_fr = { 75, 0, 14 },
+					elbow_r = { -70 },
+					leg_bl = { -4 },
+					leg_br = { 4 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { 8, -8 },
+					body = { 6, -14, 0, 0, 0.06, 0.3 },
+					leg_fl = { 45, 0, -14 },
+					elbow_l = { -50 },
+					leg_fr = { 75, 0, 14 },
+					elbow_r = { -80 },
+					leg_bl = { -4 },
+					leg_br = { 4 },
+				},
+			},
+			{
+				0.72,
+				{
+					head = { -6, -4 },
+					body = { -14, -6, 0, 0, -0.06, -0.6 },
+					leg_fl = { 70, 0, -6 },
+					elbow_l = { -10 },
+					leg_fr = { 95, 0, 6 },
+					elbow_r = {},
+					leg_bl = { 16 },
+					leg_br = { -10 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -6, -4 },
+					body = { -14, -6, 0, 0, -0.06, -0.6 },
+					leg_fl = { 70, 0, -6 },
+					elbow_l = { -10 },
+					leg_fr = { 95, 0, 6 },
+					elbow_r = {},
+					leg_bl = { 16 },
+					leg_br = { -10 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Raise Dead: runes open under the fallen it raises; a bolt at its target (decision 0105)
+	foe_mage_necromancer_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 10, -6 },
+					body = { 6, -6, 0, 0, 0.05, 0.15 },
+					leg_fl = { 140, 0, -6 },
+					elbow_l = { 10 },
+					leg_fr = { 40 },
+					elbow_r = { -30 },
+				},
+			},
+			{
+				0.62,
+				{
+					head = { 14, -8 },
+					body = { 10, -8, 0, 0, 0.1, 0.2 },
+					leg_fl = { 170, 0, -4 },
+					elbow_l = {},
+					leg_fr = { 50 },
+					elbow_r = { -40 },
+					leg_bl = { -4 },
+					leg_br = { 4 },
+				},
+			},
+			{
+				0.72,
+				{
+					head = { -8, -6 },
+					body = { -16, -10, 0, 0, -0.08, -0.5 },
+					leg_fl = { 40, 0, -10 },
+					elbow_l = { -20 },
+					leg_fr = { 10 },
+					elbow_r = { -6 },
+					leg_bl = { 16 },
+					leg_br = { -10 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -8, -6 },
+					body = { -16, -10, 0, 0, -0.08, -0.5 },
+					leg_fl = { 40, 0, -10 },
+					elbow_l = { -20 },
+					leg_fr = { 10 },
+					elbow_r = { -6 },
+					leg_bl = { 16 },
+					leg_br = { -10 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Benediction: its staff raised, light comes down on every ally it heals; a bolt at its target (decision 0105)
+	foe_mage_priest_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 10 },
+					body = { 6, 8, 0, 0, 0.04, 0.1 },
+					leg_fl = { 150, 0, -6 },
+					elbow_l = { 10 },
+					leg_fr = { 30, 0, 10 },
+				},
+			},
+			{
+				0.62,
+				{
+					head = { 16 },
+					body = { 10, 8, 0, 0, 0.08, 0.15 },
+					leg_fl = { 175, 0, -4 },
+					elbow_l = {},
+					leg_fr = { 40, 0, 20 },
+					leg_bl = { -4 },
+					leg_br = { 4 },
+				},
+			},
+			{
+				0.8,
+				{
+					head = {},
+					body = { -8, -6, 0, 0, -0.04, -0.3 },
+					leg_fl = { 80, 0, -10 },
+					elbow_l = { -20 },
+					leg_fr = { 20 },
+					leg_bl = { 12 },
+					leg_br = { -8 },
+				},
+			},
+			{
+				1,
+				{
+					head = {},
+					body = { -8, -6, 0, 0, -0.04, -0.3 },
+					leg_fl = { 80, 0, -10 },
+					elbow_l = { -20 },
+					leg_fr = { 20 },
+					leg_bl = { 12 },
+					leg_br = { -8 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Earthsplitter: its axe splits the ground to its target, which erupts (decision 0105)
+	foe_ogre_commander_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 8 },
+					body = { 10, 0, 0, 0, 0.08, 0.3 },
+					leg_fl = { 95 },
+					leg_fr = { 95 },
+					leg_bl = { 4 },
+					leg_br = { -4 },
+				},
+			},
+			{
+				0.55,
+				{
+					head = { 12 },
+					body = { 16, 0, 0, 0, 0.12, 0.4 },
+					leg_fl = { 125 },
+					leg_fr = { 125 },
+					leg_bl = { 8 },
+					leg_br = { -6 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { 12 },
+					body = { 16, 0, 0, 0, 0.12, 0.4 },
+					leg_fl = { 125 },
+					leg_fr = { 125 },
+					leg_bl = { 8 },
+					leg_br = { -6 },
+				},
+			},
+			{
+				0.66,
+				{
+					head = { -6 },
+					body = { -12, 0, 0, 0, -0.06, -0.6 },
+					leg_fl = { 40 },
+					leg_fr = { 40 },
+					leg_bl = { 24 },
+					leg_br = { -10 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -14 },
+					body = { -30, 0, 0, 0, -0.15, -1 },
+					leg_fl = { -40 },
+					leg_fr = { -40 },
+					leg_bl = { 38 },
+					leg_br = { -14 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -10 },
+					body = { -26, 0, 0, 0, -0.12, -0.9 },
+					leg_fl = { -36 },
+					leg_fr = { -36 },
+					leg_bl = { 34 },
+					leg_br = { -12 },
+				},
+			},
+			{ 1.6, {} },
+		},
+	},
+	-- Ground Pound: its club slams the ground and a crack runs to its target, which rock bursts up under (decision 0105)
+	foe_ogre_forge = {
+		length = 1.6,
+		keys = {
+			{ 0.00, {} },
+			{
+				0.3,
+				{
+					head = { 8 },
+					body = { 8, 0, 0, 0, 0.06, 0.2 },
+					leg_fl = { 30, 0, -10 },
+					leg_fr = { 150, 0, 10 },
+					elbow_r = { 40 },
+					leg_bl = { 6 },
+					leg_br = { -6 },
+				},
+			},
+			{
+				0.55,
+				{
+					head = { 12 },
+					body = { 14, 0, 0, 0, 0.12, 0.3 },
+					leg_fl = { 40, 0, -14 },
+					leg_fr = { 185, 0, 8 },
+					elbow_r = { 30 },
+					leg_bl = { 10 },
+					leg_br = { -8 },
+				},
+			},
+			{
+				0.6,
+				{
+					head = { 12 },
+					body = { 14, 0, 0, 0, 0.12, 0.3 },
+					leg_fl = { 40, 0, -14 },
+					leg_fr = { 185, 0, 8 },
+					elbow_r = { 30 },
+					leg_bl = { 10 },
+					leg_br = { -8 },
+				},
+			},
+			{
+				0.7,
+				{
+					head = { -12 },
+					body = { -26, 0, 0, 0, -0.14, -0.8 },
+					leg_fl = { 20, 0, -20 },
+					leg_fr = { 20, 0, 6 },
+					elbow_r = {},
+					leg_bl = { 36 },
+					leg_br = { -14 },
+				},
+			},
+			{
+				0.95,
+				{
+					head = { -12 },
+					body = { -22, 0, 0, 0, -0.12, -0.75 },
+					leg_fl = { 20, 0, -20 },
+					leg_fr = { 20, 0, 6 },
+					elbow_r = {},
+					leg_bl = { 36 },
+					leg_br = { -14 },
+				},
+			},
+			{ 1.6, {} },
 		},
 	},
 }
@@ -3267,6 +4428,7 @@ CollectionService:GetInstanceAddedSignal("Creature"):Connect(function(model)
 end)
 CollectionService:GetInstanceRemovedSignal("Creature"):Connect(function(model)
 	rigs[model :: Model] = nil
+	FoePowers.stop(model :: Model)
 end)
 for _, model in CollectionService:GetTagged("Creature") do
 	add(model)
@@ -3357,8 +4519,8 @@ RunService.PreSimulation:Connect(function(dt: number)
 		elseif anim == "magic" and t < MAGIC.length then
 			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
 			local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
-			if own and own.power then
-				-- its own effects (weaponFx, below) in place of the shared ones
+			if (own and own.power) or FoePowers.has(model) then
+				-- its own effects (weaponFx or FoePowers, below) in place of the shared ones
 				rig.magicAt, rig.impactAt = at, at
 			end
 			if rig.magicAt ~= at then
@@ -3392,9 +4554,10 @@ RunService.PreSimulation:Connect(function(dt: number)
 		if boltRgb then
 			boltFx(model, boltRgb, anim, at, t)
 		end
+		FoePowers.step(model, rig.bones, anim, at, t)
 		if model:GetAttribute("Winged") == true then
 			target = table.clone(target)
-			if stance and anim ~= "magic" then
+			if stance and (anim ~= "magic" or MAGICS[(model:GetAttribute("Asset") :: string?) or ""]) then
 				-- a dragon with a stance of its own poses its wings itself: as its move sets them, else as it stands
 				-- (folded, when it walks, falls or wins)
 				for _, joint in WING_JOINTS do

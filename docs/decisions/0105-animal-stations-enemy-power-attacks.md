@@ -25,6 +25,12 @@ Date: 2026-11-22. Task STATION-118.
   blow (each animal's Defence cuts its own share; the shield halves it for all). Their normal attacks still
   strike one. The extra strikes are in the hit's `also`, which WaveShow already shows.
 - **Darkcaster:** no rule change; it gets its own power move (a bolt) in the effect pass.
+- **The moves (SHANNON, 2026-11-22: "go ahead and implement all these power attack concepts"):** each enemy's
+  power clip is its concept's (`MAGICS` in Creatures.client) and its effects are the concept's, drawn by
+  `FoePowers` on the client. Before a power attack plays, WaveShow names who it reaches on the attacker
+  (`PowerAim`: the struck slots; `PowerAllies`: the slots it raises or heals), display only. Two timings differ
+  from the concepts: the charge starts with the clip (the concepts began it in the warning), and the Dark
+  Drake's four spits come sooner, so every fireball lands by the hit as its damage shows.
 - **Power scores (0096) are not changed:** they still count one raise, one heal and one target. So a wave
   with a Necromancer, a Battle Priest, a dragon or a Siege Golem is now harder than its shown power, which
   is what was asked for. The swarm factors (0101) are not re-tuned for the same reason.
