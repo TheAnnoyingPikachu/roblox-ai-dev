@@ -2698,40 +2698,36 @@ do
 end
 
 -- Power attacks in a fight (decision 0092): a plate for each of the team's animals, bottom right, with
--- its health and its power meter. A full meter glows; tap the plate (or press its number key) to fire.
--- The server decides: a refused tap does nothing.
--- Each animal's power attack has a quick press (decision 0106, BattleRules.pressOf): the ring closes on
--- the plate; the needle swings through the gold over the meter; the chain marks up to three front foes on
--- the screen, tapped in order (or the plate, once a mark); the mash counts presses of the plate.
+-- its name, its number key and its mana (the power meter), nothing else. A full meter lights the plate and
+-- pops its quick press up on the screen (decision 0106, BattleRules.pressOf): the ring closes on its mark,
+-- the needle swings through the gold, the chain's 1-2-3 are tapped in order, the mash counts presses. Tap
+-- the pop-up, the plate or the key. The server decides: a refused tap does nothing.
 
-type Mark = { part: BasePart, button: TextButton }
 type Plate = {
 	button: TextButton,
-	hp: (number) -> (),
 	power: (number) -> (),
-	name: TextLabel,
+	mana: TextLabel,
 	full: boolean,
-	ring: Frame,
-	edge: UIStroke,
-	grow: UIScale,
 	press: string,
-	needle: Frame,
-	hand: Frame,
+	label: string, -- the animal's name
 	fullAt: number, -- os.clock() when this client saw the meter fill
 	close: number, -- seconds after that when the press is due (the ring's close, the needle's first crossing)
 	sent: boolean, -- its power tap is on its way
 	presses: number, -- a mash's count
 	mashUntil: number,
-	marks: { Mark },
+	-- its pop-up while the meter is full, and the parts of it that change
+	card: TextButton?,
+	hand: Frame?, -- the needle's
+	count: TextLabel?, -- the mash's presses
+	marks: { TextButton }, -- the chain's 1-2-3
 	marked: number,
-	label: string, -- the animal's name
 }
 local plateOf: { [number]: Plate } = {}
 -- Quick presses and clicks (decision 0106) keep their functions here, set in the block below: the HUD's
 -- main chunk is close to Luau's 200 locals.
 local Press: {
 	SWING: number, -- how far the needle swings from the middle of its bar (1 wide)
-	tap: (slot: number) -> (), -- the plate (or its key) is pressed
+	tap: (slot: number) -> (), -- the plate, its pop-up or its key is pressed
 	on: (p: Plate, slot: number) -> (), -- its meter has just filled
 	off: (p: Plate) -> (), -- it is empty again, or gone
 	catcher: TextButton, -- the click layer
@@ -2755,52 +2751,23 @@ end
 local function plate(slot: number, label: string, press: string): Plate
 	local b = Style.button(plates, "", function()
 		Press.tap(slot)
-	end, "ghost", UDim2.fromOffset(224, 72))
+	end, "ghost", UDim2.fromOffset(224, 60))
 	b.LayoutOrder = slot
 	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -60, 0, 22))
 	name.Position, name.TextTruncate = UDim2.fromOffset(12, 6), Enum.TextTruncate.AtEnd
 	local key = Style.chip(b, tostring(slot))
 	key.AnchorPoint, key.Position = Vector2.new(1, 0), UDim2.new(1, -8, 0, 6)
-	local hpBar, setHp = Style.bar(b, UDim2.new(1, -24, 0, 12), C.good)
-	hpBar.Position = UDim2.fromOffset(12, 32)
-	local pBar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 10), C.accent)
-	pBar.Position = UDim2.fromOffset(12, 52)
-	-- the Perfect ring (decision 0097): it closes on the plate at the moment to tap
-	local ring = Instance.new("Frame")
-	ring.Name = "Ring"
-	ring.BackgroundTransparency = 1
-	ring.AnchorPoint, ring.Position, ring.Size = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), UDim2.fromScale(1, 1)
-	ring.ZIndex, ring.Visible = 10, false
-	Style.round(ring, 14)
-	local edge = Instance.new("UIStroke")
-	edge.Thickness, edge.Color = 5, C.gold
-	edge.Parent = ring
-	local grow = Instance.new("UIScale")
-	grow.Parent = ring
-	ring.Parent = b
-	-- the needle (decision 0106): a bar over the meter, gold in the middle, the needle swinging through it
-	local needle = Style.frame(b, UDim2.new(1, -24, 0, 14), C.night)
-	needle.Position, needle.Visible, needle.ZIndex = UDim2.fromOffset(12, 50), false, 11
-	Style.round(needle, 7)
-	-- the gold: where the needle is PERFECT_EARLY either side of a crossing (`needleAt` below)
-	local goldWide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
-	local gold = Style.frame(needle, UDim2.fromScale(goldWide, 1), C.good) -- green: the lit plate is already gold
-	gold.AnchorPoint, gold.Position, gold.ZIndex = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0), 11
-	local hand = Style.frame(needle, UDim2.new(0, 5, 1, 10), C.card)
-	hand.AnchorPoint, hand.Position, hand.ZIndex = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), 12
+	local bar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 18), C.accent)
+	bar.Position = UDim2.fromOffset(12, 33)
+	local mana = Style.text(bar, "", 13, C.ink, UDim2.fromScale(1, 1))
+	mana.TextXAlignment, mana.ZIndex = Enum.TextXAlignment.Center, 20
 	return {
 		button = b,
-		hp = setHp,
 		power = setPower,
-		name = name,
+		mana = mana,
 		full = false,
-		ring = ring,
-		edge = edge,
-		grow = grow,
 		press = press,
 		label = label,
-		needle = needle,
-		hand = hand,
 		fullAt = 0,
 		close = 0,
 		sent = false,
@@ -2811,33 +2778,11 @@ local function plate(slot: number, label: string, press: string): Plate
 	}
 end
 
--- Start the Perfect ring on a plate whose meter has just filled: it closes when a tap would land
--- BattleRules.PERFECT_AT after the fill (a tap reaches the fight FightFx.TAP_AHEAD ahead of the show,
--- and a little earlier for the player's ping), then flashes and fades over the late part of the window.
-local function ringOn(p: Plate)
-	local ping = math.min(0.25, player:GetNetworkPing() * 2)
-	local close = math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
-	p.ring.Visible, p.grow.Scale = true, 1.8
-	p.edge.Color, p.edge.Thickness, p.edge.Transparency = C.gold, 5, 0
-	TweenService:Create(p.grow, TweenInfo.new(close, Enum.EasingStyle.Linear), { Scale = 1 }):Play()
-	task.delay(close, function()
-		if not p.full then
-			return
-		end
-		p.edge.Color, p.edge.Thickness = Color3.new(1, 1, 1), 9
-		local fade = TweenService:Create(p.edge, TweenInfo.new(BattleRules.PERFECT_LATE + 0.1), { Transparency = 1 })
-		fade.Completed:Once(function()
-			p.ring.Visible = false
-		end)
-		fade:Play()
-	end)
-end
-
 do
 	-- Clicks (decision 0106): a click anywhere on the fight that is not on a button strikes the front line.
 	-- The server lands each strike FightFx.TAP_AHEAD later; here a click is answered at once (a slash on the
 	-- nearest foe, a tick, the hit count), and the clicks go up in batches (`strike`) every STRIKE_SEND
-	-- seconds. The chain's marks live here too, above the clicks. A screen of its own, under the HUD.
+	-- seconds. The quick presses' pop-ups live here too, above the clicks. A screen of its own, under the HUD.
 	-- Where the needle is `age` seconds after the meter filled: through the middle at `close`, then every
 	-- NEEDLE_EVERY after it, swinging out and back between (the server's crossings: BattleRules.perfect).
 	local function needleAt(age: number, close: number): number
@@ -2937,14 +2882,21 @@ do
 		end
 	end)
 
-	local function clearMarks(p: Plate)
-		for _, m in p.marks do
-			m.button:Destroy()
+	-- the pop-ups, in a row across the lower middle of the screen
+	local qtes = Instance.new("Frame")
+	qtes.Name, qtes.BackgroundTransparency, qtes.ZIndex = "Qtes", 1, 5
+	qtes.AnchorPoint, qtes.Position, qtes.Size = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.56), UDim2.fromScale(1, 0)
+	qtes.Parent = clickFx
+	Style.list(qtes, 16, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	local function pressOff(p: Plate)
+		if p.card then
+			p.card:Destroy()
 		end
-		p.marks, p.marked = {}, 0
+		p.card, p.hand, p.count, p.marks, p.marked = nil, nil, nil, {}, 0
 	end
 
-	-- The chain: the next mark is struck (a tap on it, or on the plate); the last one fires.
+	-- The chain: the next of its 1-2-3 is struck (tapped, or the pop-up, the plate or the key); the last fires.
 	local function chainHit(p: Plate, slot: number, k: number)
 		if not p.full or p.sent or k ~= p.marked + 1 then
 			return
@@ -2952,40 +2904,64 @@ do
 		p.marked = k
 		local m = p.marks[k]
 		if m then
-			Style.kind(m.button, "good")
-			slash(m.part.Position)
+			Style.kind(m, "good")
 		end
-		if k >= math.max(1, #p.marks) then
+		local foe = frontFoes(1)[1]
+		if foe then
+			slash(foe.Position)
+		end
+		if k >= #p.marks then
 			firePower(slot)
-			task.delay(0.15, function()
-				clearMarks(p)
-			end)
 		end
 	end
 
-	local function chainOn(p: Plate, slot: number)
-		clearMarks(p)
-		local k = uiScale.Scale
-		for i, part in frontFoes(3) do
-			local b = Style.button(clickFx, tostring(i), function()
-				chainHit(p, slot, i)
-			end, "info", UDim2.fromOffset(56 * k, 56 * k))
-			b.AnchorPoint, b.ZIndex, b.Visible = Vector2.new(0.5, 0.5), 5, false
-			table.insert(p.marks, { part = part, button = b })
-		end
-	end
-
-	-- A meter has just filled: start its press (decision 0106). Its timing is the ring's (decision 0097):
-	-- due when a tap would land BattleRules.PERFECT_AT after the fill, a little earlier for the player's ping.
+	-- A meter has just filled: its press pops up (decision 0106). Its timing is the ring's (decision 0097): due
+	-- when a tap would land BattleRules.PERFECT_AT after the fill, a little earlier for the player's ping.
 	local function pressOn(p: Plate, slot: number)
+		pressOff(p)
 		local ping = math.min(0.25, player:GetNetworkPing() * 2)
 		p.fullAt, p.close = os.clock(), math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
-		p.sent, p.presses, p.marked = false, 0, 0
-		if p.press == "needle" then
-			p.needle.Visible = true
-		elseif p.press == "chain" then
-			chainOn(p, slot)
-		elseif p.press == "mash" then -- the presses go up together at MASH_COUNT, or when the time is up
+		p.sent, p.presses = false, 0
+		local k = uiScale.Scale
+		local card = Style.button(qtes, "", function()
+			Press.tap(slot)
+		end, "primary", UDim2.fromOffset(200 * k, 150 * k))
+		card.LayoutOrder = slot
+		local title = Style.text(card, `{p.label} [{slot}]`, 15 * k, C.ink, UDim2.new(1, -16 * k, 0, 20 * k))
+		title.Position, title.TextTruncate = UDim2.fromOffset(8 * k, 8 * k), Enum.TextTruncate.AtEnd
+		title.TextXAlignment = Enum.TextXAlignment.Center
+		local say = ({ needle = "STOP IN GOLD!", chain = "TAP 1-2-3!", mash = "MASH!" })[p.press] or "TAP!"
+		local big = Style.text(card, say, 24 * k, C.ink, UDim2.new(1, 0, 0, 30 * k))
+		big.Position, big.TextXAlignment = UDim2.fromOffset(0, 30 * k), Enum.TextXAlignment.Center
+		local body = Instance.new("Frame")
+		body.BackgroundTransparency, body.Size = 1, UDim2.new(1, -24 * k, 0, 70 * k)
+		body.Position = UDim2.fromOffset(12 * k, 66 * k)
+		body.Parent = card
+		if p.press == "needle" then -- a bar, gold in the middle, the needle swinging through it (`needleAt`)
+			local bar = Style.frame(body, UDim2.new(1, 0, 0, 22 * k), C.night)
+			bar.AnchorPoint, bar.Position = Vector2.new(0, 0.5), UDim2.fromScale(0, 0.5)
+			Style.round(bar, 11 * k)
+			-- the gold: where the needle is PERFECT_EARLY either side of a crossing
+			local wide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
+			local gold = Style.frame(bar, UDim2.fromScale(wide, 1), C.gold)
+			gold.AnchorPoint, gold.Position = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0)
+			local hand = Style.frame(bar, UDim2.new(0, 6 * k, 1, 14 * k), C.card)
+			hand.AnchorPoint, hand.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
+			Style.stroke(hand, C.ink, 2)
+			p.hand = hand
+		elseif p.press == "chain" then -- 1-2-3 in a row, tapped in order
+			Style.list(body, 12 * k, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
+			for i = 1, 3 do
+				local b = Style.button(body, tostring(i), function()
+					chainHit(p, slot, i)
+				end, "info", UDim2.fromOffset(54 * k, 54 * k))
+				b.LayoutOrder, b.TextSize = i, 26 * k
+				table.insert(p.marks, b)
+			end
+		elseif p.press == "mash" then -- the count; the presses go up together at MASH_COUNT, or when time is up
+			local count = Style.text(body, `0 / {BattleRules.MASH_COUNT}`, 34 * k, C.ink, UDim2.fromScale(1, 1))
+			count.TextXAlignment = Enum.TextXAlignment.Center
+			p.count = count
 			local window = math.max(0.5, BattleRules.MASH_BY - FightFx.TAP_AHEAD - ping)
 			p.mashUntil = p.fullAt + window
 			task.delay(window, function()
@@ -2993,14 +2969,37 @@ do
 					firePower(slot, p.presses)
 				end
 			end)
-		else
-			ringOn(p)
+		else -- the ring closes on its mark when the tap is due, then flashes over the late part of the window
+			local mark = Instance.new("Frame")
+			mark.BackgroundTransparency, mark.AnchorPoint = 1, Vector2.new(0.5, 0.5)
+			mark.Position, mark.Size = UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(56 * k, 56 * k)
+			Style.round(mark, 28 * k)
+			Style.stroke(mark, C.card, 5)
+			mark.Parent = body
+			local ring = mark:Clone()
+			local edge = ring:FindFirstChildOfClass("UIStroke") :: UIStroke
+			edge.Color = C.ink
+			local grow = Instance.new("UIScale")
+			grow.Scale = 2.2
+			grow.Parent = ring
+			ring.Parent = body
+			TweenService:Create(grow, TweenInfo.new(p.close, Enum.EasingStyle.Linear), { Scale = 1 }):Play()
+			task.delay(p.close, function()
+				if ring.Parent then
+					edge.Color, edge.Thickness = C.good, 9
+					TweenService:Create(edge, TweenInfo.new(BattleRules.PERFECT_LATE + 0.1), { Transparency = 1 })
+						:Play()
+				end
+			end)
 		end
-	end
-
-	local function pressOff(p: Plate)
-		p.ring.Visible, p.needle.Visible = false, false
-		clearMarks(p)
+		local pop = card:FindFirstChildOfClass("UIScale") -- the button's own press scale: it pops in on it
+		if pop then
+			pop.Scale = 0.4
+			TweenService
+				:Create(pop, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
+				:Play()
+		end
+		p.card = card
 	end
 
 	local function pressPlate(slot: number)
@@ -3011,6 +3010,9 @@ do
 		if p.press == "mash" then
 			p.presses += 1
 			Style.sound("hover")
+			if p.count then
+				p.count.Text = `{p.presses} / {BattleRules.MASH_COUNT}`
+			end
 			if p.presses >= BattleRules.MASH_COUNT or os.clock() > p.mashUntil then
 				firePower(slot, p.presses)
 			end
@@ -3021,31 +3023,14 @@ do
 		end
 	end
 
-	-- the needles swing and the chain's marks follow their foes
+	-- the needles swing; the hit count shows while the clicks keep coming
 	RunService.RenderStepped:Connect(function()
 		if not plates.Visible then
 			return
 		end
-		local camera = Workspace.CurrentCamera
 		for _, p in plateOf do
-			if p.needle.Visible then
+			if p.hand then
 				p.hand.Position = UDim2.fromScale(needleAt(os.clock() - p.fullAt, p.close), 0.5)
-			end
-			local placed: { Vector2 } = {}
-			for _, m in p.marks do
-				local v, on = Vector3.zero, false
-				if camera and m.part.Parent then
-					v, on = camera:WorldToViewportPoint(m.part.Position + Vector3.new(0, m.part.Size.Y * 0.6, 0))
-				end
-				local at, wide = Vector2.new(v.X, v.Y), m.button.AbsoluteSize.X
-				for _, other in placed do -- foes close together: their marks stand side by side
-					if (at - other).Magnitude < wide then
-						at = Vector2.new(other.X + wide * 1.1, other.Y)
-					end
-				end
-				table.insert(placed, at)
-				m.button.Visible = on
-				m.button.Position = UDim2.fromOffset(at.X, at.Y)
 			end
 		end
 		hitCount.Visible = hits >= 3 and os.clock() - lastClick < CHAIN_HIT + 0.4
@@ -3097,19 +3082,13 @@ task.spawn(function()
 							end
 						end)
 					end
-					local hp, max = m:GetAttribute("Hp"), m:GetAttribute("MaxHp")
+					local hp = m:GetAttribute("Hp")
 					local alive = type(hp) == "number" and hp > 0
-					if type(hp) == "number" and type(max) == "number" then
-						p.hp(hp / math.max(1, max))
-					end
 					local power = m:GetAttribute("Power")
-					local full = alive and type(power) == "number" and power >= 1
-					p.power(
-						if full and p.press == "mash"
-							then p.presses / BattleRules.MASH_COUNT
-							elseif type(power) == "number" then power
-							else 0
-					)
+					local share = if type(power) == "number" then math.clamp(power, 0, 1) else 0
+					local full = alive and share >= 1
+					p.power(share)
+					p.mana.Text = if full then "MANA FULL" else `MANA {math.floor(share * 100)}%`
 					if full ~= p.full then
 						p.full = full
 						if full then
@@ -3118,10 +3097,6 @@ task.spawn(function()
 							Press.off(p)
 						end
 						Style.kind(p.button, if full then "primary" else if alive then "ghost" else "off")
-						-- what to do, by its press (decision 0106)
-						local hint = ({ needle = "STOP IN GOLD!", chain = "TAP 1-2-3!", mash = "MASH!" })[p.press]
-							or "POWER!"
-						p.name.Text = if full then `{hint} {p.label}` else p.label
 					elseif not alive then
 						Style.kind(p.button, "off")
 					end

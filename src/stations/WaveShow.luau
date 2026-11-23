@@ -306,7 +306,7 @@ function WaveShow.run(
 		end
 		theirDeep = math.max(theirDeep, deep)
 	end
-	local gap = ourDeep / 2 + theirDeep / 2 + 14
+	local gap = ourDeep / 2 + theirDeep / 2 + 20 -- the enemies a little further off (SHANNON, decision 0106)
 	local rowStep = theirDeep + 5
 	local z0 = stand.Position.Z
 

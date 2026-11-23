@@ -277,7 +277,7 @@ end
 -- max HP (0 = knocked out), `energy` its meters' share full, `dmg`, `maxHp` and `tempo` (attack time)
 -- multiplied in after the group bonuses. The fourth result is side 1's HP at the end, as shares by slot.
 BattleRules.AUTO_FIRE = 4
-BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.5, 0.15, 0.4
+BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.5, 0.25, 0.55
 BattleRules.PERFECT = 1.5
 BattleRules.COMBO_SECONDS, BattleRules.COMBO_PCT, BattleRules.COMBO_MAX = 3, 25, 4
 BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.2, 6, 0.5
@@ -305,8 +305,8 @@ BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 --   PERFECT_AT and every NEEDLE_EVERY after; a chain finished by PERFECT_AT + PERFECT_LATE; a mash that
 --   brings MASH_COUNT presses (the tap's `presses`) by MASH_BY + PERFECT_LATE.
 BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 2.4, 0.6, 1 / 12
-BattleRules.NEEDLE_EVERY = 1.2
-BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 10, 3.2, 12
+BattleRules.NEEDLE_EVERY = 1.5
+BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 8, 3.6, 12
 BattleRules.SPLASH, BattleRules.CROWD, BattleRules.CROWD_SHARE, BattleRules.KNOCKBACK = 0.5, 5, 0.6, 1
 export type Hit = {
 	t: number,

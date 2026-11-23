@@ -80,7 +80,6 @@ local function ease(u: number): number
 end
 
 FightFx.SLOW_SECONDS = 1.5
-FightFx.CUT_SECONDS = 1.3
 
 -- How fast clips play `age` seconds after the fight's killing blow: slow motion at 0.3 for 0.8 s,
 -- then back to full speed by SLOW_SECONDS. Display only: the server's clock never slows.
@@ -91,18 +90,6 @@ function FightFx.slow(age: number): number
 		return 0.3
 	end
 	return 0.3 + 0.7 * ease((age - 0.8) / (FightFx.SLOW_SECONDS - 0.8))
-end
-
--- How far the camera is cut in towards a hit (0 to 1) `age` seconds after it: in quickly, held, out.
-function FightFx.cut(age: number): number
-	if age < 0 or age > FightFx.CUT_SECONDS then
-		return 0
-	elseif age < 0.18 then
-		return ease(age / 0.18)
-	elseif age < 0.9 then
-		return 1
-	end
-	return 1 - ease((age - 0.9) / (FightFx.CUT_SECONDS - 0.9))
 end
 
 return FightFx

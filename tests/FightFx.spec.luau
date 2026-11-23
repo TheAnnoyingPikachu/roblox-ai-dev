@@ -53,16 +53,6 @@ describe("FightFx rhythm", function()
 			last = v
 		end
 	end)
-
-	it("cuts the camera in and out over CUT_SECONDS", function()
-		expect(FightFx.cut(-0.1)).toBe(0)
-		expect(FightFx.cut(0)).toBe(0)
-		expect(FightFx.cut(0.5)).toBe(1)
-		expect(FightFx.cut(FightFx.CUT_SECONDS)).toBe(0)
-		expect(FightFx.cut(FightFx.CUT_SECONDS + 1)).toBe(0)
-		expect(FightFx.cut(0.1) > 0 and FightFx.cut(0.1) < 1).toBeTruthy()
-		expect(FightFx.cut(1.1) > 0 and FightFx.cut(1.1) < 1).toBeTruthy()
-	end)
 end)
 
 describe("FightFx hit feel", function()

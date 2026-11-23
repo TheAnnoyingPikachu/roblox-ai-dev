@@ -1,0 +1,43 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-121",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0106, after SHANNON watched a run: the quick presses pop up on the screen (the plates show only the mana) and are more forgiving; the fight camera is an action camera on the canyon's side that pans between the two front lines, with no cut-ins; the enemies stand a little further off.",
+  "inputs": [
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "docs/decisions/0097-animal-stations-fight-feel.md"
+  ],
+  "dependencies": [
+    "STATION-120"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/ArenaCamera.client.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/FightFx.luau",
+    "tests/FightFx.spec.luau",
+    "src/stations/WaveShow.luau",
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "studio/tasks/STATION-121.json",
+    "src/stations/CLAUDE.md"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "FightFx.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A full meter pops its press up as a card in a row across the lower middle of the screen (ring, needle, chain 1-2-3, mash count); tapping the card, the plate or the key presses it",
+    "The plates on the right show only the animal's name, its key and its mana",
+    "PERFECT_EARLY 0.25, PERFECT_LATE 0.55, NEEDLE_EVERY 1.5, MASH_COUNT 8 by MASH_BY 3.6",
+    "The fight camera stands on the canyon's side, level with the gap between the front lines, and pans from one to the other; it never cuts in, and only a power hit nudges the view",
+    "The enemies stand 6 studs further from the team than before"
+  ],
+  "verification": "lune run tests/run (BattleRules, FightFx); a run fought in Studio with every press popping up and the camera panning.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-22, watching a showcase run of waves 19 to 60: \"do way less camera zooming and add those four quick time events for your creatures power moves rising chain needle mash\" (read as ring, chain, needle, mash), \"move the enemies further away and do an action camera between them and the animals that pans left and right to show the front lines of the battlefield\", \"only a bit further away though\", \"have the bars on the right just tell you the mana amount and have all the QTEs pop up in the screen\", \"make the qtes a bit more forgiving on time but theres gonna be alot of them happening obviously\". UiLayout.fightDistance is no longer used by the camera; it stays for now."
+}

@@ -3989,17 +3989,12 @@ local function strike(rig: Rig)
 		tween(disc, 0.35, { Size = Vector3.new(0.2, r, r), Transparency = 1 })
 		Debris:AddItem(disc, 0.45)
 	end
-	if not click then
+	if power > 0 then -- only a power hit nudges the camera (SHANNON: "way less camera zooming")
 		player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
 		player:SetAttribute("CamPunchAt", os.clock())
 	end
 	if final then
 		slowAt = os.clock() -- the finish is the slow motion alone (decision 0097)
-	end
-	-- the team's power attacks cut the camera in on their target (ArenaCamera reads these)
-	if power > 0 and not final and model:GetAttribute("Side") == 2 then
-		player:SetAttribute("CamCut", hit.Position)
-		player:SetAttribute("CamCutAt", os.clock())
 	end
 	-- and every hit is heard: a thud, a slam for a power hit or a knockout
 	local ko = model:GetAttribute("HitKo") == 1

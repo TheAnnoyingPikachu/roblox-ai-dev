@@ -1,7 +1,8 @@
 # 0106: Animal Stations: the pit fight (stages, the gate waking up, clicks, quick presses)
 
 Status: accepted (SHANNON, 2026-11-22, below). The numbers are Claude's draft, to confirm at the checkpoint.
-Date: 2026-11-22. Tasks STATION-119 (stages and the gate) and STATION-120 (clicks and the presses).
+Date: 2026-11-22. Tasks STATION-119 (stages and the gate), STATION-120 (clicks and the presses) and
+STATION-121 (the presses popping up, more forgiving; the action camera).
 
 ## Context
 
@@ -52,16 +53,36 @@ Date: 2026-11-22. Tasks STATION-119 (stages and the gate) and STATION-120 (click
 
 | Press | Species | Variants that differ | Perfect when |
 |---|---|---|---|
-| ring | lion, rhino, giraffe | Star Meerkat | today's: `PERFECT_AT` after the fill, `PERFECT_EARLY` before to `PERFECT_LATE` after |
-| needle | jackal, tortoise, meerkat | Lava Rhino, Phoenix Flamingo | at a crossing: `PERFECT_AT` after the fill, then every `NEEDLE_EVERY` (1.2 s), same window |
+| ring | lion, rhino, giraffe | Star Meerkat | `PERFECT_AT` (2.5 s) after the fill, `PERFECT_EARLY` (0.25 s) before to `PERFECT_LATE` (0.55 s) after |
+| needle | jackal, tortoise, meerkat | Lava Rhino, Phoenix Flamingo | at a crossing: `PERFECT_AT` after the fill, then every `NEEDLE_EVERY` (1.5 s), same window |
 | chain | cheetah, flamingo | Gemshell Tortoise | the tap comes no later than `PERFECT_AT + PERFECT_LATE` after the fill |
-| mash | elephant (every Titan) | | the tap brings `MASH_COUNT` (10) presses, no later than `MASH_BY + PERFECT_LATE` after the fill |
+| mash | elephant (every Titan) | | the tap brings `MASH_COUNT` (8) presses, no later than `MASH_BY` (3.6 s) `+ PERFECT_LATE` after the fill |
 
-- The needle's gold, the chain's marks and the mash's count are drawn by the HUD; the server judges only
-  the tap's time and, for a mash, its presses. The chain's marks show the foes the strike will likely reach;
-  the server's usual targets decide.
+- A full meter pops its press up on the screen, a card for each animal in a row across the lower middle:
+  the ring closing on its mark, the needle swinging through the gold, the chain's 1-2-3 tapped in order, the
+  mash's count. The plates on the right show only the name, the number key and the mana (SHANNON: "have the
+  bars on the right just tell you the mana amount and have all the QTEs pop up in the screen"). The server
+  judges only the tap's time and, for a mash, its presses.
+- More forgiving than the ring was (SHANNON: "make the qtes a bit more forgiving on time but theres gonna be
+  alot of them happening"): the window went from 0.15 s early / 0.4 s late to 0.25 / 0.55, the needle's
+  swing from 1.2 s to 1.5 s (so its gold stays a fair share of the swing), the mash from 10 presses by 3.2 s
+  to 8 by 3.6 s.
 - Every press pays as today: a Perfect is x `PERFECT`, any other press x 1; a meter nobody presses fires
   itself after `AUTO_FIRE` and costs the third star; combos and the shield are unchanged.
+
+### The fight's camera and spacing (display only)
+
+SHANNON, 2026-11-22, watching a run: "do way less camera zooming", then "move the enemies further away and do
+an action camera between them and the animals that pans left and right to show the front lines of the
+battlefield ... only a bit further away though".
+
+- The camera stands on the canyon's side, level with the gap between the team's front line and the
+  enemies', and pans from one front line to the other and back every 9 s (`ArenaCamera.client`). It reads
+  where the lines stand from the fighters, so it follows a rush as it comes on.
+- No more cut-ins on the team's power hits (decision 0097 had them); only a power hit nudges the view, by
+  less than before. The finish keeps its slow motion.
+- The enemies stand 6 studs further off (`WaveShow`: the gap between the lines is 20 studs past their depths,
+  was 14).
 
 ### Remotes (contract change)
 
