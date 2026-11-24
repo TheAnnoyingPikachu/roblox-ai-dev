@@ -26,7 +26,16 @@ PressPops.CLASS = {
 
 local GAP = 8 -- between cards, and a third of the room left beside the team
 
-type Pop = { card: GuiObject, model: Model, line: Frame, tip: Frame, lift: Vector3 }
+type Pop = {
+	card: GuiObject,
+	model: Model,
+	line: Frame,
+	tip: Frame,
+	lift: Vector3,
+	left: boolean?,
+	at: Vector2?,
+	slot: number?,
+}
 local pops: { Pop } = {}
 local marks: { [Model]: { lift: Vector3, dot: TextLabel } } = {}
 local gui: ScreenGui? = nil
@@ -111,22 +120,37 @@ local function step()
 	local centre = (lo + hi) / 2
 	local sides: { [Pop]: boolean } = {}
 	for _, p in shown do
-		sides[p] = heads[p].X < centre
+		if p.left == nil then -- its side is settled when it pops up, so it never jumps across as its animal moves
+			p.left = heads[p].X < centre
+		end
+		sides[p] = p.left :: boolean
 	end
-	for i, p in shown do
+	for _, p in shown do
 		local w, h = p.card.AbsoluteSize.X, p.card.AbsoluteSize.Y
 		local onLeft = sides[p]
-		local out = 0 -- how many of its side's cards stand nearer the team
-		for j, q in shown do
-			if sides[q] == onLeft and (if onLeft then j > i else j < i) then
-				out += 1
+		if p.slot == nil then -- its place on its side, kept while it is up: a later card takes the next free one out
+			local taken = {}
+			for _, q in shown do
+				if q ~= p and q.slot and sides[q] == onLeft then
+					taken[q.slot] = true
+				end
 			end
+			local k = 0
+			while taken[k] do
+				k += 1
+			end
+			p.slot = k
 		end
+		local out = p.slot :: number
 		local x = if onLeft
 			then lo - GAP * 3 * scale - w / 2 - out * (w + GAP * scale)
 			else hi + GAP * 3 * scale + w / 2 + out * (w + GAP * scale)
 		x = math.clamp(x, w / 2 + 8, view.X - w / 2 - 8)
 		local y = math.clamp(mid - h / 2, 8, view.Y - h - 8)
+		-- it glides after where it should be rather than jumping with every lunge of the animals
+		local want = Vector2.new(x, y)
+		p.at = if p.at then p.at:Lerp(want, 0.15) else want
+		x, y = (p.at :: Vector2).X, (p.at :: Vector2).Y
 		p.card.AnchorPoint = Vector2.new(0.5, 0)
 		p.card.Position = UDim2.fromOffset(x, y)
 		local edge = Vector2.new(x + (if onLeft then w / 2 else -w / 2), y + h / 2)

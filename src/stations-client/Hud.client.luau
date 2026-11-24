@@ -1960,14 +1960,15 @@ do
 end
 -- A big title that fades as a fight begins: the wave, and who is in it.
 local banner = Style.text(root, "", 56, C.text, UDim2.new(1, 0, 0, 70))
-banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
+-- high and brief (SHANNON, 2026-11-24): it must not hide the enemies walking in
+banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
 banner.TextXAlignment, banner.ZIndex = Enum.TextXAlignment.Center, 6
 local bannerStroke = Instance.new("UIStroke")
 bannerStroke.Thickness, bannerStroke.Transparency = 4, 1
 bannerStroke.Parent = banner
 local bannerSub = Style.text(root, "", 22, C.muted, UDim2.new(1, 0, 0, 30))
 bannerSub.AnchorPoint, bannerSub.Position, bannerSub.TextTransparency =
-	Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
+	Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
 bannerSub.TextXAlignment, bannerSub.ZIndex = Enum.TextXAlignment.Center, 6
 bannerSub.Position += UDim2.fromOffset(0, 66)
 local announced = 0
@@ -1991,11 +1992,11 @@ local function announce(n: number)
 	banner.TextColor3 = if boss then C.bad else C.text
 	bannerSub.Text = table.concat(names, "  -  ")
 	banner.TextTransparency, bannerStroke.Transparency, bannerSub.TextTransparency = 0, 0, 0
-	task.delay(2.4, function()
+	task.delay(1.1, function()
 		if announced ~= mine then
 			return
 		end
-		local fade = TweenInfo.new(0.8)
+		local fade = TweenInfo.new(0.35)
 		TweenService:Create(banner, fade, { TextTransparency = 1 }):Play()
 		TweenService:Create(bannerStroke, fade, { Transparency = 1 }):Play()
 		TweenService:Create(bannerSub, fade, { TextTransparency = 1 }):Play()
@@ -2178,12 +2179,11 @@ offerBoons = function(ids: { string }, n: number)
 				if not boonRow.Visible then -- a second click while the first is on its way
 					return
 				end
-				boonRow.Visible = false
+				-- gone the moment it is picked (SHANNON, 2026-11-24); back only if the server refuses it
+				boonRow.Visible, panel.Visible, result.Visible = false, false, false -- the next wave takes a moment to walk out
 				local ok, code = request:InvokeServer("boon", id)
-				if ok then
-					(boonRow.Parent :: GuiObject).Visible = false
-				else
-					boonRow.Visible = true
+				if not ok then
+					boonRow.Visible, panel.Visible, result.Visible = true, true, true
 					Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 				end
 			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -7, 1, 0))
@@ -2801,7 +2801,14 @@ local function firePower(slot: number, presses: number?)
 	if p.card then
 		Press.pops.fired(p.card, p.card:GetAttribute("Hot") == true)
 	end
-	local ok = request:InvokeServer("power", slot, presses)
+	local ok, code = request:InvokeServer("power", slot, presses)
+	for _ = 1, 6 do -- turned down (no foe between rushes, a moment early): sent again, so a press is never lost
+		if ok or code == "no_fight" or not p.full then
+			break
+		end
+		task.wait(0.25)
+		ok, code = request:InvokeServer("power", slot, presses)
+	end
 	if ok then
 		Style.sound("claim")
 	else
