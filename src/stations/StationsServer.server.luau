@@ -1480,6 +1480,28 @@ end
 
 saves = Saves.start({
 	name = "StationsProfile",
+	-- never a blank profile (beta blocker 5, SHANNON's pick A): a save another server still holds is waited for up
+	-- to two minutes behind the loading cover, and a session that cannot save sends the player to rejoin
+	waitBusy = 120,
+	-- an old server never loads a save newer content wrote (beta blocker 6): the player goes to a newer one
+	tooNew = function(record)
+		return type(record) == "table" and type(record.version) == "number" and record.version > StationProgress.VERSION
+	end,
+	onStatus = function(player, status)
+		if status == "newer" then
+			player:Kick("A new update is out. Please rejoin to play it.")
+		elseif status ~= "online" and not RunService:IsStudio() then
+			player:Kick(
+				if status == "lost"
+					then "Your ranch was opened on another server. Please rejoin."
+					else "Your ranch couldn't load. Please rejoin in a minute."
+			)
+		end
+	end,
+	-- a run's pot is banked while the save can still take it (beta blocker 7)
+	beforeFinish = function(player)
+		bankRun(player, false)
+	end,
 	defaults = StationProgress.defaults,
 	sanitize = StationProgress.sanitize,
 	snapshot = StationProgress.snapshot,

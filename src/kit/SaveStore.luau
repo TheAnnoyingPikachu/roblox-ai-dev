@@ -25,7 +25,7 @@ SaveStore.__index = SaveStore
 
 export type Change<P> = (P) -> P
 export type Store = { UpdateAsync: (self: any, key: string, transform: (any) -> any) -> any }
-export type Status = "online" | "busy" | "offline"
+export type Status = "online" | "busy" | "offline" | "newer"
 
 export type Options<P> = {
 	store: Store?, -- nil: DataStores unavailable, every session is offline
@@ -41,6 +41,9 @@ export type Options<P> = {
 	lockStale: number?, -- default 120 (2 x autosave)
 	inflightWait: number?, -- default 10: longest wait in finish for a running write
 	log: ((message: string) -> ())?,
+	-- a record this server's content is too old for (written by a newer build): never loaded, sanitised or
+	-- written back, so an old server cannot strip what it does not know; the session is "newer" and offline
+	tooNew: ((record: any) -> boolean)?,
 }
 
 export type Session<P> = {
@@ -134,16 +137,22 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 		closing = false,
 	}
 	if o.store then
-		local busy = false
+		local busy, newer = false, false
 		local ok, record = withRetries(self, `load {key}`, function()
 			local stored = o.store:UpdateAsync(key, function(old: any)
+				newer = old ~= nil and o.tooNew ~= nil and o.tooNew(old)
+				if newer then
+					return nil
+				end
 				busy = not SaveLock.canClaim(old, session.id, now, self.lockStale)
 				if busy then
 					return nil
 				end
 				return SaveLock.stamp(o.sanitize(old, now) :: any, session.id, now)
 			end)
-			if busy then
+			if newer then
+				error("record is newer than this server's content")
+			elseif busy then
 				error("record is locked by another session")
 			end
 			return stored
@@ -151,6 +160,8 @@ function SaveStore.load(self: any, key: string, now: number, budget: number?): S
 		if ok then
 			session.status = "online"
 			session.profile = o.sanitize(record, now)
+		elseif newer then
+			session.status = "newer"
 		elseif busy then
 			session.status = "busy"
 		end

@@ -32,6 +32,7 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 
 ## Must stay true
 
+- Saves (decision 0111): a busy save is waited for behind the loading cover (`waitBusy`), a session that cannot save kicks the player, and a save from newer content is never loaded (`tooNew`): bump `StationProgress.VERSION` with every release that adds species, variants, eggs or coats. A run's pot is banked in `beforeFinish`.
 - The server decides prices, hatches and times; profile changes are pure `StationProgress` functions that capture their inputs (SaveStore runs them twice).
 - "Level" has three meanings: wave (`LevelRules`, `Profile.best`), stat level (0 to `MAX_LEVEL`, `Owned.trained`) and player level (`StationProgress.playerLevel`, from `Profile.xp`).
 - `BattleRules` is for wave fights only. Fights between players will work differently and stats will not affect them: build nothing with PvP in mind.

@@ -76,6 +76,9 @@ export type Profile = {
 	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
 }
 
+-- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
+-- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
+-- strip what it does not know. A save is stamped with the version of the server that last wrote it.
 StationProgress.VERSION = 1
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
