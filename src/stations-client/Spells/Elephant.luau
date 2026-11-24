@@ -183,5 +183,108 @@ return function(S: any)
 			end
 			S.impact(f, C.FIRE, 4, 97)
 		end,
+
+		-- Dawnbreaker (the Sahara Mammoth): a sun wheel blazes over its back as a sun sigil turns under the target; it
+		-- stamps, a line of sun spikes races along the ground, and two colossal tusks of light erupt either side of the
+		-- target and cross over it
+		creature_elephant_sahara_forge = function(f)
+			local k, t = f.k, f.t
+			local feet = S.ground(f, (f.A.paw_l + f.A.paw_r) / 2)
+			local back = f.A.back -- the tip of the sun spike on its back
+			f.kit:aura(C.GOLD, 0.2 * env(t, 0.1, 0.6, 0.9, 1.1), 5)
+			local g = env(t, 0.1, 0.5, 0.95, 1.25)
+			if g > 0 then -- a sun wheel blazes over its back and its tusks glow
+				f.kit:ring(back, 1.5 * k * g, 0.1 * k, C.SUN, 9, g, f.V(0, 1, 0), nil, 24)
+				for i = 0, 11 do
+					local a = t * 2 + i / 12 * TAU
+					local d = f.V(math.cos(a), 0.0, math.sin(a))
+					local tip = back + d * (2.6 + 0.8 * (i % 2)) * k * g
+					f.kit:spike(back + d * 1.6 * k * g, tip, 0.16 * k, C.YELLOW, 9, g)
+				end
+				f.kit:orb(f.A.nose, 0.45 * k * g, C.SUN, 8, g)
+			end
+			local s = env(t, 0.25, 0.7, 1.2, 1.5)
+			if s > 0 then -- a sun sigil turns on the ground under the target, gems circling over it
+				f.kit:circle(f.T, 3.4 * k * s, C.GOLD, t * 1.5, 6, 0.9 * s, 12)
+				for i = 0, 3 do
+					local a = t * 3 + i / 4 * TAU
+					local p = f.TC + f.V(math.cos(a), math.sin(a), 0.0) * 2.6 * k + Z(1.5 * k)
+					f.kit:diamond(p, 0.25 * k, 0.6 * k, C.VIOLET, 7, s, t * 6)
+				end
+			end
+			local u = seg(t, 0.84, 1.3)
+			if u ~= nil then -- it stamps: a shock rolls out from its feet and a line of sun spikes races to the target
+				local run = ease(math.min(1, (t - 0.84) / (S.IMPACT - 0.84)))
+				local sink = 1 - ease(math.max(0, (t - 1.05) / 0.25))
+				local wide = (1 + 4 * ease(math.min(1, u * 2))) * k
+				f.kit:shock(feet + Z(0.08), wide, 0.1 * k, C.SUN, 1 - math.min(1, u * 2))
+				for i = 0, 8 do
+					local v = (i + 1) / 10
+					if v <= run and sink > 0 then
+						local side = f.V(if i % 2 == 1 then 0.5 else -0.5, 0.0, 0.0) * k
+						local p = feet:Lerp(f.T, v) + side
+						local tip = p + side * 0.6 + Z((1.2 + 1.8 * v) * k * sink)
+						f.kit:spike(p, tip, 0.35 * k, if i % 2 == 1 then C.GOLD else C.YELLOW, 8, sink)
+					end
+				end
+			end
+			u = seg(t, S.IMPACT, 1.55)
+			if u ~= nil then
+				local rise = ease(math.min(1, u * 3.5)) * (1 - ease(math.max(0, (u - 0.65) / 0.35)))
+				if rise > 0 then -- two colossal tusks of light erupt either side of the target and cross over it
+					local function taper(x: number): number
+						return 1 - 0.92 * x
+					end
+					for _, sgn in { -1, 1 } do
+						local pts = {}
+						for j = 0, 10 do
+							local a = j / 10 * 1.4
+							local at = f.V(sgn * (3.2 - 4.2 * (1 - math.cos(a))), 0.0, 7.5 * math.sin(a))
+							table.insert(pts, f.T + at * k * rise)
+						end
+						f.kit:tube(pts, 0.75 * k, C.SUN, 6, rise, nil, taper)
+						f.kit:tube(pts, 0.85 * k, C.GOLD, 3, 0.35 * rise, nil, taper)
+					end
+					f.kit:light(f.TC, C.SUN, 14 * rise)
+				end
+				for i = 0, 11 do -- a starburst of rays
+					local a = i / 12 * TAU
+					local d = f.V(math.cos(a), math.sin(a), 0.35).Unit
+					f.kit:spike(f.TC, f.TC + d * (1 + 6 * ease(u)) * k, 0.3 * k * (1 - u), C.YELLOW, 9, 1 - u)
+				end
+				f.kit:shock(f.T + Z(0.08), (1 + 8 * ease(u)) * k, 0.1 * k, C.VIOLET, 1 - u)
+				for i = 0, 7 do -- gems fly up and out
+					local a = i / 8 * TAU + 0.4
+					local p = f.TC
+						+ f.V(math.cos(a), math.sin(a), 0.0) * 2.2 * k * (0.4 + ease(u))
+						+ Z((5 * u - 4 * u * u) * k)
+					f.kit:diamond(p, 0.3 * k, 0.7 * k, C.VIOLET, 7, 1 - u, u * 9)
+				end
+			end
+			S.impact(f, C.SUN, 6, 93)
+		end,
+
+		-- Tusk heave (the Sahara Mammoth's regular attack; the hit at 0.44 s): its tusks glow as it drives in, the ground
+		-- breaks into stone spikes under the target and a crescent of sunlight follows the tusks up
+		["creature_elephant_sahara_forge@attack"] = function(f)
+			local k, t = f.k, f.t
+			local g = env(t, 0.15, 0.3, 0.5, 0.65)
+			if g > 0 then
+				f.kit:orb(f.A.nose, 0.4 * k * g, C.SUN, 8, g)
+			end
+			local u = seg(t, 0.38, 0.85)
+			if u ~= nil then
+				local rise = ease(math.min(1, u * 4)) * (1 - ease(math.max(0, (u - 0.55) / 0.45)))
+				for i = -2, 2 do
+					local p = f.T + f.V(0.9 * i, 0.0, 0.0) * k
+					local tip = p + Z((1.4 + 0.8 * (2 - math.abs(i))) * k * rise)
+					f.kit:spike(p, tip, 0.4 * k, if i % 2 == 0 then C.GOLD else C.SAND, 3, rise)
+				end
+				local at = f.TC + Z((-1 + 3 * ease(u)) * k)
+				f.kit:crescent(at, 2.6 * k, 0.5 * k, C.SUN, f.V(1, 0, 0), f.V(0, -0.5, 1), 8, 1 - u)
+				f.kit:shock(f.T + Z(0.08), (0.5 + 4 * ease(u)) * k, 0.08 * k, C.VIOLET, 1 - u)
+				f.kit:burst(f.TC, u, 10, 3 * k, C.SAND, 37, 0.12 * k)
+			end
+		end,
 	}
 end

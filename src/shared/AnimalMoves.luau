@@ -159,9 +159,33 @@ AnimalMoves.IDLES = {
 			tail = { 0, 18 * wave(t, 1.2), 0 },
 		}, t, 1)
 	end,
+	-- The Sahara Guardian's own (by its asset: Creatures.client looks an idle up by asset first). Sentinel: stands guard
+	-- like a statue come alive: its head sweeps slowly from side to side, a forepaw scrapes the ground, and now and then
+	-- it lifts its head and shakes out its mane with a growl
+	creature_lion_sahara_forge = function(t: number): Pose
+		local lift = bump(t, 3.0, 1.2)
+		return breathe({
+			body = { 1, 0, 0, 0, 0.02, 0 },
+			head = { 6 + 14 * lift, 16 * wave(t, LOOP) * (1 - lift), 10 * math.sin(t * TAU / 0.24) * bump(t, 3.2, 0.8) },
+			leg_fl = { 10 * bump(t, 1.2, 0.7) },
+			tail = { -6, 18 * wave(t, 2.4), 0 },
+		}, t, 1)
+	end,
+	-- The Sahara Mammoth's own. Bulwark: rocks its great weight from side to side with its head swinging low, tusks
+	-- sweeping; every loop it stamps a forefoot and tosses its head
+	creature_elephant_sahara_forge = function(t: number): Pose
+		local sway = wave(t, LOOP)
+		return breathe({
+			body = { 0, 0, 2 * sway, -0.05 * sway, 0, 0 },
+			head = { -4 + 4 * wave(t, 2.4) + 16 * bump(t, 3.5, 0.9), 10 * wave(t, LOOP, 1), 2 * sway },
+			leg_fr = { 16 * bump(t, 3.0, 0.7) },
+			leg_fl = { 5 * math.max(0, sway) },
+			tail = { 0, 20 * wave(t, 1.2), 0 },
+		}, t, 1)
+	end,
 } :: { [string]: (number) -> Pose }
 
--- Attacks by species (a variant plays its species')
+-- Attacks by species (a variant plays its species', or its own by its asset)
 AnimalMoves.ATTACKS = {
 	-- Leaping bite
 	jackal = {
@@ -475,6 +499,103 @@ AnimalMoves.ATTACKS = {
 		{ 0.62, {
 			body = { 2, -4, 0, 0, 0.02, -0.3 },
 			head = { 10, -8 },
+		} },
+		{ 0.95, {} },
+	},
+	-- Sunfang
+	creature_lion_sahara_forge = {
+		{ 0, {} },
+		{
+			0.2,
+			{
+				body = { -3, 0, 0, 0, -0.1, 0.9 },
+				head = { -8 },
+				leg_fl = { 10 },
+				leg_fr = { 10 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				tail = { -20, 12 },
+			},
+		},
+		{
+			0.36,
+			{
+				body = { 3, 0, 0, 0, 0.08, -1.2 },
+				head = { 26 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { -12 },
+				leg_br = { -12 },
+				tail = { -32 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { -4, 0, 0, 0, -0.06, -1.7 },
+				head = { -24 },
+				leg_fl = { 8 },
+				leg_fr = { 8 },
+				leg_bl = { -6 },
+				leg_br = { -6 },
+				tail = { -16 },
+			},
+		},
+		{ 0.58, {
+			body = { -3, 0, 0, 0, -0.04, -1.5 },
+			head = { -16, 12, 6 },
+			tail = { -12, -16 },
+		} },
+		{ 0.7, {
+			body = { -2, 0, 0, 0, -0.02, -1 },
+			head = { -10, -10, -6 },
+			tail = { -10, 16 },
+		} },
+		{ 0.95, {} },
+	},
+	-- Tusk heave
+	creature_elephant_sahara_forge = {
+		{ 0, {} },
+		{
+			0.24,
+			{
+				body = { -5, 0, 0, 0, -0.12, 0.4 },
+				head = { -24 },
+				leg_fl = { 12 },
+				leg_fr = { 12 },
+				leg_bl = { -8 },
+				leg_br = { -8 },
+				tail = { 10 },
+			},
+		},
+		{
+			0.38,
+			{
+				body = { -2, 0, 0, 0, -0.05, -0.9 },
+				head = { -20 },
+				leg_fl = { 18 },
+				leg_fr = { -10 },
+				leg_bl = { -14 },
+				leg_br = { 10 },
+				tail = { -10 },
+			},
+		},
+		{
+			0.44,
+			{
+				body = { 7, 0, 0, 0, 0.12, -1.15 },
+				head = { 40 },
+				leg_fl = { -8 },
+				leg_fr = { 14 },
+				leg_bl = { 8 },
+				leg_br = { -10 },
+				tail = { -22 },
+			},
+		},
+		{ 0.64, {
+			body = { 4, 0, 0, 0, 0.06, -0.8 },
+			head = { 26, 0, 6 },
+			tail = { -16 },
 		} },
 		{ 0.95, {} },
 	},
@@ -1417,6 +1538,133 @@ AnimalMoves.POWERS = {
 		},
 		{ 1.3, {
 			body = { -2 },
+		} },
+		{ 1.6, {} },
+	},
+	-- Sun's Judgement
+	creature_lion_sahara_forge = {
+		{ 0, {} },
+		{
+			0.22,
+			{
+				body = { -5, 0, 0, 0, -0.16, 0.2 },
+				head = { -18 },
+				leg_fl = { 14 },
+				leg_fr = { 14 },
+				leg_bl = { -8 },
+				leg_br = { -8 },
+				tail = { 6 },
+			},
+		},
+		{
+			0.5,
+			{
+				body = { 9, 0, 0, 0, 0.2, 0.45 },
+				head = { 30 },
+				leg_fl = { 20 },
+				leg_fr = { 16 },
+				leg_bl = { -10 },
+				leg_br = { -10 },
+				tail = { -30 },
+			},
+		},
+		{
+			0.8,
+			{
+				body = { 11, 0, 0, 0, 0.26, 0.5 },
+				head = { 38 },
+				leg_fl = { 22 },
+				leg_fr = { 20 },
+				leg_bl = { -12 },
+				leg_br = { -12 },
+				tail = { -38, 12 },
+			},
+		},
+		{
+			0.9,
+			{
+				body = { -7, 0, 0, 0, -0.12, -0.6 },
+				head = { -14, 0, 0, 0, 0, -0.1 },
+				leg_fl = { -12 },
+				leg_fr = { -12 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				tail = { -24 },
+			},
+		},
+		{
+			1.02,
+			{
+				body = { -7, 0, 0, 0, -0.12, -0.6 },
+				head = { -12, 0, 5, 0, 0, -0.1 },
+				leg_fl = { -12 },
+				leg_fr = { -12 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				tail = { -24 },
+			},
+		},
+		{
+			1.14,
+			{
+				body = { -7, 0, 0, 0, -0.12, -0.6 },
+				head = { -12, 0, -5, 0, 0, -0.1 },
+				leg_fl = { -12 },
+				leg_fr = { -12 },
+				leg_bl = { 8 },
+				leg_br = { 8 },
+				tail = { -24 },
+			},
+		},
+		{ 1.38, {
+			body = { -2 },
+			head = { -4 },
+			tail = { -10 },
+		} },
+		{ 1.6, {} },
+	},
+	-- Dawnbreaker
+	creature_elephant_sahara_forge = {
+		{ 0, {} },
+		{
+			0.35,
+			{
+				body = { 14, 0, 0, 0, 0.18, 0.25 },
+				head = { 44 },
+				leg_fl = { 30 },
+				leg_fr = { 26 },
+				leg_bl = { -14 },
+				leg_br = { -14 },
+				tail = { -14 },
+			},
+		},
+		{
+			0.76,
+			{
+				body = { 22, 0, 0, 0, 0.28, 0.32 },
+				head = { 54 },
+				leg_fl = { 48 },
+				leg_fr = { 44 },
+				leg_bl = { -22 },
+				leg_br = { -22 },
+				tail = { -18 },
+			},
+		},
+		{
+			0.9,
+			{
+				body = { -10, 0, 0, 0, -0.1, -0.5 },
+				head = { -12 },
+				leg_fl = { -18 },
+				leg_fr = { -16 },
+				leg_bl = { 12 },
+				leg_br = { 12 },
+				tail = { 20 },
+			},
+		},
+		{ 1.15, {
+			body = { -5, 0, 0, 0, -0.04, -0.3 },
+			head = { -10 },
 		} },
 		{ 1.6, {} },
 	},

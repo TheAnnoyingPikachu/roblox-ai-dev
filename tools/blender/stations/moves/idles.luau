@@ -141,4 +141,28 @@ AnimalMoves.IDLES = {
 			tail = { 0, 18 * wave(t, 1.2), 0 },
 		}, t, 1)
 	end,
+	-- The Sahara Guardian's own (by its asset: Creatures.client looks an idle up by asset first). Sentinel: stands guard
+	-- like a statue come alive: its head sweeps slowly from side to side, a forepaw scrapes the ground, and now and then
+	-- it lifts its head and shakes out its mane with a growl
+	creature_lion_sahara_forge = function(t: number): Pose
+		local lift = bump(t, 3.0, 1.2)
+		return breathe({
+			body = { 1, 0, 0, 0, 0.02, 0 },
+			head = { 6 + 14 * lift, 16 * wave(t, LOOP) * (1 - lift), 10 * math.sin(t * TAU / 0.24) * bump(t, 3.2, 0.8) },
+			leg_fl = { 10 * bump(t, 1.2, 0.7) },
+			tail = { -6, 18 * wave(t, 2.4), 0 },
+		}, t, 1)
+	end,
+	-- The Sahara Mammoth's own. Bulwark: rocks its great weight from side to side with its head swinging low, tusks
+	-- sweeping; every loop it stamps a forefoot and tosses its head
+	creature_elephant_sahara_forge = function(t: number): Pose
+		local sway = wave(t, LOOP)
+		return breathe({
+			body = { 0, 0, 2 * sway, -0.05 * sway, 0, 0 },
+			head = { -4 + 4 * wave(t, 2.4) + 16 * bump(t, 3.5, 0.9), 10 * wave(t, LOOP, 1), 2 * sway },
+			leg_fr = { 16 * bump(t, 3.0, 0.7) },
+			leg_fl = { 5 * math.max(0, sway) },
+			tail = { 0, 20 * wave(t, 1.2), 0 },
+		}, t, 1)
+	end,
 } :: { [string]: (number) -> Pose }

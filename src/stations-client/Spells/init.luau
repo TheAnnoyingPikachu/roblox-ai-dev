@@ -92,6 +92,8 @@ Spells.HOT = {
 	creature_rhino_crystal_forge = { "horn", C.DIAMOND },
 	creature_flamingo_forge = { "back", C.PINK },
 	creature_flamingo_peacock_forge = { "tail", C.GOLD },
+	creature_lion_sahara_forge = { "nose", C.SUN },
+	creature_elephant_sahara_forge = { "nose", C.SUN },
 } :: { [string]: { any } }
 local WHITE = Color3.new(1, 1, 1)
 
@@ -1002,10 +1004,14 @@ export type Frame = {
 
 local ALL: { [string]: (Frame) -> () } = {} -- filled at the end, from the spell modules
 
-local function drawOf(model: Model): ((Frame) -> ())?
+-- A model's spell, or (`strike`) the effects of its regular attack: a spell module's "<asset>@attack" entry
+local function drawOf(model: Model, strike: boolean?): ((Frame) -> ())?
 	local asset = model:GetAttribute("Asset")
 	if type(asset) ~= "string" then
 		return nil
+	end
+	if strike then
+		return ALL[asset .. "@attack"]
 	end
 	return ALL[asset] or ALL[string.match(asset, "^creature_(%l+)") or ""]
 end
@@ -1017,13 +1023,21 @@ local function point(v: { number }): Vector3
 	return Vector3.new(v[1], v[2], v[3])
 end
 
+-- How big `model` stands over its built size (AnimalRig's measures are at the built size). Model:GetScale() will not
+-- do: it also holds the importer's unit, about 0.01 on these models, which drew every spell at its smallest and put
+-- every anchor on its bone (seen in Studio, STATION-145). The Hit box is the built size times the creature's own.
+local function grown(model: Model, data: AnimalRig.Model): number
+	local hit = model:FindFirstChild("Hit")
+	return if hit and hit:IsA("BasePart") then hit.Size.Y / data.size[2] else 1
+end
+
 local function begin(model: Model, at: number, bones: { [string]: { bone: Bone, turn: CFrame } }): Cast?
 	local root = model.PrimaryPart
 	local data = AnimalRig.MODELS[(model:GetAttribute("Asset") :: string?) or ""]
 	if root == nil or data == nil then
 		return nil
 	end
-	local size = model:GetScale()
+	local size = grown(model, data)
 	local H, L = data.size[2] * size, data.size[3] * size
 	local aim = model:GetAttribute("AimAt") -- the ground under the target (WaveShow sets it)
 	local look = if typeof(aim) == "Vector3" then aim - root.CFrame.Position else root.CFrame.LookVector
@@ -1067,12 +1081,14 @@ local function anchor(cast: Cast, model: Model, bones: { [string]: { bone: Bone,
 	if data == nil or root == nil then
 		return
 	end
-	local size, turn = model:GetScale(), root.CFrame.Rotation
+	-- a bone's `turn` is its rest frame in the Root's axes; its WorldCFrame will not do, as that already holds its
+	-- parents' poses (as FoePowers)
+	local size = grown(model, data)
 	for name, a in data.anchors do
 		local b = bones[a[1]]
 		if b then
-			local now, rest = b.bone.TransformedWorldCFrame, b.bone.WorldCFrame
-			f.A[name] = now.Position + (now.Rotation * rest.Rotation:Inverse()) * (turn * (point(a[2]) * size))
+			local now = b.bone.TransformedWorldCFrame
+			f.A[name] = now.Position + now.Rotation * (b.turn:Inverse() * (point(a[2]) * size))
 		else
 			f.A[name] = f.mid
 		end
@@ -1081,9 +1097,16 @@ end
 
 -- Draws `model`'s spell at `t` seconds into the "magic" clip that started at `at`. False if it has none (the shared
 -- charge and slam play instead).
-function Spells.step(model: Model, bones: { [string]: { bone: Bone, turn: CFrame } }, at: number, t: number): boolean
-	local draw = drawOf(model)
+function Spells.step(
+	model: Model,
+	bones: { [string]: { bone: Bone, turn: CFrame } },
+	at: number,
+	t: number,
+	strike: boolean?
+): boolean
+	local draw = drawOf(model, strike)
 	if draw == nil then
+		Spells.stop(model) -- (a spell still showing when a plain attack starts)
 		return false
 	end
 	local cast = casts[model]
@@ -1099,7 +1122,7 @@ function Spells.step(model: Model, bones: { [string]: { bone: Bone, turn: CFrame
 	c.frame.t = t
 	anchor(c, model, bones)
 	c.frame.kit:begin()
-	local hot = Spells.HOT[(model:GetAttribute("Asset") :: string?) or ""]
+	local hot = if strike then nil else Spells.HOT[(model:GetAttribute("Asset") :: string?) or ""]
 	local ok, err = pcall(function()
 		local f = c.frame
 		draw(f)

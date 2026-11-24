@@ -68,12 +68,22 @@ end
 -- The reward icons (decision 0100): one picture for each kind of reward, in the Savanna look
 -- (assets/stations/icons, made by tools/icons/stations_rewards.py). Eggs show their own egg.
 local ICON = {
-	coins = "rbxassetid://126839540915586",
-	samples = "rbxassetid://109970824605063",
-	meadow = "rbxassetid://102211226773835",
-	wild = "rbxassetid://108812133520186",
-	safari = "rbxassetid://129564996329142",
-	golden = "rbxassetid://86853923413561",
+	-- the ForgeGUI HUD set (STATION-146, assets/stations/icons/hud_*.png): the piles for rewards, every egg its own
+	coins = "rbxassetid://94007045915732",
+	samples = "rbxassetid://101522904487827",
+	meadow = "rbxassetid://109046370912349",
+	wild = "rbxassetid://73338336327716",
+	safari = "rbxassetid://120994669025671",
+	golden = "rbxassetid://84301645321779",
+	dusk = "rbxassetid://115824078820759",
+	oasis = "rbxassetid://75529451728673",
+	ivory = "rbxassetid://122560806271529",
+	legend = "rbxassetid://139891503606754",
+	mythic = "rbxassetid://89504309314788",
+	divine = "rbxassetid://78850863936664",
+	celestial = "rbxassetid://81845873108455",
+	crown = "rbxassetid://87584928608960",
+	-- the older drawn set (decision 0100)
 	star = "rbxassetid://95586444952247",
 	hatch = "rbxassetid://111148238651019",
 	train = "rbxassetid://92388913223446",
