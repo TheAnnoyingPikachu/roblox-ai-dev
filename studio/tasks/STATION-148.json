@@ -1,0 +1,50 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-148",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON (2026-11-24): 'add them into the game. make them the absolute highest rarity infact make a new rarity for them, dont put them into eggs but put them into everything else and aldo give them coats and whatnot'. A new top rarity, Eternal; the Sahara Guardian and the Sahara Mammoth as exclusive variants of the Lion and the Elephant (decision 0117), in every list, menu and rule an animal is in, never in an egg, with rainbow coats.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0110-animal-stations-eggs-rarities-coats.md"
+  ],
+  "dependencies": [
+    "STATION-147"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "src/shared/StationTrade.luau",
+    "src/shared/StationAssets.luau",
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/HudWaves.luau",
+    "src/stations-client/HudAnimals.luau",
+    "tests/StationRules.spec.luau",
+    "assets/stations/creature_lion_sahara_forge_rainbow.png",
+    "assets/stations/creature_elephant_sahara_forge_rainbow.png",
+    "tools/blender/stations/uploaded.json",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0117-animal-stations-eternal-rarity-and-robux.md",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-148.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "'eternal' is the last of StationConfig.RARITIES, its floor above every other, held by the two exclusive variants only (a spec checks)",
+    "The Sahara Guardian (sahara_lion) and the Sahara Mammoth (sahara_elephant, a Titan) are variants whose power earns eternal; no egg lists them; every animal still has two egg variants",
+    "They sort, reveal, trade, release, fuse and show in the Hall of Fame and the Animals menu's Seen tab like any animal",
+    "Both have uploaded rainbow coats (a spec checks every animal and variant has one)"
+  ],
+  "verification": "2026-11-24, local: lune run tests/run 814/814 (the new spec 'keeps the eternal rarity for the exclusive variants', and 'lets an egg hatch every species and every variant' now expecting no egg for the exclusive pair); selene 0 warnings; stylua --check clean as CI reads it. Rainbow coats painted by rainbow.py (cards looked at) and uploaded by upload-assets run 45499381991 (decals 81889613634043 lion, 113668612063735 mammoth). Studio, local build 'dev' (no CI stamp): the Eggs window's shelf shows the Eternal animals row in the eternal colour. Not checked in Studio: the Hall of Fame, the Seen tab and a reveal with an owned eternal animal (Studio saves are offline, so none could be granted).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Checkpoint: see decision 0117 'To confirm at the checkpoint'."
+}

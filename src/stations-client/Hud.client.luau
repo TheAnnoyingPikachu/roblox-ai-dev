@@ -1169,6 +1169,17 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			"good",
 			(iconsOf(payload.items))
 		)
+	elseif kind == "granted" then -- an exclusive animal: bought for Robux or the beta reward (decision 0117)
+		Style.sound("claim")
+		showRarity(payload.animal)
+		Style.toast(
+			screen,
+			if payload.why == "beta" then "A thank-you for playing the beta!" else "Thank you for your purchase!",
+			6,
+			"good"
+		)
+	elseif kind == "full_purchase" then
+		Style.toast(screen, "Your Barn is full: release an animal and your purchase arrives", 8, "bad")
 	elseif kind == "reward" then
 		Style.sound("claim")
 		Style.toast(screen, `You got: {rewardWords(payload.items)}`, 4, "good", (iconsOf(payload.items)))

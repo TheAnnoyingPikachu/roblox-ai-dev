@@ -78,6 +78,8 @@ export type Profile = {
 	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
 	goals: { string }, -- ids of the goals finished and paid (decision 0115, StationGoals)
 	intro: boolean, -- the intro is done or skipped (decision 0116, StationIntro): it never shows twice
+	receipts: { string }, -- the Robux purchases granted, newest last (decision 0117): a receipt is granted once
+	beta: boolean, -- the beta reward is given (decision 0117)
 }
 
 -- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
@@ -105,6 +107,7 @@ StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu sho
 StationProgress.CHEST_STARS = 15
 StationProgress.QUICK_SECONDS = 5 -- how long a starter egg takes to hatch
 StationProgress.MAX_GOALS = 64 -- goal ids a save keeps (StationGoals has fewer)
+StationProgress.MAX_RECEIPTS = 200 -- Robux purchases a save remembers (Roblox re-sends a receipt within days)
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
 function StationProgress.defaults(_now: number): Profile
@@ -138,6 +141,8 @@ function StationProgress.defaults(_now: number): Profile
 		trades = { day = 0, count = 0, total = 0, off = false, log = {} },
 		goals = {},
 		intro = false,
+		receipts = {},
+		beta = false,
 	}
 end
 
@@ -358,6 +363,15 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			table.insert(p.goals, id)
 		end
 	end
+	for _, key in if type(record.receipts) == "table" then record.receipts else {} do
+		if type(key) == "string" and #key <= 64 and table.find(p.receipts, key) == nil then
+			table.insert(p.receipts, key)
+		end
+	end
+	while #p.receipts > StationProgress.MAX_RECEIPTS do
+		table.remove(p.receipts, 1)
+	end
+	p.beta = record.beta == true
 	local stored = if type(record.trades) == "table" then record.trades else {}
 	p.trades.day = int(stored.day, 0, 1e7, 0)
 	p.trades.count = int(stored.count, 0, 1000, 0)
@@ -645,6 +659,66 @@ function StationProgress.give(
 		table.insert(p.team, animal.id)
 	end
 	return p, true, nil, animal
+end
+
+-- Robux and the beta (decision 0117): grant one animal of species `s` and variant `v` for receipt `key`, once
+-- (a receipt already granted changes nothing and says "granted"), in coat `coat`, every stat at BASE_MAX, joining
+-- the team like a hatched one. Refused when the save is full ("full"): Roblox sends the receipt again later.
+function StationProgress.grant(
+	p: Profile,
+	s: string,
+	v: string?,
+	key: string,
+	coat: string?
+): (Profile, boolean, string?, Animal?)
+	if table.find(p.receipts, key) then
+		return p, true, "granted", nil
+	end
+	local stats = StationRules.versionStats(s, v)
+	if stats == nil or (coat ~= nil and StationConfig.coat(coat) == nil) then
+		return p, false, "animal", nil
+	elseif #p.animals >= StationProgress.MAX_ANIMALS then
+		return p, false, "full", nil
+	end
+	local trained = {} :: any
+	for _, stat in StationConfig.STATS do
+		trained[stat] = StationConfig.BASE_MAX
+	end
+	local animal: Animal = {
+		id = p.nextId,
+		s = s,
+		v = v,
+		stats = stats,
+		trained = trained :: Stats,
+		rainbow = if coat == "rainbow" then true else nil,
+		coat = coat,
+	}
+	p.nextId += 1
+	table.insert(p.animals, animal)
+	if StationProgress.isTitan(animal) then
+		p.titan = p.titan or animal.id
+	elseif #p.team < StationProgress.TEAM_SIZE then
+		table.insert(p.team, animal.id)
+	end
+	p.receipts = table.clone(p.receipts)
+	table.insert(p.receipts, key)
+	while #p.receipts > StationProgress.MAX_RECEIPTS do
+		table.remove(p.receipts, 1)
+	end
+	return p, true, nil, animal
+end
+
+-- The beta reward (decision 0117): StationConfig.BETA_GIFT, once per save, in coat `coat`.
+function StationProgress.betaGift(p: Profile, coat: string?): (Profile, boolean, string?, Animal?)
+	local gift = StationConfig.BETA_GIFT
+	if gift == nil or p.beta then
+		return p, false, "done", nil
+	end
+	local q, ok, why, animal = StationProgress.grant(p, gift.s, gift.v, "beta", coat)
+	if ok then
+		q.beta = true
+	end
+	return q, ok, why, animal
 end
 
 -- The profile as the client may see it: the held eggs without the animals inside them.

@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-149",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON (2026-11-24): 'this rarity will be obtain via robux and beta rewards', 'yes we're adding it we're monetising the game'. The eternal pair sold as Roblox developer products from the Eggs window's shelf, granted safely into the save, and the Sahara Guardian given once to every beta save (decision 0117).",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0110-animal-stations-eggs-rarities-coats.md"
+  ],
+  "dependencies": [
+    "STATION-148"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "src/kit-roblox/modules/Saves.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudEggs.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0117-animal-stations-eternal-rarity-and-robux.md",
+    "studio/tasks/STATION-149.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A receipt is granted once: StationProgress.grant is idempotent by PurchaseId and keeps the newest MAX_RECEIPTS (a spec checks)",
+    "ProcessReceipt returns PurchaseGranted only after the save is written; a full save, an unknown product, an absent player or a failed write return NotProcessedYet",
+    "The Eggs window's shelf shows both eternal animals with their Robux price, or 'Coming soon' while a product id is nil; a card prompts the purchase",
+    "While StationConfig.BETA_GIFT is set, every save gets the Sahara Guardian once at load (Profile.beta); a spec checks it is once"
+  ],
+  "verification": "2026-11-24, local: lune run tests/run 814/814, with three new specs in StationProgress.spec (a receipt granted once at BASE_MAX in its coat and the Titan to its slot; full and unknown refused, receipts kept through a save and trimmed to MAX_RECEIPTS; the beta reward once). selene 0 warnings. Studio, local build 'dev' (no CI stamp): both shelf cards show 'Coming soon' (product ids are nil) and no client error in the output. Not checked: a real purchase (no developer product exists yet), ProcessReceipt and Saves.flush against real DataStores (Studio's saves are offline), the beta reward at a real join (it needs an online save).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Checkpoint: the developer products are not made; SHANNON makes them and their prices, then their ids go into StationConfig.PRODUCTS. Kit change: Saves.flush (waits for a running write, then writes), used only by ProcessReceipt."
+}

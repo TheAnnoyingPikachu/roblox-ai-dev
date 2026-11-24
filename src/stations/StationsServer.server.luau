@@ -5,6 +5,7 @@
 -- (Ranch.luau), and routes every request (kit Router): buying eggs, starting one hatching and
 -- opening it, ranch upgrades, the team and training. The client only names an action; prices, hatches and timings are decided here.
 local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -1685,10 +1686,77 @@ saves = Saves.start({
 	end,
 })
 
+-- Robux and the beta (decision 0117) ---------------------------------------------------------------------------
+-- A granted animal's coat, rolled like a hatch from no egg (no signature coat), from `seed`.
+local function shopCoat(seed: string): string?
+	local n = 0
+	for k = 1, #seed do
+		n = (n * 31 + string.byte(seed, k)) % 2147483647
+	end
+	return StationRules.pickCoat({} :: any, Random.new(n):NextInteger(1, StationRules.PPM))
+end
+
+-- Give `player` the beta reward once (StationConfig.BETA_GIFT), and show it.
+local function betaGift(player: Player)
+	local p = saves.get(player)
+	if StationConfig.BETA_GIFT == nil or p == nil or p.beta or not saves.isOnline(player) then
+		return
+	end
+	local coat = shopCoat(`beta{player.UserId}`)
+	local given: any = nil
+	saves.apply(player, function(q)
+		local r, _, _, animal = StationProgress.betaGift(q, coat)
+		given = given or animal
+		return r
+	end)
+	if given then
+		remotes.fx(player, "granted", { animal = given, why = "beta" })
+	end
+end
+
+-- A Robux purchase (developer products, StationConfig.PRODUCTS): granted once per receipt into the save, and
+-- reported granted to Roblox only once the save is written. Anything else is "not processed yet": Roblox sends
+-- the receipt again (when the player is next in a server), and the grant is idempotent by its PurchaseId.
+MarketplaceService.ProcessReceipt = function(info)
+	local item = StationConfig.product(info.ProductId)
+	local player = Players:GetPlayerByUserId(info.PlayerId)
+	if item == nil or player == nil or not saves.isOnline(player) then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	local key = `r{info.PurchaseId}`
+	local coat = shopCoat(key)
+	local given: any, why: string? = nil, nil
+	saves.apply(player, function(q)
+		local r, _, code, animal = StationProgress.grant(q, item.s, item.v, key, coat)
+		given, why = given or animal, why or code
+		return r
+	end)
+	if why == "full" then
+		remotes.fx(player, "full_purchase", item.v)
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	local p = saves.get(player)
+	if p == nil or table.find(p.receipts, key) == nil then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	for _ = 1, 3 do
+		if saves.flush(player) then
+			if given then
+				remotes.fx(player, "granted", { animal = given, why = "robux" })
+				Analytics.event(player, "RobuxAnimal", 1, item.id)
+			end
+			return Enum.ProductPurchaseDecision.PurchaseGranted
+		end
+		task.wait(2)
+	end
+	return Enum.ProductPurchaseDecision.NotProcessedYet
+end
+
 local function load(player: Player)
 	Analytics.step(player, 1)
 	saves.load(player)
 	healTrades(player) -- a trade a crash cut short (decision 0099)
+	betaGift(player)
 end
 Players.PlayerAdded:Connect(function(player)
 	join(player)

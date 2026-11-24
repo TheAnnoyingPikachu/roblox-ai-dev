@@ -864,6 +864,29 @@ function StationConfig.foe(id: string): Foe?
 	return find(StationConfig.FOES, id)
 end
 
+-- Robux and the beta (decision 0117) --------------------------------------------------------------------------
+
+-- Each exclusive variant is sold for Robux as a developer product. `product` is its Roblox developer product id:
+-- nil until SHANNON creates the product on the Creator Dashboard (the shelf then shows "Coming soon").
+export type Product = { id: string, s: string, v: string, product: number? }
+StationConfig.PRODUCTS = {
+	{ id = "sahara_lion", s = "lion", v = "sahara_lion", product = nil },
+	{ id = "sahara_elephant", s = "elephant", v = "sahara_elephant", product = nil },
+} :: { Product }
+-- The beta reward: every save that plays while this is set gets this animal once (`Profile.beta`). Set it to nil
+-- when the beta ends.
+StationConfig.BETA_GIFT = { s = "lion", v = "sahara_lion" } :: { s: string, v: string }?
+
+-- The product sold as Roblox developer product `productId`, or nil.
+function StationConfig.product(productId: number): Product?
+	for _, item in StationConfig.PRODUCTS do
+		if item.product ~= nil and item.product == productId then
+			return item
+		end
+	end
+	return nil
+end
+
 -- The variant `variantId` of `speciesId`, or nil when either is unknown or they don't match.
 function StationConfig.variant(speciesId: string, variantId: string): Variant?
 	local species = StationConfig.species(speciesId)
