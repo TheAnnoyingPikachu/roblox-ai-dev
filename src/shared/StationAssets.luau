@@ -3494,6 +3494,127 @@ local StationAssets: { [string]: Asset } = {
 		skinned = true,
 		root = { 0, 5.944, 3.379 },
 	},
+	egg_dusk = {
+		size = { 3.77, 3.6, 3.59 },
+		parts = { "egg_dusk_body", "egg_dusk_body_glow" },
+		glow = {
+			egg_dusk_body_glow = { 255, 170, 50 },
+		},
+		centres = {
+			egg_dusk_body = { 0, 1.802, 0 },
+			egg_dusk_body_glow = { 0.057, 1.042, 0.615 },
+		},
+		joints = {},
+		model = 103180647413999,
+		decal = 139029610225569,
+		texture = nil,
+		eyes = {
+			{ 1.199, 1.315, 0.048, 0.48 },
+			{ 1.216, 1.31, 0.048, 0.34 },
+			{ -1.088, 1.317, 0.048, 0.48 },
+			{ -1.106, 1.313, 0.048, 0.34 },
+		},
+		lid = { 226, 176, 73 },
+	},
+	egg_oasis = {
+		size = { 4.27, 3.04, 4.44 },
+		parts = { "egg_oasis_body" },
+		glow = {},
+		centres = {
+			egg_oasis_body = { 0, 1.522, 0 },
+		},
+		joints = {},
+		model = 123894755141477,
+		decal = 100355323621295,
+		texture = nil,
+	},
+	egg_ivory = {
+		size = { 3.41, 3.85, 3.4 },
+		parts = { "egg_ivory_body" },
+		glow = {},
+		centres = {
+			egg_ivory_body = { 0, 1.926, 0 },
+		},
+		joints = {},
+		model = 108976613108107,
+		decal = 93634997299339,
+		texture = nil,
+	},
+	egg_legend = {
+		size = { 3.84, 3.35, 3.09 },
+		parts = { "egg_legend_body", "egg_legend_body_glow" },
+		glow = {
+			egg_legend_body_glow = { 255, 214, 90 },
+		},
+		centres = {
+			egg_legend_body = { 0, 1.675, 0 },
+			egg_legend_body_glow = { 0.006, 1.5, 1.17 },
+		},
+		joints = {},
+		model = 72872334360528,
+		decal = 99148135488871,
+		texture = nil,
+	},
+	egg_mythic = {
+		size = { 3.44, 3.55, 3.53 },
+		parts = { "egg_mythic_body", "egg_mythic_body_glow" },
+		glow = {
+			egg_mythic_body_glow = { 255, 160, 235 },
+		},
+		centres = {
+			egg_mythic_body = { 0, 1.45, -0.146 },
+			egg_mythic_body_glow = { -0.02, 1.815, 0.288 },
+		},
+		joints = {},
+		model = 82170700670887,
+		decal = 101509080501361,
+		texture = nil,
+	},
+	egg_divine = {
+		size = { 5.31, 3.7, 3.58 },
+		parts = { "egg_divine_body", "egg_divine_body_glow" },
+		glow = {
+			egg_divine_body_glow = { 255, 214, 110 },
+		},
+		centres = {
+			egg_divine_body = { 0, 1.529, 0 },
+			egg_divine_body_glow = { -0.002, 3.501, 0.06 },
+		},
+		joints = {},
+		model = 100493495953941,
+		decal = 102902175914468,
+		texture = nil,
+	},
+	egg_celestial = {
+		size = { 3.6, 3.63, 3.38 },
+		parts = { "egg_celestial_body", "egg_celestial_body_glow" },
+		glow = {
+			egg_celestial_body_glow = { 190, 220, 255 },
+		},
+		centres = {
+			egg_celestial_body = { 0, 1.492, 0 },
+			egg_celestial_body_glow = { -0.005, 1.899, 0.04 },
+		},
+		joints = {},
+		model = 81528886914886,
+		decal = 74206452172999,
+		texture = nil,
+	},
+	egg_crown = {
+		size = { 3.2, 4.48, 3.2 },
+		parts = { "egg_crown_body", "egg_crown_body_glow" },
+		glow = {
+			egg_crown_body_glow = { 255, 255, 255 },
+		},
+		centres = {
+			egg_crown_body = { 0, 2.053, 0 },
+			egg_crown_body_glow = { 0, 3.765, 0 },
+		},
+		joints = {},
+		model = 105196561287136,
+		decal = 113963835709946,
+		texture = nil,
+	},
 }
 
 return StationAssets

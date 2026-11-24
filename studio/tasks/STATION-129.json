@@ -54,7 +54,7 @@
     "A save with rainbow = true reads as the rainbow coat; an unknown coat is dropped; nothing is rewritten",
     "The HUD shows the new rarities, coat chips and a Coats tab, and the vendor lists all twelve eggs"
   ],
-  "verification": "lune run tests/run (789 pass); selene; rojo build and check-place. Played in Studio (build dev, local): the HUD loads, the vendor scrolls the twelve eggs, the Animals panel shows epic and legendary variants with coat chips. The new eggs' models rendered in Blender (--beauty), not uploaded.",
+  "verification": "lune run tests/run (789 pass); selene; rojo build and check-place. Played in Studio (build dev, local): the HUD loads, the vendor scrolls the twelve eggs, the Animals panel shows epic and legendary variants with coat chips. The new eggs' models built and uploaded (upload-assets run 45377796460). Waves re-simulated alone and as three players (decision 0110).",
   "output_artifacts": [],
   "risk_level": "high",
   "status": "in_progress",

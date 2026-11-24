@@ -1043,5 +1043,45 @@
     "model": 105768611281295,
     "decal": 77455630577645,
     "texture": null
+  },
+  "egg_dusk": {
+    "model": 103180647413999,
+    "decal": 139029610225569,
+    "texture": null
+  },
+  "egg_oasis": {
+    "model": 123894755141477,
+    "decal": 100355323621295,
+    "texture": null
+  },
+  "egg_ivory": {
+    "model": 108976613108107,
+    "decal": 93634997299339,
+    "texture": null
+  },
+  "egg_legend": {
+    "model": 72872334360528,
+    "decal": 99148135488871,
+    "texture": null
+  },
+  "egg_mythic": {
+    "model": 82170700670887,
+    "decal": 101509080501361,
+    "texture": null
+  },
+  "egg_divine": {
+    "model": 100493495953941,
+    "decal": 102902175914468,
+    "texture": null
+  },
+  "egg_celestial": {
+    "model": 81528886914886,
+    "decal": 74206452172999,
+    "texture": null
+  },
+  "egg_crown": {
+    "model": 105196561287136,
+    "decal": 113963835709946,
+    "texture": null
   }
 }

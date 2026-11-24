@@ -56,9 +56,8 @@ variant tiers; extends decision 0058 (the rainbow coat) to a family of coats.
 | 12 | Crown | wave 300 cleared | 98T | variants only | Sun Lion, Frost Mammoth; always a coat, Prismatic about 1 in 9 | Prismatic x20 |
 
 - Each animal hatches from one to three eggs, each variant from one to three. A variant-only egg's drops
-  add up to a million (`only`). A price is about 250 first clears of the wave that opens the egg. The new
-  eggs' models are drawn (`tools/blender/stations/assets/eggs.py`, concept board "The new eggs") but not
-  uploaded: the game stands the plain shell until they are.
+  add up to a million (`only`). A price is about 250 first clears of the wave that opens the egg. The new eggs' models are in `tools/blender/stations/assets/eggs.py` (concept board "How each egg looks") and
+  uploaded (upload-assets run 45377796460).
 
 ### Ten coats (`StationConfig.COATS`)
 
@@ -93,6 +92,10 @@ One coat at most per animal, rolled after the animal; an egg's signature coat is
   clears 289 to 300, wave 300 in 2 runs of 12, as decision 0107 aimed for; with random picks 159 to 169. A
   team of mythics at level 40 reaches 129 to 149 with random picks. Steepening the curve (`STEEP_BEND` 190)
   shut wave 300 to everyone, so the curve stays as it is: boons, not the team, decide the last waves.
+- Three players (three strong teams of four, 4 clicks a second each, the best boon picks) stop at wave 280,
+  289 or clear 300 (three seeds): where one player with the best team does. A crowd 4 to 16 times stronger
+  for three costs them only 10 to 20 waves, so `PARTY_POWER` stays. Every late wave is all or nothing: won
+  waves end in about 4 seconds (wave 250, staged in Studio: 32 down, the Ancient Alpha Dragon too, in 4.0 s).
 - Saves: nobody has a save yet (SHANNON), so stored animals need no restat.
 
 ## To confirm at the checkpoint

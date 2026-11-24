@@ -62,21 +62,17 @@ describe("StationAssets", function()
 	end)
 
 	it("has a still model for every egg: one painted piece, no joints", function()
-		-- decision 0110's eight new eggs are drawn (tools/blender/stations/assets/eggs.py) but not uploaded yet;
-		-- until they are the game stands the plain shell (World.kit.eggModel)
-		local PENDING = { "dusk", "oasis", "ivory", "legend", "mythic", "divine", "celestial", "crown" }
 		for _, egg in StationConfig.EGGS do
 			local name = `egg_{egg.id}`
 			local asset = StationAssets[name]
-			if asset == nil and table.find(PENDING, egg.id) then
-				continue
-			end
 			expect(asset == nil).toBe(false)
 			expect(asset.model == nil).toBe(false) -- uploaded
 			expect(table.find(asset.parts, `{name}_body`) == nil).toBe(false)
 			expect(asset.glow[`{name}_body`]).toBeNil()
 			expect(count(asset.joints)).toBe(0)
-			expect(asset.size[2] >= 3 and asset.size[2] <= 3.6).toBeTruthy() -- Ranch.luau sizes the eggs by this
+			-- Ranch.luau sizes the eggs by their shell (World's EGG_BUILT); a crown or a horn on top may stand up to 4.5
+			-- (decision 0110: the Crown Egg's crown)
+			expect(asset.size[2] >= 3 and asset.size[2] <= 4.5).toBeTruthy()
 		end
 	end)
 
