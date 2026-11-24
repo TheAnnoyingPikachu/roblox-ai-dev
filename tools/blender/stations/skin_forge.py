@@ -352,8 +352,9 @@ def guardian_weights(p):
             leg = "leg_bl"
         elif p.x <= 0 and -0.07 < p.y < 0.14:
             leg = "leg_br"
-    # the legs blend over the band where they leave the body; AnimalMoves.STIFF keeps every clip's leg turns small
-    down = ramp(-0.12, -0.18, p.z) if leg else 0.0
+    # each leg moves as one piece (SHANNON: "better ... when the lions leg just moved as one piece"): cut free below
+    # where it leaves the body (`cut_legs`), the body one skin above it
+    down = ramp(-0.06, -0.065, p.z) if leg else 0.0
     if down > 0:
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
@@ -407,7 +408,7 @@ def sun_rhino_weights(p):
     tail = ramp(0.42, 0.46, p.y) * ramp(-0.08, -0.03, p.z)
     head = ramp(-0.25, -0.3, p.y)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg, down = None, ramp(-0.06, -0.11, p.z)
+    leg, down = None, ramp(-0.06, -0.07, p.z)  # each leg moves as one piece below its top (as the Guardian's)
     if 0.0 < abs(p.x) < 0.24 and down > 0:
         left = p.x > 0
         if (left and -0.27 < p.y < -0.06) or (not left and -0.14 < p.y < 0.08):
@@ -660,12 +661,13 @@ REGIONS = {
         "joints": {
             "body": (-0.02, -0.15, -0.03),
             "head": (-0.03, -0.33, 0.0),
-            "leg_fl": (0.06, -0.37, -0.1),
-            "leg_fr": (-0.1, -0.37, -0.1),
-            "leg_bl": (0.04, -0.05, -0.1),
-            "leg_br": (-0.08, 0.04, -0.1),
+            "leg_fl": (0.06, -0.37, -0.075),
+            "leg_fr": (-0.1, -0.37, -0.075),
+            "leg_bl": (0.04, -0.05, -0.075),
+            "leg_br": (-0.08, 0.04, -0.075),
             "tail": (-0.045, 0.12, -0.06),
         },
+        "cut_legs": True,
         "weights": guardian_weights,
         "pieces": guardian_pieces,
         "small": 0.06,
@@ -718,6 +720,7 @@ REGIONS = {
             "leg_br": (-0.1, 0.37, -0.06),
             "tail": (0.0, 0.43, 0.02),
         },
+        "cut_legs": True,
         "weights": sun_rhino_weights,
         "small": 0.06,
         "shade": "smooth",
@@ -1633,6 +1636,46 @@ def main():
         weights = [{bones[v.link_faces[0][layer]] if v.link_faces else "body": 1.0} for v in bm.verts]
         bm.to_mesh(body.data)
         print("CUT APART", len(seams), "edges")
+    if spec.get("cut_legs"):  # only the legs are cut free and move whole; the rest stays one blended skin (no seams)
+        bones = sorted({k for w in weights for k in w})
+        dl = bm.verts.layers.deform.verify()
+        for v in bm.verts:
+            v[dl].clear()
+            for k, w in weights[v.index].items():
+                v[dl][bones.index(k)] = w
+        legs = {"leg_fl", "leg_fr", "leg_bl", "leg_br"}
+        layer = bm.faces.layers.int.new("leg")  # 0: not a leg's face, else 1 + its leg bone's index
+        for f in bm.faces:
+            tops = [max(weights[v.index], key=weights[v.index].get) for v in f.verts]
+            mine = [t for t in tops if t in legs]
+            f[layer] = bones.index(max(set(mine), key=mine.count)) + 1 if len(mine) * 2 > len(tops) else 0
+        for _ in range(3):  # straighten the cut, as above
+            turn = {}
+            for f in bm.faces:
+                near = [g[layer] for e in f.edges for g in e.link_faces if g is not f]
+                best = max(set(near), key=near.count) if near else f[layer]
+                if best != f[layer] and near.count(best) * 2 > len(near):
+                    turn[f] = best
+            for f, b in turn.items():
+                f[layer] = b
+        seams = [e for e in bm.edges if len({f[layer] for f in e.link_faces}) > 1]
+        bmesh.ops.split_edges(bm, edges=seams)
+        for v in [v for v in bm.verts if len({f[layer] for f in v.link_faces}) > 1]:
+            bmesh.utils.vert_separate(v, list(v.link_edges))
+        bm.verts.ensure_lookup_table()
+        weights = []
+        for v in bm.verts:
+            leg = next((f[layer] for f in v.link_faces if f[layer]), 0)
+            if leg:
+                weights.append({bones[leg - 1]: 1.0})
+            else:
+                w = {bones[k]: x for k, x in v[dl].items() if bones[k] not in legs}
+                total = sum(w.values())
+                weights.append({k: x / total for k, x in w.items()} if total > 0 else {"body": 1.0})
+        bm.verts.layers.deform.remove(dl)  # (only a carrier through the split: never into the mesh)
+        bm.to_mesh(body.data)
+        mixed = sum(1 for v in bm.verts if len({f[layer] for f in v.link_faces}) > 1)
+        print("LEGS CUT FREE", len(seams), "edges; still shared", mixed, "verts", len(bm.verts))
     bm.free()
     counts = {}
     for w in weights:
