@@ -410,6 +410,7 @@ do
 		if showing ~= docked then -- the ranch's dock, goal and To battle make way for the fight (decision 0114)
 			docked = showing
 			S.fighting = showing
+			screen:SetAttribute("Night", showing) -- messages turn to glass in a fight (Style.toast)
 			-- nobody walks in a fight: on a phone the walking stick and jump make way for the shield and the presses
 			game:GetService("GuiService").TouchControlsEnabled = not showing
 			Hud.navShown()

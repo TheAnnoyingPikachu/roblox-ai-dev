@@ -735,6 +735,7 @@ for _, part in
 		"HudHover",
 		"HudHatch",
 		"HudIntro",
+		"HudMoments",
 	}
 do
 	require(script.Parent:WaitForChild(part))
@@ -929,7 +930,12 @@ end)
 fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	if kind == "profile" then
 		local first = S.profile == nil
+		local before = if first then 0 else StationProgress.playerLevel(S.profile)
 		S.profile = payload
+		local level = StationProgress.playerLevel(payload)
+		if not first and level > before then
+			task.spawn(Hud.levelUp, level) -- it waits out a fight
+		end
 		if first then
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
 		end
@@ -938,7 +944,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "intro" then -- the borrowed fight is won (decision 0116)
 		Hud.introWon()
 	elseif kind == "announce" then -- another player's rare hatch (SHANNON, 2026-11-24)
-		Style.toast(screen, `{payload.who} hatched {payload.what}!`, 5, "good")
+		Hud.announce(payload.who, payload.what)
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
@@ -949,7 +955,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if payload.at then
 			hatchEffect(payload.at, payload.egg, payload.body, payload.spot) -- then the animal steps out
 		end
-		S.hatchFree = os.clock() + showRarity(payload) -- the next egg waits for this reveal
+		local seconds = showRarity(payload)
+		S.hatchFree = os.clock() + seconds -- the next egg waits for this reveal
+		Hud.hatchChoice(payload, seconds)
 		if lucky ~= "" then
 			Style.toast(screen, lucky, 4)
 		end

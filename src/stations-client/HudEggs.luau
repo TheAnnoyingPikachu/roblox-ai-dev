@@ -34,6 +34,14 @@ local page = Style.page(eggs)
 local shelfEgg = 1 -- the egg whose contents show on the right
 local buying = false
 
+-- Open Eggs on egg `id` (a new level's "See what is inside").
+function Hud.pickEgg(id: string)
+	for k, d in StationConfig.EGGS do
+		shelfEgg = if d.id == id then k else shelfEgg
+	end
+	show("eggs")
+end
+
 -- A line drawn from the player to the nest of hatching egg `k`, for a few seconds.
 function Hud.wayTo(k: number)
 	local nest: BasePart? = nil
