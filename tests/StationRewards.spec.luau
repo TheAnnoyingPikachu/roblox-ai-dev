@@ -58,8 +58,8 @@ describe("StationRewards planners", function()
 		local p = fresh()
 		expect(StationRewards.wavePay(p)).toBe(40)
 		p.best = 20
-		expect(StationRewards.wavePay(p)).toBe(186)
-		expect(StationRewards.resolve(p, { pays = 5 }).coins).toBe(930)
+		expect(StationRewards.wavePay(p)).toBe(116)
+		expect(StationRewards.resolve(p, { pays = 5 }).coins).toBe(580)
 	end)
 
 	it("gives the best egg unlocked and the one below it", function()

@@ -57,7 +57,9 @@ an elephant at 35. Max 70 = the four mythics at 70. The last wave cleared:
 ## Checkpoint answers (SHANNON, 2026-11-24)
 
 - 1: go (with `STEEP_GROWTH` 1.016). 2: OK. 4: fine that the last waves take that long.
-- 3: nerf the payout to fit the egg prices: open (asked, 2026-11-24).
+- 3: "shrink both accordingly but still keep the numbers quite high": `REWARD_GROWTH` 1.055 (was 1.08), so wave
+  300's first clear pays about 359 million and all 300 about 6.9 billion; the eggs are repriced with it (decision
+  0110, amended).
 
 ## To confirm at the checkpoint
 

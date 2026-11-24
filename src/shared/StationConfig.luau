@@ -558,7 +558,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "golden",
 		name = "Golden Egg",
-		price = 50000,
+		price = 40_000,
 		xp = 500,
 		hatch = 14400,
 		level = 8,
@@ -574,7 +574,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "dusk",
 		name = "Dusk Egg",
-		price = 140_000,
+		price = 85_000,
 		xp = 800,
 		hatch = 6 * 3600,
 		level = 12,
@@ -589,7 +589,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "oasis",
 		name = "Oasis Egg",
-		price = 430_000,
+		price = 185_000,
 		xp = 1200,
 		hatch = 8 * 3600,
 		level = 16,
@@ -600,7 +600,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "ivory",
 		name = "Ivory Egg",
-		price = 3_000_000,
+		price = 750_000,
 		xp = 2000,
 		hatch = 12 * 3600,
 		level = 24,
@@ -611,7 +611,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "legend",
 		name = "Legend Egg",
-		price = 20_000_000,
+		price = 2_750_000,
 		xp = 3000,
 		hatch = 16 * 3600,
 		level = 32,
@@ -634,7 +634,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "mythic",
 		name = "Mythic Egg",
-		price = 440_000_000,
+		price = 25_000_000,
 		xp = 5000,
 		hatch = 24 * 3600,
 		level = 42,
@@ -656,7 +656,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "divine",
 		name = "Divine Egg",
-		price = 9.6e9,
+		price = 200_000_000,
 		xp = 8000,
 		hatch = 36 * 3600,
 		level = 54,
@@ -675,7 +675,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "celestial",
 		name = "Celestial Egg",
-		price = 4.5e11,
+		price = 3_000_000_000,
 		xp = 12000,
 		hatch = 48 * 3600,
 		level = 68,
@@ -692,7 +692,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "crown",
 		name = "Crown Egg",
-		price = 9.8e13,
+		price = 125_000_000_000,
 		xp = 20000,
 		hatch = 72 * 3600,
 		level = 85,

@@ -105,6 +105,15 @@ One coat at most per animal, rolled after the animal; an egg's signature coat is
   each egg's old wave, rounded up; buying and training add XP). The bands and `mult`s stay as drafted
   (SHANNON: "do as you see fit").
 
+## Amended (SHANNON, 2026-11-24): payouts and prices shrunk together
+
+- SHANNON: "shrink both accordingly but still keep the numbers quite high to make them seem cool and expensive".
+- Waves pay 5.5% more each (`LevelRules.REWARD_GROWTH` 1.055, was 1.08). Each egg's price is cut by the same
+  share as the coins all first clears pay up to its old unlock wave, so an egg takes about as many runs as before,
+  rounded: Safari 15,000, Golden 40,000, Dusk 85,000, Oasis 185,000, Ivory 750,000, Legend 2.75 million, Mythic
+  25 million, Divine 200 million, Celestial 3 billion, Crown 125 billion (was 98 trillion). Meadow and Wild
+  unchanged. Ranch upgrades (up to 800,000) are unchanged. Draft: the QA pass checks them.
+
 ## Evidence
 
 - Specs: `StationRules` (twelve eggs, rarity by power for every version, coats' odds and buffs),
