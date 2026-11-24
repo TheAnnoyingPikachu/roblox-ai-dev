@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-154",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "asset",
+  "objective": "The two celestials move cleanly (SHANNON, 2026-11-24: 'fix the movements of the celestials as they are both janky'): the Sun Lion's and the Frost Mammoth's ForgeGUI models stretched where their legs and heads meet the body, because their skin was blended across those joints.",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "assets/stations/creature_lion_sun_forge.fbx",
+    "assets/stations/creature_elephant_frost_forge.fbx",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-154.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "No face of either model stretches in the game's strongest poses (skin_forge.py --stretch: 0 %)",
+    "No gap opens between the cut parts in those poses",
+    "Both are uploaded and StationAssets.luau is the upload run's"
+  ],
+  "verification": "Seen in Studio before: the Sun Lion's front legs smeared into long slabs in the walk. skin_forge.py --stretch, blended: Sun Lion 12.59 % of its surface stretched at worst (attack), Frost Mammoth 7.37 % (power). With cut skins: 0.00 % in walk, attack, power and fall for both; the pose renders show no gaps. The textures are unchanged, so their rainbow coats still fit.",
+  "output_artifacts": [
+    "assets/stations/creature_lion_sun_forge.fbx",
+    "assets/stations/creature_elephant_frost_forge.fbx"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "The fix the Sahara Guardian got (STATION-145): a faceted ForgeGUI model is skinned cut, each part moving whole. A cut model comes apart if a leg turns very far; the lion's and elephant's own clips stayed within what showed clean in the stretch poses."
+}

@@ -585,6 +585,7 @@ REGIONS = {
         # shaggy: the fur hanging round the legs moves with them
         "weights": quad_weights(-0.18, -0.5, 0.33, (-0.15, 0.06), (0.15, 0.34), -0.12, -0.12, 0.03, 0.17),
         "small": 0.06,
+        "cut": True,  # big shards of fur: blended, they stretched at the shoulders and neck (7.4 % at worst)
         "notes": "Frost Mammoth: SHANNON's Frostfur Mammoth with Crystal Tusks from ForgeGUI (artifact 29d6a1a2), one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_elephant_war_forge": {
@@ -653,7 +654,8 @@ REGIONS = {
     # lengths: the Blender models' (StationAssets.creature_lion[_shadow, _sun].size)
     "creature_lion_forge": lion("Lion", 13.0, 0.0, "c46416c2", "lion (now do it again following this reference)"),
     "creature_lion_shadow_forge": lion("Shadow Lion", 15.03, -0.05, "68e2e5b5", "Shadowfang Purple Lion"),
-    "creature_lion_sun_forge": lion("Sun Lion", 16.05, 0.0, "efa580ee", "Fierce Low-Poly Sunmane Lion"),
+    # low-poly and faceted: blended, its legs and neck stretched in the walk (12.6 % of it at worst); cut, it moves in whole parts
+    "creature_lion_sun_forge": dict(lion("Sun Lion", 16.05, 0.0, "efa580ee", "Fierce Low-Poly Sunmane Lion"), cut=True),
     # heights: the Blender models' (StationAssets.creature_flamingo[_peacock, _phoenix].size)
     "creature_lion_sahara_forge": {
         "length": 22.0,  # 1.37 x the Sun Lion
