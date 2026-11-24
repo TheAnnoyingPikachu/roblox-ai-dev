@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 
 local Areas = require(script.Parent:WaitForChild("Areas"))
 local Creatures = require(script.Parent:WaitForChild("Creatures"))
+local Analytics = require(script.Parent:WaitForChild("Analytics"))
 local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 
@@ -437,6 +438,7 @@ local function bankRun(player: Player, lost: boolean)
 	local waves = party.wins[player] or 0
 	party.pots[player], party.hp[player], party.votes[player], party.wins[player] = nil, nil, nil, nil
 	if coins > 0 or samples > 0 then
+		Analytics.because(player, "run_pot")
 		saves.apply(player, function(q)
 			return StationProgress.earn(q, coins, samples)
 		end)
@@ -574,6 +576,10 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 				continue
 			end
 			local mine = pay[m]
+			Analytics.because(m, "wave_pay")
+			if not result.won and level <= 3 then -- an early loss: the funnel's leak (decision 0113)
+				Analytics.event(m, "WaveLost", 1, `wave {level}`)
+			end
 			if result.won and not won then -- the taps won it
 				saves.apply(m, function(q)
 					return (StationProgress.clear(q, level, true))
@@ -637,7 +643,9 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 		if continuing or m ~= player then -- whoever did not ask for this wave is told it is on
 			remotes.fx(m, "began", { wave = level, party = #members })
 		end
+		Analytics.step(m, 6)
 		if won then
+			Analytics.because(m, "wave_pay")
 			saves.apply(m, function(q)
 				return (StationProgress.clear(q, level, true))
 			end)
@@ -977,7 +985,9 @@ local router = Router.new({
 			handler = function(player, userId: number)
 				local target = Players:GetPlayerByUserId(userId)
 				local mine, theirs = saves.get(player), if target then saves.get(target) else nil
-				if target == nil or target == player or mine == nil or theirs == nil then
+				if not StationTrade.ON then
+					return false, "trade_closed"
+				elseif target == nil or target == player or mine == nil or theirs == nil then
 					return false, "trade_nobody"
 				end
 				local can, code = StationTrade.canTrade(mine, os.time())
@@ -1142,6 +1152,40 @@ local router = Router.new({
 				end)
 			end,
 		},
+		-- release an animal for a few coins, or fuse four of one into the next coat tier (decision 0112)
+		release = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, id: number)
+				return apply(player, function(p)
+					return StationProgress.release(p, id)
+				end)
+			end,
+		},
+		fuse = {
+			args = {
+				Payload.int({ min = 1, max = 1e12 }),
+				Payload.int({ min = 1, max = 1e12 }),
+				Payload.int({ min = 1, max = 1e12 }),
+				Payload.int({ min = 1, max = 1e12 }),
+			},
+			handler = function(player, a: number, b: number, c: number, d: number)
+				local save, first = saves.get(player), nil
+				if save then
+					_, first = StationProgress.find(save, a)
+				end
+				if first == nil then
+					return false, "animal"
+				end
+				local next = StationProgress.COAT_TIERS[StationProgress.coatTier(first) + 1]
+				if next == nil then
+					return false, "fuse_top"
+				end
+				local coat = next[math.random(1, #next)] -- the server picks which coat of the tier
+				return apply(player, function(p)
+					return StationProgress.fuse(p, { a, b, c, d }, coat)
+				end)
+			end,
+		},
 		team = {
 			args = { Payload.int({ min = 1, max = 1e12 }) },
 			handler = function(player, id: number)
@@ -1213,6 +1257,16 @@ local router = Router.new({
 					body = look.body,
 					spot = look.spot,
 				})
+				-- an epic or rarer hatch, or any coat, is announced to the server (SHANNON, 2026-11-24)
+				local rank = table.find(StationConfig.RARITIES, StationRules.rarity(born :: any)) or 0
+				if rank >= (table.find(StationConfig.RARITIES, "epic") or 99) or born.coat then
+					local what = `a {StationRules.rarity(born :: any)} {StationTrade.nameOf(born :: any)}`
+					for _, other in Players:GetPlayers() do
+						if other ~= player then
+							remotes.fx(other, "announce", { who = player.DisplayName, what = what })
+						end
+					end
+				end
 				return true, nil
 			end,
 		},
@@ -1432,6 +1486,21 @@ local router = Router.new({
 		warn(`[StationsServer] {action}: {err}`)
 	end,
 })
+-- every request but clicks and presses names what changes the save next, and a refusal is counted (decision 0113)
+for name, action in router.options.actions do
+	if name == "strike" or name == "power" then
+		continue
+	end
+	local handler = action.handler
+	action.handler = function(player, ...)
+		Analytics.because(player, name)
+		local ok, code = handler(player, ...)
+		if not ok and code then
+			Analytics.event(player, "Refused", 1, name, tostring(code))
+		end
+		return ok, code
+	end
+end
 remotes = Remotes.create("StationsRemotes", router)
 
 -- The Hall of Fame at the hub (decision 0095): the best animals in this server, at most two of any one
@@ -1480,11 +1549,58 @@ end
 
 saves = Saves.start({
 	name = "StationsProfile",
+	-- never a blank profile (beta blocker 5, SHANNON's pick A): a save another server still holds is waited for up
+	-- to two minutes behind the loading cover, and a session that cannot save sends the player to rejoin
+	waitBusy = 120,
+	-- an old server never loads a save newer content wrote (beta blocker 6): the player goes to a newer one
+	tooNew = function(record)
+		return type(record) == "table" and type(record.version) == "number" and record.version > StationProgress.VERSION
+	end,
+	onStatus = function(player, status)
+		if status ~= "online" then
+			Analytics.event(player, "SaveTrouble", 1, status)
+		end
+		if status == "newer" then
+			player:Kick("A new update is out. Please rejoin to play it.")
+		elseif status ~= "online" and not RunService:IsStudio() then
+			player:Kick(
+				if status == "lost"
+					then "Your ranch was opened on another server. Please rejoin."
+					else "Your ranch couldn't load. Please rejoin in a minute."
+			)
+		end
+	end,
+	-- a run's pot is banked while the save can still take it (beta blocker 7)
+	beforeFinish = function(player)
+		bankRun(player, false)
+	end,
 	defaults = StationProgress.defaults,
 	sanitize = StationProgress.sanitize,
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		Analytics.changed(player, profile)
+		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
+		local hatching = #profile.animals > 0
+		for _, e in profile.eggs do
+			hatching = hatching or e.since ~= nil
+		end
+		for k, reached in
+			{
+				[2] = #profile.eggs > 0 or #profile.animals > 0,
+				[3] = hatching,
+				[4] = #profile.animals > 0,
+				[5] = #profile.team > 0,
+				[7] = profile.best >= 1,
+				[8] = profile.best >= 3,
+				[9] = profile.best >= 10,
+				[10] = StationProgress.playerLevel(profile) >= 5,
+			}
+		do
+			if reached then
+				Analytics.step(player, k)
+			end
+		end
 		remotes.fx(player, "profile", StationProgress.public(profile))
 		updateFame()
 		local i = ranchOf(player)
@@ -1499,6 +1615,7 @@ saves = Saves.start({
 })
 
 local function load(player: Player)
+	Analytics.step(player, 1)
 	saves.load(player)
 	healTrades(player) -- a trade a crash cut short (decision 0099)
 end
@@ -1513,6 +1630,7 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
 	task.defer(updateFame) -- after the player has gone
+	task.defer(Analytics.forget, player)
 	local t = trades[player]
 	if t then
 		closeTrade(t, "left")

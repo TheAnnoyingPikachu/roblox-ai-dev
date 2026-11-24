@@ -88,10 +88,17 @@ local REFUSED: { [string]: string } = {
 	trade_wait = "Look the trade over first: it opens in a moment",
 	trade_confirming = "The trade is locked: confirm it or cancel",
 	trade_off = "That player isn't taking trade requests",
+	trade_closed = "Trading opens later in the beta",
 	trade_ask_wait = "Give them a few seconds before asking again",
 	trade_saving = "Trading needs saving on for both of you",
 	trade_store = "Trading couldn't save just now: try again",
-	locked = "Clear more waves to unlock that egg",
+	locked = "Reach a higher level to unlock that egg",
+	in_team = "Take it off your team first",
+	animal_locked = "Unlock it first",
+	last_animal = "You can't release your last animal",
+	fuse_mismatch = "Fusing takes four of the same animal and coat",
+	fuse_top = "Prismatic is the top coat",
+	fuse_count = "Fusing takes four of the same animal",
 	full = "Your barn is full: upgrade the Barn at your ranch",
 	samples = "Not enough samples",
 	admin = "Admins only",
@@ -376,7 +383,8 @@ dockButton("Waves", "danger", 4, function()
 end)
 local tradeDot = dockButton("Trade", "primary", 5, function()
 	show("trade")
-end)
+end);
+(tradeDot.Parent :: GuiObject).Visible = StationTrade.ON -- off until trading is hardened (SHANNON, 2026-11-24)
 local giftsDot = dockButton("Gifts", "good", 6, function()
 	request:InvokeServer("rewards") -- count today first
 	show("gifts")
@@ -506,8 +514,9 @@ local function animalDetail(a: any)
 	end
 	local buttons = Instance.new("Frame")
 	buttons.BackgroundTransparency = 1
-	buttons.Position, buttons.Size = UDim2.fromOffset(194, 116), UDim2.new(1, -196, 0, 48)
-	Style.list(buttons, 10, true)
+	-- two rows when Release and Fuse join them (decision 0112)
+	buttons.Position, buttons.Size = UDim2.fromOffset(194, 76), UDim2.new(1, -196, 0, 100)
+	Style.list(buttons, 6, true, true)
 	buttons.Parent = head
 	Style.button(buttons, "‹ Back", function()
 		chosen = nil
@@ -520,6 +529,28 @@ local function animalDetail(a: any)
 	Style.button(buttons, if a.locked then "🔒 Locked" else "Lock", function()
 		send("lock", a.id)
 	end, if a.locked then "primary" else "ghost", UDim2.fromOffset(120, 46))
+	-- release for a few coins (a second click confirms), or fuse four of one into the next coat (decision 0112)
+	if not inTeam and not a.at and not a.locked then
+		local pay = (StationProgress.RELEASE_PAY[StationRules.rarity(a)] or 0) * (if a.coat then 2 else 1)
+		local sure = false
+		local release: TextButton
+		release = Style.button(buttons, "Release", function()
+			if not sure then
+				sure = true
+				release.Text = `Sure? +{pay}`
+				return
+			end
+			send("release", a.id)
+			chosen = nil
+		end, "ghost", UDim2.fromOffset(130, 46))
+		local mates = StationProgress.fusable(profile, a)
+		if #mates >= StationProgress.FUSE then
+			Style.button(buttons, "Fuse 4 ✦", function()
+				send("fuse", table.unpack(mates, 1, StationProgress.FUSE))
+				chosen = nil
+			end, "primary", UDim2.fromOffset(130, 46))
+		end
+	end
 
 	local grid = Instance.new("Frame")
 	grid.BackgroundTransparency = 1
@@ -559,7 +590,10 @@ local function animalDetail(a: any)
 			if training then
 				send("stop", a.id)
 			else
-				send("train", a.id, st.id) -- a taken ground is refused, and the toast says why
+				local onTeam = profile and (table.find(profile.team, a.id) or profile.titan == a.id)
+				if send("train", a.id, st.id) and onTeam then -- a taken ground is refused, and the toast says why
+					Style.toast(screen, `{nameOf(a)} left your team to train. Stop puts it back.`, nil, "info")
+				end
 			end
 		end, if training then "info" elseif taken then "off" else "primary", UDim2.new(1, -24, 0, 44))
 		button.Position, button.TextSize = UDim2.fromOffset(12, 70), 17
@@ -2043,6 +2077,14 @@ local function showRarity(a: any)
 		table.insert(lines, `A {string.lower((StationRules.coatOf(a) :: any).name)} coat!`)
 	end
 	revealSub.Text = table.concat(lines, "\n")
+	require(script.Parent:WaitForChild("RevealCard")).show( -- the animal's picture under the words
+		screen,
+		StationRules.assetOf(a.s, a.v),
+		a.rainbow,
+		RARITY_COLOUR[rarity] or C.text,
+		big,
+		2.6 + big * 0.6
+	)
 	revealSub.TextColor3 = if StationRules.coatOf(a) then Color3.fromRGB(255, 225, 100) else C.text
 	reveal.TextTransparency, revealStroke.Transparency = 0, 0
 	revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
@@ -3898,6 +3940,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
 		end
 		refresh()
+	elseif kind == "announce" then -- another player's rare hatch (SHANNON, 2026-11-24)
+		Style.toast(screen, `{payload.who} hatched {payload.what}!`, 5, "good")
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
@@ -3911,6 +3955,12 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		showRarity(payload)
 		if lucky ~= "" then
 			Style.toast(screen, lucky, 4)
+		end
+		if profile and #profile.animals <= 1 then -- the first hatch: day 1's gifts open after it (SHANNON, 2026-11-24)
+			task.delay(4, function()
+				request:InvokeServer("rewards")
+				show("gifts")
+			end)
 		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.1f", payload.seconds)

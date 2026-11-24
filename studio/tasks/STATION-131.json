@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-131",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Beta blockers 5 to 8 (SHANNON's picks, 2026-11-24): never a blank profile (a busy save waited for behind a loading cover, else a rejoin kick), a content version so an old server never loads a newer save, the run's pot banked before the save closes, and model loads retried.",
+  "inputs": [
+    "docs/decisions/0108-animal-stations-shared-fights.md"
+  ],
+  "dependencies": [
+    "STATION-130"
+  ],
+  "files": [
+    "src/kit/SaveStore.luau",
+    "src/kit-roblox/modules/Saves.luau",
+    "tests/SaveStore.spec.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/Creatures.luau",
+    "src/stations-client/LoadCover.client.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0111-animal-stations-beta-saves.md",
+    "studio/tasks/STATION-131.json"
+  ],
+  "tests": [
+    "SaveStore.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A load that finds the save locked by another server is tried again every 5 s for up to 120 s, with requests held and the client's loading cover shown; a session that still cannot save kicks the player (not in Studio)",
+    "kit SaveStore never loads, sanitises or writes back a record tooNew calls newer; Stations' is a save whose version is above StationProgress.VERSION, and the player is kicked with an update message",
+    "A leaving player's run pot is banked before the session closes (kit Saves beforeFinish), also at shutdown",
+    "InsertService loads try 3 times, 2 s then 4 s apart, at most 8 at once"
+  ],
+  "verification": "lune run tests/run; selene; rojo build and check-place. The busy and newer paths need a published place (the private test place, blocker 15).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: 5 A, 6 A, 7 A, 8 B (the game stays on SHANNON's account). Server restarts on publish are a publish setting, at the private test place."
+}

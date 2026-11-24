@@ -25,6 +25,7 @@ export type Animal = {
 	coat: string?,
 	at: string?,
 	since: number?,
+	slot: number?, -- training: the team slot it left (0 = the Titan's), where Stop puts it back
 	locked: boolean?, -- its owner locked it: it cannot go in a trade (decision 0099)
 }
 -- A finished trade as the save remembers it (decision 0099): its id (the ledger's), who with, the names
@@ -76,6 +77,9 @@ export type Profile = {
 	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
 }
 
+-- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
+-- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
+-- strip what it does not know. A save is stamped with the version of the server that last wrote it.
 StationProgress.VERSION = 1
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
@@ -249,6 +253,7 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 				taken[a.at] = true
 				animal.at = a.at
 				animal.since = int(a.since, 0, MAX_TIME, now or 0)
+				animal.slot = if type(a.slot) == "number" then int(a.slot, 0, StationProgress.TEAM_SIZE, 0) else nil
 				training += 1
 			end
 			ids[id] = animal
@@ -700,6 +705,156 @@ end
 
 -- Put animal `id` in or out of the team. A Titan goes in the Titan slot (replacing the one
 -- there). A training animal cannot join.
+-- Release and fusion (SHANNON, 2026-11-24, decision 0112) ---------------------------------------------------
+
+-- Coins for releasing an animal, by rarity; twice that with a coat.
+StationProgress.RELEASE_PAY = {
+	common = 10,
+	uncommon = 25,
+	rare = 60,
+	epic = 150,
+	legendary = 400,
+	mythic = 1000,
+	divine = 2500,
+	celestial = 6000,
+	secret = 15000,
+} :: { [string]: number }
+StationProgress.FUSE = 4 -- this many of one animal, of one coat tier, fuse into one of the next tier
+
+-- The coat tiers, commonest first: the coats grouped by how rare they are (StationConfig.COATS' ppm).
+local function coatTiers(): { { string } }
+	local byPpm: { [number]: { string } } = {}
+	local order: { number } = {}
+	for _, c in StationConfig.COATS do
+		if byPpm[c.ppm] == nil then
+			byPpm[c.ppm] = {}
+			table.insert(order, c.ppm)
+		end
+		table.insert(byPpm[c.ppm], c.id)
+	end
+	table.sort(order, function(x, y)
+		return x > y
+	end)
+	local out = {}
+	for _, ppm in order do
+		table.insert(out, byPpm[ppm])
+	end
+	return out
+end
+StationProgress.COAT_TIERS = coatTiers()
+
+-- An animal's coat tier: 0 with no coat, 1 for the commonest coats, up to #COAT_TIERS (Prismatic).
+function StationProgress.coatTier(a: Animal): number
+	local coat = StationRules.coatOf(a :: any)
+	if coat == nil then
+		return 0
+	end
+	for k, ids in StationProgress.COAT_TIERS do
+		if table.find(ids, coat.id) then
+			return k
+		end
+	end
+	return 0
+end
+
+-- Why animal `a` of `p` cannot be released or fused, or nil.
+local function busy(p: Profile, a: Animal): string?
+	if table.find(p.team, a.id) or p.titan == a.id then
+		return "in_team"
+	elseif a.at then
+		return "training"
+	elseif a.locked then
+		return "animal_locked"
+	end
+	return nil
+end
+
+-- Release animal `id` for RELEASE_PAY coins. Never one in the team, training or locked, nor the last one.
+function StationProgress.release(p: Profile, id: number): (Profile, boolean, string?)
+	local i, a = StationProgress.find(p, id)
+	if i == nil or a == nil then
+		return p, false, "animal"
+	end
+	local why = busy(p, a)
+	if why then
+		return p, false, why
+	elseif #p.animals <= 1 then
+		return p, false, "last_animal"
+	end
+	local pay = (StationProgress.RELEASE_PAY[StationRules.rarity(a :: any)] or 0) * (if a.coat then 2 else 1)
+	table.remove(p.animals, i)
+	p.coins = math.min(p.coins + pay, StationProgress.MAX_COINS)
+	return p, true, nil
+end
+
+-- The ones among `p`'s idle animals that could fuse with `a` (the same animal, the same coat tier), `a` first.
+function StationProgress.fusable(p: Profile, a: Animal): { number }
+	local out = { a.id }
+	local tier = StationProgress.coatTier(a)
+	if tier >= #StationProgress.COAT_TIERS then
+		return out
+	end
+	for _, x in p.animals do
+		if x.id ~= a.id and x.s == a.s and x.v == a.v and StationProgress.coatTier(x) == tier and busy(p, x) == nil then
+			table.insert(out, x.id)
+		end
+	end
+	return out
+end
+
+-- Fuse FUSE animals `ids` (the same animal, the same coat tier, all idle) into the first of them, wearing `coat`
+-- (one of the next tier's: the server picks it) with each stat level the average of the four, rounded down.
+function StationProgress.fuse(p: Profile, ids: { number }, coat: string): (Profile, boolean, string?)
+	if #ids ~= StationProgress.FUSE then
+		return p, false, "fuse_count"
+	end
+	local them: { Animal } = {}
+	for k, id in ids do
+		local _, a = StationProgress.find(p, id)
+		if a == nil or table.find(ids, id) ~= k then
+			return p, false, "animal"
+		end
+		local why = busy(p, a)
+		if why then
+			return p, false, why
+		end
+		table.insert(them, a)
+	end
+	local first = them[1]
+	local tier = StationProgress.coatTier(first)
+	for _, a in them do
+		if a.s ~= first.s or a.v ~= first.v or StationProgress.coatTier(a) ~= tier then
+			return p, false, "fuse_mismatch"
+		end
+	end
+	local next = StationProgress.COAT_TIERS[tier + 1]
+	if next == nil then
+		return p, false, "fuse_top"
+	elseif not table.find(next, coat) then
+		return p, false, "coat"
+	end
+	local trained = {}
+	for _, stat in StationConfig.STATS do
+		local sum = 0
+		for _, a in them do
+			sum += StationRules.level(a :: any, stat)
+		end
+		trained[stat] = sum // #them
+	end
+	local copy = table.clone(first)
+	copy.coat, copy.rainbow, copy.trained = coat, if coat == "rainbow" then true else nil, trained :: any
+	local kept = {}
+	for _, a in p.animals do
+		if a.id == first.id then
+			table.insert(kept, copy)
+		elseif not table.find(ids, a.id) then
+			table.insert(kept, a)
+		end
+	end
+	p.animals = kept
+	return p, true, nil
+end
+
 function StationProgress.toggleTeam(p: Profile, id: number): (Profile, boolean, string?)
 	local _, a = StationProgress.find(p, id)
 	if a == nil then
@@ -757,14 +912,16 @@ function StationProgress.train(p: Profile, id: number, stationId: string, now: n
 	p = StationProgress.settle(p, now)
 	local copy = table.clone(p.animals[i])
 	copy.at, copy.since = stationId, now
-	p.animals[i] = copy
 	local t = table.find(p.team, id)
 	if t then
 		table.remove(p.team, t)
+		copy.slot = t
 	end
 	if p.titan == id then
 		p.titan = nil
+		copy.slot = 0
 	end
+	p.animals[i] = copy
 	return p, true, nil
 end
 
@@ -778,8 +935,15 @@ function StationProgress.stop(p: Profile, id: number, now: number): (Profile, bo
 	end
 	p = StationProgress.settle(p, now)
 	local copy = table.clone(p.animals[i])
-	copy.at, copy.since = nil, nil
+	local slot = copy.slot
+	copy.at, copy.since, copy.slot = nil, nil, nil
 	p.animals[i] = copy
+	-- back where it left from (SHANNON, 2026-11-24), if that place is free
+	if slot == 0 and p.titan == nil then
+		p.titan = id
+	elseif slot and slot > 0 and #p.team < StationProgress.TEAM_SIZE and not table.find(p.team, id) then
+		table.insert(p.team, math.min(slot, #p.team + 1), id)
+	end
 	return p, true, nil
 end
 

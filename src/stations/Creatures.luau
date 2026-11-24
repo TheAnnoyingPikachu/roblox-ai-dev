@@ -35,6 +35,29 @@ local FLAT = Vector3.new(1, 0, 1)
 local STILL_YAW = math.pi
 local templates: { [string]: Model | boolean } = {} -- true while loading, false when it failed
 
+-- An asset from InsertService, tried 3 times (2 s then 4 s apart) with at most 8 loads at once (beta blocker 8):
+-- one failed load would otherwise refuse that animal for the server's life.
+local loading = 0
+local function insert(id: number, what: string): (boolean, any)
+	while loading >= 8 do
+		task.wait(0.1)
+	end
+	loading += 1
+	local ok, loaded
+	for try = 1, 3 do
+		ok, loaded = pcall(InsertService.LoadAsset, InsertService, id)
+		if ok then
+			break
+		end
+		warn(`[Creatures] {what} (asset {id}) failed to load, try {try} of 3: {tostring(loaded)}`)
+		if try < 3 then
+			task.wait(2 * try)
+		end
+	end
+	loading -= 1
+	return ok, loaded
+end
+
 local function vec(t: { number }): Vector3
 	return Vector3.new(t[1], t[2], t[3])
 end
@@ -44,7 +67,7 @@ local function textureOf(texture: number?, decal: number?): string?
 		return `rbxassetid://{texture}`
 	elseif decal then
 		-- The upload could not resolve the decal's image id: read it from the decal itself.
-		local ok, loaded = pcall(InsertService.LoadAsset, InsertService, decal)
+		local ok, loaded = insert(decal, "a texture")
 		local found = ok and loaded:FindFirstChildWhichIsA("Decal", true)
 		return if found then found.Texture else nil
 	end
@@ -121,9 +144,8 @@ local function build(name: string): Model?
 	if entry == nil or entry.model == nil then
 		return nil
 	end
-	local ok, loaded = pcall(InsertService.LoadAsset, InsertService, entry.model)
+	local ok, loaded = insert(entry.model, name)
 	if not ok then
-		warn(`[Creatures] {name} failed to load: {tostring(loaded)}`)
 		return nil
 	end
 	local texture = textureOf(entry.texture, entry.decal)
