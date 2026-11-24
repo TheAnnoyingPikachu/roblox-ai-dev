@@ -94,6 +94,8 @@ Spells.HOT = {
 	creature_flamingo_peacock_forge = { "tail", C.GOLD },
 	creature_lion_sahara_forge = { "nose", C.SUN },
 	creature_elephant_sahara_forge = { "nose", C.SUN },
+	creature_tortoise_sahara_forge = { "chest", C.SUN },
+	creature_rhino_sahara_forge = { "horn", C.SUN },
 } :: { [string]: { any } }
 local WHITE = Color3.new(1, 1, 1)
 

@@ -352,9 +352,8 @@ def guardian_weights(p):
             leg = "leg_bl"
         elif p.x <= 0 and -0.07 < p.y < 0.14:
             leg = "leg_br"
-    # each leg whole from its top, under the armour: blended lower (z -0.12..-0.18), the long faces of its thigh
-    # ran from a still top edge to a turning shin and stretched in every big move (SHANNON saw it in the power attack)
-    down = ramp(-0.05, -0.08, p.z) if leg else 0.0
+    # the legs blend over the band where they leave the body; AnimalMoves.STIFF keeps every clip's leg turns small
+    down = ramp(-0.12, -0.18, p.z) if leg else 0.0
     if down > 0:
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
@@ -657,26 +656,25 @@ REGIONS = {
     "creature_lion_sun_forge": lion("Sun Lion", 16.05, 0.0, "efa580ee", "Fierce Low-Poly Sunmane Lion"),
     # heights: the Blender models' (StationAssets.creature_flamingo[_peacock, _phoenix].size)
     "creature_lion_sahara_forge": {
-        "length": 22.0,
+        "length": 22.0,  # 1.37 x the Sun Lion
         "joints": {
             "body": (-0.02, -0.15, -0.03),
             "head": (-0.03, -0.33, 0.0),
-            "leg_fl": (0.06, -0.37, -0.075),
-            "leg_fr": (-0.1, -0.37, -0.075),
-            "leg_bl": (0.04, -0.05, -0.075),
-            "leg_br": (-0.08, 0.04, -0.075),
+            "leg_fl": (0.06, -0.37, -0.1),
+            "leg_fr": (-0.1, -0.37, -0.1),
+            "leg_bl": (0.04, -0.05, -0.1),
+            "leg_br": (-0.08, 0.04, -0.1),
             "tail": (-0.045, 0.12, -0.06),
         },
         "weights": guardian_weights,
         "pieces": guardian_pieces,
-        "cut": True,  # stone blocks and armour: blended, the legs' long faces stretched (up to 23 % of its surface)
         "small": 0.06,
         "notes": "Sahara Guardian: SHANNON's Sahara Guardian Rare Variant from ForgeGUI (artifact 30d3ddb4), one mesh with its sun halo, skinned to the Stations rig (decision 0102).",
     },
     # the source was turned 22.9 degrees about the vertical and centred on its feet first (ForgeGUI stood it
     # askew): its length along Y, head at -Y. A dense smooth model, thinned: shaded smooth, its skin blended.
     "creature_elephant_sahara_forge": {
-        "length": 30.0,
+        "length": 39.0,  # 1.3 x the Frost Mammoth: an Eternal is clearly bigger than its species' others
         "joints": {
             "body": (0.0, 0.05, 0.0),
             "head": (0.0, -0.2, 0.02),
@@ -693,7 +691,7 @@ REGIONS = {
         "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
     },
     "creature_tortoise_sahara_forge": {  # (the source turned 88.7 degrees first: straighten.py)
-        "length": 17.0,
+        "length": 19.5,  # 1.3 x the Island Tortoise
         "joints": {
             "body": (0.0, 0.0, 0.0),
             "head": (0.0, -0.36, -0.03),
@@ -710,7 +708,7 @@ REGIONS = {
         "notes": "Sunfire War-Tortoise: SHANNON's Sunfire War-Tortoise of the Desert from ForgeGUI (artifact 276820c6), one mesh with its sun cannon, skinned to the Stations rig (decision 0102).",
     },
     "creature_rhino_sahara_forge": {
-        "length": 20.0,
+        "length": 24.0,  # 1.3 x the Lava Rhino
         "joints": {
             "body": (0.0, 0.0, 0.0),
             "head": (0.0, -0.26, 0.03),

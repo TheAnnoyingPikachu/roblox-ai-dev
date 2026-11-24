@@ -1668,6 +1668,8 @@ AnimalMoves.POWERS = {
 		} },
 		{ 1.6, {} },
 	},
+	-- Sun Barrage: its species' own moves
+	-- Sunfire Horn: its species' own moves
 	-- Thorn Grove: its species' own moves
 	-- Diamond Prison: its species' own moves
 	-- Frozen Tomb

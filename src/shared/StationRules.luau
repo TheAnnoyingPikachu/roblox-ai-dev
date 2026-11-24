@@ -228,6 +228,8 @@ StationRules.FORGE = {
 	-- the Sahara Guardian (STATION-145): its model and moves only; no egg drops it until SHANNON says how it is won
 	sahara_elephant = "creature_elephant_sahara_forge", -- the Sahara Mammoth: as the Guardian, in no egg
 	sahara_lion = "creature_lion_sahara_forge",
+	sahara_rhino = "creature_rhino_sahara_forge",
+	sahara_tortoise = "creature_tortoise_sahara_forge",
 	shadow_lion = "creature_lion_shadow_forge",
 	sphinx_jackal = "creature_jackal_sphinx_forge",
 	star_meerkat = "creature_meerkat_star_forge",
