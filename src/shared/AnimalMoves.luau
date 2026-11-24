@@ -1502,6 +1502,51 @@ AnimalMoves.POWERS = {
 		} },
 		{ 1.6, {} },
 	},
+	-- Dawnbreaker
+	creature_elephant_sahara_forge = {
+		{ 0, {} },
+		{
+			0.35,
+			{
+				body = { 14, 0, 0, 0, 0.18, 0.25 },
+				head = { 44 },
+				leg_fl = { 30 },
+				leg_fr = { 26 },
+				leg_bl = { -14 },
+				leg_br = { -14 },
+				tail = { -14 },
+			},
+		},
+		{
+			0.76,
+			{
+				body = { 22, 0, 0, 0, 0.28, 0.32 },
+				head = { 54 },
+				leg_fl = { 48 },
+				leg_fr = { 44 },
+				leg_bl = { -22 },
+				leg_br = { -22 },
+				tail = { -18 },
+			},
+		},
+		{
+			0.9,
+			{
+				body = { -10, 0, 0, 0, -0.1, -0.5 },
+				head = { -12 },
+				leg_fl = { -18 },
+				leg_fr = { -16 },
+				leg_bl = { 12 },
+				leg_br = { 12 },
+				tail = { 20 },
+			},
+		},
+		{ 1.15, {
+			body = { -5, 0, 0, 0, -0.04, -0.3 },
+			head = { -10 },
+		} },
+		{ 1.6, {} },
+	},
 	-- Thorn Grove: its species' own moves
 	-- Diamond Prison: its species' own moves
 	-- Frozen Tomb

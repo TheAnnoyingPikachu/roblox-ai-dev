@@ -1260,6 +1260,61 @@ AXE_KEYS = [
 IRON, HAFT = (0.1, 0.08, 0.08), (0.28, 0.15, 0.07)
 
 
+def dawnbreaker(f):  # Sahara Mammoth
+    k, t = f.k, f.t
+    paws = (f.A["paw_l"] + f.A["paw_r"]) / 2
+    feet = Vector((paws.x, paws.y, f.T.z))
+    back = f.A["back"]  # the tip of the sun spike on its back
+    f.kit.aura(GOLD, 0.2 * env(t, 0.1, 0.6, 0.9, 1.1), 5)
+    g = env(t, 0.1, 0.5, 0.95, 1.25)
+    if g > 0:  # a sun wheel blazes over its back and its tusks glow
+        f.kit.ring(back, 1.5 * k * g, 0.1 * k, SUN, 9, g, Vector((0, 1, 0)), n=24)
+        for i in range(12):
+            a = t * 2 + i / 12 * math.tau
+            d = Vector((math.cos(a), 0.0, math.sin(a)))
+            f.kit.spike(back + d * 1.6 * k * g, back + d * (2.6 + 0.8 * (i % 2)) * k * g, 0.16 * k, YELLOW, 9, g)
+        f.kit.orb(f.A["nose"], 0.45 * k * g, SUN, 8, g)
+    s = env(t, 0.25, 0.7, 1.2, 1.5)
+    if s > 0:  # a sun sigil turns on the ground under the target, gems circling over it
+        f.kit.circle(f.T, 3.4 * k * s, GOLD, t * 1.5, 6, 0.9 * s, 12)
+        for i in range(4):
+            a = t * 3 + i / 4 * math.tau
+            f.kit.diamond(f.TC + Vector((math.cos(a), math.sin(a), 0.0)) * 2.6 * k + Z(1.5 * k), 0.25 * k, 0.6 * k, VIOLET, 7, s, spin=t * 6)
+    u = seg(t, 0.84, 1.3)
+    if u is not None:  # it stamps: a shock rolls out from its feet and a line of sun spikes races to the target
+        run = ease(min(1, (t - 0.84) / (IMPACT - 0.84)))
+        sink = 1 - ease(max(0, (t - 1.05) / 0.25))
+        f.kit.shock(feet + Z(0.08), (1 + 4 * ease(min(1, u * 2))) * k, 0.1 * k, SUN, 1 - min(1, u * 2))
+        for i in range(9):
+            v = (i + 1) / 10
+            if v <= run and sink > 0:
+                side = Vector((0.5 if i % 2 else -0.5, 0.0, 0.0)) * k
+                p = feet.lerp(f.T, v) + side
+                f.kit.spike(p, p + side * 0.6 + Z((1.2 + 1.8 * v) * k * sink), 0.35 * k, GOLD if i % 2 else YELLOW, 8, sink)
+    u = seg(t, IMPACT, 1.55)
+    if u is not None:
+        rise = ease(min(1, u * 3.5)) * (1 - ease(max(0, (u - 0.65) / 0.35)))
+        if rise > 0:  # two colossal tusks of light erupt either side of the target and cross over it
+            for sgn in (-1, 1):
+                pts = []
+                for j in range(11):
+                    a = j / 10 * 1.4
+                    pts.append(f.T + Vector((sgn * (3.2 - 4.2 * (1 - math.cos(a))), 0.0, 7.5 * math.sin(a))) * k * rise)
+                f.kit.tube(pts, 0.75 * k, SUN, 6, rise, taper=lambda x: 1 - 0.92 * x)
+                f.kit.tube(pts, 0.85 * k, GOLD, 3, 0.35 * rise, taper=lambda x: 1 - 0.92 * x)
+            f.kit.light(f.TC, SUN, 14 * rise)
+        for i in range(12):  # a starburst of rays
+            a = i / 12 * math.tau
+            d = Vector((math.cos(a), math.sin(a), 0.35)).normalized()
+            f.kit.spike(f.TC, f.TC + d * (1 + 6 * ease(u)) * k, 0.3 * k * (1 - u), YELLOW, 9, 1 - u)
+        f.kit.shock(f.T + Z(0.08), (1 + 8 * ease(u)) * k, 0.1 * k, VIOLET, 1 - u)
+        for i in range(8):  # gems fly up and out
+            a = i / 8 * math.tau + 0.4
+            p = f.TC + Vector((math.cos(a), math.sin(a), 0.0)) * 2.2 * k * (0.4 + ease(u)) + Z((5 * u - 4 * u * u) * k)
+            f.kit.diamond(p, 0.3 * k, 0.7 * k, VIOLET, 7, 1 - u, spin=u * 9)
+    impact(f, SUN, 6, 93)
+
+
 def war_axe(f):  # War Elephant
     """the axe in its trunk grows into a huge axe of iron and fire, which it swings up over its head and brings
     down through the target, splitting the ground"""
@@ -1456,6 +1511,9 @@ CONCEPTS = {
     }),
     "creature_elephant_frost_forge": ("Frost Mammoth", {
         "m_tomb": ("Frozen Tomb", "Trumpets a swirl of frost, slams down and sends a line of ice spikes racing to the target, freezing it in a block of ice that shatters.", TRUMPET, {}, frozen_tomb),
+    }),
+    "creature_elephant_sahara_forge": ("Sahara Mammoth", {
+        "m_dawn": ("Dawnbreaker", "A sun wheel blazes over its back as a sun sigil turns under the target; it stamps, a line of sun spikes races along the ground, and two colossal tusks of light erupt either side of the target and cross over it.", AXE_KEYS, {}, dawnbreaker),
     }),
     "creature_elephant_war_forge": ("War Elephant", {
         "m_volley": ("Burning Volley", "A war rune flares over its back and fires a volley of flaming spears high into the air, which rain down on the target.", TRUMPET, {}, burning_volley),

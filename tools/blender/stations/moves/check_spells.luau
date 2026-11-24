@@ -209,6 +209,7 @@ for _, asset in { -- every animal model's spell (the variants' own, or their spe
 	"creature_elephant_forge",
 	"creature_elephant_frost_forge",
 	"creature_elephant_war_forge",
+	"creature_elephant_sahara_forge",
 } do
 	table.insert(keys, asset)
 end

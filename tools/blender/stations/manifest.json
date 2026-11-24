@@ -9864,22 +9864,22 @@
       ],
       "creature_lion_sahara_forge_leg_fl": [
         1.377,
-        3.998,
+        4.571,
         8.492
       ],
       "creature_lion_sahara_forge_leg_fr": [
         -2.295,
-        3.998,
+        4.571,
         8.492
       ],
       "creature_lion_sahara_forge_leg_bl": [
         0.918,
-        3.998,
+        4.571,
         1.148
       ],
       "creature_lion_sahara_forge_leg_br": [
         -1.836,
-        3.998,
+        4.571,
         -0.918
       ],
       "creature_lion_sahara_forge_tail": [
@@ -9893,6 +9893,69 @@
       -0.459,
       5.604,
       3.443
+    ]
+  },
+  "creature_elephant_sahara_forge": {
+    "fbx": "build/blender/stations/creature_elephant_sahara_forge.fbx",
+    "png": "build/blender/stations/creature_elephant_sahara_forge.png",
+    "preview": "build/blender/stations/previews/creature_elephant_sahara_forge_rest.png",
+    "size_studs": [
+      13.77,
+      17.34,
+      30.0
+    ],
+    "tris": 12000,
+    "parts": {
+      "creature_elephant_sahara_forge_body": 12000
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_elephant_sahara_forge_body": [
+        0.0,
+        8.668,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_elephant_sahara_forge_head": [
+        0.0,
+        9.131,
+        5.756
+      ],
+      "creature_elephant_sahara_forge_leg_fl": [
+        4.025,
+        5.681,
+        4.894
+      ],
+      "creature_elephant_sahara_forge_leg_fr": [
+        -4.025,
+        5.681,
+        4.894
+      ],
+      "creature_elephant_sahara_forge_leg_bl": [
+        3.162,
+        5.681,
+        -7.756
+      ],
+      "creature_elephant_sahara_forge_leg_br": [
+        -3.45,
+        5.681,
+        -7.756
+      ],
+      "creature_elephant_sahara_forge_tail": [
+        -1.725,
+        6.831,
+        -10.918
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.0,
+      8.556,
+      -1.431
     ]
   }
 }
