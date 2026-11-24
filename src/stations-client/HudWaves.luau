@@ -266,7 +266,7 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 		local big = BIG[rarity] or 0
 		reveal.Text = string.upper(rarity) .. string.rep("!", big)
 		reveal.TextColor3 = RARITY_COLOUR[rarity] or C.text
-		local lines = { StationTrade.nameOf(a) }
+		local lines = { `{StationTrade.nameOf(a)} · {App.ROLE_NAME[StationRules.role(a)] or ""}` }
 		local def = StationConfig.egg(a.egg or "")
 		if a.v and def then
 			for _, drop in def.rare do
