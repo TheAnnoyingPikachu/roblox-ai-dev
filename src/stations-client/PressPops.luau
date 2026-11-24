@@ -520,9 +520,18 @@ function PressPops.lit(parts: Card, count: number)
 end
 
 -- The press has fired: a big burst (gold when it was on time: `hot`), the card springs up and away and is gone.
-function PressPops.fired(card: GuiObject, hot: boolean)
+function PressPops.fired(card: GuiObject, hot: boolean, failed: boolean?)
 	task.delay(0.34, card.Destroy, card)
-	PressPops.burst(card, if hot then PressPops.GOLD else PressPops.LIT, card.AbsoluteSize.X * 1.25, 14)
+	if failed then -- messed up: a red jolt, no burst
+		card.Rotation = 8
+		TweenService:Create(card, TweenInfo.new(0.3, Enum.EasingStyle.Elastic), { Rotation = 0 }):Play()
+		local e = card:FindFirstChildOfClass("UIStroke")
+		if e then
+			e.Color = Color3.fromRGB(255, 80, 80)
+		end
+	else
+		PressPops.burst(card, if hot then PressPops.GOLD else PressPops.LIT, card.AbsoluteSize.X * 1.25, 14)
+	end
 	local s = card:FindFirstChild("Punch") :: UIScale?
 	if s then
 		s.Scale = 1.18

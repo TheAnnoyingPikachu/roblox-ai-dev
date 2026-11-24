@@ -632,7 +632,11 @@ function WaveShow.run(
 			local last = show.log[#show.log]
 			local final = e.hp <= 0 and e.t == last.t and e.side == last.side and e.slot == last.slot -- the blow that ends the fight
 			if e.side == 1 then
-				actor.model:SetAttribute("Power", e.energy)
+				local spent = false -- its power tap is laid but not landed yet: its meter stays empty, no second card
+				for _, tap in show.taps do
+					spent = spent or (tap.slot == e.slot and tap.t > e.t)
+				end
+				actor.model:SetAttribute("Power", if spent then 0 else e.energy)
 			end
 			local ko = e.hp <= 0
 			if not ranged(kind) and not e.click then -- a melee attacker freezes with its target; a shooter has nothing to hit
@@ -662,6 +666,11 @@ function WaveShow.run(
 			elseif e.shielded then
 				for _, m in present(show) do
 					pop(m, "BLOCKED!", "shield")
+				end
+			elseif e.fail and e.side == 1 then
+				local whose = members[(show.team[e.slot] :: any).owner or 1]
+				if whose and hostOf[whose] == player then
+					pop(whose, "MISSED!", "shield")
 				end
 			end
 			target.hp, target.version = e.hp, target.version + 1
@@ -888,7 +897,9 @@ function WaveShow.power(player: Player, seat: number, presses: number?): (boolea
 		return false, "power"
 	end
 	local count: number? = nil
-	if presses and presses > 0 then
+	if presses == BattleRules.FAILED then -- messed up (the client's word: it only costs the player)
+		count = BattleRules.FAILED
+	elseif presses and presses > 0 then
 		local filled: number? = nil -- when the meter last filled, as far as the show has played
 		for _, e in show.log do
 			if e.t > seen then

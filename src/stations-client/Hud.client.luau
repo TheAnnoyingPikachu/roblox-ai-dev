@@ -2799,13 +2799,14 @@ local function firePower(slot: number, presses: number?)
 		return
 	end
 	p.sent = true
-	if p.card then -- done: it bursts and is gone at once, never waiting for the attack to play
-		Press.pops.fired(p.card, p.card:GetAttribute("Hot") == true)
+	local failed = presses == BattleRules.FAILED
+	if p.card then -- done: it bursts (red when messed up) and is gone at once, never waiting for the attack to play
+		Press.pops.fired(p.card, p.card:GetAttribute("Hot") == true, failed)
 		p.card = nil
 	end
 	local ok, code = request:InvokeServer("power", slot, presses)
 	for _ = 1, 20 do -- turned down (no foe between rushes, a moment early): sent again, so a press is never lost
-		if ok or code == "no_fight" or not p.full then
+		if ok or failed or code == "no_fight" or not p.full then
 			break
 		end
 		task.wait(0.25)
@@ -2815,7 +2816,7 @@ local function firePower(slot: number, presses: number?)
 		Style.sound("claim")
 	else
 		p.sent = false
-		if p.full then -- turned down for good while the meter is still full: a fresh card to press again
+		if p.full and not failed then -- turned down for good while the meter is still full: a fresh card to press again
 			Press.on(p, slot)
 		end
 	end
@@ -3035,8 +3036,8 @@ do
 			local window = math.max(0.5, BattleRules.MASH_BY - FightFx.TAP_AHEAD - ping)
 			p.mashUntil = p.fullAt + window
 			task.delay(window, function()
-				if p.full and not p.sent and p.presses > 0 then
-					firePower(slot, p.presses)
+				if p.full and not p.sent and p.presses > 0 then -- short of MASH_FAIL: messed up
+					firePower(slot, if p.presses < BattleRules.MASH_FAIL then BattleRules.FAILED else p.presses)
 				end
 			end)
 		end
@@ -3066,6 +3067,8 @@ do
 			end
 		elseif p.press == "chain" then
 			chainHit(p, slot, p.marked + 1)
+		elseif p.press == "needle" and p.card and p.card:GetAttribute("Hot") ~= true then
+			firePower(slot, BattleRules.FAILED) -- stopped outside the green
 		else
 			firePower(slot)
 		end
@@ -3087,7 +3090,7 @@ do
 		elseif not down and p.holdAt then
 			local tenths = math.clamp(math.floor((os.clock() - p.holdAt) * 10), 0, 30)
 			p.holdAt = nil
-			firePower(slot, tenths)
+			firePower(slot, if tenths < BattleRules.RING_FAIL then BattleRules.FAILED else tenths) -- let go too soon
 		end
 	end
 
@@ -3146,6 +3149,8 @@ plates:GetPropertyChangedSignal("Visible"):Connect(function()
 					Press.hold(slot, down)
 				elseif down and p.press ~= "ring" and keys[if p.press == "chain" then p.marked + 1 else 1] == key then
 					Press.tap(slot) -- the chain's next key, or the needle's or the mash's
+				elseif down and p.press == "chain" and table.find(keys, key) then
+					firePower(slot, BattleRules.FAILED) -- one of its keys out of order
 				end
 			end
 		end

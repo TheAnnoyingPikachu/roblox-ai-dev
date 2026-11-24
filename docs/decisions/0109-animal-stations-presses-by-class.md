@@ -55,6 +55,20 @@ Date: 2026-11-24. Task STATION-128.
   these keys are bound above the character's controls (`PressPops.listen`), so they never move or jump it. The
   number keys no longer press.
 
+## Amended (SHANNON, 2026-11-24): more forgiving, with a fail
+
+- SHANNON: "make the duration of the QTEs a bit more forgiving but give them all a fail condition as punishment
+  for messing them up"; "one animal cant gen a power attack again before the player has a chance to do the last one".
+- Longer: `AUTO_FIRE` 6 s (was 4), `PERFECT_EARLY` 0.35 (0.25: a wider green), `PERFECT_LATE` 0.8 (0.55),
+  `MASH_BY` 4.5 (3.6).
+- A fail for each: a chain key out of order, a needle stopped outside the green, a ring let go before
+  `RING_FAIL` (6 tenths), a mash short of `MASH_FAIL` (4) when its time is up. The client judges it on what the
+  player saw and sends `presses` = `FAILED` (-1); the meter is spent on a plain hit marked `fail` and "MISSED!"
+  pops. Remote contract: `power`'s second integer is now -1 to 30. Believing the client here is safe: it can
+  only cost the player.
+- A meter whose tap is laid but not landed shows empty in the replay (`WaveShow`), so no second card pops for
+  the same power; a full meter already holds until its press is done, failed or fired itself.
+
 ## Evidence
 
 - `BattleRules.spec`: each class's press, four classes four presses. 786 specs pass.

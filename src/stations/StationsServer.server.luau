@@ -1298,7 +1298,8 @@ local router = Router.new({
 		},
 		-- fire the power attack of the animal in team slot `n` (decision 0092), with a mash's presses (0106)
 		power = {
-			args = { Payload.int({ min = 1, max = 4 }), Payload.optional(Payload.int({ min = 0, max = 30 })) },
+			-- presses -1 (BattleRules.FAILED): the press was messed up, the power spent on a plain hit
+			args = { Payload.int({ min = 1, max = 4 }), Payload.optional(Payload.int({ min = -1, max = 30 })) },
 			handler = WaveShow.power,
 		},
 		-- the clicks since the client last sent: each a strike (decision 0106); half a token, so clicking

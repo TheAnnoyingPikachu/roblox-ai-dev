@@ -596,6 +596,21 @@ describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)"
 		expect(tapped(tap).perfect).toBeNil()
 	end)
 
+	it("spends a messed-up press (FAILED) on a plain hit marked fail, the meter emptied", function()
+		local solo, foe = { owned("lion") }, { owned("rhino") }
+		local base = {}
+		BattleRules.battle(solo, foe, base, {}, ready)
+		local at = filled(base, 1)
+		local good, failed = {}, {}
+		BattleRules.battle(solo, foe, good, { { slot = 1, t = at + 1, presses = 8 } }, ready)
+		BattleRules.battle(solo, foe, failed, { { slot = 1, t = at + 1, presses = BattleRules.FAILED } }, ready)
+		local miss = tapped(failed)
+		expect(miss.fail).toBe(true)
+		expect(miss.power).toBe(false)
+		expect(miss.energy).toBe(0)
+		expect(miss.dmg < tapped(good).dmg).toBeTruthy()
+	end)
+
 	it("chains power attacks by different animals within COMBO_SECONDS into a combo", function()
 		local base = {}
 		BattleRules.battle(one, two, base, {}, ready)

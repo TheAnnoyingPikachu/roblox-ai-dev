@@ -29,7 +29,7 @@ LevelRules.SAMPLE_EVERY = 5 -- a first clear drops a sample per this many waves 
 -- STEEP_GROWTH on the first steep wave and by more on every wave after (twice the exponent STEEP_BEND / 2
 -- waves on), so however fast a run's boons stack (WaveRuns), the waves outgrow them and end in a wall.
 LevelRules.LAST = 300
-LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.015, 200 -- retuned for the small boons (0110)
+LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.014, 200 -- retuned for the small boons (0110)
 LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
 
 -- What every stat of a foe is multiplied by at `level`.

@@ -287,8 +287,9 @@ end
 -- `setup` (decision 0098: a wave run) starts side 1 hurt or stronger: `hp` its HP by slot as a share of
 -- max HP (0 = knocked out), `energy` its meters' share full, `dmg`, `maxHp` and `tempo` (attack time)
 -- multiplied in after the group bonuses. The fourth result is side 1's HP at the end, as shares by slot.
-BattleRules.AUTO_FIRE = 4
-BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.5, 0.25, 0.55
+-- more forgiving, with a fail (SHANNON, 2026-11-24): was 4 s, 0.25 s and 0.55 s
+BattleRules.AUTO_FIRE = 6
+BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.5, 0.35, 0.8
 BattleRules.PERFECT = 1.5
 BattleRules.COMBO_SECONDS, BattleRules.COMBO_PCT, BattleRules.COMBO_MAX = 3, 25, 4
 BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.2, 6, 0.5
@@ -329,7 +330,12 @@ BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 --   combo, one shield, one setup.
 BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 2.4, 0.6, 1 / 12
 BattleRules.NEEDLE_EVERY = 1.5
-BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 8, 3.6, 12
+BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 8, 4.5, 12
+-- A press messed up (SHANNON, 2026-11-24: "a fail condition as punishment"): a chain's wrong key, a needle
+-- stopped outside the green, a ring let go before RING_FAIL tenths, a mash short of MASH_FAIL when time is up.
+-- The client judges it on what the player saw and sends FAILED as the tap's `presses` (it can only cost the
+-- player): the meter is spent on a plain hit, marked `fail`.
+BattleRules.FAILED, BattleRules.RING_FAIL, BattleRules.MASH_FAIL = -1, 6, 4
 BattleRules.HOLD_TENTHS = 12 -- the ring fills in 1.2 s of holding
 BattleRules.SPLASH, BattleRules.CROWD, BattleRules.CROWD_SHARE, BattleRules.KNOCKBACK = 0.5, 5, 0.6, 1
 export type Hit = {
@@ -351,6 +357,7 @@ export type Hit = {
 	also: { { slot: number, dmg: number, hp: number } }?,
 	revives: { { slot: number, hp: number } }?, -- the allies its power attack raised (decisions 0104, 0105)
 	click: boolean?, -- a click's strike (decision 0106)
+	fail: boolean?, -- a power tap whose press was messed up: a plain hit, the meter spent
 }
 export type Tap = { slot: number, t: number, presses: number?, owner: number? }
 
@@ -560,7 +567,14 @@ function BattleRules.battle(
 	end
 
 	-- `me` attacks at `now`; `power` x damage and heal
-	local function strike(me: Fighter, power: number, tapped: boolean?, perfect: boolean?, click: boolean?)
+	local function strike(
+		me: Fighter,
+		power: number,
+		tapped: boolean?,
+		perfect: boolean?,
+		click: boolean?,
+		failed: boolean?
+	)
 		local enemies = sides[3 - me.side]
 		local d = (if me.side == 2 then facing(me.spot) elseif click and players > 1 then nearest(me.owner) else nil)
 			or target(enemies, now) :: Fighter
@@ -633,6 +647,7 @@ function BattleRules.battle(
 				energy = math.min(1, me.energy / BattleRules.POWER_COST),
 				also = also,
 				click = click,
+				fail = failed,
 			}
 			table.insert(log, entry :: Hit)
 		end
@@ -771,7 +786,11 @@ function BattleRules.battle(
 				now = math.max(now, tap.t)
 				full[c] = nil
 				c.energy -= BattleRules.POWER_COST
-				strike(c, BattleRules.POWER, true, BattleRules.perfect(c.press, since, tap.presses))
+				if tap.presses == BattleRules.FAILED then
+					strike(c, 1, true, false, nil, true)
+				else
+					strike(c, BattleRules.POWER, true, BattleRules.perfect(c.press, since, tap.presses))
+				end
 			end
 			continue
 		end

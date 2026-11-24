@@ -22,7 +22,8 @@
     "studio/tasks/STATION-127.json",
     "studio/tasks/STATION-128.json",
     "src/stations/WaveShow.luau",
-    "src/stations-client/Creatures.client.luau"
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/StationsServer.server.luau"
   ],
   "tests": [
     "BattleRules.spec.luau"
