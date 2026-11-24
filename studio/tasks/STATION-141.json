@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-141",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The moments from the Moments concept board (decision 0114): messages as one stack top right (paper at the ranch, glass in a fight, a coloured dot for the kind), another player's rare hatch as a strip in ink across the top, a level card that says what the level unlocked with one click to it, where a hatched animal went under its reveal, and the loading cover in the new look.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-140"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudMoments.luau",
+    "src/stations-client/HudAnimals.luau",
+    "src/stations-client/HudEggs.luau",
+    "src/stations-client/HudWaves.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/LoadCover.client.luau",
+    "docs/checkpoints/STATION-LOOK.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-141.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Messages stack top right, up to four, the oldest leaving first; paper at the ranch and glass in a fight; the dot green for done, blue for news, pink for a refusal, gold for a reward with its picture",
+    "Another player's epic or rarer hatch runs across the top as a strip, the rarity in its colour, and leaves after five seconds",
+    "A new player level shows a card with the level, what it unlocked and 'See what is inside' (opens that egg in Eggs), or the next egg's level; never over a fight",
+    "A hatch's reveal says 'Joined your team', or that the team is full with 'Swap it in' (opens the animal in Animals); its words name the class",
+    "The loading cover is a paper card with the reason, 'nothing is lost', a moving bar and a tip"
+  ],
+  "verification": "selene 0 errors 0 warnings; lune run tests/run: 810 pass. Seen in Studio (one player, offline save): the Tortoise's reveal with 'Joined your team' under it; a strip 'BlueRanger hatched a MYTHIC Shadow Lion!' sent from the server, and it hid itself after; the claimed day 1 as a reward message with the coin pile and the gold dot; after winning wave 1, 'Level 2! Next: the Safari Egg at level 5' (seen during the next wave, which is why the card now waits for the fight to end). No script errors.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Not built from the board: a bigger burst and a longer chime for rarer hatches (the reveal already scales its rays and chime with rarity, decision of STATION-124), 'Keep in the barn' (the reveal ends by itself; a full team's animal is in the barn already). The loading bar sweeps instead of filling, since kit Saves reports no share of the wait. Not tried: the level card waiting out a fight and then showing, the 'Swap it in' button (needs a full team), the loading cover (needs a save held by another server), messages in a fight's glass, a phone (the stack's place under the notes)."
+}

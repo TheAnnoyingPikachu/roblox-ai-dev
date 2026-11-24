@@ -20,7 +20,7 @@ loud colour and always means "press this now". Keys show on a PC, tap bubbles on
 | STATION-138 | The ranch HUD: level and coin pills, the dock that is always up, goal strip, To battle, timers, notes | Explore | built (key caps on world prompts still to do) |
 | STATION-139 | The fight in glass: plates along the bottom, the story along the top, run info; boon cards, the vote, the run's end | Fight, Result | built (not: the team mate's pill, the vote's ring) |
 | STATION-140 | Menus: animals in three columns with Seen, eggs and vendor in one window with odds, the wave road, the ranch grid, the gifts' week | Animals, Eggs, Waves, RanchGifts | built (desk only; Seen is "what your eggs can still give") |
-| STATION-141 | Moments: the hatch reveal with odds and where it goes, the level card, the server strip, the loading cover | Moments | to do |
+| STATION-141 | Moments: the hatch reveal with odds and where it goes, the level card, the server strip, the loading cover | Moments | built (no bigger burst per rarity than before) |
 | STATION-142 | The intro: the Ranger's loan, the fight that cannot be lost with its four lessons, the goodbye, three quick eggs, Skip (decision 0116) | Intro, IntroTaster, IntroOwn | built (lessons are chances, not pauses; no second loan yet) |
 | STATION-143 | Phone layouts of the ranch, the menus and the fight | PhoneExplore, PhoneFight | built for the ranch and the fight; NOT tried on a device; no press pad |
 
@@ -36,8 +36,8 @@ loud colour and always means "press this now". Keys show on a PC, tap bubbles on
 
 ## Still to do
 
-- STATION-141 (moments) is not started: hatch, level-up and messages are as before, with messages under the
-  goal strip (they still show over an open menu).
+- HUD icons: the brief is a board on the concept canvas ("HUD icons: the ForgeGUI brief"); the coin's three
+  versions are made (ForgeGUI job 9f069e3a), waiting for SHANNON's pick before the other sixteen.
 - The three-column menus (Animals, Eggs, Waves) are not folded for a phone yet.
 - STATION-144 (SHANNON's playtest): eggs now open one at a time, and the Gifts window no longer opens by itself
   after the first hatch. This reverses the RanchGifts board's "Opens after your first hatch" (SHANNON: "forcing
