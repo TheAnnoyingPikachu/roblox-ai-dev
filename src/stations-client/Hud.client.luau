@@ -2958,7 +2958,7 @@ do
 		p.fullAt, p.close = os.clock(), math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
 		p.sent, p.presses = false, 0
 		-- the reference's look (decision 0109, amended): PressPops draws the card
-		local k = uiScale.Scale * 1.05
+		local k = uiScale.Scale * 0.85 -- over the animals: compact
 		local wide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
 		local card, parts = Press.pops.card(clickFx, p.press, slot, k, wide, {
 			press = function()

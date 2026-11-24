@@ -23,9 +23,9 @@ PressPops.CLASS = {
 	mash = { name = "TITAN", colour = Style.C.gold },
 } :: { [string]: { name: string, colour: Color3 } }
 
-local GAP, DROP = 10, 26 -- between cards; how far under the lowest animal's middle the row's top is
+local GAP = 8 -- between cards, and a third of the room left beside the team
 
-type Pop = { card: GuiObject, model: Model, line: Frame, tip: Frame }
+type Pop = { card: GuiObject, model: Model, line: Frame, tip: Frame, lift: Vector3 }
 local pops: { Pop } = {}
 local marks: { [Model]: { lift: Vector3, dot: TextLabel } } = {}
 local gui: ScreenGui? = nil
@@ -69,38 +69,43 @@ local function step()
 			table.remove(pops, i)
 		end
 	end
-	-- the row: under the lowest animal, cards side by side in the order of their animals across the screen
+	-- beside the team (SHANNON: "appear not obstructing ... over the animals"): the camera stands behind the
+	-- team with the crowd straight ahead, so over the heads is over the enemies. The cards stand on the open
+	-- ground left and right of the team, at its height, the left animals' to the left and the rest to the
+	-- right, each tied across to its animal.
 	local heads: { [Pop]: Vector2 } = {}
 	local shown: { Pop } = {}
-	local rowY = -math.huge
+	local lo, hi, mid = math.huge, -math.huge, 0
 	for _, p in pops do
-		local h = onScreen(p.model:GetPivot().Position)
+		local h = onScreen(p.model:GetPivot().Position + p.lift)
+		local foot = onScreen(p.model:GetPivot().Position)
 		p.card.Visible, p.line.Visible, p.tip.Visible = h ~= nil, h ~= nil, h ~= nil
-		if h then
+		if h and foot then
 			heads[p] = h
 			table.insert(shown, p)
-			rowY = math.max(rowY, h.Y + DROP * scale)
+			local half = math.abs(foot.Y - h.Y) * 0.6 -- about half the animal's width on the screen
+			lo, hi, mid = math.min(lo, h.X - half), math.max(hi, h.X + half), mid + (h.Y + foot.Y) / 2
 		end
+	end
+	if #shown > 0 then
+		mid /= #shown
 	end
 	table.sort(shown, function(a, b)
 		return heads[a].X < heads[b].X
 	end)
-	local xs, mean = {}, 0
-	for i, p in shown do
-		local w = p.card.AbsoluteSize.X
-		xs[i] = if i == 1
-			then heads[p].X
-			else math.max(heads[p].X, xs[i - 1] + (w + shown[i - 1].card.AbsoluteSize.X) / 2 + GAP * scale)
-		mean += xs[i] - heads[p].X
-	end
-	local back = if #shown > 0 then mean / #shown else 0 -- keep the row centred over the team
+	local left = math.ceil(#shown / 2)
 	for i, p in shown do
 		local w, h = p.card.AbsoluteSize.X, p.card.AbsoluteSize.Y
-		local x = math.clamp(xs[i] - back, w / 2 + 8, view.X - w / 2 - 8)
-		local y = math.clamp(rowY, 0, view.Y - h - 8)
+		local out = if i <= left then left - i else i - left - 1 -- how many cards stand nearer the team on its side
+		local x = if i <= left
+			then lo - GAP * 3 * scale - w / 2 - out * (w + GAP * scale)
+			else hi + GAP * 3 * scale + w / 2 + out * (w + GAP * scale)
+		x = math.clamp(x, w / 2 + 8, view.X - w / 2 - 8)
+		local y = math.clamp(mid - h / 2, 8, view.Y - h - 8)
 		p.card.AnchorPoint = Vector2.new(0.5, 0)
 		p.card.Position = UDim2.fromOffset(x, y)
-		line(Vector2.new(x, y - 3 * scale), heads[p], p.line)
+		local edge = Vector2.new(x + (if i <= left then w / 2 else -w / 2), y + h / 2)
+		line(edge, heads[p], p.line)
 		p.tip.Position = UDim2.fromOffset(heads[p].X, heads[p].Y)
 	end
 	-- the other players' markers
@@ -412,7 +417,7 @@ function PressPops.attach(card: GuiObject, model: Model?, _press: string, k: num
 	corner(tip, math.floor(7 * k))
 	edge(tip, LILAC, math.max(1, 2 * k)).Transparency = 0.25
 	tip.Parent = gui
-	table.insert(pops, { card = card, model = model, line = l, tip = tip })
+	table.insert(pops, { card = card, model = model, line = l, tip = tip, lift = liftOf(model) })
 	step()
 end
 
