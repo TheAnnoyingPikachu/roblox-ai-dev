@@ -75,12 +75,13 @@ export type Profile = {
 	stars: string, -- the best stars won on each wave (decision 0097): character n is wave n's, "0" to "3"
 	chests: number, -- star chests opened (one is due every CHEST_STARS stars)
 	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
+	goals: { string }, -- ids of the goals finished and paid (decision 0115, StationGoals)
 }
 
 -- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
 -- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
 -- strip what it does not know. A save is stamped with the version of the server that last wrote it.
-StationProgress.VERSION = 1
+StationProgress.VERSION = 2 -- 2: goals (decision 0115)
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
@@ -100,6 +101,7 @@ StationProgress.MAX_PENDING = 20 -- eggs won that wait for room
 StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
 StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu shows the newest 20)
 StationProgress.CHEST_STARS = 15
+StationProgress.MAX_GOALS = 64 -- goal ids a save keeps (StationGoals has fewer)
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
 function StationProgress.defaults(_now: number): Profile
@@ -131,6 +133,7 @@ function StationProgress.defaults(_now: number): Profile
 		stars = "",
 		chests = 0,
 		trades = { day = 0, count = 0, total = 0, off = false, log = {} },
+		goals = {},
 	}
 end
 
@@ -339,6 +342,13 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 		p.stars = string.sub(string.gsub(record.stars, "[^0-3]", "0"), 1, StationProgress.MAX_STAR_WAVES)
 	end
 	p.chests = int(record.chests, 0, 1e6, 0)
+	local seen: { [string]: boolean } = {}
+	for _, id in if type(record.goals) == "table" then record.goals else {} do -- which ids exist is StationGoals' business
+		if type(id) == "string" and #id <= 16 and not seen[id] and #p.goals < StationProgress.MAX_GOALS then
+			seen[id] = true
+			table.insert(p.goals, id)
+		end
+	end
 	local stored = if type(record.trades) == "table" then record.trades else {}
 	p.trades.day = int(stored.day, 0, 1e7, 0)
 	p.trades.count = int(stored.count, 0, 1000, 0)

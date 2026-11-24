@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-138",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The ranch HUD (decision 0114, the Explore board): the level in an XP ring with coin and sample pills, a dock that is always up with keys 1 to 5, the goal strip, To battle (B), what is hatching and training with the time left, who else is here with Invite, and a note when an egg is ready.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-136",
+    "STATION-137"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-138.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "No menu has to be opened to reach Animals, Eggs, Ranch, Gifts or Travel",
+    "A dock key opens its menu, closes it again, and goes straight from one menu to another; keys do nothing during a fight or while typing",
+    "The dock, the goal, To battle and the timers make way for an open menu and for a fight",
+    "selene and stylua pass; the build matches the project"
+  ],
+  "verification": "Played in Studio (build dev, local, one player), no script errors: the pills, the goal strip and its reward, the dock with its icons and keys, the Travel pop-out beside its button, To battle with 'Wave 1 · your first fight', the timer card counting a Meadow Egg down, Play together and Invite. Keys: 1 opened Animals, 3 went from Animals to Ranch, 3 closed it, B opened the wave list, 5 opened Travel.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "The slide-out Menu button is gone (decision 0093's dock is replaced). The Admin button moved to the bottom left. During a fight the ranch's HUD hides (it used to slide to the middle of the left edge): leaving mid-wave is Skip or the result's Leave. World prompts still use Roblox's own look (key caps on prompts: later in this milestone). Phone layout: STATION-143."
+}

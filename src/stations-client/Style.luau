@@ -5,11 +5,13 @@
 -- squash when pressed. Client only, display only. Everything is laid out in "design units" inside a
 -- root frame that Hud.client scales to the screen, and every button is at least 44 units tall.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+local GardenIcons = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GardenIcons"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 
 local Style = {}
@@ -473,7 +475,7 @@ function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: st
 	local colour = if kind == "bad" then C.bad elseif kind == "good" then C.good else C.info
 	local f = Instance.new("TextLabel")
 	f.Name = "Toast"
-	f.AnchorPoint, f.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14)
+	f.AnchorPoint, f.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 80) -- under the goal strip
 	f.Size = UDim2.fromOffset(0, 46)
 	f.AutomaticSize = Enum.AutomaticSize.XY
 	f.TextWrapped = true -- a long message wraps onto more lines instead of running across the screen
@@ -727,6 +729,154 @@ function Style.clear(container: Instance)
 			child:Destroy()
 		end
 	end
+end
+
+-- Sun and Moon (decision 0114) ---------------------------------------------------------------------------
+-- The ranch and the hub keep the paper and ink above. A fight is the same shapes in dark glass with a
+-- thin violet edge, and gold is its one loud colour: it always means "press this now".
+Style.N = {
+	glass = Color3.fromRGB(24, 14, 44),
+	key = Color3.fromRGB(46, 31, 74),
+	edge = Color3.fromRGB(179, 107, 255),
+	lilac = Color3.fromRGB(227, 179, 255),
+	text = Color3.fromRGB(244, 236, 255),
+	muted = Color3.fromRGB(217, 204, 239),
+	gold = Color3.fromRGB(255, 194, 58),
+	good = Color3.fromRGB(124, 224, 122),
+	bad = Color3.fromRGB(255, 107, 142),
+	main = Color3.fromRGB(110, 43, 217),
+}
+local N = Style.N
+
+-- A glass panel: dark, a little see-through, a thin violet edge.
+function Style.glass(parent: Instance, size: UDim2, radius: number?): Frame
+	local f = Style.frame(parent, size, N.glass)
+	f.BackgroundTransparency = 0.1
+	Style.round(f, radius or 14)
+	Style.stroke(f, N.edge, 2)
+	return f
+end
+
+-- A paper pill over the world (the level, the coins, a goal, a note): a sand surface whose shadow is soft,
+-- so it sits on the scenery instead of standing off it like a button.
+function Style.pill(parent: Instance, size: UDim2, radius: number?): Frame
+	local f = surface(parent, size, C.sand, radius or 20)
+	local lip = f:FindFirstChild("Lip") :: Frame
+	local edge = lip:FindFirstChildOfClass("UIStroke") :: UIStroke
+	lip.BackgroundTransparency, edge.Transparency = 0.6, 0.6
+	return f
+end
+
+-- Small print (Nunito, never under 12): what a number means, a hint under a title.
+local SMALL = Font.new("rbxasset://fonts/families/Nunito.json", Enum.FontWeight.ExtraBold)
+function Style.small(parent: Instance, text: string, size: number?, colour: Color3?, fixed: UDim2?): TextLabel
+	local l = Style.text(parent, text, size or 13, colour or C.muted, fixed)
+	l.FontFace = SMALL
+	return l
+end
+
+-- A picture from the studio's own outlined set (Shared.GardenIcons; docs/assets/register.md, GARDEN-055):
+-- paw, egg, home, gift, flag, lock, swap, check, heart, cog, chart, calendar, book.
+function Style.image(name: string): string
+	return `rbxthumb://type=Asset&id={GardenIcons[name] or 0}&w=150&h=150`
+end
+
+function Style.icon(parent: Instance, name: string, size: number): ImageLabel
+	local i = Instance.new("ImageLabel")
+	i.Name = "Icon"
+	i.BackgroundTransparency = 1
+	i.Size = UDim2.fromOffset(size, size)
+	i.Image = Style.image(name)
+	i.ScaleType = Enum.ScaleType.Fit
+	i.Parent = parent
+	return i
+end
+
+-- Keys for a keyboard, tap bubbles for a touch screen (Roblox says which the player is using, and it can
+-- change mid-session). A player's "UiInput" attribute ("touch" or "keys") stands in for it on a desktop.
+function Style.touch(): boolean
+	local forced = Players.LocalPlayer:GetAttribute("UiInput")
+	if forced == "touch" or forced == "keys" then
+		return forced == "touch"
+	end
+	return UserInputService.PreferredInput == Enum.PreferredInput.Touch
+end
+
+local inputWatchers: { () -> () } = {}
+local keyCaps: { [GuiObject]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+local function inputChanged()
+	local touch = Style.touch()
+	for cap in keyCaps do
+		cap.Visible = not touch
+	end
+	for _, fn in inputWatchers do
+		fn()
+	end
+end
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(inputChanged)
+Players.LocalPlayer:GetAttributeChangedSignal("UiInput"):Connect(inputChanged)
+
+-- Call `fn` whenever the player changes between keys and touch.
+function Style.onInput(fn: () -> ())
+	table.insert(inputWatchers, fn)
+end
+
+-- A key cap: the key that does what its button does. Never shown on a touch screen. `night` is the glass
+-- version; paint it N.gold when its press is ready.
+function Style.key(parent: Instance, text: string, night: boolean?): TextLabel
+	local k = Instance.new("TextLabel")
+	k.Name = "Key"
+	k.Size = UDim2.fromOffset(24, 24)
+	k.AutomaticSize = Enum.AutomaticSize.X
+	k.BackgroundColor3 = if night then N.key else WHITE
+	k.BorderSizePixel = 0
+	k.Font = Ui.theme.font
+	k.Text = text
+	k.TextSize = 14
+	k.TextColor3 = if night then N.text else INK
+	k.ZIndex = 5
+	Style.round(k, 7)
+	Style.stroke(k, if night then N.lilac else INK, 2)
+	local p = Instance.new("UIPadding")
+	p.PaddingLeft, p.PaddingRight = UDim.new(0, 5), UDim.new(0, 5)
+	p.Parent = k
+	k.Visible = not Style.touch()
+	keyCaps[k] = true
+	k.Parent = parent
+	return k
+end
+
+-- A disc that fills clockwise from the top: returns it and a function that sets how full it is (0 to 1).
+-- Put a smaller circle on top of it to make a ring (an XP ring round a level, a cooldown round a button).
+function Style.pie(parent: Instance, size: number, colour: Color3, back: Color3): (Frame, (f: number) -> ())
+	local holder = Style.frame(parent, UDim2.fromOffset(size, size), back)
+	Style.round(holder, size)
+	local sweeps: { UIGradient } = {}
+	for side = 0, 1 do -- the right half fills first, then the left
+		local clip = Instance.new("Frame")
+		clip.BackgroundTransparency, clip.ClipsDescendants = 1, true
+		clip.Position, clip.Size = UDim2.fromScale(0.5 - side * 0.5, 0), UDim2.fromScale(0.5, 1)
+		local disc = Style.frame(clip, UDim2.fromScale(2, 1), colour)
+		disc.Position = UDim2.fromScale(side - 1, 0)
+		Style.round(disc, size)
+		local sweep = Instance.new("UIGradient") -- shows the half of the disc that lies behind its angle
+		sweep.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(0.5, 0),
+			NumberSequenceKeypoint.new(0.501, 1),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		sweep.Parent = disc
+		sweeps[side + 1] = sweep
+		clip.Parent = holder
+	end
+	local function set(f: number)
+		f = math.clamp(f, 0, 1)
+		sweeps[1].Rotation = math.min(f, 0.5) * 360
+		sweeps[2].Rotation = 180 + math.max(f - 0.5, 0) * 360
+	end
+	set(0)
+	return holder, set
 end
 
 return Style

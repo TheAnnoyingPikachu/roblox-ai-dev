@@ -119,6 +119,7 @@ local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local Rng = require(Shared:WaitForChild("Rng"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
+local StationGoals = require(Shared:WaitForChild("StationGoals"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
@@ -194,6 +195,35 @@ local function rollEggs(items: StationRewards.Items): { StationRules.Owned }
 		table.insert(animals, a :: StationRules.Owned)
 	end
 	return animals
+end
+
+-- Goals (decision 0115): whatever goal the save now shows as reached is paid, one after another, each
+-- with a note to the player. Called after every change of a save (onChanged).
+local payingGoals: { [Player]: boolean } = {}
+local function payGoals(player: Player)
+	if payingGoals[player] then
+		return
+	end
+	payingGoals[player] = true
+	for _ = 1, #StationGoals.LIST do
+		local p = saves.get(player)
+		local q = if p then StationProgress.sanitize(p, os.time()) else nil
+		local goal = if q then StationGoals.due(q) else nil
+		if q == nil or goal == nil then
+			break
+		end
+		local items = StationGoals.items(q, goal)
+		local animals, now = rollEggs(items), os.time()
+		Analytics.because(player, "goal")
+		local ok = apply(player, function(r)
+			return StationGoals.finish(r, goal.id, items, animals, now)
+		end)
+		if not ok then
+			break
+		end
+		remotes.fx(player, "goal", { text = goal.text, items = items })
+	end
+	payingGoals[player] = nil
 end
 
 local function rewardWeek(player: Player): (boolean, string?)
@@ -1602,6 +1632,9 @@ saves = Saves.start({
 			end
 		end
 		remotes.fx(player, "profile", StationProgress.public(profile))
+		if StationGoals.due(profile) then
+			task.defer(payGoals, player)
+		end
 		updateFame()
 		local i = ranchOf(player)
 		if i then
@@ -1629,6 +1662,7 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	payingGoals[player] = nil
 	task.defer(updateFame) -- after the player has gone
 	task.defer(Analytics.forget, player)
 	local t = trades[player]

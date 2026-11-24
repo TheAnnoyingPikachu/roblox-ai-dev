@@ -35,7 +35,6 @@ local nav = App.nav
 local show = App.show
 local waves = App.waves
 local coinsText = App.coinsText
-local dock = App.dock
 local darker = App.darker
 local fight = App.fight
 local plates = App.plates
@@ -383,13 +382,10 @@ do
 	local docked = false
 	S.fightTick = function(folder: Instance?, showing: boolean)
 		shieldButton.Visible = showing
-		if showing ~= docked then -- the dock (the Menu button and its open column) centred on the left edge in a fight
+		if showing ~= docked then -- the ranch's dock, goal and To battle make way for the fight (decision 0114)
 			docked = showing
-			local tall = dock.Size.Y.Offset + 160 - 104 -- from the Menu button's top to the open column's foot
-			local down = math.max(0, (root.Size.Y.Offset - tall) / 2 - 104)
-			TweenService:Create(nav, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-				Position = if showing then UDim2.fromOffset(0, down) else UDim2.new(),
-			}):Play()
+			S.fighting = showing
+			nav.Visible = not showing and S.openName == nil
 		end
 		-- knockouts and the power bar
 		local us, them = 0, 0

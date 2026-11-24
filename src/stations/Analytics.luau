@@ -23,6 +23,7 @@ local KIND: { [string]: string } = {
 	claim = "TimedReward",
 	wave_pay = "Gameplay",
 	run_pot = "Gameplay",
+	goal = "Gameplay",
 }
 
 local function guard(f: (...any) -> (), ...: any)
