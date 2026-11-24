@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-149",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "asset",
+  "objective": "The twelve egg models as the HUD icons draw them (SHANNON, 2026-11-24: 'those eggs are good, in fact make those eggs in blender and make them the 3D eggs you see'): a smooth shell shaded softly, each egg's own marks, and none of the scenery the icons leave out.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-146"
+  ],
+  "files": [
+    "tools/blender/stations/assets/eggs.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/egg_*.fbx",
+    "assets/stations/egg_*.png",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-149.json",
+    "tests/StationAssets.spec.luau"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each egg matches its HUD icon: the same shell colour and marks, nothing standing round it",
+    "Each is still one painted piece (and one Neon piece where it glows), standing on z = 0, under the triangle budget",
+    "The models are uploaded by the Upload Blender assets workflow and StationAssets.luau is the run's output"
+  ],
+  "verification": "Built with Blender 5.2 (build.py, full bake), presentation cards (--beauty) compared side by side with the icons. Triangles: 428 (mythic) to 8,088 (crown). Uploaded by the Upload Blender assets workflow, run 45496843749 (the twelve eggs only); its egg entries copied into uploaded.json by name and StationAssets.luau written again with tools/blender/write-assets-module.mjs.",
+  "output_artifacts": [
+    "assets/stations/egg_*.fbx",
+    "assets/stations/egg_*.png"
+  ],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "No ink outline on the models: a shell of flipped faces would darken the baked shading (the bake's occlusion sees every object). The Wild Egg lost its glowing mushrooms, so it has no Neon piece now. The Mythic Egg keeps its cut facets, as its icon does."
+}

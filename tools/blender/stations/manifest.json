@@ -2815,22 +2815,22 @@
     "png": "build/blender/stations/egg_meadow.png",
     "preview": "build/blender/stations/previews/egg_meadow.png",
     "size_studs": [
-      3.23,
-      3.35,
-      3.34
+      2.35,
+      2.92,
+      2.35
     ],
-    "tris": 5224,
+    "tris": 4020,
     "parts": {
-      "egg_meadow_body": 5224
+      "egg_meadow_body": 4020
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Meadow Egg: cream dappled green, in a nest of grass and daisies, a flowering vine, a butterfly.",
+    "notes": "Meadow Egg: cream dappled green, a flowering vine, a ladybird.",
     "glow": {},
     "centres": {
       "egg_meadow_body": [
         0.0,
-        1.673,
+        1.46,
         -0.0
       ]
     },
@@ -2841,35 +2841,23 @@
     "png": "build/blender/stations/egg_wild.png",
     "preview": "build/blender/stations/previews/egg_wild.png",
     "size_studs": [
-      3.52,
-      3.0,
-      3.55
+      2.52,
+      3.05,
+      2.53
     ],
-    "tris": 4490,
+    "tris": 3384,
     "parts": {
-      "egg_wild_body": 4350,
-      "egg_wild_body_glow": 140
+      "egg_wild_body": 3384
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Wild Egg: leaf-green with bark spots, bound in thorned vines, ferns and Neon mushrooms at its foot.",
-    "glow": {
-      "egg_wild_body_glow": [
-        90,
-        255,
-        200
-      ]
-    },
+    "notes": "Wild Egg: leaf-green with bark spots and claw marks, wound with a thorned vine and broad leaves.",
+    "glow": {},
     "centres": {
       "egg_wild_body": [
         0.0,
-        1.502,
+        1.527,
         -0.0
-      ],
-      "egg_wild_body_glow": [
-        0.049,
-        0.517,
-        -0.022
       ]
     },
     "joints": {}
@@ -2879,22 +2867,22 @@
     "png": "build/blender/stations/egg_safari.png",
     "preview": "build/blender/stations/previews/egg_safari.png",
     "size_studs": [
-      3.37,
-      3.49,
-      3.43
+      2.24,
+      2.92,
+      2.25
     ],
-    "tris": 5416,
+    "tris": 3444,
     "parts": {
-      "egg_safari_body": 5416
+      "egg_safari_body": 3444
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Safari Egg: sand-gold, spotted and painted, roped and strapped, hung with feathers and a tooth.",
+    "notes": "Safari Egg: sand-gold, spotted, a red and black zigzag band, a leather band with a brass buckle.",
     "glow": {},
     "centres": {
       "egg_safari_body": [
         0.0,
-        1.745,
+        1.46,
         -0.0
       ]
     },
@@ -2905,35 +2893,35 @@
     "png": "build/blender/stations/egg_golden.png",
     "preview": "build/blender/stations/previews/egg_golden.png",
     "size_studs": [
-      2.55,
-      3.54,
-      2.67
+      2.54,
+      3.48,
+      2.54
     ],
-    "tris": 6548,
+    "tris": 7732,
     "parts": {
-      "egg_golden_body": 6188,
+      "egg_golden_body": 7372,
       "egg_golden_body_glow": 360
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Golden Egg: beaten gold, hooped and ribbed, set with Neon violet gems, crowned, on a clawed stand.",
+    "notes": "Golden Egg: beaten gold, hooped and ribbed, set with Neon magenta gems, crowned.",
     "glow": {
       "egg_golden_body_glow": [
-        170,
-        70,
-        255
+        236,
+        60,
+        200
       ]
     },
     "centres": {
       "egg_golden_body": [
-        0.0,
-        1.75,
-        0.036
+        0.007,
+        1.719,
+        0.003
       ],
       "egg_golden_body_glow": [
-        -0.001,
-        2.307,
-        -0.063
+        0.0,
+        2.251,
+        -0.0
       ]
     },
     "joints": {}
@@ -9322,18 +9310,18 @@
     "png": "build/blender/stations/egg_dusk.png",
     "preview": "build/blender/stations/previews/egg_dusk.png",
     "size_studs": [
-      3.77,
-      3.6,
-      3.59
+      2.38,
+      3.49,
+      2.43
     ],
-    "tris": 4040,
+    "tris": 5124,
     "parts": {
-      "egg_dusk_body": 3932,
-      "egg_dusk_body_glow": 108
+      "egg_dusk_body": 5032,
+      "egg_dusk_body_glow": 92
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Dusk Egg: indigo to violet, gold hieroglyph bands, a scarab, Neon eyes of Horus and lamps, a crescent moon, on a sandstone step.",
+    "notes": "Dusk Egg: indigo to violet, gold hieroglyph bands, a scarab, Neon eyes of Horus and lamps, a crescent moon.",
     "glow": {
       "egg_dusk_body_glow": [
         255,
@@ -9344,46 +9332,46 @@
     "centres": {
       "egg_dusk_body": [
         0.0,
-        1.802,
+        1.746,
         -0.0
       ],
       "egg_dusk_body_glow": [
-        0.057,
-        1.042,
-        0.615
+        0.0,
+        1.392,
+        0.509
       ]
     },
     "joints": {},
     "eyes": [
       [
-        1.199,
-        1.315,
-        0.048,
+        1.149,
+        1.206,
+        -0.058,
         0.48
       ],
       [
-        1.216,
-        1.31,
-        0.048,
+        1.166,
+        1.204,
+        -0.058,
         0.34
       ],
       [
-        -1.088,
-        1.317,
-        0.048,
+        -1.149,
+        1.206,
+        -0.058,
         0.48
       ],
       [
-        -1.106,
-        1.313,
-        0.048,
+        -1.166,
+        1.204,
+        -0.058,
         0.34
       ]
     ],
     "lid": [
-      226,
-      176,
-      73
+      232,
+      184,
+      80
     ]
   },
   "egg_oasis": {
@@ -9391,22 +9379,22 @@
     "png": "build/blender/stations/egg_oasis.png",
     "preview": "build/blender/stations/previews/egg_oasis.png",
     "size_studs": [
-      4.27,
-      3.04,
-      4.44
+      2.38,
+      2.92,
+      2.67
     ],
-    "tris": 4568,
+    "tris": 4236,
     "parts": {
-      "egg_oasis_body": 4568
+      "egg_oasis_body": 4236
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Oasis Egg: turquoise with pink flamingo-feather stripes, in a pool with lily pads and a lotus, two palms behind.",
+    "notes": "Oasis Egg: turquoise with pink flamingo-feather stripes, a lotus on a lily pad at its foot.",
     "glow": {},
     "centres": {
       "egg_oasis_body": [
         0.0,
-        1.522,
+        1.46,
         -0.0
       ]
     },
@@ -9417,22 +9405,22 @@
     "png": "build/blender/stations/egg_ivory.png",
     "preview": "build/blender/stations/previews/egg_ivory.png",
     "size_studs": [
-      3.41,
-      3.85,
-      3.4
+      3.17,
+      3.81,
+      2.44
     ],
-    "tris": 3760,
+    "tris": 4180,
     "parts": {
-      "egg_ivory_body": 3760
+      "egg_ivory_body": 4180
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Ivory Egg: ivory in ochre and red war paint, two great tusks round its sides, a rhino horn, on rocks and bones.",
+    "notes": "Ivory Egg: ivory in ochre and red war paint, two great tusks round its sides, a rhino horn.",
     "glow": {},
     "centres": {
       "egg_ivory_body": [
         0.0,
-        1.926,
+        1.905,
         -0.0
       ]
     },
@@ -9443,18 +9431,18 @@
     "png": "build/blender/stations/egg_legend.png",
     "preview": "build/blender/stations/previews/egg_legend.png",
     "size_studs": [
-      3.84,
-      3.35,
-      3.09
+      2.27,
+      3.31,
+      2.34
     ],
-    "tris": 3748,
+    "tris": 4600,
     "parts": {
-      "egg_legend_body": 3712,
+      "egg_legend_body": 4564,
       "egg_legend_body_glow": 36
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Legend Egg: royal blue in gold laurel wreaths, a shield with a Neon star, on a marble plinth between crimson banners.",
+    "notes": "Legend Egg: royal blue in gold laurel wreaths, a shield with a Neon star.",
     "glow": {
       "egg_legend_body_glow": [
         255,
@@ -9465,13 +9453,13 @@
     "centres": {
       "egg_legend_body": [
         0.0,
-        1.675,
-        -0.0
+        1.655,
+        -0.007
       ],
       "egg_legend_body_glow": [
-        0.006,
-        1.5,
-        1.17
+        0.0,
+        1.46,
+        1.132
       ]
     },
     "joints": {}
@@ -9481,18 +9469,18 @@
     "png": "build/blender/stations/egg_mythic.png",
     "preview": "build/blender/stations/previews/egg_mythic.png",
     "size_studs": [
-      3.44,
-      3.55,
-      3.53
+      3.0,
+      2.86,
+      3.03
     ],
-    "tris": 684,
+    "tris": 428,
     "parts": {
-      "egg_mythic_body": 348,
-      "egg_mythic_body_glow": 336
+      "egg_mythic_body": 156,
+      "egg_mythic_body_glow": 272
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Mythic Egg: a faceted magenta crystal with Neon pink runes, floating shards, on a dark crystal cluster.",
+    "notes": "Mythic Egg: a faceted magenta crystal with Neon pink runes, shards floating beside it.",
     "glow": {
       "egg_mythic_body_glow": [
         255,
@@ -9503,13 +9491,13 @@
     "centres": {
       "egg_mythic_body": [
         0.0,
-        1.45,
-        -0.146
+        1.43,
+        -0.0
       ],
       "egg_mythic_body_glow": [
-        -0.02,
-        1.815,
-        0.288
+        -0.353,
+        1.625,
+        0.098
       ]
     },
     "joints": {}
@@ -9519,18 +9507,18 @@
     "png": "build/blender/stations/egg_divine.png",
     "preview": "build/blender/stations/previews/egg_divine.png",
     "size_studs": [
-      5.31,
-      3.7,
-      3.58
+      5.33,
+      3.58,
+      2.42
     ],
-    "tris": 4980,
+    "tris": 5820,
     "parts": {
-      "egg_divine_body": 4612,
+      "egg_divine_body": 5452,
       "egg_divine_body_glow": 368
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Divine Egg: pearl white with gold filigree, white feathered wings, a Neon gold halo, on a bank of cloud.",
+    "notes": "Divine Egg: pearl white with gold filigree, white feathered wings, a Neon gold halo.",
     "glow": {
       "egg_divine_body_glow": [
         255,
@@ -9541,13 +9529,13 @@
     "centres": {
       "egg_divine_body": [
         0.0,
-        1.529,
+        1.46,
         -0.0
       ],
       "egg_divine_body_glow": [
-        -0.002,
-        3.501,
-        0.06
+        -0.0,
+        3.381,
+        -0.056
       ]
     },
     "joints": {}
@@ -9558,17 +9546,17 @@
     "preview": "build/blender/stations/previews/egg_celestial.png",
     "size_studs": [
       3.6,
-      3.63,
-      3.38
+      3.58,
+      3.27
     ],
-    "tris": 4020,
+    "tris": 4328,
     "parts": {
-      "egg_celestial_body": 2532,
-      "egg_celestial_body_glow": 1488
+      "egg_celestial_body": 3160,
+      "egg_celestial_body_glow": 1168
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Celestial Egg: a night sky of Neon stars and constellations, two orbits with planets, on a base with a Neon crescent.",
+    "notes": "Celestial Egg: a night sky of Neon stars and constellations, a silver orbit with planets, a Neon star on top.",
     "glow": {
       "egg_celestial_body_glow": [
         190,
@@ -9579,13 +9567,13 @@
     "centres": {
       "egg_celestial_body": [
         0.0,
-        1.492,
+        1.46,
         -0.0
       ],
       "egg_celestial_body_glow": [
-        -0.005,
-        1.899,
-        0.04
+        0.037,
+        1.934,
+        -0.003
       ]
     },
     "joints": {}
@@ -9595,18 +9583,18 @@
     "png": "build/blender/stations/egg_crown.png",
     "preview": "build/blender/stations/previews/egg_crown.png",
     "size_studs": [
-      3.2,
-      4.48,
-      3.2
+      2.41,
+      4.44,
+      2.45
     ],
-    "tris": 7258,
+    "tris": 8088,
     "parts": {
-      "egg_crown_body": 7234,
+      "egg_crown_body": 8064,
       "egg_crown_body_glow": 24
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/assets/eggs.py",
-    "notes": "Crown Egg: ruby in a gold cage, rainbow gems, a tall arched crown round a Neon diamond, on a velvet cushion.",
+    "notes": "Crown Egg: ruby in a gold cage, rainbow gems, a tall arched crown round a Neon diamond.",
     "glow": {
       "egg_crown_body_glow": [
         255,
@@ -9617,12 +9605,12 @@
     "centres": {
       "egg_crown_body": [
         0.0,
-        2.053,
+        2.044,
         -0.0
       ],
       "egg_crown_body_glow": [
-        -0.0,
-        3.765,
+        0.0,
+        3.725,
         -0.0
       ]
     },

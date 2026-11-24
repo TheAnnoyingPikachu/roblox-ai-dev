@@ -71,8 +71,9 @@ describe("StationAssets", function()
 			expect(asset.glow[`{name}_body`]).toBeNil()
 			expect(count(asset.joints)).toBe(0)
 			-- Ranch.luau sizes the eggs by their shell (World's EGG_BUILT); a crown or a horn on top may stand up to 4.5
-			-- (decision 0110: the Crown Egg's crown)
-			expect(asset.size[2] >= 3 and asset.size[2] <= 4.5).toBeTruthy()
+			-- (decision 0110: the Crown Egg's crown). An egg with nothing on top is its shell alone, 2.86 to 2.92 (STATION-149:
+			-- the eggs lost their bases)
+			expect(asset.size[2] >= 2.85 and asset.size[2] <= 4.5).toBeTruthy()
 		end
 	end)
 
