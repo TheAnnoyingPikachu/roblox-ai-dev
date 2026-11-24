@@ -502,76 +502,100 @@ function Style.radius(b: GuiObject, r: number)
 	end
 end
 
--- A message at the top of the screen: a sand pill with an icon, berry for a refusal (`kind` "bad"),
--- leaf for done ("good"), sky for anything else.
 local toasts = 0
--- `image` (an uploaded picture, e.g. a reward icon) takes the place of the round sign.
+-- Messages (the Moments board): one shape for every message, stacked top right under the notes so they
+-- never cover the middle; paper at the ranch, glass in a fight (the screen's `Night` attribute, which the
+-- fight sets). The dot says the kind: green done, blue news, pink no, gold a reward (a message with a picture).
+local MOST = 4 -- messages shown at once: a fifth pushes the oldest out
+local DOT = { good = C.good, bad = C.bad, info = C.info }
 function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: string?, image: string?)
+	local night = screen:GetAttribute("Night") == true
+	local stack = screen:FindFirstChild("Messages") :: Frame?
+	if stack == nil then
+		local made = Instance.new("Frame")
+		made.Name, made.BackgroundTransparency = "Messages", 1
+		made.AnchorPoint, made.Position, made.Size =
+			Vector2.new(1, 0), UDim2.new(1, -16, 0, 150), UDim2.fromOffset(380, 0)
+		made.AutomaticSize = Enum.AutomaticSize.Y
+		local list = Style.list(made, 8)
+		list.HorizontalAlignment = Enum.HorizontalAlignment.Right
+		made.Parent = screen
+		stack = made
+	end
+	local holder = stack :: Frame
 	toasts += 1
-	local mine = toasts
-	local colour = if kind == "bad" then C.bad elseif kind == "good" then C.good else C.info
-	local f = Instance.new("TextLabel")
+	local f = Instance.new("Frame")
 	f.Name = "Toast"
-	f.AnchorPoint, f.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 80) -- under the goal strip
-	f.Size = UDim2.fromOffset(0, 46)
+	f.LayoutOrder = toasts
+	f.Size = UDim2.fromOffset(0, 48)
 	f.AutomaticSize = Enum.AutomaticSize.XY
-	f.TextWrapped = true -- a long message wraps onto more lines instead of running across the screen
-	local most = Instance.new("UISizeConstraint")
-	most.MinSize, most.MaxSize = Vector2.new(0, 46), Vector2.new(560, math.huge)
-	most.Parent = f
-	f.BackgroundColor3 = C.sand
-	f.Font = Ui.theme.font
-	f.Text = text
-	f.TextSize = 19
-	f.TextColor3 = INK
+	f.BackgroundColor3 = if night then N.glass else C.sand
+	f.BackgroundTransparency = if night then 0.1 else 0
 	f.ZIndex = 40
-	Style.round(f, 23)
-	Style.stroke(f, INK, 3)
+	Style.round(f, 16)
+	Style.stroke(f, if night then N.edge else INK, if night then 2 else 3)
+	local most = Instance.new("UISizeConstraint")
+	most.MinSize, most.MaxSize = Vector2.new(0, 48), Vector2.new(380, math.huge)
+	most.Parent = f
 	local p = Instance.new("UIPadding")
 	p.PaddingLeft, p.PaddingRight, p.PaddingTop, p.PaddingBottom =
-		UDim.new(0, 52), UDim.new(0, 18), UDim.new(0, 8), UDim.new(0, 8)
+		UDim.new(0, if image then 60 else 40), UDim.new(0, 14), UDim.new(0, 10), UDim.new(0, 10)
 	p.Parent = f
-	local icon = Instance.new("TextLabel")
-	icon.AnchorPoint, icon.Position, icon.Size =
-		Vector2.new(0, 0.5), UDim2.new(0, -44, 0.5, 0), UDim2.fromOffset(34, 34)
-	icon.BackgroundColor3 = colour
-	icon.Font = Ui.theme.font
-	icon.Text = if kind == "bad" then "!" elseif kind == "good" then "✓" else "i"
-	icon.TextSize = 20
-	icon.TextColor3 = WHITE
-	icon.ZIndex = 41
-	Style.outline(icon)
-	Style.round(icon, 17)
-	Style.stroke(icon, INK, 2)
-	icon.Parent = f
-	if image then
-		icon.BackgroundTransparency, icon.Text = 1, ""
-		icon.Size = UDim2.fromOffset(44, 44)
-		for _, d in icon:GetChildren() do
-			if d:IsA("UIStroke") then
-				d.Enabled = false
-			end
-		end
+	local words = Instance.new("TextLabel")
+	words.BackgroundTransparency = 1
+	words.AutomaticSize = Enum.AutomaticSize.XY
+	words.Size = UDim2.fromOffset(0, 26)
+	words.TextWrapped = true -- a long message wraps onto more lines instead of running across the screen
+	local fit = Instance.new("UISizeConstraint")
+	fit.MaxSize = Vector2.new(380 - (if image then 74 else 54), math.huge)
+	fit.Parent = words
+	words.Font = Ui.theme.font
+	words.Text = text
+	words.TextSize = 17
+	words.TextColor3 = if night then N.text else INK
+	words.TextXAlignment = Enum.TextXAlignment.Left
+	words.ZIndex = 41
+	words.Parent = f
+	local dot = Instance.new("Frame")
+	dot.AnchorPoint = Vector2.new(0, 0.5)
+	dot.BackgroundColor3 = if image then C.gold else DOT[kind or ""] or C.info
+	dot.ZIndex = 41
+	Style.round(dot, 7)
+	Style.stroke(dot, if night then N.glass else INK, 2)
+	dot.Parent = f
+	if image then -- a reward: its picture, with the gold dot on its corner
+		dot.Size, dot.Position = UDim2.fromOffset(14, 14), UDim2.fromOffset(-26, -2)
 		local picture = Instance.new("ImageLabel")
 		picture.BackgroundTransparency, picture.Image = 1, image
-		picture.Size, picture.ZIndex = UDim2.fromScale(1, 1), 42
-		picture.Parent = icon
+		picture.AnchorPoint, picture.Position, picture.Size =
+			Vector2.new(0, 0.5), UDim2.new(0, -52, 0.5, 0), UDim2.fromOffset(42, 42)
+		picture.ZIndex = 41
+		picture.Parent = f
+	else
+		dot.Size, dot.Position = UDim2.fromOffset(14, 14), UDim2.new(0, -26, 0.5, 0)
 	end
 	local scale = Instance.new("UIScale")
 	scale.Scale = 0.6
 	scale.Parent = f
-	for _, old in screen:GetChildren() do -- one at a time: a new message replaces the last
+	local shown = {}
+	for _, old in holder:GetChildren() do
 		if old.Name == "Toast" then
-			old:Destroy()
+			table.insert(shown, old)
 		end
 	end
-	f.Parent = screen
+	table.sort(shown, function(a, b)
+		return (a :: Frame).LayoutOrder < (b :: Frame).LayoutOrder
+	end)
+	for k = 1, #shown - MOST + 1 do -- the oldest make room
+		shown[k]:Destroy()
+	end
+	f.Parent = holder
 	TweenService:Create(scale, SPRING, { Scale = 1 }):Play()
 	if kind == "bad" then
 		Style.sound("denied")
 	end
-	task.delay(seconds or 2.5, function()
-		if toasts ~= mine or f.Parent == nil then
+	task.delay(seconds or 3, function()
+		if f.Parent == nil then
 			return
 		end
 		TweenService:Create(scale, TweenInfo.new(0.15), { Scale = 0.6 }):Play()

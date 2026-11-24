@@ -64,6 +64,12 @@ local animalsTab = "team"
 local chosen: number? = nil -- the id of the animal shown on the right
 local page = Style.page(animals)
 
+-- Open Animals on animal `id` (a hatch's "Swap it in").
+function Hud.chooseAnimal(id: number)
+	chosen, animalsTab = id, "all"
+	show("animals")
+end
+
 -- The one extra line a card carries: what matters about this animal now.
 local function cardLine(a: any): (string, Color3?)
 	if a.at then
