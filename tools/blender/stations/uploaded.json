@@ -1083,5 +1083,10 @@
     "model": 105196561287136,
     "decal": 113963835709946,
     "texture": null
+  },
+  "stall_eggs": {
+    "model": 124912319937350,
+    "decal": 131281791860971,
+    "texture": null
   }
 }
