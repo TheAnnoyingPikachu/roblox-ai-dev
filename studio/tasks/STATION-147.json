@@ -10,7 +10,7 @@
     "docs/assets/register.md"
   ],
   "dependencies": [
-    "STATION-146"
+    "STATION-143"
   ],
   "files": [
     "tools/blender/stations/assets/eggs.py",
