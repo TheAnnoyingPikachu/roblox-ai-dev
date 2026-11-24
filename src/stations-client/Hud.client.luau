@@ -3962,7 +3962,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 							heading.Text = `Vote for a boon: {left}`
 							task.wait(1)
 						end
-						panel.Visible = false -- time is up: the server picks and the next wave starts
+						panel.Visible, result.Visible = false, false -- time is up: the server picks and the next wave starts
 					end)
 				end
 			end
@@ -3987,7 +3987,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		end
 	elseif kind == "boon" then
 		local voted = boonRow.Parent :: GuiObject
-		voted.Visible = false
+		voted.Visible, result.Visible = false, false
 		local picked = WaveRuns.boon(payload.id)
 		if picked then
 			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
