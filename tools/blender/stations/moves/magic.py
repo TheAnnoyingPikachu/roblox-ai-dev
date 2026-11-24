@@ -1017,6 +1017,81 @@ def solar_flare(f):  # Sun Lion
     impact(f, SUN, 4, 77)
 
 
+JUDGEMENT_KEYS = [
+    (0.00, {}),
+    (0.22, P(body=[-6, 0, 0, 0, -0.1, -0.25], head=[-14], leg_fl=[-10], leg_fr=[-10], leg_bl=[10], leg_br=[10], tail=[8])),
+    (0.50, P(body=[30, 0, 0, 0, 0.25, 0.9], head=[18], leg_fl=[52], leg_fr=[36], leg_bl=[-30], leg_br=[-30], tail=[-30])),
+    (0.80, P(body=[36, 0, 0, 0, 0.3, 1.05], head=[26], leg_fl=[40], leg_fr=[58], leg_bl=[-36], leg_br=[-36], tail=[-38, 12])),
+    (0.90, P(body=[-10, 0, 0, 0, -0.1, -0.4], head=[-16, 0, 0, 0, 0, -0.15], leg_fl=[-16], leg_fr=[-16], leg_bl=[10], leg_br=[10], tail=[-26])),
+    (1.02, P(body=[-10, 0, 0, 0, -0.1, -0.4], head=[-14, 0, 5, 0, 0, -0.15], leg_fl=[-16], leg_fr=[-16], leg_bl=[10], leg_br=[10], tail=[-26])),
+    (1.14, P(body=[-10, 0, 0, 0, -0.1, -0.4], head=[-14, 0, -5, 0, 0, -0.15], leg_fl=[-16], leg_fr=[-16], leg_bl=[10], leg_br=[10], tail=[-26])),
+    (1.38, P(body=[-2], head=[-4], tail=[-10])),
+    (1.60, {}),
+]
+
+
+def sun_judgement(f):  # Sahara Guardian
+    k, t = f.k, f.t
+    # the middle of the sun halo it wears: the crown anchor is the tip of one of its spikes (studs at its built 12.6 height)
+    halo = f.A["crown"] + Vector((-2.44, 1.22, -3.33)) * (f.H / 12.6)
+    top = f.T + Z(11 * k)
+    f.kit.aura(GOLD, 0.2 * env(t, 0.1, 0.6, 0.9, 1.1), 5)
+    g = env(t, 0.1, 0.5, 1.0, 1.3)
+    if g > 0:  # its halo blazes: a ring of light, sixteen turning rays, four gems circling
+        f.kit.ring(halo, 1.3 * k * (1 + 0.25 * g), 0.1 * k, SUN, 9, g, Vector((0, 1, 0)), n=24)
+        for i in range(16):
+            a = t * 2.5 + i / 16 * math.tau
+            d = Vector((math.cos(a), 0.0, math.sin(a)))
+            f.kit.spike(halo + d * 1.4 * k, halo + d * (2.2 + 1.2 * (1 - i % 2)) * k * g, 0.16 * k, YELLOW, 9, g)
+        for i in range(4):
+            a = -t * 4 + i / 4 * math.tau
+            f.kit.diamond(halo + Vector((math.cos(a), 0.0, math.sin(a))) * 2.0 * k, 0.22 * k, 0.5 * k, VIOLET, 7, g, spin=t * 6)
+    w = env(t, 0.1, 0.4, 0.8, 0.95)
+    if w > 0:  # sand whirls up round it as it rears
+        f.kit.vortex(Vector((halo.x, halo.y + 2.5 * k, f.T.z)), 2.4 * k, 4.5 * k * w, SAND, t, n=5, glow=1.5, alpha=0.45 * w, w=0.2)
+    s = env(t, 0.3, 0.75, 1.15, 1.4)
+    if s > 0:  # a second, greater halo opens in the sky over the target
+        f.kit.ring(top, 3.2 * k * s, 0.14 * k, SUN, 9, s, n=28)
+        f.kit.ring(top, 2.4 * k * s, 0.06 * k, VIOLET, 7, s, n=20)
+        for i in range(12):
+            a = -t * 2 + i / 12 * math.tau
+            d = Vector((math.cos(a), math.sin(a), 0.0))
+            f.kit.spike(top + d * 3.3 * k * s, top + d * (4.3 + 0.9 * (i % 2)) * k * s, 0.2 * k, YELLOW, 9, s)
+        for i in range(3):  # rings drop down the column, closing on the target
+            v = ((t - 0.3) * 2.2 + i / 3) % 1
+            f.kit.ring(top.lerp(f.T, v), (3.0 - 1.6 * v) * k, 0.05 * k, GOLD, 6, 0.7 * s * (1 - v), n=16)
+    u = seg(t, 0.86, 1.45)
+    if u is not None:  # the judgement: a pillar of sunlight slams down, and its roar strikes with it
+        reach = ease(min(1, (t - 0.86) / (IMPACT - 0.86)))
+        fade = 1 - ease(max(0, (t - 1.15) / 0.3))
+        f.kit.beam(top, top.lerp(f.T, reach), 1.7 * k, SUN, 10, fade)
+        f.kit.beam(top, top.lerp(f.T, reach), 2.3 * k, VIOLET, 5, 0.35 * fade, core=False)
+        f.kit.beam(f.A["nose"], f.A["nose"].lerp(f.TC, reach), 0.35 * k, GOLD, 8, 0.8 * fade)
+        f.kit.light(f.TC, SUN, 14 * fade)
+    u = seg(t, IMPACT, 1.55)
+    if u is not None:
+        rise = ease(min(1, u * 4)) * (1 - ease(max(0, (u - 0.6) / 0.4)))
+        for i in range(16):  # a crown of sun spikes bursts out of the ground round the target
+            a = i / 16 * math.tau
+            out = Vector((math.cos(a), math.sin(a), 0.0))
+            base = f.T + out * 2.4 * k
+            f.kit.spike(base, base + (out * 0.45 + Z(1)).normalized() * (3.2 + 2.0 * (1 - i % 2)) * k * rise, 0.42 * k, GOLD if i % 2 else YELLOW, 8, rise)
+        for i in range(2):  # two shock rings roll out, the second one violet
+            v = u - i * 0.16
+            if v > 0:
+                f.kit.shock(f.T + Z(0.08), (1 + 7 * ease(min(1, v))) * k, 0.1 * k, VIOLET if i == 1 else SUN, 1 - min(1, v))
+        for i in range(8):  # gems fly up and out
+            a = i / 8 * math.tau + 0.4
+            p = f.TC + Vector((math.cos(a), math.sin(a), 0.0)) * 2.2 * k * (0.4 + ease(u)) + Z((5 * u - 4 * u * u) * k)
+            f.kit.diamond(p, 0.3 * k, 0.7 * k, VIOLET, 7, 1 - u, spin=u * 9)
+        if u < 0.5:  # lightning down the pillar
+            for i in range(4):
+                a = i / 4 * math.tau + 0.8
+                out = Vector((math.cos(a), math.sin(a), 0.0))
+                f.kit.bolt(top + out * 2.0 * k, f.T + out * 3.0 * k, YELLOW, 0.1 * k, 0.14, seed=int(t * 30) + i, alpha=1 - u * 2)
+    impact(f, SUN, 5.5, 91)
+
+
 SHADOW_KEYS = [
     (0.00, {}),
     (0.35, P(crouch(30, -16), body=[-6, 0, 0, 0, -0.2, 0.2], head=[-16], tail=[-6, 20])),
@@ -1366,6 +1441,9 @@ CONCEPTS = {
     }),
     "creature_lion_sun_forge": ("Sun Lion", {
         "m_solar": ("Solar Flare", "A sun with twelve rays rises behind its head, then fires a blazing beam that bursts into a star of light on the target.", ROAR_KEYS, {}, solar_flare),
+    }),
+    "creature_lion_sahara_forge": ("Sahara Guardian", {
+        "m_judgement": ("Sun's Judgement", "Rears up as its halo blazes and sand whirls round it; a greater halo opens in the sky over the target, then it slams down and a pillar of sunlight falls through it, a crown of sun spikes bursting from the ground.", JUDGEMENT_KEYS, {}, sun_judgement),
     }),
     "creature_lion_shadow_forge": ("Shadow Lion", {
         "m_claws": ("Shadow Claws", "Crouches low as a pool of shadow spreads from its paws under the target, then swipes and three giant claws rake up out of it.", SHADOW_KEYS, {}, shadow_claws),

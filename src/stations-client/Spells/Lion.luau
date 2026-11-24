@@ -68,6 +68,120 @@ return function(S: any)
 			S.impact(f, C.SUN, 4, 77)
 		end,
 
+		-- Sun's Judgement (the Sahara Guardian): rears up as its halo blazes and sand whirls round it; a greater halo
+		-- opens in the sky over the target, then it slams down and a pillar of sunlight falls through it, a crown of sun
+		-- spikes bursting from the ground
+		creature_lion_sahara_forge = function(f)
+			local k, t = f.k, f.t
+			-- the middle of the sun halo it wears: the crown anchor is the tip of one of its spikes (studs at its built
+			-- 12.6 height)
+			local halo = f.A.crown + f.V(-2.44, 1.22, -3.33) * (f.H / 12.6)
+			local top = f.T + Z(11 * k)
+			f.kit:aura(C.GOLD, 0.2 * env(t, 0.1, 0.6, 0.9, 1.1), 5)
+			local g = env(t, 0.1, 0.5, 1.0, 1.3)
+			if g > 0 then -- its halo blazes: a ring of light, sixteen turning rays, four gems circling
+				f.kit:ring(halo, 1.3 * k * (1 + 0.25 * g), 0.1 * k, C.SUN, 9, g, f.V(0, 1, 0), nil, 24)
+				for i = 0, 15 do
+					local a = t * 2.5 + i / 16 * TAU
+					local d = f.V(math.cos(a), 0.0, math.sin(a))
+					f.kit:spike(
+						halo + d * 1.4 * k,
+						halo + d * (2.2 + 1.2 * (1 - i % 2)) * k * g,
+						0.16 * k,
+						C.YELLOW,
+						9,
+						g
+					)
+				end
+				for i = 0, 3 do
+					local a = -t * 4 + i / 4 * TAU
+					local p = halo + f.V(math.cos(a), 0.0, math.sin(a)) * 2.0 * k
+					f.kit:diamond(p, 0.22 * k, 0.5 * k, C.VIOLET, 7, g, t * 6)
+				end
+			end
+			local w = env(t, 0.1, 0.4, 0.8, 0.95)
+			if w > 0 then -- sand whirls up round it as it rears
+				local feet = S.ground(f, halo + f.V(0, 2.5, 0) * k)
+				f.kit:vortex(feet, 2.4 * k, 4.5 * k * w, C.SAND, t, 5, 1.5, 0.45 * w, nil, 0.2)
+			end
+			local s = env(t, 0.3, 0.75, 1.15, 1.4)
+			if s > 0 then -- a second, greater halo opens in the sky over the target
+				f.kit:ring(top, 3.2 * k * s, 0.14 * k, C.SUN, 9, s, nil, nil, 28)
+				f.kit:ring(top, 2.4 * k * s, 0.06 * k, C.VIOLET, 7, s, nil, nil, 20)
+				for i = 0, 11 do
+					local a = -t * 2 + i / 12 * TAU
+					local d = f.V(math.cos(a), math.sin(a), 0.0)
+					f.kit:spike(top + d * 3.3 * k * s, top + d * (4.3 + 0.9 * (i % 2)) * k * s, 0.2 * k, C.YELLOW, 9, s)
+				end
+				for i = 0, 2 do -- rings drop down the column, closing on the target
+					local v = ((t - 0.3) * 2.2 + i / 3) % 1
+					f.kit:ring(
+						top:Lerp(f.T, v),
+						(3.0 - 1.6 * v) * k,
+						0.05 * k,
+						C.GOLD,
+						6,
+						0.7 * s * (1 - v),
+						nil,
+						nil,
+						16
+					)
+				end
+			end
+			local u = seg(t, 0.86, 1.45)
+			if u ~= nil then -- the judgement: a pillar of sunlight slams down, and its roar strikes with it
+				local reach = ease(math.min(1, (t - 0.86) / (S.IMPACT - 0.86)))
+				local fade = 1 - ease(math.max(0, (t - 1.15) / 0.3))
+				f.kit:beam(top, top:Lerp(f.T, reach), 1.7 * k, C.SUN, 10, fade)
+				f.kit:beam(top, top:Lerp(f.T, reach), 2.3 * k, C.VIOLET, 5, 0.35 * fade, false)
+				f.kit:beam(f.A.nose, f.A.nose:Lerp(f.TC, reach), 0.35 * k, C.GOLD, 8, 0.8 * fade)
+				f.kit:light(f.TC, C.SUN, 14 * fade)
+			end
+			u = seg(t, S.IMPACT, 1.55)
+			if u ~= nil then
+				local rise = ease(math.min(1, u * 4)) * (1 - ease(math.max(0, (u - 0.6) / 0.4)))
+				for i = 0, 15 do -- a crown of sun spikes bursts out of the ground round the target
+					local a = i / 16 * TAU
+					local out = f.V(math.cos(a), math.sin(a), 0.0)
+					local base = f.T + out * 2.4 * k
+					local tip = base + (out * 0.45 + Z(1)).Unit * (3.2 + 2.0 * (1 - i % 2)) * k * rise
+					f.kit:spike(base, tip, 0.42 * k, if i % 2 == 1 then C.GOLD else C.YELLOW, 8, rise)
+				end
+				for i = 0, 1 do -- two shock rings roll out, the second one violet
+					local v = u - i * 0.16
+					if v > 0 then
+						local R = (1 + 7 * ease(math.min(1, v))) * k
+						f.kit:shock(f.T + Z(0.08), R, 0.1 * k, if i == 1 then C.VIOLET else C.SUN, 1 - math.min(1, v))
+					end
+				end
+				for i = 0, 7 do -- gems fly up and out
+					local a = i / 8 * TAU + 0.4
+					local p = f.TC
+						+ f.V(math.cos(a), math.sin(a), 0.0) * 2.2 * k * (0.4 + ease(u))
+						+ Z((5 * u - 4 * u * u) * k)
+					f.kit:diamond(p, 0.3 * k, 0.7 * k, C.VIOLET, 7, 1 - u, u * 9)
+				end
+				if u < 0.5 then -- lightning down the pillar
+					for i = 0, 3 do
+						local a = i / 4 * TAU + 0.8
+						local out = f.V(math.cos(a), math.sin(a), 0.0)
+						f.kit:bolt(
+							top + out * 2.0 * k,
+							f.T + out * 3.0 * k,
+							C.YELLOW,
+							0.1 * k,
+							0.14,
+							nil,
+							math.floor(t * 30) + i,
+							nil,
+							1 - u * 2
+						)
+					end
+				end
+			end
+			S.impact(f, C.SUN, 5.5, 91)
+		end,
+
 		-- Shadow Claws: crouches low as a pool of shadow spreads from its paws under the target, then swipes and three
 		-- giant claws rake up out of it
 		creature_lion_shadow_forge = function(f)

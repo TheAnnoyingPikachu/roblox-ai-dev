@@ -336,6 +336,36 @@ def lion(name, length, tail_x, artifact, what):
     }
 
 
+def guardian_weights(p):
+    """SHANNON's "Sahara Guardian Rare Variant" (ForgeGUI artifact 30d3ddb4): a stone lion in gold and purple
+    armour, mid-stride and a little left of centre (its middle is x -0.02). The head and mane are ahead of
+    y -0.31 above z -0.07 with the front legs right under them (y -0.47..-0.28); the hind legs are apart in
+    the stride (left y -0.12..0.03, right y -0.07..0.14); the tail is over a third of its length, from y 0.11."""
+    tail = ramp(0.1, 0.15, p.y)
+    head = ramp(-0.28, -0.34, p.y) * ramp(-0.1, -0.04, p.z)
+    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+    leg = None
+    if abs(p.x + 0.02) > 0.03 or p.z < -0.2:  # not the pendants hanging between the legs
+        if -0.47 < p.y < -0.28:
+            leg = "leg_fl" if p.x > -0.02 else "leg_fr"
+        elif p.x > 0 and -0.12 < p.y < 0.03:
+            leg = "leg_bl"
+        elif p.x <= 0 and -0.07 < p.y < 0.14:
+            leg = "leg_br"
+    down = ramp(-0.12, -0.18, p.z) if leg else 0.0
+    if down > 0:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def guardian_pieces(lo, hi):
+    """The sun halo (a ring and its spikes, loose pieces standing over the shoulders) goes whole with the head."""
+    if hi.y - lo.y < 0.5 and lo.y > -0.34 and hi.y < -0.1 and lo.z > 0.0 and hi.z > 0.085:
+        return {"head": 1.0}
+    return None
+
+
 # The Shadow Legion never stretches (`cut` in main): ForgeGUI grows its arms, capes and weapons onto the body,
 # and skin blended across a joint smeared them. A loose piece moves whole on the bone holding `WHOLE` of its
 # weight; the rest is cut apart where one bone's faces meet another's, each part whole on its bone.
@@ -564,6 +594,22 @@ REGIONS = {
     "creature_lion_shadow_forge": lion("Shadow Lion", 15.03, -0.05, "68e2e5b5", "Shadowfang Purple Lion"),
     "creature_lion_sun_forge": lion("Sun Lion", 16.05, 0.0, "efa580ee", "Fierce Low-Poly Sunmane Lion"),
     # heights: the Blender models' (StationAssets.creature_flamingo[_peacock, _phoenix].size)
+    "creature_lion_sahara_forge": {
+        "length": 22.0,
+        "joints": {
+            "body": (-0.02, -0.15, -0.03),
+            "head": (-0.03, -0.33, 0.0),
+            "leg_fl": (0.06, -0.37, -0.1),
+            "leg_fr": (-0.1, -0.37, -0.1),
+            "leg_bl": (0.04, -0.05, -0.1),
+            "leg_br": (-0.08, 0.04, -0.1),
+            "tail": (-0.045, 0.12, -0.06),
+        },
+        "weights": guardian_weights,
+        "pieces": guardian_pieces,
+        "small": 0.06,
+        "notes": "Sahara Guardian: SHANNON's Sahara Guardian Rare Variant from ForgeGUI (artifact 30d3ddb4), one mesh with its sun halo, skinned to the Stations rig (decision 0102).",
+    },
     "creature_flamingo_forge": flamingo("Flamingo", 8.0, 0.0, 0.12, -0.17, -0.12, {"leg_fl": (0.06, 0.035), "leg_fr": (-0.069, 0.09)}, 0.0, 0.13, (0.09, 0.13), 0.06, "c9dca2cc", "pink flamingo"),
     "creature_flamingo_peacock_forge": flamingo("King Flamingo", 9.8, -0.06, 0.06, -0.18, -0.17, {"leg_fl": (0.05, 0.04), "leg_fr": (-0.05, 0.04)}, -0.06, 0.12, (0.1, 0.15), 0.12, "a84542a7", "peacock flamingo with a crown"),
     "creature_flamingo_phoenix_forge": flamingo("Phoenix Flamingo", 11.3, -0.03, 0.12, -0.2, -0.2, {"leg_fl": (0.088, -0.02), "leg_fr": (-0.088, -0.02)}, -0.08, 0.12, (0.11, 0.17), 0.25, "675a6361", "Flamingo of Fire", beak=-0.3),

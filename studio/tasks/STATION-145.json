@@ -1,0 +1,50 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-145",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON's Sahara Guardian (ForgeGUI site model 'Sahara Guardian Rare Variant', artifact 30d3ddb4) brought into Animal Stations as SHANNON asked (2026-11-24: 'take that model from forge and animate it into roblox and give it an insane power attack'): the one mesh with its sun halo skinned to the Stations rig, uploaded, given the lions' idle and attack and a power attack of its own, Sun's Judgement. Found on the way and fixed: Spells measured every skinned animal with Model:GetScale(), which holds the importer's unit (about 0.01), so every spell drew at its smallest size, aimed 6 studs ahead when nothing was targeted, and put every anchor on its bone.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md",
+    "tools/blender/stations/moves/README.md"
+  ],
+  "dependencies": [
+    "STATION-116"
+  ],
+  "files": [
+    "assets/stations/creature_lion_sahara_forge.*",
+    "assets/stations/sources/creature_lion_sahara_forge.glb",
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "tools/blender/stations/moves/magic.py",
+    "tools/blender/stations/moves/export_moves.py",
+    "tools/blender/stations/moves/check_spells.luau",
+    "src/shared/AnimalMoves.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationRules.luau",
+    "src/stations-client/Spells/Lion.luau",
+    "src/stations-client/Spells/init.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-145.json"
+  ],
+  "tests": [
+    "AnimalMoves.spec.luau",
+    "StationAssets.spec.luau",
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "creature_lion_sahara_forge loads in the game as one skinned mesh on the Stations rig: head and halo, four legs and tail each follow their bone",
+    "It plays the lions' idle and attack, and Sun's Judgement as its power attack: its halo blazes, a greater halo opens over the target, a pillar of sunlight falls and a crown of sun spikes bursts from the ground",
+    "No egg, wave or shop gives it: no economy value, drop table, remote or save changes",
+    "A spell's size and anchors come from the model's real size (its Hit box over its built height), as FoePowers already does"
+  ],
+  "verification": "2026-11-24, local: lune run tests/run 810/810; selene src tests 0 errors 0 warnings; the changed Luau files pass stylua --check as CI reads them; lune run tools/blender/stations/moves/check_spells ALL OK (28 models). Upload-assets run 45492219555 succeeded (model 122873591019491, decal 108031634325248). Blender 5.2: skin_forge --test renders (rest, bent, crouch) show head and halo, legs and tail each following their bone. Studio, local build 'dev' of this branch (stations-guardian.rbxl, no CI stamp): the model spawned with Creatures.spawn as one MeshPart with 7 bones, textured, 8.42 x 12.6 x 22 studs; Sun's Judgement held at about 0.5 s and 0.8 to 1.0 s showed the halo rays and gems, the sand whirl, the sky halo with its dropping rings, then the pillar, lightning, roar beam and gems at a target 25 studs ahead. Before the size fix the same spell drew within 10 studs of the lion with k = 1 (GetScale 0.0107). Not checked: a real wave fight (AimAt set by WaveShow), a phone, the other animals' spells after the size fix, the frame rate (31 fps seen with three Studio windows open, not a fair measure).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON (nothing here is decided by this task). 1) How the Sahara Guardian is won. It is in StationRules.FORGE as sahara_lion (model and moves only) and in no egg. Every animal has exactly two variants (decision 0110, tested), so making it a third Lion variant, a boss foe or an event reward is a design decision with its own record. Recommended: a boss-size Lion variant of the highest rarity from the Crown Egg; if rejected it stays unobtainable and costs nothing. 2) The size fix changes how every big animal's spell looks in the game: sizes now follow the concepts (giraffes x3, elephants x2.1 to 2.6, the Phoenix x1.6, the lions x1.3 to 1.4; the small animals stay at 1) and anchors sit on the nose, crown, paws and tail instead of on the bones. SHANNON approved the spells in the game at the small size ('tone down the effects a little'), so look at a giraffe and an elephant before merging; if rejected, revert the commit 'Spells: a model's real size' and the Guardian's spell draws small again. Creatures.client line 3929 reads GetScale the same way for the skinned animals' foot lift: not touched here (outside this task's files). 3) It has no rainbow coat (every obtainable animal has one); needed only if it becomes obtainable. 4) Built 22 studs long (12.6 tall with the halo), a third longer than the Sun Lion, after the concept sheet's 'Huge Size (Boss-Like)'. 5) Sun's Judgement draws up to about 1,200 parts in a frame in the spell check, over twice the next heaviest (Thunder Cheetah, 471): check it on a phone before it is obtainable. Not done: a Blender concept render of the spell (magic.py has it; shown in Studio instead), the --stretch check."
+}

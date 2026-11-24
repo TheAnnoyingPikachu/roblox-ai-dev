@@ -3678,6 +3678,27 @@ local StationAssets: { [string]: Asset } = {
 		},
 		lid = { 226, 176, 73 },
 	},
+	creature_lion_sahara_forge = {
+		size = { 8.42, 12.6, 22 },
+		parts = { "creature_lion_sahara_forge_body" },
+		glow = {},
+		centres = {
+			creature_lion_sahara_forge_body = { 0, 6.299, 0 },
+		},
+		joints = {
+			creature_lion_sahara_forge_head = { -0.689, 6.293, 7.574 },
+			creature_lion_sahara_forge_leg_fl = { 1.377, 3.998, 8.492 },
+			creature_lion_sahara_forge_leg_fr = { -2.295, 3.998, 8.492 },
+			creature_lion_sahara_forge_leg_bl = { 0.918, 3.998, 1.148 },
+			creature_lion_sahara_forge_leg_br = { -1.836, 3.998, -0.918 },
+			creature_lion_sahara_forge_tail = { -1.033, 4.916, -2.754 },
+		},
+		model = 122873591019491,
+		decal = 108031634325248,
+		texture = nil,
+		skinned = true,
+		root = { -0.459, 5.604, 3.443 },
+	},
 }
 
 return StationAssets
