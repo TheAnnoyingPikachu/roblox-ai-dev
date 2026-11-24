@@ -20,6 +20,9 @@ local FightFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("F
 local TrainFx = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("TrainFx"))
 local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
 local FoePowers = require(script.Parent:WaitForChild("FoePowers"))
+local AnimalMoves = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalMoves"))
+local AnimalRig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalRig"))
+local Spells = require(script.Parent:WaitForChild("Spells"))
 
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
@@ -315,8 +318,8 @@ local DIE_BIPED: Clip = {
 }
 
 -- Per-species attacks (decision 0048). Every one is 0.95 s long (the server's Creatures.LENGTH.attack)
--- with its contact near 0.44 s, where the server lands the hit; a variant uses its species' clip.
--- The rhino keeps the horn charge above (ATTACK), which is also the fallback for a species not listed.
+-- with its contact near 0.44 s, where the server lands the hit; a variant uses its species' clip. The
+-- animals' are SHANNON's picks in AnimalMoves; the horn charge above (ATTACK) is the fallback.
 local function attack(keys: { { any } }): Clip
 	return { length = 0.95, keys = keys }
 end
@@ -1532,155 +1535,13 @@ local ATTACKS: { [string]: Clip } = {
 		},
 		{ 0.95, {} },
 	}),
-	-- a lunge and a snap, then a shake of the head
-	jackal = attack({
-		{ 0.00, {} },
-		{
-			0.20,
-			{ body = { -4, 0, 0, 0, -0.1, 0.3 }, head = { -22 }, leg_fl = { 12 }, leg_fr = { 12 }, tail = { -14 } },
-		},
-		{
-			0.42,
-			{ body = { 8, 0, 0, 0, 0.06, -0.9 }, head = { 30 }, leg_fl = { -22 }, leg_fr = { -22 }, tail = { 20 } },
-		},
-		{ 0.54, { body = { 4, 0, 0, 0, 0.03, -0.7 }, head = { 14, 24 } } },
-		{ 0.66, { body = { 2, 0, 0, 0, 0, -0.5 }, head = { 14, -24 } } },
-		{ 0.95, {} },
-	}),
-	-- rears a little and swipes down with one paw, then the other
-	cheetah = attack({
-		{ 0.00, {} },
-		{ 0.24, { body = { 14, 0, 0, 0, 0.18, 0.2 }, head = { 8 }, leg_fr = { 75 }, leg_fl = { 20 }, tail = { -18 } } },
-		{
-			0.42,
-			{ body = { -6, 0, 0, 0, -0.04, -0.6 }, head = { 14 }, leg_fr = { -24 }, leg_fl = { 30 }, tail = { 18 } },
-		},
-		{ 0.58, { body = { -2, 0, 0, 0, 0, -0.4 }, leg_fl = { -22 }, leg_fr = { 10 } } },
-		{ 0.95, {} },
-	}),
-	-- a heavy shell-first slam: lifts the front, then drops it with the head thrust out
-	tortoise = attack({
-		{ 0.00, {} },
-		{
-			0.28,
-			{ body = { 11, 0, 0, 0, 0.18, 0.1 }, head = { -14, 0, 0, 0, 0, 0.25 }, leg_fl = { 24 }, leg_fr = { 24 } },
-		},
-		{ 0.44, { body = { -10, 0, 0, 0, -0.06, -0.5 }, head = { 24 }, leg_fl = { -12 }, leg_fr = { -12 } } },
-		{ 0.66, { body = { -3, 0, 0, 0, 0, -0.2 }, head = { 8 } } },
-		{ 0.95, {} },
-	}),
-	-- it stands upright (decision 0055; its arms are the front legs): rocks back with both arms up, then
-	-- lunges and claws down. The legs turn against the body so the feet stay flat, the tail so it stays
-	-- on the ground
-	meerkat = attack({
-		{ 0.00, {} },
-		{
-			0.26,
-			{
-				body = { 9, 0, 0, 0, 0.03, 0.15 },
-				head = { 6 },
-				leg_fl = { 120 },
-				leg_fr = { 108 },
-				leg_bl = { -9 },
-				leg_br = { -9 },
-				tail = { -10 },
-			},
-		},
-		{
-			0.44,
-			{
-				body = { -16, 0, 0, 0, 0, -0.45 },
-				head = { 10 },
-				leg_fl = { 28 },
-				leg_fr = { 36 },
-				leg_bl = { 16 },
-				leg_br = { 16 },
-				tail = { 12 },
-			},
-		},
-		{
-			0.62,
-			{
-				body = { -6, 0, 0, 0, 0, -0.2 },
-				leg_fl = { 16 },
-				leg_fr = { 16 },
-				leg_bl = { 6 },
-				leg_br = { 6 },
-				tail = { 4 },
-			},
-		},
-		{ 0.95, {} },
-	}),
-	-- the neck draws back and whips forward
-	flamingo = attack({
-		{ 0.00, {} },
-		{ 0.30, { body = { -7, 0, 0, 0, 0, 0.3 }, head = { -46, 8 }, tail = { -14 } } },
-		{ 0.44, { body = { 9, 0, 0, 0, 0, -0.7 }, head = { 42, -10 }, tail = { 16 } } },
-		{ 0.60, { body = { 3, 0, 0, 0, 0, -0.4 }, head = { 18, 12 } } },
-		{ 0.95, {} },
-	}),
-	-- a crouch, then a long pounce with both front paws out. The crouch splays the front legs far
-	-- forward (chest low, haunches up) so the paws stay on the ground as the body drops, and the
-	-- tail is held up through the leap: the lions' long tail flame would drag on the ground
-	lion = attack({
-		{ 0.00, {} },
-		{
-			0.26,
-			{
-				body = { -8, 0, 0, 0, -0.22, 0.2 },
-				head = { -10 },
-				leg_fl = { 40 },
-				leg_fr = { 40 },
-				leg_bl = { -18 },
-				leg_br = { -18 },
-				tail = { -20 },
-			},
-		},
-		{
-			0.44,
-			{
-				body = { 18, 0, 0, 0, 0.34, -1.2 },
-				head = { 12 },
-				leg_fl = { 58 },
-				leg_fr = { 52 },
-				leg_bl = { -36 },
-				leg_br = { -36 },
-				tail = { -22 },
-			},
-		},
-		{ 0.62, { body = { -4, 0, 0, 0, 0.02, -0.6 }, head = { 8 }, leg_fl = { 10 }, leg_fr = { 10 } } },
-		{ 0.95, {} },
-	}),
-	-- the front legs rise, then a stomp and a trunk-first slam
-	elephant = attack({
-		{ 0.00, {} },
-		{
-			0.30,
-			{ body = { 10, 0, 0, 0, 0.16, 0.2 }, head = { -20 }, leg_fl = { 42 }, leg_fr = { 36 }, tail = { -10 } },
-		},
-		{
-			0.44,
-			{ body = { -7, 0, 0, 0, -0.08, -0.5 }, head = { 30 }, leg_fl = { -12 }, leg_fr = { -10 }, tail = { 12 } },
-		},
-		{ 0.66, { body = { -2, 0, 0, 0, 0, -0.2 }, head = { 10 } } },
-		{ 0.95, {} },
-	}),
 }
--- Power attacks (1.6 s, the slam at MAGIC_IMPACT where the ground erupts). Every base animal has its
--- own; a variant can add one under its asset name ("creature_lion_sun") and it wins over its species'.
-local function powerClip(coil: Pose, wound: Pose, slam: Pose): Clip
-	return {
-		length = 1.6,
-		keys = {
-			{ 0.00, {} },
-			{ 0.40, coil },
-			{ 0.78, wound },
-			{ MAGIC_IMPACT, slam },
-			{ 1.12, { body = { 2 } } },
-			{ 1.60, {} },
-		},
-	}
+for species, keys in AnimalMoves.ATTACKS do
+	ATTACKS[species] = attack(keys)
 end
+-- Power attacks (1.6 s, the impact at MAGIC_IMPACT): each animal's spell (SHANNON's picks in AnimalMoves) by
+-- species, and by asset for a variant whose spell moves differently ("creature_lion_shadow_forge"); Spells draws
+-- the magic.
 local MAGICS: { [string]: Clip } = {
 	-- the Heavy Knight's Leaping Slam (SHANNON's pick), from its hammer on its shoulder: crouches with the hammer
 	-- still shouldered, raises it overhead as it leaps, slams on landing at the impact (0.92 s), shoulders it again
@@ -1776,133 +1637,6 @@ local MAGICS: { [string]: Clip } = {
 			},
 		},
 	},
-	-- throws its head back in a howl (a positive pitch lifts the nose), then drives down on the target
-	jackal = powerClip(
-		{ body = { 14, 0, 0, 0, 0.08, 0.2 }, head = { 36 }, tail = { -20 } },
-		{ body = { 20, 0, 0, 0, 0.14, 0.3 }, head = { 52 }, leg_fl = { 14 }, leg_fr = { 14 }, tail = { -26 } },
-		{ body = { -8, 0, 0, 0, -0.12, -1.2 }, head = { -22 }, leg_fl = { -24 }, leg_fr = { -24 }, tail = { 22 } }
-	),
-	-- draws into the shell, rises, and crashes down
-	tortoise = powerClip(
-		{ body = { 6, 0, 0, 0, 0.08, 0.15 }, head = { -18, 0, 0, 0, 0, 0.3 } },
-		{ body = { 16, 0, 0, 0, 0.32, 0.3 }, head = { -24, 0, 0, 0, 0, 0.35 }, leg_fl = { 30 }, leg_fr = { 30 } },
-		{ body = { -9, 0, 0, 0, -0.12, -0.4 }, head = { 22 }, leg_fl = { -10 }, leg_fr = { -10 } }
-	),
-	-- upright: gathers the charge between its paws, lifts it overhead on its toes, then hurls it down
-	meerkat = powerClip({
-		body = { 4, 0, 0, 0, -0.05, 0.1 },
-		head = { -8 },
-		leg_fl = { 60 },
-		leg_fr = { 60 },
-		leg_bl = { -4 },
-		leg_br = { -4 },
-		tail = { -5 },
-	}, {
-		body = { 12, 0, 0, 0, 0.08, 0.2 },
-		head = { 14 },
-		leg_fl = { 165 },
-		leg_fr = { 158 },
-		leg_bl = { -12 },
-		leg_br = { -12 },
-		tail = { -14 },
-	}, {
-		body = { -22, 0, 0, 0, -0.03, -0.6 },
-		head = { 8 },
-		leg_fl = { 40 },
-		leg_fr = { 40 },
-		leg_bl = { 22 },
-		leg_br = { 22 },
-		tail = { 16 },
-	}),
-	-- coils low and bounds in. Its legs are very long: in the coil the front legs splay far forward and the
-	-- body drops only a little, or the paws sink into the ground; in the bound the body rises and the long
-	-- tail is held up, or the hind paws and the tail do
-	cheetah = powerClip({
-		body = { -9, 0, 0, 0, -0.12, 0.4 },
-		head = { -8 },
-		leg_fl = { 44 },
-		leg_fr = { 44 },
-		leg_bl = { -10 },
-		leg_br = { -10 },
-	}, {
-		body = { -12, 0, 0, 0, -0.2, 0.5 },
-		head = { -12 },
-		leg_fl = { 52 },
-		leg_fr = { 52 },
-		leg_bl = { -17 },
-		leg_br = { -17 },
-		tail = { -26 },
-	}, {
-		body = { 14, 0, 0, 0, 0.26, -1.6 },
-		head = { 16 },
-		leg_fl = { 50 },
-		leg_fr = { 50 },
-		leg_bl = { -34 },
-		leg_br = { -34 },
-		tail = { -20 },
-	}),
-	-- the neck coils far back, then spears down; the feet stay planted
-	flamingo = powerClip(
-		{ body = { -6, 0, 0, 0, 0, 0.2 }, head = { -40, 10 } },
-		{ body = { -9, 0, 0, 0, 0, 0.3 }, head = { -58, -12 }, tail = { -20 } },
-		{ body = { 12, 0, 0, 0, 0, -0.8 }, head = { 52 }, tail = { 20 } }
-	),
-	-- a crouch and a roar, then a long leaping pounce
-	lion = powerClip({
-		body = { -8, 0, 0, 0, -0.24, 0.3 },
-		head = { -6 },
-		leg_fl = { 42 },
-		leg_fr = { 42 },
-		leg_bl = { -20 },
-		leg_br = { -20 },
-	}, {
-		body = { -10, 0, 0, 0, -0.28, 0.4 },
-		head = { 30 },
-		leg_fl = { 46 },
-		leg_fr = { 46 },
-		leg_bl = { -22 },
-		leg_br = { -22 },
-		tail = { -24 },
-	}, {
-		body = { 20, 0, 0, 0, 0.36, -1.7 },
-		head = { 14 },
-		leg_fl = { 58 },
-		leg_fr = { 54 },
-		leg_bl = { -38 },
-		leg_br = { -38 },
-		tail = { -22 },
-	}),
-	-- backs up, paws the ground, then charges and tosses its horn
-	rhino = powerClip({
-		body = { -4, 0, 0, 0, -0.06, 0.6 },
-		head = { -30 },
-		leg_fl = { 36 },
-		leg_fr = { -6 },
-		leg_bl = { -14 },
-		leg_br = { -14 },
-	}, {
-		body = { -6, 0, 0, 0, -0.1, 0.8 },
-		head = { -36 },
-		leg_fl = { -6 },
-		leg_fr = { 40 },
-		leg_bl = { -18 },
-		leg_br = { -18 },
-		tail = { -16 },
-	}, {
-		body = { 8, 0, 0, 0, 0.08, -2.0 },
-		head = { 34 },
-		leg_fl = { -26 },
-		leg_fr = { -26 },
-		leg_bl = { -22 },
-		leg_br = { -22 },
-		tail = { 22 },
-	}),
-	-- trunk raised in a trumpet and the body half reared, then a stomping slam
-	elephant = powerClip(
-		{ body = { 12, 0, 0, 0, 0.12, 0.2 }, head = { 30 }, leg_fl = { 36 }, leg_fr = { 30 }, tail = { -14 } },
-		{ body = { 16, 0, 0, 0, 0.2, 0.3 }, head = { 40 }, leg_fl = { 52 }, leg_fr = { 46 }, tail = { -18 } },
-		{ body = { -10, 0, 0, 0, -0.1, -0.7 }, head = { -20 }, leg_fl = { -16 }, leg_fr = { -14 }, tail = { 18 } }
-	),
 	-- the Shadow Legion's power moves, from SHANNON's concepts (FoePowers draws their effects)
 	-- Marked Shot: aimed the whole wind-up (a red line and rings), then one fast bolt (decision 0105)
 	foe_archer_crossbow_forge = {
@@ -3121,6 +2855,9 @@ local MAGICS: { [string]: Clip } = {
 		},
 	},
 }
+for kind, keys in AnimalMoves.POWERS do
+	MAGICS[kind] = { length = 1.6, keys = keys }
+end
 
 -- A model's species: its asset is "creature_<species>" or "creature_<species>_<variant>".
 local function speciesOf(model: Model): string?
@@ -4162,6 +3899,46 @@ local function sunk(feet: Feet, now: { [string]: { number } }, scale: number): n
 	return math.max(0, feet.ground - low)
 end
 
+-- The same for a skinned animal (decision 0102: bones, no leg boxes): its feet are the points AnimalRig measured on
+-- its model, from its body bone's rest head, carried by the pose of the body and of the leg each is on.
+type SkinFeet = { ground: number, legs: { { joint: string, at: Vector3, points: { Vector3 } } } }
+local skinFeet: { [string]: SkinFeet | false } = {}
+local function skinSunk(model: Model, now: { [string]: { number } }, scale: number): number
+	local asset = (model:GetAttribute("Asset") :: string?) or ""
+	local feet = skinFeet[asset]
+	if feet == nil then
+		local data = AnimalRig.MODELS[asset]
+		feet = false
+		if data then
+			local legs, ground = {}, math.huge
+			for joint, points in data.feet do
+				local j, pts = data.joints[joint], {}
+				for _, p in points do
+					table.insert(pts, Vector3.new(p[1], p[2], p[3]))
+					ground = math.min(ground, p[2])
+				end
+				table.insert(legs, { joint = joint, at = Vector3.new(j[1], j[2], j[3]), points = pts })
+			end
+			feet = { ground = ground, legs = legs }
+		end
+		skinFeet[asset] = feet
+	end
+	if not feet then
+		return 0
+	end
+	local size = model:GetScale() -- (its measures are at its built size)
+	local body = turned(now.body, scale)
+	local low = math.huge
+	for _, leg in feet.legs do
+		local at = leg.at * size
+		local frame = body * CFrame.new(at) * turned(now[leg.joint], scale) * CFrame.new(-at)
+		for _, p in leg.points do
+			low = math.min(low, (frame * (p * size)).Y)
+		end
+	end
+	return math.max(0, feet.ground * size - low)
+end
+
 -- A hit lands (the server sets HitPower, HitDmg and then HitAt on the target): sparks, a shock disc,
 -- a harder flinch, a short hold and a camera punch. A burst and one short-lived part: no lights.
 local slowAt = -math.huge -- when the fight's killing blow landed (clips play slowly for a moment)
@@ -4176,10 +3953,13 @@ local function strike(rig: Rig)
 	local dmg = (model:GetAttribute("HitDmg") :: number?) or 0
 	local s = ((model:GetAttribute("Scale") :: number?) or 1)
 	local final = model:GetAttribute("HitFinal") == 1
+	local click = not final and model:GetAttribute("HitClick") == 1 -- a click's strike: light, many a second (0106)
 	local hot = power > 0 or final
 	local colour = if hot then Color3.fromRGB(255, 120, 70) else Color3.fromRGB(255, 220, 160)
 	rig.flinch = FightFx.flinch(power, dmg / math.max(1, (model:GetAttribute("MaxHp") :: number?) or 1))
-	rig.stopUntil = os.clock() + FightFx.hitStop(power, final, model:GetAttribute("HitKo") == 1)
+	if not click then
+		rig.stopUntil = os.clock() + FightFx.hitStop(power, final, model:GetAttribute("HitKo") == 1)
+	end
 	local spark = rig.spark
 	if spark == nil then
 		spark = Instance.new("ParticleEmitter")
@@ -4194,7 +3974,7 @@ local function strike(rig: Rig)
 	end
 	local e = spark :: ParticleEmitter
 	e.Color = ColorSequence.new(colour)
-	e:Emit(if final then 44 elseif hot then 28 else 10)
+	e:Emit(if final then 44 elseif hot then 28 elseif click then 5 else 10)
 	local camera = Workspace.CurrentCamera
 	local face = if camera then camera.CFrame.Position else hit.Position + Vector3.new(0, 0, 10)
 	if (face - hit.Position).Magnitude > 0.1 then
@@ -4205,19 +3985,16 @@ local function strike(rig: Rig)
 			Enum.Material.Neon
 		)
 		disc.Shape, disc.Transparency = Enum.PartType.Cylinder, 0.25
-		local r = (if final then 14 elseif hot then 9 else 5) * s
+		local r = (if final then 14 elseif hot then 9 elseif click then 3 else 5) * s
 		tween(disc, 0.35, { Size = Vector3.new(0.2, r, r), Transparency = 1 })
 		Debris:AddItem(disc, 0.45)
 	end
-	player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
-	player:SetAttribute("CamPunchAt", os.clock())
+	if power > 0 then -- only a power hit nudges the camera (SHANNON: "way less camera zooming")
+		player:SetAttribute("CamPunch", FightFx.punchStrength(power)) -- local only: ArenaCamera reads it
+		player:SetAttribute("CamPunchAt", os.clock())
+	end
 	if final then
 		slowAt = os.clock() -- the finish is the slow motion alone (decision 0097)
-	end
-	-- the team's power attacks cut the camera in on their target (ArenaCamera reads these)
-	if power > 0 and not final and model:GetAttribute("Side") == 2 then
-		player:SetAttribute("CamCut", hit.Position)
-		player:SetAttribute("CamCutAt", os.clock())
 	end
 	-- and every hit is heard: a thud, a slam for a power hit or a knockout
 	local ko = model:GetAttribute("HitKo") == 1
@@ -4237,7 +4014,7 @@ local function strike(rig: Rig)
 		end
 	end
 	local s2 = sound :: Sound
-	s2.Volume = if final then 0.9 elseif hot or ko then 0.55 else 0.4
+	s2.Volume = if final then 0.9 elseif hot or ko then 0.55 elseif click then 0.18 else 0.4
 	s2.PlaybackSpeed = (if ko then 0.8 else 1) * (0.92 + math.random() * 0.16)
 	s2:Play()
 end
@@ -4429,6 +4206,7 @@ end)
 CollectionService:GetInstanceRemovedSignal("Creature"):Connect(function(model)
 	rigs[model :: Model] = nil
 	FoePowers.stop(model :: Model)
+	Spells.stop(model :: Model)
 end)
 for _, model in CollectionService:GetTagged("Creature") do
 	add(model)
@@ -4519,8 +4297,8 @@ RunService.PreSimulation:Connect(function(dt: number)
 		elseif anim == "magic" and t < MAGIC.length then
 			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
 			local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
-			if (own and own.power) or FoePowers.has(model) then
-				-- its own effects (weaponFx or FoePowers, below) in place of the shared ones
+			if (own and own.power) or FoePowers.has(model) or Spells.step(model, rig.bones, at, t) then
+				-- its own effects (weaponFx or FoePowers below, or its spell) in place of the shared ones
 				rig.magicAt, rig.impactAt = at, at
 			end
 			if rig.magicAt ~= at then
@@ -4534,16 +4312,23 @@ RunService.PreSimulation:Connect(function(dt: number)
 		else
 			target = if biped then idleBiped(time) else idle(time)
 		end
+		if anim ~= "magic" or t >= MAGIC.length then
+			Spells.stop(model)
+		end
+		-- a held stance (a Shadow Legion enemy's) or an animal's own idle (AnimalMoves): its moves start from it and
+		-- settle back into it
 		local stance = STANCES[(model:GetAttribute("Asset") :: string?) or ""]
-		if stance then
+		local idleOf = AnimalMoves.IDLES[speciesOf(model) or ""]
+		local rest = if stance then stanceAt(stance, time) elseif idleOf then idleOf(time) else nil
+		if rest then
 			local length = if anim == "attack" then ATTACK.length elseif anim == "magic" then MAGIC.length else 0
 			if anim == "hit" and t < HIT.length then
-				target = mixed(stanceAt(stance, time), target, 2) -- a flinch on top of its stance
+				target = mixed(rest, target, 2) -- a flinch on top of it
 			elseif t < length then
-				-- out of its stance into the move, and back into it at the end
-				target = mixed(stanceAt(stance, time), target, math.clamp(math.min(t / 0.12, (length - t) / 0.2), 0, 1))
+				-- out of it into the move, and back into it at the end
+				target = mixed(rest, target, math.clamp(math.min(t / 0.12, (length - t) / 0.2), 0, 1))
 			elseif anim == nil or anim == "idle" or anim == "attack" or anim == "magic" or anim == "hit" then
-				target = stanceAt(stance, time)
+				target = rest
 			end
 		end
 		local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
@@ -4590,11 +4375,19 @@ RunService.PreSimulation:Connect(function(dt: number)
 			end
 		end
 		local lift = Vector3.zero -- feet stay on the ground, except in a fall
+		-- (a skinned animal's, from AnimalRig's foot points: only in the moves fitted for it, so the training clips and
+		-- the Titan's sleep keep the look they were approved with)
+		local raise = 0
 		if anim ~= "die" then
 			rig.feet = rig.feet or feetOf(rig.joints)
 			local feet = rig.feet
 			if feet then
 				lift = feet.base:VectorToObjectSpace(Vector3.new(0, sunk(feet, rig.now, scale), 0))
+			elseif
+				next(rig.bones) ~= nil
+				and (anim == nil or anim == "idle" or anim == "attack" or anim == "magic" or anim == "hit")
+			then
+				raise = skinSunk(model, rig.now, scale)
 			end
 		end
 		for _, joint in JOINTS do
@@ -4604,7 +4397,11 @@ RunService.PreSimulation:Connect(function(dt: number)
 				local pose = turned(rig.now[joint], scale)
 				motor.Transform = if joint == "body" then CFrame.new(lift) * pose else pose
 			elseif bone then
-				bone.bone.Transform = bone.turn:Inverse() * turned(rig.now[joint], scale) * bone.turn
+				local pose = turned(rig.now[joint], scale)
+				if joint == "body" and raise > 0 then
+					pose = CFrame.new(0, raise, 0) * pose
+				end
+				bone.bone.Transform = bone.turn:Inverse() * pose * bone.turn
 			end
 		end
 	end

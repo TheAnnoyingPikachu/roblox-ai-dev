@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "output_artifacts": [],
+  "status": "in_progress",
+  "task_id": "STATION-117",
+  "objective": "The Phoenix Flamingo's beak follows its head: its hanging beak was skinned to the body and tore away from its face whenever the head turned (its idle, attack and spell).",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-116"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "assets/stations/creature_flamingo_phoenix_forge.fbx",
+    "tools/blender/stations/uploaded.json",
+    "src/shared/StationAssets.luau",
+    "src/shared/AnimalRig.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-117.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every vertex of the Phoenix Flamingo's beak follows its head bone; the base and King Flamingos are unchanged",
+    "The rebuilt model is uploaded and StationAssets names it"
+  ],
+  "verification": "Blender: the 30 frontmost vertices all follow the head (11 followed the body before); the flamingo's preen, neck lash and wing peck rendered on the rebuilt model keep the beak on the face. Studio: the Phoenix's lane in the walk-through.",
+  "risk_level": "low",
+  "notes": "SHANNON, 2026-11-22: \"they are all good except the pheonix flamingo has a slight beak issue\". skin_forge's flamingo weights take a vertex as the head's only above the neck joint's height; the Phoenix's long beak hangs below it. `beak` (y -0.3 in its source's units) gives everything ahead of that to the head. The mesh and UVs are unchanged, so its texture and rainbow coat stay as uploaded."
+}

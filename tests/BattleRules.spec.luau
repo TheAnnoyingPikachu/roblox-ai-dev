@@ -637,3 +637,125 @@ describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)"
 		expect(fast < slow).toBeTruthy()
 	end)
 end)
+
+describe("BattleRules pit fight: clicks and quick presses (decision 0106)", function()
+	local one = { owned("lion"), owned("rhino"), owned("flamingo") }
+	local two = { owned("rhino"), owned("rhino"), owned("rhino") }
+	local clicks: BattleRules.Setup = { clicks = true }
+	local STRIKE = BattleRules.STRIKE
+
+	it("gives every animal the quick press of its spell, and every Titan a mash", function()
+		expect(BattleRules.pressOf(owned("lion"))).toBe("ring")
+		expect(BattleRules.pressOf(owned("cheetah"))).toBe("chain")
+		expect(BattleRules.pressOf(owned("jackal"))).toBe("needle")
+		expect(BattleRules.pressOf(owned("elephant"))).toBe("mash")
+		expect(BattleRules.pressOf(owned("elephant", "frost_elephant"))).toBe("mash")
+		expect(BattleRules.pressOf(owned("meerkat", "star_meerkat"))).toBe("ring")
+		expect(BattleRules.pressOf(owned("tortoise", "gemshell_tortoise"))).toBe("chain")
+		expect(BattleRules.pressOf(owned("flamingo", "phoenix_flamingo"))).toBe("needle")
+		for _, sp in StationConfig.SPECIES do
+			expect(BattleRules.PRESSES[sp.id] ~= nil).toBeTruthy()
+		end
+		for v in BattleRules.PRESS_VARIANTS do -- every listed variant exists
+			local species = string.match(v, "_(%a+)$") :: string
+			expect(StationConfig.variant(species, v) ~= nil).toBeTruthy()
+		end
+	end)
+
+	it("judges a Perfect by the press: ring, needle crossings, a quick chain, a full mash", function()
+		local P, E, L = BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE
+		expect(BattleRules.perfect("ring", P)).toBe(true)
+		expect(BattleRules.perfect("ring", P + L + 0.05)).toBe(false)
+		expect(BattleRules.perfect("needle", P)).toBe(true)
+		expect(BattleRules.perfect("needle", P + 2 * BattleRules.NEEDLE_EVERY + L - 0.01)).toBe(true)
+		expect(BattleRules.perfect("needle", P + BattleRules.NEEDLE_EVERY * 0.5 + 0.1)).toBe(false)
+		expect(BattleRules.perfect("needle", P - E - 0.05)).toBe(false)
+		expect(BattleRules.perfect("chain", 0.4)).toBe(true)
+		expect(BattleRules.perfect("chain", P + L + 0.05)).toBe(false)
+		expect(BattleRules.perfect("mash", 2, BattleRules.MASH_COUNT)).toBe(true)
+		expect(BattleRules.perfect("mash", 2, BattleRules.MASH_COUNT - 1)).toBe(false)
+		expect(BattleRules.perfect("mash", BattleRules.MASH_BY + L + 0.05, BattleRules.MASH_COUNT)).toBe(false)
+		expect(BattleRules.perfect("mash", 2)).toBe(false)
+	end)
+
+	it("slows the team's own attacks CLICK_SLOW times when clicks strike", function()
+		local plain, slow = {}, {}
+		BattleRules.battle(one, two, plain, {})
+		BattleRules.battle(one, two, slow, {}, clicks)
+		local function first(log: { BattleRules.Hit }): number
+			for _, e in log do
+				if e.side == 1 then
+					return e.t
+				end
+			end
+			error("no hit")
+		end
+		expect(math.abs(first(slow) - first(plain) * BattleRules.CLICK_SLOW) < 1e-6).toBeTruthy()
+	end)
+
+	it("strikes with the next animal in turn at a click's time, at most once per STRIKE_GAP", function()
+		local log = {}
+		BattleRules.battle(one, two, log, {
+			{ slot = STRIKE, t = 0.5 },
+			{ slot = STRIKE, t = 0.5 + BattleRules.STRIKE_GAP / 2 }, -- too soon: nothing
+			{ slot = STRIKE, t = 0.7 },
+			{ slot = STRIKE, t = 0.9 },
+		}, clicks)
+		local who = {}
+		for _, e in log do
+			if e.click then
+				table.insert(who, e.slot)
+				expect(e.side).toBe(1)
+				expect(e.power).toBe(false)
+				expect(e.energy > 0).toBeTruthy() -- the striker's meter gained its share
+			end
+		end
+		expect(#who).toBe(3)
+		expect(who[1]).toBe(1)
+		expect(who[2]).toBe(2)
+		expect(who[3]).toBe(3)
+	end)
+
+	it("strikes only when clicks are on, and changes nothing before a click's time", function()
+		local none = {}
+		BattleRules.battle(one, two, none, { { slot = STRIKE, t = 1 } })
+		for _, e in none do
+			expect(e.click).toBeNil()
+		end
+		local base, struck = {}, {}
+		BattleRules.battle(one, two, base, {}, clicks)
+		BattleRules.battle(one, two, struck, { { slot = STRIKE, t = 3 } }, clicks)
+		for i, e in base do
+			if e.t >= 3 then
+				break
+			end
+			expect(struck[i].t).toBe(e.t)
+			expect(struck[i].hp).toBe(e.hp)
+		end
+	end)
+
+	it("makes a Titan's power tap a Perfect only when it brings MASH_COUNT presses", function()
+		local team = { owned("lion"), owned("rhino"), owned("flamingo"), owned("elephant") }
+		local ready: BattleRules.Setup = { energy = 0.95, clicks = true }
+		local base = {}
+		BattleRules.battle(team, two, base, {}, ready)
+		local at: number? = nil
+		for _, e in base do
+			if e.side == 1 and e.slot == 4 and not e.power and e.energy >= 1 then
+				at = at or e.t
+			end
+		end
+		local function tapped(presses: number): boolean?
+			local log = {}
+			BattleRules.battle(team, two, log, { { slot = 4, t = (at :: number) + 1.5, presses = presses } }, ready)
+			for _, e in log do
+				if e.tap and e.slot == 4 then
+					return e.perfect
+				end
+			end
+			error("not fired")
+		end
+		expect(tapped(BattleRules.MASH_COUNT)).toBe(true)
+		expect(tapped(3)).toBeNil()
+	end)
+end)

@@ -58,6 +58,7 @@ type Show = {
 	ends: { number }, -- the team's HP at the end, shares by slot (a run carries it, decision 0098)
 	start: number,
 	ours: { Model }, -- the team's models by slot
+	strikeTo: number?, -- the fight time of the last click strike laid (decision 0106)
 	setup: BattleRules.Setup?,
 	arrivals: { [number]: number }, -- when each foe is in the fight (BattleRules.battle, decision 0101)
 	engaged: { [number]: number }, -- when each foe joined the front line
@@ -117,6 +118,7 @@ function WaveShow.clear(player: Player)
 	player:SetAttribute("CamRadius", nil)
 	player:SetAttribute("ShieldAt", nil)
 	player:SetAttribute("ShieldReady", nil)
+	player:SetAttribute("FightWave", nil)
 	if active == player then
 		active = nil
 	end
@@ -253,6 +255,7 @@ function WaveShow.run(
 	local function live(): boolean
 		return runs[player] == token
 	end
+	player:SetAttribute("FightWave", wave) -- the HUD's stage and the gate waking up read it (decision 0106)
 
 	local foes = LevelRules.enemies(wave)
 	local log: { BattleRules.Hit } = {}
@@ -303,7 +306,7 @@ function WaveShow.run(
 		end
 		theirDeep = math.max(theirDeep, deep)
 	end
-	local gap = ourDeep / 2 + theirDeep / 2 + 14
+	local gap = ourDeep / 2 + theirDeep / 2 + 20 -- the enemies a little further off (SHANNON, decision 0106)
 	local rowStep = theirDeep + 5
 	local z0 = stand.Position.Z
 
@@ -502,9 +505,15 @@ function WaveShow.run(
 				actor.model:SetAttribute("BoltTo", to.Position)
 				actor.model:SetAttribute("BoltFor", flight)
 			end
-			Creatures.play(actor.model, if e.power then "magic" else "attack")
+			if e.power and to then -- where its spell lands: the ground under its target, and how tall that is
+				actor.model:SetAttribute("AimAt", to.Position - Vector3.new(0, to.Size.Y / 2, 0))
+				actor.model:SetAttribute("AimHeight", to.Size.Y)
+			end
+			if not e.click then -- a click's strike is quick: no clip, no lunge (decision 0106)
+				Creatures.play(actor.model, if e.power then "magic" else "attack")
+			end
 			local root = actor.model.PrimaryPart :: BasePart
-			local lunges = not e.power and not ranged(kind)
+			local lunges = not e.power and not e.click and not ranged(kind)
 			if e.power then -- who it reaches, for its power move's effects (FoePowers): slots on the other side, its own
 				local aim, allies = { e.tslot }, {}
 				for _, x in e.also or {} do
@@ -543,7 +552,7 @@ function WaveShow.run(
 				actor.model:SetAttribute("Power", e.energy)
 			end
 			local ko = e.hp <= 0
-			if not ranged(kind) then -- a melee attacker freezes with its target; a shooter has nothing to hit
+			if not ranged(kind) and not e.click then -- a melee attacker freezes with its target; a shooter has nothing to hit
 				actor.model:SetAttribute("StopFor", FightFx.hitStop(if e.power then 1 else 0, final, ko))
 				actor.model:SetAttribute("StopAt", now)
 			end
@@ -553,6 +562,7 @@ function WaveShow.run(
 			target.model:SetAttribute("HitFinal", if final then 1 else 0)
 			target.model:SetAttribute("HitCrit", if crit then 1 else 0)
 			target.model:SetAttribute("HitKo", if ko then 1 else 0)
+			target.model:SetAttribute("HitClick", if e.click then 1 else 0) -- the client draws a click's hit lighter
 			target.model:SetAttribute("HitAt", now)
 			if e.side == 1 and crit then
 				local words = {}
@@ -587,6 +597,7 @@ function WaveShow.run(
 					other.model:SetAttribute("HitFinal", 0)
 					other.model:SetAttribute("HitCrit", 0)
 					other.model:SetAttribute("HitKo", if x.hp <= 0 then 1 else 0)
+					other.model:SetAttribute("HitClick", if e.click then 1 else 0)
 					other.model:SetAttribute("HitAt", now)
 					other.hp, other.version = x.hp, other.version + 1
 					other.model:SetAttribute("Hp", math.max(0, x.hp))
@@ -753,18 +764,37 @@ end
 
 -- The player taps their animal in team slot `slot` to fire its power attack (decision 0092). The
 -- fight is replayed from the start with the tap TAP_AHEAD seconds from now; refused when its meter
--- is not full then, the fight is over, or the tap would lose a fight the team was winning.
-function WaveShow.power(player: Player, slot: number): (boolean, string?)
+-- is not full then, the fight is over, or the tap would lose a fight the team was winning. `presses` is
+-- a mash's count (decision 0106): no more are believed than BattleRules.MASH_RATE a second since the
+-- meter filled in the show, on the server's clock.
+function WaveShow.power(player: Player, slot: number, presses: number?): (boolean, string?)
 	local show = shows[player]
 	if show == nil or runs[player] ~= show.token then
 		return false, "no_fight"
 	end
-	local t = os.clock() - show.start + TAP_AHEAD
+	local seen = os.clock() - show.start
+	local t = seen + TAP_AHEAD
 	if t < 0 or t >= show.seconds then
 		return false, "power"
 	end
+	local count: number? = nil
+	if presses and presses > 0 then
+		local filled: number? = nil -- when the meter last filled, as far as the show has played
+		for _, e in show.log do
+			if e.t > seen then
+				break
+			elseif e.side == 1 and e.slot == slot then
+				if e.power then
+					filled = nil
+				elseif e.energy >= 1 and filled == nil then
+					filled = e.t
+				end
+			end
+		end
+		count = if filled then math.min(presses, math.floor(BattleRules.MASH_RATE * (seen - filled)) + 1) else 0
+	end
 	local taps = table.clone(show.taps)
-	table.insert(taps, { slot = slot, t = t })
+	table.insert(taps, { slot = slot, t = t, presses = count })
 	local log: { BattleRules.Hit } = {}
 	local arrivals, engaged = {}, {}
 	local won, actions, seconds, ends =
@@ -781,6 +811,49 @@ function WaveShow.power(player: Player, slot: number): (boolean, string?)
 	if show.ours[slot] then -- the meter empties at once; the strike lands TAP_AHEAD from now
 		show.ours[slot]:SetAttribute("Power", 0)
 	end
+	return true, nil
+end
+
+-- The player clicks (decision 0106): `n` clicks since the client last sent (it sends at most every
+-- STRIKE_SEND seconds). Each is a strike (a tap on BattleRules.STRIKE) laid from TAP_AHEAD ahead of the
+-- show, after the last one laid and no further ahead than STRIKE_SEND, spread over that time (BattleRules
+-- ignores any closer than STRIKE_GAP). Refused when clicks do not strike in this fight, the fight is over,
+-- no strike lands (nobody in the front line yet) or they would lose a fight the team was winning.
+local STRIKE_SEND = 0.25
+function WaveShow.strike(player: Player, n: number): (boolean, string?)
+	local show = shows[player]
+	if show == nil or runs[player] ~= show.token then
+		return false, "no_fight"
+	end
+	local t = os.clock() - show.start + TAP_AHEAD
+	if t < 0 or t >= show.seconds or not (show.setup and show.setup.clicks) then
+		return false, "strike"
+	end
+	local from = math.max(t, (show.strikeTo or -math.huge) + BattleRules.STRIKE_GAP)
+	local room = math.floor((t + STRIKE_SEND - from) / BattleRules.STRIKE_GAP) + 1
+	local count = math.min(n, room)
+	if count < 1 then
+		return false, "strike"
+	end
+	local gap = math.max(BattleRules.STRIKE_GAP, STRIKE_SEND / count)
+	local taps = table.clone(show.taps)
+	for k = 0, count - 1 do
+		table.insert(taps, { slot = BattleRules.STRIKE, t = from + k * gap })
+	end
+	local log: { BattleRules.Hit } = {}
+	local arrivals, engaged = {}, {}
+	local won, actions, seconds, ends =
+		BattleRules.battle(show.team, show.foes, log, taps, show.setup, arrivals, engaged)
+	local landed = false
+	for _, e in log do
+		landed = landed or (e.click == true and e.t >= from)
+	end
+	if not landed or (show.won and not won) then
+		return false, "strike"
+	end
+	show.taps, show.log, show.won, show.actions, show.seconds, show.ends = taps, log, won, actions, seconds, ends
+	show.arrivals, show.engaged = arrivals, engaged
+	show.strikeTo = from + (count - 1) * gap
 	return true, nil
 end
 
