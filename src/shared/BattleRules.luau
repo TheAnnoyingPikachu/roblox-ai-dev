@@ -331,7 +331,8 @@ BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 --   of the front line nearest that player's team. Each player's clicks keep their own STRIKE_GAP.
 -- * Everything else is one team's: the usual target for the animals' own attacks and power attacks, one
 --   combo, one shield, one setup.
-BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 2.4, 0.6, 1 / 12
+-- clicking is a bonus, slightly easier (SHANNON, 2026-11-24): was 2.4 times slower unclicked and 0.6 s a click
+BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 1, 0.25, 1 / 12
 BattleRules.NEEDLE_EVERY = 1.5
 BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 8, 4.5, 12
 -- A press messed up (SHANNON, 2026-11-24: "a fail condition as punishment"): a chain's wrong key, a needle

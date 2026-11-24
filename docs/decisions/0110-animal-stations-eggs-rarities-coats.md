@@ -88,7 +88,7 @@ One coat at most per animal, rolled after the animal; an egg's signature coat is
   Quick Paws 3% faster (was 12), each stack multiplying. Charged Up and Second Wind are unchanged.
 - Rare boons (Revive, Lucky Find, Gold Rush) stand in `RARE_PCT` 15 offers of 100, at most one an offer:
   about 1.5 a stage of 10 waves (before: in most offers).
-- The steep waves after 100 are retuned for the small boons: `STEEP_GROWTH` 1.016 (was 1.08); `STEEP_BEND`
+- The steep waves after 100 are retuned for the small boons: `STEEP_GROWTH` 1.013 (was 1.08; 1.016 until clicking became a bonus, decision 0106); `STEEP_BEND`
   200 as before. The enemies walk out of the gate at 18 studs a second (was 13).
 - Simulation at 1.016 (4 clicks a second, a Good press 1.5 s after each meter fills: `EXPIRE_FAILS` off,
   `AUTO_FIRE` 1.5 in the sim, as a run out press now fails): the best team with good picks clears 300 or 299;

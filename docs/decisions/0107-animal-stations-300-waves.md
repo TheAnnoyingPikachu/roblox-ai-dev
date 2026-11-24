@@ -56,14 +56,14 @@ an elephant at 35. Max 70 = the four mythics at 70. The last wave cleared:
 
 ## Checkpoint answers (SHANNON, 2026-11-24)
 
-- 1: go (with `STEEP_GROWTH` 1.016). 2: OK. 4: fine that the last waves take that long.
+- 1: go (with `STEEP_GROWTH` 1.013). 2: OK. 4: fine that the last waves take that long.
 - 3: "shrink both accordingly but still keep the numbers quite high": `REWARD_GROWTH` 1.055 (was 1.08), so wave
   300's first clear pays about 359 million and all 300 about 6.9 billion; the eggs are repriced with it (decision
   0110, amended).
 
 ## To confirm at the checkpoint
 
-1. The numbers: `LAST` 300, `STEEP_FROM` 100, `STEEP_GROWTH` 1.08 (1.016 since decision 0110's amendment: small
+1. The numbers: `LAST` 300, `STEEP_FROM` 100, `STEEP_GROWTH` 1.08 (1.013 since decision 0110's amendment: small
    boons and press fails), `STEEP_BEND` 200.
 2. Fact: with boons stacking, the picks decide far more than the team. A starter team that always takes
    damage and speed reaches wave 269. Quick Paws is the lever: a click is worth `STRIKE_SECONDS` of its
