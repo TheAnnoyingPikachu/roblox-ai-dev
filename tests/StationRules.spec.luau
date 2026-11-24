@@ -150,7 +150,7 @@ describe("StationConfig", function()
 		end
 	)
 
-	it("gives every animal two variants, each epic or higher by its own power, named <word>_<species>", function()
+	it("gives every animal two egg variants, each epic or higher by its own power, named <word>_<species>", function()
 		local rank = {}
 		for k, r in StationConfig.RARITIES do
 			rank[r] = k
@@ -159,7 +159,11 @@ describe("StationConfig", function()
 		for _, sp in StationConfig.SPECIES do
 			expect(ids[sp.id]).toBeNil()
 			ids[sp.id] = true
-			expect(#sp.variants).toBe(2)
+			local fromEggs = 0
+			for _, va in sp.variants do
+				fromEggs += if va.exclusive then 0 else 1
+			end
+			expect(fromEggs).toBe(2) -- and any exclusive ones besides (decision 0117)
 			if sp.role ~= StationConfig.TITAN then
 				expect(table.find(StationConfig.BASIC_RARITIES, sp.rarity) ~= nil).toBeTruthy()
 			end
@@ -222,8 +226,23 @@ describe("StationConfig", function()
 						dropped = dropped or (row.s == sp.id and row.v == va.id)
 					end
 				end
-				expect(dropped).toBeTruthy()
+				expect(dropped).toBe(not va.exclusive) -- an exclusive one never hatches (decision 0117)
 			end
+		end
+	end)
+
+	it("keeps the eternal rarity for the exclusive variants, the top of every rarity list", function()
+		local n = 0
+		for _, sp in StationConfig.SPECIES do
+			for _, va in sp.variants do
+				expect(va.exclusive == true).toBe(va.tier == "eternal")
+				n += if va.exclusive then 1 else 0
+			end
+		end
+		expect(n).toBe(2) -- the Sahara Guardian and the Sahara Mammoth
+		expect(StationConfig.RARITIES[#StationConfig.RARITIES]).toBe("eternal")
+		for rarity, at in StationConfig.RARITY_FLOOR do
+			expect(rarity == "eternal" or at < StationConfig.RARITY_FLOOR.eternal).toBeTruthy()
 		end
 	end)
 

@@ -19,8 +19,9 @@ export type Stats = {
 	defence: number,
 }
 -- tier: its rarity (decision 0110: set by its power, `RARITY_FLOOR`); mult: its stats are the species' x mult,
--- and its twist stat gains TWIST_PER x mult more
-export type Variant = { id: string, name: string, tier: string, twist: Stat, mult: number }
+-- and its twist stat gains TWIST_PER x mult more; exclusive: no egg ever drops it (decision 0117: Robux and beta
+-- rewards only)
+export type Variant = { id: string, name: string, tier: string, twist: Stat, mult: number, exclusive: boolean? }
 export type Species = {
 	id: string,
 	name: string,
@@ -133,9 +134,10 @@ StationConfig.XP_STAT_LEVEL = 5
 
 StationConfig.BASIC_RARITIES = { "common", "uncommon", "rare" }
 StationConfig.RARITIES =
-	{ "common", "uncommon", "rare", "epic", "legendary", "mythic", "divine", "celestial", "secret" }
+	{ "common", "uncommon", "rare", "epic", "legendary", "mythic", "divine", "celestial", "secret", "eternal" }
 -- Rarity by power (decision 0110): a version's rarity is the band its stat total falls in (a Titan's band
--- is TITAN_BAND times wider). "secret" is kept for animals that are not ranked by power; none yet.
+-- is TITAN_BAND times wider). "secret" is kept for animals that are not ranked by power; none yet. "eternal"
+-- (decision 0117) is the top: the exclusive variants, never from an egg.
 StationConfig.RARITY_FLOOR = {
 	common = 0,
 	uncommon = 180,
@@ -145,6 +147,7 @@ StationConfig.RARITY_FLOOR = {
 	mythic = 800,
 	divine = 1100,
 	celestial = 1600,
+	eternal = 2300, -- decision 0117
 } :: { [string]: number }
 StationConfig.TITAN_BAND = 1.6
 StationConfig.TWIST_PER = 20
@@ -163,8 +166,8 @@ StationConfig.SOLITARY_PCT = 25
 -- Variants (decision 0110, replacing the two tiers of decision 0037): each has its own `mult`, set so its
 -- power lands in its rarity's band (StationRules.powerRarity; a spec checks). How often one hatches is set
 -- egg by egg (EGGS, `rare`).
-local function v(id: string, name: string, tier: string, twist: Stat, mult: number): Variant
-	return { id = id, name = name, tier = tier, twist = twist, mult = mult }
+local function v(id: string, name: string, tier: string, twist: Stat, mult: number, exclusive: boolean?): Variant
+	return { id = id, name = name, tier = tier, twist = twist, mult = mult, exclusive = exclusive }
 end
 
 -- speed, strength, stamina, mana, health, defence
@@ -268,6 +271,7 @@ StationConfig.SPECIES = {
 		variants = {
 			v("sun_lion", "Sun Lion", "celestial", "strength", 5),
 			v("shadow_lion", "Shadow Lion", "mythic", "speed", 2.6),
+			v("sahara_lion", "Sahara Guardian", "eternal", "strength", 7, true), -- decision 0117
 		},
 	},
 	{ -- decision 0079: draft numbers, a little over the Lion's total
@@ -292,6 +296,7 @@ StationConfig.SPECIES = {
 		variants = {
 			v("frost_elephant", "Frost Mammoth", "celestial", "health", 3.4),
 			v("war_elephant", "War Elephant", "mythic", "strength", 2),
+			v("sahara_elephant", "Sahara Mammoth", "eternal", "strength", 5, true), -- decision 0117
 		},
 	},
 } :: { Species }

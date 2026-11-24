@@ -1563,8 +1563,18 @@ remotes = Remotes.create("StationsRemotes", router)
 
 -- The Hall of Fame at the hub (decision 0095): the best animals in this server, at most two of any one
 -- player's, rarest first and rainbow coats before plain ones. Worked out again a moment after any change.
-local RANK =
-	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
+local RANK = {
+	common = 1,
+	uncommon = 2,
+	rare = 3,
+	epic = 4,
+	legendary = 5,
+	mythic = 6,
+	divine = 7,
+	celestial = 8,
+	secret = 9,
+	eternal = 10,
+}
 local fameQueued = false
 local function updateFame()
 	if fameQueued then

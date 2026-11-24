@@ -258,6 +258,7 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 		divine = 3,
 		celestial = 4,
 		secret = 5,
+		eternal = 6, -- decision 0117
 	}
 	showRarity = function(a: any): number
 		revealed += 1

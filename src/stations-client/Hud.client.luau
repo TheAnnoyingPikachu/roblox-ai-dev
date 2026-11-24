@@ -51,8 +51,18 @@ Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and label
 local C = Style.C
 local N = Style.N
 local RARITY_COLOUR = Style.RARITY
-local RANK: { [string]: number } =
-	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
+local RANK: { [string]: number } = {
+	common = 1,
+	uncommon = 2,
+	rare = 3,
+	epic = 4,
+	legendary = 5,
+	mythic = 6,
+	divine = 7,
+	celestial = 8,
+	secret = 9,
+	eternal = 10,
+}
 local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defence", utility = "Utility", titan = "TITAN" }
 local GROUP_NAME: { [string]: string } = { pack = "Pack", solitary = "Solitary" }
 local STAT_SHORT: { [string]: string } =

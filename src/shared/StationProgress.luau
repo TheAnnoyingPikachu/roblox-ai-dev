@@ -83,7 +83,7 @@ export type Profile = {
 -- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
 -- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
 -- strip what it does not know. A save is stamped with the version of the server that last wrote it.
-StationProgress.VERSION = 2 -- 2: goals and the intro (decisions 0115, 0116)
+StationProgress.VERSION = 3 -- 2: goals and the intro (decisions 0115, 0116); 3: the eternal pair (decision 0117)
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
@@ -740,6 +740,7 @@ StationProgress.RELEASE_PAY = {
 	divine = 2500,
 	celestial = 6000,
 	secret = 15000,
+	eternal = 40000, -- decision 0117
 } :: { [string]: number }
 StationProgress.FUSE = 4 -- this many of one animal, of one coat tier, fuse into one of the next tier
 
