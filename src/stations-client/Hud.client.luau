@@ -3951,6 +3951,20 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			again.Text = if payload.last then `Fight wave {wave} again` else `Fight wave {wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
 				offerBoons(payload.offer, wave)
+				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): a countdown
+					local panel = boonRow.Parent :: GuiObject
+					local heading = panel:FindFirstChild("Title") :: TextLabel?
+					task.spawn(function()
+						for left = 7, 1, -1 do
+							if not panel.Visible or heading == nil then
+								return
+							end
+							heading.Text = `Vote for a boon: {left}`
+							task.wait(1)
+						end
+						panel.Visible = false -- time is up: the server picks and the next wave starts
+					end)
+				end
 			end
 			buttons(payload.offer == nil)
 			local pot = if payload.pot then payload.pot.coins else 0
@@ -3969,10 +3983,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "votes" then
 		local votes = (boonRow.Parent :: Instance):FindFirstChild("Votes") :: TextLabel?
 		if votes then
-			votes.Text =
-				`{payload.voted} of {payload.of} have voted. The boon is picked in {payload.seconds} seconds at most.`
+			votes.Text = `{payload.voted} of {payload.of} have voted`
 		end
 	elseif kind == "boon" then
+		local voted = boonRow.Parent :: GuiObject
+		voted.Visible = false
 		local picked = WaveRuns.boon(payload.id)
 		if picked then
 			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")

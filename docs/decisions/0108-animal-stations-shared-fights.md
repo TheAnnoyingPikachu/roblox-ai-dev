@@ -82,7 +82,8 @@ light) and STATION-125 (the fight in play: server, show, HUD, camera).
   SHANNON asked for every knocked-out animal.)
 - The boon: each member votes. The boon with the most votes is the party's (`WaveRuns.tally`); a tie is
   picked at random among the tied, by the run's seed. It is settled when all have voted, or `VOTE_SECONDS`
-  (15) after the first vote. The next wave starts then.
+  (7) after it is offered, nobody's vote or a tie picked at random; the HUD counts it down. Alone there is
+  no limit. The next wave starts then.
 - A member who leaves is paid their pot; the party goes on. If the host of the show leaves in the middle
   of a wave, that wave ends for everyone with the result as it stood.
 
@@ -101,7 +102,7 @@ light) and STATION-125 (the fight in play: server, show, HUD, camera).
 ## To confirm at the checkpoint
 
 1. `PARTY_COUNT` 1.5 and 2, `PARTY_POWER` 1.6 and 2.1, `FRONT_MORE` 3.
-2. `WIPED_BACK` 25%, `VOTE_SECONDS` 15, the field held 60 seconds for a boon.
+2. `WIPED_BACK` 25%, `VOTE_SECONDS` 7 from the offer (SHANNON, 2026-11-24: "a short 7 second vote"), the field held 60 seconds for a boon.
 3. Joining at every wave's start, not only a run's first.
 4. Carrying: a new player beside a strong one clears far waves at once, and the eggs those waves open.
    Accept (recommended: it is what playing together is for), or pay a carried player without moving their

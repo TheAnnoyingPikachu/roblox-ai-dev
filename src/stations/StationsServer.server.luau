@@ -392,7 +392,7 @@ type Party = {
 	holdTo: number, -- os.clock() until when the field is kept for it while it picks a boon
 }
 local partyOf: { [Player]: Party } = {}
-local VOTE_SECONDS = 15 -- once one member has voted the others have this long
+local VOTE_SECONDS = 7 -- a party's boon vote is this long from the offer (SHANNON, 2026-11-24); alone, no limit
 local HOLD_SECONDS = 60 -- how long the field waits for a party to pick its boon
 local fieldOf: Party? = nil -- the party that last fought on the field
 local settle: (party: Party) -> ()
@@ -559,6 +559,14 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 			party.run, party.votes = after :: WaveRuns.Run, {}
 			party.round += 1
 			party.holdTo = os.clock() + HOLD_SECONDS
+			if #party.members > 1 and level < LevelRules.LAST then -- a short vote: settled when time is up
+				local round = party.round
+				task.delay(VOTE_SECONDS, function()
+					if party.round == round then
+						settle(party)
+					end
+				end)
+			end
 		end
 		local last = result.won and level >= LevelRules.LAST -- the last wave (decision 0107): the run is over
 		for k, m in members do
@@ -676,7 +684,7 @@ function settle(party: Party)
 end
 
 -- Vote for boon `id` from the run's offer (decision 0098). One player's vote picks it; a party's boon is
--- the one most of them vote for (decision 0108), once all have voted or VOTE_SECONDS after the first vote.
+-- the one most of them vote for (decision 0108), once all have voted or VOTE_SECONDS after it was offered.
 -- The next wave then starts.
 local function pickBoon(player: Player, id: string): (boolean, string?)
 	local party = partyOf[player]
@@ -688,7 +696,6 @@ local function pickBoon(player: Player, id: string): (boolean, string?)
 	elseif saves.get(player) == nil then
 		return false, "loading"
 	end
-	local first = next(party.votes) == nil
 	party.votes[player] = id
 	party.holdTo = math.max(party.holdTo, os.clock() + VOTE_SECONDS + 2)
 	if allVoted(party) then
@@ -701,14 +708,6 @@ local function pickBoon(player: Player, id: string): (boolean, string?)
 	end
 	for _, m in party.members do
 		remotes.fx(m, "votes", { voted = voted, of = #party.members, seconds = VOTE_SECONDS })
-	end
-	if first then
-		local round = party.round
-		task.delay(VOTE_SECONDS, function()
-			if party.round == round then
-				settle(party)
-			end
-		end)
 	end
 	return true, nil
 end
@@ -771,18 +770,15 @@ local function pushTrade(t: Trade)
 		local pt = saves.get(them)
 		if pt then
 			for _, a in StationTrade.copies(pt, t.offer[them]) do
-				table.insert(
-					theirs,
-					{
-						id = a.id,
-						s = a.s,
-						v = a.v,
-						rainbow = a.rainbow,
-						coat = a.coat,
-						stats = a.stats,
-						trained = a.trained,
-					}
-				)
+				table.insert(theirs, {
+					id = a.id,
+					s = a.s,
+					v = a.v,
+					rainbow = a.rainbow,
+					coat = a.coat,
+					stats = a.stats,
+					trained = a.trained,
+				})
 			end
 		end
 		local flash = t.flash
@@ -1457,17 +1453,14 @@ local function updateFame()
 				for _, a in p.animals do
 					local score = (RANK[StationRules.rarity(a :: any)] or 0) * 2
 						+ (if StationRules.coatOf(a :: any) then 1 else 0)
-					table.insert(
-						mine,
-						{
-							s = a.s,
-							v = a.v,
-							rainbow = a.rainbow,
-							coat = a.coat,
-							owner = player.DisplayName,
-							score = score,
-						}
-					)
+					table.insert(mine, {
+						s = a.s,
+						v = a.v,
+						rainbow = a.rainbow,
+						coat = a.coat,
+						owner = player.DisplayName,
+						score = score,
+					})
 				end
 				table.sort(mine, function(x, y)
 					return x.score > y.score
