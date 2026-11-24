@@ -70,7 +70,9 @@ describe("StationAssets", function()
 			expect(table.find(asset.parts, `{name}_body`) == nil).toBe(false)
 			expect(asset.glow[`{name}_body`]).toBeNil()
 			expect(count(asset.joints)).toBe(0)
-			expect(asset.size[2] >= 3 and asset.size[2] <= 3.6).toBeTruthy() -- Ranch.luau sizes the eggs by this
+			-- Ranch.luau sizes the eggs by their shell (World's EGG_BUILT); a crown or a horn on top may stand up to 4.5
+			-- (decision 0110: the Crown Egg's crown)
+			expect(asset.size[2] >= 3 and asset.size[2] <= 4.5).toBeTruthy()
 		end
 	end)
 
@@ -200,6 +202,7 @@ describe("StationAssets", function()
 				or kind == "kit_"
 				or kind == "home"
 				or kind == "scen"
+				or kind == "stal" -- stall_: a ranch's vendor stall, a still prop (STATION-130)
 			then
 				continue -- scenery_: still props (decision 0085)
 			end

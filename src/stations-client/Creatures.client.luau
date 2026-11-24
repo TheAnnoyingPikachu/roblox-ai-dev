@@ -4150,7 +4150,10 @@ local function watchHealth(model: Model)
 	end
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "HealthBar"
-	gui.Size = UDim2.fromOffset(110, 12)
+	-- an enemy's bar is sized in studs, so the crowd's bars shrink with distance and stay small (SHANNON,
+	-- 2026-11-24: "the enemy healthbars are quite big"); the team's stays a fixed, readable size
+	local foe = model:GetAttribute("Side") == 2
+	gui.Size = if foe then UDim2.fromScale(math.clamp(hit.Size.X * 0.8, 2.5, 9), 0.35) else UDim2.fromOffset(90, 10)
 	gui.Adornee = hit
 	gui.LightInfluence = 0
 	gui.MaxDistance = 400
@@ -4161,7 +4164,7 @@ local function watchHealth(model: Model)
 	back.BorderSizePixel = 0
 	back.Parent = gui
 	local edge = Instance.new("UIStroke")
-	edge.Thickness = 2
+	edge.Thickness = if foe then 1 else 2
 	edge.Color = if model:GetAttribute("Side") == 2 then Color3.fromRGB(150, 255, 70) else Color3.fromRGB(255, 200, 70)
 	edge.Parent = back
 	local fill = Instance.new("Frame")

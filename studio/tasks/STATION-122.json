@@ -1,0 +1,43 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-122",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0107: the waves end at wave 300 (LevelRules.LAST), and after wave 100 the Legion stops getting faster and its health and strength grow by more every wave, so the late waves are a wall that a run's stacking boons cannot outgrow.",
+  "inputs": [
+    "docs/decisions/0107-animal-stations-300-waves.md",
+    "docs/decisions/0098-animal-stations-wave-runs.md"
+  ],
+  "dependencies": [
+    "STATION-121"
+  ],
+  "files": [
+    "src/shared/LevelRules.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0107-animal-stations-300-waves.md",
+    "docs/game-design/game7-gdd.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-122.json"
+  ],
+  "tests": [
+    "LevelRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "LevelRules.LAST is 300; StationProgress.canFight refuses wave 301 even when wave 300 is cleared",
+    "A run that clears wave 300 ends: its pot is paid in full, no boons are offered and the result carries last",
+    "Waves 1 to 100 are as before; after wave 100 a foe's speed, stamina, mana and defence hold and its health and strength grow by LevelRules.might, more on every wave, over 20% a wave at the end",
+    "The wave menu stops at wave 300 and shows the best wave out of 300",
+    "A wave's power, a foe's power and the MVP's damage are shown with Format.short"
+  ],
+  "verification": "lune run tests/run (LevelRules, StationProgress); whole runs simulated over BattleRules.battle (the table in decision 0107). Not yet fought in Studio past wave 100.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-23: \"do not fix the stacking modifiers but we will make a cap on the levels and make it quite hard to reach\"; 2026-11-24: \"make like 300 levels and make the later levels very hard\". Checkpoint (decision 0107 has the evidence): 1. confirm LAST 300, STEEP_FROM 100, STEEP_GROWTH 1.08, STEEP_BEND 200 (recommended; if rejected only the three numbers change); 2. picks decide more than the team while boons stack (a starter team reaches wave 269 with damage and speed picks): accept, or cap Quick Paws; 3. rewards still grow 8% a wave (wave 300 pays 394 billion coins): flatten the late rewards or accept; 4. the last waves need one sitting of over an hour: accept, or let a run be resumed."
+}

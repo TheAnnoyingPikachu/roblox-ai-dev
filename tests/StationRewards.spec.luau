@@ -58,8 +58,8 @@ describe("StationRewards planners", function()
 		local p = fresh()
 		expect(StationRewards.wavePay(p)).toBe(40)
 		p.best = 20
-		expect(StationRewards.wavePay(p)).toBe(186)
-		expect(StationRewards.resolve(p, { pays = 5 }).coins).toBe(930)
+		expect(StationRewards.wavePay(p)).toBe(116)
+		expect(StationRewards.resolve(p, { pays = 5 }).coins).toBe(580)
 	end)
 
 	it("gives the best egg unlocked and the one below it", function()
@@ -67,7 +67,7 @@ describe("StationRewards planners", function()
 		local best, below = StationRewards.bestEgg(p)
 		expect(best).toBe("wild") -- the Wild Egg is for sale from the start
 		expect(below).toBe("meadow")
-		p.best = 10
+		p.xp = StationProgress.xpFor(5) -- player level 5 opens the Safari Egg
 		best, below = StationRewards.bestEgg(p)
 		expect(best).toBe("safari")
 		expect(below).toBe("wild")

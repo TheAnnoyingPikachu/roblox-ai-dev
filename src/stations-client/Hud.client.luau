@@ -52,7 +52,8 @@ Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and label
 
 local C = Style.C
 local RARITY_COLOUR = Style.RARITY
-local RANK: { [string]: number } = { common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6 }
+local RANK: { [string]: number } =
+	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
 local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defence", utility = "Utility", titan = "TITAN" }
 local GROUP_NAME: { [string]: string } = { pack = "Pack", solitary = "Solitary" }
 local STAT_SHORT: { [string]: string } =
@@ -111,6 +112,7 @@ local REFUSED: { [string]: string } = {
 	wave = "That wave is not open yet: clear the one before it",
 	no_team = "Put an animal on your team first",
 	busy = "The arena is busy: try again in a moment",
+	field = "A fight is on: wait in the wave portal to join its next wave",
 	arena = "The arena is not ready",
 	ranch = "You have no ranch yet",
 	shield = "Nothing to shield from right now",
@@ -442,12 +444,15 @@ local function animalCard(a: any, order: number)
 	elseif a.at then
 		corner(card, "Training", C.info)
 	end
-	if a.rainbow then
-		local coat = Style.chip(card, "RAINBOW", Color3.new(1, 1, 1))
+	local worn = StationRules.coatOf(a)
+	if worn then
+		local coat = Style.chip(card, string.upper(worn.name), Style.COAT[worn.id] or Color3.new(1, 1, 1))
 		coat.Position, coat.ZIndex, coat.TextSize = UDim2.fromOffset(8, 106), 3, 12
-		local colours = Instance.new("UIGradient")
-		colours.Color = RAINBOW
-		colours.Parent = coat
+		if Style.COAT[worn.id] == nil then -- rainbow, prismatic
+			local colours = Instance.new("UIGradient")
+			colours.Color = RAINBOW
+			colours.Parent = coat
+		end
 	end
 	local power = Style.chip(card, `⚡ {Format.commas(BattleRules.powerOf(live(a)))}`, C.ink, Color3.new(1, 1, 1))
 	power.AnchorPoint, power.Position, power.ZIndex, power.TextSize = Vector2.new(1, 0), UDim2.new(1, -8, 0, 8), 3, 13
@@ -482,8 +487,7 @@ local function animalDetail(a: any)
 	)
 	Style.round(view, 14)
 	Style.stroke(view, C.ink, 3)
-	local name =
-		Style.text(head, (if a.rainbow then "Rainbow " else "") .. nameOf(a), 30, C.text, UDim2.new(1, -196, 0, 36))
+	local name = Style.text(head, StationTrade.nameOf(a), 30, C.text, UDim2.new(1, -196, 0, 36))
 	name.Position, name.TextTruncate = UDim2.fromOffset(194, 2), Enum.TextTruncate.AtEnd
 	local chips = Instance.new("Frame")
 	chips.BackgroundTransparency = 1
@@ -583,7 +587,7 @@ redraw.animals = function()
 		if a.at then
 			table.insert(training, a)
 		end
-		if a.rainbow then
+		if StationRules.coatOf(a) then
 			table.insert(rainbows, a)
 		end
 	end
@@ -591,7 +595,7 @@ redraw.animals = function()
 		{ "team", `Your team  {#profile.team}/{StationProgress.TEAM_SIZE}`, team },
 		{ "all", `All animals  {#all}`, all },
 		{ "training", `Training  {#training}`, training },
-		{ "rainbow", `Rainbows  {#rainbows}`, rainbows },
+		{ "rainbow", `Coats  {#rainbows}`, rainbows },
 	}
 	local shown = all
 	for _, l in LISTS do
@@ -1008,7 +1012,7 @@ redraw.shop = function()
 	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)} · best wave {profile.best}`)
 
 	local def = StationConfig.EGGS[shopEgg]
-	local locked = def.wave ~= nil and profile.best < def.wave
+	local locked = def.level ~= nil and StationProgress.playerLevel(profile) < def.level
 	local head = Instance.new("Frame")
 	head.BackgroundTransparency = 1
 	head.Size, head.LayoutOrder = UDim2.new(1, -8, 0, 110), 1
@@ -1024,20 +1028,26 @@ redraw.shop = function()
 	Style.amount(price, "coins", Format.commas(def.price))
 	Style.chip(price, `Hatches in {Format.ago(StationProgress.hatchSeconds(profile, def))}`)
 	if locked then
-		Style.chip(price, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
+		Style.chip(price, `Reach level {def.level} to unlock`, C.bad, Color3.new(1, 1, 1))
 	end
-	local hatches = Style.text(shop.body, "HATCHES", 14, C.muted, UDim2.new(1, -8, 0, 18))
+	local hatches = Style.text(
+		shop.body,
+		if def.only then "VARIANTS ONLY: EVERY HATCH IS ONE OF THESE" else "HATCHES",
+		14,
+		C.muted,
+		UDim2.new(1, -8, 0, 18)
+	)
 	hatches.LayoutOrder = 2
 	local basics = Instance.new("Frame")
 	basics.BackgroundTransparency = 1
-	basics.Size, basics.LayoutOrder = UDim2.new(1, -8, 0, 92), 3
+	basics.Size, basics.LayoutOrder, basics.Visible = UDim2.new(1, -8, 0, 92), 3, not def.only
 	Style.list(basics, 8, true)
 	basics.Parent = shop.body
 	for i, o in def.odds do
 		local sp = StationConfig.species(o.id) :: StationConfig.Species
 		animalCell(basics, i, StationRules.assetOf(o.id, nil), sp.name, RARITY_COLOUR[sp.rarity] or C.text, 72)
 	end
-	local finds = Style.text(shop.body, "RARE FINDS", 14, C.muted, UDim2.new(1, -8, 0, 18))
+	local finds = Style.text(shop.body, if def.only then "" else "RARE FINDS", 14, C.muted, UDim2.new(1, -8, 0, 18))
 	finds.LayoutOrder = 4
 	local rare = Instance.new("Frame")
 	rare.BackgroundTransparency = 1
@@ -1052,7 +1062,7 @@ redraw.shop = function()
 	local can = not locked and profile.coins >= def.price
 	local b = Style.button(shop.body, `Buy for {Format.commas(def.price)}`, function()
 		if locked then
-			Style.toast(screen, `Clear wave {def.wave} to unlock the {def.name}`, nil, "bad")
+			Style.toast(screen, `Reach level {def.level} to unlock the {def.name}`, nil, "bad")
 			return
 		end
 		send("buy", def.id)
@@ -1669,9 +1679,11 @@ redraw.trade = function()
 				UDim2.new(1, -24, 0, 40)
 			)
 			summary.Position, summary.TextWrapped = UDim2.fromOffset(12, 6), true
-			local precious = false -- giving a mythic or a rainbow needs a hold
+			local precious = false -- giving a coat or a mythic and up needs a hold
 			for _, x in give do
-				precious = precious or x.rainbow == true or StationRules.rarity(x) == "mythic"
+				precious = precious
+					or StationRules.coatOf(x) ~= nil
+					or (RANK[StationRules.rarity(x)] or 0) >= RANK.mythic
 			end
 			local words = if tradeState.confirmed
 				then `Waiting for {tradeState.with}...`
@@ -1912,12 +1924,34 @@ do
 	drops.Size, drops.LayoutOrder = UDim2.new(1, 0, 0, 26), 3
 	Style.list(drops, 14, true)
 	drops.Parent = info
-	-- after a win in a run, three boons to pick from: picking one starts the next wave (decision 0098)
+	-- after a win in a run, three boons to pick from, in a panel of their own in the middle of the screen
+	-- (SHANNON, 2026-11-24): picking one starts the next wave (decision 0098)
+	local boons = Style.frame(root, UDim2.fromOffset(680, 0), C.sand)
+	boons.Name, boons.AutomaticSize, boons.ZIndex, boons.Visible = "BoonPanel", Enum.AutomaticSize.Y, 8, false
+	boons.AnchorPoint, boons.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.42)
+	Style.round(boons, 20)
+	Style.stroke(boons, C.ink, 3)
+	Style.pad(boons, 16)
+	Style.list(boons, 10).HorizontalAlignment = Enum.HorizontalAlignment.Center
+	local boonsTitle = Style.text(boons, "Pick a boon", 26, C.text, UDim2.new(1, 0, 0, 32))
+	boonsTitle.Name, boonsTitle.LayoutOrder, boonsTitle.TextXAlignment = "Title", 1, Enum.TextXAlignment.Center
+	local votes = Style.text(boons, "", 14, C.muted, UDim2.new(1, 0, 0, 18))
+	votes.Name, votes.LayoutOrder, votes.TextXAlignment = "Votes", 3, Enum.TextXAlignment.Center
 	boonRow = Instance.new("Frame")
 	boonRow.BackgroundTransparency = 1
-	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 96), 1, false
-	Style.list(boonRow, 8, true)
-	boonRow.Parent = act
+	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 132), 2, false
+	Style.list(boonRow, 10, true)
+	boonRow.Parent = boons
+	-- while a wave is fought: only a Skip button on the right (the wave is at the top: the stage strip)
+	local skip = Style.button(root, "Skip ▶", function()
+		local b = root:FindFirstChild("SkipWave")
+		if b then
+			(b :: GuiObject).Visible = false
+		end
+		send("wave_done") -- the pay is settled already: the result shows at once
+	end, "ghost", UDim2.fromOffset(150, 52))
+	skip.Name, skip.Visible, skip.ZIndex = "SkipWave", false, 5
+	skip.AnchorPoint, skip.Position = Vector2.new(1, 0.5), UDim2.new(1, -14, 0.36, 0)
 	resultButtons = Instance.new("Frame")
 	resultButtons.BackgroundTransparency = 1
 	resultButtons.Size, resultButtons.LayoutOrder = UDim2.new(1, 0, 0, 44), 2
@@ -1926,14 +1960,15 @@ do
 end
 -- A big title that fades as a fight begins: the wave, and who is in it.
 local banner = Style.text(root, "", 56, C.text, UDim2.new(1, 0, 0, 70))
-banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
+-- high and brief (SHANNON, 2026-11-24): it must not hide the enemies walking in
+banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
 banner.TextXAlignment, banner.ZIndex = Enum.TextXAlignment.Center, 6
 local bannerStroke = Instance.new("UIStroke")
 bannerStroke.Thickness, bannerStroke.Transparency = 4, 1
 bannerStroke.Parent = banner
 local bannerSub = Style.text(root, "", 22, C.muted, UDim2.new(1, 0, 0, 30))
 bannerSub.AnchorPoint, bannerSub.Position, bannerSub.TextTransparency =
-	Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.14), 1
+	Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
 bannerSub.TextXAlignment, bannerSub.ZIndex = Enum.TextXAlignment.Center, 6
 bannerSub.Position += UDim2.fromOffset(0, 66)
 local announced = 0
@@ -1957,11 +1992,11 @@ local function announce(n: number)
 	banner.TextColor3 = if boss then C.bad else C.text
 	bannerSub.Text = table.concat(names, "  -  ")
 	banner.TextTransparency, bannerStroke.Transparency, bannerSub.TextTransparency = 0, 0, 0
-	task.delay(2.4, function()
+	task.delay(1.1, function()
 		if announced ~= mine then
 			return
 		end
-		local fade = TweenInfo.new(0.8)
+		local fade = TweenInfo.new(0.35)
 		TweenService:Create(banner, fade, { TextTransparency = 1 }):Play()
 		TweenService:Create(bannerStroke, fade, { Transparency = 1 }):Play()
 		TweenService:Create(bannerSub, fade, { TextTransparency = 1 }):Play()
@@ -1986,7 +2021,8 @@ local revealSubStroke = Instance.new("UIStroke")
 revealSubStroke.Thickness, revealSubStroke.Transparency, revealSubStroke.Color = 3, 1, Color3.fromRGB(20, 16, 30)
 revealSubStroke.Parent = revealSub
 local revealed = 0
-local BIG: { [string]: number } = { common = 0, uncommon = 0, rare = 1, epic = 1, legendary = 2, mythic = 3 }
+local BIG: { [string]: number } =
+	{ common = 0, uncommon = 0, rare = 1, epic = 1, legendary = 2, mythic = 3, divine = 3, celestial = 4, secret = 5 }
 local function showRarity(a: any)
 	revealed += 1
 	local mine = revealed
@@ -1994,7 +2030,7 @@ local function showRarity(a: any)
 	local big = BIG[rarity] or 0
 	reveal.Text = string.upper(rarity) .. string.rep("!", big)
 	reveal.TextColor3 = RARITY_COLOUR[rarity] or C.text
-	local lines = { (if a.rainbow then "Rainbow " else "") .. nameOf(a) }
+	local lines = { StationTrade.nameOf(a) }
 	local def = StationConfig.egg(a.egg or "")
 	if a.v and def then
 		for _, drop in def.rare do
@@ -2003,11 +2039,11 @@ local function showRarity(a: any)
 			end
 		end
 	end
-	if a.rainbow then
-		table.insert(lines, "A rainbow coat!")
+	if StationRules.coatOf(a) then
+		table.insert(lines, `A {string.lower((StationRules.coatOf(a) :: any).name)} coat!`)
 	end
 	revealSub.Text = table.concat(lines, "\n")
-	revealSub.TextColor3 = if a.rainbow then Color3.fromRGB(255, 225, 100) else C.text
+	revealSub.TextColor3 = if StationRules.coatOf(a) then Color3.fromRGB(255, 225, 100) else C.text
 	reveal.TextTransparency, revealStroke.Transparency = 0, 0
 	revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
 	revealScale.Scale, reveal.Rotation = 0.2, 0
@@ -2051,12 +2087,18 @@ local again = Style.button(resultButtons, "", function()
 	fight(wave)
 end, "primary", UDim2.new(0.5, -4, 1, 0))
 local leave = Style.button(resultButtons, "Leave the arena", function()
-	result.Visible = false
+	hideResult()
 	music(nil)
 	send("wave_done")
 end, "ghost", UDim2.new(0.5, -4, 1, 0))
 hideResult = function()
 	result.Visible = false
+	for _, name in { "BoonPanel", "SkipWave" } do
+		local x = root:FindFirstChild(name)
+		if x then
+			(x :: GuiObject).Visible = false
+		end
+	end
 end
 local showStars: (n: number) -> ()
 local coinBurst: () -> ()
@@ -2120,6 +2162,16 @@ end
 offerBoons = function(ids: { string }, n: number)
 	Style.clear(boonRow)
 	boonRow.Visible = true
+	local panel = boonRow.Parent :: GuiObject
+	panel.Visible = true
+	local heading = panel:FindFirstChild("Title") :: TextLabel?
+	if heading then
+		heading.Text = `Pick a boon for wave {n}`
+	end
+	local votes = panel:FindFirstChild("Votes") :: TextLabel?
+	if votes then
+		votes.Text = ""
+	end
 	for k, id in ids do
 		local boon = WaveRuns.boon(id)
 		if boon then
@@ -2127,21 +2179,20 @@ offerBoons = function(ids: { string }, n: number)
 				if not boonRow.Visible then -- a second click while the first is on its way
 					return
 				end
-				boonRow.Visible = false
+				-- gone the moment it is picked (SHANNON, 2026-11-24); back only if the server refuses it
+				boonRow.Visible, panel.Visible, result.Visible = false, false, false -- the next wave takes a moment to walk out
 				local ok, code = request:InvokeServer("boon", id)
 				if not ok then
-					boonRow.Visible = true
+					boonRow.Visible, panel.Visible, result.Visible = true, true, true
 					Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
-					return
 				end
-				began(n)
-			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -6, 1, 0))
+			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -7, 1, 0))
 			card.Name, card.LayoutOrder = boon.name, k
-			local title = Style.text(card, boon.name, 17, C.text, UDim2.new(1, -12, 0, 24))
-			title.Position, title.TextXAlignment = UDim2.fromOffset(6, 8), Enum.TextXAlignment.Center
-			local words = Style.text(card, boon.text, 13, C.muted, UDim2.new(1, -12, 0, 38))
+			local title = Style.text(card, boon.name, 20, C.text, UDim2.new(1, -12, 0, 26))
+			title.Position, title.TextXAlignment = UDim2.fromOffset(6, 12), Enum.TextXAlignment.Center
+			local words = Style.text(card, boon.text, 15, C.muted, UDim2.new(1, -16, 0, 52))
 			words.Position, words.TextXAlignment, words.TextWrapped =
-				UDim2.fromOffset(6, 32), Enum.TextXAlignment.Center, true
+				UDim2.fromOffset(8, 42), Enum.TextXAlignment.Center, true
 			local go = Style.text(card, `Wave {n} ▶`, 12, C.text, UDim2.new(1, -12, 0, 16))
 			go.Position, go.TextXAlignment = UDim2.new(0, 6, 1, -20), Enum.TextXAlignment.Center
 		end
@@ -2165,9 +2216,11 @@ began = function(n: number)
 	Style.clear(drops)
 	Style.clear(boonRow)
 	starRow.Visible, boonRow.Visible, drops.Visible = false, false, false
-	buttons(false)
-	leave.Text = "Skip the fight" -- the pay is already settled: leaving shows the result at once
-	result.Visible = true
+	hideResult()
+	local skip = root:FindFirstChild("SkipWave")
+	if skip then
+		(skip :: GuiObject).Visible = true
+	end
 	announce(n)
 	music(if n % LevelRules.BOSS_EVERY == 0 then "boss" else "fight")
 end
@@ -2399,7 +2452,7 @@ do
 			return
 		end
 		task.delay(math.max(0, at - Workspace:GetServerTimeNow()), function()
-			local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+			local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
 			for _, m in if folder then folder:GetChildren() else {} do
 				local hp = m:GetAttribute("Hp")
 				if m:IsA("Model") and m:GetAttribute("Side") == 1 and type(hp) == "number" and hp > 0 then
@@ -2721,6 +2774,10 @@ type Plate = {
 	count: TextLabel?, -- the mash's presses
 	marks: { TextButton }, -- the chain's 1-2-3
 	marked: number,
+	parts: any, -- its pop-up's moving parts (PressPops.card)
+	holdAt: number?, -- the ring: os.clock() when the hold began
+	model: Model?, -- the animal on the field, which its pop-up stands over (PressPops)
+	keys: { Enum.KeyCode }?, -- its card's keys (PressPops.claim)
 }
 local plateOf: { [number]: Plate } = {}
 -- Quick presses and clicks (decision 0106) keep their functions here, set in the block below: the HUD's
@@ -2728,9 +2785,11 @@ local plateOf: { [number]: Plate } = {}
 local Press: {
 	SWING: number, -- how far the needle swings from the middle of its bar (1 wide)
 	tap: (slot: number) -> (), -- the plate, its pop-up or its key is pressed
+	hold: (slot: number, down: boolean) -> (), -- the ring's key or pop-up pressed or let go
 	on: (p: Plate, slot: number) -> (), -- its meter has just filled
 	off: (p: Plate) -> (), -- it is empty again, or gone
 	catcher: TextButton, -- the click layer
+	pops: any, -- PressPops: stands the pop-ups over their animals (decision 0109)
 } =
 	{ SWING = 0.46 } :: any
 
@@ -2740,11 +2799,26 @@ local function firePower(slot: number, presses: number?)
 		return
 	end
 	p.sent = true
-	local ok = request:InvokeServer("power", slot, presses)
+	local failed = presses == BattleRules.FAILED
+	if p.card then -- done: it bursts (red when messed up) and is gone at once, never waiting for the attack to play
+		Press.pops.fired(p.card, p.card:GetAttribute("Hot") == true, failed)
+		p.card = nil
+	end
+	local ok, code = request:InvokeServer("power", slot, presses)
+	for _ = 1, 20 do -- turned down (no foe between rushes, a moment early): sent again, so a press is never lost
+		if ok or failed or code == "no_fight" or not p.full then
+			break
+		end
+		task.wait(0.25)
+		ok, code = request:InvokeServer("power", slot, presses)
+	end
 	if ok then
 		Style.sound("claim")
 	else
 		p.sent = false
+		if p.full and not failed then -- turned down for good while the meter is still full: a fresh card to press again
+			Press.on(p, slot)
+		end
 	end
 end
 
@@ -2753,10 +2827,8 @@ local function plate(slot: number, label: string, press: string): Plate
 		Press.tap(slot)
 	end, "ghost", UDim2.fromOffset(224, 60))
 	b.LayoutOrder = slot
-	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -60, 0, 22))
+	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -24, 0, 22))
 	name.Position, name.TextTruncate = UDim2.fromOffset(12, 6), Enum.TextTruncate.AtEnd
-	local key = Style.chip(b, tostring(slot))
-	key.AnchorPoint, key.Position = Vector2.new(1, 0), UDim2.new(1, -8, 0, 6)
 	local bar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 18), C.accent)
 	bar.Position = UDim2.fromOffset(12, 33)
 	local mana = Style.text(bar, "", 13, C.ink, UDim2.fromScale(1, 1))
@@ -2808,13 +2880,15 @@ do
 
 	-- the standing foes nearest the team (the front line first), up to `n`, by their unseen Hit boxes
 	local function frontFoes(n: number): { BasePart }
-		local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+		local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
 		local ours, foes = {}, {}
 		for _, m in if folder then folder:GetChildren() else {} do
 			local hit, hp = m:FindFirstChild("Hit"), m:GetAttribute("Hp")
 			if m:IsA("Model") and hit and hit:IsA("BasePart") and type(hp) == "number" and hp > 0 then
 				if m:GetAttribute("Side") == 1 then
-					table.insert(ours, hit.Position)
+					if (m:GetAttribute("Owner") or player.UserId) == player.UserId then -- the player's own team
+						table.insert(ours, hit.Position)
+					end
 				elseif m:GetAttribute("Side") == 2 then
 					table.insert(foes, hit)
 				end
@@ -2855,7 +2929,8 @@ do
 	end
 
 	catcher.Activated:Connect(function()
-		if not plates.Visible then
+		-- clicks count only once the wave has started, not while the enemies walk in (SHANNON, 2026-11-24)
+		if not plates.Visible or Workspace:GetServerTimeNow() < (player:GetAttribute("FightFrom") or math.huge) then
 			return
 		end
 		clicks = math.min(clicks + 1, 40)
@@ -2882,18 +2957,18 @@ do
 		end
 	end)
 
-	-- the pop-ups, in a row across the lower middle of the screen
-	local qtes = Instance.new("Frame")
-	qtes.Name, qtes.BackgroundTransparency, qtes.ZIndex = "Qtes", 1, 5
-	qtes.AnchorPoint, qtes.Position, qtes.Size = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.56), UDim2.fromScale(1, 0)
-	qtes.Parent = clickFx
-	Style.list(qtes, 16, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
+	-- the pop-ups stand over their animals (decision 0109, SHANNON's pick B): PressPops places them
+	Press.pops = require(script.Parent:WaitForChild("PressPops"))
+	Press.pops.init(clickFx)
 
 	local function pressOff(p: Plate)
 		if p.card then
 			p.card:Destroy()
 		end
-		p.card, p.hand, p.count, p.marks, p.marked = nil, nil, nil, {}, 0
+		if p.keys then
+			Press.pops.free(p.keys)
+		end
+		p.card, p.hand, p.count, p.marks, p.marked, p.keys = nil, nil, nil, {}, 0, nil
 	end
 
 	-- The chain: the next of its 1-2-3 is struck (tapped, or the pop-up, the plate or the key); the last fires.
@@ -2902,9 +2977,23 @@ do
 			return
 		end
 		p.marked = k
-		local m = p.marks[k]
-		if m then
-			Style.kind(m, "good")
+		if p.card and p.marks[k] then
+			Press.pops.press(p.card, p.marks[k], Press.pops.GREEN)
+			if k >= #p.marks then
+				p.card:SetAttribute(
+					"Hot",
+					os.clock() - p.fullAt <= BattleRules.PERFECT_AT + BattleRules.PERFECT_LATE - 0.3
+				)
+			end
+		end
+		for i, m in p.marks do
+			local e = m:FindFirstChildOfClass("UIStroke")
+			if e then
+				e.Color = if i <= k then Press.pops.GREEN elseif i == k + 1 then Press.pops.GOLD else Press.pops.EDGE
+			end
+			if i <= k then
+				m.Text = "✓"
+			end
 		end
 		local foe = frontFoes(1)[1]
 		if foe then
@@ -2922,84 +3011,42 @@ do
 		local ping = math.min(0.25, player:GetNetworkPing() * 2)
 		p.fullAt, p.close = os.clock(), math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
 		p.sent, p.presses = false, 0
-		local k = uiScale.Scale
-		local card = Style.button(qtes, "", function()
-			Press.tap(slot)
-		end, "primary", UDim2.fromOffset(200 * k, 150 * k))
-		card.LayoutOrder = slot
-		local title = Style.text(card, `{p.label} [{slot}]`, 15 * k, C.ink, UDim2.new(1, -16 * k, 0, 20 * k))
-		title.Position, title.TextTruncate = UDim2.fromOffset(8 * k, 8 * k), Enum.TextTruncate.AtEnd
-		title.TextXAlignment = Enum.TextXAlignment.Center
-		local say = ({ needle = "STOP IN GOLD!", chain = "TAP 1-2-3!", mash = "MASH!" })[p.press] or "TAP!"
-		local big = Style.text(card, say, 24 * k, C.ink, UDim2.new(1, 0, 0, 30 * k))
-		big.Position, big.TextXAlignment = UDim2.fromOffset(0, 30 * k), Enum.TextXAlignment.Center
-		local body = Instance.new("Frame")
-		body.BackgroundTransparency, body.Size = 1, UDim2.new(1, -24 * k, 0, 70 * k)
-		body.Position = UDim2.fromOffset(12 * k, 66 * k)
-		body.Parent = card
-		if p.press == "needle" then -- a bar, gold in the middle, the needle swinging through it (`needleAt`)
-			local bar = Style.frame(body, UDim2.new(1, 0, 0, 22 * k), C.night)
-			bar.AnchorPoint, bar.Position = Vector2.new(0, 0.5), UDim2.fromScale(0, 0.5)
-			Style.round(bar, 11 * k)
-			-- the gold: where the needle is PERFECT_EARLY either side of a crossing
-			local wide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
-			local gold = Style.frame(bar, UDim2.fromScale(wide, 1), C.gold)
-			gold.AnchorPoint, gold.Position = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0)
-			local hand = Style.frame(bar, UDim2.new(0, 6 * k, 1, 14 * k), C.card)
-			hand.AnchorPoint, hand.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
-			Style.stroke(hand, C.ink, 2)
-			p.hand = hand
-		elseif p.press == "chain" then -- 1-2-3 in a row, tapped in order
-			Style.list(body, 12 * k, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
-			for i = 1, 3 do
-				local b = Style.button(body, tostring(i), function()
-					chainHit(p, slot, i)
-				end, "info", UDim2.fromOffset(54 * k, 54 * k))
-				b.LayoutOrder, b.TextSize = i, 26 * k
-				table.insert(p.marks, b)
-			end
-		elseif p.press == "mash" then -- the count; the presses go up together at MASH_COUNT, or when time is up
-			local count = Style.text(body, `0 / {BattleRules.MASH_COUNT}`, 34 * k, C.ink, UDim2.fromScale(1, 1))
-			count.TextXAlignment = Enum.TextXAlignment.Center
-			p.count = count
+		-- the reference's look (decision 0109, amended): PressPops draws the card
+		local k = uiScale.Scale * 0.85 -- over the animals: compact
+		local wide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
+		p.keys = Press.pops.claim(p.press)
+		local card, parts = Press.pops.card(clickFx, p.press, Press.pops.names(p.keys :: { Enum.KeyCode }), k, wide, {
+			press = function()
+				Press.tap(slot)
+			end,
+			down = function()
+				Press.hold(slot, true)
+			end,
+			up = function()
+				Press.hold(slot, false)
+			end,
+			mark = function(i: number)
+				chainHit(p, slot, i)
+			end,
+		})
+		p.parts, p.holdAt, p.hand, p.marks = parts, nil, parts.hand, parts.marks
+		if p.press == "mash" then -- the presses go up together at MASH_COUNT, or when time is up
 			local window = math.max(0.5, BattleRules.MASH_BY - FightFx.TAP_AHEAD - ping)
 			p.mashUntil = p.fullAt + window
 			task.delay(window, function()
-				if p.full and not p.sent and p.presses > 0 then
-					firePower(slot, p.presses)
+				if p.full and not p.sent and p.presses > 0 then -- short of MASH_FAIL: messed up
+					firePower(slot, if p.presses < BattleRules.MASH_FAIL then BattleRules.FAILED else p.presses)
 				end
 			end)
-		else -- the ring closes on its mark when the tap is due, then flashes over the late part of the window
-			local mark = Instance.new("Frame")
-			mark.BackgroundTransparency, mark.AnchorPoint = 1, Vector2.new(0.5, 0.5)
-			mark.Position, mark.Size = UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(56 * k, 56 * k)
-			Style.round(mark, 28 * k)
-			Style.stroke(mark, C.card, 5)
-			mark.Parent = body
-			local ring = mark:Clone()
-			local edge = ring:FindFirstChildOfClass("UIStroke") :: UIStroke
-			edge.Color = C.ink
-			local grow = Instance.new("UIScale")
-			grow.Scale = 2.2
-			grow.Parent = ring
-			ring.Parent = body
-			TweenService:Create(grow, TweenInfo.new(p.close, Enum.EasingStyle.Linear), { Scale = 1 }):Play()
-			task.delay(p.close, function()
-				if ring.Parent then
-					edge.Color, edge.Thickness = C.good, 9
-					TweenService:Create(edge, TweenInfo.new(BattleRules.PERFECT_LATE + 0.1), { Transparency = 1 })
-						:Play()
-				end
-			end)
-		end
-		local pop = card:FindFirstChildOfClass("UIScale") -- the button's own press scale: it pops in on it
-		if pop then
-			pop.Scale = 0.4
-			TweenService
-				:Create(pop, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 })
-				:Play()
 		end
 		p.card = card
+		Press.pops.attach(card, p.model, p.press, k)
+		task.delay(BattleRules.AUTO_FIRE - 0.1, function() -- left too long: it fails (the server's AUTO_FIRE)
+			if p.card == card and not p.sent then
+				p.sent, p.card = true, nil
+				Press.pops.fired(card, false, true)
+			end
+		end)
 	end
 
 	local function pressPlate(slot: number)
@@ -3007,19 +3054,47 @@ do
 		if p == nil or not p.full or p.sent then
 			return
 		end
-		if p.press == "mash" then
+		if p.press == "ring" then
+			if p.holdAt == nil then -- the plate tapped, not held: it fires now, never a Perfect
+				firePower(slot, 0)
+			end
+		elseif p.press == "mash" then
 			p.presses += 1
 			Style.sound("hover")
-			if p.count then
-				p.count.Text = `{p.presses} / {BattleRules.MASH_COUNT}`
+			if p.parts and p.parts.fill then
+				p.parts.fill.Size = UDim2.fromScale(math.min(1, p.presses / BattleRules.MASH_COUNT), 1)
+				Press.pops.press(p.card, p.parts.key, nil, true)
+				p.card:SetAttribute("Hot", p.presses >= BattleRules.MASH_COUNT)
 			end
 			if p.presses >= BattleRules.MASH_COUNT or os.clock() > p.mashUntil then
 				firePower(slot, p.presses)
 			end
 		elseif p.press == "chain" then
 			chainHit(p, slot, p.marked + 1)
+		elseif p.press == "needle" and p.card and p.card:GetAttribute("Hot") ~= true then
+			firePower(slot, BattleRules.FAILED) -- stopped outside the green
 		else
 			firePower(slot)
+		end
+	end
+
+	-- The ring (decision 0109, amended): held while it fills; let go, it fires with how long it was held (in
+	-- tenths, which the server caps by its own clock), and held to full it fires itself, a Perfect.
+	local function holdRing(slot: number, down: boolean)
+		local p = plateOf[slot]
+		if p == nil or not p.full or p.sent or p.press ~= "ring" then
+			return
+		end
+		if down and p.holdAt == nil then
+			p.holdAt = os.clock()
+			Style.sound("hover")
+			if p.card and p.parts and p.parts.key then
+				Press.pops.press(p.card, p.parts.key)
+			end
+		elseif not down and p.holdAt then
+			local tenths = math.clamp(math.floor((os.clock() - p.holdAt) * 10), 0, 30)
+			p.holdAt = nil
+			firePower(slot, if tenths < BattleRules.RING_FAIL then BattleRules.FAILED else tenths) -- let go too soon
 		end
 	end
 
@@ -3028,41 +3103,87 @@ do
 		if not plates.Visible then
 			return
 		end
-		for _, p in plateOf do
+		for slot, p in plateOf do
 			if p.hand then
 				p.hand.Position = UDim2.fromScale(needleAt(os.clock() - p.fullAt, p.close), 0.5)
+			end
+			if p.parts and #p.parts.dots > 0 and p.full and not p.sent then -- the ring fills while held
+				local held = if p.holdAt then (os.clock() - p.holdAt) * 10 / BattleRules.HOLD_TENTHS else 0
+				Press.pops.lit(p.parts, math.floor(math.min(1, held) * #p.parts.dots))
+				if p.card then
+					p.card:SetAttribute("Hot", held >= 1)
+				end
+				for i, dot in p.parts.dots do
+					local lit = i / #p.parts.dots <= held
+					dot.BackgroundColor3 = if not lit
+						then Press.pops.DIM
+						elseif held >= 0.8 then Press.pops.GOLD
+						else Press.pops.LIT
+				end
+				p.parts.edge.Color = if held >= 0.8 then Press.pops.GOLD else Press.pops.EDGE
+				if held >= 1 then
+					p.holdAt = nil
+					task.spawn(firePower, slot, BattleRules.HOLD_TENTHS)
+				end
+			elseif p.parts and p.hand and p.full then -- the needle's card goes green while the marker is in it
+				local x = needleAt(os.clock() - p.fullAt, p.close)
+				local wide = Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
+				p.parts.edge.Color = if math.abs(x - 0.5) <= wide then Press.pops.GREEN else Press.pops.EDGE
+				if p.card then
+					p.card:SetAttribute("Hot", math.abs(x - 0.5) <= wide)
+				end
 			end
 		end
 		hitCount.Visible = hits >= 3 and os.clock() - lastClick < CHAIN_HIT + 0.4
 		hitCount.Text = `{hits} HITS`
 	end)
-	Press.tap, Press.on, Press.off, Press.catcher = pressPlate, pressOn, pressOff, catcher
+	Press.tap, Press.on, Press.off, Press.catcher, Press.hold = pressPlate, pressOn, pressOff, catcher, holdRing
 end
 
-UserInputService.InputBegan:Connect(function(input, used)
-	if used or not plates.Visible then
-		return
-	end
-	local slot = ({
-		[Enum.KeyCode.One] = 1,
-		[Enum.KeyCode.Two] = 2,
-		[Enum.KeyCode.Three] = 3,
-		[Enum.KeyCode.Four] = 4,
-	})[input.KeyCode]
-	if slot then
-		Press.tap(slot)
-	end
+-- the press keys (PressPops.claim): each card's own, taken from the character while the fight is on
+plates:GetPropertyChangedSignal("Visible"):Connect(function()
+	Press.pops.listen(if plates.Visible
+		then function(key: Enum.KeyCode, down: boolean)
+			for slot, p in plateOf do
+				local keys = p.keys
+				if keys == nil or not p.full or p.sent then
+					continue
+				end
+				if p.press == "ring" and keys[1] == key then
+					Press.hold(slot, down)
+				elseif down and p.press ~= "ring" and keys[if p.press == "chain" then p.marked + 1 else 1] == key then
+					Press.tap(slot) -- the chain's next key, or the needle's or the mash's
+				elseif down and p.press == "chain" and table.find(keys, key) then
+					firePower(slot, BattleRules.FAILED) -- one of its keys out of order
+				end
+			end
+		end
+		else nil)
 end)
 
 task.spawn(function()
 	while true do
 		task.wait(0.1)
-		local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+		local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
 		local seen: { [number]: boolean } = {}
 		if folder then
 			for _, m in folder:GetChildren() do
-				local slot = m:GetAttribute("Slot")
-				if m:GetAttribute("Side") == 1 and type(slot) == "number" then
+				local slot = m:GetAttribute("Seat") or m:GetAttribute("Slot")
+				local owner = m:GetAttribute("Owner") or player.UserId
+				if
+					m:GetAttribute("Side") == 1
+					and type(slot) == "number"
+					and owner ~= player.UserId
+					and m:IsA("Model")
+				then
+					-- another player's animal: only a marker over it while its meter is full (decision 0109)
+					local s, power, hp = m:GetAttribute("Species"), m:GetAttribute("Power"), m:GetAttribute("Hp")
+					Press.pops.ally(
+						m,
+						if type(s) == "string" then BattleRules.pressOf({ s = s } :: any) else "ring",
+						type(power) == "number" and power >= 1 and type(hp) == "number" and hp > 0
+					)
+				elseif m:GetAttribute("Side") == 1 and type(slot) == "number" then
 					seen[slot] = true
 					local p = plateOf[slot]
 					if p == nil then
@@ -3082,6 +3203,7 @@ task.spawn(function()
 							end
 						end)
 					end
+					p.model = if m:IsA("Model") then m else nil
 					local hp = m:GetAttribute("Hp")
 					local alive = type(hp) == "number" and hp > 0
 					local power = m:GetAttribute("Power")
@@ -3132,7 +3254,7 @@ local function foeCard(e: any, share: number)
 	name.TextXAlignment = Enum.TextXAlignment.Center
 	local power = Style.text( -- its share of the wave's power, so the cards add up to the match-up
 		card,
-		`⚡ {Format.commas(math.floor(BattleRules.powerOf(e, 2) * share + 0.5))}`,
+		`⚡ {Format.short(math.floor(BattleRules.powerOf(e, 2) * share + 0.5))}`,
 		14,
 		C.night,
 		UDim2.new(1, -8, 0, 18)
@@ -3155,8 +3277,8 @@ redraw.waves = function()
 	Style.clear(waves.body)
 	Style.clear(waves.chips)
 	Style.clear(waves.tabs)
-	wave = math.clamp(wave, 1, profile.best + 1)
-	Style.chip(waves.chips, `Best wave: {profile.best}`)
+	wave = math.clamp(wave, 1, math.min(profile.best + 1, LevelRules.LAST))
+	Style.chip(waves.chips, `Best wave: {profile.best} of {LevelRules.LAST}`)
 	local got = StationProgress.starsOf(profile, wave)
 	Style.chip(waves.chips, string.rep("★", got) .. string.rep("☆", 3 - got), C.gold, C.ink)
 	local boss = wave % LevelRules.BOSS_EVERY == 0
@@ -3189,7 +3311,7 @@ redraw.waves = function()
 	local nextButton = Style.button(step, ">", function()
 		wave += 1
 		redraw.waves()
-	end, if wave <= profile.best then "ghost" else "off", UDim2.fromOffset(60, 52))
+	end, if wave <= profile.best and wave < LevelRules.LAST then "ghost" else "off", UDim2.fromOffset(60, 52))
 	nextButton.AnchorPoint, nextButton.Position, nextButton.TextSize = Vector2.new(1, 0), UDim2.fromScale(1, 0), 28
 	prev.Size, nextButton.Size = UDim2.fromOffset(46, 52), UDim2.fromOffset(46, 52)
 	local head = Style.text(step, `Wave {wave}`, 28, C.text, UDim2.new(1, -100, 1, 0))
@@ -3324,7 +3446,7 @@ redraw.waves = function()
 end
 
 function openWaves()
-	wave = if profile then profile.best + 1 else 1
+	wave = if profile then math.min(profile.best + 1, LevelRules.LAST) else 1
 	show("waves")
 end
 
@@ -3405,7 +3527,7 @@ local function showCard(model: Model?)
 		stats[stat] = if type(x) == "number" then x else 0
 	end
 	local who = { s = if foe then foe.id else (sp :: StationConfig.Species).id, stats = stats :: any }
-	cardPower.Text = `⚡ {Format.commas(BattleRules.powerOf(who, if foe then 2 else 1))} power`
+	cardPower.Text = `⚡ {Format.short(BattleRules.powerOf(who, if foe then 2 else 1))} power`
 	cardPower.TextColor3 = if foe then HEXFIRE else C.gold
 	local health = model:GetAttribute("health")
 	local max = BattleRules.HP_BASE
@@ -3792,6 +3914,10 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.1f", payload.seconds)
+		local skip = root:FindFirstChild("SkipWave")
+		if skip then
+			(skip :: GuiObject).Visible = false
+		end
 		Style.clear(drops)
 		Style.clear(boonRow)
 		drops.Visible = payload.won
@@ -3799,8 +3925,12 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		showStars(payload.stars or 0)
 		local goals = "★ win   ★ nobody knocked out   ★ you fire every power attack"
 		if payload.won then
-			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave} cleared!`, C.good
-			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.commas(payload.mvpDmg or 0)} damage)` else ""
+			resultTitle.Text, resultTitle.TextColor3 =
+				if payload.last
+					then `Wave {payload.wave} cleared: the Legion is beaten!`
+					else `Wave {payload.wave} cleared!`,
+				C.good
+			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.short(payload.mvpDmg or 0)} damage)` else ""
 			local lines = { `Won in {took}s.{if payload.first then " First clear!" else ""}{mvp}`, goals }
 			if payload.streak then
 				local pot = if payload.pot then payload.pot.coins else 0
@@ -3821,10 +3951,24 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			if payload.chest then
 				Style.toast(screen, `Boss chest! {rewardWords(payload.chest)}`, 5, "good", (iconsOf(payload.chest)))
 			end
-			wave = payload.wave + 1
-			again.Text = `Fight wave {wave}`
+			wave = math.min(payload.wave + 1, LevelRules.LAST)
+			again.Text = if payload.last then `Fight wave {wave} again` else `Fight wave {wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
 				offerBoons(payload.offer, wave)
+				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): a countdown
+					local panel = boonRow.Parent :: GuiObject
+					local heading = panel:FindFirstChild("Title") :: TextLabel?
+					task.spawn(function()
+						for left = 7, 1, -1 do
+							if not panel.Visible or heading == nil then
+								return
+							end
+							heading.Text = `Vote for a boon: {left}`
+							task.wait(1)
+						end
+						panel.Visible, result.Visible = false, false -- time is up: the server picks and the next wave starts
+					end)
+				end
 			end
 			buttons(payload.offer == nil)
 			local pot = if payload.pot then payload.pot.coins else 0
@@ -3838,6 +3982,24 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			leave.Text = "Leave the arena"
 		end
 		result.Visible = true
+	elseif kind == "began" then -- a shared fight's wave, started by another player or by the vote (decision 0108)
+		began(payload.wave)
+	elseif kind == "votes" then
+		local votes = (boonRow.Parent :: Instance):FindFirstChild("Votes") :: TextLabel?
+		if votes then
+			votes.Text = `{payload.voted} of {payload.of} have voted`
+		end
+	elseif kind == "boon" then
+		local voted = boonRow.Parent :: GuiObject
+		voted.Visible, result.Visible = false, false
+		local picked = WaveRuns.boon(payload.id)
+		if picked then
+			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
+		end
+	elseif kind == "over" then
+		hideResult()
+		music(nil)
+		Style.toast(screen, "Another party took the field: your run is banked", 5)
 	elseif kind == "banked" then
 		if payload.lost and payload.coins > 0 then
 			Style.toast(
@@ -3857,11 +4019,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		end
 	elseif kind == "waveshow" then
 		local took = string.format("%.0f", payload.seconds)
-		Style.toast(
-			screen,
-			`Wave {payload.wave}: {if payload.won then "your team won" else "your team lost"} in {took}s ({payload.attacks} attacks) against {payload.foes}`,
-			7
-		)
+		Style.toast(screen, `Wave {payload.wave}: {if payload.won then "won" else "lost"} in {took}s`, 7)
 	elseif kind == "trade_invite" then
 		invite = { from = payload.from, name = payload.name, at = os.clock() }
 		Style.toast(screen, `{payload.name} wants to trade: open Trade`, 5)

@@ -1,6 +1,6 @@
 --!strict
--- Pure Animal Stations wave rules (decisions 0023, 0032, 0040): an endless line of waves ("levels"
--- in this file), each an enemy team of three of the Shadow Legion (StationConfig.FOES: knights,
+-- Pure Animal Stations wave rules (decisions 0023, 0032, 0040): a line of LAST waves ("levels"
+-- in this file, decision 0107), each an enemy team of three of the Shadow Legion (StationConfig.FOES: knights,
 -- archers, mages, ogres, cavalry, golems and dragons) that grows stronger, fought by the player's team (BattleRules). Clearing one
 -- pays coins. Draft numbers; balance comes later.
 
@@ -18,13 +18,29 @@ LevelRules.SCALE_START = 0.6 -- level 1 enemies have 60% of their basic stats
 LevelRules.SCALE_GROWTH = 1.03 -- and 3% more every level after
 LevelRules.BOSS_EVERY = 10 -- every 10th level's last enemy is a dragon
 LevelRules.REWARD_START = 40 -- coins for clearing level 1 the first time
-LevelRules.REWARD_GROWTH = 1.08
+LevelRules.REWARD_GROWTH = 1.055 -- SHANNON, 2026-11-24: was 1.08 (394 billion for wave 300); eggs repriced with it (0110)
 LevelRules.REPLAY_PCT = 25 -- replaying a cleared level pays this % of its reward
 LevelRules.XP_START, LevelRules.XP_PER_LEVEL = 10, 4 -- player XP for a first clear: 10 + 4 per wave
 LevelRules.SAMPLE_EVERY = 5 -- a first clear drops a sample per this many waves (boss waves drop double)
 
+-- The last wave, and the steep waves before it (decision 0107). Up to STEEP_FROM every stat grows
+-- SCALE_GROWTH a wave. After it the Legion gets no faster (speed, stamina, mana and defence hold: left to
+-- grow, a swing shrinks to nothing and a fight is a blur) and health and strength grow instead: by
+-- STEEP_GROWTH on the first steep wave and by more on every wave after (twice the exponent STEEP_BEND / 2
+-- waves on), so however fast a run's boons stack (WaveRuns), the waves outgrow them and end in a wall.
+LevelRules.LAST = 300
+LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.013, 200 -- retuned for the small boons (0110)
+LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
+
+-- What every stat of a foe is multiplied by at `level`.
 function LevelRules.scale(level: number): number
-	return LevelRules.SCALE_START * LevelRules.SCALE_GROWTH ^ (level - 1)
+	return LevelRules.SCALE_START * LevelRules.SCALE_GROWTH ^ (math.min(level, LevelRules.STEEP_FROM) - 1)
+end
+
+-- What its health and strength (STEEP_STATS) are multiplied by on top of that: 1 up to STEEP_FROM.
+function LevelRules.might(level: number): number
+	local n = math.max(0, level - LevelRules.STEEP_FROM)
+	return LevelRules.STEEP_GROWTH ^ (n * (1 + n / LevelRules.STEEP_BEND))
 end
 
 -- Stages (decision 0106, display only): STAGE waves each, so every stage ends on a boss wave. Stage 6 and
@@ -65,7 +81,7 @@ function LevelRules.classic(level: number): { Owned }
 		end
 	end
 	local rng = Rng.seed(level, 23)
-	local k = LevelRules.scale(level)
+	local k, might = LevelRules.scale(level), LevelRules.might(level)
 	local team = {}
 	for i = 1, LevelRules.TEAM_SIZE do
 		local n
@@ -76,8 +92,9 @@ function LevelRules.classic(level: number): { Owned }
 		end
 		local stats = {} :: any
 		for _, stat in StationConfig.STATS do
-			-- enemies are not capped at STAT_MAX, so the levels never run out
-			stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((foe.stats :: any)[stat] * k))
+			-- enemies are not capped at STAT_MAX
+			local mult = if LevelRules.STEEP_STATS[stat] then k * might else k
+			stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((foe.stats :: any)[stat] * mult))
 		end
 		table.insert(team, { s = foe.id, stats = stats :: StationConfig.Stats })
 	end
@@ -100,6 +117,11 @@ LevelRules.CROWDS = {
 LevelRules.ELITE = 1.6
 LevelRules.CROWD_POWER = 1 -- a swarm wave's power over the classic wave's
 LevelRules.MATCH = 0.05 -- how close (a share) the swarm's power must come to that
+-- Shared fights (decision 0108): for two and three players' teams the crowd has PARTY_COUNT times the foes
+-- (and elites) and PARTY_POWER times the power. The power grows by less than a whole wave's for each
+-- player, so a wave is easier fought together.
+LevelRules.PARTY_COUNT = { 1, 1.5, 2 }
+LevelRules.PARTY_POWER = { 1, 1.6, 2.1 }
 
 export type Crowd = { from: number, count: number, rushes: number, elites: number, minions: number, power: number? }
 function LevelRules.crowd(level: number): Crowd
@@ -112,10 +134,11 @@ function LevelRules.crowd(level: number): Crowd
 	return row
 end
 
-local function scaled(foe: StationConfig.Foe, mult: number): StationConfig.Stats
+local function scaled(foe: StationConfig.Foe, mult: number, might: number): StationConfig.Stats
 	local stats = {} :: any
 	for _, stat in StationConfig.STATS do
-		stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((foe.stats :: any)[stat] * mult))
+		local by = if LevelRules.STEEP_STATS[stat] then mult * might else mult
+		stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((foe.stats :: any)[stat] * by))
 	end
 	return stats
 end
@@ -123,9 +146,13 @@ end
 -- The enemy team for `level`: always the same for the same level. LevelRules.crowd says how many; each
 -- rush sends its minions first, then its regulars (drawn from the classic line), elites last; a boss
 -- wave's dragon comes last of all. Every stat is then scaled by one number so the wave's power
--- (BattleRules.teamPower) is within MATCH of CROWD_POWER x the classic wave's.
-function LevelRules.enemies(level: number): { Owned }
-	local row = LevelRules.crowd(level)
+-- (BattleRules.teamPower) is within MATCH of CROWD_POWER x the classic wave's. For `players` teams (1 to 3,
+-- decision 0108) the crowd is PARTY_COUNT times as many and PARTY_POWER times as strong, with one boss.
+function LevelRules.enemies(level: number, players: number?): { Owned }
+	local party = math.clamp(players or 1, 1, #LevelRules.PARTY_COUNT)
+	local row = table.clone(LevelRules.crowd(level))
+	row.count = math.floor(row.count * LevelRules.PARTY_COUNT[party] + 0.5)
+	row.elites = math.floor(row.elites * LevelRules.PARTY_COUNT[party] + 0.5)
 	local pool: { StationConfig.Foe } = {}
 	local imp: StationConfig.Foe? = nil
 	for _, f in StationConfig.FOES do
@@ -158,20 +185,24 @@ function LevelRules.enemies(level: number): { Owned }
 			members[#members] = { foe = dragon, rush = row.rushes, elite = false }
 		end
 	end
-	local k = LevelRules.scale(level)
+	local k, might = LevelRules.scale(level), LevelRules.might(level)
 	local function build(m: number): { Owned }
 		local team = {}
 		for _, x in members do
 			local mult = k * m * (if x.elite then LevelRules.ELITE else 1)
-			table.insert(
-				team,
-				{ s = x.foe.id, stats = scaled(x.foe, mult), rush = x.rush, elite = if x.elite then true else nil }
-			)
+			table.insert(team, {
+				s = x.foe.id,
+				stats = scaled(x.foe, mult, might),
+				rush = x.rush,
+				elite = if x.elite then true else nil,
+			})
 		end
 		return team
 	end
 	-- one number for every stat, found by halving, so the swarm is as strong as the wave it replaces
-	local want = BattleRules.teamPower(LevelRules.classic(level), 2) * (row.power or LevelRules.CROWD_POWER)
+	local want = BattleRules.teamPower(LevelRules.classic(level), 2)
+		* (row.power or LevelRules.CROWD_POWER)
+		* LevelRules.PARTY_POWER[party]
 	local lo, hi = 0.02, 8
 	local best, bestGap = build(1), math.huge
 	for _ = 1, 40 do
@@ -201,14 +232,15 @@ end
 
 -- Whether `team` clears `level`, how many attacks the fight took, how many seconds, and the team's HP
 -- at the end (shares by slot). With `taps` the player fires the power attacks (BattleRules.battle; `{}`
--- is a fight nobody taps in); `setup` is a run's carried HP and boons.
+-- is a fight nobody taps in); `setup` is a run's carried HP and boons. A team of several players' teams
+-- (BattleRules.players) meets the crowd for that many.
 function LevelRules.fight(
 	team: { Owned },
 	level: number,
 	taps: { BattleRules.Tap }?,
 	setup: BattleRules.Setup?
 ): (boolean, number, number, { number })
-	return BattleRules.battle(team, LevelRules.enemies(level), nil, taps, setup)
+	return BattleRules.battle(team, LevelRules.enemies(level, BattleRules.players(team)), nil, taps, setup)
 end
 
 -- Stars for a fight (decision 0097): one for the win, one when none of the team was knocked out, one when
@@ -221,12 +253,12 @@ function LevelRules.stars(won: boolean, knockedOut: boolean, missed: number): nu
 	return 1 + (if knockedOut then 0 else 1) + (if missed == 0 then 1 else 0)
 end
 
--- How many of the team's power attacks in `log` fired themselves (BattleRules.AUTO_FIRE) instead of being
--- tapped.
+-- How many of the team's power attacks in `log` were left to run out (BattleRules.AUTO_FIRE) instead of
+-- being tapped.
 function LevelRules.missed(log: { BattleRules.Hit }): number
 	local n = 0
 	for _, e in log do
-		if e.side == 1 and e.power and not e.tap then
+		if e.side == 1 and (e.power or e.fail) and not e.tap then
 			n += 1
 		end
 	end

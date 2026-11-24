@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-127",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The fight's action camera and the quick presses' pop-ups, improved on the battlefield (display only): the camera pans from side to side behind the team and follows the clash; the pop-ups on the sides of the screen (since replaced by STATION-128).",
+  "inputs": [
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "docs/decisions/0108-animal-stations-shared-fights.md"
+  ],
+  "dependencies": [
+    "STATION-125"
+  ],
+  "files": [
+    "src/stations-client/ArenaCamera.client.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-127.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "During a fight the camera sways SWAY studs either side of the team every SWAY_SECONDS, looks at the clash between the team's line and the nearest standing foe (not the rushes waiting below the field), and comes nearer (to NEAR) as the lines meet",
+    "(Replaced by STATION-128, decision 0109: the pop-ups stand by their animals.) A press's pop-up showed on the screen's sides"
+  ],
+  "verification": "selene; rojo build and check-place. Played in Studio (build dev, local, one player): wave 1 from the portal and a test wave 30, the camera panning and following the crowd, two pop-ups at once on the two sides.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: \"ok improve the action camera and make the QTEs pop up on the sides\". Draft numbers: SWAY 16, SWAY_SECONDS 9, NEAR 0.82. Not checked on a phone: on a narrow screen the side cards may come close to the middle."
+}

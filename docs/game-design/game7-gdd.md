@@ -5,7 +5,7 @@ earlier one, and 0029 to 0032 are the current summary. Every number is a draft.
 
 ## Pitch
 
-Hatch animals from eggs, train them at your ranch, and send a team through endless waves of
+Hatch animals from eggs, train them at your ranch, and send a team through 300 waves of
 harder and harder enemies. Your ranch is your base and a long tycoon. The hub is where you meet
 vendors.
 
@@ -16,8 +16,8 @@ vendors.
   or mythic (decision 0037; the Lion, the Elephant, the Jackal and the Cheetah have one of each, decisions 0050 to 0053); a normal animal is never above epic. The Elephant is the Titan:
   legendary, a rare hatch from the Golden Egg (there is no legendary-only egg). The egg overhaul
   (decision 0056): a variant is a drop of its own, listed with its chance in the eggs that hatch
-  it and likelier in the higher eggs; the Meadow and Wild Eggs are open from the start, the Safari and
-  Golden Eggs unlock with the waves (10 and 20). Each egg has its own set and at most seven rare finds;
+  it and likelier in the higher eggs; the Meadow and Wild Eggs are open from the start, the rest
+  unlock by player level (Safari 5 to Crown 85; SHANNON, 2026-11-24, was by wave). Each egg has its own set and at most seven rare finds;
   how rare a hatch is shows when it opens, not in the vendor (decision 0078).
 - **Stats:** six, each with one job in a wave fight:
 
@@ -44,7 +44,15 @@ vendors.
 - **Wave fights:** on a clock and decided by the server. Attack animals hit harder, Defence
   animals draw the enemies' hits and take less, Utility animals heal. Pack and solitary animals
   get group bonuses.
-- **Waves:** an endless line of enemy teams that grow 3% a wave, with a dragon boss every
+- **Eggs, rarities and coats (decision 0110):** twelve eggs up to the Crown Egg at player level 85, the
+  last five dropping variants only; nine rarities set by power (every variant epic or higher, up to
+  celestial); ten coats (Prismatic +30% every stat, Gilded more XP, Rainbow 1 in 500, ...).
+- **Shared fights (decision 0108):** up to three players fight a wave together on the Legion's
+  battlefield, a castle in the mountains up the road north of the hub, through the wave portal. Everyone standing in the portal
+  when a wave starts joins. The crowd grows with each player but less than a wave each, every player is
+  paid as alone, each has a camera behind their own team, and the boon is voted.
+- **Waves:** 300 waves of enemy teams (decision 0107) that grow 3% a wave to wave 100 and then
+  steeply, in health and strength only, to the last, with a dragon boss every
   tenth. The enemies are the Hexbound (decision 0040), evil magic knights, archers, mages, ogres and
   dragons, not animals (`game7-enemies.md`). Clearing a wave pays coins.
 - **Player level:** from XP, and XP comes from everything: hatching and creature level-ups now;
@@ -55,12 +63,12 @@ vendors.
   mountain pass, ready for riding animals later. A ranch is one valley (decision 0070): the
   homestead in its middle (open, with no fence: the herd's meadow inside a ring path, and eight
   buildings to upgrade round it, decision 0072) and its six training grounds set into the land round it, four up the
-  mountainside and two on a beach by a lake, with a path to each. Mountains ring every area. A canyon through the
-  hub's mountains to the north is the wave arena. A server holds 3 players.
+  mountainside and two on a beach by a lake, with a path to each. Mountains ring every area. The road north out of the
+  hub leads to the Legion's battlefield, where the waves are fought (decision 0108). A server holds 3 players.
 
 ## Words
 
-"Level" means three things, so use: **wave** (the endless levels), **stat level** (0 to 70) and
+"Level" means three things, so use: **wave** (the 300 levels), **stat level** (0 to 70) and
 **player level**.
 
 ## Built
@@ -86,7 +94,7 @@ vendors.
   bolt; the fight button reads "Skip the fight". Display only.
 - The Hexbound enemies in game (decision 0042): five models with their own animations and a dark
   glow each.
-- The battle arena (decisions 0045, 0046): a walled stone pit about 190 studs long with a gatehouse,
+- The battle arena (decisions 0045, 0046; replaced by the battlefield, decision 0108): a walled stone pit about 190 studs long with a gatehouse,
   braziers, banners, statues, cages and bones, a dais for the team, the Hexbound's gate that the
   enemies walk out of, a violet dusk that fades in as you walk in, a fight camera and a wave title.
 - The Breach (decision 0047): behind the gate, a scorched road to a vast, half-broken portal ring the

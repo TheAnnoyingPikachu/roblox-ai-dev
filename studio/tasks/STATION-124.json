@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-124",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0108, the map: the Legion's battlefield (a castle in the mountains above a trampled field, from SHANNON's picture) built in the game far north of the hub, the wave portal at the canyon's mouth that leads to it, and its own light.",
+  "inputs": [
+    "docs/decisions/0108-animal-stations-shared-fights.md"
+  ],
+  "dependencies": [
+    "STATION-123"
+  ],
+  "files": [
+    "src/stations/Battlefield.luau",
+    "src/stations/World.luau",
+    "src/stations-client/ArenaMood.client.luau",
+    "src/stations/CLAUDE.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-124.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Battlefield.build makes the field at World.FIELD with a part tagged FieldStand where the teams stand and one tagged FieldGate at the summoning circle",
+    "Battlefield.seat gives each player's place for one, two and three players; each of the three has a camp in its colour behind it and no plate under it",
+    "The wave portal stands on the road at the canyon's mouth: its prompt (WaveGate) opens the wave list and World.inPortal says who stands in its ring",
+    "On the battlefield the player's light is the field's (early afternoon, the sun behind the teams, nothing blurred far off); it fades back on leaving"
+  ],
+  "verification": "selene; rojo build and check-place; walked and fought on in Studio (build dev, local).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-23: \"make a battlefield following this artstyle and objects and such ... a castle in the mountains and a large battleground area build over the studio concept that fits three players\"; 2026-11-24: \"get rid of the uhh plates beneath the creatures now, just put them on the ground instead now we have the map\". Checkpoint: decision 0108, item 5 (the old pit still stands behind the portal, unused)."
+}

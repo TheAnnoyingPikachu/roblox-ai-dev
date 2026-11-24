@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-130",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The egg vendor's new stall on every ranch (SHANNON's pick of the concept, 2026-11-24), and the gear vendor's stall taken away until gear exists.",
+  "inputs": [
+    "docs/decisions/0110-animal-stations-eggs-rarities-coats.md"
+  ],
+  "dependencies": [
+    "STATION-129"
+  ],
+  "files": [
+    "tools/blender/stations/assets/stall_eggs.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/stall_eggs.fbx",
+    "assets/stations/stall_eggs.png",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "src/stations/Ranch.luau",
+    "src/stations/CLAUDE.md",
+    "tests/StationAssets.spec.luau",
+    "studio/tasks/STATION-130.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "stall_eggs is a still model of pieces each under 20,000 triangles, uploaded, stood at each ranch's market with the Vendor prompt (Kind eggs) on an unseen counter",
+    "No gear vendor's stall or prompt stands on a ranch"
+  ],
+  "verification": "lune run tests/run; selene; rojo build and check-place; the stall seen on a ranch in Studio.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: \"the new egg vendor is great go ahead and replace the old one and also get rid of or move the gear vendor for now\". The stall has no keeper figure yet."
+}

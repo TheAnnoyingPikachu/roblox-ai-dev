@@ -15,7 +15,7 @@ local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
 
 local Props = require(script.Parent:WaitForChild("Props"))
-local Arena = require(script.Parent:WaitForChild("Arena"))
+local Battlefield = require(script.Parent:WaitForChild("Battlefield"))
 local Creatures = require(script.Parent:WaitForChild("Creatures"))
 local Valley = require(script.Parent:WaitForChild("Valley"))
 local ValleyMap = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("ValleyMap"))
@@ -29,8 +29,13 @@ local World = {}
 
 World.PLAZA = 48 -- plaza radius
 World.HUB_RADIUS = 250 -- the walkable hub: an invisible wall stands here, the mountains behind it
--- The wave arena: a canyon through the mountains north of the plaza (half width, near and far end).
-local ARENA_HALF, ARENA_NEAR, ARENA_FAR = 60, 330, 640
+-- The road north out of the hub (half width, and where the battlefield's ground begins).
+local ARENA_HALF, ARENA_NEAR = 60, 330
+-- The Legion's battlefield (decision 0108), where the wave fights happen: far to the north, past the canyon's
+-- mountains, reached only through the wave portal. Its teams look north, to the castle.
+World.FIELD = CFrame.new(0, 0, -(ARENA_NEAR + Battlefield.REACH))
+World.PORTAL = Vector3.new(0, 0, -(ARENA_NEAR - 26)) -- the wave portal's ring, on the road at the canyon's mouth
+World.PORTAL_RADIUS = 14 -- a player this near its middle is in it
 World.SPAWN = Vector3.new(0, 0.6, 76)
 World.RANCHES = 3 -- one home ranch per player; lobbies (servers) hold 3 players to match
 World.RANCH_DIST = 900 -- hub centre to each ranch centre: two valleys side by side must not meet
@@ -397,10 +402,13 @@ local function terrain()
 		t:ReplaceMaterial(region, 4, M.Grass, M.LeafyGrass)
 	end
 	calm(t, Vector3.zero, World.PLAZA + 6) -- the hub's plaza floor
-	-- the wave arena (SHANNON: "get rid of the grass in the arena"): no blades up through its floor or the
-	-- way in, so the fight is clear to see
-	local near, far =
-		Vector3.new(-(ARENA_HALF + 12), -10, -(ARENA_FAR + 16)), Vector3.new(ARENA_HALF + 12, 4, -(ARENA_NEAR - 40))
+	-- the battlefield's ground (decision 0108) begins at the hub's north edge: no terrain under it, between
+	-- the ranches' land (their level fill reaches 248 studs from the middle in x and 648 north), then full width
+	local half = World.RANCH_DIST - (ValleyMap.HALF * 2 + 400) / 2 - 4
+	t:FillBlock(CFrame.new(0, -8, -(ARENA_NEAR + 760) / 2), Vector3.new(half * 2, 16, 760 - ARENA_NEAR), M.Air)
+	t:FillBlock(CFrame.new(0, -8, -705), Vector3.new(1500, 16, 90), M.Air)
+	-- and no blades up through the portal's stone floor
+	local near, far = Vector3.new(-(ARENA_HALF + 20), -10, -(ARENA_NEAR + 20)), Vector3.new(ARENA_HALF + 20, 4, -270)
 	t:ReplaceMaterial(Region3.new(near, far):ExpandToGrid(4), 4, M.Grass, M.LeafyGrass)
 end
 
@@ -513,7 +521,7 @@ end
 
 -- The Hall of Fame (decision 0095): the best animals in this server on its pedestals, each with its
 -- owner's name. `best` is a list of { s, v, rainbow, owner }, best first (StationsServer chooses).
-function World.setFame(best: { { s: string, v: string?, rainbow: boolean?, owner: string } })
+function World.setFame(best: { { s: string, v: string?, rainbow: boolean?, coat: string?, owner: string } })
 	local f = fameFolder
 	if f == nil then
 		return
@@ -536,7 +544,7 @@ function World.setFame(best: { { s: string, v: string?, rainbow: boolean?, owner
 				CFrame.lookAt(p, p + Vector3.new(-x, 0, y).Unit),
 				f,
 				{ model = asset, size = fit },
-				a.rainbow
+				a.coat or a.rainbow
 			)
 			if model then
 				Creatures.describe(model, a.s, a.v)
@@ -818,10 +826,8 @@ local zones: { Zone } = {}
 local function layout()
 	table.clear(zones)
 	table.insert(zones, { a = Vector3.zero, r = World.HUB_RADIUS + 40 })
-	table.insert(
-		zones,
-		{ a = Vector3.new(0, 0, -World.HUB_RADIUS), b = Vector3.new(0, 0, -(ARENA_FAR + 12)), r = ARENA_HALF + 6 }
-	)
+	table.insert(zones, { a = Vector3.new(0, 0, -World.HUB_RADIUS), b = World.FIELD.Position, r = ARENA_HALF + 6 })
+	table.insert(zones, { a = World.FIELD.Position + Vector3.new(0, 0, 280), b = World.FIELD.Position, r = 320 })
 	-- a ranch's valley is its own land as far as its unseen wall: mountains stand on its rim beyond that,
 	-- where they hide the straight outer faces of the square it is written in
 	for i = 1, World.RANCHES do
@@ -974,10 +980,8 @@ local function pass(root: Instance, i: number, rng: Random)
 	end
 end
 
--- The hub's mountains: a ring that is open to the north, where two rows of mountains make a
--- canyon closed at its far end, and to the three passes. The canyon is the wave arena: the
--- player's team stands at the near end ("WaveStand") and the endless waves will come from the far
--- end ("WaveSpawn").
+-- The hub's mountains: a ring that is open to the north, where the road leaves for the battlefield
+-- (Battlefield.luau: its approach and peaks), and to the three passes.
 local function mountains(root: Instance, rng: Random)
 	local f = folder(root, "Mountains")
 	local GAP, N = 32, 26 -- degrees left open either side of north; mountains in the ring
@@ -994,15 +998,8 @@ local function mountains(root: Instance, rng: Random)
 			seated(f, u * (World.HUB_RADIUS + 60), u, foot, 1, 110, rng, Vector3.zero)
 		end
 	end
-	for k = 0, 2 do
-		for _, side in { -1, 1 } do
-			local z = -(ARENA_NEAR + 60 + k * 150)
-			mountain(f, Vector3.new(side * (ARENA_HALF + 158), 0, z), 150, rng, Vector3.new(0, 0, z))
-		end
-	end
-	mountain(f, Vector3.new(0, 0, -(ARENA_FAR + 260)), 230, rng, Vector3.new(0, 0, -ARENA_FAR))
-	-- invisible wall round the hub, open at the canyon's mouth and at each pass; then up both
-	-- sides of the canyon and across its end
+	-- invisible wall round the hub, open at the road north and at each pass; then up both sides of the
+	-- approach and round the battlefield (as far as the castle's rock)
 	local half = ARENA_HALF + 10
 	local mouth = math.deg(math.asin(half / World.HUB_RADIUS)) -- half-angle of the canyon mouth
 	local openings = { { -90, mouth } }
@@ -1026,51 +1023,67 @@ local function mountains(root: Instance, rng: Random)
 			barrier(f, rim(from + (to - from) * step / steps), rim(from + (to - from) * (step + 1) / steps))
 		end
 	end
-	local far = -(ARENA_FAR + 12)
-	barrier(f, rim(-90 + mouth), Vector3.new(half, 0, far))
-	barrier(f, rim(-90 - mouth), Vector3.new(-half, 0, far))
-	barrier(f, Vector3.new(-half, 0, far), Vector3.new(half, 0, far))
+	local field = World.FIELD.Position
+	local opens, wide, ends = field.Z + 360, 300, field.Z - 190
+	for _, sx in { -1, 1 } do
+		barrier(f, rim(-90 + sx * mouth), Vector3.new(sx * half, 0, opens))
+		barrier(f, Vector3.new(sx * half, 0, opens), Vector3.new(sx * wide, 0, opens))
+		barrier(f, Vector3.new(sx * wide, 0, opens), Vector3.new(sx * wide, 0, ends))
+	end
+	barrier(f, Vector3.new(-wide, 0, ends), Vector3.new(wide, 0, ends))
 
 	local arena = folder(root, "WaveArena")
-	local length = ARENA_FAR - ARENA_NEAR
+	-- the portal's stone floor across the road's mouth, over the seam where the battlefield's ground begins
 	part(
 		arena,
-		Vector3.new(ARENA_HALF * 2, 0.4, length),
-		CFrame.new(0, 0.2, -(ARENA_NEAR + length / 2)),
-		Color3.fromRGB(92, 84, 92),
-		M.Ground
+		Vector3.new(ARENA_HALF * 2 + 24, 0.4, 56),
+		CFrame.new(0, 0.2, -(ARENA_NEAR - 12)),
+		STONE_DARK,
+		M.Cobblestone
 	)
-	local stand =
-		disc(arena, Vector3.new(0, 0.7, -(ARENA_NEAR + Arena.DAIS_AT)), 30, 0.4, Color3.fromRGB(58, 92, 150), M.Slate)
-	stand.Name = "Stand"
-	CollectionService:AddTag(stand, "WaveStand")
-	Arena.build(arena, ARENA_HALF, ARENA_NEAR)
-	local spawn = part(
-		arena,
-		Vector3.new(ARENA_HALF * 2 - 10, 0.4, 8),
-		CFrame.new(0, 0.5, -(ARENA_FAR - 20)),
-		Color3.fromRGB(220, 70, 70),
-		M.Neon
-	)
-	spawn.Name = "Spawn"
-	CollectionService:AddTag(spawn, "WaveSpawn")
-	signboard(arena, CFrame.new(0, 0, -(ARENA_NEAR - 12)), 24, "Endless Waves", Color3.fromRGB(190, 70, 70), 8)
-	-- the wave gate: a red crystal on a stone pillar beside the road; its prompt (tagged "WaveGate")
-	-- opens the wave list on the client
-	local at = Vector3.new(18, 0, -(ARENA_NEAR - 26))
-	pillar(arena, at, 5, 1.6, STONE_DARK, M.Cobblestone)
-	local crystal = ball(arena, at + Vector3.new(0, 7, 0), 3.4, Color3.fromRGB(220, 60, 60), M.Neon)
-	glow(crystal, Color3.fromRGB(255, 90, 90), 22, 1.2)
+	-- the wave portal (decision 0108): a ring on the road and a standing portal behind it. Everyone in the
+	-- ring when a fight starts goes through to the battlefield together (StationsServer). Its prompt (tagged
+	-- "WaveGate") opens the wave list on the client.
+	local VIOLET = Color3.fromRGB(112, 64, 255)
+	local ring =
+		disc(arena, World.PORTAL + Vector3.new(0, 0.5, 0), World.PORTAL_RADIUS * 2, 0.5, STONE_DARK, M.Cobblestone)
+	ring.Name = "Portal"
+	disc(arena, World.PORTAL + Vector3.new(0, 0.56, 0), World.PORTAL_RADIUS * 2 - 3, 0.5, VIOLET, M.Neon).CanCollide =
+		false
+	disc(arena, World.PORTAL + Vector3.new(0, 0.62, 0), World.PORTAL_RADIUS * 2 - 5, 0.5, STONE, M.Cobblestone)
+	local back = World.PORTAL + Vector3.new(0, 0, -(World.PORTAL_RADIUS + 3))
+	for i = 0, 15 do -- the standing portal: a ring of stone blocks round a violet glow
+		local a = i * math.pi / 8
+		part(
+			arena,
+			Vector3.new(4.6, 3.4, 3.4),
+			CFrame.new(back + Vector3.new(math.cos(a) * 10, 11.5 + math.sin(a) * 10, 0))
+				* CFrame.Angles(0, 0, a + math.pi / 2),
+			if i % 2 == 0 then STONE_DARK else STONE,
+			M.Cobblestone
+		)
+	end
+	local glass = disc(arena, back + Vector3.new(0, 11.5, 0), 18, 0.6, VIOLET, M.Neon)
+	glass.CFrame = CFrame.new(back + Vector3.new(0, 11.5, 0)) * CFrame.Angles(0, math.pi / 2, 0)
+	glass.CanCollide, glass.Transparency = false, 0.2
+	glow(glass, VIOLET, 30, 1.6)
+	signboard(arena, CFrame.new(-24, 0, -(ARENA_NEAR - 26)), 24, "Wave Portal", Color3.fromRGB(96, 50, 176), 8)
 	local gate = Instance.new("ProximityPrompt")
-	gate.ActionText, gate.ObjectText = "Choose a wave", "Wave gate"
-	gate.HoldDuration, gate.MaxActivationDistance, gate.RequiresLineOfSight = 0.3, 14, false
-	gate.Parent = crystal
+	gate.ActionText, gate.ObjectText = "Choose a wave", "Wave portal"
+	gate.HoldDuration, gate.MaxActivationDistance, gate.RequiresLineOfSight = 0.3, World.PORTAL_RADIUS + 6, false
+	gate.Parent = ring
 	CollectionService:AddTag(gate, "WaveGate")
+	Battlefield.build(folder(root, "Battlefield"), World.FIELD)
 end
 
--- Where a player stands after a wave: back at the arena's near end, on the road, facing the stand.
+-- Where a player stands after a wave: on the road before the wave portal, outside its ring, facing it.
 function World.arenaGate(): CFrame
-	return CFrame.lookAt(Vector3.new(0, 3, -(ARENA_NEAR - 34)), Vector3.new(0, 3, -(ARENA_NEAR + 40)))
+	return CFrame.lookAt(Vector3.new(0, 3, -(ARENA_NEAR - 52)), Vector3.new(0, 3, -(ARENA_NEAR + 40)))
+end
+
+-- Whether `position` is in the wave portal's ring (decision 0108).
+function World.inPortal(position: Vector3): boolean
+	return ((position - World.PORTAL) * FLAT).Magnitude <= World.PORTAL_RADIUS
 end
 
 -- Ranches -------------------------------------------------------------------------------------------

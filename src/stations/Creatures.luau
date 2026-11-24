@@ -340,7 +340,9 @@ end
 -- its training, or its version's), set as attributes so every player's client sees them.
 function Creatures.describe(model: Model, s: string, v: string?, animal: StationRules.Owned?)
 	model:SetAttribute("Species", s)
-	model:SetAttribute("Rainbow", if animal and animal.rainbow then true else nil)
+	local coatOf = if animal then StationRules.coatOf(animal) else nil
+	model:SetAttribute("Rainbow", if coatOf and (coatOf.id == "rainbow" or coatOf.id == "prismatic") then true else nil)
+	model:SetAttribute("CoatId", if coatOf then coatOf.id else nil)
 	model:SetAttribute("Variant", v)
 	local plain = StationRules.versionStats(s, v) :: StationConfig.Stats
 	for _, stat in StationConfig.STATS do
@@ -356,14 +358,64 @@ function Creatures.describeFoe(model: Model, foeId: string, stats: StationConfig
 	end
 end
 
--- `rainbow`: in its rainbow coat (decision 0058), with a few sparkles. The client turns the Neon pieces
--- of a model whose "Rainbow" attribute is set (`describe`) through the colours.
-function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?, rainbow: boolean?): Model?
+-- How each coat of decision 0110 looks (the concept board "Ten coats"): a tint and an outline over the
+-- model (a Highlight) and an effect about it. The rainbow and prismatic coats wear the rainbow texture.
+local function rgb(r: number, g: number, b: number): Color3
+	return Color3.fromRGB(r, g, b)
+end
+local COAT_LOOKS: { [string]: { fill: Color3, fillT: number, edge: Color3?, fx: { Color3 } } } = {
+	ember = { fill = rgb(255, 110, 30), fillT = 0.55, fx = { rgb(255, 230, 90), rgb(255, 70, 10) } },
+	frost = { fill = rgb(150, 220, 255), fillT = 0.45, fx = { rgb(255, 255, 255), rgb(170, 220, 255) } },
+	storm = {
+		fill = rgb(70, 160, 255),
+		fillT = 0.35,
+		edge = rgb(255, 236, 80),
+		fx = { rgb(255, 255, 160), rgb(120, 150, 255) },
+	},
+	obsidian = {
+		fill = rgb(25, 18, 40),
+		fillT = 0.25,
+		edge = rgb(170, 90, 255),
+		fx = { rgb(200, 140, 255), rgb(90, 40, 160) },
+	},
+	verdant = { fill = rgb(70, 190, 70), fillT = 0.5, fx = { rgb(150, 240, 90), rgb(50, 150, 50) } },
+	galaxy = {
+		fill = rgb(40, 20, 110),
+		fillT = 0.3,
+		edge = rgb(120, 200, 255),
+		fx = { rgb(255, 255, 255), rgb(150, 120, 255) },
+	},
+	gilded = {
+		fill = rgb(255, 196, 40),
+		fillT = 0.4,
+		edge = rgb(255, 240, 170),
+		fx = { rgb(255, 252, 210), rgb(255, 200, 60) },
+	},
+	spectral = {
+		fill = rgb(190, 255, 245),
+		fillT = 0.2,
+		edge = rgb(120, 255, 230),
+		fx = { rgb(220, 255, 250), rgb(120, 255, 230) },
+	},
+	prismatic = {
+		fill = rgb(255, 255, 255),
+		fillT = 0.75,
+		edge = rgb(255, 255, 255),
+		fx = { rgb(255, 252, 210), rgb(255, 200, 60) },
+	},
+}
+
+-- `coatId`: the coat it wears (decision 0110; `true` is the rainbow coat of a caller from before coats).
+-- The rainbow and prismatic coats put on the rainbow texture with a few sparkles, and the client turns the
+-- Neon pieces of a model whose "Rainbow" attribute is set (`describe`) through the colours; the others are
+-- COAT_LOOKS.
+function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?, coatId: (string | boolean)?): Model?
 	local source = template(name)
 	if source == nil then
 		return nil
 	end
-	local texture = if rainbow then coat(name) else nil
+	local id = if coatId == true then "rainbow" elseif type(coatId) == "string" then coatId else nil
+	local texture = if id == "rainbow" or id == "prismatic" then coat(name) else nil
 	local model = source:Clone()
 	model:PivotTo(at)
 	if texture then
@@ -385,6 +437,30 @@ function Creatures.spawn(name: string, at: CFrame, parent: Instance, look: Look?
 		glitter.Speed = NumberRange.new(0.5 * unit, 2 * unit)
 		glitter.SpreadAngle = Vector2.new(180, 180)
 		glitter.Parent = model:FindFirstChild(`{name}_body`)
+	end
+	local dress = if id then COAT_LOOKS[id] else nil
+	if dress then
+		local h = Instance.new("Highlight")
+		h.Name, h.DepthMode = "Coat", Enum.HighlightDepthMode.Occluded
+		h.FillColor, h.FillTransparency = dress.fill, dress.fillT
+		h.OutlineColor, h.OutlineTransparency = dress.edge or dress.fill, if dress.edge then 0 else 0.6
+		h.Parent = model
+		local unit = model:GetAttribute("Scale") :: number
+		local fx = Instance.new("ParticleEmitter")
+		fx.Name = "CoatFx"
+		fx.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+		fx.Shape, fx.ShapeStyle = Enum.ParticleEmitterShape.Box, Enum.ParticleEmitterShapeStyle.Volume
+		fx.Color = ColorSequence.new(dress.fx[1], dress.fx[2])
+		fx.LightEmission, fx.Rate = 0.4, 30
+		fx.Lifetime = NumberRange.new(0.8, 1.6)
+		fx.Speed = NumberRange.new(0.5 * unit, 2 * unit)
+		fx.SpreadAngle = Vector2.new(180, 180)
+		fx.Size = NumberSequence.new(0.7 * unit, 0)
+		fx.Acceleration = if id == "ember"
+			then Vector3.new(0, 6, 0) * unit
+			elseif id == "frost" or id == "verdant" then Vector3.new(0, -2, 0) * unit
+			else Vector3.zero
+		fx.Parent = model:FindFirstChild(`{name}_body`) or model:FindFirstChildWhichIsA("MeshPart", true)
 	end
 	if look then
 		local size = look.size or 1

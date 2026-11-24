@@ -49,6 +49,9 @@ STATION-121 (the presses popping up, more forgiving; the action camera).
 
 ### Four quick presses (rule)
 
+Changed by decision 0109: a press is now its animal's class's (attack ring, defense needle, utility chain,
+Titan mash), and the pop-ups stand by their animals under the team.
+
 `BattleRules.pressOf(animal)` gives an animal's press from what its spell does; a Titan always mashes.
 
 | Press | Species | Variants that differ | Perfect when |
@@ -109,3 +112,12 @@ battlefield ... only a bit further away though".
   `STRIKE_SECONDS` are the two dials.
 - The click and mash counts come from the client; the server caps both by its own clock, so a claimed
   count never beats a fast hand.
+
+## Amended (SHANNON, 2026-11-24): clicking is a bonus
+
+- SHANNON: "clicking is a bonus that should make waves slightly easier to finish".
+- `CLICK_SLOW` 1 (was 2.4: a team nobody clicked for attacked at 42% speed) and `STRIKE_SECONDS` 0.25 (was 0.6):
+  four clicks a second add about a quarter to a team's damage. In the wave-1 check none of 150 fresh Meadow
+  teams loses wave 1 without clicking (55% did). The late waves were retuned with it (`STEEP_GROWTH` 1.013,
+  decision 0110): the best team with good picks clears 299 to 300 clicking four times a second, 289 without.
+

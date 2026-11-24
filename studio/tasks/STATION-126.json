@@ -1,0 +1,47 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-126",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0108, amended: the Legion's battlefield built over the old arena (the canyon north of the hub becomes its approach, the pit and its gate are gone), the light fitted to it, and every knocked-out animal back at 25% for the next wave of a run.",
+  "inputs": [
+    "docs/decisions/0108-animal-stations-shared-fights.md"
+  ],
+  "dependencies": [
+    "STATION-124",
+    "STATION-125"
+  ],
+  "files": [
+    "src/stations/Battlefield.luau",
+    "src/stations/World.luau",
+    "src/stations/Arena.luau",
+    "src/stations/ArenaKit.luau",
+    "src/stations/Breach.luau",
+    "src/stations-client/GateWake.client.luau",
+    "src/stations-client/ArenaMood.client.luau",
+    "src/shared/WaveRuns.luau",
+    "tests/WaveRuns.spec.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0108-animal-stations-shared-fights.md",
+    "docs/game-design/game7-gdd.md",
+    "studio/tasks/STATION-126.json"
+  ],
+  "tests": [
+    "WaveRuns.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "World.FIELD is Battlefield.REACH north of the hub's north edge: the road north leads on foot through the approach (peaks, pines, the Legion's ruined gateway, braziers and banners) onto the field",
+    "The old pit (Arena.luau, ArenaKit.luau, Breach.luau, GateWake.client.luau, the WaveStand and WaveSpawn tags) is gone and nothing reads it",
+    "The hub's terrain stops where the field's ground begins and never reaches into a ranch's land; the portal's stone floor lies over the seam",
+    "Invisible walls run up both sides of the approach and round the field as far as the castle's rock",
+    "The field's light fades in up the road north and out on the way back; nowhere else",
+    "WaveRuns.setup gives every animal at 0 in the run WIPED_BACK for its fight; the run keeps the 0, so Revive still lifts them to half"
+  ],
+  "verification": "lune run tests/run (786 pass); selene; rojo build and check-place. Played in Studio (build dev, local, one player): walked the hub's north road and the approach onto the field (the field's light fades in on the way up and out on the way back; walls stop a player at x 286 and z -1234), started wave 1 from the portal and fought it on the field.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: \"this concept is amazing can you build that over the old arena, alter that area of the map to make it all look fitting and such, also dead players come back at 25% each round\". Claude's reading, to confirm at the checkpoint: \"dead players\" means every knocked-out animal, alone or in a party, not only a player whose whole team is down (decision 0108 had that). Revive (half HP) is kept."
+}

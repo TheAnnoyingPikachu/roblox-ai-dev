@@ -77,6 +77,7 @@ local PLACE: { [string]: { number } } = {
 	den = { ValleyMap.DEN.face, ValleyMap.DEN.deg }, -- its front on the face of its hill (decision 0075)
 }
 local MARKET = { 62, 298 }
+local STALL = 0.65 -- the egg vendor's stall model, this times its built size
 -- The size of the plot staked out for a building that a new ranch does not have.
 local PLOT: { [string]: { number } } = {
 	brooder = { 18, 11 },
@@ -299,31 +300,6 @@ local function prompt(p: BasePart, tag: string, action: string, object: string, 
 	pr.Parent = p
 	CollectionService:AddTag(pr, tag)
 	return pr
-end
-
--- A vendor's stall facing -z: a counter under a striped awning, a name board and a keeper behind
--- the counter. Returns the middle of the counter top, to stand the wares on.
-local function stall(f: Instance, b: CFrame, stripe: Color3, name: string, kind: string, i: number): CFrame
-	part(f, V(11, 0.5, 8), b * CFrame.new(0, 0.5, 0), WOOD, M.WoodPlanks)
-	local counter = part(f, V(10, 3, 1.8), b * CFrame.new(0, 2.25, -2.6), WOOD_DARK, M.Wood)
-	part(f, V(10.6, 0.4, 2.4), b * CFrame.new(0, 3.95, -2.6), WOOD, M.WoodPlanks)
-	for _, sx in { -1, 1 } do
-		for _, sz in { -1, 1 } do
-			part(f, V(0.7, 9, 0.7), b * CFrame.new(sx * 5, 5.2, sz * 3.4), WOOD_DARK, M.Wood)
-		end
-	end
-	for k = 0, 5 do -- the awning, sloping down to the front
-		local strip = b * CFrame.new(-4.9 + k * 1.96, 9.7, -0.6) * CFrame.Angles(rad(-10), 0, 0)
-		part(f, V(1.95, 0.4, 9.4), strip, if k % 2 == 0 then stripe else WHITE, M.SmoothPlastic)
-	end
-	local board = part(f, V(9, 2.2, 0.4), b * CFrame.new(0, 11.6, -3.4), stripe:Lerp(INK, 0.4), M.SmoothPlastic)
-	Props.label(board, name, WHITE, 0.4)
-	part(f, V(2, 2.6, 1.2), b * CFrame.new(0, 3.8, 0.4), stripe:Lerp(WHITE, 0.2), M.SmoothPlastic) -- the keeper
-	ball(f, (b * CFrame.new(0, 6, 0.4)).Position, 1.9, Color3.fromRGB(255, 214, 170), M.SmoothPlastic)
-	part(f, V(2.6, 0.3, 2.6), b * CFrame.new(0, 6.9, 0.4), WOOD_DARK, M.SmoothPlastic)
-	part(f, V(1.6, 0.9, 1.6), b * CFrame.new(0, 7.4, 0.4), WOOD_DARK, M.SmoothPlastic)
-	prompt(counter, "Vendor", "Talk", name, i):SetAttribute("Kind", kind)
-	return b * CFrame.new(0, 4.15, -2.6)
 end
 
 -- The buildings ----------------------------------------------------------------------------------------
@@ -798,25 +774,14 @@ function Ranch.render(i: number, levels: { [string]: number })
 		building(f, cf, id, levels[id] or 0, home, i)
 	end
 
-	-- the vendors, by the way in: eggs (one of each on the counter) and gear
-	local market = out(MARKET[1], MARKET[2], 180) -- their counters to the middle
-	local wares = stall(f, market * CFrame.new(-6.5, -LAWN, 0), Color3.fromRGB(240, 170, 60), "Egg Vendor", "eggs", i)
-	for k, e in StationConfig.EGGS do
-		kit.eggModel(f, wares * CFrame.new((k - 2.5) * 2.4, 0, 0), 1.9, e.id, rng)
-	end
-	wares = stall(f, market * CFrame.new(6.5, -LAWN, 0), Color3.fromRGB(90, 130, 200), "Gear Vendor", "gear", i)
-	local steel = Color3.fromRGB(190, 196, 206)
-	part(
-		f,
-		V(1.7, 2.1, 0.3),
-		wares * CFrame.new(-3, 1.1, 0) * CFrame.Angles(rad(-14), 0, 0),
-		Color3.fromRGB(200, 70, 60),
-		M.Metal
-	)
-	ball(f, (wares * CFrame.new(-0.4, 0.7, 0)).Position, 1.5, steel, M.Metal)
-	part(f, V(0.3, 0.7, 1.2), wares * CFrame.new(-0.4, 1.5, 0), Color3.fromRGB(200, 70, 60), M.SmoothPlastic)
-	part(f, V(0.3, 3, 0.12), wares * CFrame.new(2.4, 1.5, 0) * CFrame.Angles(0, 0, rad(18)), steel, M.Metal)
-	part(f, V(1.1, 0.25, 0.3), wares * CFrame.new(2.75, 0.5, 0) * CFrame.Angles(0, 0, rad(18)), WOOD_DARK, M.Wood)
+	-- the egg vendor, by the way in (STATION-130): the stall's model (stall_eggs, its eggs on the counter), and
+	-- an unseen counter that is solid and carries the vendor's prompt. The gear vendor waits until there is gear.
+	local market = out(MARKET[1], MARKET[2], 180) -- the counter to the middle
+	local stand = market * CFrame.new(0, -LAWN, 0)
+	task.spawn(Creatures.still, "stall_eggs", stand, STALL, f) -- its front (Blender -Y) to the middle
+	local counter = part(f, V(20 * STALL / 0.65, 5, 4), stand * CFrame.new(0, 2.5, -2.2), WHITE)
+	counter.Transparency, counter.CastShadow, counter.Name = 1, false, "Solid"
+	prompt(counter, "Vendor", "Talk", "Egg Vendor", i):SetAttribute("Kind", "eggs")
 
 	-- the training areas, each on its ground in the valley, as far on as the Training Grounds
 	Areas.build(f, i, levels.grounds or 0)

@@ -4,6 +4,7 @@ local BattleRules = require("../src/shared/BattleRules")
 local StationConfig = require("../src/shared/StationConfig")
 local StationRules = require("../src/shared/StationRules")
 local LevelRules = require("../src/shared/LevelRules")
+local WaveRuns = require("../src/shared/WaveRuns")
 
 local describe, it, expect = T.describe, T.it, T.expect
 
@@ -48,7 +49,7 @@ describe("LevelRules.enemies", function()
 	end)
 
 	it(
-		"opens with the wave-1 foes (knights and battle priests), adds a new foe every few waves, never before its first wave, and gets stronger without end",
+		"opens with the wave-1 foes (knights and battle priests), adds a new foe every few waves, never before its first wave, and gets stronger to the last wave",
 		function()
 			for level = 1, 2 do
 				for _, e in LevelRules.enemies(level) do
@@ -70,7 +71,27 @@ describe("LevelRules.enemies", function()
 			end
 			expect(LevelRules.scale(2) > LevelRules.scale(1)).toBeTruthy()
 			expect(teamTotal(LevelRules.enemies(200)) > teamTotal(LevelRules.enemies(100))).toBeTruthy()
-			expect(LevelRules.enemies(300)[1].stats.speed > StationConfig.STAT_MAX).toBeTruthy()
+			expect(LevelRules.enemies(LevelRules.LAST)[1].stats.health > StationConfig.STAT_MAX).toBeTruthy()
+		end
+	)
+
+	it(
+		"holds the Legion's speed after STEEP_FROM and steepens its health and strength to the last wave (decision 0107)",
+		function()
+			local from, last = LevelRules.STEEP_FROM, LevelRules.LAST
+			expect(LevelRules.might(from)).toBe(1)
+			expect(LevelRules.scale(last)).toBe(LevelRules.scale(from))
+			-- every steep wave grows by more than the one before; at the last, health and strength together outgrow a boon
+			local first, second = LevelRules.might(from + 1), LevelRules.might(from + 2) / LevelRules.might(from + 1)
+			expect(first > 1).toBeTruthy()
+			expect(second > first).toBeTruthy()
+			expect((LevelRules.might(last) / LevelRules.might(last - 1)) ^ 2 > WaveRuns.CLAWS).toBeTruthy()
+			local k = LevelRules.scale(from)
+			for _, e in LevelRules.classic(last) do
+				local foe = StationConfig.foe(e.s) :: StationConfig.Foe
+				expect(e.stats.speed).toBe(math.floor(foe.stats.speed * k))
+				expect(e.stats.health).toBe(math.floor(foe.stats.health * (k * LevelRules.might(last))))
+			end
 		end
 	)
 
@@ -123,6 +144,32 @@ describe("LevelRules.enemies", function()
 		end
 		expect(#LevelRules.classic(30)).toBe(LevelRules.TEAM_SIZE)
 	end)
+
+	it(
+		"sends two and three players' teams a bigger, stronger crowd, but less than a wave each (decision 0108)",
+		function()
+			expect(LevelRules.PARTY_COUNT[1]).toBe(1)
+			expect(LevelRules.PARTY_POWER[1]).toBe(1)
+			for _, level in { 5, 25, 45, 73 } do
+				local row = LevelRules.crowd(level)
+				local solo = BattleRules.teamPower(LevelRules.enemies(level), 2)
+				for players = 2, 3 do
+					local wave = LevelRules.enemies(level, players)
+					expect(#wave).toBe(math.floor(row.count * LevelRules.PARTY_COUNT[players] + 0.5))
+					local got = BattleRules.teamPower(wave, 2)
+					local want = LevelRules.power(level) * (row.power or 1) * LevelRules.PARTY_POWER[players]
+					expect(math.abs(got - want) <= want * LevelRules.MATCH).toBeTruthy()
+					expect(got > solo).toBeTruthy()
+					expect(got < solo * players).toBeTruthy() -- easier fought together
+				end
+			end
+			local dragons = 0
+			for _, e in LevelRules.enemies(30, 3) do -- one boss, however many come
+				dragons += if (StationConfig.foe(e.s) :: StationConfig.Foe).kind == "dragon" then 1 else 0
+			end
+			expect(dragons).toBe(1)
+		end
+	)
 
 	it("fights a foe by its role and group, like an animal", function()
 		local bulwark = StationConfig.foe("heavy_knight") :: StationConfig.Foe
