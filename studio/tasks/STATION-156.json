@@ -1,0 +1,55 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-156",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON (2026-11-24): 'animate and implement the eternal tortoise and rhino', 'the lion model is still very fractured can you fix it??? also all the eternal animals should be fairly larger than their counterparts'. The Sunfire War-Tortoise and the Molten Sun Rhino join as Eternal exclusives with their own power attacks and rainbow coats; every Eternal is about 1.3 times its species' largest; the Sahara Guardian is one blended skin again (its cut pieces showed seams), its legs held by AnimalMoves.STIFF.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0117-animal-stations-eternal-rarity-and-robux.md"
+  ],
+  "dependencies": [
+    "STATION-155"
+  ],
+  "files": [
+    "assets/stations/sources/creature_tortoise_sahara_forge.glb",
+    "assets/stations/sources/creature_rhino_sahara_forge.glb",
+    "assets/stations/creature_*_sahara_forge*",
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "tools/blender/stations/moves/magic.py",
+    "tools/blender/stations/moves/export_moves.py",
+    "tools/blender/stations/moves/check_spells.luau",
+    "src/shared/AnimalMoves.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/stations-client/Spells/Tortoise.luau",
+    "src/stations-client/Spells/Rhino.luau",
+    "src/stations-client/Spells/init.luau",
+    "tests/StationRules.spec.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0117-animal-stations-eternal-rarity-and-robux.md",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-156.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "sahara_tortoise and sahara_rhino are exclusive eternal variants whose power earns eternal, in no egg, sold in PRODUCTS, with uploaded models and rainbow coats",
+    "Each plays its species' idle and attack and its own power attack (Sun Barrage, Sunfire Horn)",
+    "Every Eternal is about 1.3 times its species' largest model",
+    "The Sahara Guardian's skin is one piece (no cut seams)"
+  ],
+  "verification": "2026-11-24: lune 814/814; selene 0 warnings; check_spells ALL OK (Sun Barrage at most 403 parts a frame, Sunfire Horn 292). skin_forge --stretch: Guardian 5.1% walk at 27 degrees (game clamps to 16), War-Tortoise 3.6% worst, Sun Rhino 8.4% worst, Mammoth 9.0%. Blender side views: the tortoise's and rhino's species attack and their power keys on the new bodies. Upload run 45510102777 (four models, two coats). Studio, local build 'dev' (no CI stamp): all four Eternals stood beside their species' largest (Sun Lion, Frost Mammoth, Island Tortoise, Lava Rhino) and are clearly larger; the Guardian walks as one piece with no seams.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Checkpoint: prices for the two new ones (suggested 799 Robux each); the developer products for all four are still to be made. Includes STATION-153 (old icons) and STATION-155 (leg clamp) so everything lands in one squash."
+}
