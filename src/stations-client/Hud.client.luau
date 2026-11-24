@@ -10,8 +10,6 @@
 -- profile. Training progress between profiles is a local preview with the same pure rules.
 
 local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local GuiService = game:GetService("GuiService")
@@ -128,11 +126,15 @@ local REFUSED: { [string]: string } = {
 	no_fight = "No fight is on",
 }
 
-local player = Players.LocalPlayer
+local player = game:GetService("Players").LocalPlayer
 local screen = Ui.screen("StationsHud")
 local profile: any = nil
 local tickers: { () -> () } = {} -- refresh the live text of every stat being trained
 local eggTickers: { () -> () } = {} -- and of every egg hatching
+-- Helpers called from one place each are fields of this table, not locals of their own (STATION-134): the
+-- main chunk may hold 200 locals at once (Luau's limit), and every local a later function uses takes one
+-- of them to the end. A new helper that one screen calls belongs here, or inside a `do` block.
+local Hud = {}
 
 -- The root: a frame the size of the screen in design units, scaled up or down to fit it. The
 -- "UiSize" attribute of the player (a Vector2) stands in for the screen: a way to look at the
@@ -183,7 +185,7 @@ end
 
 -- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
 -- over "46"), with the time left to the next level while training ("46  12m"), or MAX.
-local function statText(a: any, stat: string, training: boolean): string
+function Hud.statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
 	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
 	local value = StationRules.stat(a, stat :: any)
@@ -300,7 +302,7 @@ dock.Position = UDim2.fromOffset(-DOCK_W - 20, 160)
 
 local open = false
 local menuButton: TextButton -- below
-local function slide(to: boolean)
+function Hud.slide(to: boolean)
 	open = to
 	TweenService:Create(
 		dock,
@@ -310,7 +312,7 @@ local function slide(to: boolean)
 	menuButton.Text = if open then "◀ Menu" else "Menu ▶"
 end
 menuButton = Style.button(nav, "Menu ▶", function()
-	slide(not open)
+	Hud.slide(not open)
 end, "primary", UDim2.fromOffset(CELL_W + 20, 46))
 menuButton.Position, menuButton.TextSize = UDim2.fromOffset(DOCK_X, 104), 20
 menuButton:SetAttribute("Sound", "tab")
@@ -344,7 +346,7 @@ places.Position, places.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -2
 Style.list(places, 10)
 places.Parent = travel
 Style.text(places, "Go to…", 20, C.text, UDim2.new(1, 0, 0, 26))
-local function travelTo(action: string, ...: any)
+function Hud.travelTo(action: string, ...: any)
 	travel.Visible = false
 	local ok, code = request:InvokeServer(action, ...)
 	if not ok then
@@ -362,7 +364,7 @@ for k, p in
 	}
 do
 	local b = Style.button(places, p[1], function()
-		travelTo(p[3], p[4])
+		Hud.travelTo(p[3], p[4])
 	end, p[2], UDim2.new(1, 0, 0, 44))
 	b.LayoutOrder = k + 1
 end
@@ -417,7 +419,7 @@ local function corner(parent: Instance, text: string, colour: Color3)
 	b.Size = UDim2.fromOffset(0, 22)
 end
 
-local function bestTwo(a: any): string
+function Hud.bestTwo(a: any): string
 	local s = live(a)
 	local order = table.clone(StationConfig.STATS)
 	table.sort(order, function(x, y)
@@ -429,7 +431,7 @@ local function bestTwo(a: any): string
 	)}`
 end
 
-local function animalCard(a: any, order: number)
+function Hud.animalCard(a: any, order: number)
 	local rarity = StationRules.rarity(a)
 	local colour = RARITY_COLOUR[rarity] or C.text
 	local inTeam = table.find(profile.team, a.id) ~= nil
@@ -467,7 +469,7 @@ local function animalCard(a: any, order: number)
 	power.Size = UDim2.fromOffset(0, 22)
 	local name = Style.text(card, nameOf(a), 17, C.text, UDim2.new(1, -16, 0, 22))
 	name.Position, name.TextTruncate = UDim2.fromOffset(8, 138), Enum.TextTruncate.AtEnd
-	local best = Style.text(card, bestTwo(a), 13, C.muted, UDim2.new(1, -16, 0, 18))
+	local best = Style.text(card, Hud.bestTwo(a), 13, C.muted, UDim2.new(1, -16, 0, 18))
 	best.Position = UDim2.fromOffset(8, 160)
 	local band = Style.frame(card, UDim2.new(1, -6, 0, 12), colour)
 	band.Position = UDim2.new(0, 3, 1, -15)
@@ -476,7 +478,7 @@ local function animalCard(a: any, order: number)
 	tag.TextXAlignment = Enum.TextXAlignment.Center
 end
 
-local function animalDetail(a: any)
+function Hud.animalDetail(a: any)
 	local sp = StationConfig.species(a.s)
 	local rarity = StationRules.rarity(a)
 	local colour = RARITY_COLOUR[rarity] or C.text
@@ -599,7 +601,7 @@ local function animalDetail(a: any)
 		button.Position, button.TextSize = UDim2.fromOffset(12, 70), 17
 		if training then
 			table.insert(tickers, function()
-				local left = string.match(statText(live(a), st.stat, true), "  (.+)$")
+				local left = string.match(Hud.statText(live(a), st.stat, true), "  (.+)$")
 				button.Text = if left then `Stop · {left}` else "Stop"
 			end)
 			tickers[#tickers]()
@@ -650,7 +652,7 @@ redraw.animals = function()
 	if chosen then
 		local _, a = StationProgress.find(profile, chosen)
 		if a then
-			animalDetail(a)
+			Hud.animalDetail(a)
 			return
 		end
 		chosen = nil
@@ -677,7 +679,7 @@ redraw.animals = function()
 		return x.id < y.id
 	end)
 	for i, a in shown do
-		animalCard(a, i)
+		Hud.animalCard(a, i)
 	end
 end
 
@@ -691,7 +693,7 @@ end
 local eggsTab = "hatching"
 
 -- A line drawn from the player to the nest of hatching egg `k`, for a few seconds.
-local function wayTo(k: number)
+function Hud.wayTo(k: number)
 	local nest: BasePart? = nil
 	for _, prompt in CollectionService:GetTagged("Egg") do
 		if prompt:GetAttribute("Index") == k and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
@@ -722,7 +724,7 @@ local function wayTo(k: number)
 	end
 end
 
-local function eggCard(k: number, e: any, order: number)
+function Hud.eggCard(k: number, e: any, order: number)
 	local def = StationConfig.egg(e.egg) :: StationConfig.Egg
 	local now = Workspace:GetServerTimeNow()
 	local need = StationProgress.hatchSeconds(profile, def) -- the Brooder shortens it
@@ -760,7 +762,7 @@ local function eggCard(k: number, e: any, order: number)
 					Style.kind(b, "info")
 					b.Activated:Connect(function()
 						show(nil)
-						wayTo(k)
+						Hud.wayTo(k)
 					end)
 				end
 			else
@@ -805,7 +807,7 @@ redraw.eggs = function()
 	Style.chip(eggs.chips, `Brooder: hatching {StationProgress.value(profile, "brooder")}% speed`)
 	local list = if eggsTab == "hatching" then hatching else stored
 	for order, k in list do
-		eggCard(k, profile.eggs[k], order)
+		Hud.eggCard(k, profile.eggs[k], order)
 	end
 	if eggsTab == "hatching" then
 		for slot = #hatching + 1, nests do -- free nests
@@ -892,7 +894,7 @@ local PLOT = { brooder = true, windmill = true, lodge = true, den = true } -- as
 
 -- Which picture shows upgrade `u` at `level`: the look Ranch.luau builds (1 to 3; the first look for a
 -- building not bought yet), or the Training Grounds' level itself (0 to 5).
-local function pictureOf(u: StationConfig.Upgrade, level: number): number
+function Hud.pictureOf(u: StationConfig.Upgrade, level: number): number
 	if u.id == "grounds" then
 		return math.clamp(level + 1, 1, #PICTURES.grounds)
 	end
@@ -920,14 +922,14 @@ local function canBuy(u: StationConfig.Upgrade): boolean
 	return cost ~= nil and profile.coins >= cost.coins and profile.samples >= cost.samples
 end
 
-local function upgradeCard(u: StationConfig.Upgrade, order: number)
+function Hud.upgradeCard(u: StationConfig.Upgrade, order: number)
 	local level = profile.upgrades[u.id] or 0
 	local cost = u.levels[level + 1]
 	local card = Style.card(ranch.body, UDim2.fromOffset(204, 330))
 	card.LayoutOrder = order
 	local pics = PICTURES[u.id]
 	if pics then
-		local now = pictureOf(u, level)
+		local now = Hud.pictureOf(u, level)
 		local view = picture(card, pics[now], UDim2.fromOffset(198, 112))
 		view.Position = UDim2.fromOffset(3, 3)
 		local built = u.id == "grounds" or level >= (if PLOT[u.id] then 1 else 0)
@@ -989,7 +991,7 @@ redraw.ranch = function()
 		end, if any then "!" else nil)
 		if ranchTab == g.id then
 			for i, id in g.upgrades do
-				upgradeCard(StationConfig.upgrade(id) :: StationConfig.Upgrade, i)
+				Hud.upgradeCard(StationConfig.upgrade(id) :: StationConfig.Upgrade, i)
 			end
 		end
 	end
@@ -1216,7 +1218,7 @@ local function giftsReady(): (boolean, boolean, boolean)
 	return week, month, StationRewards.canSpin(profile, Workspace:GetServerTimeNow())
 end
 
-local function boostChips(parent: Instance)
+function Hud.boostChips(parent: Instance)
 	local now = Workspace:GetServerTimeNow()
 	for _, b in { { "hatch", "Hatching" }, { "train", "Training" } } do
 		local left = StationProgress.boostLeft(profile, b[1], now)
@@ -1226,7 +1228,7 @@ local function boostChips(parent: Instance)
 	end
 end
 
-local function weekView()
+function Hud.weekView()
 	local r = profile.rewards
 	local head = Style.text(
 		gifts.body,
@@ -1256,7 +1258,7 @@ local function weekView()
 	end
 end
 
-local function monthView()
+function Hud.monthView()
 	local r = profile.rewards
 	local head = Style.text(
 		gifts.body,
@@ -1300,7 +1302,7 @@ end
 
 -- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer.
 local wheelTurn = 0
-local function wheelView()
+function Hud.wheelView()
 	local SIZE = 380
 	local n = #StationRewards.WHEEL
 	local holder = Instance.new("Frame")
@@ -1454,20 +1456,20 @@ redraw.gifts = function()
 			redraw.gifts()
 		end, if t[3] then "!" else nil)
 	end
-	boostChips(gifts.chips)
+	Hud.boostChips(gifts.chips)
 	Style.chip(gifts.chips, "Resets at midnight UTC")
 	wheelDisc = nil
 	if giftsTab == "week" then
-		weekView()
+		Hud.weekView()
 	elseif giftsTab == "month" then
-		monthView()
+		Hud.monthView()
 	else
-		wheelDisc = wheelView()
+		wheelDisc = Hud.wheelView()
 	end
 end
 
 -- The wheel stops on the prize the server rolled, then says what it was.
-local function landWheel(payload: any)
+function Hud.landWheel(payload: any)
 	local n = #StationRewards.WHEEL
 	local slice = 360 / n
 	local target = -((payload.prize - 1) * slice) + math.random(-12, 12)
@@ -1569,7 +1571,7 @@ local function tradeSection(title: string, order: number, height: number): Frame
 end
 
 -- The full card of the animal tapped in the trade window: version, rarity, coat, power, every stat.
-local function peekCard(a: any)
+function Hud.peekCard(a: any)
 	local card = Style.card(trade.body, UDim2.new(1, -20, 0, 128), RARITY_COLOUR[StationRules.rarity(a)])
 	card.LayoutOrder = 1
 	local title = Style.text(
@@ -1642,7 +1644,7 @@ redraw.trade = function()
 		)
 		Style.chip(trade.chips, `{tradeState.left or 0} trades left today`)
 		if tradePeek then
-			peekCard(tradePeek)
+			Hud.peekCard(tradePeek)
 		end
 		local flash = tradeState.flash
 		local theirs = tradeSection(`{tradeState.with} gives`, 2, 170)
@@ -1847,7 +1849,7 @@ redraw.trade = function()
 		no.Position, no.Size = UDim2.new(0.75, 0, 0, 14), UDim2.new(0.25, -12, 0, 44)
 	end
 	local others = 0
-	for _, other in Players:GetPlayers() do
+	for _, other in game:GetService("Players"):GetPlayers() do
 		if other ~= player then
 			others += 1
 			local card = Style.card(trade.body, UDim2.new(1, -20, 0, 64))
@@ -1993,131 +1995,149 @@ do
 	resultButtons.Parent = act
 end
 -- A big title that fades as a fight begins: the wave, and who is in it.
-local banner = Style.text(root, "", 56, C.text, UDim2.new(1, 0, 0, 70))
--- high and brief (SHANNON, 2026-11-24): it must not hide the enemies walking in
-banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
-banner.TextXAlignment, banner.ZIndex = Enum.TextXAlignment.Center, 6
-local bannerStroke = Instance.new("UIStroke")
-bannerStroke.Thickness, bannerStroke.Transparency = 4, 1
-bannerStroke.Parent = banner
-local bannerSub = Style.text(root, "", 22, C.muted, UDim2.new(1, 0, 0, 30))
-bannerSub.AnchorPoint, bannerSub.Position, bannerSub.TextTransparency =
-	Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
-bannerSub.TextXAlignment, bannerSub.ZIndex = Enum.TextXAlignment.Center, 6
-bannerSub.Position += UDim2.fromOffset(0, 66)
-local announced = 0
-local function announce(n: number)
-	announced += 1
-	local mine = announced
-	local boss = n % LevelRules.BOSS_EVERY == 0
-	local names = {}
-	local counts, order = {}, {}
-	for _, e in LevelRules.enemies(n) do
-		local name = (if e.elite then "Elite " else "") .. (StationConfig.foe(e.s) :: StationConfig.Foe).name
-		if counts[name] == nil then
-			table.insert(order, name)
+local announce: (n: number) -> ()
+do -- the banner's labels are its own (the chunk's 200 locals: see Hud)
+	local banner = Style.text(root, "", 56, C.text, UDim2.new(1, 0, 0, 70))
+	-- high and brief (SHANNON, 2026-11-24): it must not hide the enemies walking in
+	banner.AnchorPoint, banner.Position, banner.TextTransparency = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
+	banner.TextXAlignment, banner.ZIndex = Enum.TextXAlignment.Center, 6
+	local bannerStroke = Instance.new("UIStroke")
+	bannerStroke.Thickness, bannerStroke.Transparency = 4, 1
+	bannerStroke.Parent = banner
+	local bannerSub = Style.text(root, "", 22, C.muted, UDim2.new(1, 0, 0, 30))
+	bannerSub.AnchorPoint, bannerSub.Position, bannerSub.TextTransparency =
+		Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.17), 1
+	bannerSub.TextXAlignment, bannerSub.ZIndex = Enum.TextXAlignment.Center, 6
+	bannerSub.Position += UDim2.fromOffset(0, 66)
+	local announced = 0
+	announce = function(n: number)
+		announced += 1
+		local mine = announced
+		local boss = n % LevelRules.BOSS_EVERY == 0
+		local names = {}
+		local counts, order = {}, {}
+		for _, e in LevelRules.enemies(n) do
+			local name = (if e.elite then "Elite " else "") .. (StationConfig.foe(e.s) :: StationConfig.Foe).name
+			if counts[name] == nil then
+				table.insert(order, name)
+			end
+			counts[name] = (counts[name] or 0) + 1
 		end
-		counts[name] = (counts[name] or 0) + 1
-	end
-	for _, name in order do
-		table.insert(names, if counts[name] > 1 then `{name} x{counts[name]}` else name)
-	end
-	banner.Text = if boss then `BOSS WAVE {n}` else `WAVE {n}`
-	banner.TextColor3 = if boss then C.bad else C.text
-	bannerSub.Text = table.concat(names, "  -  ")
-	banner.TextTransparency, bannerStroke.Transparency, bannerSub.TextTransparency = 0, 0, 0
-	task.delay(1.1, function()
-		if announced ~= mine then
-			return
+		for _, name in order do
+			table.insert(names, if counts[name] > 1 then `{name} x{counts[name]}` else name)
 		end
-		local fade = TweenInfo.new(0.35)
-		TweenService:Create(banner, fade, { TextTransparency = 1 }):Play()
-		TweenService:Create(bannerStroke, fade, { Transparency = 1 }):Play()
-		TweenService:Create(bannerSub, fade, { TextTransparency = 1 }):Play()
-	end)
+		banner.Text = if boss then `BOSS WAVE {n}` else `WAVE {n}`
+		banner.TextColor3 = if boss then C.bad else C.text
+		bannerSub.Text = table.concat(names, "  -  ")
+		banner.TextTransparency, bannerStroke.Transparency, bannerSub.TextTransparency = 0, 0, 0
+		task.delay(1.1, function()
+			if announced ~= mine then
+				return
+			end
+			local fade = TweenInfo.new(0.35)
+			TweenService:Create(banner, fade, { TextTransparency = 1 }):Play()
+			TweenService:Create(bannerStroke, fade, { Transparency = 1 }):Play()
+			TweenService:Create(bannerSub, fade, { TextTransparency = 1 }):Play()
+		end)
+	end
 end
 
 -- What hatched, and how rare it is (decision 0078): its rarity pops up big in its colour, over the
 -- animal's name and, for a rare find, how few eggs give one. A rarer hatch pops bigger and shakes.
-local reveal = Style.text(root, "", 64, C.text, UDim2.new(1, 0, 0, 80))
-reveal.AnchorPoint, reveal.Position, reveal.TextTransparency = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.3), 1
-reveal.TextXAlignment, reveal.ZIndex = Enum.TextXAlignment.Center, 7
-local revealStroke = Instance.new("UIStroke")
-revealStroke.Thickness, revealStroke.Transparency, revealStroke.Color = 5, 1, Color3.fromRGB(20, 16, 30)
-revealStroke.Parent = reveal
-local revealScale = Instance.new("UIScale")
-revealScale.Parent = reveal
-local revealSub = Style.text(root, "", 24, C.text, UDim2.new(1, 0, 0, 60))
-revealSub.AnchorPoint, revealSub.TextTransparency = Vector2.new(0.5, 0), 1
-revealSub.Position = UDim2.new(0.5, 0, 0.3, 46)
-revealSub.TextXAlignment, revealSub.ZIndex = Enum.TextXAlignment.Center, 7
-local revealSubStroke = Instance.new("UIStroke")
-revealSubStroke.Thickness, revealSubStroke.Transparency, revealSubStroke.Color = 3, 1, Color3.fromRGB(20, 16, 30)
-revealSubStroke.Parent = revealSub
-local revealed = 0
-local BIG: { [string]: number } =
-	{ common = 0, uncommon = 0, rare = 1, epic = 1, legendary = 2, mythic = 3, divine = 3, celestial = 4, secret = 5 }
-local function showRarity(a: any)
-	revealed += 1
-	local mine = revealed
-	local rarity = StationRules.rarity(a)
-	local big = BIG[rarity] or 0
-	reveal.Text = string.upper(rarity) .. string.rep("!", big)
-	reveal.TextColor3 = RARITY_COLOUR[rarity] or C.text
-	local lines = { StationTrade.nameOf(a) }
-	local def = StationConfig.egg(a.egg or "")
-	if a.v and def then
-		for _, drop in def.rare do
-			if drop.v == a.v then
-				table.insert(lines, `Only 1 in {Format.commas(StationRules.PPM // drop.ppm)} {def.name}s hatches one`)
+local showRarity: (a: any) -> ()
+do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
+	local reveal = Style.text(root, "", 64, C.text, UDim2.new(1, 0, 0, 80))
+	reveal.AnchorPoint, reveal.Position, reveal.TextTransparency = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.3), 1
+	reveal.TextXAlignment, reveal.ZIndex = Enum.TextXAlignment.Center, 7
+	local revealStroke = Instance.new("UIStroke")
+	revealStroke.Thickness, revealStroke.Transparency, revealStroke.Color = 5, 1, Color3.fromRGB(20, 16, 30)
+	revealStroke.Parent = reveal
+	local revealScale = Instance.new("UIScale")
+	revealScale.Parent = reveal
+	local revealSub = Style.text(root, "", 24, C.text, UDim2.new(1, 0, 0, 60))
+	revealSub.AnchorPoint, revealSub.TextTransparency = Vector2.new(0.5, 0), 1
+	revealSub.Position = UDim2.new(0.5, 0, 0.3, 46)
+	revealSub.TextXAlignment, revealSub.ZIndex = Enum.TextXAlignment.Center, 7
+	local revealSubStroke = Instance.new("UIStroke")
+	revealSubStroke.Thickness, revealSubStroke.Transparency, revealSubStroke.Color = 3, 1, Color3.fromRGB(20, 16, 30)
+	revealSubStroke.Parent = revealSub
+	local revealed = 0
+	local BIG: { [string]: number } = {
+		common = 0,
+		uncommon = 0,
+		rare = 1,
+		epic = 1,
+		legendary = 2,
+		mythic = 3,
+		divine = 3,
+		celestial = 4,
+		secret = 5,
+	}
+	showRarity = function(a: any)
+		revealed += 1
+		local mine = revealed
+		local rarity = StationRules.rarity(a)
+		local big = BIG[rarity] or 0
+		reveal.Text = string.upper(rarity) .. string.rep("!", big)
+		reveal.TextColor3 = RARITY_COLOUR[rarity] or C.text
+		local lines = { StationTrade.nameOf(a) }
+		local def = StationConfig.egg(a.egg or "")
+		if a.v and def then
+			for _, drop in def.rare do
+				if drop.v == a.v then
+					table.insert(
+						lines,
+						`Only 1 in {Format.commas(StationRules.PPM // drop.ppm)} {def.name}s hatches one`
+					)
+				end
 			end
 		end
-	end
-	if StationRules.coatOf(a) then
-		table.insert(lines, `A {string.lower((StationRules.coatOf(a) :: any).name)} coat!`)
-	end
-	revealSub.Text = table.concat(lines, "\n")
-	require(script.Parent:WaitForChild("RevealCard")).show( -- the animal's picture under the words
-		screen,
-		StationRules.assetOf(a.s, a.v),
-		a.rainbow,
-		RARITY_COLOUR[rarity] or C.text,
-		big,
-		2.6 + big * 0.6
-	)
-	revealSub.TextColor3 = if StationRules.coatOf(a) then Color3.fromRGB(255, 225, 100) else C.text
-	reveal.TextTransparency, revealStroke.Transparency = 0, 0
-	revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
-	revealScale.Scale, reveal.Rotation = 0.2, 0
-	local pop = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-	TweenService:Create(revealScale, pop, { Scale = 1 + big * 0.12 }):Play()
-	task.delay(0.35, function()
-		if revealed ~= mine then
-			return
+		if StationRules.coatOf(a) then
+			table.insert(lines, `A {string.lower((StationRules.coatOf(a) :: any).name)} coat!`)
 		end
-		TweenService:Create(revealSub, TweenInfo.new(0.3), { TextTransparency = 0 }):Play()
-		TweenService:Create(revealSubStroke, TweenInfo.new(0.3), { Transparency = 0 }):Play()
-		for i = 1, big * 6 do -- a rarer hatch shakes
+		revealSub.Text = table.concat(lines, "\n")
+		require(script.Parent:WaitForChild("RevealCard")).show( -- the animal's picture under the words
+			screen,
+			StationRules.assetOf(a.s, a.v),
+			a.rainbow,
+			RARITY_COLOUR[rarity] or C.text,
+			big,
+			2.6 + big * 0.6
+		)
+		revealSub.TextColor3 = if StationRules.coatOf(a) then Color3.fromRGB(255, 225, 100) else C.text
+		reveal.TextTransparency, revealStroke.Transparency = 0, 0
+		revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
+		revealScale.Scale, reveal.Rotation = 0.2, 0
+		local pop = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+		TweenService:Create(revealScale, pop, { Scale = 1 + big * 0.12 }):Play()
+		task.delay(0.35, function()
 			if revealed ~= mine then
 				return
 			end
-			reveal.Rotation = (if i % 2 == 0 then 1 else -1) * big * 1.5 * (1 - i / (big * 6 + 1))
-			task.wait(0.04)
-		end
-		reveal.Rotation = 0
-	end)
-	task.delay(2.6 + big * 0.6, function()
-		if revealed ~= mine then
-			return
-		end
-		local fade = TweenInfo.new(0.7)
-		for _, x in { reveal, revealSub } do
-			TweenService:Create(x, fade, { TextTransparency = 1 }):Play()
-		end
-		for _, x in { revealStroke, revealSubStroke } do
-			TweenService:Create(x, fade, { Transparency = 1 }):Play()
-		end
-	end)
+			TweenService:Create(revealSub, TweenInfo.new(0.3), { TextTransparency = 0 }):Play()
+			TweenService:Create(revealSubStroke, TweenInfo.new(0.3), { Transparency = 0 }):Play()
+			for i = 1, big * 6 do -- a rarer hatch shakes
+				if revealed ~= mine then
+					return
+				end
+				reveal.Rotation = (if i % 2 == 0 then 1 else -1) * big * 1.5 * (1 - i / (big * 6 + 1))
+				task.wait(0.04)
+			end
+			reveal.Rotation = 0
+		end)
+		task.delay(2.6 + big * 0.6, function()
+			if revealed ~= mine then
+				return
+			end
+			local fade = TweenInfo.new(0.7)
+			for _, x in { reveal, revealSub } do
+				TweenService:Create(x, fade, { TextTransparency = 1 }):Play()
+			end
+			for _, x in { revealStroke, revealSubStroke } do
+				TweenService:Create(x, fade, { Transparency = 1 }):Play()
+			end
+		end)
+	end
 end
 
 local fight: (n: number) -> boolean
@@ -3847,7 +3867,7 @@ end
 
 -- The prompts in the world: the Ranch House door, the egg storage and a finished egg (the owner
 -- only), the wave gate and the vendors' stalls.
-ProximityPromptService.PromptTriggered:Connect(function(prompt, who)
+game:GetService("ProximityPromptService").PromptTriggered:Connect(function(prompt, who)
 	if who ~= player then
 		return
 	end
@@ -4116,7 +4136,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		Style.sound("claim")
 		Style.toast(screen, `You got: {rewardWords(payload.items)}`, 4, "good", (iconsOf(payload.items)))
 	elseif kind == "spun" then
-		landWheel(payload)
+		Hud.landWheel(payload)
 	elseif kind == "collected" then
 		Style.toast(
 			screen,
