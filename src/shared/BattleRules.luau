@@ -289,6 +289,9 @@ end
 -- multiplied in after the group bonuses. The fourth result is side 1's HP at the end, as shares by slot.
 -- more forgiving, with a fail (SHANNON, 2026-11-24): was 4 s, 0.25 s and 0.55 s
 BattleRules.AUTO_FIRE = 6
+-- A full meter left AUTO_FIRE seconds fails like a messed-up press (SHANNON, 2026-11-24): a plain hit marked
+-- `fail`. False makes it fire a plain power attack instead (the run simulations' presser, decision 0110).
+BattleRules.EXPIRE_FAILS = true
 BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.5, 0.35, 0.8
 BattleRules.PERFECT = 1.5
 BattleRules.COMBO_SECONDS, BattleRules.COMBO_PCT, BattleRules.COMBO_MAX = 3, 25, 4
@@ -805,7 +808,11 @@ function BattleRules.battle(
 			end
 			full[auto] = nil
 			auto.energy -= BattleRules.POWER_COST
-			strike(auto, BattleRules.POWER)
+			if BattleRules.EXPIRE_FAILS then
+				strike(auto, 1, nil, false, nil, true)
+			else
+				strike(auto, BattleRules.POWER)
+			end
 			continue
 		end
 		local me = f :: Fighter

@@ -29,7 +29,7 @@ LevelRules.SAMPLE_EVERY = 5 -- a first clear drops a sample per this many waves 
 -- STEEP_GROWTH on the first steep wave and by more on every wave after (twice the exponent STEEP_BEND / 2
 -- waves on), so however fast a run's boons stack (WaveRuns), the waves outgrow them and end in a wall.
 LevelRules.LAST = 300
-LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.014, 200 -- retuned for the small boons (0110)
+LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.016, 200 -- retuned for the small boons (0110)
 LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
 
 -- What every stat of a foe is multiplied by at `level`.
@@ -253,12 +253,12 @@ function LevelRules.stars(won: boolean, knockedOut: boolean, missed: number): nu
 	return 1 + (if knockedOut then 0 else 1) + (if missed == 0 then 1 else 0)
 end
 
--- How many of the team's power attacks in `log` fired themselves (BattleRules.AUTO_FIRE) instead of being
--- tapped.
+-- How many of the team's power attacks in `log` were left to run out (BattleRules.AUTO_FIRE) instead of
+-- being tapped.
 function LevelRules.missed(log: { BattleRules.Hit }): number
 	local n = 0
 	for _, e in log do
-		if e.side == 1 and e.power and not e.tap then
+		if e.side == 1 and (e.power or e.fail) and not e.tap then
 			n += 1
 		end
 	end

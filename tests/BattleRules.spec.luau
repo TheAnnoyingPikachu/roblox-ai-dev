@@ -460,19 +460,20 @@ describe("BattleRules.battle taps (decision 0092)", function()
 		return nil
 	end
 
-	it("holds a full meter and fires it itself AUTO_FIRE seconds later, as an extra strike", function()
+	it("holds a full meter and, left AUTO_FIRE seconds, fails it: a plain hit marked fail", function()
 		local log = {}
 		BattleRules.battle(one, two, log, {})
 		local at = filled(log, 1) :: number
 		expect(at == nil).toBe(false)
 		local fired: BattleRules.Hit? = nil
 		for _, e in log do
-			if e.side == 1 and e.slot == 1 and e.power then
+			if e.side == 1 and e.slot == 1 and e.fail then
 				fired = fired or e
 			end
 			expect(e.tap).toBeNil()
 		end
 		expect((fired :: BattleRules.Hit).t).toBe(at + BattleRules.AUTO_FIRE)
+		expect((fired :: BattleRules.Hit).power).toBe(false)
 		expect((fired :: BattleRules.Hit).energy < 1).toBeTruthy()
 	end)
 

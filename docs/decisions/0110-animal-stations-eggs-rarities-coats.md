@@ -88,9 +88,11 @@ One coat at most per animal, rolled after the animal; an egg's signature coat is
   Quick Paws 3% faster (was 12), each stack multiplying. Charged Up and Second Wind are unchanged.
 - Rare boons (Revive, Lucky Find, Gold Rush) stand in `RARE_PCT` 15 offers of 100, at most one an offer:
   about 1.5 a stage of 10 waves (before: in most offers).
-- The steep waves after 100 are retuned for the small boons: `STEEP_GROWTH` 1.014 (was 1.08; 1.015 before the presses' AUTO_FIRE went from 4 to 6 s); `STEEP_BEND`
+- The steep waves after 100 are retuned for the small boons: `STEEP_GROWTH` 1.016 (was 1.08); `STEEP_BEND`
   200 as before. The enemies walk out of the gate at 18 studs a second (was 13).
-- Simulation at 1.014 with AUTO_FIRE 6 (4 clicks a second, no presses: a player's Perfects only add): the best
+- Simulation at 1.016 (4 clicks a second, a Good press 1.5 s after each meter fills: `EXPIRE_FAILS` off,
+  `AUTO_FIRE` 1.5 in the sim, as a run out press now fails): the best team with good picks clears 300 or 299;
+  random picks 169; at 1.017 good picks stop at 269 to 279. Before the fail (no presses, AUTO_FIRE 6, 1.014): the best
   team with good picks reaches 289, 299 or 299 (three seeds). At 1.015 and AUTO_FIRE 4 it cleared 279, 289 or 300 (three
   seeds); with random picks 169 or 189. Mythics at level 40 now stop at 79 to 89 (before 129 to 149): the
   middle waves are harder too, as boons no longer carry a team. Three players not re-simulated.

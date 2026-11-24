@@ -2827,10 +2827,8 @@ local function plate(slot: number, label: string, press: string): Plate
 		Press.tap(slot)
 	end, "ghost", UDim2.fromOffset(224, 60))
 	b.LayoutOrder = slot
-	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -60, 0, 22))
+	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -24, 0, 22))
 	name.Position, name.TextTruncate = UDim2.fromOffset(12, 6), Enum.TextTruncate.AtEnd
-	local key = Style.chip(b, tostring(slot))
-	key.AnchorPoint, key.Position = Vector2.new(1, 0), UDim2.new(1, -8, 0, 6)
 	local bar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 18), C.accent)
 	bar.Position = UDim2.fromOffset(12, 33)
 	local mana = Style.text(bar, "", 13, C.ink, UDim2.fromScale(1, 1))
@@ -3043,6 +3041,12 @@ do
 		end
 		p.card = card
 		Press.pops.attach(card, p.model, p.press, k)
+		task.delay(BattleRules.AUTO_FIRE - 0.1, function() -- left too long: it fails (the server's AUTO_FIRE)
+			if p.card == card and not p.sent then
+				p.sent, p.card = true, nil
+				Press.pops.fired(card, false, true)
+			end
+		end)
 	end
 
 	local function pressPlate(slot: number)

@@ -69,6 +69,10 @@ Date: 2026-11-24. Task STATION-128.
 - A meter whose tap is laid but not landed shows empty in the replay (`WaveShow`), so no second card pops for
   the same power; a full meter already holds until its press is done, failed or fired itself.
 
+- A card left until `AUTO_FIRE` (6 s) fails too (SHANNON, 2026-11-24: "if you leave the QTE for too long that
+  also fails it just like missing it"): `EXPIRE_FAILS`, a plain hit marked `fail`, MISSED!; the HUD shakes the
+  card red at that time. The team list's 1 to 4 badges are gone (the number keys no longer press).
+
 ## Evidence
 
 - `BattleRules.spec`: each class's press, four classes four presses. 786 specs pass.
