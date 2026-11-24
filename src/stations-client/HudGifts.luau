@@ -18,7 +18,6 @@ local request = remotes:WaitForChild("Request") :: RemoteFunction
 local App: any = require(script.Parent:WaitForChild("HudApp"))
 local S = App.S
 local C = App.C
-local RAINBOW = App.RAINBOW
 local REFUSED = App.REFUSED
 local screen = App.screen
 local Hud = App.Hud
@@ -83,13 +82,15 @@ local ICON = {
 	divine = "rbxassetid://78850863936664",
 	celestial = "rbxassetid://81845873108455",
 	crown = "rbxassetid://87584928608960",
-	-- the older drawn set (decision 0100)
-	star = "rbxassetid://95586444952247",
-	hatch = "rbxassetid://111148238651019",
-	train = "rbxassetid://92388913223446",
-	rainbow = "rbxassetid://90795860429478",
-	spin = "rbxassetid://112243151972690",
-	gift = "rbxassetid://91667720786022",
+	-- the second set (STATION-148)
+	star = "rbxassetid://106093731909487",
+	hatch = "rbxassetid://91196405828135",
+	train = "rbxassetid://117835128066284",
+	rainbow = "rbxassetid://77969131949083",
+	spin = "rbxassetid://89760743626935",
+	gift = "rbxassetid://99989753342977",
+	chest = "rbxassetid://132112302967639",
+	pointer = "rbxassetid://81448409287996",
 }
 
 -- A reward's main picture and the small one for what comes with it.
@@ -273,6 +274,7 @@ end
 -- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer. One free spin
 -- a day, beside what it can give and what is running now.
 local wheelTurn = 0
+local WHEEL = "rbxassetid://103419958133693" -- the wheel's face: eight slices, the first straight up
 function Hud.wheelView()
 	local SIZE = 196
 	local n = #StationRewards.WHEEL
@@ -282,52 +284,27 @@ function Hud.wheelView()
 	stage.BackgroundTransparency = 1
 	stage.Position, stage.Size = UDim2.fromOffset(18, 26), UDim2.fromOffset(SIZE, SIZE)
 	stage.Parent = card
-	local disc = Instance.new("Frame")
+	-- the wheel's face and pointer are the ForgeGUI art (STATION-148); the prizes sit on its slices and turn with it
+	local disc = Instance.new("ImageLabel")
 	disc.Name = "Wheel"
+	disc.BackgroundTransparency, disc.Image = 1, WHEEL
 	disc.Size = UDim2.fromOffset(SIZE, SIZE)
-	disc.BackgroundColor3 = C.sand
 	disc.Rotation = wheelTurn % 360
-	Style.round(disc, SIZE / 2)
-	Style.stroke(disc, C.ink, 4)
 	disc.Parent = stage
-	local colours = {
-		C.cardHi,
-		C.accent,
-		Color3.fromRGB(201, 238, 176),
-		Color3.fromRGB(166, 216, 245),
-		C.info,
-		Color3.fromRGB(214, 196, 247), -- lilac, so the green samples stand out
-		Color3.fromRGB(247, 163, 189),
-		C.gold,
-	}
 	for k, slice in StationRewards.WHEEL do
 		local a = math.rad((k - 1) * 360 / n - 90)
-		local bubble = Instance.new("Frame")
-		bubble.AnchorPoint = Vector2.new(0.5, 0.5)
-		bubble.Position = UDim2.new(0.5, math.cos(a) * SIZE * 0.35, 0.5, math.sin(a) * SIZE * 0.35)
-		bubble.Size = UDim2.fromOffset(SIZE * 0.26, SIZE * 0.26)
-		bubble.BackgroundColor3 = colours[k]
-		bubble.Rotation = (k - 1) * 360 / n
 		local items = StationRewards.resolve(S.profile, slice.prize)
-		local icon = rewardIcon(bubble, items, math.floor(SIZE * 0.17), slice.prize.egg == "best")
-		icon.AnchorPoint, icon.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
-		Style.round(bubble, SIZE * 0.13)
-		Style.stroke(bubble, C.ink, 2)
-		if k == n then
-			local g = Instance.new("UIGradient")
-			g.Color = RAINBOW
-			g.Parent = bubble
-		end
-		bubble.Parent = disc
+		local icon = rewardIcon(disc, items, math.floor(SIZE * 0.2), slice.prize.egg == "best")
+		icon.AnchorPoint = Vector2.new(0.5, 0.5)
+		icon.Position = UDim2.new(0.5, math.cos(a) * SIZE * 0.3, 0.5, math.sin(a) * SIZE * 0.3)
+		icon.Rotation = (k - 1) * 360 / n
 	end
-	local hub = Style.frame(disc, UDim2.fromOffset(SIZE * 0.2, SIZE * 0.2), C.accent)
-	hub.AnchorPoint, hub.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
-	Style.round(hub, SIZE * 0.1)
-	Style.stroke(hub, C.ink, 4)
-	local pointer = Style.text(stage, "▼", 30, C.bad, UDim2.fromOffset(30, 30))
-	pointer.AnchorPoint, pointer.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, -18)
-	pointer.TextXAlignment, pointer.ZIndex = Enum.TextXAlignment.Center, 5
-	Style.outline(pointer)
+	local pointer = Instance.new("ImageLabel")
+	pointer.BackgroundTransparency, pointer.Image = 1, ICON.pointer
+	pointer.AnchorPoint, pointer.Position, pointer.Size =
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, -34), UDim2.fromOffset(38, 66)
+	pointer.ScaleType, pointer.ZIndex = Enum.ScaleType.Fit, 5
+	pointer.Parent = stage
 
 	local side = Instance.new("Frame")
 	side.BackgroundTransparency = 1
@@ -438,6 +415,7 @@ function Hud.landWheel(payload: any)
 end
 
 App.rewardWords = rewardWords
+App.ICON = ICON
 App.iconsOf = iconsOf
 App.giftsReady = giftsReady
 

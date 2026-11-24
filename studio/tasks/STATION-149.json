@@ -3,39 +3,40 @@
   "task_id": "STATION-149",
   "owner": "A01",
   "verifier": "CI",
-  "task_type": "implementation",
-  "objective": "SHANNON (2026-11-24): 'this rarity will be obtain via robux and beta rewards', 'yes we're adding it we're monetising the game'. The eternal pair sold as Roblox developer products from the Eggs window's shelf, granted safely into the save, and the Sahara Guardian given once to every beta save (decision 0117).",
+  "task_type": "asset",
+  "objective": "The twelve egg models as the HUD icons draw them (SHANNON, 2026-11-24: 'those eggs are good, in fact make those eggs in blender and make them the 3D eggs you see'): a smooth shell shaded softly, each egg's own marks, and none of the scenery the icons leave out.",
   "inputs": [
     "src/stations/CLAUDE.md",
-    "docs/decisions/0110-animal-stations-eggs-rarities-coats.md"
+    "docs/assets/register.md"
   ],
   "dependencies": [
-    "STATION-148"
+    "STATION-146"
   ],
   "files": [
-    "src/shared/StationConfig.luau",
-    "src/shared/StationProgress.luau",
-    "src/kit-roblox/modules/Saves.luau",
-    "src/stations/StationsServer.server.luau",
-    "src/stations-client/Hud.client.luau",
-    "src/stations-client/HudEggs.luau",
-    "tests/StationProgress.spec.luau",
-    "src/stations/CLAUDE.md",
-    "docs/decisions/0117-animal-stations-eternal-rarity-and-robux.md",
-    "studio/tasks/STATION-149.json"
+    "tools/blender/stations/assets/eggs.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/egg_*.fbx",
+    "assets/stations/egg_*.png",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-149.json",
+    "tests/StationAssets.spec.luau"
   ],
   "tests": [
-    "StationProgress.spec.luau"
+    "StationAssets.spec.luau"
   ],
   "acceptance_criteria": [
-    "A receipt is granted once: StationProgress.grant is idempotent by PurchaseId and keeps the newest MAX_RECEIPTS (a spec checks)",
-    "ProcessReceipt returns PurchaseGranted only after the save is written; a full save, an unknown product, an absent player or a failed write return NotProcessedYet",
-    "The Eggs window's shelf shows both eternal animals with their Robux price, or 'Coming soon' while a product id is nil; a card prompts the purchase",
-    "While StationConfig.BETA_GIFT is set, every save gets the Sahara Guardian once at load (Profile.beta); a spec checks it is once"
+    "Each egg matches its HUD icon: the same shell colour and marks, nothing standing round it",
+    "Each is still one painted piece (and one Neon piece where it glows), standing on z = 0, under the triangle budget",
+    "The models are uploaded by the Upload Blender assets workflow and StationAssets.luau is the run's output"
   ],
-  "verification": "2026-11-24, local: lune run tests/run 814/814, with three new specs in StationProgress.spec (a receipt granted once at BASE_MAX in its coat and the Titan to its slot; full and unknown refused, receipts kept through a save and trimmed to MAX_RECEIPTS; the beta reward once). selene 0 warnings. Studio, local build 'dev' (no CI stamp): both shelf cards show 'Coming soon' (product ids are nil) and no client error in the output. Not checked: a real purchase (no developer product exists yet), ProcessReceipt and Saves.flush against real DataStores (Studio's saves are offline), the beta reward at a real join (it needs an online save).",
-  "output_artifacts": [],
+  "verification": "Built with Blender 5.2 (build.py, full bake), presentation cards (--beauty) compared side by side with the icons. Triangles: 428 (mythic) to 8,088 (crown). Uploaded by the Upload Blender assets workflow, run 45496843749 (the twelve eggs only); its egg entries copied into uploaded.json by name and StationAssets.luau written again with tools/blender/write-assets-module.mjs.",
+  "output_artifacts": [
+    "assets/stations/egg_*.fbx",
+    "assets/stations/egg_*.png"
+  ],
   "risk_level": "medium",
   "status": "in_progress",
-  "notes": "Checkpoint: the developer products are not made; SHANNON makes them and their prices, then their ids go into StationConfig.PRODUCTS. Kit change: Saves.flush (waits for a running write, then writes), used only by ProcessReceipt."
+  "notes": "No ink outline on the models: a shell of flipped faces would darken the baked shading (the bake's occlusion sees every object). The Wild Egg lost its glowing mushrooms, so it has no Neon piece now. The Mythic Egg keeps its cut facets, as its icon does."
 }

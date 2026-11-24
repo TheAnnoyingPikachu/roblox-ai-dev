@@ -391,7 +391,7 @@ local giftsDot, giftsButton = dockButton("Gifts", "gift", Enum.KeyCode.Four, fun
 	show("gifts")
 end, "gifts")
 giftsButton.BackgroundColor3 = Color3.fromRGB(255, 233, 168)
-local _, travelButton = dockButton("Travel", "flag", Enum.KeyCode.Five, function()
+local _, travelButton = dockButton("Travel", "travel", Enum.KeyCode.Five, function()
 	travel.Visible = not travel.Visible
 end)
 travelButton.BackgroundColor3 = Color3.fromRGB(207, 232, 251)
@@ -433,7 +433,7 @@ do
 	battle.AnchorPoint, battle.Position = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -20)
 	Style.radius(battle, 20)
 	local crest = Instance.new("ImageLabel") -- the shield with a paw (assets/stations/icons/shield.png)
-	crest.BackgroundTransparency, crest.Image = 1, "rbxassetid://97488070836179"
+	crest.BackgroundTransparency, crest.Image = 1, Style.ICONS.shield
 	crest.Position, crest.Size, crest.ZIndex = UDim2.fromOffset(14, 12), UDim2.fromOffset(48, 48), 2
 	crest.Parent = battle
 	local battleTitle = Style.text(battle, "To battle", 28, Color3.fromRGB(35, 52, 15), UDim2.fromOffset(170, 30))
@@ -482,7 +482,7 @@ do
 	local goal = Style.pill(nav, UDim2.fromOffset(456, 58), 16)
 	goal.Name = "Goal"
 	goal.AnchorPoint, goal.Position, goal.Visible = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 12), false
-	Style.icon(goal, "flag", 34).Position = UDim2.fromOffset(12, 12)
+	Style.icon(goal, "goal", 34).Position = UDim2.fromOffset(12, 12)
 	local goalText = Style.text(goal, "", 17, C.text, UDim2.new(1, -212, 0, 20))
 	goalText.Position, goalText.TextWrapped, goalText.TextTruncate =
 		UDim2.fromOffset(54, 8), false, Enum.TextTruncate.AtEnd

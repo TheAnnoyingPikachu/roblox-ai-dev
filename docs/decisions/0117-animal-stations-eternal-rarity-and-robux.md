@@ -4,7 +4,7 @@ Status: accepted (SHANNON, 2026-11-24: "now add them into the game. make them th
 make a new rarity for them, dont put them into eggs but put them into everything else and aldo give them coats
 and whatnot", then "this rarity will be obtain via robux and beta rewards", then "yes we're adding it we're
 monetising the game"). The numbers, the tier's name and colour, and who gets the beta reward are Claude's
-draft, for the checkpoint. Tasks STATION-148 and STATION-149. Date: 2026-11-24.
+draft, for the checkpoint. Tasks STATION-151 and STATION-152. Date: 2026-11-24.
 
 ## Context
 

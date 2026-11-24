@@ -3,48 +3,32 @@
   "task_id": "STATION-148",
   "owner": "A01",
   "verifier": "CI",
-  "task_type": "implementation",
-  "objective": "SHANNON (2026-11-24): 'add them into the game. make them the absolute highest rarity infact make a new rarity for them, dont put them into eggs but put them into everything else and aldo give them coats and whatnot'. A new top rarity, Eternal; the Sahara Guardian and the Sahara Mammoth as exclusive variants of the Lion and the Elephant (decision 0117), in every list, menu and rule an animal is in, never in an egg, with rainbow coats.",
+  "task_type": "asset",
+  "objective": "The second set of HUD icons from ForgeGUI and a new daily wheel (SHANNON, 2026-11-24: 'start with the next icons and the new wheel and such'): the gold star, the hatching and training boosts, the rainbow jackpot, the spin, the gift and a star chest in the look of STATION-146, and the wheel's face and pointer as art.",
   "inputs": [
-    "src/stations/CLAUDE.md",
-    "docs/decisions/0110-animal-stations-eggs-rarities-coats.md"
+    "docs/assets/register.md"
   ],
   "dependencies": [
-    "STATION-147"
+    "STATION-146"
   ],
   "files": [
-    "src/shared/StationConfig.luau",
-    "src/shared/StationProgress.luau",
-    "src/shared/StationTrade.luau",
-    "src/shared/StationAssets.luau",
-    "src/stations-client/Style.luau",
-    "src/stations-client/Hud.client.luau",
-    "src/stations/StationsServer.server.luau",
-    "src/stations-client/HudWaves.luau",
-    "src/stations-client/HudAnimals.luau",
-    "tests/StationRules.spec.luau",
-    "assets/stations/creature_lion_sahara_forge_rainbow.png",
-    "assets/stations/creature_elephant_sahara_forge_rainbow.png",
-    "tools/blender/stations/uploaded.json",
-    "src/stations/CLAUDE.md",
-    "docs/decisions/0117-animal-stations-eternal-rarity-and-robux.md",
+    "src/stations-client/HudGifts.luau",
+    "src/stations-client/HudWaveMenu.luau",
+    "assets/stations/icons/hud_*.png",
     "docs/assets/register.md",
     "studio/tasks/STATION-148.json"
   ],
-  "tests": [
-    "StationRules.spec.luau",
-    "StationAssets.spec.luau",
-    "StationProgress.spec.luau"
-  ],
+  "tests": [],
   "acceptance_criteria": [
-    "'eternal' is the last of StationConfig.RARITIES, its floor above every other, held by the two exclusive variants only (a spec checks)",
-    "The Sahara Guardian (sahara_lion) and the Sahara Mammoth (sahara_elephant, a Titan) are variants whose power earns eternal; no egg lists them; every animal still has two egg variants",
-    "They sort, reveal, trade, release, fuse and show in the Hall of Fame and the Animals menu's Seen tab like any animal",
-    "Both have uploaded rainbow coats (a spec checks every animal and variant has one)"
+    "No reward shows an old drawn icon: the star, both boosts, the rainbow jackpot, the spin and the gift are the new set",
+    "The daily wheel is the art: its face turns with the prizes on its slices and lands under the pointer as before",
+    "The Waves window's star chest button shows the chest"
   ],
-  "verification": "2026-11-24, local: lune run tests/run 814/814 (the new spec 'keeps the eternal rarity for the exclusive variants', and 'lets an egg hatch every species and every variant' now expecting no egg for the exclusive pair); selene 0 warnings; stylua --check clean as CI reads it. Rainbow coats painted by rainbow.py (cards looked at) and uploaded by upload-assets run 45499381991 (decals 81889613634043 lion, 113668612063735 mammoth). Studio, local build 'dev' (no CI stamp): the Eggs window's shelf shows the Eternal animals row in the eternal colour. Not checked in Studio: the Hall of Fame, the Seen tab and a reveal with an owned eternal animal (Studio saves are offline, so none could be granted).",
-  "output_artifacts": [],
-  "risk_level": "medium",
+  "verification": "ForgeGUI generation_image type mixed, 3 variations each, the STATION-146 coin as the style reference: star d640eed0 (A), hatch boost b584b816 (A), train boost e082fe18 (A), rainbow 821781c4 (B), spin 37a0e3f5 (A), gift d8a53862 (A), chest 2aa33dd8 (A), wheel face c19c6096 (A, 512 px), pointer 8d241d74 (C). Uploaded from Studio. Seen in Studio: the month's prizes with the new boosts and rainbow, the wheel with the prizes on its slices, a spin turning it. selene 0 warnings.",
+  "output_artifacts": [
+    "assets/stations/icons/hud_*.png"
+  ],
+  "risk_level": "low",
   "status": "in_progress",
-  "notes": "Checkpoint: see decision 0117 'To confirm at the checkpoint'."
+  "notes": "Picks made by Claude to keep going (SHANNON: 'go go go'); the sheet of all 27 is in the session for a swap. The boosts show a lightning bolt instead of the old 'x2' (icons carry no text)."
 }
