@@ -906,8 +906,21 @@ end
 
 -- A picture from the studio's own outlined set (Shared.GardenIcons; docs/assets/register.md, GARDEN-055):
 -- paw, egg, home, gift, flag, lock, swap, check, heart, cog, chart, calendar, book.
+-- The HUD's own icons (STATION-150, ForgeGUI in the look of the tokens); a name not here is the older outlined set.
+Style.ICONS = {
+	paw = "rbxassetid://98374591282896",
+	egg = "rbxassetid://102366615270041",
+	home = "rbxassetid://136239560486071",
+	gift = "rbxassetid://127647100622085",
+	travel = "rbxassetid://117405312335933",
+	swap = "rbxassetid://137610859811797",
+	cog = "rbxassetid://126141937467315",
+	goal = "rbxassetid://106618996752721",
+	check = "rbxassetid://124610235341383",
+	shield = "rbxassetid://93338498652139",
+} :: { [string]: string }
 function Style.image(name: string): string
-	return `rbxthumb://type=Asset&id={GardenIcons[name] or 0}&w=150&h=150`
+	return Style.ICONS[name] or `rbxthumb://type=Asset&id={GardenIcons[name] or 0}&w=150&h=150`
 end
 
 function Style.icon(parent: Instance, name: string, size: number): ImageLabel

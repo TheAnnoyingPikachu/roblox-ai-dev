@@ -230,7 +230,7 @@ do
 	local shieldEdge = Style.stroke(shieldButton, N.edge, 2)
 	shieldButton.Parent = shieldRing
 	local shieldIcon = Instance.new("ImageLabel")
-	shieldIcon.BackgroundTransparency, shieldIcon.Image = 1, "rbxassetid://97488070836179" -- assets/stations/icons/shield.png
+	shieldIcon.BackgroundTransparency, shieldIcon.Image = 1, Style.ICONS.shield -- STATION-150
 	shieldIcon.AnchorPoint, shieldIcon.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
 	shieldIcon.Size, shieldIcon.ZIndex = UDim2.fromScale(0.66, 0.66), 3
 	shieldIcon.Parent = shieldButton

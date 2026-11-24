@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-150",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "asset",
+  "objective": "The rest of the HUD's old icons in the ForgeGUI look (SHANNON, 2026-11-24: 'can you do concepts for new icons for animals ranch eggs gifts and travel?' ... 'as in all those icons and infact any other outdated icon'): the dock (Animals, Eggs, Ranch, Gifts, Travel, Trade, More), the goal strip's flag, the collected tick, the battle shield.",
+  "inputs": [
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-148"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudFight.luau",
+    "assets/stations/icons/hud_*.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-150.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "No dock button, goal strip, collected day or shield shows an icon from the older outlined set",
+    "Every icon the HUD names through Style.icon resolves to the new set first (Style.ICONS), the older set only for names not replaced"
+  ],
+  "verification": "ForgeGUI generation_image type mixed, 3 variations each, the STATION-146 coin as the style reference: animals 6ada91bc (A), eggs fe877ecd (A), ranch 95f7d991 (A), gifts 7cc083d5 (A, SHANNON's pick), travel e5932e65 (A), trade e8d8f3b4 (A), more df05bff7 (A), goal 86263abe (A), check eed7c36d (A), shield 7556d410 (A). Uploaded from Studio. selene 0 warnings; 810 tests pass.",
+  "output_artifacts": [
+    "assets/stations/icons/hud_*.png"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Not seen in Studio: the session's own Studio windows were closed when this was made (the upload went through the open one; it does not touch its place). The egg timers, the egg note and the intro's gift picture take the new dock egg through the same name."
+}
