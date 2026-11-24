@@ -1088,5 +1088,10 @@
     "model": 124912319937350,
     "decal": 131281791860971,
     "texture": null
+  },
+  "creature_lion_sahara_forge": {
+    "model": 122873591019491,
+    "decal": 108031634325248,
+    "texture": null
   }
 }

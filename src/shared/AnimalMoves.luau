@@ -1420,6 +1420,88 @@ AnimalMoves.POWERS = {
 		} },
 		{ 1.6, {} },
 	},
+	-- Sun's Judgement
+	creature_lion_sahara_forge = {
+		{ 0, {} },
+		{
+			0.22,
+			{
+				body = { -6, 0, 0, 0, -0.1, -0.25 },
+				head = { -14 },
+				leg_fl = { -10 },
+				leg_fr = { -10 },
+				leg_bl = { 10 },
+				leg_br = { 10 },
+				tail = { 8 },
+			},
+		},
+		{
+			0.5,
+			{
+				body = { 30, 0, 0, 0, 0.25, 0.9 },
+				head = { 18 },
+				leg_fl = { 52 },
+				leg_fr = { 36 },
+				leg_bl = { -30 },
+				leg_br = { -30 },
+				tail = { -30 },
+			},
+		},
+		{
+			0.8,
+			{
+				body = { 36, 0, 0, 0, 0.3, 1.05 },
+				head = { 26 },
+				leg_fl = { 40 },
+				leg_fr = { 58 },
+				leg_bl = { -36 },
+				leg_br = { -36 },
+				tail = { -38, 12 },
+			},
+		},
+		{
+			0.9,
+			{
+				body = { -10, 0, 0, 0, -0.1, -0.4 },
+				head = { -16, 0, 0, 0, 0, -0.15 },
+				leg_fl = { -16 },
+				leg_fr = { -16 },
+				leg_bl = { 10 },
+				leg_br = { 10 },
+				tail = { -26 },
+			},
+		},
+		{
+			1.02,
+			{
+				body = { -10, 0, 0, 0, -0.1, -0.4 },
+				head = { -14, 0, 5, 0, 0, -0.15 },
+				leg_fl = { -16 },
+				leg_fr = { -16 },
+				leg_bl = { 10 },
+				leg_br = { 10 },
+				tail = { -26 },
+			},
+		},
+		{
+			1.14,
+			{
+				body = { -10, 0, 0, 0, -0.1, -0.4 },
+				head = { -14, 0, -5, 0, 0, -0.15 },
+				leg_fl = { -16 },
+				leg_fr = { -16 },
+				leg_bl = { 10 },
+				leg_br = { 10 },
+				tail = { -26 },
+			},
+		},
+		{ 1.38, {
+			body = { -2 },
+			head = { -4 },
+			tail = { -10 },
+		} },
+		{ 1.6, {} },
+	},
 	-- Thorn Grove: its species' own moves
 	-- Diamond Prison: its species' own moves
 	-- Frozen Tomb
