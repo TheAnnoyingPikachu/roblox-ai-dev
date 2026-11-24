@@ -4,6 +4,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local WaveRuns = require(Shared:WaitForChild("WaveRuns"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
@@ -17,6 +18,8 @@ local request = remotes:WaitForChild("Request") :: RemoteFunction
 local App: any = require(script.Parent:WaitForChild("HudApp"))
 local S = App.S
 local C = App.C
+local N = Style.N
+local Hud = App.Hud
 local RARITY_COLOUR = App.RARITY_COLOUR
 local REFUSED = App.REFUSED
 local screen = App.screen
@@ -28,97 +31,153 @@ local coinsText = App.coinsText
 -- Waves ---------------------------------------------------------------------------------------------------
 
 S.wave = 1
--- The fight's panel: a low bar along the bottom, so it never covers the animals, centred on the screen and
--- clear of the power plates (SHANNON, 2026-11-19). What happened on the left, what to do next on the right.
-local result = Style.frame(root, UDim2.new(1, -520, 0, 0), C.sand)
-Style.round(result, 18)
-Style.stroke(result, C.ink, 3)
+-- Between waves (decision 0114, the Result board), in glass: what happened across the top, the boon cards
+-- in the middle (or how the run ended), and one line along the bottom with what the wave paid, the pot and
+-- the way out. `result` is that line; the head and the middle follow its Visible.
+local result = Style.glass(root, UDim2.new(1, -32, 0, 60), 14)
 result.Name = "WaveResult"
-result.AutomaticSize = Enum.AutomaticSize.Y
-result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -24), false
+result.AnchorPoint, result.Position, result.Visible = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -14), false
 result.ZIndex = 5
-Style.pad(result, 12)
 local resultTitle: TextLabel, resultSub: TextLabel
 local starRow: Frame, drops: Frame, boonRow: Frame, resultButtons: Frame
 local starLabels: { TextLabel } = {}
+local pickBoon: { () -> () } = {} -- the offered cards, for the keys 1 to 3
 do
-	local resultColumns = Style.list(result, 14, true)
-	resultColumns.VerticalAlignment = Enum.VerticalAlignment.Center
-	local resultLimit = Instance.new("UISizeConstraint")
-	resultLimit.MinSize, resultLimit.MaxSize = Vector2.new(480, 0), Vector2.new(840, 1000)
-	resultLimit.Parent = result
-	local function panelColumn(width: number, order: number, gap: number): Frame
+	local DARK = Color3.fromRGB(42, 22, 64)
+	local limit = Instance.new("UISizeConstraint")
+	limit.MaxSize = Vector2.new(1100, 60)
+	limit.Parent = result
+	local function row(parent: Instance, gap: number, align: Enum.HorizontalAlignment): Frame
 		local f = Instance.new("Frame")
 		f.BackgroundTransparency = 1
-		f.Size, f.AutomaticSize, f.LayoutOrder = UDim2.new(width, -7, 0, 0), Enum.AutomaticSize.Y, order
-		Style.list(f, gap)
-		f.Parent = result
+		local l = Style.list(f, gap, true)
+		l.VerticalAlignment, l.HorizontalAlignment = Enum.VerticalAlignment.Center, align
+		f.Parent = parent
 		return f
 	end
-	local info, act = panelColumn(0.52, 1, 4), panelColumn(0.48, 2, 8)
-	-- the title, with the stars won beside it (decision 0097): three, popping in one by one
-	local titleRow = Instance.new("Frame")
-	titleRow.BackgroundTransparency = 1
-	titleRow.Size, titleRow.LayoutOrder = UDim2.new(1, 0, 0, 36), 1
-	titleRow.Parent = info
-	resultTitle = Style.text(titleRow, "", 24, C.text, UDim2.new(1, -136, 1, 0))
-	starRow = Instance.new("Frame")
-	starRow.BackgroundTransparency = 1
-	starRow.AnchorPoint, starRow.Position, starRow.Size, starRow.Visible =
-		Vector2.new(1, 0), UDim2.fromScale(1, 0), UDim2.new(0, 132, 1, 0), false
-	Style.list(starRow, 4, true)
-	starRow.Parent = titleRow
+	-- the head: the title, then the stars beside the time and the best hitter
+	local head = Instance.new("Frame")
+	head.Name, head.BackgroundTransparency, head.Visible, head.ZIndex = "WaveHead", 1, false, 5
+	head.AnchorPoint, head.Position, head.Size =
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14), UDim2.fromOffset(900, 100)
+	head.Parent = root
+	resultTitle = Style.text(head, "", 40, N.gold, UDim2.new(1, 0, 0, 46))
+	resultTitle.TextXAlignment = Enum.TextXAlignment.Center
+	Style.stroke(resultTitle, DARK, 3).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	local under = row(head, 14, Enum.HorizontalAlignment.Center)
+	under.Position, under.Size = UDim2.fromOffset(0, 48), UDim2.new(1, 0, 0, 44)
+	starRow = row(under, 2, Enum.HorizontalAlignment.Center)
+	starRow.Size, starRow.Visible, starRow.LayoutOrder = UDim2.fromOffset(104, 36), false, 1
 	for i = 1, 3 do
-		local star = Style.text(starRow, "★", 34, C.off, UDim2.fromOffset(40, 36))
+		local star = Style.text(starRow, "★", 30, N.key, UDim2.fromOffset(32, 36))
 		star.TextXAlignment, star.LayoutOrder = Enum.TextXAlignment.Center, i
-		local edge = Instance.new("UIStroke")
-		edge.Thickness, edge.Color = 3, C.ink
-		edge.Parent = star
+		Style.stroke(star, DARK, 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 		local size = Instance.new("UIScale")
 		size.Parent = star
 		starLabels[i] = star
 	end
-	resultSub = Style.text(info, "", 14, C.muted)
-	resultSub.LayoutOrder = 2
-	resultSub.TextWrapped, resultSub.AutomaticSize = true, Enum.AutomaticSize.Y
-	drops = Instance.new("Frame")
-	drops.BackgroundTransparency = 1
-	drops.Size, drops.LayoutOrder = UDim2.new(1, 0, 0, 26), 3
-	Style.list(drops, 14, true)
-	drops.Parent = info
-	-- after a win in a run, three boons to pick from, in a panel of their own in the middle of the screen
-	-- (SHANNON, 2026-11-24): picking one starts the next wave (decision 0098)
-	local boons = Style.frame(root, UDim2.fromOffset(680, 0), C.sand)
-	boons.Name, boons.AutomaticSize, boons.ZIndex, boons.Visible = "BoonPanel", Enum.AutomaticSize.Y, 8, false
-	boons.AnchorPoint, boons.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.42)
-	Style.round(boons, 20)
-	Style.stroke(boons, C.ink, 3)
-	Style.pad(boons, 16)
+	resultSub = Style.small(under, "", 14, N.text, UDim2.fromOffset(0, 40))
+	resultSub.AutomaticSize, resultSub.TextWrapped, resultSub.LayoutOrder = Enum.AutomaticSize.X, false, 2
+	Style.stroke(resultSub, DARK, 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+
+	-- the line along the bottom: what it paid, the run, then the buttons
+	local paid = row(result, 18, Enum.HorizontalAlignment.Left)
+	paid.Position, paid.Size, paid.ClipsDescendants = UDim2.fromOffset(16, 0), UDim2.new(1, -440, 1, 0), true
+	drops = row(paid, 16, Enum.HorizontalAlignment.Left)
+	drops.Size, drops.AutomaticSize, drops.LayoutOrder = UDim2.fromOffset(0, 28), Enum.AutomaticSize.X, 1
+	local runLine = Style.small(paid, "", 14, N.muted, UDim2.fromOffset(0, 28))
+	runLine.AutomaticSize, runLine.TextWrapped, runLine.LayoutOrder = Enum.AutomaticSize.X, false, 2
+	function Hud.runLine(text: string)
+		runLine.Text = text
+	end
+	resultButtons = row(result, 8, Enum.HorizontalAlignment.Right)
+	resultButtons.AnchorPoint, resultButtons.Position = Vector2.new(1, 0.5), UDim2.new(1, -10, 0.5, 0)
+	resultButtons.Size = UDim2.fromOffset(420, 44)
+
+	-- the middle: three boons to pick from after a win in a run (decision 0098); picking one starts the next
+	-- wave. A party votes for seven seconds.
+	local boons = Instance.new("Frame")
+	boons.Name, boons.BackgroundTransparency, boons.ZIndex, boons.Visible = "BoonPanel", 1, 8, false
+	boons.AnchorPoint, boons.Position, boons.Size =
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 122), UDim2.fromOffset(780, 300)
 	Style.list(boons, 10).HorizontalAlignment = Enum.HorizontalAlignment.Center
-	local boonsTitle = Style.text(boons, "Pick a boon", 26, C.text, UDim2.new(1, 0, 0, 32))
+	boons.Parent = root
+	local boonsTitle = Style.text(boons, "Pick a boon", 20, N.text, UDim2.new(1, 0, 0, 26))
 	boonsTitle.Name, boonsTitle.LayoutOrder, boonsTitle.TextXAlignment = "Title", 1, Enum.TextXAlignment.Center
-	local votes = Style.text(boons, "", 14, C.muted, UDim2.new(1, 0, 0, 18))
+	Style.stroke(boonsTitle, DARK, 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	boonRow = row(boons, 16, Enum.HorizontalAlignment.Center)
+	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 236), 2, false
+	local votes = Style.small(boons, "", 13, N.muted, UDim2.new(1, 0, 0, 18))
 	votes.Name, votes.LayoutOrder, votes.TextXAlignment = "Votes", 3, Enum.TextXAlignment.Center
-	boonRow = Instance.new("Frame")
-	boonRow.BackgroundTransparency = 1
-	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 132), 2, false
-	Style.list(boonRow, 10, true)
-	boonRow.Parent = boons
-	-- while a wave is fought: only a Skip button on the right (the wave is at the top: the stage strip)
+
+	-- how a run ended, in the same place: where it stopped, what it banked, and one thing to do about it
+	local over = Style.glass(root, UDim2.fromOffset(540, 232), 16)
+	over.Name, over.ZIndex, over.Visible = "RunOver", 8, false
+	over.AnchorPoint, over.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 130)
+	local overTitle = Style.text(over, "", 24, N.text, UDim2.new(1, -150, 0, 30))
+	overTitle.Position = UDim2.fromOffset(16, 12)
+	local best = Style.chip(over, "NEW BEST", N.gold, DARK)
+	best.AnchorPoint, best.Position = Vector2.new(1, 0), UDim2.new(1, -16, 0, 14)
+	local tiles: { { big: TextLabel, small: TextLabel } } = {}
+	for k = 1, 3 do
+		local tile = Style.frame(over, UDim2.new(1 / 3, -16, 0, 58), Color3.new(1, 1, 1))
+		tile.BackgroundTransparency = 0.93
+		tile.Position = UDim2.new((k - 1) / 3, 16 - (k - 1) * 4, 0, 52)
+		Style.round(tile, 10)
+		local big = Style.text(tile, "", 22, Color3.fromRGB(255, 210, 122), UDim2.new(1, -20, 0, 26))
+		big.Position = UDim2.fromOffset(10, 6)
+		local small = Style.small(tile, "", 12, N.muted, UDim2.new(1, -20, 0, 16))
+		small.Position = UDim2.fromOffset(10, 34)
+		tiles[k] = { big = big, small = small }
+	end
+	local advice = Style.frame(over, UDim2.new(1, -32, 0, 62), C.sand)
+	advice.Position = UDim2.fromOffset(16, 120)
+	Style.round(advice, 12)
+	Style.stroke(advice, C.ink, 3)
+	Style.small(advice, "WHAT TO DO ABOUT IT", 11, C.muted, UDim2.new(1, -24, 0, 14)).Position = UDim2.fromOffset(12, 7)
+	local adviceText = Style.text(advice, "", 15, C.text, UDim2.new(1, -24, 0, 36))
+	adviceText.Position = UDim2.fromOffset(12, 22)
+	local train = Style.button(over, "Train it now", function()
+		S.hideResult()
+		S.music(nil)
+		send("wave_done")
+		show("animals")
+	end, "night", UDim2.new(1, -32, 0, 36))
+	train.Position, train.TextSize = UDim2.fromOffset(16, 188), 15
+	-- `stats` are three pairs of a number and what it counts; `tip` the advice; `newBest` shows the tag.
+	function Hud.runOver(title: string, stats: { { string } }, tip: string, newBest: boolean)
+		overTitle.Text, adviceText.Text, best.Visible = title, tip, newBest
+		boons.Visible = false
+		for k, tile in tiles do
+			tile.big.Text, tile.small.Text = stats[k][1], stats[k][2]
+		end
+		over.Visible = true
+	end
+	result:GetPropertyChangedSignal("Visible"):Connect(function()
+		head.Visible = result.Visible
+		if not result.Visible then
+			over.Visible = false
+		end
+	end)
+
+	-- while a wave is fought: only Skip, top right (the wave is at the top: the stage strip)
 	local skip = Style.button(root, "Skip ▶", function()
 		local b = root:FindFirstChild("SkipWave")
 		if b then
 			(b :: GuiObject).Visible = false
 		end
 		send("wave_done") -- the pay is settled already: the result shows at once
-	end, "ghost", UDim2.fromOffset(150, 52))
-	skip.Name, skip.Visible, skip.ZIndex = "SkipWave", false, 5
-	skip.AnchorPoint, skip.Position = Vector2.new(1, 0.5), UDim2.new(1, -14, 0.36, 0)
-	resultButtons = Instance.new("Frame")
-	resultButtons.BackgroundTransparency = 1
-	resultButtons.Size, resultButtons.LayoutOrder = UDim2.new(1, 0, 0, 44), 2
-	Style.list(resultButtons, 8, true)
-	resultButtons.Parent = act
+	end, "night", UDim2.fromOffset(112, 44))
+	skip.Name, skip.Visible, skip.ZIndex, skip.TextSize = "SkipWave", false, 5, 16
+	skip.AnchorPoint, skip.Position = Vector2.new(1, 0), UDim2.new(1, -16, 0, 16)
+
+	UserInputService.InputBegan:Connect(function(input, typing)
+		local k = table.find({ Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three }, input.KeyCode)
+		if k and not typing and boonRow.Visible and boons.Visible and pickBoon[k] then
+			Style.sound("press")
+			pickBoon[k]()
+		end
+	end)
 end
 -- A big title that fades as a fight begins: the wave, and who is in it.
 local announce: (n: number) -> ()
@@ -270,12 +329,14 @@ local fight: (n: number) -> boolean
 local began: (n: number) -> ()
 local again = Style.button(resultButtons, "", function()
 	fight(S.wave)
-end, "primary", UDim2.new(0.5, -4, 1, 0))
+end, "gold", UDim2.fromOffset(200, 40))
+again.LayoutOrder, again.TextSize = 1, 16
 local leave = Style.button(resultButtons, "Leave the arena", function()
 	S.hideResult()
 	S.music(nil)
 	send("wave_done")
-end, "ghost", UDim2.new(0.5, -4, 1, 0))
+end, "night", UDim2.fromOffset(210, 40))
+leave.LayoutOrder, leave.TextSize = 2, 15
 S.hideResult = function()
 	result.Visible = false
 	for _, name in { "BoonPanel", "SkipWave" } do
@@ -287,21 +348,20 @@ S.hideResult = function()
 end
 local showStars: (n: number) -> ()
 local coinBurst: () -> ()
-local offerBoons: (ids: { string }, n: number) -> ()
+local offerBoons: (ids: { string }, n: number, have: { string }?) -> ()
 local function buttons(showAgain: boolean)
 	again.Visible = showAgain
-	leave.Size = if showAgain then UDim2.new(0.5, -4, 1, 0) else UDim2.fromScale(1, 1)
 end
 
 -- The stars pop in one by one: gold for each won, pale for the rest (decision 0097).
 showStars = function(n: number)
 	starRow.Visible = true
 	for i, star in starLabels do
-		star.TextColor3, star.TextTransparency = C.off, 1
+		star.TextColor3, star.TextTransparency = N.key, 1
 		local size = star:FindFirstChildOfClass("UIScale") :: UIScale
 		size.Scale = 0.2
 		task.delay(0.35 * i, function()
-			star.TextColor3 = if i <= n then C.gold else C.off
+			star.TextColor3 = if i <= n then N.gold else N.key
 			star.TextTransparency = 0
 			TweenService:Create(size, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 				Scale = if i <= n then 1.15 else 0.9,
@@ -343,9 +403,12 @@ coinBurst = function()
 	end
 end
 
--- Three boons as cards (decision 0098); a rare one is edged in gold. Picking one starts wave `n`.
-offerBoons = function(ids: { string }, n: number)
+-- Three boons as glass cards (decision 0098): each says what it does and how many of it the run already
+-- has (`have`: the boons picked so far), since a boon is small and the stack is what counts. A rare one is
+-- edged in gold. Picking one (a click, or the key on its corner) starts wave `n`.
+offerBoons = function(ids: { string }, n: number, have: { string }?)
 	Style.clear(boonRow)
+	table.clear(pickBoon)
 	boonRow.Visible = true
 	local panel = boonRow.Parent :: GuiObject
 	panel.Visible = true
@@ -360,7 +423,11 @@ offerBoons = function(ids: { string }, n: number)
 	for k, id in ids do
 		local boon = WaveRuns.boon(id)
 		if boon then
-			local card = Style.button(boonRow, "", function()
+			local owned = 0
+			for _, b in have or {} do
+				owned += if b == id then 1 else 0
+			end
+			local function pick()
 				if not boonRow.Visible then -- a second click while the first is on its way
 					return
 				end
@@ -371,15 +438,41 @@ offerBoons = function(ids: { string }, n: number)
 					boonRow.Visible, panel.Visible, result.Visible = true, true, true
 					Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 				end
-			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -7, 1, 0))
+			end
+			pickBoon[k] = pick
+			local card =
+				Style.button(boonRow, "", pick, if boon.rare then "nightHot" else "night", UDim2.fromOffset(236, 232))
 			card.Name, card.LayoutOrder = boon.name, k
-			local title = Style.text(card, boon.name, 20, C.text, UDim2.new(1, -12, 0, 26))
-			title.Position, title.TextXAlignment = UDim2.fromOffset(6, 12), Enum.TextXAlignment.Center
-			local words = Style.text(card, boon.text, 15, C.muted, UDim2.new(1, -16, 0, 52))
-			words.Position, words.TextXAlignment, words.TextWrapped =
-				UDim2.fromOffset(8, 42), Enum.TextXAlignment.Center, true
-			local go = Style.text(card, `Wave {n} ▶`, 12, C.text, UDim2.new(1, -12, 0, 16))
-			go.Position, go.TextXAlignment = UDim2.new(0, 6, 1, -20), Enum.TextXAlignment.Center
+			Style.radius(card, 18)
+			Style.key(card, tostring(k), true).Position = UDim2.fromOffset(10, 10)
+			local tile = Style.frame(card, UDim2.fromOffset(64, 64), if boon.rare then N.gold else N.main)
+			tile.AnchorPoint, tile.Position, tile.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 20), 2
+			Style.round(tile, 16)
+			local stack = Style.text(
+				tile,
+				`x{owned + 1}`,
+				26,
+				if boon.rare then Color3.fromRGB(42, 22, 64) else N.text,
+				UDim2.fromScale(1, 1)
+			)
+			stack.TextXAlignment, stack.ZIndex = Enum.TextXAlignment.Center, 3
+			local title = Style.text(card, boon.name, 22, N.text, UDim2.new(1, -16, 0, 28))
+			title.Position, title.TextXAlignment, title.ZIndex = UDim2.fromOffset(8, 94), Enum.TextXAlignment.Center, 2
+			local words = Style.text(card, boon.text, 16, Color3.fromRGB(255, 210, 122), UDim2.new(1, -24, 0, 44))
+			words.Position, words.TextXAlignment, words.ZIndex =
+				UDim2.fromOffset(12, 126), Enum.TextXAlignment.Center, 2
+			local count = Style.small(
+				card,
+				if owned > 0 then `You have {owned}. This makes {owned + 1}.` else "Your first of these.",
+				13,
+				N.muted,
+				UDim2.new(1, -16, 0, 18)
+			)
+			count.Position, count.TextXAlignment, count.ZIndex = UDim2.new(0, 8, 1, -34), Enum.TextXAlignment.Center, 2
+			if boon.rare then
+				local tag = Style.chip(card, "RARE", N.gold, Color3.fromRGB(42, 22, 64))
+				tag.AnchorPoint, tag.Position, tag.ZIndex = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0), 4
+			end
 		end
 	end
 end
@@ -410,15 +503,15 @@ began = function(n: number)
 	S.music(if n % LevelRules.BOSS_EVERY == 0 then "boss" else "fight")
 end
 
--- The power plates' column, bottom right (decision 0092), with the shield at its top (decision 0097).
+-- The team's plates, along the bottom (decision 0114): the power bar over a row of plates. HudFight fills it.
 local plates = Instance.new("Frame")
 plates.Name = "PowerPlates"
 plates.BackgroundTransparency = 1
-plates.AnchorPoint, plates.Position = Vector2.new(1, 1), UDim2.new(1, -14, 1, -20)
-plates.Size, plates.AutomaticSize = UDim2.fromOffset(224, 0), Enum.AutomaticSize.Y
+plates.AnchorPoint, plates.Position = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -12)
+plates.Size, plates.AutomaticSize = UDim2.fromOffset(900, 0), Enum.AutomaticSize.Y
 plates.Visible = false
 plates.ZIndex = 4
-local plateList = Style.list(plates, 12)
+local plateList = Style.list(plates, 16)
 plateList.VerticalAlignment = Enum.VerticalAlignment.Bottom
 plates.Parent = root
 plateList.HorizontalAlignment = Enum.HorizontalAlignment.Center

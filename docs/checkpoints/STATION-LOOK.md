@@ -18,7 +18,7 @@ loud colour and always means "press this now". Keys show on a PC, tap bubbles on
 | STATION-136 | The kit: night tokens and glass, icons, pills, key caps, rings, input mode, message styles | Kit | built |
 | STATION-137 | Goals: the strip's rules and rewards (pure module, specs, server payout, decision 0115) | Explore, IntroOwn | built |
 | STATION-138 | The ranch HUD: level and coin pills, the dock that is always up, goal strip, To battle, timers, notes | Explore | built (key caps on world prompts still to do) |
-| STATION-139 | The fight in glass: plates along the bottom, the story along the top, run info; boon cards, the vote, the run's end | Fight, Result | to do |
+| STATION-139 | The fight in glass: plates along the bottom, the story along the top, run info; boon cards, the vote, the run's end | Fight, Result | built (not: the team mate's pill, the vote's ring) |
 | STATION-140 | Menus: animals in three columns with Seen, eggs and vendor in one window with odds, the wave road, the ranch grid, the gifts' week | Animals, Eggs, Waves, RanchGifts | to do |
 | STATION-141 | Moments: the hatch reveal with odds and where it goes, the level card, the server strip, the loading cover | Moments | to do |
 | STATION-142 | The intro: the Ranger's loan, the fight that cannot be lost with its four lessons, the goodbye, three quick eggs, Skip (decision 0116) | Intro, IntroTaster, IntroOwn | to do |

@@ -49,6 +49,7 @@ Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and label
 })
 
 local C = Style.C
+local N = Style.N
 local RARITY_COLOUR = Style.RARITY
 local RANK: { [string]: number } =
 	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
@@ -595,11 +596,11 @@ do
 	end
 end
 
--- Admin button, bottom left: only for players the server marks as admin (decision 0038)
+-- Admin button, bottom right: only for players the server marks as admin (decision 0038)
 local adminToggle = Style.button(root, "Admin", function()
 	show(if S.openName == "admin" then nil else "admin")
 end, "ghost", UDim2.fromOffset(84, 40))
-adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(0, 1), UDim2.new(0, 16, 1, -22)
+adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(1, 1), UDim2.new(1, -16, 1, -22)
 adminToggle.TextSize = 16
 
 -- What the parts below need from this script. They are loaded in the order they were written: each
@@ -827,29 +828,37 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		drops.Visible = payload.won
 		S.music(if payload.won then "win" else "lose")
 		showStars(payload.stars or 0)
+		S.party = payload.party or 1
 		local goals = "★ win   ★ nobody knocked out   ★ you fire every power attack"
 		if payload.won then
 			resultTitle.Text, resultTitle.TextColor3 =
 				if payload.last
 					then `Wave {payload.wave} cleared: the Legion is beaten!`
 					else `Wave {payload.wave} cleared!`,
-				C.good
-			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.short(payload.mvpDmg or 0)} damage)` else ""
-			local lines = { `Won in {took}s.{if payload.first then " First clear!" else ""}{mvp}`, goals }
-			if payload.streak then
-				local pot = if payload.pot then payload.pot.coins else 0
-				table.insert(
-					lines,
-					if pot > 0
-						then `Run: {payload.streak} in a row. Pot: +{Format.commas(pot)} coins, paid when you leave.`
-						else `Run: {payload.streak} in a row. Keep winning to fill the pot.`
-				)
-			end
-			resultSub.Text = table.concat(lines, "\n")
-			Style.amount(drops, "coins", `+{Format.commas(payload.coins)}`)
-			Style.amount(drops, "xp", `+{payload.xp} XP`)
+				N.gold
+			local pot = if payload.pot then payload.pot.coins else 0
+			resultSub.Text = `{took} seconds{if payload.first then "  ·  First clear!" else ""}{if payload.mvp
+				then `  ·  Best hitter: {payload.mvp} ({Format.short(payload.mvpDmg or 0)})`
+				else ""}\n{goals}`
+			Hud.runLine(
+				if payload.streak == nil
+					then ""
+					elseif pot > 0 then `{payload.streak} in a row: the pot is now {Format.commas(pot)}`
+					else `{payload.streak} in a row: keep winning to fill the pot`
+			)
+			S.run = if payload.streak
+				then {
+					streak = payload.streak,
+					pot = pot,
+					boons = payload.boons or {},
+					best = (S.run ~= nil and S.run.best) or payload.first == true, -- a wave never cleared before
+					at = os.clock(),
+				}
+				else nil
+			Style.amount(drops, "coins", `+{Format.commas(payload.coins)}`, N.text)
+			Style.amount(drops, "xp", `+{payload.xp} XP`, N.text)
 			if payload.samples > 0 then
-				Style.amount(drops, "samples", `+{payload.samples} samples`)
+				Style.amount(drops, "samples", `+{payload.samples}`, N.text)
 			end
 			coinBurst()
 			if payload.chest then
@@ -858,7 +867,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			S.wave = math.min(payload.wave + 1, LevelRules.LAST)
 			again.Text = if payload.last then `Fight wave {S.wave} again` else `Fight wave {S.wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
-				offerBoons(payload.offer, S.wave)
+				offerBoons(payload.offer, S.wave, payload.boons)
 				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): a countdown
 					local panel = boonRow.Parent :: GuiObject
 					local heading = panel:FindFirstChild("Title") :: TextLabel?
@@ -875,11 +884,36 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			buttons(payload.offer == nil)
-			local pot = if payload.pot then payload.pot.coins else 0
 			leave.Text = if pot > 0 then `Leave and bank +{Format.commas(pot)}` else "Leave the arena"
 		else
-			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave}: beaten`, C.bad
-			resultSub.Text = `Your team lost in {took}s to {payload.foes}. Train your animals up and try again.`
+			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave}: beaten`, N.bad
+			resultSub.Text = `Your team lost in {took} seconds to {payload.foes}`
+			Hud.runLine("")
+			-- how the run ended, and the weakest stat of the team as the one thing to do about it
+			local low: { name: string, stat: string, level: number }? = nil
+			for _, id in if S.profile then S.profile.team else {} do
+				local _, a = StationProgress.find(S.profile, id)
+				for _, stat in if a then StationConfig.STATS else {} do
+					local level = StationRules.level(a :: any, stat)
+					if low == nil or level < low.level then
+						low = { name = nameOf(a), stat = STAT_SHORT[stat], level = level }
+					end
+				end
+			end
+			local kept = if S.run then math.floor(S.run.pot * WaveRuns.LOSS_KEEP / 100) else 0
+			Hud.runOver(
+				`Stopped at wave {payload.wave}`,
+				{
+					{ tostring(payload.wins or 0), "waves won this run" },
+					{ Format.commas(kept), "banked: half the pot" },
+					{ `x{#(payload.boons or {})}`, "boons picked this run" },
+				},
+				if low
+					then `Your {low.name}'s {low.stat} is only level {low.level}. Training it is the quickest gain.`
+					else "Hatch three animals and put them in your team.",
+				S.run ~= nil and S.run.best
+			)
+			S.run = nil
 			S.wave = payload.wave
 			again.Text = `Try wave {S.wave} again`
 			buttons(true)
@@ -897,14 +931,20 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		local voted = boonRow.Parent :: GuiObject
 		voted.Visible, result.Visible = false, false
 		local picked = WaveRuns.boon(payload.id)
-		if picked then
+		if S.run then -- the run's stack, top left in the fight
+			table.insert(S.run.boons, payload.id)
+			S.run.at = os.clock()
+		end
+		if picked and (S.party or 1) > 1 then
 			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
 		end
 	elseif kind == "over" then
+		S.run = nil
 		S.hideResult()
 		S.music(nil)
 		Style.toast(screen, "Another party took the field: your run is banked", 5)
 	elseif kind == "banked" then
+		S.run = nil
 		if payload.lost and payload.coins > 0 then
 			Style.toast(
 				screen,

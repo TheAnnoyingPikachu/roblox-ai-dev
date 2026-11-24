@@ -13,6 +13,7 @@ local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local FightFx = require(Shared:WaitForChild("FightFx"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
+local WaveRuns = require(Shared:WaitForChild("WaveRuns"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
@@ -24,6 +25,8 @@ local player = game:GetService("Players").LocalPlayer
 local App: any = require(script.Parent:WaitForChild("HudApp"))
 local S = App.S
 local C = App.C
+local N = Style.N
+local result = App.result
 local RARITY_COLOUR = App.RARITY_COLOUR
 local screen = App.screen
 local root = App.root
@@ -196,36 +199,59 @@ do
 		end
 	end)
 
-	-- the boss's bar: it slams in as the dragon lands
-	local bossBar = Style.frame(root, UDim2.fromOffset(440, 66), C.night)
-	Style.round(bossBar, 14)
-	Style.stroke(bossBar, C.ink, 3)
+	-- the boss's bar, under the stage strip: it slams in as the dragon lands. Marks at each third.
+	local bossBar = Style.glass(root, UDim2.fromOffset(520, 40), 12)
+	local bossEdge = bossBar:FindFirstChildOfClass("UIStroke") :: UIStroke
+	bossEdge.Color = N.bad
 	bossBar.AnchorPoint, bossBar.Position, bossBar.Visible, bossBar.ZIndex =
-		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14), false, 6
-	local bossName = Style.text(bossBar, "", 20, C.hex, UDim2.new(1, -24, 0, 26))
-	bossName.Position, bossName.TextXAlignment = UDim2.fromOffset(12, 6), Enum.TextXAlignment.Center
-	local bossHp, setBossHp = Style.bar(bossBar, UDim2.new(1, -24, 0, 16), C.bad)
-	bossHp.Position = UDim2.fromOffset(12, 38)
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 80), false, 6
+	local bossName = Style.text(bossBar, "", 15, Color3.fromRGB(255, 179, 198), UDim2.fromOffset(172, 40))
+	bossName.Position, bossName.TextWrapped, bossName.TextTruncate =
+		UDim2.fromOffset(14, 0), false, Enum.TextTruncate.AtEnd
+	local bossHp, fillBoss = Style.track(bossBar, UDim2.new(1, -262, 0, 14), C.bad)
+	bossHp.Position = UDim2.fromOffset(192, 13)
+	for third = 1, 2 do
+		local mark = Style.frame(bossHp, UDim2.new(0, 2, 1, 0), N.glass)
+		mark.Position, mark.ZIndex = UDim2.fromScale(third / 3, 0), 3
+	end
+	local bossPct = Style.text(bossBar, "", 14, N.text, UDim2.fromOffset(52, 40))
+	bossPct.AnchorPoint, bossPct.Position, bossPct.TextXAlignment =
+		Vector2.new(1, 0), UDim2.new(1, -12, 0, 0), Enum.TextXAlignment.Right
+	local function setBossHp(share: number)
+		fillBoss(share)
+		bossPct.Text = `{math.ceil(share * 100)}%`
+	end
 	local bossScale = Instance.new("UIScale")
 	bossScale.Parent = bossBar
 	local bossOf: Model? = nil
 
-	-- the shield: a round button left of the plates (or F); it pulses while an enemy power attack is coming
+	-- the shield (key F): a round glass button, bottom left, with its cooldown drawn round it; its edge
+	-- flashes gold while an enemy power attack is coming
 	local tellUntil = 0
-	local shieldButton = Style.button(plates, "", function() end, "ghost", UDim2.fromOffset(96, 96))
-	shieldButton.Name, shieldButton.LayoutOrder = "Shield", -1
-	shieldButton.Visible, shieldButton.TextSize, shieldButton.ZIndex = false, 30, 4
-	Style.radius(shieldButton, 48)
+	local shieldRing, setShield = Style.pie(root, 86, N.edge, N.key)
+	shieldRing.Name, shieldRing.Visible, shieldRing.ZIndex = "Shield", false, 4
+	shieldRing.AnchorPoint, shieldRing.Position = Vector2.new(0, 1), UDim2.new(0, 34, 1, -44)
+	local shieldButton = Instance.new("TextButton")
+	shieldButton.Text, shieldButton.AutoButtonColor, shieldButton.BorderSizePixel = "", false, 0
+	shieldButton.AnchorPoint, shieldButton.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
+	shieldButton.Size, shieldButton.BackgroundColor3, shieldButton.ZIndex = UDim2.fromOffset(72, 72), N.glass, 2
+	Style.round(shieldButton, 36)
+	local shieldEdge = Style.stroke(shieldButton, N.edge, 2)
+	shieldButton.Parent = shieldRing
 	local shieldIcon = Instance.new("ImageLabel")
 	shieldIcon.BackgroundTransparency, shieldIcon.Image = 1, "rbxassetid://97488070836179" -- assets/stations/icons/shield.png
-	shieldIcon.AnchorPoint, shieldIcon.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.46)
-	shieldIcon.Size, shieldIcon.ZIndex = UDim2.fromScale(0.72, 0.72), 5
+	shieldIcon.AnchorPoint, shieldIcon.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
+	shieldIcon.Size, shieldIcon.ZIndex = UDim2.fromScale(0.66, 0.66), 3
 	shieldIcon.Parent = shieldButton
-	local shieldKey = Style.chip(shieldButton, "F", C.ink, Color3.new(1, 1, 1))
-	shieldKey.AnchorPoint, shieldKey.Position, shieldKey.ZIndex = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, 4), 6
+	local shieldKey = Style.key(shieldRing, "F", true)
+	shieldKey.AnchorPoint, shieldKey.Position = Vector2.new(1, 1), UDim2.new(1, 4, 1, 2)
+	local shieldNote = Style.small(shieldRing, "", 12, N.muted, UDim2.fromOffset(130, 16))
+	shieldNote.AnchorPoint, shieldNote.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 1, 6)
+	shieldNote.TextXAlignment = Enum.TextXAlignment.Center
+	Style.stroke(shieldNote, Color3.fromRGB(42, 22, 64), 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 	local shieldLook = ""
 	local function raiseShield()
-		if not shieldButton.Visible then
+		if not shieldRing.Visible then
 			return
 		end
 		local ready = player:GetAttribute("ShieldReady")
@@ -350,16 +376,24 @@ do
 			fly:Play()
 		end
 	end
-	-- the power bar: each side's power still standing (its fighters' power x their HP left), in the plates'
-	-- column between the shield and the team's plates, as wide as a plate
-	local tug = Style.frame(plates, UDim2.fromOffset(224, 13), C.bad)
-	tug.Name, tug.LayoutOrder, tug.Visible, tug.ZIndex = "PowerBar", 0, false, 6
-	Style.round(tug, 7)
-	Style.stroke(tug, C.ink, 3)
-	local ourSide = Style.frame(tug, UDim2.fromScale(0.5, 1), C.good)
-	Style.round(ourSide, 7)
-	local tugLabel = Style.text(tug, "", 11, Color3.new(1, 1, 1), UDim2.fromScale(1, 1))
-	tugLabel.TextXAlignment, tugLabel.ZIndex = Enum.TextXAlignment.Center, 8
+	-- the power bar: each side's power still standing (its fighters' power x their HP left), over the plates
+	local tug = Instance.new("Frame")
+	tug.Name, tug.BackgroundTransparency, tug.LayoutOrder, tug.Visible = "PowerBar", 1, 0, false
+	tug.Size, tug.ZIndex = UDim2.fromOffset(540, 16), 6
+	tug.Parent = plates
+	local tugBar = Style.frame(tug, UDim2.fromOffset(300, 10), C.bad)
+	tugBar.AnchorPoint, tugBar.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
+	Style.round(tugBar, 5)
+	Style.stroke(tugBar, Color3.fromRGB(27, 16, 48), 2)
+	local ourSide = Style.frame(tugBar, UDim2.fromScale(0.5, 1), N.good)
+	Style.round(ourSide, 5)
+	local tugLabel = Style.small(tug, "", 13, N.text, UDim2.fromOffset(112, 16))
+	tugLabel.TextXAlignment = Enum.TextXAlignment.Right
+	local tugThem = Style.small(tug, "", 13, N.text, UDim2.fromOffset(112, 16))
+	tugThem.AnchorPoint, tugThem.Position = Vector2.new(1, 0), UDim2.fromScale(1, 0)
+	for _, words in { tugLabel, tugThem } do
+		Style.stroke(words, Color3.fromRGB(42, 22, 64), 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+	end
 	local powerCache: { [Model]: number } = {}
 	local function powerOf(m: Model, side: number): number
 		local got = powerCache[m]
@@ -381,7 +415,7 @@ do
 	-- shield button, and the music building as the enemies fall.
 	local docked = false
 	S.fightTick = function(folder: Instance?, showing: boolean)
-		shieldButton.Visible = showing
+		shieldRing.Visible = showing and not result.Visible
 		if showing ~= docked then -- the ranch's dock, goal and To battle make way for the fight (decision 0114)
 			docked = showing
 			S.fighting = showing
@@ -404,10 +438,11 @@ do
 				end
 			end
 		end
-		tug.Visible = showing and us + them > 0
+		tug.Visible = showing and us + them > 0 and not result.Visible
 		if us + them > 0 then
 			ourSide.Size = UDim2.fromScale(math.clamp(us / (us + them), 0.02, 0.98), 1)
-			tugLabel.Text = `⚡ {Format.commas(math.floor(us))}  vs  {Format.commas(math.floor(them))}`
+			tugLabel.Text, tugThem.Text =
+				`You {Format.short(math.floor(us))}`, `Legion {Format.short(math.floor(them))}`
 		end
 		if not showing and kos > 0 then -- the fight is over: the count starts again next time
 			kos = 0
@@ -477,11 +512,9 @@ do
 		-- chunk is close to Luau's 200 locals.
 		local strip = root:FindFirstChild("StageStrip") :: Frame?
 		if strip == nil then
-			local made = Style.frame(root, UDim2.fromOffset(360, 58), C.night)
+			local made = Style.glass(root, UDim2.fromOffset(380, 58), 14)
 			made.Name, made.AnchorPoint, made.ZIndex = "StageStrip", Vector2.new(0.5, 0), 6
-			Style.round(made, 12)
-			Style.stroke(made, C.ink, 3)
-			local title = Style.text(made, "", 15, C.sand, UDim2.new(1, -20, 0, 20))
+			local title = Style.text(made, "", 15, N.text, UDim2.new(1, -20, 0, 20))
 			title.Name, title.Position, title.TextXAlignment =
 				"Title", UDim2.fromOffset(10, 5), Enum.TextXAlignment.Center
 			local row = Instance.new("Frame")
@@ -490,19 +523,20 @@ do
 			row.Parent = made
 			Style.list(row, 4, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
 			for i = 1, LevelRules.STAGE do
-				local pip = Style.frame(row, UDim2.fromOffset(if i == LevelRules.STAGE then 46 else 28, 22), C.night)
+				local pip = Style.frame(row, UDim2.fromOffset(if i == LevelRules.STAGE then 46 else 28, 22), N.key)
 				pip.Name, pip.LayoutOrder = `Pip{i}`, i
-				Style.round(pip, 6)
-				Style.stroke(pip, C.ink, 2)
-				local label = Style.text(pip, "", 12, C.sand, UDim2.fromScale(1, 1))
+				Style.round(pip, 7)
+				Style.stroke(pip, N.lilac, 2)
+				local label = Style.text(pip, "", 12, N.text, UDim2.fromScale(1, 1))
 				label.Name, label.TextXAlignment = "Label", Enum.TextXAlignment.Center
 			end
 			strip = made
 		end
 		local bar = strip :: Frame
 		local fought = player:GetAttribute("FightWave")
-		bar.Visible = showing and type(fought) == "number"
-		bar.Position = UDim2.new(0.5, 0, 0, if bossBar.Visible then 90 else 14)
+		bar.Visible = showing and type(fought) == "number" and not result.Visible
+		bar.Position = UDim2.new(0.5, 0, 0, 14)
+		bossBar.Position = UDim2.new(0.5, 0, 0, if bar.Visible then 80 else 14)
 		if type(fought) == "number" and bar:GetAttribute("Wave") ~= fought then
 			bar:SetAttribute("Wave", fought)
 			local st = LevelRules.stage(fought)
@@ -512,17 +546,22 @@ do
 				local pip = (bar:FindFirstChild("Pips") :: Frame):FindFirstChild(`Pip{i}`) :: Frame
 				local label = pip:FindFirstChild("Label") :: TextLabel
 				local w, isBoss = st.first + i - 1, i == LevelRules.STAGE
+				-- cleared green, this wave gold (the one loud colour), the boss berry, the rest dark
 				pip.BackgroundColor3 = if w < fought
-					then C.good
-					elseif w == fought then C.accent
-					elseif isBoss then C.bad
-					else C.night
+					then Color3.fromRGB(60, 154, 46)
+					elseif w == fought then N.gold
+					elseif isBoss then Color3.fromRGB(200, 55, 106)
+					else N.key
 				local edge = pip:FindFirstChildOfClass("UIStroke")
 				if edge then
-					edge.Color = if w == fought then C.sand else C.ink
+					edge.Color = if w < fought
+						then Color3.fromRGB(158, 224, 142)
+						elseif w == fought then Color3.fromRGB(255, 233, 168)
+						elseif isBoss then Color3.fromRGB(255, 179, 198)
+						else N.edge
 				end
 				label.Text = if isBoss then "BOSS" elseif w <= fought then tostring(w) else ""
-				label.TextColor3 = if w <= fought then C.ink else C.sand
+				label.TextColor3 = if w == fought then Color3.fromRGB(42, 22, 64) else N.text
 			end
 		end
 		-- the shield button: cooling down, warning (flashing), or ready
@@ -532,18 +571,69 @@ do
 			then `wait {math.ceil(wait)}`
 			elseif os.clock() < tellUntil then (if math.floor(os.clock() * 6) % 2 == 0 then "warn" else "warn2")
 			else "ready"
+		setShield(if wait > 0 then 1 - wait / BattleRules.SHIELD_COOLDOWN else 1)
 		if look ~= shieldLook then
 			shieldLook = look
-			shieldButton.Text = if wait > 0 then `{math.ceil(wait)}` else ""
-			shieldIcon.ImageTransparency = if wait > 0 then 0.75 else 0
-			Style.kind(
-				shieldButton,
-				if wait > 0
-					then "off"
-					elseif look == "warn" then "danger"
-					elseif look == "warn2" then "primary"
-					else "info"
-			)
+			shieldNote.Text = if wait > 0
+				then `Shield in {math.ceil(wait)}s`
+				elseif look == "ready" then "Shield"
+				else "Shield now!"
+			shieldIcon.ImageTransparency = if wait > 0 then 0.6 else 0
+			shieldEdge.Color = if look == "warn" then N.gold elseif look == "warn2" then N.lilac else N.edge
+			shieldKey.BackgroundColor3 = if look == "warn" or look == "warn2" then N.gold else N.key
+			shieldKey.TextColor3 = if look == "warn" or look == "warn2" then Color3.fromRGB(42, 22, 64) else N.text
+		end
+		-- the run, top left: wins in a row, the pot and the boons it has stacked
+		local run = S.run
+		local box = root:FindFirstChild("RunInfo") :: Frame?
+		if run and box == nil then
+			local made = Instance.new("Frame")
+			made.Name, made.BackgroundTransparency = "RunInfo", 1
+			made.Position, made.Size, made.ZIndex = UDim2.fromOffset(16, 84), UDim2.fromOffset(420, 80), 4
+			Style.list(made, 7)
+			made.Parent = root
+			box = made
+		end
+		if box then
+			box.Visible = showing and run ~= nil and not result.Visible
+			if run and box:GetAttribute("At") ~= run.at then
+				box:SetAttribute("At", run.at)
+				Style.clear(box)
+				local line = Style.glass(box, UDim2.fromOffset(0, 32), 12)
+				line.AutomaticSize = Enum.AutomaticSize.X
+				local words = Style.text(
+					line,
+					`{run.streak} {if run.streak == 1 then "win" else "wins in a row"}{if run.pot > 0
+						then `  ·  {Format.commas(run.pot)} in the pot`
+						else ""}`,
+					14,
+					N.text,
+					UDim2.fromOffset(0, 32)
+				)
+				words.AutomaticSize, words.TextWrapped = Enum.AutomaticSize.X, false
+				Style.pad(words, 0)
+				local pad = Instance.new("UIPadding")
+				pad.PaddingLeft, pad.PaddingRight = UDim.new(0, 13), UDim.new(0, 13)
+				pad.Parent = line
+				local chips = Instance.new("Frame")
+				chips.BackgroundTransparency, chips.Size, chips.LayoutOrder = 1, UDim2.new(1, 0, 0, 26), 2
+				Style.list(chips, 6, true, true)
+				chips.Parent = box
+				local counts, order = {}, {}
+				for _, id in run.boons do
+					if counts[id] == nil then
+						table.insert(order, id)
+					end
+					counts[id] = (counts[id] or 0) + 1
+				end
+				for _, id in order do
+					local boon = WaveRuns.boon(id)
+					local chip = Style.chip(chips, `{if boon then boon.name else id}  x{counts[id]}`, N.glass, N.text)
+					chip.TextSize, chip.BackgroundTransparency = 13, 0.1
+					local edge = chip:FindFirstChildOfClass("UIStroke") :: UIStroke
+					edge.Color = N.edge
+				end
+			end
 		end
 	end
 end
@@ -557,7 +647,10 @@ end
 type Plate = {
 	button: TextButton,
 	power: (number) -> (),
-	mana: TextLabel,
+	holder: Frame,
+	health: (number) -> (),
+	fill: Frame, -- the mana bar's
+	key: TextLabel, -- the press's key, shown while the meter is full
 	full: boolean,
 	press: string,
 	label: string, -- the animal's name
@@ -620,21 +713,52 @@ local function firePower(slot: number, presses: number?)
 	end
 end
 
-local function plate(slot: number, label: string, press: string): Plate
-	local b = Style.button(plates, "", function()
+local plateRow = Instance.new("Frame")
+plateRow.Name, plateRow.BackgroundTransparency, plateRow.LayoutOrder = "Row", 1, 1
+plateRow.Size, plateRow.AutomaticSize = UDim2.fromOffset(0, 72), Enum.AutomaticSize.X
+Style.list(plateRow, 8, true).VerticalAlignment = Enum.VerticalAlignment.Bottom
+plateRow.Parent = plates
+result:GetPropertyChangedSignal("Visible"):Connect(function() -- the result's line takes the bottom between waves
+	plateRow.Visible = not result.Visible
+end)
+local ROLE_COLOUR: { [string]: Color3 } = { attack = C.bad, defense = C.info, utility = C.good, titan = N.gold }
+
+-- A plate (decision 0114): the animal's picture, its class, its health and its mana. A full meter lifts
+-- it, edges it in gold and shows the key of its press.
+local function plate(slot: number, label: string, press: string, asset: string?, role: string?): Plate
+	local holder = Instance.new("Frame")
+	holder.BackgroundTransparency, holder.Size, holder.LayoutOrder = 1, UDim2.fromOffset(196, 72), slot
+	holder.Parent = plateRow
+	local b = Style.button(holder, "", function()
 		Press.tap(slot)
-	end, "ghost", UDim2.fromOffset(224, 60))
-	b.LayoutOrder = slot
-	local name = Style.text(b, label, 17, C.text, UDim2.new(1, -24, 0, 22))
-	name.Position, name.TextTruncate = UDim2.fromOffset(12, 6), Enum.TextTruncate.AtEnd
-	local bar, setPower = Style.bar(b, UDim2.new(1, -24, 0, 18), C.accent)
-	bar.Position = UDim2.fromOffset(12, 33)
-	local mana = Style.text(bar, "", 13, C.ink, UDim2.fromScale(1, 1))
-	mana.TextXAlignment, mana.ZIndex = Enum.TextXAlignment.Center, 20
+	end, "night", UDim2.fromOffset(196, 62))
+	b.Position = UDim2.fromOffset(0, 10)
+	Style.radius(b, 14)
+	if asset then
+		local face = Portrait.new(b, asset, { size = UDim2.fromOffset(48, 48), background = N.key })
+		face.Position, face.ZIndex = UDim2.fromOffset(7, 7), 2
+		Style.round(face, 11)
+	end
+	local class = Style.frame(b, UDim2.fromOffset(9, 9), ROLE_COLOUR[role or ""] or N.muted)
+	class.Position, class.ZIndex = UDim2.fromOffset(63, 10), 2
+	Style.round(class, 3)
+	local name = Style.text(b, label, 14, N.text, UDim2.new(1, -88, 0, 16))
+	name.Position, name.TextWrapped, name.TextTruncate, name.ZIndex =
+		UDim2.fromOffset(77, 6), false, Enum.TextTruncate.AtEnd, 2
+	local hpBar, setHp = Style.track(b, UDim2.new(1, -73, 0, 8), N.good)
+	hpBar.Position, hpBar.ZIndex = UDim2.fromOffset(63, 28), 2
+	local manaBar, setPower, fill = Style.track(b, UDim2.new(1, -73, 0, 8), N.edge)
+	manaBar.Position, manaBar.ZIndex = UDim2.fromOffset(63, 42), 2
+	local key = Style.key(b, "", true)
+	key.AnchorPoint, key.Position, key.Visible = Vector2.new(1, 1), UDim2.new(1, -6, 0, 7), false
+	key.BackgroundColor3, key.TextColor3 = N.gold, Color3.fromRGB(42, 22, 64)
 	return {
 		button = b,
+		holder = holder,
 		power = setPower,
-		mana = mana,
+		health = setHp,
+		fill = fill,
+		key = key,
 		full = false,
 		press = press,
 		label = label,
@@ -993,7 +1117,15 @@ task.spawn(function()
 						local press = if type(s) == "string"
 							then BattleRules.pressOf({ s = s, v = if type(v) == "string" then v else nil } :: any)
 							else "ring"
-						p = plate(slot, if va then va.name elseif sp then sp.name else "?", press)
+						p = plate(
+							slot,
+							if va then va.name elseif sp then sp.name else "?",
+							press,
+							if type(s) == "string"
+								then StationRules.assetOf(s, if type(v) == "string" then v else nil)
+								else nil,
+							if type(s) == "string" then StationRules.role({ s = s, v = v } :: any) else nil
+						)
 						plateOf[slot] = p
 						m:GetAttributeChangedSignal("AnimAt"):Connect(function()
 							if m:GetAttribute("Anim") == "magic" and type(s) == "string" then -- its power attack: say its name
@@ -1008,7 +1140,18 @@ task.spawn(function()
 					local share = if type(power) == "number" then math.clamp(power, 0, 1) else 0
 					local full = alive and share >= 1
 					p.power(share)
-					p.mana.Text = if full then "MANA FULL" else `MANA {math.floor(share * 100)}%`
+					local max = m:GetAttribute("MaxHp")
+					p.health(
+						if type(hp) == "number" and type(max) == "number" then math.max(0, hp) / math.max(1, max) else 0
+					)
+					p.fill.BackgroundColor3 = if full then N.gold else N.edge
+					p.key.Visible = full and p.keys ~= nil and not Style.touch()
+					if p.keys then
+						p.key.Text = if p.press == "chain"
+							then "Arrows"
+							elseif p.press == "mash" then "Space"
+							else Press.pops.names(p.keys)[1] or ""
+					end
 					if full ~= p.full then
 						p.full = full
 						if full then
@@ -1016,9 +1159,10 @@ task.spawn(function()
 						else
 							Press.off(p)
 						end
-						Style.kind(p.button, if full then "primary" else if alive then "ghost" else "off")
+						Style.kind(p.button, if full then "nightHot" else if alive then "night" else "nightOff")
+						p.button.Position = UDim2.fromOffset(0, if full then 0 else 10)
 					elseif not alive then
-						Style.kind(p.button, "off")
+						Style.kind(p.button, "nightOff")
 					end
 				end
 			end
@@ -1026,7 +1170,7 @@ task.spawn(function()
 		for slot, p in plateOf do
 			if not seen[slot] then
 				Press.off(p)
-				p.button:Destroy()
+				p.holder:Destroy()
 				plateOf[slot] = nil
 			end
 		end

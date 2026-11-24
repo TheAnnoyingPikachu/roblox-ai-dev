@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-139",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The fight in glass (decision 0114, the Fight and Result boards): the team's plates along the bottom with the power bar, the stage and the boss along the top, the shield bottom left with its cooldown, the run's wins, pot and boons top left; between waves a gold title, three big boon cards with their stack counts and keys 1 to 3, one line along the bottom; and a card for how a run ended.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-138"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/HudWaves.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations/StationsServer.server.luau",
+    "docs/checkpoints/STATION-LOOK.md",
+    "studio/tasks/STATION-139.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "In a fight nothing is paper except the level and coin pills; gold marks only what can be pressed now (a plate whose meter is full and its key, this wave's pip, the shield while a power attack is coming) and what was done well",
+    "A plate shows the animal's picture, class, health and mana, and the key of its press while its meter is full",
+    "A boon card says how many of it the run has; keys 1, 2 and 3 pick; the result's line names the pot and what leaving banks",
+    "No rule changes: the server sends two more display fields with a wave's result (the run's boons, the member's wins) and the boon message to a solo player too",
+    "selene and stylua pass; the specs pass"
+  ],
+  "verification": "selene 0 errors 0 warnings; lune run tests/run: 804 pass. Played in Studio (build dev, local, one player), no script errors: wave 1 from the wave list with the stage strip, three plates (the Sphinx Jackal's lifted and gold with its key S beside its hold card), the power bar and the shield; the result with its gold title, stars, three cards and the line ('1 in a row: keep winning to fill the pot'); key 3 and key 1 picked a boon; wave 2 showed Skip and '1 win, Quick Paws x1' top left; the second result said 'the pot is now 2' and 'Leave and bank +2'; a lost wave 3 showed 'Wave 3: beaten', the run's card with its three numbers, the advice ('Your Jackal's SPD is only level 1...') and Train it now; a test boss wave (20) showed the boss bar with its marks and percent under the strip, four plates with the Titan's gold dot, and the keys W and Arrows on the two ready plates.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Night button kinds in Style: night, nightHot, nightMain, gold, nightOff (a thin bright edge on a dark lip). Not built from the boards: the team mate's pill top left and the vote's ring (the vote keeps its countdown in the title); both need a second player to test. The advice at a run's end is the team's lowest stat, not a simulation. The Admin button moved to the bottom right, clear of the shield. Phone layout: STATION-143."
+}

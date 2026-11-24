@@ -625,6 +625,7 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 				if result.won then mine.xp else 0,
 				if result.won then mine.samples else 0
 			out.first = mine.first
+			out.boons, out.wins = party.run.boons, party.wins[m] -- for the boon cards' stacks and the run's end
 			if after then
 				local coins, samples = WaveRuns.bonus(run, mine.coins, mine.samples)
 				local pot = party.pots[m]
@@ -703,10 +704,8 @@ function settle(party: Party)
 	end
 	party.run, party.votes = picked, {}
 	party.round += 1
-	if #party.members > 1 then
-		for _, m in party.members do
-			remotes.fx(m, "boon", { id = id })
-		end
+	for _, m in party.members do -- everyone's HUD adds it to the run's stack; a party's also says which won the vote
+		remotes.fx(m, "boon", { id = id })
 	end
 	if not waveFight(party.members[1], picked.wave, true) then
 		-- they took too long and the field is another party's now: the run ends here, its pots paid

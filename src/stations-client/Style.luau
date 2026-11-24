@@ -38,6 +38,20 @@ Style.C = {
 	off = Color3.fromRGB(230, 220, 203),
 }
 local C = Style.C
+-- The night side (decision 0114): a fight's glass, where gold only ever means "press this now".
+Style.N = {
+	glass = Color3.fromRGB(24, 14, 44),
+	key = Color3.fromRGB(46, 31, 74),
+	edge = Color3.fromRGB(179, 107, 255),
+	lilac = Color3.fromRGB(227, 179, 255),
+	text = Color3.fromRGB(244, 236, 255),
+	muted = Color3.fromRGB(217, 204, 239),
+	gold = Color3.fromRGB(255, 194, 58),
+	good = Color3.fromRGB(124, 224, 122),
+	bad = Color3.fromRGB(255, 107, 142),
+	main = Color3.fromRGB(110, 43, 217),
+}
+local N = Style.N
 
 -- One set of rarity colours, used for nothing else (decision 0091).
 Style.RARITY = {
@@ -269,7 +283,7 @@ end
 
 -- A round token: a coin, a sample, an XP star.
 local TOKEN = { coins = C.accent, samples = C.good, xp = C.info }
-function Style.amount(parent: Instance, kind: string, text: string): (Frame, TextLabel)
+function Style.amount(parent: Instance, kind: string, text: string, colour: Color3?): (Frame, TextLabel)
 	local f = Instance.new("Frame")
 	f.AutomaticSize = Enum.AutomaticSize.X
 	f.Size = UDim2.fromOffset(0, 26)
@@ -282,7 +296,7 @@ function Style.amount(parent: Instance, kind: string, text: string): (Frame, Tex
 	end
 	Style.stroke(dot, INK, 2)
 	dot.LayoutOrder = 1
-	local t = Style.text(f, text, 18, C.text, UDim2.fromOffset(0, 26))
+	local t = Style.text(f, text, 18, colour or C.text, UDim2.fromOffset(0, 26))
 	t.AutomaticSize = Enum.AutomaticSize.X
 	t.TextXAlignment = Enum.TextXAlignment.Left
 	t.LayoutOrder = 2
@@ -310,13 +324,36 @@ local KIND = {
 	ghost = { WHITE, INK },
 	off = { C.off, Color3.fromRGB(154, 138, 116) }, -- looks unavailable but still answers, so the refusal can explain itself
 	stat = { WHITE, INK },
+	-- on glass, in a fight (decision 0114): plain, a plate whose press is ready, the main action, press now, unavailable
+	night = { N.glass, N.text },
+	nightHot = { N.glass, N.text },
+	nightMain = { N.main, WHITE },
+	gold = { N.gold, Color3.fromRGB(42, 22, 64) },
+	nightOff = { N.glass, N.muted },
+}
+local NIGHT_EDGE = {
+	night = N.edge,
+	nightHot = N.gold,
+	nightMain = N.lilac,
+	gold = Color3.fromRGB(255, 233, 168),
+	nightOff = N.key,
 }
 
 local function paintButton(b: TextButton, kind: string)
 	local colours = KIND[kind] or KIND.primary
 	b.BackgroundColor3, b.TextColor3 = colours[1], colours[2] -- the face and label copy these
 	b.TextStrokeColor3 = INK
-	b.TextStrokeTransparency = if colours[2] == WHITE then 0.25 else 1
+	local edge = NIGHT_EDGE[kind] -- a night button: a thin bright edge on a dark lip, see-through when it is glass
+	b.TextStrokeTransparency = if colours[2] == WHITE and edge == nil then 0.25 else 1
+	local face, lip = b:FindFirstChild("Face") :: Frame?, b:FindFirstChild("Lip") :: Frame?
+	if face and lip then
+		local dark = if edge then Color3.fromRGB(12, 7, 24) else INK
+		local faceEdge = face:FindFirstChildOfClass("UIStroke") :: UIStroke
+		faceEdge.Color, faceEdge.Thickness = edge or INK, if edge then 2 else 3
+		face.BackgroundTransparency = if colours[1] == N.glass then 0.08 else 0
+		lip.BackgroundColor3 = dark;
+		(lip:FindFirstChildOfClass("UIStroke") :: UIStroke).Color = dark
+	end
 	b:SetAttribute("Kind", kind)
 end
 
@@ -734,19 +771,6 @@ end
 -- Sun and Moon (decision 0114) ---------------------------------------------------------------------------
 -- The ranch and the hub keep the paper and ink above. A fight is the same shapes in dark glass with a
 -- thin violet edge, and gold is its one loud colour: it always means "press this now".
-Style.N = {
-	glass = Color3.fromRGB(24, 14, 44),
-	key = Color3.fromRGB(46, 31, 74),
-	edge = Color3.fromRGB(179, 107, 255),
-	lilac = Color3.fromRGB(227, 179, 255),
-	text = Color3.fromRGB(244, 236, 255),
-	muted = Color3.fromRGB(217, 204, 239),
-	gold = Color3.fromRGB(255, 194, 58),
-	good = Color3.fromRGB(124, 224, 122),
-	bad = Color3.fromRGB(255, 107, 142),
-	main = Color3.fromRGB(110, 43, 217),
-}
-local N = Style.N
 
 -- A glass panel: dark, a little see-through, a thin violet edge.
 function Style.glass(parent: Instance, size: UDim2, radius: number?): Frame
@@ -755,6 +779,18 @@ function Style.glass(parent: Instance, size: UDim2, radius: number?): Frame
 	Style.round(f, radius or 14)
 	Style.stroke(f, N.edge, 2)
 	return f
+end
+
+-- A bar on glass: a see-through track with no outline. Returns it, its setter (0 to 1) and its fill.
+function Style.track(parent: Instance, size: UDim2, colour: Color3): (Frame, (f: number) -> (), Frame)
+	local back = Style.frame(parent, size, WHITE)
+	back.BackgroundTransparency = 0.84
+	Style.round(back, 8)
+	local fill = Style.frame(back, UDim2.fromScale(0, 1), colour)
+	Style.round(fill, 8)
+	return back, function(f: number)
+		fill.Size = UDim2.fromScale(math.clamp(f, 0, 1), 1)
+	end, fill
 end
 
 -- A paper pill over the world (the level, the coins, a goal, a note): a sand surface whose shadow is soft,
