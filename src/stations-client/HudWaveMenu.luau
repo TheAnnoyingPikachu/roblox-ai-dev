@@ -25,6 +25,7 @@ local redraw = App.redraw
 local show = App.show
 local waves = App.waves
 local fight = App.fight
+local ICON = App.ICON
 
 local page = Style.page(waves)
 local PORTAL_RADIUS = 14 -- World.PORTAL_RADIUS: who stands this near the portal's middle joins the fight
@@ -313,6 +314,11 @@ local function partyColumn(col: Instance, team: { any })
 		end
 	end, if due > 0 then "primary" else "off", UDim2.new(1, -8, 0, 44))
 	chest.LayoutOrder, chest.TextSize = 12, 16
+	local box = Instance.new("ImageLabel") -- the star chest's picture (STATION-148)
+	box.BackgroundTransparency, box.Image = 1, ICON.chest
+	box.AnchorPoint, box.Position, box.Size, box.ZIndex =
+		Vector2.new(0, 0.5), UDim2.new(0, 8, 0.5, -2), UDim2.fromOffset(36, 36), 3
+	box.Parent = chest
 end
 
 redraw.waves = function()

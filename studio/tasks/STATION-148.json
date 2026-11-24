@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-148",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "asset",
+  "objective": "The second set of HUD icons from ForgeGUI and a new daily wheel (SHANNON, 2026-11-24: 'start with the next icons and the new wheel and such'): the gold star, the hatching and training boosts, the rainbow jackpot, the spin, the gift and a star chest in the look of STATION-146, and the wheel's face and pointer as art.",
+  "inputs": [
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-146"
+  ],
+  "files": [
+    "src/stations-client/HudGifts.luau",
+    "src/stations-client/HudWaveMenu.luau",
+    "assets/stations/icons/hud_*.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-148.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "No reward shows an old drawn icon: the star, both boosts, the rainbow jackpot, the spin and the gift are the new set",
+    "The daily wheel is the art: its face turns with the prizes on its slices and lands under the pointer as before",
+    "The Waves window's star chest button shows the chest"
+  ],
+  "verification": "ForgeGUI generation_image type mixed, 3 variations each, the STATION-146 coin as the style reference: star d640eed0 (A), hatch boost b584b816 (A), train boost e082fe18 (A), rainbow 821781c4 (B), spin 37a0e3f5 (A), gift d8a53862 (A), chest 2aa33dd8 (A), wheel face c19c6096 (A, 512 px), pointer 8d241d74 (C). Uploaded from Studio. Seen in Studio: the month's prizes with the new boosts and rainbow, the wheel with the prizes on its slices, a spin turning it. selene 0 warnings.",
+  "output_artifacts": [
+    "assets/stations/icons/hud_*.png"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Picks made by Claude to keep going (SHANNON: 'go go go'); the sheet of all 27 is in the session for a swap. The boosts show a lightning bolt instead of the old 'x2' (icons carry no text)."
+}
