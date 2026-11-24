@@ -4297,6 +4297,7 @@ RunService.PreSimulation:Connect(function(dt: number)
 				elseif string.find(kind, "^foe_mage") then pick(ATTACKS, model, MAGE_ATTACK)
 				else pick(ATTACKS, model, BIPED_ATTACK) -- an upright animal has its own
 			target = sample(clip, t)
+			Spells.step(model, rig.bones, at, t, true) -- its regular attack's own effects, if it has any
 		elseif anim == "magic" and t < MAGIC.length then
 			target = sample(pick(MAGICS, model, if biped then BIPED_MAGIC else MAGIC), t)
 			local own = WEAPON_FX[(model:GetAttribute("Asset") :: string?) or ""]
@@ -4315,13 +4316,14 @@ RunService.PreSimulation:Connect(function(dt: number)
 		else
 			target = if biped then idleBiped(time) else idle(time)
 		end
-		if anim ~= "magic" or t >= MAGIC.length then
+		if not ((anim == "magic" and t < MAGIC.length) or (anim == "attack" and t < ATTACK.length)) then
 			Spells.stop(model)
 		end
 		-- a held stance (a Shadow Legion enemy's) or an animal's own idle (AnimalMoves): its moves start from it and
 		-- settle back into it
 		local stance = STANCES[(model:GetAttribute("Asset") :: string?) or ""]
-		local idleOf = AnimalMoves.IDLES[speciesOf(model) or ""]
+		local idleOf = AnimalMoves.IDLES[(model:GetAttribute("Asset") :: string?) or ""]
+			or AnimalMoves.IDLES[speciesOf(model) or ""] -- its own (the Sahara pair), or its species'
 		local rest = if stance then stanceAt(stance, time) elseif idleOf then idleOf(time) else nil
 		if rest then
 			local length = if anim == "attack" then ATTACK.length elseif anim == "magic" then MAGIC.length else 0

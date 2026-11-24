@@ -1004,10 +1004,14 @@ export type Frame = {
 
 local ALL: { [string]: (Frame) -> () } = {} -- filled at the end, from the spell modules
 
-local function drawOf(model: Model): ((Frame) -> ())?
+-- A model's spell, or (`strike`) the effects of its regular attack: a spell module's "<asset>@attack" entry
+local function drawOf(model: Model, strike: boolean?): ((Frame) -> ())?
 	local asset = model:GetAttribute("Asset")
 	if type(asset) ~= "string" then
 		return nil
+	end
+	if strike then
+		return ALL[asset .. "@attack"]
 	end
 	return ALL[asset] or ALL[string.match(asset, "^creature_(%l+)") or ""]
 end
@@ -1093,9 +1097,16 @@ end
 
 -- Draws `model`'s spell at `t` seconds into the "magic" clip that started at `at`. False if it has none (the shared
 -- charge and slam play instead).
-function Spells.step(model: Model, bones: { [string]: { bone: Bone, turn: CFrame } }, at: number, t: number): boolean
-	local draw = drawOf(model)
+function Spells.step(
+	model: Model,
+	bones: { [string]: { bone: Bone, turn: CFrame } },
+	at: number,
+	t: number,
+	strike: boolean?
+): boolean
+	local draw = drawOf(model, strike)
 	if draw == nil then
+		Spells.stop(model) -- (a spell still showing when a plain attack starts)
 		return false
 	end
 	local cast = casts[model]
@@ -1111,7 +1122,7 @@ function Spells.step(model: Model, bones: { [string]: { bone: Bone, turn: CFrame
 	c.frame.t = t
 	anchor(c, model, bones)
 	c.frame.kit:begin()
-	local hot = Spells.HOT[(model:GetAttribute("Asset") :: string?) or ""]
+	local hot = if strike then nil else Spells.HOT[(model:GetAttribute("Asset") :: string?) or ""]
 	local ok, err = pcall(function()
 		local f = c.frame
 		draw(f)

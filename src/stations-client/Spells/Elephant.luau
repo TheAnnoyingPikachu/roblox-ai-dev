@@ -263,5 +263,28 @@ return function(S: any)
 			end
 			S.impact(f, C.SUN, 6, 93)
 		end,
+
+		-- Tusk heave (the Sahara Mammoth's regular attack; the hit at 0.44 s): its tusks glow as it drives in, the ground
+		-- breaks into stone spikes under the target and a crescent of sunlight follows the tusks up
+		["creature_elephant_sahara_forge@attack"] = function(f)
+			local k, t = f.k, f.t
+			local g = env(t, 0.15, 0.3, 0.5, 0.65)
+			if g > 0 then
+				f.kit:orb(f.A.nose, 0.4 * k * g, C.SUN, 8, g)
+			end
+			local u = seg(t, 0.38, 0.85)
+			if u ~= nil then
+				local rise = ease(math.min(1, u * 4)) * (1 - ease(math.max(0, (u - 0.55) / 0.45)))
+				for i = -2, 2 do
+					local p = f.T + f.V(0.9 * i, 0.0, 0.0) * k
+					local tip = p + Z((1.4 + 0.8 * (2 - math.abs(i))) * k * rise)
+					f.kit:spike(p, tip, 0.4 * k, if i % 2 == 0 then C.GOLD else C.SAND, 3, rise)
+				end
+				local at = f.TC + Z((-1 + 3 * ease(u)) * k)
+				f.kit:crescent(at, 2.6 * k, 0.5 * k, C.SUN, f.V(1, 0, 0), f.V(0, -0.5, 1), 8, 1 - u)
+				f.kit:shock(f.T + Z(0.08), (0.5 + 4 * ease(u)) * k, 0.08 * k, C.VIOLET, 1 - u)
+				f.kit:burst(f.TC, u, 10, 3 * k, C.SAND, 37, 0.12 * k)
+			end
+		end,
 	}
 end

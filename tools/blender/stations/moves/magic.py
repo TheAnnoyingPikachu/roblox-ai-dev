@@ -1017,14 +1017,15 @@ def solar_flare(f):  # Sun Lion
     impact(f, SUN, 4, 77)
 
 
+# (its legs within about 25 degrees: it is stone blocks cut apart at the joints, see concepts.SAHARA_LION)
 JUDGEMENT_KEYS = [
     (0.00, {}),
-    (0.22, P(body=[-6, 0, 0, 0, -0.1, -0.25], head=[-14], leg_fl=[-10], leg_fr=[-10], leg_bl=[10], leg_br=[10], tail=[8])),
-    (0.50, P(body=[30, 0, 0, 0, 0.25, 0.9], head=[18], leg_fl=[52], leg_fr=[36], leg_bl=[-30], leg_br=[-30], tail=[-30])),
-    (0.80, P(body=[36, 0, 0, 0, 0.3, 1.05], head=[26], leg_fl=[40], leg_fr=[58], leg_bl=[-36], leg_br=[-36], tail=[-38, 12])),
-    (0.90, P(body=[-10, 0, 0, 0, -0.1, -0.4], head=[-16, 0, 0, 0, 0, -0.15], leg_fl=[-16], leg_fr=[-16], leg_bl=[10], leg_br=[10], tail=[-26])),
-    (1.02, P(body=[-10, 0, 0, 0, -0.1, -0.4], head=[-14, 0, 5, 0, 0, -0.15], leg_fl=[-16], leg_fr=[-16], leg_bl=[10], leg_br=[10], tail=[-26])),
-    (1.14, P(body=[-10, 0, 0, 0, -0.1, -0.4], head=[-14, 0, -5, 0, 0, -0.15], leg_fl=[-16], leg_fr=[-16], leg_bl=[10], leg_br=[10], tail=[-26])),
+    (0.22, P(crouch(14, -8), body=[-5, 0, 0, 0, -0.16, 0.2], head=[-18], tail=[6])),
+    (0.50, P(body=[9, 0, 0, 0, 0.2, 0.45], head=[30], leg_fl=[20], leg_fr=[16], leg_bl=[-10], leg_br=[-10], tail=[-30])),
+    (0.80, P(body=[11, 0, 0, 0, 0.26, 0.5], head=[38], leg_fl=[22], leg_fr=[20], leg_bl=[-12], leg_br=[-12], tail=[-38, 12])),
+    (0.90, P(body=[-7, 0, 0, 0, -0.12, -0.6], head=[-14, 0, 0, 0, 0, -0.1], leg_fl=[-12], leg_fr=[-12], leg_bl=[8], leg_br=[8], tail=[-24])),
+    (1.02, P(body=[-7, 0, 0, 0, -0.12, -0.6], head=[-12, 0, 5, 0, 0, -0.1], leg_fl=[-12], leg_fr=[-12], leg_bl=[8], leg_br=[8], tail=[-24])),
+    (1.14, P(body=[-7, 0, 0, 0, -0.12, -0.6], head=[-12, 0, -5, 0, 0, -0.1], leg_fl=[-12], leg_fr=[-12], leg_bl=[8], leg_br=[8], tail=[-24])),
     (1.38, P(body=[-2], head=[-4], tail=[-10])),
     (1.60, {}),
 ]
@@ -1420,6 +1421,48 @@ PECK_WINGS = [
     (1.30, P(leg_bl=[0, 0, 20], leg_br=[0, 0, -20])),
     (1.60, {}),
 ]
+
+# ---- the Sahara pair's regular attacks: effects on the 0.95 s attack clip, the hit at HIT (Spells' "<asset>@attack") --
+HIT = 0.44
+
+
+def sunfang(f):  # Sahara Guardian
+    k, t = f.k, f.t
+    halo = f.A["crown"] + Vector((-2.44, 1.22, -3.33)) * (f.H / 12.6)
+    g = env(t, 0.1, 0.3, 0.5, 0.7)
+    if g > 0:  # its halo flares as it lunges
+        f.kit.ring(halo, 1.3 * k * (1 + 0.2 * g), 0.08 * k, SUN, 9, g, Vector((0, 1, 0)), n=24)
+    u = seg(t, 0.36, 0.8)
+    if u is not None:  # three claws of sunlight rake across the target
+        reach = ease(min(1, u * 4))
+        fade = 1 - ease(max(0, (u - 0.4) / 0.6))
+        for i in (-1, 0, 1):
+            a = f.TC + Vector((-2.2, 0.0, 1.6 + 0.9 * i)) * k
+            b = f.TC + Vector((2.2, 0.0, -1.6 + 0.9 * i)) * k
+            f.kit.beam(a, a.lerp(b, reach), 0.16 * k, YELLOW, 9, fade)
+        f.kit.star(f.TC, 3 * k * (0.6 + 0.4 * reach), SUN, fade)
+        f.kit.shock(f.T + Z(0.08), (0.5 + 3.5 * ease(u)) * k, 0.07 * k, SUN, 1 - u)
+        f.kit.burst(f.TC, u, 10, 3 * k, GOLD, 31, 0.1 * k)
+
+
+def tusk_heave(f):  # Sahara Mammoth
+    k, t = f.k, f.t
+    g = env(t, 0.15, 0.3, 0.5, 0.65)
+    if g > 0:  # its tusks glow as it drives in
+        f.kit.orb(f.A["nose"], 0.4 * k * g, SUN, 8, g)
+    u = seg(t, 0.38, 0.85)
+    if u is not None:
+        rise = ease(min(1, u * 4)) * (1 - ease(max(0, (u - 0.55) / 0.45)))
+        for i in range(-2, 3):  # the ground breaks into stone spikes under the target
+            p = f.T + Vector((0.9 * i, 0.0, 0.0)) * k
+            f.kit.spike(p, p + Z((1.4 + 0.8 * (2 - abs(i))) * k * rise), 0.4 * k, SAND if i % 2 else GOLD, 3, rise)
+        # a crescent of sunlight follows the tusks up
+        f.kit.crescent(f.TC + Z((-1 + 3 * ease(u)) * k), 2.6 * k, 0.5 * k, SUN, Vector((1, 0, 0)), Vector((0, -0.5, 1)), 8, 1 - u)
+        f.kit.shock(f.T + Z(0.08), (0.5 + 4 * ease(u)) * k, 0.08 * k, VIOLET, 1 - u)
+        f.kit.burst(f.TC, u, 10, 3 * k, SAND, 37, 0.12 * k)
+
+
+STRIKES = {"creature_lion_sahara_forge": sunfang, "creature_elephant_sahara_forge": tusk_heave}
 
 CONCEPTS = {
     "creature_jackal_forge": ("Jackal", {
