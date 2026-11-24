@@ -1316,6 +1316,61 @@ def dawnbreaker(f):  # Sahara Mammoth
     impact(f, SUN, 6, 93)
 
 
+def sun_barrage(f):  # Sunfire War-Tortoise
+    k, t = f.k, f.t
+    muzzle = f.A["chest"]  # the cannon's mouth: the body's frontmost point
+    g = env(t, 0.15, 0.75, 0.85, 1.0)
+    if g > 0:  # the cannon drinks in the sun: an orb swells at its mouth, rings closing in
+        f.kit.orb(muzzle, 0.9 * k * g, SUN, 8, g, light=5 * g)
+        for i in range(3):
+            v = ((t - 0.15) * 2 + i / 3) % 1
+            f.kit.ring(muzzle, (2.2 - 1.8 * v) * k * g, 0.05 * k, GOLD, 6, 0.8 * g * v)
+    for i, t0 in enumerate((0.84, 0.92, 1.0)):  # three sun shells arc out of the cannon, one after another
+        side = Vector(((i - 1) * 2.2, 0, 0)) * k
+        land = f.T + side
+
+        def shell(p, u):
+            f.kit.orb(p, 0.55 * k, SUN, 9, 1.0)
+        flight(f, muzzle, land + Z(0.4 * k), t0, t0 + 0.28, 6 * k, shell, trail=(GOLD, 0.3 * k))
+        u = seg(t, t0 + 0.28, t0 + 0.75)
+        if u is not None:  # each bursts in a ring of sunfire
+            f.kit.shock(land + Z(0.08), (0.5 + 4 * ease(u)) * k, 0.09 * k, SUN, 1 - u)
+            f.kit.orb(land + Z(0.8 * k), (0.4 + 1.4 * ease(min(1, u * 3))) * k, YELLOW, 8, (1 - u) ** 1.5)
+            f.kit.burst(land + Z(0.6 * k), u, 10, 3 * k, GOLD, 50 + i, 0.12 * k)
+    if 0.82 < t < 1.1:  # the cannon's flash
+        f.kit.star(muzzle, 2.4 * k, SUN, 1 - (t - 0.82) / 0.28)
+    impact(f, SUN, 5, 95)
+
+
+def sunfire_horn(f):  # Molten Sun Rhino
+    k, t = f.k, f.t
+    horn = f.A["horn"]
+    paws = (f.A["paw_l"] + f.A["paw_r"]) / 2
+    feet = Vector((paws.x, paws.y, f.T.z))
+    g = env(t, 0.15, 0.7, 0.9, 1.05)
+    if g > 0:  # its horn takes fire and molten cracks glow under its feet
+        f.kit.orb(horn, 0.6 * k * g, SUN, 9, g, light=4 * g)
+        f.kit.disc(feet, 2.2 * k * g, LAVA, 3, 0.5 * g)
+    u = seg(t, 0.8, 1.25)
+    if u is not None:  # a molten crack races to the target and sun spikes burst up along it
+        run = ease(min(1, (t - 0.8) / (IMPACT - 0.8)))
+        fade = 1 - ease(max(0, (t - 1.05) / 0.2))
+        f.kit.beam(feet + Z(0.05), feet.lerp(f.T, run) + Z(0.05), 0.25 * k, LAVA, 8, fade)
+        for i in range(7):
+            v = (i + 1) / 8
+            if v <= run:
+                p = feet.lerp(f.T, v)
+                f.kit.spike(p, p + Z((0.8 + 2.2 * v) * k * fade), 0.4 * k, SUN if i % 2 else LAVA, 8, fade)
+        f.kit.beam(horn, horn.lerp(f.TC, run), 0.4 * k, SUN, 10, fade)
+    u = seg(t, IMPACT, 1.5)
+    if u is not None:  # a pillar of molten sun erupts under the target
+        rise = ease(min(1, u * 4)) * (1 - ease(max(0, (u - 0.5) / 0.5)))
+        f.kit.beam(f.T, f.T + Z(9 * k * rise), 1.3 * k, LAVA, 8, rise)
+        f.kit.beam(f.T, f.T + Z(9 * k * rise), 0.7 * k, YELLOW, 10, rise)
+        f.kit.shock(f.T + Z(0.08), (1 + 6 * ease(u)) * k, 0.1 * k, SUN, 1 - u)
+    impact(f, SUN, 5, 96)
+
+
 def war_axe(f):  # War Elephant
     """the axe in its trunk grows into a huge axe of iron and fire, which it swings up over its head and brings
     down through the target, splitting the ground"""
@@ -1557,6 +1612,12 @@ CONCEPTS = {
     }),
     "creature_elephant_sahara_forge": ("Sahara Mammoth", {
         "m_dawn": ("Dawnbreaker", "A sun wheel blazes over its back as a sun sigil turns under the target; it stamps, a line of sun spikes races along the ground, and two colossal tusks of light erupt either side of the target and cross over it.", AXE_KEYS, {}, dawnbreaker),
+    }),
+    "creature_tortoise_sahara_forge": ("Sunfire War-Tortoise", {
+        "m_barrage": ("Sun Barrage", "Hunkers down as its sun cannon drinks in the light, then fires three blazing sun shells that arc onto the target and burst in rings of sunfire.", SHELL_NOVA_KEYS, {}, sun_barrage),
+    }),
+    "creature_rhino_sahara_forge": ("Molten Sun Rhino", {
+        "m_sunhorn": ("Sunfire Horn", "Its horn takes fire as molten cracks glow under it; a crack races to the target with sun spikes bursting along it, its horn fires, and a pillar of molten sun erupts.", LANCE_KEYS, {}, sunfire_horn),
     }),
     "creature_elephant_war_forge": ("War Elephant", {
         "m_volley": ("Burning Volley", "A war rune flares over its back and fires a volley of flaming spears high into the air, which rain down on the target.", TRUMPET, {}, burning_volley),

@@ -209,6 +209,7 @@ StationConfig.SPECIES = {
 		variants = {
 			v("gemshell_tortoise", "Gemshell Tortoise", "epic", "defence", 2),
 			v("island_tortoise", "Island Tortoise", "legendary", "health", 3),
+			v("sahara_tortoise", "Sunfire War-Tortoise", "eternal", "defence", 11, true), -- decision 0117
 		},
 	},
 	{
@@ -247,6 +248,7 @@ StationConfig.SPECIES = {
 		variants = {
 			v("lava_rhino", "Lava Rhino", "legendary", "strength", 2),
 			v("crystal_rhino", "Crystal Rhino", "divine", "defence", 4),
+			v("sahara_rhino", "Molten Sun Rhino", "eternal", "strength", 8, true), -- decision 0117
 		},
 	},
 	{
@@ -872,6 +874,8 @@ export type Product = { id: string, s: string, v: string, product: number? }
 StationConfig.PRODUCTS = {
 	{ id = "sahara_lion", s = "lion", v = "sahara_lion", product = nil },
 	{ id = "sahara_elephant", s = "elephant", v = "sahara_elephant", product = nil },
+	{ id = "sahara_tortoise", s = "tortoise", v = "sahara_tortoise", product = nil },
+	{ id = "sahara_rhino", s = "rhino", v = "sahara_rhino", product = nil },
 } :: { Product }
 -- The beta reward: every save that plays while this is set gets this animal once (`Profile.beta`). Set it to nil
 -- when the beta ends.

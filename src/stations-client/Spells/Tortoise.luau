@@ -123,5 +123,36 @@ return function(S: any)
 			end
 			S.impact(f, C.AQUA, 3.5, 55, nil, false)
 		end,
+
+		-- Sun Barrage (the Sunfire War-Tortoise): hunkers down as its sun cannon drinks in the light, then fires three
+		-- blazing sun shells that arc onto the target and burst in rings of sunfire
+		creature_tortoise_sahara_forge = function(f)
+			local k, t = f.k, f.t
+			local muzzle = f.A.chest -- the cannon's mouth: the body's frontmost point
+			local g = env(t, 0.15, 0.75, 0.85, 1.0)
+			if g > 0 then
+				f.kit:orb(muzzle, 0.9 * k * g, C.SUN, 8, g, nil, 5 * g)
+				for i = 0, 2 do
+					local v = ((t - 0.15) * 2 + i / 3) % 1
+					f.kit:ring(muzzle, (2.2 - 1.8 * v) * k * g, 0.05 * k, C.GOLD, 6, 0.8 * g * v)
+				end
+			end
+			for i, t0 in { 0.84, 0.92, 1.0 } do
+				local land = f.T + f.V((i - 2) * 2.2, 0, 0) * k
+				S.flight(f, muzzle, land + Z(0.4 * k), t0, t0 + 0.28, 6 * k, function(p: Vector3)
+					f.kit:orb(p, 0.55 * k, C.SUN, 9, 1)
+				end, { C.GOLD, 0.3 * k })
+				local u = seg(t, t0 + 0.28, t0 + 0.75)
+				if u ~= nil then
+					f.kit:shock(land + Z(0.08), (0.5 + 4 * ease(u)) * k, 0.09 * k, C.SUN, 1 - u)
+					f.kit:orb(land + Z(0.8 * k), (0.4 + 1.4 * ease(math.min(1, u * 3))) * k, C.YELLOW, 8, (1 - u) ^ 1.5)
+					f.kit:burst(land + Z(0.6 * k), u, 10, 3 * k, C.GOLD, 49 + i, 0.12 * k)
+				end
+			end
+			if t > 0.82 and t < 1.1 then
+				f.kit:star(muzzle, 2.4 * k, C.SUN, 1 - (t - 0.82) / 0.28)
+			end
+			S.impact(f, C.SUN, 5, 95)
+		end,
 	}
 end

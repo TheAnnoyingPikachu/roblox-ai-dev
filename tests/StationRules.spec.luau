@@ -239,7 +239,7 @@ describe("StationConfig", function()
 				n += if va.exclusive then 1 else 0
 			end
 		end
-		expect(n).toBe(2) -- the Sahara Guardian and the Sahara Mammoth
+		expect(n).toBe(4) -- the Sahara Guardian, Sahara Mammoth, Sunfire War-Tortoise and Molten Sun Rhino
 		expect(StationConfig.RARITIES[#StationConfig.RARITIES]).toBe("eternal")
 		for rarity, at in StationConfig.RARITY_FLOOR do
 			expect(rarity == "eternal" or at < StationConfig.RARITY_FLOOR.eternal).toBeTruthy()

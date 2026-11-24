@@ -37,6 +37,17 @@ draft, for the checkpoint. Tasks STATION-151 and STATION-152. Date: 2026-11-24.
   Guardian once (`Profile.beta`), the same way. Set it to nil when the beta ends.
 - The save version goes to 3 (new variants; `receipts` and `beta` in the save).
 
+## Added later (STATION-156, same day)
+
+- SHANNON: "animate and implement the eternal tortoise and rhino", then "all the eternal animals should be fairly
+  larger than their counterparts". Two more exclusive variants: the **Sunfire War-Tortoise** (`sahara_tortoise`,
+  defence, mult 11: power 2453, a sun cannon on its back: Sun Barrage) and the **Molten Sun Rhino** (`sahara_rhino`,
+  strength, mult 8: power 2320: Sunfire Horn). Each plays its species' idle and attack, sold the same way
+  (`PRODUCTS`, ids still nil), with rainbow coats.
+- Every Eternal is about 1.3 times its species' largest model: Guardian 22 studs long (Sun Lion 16), Mammoth 39
+  (Frost Mammoth 30), War-Tortoise 19.5 (Island Tortoise 14.8), Sun Rhino 24 (Lava Rhino 18.5).
+- Suggested prices for the two new ones: 799 Robux each.
+
 ## Not done
 
 - The products are not made: `product` is nil for both, and the shelf says "Coming soon". Making them (and

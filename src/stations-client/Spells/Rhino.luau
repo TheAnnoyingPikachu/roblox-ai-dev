@@ -124,5 +124,47 @@ return function(S: any)
 			end
 			S.impact(f, C.WHITE, 4, 69)
 		end,
+
+		-- Sunfire Horn (the Molten Sun Rhino): its horn takes fire as molten cracks glow under it; a crack races to the
+		-- target with sun spikes bursting along it, its horn fires, and a pillar of molten sun erupts
+		creature_rhino_sahara_forge = function(f)
+			local k, t = f.k, f.t
+			local horn = f.A.horn
+			local feet = S.ground(f, (f.A.paw_l + f.A.paw_r) / 2)
+			local g = env(t, 0.15, 0.7, 0.9, 1.05)
+			if g > 0 then
+				f.kit:orb(horn, 0.6 * k * g, C.SUN, 9, g, nil, 4 * g)
+				f.kit:disc(feet, 2.2 * k * g, C.LAVA, 3, 0.5 * g)
+			end
+			local u = seg(t, 0.8, 1.25)
+			if u ~= nil then
+				local run = ease(math.min(1, (t - 0.8) / (S.IMPACT - 0.8)))
+				local fade = 1 - ease(math.max(0, (t - 1.05) / 0.2))
+				f.kit:beam(feet + Z(0.05), feet:Lerp(f.T, run) + Z(0.05), 0.25 * k, C.LAVA, 8, fade)
+				for i = 0, 6 do
+					local v = (i + 1) / 8
+					if v <= run then
+						local p = feet:Lerp(f.T, v)
+						f.kit:spike(
+							p,
+							p + Z((0.8 + 2.2 * v) * k * fade),
+							0.4 * k,
+							if i % 2 == 1 then C.SUN else C.LAVA,
+							8,
+							fade
+						)
+					end
+				end
+				f.kit:beam(horn, horn:Lerp(f.TC, run), 0.4 * k, C.SUN, 10, fade)
+			end
+			u = seg(t, S.IMPACT, 1.5)
+			if u ~= nil then
+				local rise = ease(math.min(1, u * 4)) * (1 - ease(math.max(0, (u - 0.5) / 0.5)))
+				f.kit:beam(f.T, f.T + Z(9 * k * rise), 1.3 * k, C.LAVA, 8, rise)
+				f.kit:beam(f.T, f.T + Z(9 * k * rise), 0.7 * k, C.YELLOW, 10, rise)
+				f.kit:shock(f.T + Z(0.08), (1 + 6 * ease(u)) * k, 0.1 * k, C.SUN, 1 - u)
+			end
+			S.impact(f, C.SUN, 5, 96)
+		end,
 	}
 end
