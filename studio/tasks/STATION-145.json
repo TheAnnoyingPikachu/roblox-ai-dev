@@ -1,0 +1,49 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-145",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON's Sahara Guardian (ForgeGUI site model 'Sahara Guardian Rare Variant', artifact 30d3ddb4) brought into Animal Stations as SHANNON asked (2026-11-24: 'take that model from forge and animate it into roblox and give it an insane power attack'): the one mesh with its sun halo skinned to the Stations rig, uploaded, given the lions' idle and attack and a power attack of its own, Sun's Judgement.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0102-animal-stations-skinned-forge-models.md",
+    "tools/blender/stations/moves/README.md"
+  ],
+  "dependencies": [
+    "STATION-116"
+  ],
+  "files": [
+    "assets/stations/creature_lion_sahara_forge.*",
+    "assets/stations/sources/creature_lion_sahara_forge.glb",
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "tools/blender/stations/moves/magic.py",
+    "tools/blender/stations/moves/export_moves.py",
+    "tools/blender/stations/moves/check_spells.luau",
+    "src/shared/AnimalMoves.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "src/shared/StationRules.luau",
+    "src/stations-client/Spells/Lion.luau",
+    "src/stations-client/Spells/init.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-145.json"
+  ],
+  "tests": [
+    "tests/AnimalMoves.spec.luau",
+    "tests/StationAssets.spec.luau",
+    "tests/StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "creature_lion_sahara_forge loads in the game as one skinned mesh on the Stations rig: head and halo, four legs and tail each follow their bone",
+    "It plays the lions' idle and attack, and Sun's Judgement as its power attack: its halo blazes, a greater halo opens over the target, a pillar of sunlight falls and a crown of sun spikes bursts from the ground",
+    "No egg, wave or shop gives it: no economy value, drop table, remote or save changes"
+  ],
+  "verification": "",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON (nothing here is decided by this task). 1) How the Sahara Guardian is won. It is in StationRules.FORGE as sahara_lion (model and moves only) and in no egg. Every animal has exactly two variants (decision 0110, tested), so making it a third Lion variant, a boss foe or an event reward is a design decision with its own record. Recommended: a boss-size Lion variant of the highest rarity from the Crown Egg; if rejected it stays unobtainable and costs nothing. 2) It has no rainbow coat (every obtainable animal has one); needed only if it becomes obtainable. 3) Built 22 studs long (12.6 tall with the halo), a third longer than the Sun Lion, after the concept sheet's 'Huge Size (Boss-Like)'. 4) Sun's Judgement draws up to about 1,200 parts in a frame, over twice the next heaviest spell (Thunder Cheetah, 471): check it on a phone before it is obtainable. Not done: a Blender concept render of the spell (magic.py has it; shown in Studio instead), the --stretch check."
+}
