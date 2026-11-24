@@ -72,9 +72,12 @@ end
 local children = {}
 for _, name in fs.readDir(DIR) do
 	if name ~= "init.luau" and string.sub(name, -5) == ".luau" then
-		table.insert(children, { name = name, IsA = function(_, c)
-			return c == "ModuleScript"
-		end })
+		table.insert(children, {
+			name = name,
+			IsA = function(_, c)
+				return c == "ModuleScript"
+			end,
+		})
 	end
 end
 local AnimalRig = luau.load(fs.readFile(REPO .. "/src/shared/AnimalRig.luau"), { debugName = "AnimalRig" })()
@@ -88,9 +91,11 @@ local game = {
 		if name == "Workspace" then
 			return workspace
 		end
-		return { WaitForChild = function()
-			return shared
-		end }
+		return {
+			WaitForChild = function()
+				return shared
+			end,
+		}
 	end,
 }
 local function myRequire(m)
@@ -105,9 +110,11 @@ local Spells = luau.load(fs.readFile(DIR .. "/init.luau"), {
 	environment = env({
 		game = game,
 		require = myRequire,
-		script = { GetChildren = function()
-			return children
-		end },
+		script = {
+			GetChildren = function()
+				return children
+			end,
+		},
 	}),
 })()
 
@@ -133,7 +140,8 @@ local function standIn(asset: string)
 	local bones = {}
 	for name, j in data.joints do
 		local cf = body * roblox.CFrame.new(j[1], j[2], j[3])
-		bones[name] = { bone = { WorldCFrame = cf, TransformedWorldCFrame = cf, Name = name }, turn = roblox.CFrame.identity }
+		bones[name] =
+			{ bone = { WorldCFrame = cf, TransformedWorldCFrame = cf, Name = name }, turn = roblox.CFrame.identity }
 	end
 	return model, bones
 end
@@ -180,39 +188,41 @@ local function bad(v): boolean
 end
 
 local keys = {}
-for _, asset in { -- every animal model's spell (the variants' own, or their species')
-	"creature_jackal_forge",
-	"creature_jackal_pharaoh_forge",
-	"creature_jackal_sphinx_forge",
-	"creature_tortoise_forge",
-	"creature_tortoise_gemshell_forge",
-	"creature_tortoise_island_forge",
-	"creature_meerkat_forge",
-	"creature_meerkat_star_forge",
-	"creature_meerkat_storm_forge",
-	"creature_cheetah_forge",
-	"creature_cheetah_lightning_forge",
-	"creature_cheetah_thunder_forge",
-	"creature_rhino_forge",
-	"creature_rhino_lava_forge",
-	"creature_rhino_crystal_forge",
-	"creature_lion_sahara_forge",
-	"creature_flamingo_forge",
-	"creature_flamingo_peacock_forge",
-	"creature_flamingo_phoenix_forge",
-	"creature_lion_forge",
-	"creature_lion_sun_forge",
-	"creature_lion_shadow_forge",
-	"creature_giraffe_forge",
-	"creature_giraffe_acacia_forge",
-	"creature_giraffe_diamond_forge",
-	"creature_elephant_forge",
-	"creature_elephant_frost_forge",
-	"creature_elephant_war_forge",
-	"creature_elephant_sahara_forge",
-	"creature_tortoise_sahara_forge",
-	"creature_rhino_sahara_forge",
-} do
+for _, asset in
+	{ -- every animal model's spell (the variants' own, or their species')
+		"creature_jackal_forge",
+		"creature_jackal_pharaoh_forge",
+		"creature_jackal_sphinx_forge",
+		"creature_tortoise_forge",
+		"creature_tortoise_gemshell_forge",
+		"creature_tortoise_island_forge",
+		"creature_meerkat_forge",
+		"creature_meerkat_star_forge",
+		"creature_meerkat_storm_forge",
+		"creature_cheetah_forge",
+		"creature_cheetah_lightning_forge",
+		"creature_cheetah_thunder_forge",
+		"creature_rhino_forge",
+		"creature_rhino_lava_forge",
+		"creature_rhino_crystal_forge",
+		"creature_lion_sahara_forge",
+		"creature_flamingo_forge",
+		"creature_flamingo_peacock_forge",
+		"creature_flamingo_phoenix_forge",
+		"creature_lion_forge",
+		"creature_lion_sun_forge",
+		"creature_lion_shadow_forge",
+		"creature_giraffe_forge",
+		"creature_giraffe_acacia_forge",
+		"creature_giraffe_diamond_forge",
+		"creature_elephant_forge",
+		"creature_elephant_frost_forge",
+		"creature_elephant_war_forge",
+		"creature_elephant_sahara_forge",
+		"creature_tortoise_sahara_forge",
+		"creature_rhino_sahara_forge",
+	}
+do
 	table.insert(keys, asset)
 end
 
