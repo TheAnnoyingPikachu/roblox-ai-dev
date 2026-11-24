@@ -432,7 +432,7 @@ do
 	battle.Name = "ToBattle"
 	battle.AnchorPoint, battle.Position = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -20)
 	Style.radius(battle, 20)
-	local crest = Instance.new("ImageLabel") -- the shield with a paw (assets/stations/icons/shield.png)
+	local crest = Instance.new("ImageLabel") -- the shield with a paw (STATION-150)
 	crest.BackgroundTransparency, crest.Image = 1, Style.ICONS.shield
 	crest.Position, crest.Size, crest.ZIndex = UDim2.fromOffset(14, 12), UDim2.fromOffset(48, 48), 2
 	crest.Parent = battle
