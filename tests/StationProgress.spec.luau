@@ -264,6 +264,7 @@ describe("StationProgress.buy", function()
 			p = StationProgress.crack(p, 1, 1e9)
 		end
 		expect(#p.animals).toBe(4)
+		expect(#p.team).toBe(3)
 		expect(#p.eggs).toBe(0)
 		expect(#p.team).toBe(3) -- the fourth rests
 		-- an egg still in the storage cannot be opened, however long it waits
@@ -469,6 +470,70 @@ describe("StationProgress team and training", function()
 		local _, stopped, why = StationProgress.stop(p, 1, 5000)
 		expect(stopped).toBe(false)
 		expect(why).toBe("idle")
+	end)
+
+	it("puts an animal back in the team slot it left when its training stops, if that place is free", function()
+		local p = three()
+		local first = p.team[1]
+		p = StationProgress.train(p, first, "track", 0)
+		expect(table.find(p.team, first)).toBeNil()
+		p = StationProgress.sanitize(StationProgress.snapshot(p, 10), 10) -- the slot survives a save
+		p = StationProgress.stop(p, first, 20)
+		expect(p.team[1]).toBe(first)
+		-- a full team keeps the stopped animal out
+		p = StationProgress.train(p, first, "track", 30)
+		p.coins = 1000
+		p = get(p, "meadow", hatched("jackal")) -- a hatch joins a team with room
+		expect(#p.team).toBe(StationProgress.TEAM_SIZE)
+		p = StationProgress.stop(p, first, 40)
+		expect(table.find(p.team, first)).toBeNil()
+		expect(#p.team).toBe(StationProgress.TEAM_SIZE)
+	end)
+
+	it("releases an idle animal for coins by rarity, never one in the team, training, locked or the last", function()
+		local p = three()
+		p.coins = 1000
+		p = get(p, "meadow", hatched("jackal")) -- the fourth waits outside a full team
+		local spare = p.animals[#p.animals].id
+		local _, ok, code = StationProgress.release(p, p.team[1])
+		expect(code).toBe("in_team")
+		local coins = p.coins
+		p, ok = StationProgress.release(p, spare)
+		expect(ok).toBe(true)
+		expect(#p.animals).toBe(3)
+		expect(p.coins).toBe(coins + StationProgress.RELEASE_PAY.common)
+	end)
+
+	it("fuses four of one animal and coat tier into one of the next tier, levels averaged", function()
+		local p = fresh()
+		p.coins = 1e6
+		for _ = 1, 3 do -- three for the team, then four more outside it
+			p = get(p, "meadow", hatched("meerkat"))
+		end
+		local ids = {}
+		for k = 1, 4 do
+			p = get(p, "meadow", hatched("jackal"))
+			local a = p.animals[#p.animals]
+			ids[k] = a.id
+			local copy = table.clone(a)
+			copy.trained = { speed = k * 4, stamina = 0, strength = 0, mana = 0, health = 0, defence = 0 } :: any
+			p.animals[#p.animals] = copy
+		end
+		local _, a = StationProgress.find(p, ids[1])
+		expect(#StationProgress.fusable(p, a :: StationProgress.Animal)).toBe(4)
+		local _, ok, code = StationProgress.fuse(p, ids, "rainbow")
+		expect(code).toBe("coat") -- a plain animal fuses into the commonest coats, not Rainbow
+		local coat = StationProgress.COAT_TIERS[1][1]
+		local before = #p.animals
+		p, ok = StationProgress.fuse(p, ids, coat)
+		expect(ok).toBe(true)
+		expect(#p.animals).toBe(before - 3)
+		local _, fused = StationProgress.find(p, ids[1])
+		expect((fused :: StationProgress.Animal).coat).toBe(coat)
+		expect(StationRules.level(fused :: any, "speed")).toBe(10) -- (4 + 8 + 12 + 16) / 4
+		expect(StationProgress.coatTier(fused :: StationProgress.Animal)).toBe(1)
+		local _, _, why = StationProgress.fuse(p, { ids[1], ids[1], ids[1], ids[1] }, coat)
+		expect(why).toBe("animal")
 	end)
 
 	it("settles on every save without double counting", function()

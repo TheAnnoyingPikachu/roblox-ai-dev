@@ -32,6 +32,7 @@ eggs, stations), `StationRules` (hatch, stat levels, roles), `BattleRules` (wave
 
 ## Must stay true
 
+- Release and fusion (decision 0112): `StationProgress.release` and `fuse` (four of one animal and coat tier into the next tier, `COAT_TIERS`); never on an animal in the team, training or locked. Trading is off while `StationTrade.ON` is false. Training remembers the team `slot` it left and `stop` puts it back.
 - Saves (decision 0111): a busy save is waited for behind the loading cover (`waitBusy`), a session that cannot save kicks the player, and a save from newer content is never loaded (`tooNew`): bump `StationProgress.VERSION` with every release that adds species, variants, eggs or coats. A run's pot is banked in `beforeFinish`.
 - The server decides prices, hatches and times; profile changes are pure `StationProgress` functions that capture their inputs (SaveStore runs them twice).
 - "Level" has three meanings: wave (`LevelRules`, `Profile.best`), stat level (0 to `MAX_LEVEL`, `Owned.trained`) and player level (`StationProgress.playerLevel`, from `Profile.xp`).

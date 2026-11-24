@@ -977,7 +977,9 @@ local router = Router.new({
 			handler = function(player, userId: number)
 				local target = Players:GetPlayerByUserId(userId)
 				local mine, theirs = saves.get(player), if target then saves.get(target) else nil
-				if target == nil or target == player or mine == nil or theirs == nil then
+				if not StationTrade.ON then
+					return false, "trade_closed"
+				elseif target == nil or target == player or mine == nil or theirs == nil then
 					return false, "trade_nobody"
 				end
 				local can, code = StationTrade.canTrade(mine, os.time())
@@ -1142,6 +1144,40 @@ local router = Router.new({
 				end)
 			end,
 		},
+		-- release an animal for a few coins, or fuse four of one into the next coat tier (decision 0112)
+		release = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, id: number)
+				return apply(player, function(p)
+					return StationProgress.release(p, id)
+				end)
+			end,
+		},
+		fuse = {
+			args = {
+				Payload.int({ min = 1, max = 1e12 }),
+				Payload.int({ min = 1, max = 1e12 }),
+				Payload.int({ min = 1, max = 1e12 }),
+				Payload.int({ min = 1, max = 1e12 }),
+			},
+			handler = function(player, a: number, b: number, c: number, d: number)
+				local save, first = saves.get(player), nil
+				if save then
+					_, first = StationProgress.find(save, a)
+				end
+				if first == nil then
+					return false, "animal"
+				end
+				local next = StationProgress.COAT_TIERS[StationProgress.coatTier(first) + 1]
+				if next == nil then
+					return false, "fuse_top"
+				end
+				local coat = next[math.random(1, #next)] -- the server picks which coat of the tier
+				return apply(player, function(p)
+					return StationProgress.fuse(p, { a, b, c, d }, coat)
+				end)
+			end,
+		},
 		team = {
 			args = { Payload.int({ min = 1, max = 1e12 }) },
 			handler = function(player, id: number)
@@ -1213,6 +1249,16 @@ local router = Router.new({
 					body = look.body,
 					spot = look.spot,
 				})
+				-- an epic or rarer hatch, or any coat, is announced to the server (SHANNON, 2026-11-24)
+				local rank = table.find(StationConfig.RARITIES, StationRules.rarity(born :: any)) or 0
+				if rank >= (table.find(StationConfig.RARITIES, "epic") or 99) or born.coat then
+					local what = `a {StationRules.rarity(born :: any)} {StationTrade.nameOf(born :: any)}`
+					for _, other in Players:GetPlayers() do
+						if other ~= player then
+							remotes.fx(other, "announce", { who = player.DisplayName, what = what })
+						end
+					end
+				end
 				return true, nil
 			end,
 		},

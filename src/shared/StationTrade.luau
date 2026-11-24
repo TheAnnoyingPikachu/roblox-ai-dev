@@ -19,6 +19,9 @@ local StationRules = require("./StationRules")
 
 local StationTrade = {}
 
+-- trading is switched off until its hardening is done (SHANNON, 2026-11-24): the Trade button is hidden and every
+-- trade request refused; true turns it back on
+StationTrade.ON = false
 StationTrade.MAX = 4 -- animals each side may put in one trade
 StationTrade.MIN_LEVEL = 5
 StationTrade.PER_DAY = 20
