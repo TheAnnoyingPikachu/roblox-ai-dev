@@ -581,26 +581,19 @@ describe("BattleRules fight feel (decision 0097) and run setups (decision 0098)"
 		error("no tap")
 	end
 
-	it("makes a tap PERFECT_AT after the meter filled a Perfect, PERFECT times as strong", function()
+	it("makes a Perfect PERFECT times as strong: a lion's ring held while it fills (decision 0109)", function()
 		local solo, foe = { owned("lion") }, { owned("rhino") } -- alone, so no combo changes the numbers
 		local base = {}
 		BattleRules.battle(solo, foe, base, {}, ready)
 		local at = filled(base, 1)
-		local plain, perfect = {}, {}
-		BattleRules.battle(solo, foe, plain, { { slot = 1, t = at + 1 } }, ready)
-		BattleRules.battle(solo, foe, perfect, { { slot = 1, t = at + BattleRules.PERFECT_AT } }, ready)
+		local plain, perfect, tap = {}, {}, {}
+		BattleRules.battle(solo, foe, plain, { { slot = 1, t = at + 1, presses = 4 } }, ready) -- let go early
+		BattleRules.battle(solo, foe, perfect, { { slot = 1, t = at + 1.3, presses = BattleRules.HOLD_TENTHS } }, ready)
+		BattleRules.battle(solo, foe, tap, { { slot = 1, t = at + BattleRules.PERFECT_AT } }, ready) -- a tap, not held
 		expect(tapped(plain).perfect).toBeNil()
 		expect(tapped(perfect).perfect).toBe(true)
 		expect(tapped(perfect).dmg > tapped(plain).dmg * 1.4).toBeTruthy()
-		local late = {}
-		BattleRules.battle(
-			solo,
-			foe,
-			late,
-			{ { slot = 1, t = at + BattleRules.PERFECT_AT + BattleRules.PERFECT_LATE + 0.05 } },
-			ready
-		)
-		expect(tapped(late).perfect).toBeNil()
+		expect(tapped(tap).perfect).toBeNil()
 	end)
 
 	it("chains power attacks by different animals within COMBO_SECONDS into a combo", function()
@@ -684,10 +677,12 @@ describe("BattleRules pit fight: clicks and quick presses (decision 0106)", func
 		end
 	)
 
-	it("judges a Perfect by the press: ring, needle crossings, a quick chain, a full mash", function()
+	it("judges a Perfect by the press: a held ring, needle crossings, a quick chain, a full mash", function()
 		local P, E, L = BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE
-		expect(BattleRules.perfect("ring", P)).toBe(true)
-		expect(BattleRules.perfect("ring", P + L + 0.05)).toBe(false)
+		-- the ring is held while it fills (decision 0109): its presses are tenths of a second held
+		expect(BattleRules.perfect("ring", 1.5, BattleRules.HOLD_TENTHS)).toBe(true)
+		expect(BattleRules.perfect("ring", P, BattleRules.HOLD_TENTHS - 1)).toBe(false)
+		expect(BattleRules.perfect("ring", P)).toBe(false)
 		expect(BattleRules.perfect("needle", P)).toBe(true)
 		expect(BattleRules.perfect("needle", P + 2 * BattleRules.NEEDLE_EVERY + L - 0.01)).toBe(true)
 		expect(BattleRules.perfect("needle", P + BattleRules.NEEDLE_EVERY * 0.5 + 0.1)).toBe(false)

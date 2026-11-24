@@ -897,7 +897,10 @@ function WaveShow.power(player: Player, seat: number, presses: number?): (boolea
 				end
 			end
 		end
-		count = if filled then math.min(presses, math.floor(BattleRules.MASH_RATE * (seen - filled)) + 1) else 0
+		-- believed only as far as the server's own clock allows since the meter filled: MASH_RATE presses a
+		-- second for a mash, ten tenths a second for a ring's hold (decision 0109)
+		local rate = if BattleRules.pressOf(show.team[slot] :: any) == "ring" then 10 else BattleRules.MASH_RATE
+		count = if filled then math.min(presses, math.floor(rate * (seen - filled)) + 1) else 0
 	end
 	local taps = table.clone(show.taps)
 	table.insert(taps, { slot = slot, t = t, presses = count })

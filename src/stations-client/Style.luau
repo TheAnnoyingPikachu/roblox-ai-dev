@@ -475,7 +475,11 @@ function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: st
 	f.Name = "Toast"
 	f.AnchorPoint, f.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14)
 	f.Size = UDim2.fromOffset(0, 46)
-	f.AutomaticSize = Enum.AutomaticSize.X
+	f.AutomaticSize = Enum.AutomaticSize.XY
+	f.TextWrapped = true -- a long message wraps onto more lines instead of running across the screen
+	local most = Instance.new("UISizeConstraint")
+	most.MinSize, most.MaxSize = Vector2.new(0, 46), Vector2.new(560, math.huge)
+	most.Parent = f
 	f.BackgroundColor3 = C.sand
 	f.Font = Ui.theme.font
 	f.Text = text
@@ -485,7 +489,8 @@ function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: st
 	Style.round(f, 23)
 	Style.stroke(f, INK, 3)
 	local p = Instance.new("UIPadding")
-	p.PaddingLeft, p.PaddingRight = UDim.new(0, 52), UDim.new(0, 18)
+	p.PaddingLeft, p.PaddingRight, p.PaddingTop, p.PaddingBottom =
+		UDim.new(0, 52), UDim.new(0, 18), UDim.new(0, 8), UDim.new(0, 8)
 	p.Parent = f
 	local icon = Instance.new("TextLabel")
 	icon.AnchorPoint, icon.Position, icon.Size =

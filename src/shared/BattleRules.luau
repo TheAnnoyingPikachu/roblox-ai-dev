@@ -312,7 +312,8 @@ BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 --   with STRIKE_SECONDS of its attacking (its `click` share of a normal hit, splash and heal included), and
 --   its meter gains the same share of its energy. Its log entry is a normal hit marked `click`. A strike
 --   less than STRIKE_GAP after the last one does nothing.
--- * A power tap is a Perfect by its animal's press (`perfect`): the ring's window; the needle's, at
+-- * A power tap is a Perfect by its animal's press (`perfect`): a ring held while it fills (decision 0109,
+--   amended: the tap's `presses` is how long it was held, in tenths of a second, at least HOLD_TENTHS); the needle's, at
 --   PERFECT_AT and every NEEDLE_EVERY after; a chain finished by PERFECT_AT + PERFECT_LATE; a mash that
 --   brings MASH_COUNT presses (the tap's `presses`) by MASH_BY + PERFECT_LATE.
 --
@@ -329,6 +330,7 @@ BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 2.4, 0.6, 1 / 12
 BattleRules.NEEDLE_EVERY = 1.5
 BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 8, 3.6, 12
+BattleRules.HOLD_TENTHS = 12 -- the ring fills in 1.2 s of holding
 BattleRules.SPLASH, BattleRules.CROWD, BattleRules.CROWD_SHARE, BattleRules.KNOCKBACK = 0.5, 5, 0.6, 1
 export type Hit = {
 	t: number,
@@ -353,13 +355,15 @@ export type Hit = {
 export type Tap = { slot: number, t: number, presses: number?, owner: number? }
 
 -- Whether a power tap `since` seconds after its meter filled is a Perfect for an animal whose press is
--- `press` (decisions 0097, 0106); `presses` is a mash's count.
+-- `press` (decisions 0097, 0106, 0109); `presses` is a mash's count or a ring's hold in tenths of a second.
 function BattleRules.perfect(press: string, since: number, presses: number?): boolean
 	local late = since - BattleRules.PERFECT_AT
 	if press == "chain" then
 		return late <= BattleRules.PERFECT_LATE
 	elseif press == "mash" then
 		return (presses or 0) >= BattleRules.MASH_COUNT and since <= BattleRules.MASH_BY + BattleRules.PERFECT_LATE
+	elseif press == "ring" then
+		return (presses or 0) >= BattleRules.HOLD_TENTHS
 	elseif press == "needle" then
 		return late >= -BattleRules.PERFECT_EARLY
 			and (late + BattleRules.PERFECT_EARLY) % BattleRules.NEEDLE_EVERY

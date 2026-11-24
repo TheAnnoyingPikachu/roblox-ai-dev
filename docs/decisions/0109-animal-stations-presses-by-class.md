@@ -27,6 +27,19 @@ Date: 2026-11-24. Task STATION-128.
   cards never cover them. The cards are compact: the line says whose each is, so the card shows only what to
   do and its key. Another player's animal with a full meter gets only a small marker over its head.
 
+## Amended (SHANNON, 2026-11-24): the reference's look, and the ring held
+
+- SHANNON, on a reference picture: "make the QTEs following this reference", then on the concept: "make the
+  hold key indicator slightly smaller and bring it more central ... once youve refined them agin go ahead
+  and add them, and also make the old hold the new circle fill hold".
+- The pop-ups are drawn by `PressPops.card`: dark glass with a violet edge, key caps, a gold glow on what is
+  due (green for the needle in its zone); the class tags are gone and the line to the animal is fine,
+  fading, with a small ring where it meets it.
+- The ring is now held while it fills (`HOLD_TENTHS`, 1.2 s). Let go early, it fires with what was held (a
+  Good); held to full it fires itself, a Perfect. Clicking its plate is a plain tap (never a Perfect).
+- Remote contract: `power`'s second integer is, for a ring, how long it was held in tenths of a second
+  (0 to 30); the server caps it at ten a second since the meter filled, on its own clock, as it caps a mash.
+
 ## Evidence
 
 - `BattleRules.spec`: each class's press, four classes four presses. 786 specs pass.

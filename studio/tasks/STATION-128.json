@@ -20,7 +20,8 @@
     "docs/decisions/0109-animal-stations-presses-by-class.md",
     "docs/decisions/0106-animal-stations-pit-fight.md",
     "studio/tasks/STATION-127.json",
-    "studio/tasks/STATION-128.json"
+    "studio/tasks/STATION-128.json",
+    "src/stations/WaveShow.luau"
   ],
   "tests": [
     "BattleRules.spec.luau"
@@ -29,9 +30,10 @@
     "BattleRules.pressOf gives an animal its class's press (PRESS_OF_ROLE); the four classes have four different presses",
     "A pop-up stands in a row just under its player's team, tied to its animal by a line in its class's colour, with the class's name on it; cards never overlap and stay on the screen",
     "Another player's animal with a full meter shows a small marker over it, not a card",
-    "The pop-ups are compact (the press and its key, no name)"
+    "The pop-ups are compact (the press and its key, no name)",
+    "Amended: the pop-ups in the reference's look (PressPops.card, no class tags, fine fading lines); the ring held while it fills, a Perfect at HOLD_TENTHS, the server capping the held tenths by its clock"
   ],
-  "verification": "lune run tests/run (786 pass); selene; rojo build and check-place. Played in Studio (build dev, local, one player): test wave 25 with Sun Lion, Lava Rhino, Phoenix Flamingo and Frost Mammoth, three pop-ups at once under the team.",
+  "verification": "lune run tests/run (786 pass); selene; rojo build and check-place. Played in Studio (build dev, local, one player): test wave 25 with Sun Lion, Lava Rhino, Phoenix Flamingo and Frost Mammoth, three pop-ups at once under the team. Amended: in Studio (test wave 25) the new cards show and holding key 1 to full fired a Perfect.",
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",

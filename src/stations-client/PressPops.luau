@@ -1,12 +1,14 @@
 --!strict
--- Where the quick presses pop up (decision 0109, SHANNON's pick B): over the animal that fires. The HUD makes
--- each pop-up card (Hud.client: `pressOn`); this stands it over its animal on the screen, every frame, tied to
--- the animal by a line in its class's colour. The cards of one player's team stand in one row just under
+-- Where the quick presses pop up (decision 0109, SHANNON's pick B): by the animal that fires. `card` draws
+-- each pop-up (dark glass, a violet edge, key caps: SHANNON's reference, 2026-11-24) for the HUD's `pressOn`;
+-- `attach` stands it by its animal on the screen, every frame, tied to it by a fine line that fades as it
+-- goes and ends in a small ring. The cards of one player's team stand in one row just under
 -- the team, pushed apart so none covers another: the camera is behind the team, so the enemies are always
 -- higher on the screen and the cards never cover them (SHANNON: "try to not block the enemies"). Another player's animal with a full meter gets only a small
 -- marker over its head: theirs to press, not this player's. Display only.
 
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 
 local Style = require(script.Parent:WaitForChild("Style"))
@@ -23,7 +25,7 @@ PressPops.CLASS = {
 
 local GAP, DROP = 10, 26 -- between cards; how far under the lowest animal's middle the row's top is
 
-type Pop = { card: GuiObject, model: Model, line: Frame }
+type Pop = { card: GuiObject, model: Model, line: Frame, tip: Frame }
 local pops: { Pop } = {}
 local marks: { [Model]: { lift: Vector3, dot: TextLabel } } = {}
 local gui: ScreenGui? = nil
@@ -48,7 +50,7 @@ end
 local function line(from: Vector2, to: Vector2, frame: Frame)
 	local d = to - from
 	frame.Position = UDim2.fromOffset((from.X + to.X) / 2, (from.Y + to.Y) / 2)
-	frame.Size = UDim2.fromOffset(d.Magnitude, math.max(2, 3 * scale))
+	frame.Size = UDim2.fromOffset(d.Magnitude, math.max(1, 2 * scale))
 	frame.Rotation = math.deg(math.atan2(d.Y, d.X))
 end
 
@@ -60,6 +62,7 @@ local function step()
 		local p = pops[i]
 		if p.card.Parent == nil or p.model.Parent == nil then
 			p.line:Destroy()
+			p.tip:Destroy()
 			if p.card.Parent then
 				p.card.Visible = false
 			end
@@ -72,7 +75,7 @@ local function step()
 	local rowY = -math.huge
 	for _, p in pops do
 		local h = onScreen(p.model:GetPivot().Position)
-		p.card.Visible, p.line.Visible = h ~= nil, h ~= nil
+		p.card.Visible, p.line.Visible, p.tip.Visible = h ~= nil, h ~= nil, h ~= nil
 		if h then
 			heads[p] = h
 			table.insert(shown, p)
@@ -97,7 +100,8 @@ local function step()
 		local y = math.clamp(rowY, 0, view.Y - h - 8)
 		p.card.AnchorPoint = Vector2.new(0.5, 0)
 		p.card.Position = UDim2.fromOffset(x, y)
-		line(Vector2.new(x, y), heads[p], p.line)
+		line(Vector2.new(x, y - 3 * scale), heads[p], p.line)
+		p.tip.Position = UDim2.fromOffset(heads[p].X, heads[p].Y)
 	end
 	-- the other players' markers
 	for model, m in marks do
@@ -118,30 +122,297 @@ function PressPops.init(screen: ScreenGui)
 	RunService.RenderStepped:Connect(step)
 end
 
--- Stand `card` (a quick press's pop-up, `press` its kind) over `model` until the card is destroyed. `k` is
--- the HUD's scale.
-function PressPops.attach(card: GuiObject, model: Model?, press: string, k: number)
-	scale = k
-	local class = PressPops.CLASS[press] or PressPops.CLASS.ring
-	-- its class: the card's edge in the class's colour and a tag on its top edge
-	local face = card:FindFirstChild("Face")
-	local edge = if face then face:FindFirstChildOfClass("UIStroke") else nil
-	if edge then
-		edge.Color, edge.Thickness = class.colour, 5
+local GLASS, EDGE, LILAC = Color3.fromRGB(34, 20, 58), Color3.fromRGB(179, 107, 255), Color3.fromRGB(227, 179, 255)
+PressPops.GOLD, PressPops.GREEN, PressPops.EDGE = Color3.fromRGB(255, 194, 58), Color3.fromRGB(87, 224, 90), EDGE
+PressPops.DIM, PressPops.LIT = Color3.fromRGB(64, 40, 104), Color3.fromRGB(208, 123, 255)
+
+local function frame(parent: Instance, size: UDim2, at: UDim2, colour: Color3, z: number): Frame
+	local f = Instance.new("Frame")
+	f.BorderSizePixel, f.AnchorPoint, f.Size, f.Position = 0, Vector2.new(0.5, 0.5), size, at
+	f.BackgroundColor3, f.ZIndex = colour, z
+	f.Parent = parent
+	return f
+end
+local function corner(f: GuiObject, r: number)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r)
+	c.Parent = f
+end
+local function edge(f: GuiObject, colour: Color3, thick: number): UIStroke
+	local e = Instance.new("UIStroke")
+	e.Color, e.Thickness, e.ApplyStrokeMode = colour, thick, Enum.ApplyStrokeMode.Border
+	e.Parent = f
+	return e
+end
+local function words(parent: Instance, text: string, size: number, at: UDim2, colour: Color3, z: number): TextLabel
+	local t = Instance.new("TextLabel")
+	t.BackgroundTransparency, t.AnchorPoint, t.Position = 1, Vector2.new(0.5, 0.5), at
+	t.Size, t.Text, t.TextSize, t.Font = UDim2.new(1, 0, 0, size + 4), text, size, Enum.Font.FredokaOne
+	t.TextColor3, t.ZIndex = colour, z
+	t.Parent = parent
+	return t
+end
+-- a key cap, `w` wide, its middle at `at`
+local function key(parent: Instance, text: string, w: number, at: UDim2, k: number): Frame
+	local cap = frame(parent, UDim2.fromOffset(w, w), at, Color3.fromRGB(46, 31, 74), 8)
+	corner(cap, math.floor(w * 0.24))
+	edge(cap, LILAC, math.max(1, 2 * k))
+	local shade = frame(
+		cap,
+		UDim2.new(1, 0, 0, math.max(2, 3 * k)),
+		UDim2.new(0.5, 0, 1, -math.max(1, 1.5 * k)),
+		Color3.fromRGB(22, 12, 40),
+		8
+	)
+	corner(shade, math.floor(w * 0.24))
+	words(cap, text, math.floor(w * 0.55), UDim2.fromScale(0.5, 0.47), Color3.fromRGB(244, 236, 255), 9)
+	return cap
+end
+
+-- A quick press's pop-up (decision 0109, the reference's look): a card of dark glass with a violet edge, its
+-- instruction on top, and under it the press. `slot` is the animal's key. `on.press` runs on a click of the
+-- card, `on.down` / `on.up` on a mouse button held on it (the ring), `on.mark(i)` on the chain's mark i.
+-- Returns the card and the parts the HUD moves: `edge` (the card's), `dots` (the ring's), `hand` (the
+-- needle's), `fill` (the mash's bar), `marks` (the chain's caps).
+export type Card = {
+	edge: UIStroke,
+	dots: { Frame },
+	hand: Frame?,
+	fill: Frame?,
+	marks: { TextButton },
+	key: Frame?,
+	lit: number,
+}
+function PressPops.card(
+	parent: Instance,
+	press: string,
+	slot: number,
+	k: number,
+	wide: number,
+	on: any
+): (TextButton, Card)
+	local card = Instance.new("TextButton")
+	card.Name, card.Text, card.AutoButtonColor = "Press", "", false
+	card.Size, card.BackgroundColor3, card.ZIndex = UDim2.fromOffset(150 * k, 132 * k), GLASS, 5
+	card.Parent = parent
+	corner(card, math.floor(14 * k))
+	local parts: Card = { edge = edge(card, EDGE, math.max(1, 2 * k)), dots = {}, marks = {}, lit = 0 }
+	local glass = Instance.new("UIGradient") -- lighter at the top, like glass
+	glass.Rotation, glass.Color = 90, ColorSequence.new(Color3.fromRGB(70, 44, 112), GLASS)
+	glass.Parent = card
+	local inner = frame(card, UDim2.new(1, -8 * k, 1, -8 * k), UDim2.fromScale(0.5, 0.5), GLASS, 5)
+	inner.BackgroundTransparency = 1
+	corner(inner, math.floor(11 * k))
+	edge(inner, Color3.fromRGB(120, 70, 190), 1).Transparency = 0.4
+	local say = ({ ring = "HOLD THE KEY", needle = "STOP IN THE GREEN", chain = "TAP IN ORDER", mash = "MASH!" })[press]
+		or "TAP!"
+	words(card, say, math.floor(14 * k), UDim2.new(0.5, 0, 0, 16 * k), Color3.fromRGB(241, 214, 255), 7)
+	local mid = UDim2.new(0.5, 0, 0, 78 * k)
+	if press == "ring" then -- the ring fills round the key while it is held (`dots`, lit by the HUD)
+		local N, R = 28, 40 * k
+		for i = 1, N do
+			local a = (i - 1) / N * math.pi * 2 - math.pi / 2
+			local dot = frame(
+				card,
+				UDim2.fromOffset(7 * k, 7 * k),
+				UDim2.new(0.5, math.cos(a) * R, 0, 78 * k + math.sin(a) * R),
+				PressPops.DIM,
+				6
+			)
+			corner(dot, math.floor(4 * k))
+			table.insert(parts.dots, dot)
+		end
+		local well = frame(card, UDim2.fromOffset(62 * k, 62 * k), mid, Color3.fromRGB(26, 14, 46), 6)
+		corner(well, math.floor(31 * k))
+		edge(well, Color3.fromRGB(91, 62, 140), 1)
+		parts.key = key(card, tostring(slot), 28 * k, UDim2.new(0.5, 0, 0, 72 * k), k)
+		words(card, "HOLD", math.floor(10 * k), UDim2.new(0.5, 0, 0, 94 * k), Color3.fromRGB(241, 198, 255), 9)
+		card.MouseButton1Down:Connect(on.down)
+		card.MouseButton1Up:Connect(on.up)
+		card.MouseLeave:Connect(on.up)
+	elseif press == "needle" then -- the track, the green zone and the marker swinging through it (`hand`)
+		local bar =
+			frame(card, UDim2.new(1, -24 * k, 0, 18 * k), UDim2.new(0.5, 0, 0, 66 * k), Color3.fromRGB(22, 12, 40), 6)
+		corner(bar, math.floor(9 * k))
+		edge(bar, LILAC, math.max(1, 2 * k))
+		bar.ClipsDescendants = true
+		local green = frame(bar, UDim2.fromScale(wide, 1), UDim2.fromScale(0.5, 0.5), PressPops.GREEN, 7)
+		edge(green, Color3.fromRGB(170, 255, 160), 1).Transparency = 0.5
+		local hand = frame(bar, UDim2.new(0, 3 * k, 1, 0), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1), 8)
+		parts.hand = hand
+		parts.key = key(card, tostring(slot), 24 * k, UDim2.new(0.5, 0, 0, 104 * k), k)
+		card.Activated:Connect(on.press)
+	elseif press == "chain" then -- three caps with arrows, the one due in gold (`marks`)
+		local row = frame(card, UDim2.new(1, 0, 0, 34 * k), UDim2.new(0.5, 0, 0, 74 * k), GLASS, 6)
+		row.BackgroundTransparency = 1
+		local list = Instance.new("UIListLayout")
+		list.FillDirection, list.HorizontalAlignment, list.VerticalAlignment =
+			Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center
+		list.SortOrder, list.Padding = Enum.SortOrder.LayoutOrder, UDim.new(0, 2 * k)
+		list.Parent = row
+		for i = 1, 3 do
+			local b = Instance.new("TextButton")
+			b.Size, b.BackgroundColor3, b.AutoButtonColor, b.LayoutOrder, b.ZIndex =
+				UDim2.fromOffset(32 * k, 32 * k), Color3.fromRGB(46, 31, 74), false, i * 2, 8
+			b.Text, b.TextSize, b.Font, b.TextColor3 =
+				tostring(i), math.floor(17 * k), Enum.Font.FredokaOne, Color3.fromRGB(244, 236, 255)
+			corner(b, math.floor(8 * k))
+			edge(b, if i == 1 then PressPops.GOLD else EDGE, math.max(1, 2 * k))
+			b.Parent = row
+			b.Activated:Connect(function()
+				on.mark(i)
+			end)
+			table.insert(parts.marks, b)
+			if i < 3 then
+				local arrow = words(row, "›", math.floor(15 * k), UDim2.new(), LILAC, 8)
+				arrow.Size, arrow.LayoutOrder = UDim2.fromOffset(10 * k, 20 * k), i * 2 + 1
+			end
+		end
+		card.Activated:Connect(on.press)
+	else -- mash: the key over a violet burst, the bar under it (`fill`)
+		local burst = frame(card, UDim2.fromOffset(58 * k, 58 * k), UDim2.new(0.5, 0, 0, 64 * k), PressPops.LIT, 6)
+		burst.BackgroundTransparency = 0.72
+		corner(burst, math.floor(29 * k))
+		edge(burst, PressPops.LIT, math.max(1, 2 * k)).Transparency = 0.3
+		parts.key = key(card, tostring(slot), 32 * k, UDim2.new(0.5, 0, 0, 64 * k), k)
+		local track =
+			frame(card, UDim2.new(1, -28 * k, 0, 12 * k), UDim2.new(0.5, 0, 0, 108 * k), Color3.fromRGB(22, 12, 40), 6)
+		corner(track, math.floor(6 * k))
+		edge(track, LILAC, math.max(1, 2 * k))
+		local fill = frame(track, UDim2.fromScale(0, 1), UDim2.fromScale(0, 0.5), PressPops.LIT, 7)
+		fill.AnchorPoint = Vector2.new(0, 0.5)
+		corner(fill, math.floor(6 * k))
+		parts.fill = fill
+		card.Activated:Connect(on.press)
 	end
-	local tag = Style.text(card, class.name, 16 * k, Style.C.card, UDim2.fromOffset(104 * k, 24 * k))
-	tag.Name, tag.AnchorPoint, tag.Position = "Class", Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0)
-	tag.BackgroundTransparency, tag.BackgroundColor3, tag.ZIndex = 0, class.colour, card.ZIndex + 3
-	tag.TextXAlignment = Enum.TextXAlignment.Center
-	Style.round(tag, 12 * k)
+	local pop = Instance.new("UIScale")
+	pop.Name, pop.Scale = "Punch", 0.4
+	pop.Parent = card
+	TweenService:Create(
+		parts.edge,
+		TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+		{ Thickness = math.max(2, 4 * k) }
+	):Play()
+	TweenService:Create(pop, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	return card, parts
+end
+
+-- Effects (display only) -------------------------------------------------------------------------------
+
+-- `obj` jumps by `amount` of its size and springs back.
+function PressPops.punch(obj: GuiObject, amount: number)
+	local s = obj:FindFirstChild("Punch") :: UIScale?
+	if s == nil then
+		local made = Instance.new("UIScale")
+		made.Name = "Punch"
+		made.Parent = obj
+		s = made
+	end
+	local sc = s :: UIScale
+	sc.Scale = 1 + amount
+	TweenService:Create(sc, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+end
+
+-- A burst of light at the middle of `obj`: a ring that grows and fades, and `n` sparks flying out.
+function PressPops.burst(obj: GuiObject, colour: Color3, size: number, n: number)
+	if gui == nil or obj.Parent == nil then
+		return
+	end
+	local at = obj.AbsolutePosition + obj.AbsoluteSize / 2
+	local ring = Instance.new("Frame")
+	ring.BackgroundTransparency, ring.AnchorPoint, ring.ZIndex = 1, Vector2.new(0.5, 0.5), 20
+	ring.Position, ring.Size = UDim2.fromOffset(at.X, at.Y), UDim2.fromOffset(size * 0.4, size * 0.4)
+	corner(ring, 999)
+	local e = edge(ring, colour, math.max(2, size / 14))
+	ring.Parent = gui
+	TweenService:Create(
+		ring,
+		TweenInfo.new(0.38, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Size = UDim2.fromOffset(size * 1.6, size * 1.6) }
+	):Play()
+	TweenService:Create(e, TweenInfo.new(0.38), { Transparency = 1, Thickness = 1 }):Play()
+	for i = 1, n do
+		local a = (i + math.random()) / n * math.pi * 2
+		local spark = Instance.new("Frame")
+		spark.BorderSizePixel, spark.AnchorPoint, spark.ZIndex, spark.BackgroundColor3 =
+			0, Vector2.new(0.5, 0.5), 21, colour
+		local w = math.max(3, size / 16)
+		spark.Size, spark.Position, spark.Rotation =
+			UDim2.fromOffset(w * 2.4, w), UDim2.fromOffset(at.X, at.Y), math.deg(a)
+		corner(spark, 999)
+		spark.Parent = gui
+		local reach = size * (0.55 + math.random() * 0.45)
+		TweenService:Create(spark, TweenInfo.new(0.42, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Position = UDim2.fromOffset(at.X + math.cos(a) * reach, at.Y + math.sin(a) * reach),
+			BackgroundTransparency = 1,
+			Size = UDim2.fromOffset(w, w * 0.6),
+		}):Play()
+		task.delay(0.45, spark.Destroy, spark)
+	end
+	task.delay(0.4, ring.Destroy, ring)
+end
+
+-- A press on the card (a mash's press, a chain's mark, the ring's hold starting): `obj` (a key cap or a mark)
+-- jumps, a little burst goes off on it, and with `shake` the card jolts.
+function PressPops.press(card: GuiObject, obj: GuiObject?, colour: Color3?, shake: boolean?)
+	local target = obj or card
+	PressPops.punch(target, -0.18)
+	PressPops.burst(target, colour or PressPops.LIT, target.AbsoluteSize.X * 1.3, 6)
+	if shake then
+		card.Rotation = (math.random() - 0.5) * 7
+		TweenService
+			:Create(card, TweenInfo.new(0.16, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Rotation = 0 })
+			:Play()
+	end
+end
+
+-- The ring's dots: a dot just lit pops.
+function PressPops.lit(parts: Card, count: number)
+	for i = parts.lit + 1, math.min(count, #parts.dots) do
+		PressPops.punch(parts.dots[i], 0.9)
+	end
+	parts.lit = count
+end
+
+-- The press has fired: a big burst (gold when it was on time: `hot`) and the card springs up and away.
+function PressPops.fired(card: GuiObject, hot: boolean)
+	PressPops.burst(card, if hot then PressPops.GOLD else PressPops.LIT, card.AbsoluteSize.X * 1.25, 14)
+	local s = card:FindFirstChild("Punch") :: UIScale?
+	if s then
+		s.Scale = 1.18
+		TweenService:Create(s, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Scale = 0 })
+			:Play()
+	end
+end
+
+-- The tap was refused: the card comes back.
+function PressPops.unfired(card: GuiObject)
+	local s = card:FindFirstChild("Punch") :: UIScale?
+	if s then
+		TweenService:Create(s, TweenInfo.new(0.2), { Scale = 1 }):Play()
+	end
+end
+
+-- Stand `card` (a quick press's pop-up) by `model` until the card is destroyed. `k` is the HUD's scale.
+function PressPops.attach(card: GuiObject, model: Model?, _press: string, k: number)
+	scale = k
 	if model == nil or gui == nil then
 		return
 	end
 	local l = Instance.new("Frame")
-	l.Name, l.BorderSizePixel, l.BackgroundColor3, l.AnchorPoint = "Tether", 0, class.colour, Vector2.new(0.5, 0.5)
+	l.Name, l.BorderSizePixel, l.BackgroundColor3, l.AnchorPoint = "Tether", 0, LILAC, Vector2.new(0.5, 0.5)
 	l.ZIndex = math.max(1, card.ZIndex - 1)
+	local fade = Instance.new("UIGradient") -- strong at the card, faint at the animal
+	fade.Transparency = NumberSequence.new(0.1, 0.75)
+	fade.Parent = l
 	l.Parent = gui
-	table.insert(pops, { card = card, model = model, line = l })
+	local tip = Instance.new("Frame") -- a small ring where it meets the animal
+	tip.Name, tip.BackgroundTransparency, tip.AnchorPoint = "TetherTip", 1, Vector2.new(0.5, 0.5)
+	tip.Size, tip.ZIndex = UDim2.fromOffset(14 * k, 14 * k), l.ZIndex
+	corner(tip, math.floor(7 * k))
+	edge(tip, LILAC, math.max(1, 2 * k)).Transparency = 0.25
+	tip.Parent = gui
+	table.insert(pops, { card = card, model = model, line = l, tip = tip })
 	step()
 end
 
