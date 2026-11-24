@@ -79,6 +79,21 @@ One coat at most per animal, rolled after the animal; an egg's signature coat is
   before coats with only `rainbow = true` reads as the rainbow coat. Nothing is rewritten.
 - Trades weigh a coat by its rarity (`StationTrade.COAT`); giving any coat or a mythic or higher needs a hold.
 
+## Amended (SHANNON, 2026-11-24): small boons, rare boons rarer, a quicker walk-in
+
+- SHANNON: "speed up the time it takes for the next wave to hit ... nerf all the boons to much smaller
+  numbers so that wave 300 requires both a good team and good boon stacks, also decrease the frequency of
+  special boons to about one or two every stage".
+- Boons (`WaveRuns.CLAWS`, `HIDE`, `QUICK`): Sharp Claws +5% damage (was 20), Thick Hide +5% max HP (was 20),
+  Quick Paws 3% faster (was 12), each stack multiplying. Charged Up and Second Wind are unchanged.
+- Rare boons (Revive, Lucky Find, Gold Rush) stand in `RARE_PCT` 15 offers of 100, at most one an offer:
+  about 1.5 a stage of 10 waves (before: in most offers).
+- The steep waves after 100 are retuned for the small boons: `STEEP_GROWTH` 1.015 (was 1.08); `STEEP_BEND`
+  200 as before. The enemies walk out of the gate at 18 studs a second (was 13).
+- Simulation (4 clicks a second): the best team (level 70) with good picks clears 279, 289 or 300 (three
+  seeds); with random picks 169 or 189. Mythics at level 40 now stop at 79 to 89 (before 129 to 149): the
+  middle waves are harder too, as boons no longer carry a team. Three players not re-simulated.
+
 ## Evidence
 
 - Specs: `StationRules` (twelve eggs, rarity by power for every version, coats' odds and buffs),

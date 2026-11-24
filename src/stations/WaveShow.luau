@@ -40,7 +40,7 @@ type Slot = {
 local WaveShow = {}
 
 local GROUND = 0.05 -- how far above the land a creature's feet are set
-local WALK_SPEED = 13 -- studs a second the enemies walk out of the gate at
+local WALK_SPEED = 18 -- studs a second the enemies walk out of the gate at
 -- archers and mages (any of their models, decision 0104) stand and shoot instead of lunging
 local function ranged(asset: string): boolean
 	return string.find(asset, "^foe_archer") ~= nil or string.find(asset, "^foe_mage") ~= nil

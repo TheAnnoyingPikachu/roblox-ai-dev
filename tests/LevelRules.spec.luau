@@ -4,6 +4,7 @@ local BattleRules = require("../src/shared/BattleRules")
 local StationConfig = require("../src/shared/StationConfig")
 local StationRules = require("../src/shared/StationRules")
 local LevelRules = require("../src/shared/LevelRules")
+local WaveRuns = require("../src/shared/WaveRuns")
 
 local describe, it, expect = T.describe, T.it, T.expect
 
@@ -80,11 +81,11 @@ describe("LevelRules.enemies", function()
 			local from, last = LevelRules.STEEP_FROM, LevelRules.LAST
 			expect(LevelRules.might(from)).toBe(1)
 			expect(LevelRules.scale(last)).toBe(LevelRules.scale(from))
-			-- every steep wave grows by more than the one before, the last by more than the strongest boon's 20%
+			-- every steep wave grows by more than the one before; at the last, health and strength together outgrow a boon
 			local first, second = LevelRules.might(from + 1), LevelRules.might(from + 2) / LevelRules.might(from + 1)
 			expect(first > 1).toBeTruthy()
 			expect(second > first).toBeTruthy()
-			expect(LevelRules.might(last) / LevelRules.might(last - 1) > 1.2).toBeTruthy()
+			expect((LevelRules.might(last) / LevelRules.might(last - 1)) ^ 2 > WaveRuns.CLAWS).toBeTruthy()
 			local k = LevelRules.scale(from)
 			for _, e in LevelRules.classic(last) do
 				local foe = StationConfig.foe(e.s) :: StationConfig.Foe

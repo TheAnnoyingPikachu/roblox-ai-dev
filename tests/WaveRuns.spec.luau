@@ -44,11 +44,25 @@ describe("WaveRuns (decision 0098)", function()
 		expect(revived.hp[2]).toBe(0.5)
 	end)
 
+	it("offers a rare boon about once or twice a stage, never two in one offer", function()
+		local rares = 0
+		for w = 1, 1000 do
+			local run = WaveRuns.new(w, 3, 77)
+			local n = 0
+			for _, id in WaveRuns.won(run, { 1, 1, 1 }, 0, 0).offer :: { string } do
+				n += if (WaveRuns.boon(id) :: WaveRuns.Boon).rare then 1 else 0
+			end
+			expect(n <= 1).toBeTruthy()
+			rares += n
+		end
+		expect(rares >= 100 and rares <= 200).toBeTruthy() -- 1000 waves are 100 stages
+	end)
+
 	it("makes boons count in the fight and in the pot", function()
 		local run = WaveRuns.new(1, 3, 1)
 		run.boons = { "claws", "claws", "gold", "lucky" }
 		local setup = WaveRuns.setup(run)
-		expect(math.abs((setup.dmg :: number) - 1.44) < 1e-9).toBeTruthy()
+		expect(math.abs((setup.dmg :: number) - WaveRuns.CLAWS ^ 2) < 1e-9).toBeTruthy()
 		run.streak = 30
 		local coins, samples = WaveRuns.bonus(run, 1000, 4)
 		expect(coins).toBe(1000 * (WaveRuns.STREAK_MAX + WaveRuns.GOLD_PCT) // 100)

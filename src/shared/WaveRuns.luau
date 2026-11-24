@@ -27,9 +27,9 @@ export type Run = {
 export type Boon = { id: string, name: string, text: string, weight: number, rare: boolean? }
 
 WaveRuns.BOONS = {
-	{ id = "claws", name = "Sharp Claws", text = "+20% damage", weight = 10 },
-	{ id = "hide", name = "Thick Hide", text = "+20% max HP", weight = 10 },
-	{ id = "quick", name = "Quick Paws", text = "Attacks 12% faster", weight = 8 },
+	{ id = "claws", name = "Sharp Claws", text = "+5% damage", weight = 10 },
+	{ id = "hide", name = "Thick Hide", text = "+5% max HP", weight = 10 },
+	{ id = "quick", name = "Quick Paws", text = "Attacks 3% faster", weight = 8 },
 	{ id = "charged", name = "Charged Up", text = "Power meters start half full", weight = 8 },
 	{ id = "mend", name = "Second Wind", text = "Heal the team to full", weight = 8 },
 	{ id = "revive", name = "Revive", text = "Knocked-out animals come back at half HP", weight = 4, rare = true },
@@ -41,6 +41,10 @@ WaveRuns.GOLD_PCT = 25
 WaveRuns.REST_HEAL = 0.2
 WaveRuns.LOSS_KEEP = 50
 WaveRuns.OFFER = 3
+-- each stack of a boon (SHANNON, 2026-11-24: small, so wave 300 takes a good team and good stacks); the texts say so
+WaveRuns.CLAWS, WaveRuns.HIDE, WaveRuns.QUICK = 1.05, 1.05, 0.97
+-- in how many offers in 100 one of the rare boons stands (about one or two a stage of 10 waves)
+WaveRuns.RARE_PCT = 15
 WaveRuns.WIPED_BACK = 0.25
 
 function WaveRuns.boon(id: string): Boon?
@@ -84,9 +88,9 @@ function WaveRuns.setup(run: Run): BattleRules.Setup
 	return {
 		hp = hp,
 		energy = if count(run, "charged") > 0 then 0.5 else 0,
-		dmg = 1.2 ^ count(run, "claws"),
-		maxHp = 1.2 ^ count(run, "hide"),
-		tempo = 0.88 ^ count(run, "quick"),
+		dmg = WaveRuns.CLAWS ^ count(run, "claws"),
+		maxHp = WaveRuns.HIDE ^ count(run, "hide"),
+		tempo = WaveRuns.QUICK ^ count(run, "quick"),
 		clicks = true, -- a run's fight is the pit fight: clicks add strikes (decision 0106)
 	}
 end
@@ -112,13 +116,28 @@ function WaveRuns.won(run: Run, ends: { number }, coins: number, samples: number
 	for i, share in ends do
 		out.hp[i] = if share <= 0 then 0 else math.min(1, share + WaveRuns.REST_HEAL)
 	end
-	local pool, total = table.clone(WaveRuns.BOONS), 0
-	for _, b in pool do
-		total += b.weight
-	end
 	local rng = Rng.seed(run.seed, run.wave, 98)
+	local roll
+	roll, rng = Rng.int(rng, 1, 100)
+	local rare = roll <= WaveRuns.RARE_PCT -- this offer's first boon is a rare one, the others common
+	local pool, total = {}, 0
+	for _, b in WaveRuns.BOONS do
+		if (b.rare == true) == rare then
+			table.insert(pool, b)
+			total += b.weight
+		end
+	end
 	out.offer = {}
-	for _ = 1, WaveRuns.OFFER do
+	for n = 1, WaveRuns.OFFER do
+		if rare and n == 2 then -- the rest are common
+			pool, total = {}, 0
+			for _, b in WaveRuns.BOONS do
+				if not b.rare then
+					table.insert(pool, b)
+					total += b.weight
+				end
+			end
+		end
 		local r
 		r, rng = Rng.int(rng, 1, total)
 		for k, b in pool do

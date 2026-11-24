@@ -37,14 +37,20 @@
     "assets/stations/egg_*.png",
     "tools/blender/stations/uploaded.json",
     "src/shared/StationAssets.luau",
-    "docs/assets/register.md"
+    "docs/assets/register.md",
+    "src/shared/WaveRuns.luau",
+    "src/shared/LevelRules.luau",
+    "tests/WaveRuns.spec.luau",
+    "tests/LevelRules.spec.luau"
   ],
   "tests": [
     "StationRules.spec.luau",
     "StationProgress.spec.luau",
     "BattleRules.spec.luau",
     "StationAssets.spec.luau",
-    "StationTrade.spec.luau"
+    "StationTrade.spec.luau",
+    "WaveRuns.spec.luau",
+    "LevelRules.spec.luau"
   ],
   "acceptance_criteria": [
     "Every species' and variant's rarity is the one StationRules.powerRarity gives its stat total; every variant is epic or higher",
@@ -58,5 +64,5 @@
   "output_artifacts": [],
   "risk_level": "high",
   "status": "in_progress",
-  "notes": "SHANNON, 2026-11-24: see decision 0110. SHANNON swapped the Crystal and Lava Rhinos' places, asked for the eggs to be uploaded (2026-11-24); no restat (nobody has a save yet). Waves re-simulated: no change needed. Checkpoint: decision 0110 items 1 and 2."
+  "notes": "SHANNON, 2026-11-24: see decision 0110. SHANNON swapped the Crystal and Lava Rhinos' places, asked for the eggs to be uploaded (2026-11-24); no restat (nobody has a save yet). Waves re-simulated: no change needed. Checkpoint: decision 0110 items 1 and 2. SHANNON, 2026-11-24: boons nerfed (+5% damage/HP, 3% faster), rare boons on 15% of offers, the steep waves retuned (STEEP_GROWTH 1.015), the enemies walk out faster; decision 0110 amended."
 }
