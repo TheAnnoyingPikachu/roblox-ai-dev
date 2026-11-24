@@ -230,7 +230,7 @@ end
 
 -- What hatched, and how rare it is (decision 0078): its rarity pops up big in its colour, over the
 -- animal's name and, for a rare find, how few eggs give one. A rarer hatch pops bigger and shakes.
-local showRarity: (a: any) -> ()
+local showRarity: (a: any) -> number -- how long the reveal shows
 do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 	local reveal = Style.text(root, "", 64, C.text, UDim2.new(1, 0, 0, 80))
 	reveal.AnchorPoint, reveal.Position, reveal.TextTransparency = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.3), 1
@@ -259,7 +259,7 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 		celestial = 4,
 		secret = 5,
 	}
-	showRarity = function(a: any)
+	showRarity = function(a: any): number
 		revealed += 1
 		local mine = revealed
 		local rarity = StationRules.rarity(a)
@@ -323,6 +323,7 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 				TweenService:Create(x, fade, { Transparency = 1 }):Play()
 			end
 		end)
+		return 3.3 + big * 0.6
 	end
 end
 

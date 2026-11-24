@@ -1,5 +1,5 @@
 --!strict
--- The Gifts sheet: the weekly planner, the monthly planner and the daily wheel.
+-- The Gifts window (the RanchGifts board): the week, the month and the daily wheel on one page.
 -- One part of the HUD: Hud.client.luau loads the parts in order, and HudApp holds what they share.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,7 +11,6 @@ local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 local StationRewards = require(Shared:WaitForChild("StationRewards"))
 local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
-local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 local Portrait = require(script.Parent:WaitForChild("Portrait"))
 local Style = require(script.Parent:WaitForChild("Style"))
 local remotes = ReplicatedStorage:WaitForChild("StationsRemotes")
@@ -29,7 +28,6 @@ local gifts = App.gifts
 
 -- Gifts (decision 0094): the weekly planner, the monthly planner and the daily wheel ----------------------
 
-local giftsTab = "week"
 local spinning = false
 
 -- What a reward gives, in words: "930 coins, 2 Meadow Eggs".
@@ -149,127 +147,138 @@ function Hud.boostChips(parent: Instance)
 	end
 end
 
+-- The week (the RanchGifts board): a row of seven days, collected ones green, today yellow with its
+-- Collect button under the row, later days paler.
 function Hud.weekView()
 	local r = S.profile.rewards
-	local head = Style.text(
-		gifts.body,
-		`Day {math.min(r.weekGot + 1, 7)} of 7 · new rewards every Monday`,
-		18,
-		C.muted,
-		UDim2.new(1, -12, 0, 24)
-	)
-	head.LayoutOrder = 0
+	local today = math.min(r.weekGot + 1, 7)
+	local head = Style.text(gifts.body, `This week · day {today} of 7`, 20, C.text, UDim2.new(1, -12, 0, 26))
+	head.LayoutOrder = 1
+	local row = Instance.new("Frame")
+	row.BackgroundTransparency = 1
+	row.Size, row.LayoutOrder = UDim2.new(1, -12, 0, 150), 2
+	local cells = Instance.new("UIGridLayout")
+	cells.CellSize, cells.CellPadding = UDim2.new(1 / 7, -8, 1, -6), UDim2.fromOffset(9, 0)
+	cells.SortOrder = Enum.SortOrder.LayoutOrder
+	cells.Parent = row
+	row.Parent = gifts.body
+	local ready = r.weekGot < r.weekDays
 	for k, spec in StationRewards.WEEK do
-		local got, ready = k <= r.weekGot, k == r.weekGot + 1 and r.weekGot < r.weekDays
-		local card =
-			Style.card(gifts.body, UDim2.fromOffset(150, 228), if got then C.good elseif k == 7 then C.accent else nil)
-		card.LayoutOrder = k
-		local t = Style.text(card, `Day {k}`, 20, C.text, UDim2.new(1, -20, 0, 24))
-		t.Position = UDim2.fromOffset(10, 8)
+		local got, now = k <= r.weekGot, k == r.weekGot + 1
 		local items = StationRewards.resolve(S.profile, spec)
-		local icon = rewardIcon(card, items, 68, spec.egg == "best")
-		icon.Position = UDim2.fromOffset(41, 34)
-		local words = Style.text(card, rewardWords(items), 14, C.muted, UDim2.new(1, -20, 0, 66))
+		local card = Style.card(row, UDim2.new(), if got then C.good elseif now then C.accent else nil)
+		card.LayoutOrder = k
+		if now then
+			Style.paint(card, Color3.fromRGB(255, 233, 168)) -- today
+		elseif not got then
+			Style.paint(card, C.sand)
+		end
+		local day = Style.small(card, `DAY {k}`, 12, C.muted, UDim2.new(1, 0, 0, 18))
+		day.Position, day.TextXAlignment = UDim2.fromOffset(0, 6), Enum.TextXAlignment.Center
+		if got then
+			local tick = Style.frame(card, UDim2.fromOffset(52, 52), C.good)
+			tick.AnchorPoint, tick.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 28)
+			Style.round(tick, 26)
+			Style.stroke(tick, C.ink, 3)
+			Style.icon(tick, "check", 30).Position = UDim2.fromOffset(11, 11)
+		else
+			local icon = rewardIcon(card, items, 56, spec.egg == "best")
+			icon.AnchorPoint, icon.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 26)
+		end
+		local words = Style.small(card, rewardWords(items), 12, C.text, UDim2.new(1, -10, 0, 50))
 		words.Position, words.TextWrapped, words.TextXAlignment =
-			UDim2.fromOffset(10, 106), true, Enum.TextXAlignment.Center
-		local b = Style.button(card, if got then "Claimed" elseif ready then "Claim" else "Log in more", function()
-			send("claim_week")
-		end, if ready then "good" else "off")
-		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 174), UDim2.new(1, -20, 0, 44), 16
+			UDim2.fromOffset(5, 88), true, Enum.TextXAlignment.Center
+		words.TextYAlignment = Enum.TextYAlignment.Top
 	end
+	local b = Style.button(
+		gifts.body,
+		if ready then `Collect day {today}` elseif r.weekGot >= 7 then "This week is done" else "Come back tomorrow",
+		function()
+			send("claim_week")
+		end,
+		if ready then "primary" else "off",
+		UDim2.fromOffset(220, 46)
+	)
+	b.LayoutOrder, b.TextSize = 3, 18
 end
 
+-- The month: one bar of the days played, and its prizes along it; a prize that is due is a button.
 function Hud.monthView()
 	local r = S.profile.rewards
-	local head = Style.text(
-		gifts.body,
-		`Days logged this month: {r.monthDays} · a missed day never resets it`,
-		18,
+	local card = Style.card(gifts.body, UDim2.new(1, -12, 0, 176))
+	card.LayoutOrder = 4
+	local title = Style.text(card, "This month", 20, C.text, UDim2.fromOffset(200, 26))
+	title.Position = UDim2.fromOffset(14, 10)
+	local sub = Style.small(
+		card,
+		`{r.monthDays} days played · a missed day never resets it`,
+		13,
 		C.muted,
-		UDim2.new(1, -12, 0, 24)
+		UDim2.new(1, -230, 0, 26)
 	)
-	head.LayoutOrder = 0
+	sub.AnchorPoint, sub.Position, sub.TextXAlignment =
+		Vector2.new(1, 0), UDim2.new(1, -14, 0, 10), Enum.TextXAlignment.Right
+	local bar, set = Style.bar(card, UDim2.new(1, -28, 0, 16), C.info)
+	bar.Position = UDim2.fromOffset(14, 42)
+	set(r.monthDays / 28)
+	local prizes = Instance.new("Frame")
+	prizes.BackgroundTransparency = 1
+	prizes.Position, prizes.Size = UDim2.fromOffset(14, 68), UDim2.new(1, -28, 0, 100)
+	local cells = Instance.new("UIGridLayout")
+	cells.CellSize, cells.CellPadding = UDim2.new(1 / #StationRewards.MILESTONES, -6, 1, 0), UDim2.fromOffset(6, 0)
+	cells.SortOrder = Enum.SortOrder.LayoutOrder
+	cells.Parent = prizes
+	prizes.Parent = card
+	local month = StationRewards.monthOf(Workspace:GetServerTimeNow())
 	for k, d in StationRewards.MILESTONES do
 		local spec = StationRewards.MONTH[d]
 		local got = table.find(r.monthGot, d) ~= nil
-		local ready = not got and r.monthDays >= d
-		local items = StationRewards.resolve(S.profile, spec, StationRewards.monthOf(Workspace:GetServerTimeNow()))
-		local card =
-			Style.card(gifts.body, UDim2.fromOffset(150, 228), if got then C.good elseif d == 28 then C.accent else nil)
-		card.LayoutOrder = k
-		local t = Style.text(card, `Day {d}`, 20, C.text, UDim2.new(1, -20, 0, 24))
-		t.Position = UDim2.fromOffset(10, 8)
+		local due = not got and r.monthDays >= d
+		local items = StationRewards.resolve(S.profile, spec, month)
+		local tile = Style.button(prizes, "", function()
+			send("claim_month", d)
+		end, if due then "primary" elseif got then "good" else "ghost", UDim2.new())
+		tile.LayoutOrder = k
+		local day = Style.small(tile, if got then `Day {d} ✓` else `Day {d}`, 12, C.text, UDim2.new(1, 0, 0, 16))
+		day.Position, day.TextXAlignment, day.ZIndex = UDim2.fromOffset(0, 4), Enum.TextXAlignment.Center, 3
 		if items.rainbow then -- the month's own rainbow animal
 			local view = Portrait.new(
-				card,
+				tile,
 				StationRules.assetOf(items.rainbow, nil),
-				{ size = UDim2.fromOffset(84, 68), rainbow = true, background = C.cardHi }
+				{ size = UDim2.fromOffset(52, 44), rainbow = true, background = C.cardHi }
 			)
-			view.Position = UDim2.fromOffset(33, 34)
+			view.AnchorPoint, view.Position, view.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 22), 3
 		else
-			local icon = rewardIcon(card, items, 68, spec.egg == "best")
-			icon.Position = UDim2.fromOffset(41, 34)
+			local icon = rewardIcon(tile, items, 44, spec.egg == "best")
+			icon.AnchorPoint, icon.Position, icon.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 22), 3
 		end
-		local words = Style.text(card, rewardWords(items), 14, C.muted, UDim2.new(1, -20, 0, 66))
-		words.Position, words.TextWrapped, words.TextXAlignment =
-			UDim2.fromOffset(10, 106), true, Enum.TextXAlignment.Center
-		local label = if got then "Claimed" elseif ready then "Claim" else `{d - r.monthDays} more days`
-		local b = Style.button(card, label, function()
-			send("claim_month", d)
-		end, if ready then "good" else "off")
-		b.Position, b.Size, b.TextSize = UDim2.fromOffset(10, 174), UDim2.new(1, -20, 0, 44), 16
+		local words =
+			Style.small(tile, if due then "Collect!" else rewardWords(items), 11, C.text, UDim2.new(1, -6, 0, 28))
+		words.Position, words.TextWrapped, words.TextXAlignment, words.ZIndex =
+			UDim2.fromOffset(3, 68), true, Enum.TextXAlignment.Center, 3
+		words.TextTruncate = Enum.TextTruncate.AtEnd
 	end
 end
 
--- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer.
+-- The wheel: eight prize bubbles round a hub, turned so the prize won stops under the pointer. One free spin
+-- a day, beside what it can give and what is running now.
 local wheelTurn = 0
 function Hud.wheelView()
-	local SIZE = 380
+	local SIZE = 196
 	local n = #StationRewards.WHEEL
-	local holder = Instance.new("Frame")
-	holder.BackgroundTransparency = 1
-	holder.Size, holder.LayoutOrder = UDim2.new(1, -12, 0, SIZE + 300), 1
-	holder.Parent = gifts.body
-
-	-- the odds, below the wheel and its button, in two columns
-	local odds = Instance.new("Frame")
-	odds.BackgroundTransparency = 1
-	odds.AnchorPoint, odds.Position, odds.Size =
-		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 130), UDim2.fromOffset(560, 160)
-	local grid = Instance.new("UIGridLayout")
-	grid.CellSize, grid.CellPadding = UDim2.fromOffset(276, 22), UDim2.fromOffset(8, 2)
-	grid.SortOrder = Enum.SortOrder.LayoutOrder
-	grid.Parent = odds
-	odds.Parent = holder
-	local title = Style.text(holder, "THE ODDS", 14, C.muted, UDim2.fromOffset(560, 20))
-	title.AnchorPoint, title.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 106)
-	title.TextXAlignment = Enum.TextXAlignment.Center
-	for k, slice in StationRewards.WHEEL do
-		local line =
-			Style.text(odds, `{slice.name}: {slice.ppm / 10000}%`, 15, if k == n then C.bad else C.muted, UDim2.new())
-		line.LayoutOrder = k
-		line.TextXAlignment = Enum.TextXAlignment.Center
-	end
-	local pity = Style.text(
-		holder,
-		`After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`,
-		13,
-		C.muted,
-		UDim2.fromOffset(560, 20)
-	)
-	pity.AnchorPoint, pity.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 238)
-	pity.TextXAlignment = Enum.TextXAlignment.Center
-
-	local stage = holder
-	-- the wheel, big, in the middle
+	local card = Style.card(gifts.body, UDim2.new(1, -12, 0, SIZE + 44))
+	card.LayoutOrder = 5
+	local stage = Instance.new("Frame")
+	stage.BackgroundTransparency = 1
+	stage.Position, stage.Size = UDim2.fromOffset(18, 26), UDim2.fromOffset(SIZE, SIZE)
+	stage.Parent = card
 	local disc = Instance.new("Frame")
 	disc.Name = "Wheel"
-	disc.AnchorPoint, disc.Position, disc.Size =
-		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 22), UDim2.fromOffset(SIZE, SIZE)
+	disc.Size = UDim2.fromOffset(SIZE, SIZE)
 	disc.BackgroundColor3 = C.sand
 	disc.Rotation = wheelTurn % 360
 	Style.round(disc, SIZE / 2)
-	Style.stroke(disc, C.ink, 6)
+	Style.stroke(disc, C.ink, 4)
 	disc.Parent = stage
 	local colours = {
 		C.cardHi,
@@ -283,35 +292,17 @@ function Hud.wheelView()
 	}
 	for k, slice in StationRewards.WHEEL do
 		local a = math.rad((k - 1) * 360 / n - 90)
-		local bubble = Instance.new("TextLabel")
+		local bubble = Instance.new("Frame")
 		bubble.AnchorPoint = Vector2.new(0.5, 0.5)
 		bubble.Position = UDim2.new(0.5, math.cos(a) * SIZE * 0.35, 0.5, math.sin(a) * SIZE * 0.35)
-		bubble.Size = UDim2.fromOffset(SIZE * 0.25, SIZE * 0.25)
+		bubble.Size = UDim2.fromOffset(SIZE * 0.26, SIZE * 0.26)
 		bubble.BackgroundColor3 = colours[k]
-		bubble.Font = Ui.theme.font
-		bubble.Text = ""
 		bubble.Rotation = (k - 1) * 360 / n
-		local prize = slice.prize
-		local items = StationRewards.resolve(S.profile, prize)
-		local icon = rewardIcon(bubble, items, math.floor(SIZE * 0.15), prize.egg == "best")
-		icon.AnchorPoint, icon.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 6)
-		local caption = Style.text(
-			bubble,
-			if prize.jackpot
-				then "MYTHIC!"
-				elseif prize.pays then `{prize.pays} pays`
-				elseif prize.boost then `x2 {Format.ago(prize.seconds or 0)}`
-				elseif prize.samples then `{prize.samples} samples`
-				elseif prize.egg == "best" then "Best egg"
-				else "Egg",
-			13,
-			C.ink,
-			UDim2.new(1, 0, 0, 16)
-		)
-		caption.AnchorPoint, caption.Position, caption.TextXAlignment =
-			Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -6), Enum.TextXAlignment.Center
-		Style.round(bubble, SIZE * 0.125)
-		Style.stroke(bubble, C.ink, 3)
+		local items = StationRewards.resolve(S.profile, slice.prize)
+		local icon = rewardIcon(bubble, items, math.floor(SIZE * 0.17), slice.prize.egg == "best")
+		icon.AnchorPoint, icon.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
+		Style.round(bubble, SIZE * 0.13)
+		Style.stroke(bubble, C.ink, 2)
 		if k == n then
 			local g = Instance.new("UIGradient")
 			g.Color = RAINBOW
@@ -319,21 +310,39 @@ function Hud.wheelView()
 		end
 		bubble.Parent = disc
 	end
-	local hub = Style.text(disc, "", 1, C.ink, UDim2.fromOffset(SIZE * 0.22, SIZE * 0.22))
+	local hub = Style.frame(disc, UDim2.fromOffset(SIZE * 0.2, SIZE * 0.2), C.accent)
 	hub.AnchorPoint, hub.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5)
-	hub.BackgroundTransparency, hub.BackgroundColor3 = 0, C.accent
-	Style.round(hub, SIZE * 0.11)
-	Style.stroke(hub, C.ink, 5)
-	local pointer = Style.text(stage, "▼", 48, C.bad, UDim2.fromOffset(48, 48))
-	pointer.AnchorPoint, pointer.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, -4)
+	Style.round(hub, SIZE * 0.1)
+	Style.stroke(hub, C.ink, 4)
+	local pointer = Style.text(stage, "▼", 30, C.bad, UDim2.fromOffset(30, 30))
+	pointer.AnchorPoint, pointer.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, -18)
 	pointer.TextXAlignment, pointer.ZIndex = Enum.TextXAlignment.Center, 5
 	Style.outline(pointer)
 
-	-- under the wheel: the button, which pops while a spin is ready, and when the next one comes
+	local side = Instance.new("Frame")
+	side.BackgroundTransparency = 1
+	side.Position, side.Size = UDim2.fromOffset(SIZE + 44, 16), UDim2.new(1, -SIZE - 60, 1, -28)
+	Style.list(side, 8)
+	side.Parent = card
+	Style.text(side, "The daily wheel", 20, C.text, UDim2.new(1, 0, 0, 26)).LayoutOrder = 1
+	local about = Style.small(
+		side,
+		"One free spin a day. Coins, samples, an egg, double hatching or training for a while, or the rainbow jackpot.",
+		13,
+		C.muted,
+		UDim2.new(1, 0, 0, 36)
+	)
+	about.TextWrapped, about.LayoutOrder = true, 2
+	local running = Instance.new("Frame")
+	running.BackgroundTransparency = 1
+	running.Size, running.AutomaticSize, running.LayoutOrder = UDim2.fromScale(1, 0), Enum.AutomaticSize.Y, 3
+	Style.list(running, 6, true, true)
+	running.Parent = side
+	Hud.boostChips(running)
 	local now = Workspace:GetServerTimeNow()
 	local can = StationRewards.canSpin(S.profile, now)
 	local nextIn = (StationRewards.day(now) + 1) * 86400 - now
-	local b = Style.button(stage, if can then "Spin it!" else `Next spin in {Format.ago(nextIn)}`, function()
+	local b = Style.button(side, if can then "Spin it" else `Next spin in {Format.ago(nextIn)}`, function()
 		if spinning then
 			return
 		end
@@ -343,22 +352,20 @@ function Hud.wheelView()
 			spinning = false
 			Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 		end
-	end, if can then "primary" else "off", UDim2.fromOffset(240, 60))
-	b.AnchorPoint, b.Position, b.TextSize = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, SIZE + 40), 26
-	if can then
-		local pop = b:FindFirstChildOfClass("UIScale") :: UIScale
-		task.spawn(function() -- a gentle pulse until it is pressed or the menu redraws
-			while b.Parent and not spinning do
-				TweenService:Create(pop, TweenInfo.new(0.45, Enum.EasingStyle.Sine), { Scale = 1.08 }):Play()
-				task.wait(0.5)
-				if not b.Parent or spinning then
-					break
-				end
-				TweenService:Create(pop, TweenInfo.new(0.45, Enum.EasingStyle.Sine), { Scale = 1 }):Play()
-				task.wait(0.5)
-			end
-		end)
+	end, if can then "good" else "off", UDim2.fromOffset(if can then 150 else 240, 48))
+	b.LayoutOrder, b.TextSize = 4, 20
+	local odds = {}
+	for _, slice in StationRewards.WHEEL do
+		table.insert(odds, `{slice.name} {slice.ppm / 10000}%`)
 	end
+	local line = Style.small(
+		side,
+		`{table.concat(odds, " · ")}. After {StationRewards.PITY} spins without it, the jackpot's chance doubles.`,
+		11,
+		C.muted,
+		UDim2.new(1, 0, 0, 30)
+	)
+	line.TextWrapped, line.LayoutOrder = true, 5
 	return disc
 end
 
@@ -369,24 +376,22 @@ redraw.gifts = function()
 	end
 	Style.clear(gifts.body)
 	Style.clear(gifts.chips)
-	Style.clear(gifts.tabs)
-	local week, month, spin = giftsReady()
-	for _, t in { { "week", "This week", week }, { "month", "This month", month }, { "wheel", "Daily wheel", spin } } do
-		Style.tab(gifts, t[2], giftsTab == t[1], function()
-			giftsTab = t[1]
-			redraw.gifts()
-		end, if t[3] then "!" else nil)
+	Style.clear(gifts.count)
+	local now = Workspace:GetServerTimeNow()
+	local midnight = (StationRewards.day(now) + 1) * 86400 - now
+	Style.small(gifts.chips, `New at midnight UTC · {Format.ago(midnight)}`, 13, C.muted, UDim2.fromOffset(240, 20))
+	local week, _, spin = giftsReady()
+	local due = (if week then 1 else 0) + (if spin then 1 else 0)
+	for _, d in StationRewards.MILESTONES do
+		local r = S.profile.rewards
+		due += if r.monthDays >= d and not table.find(r.monthGot, d) then 1 else 0
 	end
-	Hud.boostChips(gifts.chips)
-	Style.chip(gifts.chips, "Resets at midnight UTC")
-	wheelDisc = nil
-	if giftsTab == "week" then
-		Hud.weekView()
-	elseif giftsTab == "month" then
-		Hud.monthView()
-	else
-		wheelDisc = Hud.wheelView()
+	if due > 0 then
+		Style.chip(gifts.count, `{due} to collect`, C.bad, Color3.new(1, 1, 1))
 	end
+	Hud.weekView()
+	Hud.monthView()
+	wheelDisc = Hud.wheelView()
 end
 
 -- The wheel stops on the prize the server rolled, then says what it was.

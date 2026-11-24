@@ -215,6 +215,7 @@ function Hud.navShown() -- not under an open menu, in a fight, or before the int
 end
 
 local function show(name: string?)
+	name = if name == "shop" then "eggs" else name -- the vendor is the Eggs window's shelf
 	if name and name ~= S.openName and sheets[name] then
 		Style.pop(sheets[name])
 	end
@@ -228,10 +229,10 @@ local function show(name: string?)
 	end
 end
 
-local function newSheet(name: string, heading: string): Style.Sheet
+local function newSheet(name: string, heading: string, width: number?): Style.Sheet
 	local sh = Style.sheet(root, name, heading, function()
 		show(nil)
-	end)
+	end, width)
 	Portrait.keepCulled(sh.body)
 	sheets[name] = sh
 	return sh
@@ -239,12 +240,11 @@ end
 
 local animals = newSheet("animals", "Your animals")
 local eggs = newSheet("eggs", "Eggs")
-local ranch = newSheet("ranch", "Your ranch")
-local shop = newSheet("shop", "Egg vendor")
-local waves = newSheet("waves", "Endless waves")
+local ranch = newSheet("ranch", "Your ranch", 900) -- the two small menus of the RanchGifts board
+local waves = newSheet("waves", "Waves")
 local admin = newSheet("admin", "Admin")
 local trade = newSheet("trade", "Trade")
-local gifts = newSheet("gifts", "Gifts")
+local gifts = newSheet("gifts", "Gifts", 820)
 S.ranchTab = "animals" -- the group of upgrades the Ranch menu shows
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
@@ -603,7 +603,7 @@ do
 	faces.Parent = mates
 	local matesText = Style.small(faces, "Play together", 13, C.text, UDim2.fromOffset(92, 16))
 	matesText.LayoutOrder = 0
-	local invite = Style.button(faces, "+ Invite", function()
+	function Hud.invite() -- Roblox's invite prompt (the Waves window's open places use it too)
 		local SocialService = game:GetService("SocialService")
 		local ok, can = pcall(SocialService.CanSendGameInviteAsync, SocialService, player)
 		if ok and can then
@@ -611,7 +611,8 @@ do
 		else
 			Style.toast(screen, "Invites are not open here: share the game's link instead")
 		end
-	end, "good", UDim2.fromOffset(88, 30))
+	end
+	local invite = Style.button(faces, "+ Invite", Hud.invite, "good", UDim2.fromOffset(88, 30))
 	invite.TextSize, invite.LayoutOrder = 15, 99
 	local function showMates()
 		for _, f in faces:GetChildren() do
@@ -713,7 +714,6 @@ App.show = show
 App.animals = animals
 App.eggs = eggs
 App.ranch = ranch
-App.shop = shop
 App.waves = waves
 App.admin = admin
 App.trade = trade
@@ -726,11 +726,12 @@ for _, part in
 	{
 		"HudAnimals",
 		"HudRanch",
-		"HudShop",
+		"HudEggs",
 		"HudGifts",
 		"HudTrade",
 		"HudWaves",
 		"HudFight",
+		"HudWaveMenu",
 		"HudHover",
 		"HudHatch",
 		"HudIntro",
@@ -791,6 +792,49 @@ local function refresh()
 	end
 end
 
+-- Eggs open one at a time: a second press waits until the first one's hatch and reveal are over, so
+-- three ready eggs never hatch on top of each other. The nest is kept, not the prompt: the eggs are
+-- drawn again after each opening and their places in the list move up.
+do
+	local queue: { Vector3 } = {}
+	local working = false
+	S.hatchFree = 0 -- os.clock() when the last hatch's moment is over
+	function Hud.openEgg(nest: Vector3)
+		for _, n in queue do
+			if (n - nest).Magnitude < 1 then
+				return
+			end
+		end
+		table.insert(queue, nest)
+		if working then
+			return
+		end
+		working = true
+		while queue[1] do
+			while os.clock() < S.hatchFree do
+				task.wait(0.1)
+			end
+			local at = table.remove(queue, 1) :: Vector3
+			for _, p in CollectionService:GetTagged("Egg") do
+				local shell = p.Parent
+				if
+					p:GetAttribute("Ranch") == player:GetAttribute("Ranch")
+					and shell
+					and shell:IsA("BasePart")
+					and (shell.Position - at).Magnitude < 1
+				then
+					S.hatchFree = os.clock() + 2 -- until "hatched" says how long this one shows
+					if not send("open", p:GetAttribute("Index")) then
+						S.hatchFree = 0
+					end
+					break
+				end
+			end
+		end
+		working = false
+	end
+end
+
 -- The prompts in the world: the Ranch House door, the egg storage and a finished egg (the owner
 -- only), the wave gate and the vendors' stalls.
 game:GetService("ProximityPromptService").PromptTriggered:Connect(function(prompt, who)
@@ -816,7 +860,7 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 	elseif CollectionService:HasTag(prompt, "WaveGate") then
 		S.openWaves()
 	elseif CollectionService:HasTag(prompt, "Egg") then
-		send("open", prompt:GetAttribute("Index"))
+		Hud.openEgg((prompt.Parent :: BasePart).Position)
 	elseif CollectionService:HasTag(prompt, "Mill") then
 		send("collect")
 	elseif CollectionService:HasTag(prompt, "Vendor") then
@@ -905,15 +949,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if payload.at then
 			hatchEffect(payload.at, payload.egg, payload.body, payload.spot) -- then the animal steps out
 		end
-		showRarity(payload)
+		S.hatchFree = os.clock() + showRarity(payload) -- the next egg waits for this reveal
 		if lucky ~= "" then
 			Style.toast(screen, lucky, 4)
-		end
-		if S.profile and #S.profile.animals <= 1 then -- the first hatch: day 1's gifts open after it (SHANNON, 2026-11-24)
-			task.delay(4, function()
-				request:InvokeServer("rewards")
-				show("gifts")
-			end)
 		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.1f", payload.seconds)

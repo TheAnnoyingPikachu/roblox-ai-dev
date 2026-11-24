@@ -583,21 +583,26 @@ end
 export type Sheet = {
 	backdrop: TextButton,
 	frame: Frame,
+	head: Frame,
 	side: Frame,
 	tabs: Frame,
 	body: ScrollingFrame,
 	title: TextLabel,
 	chips: Frame,
+	count: Frame,
 }
 
-local SIDE_W = 214 -- the tab column
-local FOLD_W = 680 -- a menu narrower than this (a phone held upright) puts its tabs in a row on top
+local SIDE_W = 180 -- the tab column, for a menu that has tabs
+local FOLD_W = 680 -- a menu narrower than this (a phone) puts its tabs in a row under the header
+local HEAD_H = 64
+Style.HEAD = Color3.fromRGB(251, 233, 196) -- a menu's header band: the paper, a shade warmer
 
--- A menu (decision 0091): a dimmed backdrop (tap it to close) and a sand panel up to 940 x 660 units.
--- On its left a column with the menu's name, its tabs (Style.tab) and, at the bottom, its chips (the
--- limit that matters there, the wallet); on its right a scrolling body; a berry close button on the
--- corner. Hidden until the backdrop is made Visible; Style.pop plays its opening.
-function Style.sheet(parent: Instance, name: string, heading: string, onClose: () -> ()): Sheet
+-- A menu (decisions 0091, 0114; the concept boards' windows): a dimmed backdrop (tap it to close) and a
+-- paper window up to `width` x 680 units. Along its top a header band: the menu's name, its `chips` (the
+-- purses, the limits that matter there), its `count` on the right (what can be done now) and the berry
+-- close button. Under it the `body` scrolls; a menu that puts tabs in `tabs` gets a column for them on its
+-- left (a row on a phone). Hidden until the backdrop is made Visible; Style.pop plays its opening.
+function Style.sheet(parent: Instance, name: string, heading: string, onClose: () -> (), width: number?): Sheet
 	local backdrop = Instance.new("TextButton")
 	backdrop.Name = name
 	backdrop.Size = UDim2.fromScale(1, 1)
@@ -614,7 +619,7 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	local frame = Style.panel(backdrop, UDim2.new(1, -40, 1, -48))
 	frame.AnchorPoint, frame.Position = Vector2.new(0.5, 0.5), UDim2.new(0.5, 0, 0.5, 6)
 	local limit = Instance.new("UISizeConstraint")
-	limit.MaxSize = Vector2.new(940, 660)
+	limit.MaxSize = Vector2.new(width or 1180, 680)
 	limit.Parent = frame
 	local scale = Instance.new("UIScale")
 	scale.Name = "Pop"
@@ -624,13 +629,48 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	sink.AutoButtonColor = false
 	sink.Parent = frame
 
+	-- the header band: rounded at the top only (a square strip under its corners), an ink rule under it
+	local head = Style.frame(frame, UDim2.new(1, 0, 0, HEAD_H), Style.HEAD)
+	head.Name = "Head"
+	Style.round(head, 18)
+	local square = Style.frame(head, UDim2.new(1, 0, 0, 20), Style.HEAD)
+	square.Position = UDim2.new(0, 0, 1, -20)
+	local rule = Style.frame(head, UDim2.new(1, 0, 0, 3), INK)
+	rule.Position = UDim2.fromScale(0, 1)
+	local row = Instance.new("Frame")
+	row.BackgroundTransparency = 1
+	row.Position, row.Size = UDim2.fromOffset(20, 0), UDim2.new(1, -96, 1, 0)
+	row.ZIndex = 2
+	local rowList = Style.list(row, 12, true)
+	rowList.VerticalAlignment = Enum.VerticalAlignment.Center
+	row.Parent = head
+	local title = Style.text(row, heading, 28, C.text, UDim2.fromOffset(0, 40))
+	title.AutomaticSize, title.TextWrapped = Enum.AutomaticSize.X, false
+	title.LayoutOrder = 1
+	local chips = Instance.new("Frame")
+	chips.Name = "Chips"
+	chips.BackgroundTransparency = 1
+	chips.AutomaticSize = Enum.AutomaticSize.X
+	chips.Size = UDim2.fromOffset(0, 44)
+	chips.LayoutOrder = 2
+	Style.list(chips, 8, true).VerticalAlignment = Enum.VerticalAlignment.Center
+	chips.Parent = row
+	local count = Instance.new("Frame")
+	count.Name = "Count"
+	count.BackgroundTransparency = 1
+	count.AnchorPoint, count.Position, count.Size =
+		Vector2.new(1, 0.5), UDim2.new(1, -76, 0.5, 0), UDim2.fromOffset(0, 44)
+	count.AutomaticSize = Enum.AutomaticSize.X
+	count.ZIndex = 2
+	local countList = Style.list(count, 8, true)
+	countList.VerticalAlignment, countList.HorizontalAlignment =
+		Enum.VerticalAlignment.Center, Enum.HorizontalAlignment.Right
+	count.Parent = head
+
 	local side = Instance.new("Frame")
 	side.Name = "Side"
 	side.BackgroundTransparency = 1
 	side.Parent = frame
-	local title = Style.text(side, heading, 32, C.text, UDim2.new(1, 0, 0, 40))
-	title.TextTruncate = Enum.TextTruncate.AtEnd
-	title.TextWrapped = false
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
 	tabs.BackgroundTransparency = 1
@@ -638,19 +678,13 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	tabs.ScrollBarThickness = 0
 	tabs.CanvasSize = UDim2.new()
 	tabs.ElasticBehavior = Enum.ElasticBehavior.Never
+	tabs.Size = UDim2.fromScale(1, 1)
 	local tabList = Style.list(tabs, 10)
 	local tabPad = Instance.new("UIPadding") -- room for the buttons' outlines and shadows
 	tabPad.PaddingTop, tabPad.PaddingLeft, tabPad.PaddingRight, tabPad.PaddingBottom =
-		UDim.new(0, 12), UDim.new(0, 4), UDim.new(0, 14), UDim.new(0, 8)
+		UDim.new(0, 4), UDim.new(0, 4), UDim.new(0, 8), UDim.new(0, 8)
 	tabPad.Parent = tabs
 	tabs.Parent = side
-	local chips = Instance.new("Frame")
-	chips.Name = "Chips"
-	chips.BackgroundTransparency = 1
-	chips.AutomaticSize = Enum.AutomaticSize.Y
-	local chipList = Style.list(chips, 8)
-	chipList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	chips.Parent = side
 
 	local body = Instance.new("ScrollingFrame")
 	body.Name = "Body"
@@ -667,71 +701,62 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	inset.Parent = body
 	body.Parent = frame
 
-	local close = Style.button(frame, "×", onClose, "danger", UDim2.fromOffset(52, 52))
-	close.AnchorPoint, close.Position = Vector2.new(0.5, 0.5), UDim2.new(1, -8, 0, 8)
-	close.TextSize = 34
+	local close = Style.button(head, "×", onClose, "danger", UDim2.fromOffset(48, 48))
+	close.AnchorPoint, close.Position = Vector2.new(1, 0.5), UDim2.new(1, -14, 0.5, -2)
+	close.TextSize = 32
 	close.ZIndex = 3
-	Style.radius(close, 26)
+	Style.radius(close, 24)
 	close:SetAttribute("Sound", "close")
 
-	-- the column on the left, or (narrow) the tabs in a row along the top
+	-- the tab column on the left (only when the menu has tabs), or (narrow) the tabs in a row on top
 	local function layout()
 		local rootScale = parent:FindFirstChildOfClass("UIScale")
 		local units = frame.AbsoluteSize.X / math.max(scale.Scale * (if rootScale then rootScale.Scale else 1), 0.01)
-		if units < FOLD_W then
-			side.Position, side.Size = UDim2.fromOffset(18, 14), UDim2.new(1, -36, 0, 150)
-			tabs.Position, tabs.Size = UDim2.fromOffset(-4, 44), UDim2.new(1, 8, 0, 62)
+		local any = tabs:FindFirstChildWhichIsA("GuiObject") ~= nil
+		local top = HEAD_H + 14
+		side.Visible = any
+		if not any then
+			body.Position, body.Size = UDim2.fromOffset(14, top), UDim2.new(1, -24, 1, -top - 10)
+		elseif units < FOLD_W then
+			side.Position, side.Size = UDim2.fromOffset(14, top - 4), UDim2.new(1, -28, 0, 60)
 			tabList.FillDirection = Enum.FillDirection.Horizontal
 			tabs.AutomaticCanvasSize = Enum.AutomaticSize.X
 			tabs.ScrollingDirection = Enum.ScrollingDirection.X
-			chips.Position, chips.Size = UDim2.fromOffset(0, 112), UDim2.new(1, 0, 0, 30)
-			chipList.FillDirection = Enum.FillDirection.Horizontal
-			chipList.VerticalAlignment = Enum.VerticalAlignment.Center
-			body.Position, body.Size = UDim2.fromOffset(12, 168), UDim2.new(1, -24, 1, -180)
+			body.Position, body.Size = UDim2.fromOffset(14, top + 60), UDim2.new(1, -24, 1, -top - 70)
 		else
-			side.Position, side.Size = UDim2.fromOffset(20, 18), UDim2.new(0, SIDE_W, 1, -36)
-			-- stopped short of the chips under it, so a long list (the twelve eggs) scrolls instead of running under them
-			tabs.Position, tabs.Size =
-				UDim2.fromOffset(-4, 48),
-				UDim2.new(
-					1,
-					8,
-					1,
-					-56
-						- chips.AbsoluteSize.Y
-							/ math.max(scale.Scale * (if rootScale then rootScale.Scale else 1), 0.01)
-				)
+			side.Position, side.Size = UDim2.fromOffset(16, top - 4), UDim2.new(0, SIDE_W, 1, -top - 8)
 			tabList.FillDirection = Enum.FillDirection.Vertical
 			tabs.AutomaticCanvasSize = Enum.AutomaticSize.Y
 			tabs.ScrollingDirection = Enum.ScrollingDirection.Y
-			chips.Position, chips.Size = UDim2.fromScale(0, 1), UDim2.fromScale(1, 0)
-			chips.AnchorPoint = Vector2.new(0, 1)
-			chipList.FillDirection = Enum.FillDirection.Vertical
-			chipList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-			body.Position, body.Size = UDim2.fromOffset(SIDE_W + 34, 16), UDim2.new(1, -(SIDE_W + 46), 1, -28)
-		end
-		if units < FOLD_W then
-			chips.AnchorPoint = Vector2.new(0, 0)
+			body.Position, body.Size = UDim2.fromOffset(SIDE_W + 28, top), UDim2.new(1, -(SIDE_W + 38), 1, -top - 10)
 		end
 	end
 	frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
-	chips:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	tabs.ChildAdded:Connect(function()
+		task.defer(layout)
+	end)
+	tabs.ChildRemoved:Connect(function()
+		task.defer(layout)
+	end)
 	layout()
 	return {
 		backdrop = backdrop,
 		frame = frame,
+		head = head,
 		side = side,
 		tabs = tabs,
 		body = body,
 		title = title,
 		chips = chips,
+		count = count,
 	}
 end
 
 -- A tab in a menu's column: leaf green when `selected`, white otherwise; `badge` puts a berry dot on it.
 function Style.tab(sh: Sheet, label: string, selected: boolean, onClick: () -> (), badge: string?): TextButton
-	local b = Style.button(sh.tabs, label, onClick, if selected then "good" else "ghost", UDim2.fromOffset(196, 48))
-	b.TextSize = 19
+	local b =
+		Style.button(sh.tabs, label, onClick, if selected then "good" else "ghost", UDim2.fromOffset(SIDE_W - 14, 46))
+	b.TextSize = 18
 	b.TextXAlignment = Enum.TextXAlignment.Left
 	local p = (b:FindFirstChild("Label") :: TextLabel):FindFirstChild("Inset") :: UIPadding
 	p.PaddingLeft = UDim.new(0, 14)
@@ -741,6 +766,40 @@ function Style.tab(sh: Sheet, label: string, selected: boolean, onClick: () -> (
 		Style.dot(b, badge)
 	end
 	return b
+end
+
+-- A page in the body's place that does not scroll, for a menu laid out in columns that each scroll on
+-- their own (the Eggs, Animals and Waves windows). It follows the body when the tabs move it.
+function Style.page(sh: Sheet): Frame
+	local page = Instance.new("Frame")
+	page.Name, page.BackgroundTransparency = "Page", 1
+	local function follow()
+		page.Position, page.Size = sh.body.Position, sh.body.Size
+	end
+	sh.body:GetPropertyChangedSignal("Size"):Connect(follow)
+	sh.body:GetPropertyChangedSignal("Position"):Connect(follow)
+	follow()
+	sh.body.Visible = false
+	page.Parent = sh.frame
+	return page
+end
+
+-- A column of a page: across from `x`, `w` wide (each a UDim), the page's full height. It scrolls on its
+-- own and lays its children out in a list (`wrap`: in rows that wrap, for a grid of cards).
+function Style.column(page: Frame, x: UDim, w: UDim, order: number, gap: number?, wrap: boolean?): ScrollingFrame
+	local col = Instance.new("ScrollingFrame")
+	col.BackgroundTransparency, col.BorderSizePixel = 1, 0
+	col.Position, col.Size = UDim2.new(x, UDim.new(0, 0)), UDim2.new(w, UDim.new(1, 0))
+	col.ScrollBarThickness, col.ScrollBarImageColor3 = 5, C.muted
+	col.AutomaticCanvasSize, col.CanvasSize = Enum.AutomaticSize.Y, UDim2.new()
+	col.ElasticBehavior, col.LayoutOrder = Enum.ElasticBehavior.Never, order
+	Style.list(col, gap or 10, wrap, wrap)
+	local pad = Instance.new("UIPadding") -- room for the cards' outlines and shadows
+	pad.PaddingTop, pad.PaddingLeft, pad.PaddingBottom, pad.PaddingRight =
+		UDim.new(0, 4), UDim.new(0, 4), UDim.new(0, 10), UDim.new(0, 8)
+	pad.Parent = col
+	col.Parent = page
+	return col
 end
 
 -- The menu's opening: it pops from a little smaller with a soft paper flick. (The ForgeGUI "open" sound
