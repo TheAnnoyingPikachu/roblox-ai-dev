@@ -308,15 +308,12 @@ local function unseen(): { { asset: string, name: string, egg: string, rank: num
 				local key = o.id .. "/"
 				if not owned[key] and not listed[key] then
 					listed[key] = true
-					table.insert(
-						out,
-						{
-							asset = StationRules.assetOf(o.id, nil),
-							name = sp.name,
-							egg = d.name,
-							rank = RANK[sp.rarity] or 0,
-						}
-					)
+					table.insert(out, {
+						asset = StationRules.assetOf(o.id, nil),
+						name = sp.name,
+						egg = d.name,
+						rank = RANK[sp.rarity] or 0,
+					})
 				end
 			end
 			for _, drop in d.rare do
@@ -324,15 +321,12 @@ local function unseen(): { { asset: string, name: string, egg: string, rank: num
 				local key = drop.s .. "/" .. drop.v
 				if not owned[key] and not listed[key] then
 					listed[key] = true
-					table.insert(
-						out,
-						{
-							asset = StationRules.assetOf(drop.s, drop.v),
-							name = va.name,
-							egg = d.name,
-							rank = RANK[va.tier] or 0,
-						}
-					)
+					table.insert(out, {
+						asset = StationRules.assetOf(drop.s, drop.v),
+						name = va.name,
+						egg = d.name,
+						rank = RANK[va.tier] or 0,
+					})
 				end
 			end
 		end
