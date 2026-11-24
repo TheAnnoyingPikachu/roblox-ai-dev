@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-135",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The HUD in modules (SHANNON, 2026-11-24: 'go ahead with the intro concept and modules'): cut Hud.client.luau, 4,171 lines in one chunk, into one module for each screen, without changing what the HUD does, so the HUD overhaul and the intro have room and each screen can be restyled in a file of its own.",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-134"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Hud*.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-135.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The code is moved, not rewritten: putting the parts back together and undoing the S. renames gives the file before the split, apart from a listed handful of lines",
+    "No part can hold a stale copy of shared state: every shared name that is assigned again is read and written as S.name in every file",
+    "selene finds no undefined or unused variable; stylua, the specs, the build and check-place pass",
+    "Roblox's compiler accepts every part with at least 100 more locals"
+  ],
+  "verification": "Moved by a script from the tag backup/hud-before-modules (5f22b45), then checked by a second script that shares no code with it: the nine parts and the main script put back together, with S. renames undone, differ from the file at the tag in 31 diff lines out of 4,033 lines of code: 7 services and requires only the moved code used (gone from the main script), 12 declarations of shared state (local x = v became S.x = v; four forward declarations went), 1 line stylua re-wrapped. The same script asserts that the only lines added are requires, App.name = name, local name = App.name, the loop that loads the parts, and comments. selene: 0 errors, 0 warnings (an unrenamed or missing name would be an undefined variable). lune run tests/run: 795 pass. rojo build and check-place: matches. Roblox's compiler (Studio, Edit mode, loadstring with N used dummy tables in front): room for 133 in Hud, 124 in HudFight, 162 to 183 in the others (28 for the whole HUD before). Played in Studio (build dev, local, one player), no script errors in the output: the player card after the profile arrives; the dock; Animals (list, detail, train with its warning, Stop puts the animal back in the team); Eggs (storage, start an egg, the countdown ticking, Show me the way); the egg vendor (buy); Admin (add three animals); Gifts (claim day 1, the wheel's odds, a spin and its prize); the ranch menu from the door prompt (upgrade the Barn, switch tab); opening an egg at the hatchery (the hatch and the rarity pop); Waves (the preview, Fight wave 1); the fight (stage strip, team plates, boss bar, the result with its stars, the boon offer, wave 2, the level-up, Leave and bank); a test wave with a hold press card fired from its key; the card under the cursor.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Backup: tag backup/hud-before-modules (5f22b45). The parts are side-effect modules required in the order the code was written, so everything runs in the order it did. HudApp is the table they share: set once (App.name = name), taken as a local by later parts; reading a name nobody has set errors at load. App.S holds the 12 shared names that are assigned again (profile, openName, ranchTab, hideResult, openWaves, tradeState, invite, tradePeek, wave, moveName, fightTick, music), read and written as S.name in every file, so a part can never keep an old value. Services and requires are repeated at the top of each part that uses them (WaitForChild and require return the same thing). Not reached in play: trading (switched off), the mash and three-key press cards (only the hold card came up), release and fuse, the gifts' month view, a phone layout, two or three players. Types: App is any, so the names taken from it lose their types in strict mode (the checker is not run in CI). Not published: the live place keeps the build before the trim. Not added: a CI check with Lune's compiler (offered, waiting for SHANNON's yes)."
+}
