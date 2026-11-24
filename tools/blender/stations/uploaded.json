@@ -885,8 +885,8 @@
     "texture": null
   },
   "creature_lion_sun_forge": {
-    "model": 81876474528921,
-    "decal": 86649895327070,
+    "model": 77103579919994,
+    "decal": 138829552980700,
     "texture": null
   },
   "creature_lion_sun_forge_rainbow": {
@@ -935,8 +935,8 @@
     "texture": null
   },
   "creature_elephant_frost_forge": {
-    "model": 100989683742707,
-    "decal": 99542524767159,
+    "model": 111738461398024,
+    "decal": 138059257420429,
     "texture": null
   },
   "creature_elephant_frost_forge_rainbow": {
