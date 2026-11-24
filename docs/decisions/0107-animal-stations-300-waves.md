@@ -56,7 +56,8 @@ an elephant at 35. Max 70 = the four mythics at 70. The last wave cleared:
 
 ## To confirm at the checkpoint
 
-1. The numbers: `LAST` 300, `STEEP_FROM` 100, `STEEP_GROWTH` 1.08, `STEEP_BEND` 200.
+1. The numbers: `LAST` 300, `STEEP_FROM` 100, `STEEP_GROWTH` 1.08 (1.016 since decision 0110's amendment: small
+   boons and press fails), `STEEP_BEND` 200.
 2. Fact: with boons stacking, the picks decide far more than the team. A starter team that always takes
    damage and speed reaches wave 269. Quick Paws is the lever: a click is worth `STRIKE_SECONDS` of its
    animal's own attacking, so each 12% faster also makes every click 13.6% stronger. Not changed
