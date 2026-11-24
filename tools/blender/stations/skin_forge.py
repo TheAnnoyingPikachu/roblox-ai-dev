@@ -381,6 +381,46 @@ def mammoth_weights(p):
     return {k: v for k, v in w.items() if v > 0.001}
 
 
+def war_tortoise_weights(p):
+    """SHANNON's Sunfire War-Tortoise (ForgeGUI artifact 276820c6), turned 88.7 degrees to stand along Y: a shell
+    with a sun cannon on top whose barrel reaches out over the head (y < -0.36, above z 0.09: it stays on the body),
+    the head below it ahead of y -0.36, stout legs under the shell's sides (front y -0.36..-0.12, hind 0.12..0.42,
+    |x| 0.06..0.32) apart below z -0.21, and a small tail from y 0.4."""
+    tail = ramp(0.4, 0.44, p.y) * (1 - ramp(0.06, 0.09, abs(p.x)))
+    head = ramp(-0.34, -0.39, p.y) * (1 - ramp(0.06, 0.1, p.z))
+    w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
+    leg, down = None, ramp(-0.17, -0.23, p.z)
+    if 0.06 < abs(p.x) < 0.32 and down > 0:
+        if -0.36 < p.y < -0.12:
+            leg = "leg_fl" if p.x > 0 else "leg_fr"
+        elif 0.12 < p.y < 0.42:
+            leg = "leg_bl" if p.x > 0 else "leg_br"
+    if leg:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def sun_rhino_weights(p):
+    """SHANNON's Molten Sun Rhino (ForgeGUI artifact 8fd726bf), mid-stride: the head and horn ahead of y -0.27, the
+    left legs ahead of the right ones (front left y -0.27..-0.06, front right -0.14..0.08, hind left 0.15..0.36,
+    hind right 0.26..0.46), apart below z -0.06, and a tail curling up behind from y 0.42 above z -0.05."""
+    tail = ramp(0.42, 0.46, p.y) * ramp(-0.08, -0.03, p.z)
+    head = ramp(-0.25, -0.3, p.y)
+    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+    leg, down = None, ramp(-0.06, -0.11, p.z)
+    if 0.0 < abs(p.x) < 0.24 and down > 0:
+        left = p.x > 0
+        if (left and -0.27 < p.y < -0.06) or (not left and -0.14 < p.y < 0.08):
+            leg = "leg_fl" if left else "leg_fr"
+        elif (left and 0.15 < p.y < 0.36) or (not left and 0.26 < p.y < 0.46):
+            leg = "leg_bl" if left else "leg_br"
+    if leg:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
 def guardian_pieces(lo, hi):
     """The sun halo (a ring and its spikes, loose pieces standing over the shoulders) goes whole with the head."""
     if hi.y - lo.y < 0.5 and lo.y > -0.34 and hi.y < -0.1 and lo.z > 0.0 and hi.z > 0.085:
@@ -651,6 +691,40 @@ REGIONS = {
         "shade": "smooth",
         "tris": 12000,
         "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_tortoise_sahara_forge": {  # (the source turned 88.7 degrees first: straighten.py)
+        "length": 17.0,
+        "joints": {
+            "body": (0.0, 0.0, 0.0),
+            "head": (0.0, -0.36, -0.03),
+            "leg_fl": (0.2, -0.25, -0.17),
+            "leg_fr": (-0.2, -0.25, -0.17),
+            "leg_bl": (0.2, 0.27, -0.17),
+            "leg_br": (-0.2, 0.27, -0.17),
+            "tail": (0.0, 0.4, -0.1),
+        },
+        "weights": war_tortoise_weights,
+        "small": 0.06,
+        "shade": "smooth",
+        "tris": 12000,
+        "notes": "Sunfire War-Tortoise: SHANNON's Sunfire War-Tortoise of the Desert from ForgeGUI (artifact 276820c6), one mesh with its sun cannon, skinned to the Stations rig (decision 0102).",
+    },
+    "creature_rhino_sahara_forge": {
+        "length": 20.0,
+        "joints": {
+            "body": (0.0, 0.0, 0.0),
+            "head": (0.0, -0.26, 0.03),
+            "leg_fl": (0.15, -0.17, -0.06),
+            "leg_fr": (-0.16, -0.03, -0.06),
+            "leg_bl": (0.07, 0.26, -0.06),
+            "leg_br": (-0.1, 0.37, -0.06),
+            "tail": (0.0, 0.43, 0.02),
+        },
+        "weights": sun_rhino_weights,
+        "small": 0.06,
+        "shade": "smooth",
+        "tris": 12000,
+        "notes": "Molten Sun Rhino: SHANNON's Molten Sun Rhino of the Savannah from ForgeGUI (artifact 8fd726bf), one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_flamingo_forge": flamingo("Flamingo", 8.0, 0.0, 0.12, -0.17, -0.12, {"leg_fl": (0.06, 0.035), "leg_fr": (-0.069, 0.09)}, 0.0, 0.13, (0.09, 0.13), 0.06, "c9dca2cc", "pink flamingo"),
     "creature_flamingo_peacock_forge": flamingo("King Flamingo", 9.8, -0.06, 0.06, -0.18, -0.17, {"leg_fl": (0.05, 0.04), "leg_fr": (-0.05, 0.04)}, -0.06, 0.12, (0.1, 0.15), 0.12, "a84542a7", "peacock flamingo with a crown"),

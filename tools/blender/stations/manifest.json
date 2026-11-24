@@ -9945,5 +9945,131 @@
       8.556,
       -1.431
     ]
+  },
+  "creature_tortoise_sahara_forge": {
+    "fbx": "build/blender/stations/creature_tortoise_sahara_forge.fbx",
+    "png": "build/blender/stations/creature_tortoise_sahara_forge.png",
+    "preview": "build/blender/stations/previews/creature_tortoise_sahara_forge_rest.png",
+    "size_studs": [
+      10.99,
+      9.67,
+      17.0
+    ],
+    "tris": 12000,
+    "parts": {
+      "creature_tortoise_sahara_forge_body": 12000
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Sunfire War-Tortoise: SHANNON's Sunfire War-Tortoise of the Desert from ForgeGUI (artifact 276820c6), one mesh with its sun cannon, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_tortoise_sahara_forge_body": [
+        0.0,
+        4.834,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_tortoise_sahara_forge_head": [
+        -0.001,
+        4.358,
+        6.436
+      ],
+      "creature_tortoise_sahara_forge_leg_fl": [
+        3.576,
+        1.854,
+        4.469
+      ],
+      "creature_tortoise_sahara_forge_leg_fr": [
+        -3.578,
+        1.854,
+        4.469
+      ],
+      "creature_tortoise_sahara_forge_leg_bl": [
+        3.576,
+        1.854,
+        -4.832
+      ],
+      "creature_tortoise_sahara_forge_leg_br": [
+        -3.578,
+        1.854,
+        -4.832
+      ],
+      "creature_tortoise_sahara_forge_tail": [
+        -0.001,
+        3.106,
+        -7.157
+      ]
+    },
+    "skinned": true,
+    "root": [
+      -0.001,
+      4.895,
+      -0.002
+    ]
+  },
+  "creature_rhino_sahara_forge": {
+    "fbx": "build/blender/stations/creature_rhino_sahara_forge.fbx",
+    "png": "build/blender/stations/creature_rhino_sahara_forge.png",
+    "preview": "build/blender/stations/previews/creature_rhino_sahara_forge_rest.png",
+    "size_studs": [
+      9.08,
+      7.69,
+      20.0
+    ],
+    "tris": 11999,
+    "parts": {
+      "creature_rhino_sahara_forge_body": 11999
+    },
+    "tris_budget": 20000,
+    "script": "tools/blender/stations/skin_forge.py",
+    "notes": "Molten Sun Rhino: SHANNON's Molten Sun Rhino of the Savannah from ForgeGUI (artifact 8fd726bf), one mesh, skinned to the Stations rig (decision 0102).",
+    "glow": {},
+    "centres": {
+      "creature_rhino_sahara_forge_body": [
+        0.0,
+        3.846,
+        -0.0
+      ]
+    },
+    "joints": {
+      "creature_rhino_sahara_forge_head": [
+        0.02,
+        4.508,
+        5.383
+      ],
+      "creature_rhino_sahara_forge_leg_fl": [
+        3.144,
+        2.633,
+        3.509
+      ],
+      "creature_rhino_sahara_forge_leg_fr": [
+        -3.312,
+        2.633,
+        0.593
+      ],
+      "creature_rhino_sahara_forge_leg_bl": [
+        1.478,
+        2.633,
+        -5.447
+      ],
+      "creature_rhino_sahara_forge_leg_br": [
+        -2.062,
+        2.633,
+        -7.737
+      ],
+      "creature_rhino_sahara_forge_tail": [
+        0.02,
+        4.299,
+        -8.987
+      ]
+    },
+    "skinned": true,
+    "root": [
+      0.02,
+      3.883,
+      -0.032
+    ]
   }
 }
