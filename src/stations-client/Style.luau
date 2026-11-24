@@ -281,21 +281,31 @@ function Style.dot(parent: Instance, text: string?): TextLabel
 	return d
 end
 
--- A round token: a coin, a sample, an XP star.
+-- A token: a coin, a sample, an XP star. The pictures are the HUD icons made in ForgeGUI (STATION-146,
+-- assets/stations/icons/hud_*.png); a kind without one gets a dot in its colour.
 local TOKEN = { coins = C.accent, samples = C.good, xp = C.info }
+Style.TOKEN = {
+	coins = "rbxassetid://134110233369810",
+	samples = "rbxassetid://97090063840425",
+	xp = "rbxassetid://73327321297638",
+} :: { [string]: string }
 function Style.amount(parent: Instance, kind: string, text: string, colour: Color3?): (Frame, TextLabel)
 	local f = Instance.new("Frame")
 	f.AutomaticSize = Enum.AutomaticSize.X
 	f.Size = UDim2.fromOffset(0, 26)
 	f.BackgroundTransparency = 1
 	Style.list(f, 5, true).VerticalAlignment = Enum.VerticalAlignment.Center
-	local dot = Style.frame(f, UDim2.fromOffset(18, 18), TOKEN[kind] or C.muted)
-	Style.round(dot, if kind == "samples" then 5 else 9)
-	if kind == "samples" then
-		dot.Rotation = 45
+	if Style.TOKEN[kind] then
+		local icon = Instance.new("ImageLabel")
+		icon.BackgroundTransparency, icon.Image = 1, Style.TOKEN[kind]
+		icon.Size, icon.LayoutOrder = UDim2.fromOffset(26, 26), 1
+		icon.Parent = f
+	else
+		local dot = Style.frame(f, UDim2.fromOffset(18, 18), TOKEN[kind] or C.muted)
+		Style.round(dot, 9)
+		Style.stroke(dot, INK, 2)
+		dot.LayoutOrder = 1
 	end
-	Style.stroke(dot, INK, 2)
-	dot.LayoutOrder = 1
 	local t = Style.text(f, text, 18, colour or C.text, UDim2.fromOffset(0, 26))
 	t.AutomaticSize = Enum.AutomaticSize.X
 	t.TextXAlignment = Enum.TextXAlignment.Left
