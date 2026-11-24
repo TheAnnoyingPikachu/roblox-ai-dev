@@ -64,6 +64,7 @@ Style.RARITY = {
 	divine = Color3.fromRGB(94, 240, 216), -- decision 0110
 	celestial = Color3.fromRGB(169, 155, 255),
 	secret = Color3.fromRGB(255, 77, 94),
+	eternal = Color3.fromRGB(255, 168, 36), -- decision 0117: sun gold
 } :: { [string]: Color3 }
 
 -- Each coat's chip colour (decision 0110); the rainbow and prismatic chips are a rainbow gradient instead.

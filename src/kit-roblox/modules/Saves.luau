@@ -159,6 +159,17 @@ function Saves.start(options: Options)
 		return ok
 	end
 
+	-- Writes `player`'s save now, after any write already running (a Robux purchase is stored before it is
+	-- reported granted). True when stored.
+	function api.flush(player: Player): boolean
+		local key = keyFor(player)
+		local waited = 0
+		while saves.sessions[key] and saves.sessions[key].writing and waited < 10 do
+			waited += task.wait(0.2)
+		end
+		return saves:flush(key, os.time())
+	end
+
 	function api.finish(player: Player)
 		local key = keyFor(player)
 		if options.beforeFinish and saves:session(key) then

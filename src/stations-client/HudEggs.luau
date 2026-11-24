@@ -5,6 +5,7 @@
 -- One part of the HUD: Hud.client.luau loads the parts in order, and HudApp holds what they share.
 
 local CollectionService = game:GetService("CollectionService")
+local MarketplaceService = game:GetService("MarketplaceService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -315,6 +316,46 @@ local function contentsColumn(col: Frame, def: StationConfig.Egg, level: number)
 	end
 end
 
+-- An exclusive animal on the shelf (decision 0117): its picture, its name in the eternal colour and its Robux
+-- price; pressing it asks Roblox to sell it. "Coming soon" while its product is not made.
+local prices: { [number]: number } = {}
+local function productCard(col: Instance, k: number, item: StationConfig.Product)
+	local va = StationConfig.variant(item.s, item.v) :: StationConfig.Variant
+	local product = item.product
+	local card = Style.button(col, "", function()
+		if product then
+			MarketplaceService:PromptProductPurchase(player, product)
+		end
+	end, if product then "primary" else "ghost", UDim2.fromOffset(150, 190))
+	card.LayoutOrder = 100 + k
+	local view = Portrait.new(card, StationRules.assetOf(item.s, item.v), {
+		size = UDim2.fromOffset(110, 92),
+		background = darker(RARITY_COLOUR.eternal),
+	})
+	view.AnchorPoint, view.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 8)
+	local name = Style.text(card, va.name, 16, RARITY_COLOUR.eternal, UDim2.new(1, -12, 0, 20))
+	name.Position, name.TextXAlignment = UDim2.fromOffset(6, 104), Enum.TextXAlignment.Center
+	local price = Style.small(card, "Coming soon", 15, C.text, UDim2.new(1, -12, 0, 22))
+	price.Position, price.TextXAlignment = UDim2.fromOffset(6, 128), Enum.TextXAlignment.Center
+	if product then
+		price.Text = if prices[product] then `R$ {prices[product]}` else "R$ ..."
+		if prices[product] == nil then
+			task.spawn(function()
+				local ok, info =
+					pcall(MarketplaceService.GetProductInfo, MarketplaceService, product, Enum.InfoType.Product)
+				if ok and info and info.PriceInRobux then
+					prices[product] = info.PriceInRobux
+					if price.Parent then
+						price.Text = `R$ {info.PriceInRobux}`
+					end
+				end
+			end)
+		end
+	end
+	local tier = Style.small(card, "ETERNAL · never in an egg", 11, C.muted, UDim2.new(1, -12, 0, 18))
+	tier.Position, tier.TextXAlignment = UDim2.fromOffset(6, 156), Enum.TextXAlignment.Center
+end
+
 redraw.eggs = function()
 	Style.clear(page)
 	Style.clear(eggs.chips)
@@ -366,6 +407,11 @@ redraw.eggs = function()
 		UDim2.new(1, -12, 0, 26)
 	)
 	note.LayoutOrder = 0
+	local special = Style.text(shelf, "Eternal animals", 20, RARITY_COLOUR.eternal, UDim2.new(1, -12, 0, 26))
+	special.LayoutOrder = 100
+	for k, item in StationConfig.PRODUCTS do
+		productCard(shelf, k, item)
+	end
 	local right = Style.column(page, UDim.new(1, -330), UDim.new(0, 330), 3, 6)
 	contentsColumn(right, StationConfig.EGGS[shelfEgg], level)
 end

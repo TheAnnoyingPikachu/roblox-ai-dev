@@ -300,7 +300,8 @@ function Hud.animalDetail(col: Instance, a: any)
 	end
 end
 
--- What the player's open eggs can still give them: every species and variant in them not owned yet.
+-- What the player can still get: every species and variant in their open eggs, and the exclusive ones (decision
+-- 0117, "Shop"), not owned yet.
 local function unseen(): { { asset: string, name: string, egg: string, rank: number } }
 	local owned = {}
 	for _, a in S.profile.animals do
@@ -334,6 +335,20 @@ local function unseen(): { { asset: string, name: string, egg: string, rank: num
 						rank = RANK[va.tier] or 0,
 					})
 				end
+			end
+		end
+	end
+	for _, sp in StationConfig.SPECIES do
+		for _, va in sp.variants do
+			local key = sp.id .. "/" .. va.id
+			if va.exclusive and not owned[key] and not listed[key] then
+				listed[key] = true
+				table.insert(out, {
+					asset = StationRules.assetOf(sp.id, va.id),
+					name = va.name,
+					egg = "Shop",
+					rank = RANK[va.tier] or 0,
+				})
 			end
 		end
 	end

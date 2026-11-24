@@ -1098,5 +1098,15 @@
     "model": 101132425956073,
     "decal": 139557076603707,
     "texture": null
+  },
+  "creature_elephant_sahara_forge_rainbow": {
+    "model": null,
+    "decal": 113668612063735,
+    "texture": null
+  },
+  "creature_lion_sahara_forge_rainbow": {
+    "model": null,
+    "decal": 81889613634043,
+    "texture": null
   }
 }

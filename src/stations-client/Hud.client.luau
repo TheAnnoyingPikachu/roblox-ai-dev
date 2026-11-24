@@ -51,8 +51,18 @@ Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and label
 local C = Style.C
 local N = Style.N
 local RARITY_COLOUR = Style.RARITY
-local RANK: { [string]: number } =
-	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
+local RANK: { [string]: number } = {
+	common = 1,
+	uncommon = 2,
+	rare = 3,
+	epic = 4,
+	legendary = 5,
+	mythic = 6,
+	divine = 7,
+	celestial = 8,
+	secret = 9,
+	eternal = 10,
+}
 local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defence", utility = "Utility", titan = "TITAN" }
 local GROUP_NAME: { [string]: string } = { pack = "Pack", solitary = "Solitary" }
 local STAT_SHORT: { [string]: string } =
@@ -1159,6 +1169,17 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			"good",
 			(iconsOf(payload.items))
 		)
+	elseif kind == "granted" then -- an exclusive animal: bought for Robux or the beta reward (decision 0117)
+		Style.sound("claim")
+		showRarity(payload.animal)
+		Style.toast(
+			screen,
+			if payload.why == "beta" then "A thank-you for playing the beta!" else "Thank you for your purchase!",
+			6,
+			"good"
+		)
+	elseif kind == "full_purchase" then
+		Style.toast(screen, "Your Barn is full: release an animal and your purchase arrives", 8, "bad")
 	elseif kind == "reward" then
 		Style.sound("claim")
 		Style.toast(screen, `You got: {rewardWords(payload.items)}`, 4, "good", (iconsOf(payload.items)))

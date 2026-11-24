@@ -92,6 +92,7 @@ StationTrade.RARITY = {
 	divine = 50,
 	celestial = 120,
 	secret = 300,
+	eternal = 800, -- decision 0117
 }
 StationTrade.RAINBOW = 3
 StationTrade.COAT = { prismatic = 20, spectral = 6, galaxy = 4, gilded = 4, rainbow = StationTrade.RAINBOW }

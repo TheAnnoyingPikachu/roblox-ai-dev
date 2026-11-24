@@ -1031,3 +1031,74 @@ describe("StationProgress wave fights", function()
 		expect(q.best).toBe(0)
 	end)
 end)
+
+describe("StationProgress Robux and the beta (decision 0117)", function()
+	it("grants a purchase once per receipt, at BASE_MAX in its coat, the Titan to its slot", function()
+		local p = fresh()
+		local q, ok, code, a = StationProgress.grant(p, "lion", "sahara_lion", "r1", "rainbow")
+		expect(ok).toBe(true)
+		expect(code).toBeNil()
+		local got = a :: StationProgress.Animal
+		expect(got.v).toBe("sahara_lion")
+		expect(got.coat).toBe("rainbow")
+		expect(got.rainbow).toBe(true)
+		expect(got.trained.strength).toBe(StationConfig.BASE_MAX)
+		expect(#q.animals).toBe(1)
+		expect(q.team[1]).toBe(got.id)
+		local again, ok2, code2, a2 = StationProgress.grant(q, "lion", "sahara_lion", "r1", "rainbow")
+		expect(ok2).toBe(true) -- Roblox sent the receipt again: nothing more is given
+		expect(code2).toBe("granted")
+		expect(a2).toBeNil()
+		expect(#again.animals).toBe(1)
+		local t = StationProgress.grant(again, "elephant", "sahara_elephant", "r2", nil)
+		expect(#t.animals).toBe(2)
+		expect(t.titan).toBe(t.animals[2].id)
+		expect(#t.team).toBe(1) -- a Titan never joins the team
+	end)
+
+	it(
+		"refuses a purchase when the save is full or the animal unknown, and remembers receipts through a save",
+		function()
+			local p = fresh()
+			for k = 1, StationProgress.MAX_ANIMALS do
+				p.animals[k] = {
+					id = k,
+					s = "lion",
+					stats = StationRules.versionStats("lion", nil) :: StationConfig.Stats,
+					trained = full(1),
+				}
+			end
+			p.nextId = StationProgress.MAX_ANIMALS + 1
+			local _, ok, code = StationProgress.grant(p, "lion", "sahara_lion", "r1", nil)
+			expect(ok).toBe(false)
+			expect(code).toBe("full")
+			local _, ok2, code2 = StationProgress.grant(fresh(), "lion", "nope_lion", "r1", nil)
+			expect(ok2).toBe(false)
+			expect(code2).toBe("animal")
+			local q = StationProgress.grant(fresh(), "lion", "sahara_lion", "r9", "galaxy")
+			local back = StationProgress.sanitize(q, 0)
+			expect(back.receipts[1]).toBe("r9")
+			expect(back.animals[1].v).toBe("sahara_lion") -- an exclusive variant survives a save
+			expect(back.animals[1].coat).toBe("galaxy")
+			local many = fresh()
+			for k = 1, StationProgress.MAX_RECEIPTS + 5 do
+				many = StationProgress.grant(many, "lion", "sahara_lion", `x{k}`, nil)
+				table.clear(many.animals) -- only the receipts matter here
+			end
+			expect(#many.receipts).toBe(StationProgress.MAX_RECEIPTS)
+			expect(many.receipts[1]).toBe("x6") -- the oldest go
+		end
+	)
+
+	it("gives the beta reward once per save while it is on", function()
+		local q, ok, _, a = StationProgress.betaGift(fresh(), nil)
+		local gift = StationConfig.BETA_GIFT :: { s: string, v: string }
+		expect(ok).toBe(true)
+		expect((a :: StationProgress.Animal).v).toBe(gift.v)
+		expect(q.beta).toBe(true)
+		local again, ok2, code2 = StationProgress.betaGift(StationProgress.sanitize(q, 0), nil)
+		expect(ok2).toBe(false)
+		expect(code2).toBe("done")
+		expect(#again.animals).toBe(1)
+	end)
+end)
