@@ -77,6 +77,7 @@ export type Setup = {
 	maxHp: number?,
 	tempo: number?,
 	clicks: boolean?,
+	immortal: boolean?, -- the intro's borrowed fight (decision 0116): nobody on the team can be knocked out
 }
 
 -- Quick presses (decisions 0106, 0109): each of the four classes has its own press, so a team of one of
@@ -565,6 +566,9 @@ function BattleRules.battle(
 		local dealt = math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
 		if d.spectral and not d.spared and dealt >= d.hp and d.hp > 1 then -- the Spectral coat: once, it stays up
 			d.spared, dealt = true, d.hp - 1
+		end
+		if d.side == 1 and setup and setup.immortal then -- a fight that cannot be lost: the last point of HP stays
+			dealt = math.min(dealt, math.max(0, d.hp - 1))
 		end
 		d.hp -= dealt
 		return dealt

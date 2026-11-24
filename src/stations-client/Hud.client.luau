@@ -84,6 +84,7 @@ local REFUSED: { [string]: string } = {
 	trade_their_level = `That player can't trade yet (level {StationTrade.MIN_LEVEL})`,
 	trade_limit = `You've done your {StationTrade.PER_DAY} trades today: more tomorrow`,
 	trade_locked = "That animal is locked: unlock it in Animals first",
+	intro_done = "You have already met the Ranger",
 	trade_wait = "Look the trade over first: it opens in a moment",
 	trade_confirming = "The trade is locked: confirm it or cancel",
 	trade_off = "That player isn't taking trade requests",
@@ -208,7 +209,10 @@ end
 local sheets: { [string]: Style.Sheet } = {}
 local redraw: { [string]: () -> () } = {}
 S.openName = nil
-local nav = Instance.new("Frame") -- the side dock, hidden while a sheet is open
+local nav = Instance.new("Frame") -- the ranch's HUD (the dock, the goal, To battle): it makes way for the rest
+function Hud.navShown() -- not under an open menu, in a fight, or before the intro is done
+	nav.Visible = S.openName == nil and not S.fighting and not S.intro
+end
 
 local function show(name: string?)
 	if name and name ~= S.openName and sheets[name] then
@@ -218,7 +222,7 @@ local function show(name: string?)
 	for n, sh in sheets do
 		sh.backdrop.Visible = n == name
 	end
-	nav.Visible = name == nil and not S.fighting
+	Hud.navShown()
 	if name and redraw[name] and S.profile then
 		redraw[name]()
 	end
@@ -406,7 +410,7 @@ end
 -- A key from the dock opens its menu, closes it again, or goes straight from one menu to another.
 UserInputService.InputBegan:Connect(function(input, typing)
 	local hot = hotkeys[input.KeyCode]
-	if typing or hot == nil or S.fighting then
+	if typing or hot == nil or S.fighting or S.intro then
 		return
 	elseif hot.sheet and S.openName == hot.sheet then
 		Style.sound("close")
@@ -592,7 +596,7 @@ do
 	-- The note for hatching egg `k` (nil: none is ready).
 	function Hud.eggReady(k: number?, name: string?)
 		eggNote.Visible, eggNoteAt = k ~= nil, k or 0
-		eggNoteText.Text = `Your {name or "egg"} is ready`
+		eggNoteText.Text = `{name or "Egg"} ready!`
 	end
 end
 
@@ -639,7 +643,18 @@ App.tradeDot = tradeDot
 App.adminToggle = adminToggle
 
 for _, part in
-	{ "HudAnimals", "HudRanch", "HudShop", "HudGifts", "HudTrade", "HudWaves", "HudFight", "HudHover", "HudHatch" }
+	{
+		"HudAnimals",
+		"HudRanch",
+		"HudShop",
+		"HudGifts",
+		"HudTrade",
+		"HudWaves",
+		"HudFight",
+		"HudHover",
+		"HudHatch",
+		"HudIntro",
+	}
 do
 	require(script.Parent:WaitForChild(part))
 end
@@ -795,6 +810,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
 		end
 		refresh()
+		Hud.intro()
+	elseif kind == "intro" then -- the borrowed fight is won (decision 0116)
+		Hud.introWon()
 	elseif kind == "announce" then -- another player's rare hatch (SHANNON, 2026-11-24)
 		Style.toast(screen, `{payload.who} hatched {payload.what}!`, 5, "good")
 	elseif kind == "hatched" then

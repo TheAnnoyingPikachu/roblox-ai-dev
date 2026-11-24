@@ -120,6 +120,7 @@ local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local Rng = require(Shared:WaitForChild("Rng"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationGoals = require(Shared:WaitForChild("StationGoals"))
+local StationIntro = require(Shared:WaitForChild("StationIntro"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
@@ -1441,6 +1442,34 @@ local router = Router.new({
 				pcall(player.RequestStreamAroundAsync, player, to.Position)
 				player.Character:PivotTo(to)
 				return true, nil
+			end,
+		},
+		-- the intro (decision 0116): "fight" starts the borrowed fight, which cannot be lost and ends the intro;
+		-- "skip" ends it at once. Either way the starter eggs are given, once.
+		intro = {
+			args = { Payload.enum({ "fight", "skip" }) },
+			handler = function(player, what: string)
+				local p = saves.get(player)
+				if p == nil then
+					return false, "loading"
+				elseif StationProgress.sanitize(p, os.time()).intro then
+					return false, "intro_done"
+				end
+				local function finish(): (boolean, string?)
+					local now = os.time()
+					Analytics.because(player, "intro")
+					return apply(player, function(q)
+						return StationIntro.finish(q, now)
+					end)
+				end
+				if what == "skip" then
+					Analytics.event(player, "IntroSkipped", 1)
+					return finish()
+				end
+				return WaveShow.run({ player }, StationIntro.WAVE, StationIntro.team() :: any, function(result)
+					finish()
+					remotes.fx(player, "intro", { seconds = result.seconds })
+				end, StationIntro.SETUP)
 			end,
 		},
 		-- a test wave in the arena: `team` is "mine" (the admin's own team), "starters" or "mythics"

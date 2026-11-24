@@ -21,7 +21,7 @@ loud colour and always means "press this now". Keys show on a PC, tap bubbles on
 | STATION-139 | The fight in glass: plates along the bottom, the story along the top, run info; boon cards, the vote, the run's end | Fight, Result | built (not: the team mate's pill, the vote's ring) |
 | STATION-140 | Menus: animals in three columns with Seen, eggs and vendor in one window with odds, the wave road, the ranch grid, the gifts' week | Animals, Eggs, Waves, RanchGifts | to do |
 | STATION-141 | Moments: the hatch reveal with odds and where it goes, the level card, the server strip, the loading cover | Moments | to do |
-| STATION-142 | The intro: the Ranger's loan, the fight that cannot be lost with its four lessons, the goodbye, three quick eggs, Skip (decision 0116) | Intro, IntroTaster, IntroOwn | to do |
+| STATION-142 | The intro: the Ranger's loan, the fight that cannot be lost with its four lessons, the goodbye, three quick eggs, Skip (decision 0116) | Intro, IntroTaster, IntroOwn | built (lessons are chances, not pauses; no second loan yet) |
 | STATION-143 | Phone layouts of the ranch, the menus and the fight | PhoneExplore, PhoneFight | to do |
 
 ## Decisions taken on the recommended option (SHANNON reviews at the end)

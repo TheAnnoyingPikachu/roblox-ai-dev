@@ -34,7 +34,7 @@ local uiScale = App.uiScale
 local send = App.send
 local nameOf = App.nameOf
 local redraw = App.redraw
-local nav = App.nav
+local Hud = App.Hud
 local show = App.show
 local waves = App.waves
 local coinsText = App.coinsText
@@ -419,7 +419,7 @@ do
 		if showing ~= docked then -- the ranch's dock, goal and To battle make way for the fight (decision 0114)
 			docked = showing
 			S.fighting = showing
-			nav.Visible = not showing and S.openName == nil
+			Hud.navShown()
 		end
 		-- knockouts and the power bar
 		local us, them = 0, 0
@@ -705,6 +705,9 @@ local function firePower(slot: number, presses: number?)
 	end
 	if ok then
 		Style.sound("claim")
+		if S.fired and not failed then -- the intro's lessons: this kind of press was done
+			S.fired[p.press] = true
+		end
 	else
 		p.sent = false
 		if p.full and not failed then -- turned down for good while the meter is still full: a fresh card to press again
@@ -872,6 +875,7 @@ do
 			if clicks > 0 then
 				local n = math.min(clicks, 20)
 				clicks -= n
+				S.strikes = (S.strikes or 0) + n -- the intro's first lesson counts them
 				task.spawn(function()
 					request:InvokeServer("strike", n)
 				end)
