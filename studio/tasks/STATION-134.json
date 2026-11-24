@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-134",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The HUD trim (SHANNON, 2026-11-24): free locals in Hud.client.luau's main chunk, which had room for none of Luau's 200, without changing what the HUD does.",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-133"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-134.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Roblox's compiler accepts the HUD with at least 25 more locals at its tightest point (it accepted none)",
+    "No behaviour changes: the diff is renames to one table (Hud), two do blocks round private labels, and two services fetched where they are used",
+    "selene finds no undefined or unused variable; stylua, the specs, the build and check-place pass"
+  ],
+  "verification": "Measured in Studio with Roblox's own compiler (Edit mode, loadstring of the script's Source with N used dummy locals in front): room for 0 before, 28 after; confirmed in Play (28 dummies: the HUD loads; 29: 'Out of local registers ... exceeded limit 200'). Lune 0.11.1's stricter compiler: over by 22 before, room for 6 after (O0, debug 2); all 136 scripts under src compile with it. Played in Studio (build dev, local, one player), no errors: the eight sheets, the gifts' week, month and wheel views and a spin, an animal's detail and a training timer, an egg card, Show me the way, a hatch reveal, the Menu and Travel buttons, a wave from the wave list (the banner), a vendor prompt, a test fight with press cards.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: 'go ahead with the trim but take your time and make backups'. Backup: tag backup/hud-before-trim (dee5e1d, pushed). Sixteen helpers called from one place each are fields of the table Hud (statText, slide, travelTo, bestTwo, animalCard, animalDetail, wayTo, eggCard, pictureOf, upgradeCard, boostChips, weekView, monthView, wheelView, landWheel, peekCard); the wave banner's and the hatch reveal's labels are in do blocks (announce and showRarity stay locals); Players and ProximityPromptService are fetched where used. Not reached in play: Hud.peekCard (trading is off). Merging number constants was dropped from the plan: Roblox's compiler already folds them, so it frees nothing. Not published: the live place keeps the build before the trim."
+}
