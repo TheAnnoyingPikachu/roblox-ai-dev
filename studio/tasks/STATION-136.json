@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-136",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Sun and Moon, the kit (SHANNON, 2026-11-24: 'go for your choice of C and implement what youve shown me'): the parts every new screen is built from, in Style.luau.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-135"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "docs/decisions/0114-animal-stations-sun-and-moon.md",
+    "docs/checkpoints/STATION-LOOK.md",
+    "studio/tasks/STATION-136.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Style has the night tokens (Style.N) and a glass panel, a paper pill, small print, icons from the studio's own set, key caps that hide on a touch screen, a ring's fill, and the input mode with a change signal",
+    "No new assets: icons are Shared.GardenIcons through rbxthumb",
+    "selene and stylua pass; nothing that used Style before looks different"
+  ],
+  "verification": "selene 0 errors 0 warnings; stylua clean. Seen in Studio (build dev, local): the level's XP ring fills clockwise from the top (10 of 25 XP), pills over the world, the five dock icons, key caps 1 to 5 and B. UserInputService.PreferredInput and the Nunito font checked in this Studio. Not seen yet: a touch device (key caps hidden), the glass panel (used by the fight, STATION-139).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Decision 0114. Toasts moved down 66 units so they do not cover the goal strip; their restyle and stacking is STATION-141."
+}

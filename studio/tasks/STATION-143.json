@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-143",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A layout of its own for a phone (decision 0114, the PhoneExplore and PhoneFight boards; SHANNON: 'include mobile UI and HUD as well, also can there be two different UI for mobile and PC?'): the ranch HUD and the fight lay themselves out for touch or a short screen, and switch live.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-139",
+    "STATION-142"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/HudWaves.luau",
+    "docs/checkpoints/STATION-LOOK.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-143.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "On a touch screen or a short one the bottom corners are free at the ranch (the walking stick, jump): Animals, Eggs, Gifts and More sit in a square above jump, Ranch and Travel are in More",
+    "No key cap shows on a touch screen; the lessons' words say tap, not a key",
+    "In a fight on a phone the plates are narrow enough to clear the shield, the boon cards clear the line under them, and Roblox's touch controls are hidden",
+    "A desk's layout is unchanged, and the two switch when the input or the screen changes"
+  ],
+  "verification": "selene 0 errors 0 warnings; lune run tests/run: 810 pass. Seen in Studio with the player's UiSize set to 844 x 390 and UiInput to touch (a stand-in, not a device): the level as its ring with the two purses, the goal strip narrower with its reward as a picture, one timer under them, Invite, the four buttons in a square above the bottom right corner with no key caps, To battle smaller in the middle, both bottom corners free; in a test boss wave the narrow plates with pictures and bars only, the shield at their left, GuiService.TouchControlsEnabled false. Back on the desk size the column, the keys and the wide plates return.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "NOT tested on a real phone or in Roblox's device emulator: the stand-in resizes the HUD's root only, so the press cards (drawn over the animals on the whole screen) and the camera are not at phone size. Not built from the PhoneFight board: the one press pad under the right thumb (the press cards stay beside their animals and are tapped there), plates as health rings. Menus on a phone are the sheets' existing folded layout (decision 0091). Upright phones: untested. Key caps were held in a weak table and could be dropped: now a plain one, emptied as each cap is destroyed."
+}

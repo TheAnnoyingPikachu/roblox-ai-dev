@@ -119,6 +119,8 @@ local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local Rng = require(Shared:WaitForChild("Rng"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
+local StationGoals = require(Shared:WaitForChild("StationGoals"))
+local StationIntro = require(Shared:WaitForChild("StationIntro"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
@@ -194,6 +196,35 @@ local function rollEggs(items: StationRewards.Items): { StationRules.Owned }
 		table.insert(animals, a :: StationRules.Owned)
 	end
 	return animals
+end
+
+-- Goals (decision 0115): whatever goal the save now shows as reached is paid, one after another, each
+-- with a note to the player. Called after every change of a save (onChanged).
+local payingGoals: { [Player]: boolean } = {}
+local function payGoals(player: Player)
+	if payingGoals[player] then
+		return
+	end
+	payingGoals[player] = true
+	for _ = 1, #StationGoals.LIST do
+		local p = saves.get(player)
+		local q = if p then StationProgress.sanitize(p, os.time()) else nil
+		local goal = if q then StationGoals.due(q) else nil
+		if q == nil or goal == nil then
+			break
+		end
+		local items = StationGoals.items(q, goal)
+		local animals, now = rollEggs(items), os.time()
+		Analytics.because(player, "goal")
+		local ok = apply(player, function(r)
+			return StationGoals.finish(r, goal.id, items, animals, now)
+		end)
+		if not ok then
+			break
+		end
+		remotes.fx(player, "goal", { text = goal.text, items = items })
+	end
+	payingGoals[player] = nil
 end
 
 local function rewardWeek(player: Player): (boolean, string?)
@@ -595,6 +626,7 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 				if result.won then mine.xp else 0,
 				if result.won then mine.samples else 0
 			out.first = mine.first
+			out.boons, out.wins = party.run.boons, party.wins[m] -- for the boon cards' stacks and the run's end
 			if after then
 				local coins, samples = WaveRuns.bonus(run, mine.coins, mine.samples)
 				local pot = party.pots[m]
@@ -673,10 +705,8 @@ function settle(party: Party)
 	end
 	party.run, party.votes = picked, {}
 	party.round += 1
-	if #party.members > 1 then
-		for _, m in party.members do
-			remotes.fx(m, "boon", { id = id })
-		end
+	for _, m in party.members do -- everyone's HUD adds it to the run's stack; a party's also says which won the vote
+		remotes.fx(m, "boon", { id = id })
 	end
 	if not waveFight(party.members[1], picked.wave, true) then
 		-- they took too long and the field is another party's now: the run ends here, its pots paid
@@ -1414,6 +1444,34 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- the intro (decision 0116): "fight" starts the borrowed fight, which cannot be lost and ends the intro;
+		-- "skip" ends it at once. Either way the starter eggs are given, once.
+		intro = {
+			args = { Payload.enum({ "fight", "skip" }) },
+			handler = function(player, what: string)
+				local p = saves.get(player)
+				if p == nil then
+					return false, "loading"
+				elseif StationProgress.sanitize(p, os.time()).intro then
+					return false, "intro_done"
+				end
+				local function finish(): (boolean, string?)
+					local now = os.time()
+					Analytics.because(player, "intro")
+					return apply(player, function(q)
+						return StationIntro.finish(q, now)
+					end)
+				end
+				if what == "skip" then
+					Analytics.event(player, "IntroSkipped", 1)
+					return finish()
+				end
+				return WaveShow.run({ player }, StationIntro.WAVE, StationIntro.team() :: any, function(result)
+					finish()
+					remotes.fx(player, "intro", { seconds = result.seconds })
+				end, StationIntro.SETUP)
+			end,
+		},
 		-- a test wave in the arena: `team` is "mine" (the admin's own team), "starters" or "mythics"
 		testwave = {
 			args = { Payload.int({ min = 1, max = 200 }), Payload.enum({ "mine", "starters", "mythics" }) },
@@ -1602,6 +1660,9 @@ saves = Saves.start({
 			end
 		end
 		remotes.fx(player, "profile", StationProgress.public(profile))
+		if StationGoals.due(profile) then
+			task.defer(payGoals, player)
+		end
 		updateFame()
 		local i = ranchOf(player)
 		if i then
@@ -1629,6 +1690,7 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	payingGoals[player] = nil
 	task.defer(updateFame) -- after the player has gone
 	task.defer(Analytics.forget, player)
 	local t = trades[player]

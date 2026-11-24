@@ -5,11 +5,13 @@
 -- squash when pressed. Client only, display only. Everything is laid out in "design units" inside a
 -- root frame that Hud.client scales to the screen, and every button is at least 44 units tall.
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+local GardenIcons = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GardenIcons"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 
 local Style = {}
@@ -36,6 +38,20 @@ Style.C = {
 	off = Color3.fromRGB(230, 220, 203),
 }
 local C = Style.C
+-- The night side (decision 0114): a fight's glass, where gold only ever means "press this now".
+Style.N = {
+	glass = Color3.fromRGB(24, 14, 44),
+	key = Color3.fromRGB(46, 31, 74),
+	edge = Color3.fromRGB(179, 107, 255),
+	lilac = Color3.fromRGB(227, 179, 255),
+	text = Color3.fromRGB(244, 236, 255),
+	muted = Color3.fromRGB(217, 204, 239),
+	gold = Color3.fromRGB(255, 194, 58),
+	good = Color3.fromRGB(124, 224, 122),
+	bad = Color3.fromRGB(255, 107, 142),
+	main = Color3.fromRGB(110, 43, 217),
+}
+local N = Style.N
 
 -- One set of rarity colours, used for nothing else (decision 0091).
 Style.RARITY = {
@@ -267,7 +283,7 @@ end
 
 -- A round token: a coin, a sample, an XP star.
 local TOKEN = { coins = C.accent, samples = C.good, xp = C.info }
-function Style.amount(parent: Instance, kind: string, text: string): (Frame, TextLabel)
+function Style.amount(parent: Instance, kind: string, text: string, colour: Color3?): (Frame, TextLabel)
 	local f = Instance.new("Frame")
 	f.AutomaticSize = Enum.AutomaticSize.X
 	f.Size = UDim2.fromOffset(0, 26)
@@ -280,7 +296,7 @@ function Style.amount(parent: Instance, kind: string, text: string): (Frame, Tex
 	end
 	Style.stroke(dot, INK, 2)
 	dot.LayoutOrder = 1
-	local t = Style.text(f, text, 18, C.text, UDim2.fromOffset(0, 26))
+	local t = Style.text(f, text, 18, colour or C.text, UDim2.fromOffset(0, 26))
 	t.AutomaticSize = Enum.AutomaticSize.X
 	t.TextXAlignment = Enum.TextXAlignment.Left
 	t.LayoutOrder = 2
@@ -308,13 +324,36 @@ local KIND = {
 	ghost = { WHITE, INK },
 	off = { C.off, Color3.fromRGB(154, 138, 116) }, -- looks unavailable but still answers, so the refusal can explain itself
 	stat = { WHITE, INK },
+	-- on glass, in a fight (decision 0114): plain, a plate whose press is ready, the main action, press now, unavailable
+	night = { N.glass, N.text },
+	nightHot = { N.glass, N.text },
+	nightMain = { N.main, WHITE },
+	gold = { N.gold, Color3.fromRGB(42, 22, 64) },
+	nightOff = { N.glass, N.muted },
+}
+local NIGHT_EDGE = {
+	night = N.edge,
+	nightHot = N.gold,
+	nightMain = N.lilac,
+	gold = Color3.fromRGB(255, 233, 168),
+	nightOff = N.key,
 }
 
 local function paintButton(b: TextButton, kind: string)
 	local colours = KIND[kind] or KIND.primary
 	b.BackgroundColor3, b.TextColor3 = colours[1], colours[2] -- the face and label copy these
 	b.TextStrokeColor3 = INK
-	b.TextStrokeTransparency = if colours[2] == WHITE then 0.25 else 1
+	local edge = NIGHT_EDGE[kind] -- a night button: a thin bright edge on a dark lip, see-through when it is glass
+	b.TextStrokeTransparency = if colours[2] == WHITE and edge == nil then 0.25 else 1
+	local face, lip = b:FindFirstChild("Face") :: Frame?, b:FindFirstChild("Lip") :: Frame?
+	if face and lip then
+		local dark = if edge then Color3.fromRGB(12, 7, 24) else INK
+		local faceEdge = face:FindFirstChildOfClass("UIStroke") :: UIStroke
+		faceEdge.Color, faceEdge.Thickness = edge or INK, if edge then 2 else 3
+		face.BackgroundTransparency = if colours[1] == N.glass then 0.08 else 0
+		lip.BackgroundColor3 = dark;
+		(lip:FindFirstChildOfClass("UIStroke") :: UIStroke).Color = dark
+	end
 	b:SetAttribute("Kind", kind)
 end
 
@@ -473,7 +512,7 @@ function Style.toast(screen: ScreenGui, text: string, seconds: number?, kind: st
 	local colour = if kind == "bad" then C.bad elseif kind == "good" then C.good else C.info
 	local f = Instance.new("TextLabel")
 	f.Name = "Toast"
-	f.AnchorPoint, f.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 14)
+	f.AnchorPoint, f.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 80) -- under the goal strip
 	f.Size = UDim2.fromOffset(0, 46)
 	f.AutomaticSize = Enum.AutomaticSize.XY
 	f.TextWrapped = true -- a long message wraps onto more lines instead of running across the screen
@@ -544,21 +583,26 @@ end
 export type Sheet = {
 	backdrop: TextButton,
 	frame: Frame,
+	head: Frame,
 	side: Frame,
 	tabs: Frame,
 	body: ScrollingFrame,
 	title: TextLabel,
 	chips: Frame,
+	count: Frame,
 }
 
-local SIDE_W = 214 -- the tab column
-local FOLD_W = 680 -- a menu narrower than this (a phone held upright) puts its tabs in a row on top
+local SIDE_W = 180 -- the tab column, for a menu that has tabs
+local FOLD_W = 680 -- a menu narrower than this (a phone) puts its tabs in a row under the header
+local HEAD_H = 64
+Style.HEAD = Color3.fromRGB(251, 233, 196) -- a menu's header band: the paper, a shade warmer
 
--- A menu (decision 0091): a dimmed backdrop (tap it to close) and a sand panel up to 940 x 660 units.
--- On its left a column with the menu's name, its tabs (Style.tab) and, at the bottom, its chips (the
--- limit that matters there, the wallet); on its right a scrolling body; a berry close button on the
--- corner. Hidden until the backdrop is made Visible; Style.pop plays its opening.
-function Style.sheet(parent: Instance, name: string, heading: string, onClose: () -> ()): Sheet
+-- A menu (decisions 0091, 0114; the concept boards' windows): a dimmed backdrop (tap it to close) and a
+-- paper window up to `width` x 680 units. Along its top a header band: the menu's name, its `chips` (the
+-- purses, the limits that matter there), its `count` on the right (what can be done now) and the berry
+-- close button. Under it the `body` scrolls; a menu that puts tabs in `tabs` gets a column for them on its
+-- left (a row on a phone). Hidden until the backdrop is made Visible; Style.pop plays its opening.
+function Style.sheet(parent: Instance, name: string, heading: string, onClose: () -> (), width: number?): Sheet
 	local backdrop = Instance.new("TextButton")
 	backdrop.Name = name
 	backdrop.Size = UDim2.fromScale(1, 1)
@@ -575,7 +619,7 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	local frame = Style.panel(backdrop, UDim2.new(1, -40, 1, -48))
 	frame.AnchorPoint, frame.Position = Vector2.new(0.5, 0.5), UDim2.new(0.5, 0, 0.5, 6)
 	local limit = Instance.new("UISizeConstraint")
-	limit.MaxSize = Vector2.new(940, 660)
+	limit.MaxSize = Vector2.new(width or 1180, 680)
 	limit.Parent = frame
 	local scale = Instance.new("UIScale")
 	scale.Name = "Pop"
@@ -585,13 +629,48 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	sink.AutoButtonColor = false
 	sink.Parent = frame
 
+	-- the header band: rounded at the top only (a square strip under its corners), an ink rule under it
+	local head = Style.frame(frame, UDim2.new(1, 0, 0, HEAD_H), Style.HEAD)
+	head.Name = "Head"
+	Style.round(head, 18)
+	local square = Style.frame(head, UDim2.new(1, 0, 0, 20), Style.HEAD)
+	square.Position = UDim2.new(0, 0, 1, -20)
+	local rule = Style.frame(head, UDim2.new(1, 0, 0, 3), INK)
+	rule.Position = UDim2.fromScale(0, 1)
+	local row = Instance.new("Frame")
+	row.BackgroundTransparency = 1
+	row.Position, row.Size = UDim2.fromOffset(20, 0), UDim2.new(1, -96, 1, 0)
+	row.ZIndex = 2
+	local rowList = Style.list(row, 12, true)
+	rowList.VerticalAlignment = Enum.VerticalAlignment.Center
+	row.Parent = head
+	local title = Style.text(row, heading, 28, C.text, UDim2.fromOffset(0, 40))
+	title.AutomaticSize, title.TextWrapped = Enum.AutomaticSize.X, false
+	title.LayoutOrder = 1
+	local chips = Instance.new("Frame")
+	chips.Name = "Chips"
+	chips.BackgroundTransparency = 1
+	chips.AutomaticSize = Enum.AutomaticSize.X
+	chips.Size = UDim2.fromOffset(0, 44)
+	chips.LayoutOrder = 2
+	Style.list(chips, 8, true).VerticalAlignment = Enum.VerticalAlignment.Center
+	chips.Parent = row
+	local count = Instance.new("Frame")
+	count.Name = "Count"
+	count.BackgroundTransparency = 1
+	count.AnchorPoint, count.Position, count.Size =
+		Vector2.new(1, 0.5), UDim2.new(1, -76, 0.5, 0), UDim2.fromOffset(0, 44)
+	count.AutomaticSize = Enum.AutomaticSize.X
+	count.ZIndex = 2
+	local countList = Style.list(count, 8, true)
+	countList.VerticalAlignment, countList.HorizontalAlignment =
+		Enum.VerticalAlignment.Center, Enum.HorizontalAlignment.Right
+	count.Parent = head
+
 	local side = Instance.new("Frame")
 	side.Name = "Side"
 	side.BackgroundTransparency = 1
 	side.Parent = frame
-	local title = Style.text(side, heading, 32, C.text, UDim2.new(1, 0, 0, 40))
-	title.TextTruncate = Enum.TextTruncate.AtEnd
-	title.TextWrapped = false
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
 	tabs.BackgroundTransparency = 1
@@ -599,19 +678,13 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	tabs.ScrollBarThickness = 0
 	tabs.CanvasSize = UDim2.new()
 	tabs.ElasticBehavior = Enum.ElasticBehavior.Never
+	tabs.Size = UDim2.fromScale(1, 1)
 	local tabList = Style.list(tabs, 10)
 	local tabPad = Instance.new("UIPadding") -- room for the buttons' outlines and shadows
 	tabPad.PaddingTop, tabPad.PaddingLeft, tabPad.PaddingRight, tabPad.PaddingBottom =
-		UDim.new(0, 12), UDim.new(0, 4), UDim.new(0, 14), UDim.new(0, 8)
+		UDim.new(0, 4), UDim.new(0, 4), UDim.new(0, 8), UDim.new(0, 8)
 	tabPad.Parent = tabs
 	tabs.Parent = side
-	local chips = Instance.new("Frame")
-	chips.Name = "Chips"
-	chips.BackgroundTransparency = 1
-	chips.AutomaticSize = Enum.AutomaticSize.Y
-	local chipList = Style.list(chips, 8)
-	chipList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	chips.Parent = side
 
 	local body = Instance.new("ScrollingFrame")
 	body.Name = "Body"
@@ -628,71 +701,62 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 	inset.Parent = body
 	body.Parent = frame
 
-	local close = Style.button(frame, "×", onClose, "danger", UDim2.fromOffset(52, 52))
-	close.AnchorPoint, close.Position = Vector2.new(0.5, 0.5), UDim2.new(1, -8, 0, 8)
-	close.TextSize = 34
+	local close = Style.button(head, "×", onClose, "danger", UDim2.fromOffset(48, 48))
+	close.AnchorPoint, close.Position = Vector2.new(1, 0.5), UDim2.new(1, -14, 0.5, -2)
+	close.TextSize = 32
 	close.ZIndex = 3
-	Style.radius(close, 26)
+	Style.radius(close, 24)
 	close:SetAttribute("Sound", "close")
 
-	-- the column on the left, or (narrow) the tabs in a row along the top
+	-- the tab column on the left (only when the menu has tabs), or (narrow) the tabs in a row on top
 	local function layout()
 		local rootScale = parent:FindFirstChildOfClass("UIScale")
 		local units = frame.AbsoluteSize.X / math.max(scale.Scale * (if rootScale then rootScale.Scale else 1), 0.01)
-		if units < FOLD_W then
-			side.Position, side.Size = UDim2.fromOffset(18, 14), UDim2.new(1, -36, 0, 150)
-			tabs.Position, tabs.Size = UDim2.fromOffset(-4, 44), UDim2.new(1, 8, 0, 62)
+		local any = tabs:FindFirstChildWhichIsA("GuiObject") ~= nil
+		local top = HEAD_H + 14
+		side.Visible = any
+		if not any then
+			body.Position, body.Size = UDim2.fromOffset(14, top), UDim2.new(1, -24, 1, -top - 10)
+		elseif units < FOLD_W then
+			side.Position, side.Size = UDim2.fromOffset(14, top - 4), UDim2.new(1, -28, 0, 60)
 			tabList.FillDirection = Enum.FillDirection.Horizontal
 			tabs.AutomaticCanvasSize = Enum.AutomaticSize.X
 			tabs.ScrollingDirection = Enum.ScrollingDirection.X
-			chips.Position, chips.Size = UDim2.fromOffset(0, 112), UDim2.new(1, 0, 0, 30)
-			chipList.FillDirection = Enum.FillDirection.Horizontal
-			chipList.VerticalAlignment = Enum.VerticalAlignment.Center
-			body.Position, body.Size = UDim2.fromOffset(12, 168), UDim2.new(1, -24, 1, -180)
+			body.Position, body.Size = UDim2.fromOffset(14, top + 60), UDim2.new(1, -24, 1, -top - 70)
 		else
-			side.Position, side.Size = UDim2.fromOffset(20, 18), UDim2.new(0, SIDE_W, 1, -36)
-			-- stopped short of the chips under it, so a long list (the twelve eggs) scrolls instead of running under them
-			tabs.Position, tabs.Size =
-				UDim2.fromOffset(-4, 48),
-				UDim2.new(
-					1,
-					8,
-					1,
-					-56
-						- chips.AbsoluteSize.Y
-							/ math.max(scale.Scale * (if rootScale then rootScale.Scale else 1), 0.01)
-				)
+			side.Position, side.Size = UDim2.fromOffset(16, top - 4), UDim2.new(0, SIDE_W, 1, -top - 8)
 			tabList.FillDirection = Enum.FillDirection.Vertical
 			tabs.AutomaticCanvasSize = Enum.AutomaticSize.Y
 			tabs.ScrollingDirection = Enum.ScrollingDirection.Y
-			chips.Position, chips.Size = UDim2.fromScale(0, 1), UDim2.fromScale(1, 0)
-			chips.AnchorPoint = Vector2.new(0, 1)
-			chipList.FillDirection = Enum.FillDirection.Vertical
-			chipList.VerticalAlignment = Enum.VerticalAlignment.Bottom
-			body.Position, body.Size = UDim2.fromOffset(SIDE_W + 34, 16), UDim2.new(1, -(SIDE_W + 46), 1, -28)
-		end
-		if units < FOLD_W then
-			chips.AnchorPoint = Vector2.new(0, 0)
+			body.Position, body.Size = UDim2.fromOffset(SIDE_W + 28, top), UDim2.new(1, -(SIDE_W + 38), 1, -top - 10)
 		end
 	end
 	frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
-	chips:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	tabs.ChildAdded:Connect(function()
+		task.defer(layout)
+	end)
+	tabs.ChildRemoved:Connect(function()
+		task.defer(layout)
+	end)
 	layout()
 	return {
 		backdrop = backdrop,
 		frame = frame,
+		head = head,
 		side = side,
 		tabs = tabs,
 		body = body,
 		title = title,
 		chips = chips,
+		count = count,
 	}
 end
 
 -- A tab in a menu's column: leaf green when `selected`, white otherwise; `badge` puts a berry dot on it.
 function Style.tab(sh: Sheet, label: string, selected: boolean, onClick: () -> (), badge: string?): TextButton
-	local b = Style.button(sh.tabs, label, onClick, if selected then "good" else "ghost", UDim2.fromOffset(196, 48))
-	b.TextSize = 19
+	local b =
+		Style.button(sh.tabs, label, onClick, if selected then "good" else "ghost", UDim2.fromOffset(SIDE_W - 14, 46))
+	b.TextSize = 18
 	b.TextXAlignment = Enum.TextXAlignment.Left
 	local p = (b:FindFirstChild("Label") :: TextLabel):FindFirstChild("Inset") :: UIPadding
 	p.PaddingLeft = UDim.new(0, 14)
@@ -702,6 +766,40 @@ function Style.tab(sh: Sheet, label: string, selected: boolean, onClick: () -> (
 		Style.dot(b, badge)
 	end
 	return b
+end
+
+-- A page in the body's place that does not scroll, for a menu laid out in columns that each scroll on
+-- their own (the Eggs, Animals and Waves windows). It follows the body when the tabs move it.
+function Style.page(sh: Sheet): Frame
+	local page = Instance.new("Frame")
+	page.Name, page.BackgroundTransparency = "Page", 1
+	local function follow()
+		page.Position, page.Size = sh.body.Position, sh.body.Size
+	end
+	sh.body:GetPropertyChangedSignal("Size"):Connect(follow)
+	sh.body:GetPropertyChangedSignal("Position"):Connect(follow)
+	follow()
+	sh.body.Visible = false
+	page.Parent = sh.frame
+	return page
+end
+
+-- A column of a page: across from `x`, `w` wide (each a UDim), the page's full height. It scrolls on its
+-- own and lays its children out in a list (`wrap`: in rows that wrap, for a grid of cards).
+function Style.column(page: Frame, x: UDim, w: UDim, order: number, gap: number?, wrap: boolean?): ScrollingFrame
+	local col = Instance.new("ScrollingFrame")
+	col.BackgroundTransparency, col.BorderSizePixel = 1, 0
+	col.Position, col.Size = UDim2.new(x, UDim.new(0, 0)), UDim2.new(w, UDim.new(1, 0))
+	col.ScrollBarThickness, col.ScrollBarImageColor3 = 5, C.muted
+	col.AutomaticCanvasSize, col.CanvasSize = Enum.AutomaticSize.Y, UDim2.new()
+	col.ElasticBehavior, col.LayoutOrder = Enum.ElasticBehavior.Never, order
+	Style.list(col, gap or 10, wrap, wrap)
+	local pad = Instance.new("UIPadding") -- room for the cards' outlines and shadows
+	pad.PaddingTop, pad.PaddingLeft, pad.PaddingBottom, pad.PaddingRight =
+		UDim.new(0, 4), UDim.new(0, 4), UDim.new(0, 10), UDim.new(0, 8)
+	pad.Parent = col
+	col.Parent = page
+	return col
 end
 
 -- The menu's opening: it pops from a little smaller with a soft paper flick. (The ForgeGUI "open" sound
@@ -727,6 +825,161 @@ function Style.clear(container: Instance)
 			child:Destroy()
 		end
 	end
+end
+
+-- Sun and Moon (decision 0114) ---------------------------------------------------------------------------
+-- The ranch and the hub keep the paper and ink above. A fight is the same shapes in dark glass with a
+-- thin violet edge, and gold is its one loud colour: it always means "press this now".
+
+-- A glass panel: dark, a little see-through, a thin violet edge.
+function Style.glass(parent: Instance, size: UDim2, radius: number?): Frame
+	local f = Style.frame(parent, size, N.glass)
+	f.BackgroundTransparency = 0.1
+	Style.round(f, radius or 14)
+	Style.stroke(f, N.edge, 2)
+	return f
+end
+
+-- A bar on glass: a see-through track with no outline. Returns it, its setter (0 to 1) and its fill.
+function Style.track(parent: Instance, size: UDim2, colour: Color3): (Frame, (f: number) -> (), Frame)
+	local back = Style.frame(parent, size, WHITE)
+	back.BackgroundTransparency = 0.84
+	Style.round(back, 8)
+	local fill = Style.frame(back, UDim2.fromScale(0, 1), colour)
+	Style.round(fill, 8)
+	return back, function(f: number)
+		fill.Size = UDim2.fromScale(math.clamp(f, 0, 1), 1)
+	end, fill
+end
+
+-- A paper pill over the world (the level, the coins, a goal, a note): a sand surface whose shadow is soft,
+-- so it sits on the scenery instead of standing off it like a button.
+function Style.pill(parent: Instance, size: UDim2, radius: number?): Frame
+	local f = surface(parent, size, C.sand, radius or 20)
+	local lip = f:FindFirstChild("Lip") :: Frame
+	local edge = lip:FindFirstChildOfClass("UIStroke") :: UIStroke
+	lip.BackgroundTransparency, edge.Transparency = 0.6, 0.6
+	return f
+end
+
+-- Small print (Nunito, never under 12): what a number means, a hint under a title.
+local SMALL = Font.new("rbxasset://fonts/families/Nunito.json", Enum.FontWeight.ExtraBold)
+function Style.small(parent: Instance, text: string, size: number?, colour: Color3?, fixed: UDim2?): TextLabel
+	local l = Style.text(parent, text, size or 13, colour or C.muted, fixed)
+	l.FontFace = SMALL
+	return l
+end
+
+-- A picture from the studio's own outlined set (Shared.GardenIcons; docs/assets/register.md, GARDEN-055):
+-- paw, egg, home, gift, flag, lock, swap, check, heart, cog, chart, calendar, book.
+function Style.image(name: string): string
+	return `rbxthumb://type=Asset&id={GardenIcons[name] or 0}&w=150&h=150`
+end
+
+function Style.icon(parent: Instance, name: string, size: number): ImageLabel
+	local i = Instance.new("ImageLabel")
+	i.Name = "Icon"
+	i.BackgroundTransparency = 1
+	i.Size = UDim2.fromOffset(size, size)
+	i.Image = Style.image(name)
+	i.ScaleType = Enum.ScaleType.Fit
+	i.Parent = parent
+	return i
+end
+
+-- Keys for a keyboard, tap bubbles for a touch screen (Roblox says which the player is using, and it can
+-- change mid-session). A player's "UiInput" attribute ("touch" or "keys") stands in for it on a desktop.
+function Style.touch(): boolean
+	local forced = Players.LocalPlayer:GetAttribute("UiInput")
+	if forced == "touch" or forced == "keys" then
+		return forced == "touch"
+	end
+	return UserInputService.PreferredInput == Enum.PreferredInput.Touch
+end
+
+local inputWatchers: { () -> () } = {}
+local keyCaps: { [GuiObject]: boolean } = {} -- until each is destroyed
+local function inputChanged()
+	local touch = Style.touch()
+	for cap in keyCaps do
+		cap.Visible = not touch
+	end
+	for _, fn in inputWatchers do
+		fn()
+	end
+end
+UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(inputChanged)
+Players.LocalPlayer:GetAttributeChangedSignal("UiInput"):Connect(inputChanged)
+
+-- A phone's layout: a touch screen, or a screen too short for the desk layout (`height` in design units).
+function Style.compact(height: number): boolean
+	return Style.touch() or height < 560
+end
+
+-- Call `fn` whenever the player changes between keys and touch.
+function Style.onInput(fn: () -> ())
+	table.insert(inputWatchers, fn)
+end
+
+-- A key cap: the key that does what its button does. Never shown on a touch screen. `night` is the glass
+-- version; paint it N.gold when its press is ready.
+function Style.key(parent: Instance, text: string, night: boolean?): TextLabel
+	local k = Instance.new("TextLabel")
+	k.Name = "Key"
+	k.Size = UDim2.fromOffset(24, 24)
+	k.AutomaticSize = Enum.AutomaticSize.X
+	k.BackgroundColor3 = if night then N.key else WHITE
+	k.BorderSizePixel = 0
+	k.Font = Ui.theme.font
+	k.Text = text
+	k.TextSize = 14
+	k.TextColor3 = if night then N.text else INK
+	k.ZIndex = 5
+	Style.round(k, 7)
+	Style.stroke(k, if night then N.lilac else INK, 2)
+	local p = Instance.new("UIPadding")
+	p.PaddingLeft, p.PaddingRight = UDim.new(0, 5), UDim.new(0, 5)
+	p.Parent = k
+	k.Visible = not Style.touch()
+	keyCaps[k] = true
+	k.Destroying:Connect(function()
+		keyCaps[k] = nil
+	end)
+	k.Parent = parent
+	return k
+end
+
+-- A disc that fills clockwise from the top: returns it and a function that sets how full it is (0 to 1).
+-- Put a smaller circle on top of it to make a ring (an XP ring round a level, a cooldown round a button).
+function Style.pie(parent: Instance, size: number, colour: Color3, back: Color3): (Frame, (f: number) -> ())
+	local holder = Style.frame(parent, UDim2.fromOffset(size, size), back)
+	Style.round(holder, size)
+	local sweeps: { UIGradient } = {}
+	for side = 0, 1 do -- the right half fills first, then the left
+		local clip = Instance.new("Frame")
+		clip.BackgroundTransparency, clip.ClipsDescendants = 1, true
+		clip.Position, clip.Size = UDim2.fromScale(0.5 - side * 0.5, 0), UDim2.fromScale(0.5, 1)
+		local disc = Style.frame(clip, UDim2.fromScale(2, 1), colour)
+		disc.Position = UDim2.fromScale(side - 1, 0)
+		Style.round(disc, size)
+		local sweep = Instance.new("UIGradient") -- shows the half of the disc that lies behind its angle
+		sweep.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0),
+			NumberSequenceKeypoint.new(0.5, 0),
+			NumberSequenceKeypoint.new(0.501, 1),
+			NumberSequenceKeypoint.new(1, 1),
+		})
+		sweep.Parent = disc
+		sweeps[side + 1] = sweep
+		clip.Parent = holder
+	end
+	local function set(f: number)
+		f = math.clamp(f, 0, 1)
+		sweeps[1].Rotation = math.min(f, 0.5) * 360
+		sweeps[2].Rotation = 180 + math.max(f - 0.5, 0) * 360
+	end
+	set(0)
+	return holder, set
 end
 
 return Style

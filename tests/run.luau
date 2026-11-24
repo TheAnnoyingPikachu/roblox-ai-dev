@@ -11,6 +11,12 @@ local serde = require("@lune/serde")
 local process = require("@lune/process")
 
 local SPECS = {
+	["StationGoals.spec.luau"] = function()
+		require("./StationGoals.spec")
+	end,
+	["StationIntro.spec.luau"] = function()
+		require("./StationIntro.spec")
+	end,
 	["StationRewards.spec.luau"] = function()
 		require("./StationRewards.spec")
 	end,

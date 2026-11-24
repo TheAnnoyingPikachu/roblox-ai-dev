@@ -1,5 +1,5 @@
 --!strict
--- The Ranch sheet: the upgrades of the ranch in three groups, each with a picture of its building.
+-- The Ranch window (the RanchGifts board): every building on one page, each with its picture.
 -- One part of the HUD: Hud.client.luau loads the parts in order, and HudApp holds what they share.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -77,86 +77,97 @@ local function canBuy(u: StationConfig.Upgrade): boolean
 	return cost ~= nil and S.profile.coins >= cost.coins and S.profile.samples >= cost.samples
 end
 
+-- A building's card (the RanchGifts board): its picture, its level as squares, what it gives now and next
+-- in one line, the cost and one button, yellow only when it can be paid for.
 function Hud.upgradeCard(u: StationConfig.Upgrade, order: number)
 	local level = S.profile.upgrades[u.id] or 0
 	local cost = u.levels[level + 1]
-	local card = Style.card(ranch.body, UDim2.fromOffset(204, 330))
+	local can = canBuy(u)
+	local card = Style.card(ranch.body, UDim2.fromOffset(418, 132))
 	card.LayoutOrder = order
 	local pics = PICTURES[u.id]
+	local built = u.id == "grounds" or level >= (if PLOT[u.id] then 1 else 0)
 	if pics then
-		local now = Hud.pictureOf(u, level)
-		local view = picture(card, pics[now], UDim2.fromOffset(198, 112))
-		view.Position = UDim2.fromOffset(3, 3)
-		local built = u.id == "grounds" or level >= (if PLOT[u.id] then 1 else 0)
+		local view = picture(card, pics[Hud.pictureOf(u, level)], UDim2.fromOffset(112, 112))
+		view.Position = UDim2.fromOffset(10, 10)
+		Style.stroke(view, C.ink, 2)
 		if not built then
 			view.ImageTransparency = 0.45
-			local tag = Style.chip(view, "Not built yet", C.ink, Color3.new(1, 1, 1))
-			tag.Position, tag.TextSize = UDim2.fromOffset(8, 8), 13
 		end
 	end
-	local title = Style.text(card, u.name, 21, C.text, UDim2.new(1, -24, 0, 26))
-	title.Position = UDim2.fromOffset(12, 122)
+	local title = Style.text(card, u.name, 19, C.text, UDim2.new(1, -230, 0, 24))
+	title.Position, title.TextTruncate = UDim2.fromOffset(134, 10), Enum.TextTruncate.AtEnd
 	local pips = Instance.new("Frame")
 	pips.BackgroundTransparency = 1
-	pips.Position, pips.Size = UDim2.fromOffset(12, 152), UDim2.new(1, -24, 0, 14)
-	Style.list(pips, 4, true)
+	pips.AnchorPoint, pips.Position, pips.Size = Vector2.new(1, 0), UDim2.new(1, -12, 0, 16), UDim2.fromOffset(0, 14)
+	pips.AutomaticSize = Enum.AutomaticSize.X
+	Style.list(pips, 3, true)
 	pips.Parent = card
 	for i = 1, #u.levels do
-		local pip = Style.frame(pips, UDim2.fromOffset(22, 12), if i <= level then C.good else Color3.new(1, 1, 1))
-		Style.round(pip, 4)
+		local pip = Style.frame(pips, UDim2.fromOffset(12, 12), if i <= level then C.good else Color3.new(1, 1, 1))
+		Style.round(pip, 3)
 		Style.stroke(pip, C.ink, 2)
 		pip.LayoutOrder = i
 	end
 	local now = StationProgress.value(S.profile, u.id)
-	local words = if cost then `Now {now} → next {cost.value}\n{u.gives}` else `{now} {u.gives}`
-	local gives = Style.text(card, words, 14, C.muted, UDim2.new(1, -24, 0, 54))
-	gives.Position = UDim2.fromOffset(12, 174)
+	-- "2 animals training at once. Next: 3." or, for a share, "Training speed 100%. Next: 115%."
+	local share = string.sub(u.gives, 1, 2) == "% "
+	local what = if share then string.upper(string.sub(u.gives, 3, 3)) .. string.sub(u.gives, 4) else u.gives
+	local function said(v: number): string
+		return if share then `{v}%` else tostring(v)
+	end
+	local words = if share then `{what} {said(now)}.` else `{now} {what}.`
+	if not built then
+		local first = if cost then cost.value else now
+		words = if share then `Not built yet. Then: {what} {said(first)}.` else `Not built yet. Then: {first} {what}.`
+	elseif cost then
+		words ..= ` Next: {said(cost.value)}.`
+	end
+	local gives = Style.small(card, words, 14, C.muted, UDim2.new(1, -146, 0, 38))
+	gives.Position, gives.TextWrapped = UDim2.fromOffset(134, 38), true
 	if cost == nil then
-		local done = Style.chip(card, "TOP LEVEL", C.accent)
-		done.Position = UDim2.fromOffset(12, 238)
+		local done = Style.chip(card, "TOP LEVEL", C.good, Color3.new(1, 1, 1))
+		done.Position = UDim2.fromOffset(134, 90)
 		return
 	end
 	local price = Instance.new("Frame")
 	price.BackgroundTransparency = 1
-	price.Position, price.Size = UDim2.fromOffset(12, 232), UDim2.new(1, -24, 0, 26)
+	price.Position, price.Size = UDim2.fromOffset(134, 92), UDim2.fromOffset(150, 26)
 	Style.list(price, 10, true)
 	price.Parent = card
-	Style.amount(price, "coins", Format.commas(cost.coins))
+	Style.amount(price, "coins", Format.short(cost.coins))
 	if cost.samples > 0 then
 		Style.amount(price, "samples", tostring(cost.samples))
 	end
-	local b = Style.button(card, "Upgrade", function()
+	local b = Style.button(card, if can then "Upgrade" else "Not yet", function()
 		send("upgrade", u.id)
-	end, if canBuy(u) then "good" else "off")
-	b.Position, b.Size = UDim2.fromOffset(12, 270), UDim2.new(1, -24, 0, 44)
+	end, if can then "primary" else "off", UDim2.fromOffset(112, 40))
+	b.AnchorPoint, b.Position, b.TextSize = Vector2.new(1, 1), UDim2.new(1, -12, 1, -10), 16
 end
 
 redraw.ranch = function()
 	Style.clear(ranch.body)
 	Style.clear(ranch.chips)
-	Style.clear(ranch.tabs)
+	Style.clear(ranch.count)
+	local afford, order = 0, 0
 	for _, g in GROUPS do
-		local any = false
 		for _, id in g.upgrades do
-			any = any or canBuy(StationConfig.upgrade(id) :: StationConfig.Upgrade)
-		end
-		Style.tab(ranch, g.name, S.ranchTab == g.id, function()
-			S.ranchTab = g.id
-			redraw.ranch()
-		end, if any then "!" else nil)
-		if S.ranchTab == g.id then
-			for i, id in g.upgrades do
-				Hud.upgradeCard(StationConfig.upgrade(id) :: StationConfig.Upgrade, i)
-			end
+			local u = StationConfig.upgrade(id) :: StationConfig.Upgrade
+			order += 1
+			Hud.upgradeCard(u, order)
+			afford += if canBuy(u) then 1 else 0
 		end
 	end
 	Style.amount(ranch.chips, "coins", Format.commas(S.profile.coins))
-	Style.amount(ranch.chips, "samples", `{Format.commas(S.profile.samples)} samples`)
+	Style.amount(ranch.chips, "samples", Format.commas(S.profile.samples))
+	if afford > 0 then
+		Style.chip(ranch.count, `{afford} you can afford`, C.good, Color3.new(1, 1, 1))
+	end
 	if RunService:IsStudio() then -- a way to try the upgrades without fighting for them
-		local funds = Style.button(ranch.chips, "Test funds (Studio)", function()
+		Style.button(ranch.count, "Test funds", function()
 			send("funds")
-		end, "ghost", UDim2.fromOffset(196, 44))
-		funds.LayoutOrder = -1
+		end, "ghost", UDim2.fromOffset(120, 36)).TextSize =
+			14
 	end
 end
 

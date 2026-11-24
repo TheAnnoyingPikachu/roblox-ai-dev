@@ -36,7 +36,8 @@ export type Trades = { day: number, count: number, total: number, off: boolean, 
 -- A bought egg: which egg, since when it has been hatching (os.time; nil while it waits in the
 -- egg storage), and the animal the server rolled for it when it was bought. The animal is never
 -- sent to the client (`public`).
-export type HeldEgg = { egg: string, since: number?, animal: StationRules.Owned }
+-- `quick`: one of the intro's starter eggs, which hatches in QUICK_SECONDS (decision 0116).
+export type HeldEgg = { egg: string, since: number?, animal: StationRules.Owned, quick: boolean? }
 -- A boost (decision 0094): from `from` to `to` (os.time), eggs hatch (or animals train) twice as fast.
 export type Window = { from: number, to: number }
 export type Boosts = { hatch: { Window }, train: { Window } }
@@ -75,12 +76,14 @@ export type Profile = {
 	stars: string, -- the best stars won on each wave (decision 0097): character n is wave n's, "0" to "3"
 	chests: number, -- star chests opened (one is due every CHEST_STARS stars)
 	trades: Trades, -- trades today (UTC `day`), all time, requests off, and the history (decision 0099)
+	goals: { string }, -- ids of the goals finished and paid (decision 0115, StationGoals)
+	intro: boolean, -- the intro is done or skipped (decision 0116, StationIntro): it never shows twice
 }
 
 -- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
 -- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
 -- strip what it does not know. A save is stamped with the version of the server that last wrote it.
-StationProgress.VERSION = 1
+StationProgress.VERSION = 2 -- 2: goals and the intro (decisions 0115, 0116)
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
@@ -100,6 +103,8 @@ StationProgress.MAX_PENDING = 20 -- eggs won that wait for room
 StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
 StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu shows the newest 20)
 StationProgress.CHEST_STARS = 15
+StationProgress.QUICK_SECONDS = 5 -- how long a starter egg takes to hatch
+StationProgress.MAX_GOALS = 64 -- goal ids a save keeps (StationGoals has fewer)
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
 function StationProgress.defaults(_now: number): Profile
@@ -131,6 +136,8 @@ function StationProgress.defaults(_now: number): Profile
 		stars = "",
 		chests = 0,
 		trades = { day = 0, count = 0, total = 0, off = false, log = {} },
+		goals = {},
+		intro = false,
 	}
 end
 
@@ -269,7 +276,10 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 			if animal and type(e.egg) == "string" and StationConfig.egg(e.egg) and room then
 				local started = type(e.since) == "number" and StationProgress.hatching(p) < StationProgress.MAX_EGGS
 				local since = if started then int(e.since, 0, MAX_TIME, now or 0) else nil
-				table.insert(p.eggs, { egg = e.egg, since = since, animal = animal })
+				table.insert(
+					p.eggs,
+					{ egg = e.egg, since = since, animal = animal, quick = if e.quick == true then true else nil }
+				)
 			end
 		end
 	end
@@ -339,6 +349,15 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 		p.stars = string.sub(string.gsub(record.stars, "[^0-3]", "0"), 1, StationProgress.MAX_STAR_WAVES)
 	end
 	p.chests = int(record.chests, 0, 1e6, 0)
+	-- the intro: done when the save says so, and for a save from before it that has already played
+	p.intro = record.intro == true or (record.intro == nil and (#p.animals > 0 or #p.eggs > 0 or p.best > 0))
+	local seen: { [string]: boolean } = {}
+	for _, id in if type(record.goals) == "table" then record.goals else {} do -- which ids exist is StationGoals' business
+		if type(id) == "string" and #id <= 16 and not seen[id] and #p.goals < StationProgress.MAX_GOALS then
+			seen[id] = true
+			table.insert(p.goals, id)
+		end
+	end
 	local stored = if type(record.trades) == "table" then record.trades else {}
 	p.trades.day = int(stored.day, 0, 1e7, 0)
 	p.trades.count = int(stored.count, 0, 1000, 0)
@@ -505,7 +524,7 @@ function StationProgress.start(p: Profile, k: number, now: number): (Profile, bo
 		return p, false, "nests_full"
 	end
 	p.eggs = table.clone(p.eggs)
-	p.eggs[k] = { egg = e.egg, since = now, animal = e.animal }
+	p.eggs[k] = { egg = e.egg, since = now, animal = e.animal, quick = e.quick }
 	return p, true, nil
 end
 
@@ -521,6 +540,9 @@ function StationProgress.dueAt(p: Profile, e: { egg: string, since: number? }): 
 	local egg = StationConfig.egg(e.egg)
 	if egg == nil or e.since == nil then
 		return nil
+	end
+	if (e :: any).quick then
+		return (e.since :: number) + StationProgress.QUICK_SECONDS
 	end
 	local t, left = e.since :: number, StationProgress.hatchSeconds(p, egg)
 	local windows = table.clone(p.boosts.hatch)
@@ -630,7 +652,7 @@ function StationProgress.public(p: Profile): any
 	local copy = table.clone(p) :: any
 	copy.eggs = {}
 	for k, e in p.eggs do
-		copy.eggs[k] = { egg = e.egg, since = e.since }
+		copy.eggs[k] = { egg = e.egg, since = e.since, quick = e.quick }
 	end
 	copy.rewards = table.clone(p.rewards)
 	copy.rewards.pending = {}

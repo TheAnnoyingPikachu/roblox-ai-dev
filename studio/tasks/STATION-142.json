@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-142",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The intro (decision 0116, beta blocker 11): the Ranger's loan of four legends, a first fight that cannot be lost with four lessons, the goodbye, and three starter eggs that hatch in seconds.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-139"
+  ],
+  "files": [
+    "src/shared/StationIntro.luau",
+    "src/shared/StationProgress.luau",
+    "src/shared/BattleRules.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/HudIntro.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudFight.luau",
+    "tests/StationIntro.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0116-animal-stations-intro.md",
+    "docs/checkpoints/STATION-LOOK.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-142.json"
+  ],
+  "tests": [
+    "StationIntro.spec.luau",
+    "StationProgress.spec.luau",
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A save that has not done the intro sees only the Ranger's card; a save from before the intro that has played never sees it",
+    "The borrowed fight is won whatever the player presses, and no legend is knocked out (spec)",
+    "The intro ends once, by the server, with three starter eggs of the three classes hatching in 5 seconds; skipping gives the same",
+    "The borrowed fight pays nothing and opens no wave"
+  ],
+  "verification": "lune run tests/run: 810 pass (6 new in StationIntro.spec: the loan team's classes, the fight won untouched in 30 to 150 s with every legend above half health, won even without the blessing, the starter eggs given once and hatching in 5 s, surviving a save, old saves skipping it). Played in Studio (build dev, local, one player, a new save): the Ranger's card alone on screen with the four legends and their classes; Skip intro after about ten seconds; Space started the fight on wave 40 with the Shadow Dragon's bar, the four plates and the four steps; twelve clicks turned Tap gold, F turned Shield gold, mashing Space turned Titan gold, the note moved on to Hold; the fight was won about 40 s in; 'The Legion is beaten!' with the starter eggs; To my ranch brought the ranch HUD back with three Meadow Eggs 'Ready!', the Eggs dot at 3, the egg note with Go and the goal 'Hatch a team of three'.",
+  "output_artifacts": [],
+  "risk_level": "high",
+  "status": "in_progress",
+  "notes": "Not built from the boards (decision 0116): the fight waiting for each lesson (a fight cannot be paused), the Seen outlines (STATION-140), the second loan at wave 10's boss. Not tested: Skip intro's click, a busy arena (another party fighting: the card stays and says so), a phone, opening the three eggs at the hatchery after the intro (the hatch itself is unchanged), a returning save in the published place."
+}

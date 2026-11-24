@@ -1,0 +1,43 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-140",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The menus from the concept boards (decision 0114; SHANNON, 2026-11-24: 'the menu ui hasnt changed ... basically can you get in all those menu concepts as the menus'): every menu is the boards' window (a header band with the name, the purses and a count, the body under it); Animals in three columns with Seen, Eggs (the hatchery, the vendor's shelf and an egg's odds in one window), Waves as a road to the boss with the party, Ranch and Gifts as one page each.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-136",
+    "STATION-143"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudAnimals.luau",
+    "src/stations-client/HudEggs.luau",
+    "src/stations-client/HudShop.luau",
+    "src/stations-client/HudRanch.luau",
+    "src/stations-client/HudGifts.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/HudWaveMenu.luau",
+    "docs/checkpoints/STATION-LOOK.md",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-140.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every menu opens as the boards' window: a header band with its name, purses and a count of what can be done now, the close button in the band; a tab column only for a menu that has tabs",
+    "Animals: tabs (Team, All, Training, Coats, Seen), the grid, and the chosen animal beside it with six stat rows (value, level, Train or Stop) and Join, Lock, Release, Fuse; no Back button",
+    "Eggs: the nests and the cellar, the vendor's twelve eggs (locked ones dimmed with their level), the picked egg's contents with every chance, Buy 1 and Buy 3; the vendor's stall opens this window",
+    "Waves: the stages, the stage's ten waves as a road with stars and the boss, the picked wave's enemies, power bar, verdict and pay, who is in the portal and open places with Invite, Fight (B)",
+    "Ranch: every building on one page with its picture, level squares, now and next, cost, and a yellow button only when it can be paid; Gifts: the week as a row of seven, the month as a bar with its prizes, the wheel with Spin"
+  ],
+  "verification": "selene 0 errors 0 warnings; lune run tests/run: 810 pass; rojo build and check-place match. Seen in Studio (one player, desk size, offline save, admin animals and Studio test funds): Eggs with three quick eggs hatching, the shelf (2 of 12 open) and the Meadow Egg's odds (50% Jackal, 50% Meerkat, 1 in 5,000 Pharaoh Jackal and Alien Meerkat); Animals with seven animals, badges, the Sphinx Jackal's stat rows; Ranch with nine buildings and '9 you can afford'; Gifts with day 1 to collect, the month's nine prizes and the wheel; Waves at stage 1 with the road to the Dark Drake, wave 1's four enemies and the party column. No script errors in the output.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Differs from the boards: 'Seen' lists what the player's open eggs can still give (the save does not record animals met), as dark outlines with their egg; the party column shows who stands in the portal's ring with their avatar, not their team power (another player's save is not on this client); the month shows all nine prizes (the board drew four); the Gifts window no longer opens after the first hatch (SHANNON, 2026-11-24, see STATION-144). Not tried: a phone (the three-column windows are not folded for a narrow screen yet), two or three players in the portal, Buy 3 with too few coins for the third (it stops at the refusal), the wheel's spin in its smaller size, the trade and admin menus in the new window."
+}

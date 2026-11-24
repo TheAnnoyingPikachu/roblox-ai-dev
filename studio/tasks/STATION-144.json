@@ -1,0 +1,29 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-144",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Two fixes from SHANNON's playtest (2026-11-24): 'the eggs overlap when they hatch' (three ready eggs opened in a row played three hatches and reveals over each other) and 'forcing someone into the spin menu might lock them so dont force open that anymore' (the Gifts window opened by itself after the first hatch).",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-142"
+  ],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudWaves.luau",
+    "studio/tasks/STATION-144.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Pressing Open on a second egg while one is hatching waits until the first one's hatch and reveal are over, then opens it; the same nest pressed twice opens once",
+    "No menu opens by itself after a hatch"
+  ],
+  "verification": "selene 0 errors 0 warnings; lune run tests/run: 810 pass. Seen in Studio: before, three opens 0.8 s apart cut each reveal off with the next and stood the animals on each other; after, two eggs opened with the E key one after the other with no error, and the Gifts window stayed shut after the first hatch.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "The queue keeps the nest's position, not the prompt (the eggs are drawn again after each opening and their places in the list move up). A queued open whose egg is gone is dropped quietly. Not tried: three presses within one reveal."
+}

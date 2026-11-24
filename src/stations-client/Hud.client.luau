@@ -11,13 +11,14 @@
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local WaveRuns = require(Shared:WaitForChild("WaveRuns"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
+local StationGoals = require(Shared:WaitForChild("StationGoals"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local StationRules = require(Shared:WaitForChild("StationRules"))
 local StationTrade = require(Shared:WaitForChild("StationTrade"))
@@ -48,6 +49,7 @@ Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and label
 })
 
 local C = Style.C
+local N = Style.N
 local RARITY_COLOUR = Style.RARITY
 local RANK: { [string]: number } =
 	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
@@ -82,6 +84,7 @@ local REFUSED: { [string]: string } = {
 	trade_their_level = `That player can't trade yet (level {StationTrade.MIN_LEVEL})`,
 	trade_limit = `You've done your {StationTrade.PER_DAY} trades today: more tomorrow`,
 	trade_locked = "That animal is locked: unlock it in Animals first",
+	intro_done = "You have already met the Ranger",
 	trade_wait = "Look the trade over first: it opens in a moment",
 	trade_confirming = "The trade is locked: confirm it or cancel",
 	trade_off = "That player isn't taking trade requests",
@@ -206,9 +209,13 @@ end
 local sheets: { [string]: Style.Sheet } = {}
 local redraw: { [string]: () -> () } = {}
 S.openName = nil
-local nav = Instance.new("Frame") -- the side dock, hidden while a sheet is open
+local nav = Instance.new("Frame") -- the ranch's HUD (the dock, the goal, To battle): it makes way for the rest
+function Hud.navShown() -- not under an open menu, in a fight, or before the intro is done
+	nav.Visible = S.openName == nil and not S.fighting and not S.intro
+end
 
 local function show(name: string?)
+	name = if name == "shop" then "eggs" else name -- the vendor is the Eggs window's shelf
 	if name and name ~= S.openName and sheets[name] then
 		Style.pop(sheets[name])
 	end
@@ -216,16 +223,16 @@ local function show(name: string?)
 	for n, sh in sheets do
 		sh.backdrop.Visible = n == name
 	end
-	nav.Visible = name == nil
+	Hud.navShown()
 	if name and redraw[name] and S.profile then
 		redraw[name]()
 	end
 end
 
-local function newSheet(name: string, heading: string): Style.Sheet
+local function newSheet(name: string, heading: string, width: number?): Style.Sheet
 	local sh = Style.sheet(root, name, heading, function()
 		show(nil)
-	end)
+	end, width)
 	Portrait.keepCulled(sh.body)
 	sheets[name] = sh
 	return sh
@@ -233,118 +240,110 @@ end
 
 local animals = newSheet("animals", "Your animals")
 local eggs = newSheet("eggs", "Eggs")
-local ranch = newSheet("ranch", "Your ranch")
-local shop = newSheet("shop", "Egg vendor")
-local waves = newSheet("waves", "Endless waves")
+local ranch = newSheet("ranch", "Your ranch", 900) -- the two small menus of the RanchGifts board
+local waves = newSheet("waves", "Waves")
 local admin = newSheet("admin", "Admin")
 local trade = newSheet("trade", "Trade")
-local gifts = newSheet("gifts", "Gifts")
+local gifts = newSheet("gifts", "Gifts", 820)
 S.ranchTab = "animals" -- the group of upgrades the Ranch menu shows
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
 end
 
--- Player card, top left
-local top = Style.card(root, UDim2.fromOffset(266, 86))
-top.Position = UDim2.fromOffset(12, 12)
-local badge = Style.frame(top, UDim2.fromOffset(56, 56), C.accent)
-badge.Position = UDim2.fromOffset(10, 15)
-Style.round(badge, 28)
-Style.stroke(badge, C.panel, 3)
-local badgeText = Style.text(badge, "1", 28, C.accentText, UDim2.fromScale(1, 1))
-badgeText.TextXAlignment = Enum.TextXAlignment.Center
-local levelText = Style.text(top, "Level 1", 20, C.text, UDim2.new(1, -86, 0, 22))
-levelText.Position = UDim2.fromOffset(76, 8)
-local xpText = Style.text(top, "", 13, C.muted, UDim2.new(1, -86, 0, 22))
-xpText.Position = UDim2.fromOffset(76, 10)
-xpText.TextXAlignment = Enum.TextXAlignment.Right
-local xpBar, setXp = Style.bar(top, UDim2.new(1, -86, 0, 10), C.info)
-xpBar.Position = UDim2.fromOffset(76, 34)
-local wallet = Instance.new("Frame")
-wallet.BackgroundTransparency = 1
-wallet.Position, wallet.Size = UDim2.fromOffset(76, 52), UDim2.new(1, -86, 0, 26)
-Style.list(wallet, 14, true)
-wallet.Parent = top
-local _, coinsText = Style.amount(wallet, "coins", "0")
-local _, samplesText = Style.amount(wallet, "samples", "0")
+-- The player, top left (decision 0114): the level in its XP ring, then the coins and the samples, each in a
+-- paper pill of its own.
+-- Each piece below has two layouts (decision 0114): for a desk, and for a phone (a touch screen or a short
+-- one), where the bottom corners are Roblox's (the walking stick, jump). `layouts` holds each piece's.
+local layouts: { (small: boolean) -> () } = {}
+local top = Instance.new("Frame")
+top.Name = "Player"
+top.BackgroundTransparency = 1
+top.Position, top.Size = UDim2.fromOffset(14, 12), UDim2.fromOffset(440, 60)
+Style.list(top, 8, true).VerticalAlignment = Enum.VerticalAlignment.Center
+top.Parent = root
+local levelPill = Style.pill(top, UDim2.fromOffset(204, 60), 30)
+local xpRing, setXp = Style.pie(levelPill, 50, C.info, C.cardHi)
+xpRing.Position = UDim2.fromOffset(5, 5)
+local badge = Style.frame(xpRing, UDim2.fromOffset(38, 38), C.accent)
+badge.AnchorPoint, badge.Position, badge.ZIndex = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), 2
+Style.round(badge, 19)
+Style.stroke(badge, C.ink, 3)
+local badgeText = Style.text(badge, "1", 19, C.accentText, UDim2.fromScale(1, 1))
+badgeText.TextXAlignment, badgeText.ZIndex = Enum.TextXAlignment.Center, 3
+local levelText = Style.text(levelPill, "Level 1", 18, C.text, UDim2.new(1, -78, 0, 20))
+levelText.Position = UDim2.fromOffset(64, 10)
+local xpText = Style.small(levelPill, "", 13, C.muted, UDim2.new(1, -78, 0, 16))
+xpText.Position = UDim2.fromOffset(64, 32)
+local function purse(kind: string, width: number): TextLabel
+	local pill = Style.pill(top, UDim2.fromOffset(width, 40), 20)
+	local row, text = Style.amount(pill, kind, "0")
+	row.Position = UDim2.fromOffset(10, 7)
+	return text
+end
+local coinsText = purse("coins", 112)
+local samplesText = purse("samples", 92)
+table.insert(layouts, function(small) -- a phone: the level is only its ring
+	levelPill.Size = UDim2.fromOffset(if small then 60 else 204, 60)
+	levelText.Visible, xpText.Visible = not small, not small
+end)
 
--- The side dock (decision 0093): a small Menu button on the left edge slides a column of big buttons out
--- from it: Travel (a pop-out with the hub, your ranch and the wave arena; no teleport pads), Animals,
--- Eggs, Waves and Trade. The whole dock hides while a menu is open.
+-- Everything that makes way for an open menu and for a fight: the dock, the goal, To battle, what is waiting.
 nav.Name = "Nav"
 nav.BackgroundTransparency = 1
-nav.Position, nav.Size = UDim2.fromOffset(0, 0), UDim2.fromScale(1, 1)
+nav.Size = UDim2.fromScale(1, 1)
 nav.Parent = root
 
--- One column of five 56-unit buttons; on a short screen (a phone held sideways) two columns of three.
-local DOCK_X, CELL_W, CELL_H, GAP = 14, 112, 56, 10
-local dock = Style.panel(nav, UDim2.fromOffset(0, 0))
-local column = Instance.new("Frame")
-column.BackgroundTransparency = 1
-column.Position, column.Size = UDim2.fromOffset(10, 12), UDim2.new(1, -20, 1, -26)
-local dockGrid = Instance.new("UIGridLayout")
-dockGrid.CellSize, dockGrid.CellPadding = UDim2.fromOffset(CELL_W, CELL_H), UDim2.fromOffset(GAP, GAP)
-dockGrid.SortOrder = Enum.SortOrder.LayoutOrder
-dockGrid.Parent = column
-column.Parent = dock
-local DOCK_W = CELL_W + 20
-local function shape()
-	local cols = if root.Size.Y.Offset < 560 then 2 else 1
-	local rows = math.ceil(6 / cols)
-	DOCK_W = cols * CELL_W + (cols - 1) * GAP + 20
-	dock.Size = UDim2.fromOffset(DOCK_W, rows * CELL_H + (rows - 1) * GAP + 28)
-	dockGrid.FillDirectionMaxCells = cols
-end
-shape()
-root:GetPropertyChangedSignal("Size"):Connect(shape)
-dock.Position = UDim2.fromOffset(-DOCK_W - 20, 160)
-
-local open = false
-local menuButton: TextButton -- below
-function Hud.slide(to: boolean)
-	open = to
-	TweenService:Create(
-		dock,
-		TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Position = UDim2.fromOffset(if open then DOCK_X else -DOCK_W - 20, 160) }
-	):Play()
-	menuButton.Text = if open then "◀ Menu" else "Menu ▶"
-end
-menuButton = Style.button(nav, "Menu ▶", function()
-	Hud.slide(not open)
-end, "primary", UDim2.fromOffset(CELL_W + 20, 46))
-menuButton.Position, menuButton.TextSize = UDim2.fromOffset(DOCK_X, 104), 20
-menuButton:SetAttribute("Sound", "tab")
-local menuDot = Style.dot(menuButton, "")
-menuDot.Visible = false
-
-S.hideResult = function() end -- set once the fight panel exists
-local dots: { TextLabel } = {}
-local function dockButton(label: string, kind: string, order: number, onClick: () -> ()): TextLabel
-	local b = Style.button(column, label, onClick, kind)
-	b.LayoutOrder, b.TextSize = order, 21
+-- The dock (decision 0114): what is done most is always up on the left edge, each button a picture, a word
+-- and its key. No menu to open first.
+local dock = Instance.new("Frame")
+dock.Name = "Dock"
+dock.BackgroundTransparency = 1
+dock.Position, dock.Size = UDim2.fromOffset(16, 96), UDim2.fromOffset(84, 480)
+local dockList = Style.list(dock, 12)
+dock.Parent = nav
+local hotkeys: { [Enum.KeyCode]: { sheet: string?, run: () -> () } } = {}
+local function dockButton(
+	label: string,
+	icon: string,
+	key: Enum.KeyCode,
+	onClick: () -> (),
+	sheet: string?
+): (TextLabel, TextButton)
+	local b = Style.button(dock, label, onClick, "ghost", UDim2.fromOffset(84, 68))
+	b.LayoutOrder, b.TextSize, b.TextYAlignment = #dock:GetChildren() - 1, 15, Enum.TextYAlignment.Bottom
+	local inset = (b:FindFirstChild("Label") :: TextLabel):FindFirstChild("Inset") :: UIPadding
+	inset.PaddingBottom = UDim.new(0, 5)
+	local art = Style.icon(b, icon, 38)
+	art.AnchorPoint, art.Position, art.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 4), 2
+	local cap = Style.key(b, tostring(b.LayoutOrder))
+	cap.AnchorPoint, cap.Position = Vector2.new(0.5, 0.5), UDim2.fromOffset(4, 4)
+	hotkeys[key] = { sheet = sheet, run = onClick }
 	local dot = Style.dot(b, "")
 	dot.Visible = false
-	dot:GetPropertyChangedSignal("Visible"):Connect(function() -- the Menu button shows a dot while any does
-		local any = false
-		for _, d in dots do
-			any = any or d.Visible
-		end
-		menuDot.Visible = any
+	table.insert(layouts, function(small)
+		b.Size, b.TextSize =
+			UDim2.fromOffset(if small then 72 else 84, if small then 58 else 68), if small then 13 else 15
+		art.Size = UDim2.fromOffset(if small then 30 else 38, if small then 30 else 38)
 	end)
-	table.insert(dots, dot)
-	return dot
+	return dot, b
 end
 
--- Travel: a pop-out beside the dock
+S.hideResult = function() end -- set once the fight panel exists
+
+-- Travel: a pop-out beside its button with the hub, your ranch and the wave arena (no teleport pads)
 local travel = Style.panel(nav, UDim2.fromOffset(196, 214))
-travel.Position, travel.Visible = UDim2.fromOffset(DOCK_X + DOCK_W + 12, 160), false
+travel.AnchorPoint, travel.Position, travel.Visible = Vector2.new(0, 1), UDim2.fromOffset(114, 488), false
 local places = Instance.new("Frame")
 places.BackgroundTransparency = 1
 places.Position, places.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -20)
 Style.list(places, 10)
 places.Parent = travel
 Style.text(places, "Go to…", 20, C.text, UDim2.new(1, 0, 0, 26))
+local ranchPlace = Style.button(places, "Ranch menu", function() -- a phone's More button holds it
+	travel.Visible = false
+	show("ranch")
+end, "primary", UDim2.new(1, 0, 0, 44))
+ranchPlace.LayoutOrder = 1
 function Hud.travelTo(action: string, ...: any)
 	travel.Visible = false
 	local ok, code = request:InvokeServer(action, ...)
@@ -368,38 +367,326 @@ do
 	b.LayoutOrder = k + 1
 end
 
-dockButton("Travel", "info", 1, function()
-	travel.Position = UDim2.fromOffset(DOCK_X + DOCK_W + 12, 160)
-	travel.Visible = not travel.Visible
-end)
-dockButton("Animals", "good", 2, function()
+dockButton("Animals", "paw", Enum.KeyCode.One, function()
 	show("animals")
-end)
-local eggsDot = dockButton("Eggs", "ghost", 3, function()
+end, "animals")
+local eggsDot = dockButton("Eggs", "egg", Enum.KeyCode.Two, function()
 	show("eggs")
-end)
--- S.openWaves: below, with the wave sheet
-dockButton("Waves", "danger", 4, function()
-	S.openWaves()
-end)
-local tradeDot = dockButton("Trade", "primary", 5, function()
-	show("trade")
-end);
-(tradeDot.Parent :: GuiObject).Visible = StationTrade.ON -- off until trading is hardened (SHANNON, 2026-11-24)
-local giftsDot = dockButton("Gifts", "good", 6, function()
+end, "eggs")
+local _, ranchButton = dockButton("Ranch", "home", Enum.KeyCode.Three, function()
+	show("ranch")
+end, "ranch")
+local giftsDot, giftsButton = dockButton("Gifts", "gift", Enum.KeyCode.Four, function()
 	request:InvokeServer("rewards") -- count today first
 	show("gifts")
+end, "gifts")
+giftsButton.BackgroundColor3 = Color3.fromRGB(255, 233, 168)
+local _, travelButton = dockButton("Travel", "flag", Enum.KeyCode.Five, function()
+	travel.Visible = not travel.Visible
 end)
+travelButton.BackgroundColor3 = Color3.fromRGB(207, 232, 251)
+local tradeDot, tradeButton = dockButton("Trade", "swap", Enum.KeyCode.Six, function()
+	show("trade")
+end, "trade")
+if not StationTrade.ON then -- off until trading is hardened (SHANNON, 2026-11-24)
+	tradeButton.Visible, hotkeys[Enum.KeyCode.Six] = false, nil
+end
+local _, moreButton = dockButton("More", "cog", Enum.KeyCode.Seven, function()
+	travel.Visible = not travel.Visible
+end)
+hotkeys[Enum.KeyCode.Seven] = nil
 nav:GetPropertyChangedSignal("Visible"):Connect(function()
 	travel.Visible = false
 end)
+-- A desk: one column on the left edge. A phone: Animals, Eggs, Gifts and More in a square above jump,
+-- where the right thumb rests; Ranch and Travel fold into More.
+table.insert(layouts, function(small)
+	ranchButton.Visible, travelButton.Visible, moreButton.Visible = not small, not small, small
+	tradeButton.Visible = StationTrade.ON and not small
+	ranchPlace.Visible = small
+	dockList.FillDirection = if small then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical
+	dockList.Wraps = small
+	dock.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.zero
+	dock.Position = if small then UDim2.new(1, -14, 1, -112) else UDim2.fromOffset(16, 96)
+	dock.Size = if small then UDim2.fromOffset(156, 128) else UDim2.fromOffset(84, 480)
+	travel.Size = UDim2.fromOffset(196, if small then 268 else 214)
+	travel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
+	travel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
+end)
 
--- Admin button, top right: only for players the server marks as admin (decision 0038)
+-- To battle (key B): the biggest button on the screen says which wave is next.
+do
+	local battle = Style.button(nav, "", function()
+		S.openWaves()
+	end, "good", UDim2.fromOffset(296, 72))
+	battle.Name = "ToBattle"
+	battle.AnchorPoint, battle.Position = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -20)
+	Style.radius(battle, 20)
+	local crest = Instance.new("ImageLabel") -- the shield with a paw (assets/stations/icons/shield.png)
+	crest.BackgroundTransparency, crest.Image = 1, "rbxassetid://97488070836179"
+	crest.Position, crest.Size, crest.ZIndex = UDim2.fromOffset(14, 12), UDim2.fromOffset(48, 48), 2
+	crest.Parent = battle
+	local battleTitle = Style.text(battle, "To battle", 28, Color3.fromRGB(35, 52, 15), UDim2.fromOffset(170, 30))
+	battleTitle.Position, battleTitle.ZIndex = UDim2.fromOffset(72, 9), 2
+	local battleSub = Style.small(battle, "", 13, Color3.fromRGB(35, 52, 15), UDim2.fromOffset(180, 16))
+	battleSub.Position, battleSub.ZIndex = UDim2.fromOffset(72, 43), 2
+	table.insert(layouts, function(small)
+		battle.Size = UDim2.fromOffset(if small then 250 else 296, if small then 58 else 72)
+		battle.Position = UDim2.new(0.5, 0, 1, if small then -12 else -20)
+		crest.Size, crest.Position =
+			UDim2.fromOffset(if small then 38 else 48, if small then 38 else 48),
+			UDim2.fromOffset(12, if small then 10 else 12)
+		battleTitle.TextSize, battleTitle.Position =
+			if small then 22 else 28, UDim2.fromOffset(if small then 60 else 72, if small then 5 else 9)
+		battleSub.Position = UDim2.fromOffset(if small then 60 else 72, if small then 33 else 43)
+	end)
+	local battleKey = Style.key(battle, "B")
+	battleKey.AnchorPoint, battleKey.Position = Vector2.new(1, 0.5), UDim2.new(1, -16, 0.5, 0)
+	hotkeys[Enum.KeyCode.B] = {
+		sheet = "waves",
+		run = function()
+			S.openWaves()
+		end,
+	}
+	function Hud.nextWave(text: string)
+		battleSub.Text = text
+	end
+end
+
+-- A key from the dock opens its menu, closes it again, or goes straight from one menu to another.
+UserInputService.InputBegan:Connect(function(input, typing)
+	local hot = hotkeys[input.KeyCode]
+	if typing or hot == nil or S.fighting or S.intro then
+		return
+	elseif hot.sheet and S.openName == hot.sheet then
+		Style.sound("close")
+		show(nil)
+	elseif S.openName == nil or hot.sheet then
+		Style.sound("tab")
+		hot.run()
+	end
+end)
+
+-- The goal (decision 0115): the next thing to do and what it pays, always at the top.
+do
+	local goal = Style.pill(nav, UDim2.fromOffset(456, 58), 16)
+	goal.Name = "Goal"
+	goal.AnchorPoint, goal.Position, goal.Visible = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 12), false
+	Style.icon(goal, "flag", 34).Position = UDim2.fromOffset(12, 12)
+	local goalText = Style.text(goal, "", 17, C.text, UDim2.new(1, -212, 0, 20))
+	goalText.Position, goalText.TextWrapped, goalText.TextTruncate =
+		UDim2.fromOffset(54, 8), false, Enum.TextTruncate.AtEnd
+	local goalBar, setGoal = Style.bar(goal, UDim2.fromOffset(140, 10), C.good)
+	goalBar.Position = UDim2.fromOffset(54, 35)
+	local goalCount = Style.small(goal, "", 12, C.muted, UDim2.fromOffset(104, 14))
+	goalCount.Position = UDim2.fromOffset(202, 33)
+	local goalPays = Style.frame(goal, UDim2.fromOffset(144, 42), C.cardHi)
+	goalPays.AnchorPoint, goalPays.Position = Vector2.new(1, 0.5), UDim2.new(1, -8, 0.5, 0)
+	Style.round(goalPays, 12)
+	local goalPaysIcon = Instance.new("ImageLabel")
+	goalPaysIcon.BackgroundTransparency = 1
+	goalPaysIcon.Position, goalPaysIcon.Size = UDim2.fromOffset(5, 5), UDim2.fromOffset(32, 32)
+	goalPaysIcon.Parent = goalPays
+	local goalPaysText = Style.text(goalPays, "", 14, C.text, UDim2.new(1, -46, 1, 0))
+	table.insert(layouts, function(small) -- a phone: narrower, the reward as its picture only
+		goal.Size = UDim2.fromOffset(if small then 350 else 456, 58)
+		goalPays.Size = UDim2.fromOffset(if small then 42 else 144, 42)
+		goalText.Size = UDim2.new(1, if small then -110 else -212, 0, 20)
+		goalPaysText.Visible = not small
+	end)
+	goalPaysText.Position = UDim2.fromOffset(42, 0)
+	-- `text` nil hides the strip (every goal is done).
+	function Hud.showGoal(text: string?, f: number?, count: string?, pays: string?, icon: string?)
+		goal.Visible = text ~= nil
+		goalText.Text, goalCount.Text = text or "", count or ""
+		goalPaysText.Text, goalPaysIcon.Image = pays or "", icon or ""
+		setGoal(f or 0)
+	end
+end
+
+-- What is hatching and training, beside the dock, with the time left: the soonest three.
+do
+	local waiting = Style.pill(nav, UDim2.fromOffset(256, 46), 16)
+	waiting.Name = "Waiting"
+	waiting.AnchorPoint, waiting.Position, waiting.Visible = Vector2.new(0, 1), UDim2.new(0, 114, 1, -22), false
+	local waitRows: { { row: Frame, art: ImageLabel, name: TextLabel, left: TextLabel, fill: Frame } } = {}
+	for k = 1, 3 do
+		local row = Instance.new("Frame")
+		row.BackgroundTransparency = 1
+		row.Position, row.Size = UDim2.fromOffset(10, 8 + (k - 1) * 38), UDim2.new(1, -20, 0, 30)
+		row.Parent = waiting
+		local art = Style.icon(row, "egg", 30)
+		local name = Style.text(row, "", 14, C.text, UDim2.new(1, -100, 0, 16))
+		name.Position, name.TextWrapped, name.TextTruncate = UDim2.fromOffset(38, 0), false, Enum.TextTruncate.AtEnd
+		local left = Style.small(row, "", 13, C.text, UDim2.fromOffset(62, 16))
+		left.AnchorPoint, left.Position, left.TextXAlignment =
+			Vector2.new(1, 0), UDim2.fromScale(1, 0), Enum.TextXAlignment.Right
+		local bar = Style.frame(row, UDim2.new(1, -38, 0, 8), C.cardHi)
+		bar.Position = UDim2.fromOffset(38, 21)
+		Style.round(bar, 4)
+		local fill = Style.frame(bar, UDim2.fromScale(0, 1), C.accent)
+		Style.round(fill, 4)
+		waitRows[k] = { row = row, art = art, name = name, left = left, fill = fill }
+	end
+	-- Called once a second and whenever the save changes.
+	function Hud.waiting()
+		local p, now = S.profile, Workspace:GetServerTimeNow()
+		local rows: { { icon: string, name: string, left: number, f: number, colour: Color3 } } = {}
+		for _, e in p.eggs do
+			local def = e.since and StationConfig.egg(e.egg)
+			if def then
+				local due = StationProgress.dueAt(p, e) :: number
+				table.insert(rows, {
+					icon = "egg",
+					name = def.name,
+					left = math.max(0, due - now),
+					f = (now - e.since) / math.max(1, due - e.since),
+					colour = C.accent,
+				})
+			end
+		end
+		for _, a in p.animals do
+			local station = a.at and a.since and StationConfig.station(a.at)
+			local cur = if station then live(a) else a
+			local level = if station then StationRules.level(cur, station.stat) else StationConfig.MAX_LEVEL
+			if station and level < StationConfig.MAX_LEVEL then
+				local f = if cur.trained then cur.trained[station.stat] - level else 0
+				table.insert(rows, {
+					icon = "paw",
+					name = `{nameOf(a)} · {STAT_SHORT[station.stat]} {level + 1}`,
+					left = (1 - f) * StationRules.levelSeconds(level + 1) * 100 / StationProgress.value(p, "grounds"),
+					f = f,
+					colour = C.info,
+				})
+			end
+		end
+		table.sort(rows, function(x, y)
+			return x.left < y.left
+		end)
+		for k, w in waitRows do
+			local r = rows[k]
+			w.row.Visible = r ~= nil
+			if r then
+				w.art.Image = Style.image(r.icon)
+				w.name.Text, w.left.Text = r.name, if r.left <= 0 then "Ready!" else Format.ago(r.left)
+				w.fill.Size, w.fill.BackgroundColor3 = UDim2.fromScale(math.clamp(r.f, 0, 1), 1), r.colour
+			end
+		end
+		local small = Style.compact(root.Size.Y.Offset) -- a phone: the soonest one only, under the purses
+		for k, w in waitRows do
+			w.row.Visible = w.row.Visible and (k == 1 or not small)
+		end
+		waiting.Visible = #rows > 0
+		waiting.Size = UDim2.fromOffset(if small then 230 else 256, 12 + math.min(#rows, if small then 1 else 3) * 38)
+		waiting.AnchorPoint = if small then Vector2.zero else Vector2.new(0, 1)
+		waiting.Position = if small then UDim2.fromOffset(14, 80) else UDim2.new(0, 114, 1, -22)
+	end
+end
+
+-- Top right: who else is here, with a way to bring a friend; under it a note when an egg is ready to open.
+do
+	local side = Instance.new("Frame")
+	side.Name = "Side"
+	side.BackgroundTransparency = 1
+	side.AnchorPoint, side.Position, side.Size = Vector2.new(1, 0), UDim2.new(1, -14, 0, 12), UDim2.fromOffset(300, 140)
+	local sideList = Style.list(side, 12)
+	sideList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	side.Parent = nav
+	local mates = Style.pill(side, UDim2.fromOffset(120, 44), 22)
+	mates.Name = "Mates"
+	local faces = Instance.new("Frame")
+	faces.BackgroundTransparency = 1
+	faces.Position, faces.Size = UDim2.fromOffset(8, 6), UDim2.new(1, -16, 0, 32)
+	local faceList = Style.list(faces, 6, true)
+	faceList.VerticalAlignment, faceList.HorizontalAlignment =
+		Enum.VerticalAlignment.Center, Enum.HorizontalAlignment.Right
+	faces.Parent = mates
+	local matesText = Style.small(faces, "Play together", 13, C.text, UDim2.fromOffset(92, 16))
+	matesText.LayoutOrder = 0
+	function Hud.invite() -- Roblox's invite prompt (the Waves window's open places use it too)
+		local SocialService = game:GetService("SocialService")
+		local ok, can = pcall(SocialService.CanSendGameInviteAsync, SocialService, player)
+		if ok and can then
+			pcall(SocialService.PromptGameInvite, SocialService, player)
+		else
+			Style.toast(screen, "Invites are not open here: share the game's link instead")
+		end
+	end
+	local invite = Style.button(faces, "+ Invite", Hud.invite, "good", UDim2.fromOffset(88, 30))
+	invite.TextSize, invite.LayoutOrder = 15, 99
+	local function showMates()
+		for _, f in faces:GetChildren() do
+			if f:IsA("ImageLabel") then
+				f:Destroy()
+			end
+		end
+		local others = 0
+		for _, other in game:GetService("Players"):GetPlayers() do
+			if other ~= player then
+				others += 1
+				local face = Instance.new("ImageLabel")
+				face.Size, face.BackgroundColor3, face.LayoutOrder = UDim2.fromOffset(32, 32), C.info, others
+				face.Image = `rbxthumb://type=AvatarHeadShot&id={other.UserId}&w=48&h=48`
+				Style.round(face, 16)
+				Style.stroke(face, C.ink, 2)
+				face.Parent = faces
+			end
+		end
+		matesText.Text = if others > 0 then "Ranch mates" else "Play together"
+		local small = Style.compact(root.Size.Y.Offset)
+		matesText.Visible = not small
+		mates.Size = UDim2.fromOffset((if small then 104 else 202) + others * 38, 44)
+	end
+	game:GetService("Players").PlayerAdded:Connect(showMates)
+	game:GetService("Players").PlayerRemoving:Connect(function()
+		task.defer(showMates)
+	end)
+	showMates()
+	local eggNote = Style.pill(side, UDim2.fromOffset(300, 62), 16)
+	eggNote.Name, eggNote.Visible, eggNote.LayoutOrder = "EggReady", false, 2
+	Style.icon(eggNote, "egg", 44).Position = UDim2.fromOffset(9, 9)
+	local eggNoteText = Style.text(eggNote, "", 16, C.text, UDim2.new(1, -140, 0, 20))
+	eggNoteText.Position, eggNoteText.TextWrapped, eggNoteText.TextTruncate =
+		UDim2.fromOffset(60, 11), false, Enum.TextTruncate.AtEnd
+	Style.small(eggNote, "At your hatchery", 13, C.muted, UDim2.new(1, -140, 0, 16)).Position = UDim2.fromOffset(60, 33)
+	local eggNoteAt = 0
+	local eggGo = Style.button(eggNote, "Go", function()
+		Hud.wayTo(eggNoteAt)
+	end, "primary", UDim2.fromOffset(64, 40))
+	eggGo.AnchorPoint, eggGo.Position = Vector2.new(1, 0.5), UDim2.new(1, -10, 0.5, -2)
+	-- The note for hatching egg `k` (nil: none is ready).
+	function Hud.eggReady(k: number?, name: string?)
+		eggNote.Visible, eggNoteAt = k ~= nil, k or 0
+		eggNoteText.Text = `{name or "Egg"} ready!`
+	end
+	table.insert(layouts, function(small)
+		showMates()
+		eggNote.Size = UDim2.fromOffset(if small then 250 else 300, 62)
+	end)
+end
+
+-- Admin button, bottom right: only for players the server marks as admin (decision 0038)
 local adminToggle = Style.button(root, "Admin", function()
 	show(if S.openName == "admin" then nil else "admin")
 end, "ghost", UDim2.fromOffset(84, 40))
-adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 12)
+adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(1, 1), UDim2.new(1, -16, 1, -22)
 adminToggle.TextSize = 16
+table.insert(layouts, function(small) -- a phone: clear of jump, under the notes
+	adminToggle.AnchorPoint = if small then Vector2.new(1, 0) else Vector2.new(1, 1)
+	adminToggle.Position = if small then UDim2.new(1, -182, 0, 12) else UDim2.new(1, -16, 1, -22)
+end)
+function Hud.relayout()
+	local small = Style.compact(root.Size.Y.Offset)
+	for _, lay in layouts do
+		lay(small)
+	end
+	if S.profile then
+		Hud.waiting()
+	end
+end
+root:GetPropertyChangedSignal("Size"):Connect(Hud.relayout)
+Style.onInput(Hud.relayout)
+Hud.relayout()
 
 -- What the parts below need from this script. They are loaded in the order they were written: each
 -- takes what it needs from App as locals of its own and adds what it makes.
@@ -427,18 +714,28 @@ App.show = show
 App.animals = animals
 App.eggs = eggs
 App.ranch = ranch
-App.shop = shop
 App.waves = waves
 App.admin = admin
 App.trade = trade
 App.gifts = gifts
 App.coinsText = coinsText
-App.dock = dock
 App.tradeDot = tradeDot
 App.adminToggle = adminToggle
 
 for _, part in
-	{ "HudAnimals", "HudRanch", "HudShop", "HudGifts", "HudTrade", "HudWaves", "HudFight", "HudHover", "HudHatch" }
+	{
+		"HudAnimals",
+		"HudRanch",
+		"HudEggs",
+		"HudGifts",
+		"HudTrade",
+		"HudWaves",
+		"HudFight",
+		"HudWaveMenu",
+		"HudHover",
+		"HudHatch",
+		"HudIntro",
+	}
 do
 	require(script.Parent:WaitForChild(part))
 end
@@ -475,8 +772,66 @@ local function refresh()
 	setXp((S.profile.xp - from) / math.max(1, to - from))
 	coinsText.Text = Format.short(S.profile.coins)
 	samplesText.Text = Format.short(S.profile.samples)
+	local best = S.profile.best
+	Hud.nextWave(
+		if best == 0
+			then "Wave 1 · your first fight"
+			else `Wave {math.min(best + 1, LevelRules.LAST)} · your best is {best}`
+	)
+	local goal = StationGoals.next(S.profile)
+	if goal then
+		local done, of = StationGoals.progress(S.profile, goal)
+		local items = StationGoals.items(S.profile, goal)
+		Hud.showGoal(goal.text, done / of, StationGoals.label(S.profile, goal), rewardWords(items), (iconsOf(items)))
+	else
+		Hud.showGoal(nil)
+	end
+	Hud.waiting()
 	if S.openName and redraw[S.openName] then
 		redraw[S.openName]()
+	end
+end
+
+-- Eggs open one at a time: a second press waits until the first one's hatch and reveal are over, so
+-- three ready eggs never hatch on top of each other. The nest is kept, not the prompt: the eggs are
+-- drawn again after each opening and their places in the list move up.
+do
+	local queue: { Vector3 } = {}
+	local working = false
+	S.hatchFree = 0 -- os.clock() when the last hatch's moment is over
+	function Hud.openEgg(nest: Vector3)
+		for _, n in queue do
+			if (n - nest).Magnitude < 1 then
+				return
+			end
+		end
+		table.insert(queue, nest)
+		if working then
+			return
+		end
+		working = true
+		while queue[1] do
+			while os.clock() < S.hatchFree do
+				task.wait(0.1)
+			end
+			local at = table.remove(queue, 1) :: Vector3
+			for _, p in CollectionService:GetTagged("Egg") do
+				local shell = p.Parent
+				if
+					p:GetAttribute("Ranch") == player:GetAttribute("Ranch")
+					and shell
+					and shell:IsA("BasePart")
+					and (shell.Position - at).Magnitude < 1
+				then
+					S.hatchFree = os.clock() + 2 -- until "hatched" says how long this one shows
+					if not send("open", p:GetAttribute("Index")) then
+						S.hatchFree = 0
+					end
+					break
+				end
+			end
+		end
+		working = false
 	end
 end
 
@@ -505,7 +860,7 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 	elseif CollectionService:HasTag(prompt, "WaveGate") then
 		S.openWaves()
 	elseif CollectionService:HasTag(prompt, "Egg") then
-		send("open", prompt:GetAttribute("Index"))
+		Hud.openEgg((prompt.Parent :: BasePart).Position)
 	elseif CollectionService:HasTag(prompt, "Mill") then
 		send("collect")
 	elseif CollectionService:HasTag(prompt, "Vendor") then
@@ -522,13 +877,17 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 		task.wait(1)
 		if S.profile then -- the Eggs button's dot: eggs ready to open at the hatchery
 			local ready, now = 0, Workspace:GetServerTimeNow()
-			for _, e in S.profile.eggs do
+			local first: number?, firstName: string? = nil, nil
+			for k, e in S.profile.eggs do
 				local def = e.since and StationConfig.egg(e.egg)
 				if def and now >= (StationProgress.dueAt(S.profile, e) :: number) then
 					ready += 1
+					first, firstName = first or k, firstName or def.name
 				end
 			end
 			eggsDot.Text, eggsDot.Visible = tostring(ready), ready > 0
+			Hud.eggReady(first, firstName)
+			Hud.waiting()
 			local week, month, spin = giftsReady()
 			giftsDot.Text, giftsDot.Visible = "!", week or month or spin
 		end
@@ -575,6 +934,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
 		end
 		refresh()
+		Hud.intro()
+	elseif kind == "intro" then -- the borrowed fight is won (decision 0116)
+		Hud.introWon()
 	elseif kind == "announce" then -- another player's rare hatch (SHANNON, 2026-11-24)
 		Style.toast(screen, `{payload.who} hatched {payload.what}!`, 5, "good")
 	elseif kind == "hatched" then
@@ -587,15 +949,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if payload.at then
 			hatchEffect(payload.at, payload.egg, payload.body, payload.spot) -- then the animal steps out
 		end
-		showRarity(payload)
+		S.hatchFree = os.clock() + showRarity(payload) -- the next egg waits for this reveal
 		if lucky ~= "" then
 			Style.toast(screen, lucky, 4)
-		end
-		if S.profile and #S.profile.animals <= 1 then -- the first hatch: day 1's gifts open after it (SHANNON, 2026-11-24)
-			task.delay(4, function()
-				request:InvokeServer("rewards")
-				show("gifts")
-			end)
 		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.1f", payload.seconds)
@@ -608,29 +964,37 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		drops.Visible = payload.won
 		S.music(if payload.won then "win" else "lose")
 		showStars(payload.stars or 0)
+		S.party = payload.party or 1
 		local goals = "★ win   ★ nobody knocked out   ★ you fire every power attack"
 		if payload.won then
 			resultTitle.Text, resultTitle.TextColor3 =
 				if payload.last
 					then `Wave {payload.wave} cleared: the Legion is beaten!`
 					else `Wave {payload.wave} cleared!`,
-				C.good
-			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.short(payload.mvpDmg or 0)} damage)` else ""
-			local lines = { `Won in {took}s.{if payload.first then " First clear!" else ""}{mvp}`, goals }
-			if payload.streak then
-				local pot = if payload.pot then payload.pot.coins else 0
-				table.insert(
-					lines,
-					if pot > 0
-						then `Run: {payload.streak} in a row. Pot: +{Format.commas(pot)} coins, paid when you leave.`
-						else `Run: {payload.streak} in a row. Keep winning to fill the pot.`
-				)
-			end
-			resultSub.Text = table.concat(lines, "\n")
-			Style.amount(drops, "coins", `+{Format.commas(payload.coins)}`)
-			Style.amount(drops, "xp", `+{payload.xp} XP`)
+				N.gold
+			local pot = if payload.pot then payload.pot.coins else 0
+			resultSub.Text = `{took} seconds{if payload.first then "  ·  First clear!" else ""}{if payload.mvp
+				then `  ·  Best hitter: {payload.mvp} ({Format.short(payload.mvpDmg or 0)})`
+				else ""}\n{goals}`
+			Hud.runLine(
+				if payload.streak == nil
+					then ""
+					elseif pot > 0 then `{payload.streak} in a row: the pot is now {Format.commas(pot)}`
+					else `{payload.streak} in a row: keep winning to fill the pot`
+			)
+			S.run = if payload.streak
+				then {
+					streak = payload.streak,
+					pot = pot,
+					boons = payload.boons or {},
+					best = (S.run ~= nil and S.run.best) or payload.first == true, -- a wave never cleared before
+					at = os.clock(),
+				}
+				else nil
+			Style.amount(drops, "coins", `+{Format.commas(payload.coins)}`, N.text)
+			Style.amount(drops, "xp", `+{payload.xp} XP`, N.text)
 			if payload.samples > 0 then
-				Style.amount(drops, "samples", `+{payload.samples} samples`)
+				Style.amount(drops, "samples", `+{payload.samples}`, N.text)
 			end
 			coinBurst()
 			if payload.chest then
@@ -639,7 +1003,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			S.wave = math.min(payload.wave + 1, LevelRules.LAST)
 			again.Text = if payload.last then `Fight wave {S.wave} again` else `Fight wave {S.wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
-				offerBoons(payload.offer, S.wave)
+				offerBoons(payload.offer, S.wave, payload.boons)
 				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): a countdown
 					local panel = boonRow.Parent :: GuiObject
 					local heading = panel:FindFirstChild("Title") :: TextLabel?
@@ -656,11 +1020,36 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			buttons(payload.offer == nil)
-			local pot = if payload.pot then payload.pot.coins else 0
 			leave.Text = if pot > 0 then `Leave and bank +{Format.commas(pot)}` else "Leave the arena"
 		else
-			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave}: beaten`, C.bad
-			resultSub.Text = `Your team lost in {took}s to {payload.foes}. Train your animals up and try again.`
+			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave}: beaten`, N.bad
+			resultSub.Text = `Your team lost in {took} seconds to {payload.foes}`
+			Hud.runLine("")
+			-- how the run ended, and the weakest stat of the team as the one thing to do about it
+			local low: { name: string, stat: string, level: number }? = nil
+			for _, id in if S.profile then S.profile.team else {} do
+				local _, a = StationProgress.find(S.profile, id)
+				for _, stat in if a then StationConfig.STATS else {} do
+					local level = StationRules.level(a :: any, stat)
+					if low == nil or level < low.level then
+						low = { name = nameOf(a), stat = STAT_SHORT[stat], level = level }
+					end
+				end
+			end
+			local kept = if S.run then math.floor(S.run.pot * WaveRuns.LOSS_KEEP / 100) else 0
+			Hud.runOver(
+				`Stopped at wave {payload.wave}`,
+				{
+					{ tostring(payload.wins or 0), "waves won this run" },
+					{ Format.commas(kept), "banked: half the pot" },
+					{ `x{#(payload.boons or {})}`, "boons picked this run" },
+				},
+				if low
+					then `Your {low.name}'s {low.stat} is only level {low.level}. Training it is the quickest gain.`
+					else "Hatch three animals and put them in your team.",
+				S.run ~= nil and S.run.best
+			)
+			S.run = nil
 			S.wave = payload.wave
 			again.Text = `Try wave {S.wave} again`
 			buttons(true)
@@ -678,14 +1067,20 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		local voted = boonRow.Parent :: GuiObject
 		voted.Visible, result.Visible = false, false
 		local picked = WaveRuns.boon(payload.id)
-		if picked then
+		if S.run then -- the run's stack, top left in the fight
+			table.insert(S.run.boons, payload.id)
+			S.run.at = os.clock()
+		end
+		if picked and (S.party or 1) > 1 then
 			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
 		end
 	elseif kind == "over" then
+		S.run = nil
 		S.hideResult()
 		S.music(nil)
 		Style.toast(screen, "Another party took the field: your run is banked", 5)
 	elseif kind == "banked" then
+		S.run = nil
 		if payload.lost and payload.coins > 0 then
 			Style.toast(
 				screen,
@@ -746,6 +1141,15 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				else "nothing"}`,
 			5,
 			"good"
+		)
+	elseif kind == "goal" then -- a goal reached and paid (decision 0115)
+		Style.sound("claim")
+		Style.toast(
+			screen,
+			`Goal done: {payload.text}. You got {rewardWords(payload.items)}`,
+			5,
+			"good",
+			(iconsOf(payload.items))
 		)
 	elseif kind == "reward" then
 		Style.sound("claim")

@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-137",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Goals (decision 0115): one goal is always on screen with what it pays. Pure rules, the save field, the server's payout.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-136"
+  ],
+  "files": [
+    "src/shared/StationGoals.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/Analytics.luau",
+    "tests/StationGoals.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0115-animal-stations-goals.md",
+    "studio/tasks/STATION-137.json"
+  ],
+  "tests": [
+    "StationGoals.spec.luau",
+    "StationProgress.spec.luau",
+    "StationRewards.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A goal is paid once, in order, only when reached, by the server; the client sends nothing new",
+    "A returning save is caught up one goal after another",
+    "A save keeps the ids it finished; StationProgress.VERSION is 2 so an older server cannot strip them"
+  ],
+  "verification": "lune run tests/run: 804 pass (9 new in StationGoals.spec). Played in Studio (build dev, local, one player): a new save shows 'Hatch a team of three, 0 of 3, 80 coins'; adding three animals paid 80 coins (280 from 200), sent 'Goal done: Hatch a team of three. You got 80 coins' and moved the strip to 'Clear wave 3, 160 coins'.",
+  "output_artifacts": [],
+  "risk_level": "high",
+  "status": "in_progress",
+  "notes": "The numbers are a draft for the checkpoint (decision 0115): the Safari Egg at the first boss, about 720 samples over the thirty stage bosses. Not tested: an egg reward with a full egg storage (StationRewards.grant's pending list, covered by its own specs), two or three players."
+}
