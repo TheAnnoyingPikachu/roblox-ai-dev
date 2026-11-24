@@ -571,6 +571,48 @@ ELEPHANT = {
     },
 }
 
+# ------------------------------------------------------------------------- the Sahara pair (STATION-147)
+# The Sahara Guardian is stone blocks cut apart at the joints: a leg turned far swings out of its socket (SHANNON:
+# "the lion still looks weird when it attacks"), so its legs stay within about 25 degrees and its body's pitch within
+# 12; it moves by its weight, its head and its tail.
+SAHARA_LION = {
+    "idle": {
+        "1_sentinel": ("Sentinel", "Stands guard like a statue come alive: its head sweeps slowly from side to side, a forepaw scrapes the ground, and now and then it lifts its head and shakes out its mane with a growl.",
+                       lambda t: P(breath(t), body=[1, 0, 0, 0, 0.02, 0],
+                                   head=[6 + 14 * bump(t, 3.0, 1.2), 16 * wave(t, LOOP) * (1 - bump(t, 3.0, 1.2)), 10 * math.sin(t * TAU / 0.24) * bump(t, 3.2, 0.8)],
+                                   leg_fl=[10 * bump(t, 1.2, 0.7)], tail=[-6, 18 * wave(t, 2.4), 0])),
+    },
+    "attack": {
+        "a_sunfang": ("Sunfang", "Steps back and braces, charges in stiff as a battering ram with its jaws raised, and chomps down on the target, then worries it with a shake of its head; three claws of sunlight rake across it.", [
+            (0.00, {}),
+            (0.20, P(body=[-3, 0, 0, 0, -0.1, 0.9], head=[-8], leg_fl=[10], leg_fr=[10], leg_bl=[8], leg_br=[8], tail=[-20, 12])),
+            (0.36, P(body=[3, 0, 0, 0, 0.08, -1.2], head=[26], leg_fl=[-10], leg_fr=[-10], leg_bl=[-12], leg_br=[-12], tail=[-32])),
+            (0.44, P(body=[-4, 0, 0, 0, -0.06, -1.7], head=[-24], leg_fl=[8], leg_fr=[8], leg_bl=[-6], leg_br=[-6], tail=[-16])),
+            (0.58, P(body=[-3, 0, 0, 0, -0.04, -1.5], head=[-16, 12, 6], tail=[-12, -16])),
+            (0.70, P(body=[-2, 0, 0, 0, -0.02, -1.0], head=[-10, -10, -6], tail=[-10, 16])),
+            (0.95, {}),
+        ]),
+    },
+}
+SAHARA_MAMMOTH = {
+    "idle": {
+        "1_bulwark": ("Bulwark", "Rocks its great weight from side to side with its head swinging low, tusks sweeping; every loop it stamps a forefoot and tosses its head.",
+                      lambda t: P(breath(t), body=[0, 0, 2 * wave(t, LOOP), -0.05 * wave(t, LOOP), 0, 0],
+                                  head=[-4 + 4 * wave(t, 2.4) + 16 * bump(t, 3.5, 0.9), 10 * wave(t, LOOP, 1), 2 * wave(t, LOOP)],
+                                  leg_fr=[16 * bump(t, 3.0, 0.7)], leg_fl=[5 * max(0.0, wave(t, LOOP))], tail=[0, 20 * wave(t, 1.2), 0])),
+    },
+    "attack": {
+        "a_heave": ("Tusk heave", "Drops its head and drives forward, then heaves its tusks up through the target; the ground breaks into stone spikes under it and a crescent of sunlight follows the tusks.", [
+            (0.00, {}),
+            (0.24, P(crouch(12, -8), body=[-5, 0, 0, 0, -0.12, 0.4], head=[-24], tail=[10])),
+            (0.38, P(body=[-2, 0, 0, 0, -0.05, -0.9], head=[-20], leg_fl=[18], leg_fr=[-10], leg_bl=[-14], leg_br=[10], tail=[-10])),
+            (0.44, P(body=[7, 0, 0, 0, 0.12, -1.15], head=[40], leg_fl=[-8], leg_fr=[14], leg_bl=[8], leg_br=[-10], tail=[-22])),
+            (0.64, P(body=[4, 0, 0, 0, 0.06, -0.8], head=[26, 0, 6], tail=[-16])),
+            (0.95, {}),
+        ]),
+    },
+}
+
 CONCEPTS = {
     "creature_jackal_forge": ("Jackal", JACKAL),
     "creature_tortoise_forge": ("Tortoise", TORTOISE),
@@ -581,6 +623,8 @@ CONCEPTS = {
     "creature_lion_forge": ("Lion", LION),
     "creature_giraffe_forge": ("Giraffe", GIRAFFE),
     "creature_elephant_forge": ("Elephant", ELEPHANT),
+    "creature_lion_sahara_forge": ("Sahara Guardian", SAHARA_LION),
+    "creature_elephant_sahara_forge": ("Sahara Mammoth", SAHARA_MAMMOTH),
 }
 
 

@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-147",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON on the Sahara pair (2026-11-24): 'the lion still looks weird when it attacks and they both need an idle and regular attack, make the regular attack pretty cool as well', then 'make his attack more rigid if you need to, give him a step back and charge chomp or something like that'. The Guardian's power attack turned its stone legs up to 58 degrees, which swung its cut-apart blocks out of their sockets; its moves are redone within what a statue can do. Both animals get an idle and a regular attack of their own, each attack with effects of its own.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "tools/blender/stations/moves/README.md"
+  ],
+  "dependencies": [
+    "STATION-145"
+  ],
+  "files": [
+    "tools/blender/stations/moves/concepts.py",
+    "tools/blender/stations/moves/magic.py",
+    "tools/blender/stations/moves/export_moves.py",
+    "tools/blender/stations/moves/idles.luau",
+    "src/shared/AnimalMoves.luau",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations-client/Spells/init.luau",
+    "src/stations-client/Spells/Lion.luau",
+    "src/stations-client/Spells/Elephant.luau",
+    "studio/tasks/STATION-147.json"
+  ],
+  "tests": [
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Guardian's power attack keeps its legs within about 25 degrees and its body's pitch within 12: no block leaves its socket",
+    "The Guardian idles as Sentinel and attacks with Sunfang (steps back, charges stiff, chomps, shakes; three claws of sunlight rake the target); the Mammoth idles as Bulwark and attacks with Tusk heave (stone spikes under the target, a crescent of sunlight after the tusks)",
+    "An animal's idle and attack are looked up by its asset first, then its species; every other animal plays what it played",
+    "A regular attack may have effects of its own (a spell module's '<asset>@attack' entry); animals without one draw nothing more than before"
+  ],
+  "verification": "2026-11-24, local: lune run tests/run 810/810; selene src tests 0 errors 0 warnings; the changed Luau files pass stylua --check as CI reads them; check_spells ALL OK (it does not run the two attack effects). Blender 5.2, the game's poses on the built models (side views of each clip's keys): the Guardian's old power attack showed its front legs and haunches swung out of the body at 0.5 and 0.8 s; with the new keys, and in Sunfang at 0.20, 0.36, 0.44 and 0.58 s, every block stays in its socket; the Mammoth's Tusk heave reads as head down, drive, tusks up. Studio, local build 'dev' of this branch (stations-guardian.rbxl, no CI stamp): both spawned; the attack held at about 0.5 s showed the Guardian's halo flare, star and shock ring at its target and the Mammoth's crescent, five stone spikes and violet ring; the Guardian's power attack held at about 0.7 s showed it whole with its head thrown back. Not checked: the idles in Studio beyond a glance, the three claws at the moment of the hit (the held frame was past them), a wave fight (where an attacker closes on its target before striking), a phone.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "Checkpoint for SHANNON: 1) regular attacks with effects are new (only the Sahara pair has them): say if other animals should get them or if these should be plainer. 2) The Guardian's walk still swings its legs 27 degrees like every animal's; not changed (SHANNON named the attack). 3) Archiving the Guardian's first upload (run 45496484932): the decal 108031634325248 is archived; Roblox refuses to archive a model through the API ('not an archivable asset type'), so model 122873591019491 stays in the inventory, unused, until it is archived by hand on the Creator Dashboard."
+}
