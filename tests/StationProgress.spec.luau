@@ -192,19 +192,19 @@ describe("StationProgress.buy", function()
 		function()
 			local p = fresh()
 			p.coins = 1e9
-			p.xp = StationProgress.xpFor(50) -- player level no longer opens an egg
+			p.best = 300 -- the waves no longer open an egg: player level does (SHANNON, 2026-11-24)
 			expect((StationProgress.canBuy(p, "meadow"))).toBe(true)
 			expect((StationProgress.canBuy(p, "wild"))).toBe(true)
-			p.best = 9
+			p.xp = StationProgress.xpFor(4)
 			local _, ok, code = StationProgress.buy(p, "safari", hatched("lion"))
 			expect(ok).toBe(false)
 			expect(code).toBe("locked")
-			p.best = 10
+			p.xp = StationProgress.xpFor(5)
 			_, ok = StationProgress.buy(p, "safari", hatched("lion"))
 			expect(ok).toBe(true)
 			_, ok, code = StationProgress.buy(p, "golden", hatched("lion"))
 			expect(code).toBe("locked")
-			p.best = 20
+			p.xp = StationProgress.xpFor(8)
 			_, ok = StationProgress.buy(p, "golden", hatched("lion"))
 			expect(ok).toBe(true)
 		end
@@ -391,10 +391,10 @@ describe("StationProgress.buy", function()
 		expect(seen.coins).toBe(p.coins)
 	end)
 
-	it("keeps the Golden Egg locked until wave 20 is cleared, whatever the coins", function()
+	it("keeps the Golden Egg locked until player level 8, whatever the coins", function()
 		local p = fresh()
 		p.coins = 1e9
-		p.best = 19
+		p.xp = StationProgress.xpFor(8) - 1
 		local ok, code = StationProgress.canBuy(p, "golden")
 		expect(ok).toBe(false)
 		expect(code).toBe("locked")
@@ -402,7 +402,7 @@ describe("StationProgress.buy", function()
 		expect(bought).toBe(false)
 		expect(#p.animals).toBe(0)
 		expect(p.coins).toBe(1e9)
-		p.best = 20
+		p.xp = StationProgress.xpFor(8)
 		expect((StationProgress.canBuy(p, "golden"))).toBe(true)
 		p, bought = StationProgress.buy(p, "golden", hatched("elephant"))
 		expect(bought).toBe(true)
@@ -564,7 +564,7 @@ describe("StationProgress team and training", function()
 	it("keeps the Titan in its own fourth slot, outside the team of three, one at a time", function()
 		local p = three()
 		p.coins = 1e9
-		p.best = 20 -- the Golden Egg is unlocked
+		p.xp = StationProgress.xpFor(8) -- the Golden Egg is unlocked
 		local ok
 		p = get(p, "golden", hatched("elephant")) -- id 4
 		expect(p.titan).toBe(4)

@@ -16,8 +16,8 @@ vendors.
   or mythic (decision 0037; the Lion, the Elephant, the Jackal and the Cheetah have one of each, decisions 0050 to 0053); a normal animal is never above epic. The Elephant is the Titan:
   legendary, a rare hatch from the Golden Egg (there is no legendary-only egg). The egg overhaul
   (decision 0056): a variant is a drop of its own, listed with its chance in the eggs that hatch
-  it and likelier in the higher eggs; the Meadow and Wild Eggs are open from the start, the Safari and
-  Golden Eggs unlock with the waves (10 and 20). Each egg has its own set and at most seven rare finds;
+  it and likelier in the higher eggs; the Meadow and Wild Eggs are open from the start, the rest
+  unlock by player level (Safari 5 to Crown 85; SHANNON, 2026-11-24, was by wave). Each egg has its own set and at most seven rare finds;
   how rare a hatch is shows when it opens, not in the vendor (decision 0078).
 - **Stats:** six, each with one job in a wave fight:
 
@@ -44,7 +44,7 @@ vendors.
 - **Wave fights:** on a clock and decided by the server. Attack animals hit harder, Defence
   animals draw the enemies' hits and take less, Utility animals heal. Pack and solitary animals
   get group bonuses.
-- **Eggs, rarities and coats (decision 0110):** twelve eggs up to the Crown Egg for clearing wave 300, the
+- **Eggs, rarities and coats (decision 0110):** twelve eggs up to the Crown Egg at player level 85, the
   last five dropping variants only; nine rarities set by power (every variant epic or higher, up to
   celestial); ten coats (Prismatic +30% every stat, Gilded more XP, Rainbow 1 in 500, ...).
 - **Shared fights (decision 0108):** up to three players fight a wave together on the Legion's

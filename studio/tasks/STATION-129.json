@@ -41,7 +41,12 @@
     "src/shared/WaveRuns.luau",
     "src/shared/LevelRules.luau",
     "tests/WaveRuns.spec.luau",
-    "tests/LevelRules.spec.luau"
+    "tests/LevelRules.spec.luau",
+    "src/shared/StationRewards.luau",
+    "tests/StationRewards.spec.luau",
+    "docs/decisions/0108-animal-stations-shared-fights.md",
+    "docs/decisions/0109-animal-stations-presses-by-class.md",
+    "docs/decisions/0107-animal-stations-300-waves.md"
   ],
   "tests": [
     "StationRules.spec.luau",
@@ -50,7 +55,8 @@
     "StationAssets.spec.luau",
     "StationTrade.spec.luau",
     "WaveRuns.spec.luau",
-    "LevelRules.spec.luau"
+    "LevelRules.spec.luau",
+    "StationRewards.spec.luau"
   ],
   "acceptance_criteria": [
     "Every species' and variant's rarity is the one StationRules.powerRarity gives its stat total; every variant is epic or higher",

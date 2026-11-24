@@ -79,6 +79,10 @@ Date: 2026-11-24. Task STATION-128.
 - Played in Studio (build dev, local, one player): a test wave 25 with a team of an attack, a utility and a
   defense animal and a Titan; three pop-ups at once in a row under the team, each tied to its animal.
 
+## Checkpoint answers (SHANNON, 2026-11-24)
+
+- 1 and 2: keep as built.
+
 ## To confirm at the checkpoint
 
 1. Which press goes with which class (ring attack, needle defense, chain utility, mash Titan). Rejected:

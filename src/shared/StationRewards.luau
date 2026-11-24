@@ -132,7 +132,7 @@ end
 function StationRewards.bestEgg(p: Profile): (string, string)
 	local best, below = StationConfig.EGGS[1].id, StationConfig.EGGS[1].id
 	for _, e in StationConfig.EGGS do
-		if e.wave == nil or p.best >= e.wave then
+		if e.level == nil or StationProgress.playerLevel(p) >= e.level then
 			below, best = best, e.id
 		end
 	end

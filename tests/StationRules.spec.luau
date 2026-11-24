@@ -121,13 +121,13 @@ describe("StationConfig", function()
 			expect(#StationConfig.EGGS).toBe(12)
 			local wave, price, least = -1, 0, 0
 			for k, egg in StationConfig.EGGS do
-				expect((egg.wave or 0) >= wave).toBeTruthy()
+				expect((egg.level or 0) >= wave).toBeTruthy()
 				expect(egg.price > price).toBeTruthy()
 				expect(egg.xp > 0).toBeTruthy()
-				wave, price = egg.wave or 0, egg.price
+				wave, price = egg.level or 0, egg.price
 				expect(egg.only == (k >= 8) or (egg.only == nil and k < 8)).toBeTruthy()
 				if k <= 2 then
-					expect(egg.wave).toBeNil() -- the Meadow and Wild Eggs are open from the start
+					expect(egg.level).toBeNil() -- the Meadow and Wild Eggs are open from the start
 				end
 				if egg.only then
 					local low = math.huge
@@ -146,7 +146,7 @@ describe("StationConfig", function()
 					end
 				end
 			end
-			expect(StationConfig.EGGS[12].wave).toBe(LevelRules.LAST) -- the Crown Egg: for clearing the last wave
+			expect(StationConfig.EGGS[12].level).toBe(85) -- the Crown Egg: for the highest players
 		end
 	)
 

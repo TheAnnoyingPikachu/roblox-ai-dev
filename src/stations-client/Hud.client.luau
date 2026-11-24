@@ -1012,7 +1012,7 @@ redraw.shop = function()
 	Style.chip(shop.chips, `Level {StationProgress.playerLevel(profile)} · best wave {profile.best}`)
 
 	local def = StationConfig.EGGS[shopEgg]
-	local locked = def.wave ~= nil and profile.best < def.wave
+	local locked = def.level ~= nil and StationProgress.playerLevel(profile) < def.level
 	local head = Instance.new("Frame")
 	head.BackgroundTransparency = 1
 	head.Size, head.LayoutOrder = UDim2.new(1, -8, 0, 110), 1
@@ -1028,7 +1028,7 @@ redraw.shop = function()
 	Style.amount(price, "coins", Format.commas(def.price))
 	Style.chip(price, `Hatches in {Format.ago(StationProgress.hatchSeconds(profile, def))}`)
 	if locked then
-		Style.chip(price, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
+		Style.chip(price, `Reach level {def.level} to unlock`, C.bad, Color3.new(1, 1, 1))
 	end
 	local hatches = Style.text(
 		shop.body,
@@ -1062,7 +1062,7 @@ redraw.shop = function()
 	local can = not locked and profile.coins >= def.price
 	local b = Style.button(shop.body, `Buy for {Format.commas(def.price)}`, function()
 		if locked then
-			Style.toast(screen, `Clear wave {def.wave} to unlock the {def.name}`, nil, "bad")
+			Style.toast(screen, `Reach level {def.level} to unlock the {def.name}`, nil, "bad")
 			return
 		end
 		send("buy", def.id)

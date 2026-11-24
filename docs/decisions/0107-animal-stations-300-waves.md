@@ -54,6 +54,11 @@ an elephant at 35. Max 70 = the four mythics at 70. The last wave cleared:
   past that is only reached inside one unbroken run.
 - With no clicks at all and the best picks, Max 70 reaches 269 to 289; Starter 8 loses its second wave.
 
+## Checkpoint answers (SHANNON, 2026-11-24)
+
+- 1: go (with `STEEP_GROWTH` 1.016). 2: OK. 4: fine that the last waves take that long.
+- 3: nerf the payout to fit the egg prices: open (asked, 2026-11-24).
+
 ## To confirm at the checkpoint
 
 1. The numbers: `LAST` 300, `STEEP_FROM` 100, `STEEP_GROWTH` 1.08 (1.016 since decision 0110's amendment: small

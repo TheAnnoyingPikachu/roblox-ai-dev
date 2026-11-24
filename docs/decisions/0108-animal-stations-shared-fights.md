@@ -99,6 +99,15 @@ light) and STATION-125 (the fight in play: server, show, HUD, camera).
   each seat's camera; clicks, power taps by seat and the shield through `WaveShow`.
 - Not tested: two or three real players together. Studio's play mode here has one.
 
+## Checkpoint answers (SHANNON, 2026-11-24)
+
+- 1, 3, 6: accepted as built (6 left to Claude: kept).
+- 2: accepted, but the field is held 30 seconds for a boon (`HOLD_SECONDS`, was 60).
+- 4: accepted; a carried player is paid only for the waves they fought in (as built: each wave pays its members),
+  and eggs now unlock by player level, not the best wave (decision 0110, amended), so a carry opens no eggs.
+- 7: as built: a run ends when the whole side is down (a solo team wiped, or every member's team in a party);
+  one member's team down in a party comes back at `WIPED_BACK` for the next wave.
+
 ## To confirm at the checkpoint
 
 1. `PARTY_COUNT` 1.5 and 2, `PARTY_POWER` 1.6 and 2.1, `FRONT_MORE` 3.

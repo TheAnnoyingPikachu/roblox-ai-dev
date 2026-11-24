@@ -97,6 +97,14 @@ One coat at most per animal, rolled after the animal; an egg's signature coat is
   seeds); with random picks 169 or 189. Mythics at level 40 now stop at 79 to 89 (before 129 to 149): the
   middle waves are harder too, as boons no longer carry a team. Three players not re-simulated.
 
+## Amended (SHANNON, 2026-11-24): eggs by player level
+
+- SHANNON: "we're going to lock eggs behind player level instead of wave". An egg's `level`
+  (`StationProgress.playerLevel`) replaces its `wave`: Safari 5, Golden 8, Dusk 12, Oasis 16, Ivory 24, Legend
+  32, Mythic 42, Divine 54, Celestial 68, Crown 85 (draft: the level a player has from the waves' XP alone at
+  each egg's old wave, rounded up; buying and training add XP). The bands and `mult`s stay as drafted
+  (SHANNON: "do as you see fit").
+
 ## Evidence
 
 - Specs: `StationRules` (twelve eggs, rarity by power for every version, coats' odds and buffs),

@@ -393,7 +393,7 @@ type Party = {
 }
 local partyOf: { [Player]: Party } = {}
 local VOTE_SECONDS = 7 -- a party's boon vote is this long from the offer (SHANNON, 2026-11-24); alone, no limit
-local HOLD_SECONDS = 60 -- how long the field waits for a party to pick its boon
+local HOLD_SECONDS = 30 -- how long the field waits for a party to pick its boon (SHANNON, 2026-11-24: was 60)
 local fieldOf: Party? = nil -- the party that last fought on the field
 local settle: (party: Party) -> ()
 

@@ -454,7 +454,7 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
 		return false, "egg"
-	elseif egg.wave and p.best < egg.wave then -- eggs unlock with the waves (decision 0056)
+	elseif egg.level and StationProgress.playerLevel(p) < egg.level then -- by player level (SHANNON, 2026-11-24)
 		return false, "locked"
 	elseif #p.eggs >= StationProgress.value(p, "hatchery") + StationProgress.value(p, "cellar") then
 		return false, "eggs_full"
