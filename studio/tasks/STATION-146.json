@@ -1,0 +1,35 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-146",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "asset",
+  "objective": "HUD icons from ForgeGUI (SHANNON, 2026-11-24: 'make a prompt or concept to prepare to prompt forgegui for new icons for gold and samples and egg drops'; picks approved 'those are all good'): the coin, sample and XP tokens, the coin and sample piles for rewards, and an icon of its own for each of the twelve eggs, in one look.",
+  "inputs": [
+    "docs/assets/register.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-141"
+  ],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/HudGifts.luau",
+    "assets/stations/icons/hud_*.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-146.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every coin, sample and XP amount (purses, prices, pay) shows the new token picture",
+    "Rewards show the coin and sample piles; every egg's reward shows its own egg icon, none borrows the Meadow Egg's",
+    "The icons are registered with their ForgeGUI jobs and Roblox ids"
+  ],
+  "verification": "Brief on the concept canvas (board 'HUD icons: the ForgeGUI brief'). ForgeGUI generation_image type mixed, 3 variations each: coin job 9f069e3a (pick A, then the style reference for the rest), sample 008316fb (A), XP f60bc8e2 (A), coin pile 12e17989 (A), sample pile bbd0cad2 (B), the eggs each with a Studio capture of its model as a second reference (picks: meadow A, wild B, safari A, golden A, dusk A, oasis A, ivory A, legend B, mythic A, divine A, celestial B, crown A). Trimmed and squared to 256 x 256 PNG, uploaded from Studio. Seen in Studio: the purses top left, the Gifts window's week and month with the piles and the new egg icons. selene 0 warnings; 810 tests pass.",
+  "output_artifacts": [
+    "assets/stations/icons/hud_*.png"
+  ],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "The egg picks were made by Claude to keep going; SHANNON can swap any from the sheet of 36. The old drawn icons (star, x2 boosts, rainbow, spin, gift) stay until they get the same treatment. The 3D egg models are being remade to match these icons (STATION-147)."
+}
