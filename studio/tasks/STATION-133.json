@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-133",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Beta blocker 13 (SHANNON's pick A): the onboarding funnel, an economy event for every coin and sample change, and custom events for early losses, refusals and save trouble.",
+  "inputs": [
+    "docs/decisions/0111-animal-stations-beta-saves.md"
+  ],
+  "dependencies": [
+    "STATION-132"
+  ],
+  "files": [
+    "src/stations/Analytics.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0113-animal-stations-analytics.md",
+    "studio/tasks/STATION-133.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Ten onboarding steps, each logged once a session",
+    "Every change to coins or samples is one LogEconomyEvent, typed by the request or payout that made it",
+    "WaveLost (waves 1 to 3), Refused (action, code) and SaveTrouble (status) custom events",
+    "Clicks (strike) and power presses are never logged"
+  ],
+  "verification": "lune run tests/run; selene; rojo build and check-place; in Studio the events fire (AnalyticsService prints them); the dashboard after publishing (blocker 15).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: 13 A. Read the Error Report daily once published. Model-load failures stay warnings (they are server events with no player): the Error Report shows them."
+}

@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 
 local Areas = require(script.Parent:WaitForChild("Areas"))
 local Creatures = require(script.Parent:WaitForChild("Creatures"))
+local Analytics = require(script.Parent:WaitForChild("Analytics"))
 local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 
@@ -437,6 +438,7 @@ local function bankRun(player: Player, lost: boolean)
 	local waves = party.wins[player] or 0
 	party.pots[player], party.hp[player], party.votes[player], party.wins[player] = nil, nil, nil, nil
 	if coins > 0 or samples > 0 then
+		Analytics.because(player, "run_pot")
 		saves.apply(player, function(q)
 			return StationProgress.earn(q, coins, samples)
 		end)
@@ -574,6 +576,10 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 				continue
 			end
 			local mine = pay[m]
+			Analytics.because(m, "wave_pay")
+			if not result.won and level <= 3 then -- an early loss: the funnel's leak (decision 0113)
+				Analytics.event(m, "WaveLost", 1, `wave {level}`)
+			end
 			if result.won and not won then -- the taps won it
 				saves.apply(m, function(q)
 					return (StationProgress.clear(q, level, true))
@@ -637,7 +643,9 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 		if continuing or m ~= player then -- whoever did not ask for this wave is told it is on
 			remotes.fx(m, "began", { wave = level, party = #members })
 		end
+		Analytics.step(m, 6)
 		if won then
+			Analytics.because(m, "wave_pay")
 			saves.apply(m, function(q)
 				return (StationProgress.clear(q, level, true))
 			end)
@@ -1478,6 +1486,21 @@ local router = Router.new({
 		warn(`[StationsServer] {action}: {err}`)
 	end,
 })
+-- every request but clicks and presses names what changes the save next, and a refusal is counted (decision 0113)
+for name, action in router.options.actions do
+	if name == "strike" or name == "power" then
+		continue
+	end
+	local handler = action.handler
+	action.handler = function(player, ...)
+		Analytics.because(player, name)
+		local ok, code = handler(player, ...)
+		if not ok and code then
+			Analytics.event(player, "Refused", 1, name, tostring(code))
+		end
+		return ok, code
+	end
+end
 remotes = Remotes.create("StationsRemotes", router)
 
 -- The Hall of Fame at the hub (decision 0095): the best animals in this server, at most two of any one
@@ -1534,6 +1557,9 @@ saves = Saves.start({
 		return type(record) == "table" and type(record.version) == "number" and record.version > StationProgress.VERSION
 	end,
 	onStatus = function(player, status)
+		if status ~= "online" then
+			Analytics.event(player, "SaveTrouble", 1, status)
+		end
 		if status == "newer" then
 			player:Kick("A new update is out. Please rejoin to play it.")
 		elseif status ~= "online" and not RunService:IsStudio() then
@@ -1553,6 +1579,28 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		Analytics.changed(player, profile)
+		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
+		local hatching = #profile.animals > 0
+		for _, e in profile.eggs do
+			hatching = hatching or e.since ~= nil
+		end
+		for k, reached in
+			{
+				[2] = #profile.eggs > 0 or #profile.animals > 0,
+				[3] = hatching,
+				[4] = #profile.animals > 0,
+				[5] = #profile.team > 0,
+				[7] = profile.best >= 1,
+				[8] = profile.best >= 3,
+				[9] = profile.best >= 10,
+				[10] = StationProgress.playerLevel(profile) >= 5,
+			}
+		do
+			if reached then
+				Analytics.step(player, k)
+			end
+		end
 		remotes.fx(player, "profile", StationProgress.public(profile))
 		updateFame()
 		local i = ranchOf(player)
@@ -1567,6 +1615,7 @@ saves = Saves.start({
 })
 
 local function load(player: Player)
+	Analytics.step(player, 1)
 	saves.load(player)
 	healTrades(player) -- a trade a crash cut short (decision 0099)
 end
@@ -1581,6 +1630,7 @@ end
 
 Players.PlayerRemoving:Connect(function(player)
 	task.defer(updateFame) -- after the player has gone
+	task.defer(Analytics.forget, player)
 	local t = trades[player]
 	if t then
 		closeTrade(t, "left")
