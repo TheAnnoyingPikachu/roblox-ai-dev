@@ -29,7 +29,7 @@ VARIANTS = {  # a variant's spell, by its asset (each variant keeps its species'
     "creature_rhino_lava_forge": "m_magma", "creature_rhino_crystal_forge": "m_prism",
     "creature_flamingo_peacock_forge": "m_fan", "creature_flamingo_phoenix_forge": "m_firebird",
     "creature_lion_sun_forge": "m_solar", "creature_lion_shadow_forge": "m_claws",
-    "creature_lion_sahara_forge": "m_judgement",
+    "creature_lion_sahara_forge": "m_judgement", "creature_elephant_sahara_forge": "m_dawn",
     "creature_giraffe_acacia_forge": "m_thorns", "creature_giraffe_diamond_forge": "m_prison",
     "creature_elephant_frost_forge": "m_tomb", "creature_elephant_war_forge": "m_axe",
 }
