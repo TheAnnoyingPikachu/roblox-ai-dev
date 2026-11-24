@@ -48,6 +48,13 @@ Date: 2026-11-24. Task STATION-128.
   attack plays; a press the server turns down is sent again for up to 5 s, and only then does a fresh card show.
 - Clicks count from the wave's start (`FightFrom` on each member, server time), not while the enemies walk in.
 
+- Keys (SHANNON, 2026-11-24: "make titan mashing space bar and make the three button presses a random order of
+  arrow keys ... the other two a random button between WASD each time but dont make two the same button at once"):
+  `PressPops.claim` gives the mash Space, a chain three arrows in a random order (a second chain up at once three
+  of W A S D), a ring or a needle a random free one of W A S D; no two cards up at once share a key. During a fight
+  these keys are bound above the character's controls (`PressPops.listen`), so they never move or jump it. The
+  number keys no longer press.
+
 ## Evidence
 
 - `BattleRules.spec`: each class's press, four classes four presses. 786 specs pass.

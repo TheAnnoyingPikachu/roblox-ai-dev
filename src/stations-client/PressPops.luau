@@ -6,6 +6,7 @@
 -- higher on the screen and the cards never cover them (SHANNON: "try to not block the enemies"). Another player's animal with a full meter gets only a small
 -- marker over its head: theirs to press, not this player's. Display only.
 
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -193,7 +194,8 @@ local function words(parent: Instance, text: string, size: number, at: UDim2, co
 end
 -- a key cap, `w` wide, its middle at `at`
 local function key(parent: Instance, text: string, w: number, at: UDim2, k: number): Frame
-	local cap = frame(parent, UDim2.fromOffset(w, w), at, Color3.fromRGB(46, 31, 74), 8)
+	local long = (utf8.len(text) or 1) > 1 -- SPACE: a wide cap, smaller letters
+	local cap = frame(parent, UDim2.fromOffset(if long then w * 2.6 else w, w), at, Color3.fromRGB(46, 31, 74), 8)
 	corner(cap, math.floor(w * 0.24))
 	edge(cap, LILAC, math.max(1, 2 * k))
 	local shade = frame(
@@ -204,7 +206,14 @@ local function key(parent: Instance, text: string, w: number, at: UDim2, k: numb
 		8
 	)
 	corner(shade, math.floor(w * 0.24))
-	words(cap, text, math.floor(w * 0.55), UDim2.fromScale(0.5, 0.47), Color3.fromRGB(244, 236, 255), 9)
+	words(
+		cap,
+		text,
+		math.floor(w * (if long then 0.4 else 0.55)),
+		UDim2.fromScale(0.5, 0.47),
+		Color3.fromRGB(244, 236, 255),
+		9
+	)
 	return cap
 end
 
@@ -221,7 +230,7 @@ local function onPress(b: GuiButton, fn: () -> ())
 end
 
 -- A quick press's pop-up (decision 0109, the reference's look): a card of dark glass with a violet edge, its
--- instruction on top, and under it the press. `slot` is the animal's key. `on.press` runs on a click of the
+-- instruction on top, and under it the press. `keys` are its keys' names (PressPops.claim: one, or the chain's three). `on.press` runs on a click of the
 -- card, `on.down` / `on.up` on a mouse button held on it (the ring), `on.mark(i)` on the chain's mark i.
 -- Returns the card and the parts the HUD moves: `edge` (the card's), `dots` (the ring's), `hand` (the
 -- needle's), `fill` (the mash's bar), `marks` (the chain's caps).
@@ -237,7 +246,7 @@ export type Card = {
 function PressPops.card(
 	parent: Instance,
 	press: string,
-	slot: number,
+	keys: { string },
 	k: number,
 	wide: number,
 	on: any
@@ -276,7 +285,7 @@ function PressPops.card(
 		local well = frame(card, UDim2.fromOffset(62 * k, 62 * k), mid, Color3.fromRGB(26, 14, 46), 6)
 		corner(well, math.floor(31 * k))
 		edge(well, Color3.fromRGB(91, 62, 140), 1)
-		parts.key = key(card, tostring(slot), 28 * k, UDim2.new(0.5, 0, 0, 72 * k), k)
+		parts.key = key(card, keys[1], 28 * k, UDim2.new(0.5, 0, 0, 72 * k), k)
 		words(card, "HOLD", math.floor(10 * k), UDim2.new(0.5, 0, 0, 94 * k), Color3.fromRGB(241, 198, 255), 9)
 		card.MouseButton1Down:Connect(on.down)
 		card.MouseButton1Up:Connect(on.up)
@@ -291,7 +300,7 @@ function PressPops.card(
 		edge(green, Color3.fromRGB(170, 255, 160), 1).Transparency = 0.5
 		local hand = frame(bar, UDim2.new(0, 3 * k, 1, 0), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1), 8)
 		parts.hand = hand
-		parts.key = key(card, tostring(slot), 24 * k, UDim2.new(0.5, 0, 0, 104 * k), k)
+		parts.key = key(card, keys[1], 24 * k, UDim2.new(0.5, 0, 0, 104 * k), k)
 		onPress(card, on.press)
 	elseif press == "chain" then -- three caps with arrows, the one due in gold (`marks`)
 		local row = frame(card, UDim2.new(1, 0, 0, 34 * k), UDim2.new(0.5, 0, 0, 74 * k), GLASS, 6)
@@ -306,7 +315,7 @@ function PressPops.card(
 			b.Size, b.BackgroundColor3, b.AutoButtonColor, b.LayoutOrder, b.ZIndex =
 				UDim2.fromOffset(32 * k, 32 * k), Color3.fromRGB(46, 31, 74), false, i * 2, 8
 			b.Text, b.TextSize, b.Font, b.TextColor3 =
-				tostring(i), math.floor(17 * k), Enum.Font.FredokaOne, Color3.fromRGB(244, 236, 255)
+				keys[i] or tostring(i), math.floor(17 * k), Enum.Font.FredokaOne, Color3.fromRGB(244, 236, 255)
 			corner(b, math.floor(8 * k))
 			edge(b, if i == 1 then PressPops.GOLD else EDGE, math.max(1, 2 * k))
 			b.Parent = row
@@ -325,7 +334,7 @@ function PressPops.card(
 		burst.BackgroundTransparency = 0.72
 		corner(burst, math.floor(29 * k))
 		edge(burst, PressPops.LIT, math.max(1, 2 * k)).Transparency = 0.3
-		parts.key = key(card, tostring(slot), 32 * k, UDim2.new(0.5, 0, 0, 64 * k), k)
+		parts.key = key(card, keys[1], 32 * k, UDim2.new(0.5, 0, 0, 64 * k), k)
 		local track =
 			frame(card, UDim2.new(1, -28 * k, 0, 12 * k), UDim2.new(0.5, 0, 0, 108 * k), Color3.fromRGB(22, 12, 40), 6)
 		corner(track, math.floor(6 * k))
@@ -346,6 +355,91 @@ function PressPops.card(
 	):Play()
 	TweenService:Create(pop, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 	return card, parts
+end
+
+-- Keys (SHANNON, 2026-11-24): the Titan's mash is Space, a chain three arrow keys in a random order, a ring
+-- or a needle one of W A S D; no two cards up at once share a key. While a fight is on these keys press, not
+-- move the character (`listen`).
+local WASD = { Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D }
+local ARROWS = { Enum.KeyCode.Up, Enum.KeyCode.Down, Enum.KeyCode.Left, Enum.KeyCode.Right }
+local NAMES = {
+	[Enum.KeyCode.W] = "W",
+	[Enum.KeyCode.A] = "A",
+	[Enum.KeyCode.S] = "S",
+	[Enum.KeyCode.D] = "D",
+	[Enum.KeyCode.Up] = "↑",
+	[Enum.KeyCode.Down] = "↓",
+	[Enum.KeyCode.Left] = "←",
+	[Enum.KeyCode.Right] = "→",
+	[Enum.KeyCode.Space] = "SPACE",
+}
+local taken: { [Enum.KeyCode]: boolean } = {}
+local shuffle = Random.new()
+
+-- The keys of a card for `press`, taken until `free`d.
+function PressPops.claim(press: string): { Enum.KeyCode }
+	if press == "mash" then
+		return { Enum.KeyCode.Space }
+	end
+	local want = if press == "chain" then 3 else 1
+	local first, second = if press == "chain" then ARROWS else WASD, if press == "chain" then WASD else ARROWS
+	local function open(pool: { Enum.KeyCode }): { Enum.KeyCode }
+		local out = {}
+		for _, kc in pool do
+			if not taken[kc] then
+				table.insert(out, kc)
+			end
+		end
+		shuffle:Shuffle(out)
+		return out
+	end
+	local pick = open(first)
+	if #pick < want then -- its own keys are in use (a second chain): the other set
+		pick = open(second)
+	end
+	-- shortcut: three chains up at once run out of free keys and reuse arrows, a team of three utility animals only
+	local extra = table.clone(ARROWS)
+	shuffle:Shuffle(extra)
+	while #pick < want do
+		table.insert(pick, table.remove(extra) :: Enum.KeyCode)
+	end
+	local out = table.move(pick, 1, want, 1, {})
+	for _, kc in out do
+		taken[kc] = true
+	end
+	return out
+end
+
+function PressPops.free(keys: { Enum.KeyCode })
+	for _, kc in keys do
+		taken[kc] = nil
+	end
+end
+
+function PressPops.names(keys: { Enum.KeyCode }): { string }
+	local out = {}
+	for _, kc in keys do
+		table.insert(out, NAMES[kc] or "?")
+	end
+	return out
+end
+
+-- While `fn` is set the press keys go to it (`down` true on a press, false on a let-go) instead of the
+-- character's movement and jump; nil gives them back.
+function PressPops.listen(fn: ((key: Enum.KeyCode, down: boolean) -> ())?)
+	ContextActionService:UnbindAction("StationsPresses")
+	if fn == nil then
+		return
+	end
+	local keys = table.clone(WASD)
+	table.move(ARROWS, 1, #ARROWS, #keys + 1, keys)
+	table.insert(keys, Enum.KeyCode.Space)
+	ContextActionService:BindActionAtPriority("StationsPresses", function(_, state, input)
+		if state == Enum.UserInputState.Begin or state == Enum.UserInputState.End then
+			fn(input.KeyCode, state == Enum.UserInputState.Begin)
+		end
+		return Enum.ContextActionResult.Sink
+	end, false, Enum.ContextActionPriority.High.Value + 1, table.unpack(keys))
 end
 
 -- Effects (display only) -------------------------------------------------------------------------------

@@ -2777,6 +2777,7 @@ type Plate = {
 	parts: any, -- its pop-up's moving parts (PressPops.card)
 	holdAt: number?, -- the ring: os.clock() when the hold began
 	model: Model?, -- the animal on the field, which its pop-up stands over (PressPops)
+	keys: { Enum.KeyCode }?, -- its card's keys (PressPops.claim)
 }
 local plateOf: { [number]: Plate } = {}
 -- Quick presses and clicks (decision 0106) keep their functions here, set in the block below: the HUD's
@@ -2965,7 +2966,10 @@ do
 		if p.card then
 			p.card:Destroy()
 		end
-		p.card, p.hand, p.count, p.marks, p.marked = nil, nil, nil, {}, 0
+		if p.keys then
+			Press.pops.free(p.keys)
+		end
+		p.card, p.hand, p.count, p.marks, p.marked, p.keys = nil, nil, nil, {}, 0, nil
 	end
 
 	-- The chain: the next of its 1-2-3 is struck (tapped, or the pop-up, the plate or the key); the last fires.
@@ -3011,7 +3015,8 @@ do
 		-- the reference's look (decision 0109, amended): PressPops draws the card
 		local k = uiScale.Scale * 0.85 -- over the animals: compact
 		local wide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
-		local card, parts = Press.pops.card(clickFx, p.press, slot, k, wide, {
+		p.keys = Press.pops.claim(p.press)
+		local card, parts = Press.pops.card(clickFx, p.press, Press.pops.names(p.keys :: { Enum.KeyCode }), k, wide, {
 			press = function()
 				Press.tap(slot)
 			end,
@@ -3128,35 +3133,23 @@ do
 	Press.tap, Press.on, Press.off, Press.catcher, Press.hold = pressPlate, pressOn, pressOff, catcher, holdRing
 end
 
-UserInputService.InputBegan:Connect(function(input, used)
-	if used or not plates.Visible then
-		return
-	end
-	local slot = ({
-		[Enum.KeyCode.One] = 1,
-		[Enum.KeyCode.Two] = 2,
-		[Enum.KeyCode.Three] = 3,
-		[Enum.KeyCode.Four] = 4,
-	})[input.KeyCode]
-	if slot then
-		local p = plateOf[slot]
-		if p and p.press == "ring" then
-			Press.hold(slot, true)
-		else
-			Press.tap(slot)
+-- the press keys (PressPops.claim): each card's own, taken from the character while the fight is on
+plates:GetPropertyChangedSignal("Visible"):Connect(function()
+	Press.pops.listen(if plates.Visible
+		then function(key: Enum.KeyCode, down: boolean)
+			for slot, p in plateOf do
+				local keys = p.keys
+				if keys == nil or not p.full or p.sent then
+					continue
+				end
+				if p.press == "ring" and keys[1] == key then
+					Press.hold(slot, down)
+				elseif down and p.press ~= "ring" and keys[if p.press == "chain" then p.marked + 1 else 1] == key then
+					Press.tap(slot) -- the chain's next key, or the needle's or the mash's
+				end
+			end
 		end
-	end
-end)
-UserInputService.InputEnded:Connect(function(input)
-	local slot = ({
-		[Enum.KeyCode.One] = 1,
-		[Enum.KeyCode.Two] = 2,
-		[Enum.KeyCode.Three] = 3,
-		[Enum.KeyCode.Four] = 4,
-	})[input.KeyCode]
-	if slot and plates.Visible then
-		Press.hold(slot, false)
-	end
+		else nil)
 end)
 
 task.spawn(function()
