@@ -1,0 +1,40 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-132",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON's picks, 2026-11-24: release an animal for coins and fuse four of one into the next coat tier (beta blocker 14), trading switched off until hardened, training that warns and puts the animal back in its slot on Stop, Gifts opened after the first hatch, a reveal card with sound, and rare hatches announced to the server.",
+  "inputs": [
+    "docs/decisions/0110-animal-stations-eggs-rarities-coats.md"
+  ],
+  "dependencies": [
+    "STATION-131"
+  ],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "src/shared/StationTrade.luau",
+    "tests/StationProgress.spec.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/RevealCard.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0112-animal-stations-release-fuse.md",
+    "studio/tasks/STATION-132.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "release pays RELEASE_PAY by rarity (twice with a coat) and refuses an animal in the team, training or locked, and the last one",
+    "fuse takes four idle animals of one species, variant and coat tier and leaves the first wearing a coat of the next tier (the server's pick), stat levels averaged",
+    "Trade is hidden and trade_ask refused while StationTrade.ON is false",
+    "An animal that leaves the team to train is warned about and goes back to its slot (or the Titan's) on Stop when that place is free",
+    "The first hatch opens Gifts; every hatch shows the reveal card; an epic or rarer hatch, or a coat, is announced to the other players"
+  ],
+  "verification": "lune run tests/run; selene; rojo build and check-place; in Studio: the HUD loads, Trade hidden and refused, Release and Fuse on the animal panel, a fuse of four Jackals, the reveal card.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: 14 A plus fusion (\"4 normal becomes 1 coat variant\"), Gifts after the first hatch, a reveal card with sound and rare hatches announced, training warns then Stop restores the slot, trading off until hardened. The fusion ladder and release pay are Claude's draft (decision 0112)."
+}

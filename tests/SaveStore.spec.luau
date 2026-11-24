@@ -82,6 +82,33 @@ describe("SaveStore.load", function()
 		expect(SaveLock.holds(store:read("k"), s.id)).toBe(true)
 	end)
 
+	it("never loads or writes back a record a newer build wrote (tooNew)", function()
+		local store = FakeDataStore.new({ k = { coins = 9, version = 3 } })
+		local clock = FakeDataStore.clock()
+		local saves = SaveStore.new({
+			store = store,
+			defaults = function()
+				return { coins = 0, lastSeen = 0 }
+			end,
+			sanitize = sanitize,
+			wait = clock.wait,
+			clock = clock.time,
+			newId = function()
+				return "old-server"
+			end,
+			tooNew = function(record: any): boolean
+				return (record.version or 0) > 2
+			end,
+		})
+		local s = saves:load("k", 0)
+		expect(s.status).toBe("newer")
+		expect(store.writes).toBe(0)
+		saves:apply("k", add(5))
+		saves:finish("k", 10)
+		expect(store:read("k").coins).toBe(9)
+		expect(store:read("k").version).toBe(3)
+	end)
+
 	it("a failed load never writes and runs offline on defaults", function()
 		local store = FakeDataStore.new({ k = { coins = 500 } })
 		store:failNext(3)

@@ -34,6 +34,13 @@ export type Options = {
 	snapshot: ((p: any, now: number) -> any)?,
 	onChanged: ((player: Player, profile: any) -> ())?,
 	onStatus: ((player: Player, status: string) -> ())?, -- "online" | "busy" | "offline" | "lost"
+	-- a "busy" load (the save still locked by another server) is tried again every 5 s for this long, with the
+	-- player's `ProfileLoading` attribute set meanwhile and requests held (isLoaded false); 0 or nil: once
+	waitBusy: number?,
+	-- runs before a leaving player's session closes (and for everyone still in at shutdown), so the game can
+	-- make its last changes (a run's pot) while they can still be saved
+	beforeFinish: ((player: Player) -> ())?,
+	tooNew: ((record: any) -> boolean)?, -- kit/SaveStore: a save from newer content is never loaded ("newer")
 	coalesce: number?,
 	autosave: number?,
 	lockStale: number?,
@@ -74,6 +81,7 @@ function Saves.start(options: Options)
 		coalesce = options.coalesce,
 		autosave = options.autosave,
 		lockStale = options.lockStale,
+		tooNew = options.tooNew,
 		log = function(message)
 			warn(message)
 		end,
@@ -99,12 +107,24 @@ function Saves.start(options: Options)
 
 	local api = {}
 	api.store = saves
+	local loading: { [string]: boolean } = {}
 
 	-- Blocks until loaded. Requests must wait for this (kit/Router `ready` = api.isLoaded).
 	function api.load(player: Player)
 		local key = keyFor(player)
 		byKey[key] = player
 		local session = saves:load(key, os.time(), CLOSE_BUDGET)
+		local waited = 0
+		while session.status == "busy" and waited < (options.waitBusy or 0) and player.Parent do
+			loading[key] = true
+			player:SetAttribute("ProfileLoading", true)
+			saves:finish(key, os.time(), CLOSE_BUDGET) -- a busy session: dropped, nothing written
+			task.wait(5)
+			waited += 5
+			session = saves:load(key, os.time(), CLOSE_BUDGET)
+		end
+		loading[key] = nil
+		player:SetAttribute("ProfileLoading", nil)
 		player:SetAttribute("ProfileOnline", session.status == "online")
 		if options.onStatus then
 			options.onStatus(player, session.status)
@@ -118,7 +138,8 @@ function Saves.start(options: Options)
 	end
 
 	function api.isLoaded(player: Player): boolean
-		return saves:session(keyFor(player)) ~= nil
+		local key = keyFor(player)
+		return saves:session(key) ~= nil and not loading[key]
 	end
 
 	function api.isOnline(player: Player): boolean
@@ -140,6 +161,12 @@ function Saves.start(options: Options)
 
 	function api.finish(player: Player)
 		local key = keyFor(player)
+		if options.beforeFinish and saves:session(key) then
+			local ok, err = pcall(options.beforeFinish, player)
+			if not ok then
+				warn(`[Saves] beforeFinish for {player.UserId} failed: {err}`)
+			end
+		end
 		saves:finish(key, os.time(), CLOSE_BUDGET)
 		if byKey[key] == player then -- a rejoin may already own the key
 			byKey[key] = nil
@@ -151,6 +178,11 @@ function Saves.start(options: Options)
 	-- Every open session, not Players:GetPlayers(): on shutdown players are usually removed already
 	-- while their PlayerRemoving finish is still writing; finishAll waits for those too.
 	game:BindToClose(function()
+		if options.beforeFinish then -- everyone still in: their last changes first
+			for _, player in Players:GetPlayers() do
+				pcall(options.beforeFinish, player)
+			end
+		end
 		saves:finishAll(os.time(), function(run)
 			task.spawn(run)
 		end, CLOSE_BUDGET)
