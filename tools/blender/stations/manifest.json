@@ -9627,5 +9627,209 @@
       ]
     },
     "joints": {}
+  },
+  "stall_eggs": {
+    "fbx": "build/blender/stations/stall_eggs.fbx",
+    "png": "build/blender/stations/stall_eggs.png",
+    "preview": "build/blender/stations/previews/stall_eggs.png",
+    "size_studs": [
+      35.25,
+      24.41,
+      14.4
+    ],
+    "tris": 39156,
+    "parts": {
+      "stall_eggs_body": 4532,
+      "stall_eggs_body_glow": 24,
+      "stall_eggs_body2_glow": 328,
+      "stall_eggs_body3_glow": 108,
+      "stall_eggs_body4_glow": 360,
+      "stall_eggs_body5_glow": 368,
+      "stall_eggs_body6_glow": 1128,
+      "stall_eggs_body7_glow": 24,
+      "stall_eggs_body8_glow": 24,
+      "stall_eggs_body9_glow": 72,
+      "stall_eggs_body10_glow": 96,
+      "stall_eggs_body11_glow": 36,
+      "stall_eggs_eggs_top": 10366,
+      "stall_eggs_eggs": 9706,
+      "stall_eggs_cloth": 7724,
+      "stall_eggs_props": 4260
+    },
+    "tris_budget": 60000,
+    "script": "tools/blender/stations/assets/stall_eggs.py",
+    "notes": "The egg vendor's stall on each ranch (SHANNON's pick, 2026-11-24): purple and gold, ten eggs in straw nests on a two-tier counter.",
+    "glow": {
+      "stall_eggs_body_glow": [
+        255,
+        255,
+        255
+      ],
+      "stall_eggs_body2_glow": [
+        255,
+        160,
+        235
+      ],
+      "stall_eggs_body3_glow": [
+        255,
+        170,
+        50
+      ],
+      "stall_eggs_body4_glow": [
+        170,
+        70,
+        255
+      ],
+      "stall_eggs_body5_glow": [
+        255,
+        214,
+        110
+      ],
+      "stall_eggs_body6_glow": [
+        190,
+        220,
+        255
+      ],
+      "stall_eggs_body7_glow": [
+        255,
+        156,
+        48
+      ],
+      "stall_eggs_body8_glow": [
+        255,
+        232,
+        150
+      ],
+      "stall_eggs_body9_glow": [
+        226,
+        186,
+        255
+      ],
+      "stall_eggs_body10_glow": [
+        176,
+        96,
+        255
+      ],
+      "stall_eggs_body11_glow": [
+        255,
+        214,
+        90
+      ]
+    },
+    "centres": {
+      "stall_eggs_body": [
+        0.0,
+        7.8,
+        1.5
+      ],
+      "stall_eggs_body_glow": [
+        0.0,
+        9.459,
+        -1.2
+      ],
+      "stall_eggs_body2_glow": [
+        -4.015,
+        8.289,
+        -1.023
+      ],
+      "stall_eggs_body3_glow": [
+        3.927,
+        5.482,
+        2.226
+      ],
+      "stall_eggs_body4_glow": [
+        -0.001,
+        6.274,
+        1.9
+      ],
+      "stall_eggs_body5_glow": [
+        7.894,
+        9.252,
+        -1.236
+      ],
+      "stall_eggs_body6_glow": [
+        3.971,
+        8.416,
+        -1.202
+      ],
+      "stall_eggs_body7_glow": [
+        0.0,
+        8.393,
+        1.366
+      ],
+      "stall_eggs_body8_glow": [
+        0.0,
+        8.284,
+        1.358
+      ],
+      "stall_eggs_body9_glow": [
+        -1.723,
+        1.835,
+        1.962
+      ],
+      "stall_eggs_body10_glow": [
+        -1.981,
+        1.346,
+        1.82
+      ],
+      "stall_eggs_body11_glow": [
+        -8.018,
+        8.1,
+        -0.508
+      ],
+      "stall_eggs_eggs_top": [
+        0.045,
+        7.828,
+        -0.039
+      ],
+      "stall_eggs_eggs": [
+        0.024,
+        5.591,
+        1.9
+      ],
+      "stall_eggs_cloth": [
+        0.0,
+        12.357,
+        0.315
+      ],
+      "stall_eggs_props": [
+        0.0,
+        5.871,
+        1.803
+      ]
+    },
+    "joints": {},
+    "lift": 0.0,
+    "eyes": [
+      [
+        4.635,
+        5.647,
+        0.472,
+        0.286
+      ],
+      [
+        4.644,
+        5.641,
+        0.473,
+        0.203
+      ],
+      [
+        3.269,
+        5.646,
+        0.328,
+        0.286
+      ],
+      [
+        3.261,
+        5.645,
+        0.328,
+        0.201
+      ]
+    ],
+    "lid": [
+      226,
+      176,
+      73
+    ]
   }
 }

@@ -202,6 +202,7 @@ describe("StationAssets", function()
 				or kind == "kit_"
 				or kind == "home"
 				or kind == "scen"
+				or kind == "stal" -- stall_: a ranch's vendor stall, a still prop (STATION-130)
 			then
 				continue -- scenery_: still props (decision 0085)
 			end
