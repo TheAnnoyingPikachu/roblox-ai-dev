@@ -30,6 +30,7 @@ VARIANTS = {  # a variant's spell, by its asset (each variant keeps its species'
     "creature_flamingo_peacock_forge": "m_fan", "creature_flamingo_phoenix_forge": "m_firebird",
     "creature_lion_sun_forge": "m_solar", "creature_lion_shadow_forge": "m_claws",
     "creature_lion_sahara_forge": "m_judgement", "creature_elephant_sahara_forge": "m_dawn",
+    "creature_tortoise_sahara_forge": "m_barrage", "creature_rhino_sahara_forge": "m_sunhorn",
     "creature_giraffe_acacia_forge": "m_thorns", "creature_giraffe_diamond_forge": "m_prison",
     "creature_elephant_frost_forge": "m_tomb", "creature_elephant_war_forge": "m_axe",
 }
@@ -120,6 +121,14 @@ AnimalMoves.ATTACKS = {{
 AnimalMoves.POWERS = {{
 {chr(10).join(powers)}
 }} :: {{ [string]: Keys }}
+
+-- The most (degrees) any clip may turn a leg of these models, by asset: the Sahara Guardian is stone blocks cut
+-- apart at the joints and the Sahara Mammoth a thick hide, and past this their legs come apart or stretch
+-- (SHANNON saw it in the shared walk, hit, win and training clips). Creatures.client clamps every leg turn to it.
+AnimalMoves.STIFF = {{
+	creature_lion_sahara_forge = 16,
+	creature_elephant_sahara_forge = 20,
+}} :: {{ [string]: number }}
 
 return AnimalMoves
 '''

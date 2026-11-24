@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-155",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON (2026-11-24): 'both models are still messed up please fix'. In the shared clips (walk, hit, win, the training clips) the Sahara Guardian's legs swung out of its body (stone blocks cut apart at the joints) and the Sahara Mammoth's hide stretched. Every clip's leg turns are now clamped per model (AnimalMoves.STIFF: Guardian 16 degrees, Mammoth 20).",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-147"
+  ],
+  "files": [
+    "tools/blender/stations/moves/export_moves.py",
+    "src/shared/AnimalMoves.luau",
+    "src/stations-client/Creatures.client.luau",
+    "studio/tasks/STATION-155.json"
+  ],
+  "tests": [
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A model in AnimalMoves.STIFF never turns a leg further than its number in any clip; every other animal moves as before"
+  ],
+  "verification": "2026-11-24: lune 814/814, selene 0 warnings. Studio, local build 'dev' (no CI stamp): the Guardian's walk before showed its front legs and chest armour splayed apart; after, its legs stay on and its armour together (a small seam at the chest remains). Not checked frame by frame: hit, win, fall and the six training clips (cycled in Studio, not each looked at).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "If the walk now looks too stiff, raise the numbers in export_moves.py (STIFF) and regenerate."
+}

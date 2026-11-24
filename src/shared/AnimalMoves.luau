@@ -1668,6 +1668,8 @@ AnimalMoves.POWERS = {
 		} },
 		{ 1.6, {} },
 	},
+	-- Sun Barrage: its species' own moves
+	-- Sunfire Horn: its species' own moves
 	-- Thorn Grove: its species' own moves
 	-- Diamond Prison: its species' own moves
 	-- Frozen Tomb
@@ -1761,5 +1763,13 @@ AnimalMoves.POWERS = {
 		{ 1.6, {} },
 	},
 } :: { [string]: Keys }
+
+-- The most (degrees) any clip may turn a leg of these models, by asset: the Sahara Guardian is stone blocks cut
+-- apart at the joints and the Sahara Mammoth a thick hide, and past this their legs come apart or stretch
+-- (SHANNON saw it in the shared walk, hit, win and training clips). Creatures.client clamps every leg turn to it.
+AnimalMoves.STIFF = {
+	creature_lion_sahara_forge = 16,
+	creature_elephant_sahara_forge = 20,
+} :: { [string]: number }
 
 return AnimalMoves

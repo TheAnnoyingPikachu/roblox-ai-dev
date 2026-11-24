@@ -4370,6 +4370,20 @@ RunService.PreSimulation:Connect(function(dt: number)
 				if tail then tail[3] or 0 else 0,
 			}
 		end
+		local stiff = AnimalMoves.STIFF[(model:GetAttribute("Asset") :: string?) or ""]
+		if stiff then -- its legs turn only so far in any clip (AnimalMoves.STIFF): past it they come apart
+			target = table.clone(target)
+			for _, leg in { "leg_fl", "leg_fr", "leg_bl", "leg_br" } do
+				local v = target[leg]
+				if v then
+					local w = table.clone(v)
+					for k = 1, 3 do
+						w[k] = math.clamp(v[k] or 0, -stiff, stiff)
+					end
+					target[leg] = w
+				end
+			end
+		end
 		local scale = ((model:GetAttribute("Scale") :: number?) or 1)
 		local blend = math.min(1, dt * 22)
 		for _, joint in JOINTS do
