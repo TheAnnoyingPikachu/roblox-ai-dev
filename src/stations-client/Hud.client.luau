@@ -1924,12 +1924,34 @@ do
 	drops.Size, drops.LayoutOrder = UDim2.new(1, 0, 0, 26), 3
 	Style.list(drops, 14, true)
 	drops.Parent = info
-	-- after a win in a run, three boons to pick from: picking one starts the next wave (decision 0098)
+	-- after a win in a run, three boons to pick from, in a panel of their own in the middle of the screen
+	-- (SHANNON, 2026-11-24): picking one starts the next wave (decision 0098)
+	local boons = Style.frame(root, UDim2.fromOffset(680, 0), C.sand)
+	boons.Name, boons.AutomaticSize, boons.ZIndex, boons.Visible = "BoonPanel", Enum.AutomaticSize.Y, 8, false
+	boons.AnchorPoint, boons.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.42)
+	Style.round(boons, 20)
+	Style.stroke(boons, C.ink, 3)
+	Style.pad(boons, 16)
+	Style.list(boons, 10).HorizontalAlignment = Enum.HorizontalAlignment.Center
+	local boonsTitle = Style.text(boons, "Pick a boon", 26, C.text, UDim2.new(1, 0, 0, 32))
+	boonsTitle.Name, boonsTitle.LayoutOrder, boonsTitle.TextXAlignment = "Title", 1, Enum.TextXAlignment.Center
+	local votes = Style.text(boons, "", 14, C.muted, UDim2.new(1, 0, 0, 18))
+	votes.Name, votes.LayoutOrder, votes.TextXAlignment = "Votes", 3, Enum.TextXAlignment.Center
 	boonRow = Instance.new("Frame")
 	boonRow.BackgroundTransparency = 1
-	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 96), 1, false
-	Style.list(boonRow, 8, true)
-	boonRow.Parent = act
+	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 132), 2, false
+	Style.list(boonRow, 10, true)
+	boonRow.Parent = boons
+	-- while a wave is fought: only a Skip button on the right (the wave is at the top: the stage strip)
+	local skip = Style.button(root, "Skip ▶", function()
+		local b = root:FindFirstChild("SkipWave")
+		if b then
+			(b :: GuiObject).Visible = false
+		end
+		send("wave_done") -- the pay is settled already: the result shows at once
+	end, "ghost", UDim2.fromOffset(150, 52))
+	skip.Name, skip.Visible, skip.ZIndex = "SkipWave", false, 5
+	skip.AnchorPoint, skip.Position = Vector2.new(1, 0.5), UDim2.new(1, -14, 0.36, 0)
 	resultButtons = Instance.new("Frame")
 	resultButtons.BackgroundTransparency = 1
 	resultButtons.Size, resultButtons.LayoutOrder = UDim2.new(1, 0, 0, 44), 2
@@ -2064,12 +2086,18 @@ local again = Style.button(resultButtons, "", function()
 	fight(wave)
 end, "primary", UDim2.new(0.5, -4, 1, 0))
 local leave = Style.button(resultButtons, "Leave the arena", function()
-	result.Visible = false
+	hideResult()
 	music(nil)
 	send("wave_done")
 end, "ghost", UDim2.new(0.5, -4, 1, 0))
 hideResult = function()
 	result.Visible = false
+	for _, name in { "BoonPanel", "SkipWave" } do
+		local x = root:FindFirstChild(name)
+		if x then
+			(x :: GuiObject).Visible = false
+		end
+	end
 end
 local showStars: (n: number) -> ()
 local coinBurst: () -> ()
@@ -2133,6 +2161,16 @@ end
 offerBoons = function(ids: { string }, n: number)
 	Style.clear(boonRow)
 	boonRow.Visible = true
+	local panel = boonRow.Parent :: GuiObject
+	panel.Visible = true
+	local heading = panel:FindFirstChild("Title") :: TextLabel?
+	if heading then
+		heading.Text = `Pick a boon for wave {n}`
+	end
+	local votes = panel:FindFirstChild("Votes") :: TextLabel?
+	if votes then
+		votes.Text = ""
+	end
 	for k, id in ids do
 		local boon = WaveRuns.boon(id)
 		if boon then
@@ -2142,17 +2180,19 @@ offerBoons = function(ids: { string }, n: number)
 				end
 				boonRow.Visible = false
 				local ok, code = request:InvokeServer("boon", id)
-				if not ok then
+				if ok then
+					(boonRow.Parent :: GuiObject).Visible = false
+				else
 					boonRow.Visible = true
 					Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
 				end
-			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -6, 1, 0))
+			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -7, 1, 0))
 			card.Name, card.LayoutOrder = boon.name, k
-			local title = Style.text(card, boon.name, 17, C.text, UDim2.new(1, -12, 0, 24))
-			title.Position, title.TextXAlignment = UDim2.fromOffset(6, 8), Enum.TextXAlignment.Center
-			local words = Style.text(card, boon.text, 13, C.muted, UDim2.new(1, -12, 0, 38))
+			local title = Style.text(card, boon.name, 20, C.text, UDim2.new(1, -12, 0, 26))
+			title.Position, title.TextXAlignment = UDim2.fromOffset(6, 12), Enum.TextXAlignment.Center
+			local words = Style.text(card, boon.text, 15, C.muted, UDim2.new(1, -16, 0, 52))
 			words.Position, words.TextXAlignment, words.TextWrapped =
-				UDim2.fromOffset(6, 32), Enum.TextXAlignment.Center, true
+				UDim2.fromOffset(8, 42), Enum.TextXAlignment.Center, true
 			local go = Style.text(card, `Wave {n} ▶`, 12, C.text, UDim2.new(1, -12, 0, 16))
 			go.Position, go.TextXAlignment = UDim2.new(0, 6, 1, -20), Enum.TextXAlignment.Center
 		end
@@ -2176,9 +2216,11 @@ began = function(n: number)
 	Style.clear(drops)
 	Style.clear(boonRow)
 	starRow.Visible, boonRow.Visible, drops.Visible = false, false, false
-	buttons(false)
-	leave.Text = "Skip the fight" -- the pay is already settled: leaving shows the result at once
-	result.Visible = true
+	hideResult()
+	local skip = root:FindFirstChild("SkipWave")
+	if skip then
+		(skip :: GuiObject).Visible = true
+	end
 	announce(n)
 	music(if n % LevelRules.BOSS_EVERY == 0 then "boss" else "fight")
 end
@@ -3861,6 +3903,10 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		end
 	elseif kind == "wavedone" then
 		local took = string.format("%.1f", payload.seconds)
+		local skip = root:FindFirstChild("SkipWave")
+		if skip then
+			(skip :: GuiObject).Visible = false
+		end
 		Style.clear(drops)
 		Style.clear(boonRow)
 		drops.Visible = payload.won
@@ -3914,15 +3960,18 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "began" then -- a shared fight's wave, started by another player or by the vote (decision 0108)
 		began(payload.wave)
 	elseif kind == "votes" then
-		resultSub.Text =
-			`{payload.voted} of {payload.of} have voted. The boon is picked in {payload.seconds} seconds at most.`
+		local votes = (boonRow.Parent :: Instance):FindFirstChild("Votes") :: TextLabel?
+		if votes then
+			votes.Text =
+				`{payload.voted} of {payload.of} have voted. The boon is picked in {payload.seconds} seconds at most.`
+		end
 	elseif kind == "boon" then
 		local picked = WaveRuns.boon(payload.id)
 		if picked then
 			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
 		end
 	elseif kind == "over" then
-		result.Visible = false
+		hideResult()
 		music(nil)
 		Style.toast(screen, "Another party took the field: your run is banked", 5)
 	elseif kind == "banked" then

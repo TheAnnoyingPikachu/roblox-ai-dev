@@ -7,6 +7,7 @@
 -- higher on the screen and the cards never cover them (SHANNON: "try to not block the enemies"). Another player's animal with a full meter gets only a small
 -- marker over its head: theirs to press, not this player's. Display only.
 
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
@@ -89,22 +90,46 @@ local function step()
 	end
 	if #shown > 0 then
 		mid /= #shown
+		-- the room left free is beside the whole team, not only the animals with a card up
+		local me = Players.LocalPlayer.UserId
+		for _, m in (shown[1].model.Parent :: Instance):GetChildren() do
+			local owner = m:GetAttribute("Owner")
+			if m:IsA("Model") and m:GetAttribute("Side") == 1 and (owner == nil or owner == me) then
+				local h = onScreen(m:GetPivot().Position + liftOf(m))
+				local foot = onScreen(m:GetPivot().Position)
+				if h and foot then
+					local half = math.abs(foot.Y - h.Y) * 0.6
+					lo, hi = math.min(lo, h.X - half), math.max(hi, h.X + half)
+				end
+			end
+		end
 	end
 	table.sort(shown, function(a, b)
 		return heads[a].X < heads[b].X
 	end)
-	local left = math.ceil(#shown / 2)
+	-- each card on its own animal's side of the team, the nearer the middle the nearer the team
+	local centre = (lo + hi) / 2
+	local sides: { [Pop]: boolean } = {}
+	for _, p in shown do
+		sides[p] = heads[p].X < centre
+	end
 	for i, p in shown do
 		local w, h = p.card.AbsoluteSize.X, p.card.AbsoluteSize.Y
-		local out = if i <= left then left - i else i - left - 1 -- how many cards stand nearer the team on its side
-		local x = if i <= left
+		local onLeft = sides[p]
+		local out = 0 -- how many of its side's cards stand nearer the team
+		for j, q in shown do
+			if sides[q] == onLeft and (if onLeft then j > i else j < i) then
+				out += 1
+			end
+		end
+		local x = if onLeft
 			then lo - GAP * 3 * scale - w / 2 - out * (w + GAP * scale)
 			else hi + GAP * 3 * scale + w / 2 + out * (w + GAP * scale)
 		x = math.clamp(x, w / 2 + 8, view.X - w / 2 - 8)
 		local y = math.clamp(mid - h / 2, 8, view.Y - h - 8)
 		p.card.AnchorPoint = Vector2.new(0.5, 0)
 		p.card.Position = UDim2.fromOffset(x, y)
-		local edge = Vector2.new(x + (if i <= left then w / 2 else -w / 2), y + h / 2)
+		local edge = Vector2.new(x + (if onLeft then w / 2 else -w / 2), y + h / 2)
 		line(edge, heads[p], p.line)
 		p.tip.Position = UDim2.fromOffset(heads[p].X, heads[p].Y)
 	end
@@ -172,6 +197,18 @@ local function key(parent: Instance, text: string, w: number, at: UDim2, k: numb
 	corner(shade, math.floor(w * 0.24))
 	words(cap, text, math.floor(w * 0.55), UDim2.fromScale(0.5, 0.47), Color3.fromRGB(244, 236, 255), 9)
 	return cap
+end
+
+-- `fn` the moment `b` is pressed (a click or a touch), not when it is let go: the presses are timed
+local function onPress(b: GuiButton, fn: () -> ())
+	b.InputBegan:Connect(function(input)
+		if
+			input.UserInputType == Enum.UserInputType.MouseButton1
+			or input.UserInputType == Enum.UserInputType.Touch
+		then
+			fn()
+		end
+	end)
 end
 
 -- A quick press's pop-up (decision 0109, the reference's look): a card of dark glass with a violet edge, its
@@ -246,7 +283,7 @@ function PressPops.card(
 		local hand = frame(bar, UDim2.new(0, 3 * k, 1, 0), UDim2.fromScale(0.5, 0.5), Color3.new(1, 1, 1), 8)
 		parts.hand = hand
 		parts.key = key(card, tostring(slot), 24 * k, UDim2.new(0.5, 0, 0, 104 * k), k)
-		card.Activated:Connect(on.press)
+		onPress(card, on.press)
 	elseif press == "chain" then -- three caps with arrows, the one due in gold (`marks`)
 		local row = frame(card, UDim2.new(1, 0, 0, 34 * k), UDim2.new(0.5, 0, 0, 74 * k), GLASS, 6)
 		row.BackgroundTransparency = 1
@@ -264,7 +301,7 @@ function PressPops.card(
 			corner(b, math.floor(8 * k))
 			edge(b, if i == 1 then PressPops.GOLD else EDGE, math.max(1, 2 * k))
 			b.Parent = row
-			b.Activated:Connect(function()
+			onPress(b, function()
 				on.mark(i)
 			end)
 			table.insert(parts.marks, b)
@@ -273,7 +310,7 @@ function PressPops.card(
 				arrow.Size, arrow.LayoutOrder = UDim2.fromOffset(10 * k, 20 * k), i * 2 + 1
 			end
 		end
-		card.Activated:Connect(on.press)
+		onPress(card, on.press)
 	else -- mash: the key over a violet burst, the bar under it (`fill`)
 		local burst = frame(card, UDim2.fromOffset(58 * k, 58 * k), UDim2.new(0.5, 0, 0, 64 * k), PressPops.LIT, 6)
 		burst.BackgroundTransparency = 0.72
@@ -288,7 +325,7 @@ function PressPops.card(
 		fill.AnchorPoint = Vector2.new(0, 0.5)
 		corner(fill, math.floor(6 * k))
 		parts.fill = fill
-		card.Activated:Connect(on.press)
+		onPress(card, on.press)
 	end
 	local pop = Instance.new("UIScale")
 	pop.Name, pop.Scale = "Punch", 0.4

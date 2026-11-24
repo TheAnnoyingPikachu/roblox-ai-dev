@@ -21,7 +21,8 @@
     "docs/decisions/0106-animal-stations-pit-fight.md",
     "studio/tasks/STATION-127.json",
     "studio/tasks/STATION-128.json",
-    "src/stations/WaveShow.luau"
+    "src/stations/WaveShow.luau",
+    "src/stations-client/Creatures.client.luau"
   ],
   "tests": [
     "BattleRules.spec.luau"
@@ -31,7 +32,8 @@
     "A pop-up stands in a row just under its player's team, tied to its animal by a line in its class's colour, with the class's name on it; cards never overlap and stay on the screen",
     "Another player's animal with a full meter shows a small marker over it, not a card",
     "The pop-ups are compact (the press and its key, no name)",
-    "Amended: the pop-ups in the reference's look (PressPops.card, no class tags, fine fading lines); the ring held while it fills, a Perfect at HOLD_TENTHS, the server capping the held tenths by its clock"
+    "Amended: the pop-ups in the reference's look (PressPops.card, no class tags, fine fading lines); the ring held while it fills, a Perfect at HOLD_TENTHS, the server capping the held tenths by its clock",
+    "SHANNON, 2026-11-24: the pop-ups beside the team on each animal's side; pressed on the press, not the release; enemy health bars sized in studs (small); the boons in their own panel in the middle after a win, the summary alone at the bottom, a Skip button on the right during a wave"
   ],
   "verification": "lune run tests/run (786 pass); selene; rojo build and check-place. Played in Studio (build dev, local, one player): test wave 25 with Sun Lion, Lava Rhino, Phoenix Flamingo and Frost Mammoth, three pop-ups at once under the team. Amended: in Studio (test wave 25) the new cards show and holding key 1 to full fired a Perfect.",
   "output_artifacts": [],
