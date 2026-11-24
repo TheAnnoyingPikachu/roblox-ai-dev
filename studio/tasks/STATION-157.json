@@ -1,0 +1,44 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-157",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The intro's finishing touches from the Intro, IntroTaster and IntroOwn boards (SHANNON, 2026-11-24): the lessons in a spotlight, the press bubbles waiting for the player, the legends' goodbye and 300 coins, the Titan's empty plate, the goal log.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudIntro.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/PressPops.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudMoments.luau",
+    "src/shared/StationIntro.luau",
+    "src/shared/BattleRules.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/WaveShow.luau",
+    "tests/StationIntro.spec.luau",
+    "tests/BattleRules.spec.luau",
+    "docs/decisions/0116-animal-stations-intro.md",
+    "studio/tasks/STATION-157.json"
+  ],
+  "tests": [
+    "StationIntro.spec.luau",
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each lesson dims the screen and rings the one thing to press, with a note in one line (SHANNON's pick: the spotlight)",
+    "In the intro only, a press bubble stays until the player does it or the fight ends: it never fails by waiting (a patient setup, the rule in BattleRules)",
+    "The goodbye: the four legends fade out one by one; finishing or skipping gives 3 Starter Eggs and 300 coins (decision 0116 amended)",
+    "In the player's first fights an empty fourth plate says 'Titan: Ivory Egg, level 24'",
+    "Clicking the goal strip opens the goal log: the goals done with what they paid, the next ones with their rewards"
+  ],
+  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "SHANNON's picks: the spotlight during the fight; 'for this introduction make the bubbles stay until they complete them or the fight ends'; 300 coins: yes."
+}

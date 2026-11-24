@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-161",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Phone menus and presses (SHANNON, 2026-11-24): Animals, Eggs and Waves as a list then a full-screen detail with Back on a phone; bigger press cards by the animals.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudAnimals.luau",
+    "src/stations-client/HudEggs.luau",
+    "src/stations-client/HudWaveMenu.luau",
+    "src/stations-client/Style.luau",
+    "src/stations-client/PressPops.luau",
+    "src/stations-client/HudFight.luau",
+    "studio/tasks/STATION-161.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "On a phone (Style.compact) each three-column menu is one column with its tabs on top; choosing an animal, egg or stage opens its detail full-screen with Back",
+    "On a phone the press cards beside the animals are bigger and easy to tap; no separate press pad",
+    "The desk layout is unchanged"
+  ],
+  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "SHANNON's picks: list, then full detail; bigger cards by the animals. Try it on a real phone after a publish."
+}

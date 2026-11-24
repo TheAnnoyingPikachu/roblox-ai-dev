@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-163",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The hover card from the concept board 'The card under the cursor' (SHANNON, 2026-11-24: 'All of the board').",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudHover.luau",
+    "src/stations-client/Style.luau",
+    "studio/tasks/STATION-163.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The player's own animal: the full trading card (rarity banner, picture, power, class, group and coat chips, six stat bars, what it is doing now, how its press works, Click to open)",
+    "Someone else's: whose it is, the animal, its power against the player's best, the egg it comes from with the odds",
+    "In a fight: the glass card with health, what it hits for, its power attack and, for the player's own, its key when ready",
+    "Beside the cursor, flipped at the edges, after a short pause; on a phone press and hold, docked at the top"
+  ],
+  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "SHANNON's pick: all of the board."
+}

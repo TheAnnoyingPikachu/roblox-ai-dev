@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-160",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "HUD quick wins (SHANNON, 2026-11-24): teammates' pills with their health and the boon vote's ring and dots, sorting in Animals, messages under the notes, the hatch reveal scaled by rarity.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/HudWaves.luau",
+    "src/stations-client/HudAnimals.luau",
+    "src/stations-client/HudMoments.luau",
+    "src/stations-client/RevealCard.luau",
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "studio/tasks/STATION-160.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "In a shared fight each teammate has a pill top left: avatar, name, their team's health",
+    "The boon vote shows a 7-second ring and each player's avatar dot on the card they voted for",
+    "Animals sorts by power, rarity, level or newest with one button, remembered between visits",
+    "Messages always stack below the notes top right (egg ready, mates) and move down when a note appears",
+    "A common or uncommon hatch is a quick pop; rare and up the full moment (rays, a bigger card, the odds line, 'Add to my team' / 'Keep in the barn'); mythic and up shake the screen"
+  ],
+  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "SHANNON's picks: pills with health and vote dots; power, rarity, level, newest; the stack under the notes; scales with rarity."
+}
