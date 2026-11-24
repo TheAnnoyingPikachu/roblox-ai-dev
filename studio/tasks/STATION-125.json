@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-125",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0108, the shared fight in play: the server's parties (everyone in the portal's ring joins each wave, each paid as alone, the boon vote, one field), the show for several players' teams on the battlefield, the HUD's own plates and vote, and a camera behind each player's own team.",
+  "inputs": [
+    "docs/decisions/0108-animal-stations-shared-fights.md"
+  ],
+  "dependencies": [
+    "STATION-123",
+    "STATION-124"
+  ],
+  "files": [
+    "src/stations/WaveShow.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/ArenaCamera.client.luau",
+    "src/stations/CLAUDE.md",
+    "studio/tasks/STATION-125.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Starting a wave takes everyone in the portal's ring with a team to the battlefield, at a run's first wave and at each one after; three at most",
+    "Every member is paid by their own save as alone and keeps their own pot and stars; nothing is split",
+    "After a win every member votes for a boon; it is settled when all have voted or 15 seconds after the first vote, and the next wave starts for all",
+    "Each team stands at its own seat with its Titan behind it; the crowd stands in files before them and walks out of the summoning circle",
+    "A player's power plates are their own animals only, their clicks strike with their own animals, and their camera stands behind their own team",
+    "While one party fights or picks its boon another's wave is refused with the code field"
+  ],
+  "verification": "selene; rojo build and check-place; played in Studio (build dev, local, one player): a run through the new path, three teams staged from each seat's camera, clicks, power taps and the shield. Not played by two or three real players yet.",
+  "output_artifacts": [],
+  "risk_level": "high",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: \"when three players join a fight the rewards are the same as solo and theyre the same for all three but itll be easier to fight the enenimes\", \"crowds will scale for each player in the game, all clicks do damage to the closest target to your team. everyone receives the same amount of coins regardless of player count and stuff so no splitting the coins, players will vote on a boon with a tie picking randomly\", \"option B, everyone joins the portal thing and when it starts everyone inside joins the fight\". SHANNON, 2026-11-23: \"make it one shared target and add a camera for each player\". Checkpoint: decision 0108, items 2 to 5. Open risk: two or three real players have not fought together yet; a publish to the private test place is needed for that."
+}

@@ -11,8 +11,9 @@ local StationRules = {}
 type Stats = StationConfig.Stats
 -- One hatched animal: v nil = basic; stats = its version's numbers; trained = each stat's level
 -- (rolled at hatch, then trained up to MAX_LEVEL) with the progress to the next as the fraction.
--- rainbow = true: it wears the rainbow coat (decision 0058), which adds to every stat (`stat`); absent
--- on every other animal.
+-- coat: the coat it wears (decision 0110, StationConfig.COATS), absent on most; `stat` adds its buff.
+-- rainbow = true: the rainbow coat (decision 0058); kept beside `coat = "rainbow"` so saves and code from
+-- before coats read it the same.
 -- `boost` is never stored: StationProgress.fighters sets it on the Titan for a wave (the Titan's Den).
 -- `rush` and `elite` are a wave foe's (decision 0101): which rush it comes in, and whether it is an elite.
 export type Owned = {
@@ -21,6 +22,7 @@ export type Owned = {
 	stats: Stats,
 	trained: Stats?,
 	rainbow: boolean?,
+	coat: string?,
 	boost: number?,
 	rush: number?,
 	elite: boolean?,
@@ -47,7 +49,8 @@ function StationRules.pick(odds: { StationConfig.Odds }, r: number): string
 			return o.id
 		end
 	end
-	return odds[#odds].id
+	local last = odds[#odds] -- none in a variant-only egg, whose rare drops always hit
+	return if last then last.id else ""
 end
 
 -- An egg's rare drop for r in 1..PPM, in the order the egg lists them, or nil for a basic animal.
@@ -85,13 +88,13 @@ function StationRules.versionStats(speciesId: string, variantId: string?): Stats
 		return table.clone(sp.stats)
 	end
 	local va = StationConfig.variant(speciesId, variantId)
-	local tier = va and StationConfig.tier(va.tier)
-	if va == nil or tier == nil then
+	if va == nil then
 		return nil
 	end
 	local out = {} :: any
 	for _, stat in StationConfig.STATS do
-		local x = (sp.stats :: any)[stat] * tier.mult + (if stat == va.twist then tier.twist else 0)
+		local x = (sp.stats :: any)[stat] * va.mult
+			+ (if stat == va.twist then StationConfig.TWIST_PER * va.mult else 0)
 		out[stat] = math.min(math.floor(x), StationConfig.STAT_MAX)
 	end
 	return out :: Stats
@@ -99,7 +102,7 @@ end
 
 -- Hatch one animal from `eggId`. Nil for an unknown egg (the server refuses the request).
 -- Draws: a basic species, the egg's rare drops (a hit replaces the species), a base level per stat,
--- the jackpot (and its stat when it hits), the rainbow coat.
+-- the jackpot (and its stat when it hits), the coat (`coatOf`).
 function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
@@ -127,17 +130,67 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 		which, rng = Rng.int(rng, 1, #StationConfig.STATS)
 		levels[StationConfig.STATS[which]] = StationConfig.MAX_LEVEL
 	end
-	local coat
-	coat, rng = Rng.int(rng, 1, StationRules.PPM)
+	local roll
+	roll, rng = Rng.int(rng, 1, StationRules.PPM)
+	local coat = StationRules.pickCoat(egg, roll)
 	local stats = StationRules.versionStats(species, variantId) :: Stats
 	return {
 		s = species,
 		v = variantId,
 		stats = stats,
 		trained = levels :: Stats,
-		rainbow = if coat <= StationConfig.RAINBOW_PPM then true else nil,
+		coat = coat,
+		rainbow = if coat == "rainbow" then true else nil,
 	},
 		rng
+end
+
+-- The coat a hatch from `egg` comes out in for r in 1..PPM, or nil (decision 0110): the coats in order, each
+-- `ppm` in a million, its signature coat COAT_TIMES (or `times`) as likely; from an egg with `always`, the
+-- same odds scaled so every hatch has one.
+function StationRules.coatWeight(egg: StationConfig.Egg, c: StationConfig.Coat): number
+	return c.ppm * (if egg.coat == c.id then egg.times or StationConfig.COAT_TIMES else 1)
+end
+function StationRules.pickCoat(egg: StationConfig.Egg, r: number): string?
+	local sum = 0
+	for _, c in StationConfig.COATS do
+		sum += StationRules.coatWeight(egg, c)
+	end
+	local at = if egg.always then r * sum / StationRules.PPM else r
+	local total = 0
+	for _, c in StationConfig.COATS do
+		total += StationRules.coatWeight(egg, c)
+		if at <= total then
+			return c.id
+		end
+	end
+	return nil
+end
+
+-- The coat `animal` wears, or nil: `coat`, or the rainbow of a save from before coats.
+function StationRules.coatOf(animal: Owned): StationConfig.Coat?
+	local id = animal.coat or (if animal.rainbow then "rainbow" else nil)
+	return if id then StationConfig.coat(id) else nil
+end
+
+-- A version's power for its rarity (decision 0110): its six stats added up; and the rarity that power
+-- earns, by StationConfig.RARITY_FLOOR (a Titan's bands TITAN_BAND wider).
+function StationRules.total(stats: Stats): number
+	local n = 0
+	for _, stat in StationConfig.STATS do
+		n += (stats :: any)[stat]
+	end
+	return n
+end
+function StationRules.powerRarity(total: number, titan: boolean): string
+	local best, floor = "common", -1
+	for rarity, at in StationConfig.RARITY_FLOOR do
+		local need = if titan then at * StationConfig.TITAN_BAND else at
+		if total >= need and at > floor then
+			best, floor = rarity, at
+		end
+	end
+	return best
 end
 
 -- An animal's role, from its species (or a foe's, from its entry): "attack", "defense", "utility"
@@ -206,16 +259,18 @@ function StationRules.level(animal: Owned, stat: StationConfig.Stat): number
 	return if animal.trained then math.floor((animal.trained :: any)[stat]) else 0
 end
 
--- An animal's stat right now: the hatched value grown by its level (doubled at MAX_LEVEL), and for
--- an animal in a rainbow coat RAINBOW_BONUS percent more, rounded up (decision 0058).
+-- An animal's stat right now: the hatched value grown by its level (doubled at MAX_LEVEL), and its coat's
+-- buff (decisions 0058, 0110): `all` percent more of every stat or `pct` more of its own, rounded up.
 -- Whole-number maths, so a result that should be exact is never one short. Not capped: level
 -- enemies have no levels but hatched stats that keep growing.
 function StationRules.stat(animal: Owned, stat: StationConfig.Stat): number
 	local max = StationConfig.MAX_LEVEL
 	local grown = max + StationConfig.LEVEL_GROWTH * StationRules.level(animal, stat)
 	local value = math.floor((animal.stats :: any)[stat] * grown / max)
-	if animal.rainbow then
-		value += (value * StationConfig.RAINBOW_BONUS + 99) // 100
+	local coat = StationRules.coatOf(animal)
+	local pct = if coat then coat.all or (if coat.stat == stat then coat.pct else nil) else nil
+	if pct then
+		value += (value * pct + 99) // 100
 	end
 	if animal.boost then -- the Titan's Den: this many percent of the stat, rounded down
 		value = value * animal.boost // 100

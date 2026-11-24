@@ -374,75 +374,226 @@ end
 -- Every fight is part of a wave run (decision 0098): HP carries over, a win offers three boons (picking
 -- one starts the next wave), and the run's pot is banked when the player leaves (half after a loss).
 -- Stars (decision 0097) are kept per wave.
-local readyAt: { [Player]: number } = {} -- os.clock() when the player may start another fight
-local waveRuns: { [Player]: WaveRuns.Run } = {}
+--
+-- Shared fights (decision 0108): a fight is a party's, of one to World.RANCHES players. Everyone standing
+-- in the wave portal's ring when a wave starts joins it, at a run's first wave and at every one after. The
+-- party shares the run (its wave, its boons, each animal's carried HP); every member is paid what they
+-- would be alone, by their own save, and keeps their own pot. After a win they vote for the boon.
+type Pot = { coins: number, samples: number }
+type Party = {
+	members: { Player }, -- in the order they joined: a member's place is their team's `owner` in the fight
+	run: WaveRuns.Run,
+	hp: { [Player]: { number } }, -- each member's carried HP, by their own animals in order
+	pots: { [Player]: Pot },
+	wins: { [Player]: number }, -- the waves each member has won in this run
+	votes: { [Player]: string },
+	round: number, -- counts the votes, so an old vote's timer does nothing
+	readyAt: number, -- os.clock() when the party may start another fight
+	holdTo: number, -- os.clock() until when the field is kept for it while it picks a boon
+}
+local partyOf: { [Player]: Party } = {}
+local VOTE_SECONDS = 15 -- once one member has voted the others have this long
+local HOLD_SECONDS = 60 -- how long the field waits for a party to pick its boon
+local fieldOf: Party? = nil -- the party that last fought on the field
+local settle: (party: Party) -> ()
 
--- End the player's run, if any, and pay its pot: all of it, or WaveRuns.LOSS_KEEP % after a loss.
+-- Whether a party other than `mine` holds the field: its fight is on, or it is picking its boon.
+local function fieldHeld(mine: Party?): boolean
+	local p = fieldOf
+	if p == nil or p == mine or #p.members == 0 then
+		return false
+	end
+	local host = WaveShow.active()
+	return (host ~= nil and partyOf[host] == p and os.clock() < p.readyAt)
+		or (p.run.offer ~= nil and os.clock() < p.holdTo)
+end
+
+-- Whether every member of `party` has voted for a boon on offer.
+local function allVoted(party: Party): boolean
+	if party.run.offer == nil or #party.members == 0 then
+		return false
+	end
+	for _, m in party.members do
+		if party.votes[m] == nil then
+			return false
+		end
+	end
+	return true
+end
+
+-- `player` leaves their party, if any, and their pot is paid: all of it, or WaveRuns.LOSS_KEEP % after a
+-- loss. The party goes on without them.
 local function bankRun(player: Player, lost: boolean)
-	local run = waveRuns[player]
-	waveRuns[player] = nil
-	if run == nil then
+	local party = partyOf[player]
+	partyOf[player] = nil
+	if party == nil then
 		return
 	end
-	local coins, samples = WaveRuns.bank(run, lost)
+	local k = table.find(party.members, player)
+	if k then
+		table.remove(party.members, k)
+	end
+	local coins, samples = WaveRuns.bank({ pot = party.pots[player] or { coins = 0, samples = 0 } } :: any, lost)
+	local waves = party.wins[player] or 0
+	party.pots[player], party.hp[player], party.votes[player], party.wins[player] = nil, nil, nil, nil
 	if coins > 0 or samples > 0 then
 		saves.apply(player, function(q)
 			return StationProgress.earn(q, coins, samples)
 		end)
 	end
-	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = run.streak })
+	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = waves })
+	if allVoted(party) then -- the others were only waiting for this player's vote
+		settle(party)
+	end
+end
+
+-- Whether `p` has a team to fight with now.
+local function hasTeam(p: Player): boolean
+	local save = saves.get(p)
+	return save ~= nil and #StationProgress.fighters(StationProgress.sanitize(save, os.time())) > 0
+end
+
+-- Everyone who fights `party`'s next wave: its members who still have a team, and anyone else standing in
+-- the wave portal's ring with one (they leave the run they were in). World.RANCHES at most.
+local function muster(party: Party)
+	for _, m in table.clone(party.members) do
+		if not hasTeam(m) then
+			bankRun(m, false)
+		end
+	end
+	for _, p in Players:GetPlayers() do
+		if #party.members >= World.RANCHES then
+			break
+		end
+		local root = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+		if partyOf[p] ~= party and root and root:IsA("BasePart") and World.inPortal(root.Position) and hasTeam(p) then
+			bankRun(p, false)
+			partyOf[p] = party
+			table.insert(party.members, p)
+		end
+	end
 end
 
 local function waveFight(player: Player, level: number, continuing: boolean?): (boolean, string?)
 	local p = saves.get(player)
 	if p == nil then
 		return false, "loading"
-	elseif os.clock() < (readyAt[player] or 0) then
+	end
+	local party = partyOf[player]
+	if party and os.clock() < party.readyAt then
 		return false, "busy"
 	end
-	local copy = StationProgress.sanitize(p, os.time())
-	local ok, code = StationProgress.canFight(copy, level)
-	if not ok then
-		return false, code
-	end
-	local team = StationProgress.fighters(copy)
 	if not continuing then -- a new run: the old one (if any) is banked
+		if fieldHeld(party) then
+			return false, "field" -- another party is fighting: wait in the portal to join its next wave
+		end
+		local ok, code = StationProgress.canFight(StationProgress.sanitize(p, os.time()), level)
+		if not ok then
+			return false, code
+		end
 		bankRun(player, false)
 		local seed
 		seed, rng = Rng.int(rng, 1, 2 ^ 30)
-		waveRuns[player] = WaveRuns.new(level, #team, seed)
+		party = {
+			members = { player },
+			run = WaveRuns.new(level, 0, seed),
+			hp = {},
+			pots = {},
+			wins = {},
+			votes = {},
+			round = 0,
+			readyAt = 0,
+			holdTo = 0,
+		}
+		partyOf[player] = party
 	end
-	local run = waveRuns[player]
-	if run == nil or run.wave ~= level then
+	if party == nil or party.run.wave ~= level then
 		return false, "wave"
+	end
+	muster(party)
+	if #party.members == 0 then
+		return false, "no_team"
+	end
+	-- the fight's team: every member's animals, marked with the member's place, at the HP the run carries
+	local members = table.clone(party.members)
+	local team, ownerOf, hp = {}, {}, {}
+	local pay: { [Player]: { coins: number, xp: number, samples: number, first: boolean } } = {}
+	for k, m in members do
+		local copy = StationProgress.sanitize(saves.get(m) :: any, os.time())
+		local carried = party.hp[m]
+		for j, a in StationProgress.fighters(copy) do
+			local mine = table.clone(a) :: any
+			mine.owner = k
+			table.insert(team, mine)
+			table.insert(ownerOf, k)
+			table.insert(hp, if carried and carried[j] then carried[j] else 1)
+		end
+		local coins, xp, samples = StationProgress.payout(copy, level)
+		pay[m] = { coins = coins, xp = xp, samples = samples, first = level > copy.best }
+		party.pots[m] = party.pots[m] or { coins = 0, samples = 0 }
+		party.wins[m] = party.wins[m] or 0
+	end
+	local run = table.clone(party.run)
+	run.hp = hp
+	party.run = run
+	local onField = WaveShow.active() -- a finished fight's result still on the field makes way
+	if onField and not table.find(members, onField) then
+		WaveShow.clear(onField)
 	end
 	local setup = WaveRuns.setup(run)
 	local won, _, seconds = LevelRules.fight(team :: any, level, {}, setup)
 	local began = os.clock()
-	readyAt[player] = began + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
-	local coins, xp, samples = StationProgress.payout(copy, level)
-	local first = level > copy.best
-	local started, why = WaveShow.run(player, level, team :: any, function(result)
+	party.readyAt = began + math.min(seconds, BattleRules.MAX_SECONDS) + 4 -- the walk-in too
+	local started, why = WaveShow.run(members, level, team :: any, function(result)
 		-- clicks shorten a fight (decision 0106): the next may start once this one's own time is up
-		readyAt[player] = math.min(readyAt[player] or 0, began + math.min(result.seconds, BattleRules.MAX_SECONDS) + 4)
-		if result.won and not won then -- the taps won it
-			saves.apply(player, function(q)
-				return (StationProgress.clear(q, level))
-			end)
+		party.readyAt = math.min(party.readyAt, began + math.min(result.seconds, BattleRules.MAX_SECONDS) + 4)
+		local after: WaveRuns.Run? = nil
+		if party.run == run and result.won then
+			after = WaveRuns.won(run, result.ends, 0, 0)
+			for _, m in members do
+				party.hp[m] = {}
+			end
+			for i, k in ownerOf do
+				table.insert(party.hp[members[k]], (after :: WaveRuns.Run).hp[i])
+			end
+			party.run, party.votes = after :: WaveRuns.Run, {}
+			party.round += 1
+			party.holdTo = os.clock() + HOLD_SECONDS
 		end
-		saves.apply(player, function(q)
-			return StationProgress.setStars(q, level, result.stars)
-		end)
-		result.coins, result.xp, result.samples =
-			if result.won then coins else 0, if result.won then xp else 0, if result.won then samples else 0
-		result.first = first
-		if waveRuns[player] == run then
-			if result.won then
-				local after = WaveRuns.won(run, result.ends, coins, samples)
-				waveRuns[player] = after
-				result.offer, result.streak, result.pot = after.offer, after.streak, after.pot
-				if level % LevelRules.BOSS_EVERY == 0 then -- the boss chest
-					local q = saves.get(player)
+		local last = result.won and level >= LevelRules.LAST -- the last wave (decision 0107): the run is over
+		for k, m in members do
+			if partyOf[m] ~= party then -- left meanwhile: paid for what was settled at the start, no more
+				continue
+			end
+			local mine = pay[m]
+			if result.won and not won then -- the taps won it
+				saves.apply(m, function(q)
+					return (StationProgress.clear(q, level, true))
+				end)
+			end
+			saves.apply(m, function(q)
+				return StationProgress.setStars(q, level, result.stars[k])
+			end)
+			local out = table.clone(result)
+			out.stars, out.missed, out.party = result.stars[k], result.missed[k], #members
+			out.coins, out.xp, out.samples =
+				if result.won then mine.coins else 0,
+				if result.won then mine.xp else 0,
+				if result.won then mine.samples else 0
+			out.first = mine.first
+			if after then
+				local coins, samples = WaveRuns.bonus(run, mine.coins, mine.samples)
+				local pot = party.pots[m]
+				pot.coins += coins
+				pot.samples += samples
+				party.wins[m] += 1
+				if last then
+					out.last = true
+				else
+					out.offer, out.streak, out.pot = after.offer, after.streak, pot
+				end
+				if level % LevelRules.BOSS_EVERY == 0 then -- the boss chest, one each
+					local q = saves.get(m)
 					local items = if q
 						then StationRewards.resolve(
 							StationProgress.sanitize(q, os.time()),
@@ -451,53 +602,115 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 						else nil
 					if items then
 						local animals, now = rollEggs(items), os.time()
-						local given = apply(player, function(r)
+						local given = apply(m, function(r)
 							return StationRewards.grant(r, items, animals, nil, now)
 						end)
-						result.chest = if given then items else nil
+						out.chest = if given then items else nil
 					end
 				end
-			else
-				bankRun(player, true)
 			end
+			if last or not result.won then -- the run is over: the pot in full after the last wave, a part after a loss
+				bankRun(m, not result.won)
+			end
+			remotes.fx(m, "wavedone", out)
 		end
-		remotes.fx(player, "wavedone", result)
 	end, setup)
 	if not started then
-		readyAt[player] = nil
-		if not continuing then
-			waveRuns[player] = nil
+		party.readyAt = 0
+		if not continuing then -- the run never began: nothing to bank
+			for _, m in table.clone(party.members) do
+				partyOf[m] = nil
+			end
 		end
-	elseif won then
-		saves.apply(player, function(q)
-			return (StationProgress.clear(q, level))
-		end)
-	end
-	return started, why
-end
-
--- Pick boon `id` from the run's offer and fight the run's next wave (decision 0098).
-local function pickBoon(player: Player, id: string): (boolean, string?)
-	local run = waveRuns[player]
-	if run == nil or run.offer == nil then
-		return false, "boon"
-	elseif os.clock() < (readyAt[player] or 0) then
-		return false, "busy"
-	end
-	local p = saves.get(player)
-	if p == nil then
-		return false, "loading"
-	end
-	local can, code = StationProgress.canFight(StationProgress.sanitize(p, os.time()), run.wave)
-	if not can then
-		return false, code
-	end
-	local picked, ok, why = WaveRuns.pick(run, id)
-	if not ok then
 		return false, why
 	end
-	waveRuns[player] = picked
-	return waveFight(player, picked.wave, true)
+	fieldOf = party
+	for _, m in members do
+		if continuing or m ~= player then -- whoever did not ask for this wave is told it is on
+			remotes.fx(m, "began", { wave = level, party = #members })
+		end
+		if won then
+			saves.apply(m, function(q)
+				return (StationProgress.clear(q, level, true))
+			end)
+		end
+	end
+	return true, nil
+end
+
+-- The votes are in (or their time is up): the party's boon is picked (WaveRuns.tally) and its next wave starts.
+function settle(party: Party)
+	local run = party.run
+	if run.offer == nil or #party.members == 0 then
+		return
+	end
+	local votes = {}
+	for _, m in party.members do
+		if party.votes[m] then
+			table.insert(votes, party.votes[m])
+		end
+	end
+	local id = WaveRuns.tally(run, votes)
+	local picked, ok = WaveRuns.pick(run, id or "")
+	if not ok then
+		return
+	end
+	party.run, party.votes = picked, {}
+	party.round += 1
+	if #party.members > 1 then
+		for _, m in party.members do
+			remotes.fx(m, "boon", { id = id })
+		end
+	end
+	if not waveFight(party.members[1], picked.wave, true) then
+		-- they took too long and the field is another party's now: the run ends here, its pots paid
+		for _, m in table.clone(party.members) do
+			WaveShow.clear(m)
+			bankRun(m, false)
+			remotes.fx(m, "over", {})
+			if m.Character then
+				m.Character:PivotTo(World.arenaGate())
+			end
+		end
+	end
+end
+
+-- Vote for boon `id` from the run's offer (decision 0098). One player's vote picks it; a party's boon is
+-- the one most of them vote for (decision 0108), once all have voted or VOTE_SECONDS after the first vote.
+-- The next wave then starts.
+local function pickBoon(player: Player, id: string): (boolean, string?)
+	local party = partyOf[player]
+	local offer = if party then party.run.offer else nil
+	if party == nil or offer == nil or not table.find(offer, id) then
+		return false, "boon"
+	elseif os.clock() < party.readyAt then
+		return false, "busy"
+	elseif saves.get(player) == nil then
+		return false, "loading"
+	end
+	local first = next(party.votes) == nil
+	party.votes[player] = id
+	party.holdTo = math.max(party.holdTo, os.clock() + VOTE_SECONDS + 2)
+	if allVoted(party) then
+		settle(party)
+		return true, nil
+	end
+	local voted = 0
+	for _, m in party.members do
+		voted += if party.votes[m] then 1 else 0
+	end
+	for _, m in party.members do
+		remotes.fx(m, "votes", { voted = voted, of = #party.members, seconds = VOTE_SECONDS })
+	end
+	if first then
+		local round = party.round
+		task.delay(VOTE_SECONDS, function()
+			if party.round == round then
+				settle(party)
+			end
+		end)
+	end
+	return true, nil
 end
 
 -- Open the next star chest (decision 0097).
@@ -560,7 +773,15 @@ local function pushTrade(t: Trade)
 			for _, a in StationTrade.copies(pt, t.offer[them]) do
 				table.insert(
 					theirs,
-					{ id = a.id, s = a.s, v = a.v, rainbow = a.rainbow, stats = a.stats, trained = a.trained }
+					{
+						id = a.id,
+						s = a.s,
+						v = a.v,
+						rainbow = a.rainbow,
+						coat = a.coat,
+						stats = a.stats,
+						trained = a.trained,
+					}
 				)
 			end
 		end
@@ -990,6 +1211,7 @@ local router = Router.new({
 					stats = born.stats,
 					trained = born.trained,
 					rainbow = born.rainbow,
+					coat = born.coat,
 					at = at,
 					egg = eggId,
 					body = look.body,
@@ -1072,7 +1294,8 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
-		-- fight wave `n` with the player's own team; `wave_done` leaves the arena
+		-- fight wave `n` with the player's own team, and everyone's in the wave portal (decision 0108);
+		-- `wave_done` leaves the fight
 		wave = {
 			args = { Payload.int({ min = 1, max = 1e6 }) },
 			handler = waveFight,
@@ -1157,7 +1380,8 @@ local router = Router.new({
 				if #team == 0 then
 					team = WaveShow.team(if which == "mythics" then "mythics" else "starters")
 				end
-				return WaveShow.run(player, wave, team :: any, function(result)
+				return WaveShow.run({ player }, wave, team :: any, function(result)
+					result.stars, result.missed = result.stars[1], result.missed[1]
 					remotes.fx(player, "waveshow", result)
 				end)
 			end,
@@ -1215,7 +1439,8 @@ remotes = Remotes.create("StationsRemotes", router)
 
 -- The Hall of Fame at the hub (decision 0095): the best animals in this server, at most two of any one
 -- player's, rarest first and rainbow coats before plain ones. Worked out again a moment after any change.
-local RANK = { common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6 }
+local RANK =
+	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
 local fameQueued = false
 local function updateFame()
 	if fameQueued then
@@ -1230,10 +1455,18 @@ local function updateFame()
 			if p then
 				local mine = {}
 				for _, a in p.animals do
-					local score = (RANK[StationRules.rarity(a :: any)] or 0) * 2 + (if a.rainbow then 1 else 0)
+					local score = (RANK[StationRules.rarity(a :: any)] or 0) * 2
+						+ (if StationRules.coatOf(a :: any) then 1 else 0)
 					table.insert(
 						mine,
-						{ s = a.s, v = a.v, rainbow = a.rainbow, owner = player.DisplayName, score = score }
+						{
+							s = a.s,
+							v = a.v,
+							rainbow = a.rainbow,
+							coat = a.coat,
+							owner = player.DisplayName,
+							score = score,
+						}
 					)
 				end
 				table.sort(mine, function(x, y)
@@ -1295,7 +1528,6 @@ Players.PlayerRemoving:Connect(function(player)
 	looks(player):Destroy()
 	WaveShow.clear(player)
 	bankRun(player, false)
-	readyAt[player] = nil
 	local i = ranchOf(player)
 	if i then
 		owners[i] = nil
@@ -1452,7 +1684,7 @@ local function syncTrainers(i: number, animals: { StationProgress.Animal }, leve
 				local name = Creatures.asset(a.s, a.v)
 				local act = Areas.act(i, station, level, StationAssets[name].size)
 				local start = act.at or CFrame.lookAt((act.round :: { Vector3 })[1], (act.round :: { Vector3 })[2])
-				local model = Creatures.spawn(name, start, plot, nil, a.rainbow)
+				local model = Creatures.spawn(name, start, plot, nil, a.coat or a.rainbow)
 				if model and at[station] == t then
 					t.model = model
 					Creatures.describe(model, a.s, a.v, a :: any)
@@ -1506,7 +1738,7 @@ function syncHerd(i: number, animals: { StationProgress.Animal }, grounds: numbe
 					task.wait(1.4) -- the hatching animation plays first
 				end
 				local at = home or nest or CFrame.new(somewhere(i))
-				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot, nil, a.rainbow)
+				local model = Creatures.spawn(Creatures.asset(a.s, a.v), at, plot, nil, a.coat or a.rainbow)
 				if model and herd[id] == false then
 					herd[id] = model
 					Creatures.describe(model, a.s, a.v, a :: any)

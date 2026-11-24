@@ -18,7 +18,9 @@ export type Stats = {
 	health: number,
 	defence: number,
 }
-export type Variant = { id: string, name: string, tier: string, twist: Stat }
+-- tier: its rarity (decision 0110: set by its power, `RARITY_FLOOR`); mult: its stats are the species' x mult,
+-- and its twist stat gains TWIST_PER x mult more
+export type Variant = { id: string, name: string, tier: string, twist: Stat, mult: number }
 export type Species = {
 	id: string,
 	name: string,
@@ -47,7 +49,6 @@ export type Foe = {
 	ability: string?, -- "revive": its power attack raises fallen allies (decision 0104); "sweep": it strikes the
 	-- whole team (decision 0105)
 }
-export type Tier = { tier: string, mult: number, twist: number }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
 export type Rare = { s: string, v: string, ppm: number } -- a variant as a drop of its own: ppm of the egg's hatches
 -- wave: the wave that must be cleared before it can be bought (nil = from the start); xp: player XP
@@ -62,6 +63,21 @@ export type Egg = {
 	wave: number?,
 	odds: { Odds },
 	rare: { Rare },
+	only: boolean?, -- variants only (decision 0110): its `rare` drops add up to a million, `odds` is empty
+	coat: string?, -- its signature coat: COAT_TIMES (or `times`) as likely
+	times: number?,
+	always: boolean?, -- every hatch has a coat (the coats' odds scaled to a million)
+}
+export type Coat = {
+	id: string,
+	name: string,
+	ppm: number,
+	all: number?,
+	stat: Stat?,
+	pct: number?,
+	xp: number?,
+	charged: boolean?,
+	spectral: boolean?,
 }
 export type Station = { id: string, name: string, stat: Stat }
 
@@ -69,7 +85,7 @@ export type Station = { id: string, name: string, stat: Stat }
 -- Strength damage, Stamina the rest between attacks, Mana the charge towards the power attack,
 -- Health HP and Defence cuts incoming damage.
 StationConfig.STATS = { "speed", "strength", "stamina", "mana", "health", "defence" } :: { Stat }
-StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 400 -- limits of a version's (level 0) stat
+StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 1000 -- limits of a version's (level 0) stat
 
 -- Stat levels (decision 0029): training raises a stat's level, 0 to MAX_LEVEL. A stat's value is
 -- its species value x (1 + LEVEL_GROWTH x level / MAX_LEVEL), so a maxed stat is doubled.
@@ -89,17 +105,49 @@ StationConfig.LEVEL_LAST = 48 * 3600
 StationConfig.BASE_MAX = 15
 StationConfig.BASE_TOP, StationConfig.BASE_STEP = 7, 5
 StationConfig.JACKPOT_PPM = 100 -- 1 in 10,000 hatches
--- Rainbow (decision 0058): any hatch, of any animal or variant, can come out in a rainbow coat. The
--- coat adds RAINBOW_BONUS percent to every stat, rounded up, so even a stat of 8 gains 1.
-StationConfig.RAINBOW_PPM = 5000 -- 1 in 200 hatches
-StationConfig.RAINBOW_BONUS = 5
+-- Coats (decisions 0058, 0110): any hatch, of any animal or variant, can come out in one coat, rolled after
+-- the animal: `ppm` hatches in a million, `times` as often from an egg whose signature coat it is (`Egg.coat`).
+-- `all` adds that percent to every stat, `stat` and `pct` to one, rounded up, so even a stat of 8 gains 1.
+-- `xp`: the player gains that percent more XP from a wave it fights in (up to COAT_XP_MAX of them count).
+-- `charged`: its power meter starts each fight CHARGED_START full. `spectral`: once a fight, a blow that
+-- would knock it out leaves it at 1 HP. Rarest first; the rainbow coat of decision 0058 is one of them.
+StationConfig.COATS = {
+	{ id = "prismatic", name = "Prismatic", ppm = 100, all = 30 },
+	{ id = "spectral", name = "Spectral", ppm = 400, spectral = true },
+	{ id = "galaxy", name = "Galaxy", ppm = 1000, stat = "mana", pct = 12, charged = true },
+	{ id = "gilded", name = "Gilded", ppm = 1000, xp = 25 },
+	{ id = "rainbow", name = "Rainbow", ppm = 2000, all = 5 },
+	{ id = "ember", name = "Ember", ppm = 2500, stat = "strength", pct = 12 },
+	{ id = "frost", name = "Frost", ppm = 2500, stat = "health", pct = 12 },
+	{ id = "storm", name = "Storm", ppm = 2500, stat = "speed", pct = 12 },
+	{ id = "obsidian", name = "Obsidian", ppm = 2500, stat = "defence", pct = 12 },
+	{ id = "verdant", name = "Verdant", ppm = 2500, stat = "stamina", pct = 12 },
+} :: { Coat }
+StationConfig.COAT_TIMES = 5 -- an egg's signature coat is this many times as likely
+StationConfig.COAT_XP_MAX = 3
+StationConfig.CHARGED_START = 0.25
 -- Player XP comes from everything the player does (decision 0032). Built so far: hatching (each
 -- egg's `xp`) and every stat level a creature gains in training. Waves, the login tracks and
 -- gear will add theirs when they exist.
 StationConfig.XP_STAT_LEVEL = 5
 
 StationConfig.BASIC_RARITIES = { "common", "uncommon", "rare" }
-StationConfig.RARITIES = { "common", "uncommon", "rare", "epic", "legendary", "mythic" }
+StationConfig.RARITIES =
+	{ "common", "uncommon", "rare", "epic", "legendary", "mythic", "divine", "celestial", "secret" }
+-- Rarity by power (decision 0110): a version's rarity is the band its stat total falls in (a Titan's band
+-- is TITAN_BAND times wider). "secret" is kept for animals that are not ranked by power; none yet.
+StationConfig.RARITY_FLOOR = {
+	common = 0,
+	uncommon = 180,
+	rare = 260,
+	epic = 400,
+	legendary = 550,
+	mythic = 800,
+	divine = 1100,
+	celestial = 1600,
+} :: { [string]: number }
+StationConfig.TITAN_BAND = 1.6
+StationConfig.TWIST_PER = 20
 
 -- Roles (decision 0027): three team roles, each with its own job in a wave fight (BattleRules),
 -- and the Titan, which fills the team's fourth slot.
@@ -112,15 +160,11 @@ StationConfig.GROUPS = { "pack", "solitary" }
 StationConfig.PACK_PCT = 10
 StationConfig.SOLITARY_PCT = 25
 
--- Variant tiers. A variant's stats are the basic stats x mult, plus `twist` on its twist stat. How
--- often one hatches is set egg by egg (EGGS, `rare`).
-StationConfig.TIERS = {
-	{ tier = "mythic", mult = 3.0, twist = 60 },
-	{ tier = "legendary", mult = 2.0, twist = 40 },
-} :: { Tier }
-
-local function v(id: string, name: string, tier: string, twist: Stat): Variant
-	return { id = id, name = name, tier = tier, twist = twist }
+-- Variants (decision 0110, replacing the two tiers of decision 0037): each has its own `mult`, set so its
+-- power lands in its rarity's band (StationRules.powerRarity; a spec checks). How often one hatches is set
+-- egg by egg (EGGS, `rare`).
+local function v(id: string, name: string, tier: string, twist: Stat, mult: number): Variant
+	return { id = id, name = name, tier = tier, twist = twist, mult = mult }
 end
 
 -- speed, strength, stamina, mana, health, defence
@@ -135,10 +179,10 @@ local function s(speed: number, strength: number, stamina: number, mana: number,
 	}
 end
 
--- Small African beta pool: one common and one uncommon per role, a rare lion, and the Titan.
+-- Small African beta pool: one common and one uncommon per role, a rare lion, and the Titan. Rarity by power
+-- (decision 0110): the Tortoise is uncommon, the Rhino rare, the Titan Elephant epic.
 -- Pack: jackal (dog), lion (cat), meerkat, flamingo (bird), giraffe, elephant. Solitary: tortoise, cheetah, rhino.
--- One variant each (decision 0037): legendary for the commons, mythic for the rest. A variant is
--- always legendary or higher. Its model is the asset "creature_<species>_<first word of its id>".
+-- Two variants each (decisions 0037, 0110): each at least epic, its rarity by its power. Its model is the asset "creature_<species>_<first word of its id>".
 StationConfig.SPECIES = {
 	{
 		id = "jackal",
@@ -148,8 +192,8 @@ StationConfig.SPECIES = {
 		rarity = "common",
 		stats = s(42, 22, 15, 18, 30, 10),
 		variants = {
-			v("pharaoh_jackal", "Pharaoh Jackal", "legendary", "mana"),
-			v("sphinx_jackal", "Sphinx Jackal", "mythic", "speed"),
+			v("pharaoh_jackal", "Pharaoh Jackal", "epic", "mana", 2.8),
+			v("sphinx_jackal", "Sphinx Jackal", "legendary", "speed", 4),
 		},
 	},
 	{
@@ -157,11 +201,11 @@ StationConfig.SPECIES = {
 		name = "Tortoise",
 		role = "defense",
 		group = "solitary",
-		rarity = "common",
+		rarity = "uncommon",
 		stats = s(5, 25, 48, 20, 55, 50),
 		variants = {
-			v("gemshell_tortoise", "Gemshell Tortoise", "legendary", "defence"),
-			v("island_tortoise", "Island Tortoise", "mythic", "health"),
+			v("gemshell_tortoise", "Gemshell Tortoise", "epic", "defence", 2),
+			v("island_tortoise", "Island Tortoise", "legendary", "health", 3),
 		},
 	},
 	{
@@ -173,8 +217,8 @@ StationConfig.SPECIES = {
 		stats = s(30, 8, 15, 42, 25, 8),
 		variants = {
 			-- the ids stay so saves and eggs keep them; SHANNON renamed them to fit their models (decision 0102)
-			v("storm_meerkat", "Alien Meerkat", "legendary", "mana"),
-			v("star_meerkat", "Comet Meerkat", "mythic", "speed"),
+			v("storm_meerkat", "Alien Meerkat", "epic", "mana", 2.9),
+			v("star_meerkat", "Comet Meerkat", "legendary", "speed", 4),
 		},
 	},
 	{
@@ -185,9 +229,9 @@ StationConfig.SPECIES = {
 		rarity = "uncommon",
 		stats = s(70, 35, 20, 20, 45, 15),
 		variants = {
-			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed"),
+			v("lightning_cheetah", "Lightning Cheetah", "mythic", "speed", 3.8),
 			-- the id stays "fire_cheetah" so saves and eggs keep it; SHANNON made it the Thunder Cheetah (decision 0102)
-			v("fire_cheetah", "Thunder Cheetah", "legendary", "strength"),
+			v("fire_cheetah", "Thunder Cheetah", "epic", "strength", 2),
 		},
 	},
 	{
@@ -195,11 +239,11 @@ StationConfig.SPECIES = {
 		name = "Rhino",
 		role = "defense",
 		group = "solitary",
-		rarity = "uncommon",
+		rarity = "rare",
 		stats = s(25, 50, 60, 10, 70, 55),
 		variants = {
-			v("lava_rhino", "Lava Rhino", "mythic", "strength"),
-			v("crystal_rhino", "Crystal Rhino", "legendary", "defence"),
+			v("lava_rhino", "Lava Rhino", "legendary", "strength", 2),
+			v("crystal_rhino", "Crystal Rhino", "divine", "defence", 4),
 		},
 	},
 	{
@@ -210,8 +254,8 @@ StationConfig.SPECIES = {
 		rarity = "uncommon",
 		stats = s(30, 10, 30, 65, 50, 15),
 		variants = {
-			v("phoenix_flamingo", "Phoenix Flamingo", "mythic", "mana"),
-			v("peacock_flamingo", "King Flamingo", "legendary", "stamina"), -- renamed by SHANNON (decision 0102); the id stays
+			v("phoenix_flamingo", "Phoenix Flamingo", "legendary", "mana", 3),
+			v("peacock_flamingo", "King Flamingo", "epic", "stamina", 2), -- renamed by SHANNON (decision 0102); the id stays
 		},
 	},
 	{
@@ -222,8 +266,8 @@ StationConfig.SPECIES = {
 		rarity = "rare",
 		stats = s(55, 90, 40, 25, 70, 30),
 		variants = {
-			v("sun_lion", "Sun Lion", "mythic", "strength"),
-			v("shadow_lion", "Shadow Lion", "legendary", "speed"),
+			v("sun_lion", "Sun Lion", "celestial", "strength", 5),
+			v("shadow_lion", "Shadow Lion", "mythic", "speed", 2.6),
 		},
 	},
 	{ -- decision 0079: draft numbers, a little over the Lion's total
@@ -234,8 +278,8 @@ StationConfig.SPECIES = {
 		rarity = "rare",
 		stats = s(50, 60, 45, 55, 80, 25),
 		variants = {
-			v("diamond_giraffe", "Diamond Giraffe", "mythic", "defence"),
-			v("acacia_giraffe", "Acacia Giraffe", "legendary", "health"), -- decision 0103
+			v("diamond_giraffe", "Diamond Giraffe", "divine", "defence", 3.6),
+			v("acacia_giraffe", "Acacia Giraffe", "mythic", "health", 2.6), -- decision 0103
 		},
 	},
 	{
@@ -243,11 +287,11 @@ StationConfig.SPECIES = {
 		name = "Elephant",
 		role = "titan",
 		group = "pack",
-		rarity = "legendary",
+		rarity = "epic",
 		stats = s(30, 160, 180, 60, 200, 120),
 		variants = {
-			v("frost_elephant", "Frost Mammoth", "mythic", "health"),
-			v("war_elephant", "War Elephant", "legendary", "strength"),
+			v("frost_elephant", "Frost Mammoth", "celestial", "health", 3.4),
+			v("war_elephant", "War Elephant", "mythic", "strength", 2),
 		},
 	},
 } :: { Species }
@@ -461,86 +505,57 @@ StationConfig.FOES = {
 	},
 } :: { Foe }
 
--- Eggs (decision 0056). A hatch first rolls the egg's rare drops: each variant it lists is a drop of
+-- Eggs (decisions 0056, 0110). A hatch first rolls the egg's rare drops: each variant it lists is a drop of
 -- its own, `ppm` hatches in a million (shown as "1 in N", so every ppm divides a million). If none
--- hits, it rolls a basic animal by `odds`. A variant gets likelier egg by egg, and an animal's mythic
--- starts one egg after its legendary. The Meadow and Wild Eggs are open from the start; the others
--- unlock with the waves: the Safari Egg with the first dragon beaten (wave 10), the Golden Egg with
--- the second (wave 20). There is no legendary-only egg: the Titan is a rare hatch from the Golden Egg,
--- which drops other animals too (decision 0031). Each egg has its own set and at most seven variants,
--- the commons' in the first two, the uncommons' in the middle two (decision 0078). Draft numbers.
+-- hits, it rolls a basic animal by `odds`. Twelve eggs, one opening every 10 to 50 waves, each holding two
+-- or three animals and its own variants and signature coat, so collecting means working up through them.
+-- The first seven drop animals and, rarely, variants; the last five (`only`) drop nothing but variants,
+-- rarer and stronger egg by egg up to the Crown Egg for clearing the last wave. Every hatch from the
+-- Celestial and Crown Eggs has a coat, and the Crown Egg's Prismatic is far likelier (decision 0110, which
+-- replaces decision 0031's "no legendary-only egg"). Draft numbers: a price is about 250 first clears of
+-- the wave that opens the egg.
 local function r(species: string, variant: string, oneIn: number): Rare
 	return { s = species, v = variant, ppm = 1_000_000 / oneIn }
 end
+local function w(species: string, variant: string, ppm: number): Rare -- a variant-only egg's share
+	return { s = species, v = variant, ppm = ppm }
+end
+local function egg(e: any): Egg
+	return e :: Egg
+end
 
 StationConfig.EGGS = {
-	{
+	egg({
 		id = "meadow",
 		name = "Meadow Egg",
 		price = 100,
 		xp = 10,
 		hatch = 60,
-		odds = {
-			{ id = "jackal", bp = 3400 },
-			{ id = "tortoise", bp = 3300 },
-			{ id = "meerkat", bp = 3300 },
-		},
-		rare = {
-			r("jackal", "pharaoh_jackal", 5000),
-			r("tortoise", "gemshell_tortoise", 5000),
-			r("meerkat", "storm_meerkat", 5000),
-		},
-	},
-	{
+		odds = { { id = "jackal", bp = 5000 }, { id = "meerkat", bp = 5000 } },
+		rare = { r("jackal", "pharaoh_jackal", 5000), r("meerkat", "storm_meerkat", 5000) },
+	}),
+	egg({
 		id = "wild",
 		name = "Wild Egg",
 		price = 1500,
 		xp = 40,
 		hatch = 600,
-		odds = {
-			{ id = "jackal", bp = 1000 },
-			{ id = "tortoise", bp = 1000 },
-			{ id = "meerkat", bp = 1000 },
-			{ id = "cheetah", bp = 2400 },
-			{ id = "rhino", bp = 2300 },
-			{ id = "flamingo", bp = 2300 },
-		},
-		rare = {
-			r("cheetah", "fire_cheetah", 4000),
-			r("rhino", "crystal_rhino", 4000),
-			r("flamingo", "peacock_flamingo", 4000),
-			r("jackal", "sphinx_jackal", 20000),
-			r("tortoise", "island_tortoise", 20000),
-			r("meerkat", "star_meerkat", 20000),
-		},
-	},
-	{
+		odds = { { id = "jackal", bp = 3000 }, { id = "tortoise", bp = 3500 }, { id = "cheetah", bp = 3500 } },
+		rare = { r("tortoise", "gemshell_tortoise", 4000), r("cheetah", "fire_cheetah", 4000) },
+		coat = "storm",
+	}),
+	egg({
 		id = "safari",
 		name = "Safari Egg",
 		price = 15000,
 		xp = 150,
 		hatch = 3600,
 		wave = 10,
-		odds = {
-			{ id = "cheetah", bp = 2000 },
-			{ id = "rhino", bp = 2000 },
-			{ id = "flamingo", bp = 2000 },
-			{ id = "lion", bp = 2000 },
-			{ id = "giraffe", bp = 2000 },
-		},
-		rare = {
-			r("lion", "shadow_lion", 2000),
-			r("giraffe", "acacia_giraffe", 2000), -- decision 0103: the Shadow Lion's odds
-			r("giraffe", "diamond_giraffe", 10000),
-			r("cheetah", "fire_cheetah", 1000),
-			r("rhino", "crystal_rhino", 1000),
-			r("flamingo", "peacock_flamingo", 1000),
-			r("cheetah", "lightning_cheetah", 10000),
-			r("rhino", "lava_rhino", 10000),
-			r("flamingo", "phoenix_flamingo", 10000),
-		},
-	},
-	{
+		odds = { { id = "meerkat", bp = 3000 }, { id = "flamingo", bp = 3500 }, { id = "rhino", bp = 3500 } },
+		rare = { r("flamingo", "peacock_flamingo", 2000), r("meerkat", "star_meerkat", 10000) },
+		coat = "ember",
+	}),
+	egg({
 		id = "golden",
 		name = "Golden Egg",
 		price = 50000,
@@ -548,25 +563,146 @@ StationConfig.EGGS = {
 		hatch = 14400,
 		wave = 20,
 		odds = {
-			{ id = "lion", bp = 4000 },
-			{ id = "cheetah", bp = 1500 },
-			{ id = "rhino", bp = 1500 },
-			{ id = "flamingo", bp = 1500 },
-			{ id = "giraffe", bp = 1000 },
+			{ id = "cheetah", bp = 3000 },
+			{ id = "lion", bp = 3500 },
+			{ id = "giraffe", bp = 3000 },
 			{ id = "elephant", bp = 500 },
 		},
+		rare = { r("cheetah", "fire_cheetah", 2000), r("cheetah", "lightning_cheetah", 25000) },
+		coat = "gilded",
+	}),
+	egg({
+		id = "dusk",
+		name = "Dusk Egg",
+		price = 140_000,
+		xp = 800,
+		hatch = 6 * 3600,
+		wave = 35,
+		odds = { { id = "tortoise", bp = 3500 }, { id = "rhino", bp = 3500 }, { id = "jackal", bp = 3000 } },
 		rare = {
-			r("giraffe", "diamond_giraffe", 4000),
-			r("elephant", "frost_elephant", 20000),
-			r("lion", "sun_lion", 4000),
-			r("cheetah", "lightning_cheetah", 2000),
-			r("rhino", "lava_rhino", 2000),
-			r("flamingo", "phoenix_flamingo", 2000),
-			r("lion", "shadow_lion", 400),
-			r("giraffe", "acacia_giraffe", 400),
-			r("elephant", "war_elephant", 2000),
+			r("tortoise", "island_tortoise", 5000),
+			r("jackal", "sphinx_jackal", 5000),
+			r("rhino", "lava_rhino", 8000),
 		},
-	},
+		coat = "obsidian",
+	}),
+	egg({
+		id = "oasis",
+		name = "Oasis Egg",
+		price = 430_000,
+		xp = 1200,
+		hatch = 8 * 3600,
+		wave = 50,
+		odds = { { id = "flamingo", bp = 3500 }, { id = "giraffe", bp = 3000 }, { id = "meerkat", bp = 3500 } },
+		rare = { r("flamingo", "phoenix_flamingo", 5000), r("giraffe", "acacia_giraffe", 20000) },
+		coat = "verdant",
+	}),
+	egg({
+		id = "ivory",
+		name = "Ivory Egg",
+		price = 3_000_000,
+		xp = 2000,
+		hatch = 12 * 3600,
+		wave = 75,
+		odds = { { id = "elephant", bp = 4000 }, { id = "rhino", bp = 3000 }, { id = "lion", bp = 3000 } },
+		rare = { r("elephant", "war_elephant", 5000), r("lion", "shadow_lion", 20000) },
+		coat = "frost",
+	}),
+	egg({
+		id = "legend",
+		name = "Legend Egg",
+		price = 20_000_000,
+		xp = 3000,
+		hatch = 16 * 3600,
+		wave = 100,
+		only = true,
+		odds = {},
+		rare = { -- epic 80%, legendary 20%
+			w("jackal", "pharaoh_jackal", 160000),
+			w("meerkat", "storm_meerkat", 160000),
+			w("tortoise", "gemshell_tortoise", 160000),
+			w("flamingo", "peacock_flamingo", 160000),
+			w("cheetah", "fire_cheetah", 160000),
+			w("jackal", "sphinx_jackal", 40000),
+			w("meerkat", "star_meerkat", 40000),
+			w("tortoise", "island_tortoise", 40000),
+			w("flamingo", "phoenix_flamingo", 40000),
+			w("rhino", "lava_rhino", 40000),
+		},
+		coat = "spectral",
+	}),
+	egg({
+		id = "mythic",
+		name = "Mythic Egg",
+		price = 440_000_000,
+		xp = 5000,
+		hatch = 24 * 3600,
+		wave = 140,
+		only = true,
+		odds = {},
+		rare = { -- legendary 85%, mythic 15%
+			w("jackal", "sphinx_jackal", 170000),
+			w("meerkat", "star_meerkat", 170000),
+			w("tortoise", "island_tortoise", 170000),
+			w("flamingo", "phoenix_flamingo", 170000),
+			w("rhino", "lava_rhino", 170000),
+			w("cheetah", "lightning_cheetah", 37500),
+			w("lion", "shadow_lion", 37500),
+			w("giraffe", "acacia_giraffe", 37500),
+			w("elephant", "war_elephant", 37500),
+		},
+		coat = "galaxy",
+	}),
+	egg({
+		id = "divine",
+		name = "Divine Egg",
+		price = 9.6e9,
+		xp = 8000,
+		hatch = 36 * 3600,
+		wave = 180,
+		only = true,
+		odds = {},
+		rare = { -- mythic 90%, divine 10%
+			w("cheetah", "lightning_cheetah", 225000),
+			w("lion", "shadow_lion", 225000),
+			w("giraffe", "acacia_giraffe", 225000),
+			w("elephant", "war_elephant", 225000),
+			w("rhino", "crystal_rhino", 50000),
+			w("giraffe", "diamond_giraffe", 50000),
+		},
+		coat = "prismatic",
+	}),
+	egg({
+		id = "celestial",
+		name = "Celestial Egg",
+		price = 4.5e11,
+		xp = 12000,
+		hatch = 48 * 3600,
+		wave = 230,
+		only = true,
+		odds = {},
+		rare = { -- divine 95%, celestial 5%
+			w("rhino", "crystal_rhino", 475000),
+			w("giraffe", "diamond_giraffe", 475000),
+			w("lion", "sun_lion", 30000),
+			w("elephant", "frost_elephant", 20000),
+		},
+		always = true,
+	}),
+	egg({
+		id = "crown",
+		name = "Crown Egg",
+		price = 9.8e13,
+		xp = 20000,
+		hatch = 72 * 3600,
+		wave = 300,
+		only = true,
+		odds = {},
+		rare = { w("lion", "sun_lion", 600000), w("elephant", "frost_elephant", 400000) },
+		coat = "prismatic",
+		times = 20,
+		always = true,
+	}),
 } :: { Egg }
 
 -- Training stations (decision 0023): an animal left on a station slowly levels that station's stat.
@@ -729,13 +865,8 @@ function StationConfig.variant(speciesId: string, variantId: string): Variant?
 	return if species then find(species.variants, variantId) else nil
 end
 
-function StationConfig.tier(tier: string): Tier?
-	for _, t in StationConfig.TIERS do
-		if t.tier == tier then
-			return t
-		end
-	end
-	return nil
+function StationConfig.coat(id: string): Coat?
+	return find(StationConfig.COATS, id)
 end
 
 function StationConfig.egg(id: string): Egg?

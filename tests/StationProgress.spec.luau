@@ -1,5 +1,6 @@
 --!strict
 local T = require("./framework")
+local LevelRules = require("../src/shared/LevelRules")
 local Rng = require("../src/shared/Rng")
 local StationConfig = require("../src/shared/StationConfig")
 local StationRules = require("../src/shared/StationRules")
@@ -877,6 +878,25 @@ describe("StationProgress wave fights", function()
 		return get(p, "meadow", hatched("jackal"))
 	end
 
+	it(
+		"pays 25% more XP for each Gilded animal on the team, up to three, and keeps coats in the save (decision 0110)",
+		function()
+			local p = withTeam()
+			local _, plain = StationProgress.payout(p, 5)
+			p.animals[1].coat = "gilded"
+			local _, more = StationProgress.payout(p, 5)
+			expect(more).toBe(plain * 125 // 100)
+			local q = StationProgress.sanitize(p, 0)
+			expect(q.animals[1].coat).toBe("gilded")
+			q.animals[1].coat = "nonsense"
+			expect(StationProgress.sanitize(q, 0).animals[1].coat).toBeNil()
+			q.animals[1].coat, q.animals[1].rainbow = nil, true -- a save from before coats
+			local old = StationProgress.sanitize(q, 0).animals[1]
+			expect(old.coat).toBe("rainbow")
+			expect(old.rainbow).toBe(true)
+		end
+	)
+
 	it("opens waves one at a time up to one past the best, and needs an animal on the team", function()
 		local p = fresh()
 		local ok, code = StationProgress.canFight(p, 1)
@@ -895,6 +915,31 @@ describe("StationProgress wave fights", function()
 		expect(zero).toBe("wave")
 		local _, half = StationProgress.canFight(p, 2.5)
 		expect(half).toBe("wave")
+		p.best = LevelRules.LAST - 1
+		expect(StationProgress.canFight(p, LevelRules.LAST)).toBe(true)
+		p.best = LevelRules.LAST
+		expect(StationProgress.canFight(p, LevelRules.LAST)).toBe(true) -- a replay of the last wave
+		local _, over = StationProgress.canFight(p, LevelRules.LAST + 1)
+		expect(over).toBe("wave") -- there is no wave after the last (decision 0107)
+	end)
+
+	it("pays a player carried to a wave past their own best, and makes it their best (decision 0108)", function()
+		local p = withTeam()
+		p.best = 4
+		local _, alone, why = StationProgress.clear(p, 30)
+		expect(alone).toBe(false)
+		expect(why).toBe("wave")
+		local coins = StationProgress.payout(p, 30)
+		local before = p.coins
+		local q, ok = StationProgress.clear(p, 30, true)
+		expect(ok).toBe(true)
+		expect(q.best).toBe(30)
+		expect(q.coins).toBe(before + coins)
+		local _, past = StationProgress.clear(q, LevelRules.LAST + 1, true)
+		expect(past).toBe(false) -- never past the last wave
+		local _, none, code = StationProgress.clear(fresh(), 3, true)
+		expect(none).toBe(false) -- never without a team
+		expect(code).toBe("no_team")
 	end)
 
 	it("pays coins, XP and samples for a first clear, records the best and pays a quarter for a replay", function()

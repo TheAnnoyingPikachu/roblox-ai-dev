@@ -78,12 +78,24 @@ function StationTrade.setOff(p: Profile, off: boolean): (Profile, boolean, strin
 end
 
 -- What an animal is worth on the fairness meter (a guide, never a block): its power, times its
--- rarity's weight, times RAINBOW for a rainbow coat.
-StationTrade.RARITY = { common = 1, uncommon = 1.5, rare = 2.5, epic = 4, legendary = 8, mythic = 20 }
+-- rarity's weight, times its coat's weight (COAT, by the coat's rarity: decision 0110).
+StationTrade.RARITY = {
+	common = 1,
+	uncommon = 1.5,
+	rare = 2.5,
+	epic = 4,
+	legendary = 8,
+	mythic = 20,
+	divine = 50,
+	celestial = 120,
+	secret = 300,
+}
 StationTrade.RAINBOW = 3
+StationTrade.COAT = { prismatic = 20, spectral = 6, galaxy = 4, gilded = 4, rainbow = StationTrade.RAINBOW }
 function StationTrade.worth(a: StationRules.Owned): number
 	local weight = StationTrade.RARITY[StationRules.rarity(a)] or 1
-	return BattleRules.powerOf(a) * weight * (if a.rainbow then StationTrade.RAINBOW else 1)
+	local coat = StationRules.coatOf(a)
+	return BattleRules.powerOf(a) * weight * (if coat then StationTrade.COAT[coat.id] or 2 else 1)
 end
 
 -- Where a trade sits on the fairness meter, from 0 (you give everything) to 1 (you get everything); 0.5
@@ -106,7 +118,8 @@ end
 function StationTrade.nameOf(a: StationRules.Owned): string
 	local va = if a.v then StationConfig.variant(a.s, a.v) else nil
 	local sp = StationConfig.species(a.s)
-	return (if a.rainbow then "Rainbow " else "") .. (if va then va.name elseif sp then sp.name else a.s)
+	local coat = StationRules.coatOf(a)
+	return (if coat then coat.name .. " " else "") .. (if va then va.name elseif sp then sp.name else a.s)
 end
 
 -- `offer` with `id` put in or taken out (at most MAX), and whether that was allowed.

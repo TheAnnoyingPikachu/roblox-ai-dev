@@ -45,6 +45,21 @@ Style.RARITY = {
 	epic = Color3.fromRGB(176, 109, 242),
 	legendary = Color3.fromRGB(255, 194, 58),
 	mythic = Color3.fromRGB(255, 121, 198),
+	divine = Color3.fromRGB(94, 240, 216), -- decision 0110
+	celestial = Color3.fromRGB(169, 155, 255),
+	secret = Color3.fromRGB(255, 77, 94),
+} :: { [string]: Color3 }
+
+-- Each coat's chip colour (decision 0110); the rainbow and prismatic chips are a rainbow gradient instead.
+Style.COAT = {
+	ember = Color3.fromRGB(255, 154, 77),
+	frost = Color3.fromRGB(168, 220, 255),
+	storm = Color3.fromRGB(143, 184, 255),
+	obsidian = Color3.fromRGB(201, 160, 255),
+	verdant = Color3.fromRGB(142, 224, 122),
+	galaxy = Color3.fromRGB(179, 164, 255),
+	gilded = Color3.fromRGB(255, 194, 58),
+	spectral = Color3.fromRGB(159, 245, 228),
 } :: { [string]: Color3 }
 
 -- Sounds (ForgeGUI, decision 0091; docs/assets/register.md), played on this client only.
@@ -631,7 +646,17 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 			body.Position, body.Size = UDim2.fromOffset(12, 168), UDim2.new(1, -24, 1, -180)
 		else
 			side.Position, side.Size = UDim2.fromOffset(20, 18), UDim2.new(0, SIDE_W, 1, -36)
-			tabs.Position, tabs.Size = UDim2.fromOffset(-4, 48), UDim2.new(1, 8, 1, -48)
+			-- stopped short of the chips under it, so a long list (the twelve eggs) scrolls instead of running under them
+			tabs.Position, tabs.Size =
+				UDim2.fromOffset(-4, 48),
+				UDim2.new(
+					1,
+					8,
+					1,
+					-56
+						- chips.AbsoluteSize.Y
+							/ math.max(scale.Scale * (if rootScale then rootScale.Scale else 1), 0.01)
+				)
 			tabList.FillDirection = Enum.FillDirection.Vertical
 			tabs.AutomaticCanvasSize = Enum.AutomaticSize.Y
 			tabs.ScrollingDirection = Enum.ScrollingDirection.Y
@@ -646,6 +671,7 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 		end
 	end
 	frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	chips:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
 	layout()
 	return {
 		backdrop = backdrop,

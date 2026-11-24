@@ -102,3 +102,36 @@ describe("WaveRuns (decision 0098)", function()
 		expect(LevelRules.stars(false, false, 0)).toBe(0)
 	end)
 end)
+
+describe("WaveRuns shared fights (decision 0108)", function()
+	it("brings every knocked-out animal back at WIPED_BACK for the next wave, alone or together", function()
+		local after = WaveRuns.won(WaveRuns.new(1, 4, 7), { 0, 0.5, 0, 1 }, 100, 0)
+		local hp = WaveRuns.setup(after).hp :: { number }
+		expect(hp[1]).toBe(WaveRuns.WIPED_BACK)
+		expect(hp[2]).toBe(0.5 + WaveRuns.REST_HEAL)
+		expect(hp[3]).toBe(WaveRuns.WIPED_BACK)
+		expect(hp[4]).toBe(1)
+		expect(after.hp[1]).toBe(0) -- the run still knows who fell: Revive lifts them to half
+		after.offer = { "revive", "mend", "claws" }
+		expect((WaveRuns.setup((WaveRuns.pick(after, "revive"))).hp :: { number })[1]).toBe(0.5)
+	end)
+
+	it("picks the boon with the most votes, and breaks a tie at random but the same way every time", function()
+		local run = WaveRuns.won(WaveRuns.new(1, 3, 11), { 1, 1, 1 }, 100, 0)
+		local offer = run.offer :: { string }
+		expect(WaveRuns.tally(run, { offer[2], offer[2], offer[1] })).toBe(offer[2])
+		expect(WaveRuns.tally(run, { offer[3] })).toBe(offer[3])
+		expect(WaveRuns.tally(run, { "nonsense", offer[1] })).toBe(offer[1])
+		local tie = WaveRuns.tally(run, { offer[1], offer[3] })
+		expect(tie == offer[1] or tie == offer[3]).toBeTruthy()
+		expect(WaveRuns.tally(run, { offer[3], offer[1] })).toBe(tie) -- the same votes, the same boon
+		local won = {}
+		for seed = 1, 40 do -- over many runs each side of a tie wins sometimes
+			local r = WaveRuns.won(WaveRuns.new(1, 3, seed), { 1, 1, 1 }, 100, 0)
+			local o = r.offer :: { string }
+			won[if WaveRuns.tally(r, { o[1], o[2] }) == o[1] then 1 else 2] = true
+		end
+		expect(won[1] and won[2]).toBeTruthy()
+		expect(WaveRuns.tally(WaveRuns.new(1, 3, 1), {})).toBeNil() -- nothing on offer yet
+	end)
+end)

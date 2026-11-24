@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-128",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0109: a quick press for each class (attack ring, defense needle, utility chain, Titan mash), and the pop-ups standing by their animals (option B): a compact row under the player's team, each tied to its animal in its class's colour, clear of the enemies; other players' full meters as markers.",
+  "inputs": [
+    "docs/decisions/0109-animal-stations-presses-by-class.md"
+  ],
+  "dependencies": [
+    "STATION-127"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "tests/BattleRules.spec.luau",
+    "src/stations-client/PressPops.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0109-animal-stations-presses-by-class.md",
+    "docs/decisions/0106-animal-stations-pit-fight.md",
+    "studio/tasks/STATION-127.json",
+    "studio/tasks/STATION-128.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "BattleRules.pressOf gives an animal its class's press (PRESS_OF_ROLE); the four classes have four different presses",
+    "A pop-up stands in a row just under its player's team, tied to its animal by a line in its class's colour, with the class's name on it; cards never overlap and stay on the screen",
+    "Another player's animal with a full meter shows a small marker over it, not a card",
+    "The pop-ups are compact (the press and its key, no name)"
+  ],
+  "verification": "lune run tests/run (786 pass); selene; rojo build and check-place. Played in Studio (build dev, local, one player): test wave 25 with Sun Lion, Lava Rhino, Phoenix Flamingo and Frost Mammoth, three pop-ups at once under the team.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: \"do option B for the QTEs and make each QTE assigned to one of the four classes like attack defense utility\"; \"the QTEs are too far off to the side now, just do it like you would in that option B\"; \"make the QTEs more compact and try to not block the enemies with them\". Checkpoint: decision 0109 items 1 and 2. The other players' markers are untested (one player in Studio)."
+}

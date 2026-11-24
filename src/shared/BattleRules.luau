@@ -45,6 +45,10 @@ export type Fighter = {
 	sweep: boolean?, -- its power attack strikes every animal of the team that stands (decision 0105)
 	press: string, -- its power attack's quick press (decision 0106): "ring", "chain", "needle" or "mash"
 	click: number, -- a click strike's share of a normal hit (decision 0106); 0 when clicks do not strike
+	owner: number, -- side 1: which player's team it is in (decision 0108: an Owned's `owner`, 1 when unset)
+	spot: number?, -- side 2: its place along the front line while it stands in it (decision 0108)
+	spectral: boolean?, -- the Spectral coat (decision 0110): the first blow that would knock it out leaves it at 1 HP
+	spared: boolean?, -- ... and that has happened
 }
 
 BattleRules.HP_BASE, BattleRules.HP_PER_HEALTH = 20, 1.5
@@ -75,29 +79,16 @@ export type Setup = {
 	clicks: boolean?,
 }
 
--- Quick presses (decision 0106): what the spell does picks the press; a Titan always mashes.
-BattleRules.PRESSES = {
-	lion = "ring",
-	rhino = "ring",
-	giraffe = "ring",
-	jackal = "needle",
-	tortoise = "needle",
-	meerkat = "needle",
-	cheetah = "chain",
-	flamingo = "chain",
-	elephant = "mash",
-} :: { [string]: string }
-BattleRules.PRESS_VARIANTS = { -- variants whose spell works differently from their species'
-	star_meerkat = "ring", -- Comet Strike
-	lava_rhino = "needle", -- Magma Eruption
-	phoenix_flamingo = "needle", -- Firebird
-	gemshell_tortoise = "chain", -- Gem Barrage
+-- Quick presses (decisions 0106, 0109): each of the four classes has its own press, so a team of one of
+-- each and its Titan has all four. SHANNON, 2026-11-24: "make each QTE assigned to one of the four classes".
+BattleRules.PRESS_OF_ROLE = {
+	attack = "ring",
+	defense = "needle",
+	utility = "chain",
+	titan = "mash",
 } :: { [string]: string }
 function BattleRules.pressOf(animal: Owned): string
-	if StationRules.role(animal) == "titan" then
-		return "mash"
-	end
-	return (if animal.v then BattleRules.PRESS_VARIANTS[animal.v] else nil) or BattleRules.PRESSES[animal.s] or "ring"
+	return BattleRules.PRESS_OF_ROLE[StationRules.role(animal)] or "ring"
 end
 
 -- One animal's battle numbers before group bonuses. Each stat feeds exactly one of them.
@@ -105,6 +96,7 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 	local foe = StationConfig.foe(animal.s)
 	local sp = StationConfig.species(animal.s) or foe
 	local role = StationRules.role(animal)
+	local coat = StationRules.coatOf(animal)
 	local function stat(name: StationConfig.Stat): number
 		return StationRules.stat(animal, name)
 	end
@@ -125,7 +117,7 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 		swing = swing,
 		rest = BattleRules.REST * half / (half + stat("stamina")),
 		gain = BattleRules.POWER_GAIN + stat("mana"),
-		energy = 0,
+		energy = if coat and coat.charged then math.floor(BattleRules.POWER_COST * StationConfig.CHARGED_START) else 0,
 		next = swing, -- the first attack lands after one swing, so the faster animal strikes first
 		side = side,
 		slot = slot,
@@ -136,12 +128,29 @@ function BattleRules.fighter(animal: Owned, side: number, slot: number): Fighter
 		sweep = if foe and foe.ability == "sweep" then true else nil,
 		press = BattleRules.pressOf(animal),
 		click = 0,
+		owner = math.max(1, (animal :: any).owner or 1),
+		spectral = if coat and coat.spectral then true else nil,
 	}
+end
+
+-- Shared fights (decision 0108): a team may hold several players' teams, each animal marked with its
+-- player's number (`owner`, 1 to `players`). The front line is FRONT_MORE longer for each player after
+-- the first.
+BattleRules.FRONT_MORE = 3
+function BattleRules.players(team: { Owned }): number
+	local n = 1
+	for _, a in team do
+		n = math.max(n, (a :: any).owner or 1)
+	end
+	return n
+end
+function BattleRules.front(players: number): number
+	return BattleRules.FRONT + BattleRules.FRONT_MORE * (math.max(1, players) - 1)
 end
 
 -- A whole team ready to fight, with the group bonuses on damage and HP: a pack animal gains
 -- PACK_PCT % for each other pack animal, a solitary animal SOLITARY_PCT % when no teammate
--- shares its role.
+-- shares its role. A teammate is an animal of the same player (decision 0108).
 function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fighter }
 	local out = {}
 	for i, a in team do
@@ -151,14 +160,14 @@ function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fig
 		local pct = 0
 		if f.group == "pack" then
 			for _, m in out do
-				if m ~= f and m.group == "pack" then
+				if m ~= f and m.group == "pack" and m.owner == f.owner then
 					pct += StationConfig.PACK_PCT
 				end
 			end
 		elseif f.group == "solitary" then
 			pct = StationConfig.SOLITARY_PCT
 			for _, m in out do
-				if m ~= f and m.role == f.role then
+				if m ~= f and m.role == f.role and m.owner == f.owner then
 					pct = 0
 				end
 			end
@@ -181,7 +190,9 @@ function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fig
 				f.rest *= BattleRules.CLICK_SLOW
 			end
 			f.next = f.swing
-			f.energy = math.floor(BattleRules.POWER_COST * math.clamp(setup.energy or 0, 0, 0.99))
+			f.energy = math.floor( -- a boon's charge on top of a coat's
+				BattleRules.POWER_COST * math.clamp((setup.energy or 0) + f.energy / BattleRules.POWER_COST, 0, 0.99)
+			)
 		end
 	end
 	return out
@@ -304,6 +315,17 @@ BattleRules.FRONT, BattleRules.RUSH_SECONDS, BattleRules.RUSH_WALK = 6, 8, 2
 -- * A power tap is a Perfect by its animal's press (`perfect`): the ring's window; the needle's, at
 --   PERFECT_AT and every NEEDLE_EVERY after; a chain finished by PERFECT_AT + PERFECT_LATE; a mash that
 --   brings MASH_COUNT presses (the tap's `presses`) by MASH_BY + PERFECT_LATE.
+--
+-- Shared fights (decision 0108), when side 1 holds more than one player's team (`BattleRules.players`):
+-- * The front line is `BattleRules.front(players)` long. Each foe in it has a place along it (`spot`, 1 to
+--   that; `places`, when given, gets each foe's by slot): the first take them in order, and a foe that steps
+--   up takes the place the longest empty. Player k's team stands before the k-th part of the line.
+-- * A foe attacks the team it stands before (its first standing Defence animal, else its first standing
+--   animal), and the usual target once that team is down.
+-- * A click is its player's (the tap's `owner`): that player's next standing animal strikes the standing foe
+--   of the front line nearest that player's team. Each player's clicks keep their own STRIKE_GAP.
+-- * Everything else is one team's: the usual target for the animals' own attacks and power attacks, one
+--   combo, one shield, one setup.
 BattleRules.STRIKE, BattleRules.CLICK_SLOW, BattleRules.STRIKE_SECONDS, BattleRules.STRIKE_GAP = -1, 2.4, 0.6, 1 / 12
 BattleRules.NEEDLE_EVERY = 1.5
 BattleRules.MASH_COUNT, BattleRules.MASH_BY, BattleRules.MASH_RATE = 8, 3.6, 12
@@ -328,7 +350,7 @@ export type Hit = {
 	revives: { { slot: number, hp: number } }?, -- the allies its power attack raised (decisions 0104, 0105)
 	click: boolean?, -- a click's strike (decision 0106)
 }
-export type Tap = { slot: number, t: number, presses: number? }
+export type Tap = { slot: number, t: number, presses: number?, owner: number? }
 
 -- Whether a power tap `since` seconds after its meter filled is a Perfect for an animal whose press is
 -- `press` (decisions 0097, 0106); `presses` is a mash's count.
@@ -372,10 +394,20 @@ function BattleRules.battle(
 	taps: { Tap }?,
 	setup: Setup?,
 	arrivals: { [number]: number }?,
-	engaged: { [number]: number }?
+	engaged: { [number]: number }?,
+	places: { [number]: number }?
 ): (boolean, number, number, { number })
 	local sides = { BattleRules.lineup(one, 1, setup), BattleRules.lineup(two, 2) }
 	local foes = sides[2]
+	local players = BattleRules.players(one)
+	local front = BattleRules.front(players)
+	local teams: { { Fighter } } = table.create(players) -- each player's animals, in slot order
+	for k = 1, players do
+		teams[k] = {}
+	end
+	for _, f in sides[1] do
+		table.insert(teams[math.min(f.owner, players)], f)
+	end
 	-- rushes: rushAt[r] is when rush r arrives (math.huge until it is called)
 	local rushes = 1
 	for _, f in foes do
@@ -405,26 +437,72 @@ function BattleRules.battle(
 	end
 	local shieldTo = -math.huge
 	local combo, comboAt, comboSlot = 0, -math.huge, 0
-	local strikes, strikeReady = 0, -math.huge -- clicks so far, and when the next may strike (decision 0106)
+	-- each player's clicks so far, and when their next may strike (decision 0106)
+	local strikes, strikeReady = table.create(players, 0), table.create(players, -math.huge)
 
-	-- the front line: the first FRONT standing foes that have arrived; one that joins after the start
-	-- swings from then
+	-- the front line: the first `front` standing foes that have arrived; one that joins after the start
+	-- swings from then. Each stands in a place along it: a fallen foe's place is free again.
+	local free: { number }, spots = {}, 0
 	local function engage()
+		for _, f in foes do
+			if f.spot and f.hp <= 0 then
+				table.insert(free, f.spot)
+				f.spot = nil
+			end
+		end
 		local n = 0
 		for _, f in foes do
 			if f.hp > 0 and f.arrive <= now then
 				n += 1
-				if n <= BattleRules.FRONT and not f.engaged then
-					f.engaged = true
-					if now > 0 then
-						f.next = now + f.swing
+				if n <= front then
+					if not f.engaged then
+						f.engaged = true
+						if now > 0 then
+							f.next = now + f.swing
+						end
+						if engaged then
+							engaged[f.slot] = now
+						end
 					end
-					if engaged then
-						engaged[f.slot] = now
+					if f.spot == nil then
+						spots = if #free > 0 then spots else spots + 1
+						f.spot = table.remove(free, 1) or (spots - 1) % front + 1
+						if places then
+							places[f.slot] = f.spot :: number
+						end
 					end
 				end
 			end
 		end
+	end
+	-- shared fights: the standing animal a foe in place `spot` attacks, of the team it stands before
+	local function facing(spot: number?): Fighter?
+		if players == 1 or spot == nil then
+			return nil
+		end
+		local first: Fighter? = nil
+		for _, f in teams[math.clamp(math.ceil(spot * players / front), 1, players)] do
+			if f.hp > 0 then
+				if f.role == "defense" then
+					return f
+				end
+				first = first or f
+			end
+		end
+		return first
+	end
+	-- shared fights: the standing foe of the front line nearest player `who`'s team
+	local function nearest(who: number): Fighter?
+		local mid = (who - 0.5) * front / players + 0.5
+		local best: Fighter? = nil
+		for _, f in foes do
+			if f.hp > 0 and f.arrive <= now and f.spot then
+				if best == nil or math.abs(f.spot - mid) < math.abs((best.spot :: number) - mid) then
+					best = f
+				end
+			end
+		end
+		return best
 	end
 	local function call(r: number) -- rush r is on its way
 		rushAt[r] = now + BattleRules.RUSH_WALK
@@ -470,6 +548,9 @@ function BattleRules.battle(
 			hit *= BattleRules.GUARD
 		end
 		local dealt = math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
+		if d.spectral and not d.spared and dealt >= d.hp and d.hp > 1 then -- the Spectral coat: once, it stays up
+			d.spared, dealt = true, d.hp - 1
+		end
 		d.hp -= dealt
 		return dealt
 	end
@@ -477,7 +558,8 @@ function BattleRules.battle(
 	-- `me` attacks at `now`; `power` x damage and heal
 	local function strike(me: Fighter, power: number, tapped: boolean?, perfect: boolean?, click: boolean?)
 		local enemies = sides[3 - me.side]
-		local d = target(enemies, now) :: Fighter
+		local d = (if me.side == 2 then facing(me.spot) elseif click and players > 1 then nearest(me.owner) else nil)
+			or target(enemies, now) :: Fighter
 		local hit = me.dmg * power
 		local chain = nil
 		if held and me.side == 1 and power > 1 then
@@ -654,12 +736,14 @@ function BattleRules.battle(
 			local c = sides[1][tap.slot]
 			if tap.slot == 0 and up[tap.t] then
 				shieldTo = tap.t + BattleRules.SHIELD_SECONDS
-			elseif tap.slot == BattleRules.STRIKE then -- a click (decision 0106)
-				if tap.t >= strikeReady and tap.t <= BattleRules.MAX_SECONDS and target(foes, tap.t) then
+			elseif tap.slot == BattleRules.STRIKE then -- a click (decision 0106), its player's (decision 0108)
+				local who = math.clamp(tap.owner or 1, 1, players)
+				if tap.t >= strikeReady[who] and tap.t <= BattleRules.MAX_SECONDS and target(foes, tap.t) then
 					local me: Fighter? = nil
-					for _ = 1, #sides[1] do -- the next standing animal in turn
-						strikes += 1
-						local m = sides[1][(strikes - 1) % #sides[1] + 1]
+					local mine = teams[who]
+					for _ = 1, #mine do -- that player's next standing animal in turn
+						strikes[who] += 1
+						local m = mine[(strikes[who] - 1) % #mine + 1]
 						if m.hp > 0 and m.click > 0 then
 							me = m
 							break
@@ -667,7 +751,7 @@ function BattleRules.battle(
 					end
 					if me then
 						now = math.max(now, tap.t)
-						strikeReady = tap.t + BattleRules.STRIKE_GAP
+						strikeReady[who] = tap.t + BattleRules.STRIKE_GAP
 						me.energy = math.min(BattleRules.POWER_COST, me.energy + me.gain * me.click)
 						if me.energy >= BattleRules.POWER_COST and full[me] == nil then
 							full[me] = now

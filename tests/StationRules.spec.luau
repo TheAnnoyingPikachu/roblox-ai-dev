@@ -31,19 +31,28 @@ end
 describe("StationConfig", function()
 	it("has egg odds that sum to 10000 and name real species, and rare drops that name real variants once", function()
 		for _, egg in StationConfig.EGGS do
-			local sum = 0
+			local sum, rare = 0, 0
 			for _, o in egg.odds do
 				sum += o.bp
 				expect(StationConfig.species(o.id) ~= nil).toBeTruthy()
 			end
-			expect(sum).toBe(10000)
 			local listed = {}
 			for _, row in egg.rare do
 				expect(StationConfig.variant(row.s, row.v) ~= nil).toBeTruthy()
 				expect(listed[row.v]).toBeNil()
 				listed[row.v] = true
-				expect(row.ppm > 0 and StationRules.PPM % row.ppm == 0).toBeTruthy() -- shown as "1 in N"
+				rare += row.ppm
+				if not egg.only then
+					expect(row.ppm > 0 and StationRules.PPM % row.ppm == 0).toBeTruthy() -- shown as "1 in N"
+				end
 			end
+			if egg.only then -- variants only (decision 0110): no animals, and a variant every time
+				expect(#egg.odds).toBe(0)
+				expect(rare).toBe(StationRules.PPM)
+			else
+				expect(sum).toBe(10000)
+			end
+			expect(egg.coat == nil or StationConfig.coat(egg.coat) ~= nil).toBeTruthy()
 		end
 	end)
 
@@ -80,81 +89,85 @@ describe("StationConfig", function()
 		end
 	end)
 
-	it("has one Titan: legendary, with a mythic variant, bigger than any basic animal", function()
-		local biggest, titans = 0, 0
-		for _, sp in StationConfig.SPECIES do
-			if sp.role ~= StationConfig.TITAN then
-				biggest = math.max(biggest, total(sp.stats))
-			end
-		end
-		for _, sp in StationConfig.SPECIES do
-			if sp.role == StationConfig.TITAN then
-				titans += 1
-				expect(sp.id).toBe("elephant")
-				expect(sp.rarity).toBe("legendary")
-				expect(sp.variants[1].tier).toBe("mythic")
-				expect(total(sp.stats) > biggest).toBeTruthy()
-			end
-		end
-		expect(titans).toBe(1)
-	end)
-
 	it(
-		"has no legendary-only egg: the Titan is a rare hatch from the Golden Egg; the Meadow and Wild Eggs are open from the start, the others unlock with the waves (10, 20)",
+		"has one Titan: epic by its power (decision 0110), with variants up to celestial, bigger than any basic animal",
 		function()
-			local locked = 0
-			for _, egg in StationConfig.EGGS do
-				local titan, other = false, false
-				for _, o in egg.odds do
-					local sp = StationConfig.species(o.id) :: StationConfig.Species
-					if sp.role == StationConfig.TITAN then
-						titan = true
-					else
-						other = true
-					end
+			local biggest, titans = 0, 0
+			for _, sp in StationConfig.SPECIES do
+				if sp.role ~= StationConfig.TITAN then
+					biggest = math.max(biggest, total(sp.stats))
 				end
-				expect(other).toBe(true) -- every egg drops ordinary animals
-				if egg.id == "meadow" or egg.id == "wild" then
-					expect(egg.wave).toBeNil()
-					expect(titan).toBe(false)
-				elseif egg.id ~= "golden" then
-					locked += 1
-					expect(egg.wave).toBe(10)
-					expect(titan).toBe(false)
-				elseif egg.wave then
-					locked += 1
-					expect(egg.wave).toBe(20)
-					expect(titan).toBe(true)
-					local share = 0
-					for _, o in egg.odds do
-						local sp = StationConfig.species(o.id) :: StationConfig.Species
-						share += if sp.role == StationConfig.TITAN then o.bp else 0
-					end
-					expect(share <= 1000).toBeTruthy() -- the legendary stays a rare drop
-				else
-					expect(titan).toBe(false)
-				end
-				expect(egg.xp > 0).toBeTruthy()
 			end
-			expect(locked).toBe(2)
+			for _, sp in StationConfig.SPECIES do
+				if sp.role == StationConfig.TITAN then
+					titans += 1
+					expect(sp.id).toBe("elephant")
+					expect(sp.rarity).toBe("epic")
+					expect(sp.variants[1].tier).toBe("celestial")
+					expect(total(sp.stats) > biggest).toBeTruthy()
+				end
+			end
+			expect(titans).toBe(1)
 		end
 	)
 
-	it("gives every animal a variant, legendary or mythic, named <word>_<species>", function()
+	it(
+		"opens twelve eggs up the waves, dearer each time: seven of animals, then five of variants only, of a rarity rising egg by egg",
+		function()
+			local rank = {}
+			for k, r in StationConfig.RARITIES do
+				rank[r] = k
+			end
+			expect(#StationConfig.EGGS).toBe(12)
+			local wave, price, least = -1, 0, 0
+			for k, egg in StationConfig.EGGS do
+				expect((egg.wave or 0) >= wave).toBeTruthy()
+				expect(egg.price > price).toBeTruthy()
+				expect(egg.xp > 0).toBeTruthy()
+				wave, price = egg.wave or 0, egg.price
+				expect(egg.only == (k >= 8) or (egg.only == nil and k < 8)).toBeTruthy()
+				if k <= 2 then
+					expect(egg.wave).toBeNil() -- the Meadow and Wild Eggs are open from the start
+				end
+				if egg.only then
+					local low = math.huge
+					for _, row in egg.rare do
+						local va = StationConfig.variant(row.s, row.v) :: StationConfig.Variant
+						low = math.min(low, rank[va.tier])
+					end
+					expect(low >= rank.epic).toBeTruthy()
+					expect(low >= least).toBeTruthy()
+					least = low
+				end
+				for _, o in egg.odds do -- the plain Titan hatches only from the Golden and Ivory Eggs
+					local sp = StationConfig.species(o.id) :: StationConfig.Species
+					if sp.role == StationConfig.TITAN then
+						expect(egg.id == "golden" or egg.id == "ivory").toBeTruthy()
+					end
+				end
+			end
+			expect(StationConfig.EGGS[12].wave).toBe(LevelRules.LAST) -- the Crown Egg: for clearing the last wave
+		end
+	)
+
+	it("gives every animal two variants, each epic or higher by its own power, named <word>_<species>", function()
+		local rank = {}
+		for k, r in StationConfig.RARITIES do
+			rank[r] = k
+		end
 		local ids = {}
 		for _, sp in StationConfig.SPECIES do
 			expect(ids[sp.id]).toBeNil()
 			ids[sp.id] = true
-			expect(#sp.variants >= 1).toBeTruthy()
-			-- a basic animal is never above epic, unless it is the Titan (legendary)
+			expect(#sp.variants).toBe(2)
 			if sp.role ~= StationConfig.TITAN then
 				expect(table.find(StationConfig.BASIC_RARITIES, sp.rarity) ~= nil).toBeTruthy()
 			end
 			for _, va in sp.variants do
 				expect(ids[va.id]).toBeNil()
 				ids[va.id] = true
-				expect(va.tier == "legendary" or va.tier == "mythic").toBeTruthy()
-				expect(StationConfig.tier(va.tier) ~= nil).toBeTruthy()
+				expect(rank[va.tier] >= rank.epic).toBeTruthy()
+				expect(va.mult > 1).toBeTruthy()
 				expect(table.find(StationConfig.STATS, va.twist) ~= nil).toBeTruthy()
 				expect(string.match(va.id, "^%l+_" .. sp.id .. "$") ~= nil).toBeTruthy() -- the model's name comes from it
 			end
@@ -162,26 +175,26 @@ describe("StationConfig", function()
 	end)
 
 	it(
-		"makes variants rare drops (1 in 400 or rarer; no mythic likelier than a legendary of its egg) and every tier legendary or higher",
+		"gives every animal and variant the rarity its power earns, and keeps variants rare in the animal eggs",
 		function()
-			for _, egg in StationConfig.EGGS do
-				local sum, legendary, mythic = 0, math.huge, 0 -- the egg's rarest legendary and likeliest mythic
-				for _, row in egg.rare do
-					sum += row.ppm
-					expect(row.ppm <= 2500).toBeTruthy()
-					if (StationConfig.variant(row.s, row.v) :: StationConfig.Variant).tier == "mythic" then
-						mythic = math.max(mythic, row.ppm)
-					else
-						legendary = math.min(legendary, row.ppm)
-					end
+			for _, sp in StationConfig.SPECIES do
+				local titan = sp.role == StationConfig.TITAN
+				local plain = StationRules.versionStats(sp.id, nil) :: StationConfig.Stats
+				expect(StationRules.powerRarity(StationRules.total(plain), titan)).toBe(sp.rarity)
+				for _, va in sp.variants do
+					local st = StationRules.versionStats(sp.id, va.id) :: StationConfig.Stats
+					expect(StationRules.powerRarity(StationRules.total(st), titan)).toBe(va.tier)
 				end
-				expect(sum <= 10000).toBeTruthy() -- at most 1 hatch in 100 is a variant
-				expect(mythic <= legendary).toBeTruthy()
 			end
-			for _, t in StationConfig.TIERS do
-				expect(t.tier == "legendary" or t.tier == "mythic").toBeTruthy()
-				expect(table.find(StationConfig.BASIC_RARITIES, t.tier)).toBeNil()
-				expect(table.find(StationConfig.RARITIES, t.tier) ~= nil).toBeTruthy()
+			for _, egg in StationConfig.EGGS do
+				if not egg.only then
+					local sum = 0
+					for _, row in egg.rare do
+						sum += row.ppm
+						expect(row.ppm <= 2500).toBeTruthy() -- 1 in 400 or rarer
+					end
+					expect(sum <= 10000).toBeTruthy() -- at most 1 hatch in 100 is a variant
+				end
 			end
 		end
 	)
@@ -221,11 +234,11 @@ describe("StationConfig", function()
 end)
 
 describe("StationRules.versionStats", function()
-	it("multiplies a variant's stats by its tier and adds the twist", function()
-		local st = StationRules.versionStats("jackal", "pharaoh_jackal") :: StationConfig.Stats -- legendary x2, +40 mana
-		expect(st.speed).toBe(84)
-		expect(st.mana).toBe(76)
-		expect(st.defence).toBe(20)
+	it("multiplies a variant's stats by its own mult and adds TWIST_PER x mult to its twist", function()
+		local st = StationRules.versionStats("jackal", "pharaoh_jackal") :: StationConfig.Stats -- x2.8, +56 mana
+		expect(st.speed).toBe(117)
+		expect(st.mana).toBe(106)
+		expect(st.defence).toBe(28)
 	end)
 
 	it("refuses unknown species and mismatched variants", function()
@@ -334,9 +347,10 @@ describe("StationRules.hatch", function()
 	it("picks species by cumulative basis points at the boundaries", function()
 		local odds = (StationConfig.egg("meadow") :: StationConfig.Egg).odds
 		expect(StationRules.pick(odds, 1)).toBe("jackal")
-		expect(StationRules.pick(odds, 3400)).toBe("jackal")
-		expect(StationRules.pick(odds, 3401)).toBe("tortoise")
+		expect(StationRules.pick(odds, 5000)).toBe("jackal")
+		expect(StationRules.pick(odds, 5001)).toBe("meerkat")
 		expect(StationRules.pick(odds, 10000)).toBe("meerkat")
+		expect(StationRules.pick({}, 1)).toBe("") -- a variant-only egg: its rare drops always hit first
 	end)
 
 	it("picks an egg's rare drops in the order it lists them, a basic animal past their total", function()
@@ -347,9 +361,9 @@ describe("StationRules.hatch", function()
 		end
 		expect(drop(1)).toBe("pharaoh_jackal")
 		expect(drop(200)).toBe("pharaoh_jackal")
-		expect(drop(201)).toBe("gemshell_tortoise")
-		expect(drop(600)).toBe("storm_meerkat")
-		expect(drop(601)).toBeNil()
+		expect(drop(201)).toBe("storm_meerkat")
+		expect(drop(400)).toBe("storm_meerkat")
+		expect(drop(401)).toBeNil()
 		expect(drop(1_000_000)).toBeNil()
 	end)
 
@@ -360,14 +374,14 @@ describe("StationRules.hatch", function()
 			listed[row.v] = true
 		end
 		local shadow = 0
-		for _ = 1, 60000 do -- the Safari Egg lists the Shadow Lion at 1 in 2,000: about 30 here
+		for _ = 1, 60000 do -- the Safari Egg lists the King Flamingo at 1 in 2,000: about 30 here
 			local a
 			a, rng = StationRules.hatch("safari", rng)
 			local animal = a :: StationRules.Owned
 			if animal.v then
 				expect(listed[animal.v]).toBe(true) -- never the Sun Lion or the Pharaoh Jackal: not in this egg
 			end
-			shadow += if animal.v == "shadow_lion" then 1 else 0
+			shadow += if animal.v == "peacock_flamingo" then 1 else 0
 		end
 		expect(shadow >= 12 and shadow <= 55).toBeTruthy()
 	end)
@@ -447,44 +461,66 @@ describe("StationRules.hatch", function()
 	end)
 
 	it(
-		"hatches about 1 animal in 200 in a rainbow coat, with the hatched stats of the same animal without it",
+		"rolls a coat after the animal (decision 0110): about 1 hatch in 59, its egg's signature coat 5 times as often",
 		function()
-			expect(StationConfig.RAINBOW_PPM * 200).toBe(StationRules.PPM)
+			local meadow = StationConfig.egg("meadow") :: StationConfig.Egg
+			expect(StationRules.pickCoat(meadow, 100)).toBe("prismatic")
+			expect(StationRules.pickCoat(meadow, 101)).toBe("spectral")
+			expect(StationRules.pickCoat(meadow, 17000)).toBe("verdant")
+			expect(StationRules.pickCoat(meadow, 17001)).toBeNil()
 			local rng = Rng.seed(11)
-			local coats, same = 0, true
+			local coats, rainbows, same = 0, 0, true
 			for _ = 1, 20000 do
 				local a
 				a, rng = StationRules.hatch("meadow", rng)
 				local animal = a :: StationRules.Owned
-				if animal.rainbow then
-					coats += 1
-					local plain = StationRules.versionStats(animal.s, animal.v) :: StationConfig.Stats
-					for _, stat in StationConfig.STATS do
-						same = same and (animal.stats :: any)[stat] == (plain :: any)[stat]
-					end
-				else
-					same = same and animal.rainbow == nil -- absent, never false: nothing extra in a save
+				local plain = StationRules.versionStats(animal.s, animal.v) :: StationConfig.Stats
+				for _, stat in StationConfig.STATS do
+					same = same and (animal.stats :: any)[stat] == (plain :: any)[stat] -- the buff is in `stat`, not stored
+				end
+				same = same and (animal.rainbow == true) == (animal.coat == "rainbow") -- never false: nothing extra in a save
+				coats += if animal.coat then 1 else 0
+				rainbows += if animal.coat == "rainbow" then 1 else 0
+			end
+			expect(coats >= 250 and coats <= 430).toBeTruthy() -- 340 expected
+			expect(rainbows >= 20 and rainbows <= 65).toBeTruthy() -- 1 in 500 (it was 1 in 200): 40 expected
+			expect(same).toBe(true)
+			local tally = {}
+			for _ = 1, 20000 do -- the Wild Egg's signature coat is Storm
+				local a
+				a, rng = StationRules.hatch("wild", rng)
+				local id = (a :: StationRules.Owned).coat
+				if id then
+					tally[id] = (tally[id] or 0) + 1
 				end
 			end
-			expect(coats >= 60 and coats <= 140).toBeTruthy() -- 100 expected
-			expect(same).toBe(true)
-			-- forced on and off: any egg, any animal
-			local real = StationConfig.RAINBOW_PPM
-			for _, forced in { StationRules.PPM, 0 } do
-				StationConfig.RAINBOW_PPM = forced
-				for _, egg in StationConfig.EGGS do
-					local a
-					a, rng = StationRules.hatch(egg.id, rng)
-					same = same and (a :: StationRules.Owned).rainbow == (if forced == 0 then nil else true)
-				end
+			expect((tally.storm or 0) > 3 * (tally.ember or 0)).toBeTruthy()
+			local prismatic = 0
+			for _ = 1, 2000 do -- the Crown Egg: always a coat, Prismatic about 1 in 9
+				local a
+				a, rng = StationRules.hatch("crown", rng)
+				local animal = a :: StationRules.Owned
+				expect(animal.coat ~= nil).toBeTruthy()
+				expect(animal.v ~= nil).toBeTruthy() -- variants only
+				prismatic += if animal.coat == "prismatic" then 1 else 0
 			end
-			StationConfig.RAINBOW_PPM = real
-			expect(same).toBe(true)
+			expect(prismatic >= 150 and prismatic <= 280).toBeTruthy()
 		end
 	)
 
+	it("buffs one stat by 12% for a stat coat, every stat by 30% for Prismatic", function()
+		local stats = { speed = 100, strength = 100, stamina = 100, mana = 100, health = 100, defence = 100 }
+		for _, stat in StationConfig.STATS do
+			expect(StationRules.stat({ s = "lion", stats = stats, coat = "ember" }, stat)).toBe(
+				if stat == "strength" then 112 else 100
+			)
+			expect(StationRules.stat({ s = "lion", stats = stats, coat = "prismatic" }, stat)).toBe(130)
+			expect(StationRules.stat({ s = "lion", stats = stats, coat = "gilded" }, stat)).toBe(100)
+		end
+	end)
+
 	it("gives a rainbow animal 5% more of every stat, rounded up, at any level", function()
-		expect(StationConfig.RAINBOW_BONUS).toBe(5)
+		expect((StationConfig.coat("rainbow") :: StationConfig.Coat).all).toBe(5)
 		local function lion(level: number, rainbow: boolean?): StationRules.Owned
 			local trained = {} :: any
 			for _, stat in StationConfig.STATS do
@@ -541,33 +577,27 @@ describe("StationRules.hatch", function()
 		expect(good).toBe(true)
 	end)
 
-	it("drops the Titan from the Golden Egg about 1 time in 20, now and then as one of its variants", function()
+	it("drops the plain Titan from the Golden Egg about 1 time in 20, and its variants never from it", function()
 		local rng = Rng.seed(9)
-		local titans, special, variants = 0, 0, 0
-		for _ = 1, 40000 do -- the Golden Egg lists both Titan variants (1 in 2,000 and 1 in 20,000): about 22 here
+		local titans, special = 0, 0
+		for _ = 1, 40000 do
 			local a
 			a, rng = StationRules.hatch("golden", rng)
 			local animal = a :: StationRules.Owned
 			if StationRules.role(animal) == StationConfig.TITAN then
 				titans += 1
-				expect(animal.s).toBe("elephant")
-				if animal.v then
-					special += 1
-					expect(StationConfig.variant("elephant", animal.v) ~= nil).toBeTruthy()
-				end
-			elseif animal.v then
-				variants += 1
+				special += if animal.v then 1 else 0
 			end
 		end
 		expect(titans >= 1700 and titans <= 2300).toBeTruthy() -- 5% of 40,000 = 2,000
-		expect(special >= 1 and special <= 40).toBeTruthy() -- rare, but they do hatch
-		expect(variants > 0).toBeTruthy()
+		expect(special).toBe(0) -- the War Elephant is the Ivory Egg's, the Frost Mammoth the top eggs'
 	end)
 
 	it("reports the variant tier as the rarity, else the species rarity", function()
 		expect(StationRules.rarity(owned("lion"))).toBe("rare")
 		expect(StationRules.rarity(owned("cheetah", "lightning_cheetah"))).toBe("mythic")
-		expect(StationRules.rarity(owned("elephant"))).toBe("legendary")
+		expect(StationRules.rarity(owned("elephant"))).toBe("epic")
+		expect(StationRules.rarity(owned("lion", "sun_lion"))).toBe("celestial")
 	end)
 end)
 

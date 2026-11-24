@@ -13,7 +13,8 @@ local StationProgress = {}
 
 type Stats = StationConfig.Stats
 -- One owned animal: the hatched Owned fields plus an id, and where it trains (at = station id)
--- since when (os.time). rainbow = true: it wears the rainbow coat (decision 0058).
+-- since when (os.time). coat: the coat it wears (decision 0110); rainbow = true beside coat = "rainbow"
+-- (decision 0058: saves from before coats have only that).
 export type Animal = {
 	id: number,
 	s: string,
@@ -21,6 +22,7 @@ export type Animal = {
 	stats: Stats,
 	trained: Stats?,
 	rainbow: boolean?,
+	coat: string?,
 	at: string?,
 	since: number?,
 	locked: boolean?, -- its owner locked it: it cannot go in a trade (decision 0099)
@@ -61,7 +63,7 @@ export type Profile = {
 	animals: { Animal },
 	team: { number }, -- animal ids, at most TEAM_SIZE, never a Titan or one that is training
 	titan: number?, -- the fourth slot: one Titan's id (decision 0027)
-	best: number, -- highest wave (endless level) cleared
+	best: number, -- highest wave cleared (LevelRules.LAST at most)
 	xp: number, -- player XP; the player level comes from it (playerLevel)
 	samples: number, -- dropped by harder waves; with coins they pay for ranch upgrades
 	upgrades: { [string]: number }, -- level of each ranch upgrade (StationConfig.UPGRADES), 0 = not bought
@@ -182,7 +184,18 @@ local function owned(a: any): StationRules.Owned?
 	local trained = if type(a.trained) == "table"
 		then cleanStats(a.trained, 0, StationConfig.MAX_LEVEL, StationRules.ZERO)
 		else nil
-	return { s = a.s, v = v, stats = stats, trained = trained, rainbow = if a.rainbow == true then true else nil }
+	local coat = if type(a.coat) == "string" and StationConfig.coat(a.coat)
+		then a.coat
+		elseif a.rainbow == true then "rainbow"
+		else nil
+	return {
+		s = a.s,
+		v = v,
+		stats = stats,
+		trained = trained,
+		coat = coat,
+		rainbow = if coat == "rainbow" then true else nil,
+	}
 end
 
 function StationProgress.isTitan(a: Animal): boolean
@@ -229,6 +242,7 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 				stats = own.stats,
 				trained = own.trained,
 				rainbow = own.rainbow,
+				coat = own.coat,
 				locked = if a.locked == true then true else nil,
 			}
 			if type(a.at) == "string" and StationConfig.station(a.at) and training < slots and not taken[a.at] then
@@ -467,6 +481,7 @@ function StationProgress.buy(p: Profile, eggId: string, hatched: StationRules.Ow
 		stats = table.clone(hatched.stats),
 		trained = if hatched.trained then table.clone(hatched.trained) else nil, -- the base levels
 		rainbow = hatched.rainbow,
+		coat = hatched.coat,
 	}
 	p.eggs = table.clone(p.eggs)
 	table.insert(p.eggs, { egg = eggId, animal = animal })
@@ -552,6 +567,7 @@ function StationProgress.crack(p: Profile, k: number, now: number): (Profile, bo
 		stats = e.animal.stats,
 		trained = e.animal.trained,
 		rainbow = e.animal.rainbow,
+		coat = e.animal.coat,
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
@@ -592,6 +608,7 @@ function StationProgress.give(
 		stats = stats,
 		trained = trained :: Stats,
 		rainbow = if rainbow then true else nil,
+		coat = if rainbow then "rainbow" else nil,
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
@@ -806,10 +823,11 @@ function StationProgress.upgrade(p: Profile, id: string, now: number): (Profile,
 	return p, true, nil
 end
 
--- Whether `p` can send its team at wave `level` now: any wave up to one past the best cleared,
--- with at least one animal on the team. The code says why not.
+-- Whether `p` can send its team at wave `level` now: any wave up to one past the best cleared and
+-- no further than the last (LevelRules.LAST, decision 0107), with at least one animal on the team.
+-- The code says why not.
 function StationProgress.canFight(p: Profile, level: number): (boolean, string?)
-	if level < 1 or level > p.best + 1 or level ~= math.floor(level) then
+	if level < 1 or level > math.min(p.best + 1, LevelRules.LAST) or level ~= math.floor(level) then
 		return false, "wave"
 	elseif #StationProgress.fighters(p) == 0 then
 		return false, "no_team"
@@ -820,13 +838,24 @@ end
 -- What clearing wave `level` pays `p` now: coins (the Trophy Lodge adds to them), player XP and samples.
 function StationProgress.payout(p: Profile, level: number): (number, number, number)
 	local coins = LevelRules.reward(level, p.best) * StationProgress.value(p, "lodge") // 100
-	return coins, LevelRules.xp(level, p.best), LevelRules.samples(level, p.best)
+	local pct, n = 100, 0 -- the Gilded coat (decision 0110): more XP for each on the team, up to COAT_XP_MAX
+	for _, a in StationProgress.fighters(p) do
+		local coat = StationRules.coatOf(a :: any)
+		if coat and coat.xp and n < StationConfig.COAT_XP_MAX then
+			pct, n = pct + coat.xp, n + 1
+		end
+	end
+	return coins, LevelRules.xp(level, p.best) * pct // 100, LevelRules.samples(level, p.best)
 end
 
 -- Pay for clearing wave `level` (the server has decided the fight was won) and record it as the
--- best if it is.
-function StationProgress.clear(p: Profile, level: number): (Profile, boolean, string?)
-	local ok, code = StationProgress.canFight(p, level)
+-- best if it is. `carried` (a shared fight, decision 0108): another player opened the wave, so it may be
+-- further on than this save could open alone; it is still a wave that exists, won with a team.
+function StationProgress.clear(p: Profile, level: number, carried: boolean?): (Profile, boolean, string?)
+	local ok, code = StationProgress.canFight(p, if carried then math.min(level, p.best + 1) else level)
+	if carried and (level > LevelRules.LAST or level ~= math.floor(level)) then
+		ok, code = false, "wave"
+	end
 	if not ok then
 		return p, false, code
 	end

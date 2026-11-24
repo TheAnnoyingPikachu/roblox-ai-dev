@@ -1,0 +1,101 @@
+# 0110: Animal Stations: twelve eggs, rarity by power, stronger variants, ten coats
+
+Status: accepted (SHANNON, 2026-11-24, below). The numbers are Claude's draft, to confirm at the checkpoint.
+Date: 2026-11-24. Task STATION-129. Replaces decision 0031's "no legendary-only egg" and decision 0037's two
+variant tiers; extends decision 0058 (the rainbow coat) to a family of coats.
+
+## Context
+
+- Fact: four eggs, the last open at wave 20, with 300 waves (decision 0107). Every egg dropped every animal
+  of its tier. Rarity did not follow power: the "mythic" Comet Meerkat (444) was weaker than the
+  "legendary" Shadow Lion (660).
+- Concept: the canvas "Eggs, Rarities and Coats" (boards: the plan, the egg ladder, rarities, coats shot on
+  the game's Lion in Studio, the drop matrix, and the new eggs' looks).
+- SHANNON, 2026-11-24: "make a plan to spread the animals sparsly through more eggs ... make higher tier eggs
+  drop nothing but good varients, ... concepts for more texture variants like rainbow and what each variant
+  will give as a buff, make more creature rarities and adjust the current rarities so the most powerful
+  creatures all come in a higher rarity and from harder to obtain eggs"; then, on the concept: "make the
+  current special variants slightly stronger so they are epic or legendary at least ... we wont be making
+  any more [animals] yet so just do what you can with the current animals, if need be you could make some
+  animals even more powerful to fit them into higher rarities ... yes the super high level eggs will only
+  drop high rarity variants. i like the guilded coat but make it increase XP gain instead. also make the
+  rainbow coat rarer and make the primsatic coat extremely good like 30% to each stat ... dont make the
+  crown egg drop guarenteed prismatic ... but make it a higher chance".
+
+## What
+
+### Rarity by power (`StationRules.powerRarity`)
+
+- Nine rarities: common, uncommon, rare, epic, legendary, mythic, divine, celestial, secret (kept for later;
+  none yet). A version's rarity is the band its stat total falls in: under 180 common, 180 uncommon, 260
+  rare, 400 epic, 550 legendary, 800 mythic, 1,100 divine, 1,600 celestial. A Titan's bands are 1.6 times as
+  wide. A spec checks every version.
+- The Tortoise moves to uncommon, the Rhino to rare, the Elephant to epic.
+- Each variant has its own `mult` (its stats are the species' x mult, its twist stat gains 20 x mult more),
+  set so it lands in its band. Every variant is at least epic. Epic: Pharaoh Jackal, Alien Meerkat,
+  Gemshell Tortoise, King Flamingo, Thunder Cheetah. Legendary: Sphinx Jackal, Comet Meerkat, Island
+  Tortoise, Phoenix Flamingo, Lava Rhino. Mythic: Lightning Cheetah, Shadow Lion, Acacia Giraffe, War
+  Elephant. Divine: Crystal Rhino, Diamond Giraffe (SHANNON swapped the two rhinos' places, 2026-11-24). Celestial: Sun Lion, Frost Mammoth.
+- `STAT_MAX` (a version's stat) goes from 400 to 1,000, so the strongest are not cut short.
+
+### Twelve eggs (`StationConfig.EGGS`)
+
+| # | Egg | Opens | Price | Animals | Variants | Signature coat |
+|---|---|---|---|---|---|---|
+| 1 | Meadow | start | 100 | Jackal, Meerkat | Pharaoh Jackal, Alien Meerkat 1 in 5,000 | none |
+| 2 | Wild | start | 1,500 | Jackal, Tortoise, Cheetah | Gemshell Tortoise, Thunder Cheetah 1 in 4,000 | Storm |
+| 3 | Safari | wave 10 | 15K | Meerkat, Flamingo, Rhino | King Flamingo 1 in 2,000; Comet Meerkat 1 in 10,000 | Ember |
+| 4 | Golden | wave 20 | 50K | Cheetah, Lion, Giraffe, Elephant 5% | Thunder Cheetah 1 in 2,000; Lightning Cheetah 1 in 25,000 | Gilded |
+| 5 | Dusk | wave 35 | 140K | Tortoise, Rhino, Jackal | Island Tortoise, Sphinx Jackal 1 in 5,000; Lava Rhino 1 in 8,000 | Obsidian |
+| 6 | Oasis | wave 50 | 430K | Flamingo, Giraffe, Meerkat | Phoenix Flamingo 1 in 5,000; Acacia Giraffe 1 in 20,000 | Verdant |
+| 7 | Ivory | wave 75 | 3M | Elephant 40%, Rhino, Lion | War Elephant 1 in 5,000; Shadow Lion 1 in 20,000 | Frost |
+| 8 | Legend | wave 100 | 20M | variants only | epic 80%, legendary 20% | Spectral |
+| 9 | Mythic | wave 140 | 440M | variants only | legendary 85%, mythic 15% | Galaxy |
+| 10 | Divine | wave 180 | 9.6B | variants only | mythic 90%, divine 10% | Prismatic (1 in 2,000) |
+| 11 | Celestial | wave 230 | 450B | variants only | divine 95%, celestial 5%; always a coat | none |
+| 12 | Crown | wave 300 cleared | 98T | variants only | Sun Lion, Frost Mammoth; always a coat, Prismatic about 1 in 9 | Prismatic x20 |
+
+- Each animal hatches from one to three eggs, each variant from one to three. A variant-only egg's drops
+  add up to a million (`only`). A price is about 250 first clears of the wave that opens the egg. The new
+  eggs' models are drawn (`tools/blender/stations/assets/eggs.py`, concept board "The new eggs") but not
+  uploaded: the game stands the plain shell until they are.
+
+### Ten coats (`StationConfig.COATS`)
+
+One coat at most per animal, rolled after the animal; an egg's signature coat is 5 times as likely.
+
+| Coat | Odds | Buff |
+|---|---|---|
+| Prismatic | 1 in 10,000 | +30% every stat |
+| Spectral | 1 in 2,500 | once a fight, a blow that would knock it out leaves it at 1 HP |
+| Galaxy | 1 in 1,000 | +12% Mana; its power meter starts each fight a quarter full |
+| Gilded | 1 in 1,000 | +25% player XP from a wave it fights in (up to three count) |
+| Rainbow | 1 in 500 (was 1 in 200) | +5% every stat (decision 0058) |
+| Ember, Frost, Storm, Obsidian, Verdant | 1 in 400 each | +12% Strength, Health, Speed, Defence, Stamina |
+
+- Looks (`Creatures.spawn`): Rainbow and Prismatic wear the rainbow texture; the rest are a tint, an outline
+  and an effect over the model, as shot on the concept board. Galaxy and Prismatic should get their own
+  textures later.
+- Saves: an animal gains `coat` (an id); `rainbow = true` is kept beside `coat = "rainbow"`, and a save from
+  before coats with only `rainbow = true` reads as the rainbow coat. Nothing is rewritten.
+- Trades weigh a coat by its rarity (`StationTrade.COAT`); giving any coat or a mythic or higher needs a hold.
+
+## Evidence
+
+- Specs: `StationRules` (twelve eggs, rarity by power for every version, coats' odds and buffs),
+  `BattleRules` (Spectral, Galaxy), `StationProgress` (Gilded XP, coats in saves). 789 pass.
+- Played in Studio (build dev, local): the HUD loads (it is at Luau's local limit), the egg vendor lists all
+  twelve (the tab column now scrolls clear of the chips), the Animals panel shows the new rarities and coat
+  chips and a Coats tab.
+
+- The waves (decision 0107's simulation, 4 clicks a second, re-run with the new variants): the best team
+  there is (Sun Lion, Crystal Rhino, Diamond Giraffe, Frost Mammoth, all level 70) with the best boon picks
+  clears 289 to 300, wave 300 in 2 runs of 12, as decision 0107 aimed for; with random picks 159 to 169. A
+  team of mythics at level 40 reaches 129 to 149 with random picks. Steepening the curve (`STEEP_BEND` 190)
+  shut wave 300 to everyone, so the curve stays as it is: boons, not the team, decide the last waves.
+- Saves: nobody has a save yet (SHANNON), so stored animals need no restat.
+
+## To confirm at the checkpoint
+
+1. Prices, hatch times and odds: in the QA pass.
+2. The bands and the variants' `mult`s (draft).

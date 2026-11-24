@@ -168,6 +168,25 @@ describe("BattleRules.battle", function()
 		expect((BattleRules.battle(team, { owned("jackal"), owned("tortoise"), owned("meerkat") }))).toBe(true)
 	end)
 
+	it("lets a Spectral coat stand once at 1 HP and a Galaxy coat start a quarter charged (decision 0110)", function()
+		local team = { owned("jackal") }
+		local ghost = { table.clone(team[1]) }
+		(ghost[1] :: any).coat = "spectral"
+		expect((BattleRules.battle(team, { owned("jackal") }))).toBe(true) -- the player's side wins a mirror match
+		local log = {}
+		expect((BattleRules.battle(team, ghost, log))).toBe(false) -- ... but not against a Spectral twin
+		local spared = 0
+		for _, e in log :: { any } do
+			spared += if e.side == 1 and e.hp == 1 then 1 else 0 -- a blow from the player's side left it at 1
+		end
+		expect(spared >= 1).toBeTruthy()
+		expect(BattleRules.fighter(ghost[1], 2, 1).spectral).toBe(true)
+		local star = table.clone(team[1]);
+		(star :: any).coat = "galaxy"
+		expect(BattleRules.fighter(star, 1, 1).energy).toBe(BattleRules.POWER_COST // 4)
+		expect(BattleRules.fighter(team[1], 1, 1).energy).toBe(0)
+	end)
+
 	it("makes enemies hit the Defence animal first, so it shields a fragile teammate", function()
 		local glass = custom("jackal", { health = 1, strength = 400, mana = 0, defence = 0 })
 		local wall = { health = 100, defence = 200, strength = 0 }
@@ -644,23 +663,26 @@ describe("BattleRules pit fight: clicks and quick presses (decision 0106)", func
 	local clicks: BattleRules.Setup = { clicks = true }
 	local STRIKE = BattleRules.STRIKE
 
-	it("gives every animal the quick press of its spell, and every Titan a mash", function()
-		expect(BattleRules.pressOf(owned("lion"))).toBe("ring")
-		expect(BattleRules.pressOf(owned("cheetah"))).toBe("chain")
-		expect(BattleRules.pressOf(owned("jackal"))).toBe("needle")
-		expect(BattleRules.pressOf(owned("elephant"))).toBe("mash")
-		expect(BattleRules.pressOf(owned("elephant", "frost_elephant"))).toBe("mash")
-		expect(BattleRules.pressOf(owned("meerkat", "star_meerkat"))).toBe("ring")
-		expect(BattleRules.pressOf(owned("tortoise", "gemshell_tortoise"))).toBe("chain")
-		expect(BattleRules.pressOf(owned("flamingo", "phoenix_flamingo"))).toBe("needle")
-		for _, sp in StationConfig.SPECIES do
-			expect(BattleRules.PRESSES[sp.id] ~= nil).toBeTruthy()
+	it(
+		"gives every class its own quick press: attack a ring, defense a needle, utility a chain, a Titan a mash",
+		function()
+			expect(BattleRules.pressOf(owned("lion"))).toBe("ring") -- attack
+			expect(BattleRules.pressOf(owned("cheetah"))).toBe("ring")
+			expect(BattleRules.pressOf(owned("rhino"))).toBe("needle") -- defense
+			expect(BattleRules.pressOf(owned("tortoise", "gemshell_tortoise"))).toBe("needle")
+			expect(BattleRules.pressOf(owned("flamingo"))).toBe("chain") -- utility
+			expect(BattleRules.pressOf(owned("meerkat", "star_meerkat"))).toBe("chain")
+			expect(BattleRules.pressOf(owned("elephant", "frost_elephant"))).toBe("mash") -- titan
+			local seen = {}
+			for _, role in StationConfig.ROLES do
+				seen[BattleRules.PRESS_OF_ROLE[role]] = true
+			end
+			seen[BattleRules.PRESS_OF_ROLE.titan] = true
+			for _, press in { "ring", "needle", "chain", "mash" } do -- four classes, four presses
+				expect(seen[press]).toBeTruthy()
+			end
 		end
-		for v in BattleRules.PRESS_VARIANTS do -- every listed variant exists
-			local species = string.match(v, "_(%a+)$") :: string
-			expect(StationConfig.variant(species, v) ~= nil).toBeTruthy()
-		end
-	end)
+	)
 
 	it("judges a Perfect by the press: ring, needle crossings, a quick chain, a full mash", function()
 		local P, E, L = BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE
@@ -757,5 +779,141 @@ describe("BattleRules pit fight: clicks and quick presses (decision 0106)", func
 		end
 		expect(tapped(BattleRules.MASH_COUNT)).toBe(true)
 		expect(tapped(3)).toBeNil()
+	end)
+end)
+
+describe("BattleRules shared fights (decision 0108)", function()
+	local STRIKE = BattleRules.STRIKE
+	local clicks: BattleRules.Setup = { clicks = true }
+	-- player `who`'s copy of an animal
+	local function of(who: number, a: StationRules.Owned): StationRules.Owned
+		local out = table.clone(a) :: any
+		out.owner = who
+		return out
+	end
+	-- `players` teams of three sturdy animals, none of them a Defence animal
+	local function party(players: number): { StationRules.Owned }
+		local team = {}
+		for who = 1, players do
+			for _, id in { "lion", "jackal", "flamingo" } do
+				table.insert(team, of(who, custom(id, { health = 400, defence = 200 })))
+			end
+		end
+		return team
+	end
+	local function crowd(n: number): { StationRules.Owned }
+		local foes = {}
+		for _ = 1, n do
+			table.insert(foes, foeAt("shadow_knight", 1))
+		end
+		return foes
+	end
+
+	it("counts the players in a team and makes the front line FRONT_MORE longer for each after the first", function()
+		expect(BattleRules.players(three("lion"))).toBe(1)
+		expect(BattleRules.players(party(3))).toBe(3)
+		expect(BattleRules.front(1)).toBe(BattleRules.FRONT)
+		expect(BattleRules.front(3)).toBe(BattleRules.FRONT + 2 * BattleRules.FRONT_MORE)
+		local front = BattleRules.front(2)
+		local engaged, places = {}, {}
+		BattleRules.battle(party(2), crowd(14), nil, {}, clicks, nil, engaged, places)
+		local atStart = 0
+		for _, at in engaged do
+			atStart += if at == 0 then 1 else 0
+		end
+		expect(atStart).toBe(front)
+		for slot = 1, front do
+			expect(places[slot]).toBe(slot) -- the first take the places along the line in order
+		end
+		for slot = front + 1, 14 do -- one that steps up takes a fallen foe's place
+			expect(places[slot] == nil or (places[slot] >= 1 and places[slot] <= front)).toBeTruthy()
+		end
+	end)
+
+	it("keeps the group bonuses inside each player's own team", function()
+		local alone = BattleRules.lineup({ owned("lion"), owned("jackal") }, 1)
+		local both = BattleRules.lineup({
+			of(1, owned("lion")),
+			of(1, owned("jackal")),
+			of(2, owned("lion")),
+			of(2, owned("meerkat")),
+		}, 1)
+		expect(both[1].owner).toBe(1)
+		expect(both[3].owner).toBe(2)
+		expect(both[1].dmg).toBe(alone[1].dmg) -- one other pack animal each, not three
+		expect(both[3].dmg).toBe(alone[1].dmg)
+		-- a solitary animal keeps its bonus beside another player's animal of its role
+		local cheetah = BattleRules.lineup({ owned("cheetah") }, 1)[1]
+		expect(BattleRules.lineup({ of(1, owned("cheetah")), of(2, owned("jackal")) }, 1)[1].dmg).toBe(cheetah.dmg)
+	end)
+
+	it("lets a click strike with its own player's next animal, at the foe nearest that player's team", function()
+		local log = {}
+		BattleRules.battle(party(2), crowd(9), log, {
+			{ slot = STRIKE, t = 0.2, owner = 2 },
+			{ slot = STRIKE, t = 0.2 + BattleRules.STRIKE_GAP / 2, owner = 1 }, -- another player's: their own STRIKE_GAP
+			{ slot = STRIKE, t = 0.4, owner = 2 },
+		}, clicks)
+		local hits = {}
+		for _, e in log do
+			if e.click then
+				table.insert(hits, e)
+			end
+		end
+		expect(#hits).toBe(3)
+		-- nine places and two teams: the first stands before the low places, the second before the high
+		expect(hits[1].slot).toBe(4)
+		expect(hits[1].tslot).toBe(7)
+		expect(hits[2].slot).toBe(1)
+		expect(hits[2].tslot).toBe(3)
+		expect(hits[3].slot).toBe(5)
+		expect(hits[3].tslot).toBe(7)
+	end)
+
+	it("sends each foe at the team it stands before, and at the usual target once that team is down", function()
+		local log = {}
+		BattleRules.battle(party(3), crowd(12), log, {}, clicks)
+		local seen = 0
+		for _, e in log do
+			if e.t > 3 then -- before anyone falls or steps up
+				break
+			elseif e.side == 2 then
+				seen += 1
+				-- twelve places and three teams of three: foes 1 to 4 face player 1's (slots 1 to 3), and so on
+				expect((e.tslot - 1) // 3 + 1).toBe((e.slot - 1) // 4 + 1)
+			end
+		end
+		expect(seen > 0).toBeTruthy()
+		-- with player 1's team down from the start, the foes before it turn on the first animal standing
+		local hurt: BattleRules.Setup = { clicks = true, hp = { 0, 0, 0, 1, 1, 1, 1, 1, 1 } }
+		local after = {}
+		BattleRules.battle(party(3), crowd(12), after, {}, hurt)
+		local turned = false
+		for _, e in after do
+			if e.side == 2 and e.slot <= 4 then
+				expect(e.tslot).toBe(4)
+				turned = true
+				break
+			end
+		end
+		expect(turned).toBe(true)
+	end)
+
+	it("changes nothing before a click's time, whoever clicks", function()
+		local base, struck = {}, {}
+		BattleRules.battle(party(2), crowd(9), base, {}, clicks)
+		BattleRules.battle(party(2), crowd(9), struck, { { slot = STRIKE, t = 3, owner = 2 } }, clicks)
+		local same = 0
+		for i, e in base do
+			if e.t >= 3 then
+				break
+			end
+			same += 1
+			expect(struck[i].t).toBe(e.t)
+			expect(struck[i].slot).toBe(e.slot)
+			expect(struck[i].tslot).toBe(e.tslot)
+			expect(struck[i].dmg).toBe(e.dmg)
+		end
+		expect(same > 0).toBeTruthy()
 	end)
 end)

@@ -52,7 +52,8 @@ Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and label
 
 local C = Style.C
 local RARITY_COLOUR = Style.RARITY
-local RANK: { [string]: number } = { common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6 }
+local RANK: { [string]: number } =
+	{ common = 1, uncommon = 2, rare = 3, epic = 4, legendary = 5, mythic = 6, divine = 7, celestial = 8, secret = 9 }
 local ROLE_NAME: { [string]: string } = { attack = "Attack", defense = "Defence", utility = "Utility", titan = "TITAN" }
 local GROUP_NAME: { [string]: string } = { pack = "Pack", solitary = "Solitary" }
 local STAT_SHORT: { [string]: string } =
@@ -111,6 +112,7 @@ local REFUSED: { [string]: string } = {
 	wave = "That wave is not open yet: clear the one before it",
 	no_team = "Put an animal on your team first",
 	busy = "The arena is busy: try again in a moment",
+	field = "A fight is on: wait in the wave portal to join its next wave",
 	arena = "The arena is not ready",
 	ranch = "You have no ranch yet",
 	shield = "Nothing to shield from right now",
@@ -442,12 +444,15 @@ local function animalCard(a: any, order: number)
 	elseif a.at then
 		corner(card, "Training", C.info)
 	end
-	if a.rainbow then
-		local coat = Style.chip(card, "RAINBOW", Color3.new(1, 1, 1))
+	local worn = StationRules.coatOf(a)
+	if worn then
+		local coat = Style.chip(card, string.upper(worn.name), Style.COAT[worn.id] or Color3.new(1, 1, 1))
 		coat.Position, coat.ZIndex, coat.TextSize = UDim2.fromOffset(8, 106), 3, 12
-		local colours = Instance.new("UIGradient")
-		colours.Color = RAINBOW
-		colours.Parent = coat
+		if Style.COAT[worn.id] == nil then -- rainbow, prismatic
+			local colours = Instance.new("UIGradient")
+			colours.Color = RAINBOW
+			colours.Parent = coat
+		end
 	end
 	local power = Style.chip(card, `⚡ {Format.commas(BattleRules.powerOf(live(a)))}`, C.ink, Color3.new(1, 1, 1))
 	power.AnchorPoint, power.Position, power.ZIndex, power.TextSize = Vector2.new(1, 0), UDim2.new(1, -8, 0, 8), 3, 13
@@ -482,8 +487,7 @@ local function animalDetail(a: any)
 	)
 	Style.round(view, 14)
 	Style.stroke(view, C.ink, 3)
-	local name =
-		Style.text(head, (if a.rainbow then "Rainbow " else "") .. nameOf(a), 30, C.text, UDim2.new(1, -196, 0, 36))
+	local name = Style.text(head, StationTrade.nameOf(a), 30, C.text, UDim2.new(1, -196, 0, 36))
 	name.Position, name.TextTruncate = UDim2.fromOffset(194, 2), Enum.TextTruncate.AtEnd
 	local chips = Instance.new("Frame")
 	chips.BackgroundTransparency = 1
@@ -583,7 +587,7 @@ redraw.animals = function()
 		if a.at then
 			table.insert(training, a)
 		end
-		if a.rainbow then
+		if StationRules.coatOf(a) then
 			table.insert(rainbows, a)
 		end
 	end
@@ -591,7 +595,7 @@ redraw.animals = function()
 		{ "team", `Your team  {#profile.team}/{StationProgress.TEAM_SIZE}`, team },
 		{ "all", `All animals  {#all}`, all },
 		{ "training", `Training  {#training}`, training },
-		{ "rainbow", `Rainbows  {#rainbows}`, rainbows },
+		{ "rainbow", `Coats  {#rainbows}`, rainbows },
 	}
 	local shown = all
 	for _, l in LISTS do
@@ -1026,18 +1030,24 @@ redraw.shop = function()
 	if locked then
 		Style.chip(price, `Clear wave {def.wave} to unlock`, C.bad, Color3.new(1, 1, 1))
 	end
-	local hatches = Style.text(shop.body, "HATCHES", 14, C.muted, UDim2.new(1, -8, 0, 18))
+	local hatches = Style.text(
+		shop.body,
+		if def.only then "VARIANTS ONLY: EVERY HATCH IS ONE OF THESE" else "HATCHES",
+		14,
+		C.muted,
+		UDim2.new(1, -8, 0, 18)
+	)
 	hatches.LayoutOrder = 2
 	local basics = Instance.new("Frame")
 	basics.BackgroundTransparency = 1
-	basics.Size, basics.LayoutOrder = UDim2.new(1, -8, 0, 92), 3
+	basics.Size, basics.LayoutOrder, basics.Visible = UDim2.new(1, -8, 0, 92), 3, not def.only
 	Style.list(basics, 8, true)
 	basics.Parent = shop.body
 	for i, o in def.odds do
 		local sp = StationConfig.species(o.id) :: StationConfig.Species
 		animalCell(basics, i, StationRules.assetOf(o.id, nil), sp.name, RARITY_COLOUR[sp.rarity] or C.text, 72)
 	end
-	local finds = Style.text(shop.body, "RARE FINDS", 14, C.muted, UDim2.new(1, -8, 0, 18))
+	local finds = Style.text(shop.body, if def.only then "" else "RARE FINDS", 14, C.muted, UDim2.new(1, -8, 0, 18))
 	finds.LayoutOrder = 4
 	local rare = Instance.new("Frame")
 	rare.BackgroundTransparency = 1
@@ -1669,9 +1679,11 @@ redraw.trade = function()
 				UDim2.new(1, -24, 0, 40)
 			)
 			summary.Position, summary.TextWrapped = UDim2.fromOffset(12, 6), true
-			local precious = false -- giving a mythic or a rainbow needs a hold
+			local precious = false -- giving a coat or a mythic and up needs a hold
 			for _, x in give do
-				precious = precious or x.rainbow == true or StationRules.rarity(x) == "mythic"
+				precious = precious
+					or StationRules.coatOf(x) ~= nil
+					or (RANK[StationRules.rarity(x)] or 0) >= RANK.mythic
 			end
 			local words = if tradeState.confirmed
 				then `Waiting for {tradeState.with}...`
@@ -1986,7 +1998,8 @@ local revealSubStroke = Instance.new("UIStroke")
 revealSubStroke.Thickness, revealSubStroke.Transparency, revealSubStroke.Color = 3, 1, Color3.fromRGB(20, 16, 30)
 revealSubStroke.Parent = revealSub
 local revealed = 0
-local BIG: { [string]: number } = { common = 0, uncommon = 0, rare = 1, epic = 1, legendary = 2, mythic = 3 }
+local BIG: { [string]: number } =
+	{ common = 0, uncommon = 0, rare = 1, epic = 1, legendary = 2, mythic = 3, divine = 3, celestial = 4, secret = 5 }
 local function showRarity(a: any)
 	revealed += 1
 	local mine = revealed
@@ -1994,7 +2007,7 @@ local function showRarity(a: any)
 	local big = BIG[rarity] or 0
 	reveal.Text = string.upper(rarity) .. string.rep("!", big)
 	reveal.TextColor3 = RARITY_COLOUR[rarity] or C.text
-	local lines = { (if a.rainbow then "Rainbow " else "") .. nameOf(a) }
+	local lines = { StationTrade.nameOf(a) }
 	local def = StationConfig.egg(a.egg or "")
 	if a.v and def then
 		for _, drop in def.rare do
@@ -2003,11 +2016,11 @@ local function showRarity(a: any)
 			end
 		end
 	end
-	if a.rainbow then
-		table.insert(lines, "A rainbow coat!")
+	if StationRules.coatOf(a) then
+		table.insert(lines, `A {string.lower((StationRules.coatOf(a) :: any).name)} coat!`)
 	end
 	revealSub.Text = table.concat(lines, "\n")
-	revealSub.TextColor3 = if a.rainbow then Color3.fromRGB(255, 225, 100) else C.text
+	revealSub.TextColor3 = if StationRules.coatOf(a) then Color3.fromRGB(255, 225, 100) else C.text
 	reveal.TextTransparency, revealStroke.Transparency = 0, 0
 	revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
 	revealScale.Scale, reveal.Rotation = 0.2, 0
@@ -2132,9 +2145,7 @@ offerBoons = function(ids: { string }, n: number)
 				if not ok then
 					boonRow.Visible = true
 					Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
-					return
 				end
-				began(n)
 			end, if boon.rare then "primary" else "ghost", UDim2.new(1 / 3, -6, 1, 0))
 			card.Name, card.LayoutOrder = boon.name, k
 			local title = Style.text(card, boon.name, 17, C.text, UDim2.new(1, -12, 0, 24))
@@ -2399,7 +2410,7 @@ do
 			return
 		end
 		task.delay(math.max(0, at - Workspace:GetServerTimeNow()), function()
-			local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+			local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
 			for _, m in if folder then folder:GetChildren() else {} do
 				local hp = m:GetAttribute("Hp")
 				if m:IsA("Model") and m:GetAttribute("Side") == 1 and type(hp) == "number" and hp > 0 then
@@ -2721,6 +2732,7 @@ type Plate = {
 	count: TextLabel?, -- the mash's presses
 	marks: { TextButton }, -- the chain's 1-2-3
 	marked: number,
+	model: Model?, -- the animal on the field, which its pop-up stands over (PressPops)
 }
 local plateOf: { [number]: Plate } = {}
 -- Quick presses and clicks (decision 0106) keep their functions here, set in the block below: the HUD's
@@ -2731,6 +2743,7 @@ local Press: {
 	on: (p: Plate, slot: number) -> (), -- its meter has just filled
 	off: (p: Plate) -> (), -- it is empty again, or gone
 	catcher: TextButton, -- the click layer
+	pops: any, -- PressPops: stands the pop-ups over their animals (decision 0109)
 } =
 	{ SWING = 0.46 } :: any
 
@@ -2808,13 +2821,15 @@ do
 
 	-- the standing foes nearest the team (the front line first), up to `n`, by their unseen Hit boxes
 	local function frontFoes(n: number): { BasePart }
-		local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+		local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
 		local ours, foes = {}, {}
 		for _, m in if folder then folder:GetChildren() else {} do
 			local hit, hp = m:FindFirstChild("Hit"), m:GetAttribute("Hp")
 			if m:IsA("Model") and hit and hit:IsA("BasePart") and type(hp) == "number" and hp > 0 then
 				if m:GetAttribute("Side") == 1 then
-					table.insert(ours, hit.Position)
+					if (m:GetAttribute("Owner") or player.UserId) == player.UserId then -- the player's own team
+						table.insert(ours, hit.Position)
+					end
 				elseif m:GetAttribute("Side") == 2 then
 					table.insert(foes, hit)
 				end
@@ -2882,12 +2897,9 @@ do
 		end
 	end)
 
-	-- the pop-ups, in a row across the lower middle of the screen
-	local qtes = Instance.new("Frame")
-	qtes.Name, qtes.BackgroundTransparency, qtes.ZIndex = "Qtes", 1, 5
-	qtes.AnchorPoint, qtes.Position, qtes.Size = Vector2.new(0.5, 0), UDim2.fromScale(0.5, 0.56), UDim2.fromScale(1, 0)
-	qtes.Parent = clickFx
-	Style.list(qtes, 16, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
+	-- the pop-ups stand over their animals (decision 0109, SHANNON's pick B): PressPops places them
+	Press.pops = require(script.Parent:WaitForChild("PressPops"))
+	Press.pops.init(clickFx)
 
 	local function pressOff(p: Plate)
 		if p.card then
@@ -2922,20 +2934,18 @@ do
 		local ping = math.min(0.25, player:GetNetworkPing() * 2)
 		p.fullAt, p.close = os.clock(), math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
 		p.sent, p.presses = false, 0
-		local k = uiScale.Scale
-		local card = Style.button(qtes, "", function()
+		-- compact (SHANNON: "make the QTEs more compact"): no name, its line to the animal says whose it is
+		local k = uiScale.Scale * 0.8
+		local card = Style.button(clickFx, "", function()
 			Press.tap(slot)
-		end, "primary", UDim2.fromOffset(200 * k, 150 * k))
-		card.LayoutOrder = slot
-		local title = Style.text(card, `{p.label} [{slot}]`, 15 * k, C.ink, UDim2.new(1, -16 * k, 0, 20 * k))
-		title.Position, title.TextTruncate = UDim2.fromOffset(8 * k, 8 * k), Enum.TextTruncate.AtEnd
-		title.TextXAlignment = Enum.TextXAlignment.Center
+		end, "primary", UDim2.fromOffset(170 * k, 112 * k))
+		card.ZIndex = 5
 		local say = ({ needle = "STOP IN GOLD!", chain = "TAP 1-2-3!", mash = "MASH!" })[p.press] or "TAP!"
-		local big = Style.text(card, say, 24 * k, C.ink, UDim2.new(1, 0, 0, 30 * k))
-		big.Position, big.TextXAlignment = UDim2.fromOffset(0, 30 * k), Enum.TextXAlignment.Center
+		local big = Style.text(card, `{say} [{slot}]`, 21 * k, C.ink, UDim2.new(1, 0, 0, 28 * k))
+		big.Position, big.TextXAlignment = UDim2.fromOffset(0, 14 * k), Enum.TextXAlignment.Center
 		local body = Instance.new("Frame")
-		body.BackgroundTransparency, body.Size = 1, UDim2.new(1, -24 * k, 0, 70 * k)
-		body.Position = UDim2.fromOffset(12 * k, 66 * k)
+		body.BackgroundTransparency, body.Size = 1, UDim2.new(1, -24 * k, 0, 56 * k)
+		body.Position = UDim2.fromOffset(12 * k, 46 * k)
 		body.Parent = card
 		if p.press == "needle" then -- a bar, gold in the middle, the needle swinging through it (`needleAt`)
 			local bar = Style.frame(body, UDim2.new(1, 0, 0, 22 * k), C.night)
@@ -2950,12 +2960,12 @@ do
 			Style.stroke(hand, C.ink, 2)
 			p.hand = hand
 		elseif p.press == "chain" then -- 1-2-3 in a row, tapped in order
-			Style.list(body, 12 * k, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
+			Style.list(body, 8 * k, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
 			for i = 1, 3 do
 				local b = Style.button(body, tostring(i), function()
 					chainHit(p, slot, i)
-				end, "info", UDim2.fromOffset(54 * k, 54 * k))
-				b.LayoutOrder, b.TextSize = i, 26 * k
+				end, "info", UDim2.fromOffset(44 * k, 44 * k))
+				b.LayoutOrder, b.TextSize = i, 22 * k
 				table.insert(p.marks, b)
 			end
 		elseif p.press == "mash" then -- the count; the presses go up together at MASH_COUNT, or when time is up
@@ -3000,6 +3010,7 @@ do
 				:Play()
 		end
 		p.card = card
+		Press.pops.attach(card, p.model, p.press, k)
 	end
 
 	local function pressPlate(slot: number)
@@ -3057,12 +3068,26 @@ end)
 task.spawn(function()
 	while true do
 		task.wait(0.1)
-		local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
+		local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
 		local seen: { [number]: boolean } = {}
 		if folder then
 			for _, m in folder:GetChildren() do
-				local slot = m:GetAttribute("Slot")
-				if m:GetAttribute("Side") == 1 and type(slot) == "number" then
+				local slot = m:GetAttribute("Seat") or m:GetAttribute("Slot")
+				local owner = m:GetAttribute("Owner") or player.UserId
+				if
+					m:GetAttribute("Side") == 1
+					and type(slot) == "number"
+					and owner ~= player.UserId
+					and m:IsA("Model")
+				then
+					-- another player's animal: only a marker over it while its meter is full (decision 0109)
+					local s, power, hp = m:GetAttribute("Species"), m:GetAttribute("Power"), m:GetAttribute("Hp")
+					Press.pops.ally(
+						m,
+						if type(s) == "string" then BattleRules.pressOf({ s = s } :: any) else "ring",
+						type(power) == "number" and power >= 1 and type(hp) == "number" and hp > 0
+					)
+				elseif m:GetAttribute("Side") == 1 and type(slot) == "number" then
 					seen[slot] = true
 					local p = plateOf[slot]
 					if p == nil then
@@ -3082,6 +3107,7 @@ task.spawn(function()
 							end
 						end)
 					end
+					p.model = if m:IsA("Model") then m else nil
 					local hp = m:GetAttribute("Hp")
 					local alive = type(hp) == "number" and hp > 0
 					local power = m:GetAttribute("Power")
@@ -3132,7 +3158,7 @@ local function foeCard(e: any, share: number)
 	name.TextXAlignment = Enum.TextXAlignment.Center
 	local power = Style.text( -- its share of the wave's power, so the cards add up to the match-up
 		card,
-		`⚡ {Format.commas(math.floor(BattleRules.powerOf(e, 2) * share + 0.5))}`,
+		`⚡ {Format.short(math.floor(BattleRules.powerOf(e, 2) * share + 0.5))}`,
 		14,
 		C.night,
 		UDim2.new(1, -8, 0, 18)
@@ -3155,8 +3181,8 @@ redraw.waves = function()
 	Style.clear(waves.body)
 	Style.clear(waves.chips)
 	Style.clear(waves.tabs)
-	wave = math.clamp(wave, 1, profile.best + 1)
-	Style.chip(waves.chips, `Best wave: {profile.best}`)
+	wave = math.clamp(wave, 1, math.min(profile.best + 1, LevelRules.LAST))
+	Style.chip(waves.chips, `Best wave: {profile.best} of {LevelRules.LAST}`)
 	local got = StationProgress.starsOf(profile, wave)
 	Style.chip(waves.chips, string.rep("★", got) .. string.rep("☆", 3 - got), C.gold, C.ink)
 	local boss = wave % LevelRules.BOSS_EVERY == 0
@@ -3189,7 +3215,7 @@ redraw.waves = function()
 	local nextButton = Style.button(step, ">", function()
 		wave += 1
 		redraw.waves()
-	end, if wave <= profile.best then "ghost" else "off", UDim2.fromOffset(60, 52))
+	end, if wave <= profile.best and wave < LevelRules.LAST then "ghost" else "off", UDim2.fromOffset(60, 52))
 	nextButton.AnchorPoint, nextButton.Position, nextButton.TextSize = Vector2.new(1, 0), UDim2.fromScale(1, 0), 28
 	prev.Size, nextButton.Size = UDim2.fromOffset(46, 52), UDim2.fromOffset(46, 52)
 	local head = Style.text(step, `Wave {wave}`, 28, C.text, UDim2.new(1, -100, 1, 0))
@@ -3324,7 +3350,7 @@ redraw.waves = function()
 end
 
 function openWaves()
-	wave = if profile then profile.best + 1 else 1
+	wave = if profile then math.min(profile.best + 1, LevelRules.LAST) else 1
 	show("waves")
 end
 
@@ -3405,7 +3431,7 @@ local function showCard(model: Model?)
 		stats[stat] = if type(x) == "number" then x else 0
 	end
 	local who = { s = if foe then foe.id else (sp :: StationConfig.Species).id, stats = stats :: any }
-	cardPower.Text = `⚡ {Format.commas(BattleRules.powerOf(who, if foe then 2 else 1))} power`
+	cardPower.Text = `⚡ {Format.short(BattleRules.powerOf(who, if foe then 2 else 1))} power`
 	cardPower.TextColor3 = if foe then HEXFIRE else C.gold
 	local health = model:GetAttribute("health")
 	local max = BattleRules.HP_BASE
@@ -3799,8 +3825,12 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		showStars(payload.stars or 0)
 		local goals = "★ win   ★ nobody knocked out   ★ you fire every power attack"
 		if payload.won then
-			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave} cleared!`, C.good
-			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.commas(payload.mvpDmg or 0)} damage)` else ""
+			resultTitle.Text, resultTitle.TextColor3 =
+				if payload.last
+					then `Wave {payload.wave} cleared: the Legion is beaten!`
+					else `Wave {payload.wave} cleared!`,
+				C.good
+			local mvp = if payload.mvp then `  MVP: {payload.mvp} ({Format.short(payload.mvpDmg or 0)} damage)` else ""
 			local lines = { `Won in {took}s.{if payload.first then " First clear!" else ""}{mvp}`, goals }
 			if payload.streak then
 				local pot = if payload.pot then payload.pot.coins else 0
@@ -3821,8 +3851,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			if payload.chest then
 				Style.toast(screen, `Boss chest! {rewardWords(payload.chest)}`, 5, "good", (iconsOf(payload.chest)))
 			end
-			wave = payload.wave + 1
-			again.Text = `Fight wave {wave}`
+			wave = math.min(payload.wave + 1, LevelRules.LAST)
+			again.Text = if payload.last then `Fight wave {wave} again` else `Fight wave {wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
 				offerBoons(payload.offer, wave)
 			end
@@ -3838,6 +3868,20 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			leave.Text = "Leave the arena"
 		end
 		result.Visible = true
+	elseif kind == "began" then -- a shared fight's wave, started by another player or by the vote (decision 0108)
+		began(payload.wave)
+	elseif kind == "votes" then
+		resultSub.Text =
+			`{payload.voted} of {payload.of} have voted. The boon is picked in {payload.seconds} seconds at most.`
+	elseif kind == "boon" then
+		local picked = WaveRuns.boon(payload.id)
+		if picked then
+			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
+		end
+	elseif kind == "over" then
+		result.Visible = false
+		music(nil)
+		Style.toast(screen, "Another party took the field: your run is banked", 5)
 	elseif kind == "banked" then
 		if payload.lost and payload.coins > 0 then
 			Style.toast(

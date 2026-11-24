@@ -49,6 +49,9 @@ STATION-121 (the presses popping up, more forgiving; the action camera).
 
 ### Four quick presses (rule)
 
+Changed by decision 0109: a press is now its animal's class's (attack ring, defense needle, utility chain,
+Titan mash), and the pop-ups stand by their animals under the team.
+
 `BattleRules.pressOf(animal)` gives an animal's press from what its spell does; a Titan always mashes.
 
 | Press | Species | Variants that differ | Perfect when |

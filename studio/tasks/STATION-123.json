@@ -1,0 +1,45 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-123",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Decision 0108, the rules of a shared fight: up to three players' teams in one fight against one crowd that grows with each player; a foe attacks the team it faces; a click strikes the foe nearest its player's team; a wiped team comes back at 25% for the next wave; the boon is voted; a carried player is paid.",
+  "inputs": [
+    "docs/decisions/0108-animal-stations-shared-fights.md"
+  ],
+  "dependencies": [
+    "STATION-122"
+  ],
+  "files": [
+    "src/shared/BattleRules.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/WaveRuns.luau",
+    "src/shared/StationProgress.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/WaveRuns.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0108-animal-stations-shared-fights.md",
+    "studio/tasks/STATION-123.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau",
+    "LevelRules.spec.luau",
+    "WaveRuns.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "An animal's owner (1 to 3) is its player; pack and solitary bonuses stay inside one player's team",
+    "The front line is 6, 9 and 12 long for one, two and three players, and each foe in it has a place along it",
+    "In a party a foe attacks the team it stands before and a click strikes the standing foe nearest its player's team; with one player nothing changes",
+    "LevelRules.enemies(level, players) has PARTY_COUNT times the foes and PARTY_POWER times the power, with one boss",
+    "WaveRuns.won gives a player with nobody standing their team back at WIPED_BACK; WaveRuns.tally picks the boon with the most votes and breaks a tie by the run's seed",
+    "StationProgress.clear pays a carried player a wave past their own best and makes it their best"
+  ],
+  "verification": "lune run tests/run (786 pass); the simulation in decision 0108.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "SHANNON, 2026-11-24: \"when three players join a fight the rewards are the same as solo and theyre the same for all three but itll be easier to fight the enenimes\", \"crowds will scale for each player in the game, all clicks do damage to the closest target to your team. everyone receives the same amount of coins regardless of player count and stuff so no splitting the coins, players will vote on a boon with a tie picking randomly\", \"option B, everyone joins the portal thing and when it starts everyone inside joins the fight\". Checkpoint: decision 0108, items 1 to 4 and 6."
+}

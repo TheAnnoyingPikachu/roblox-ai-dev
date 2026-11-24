@@ -1,11 +1,13 @@
 --!strict
--- The fight camera (decisions 0045, 0097; SHANNON 2026-11-22, decision 0106): an action camera on the
--- canyon's side, level with the gap between the team's front line and the enemies', panning left and right
--- from one front line to the other. While the server shows a wave in the arena it sets the player's
--- "CamFocus" attribute (stations/WaveShow.luau): this takes the camera then, and gives it back once that
--- clears. Where the lines stand is read from the fighters (the show's folder), so the shot follows the
--- enemies as they come on and fall. No cut-ins ("way less camera zooming"): only a power hit nudges the
--- view. Display only.
+-- The fight camera (decisions 0045, 0097, 0108): behind the player's own team, over its Titan and its
+-- front line, looking at the crowd and the castle beyond. While the server shows a wave on the battlefield
+-- it sets the player's "CamFrom" (the middle of their team's front line) and "CamFocus" (a point ahead of
+-- it, the way the team looks) attributes (stations/WaveShow.luau): this takes the camera then, and gives it
+-- back once they clear. "CamScale" (0.55 to 1) brings it nearer a team of small animals. Every player of a
+-- shared fight has their own. It is an action camera (decision 0106, SHANNON: "pans left and right to show
+-- the front lines"): it sways slowly from side to side behind the team, looks at the clash (between the team's
+-- line and the nearest standing foe, so it follows a rush as it comes on) and comes a little nearer once
+-- the lines meet. No cut-ins and little zoom: only a power hit nudges the view. Display only.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -13,82 +15,61 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local FightFx = require(Shared:WaitForChild("FightFx"))
 
 local player = Players.LocalPlayer
 local STEP = "StationsArenaCamera"
-local FOV = 55
-local PAN_SECONDS = 9 -- one sweep from a front line to the other and back
-local PAN = 0.42 -- how far either way along the gap it looks (a share of the gap); it slides a third of that
-local OUT, LIFT = 0.8, 0.6 -- how far out to the side (a share of the gap) and how high (a share of that)
-local NEAR, FAR = 24, 40 -- studs out to the side: the canyon's walls stand about 50 out from its middle
+local FOV = 70
+local UP, BACK, LOOK_UP = 48, 88, 2 -- how high and how far behind the front line it stands; how far above the focus it looks
+local SWAY, SWAY_SECONDS = 16, 9 -- the pan: studs to either side, and the seconds for a sweep there and back
+local NEAR = 0.82 -- how near it comes (of BACK and UP) once the lines meet
 local active = false
-local started = 0
 local normalFov = 70
 local current: CFrame? = nil
-local ours: Vector3?, front: Vector3? = nil, nil -- the two lines, eased
 
--- The middle of the team's standing animals and of the enemies' front line (the FRONT standing nearest).
-local function lines(): (Vector3?, Vector3?)
-	local folder = Workspace:FindFirstChild(`WaveShow{player.UserId}`)
-	local mine: { Vector3 }, foes: { Vector3 } = {}, {}
-	for _, m in if folder then folder:GetChildren() else {} do
-		local hit, hp, side = m:FindFirstChild("Hit"), m:GetAttribute("Hp"), m:GetAttribute("Side")
-		if hit and hit:IsA("BasePart") and type(hp) == "number" and hp > 0 then
-			if side == 1 then
-				table.insert(mine, hit.Position)
-			elseif side == 2 then
-				table.insert(foes, hit.Position)
+-- The nearest standing foe of the fight to `from` (later rushes wait far below the field: not those).
+local function nearestFoe(from: Vector3): Vector3?
+	local name = player:GetAttribute("FightFolder")
+	local folder = Workspace:FindFirstChild(if type(name) == "string" then name else `WaveShow{player.UserId}`)
+	if folder == nil then
+		return nil
+	end
+	local best, bestD = nil, math.huge
+	for _, m in folder:GetChildren() do
+		local hp = m:GetAttribute("Hp")
+		if m:IsA("Model") and m:GetAttribute("Side") == 2 and (type(hp) ~= "number" or hp > 0) then
+			local p = m:GetPivot().Position
+			local d = ((p - from) * Vector3.new(1, 0, 1)).Magnitude
+			if d < bestD and math.abs(p.Y - from.Y) < 40 then
+				best, bestD = p, d
 			end
 		end
 	end
-	if #mine == 0 then
-		return nil, nil
-	end
-	local mid = Vector3.zero
-	for _, at in mine do
-		mid += at / #mine
-	end
-	table.sort(foes, function(a, b)
-		return (a - mid).Magnitude < (b - mid).Magnitude
-	end)
-	local n = math.min(#foes, BattleRules.FRONT)
-	if n == 0 then
-		return mid, nil
-	end
-	local line = Vector3.zero
-	for i = 1, n do
-		line += foes[i] / n
-	end
-	return mid, line
+	return best
 end
 
-local function aim(dt: number): CFrame?
-	local focus = player:GetAttribute("CamFocus")
-	if typeof(focus) ~= "Vector3" then
+local function aim(): CFrame?
+	local from, focus = player:GetAttribute("CamFrom"), player:GetAttribute("CamFocus")
+	if typeof(from) ~= "Vector3" or typeof(focus) ~= "Vector3" then
 		return nil
 	end
-	local mine, theirs = lines()
-	mine = mine or ours or focus
-	-- nobody of theirs standing (between rushes): the front line stays where it was
-	theirs = theirs or front or focus + (focus - (mine :: Vector3))
-	local k = 1 - math.exp(-dt * 1.5) -- a knockout or a rush coming on moves the shot smoothly
-	ours = if ours then ours:Lerp(mine :: Vector3, k) else mine
-	front = if front then front:Lerp(theirs :: Vector3, k) else theirs
-	local a, b = ours :: Vector3, front :: Vector3
-	local along = Vector3.new(b.X - a.X, 0, b.Z - a.Z)
-	local gap = math.clamp(along.Magnitude, 12, 70)
-	local u = if along.Magnitude > 0.1 then along.Unit else Vector3.new(0, 0, -1)
-	local side = u:Cross(Vector3.yAxis)
-	if side.X < 0 then -- the canyon's +X side: the team on the left of the screen, clear of the plates
-		side = -side
+	local to = Vector3.new(focus.X - from.X, 0, focus.Z - from.Z)
+	local u = if to.Magnitude > 0.1 then to.Unit else Vector3.new(0, 0, -1)
+	local side = Vector3.new(-u.Z, 0, u.X)
+	local scale = player:GetAttribute("CamScale")
+	local k = if type(scale) == "number" then scale else 1
+	-- the clash: halfway to the nearest foe, which the camera looks a little towards from the focus
+	local foe = nearestFoe(from)
+	local look, near = focus, 0
+	if foe then
+		local gap = ((foe - from) * Vector3.new(1, 0, 1)).Magnitude
+		look = focus:Lerp(Vector3.new((from.X + foe.X) / 2, focus.Y, (from.Z + foe.Z) / 2), 0.55)
+		near = math.clamp((60 - gap) / 40, 0, 1) -- from 60 studs off to 20: the lines meeting
 	end
-	local mid = a + u * (gap / 2) + Vector3.new(0, (b.Y - a.Y) / 2, 0)
-	local swing = math.sin((os.clock() - started) * 2 * math.pi / PAN_SECONDS) -- -1 our line, 1 theirs
-	local out = math.clamp(gap * OUT, NEAR, FAR)
-	local look = mid + u * (swing * gap * PAN)
-	return CFrame.lookAt(mid + side * out + Vector3.yAxis * (out * LIFT) + u * (swing * gap * PAN / 3), look)
+	local d = 1 - (1 - NEAR) * near
+	local sway = math.sin(os.clock() * 2 * math.pi / SWAY_SECONDS) * SWAY * k
+	local at = from - u * BACK * k * d + side * sway + Vector3.yAxis * UP * k * d
+	return CFrame.lookAt(at, look + side * sway * 0.4 + Vector3.yAxis * LOOK_UP)
 end
 
 local function stop()
@@ -102,7 +83,7 @@ local function stop()
 		camera.FieldOfView = normalFov
 		camera.CameraType = Enum.CameraType.Custom
 	end
-	current, ours, front = nil, nil, nil
+	current = nil
 end
 
 local function start()
@@ -111,23 +92,22 @@ local function start()
 		return
 	end
 	active = true
-	started = os.clock()
 	normalFov = camera.FieldOfView
 	camera.CameraType = Enum.CameraType.Scriptable
 	camera.FieldOfView = FOV
 	current = camera.CFrame
-	RunService:BindToRenderStep(STEP, Enum.RenderPriority.Camera.Value + 1, function(dt)
+	RunService:BindToRenderStep(STEP, Enum.RenderPriority.Camera.Value + 1, function(dt: number)
 		local cam = Workspace.CurrentCamera
 		if cam == nil or typeof(player:GetAttribute("CamFocus")) ~= "Vector3" then
 			stop()
 			return
 		end
-		local want = aim(dt)
+		local want = aim()
 		if want == nil then
 			return
 		end
 		cam.CameraType = Enum.CameraType.Scriptable -- keep it ours while the fight lasts
-		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * 2.5))
+		current = (current :: CFrame):Lerp(want, 1 - math.exp(-dt * 2))
 		-- a jolt shakes it for a moment: a Perfect, a combo, a boss landing (the HUD sets these)
 		local jolt, joltAt = player:GetAttribute("CamShake"), player:GetAttribute("CamShakeAt")
 		local amount = if type(jolt) == "number" and type(joltAt) == "number"
