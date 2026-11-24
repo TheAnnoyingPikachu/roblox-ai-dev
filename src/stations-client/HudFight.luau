@@ -419,6 +419,8 @@ do
 		if showing ~= docked then -- the ranch's dock, goal and To battle make way for the fight (decision 0114)
 			docked = showing
 			S.fighting = showing
+			-- nobody walks in a fight: on a phone the walking stick and jump make way for the shield and the presses
+			game:GetService("GuiService").TouchControlsEnabled = not showing
 			Hud.navShown()
 		end
 		-- knockouts and the power bar
@@ -730,11 +732,12 @@ local ROLE_COLOUR: { [string]: Color3 } = { attack = C.bad, defense = C.info, ut
 -- it, edges it in gold and shows the key of its press.
 local function plate(slot: number, label: string, press: string, asset: string?, role: string?): Plate
 	local holder = Instance.new("Frame")
-	holder.BackgroundTransparency, holder.Size, holder.LayoutOrder = 1, UDim2.fromOffset(196, 72), slot
+	local wide = if Style.compact(root.Size.Y.Offset) then 150 else 196 -- a phone: clear of the shield and the corners
+	holder.BackgroundTransparency, holder.Size, holder.LayoutOrder = 1, UDim2.fromOffset(wide, 72), slot
 	holder.Parent = plateRow
 	local b = Style.button(holder, "", function()
 		Press.tap(slot)
-	end, "night", UDim2.fromOffset(196, 62))
+	end, "night", UDim2.fromOffset(wide, 62))
 	b.Position = UDim2.fromOffset(0, 10)
 	Style.radius(b, 14)
 	if asset then
@@ -752,6 +755,10 @@ local function plate(slot: number, label: string, press: string, asset: string?,
 	hpBar.Position, hpBar.ZIndex = UDim2.fromOffset(63, 28), 2
 	local manaBar, setPower, fill = Style.track(b, UDim2.new(1, -73, 0, 8), N.edge)
 	manaBar.Position, manaBar.ZIndex = UDim2.fromOffset(63, 42), 2
+	if wide < 196 then -- a phone's plate: the picture says who it is, the bars get the room
+		name.Visible, class.Position = false, UDim2.fromOffset(63, 9)
+		hpBar.Position, manaBar.Position = UDim2.fromOffset(63, 24), UDim2.fromOffset(63, 40)
+	end
 	local key = Style.key(b, "", true)
 	key.AnchorPoint, key.Position, key.Visible = Vector2.new(1, 1), UDim2.new(1, -6, 0, 7), false
 	key.BackgroundColor3, key.TextColor3 = N.gold, Color3.fromRGB(42, 22, 64)

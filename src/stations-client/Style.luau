@@ -839,7 +839,7 @@ function Style.touch(): boolean
 end
 
 local inputWatchers: { () -> () } = {}
-local keyCaps: { [GuiObject]: boolean } = setmetatable({}, { __mode = "k" }) :: any
+local keyCaps: { [GuiObject]: boolean } = {} -- until each is destroyed
 local function inputChanged()
 	local touch = Style.touch()
 	for cap in keyCaps do
@@ -851,6 +851,11 @@ local function inputChanged()
 end
 UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(inputChanged)
 Players.LocalPlayer:GetAttributeChangedSignal("UiInput"):Connect(inputChanged)
+
+-- A phone's layout: a touch screen, or a screen too short for the desk layout (`height` in design units).
+function Style.compact(height: number): boolean
+	return Style.touch() or height < 560
+end
 
 -- Call `fn` whenever the player changes between keys and touch.
 function Style.onInput(fn: () -> ())
@@ -878,6 +883,9 @@ function Style.key(parent: Instance, text: string, night: boolean?): TextLabel
 	p.Parent = k
 	k.Visible = not Style.touch()
 	keyCaps[k] = true
+	k.Destroying:Connect(function()
+		keyCaps[k] = nil
+	end)
 	k.Parent = parent
 	return k
 end

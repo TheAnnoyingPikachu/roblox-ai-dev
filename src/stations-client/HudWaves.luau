@@ -147,6 +147,7 @@ do
 	-- `stats` are three pairs of a number and what it counts; `tip` the advice; `newBest` shows the tag.
 	function Hud.runOver(title: string, stats: { { string } }, tip: string, newBest: boolean)
 		overTitle.Text, adviceText.Text, best.Visible = title, tip, newBest
+		over.Position = UDim2.new(0.5, 0, 0, if Style.compact(root.Size.Y.Offset) then 104 else 130)
 		boons.Visible = false
 		for k, tile in tiles do
 			tile.big.Text, tile.small.Text = stats[k][1], stats[k][2]
@@ -410,6 +411,8 @@ offerBoons = function(ids: { string }, n: number, have: { string }?)
 	Style.clear(boonRow)
 	table.clear(pickBoon)
 	boonRow.Visible = true
+	local short = Style.compact(root.Size.Y.Offset) -- a phone: shorter cards, so the line under them stays clear
+	boonRow.Size = UDim2.new(1, 0, 0, if short then 190 else 236)
 	local panel = boonRow.Parent :: GuiObject
 	panel.Visible = true
 	local heading = panel:FindFirstChild("Title") :: TextLabel?
@@ -440,13 +443,20 @@ offerBoons = function(ids: { string }, n: number, have: { string }?)
 				end
 			end
 			pickBoon[k] = pick
-			local card =
-				Style.button(boonRow, "", pick, if boon.rare then "nightHot" else "night", UDim2.fromOffset(236, 232))
+			local card = Style.button(
+				boonRow,
+				"",
+				pick,
+				if boon.rare then "nightHot" else "night",
+				UDim2.fromOffset(236, if short then 186 else 232)
+			)
 			card.Name, card.LayoutOrder = boon.name, k
 			Style.radius(card, 18)
 			Style.key(card, tostring(k), true).Position = UDim2.fromOffset(10, 10)
 			local tile = Style.frame(card, UDim2.fromOffset(64, 64), if boon.rare then N.gold else N.main)
-			tile.AnchorPoint, tile.Position, tile.ZIndex = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 20), 2
+			tile.AnchorPoint, tile.Position, tile.ZIndex =
+				Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, if short then 12 else 20), 2
+			tile.Size = UDim2.fromOffset(if short then 48 else 64, if short then 48 else 64)
 			Style.round(tile, 16)
 			local stack = Style.text(
 				tile,
@@ -457,10 +467,11 @@ offerBoons = function(ids: { string }, n: number, have: { string }?)
 			)
 			stack.TextXAlignment, stack.ZIndex = Enum.TextXAlignment.Center, 3
 			local title = Style.text(card, boon.name, 22, N.text, UDim2.new(1, -16, 0, 28))
-			title.Position, title.TextXAlignment, title.ZIndex = UDim2.fromOffset(8, 94), Enum.TextXAlignment.Center, 2
+			title.Position, title.TextXAlignment, title.ZIndex =
+				UDim2.fromOffset(8, if short then 64 else 94), Enum.TextXAlignment.Center, 2
 			local words = Style.text(card, boon.text, 16, Color3.fromRGB(255, 210, 122), UDim2.new(1, -24, 0, 44))
 			words.Position, words.TextXAlignment, words.ZIndex =
-				UDim2.fromOffset(12, 126), Enum.TextXAlignment.Center, 2
+				UDim2.fromOffset(12, if short then 94 else 126), Enum.TextXAlignment.Center, 2
 			local count = Style.small(
 				card,
 				if owned > 0 then `You have {owned}. This makes {owned + 1}.` else "Your first of these.",

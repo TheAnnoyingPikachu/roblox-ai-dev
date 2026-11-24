@@ -22,7 +22,7 @@ loud colour and always means "press this now". Keys show on a PC, tap bubbles on
 | STATION-140 | Menus: animals in three columns with Seen, eggs and vendor in one window with odds, the wave road, the ranch grid, the gifts' week | Animals, Eggs, Waves, RanchGifts | to do |
 | STATION-141 | Moments: the hatch reveal with odds and where it goes, the level card, the server strip, the loading cover | Moments | to do |
 | STATION-142 | The intro: the Ranger's loan, the fight that cannot be lost with its four lessons, the goodbye, three quick eggs, Skip (decision 0116) | Intro, IntroTaster, IntroOwn | built (lessons are chances, not pauses; no second loan yet) |
-| STATION-143 | Phone layouts of the ranch, the menus and the fight | PhoneExplore, PhoneFight | to do |
+| STATION-143 | Phone layouts of the ranch, the menus and the fight | PhoneExplore, PhoneFight | built for the ranch and the fight; NOT tried on a device; no press pad |
 
 ## Decisions taken on the recommended option (SHANNON reviews at the end)
 
@@ -33,6 +33,15 @@ loud colour and always means "press this now". Keys show on a PC, tap bubbles on
 3. The loan team is the board's: Sphinx Jackal, Lava Rhino, Phoenix Flamingo, War Elephant.
 4. The Ranger lends one legend again for the wave 10 boss, then once a day. (Board: "Mine: yes".)
 5. "Skip intro" shows after ten seconds.
+
+## Still to do
+
+- STATION-140 (menus) and STATION-141 (moments) are not started: the menus work as before, in the paper look
+  they already had; hatch, level-up and messages are as before, with messages moved under the goal strip.
+- A real phone: `UiSize` and `UiInput` stand in for one on a desk, but the press cards and the camera are not
+  at phone size there. Try the published build on a phone before trusting the fight's layout.
+- From the boards and not built: the fight waiting for each lesson, the second loan at wave 10's boss, the
+  Seen outlines, the team mate's pill, the vote's ring, the one press pad on a phone, key caps on world prompts.
 
 ## Not in this milestone
 

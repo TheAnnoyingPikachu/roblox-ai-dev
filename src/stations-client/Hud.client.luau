@@ -252,6 +252,9 @@ end
 
 -- The player, top left (decision 0114): the level in its XP ring, then the coins and the samples, each in a
 -- paper pill of its own.
+-- Each piece below has two layouts (decision 0114): for a desk, and for a phone (a touch screen or a short
+-- one), where the bottom corners are Roblox's (the walking stick, jump). `layouts` holds each piece's.
+local layouts: { (small: boolean) -> () } = {}
 local top = Instance.new("Frame")
 top.Name = "Player"
 top.BackgroundTransparency = 1
@@ -279,6 +282,10 @@ local function purse(kind: string, width: number): TextLabel
 end
 local coinsText = purse("coins", 112)
 local samplesText = purse("samples", 92)
+table.insert(layouts, function(small) -- a phone: the level is only its ring
+	levelPill.Size = UDim2.fromOffset(if small then 60 else 204, 60)
+	levelText.Visible, xpText.Visible = not small, not small
+end)
 
 -- Everything that makes way for an open menu and for a fight: the dock, the goal, To battle, what is waiting.
 nav.Name = "Nav"
@@ -292,7 +299,7 @@ local dock = Instance.new("Frame")
 dock.Name = "Dock"
 dock.BackgroundTransparency = 1
 dock.Position, dock.Size = UDim2.fromOffset(16, 96), UDim2.fromOffset(84, 480)
-Style.list(dock, 12)
+local dockList = Style.list(dock, 12)
 dock.Parent = nav
 local hotkeys: { [Enum.KeyCode]: { sheet: string?, run: () -> () } } = {}
 local function dockButton(
@@ -313,6 +320,11 @@ local function dockButton(
 	hotkeys[key] = { sheet = sheet, run = onClick }
 	local dot = Style.dot(b, "")
 	dot.Visible = false
+	table.insert(layouts, function(small)
+		b.Size, b.TextSize =
+			UDim2.fromOffset(if small then 72 else 84, if small then 58 else 68), if small then 13 else 15
+		art.Size = UDim2.fromOffset(if small then 30 else 38, if small then 30 else 38)
+	end)
 	return dot, b
 end
 
@@ -327,6 +339,11 @@ places.Position, places.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -2
 Style.list(places, 10)
 places.Parent = travel
 Style.text(places, "Go to…", 20, C.text, UDim2.new(1, 0, 0, 26))
+local ranchPlace = Style.button(places, "Ranch menu", function() -- a phone's More button holds it
+	travel.Visible = false
+	show("ranch")
+end, "primary", UDim2.new(1, 0, 0, 44))
+ranchPlace.LayoutOrder = 1
 function Hud.travelTo(action: string, ...: any)
 	travel.Visible = false
 	local ok, code = request:InvokeServer(action, ...)
@@ -356,7 +373,7 @@ end, "animals")
 local eggsDot = dockButton("Eggs", "egg", Enum.KeyCode.Two, function()
 	show("eggs")
 end, "eggs")
-dockButton("Ranch", "home", Enum.KeyCode.Three, function()
+local _, ranchButton = dockButton("Ranch", "home", Enum.KeyCode.Three, function()
 	show("ranch")
 end, "ranch")
 local giftsDot, giftsButton = dockButton("Gifts", "gift", Enum.KeyCode.Four, function()
@@ -374,8 +391,27 @@ end, "trade")
 if not StationTrade.ON then -- off until trading is hardened (SHANNON, 2026-11-24)
 	tradeButton.Visible, hotkeys[Enum.KeyCode.Six] = false, nil
 end
+local _, moreButton = dockButton("More", "cog", Enum.KeyCode.Seven, function()
+	travel.Visible = not travel.Visible
+end)
+hotkeys[Enum.KeyCode.Seven] = nil
 nav:GetPropertyChangedSignal("Visible"):Connect(function()
 	travel.Visible = false
+end)
+-- A desk: one column on the left edge. A phone: Animals, Eggs, Gifts and More in a square above jump,
+-- where the right thumb rests; Ranch and Travel fold into More.
+table.insert(layouts, function(small)
+	ranchButton.Visible, travelButton.Visible, moreButton.Visible = not small, not small, small
+	tradeButton.Visible = StationTrade.ON and not small
+	ranchPlace.Visible = small
+	dockList.FillDirection = if small then Enum.FillDirection.Horizontal else Enum.FillDirection.Vertical
+	dockList.Wraps = small
+	dock.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.zero
+	dock.Position = if small then UDim2.new(1, -14, 1, -112) else UDim2.fromOffset(16, 96)
+	dock.Size = if small then UDim2.fromOffset(156, 128) else UDim2.fromOffset(84, 480)
+	travel.Size = UDim2.fromOffset(196, if small then 268 else 214)
+	travel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
+	travel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
 end)
 
 -- To battle (key B): the biggest button on the screen says which wave is next.
@@ -394,6 +430,16 @@ do
 	battleTitle.Position, battleTitle.ZIndex = UDim2.fromOffset(72, 9), 2
 	local battleSub = Style.small(battle, "", 13, Color3.fromRGB(35, 52, 15), UDim2.fromOffset(180, 16))
 	battleSub.Position, battleSub.ZIndex = UDim2.fromOffset(72, 43), 2
+	table.insert(layouts, function(small)
+		battle.Size = UDim2.fromOffset(if small then 250 else 296, if small then 58 else 72)
+		battle.Position = UDim2.new(0.5, 0, 1, if small then -12 else -20)
+		crest.Size, crest.Position =
+			UDim2.fromOffset(if small then 38 else 48, if small then 38 else 48),
+			UDim2.fromOffset(12, if small then 10 else 12)
+		battleTitle.TextSize, battleTitle.Position =
+			if small then 22 else 28, UDim2.fromOffset(if small then 60 else 72, if small then 5 else 9)
+		battleSub.Position = UDim2.fromOffset(if small then 60 else 72, if small then 33 else 43)
+	end)
 	local battleKey = Style.key(battle, "B")
 	battleKey.AnchorPoint, battleKey.Position = Vector2.new(1, 0.5), UDim2.new(1, -16, 0.5, 0)
 	hotkeys[Enum.KeyCode.B] = {
@@ -442,6 +488,12 @@ do
 	goalPaysIcon.Position, goalPaysIcon.Size = UDim2.fromOffset(5, 5), UDim2.fromOffset(32, 32)
 	goalPaysIcon.Parent = goalPays
 	local goalPaysText = Style.text(goalPays, "", 14, C.text, UDim2.new(1, -46, 1, 0))
+	table.insert(layouts, function(small) -- a phone: narrower, the reward as its picture only
+		goal.Size = UDim2.fromOffset(if small then 350 else 456, 58)
+		goalPays.Size = UDim2.fromOffset(if small then 42 else 144, 42)
+		goalText.Size = UDim2.new(1, if small then -110 else -212, 0, 20)
+		goalPaysText.Visible = not small
+	end)
 	goalPaysText.Position = UDim2.fromOffset(42, 0)
 	-- `text` nil hides the strip (every goal is done).
 	function Hud.showGoal(text: string?, f: number?, count: string?, pays: string?, icon: string?)
@@ -520,8 +572,14 @@ do
 				w.fill.Size, w.fill.BackgroundColor3 = UDim2.fromScale(math.clamp(r.f, 0, 1), 1), r.colour
 			end
 		end
+		local small = Style.compact(root.Size.Y.Offset) -- a phone: the soonest one only, under the purses
+		for k, w in waitRows do
+			w.row.Visible = w.row.Visible and (k == 1 or not small)
+		end
 		waiting.Visible = #rows > 0
-		waiting.Size = UDim2.fromOffset(256, 12 + math.min(#rows, 3) * 38)
+		waiting.Size = UDim2.fromOffset(if small then 230 else 256, 12 + math.min(#rows, if small then 1 else 3) * 38)
+		waiting.AnchorPoint = if small then Vector2.zero else Vector2.new(0, 1)
+		waiting.Position = if small then UDim2.fromOffset(14, 80) else UDim2.new(0, 114, 1, -22)
 	end
 end
 
@@ -574,7 +632,9 @@ do
 			end
 		end
 		matesText.Text = if others > 0 then "Ranch mates" else "Play together"
-		mates.Size = UDim2.fromOffset(202 + others * 38, 44)
+		local small = Style.compact(root.Size.Y.Offset)
+		matesText.Visible = not small
+		mates.Size = UDim2.fromOffset((if small then 104 else 202) + others * 38, 44)
 	end
 	game:GetService("Players").PlayerAdded:Connect(showMates)
 	game:GetService("Players").PlayerRemoving:Connect(function()
@@ -598,6 +658,10 @@ do
 		eggNote.Visible, eggNoteAt = k ~= nil, k or 0
 		eggNoteText.Text = `{name or "Egg"} ready!`
 	end
+	table.insert(layouts, function(small)
+		showMates()
+		eggNote.Size = UDim2.fromOffset(if small then 250 else 300, 62)
+	end)
 end
 
 -- Admin button, bottom right: only for players the server marks as admin (decision 0038)
@@ -606,6 +670,22 @@ local adminToggle = Style.button(root, "Admin", function()
 end, "ghost", UDim2.fromOffset(84, 40))
 adminToggle.AnchorPoint, adminToggle.Position = Vector2.new(1, 1), UDim2.new(1, -16, 1, -22)
 adminToggle.TextSize = 16
+table.insert(layouts, function(small) -- a phone: clear of jump, under the notes
+	adminToggle.AnchorPoint = if small then Vector2.new(1, 0) else Vector2.new(1, 1)
+	adminToggle.Position = if small then UDim2.new(1, -182, 0, 12) else UDim2.new(1, -16, 1, -22)
+end)
+function Hud.relayout()
+	local small = Style.compact(root.Size.Y.Offset)
+	for _, lay in layouts do
+		lay(small)
+	end
+	if S.profile then
+		Hud.waiting()
+	end
+end
+root:GetPropertyChangedSignal("Size"):Connect(Hud.relayout)
+Style.onInput(Hud.relayout)
+Hud.relayout()
 
 -- What the parts below need from this script. They are loaded in the order they were written: each
 -- takes what it needs from App as locals of its own and adds what it makes.
