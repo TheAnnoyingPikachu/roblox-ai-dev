@@ -224,5 +224,29 @@ return function(S: any)
 			end
 			S.impact(f, C.SHADOW, 3.5, 79)
 		end,
+
+		-- Sunfang (the Sahara Guardian's regular attack; the hit at 0.44 s): its halo flares as it lunges, and three claws
+		-- of sunlight rake across the target
+		["creature_lion_sahara_forge@attack"] = function(f)
+			local k, t = f.k, f.t
+			local halo = f.A.crown + f.V(-2.44, 1.22, -3.33) * (f.H / 12.6)
+			local g = env(t, 0.1, 0.3, 0.5, 0.7)
+			if g > 0 then
+				f.kit:ring(halo, 1.3 * k * (1 + 0.2 * g), 0.08 * k, C.SUN, 9, g, f.V(0, 1, 0), nil, 24)
+			end
+			local u = seg(t, 0.36, 0.8)
+			if u ~= nil then
+				local reach = ease(math.min(1, u * 4))
+				local fade = 1 - ease(math.max(0, (u - 0.4) / 0.6))
+				for i = -1, 1 do
+					local a = f.TC + f.V(-2.2, 0.0, 1.6 + 0.9 * i) * k
+					local b = f.TC + f.V(2.2, 0.0, -1.6 + 0.9 * i) * k
+					f.kit:beam(a, a:Lerp(b, reach), 0.16 * k, C.YELLOW, 9, fade)
+				end
+				f.kit:star(f.TC, 3 * k * (0.6 + 0.4 * reach), C.SUN, fade)
+				f.kit:shock(f.T + Z(0.08), (0.5 + 3.5 * ease(u)) * k, 0.07 * k, C.SUN, 1 - u)
+				f.kit:burst(f.TC, u, 10, 3 * k, C.GOLD, 31, 0.1 * k)
+			end
+		end,
 	}
 end

@@ -34,6 +34,10 @@ VARIANTS = {  # a variant's spell, by its asset (each variant keeps its species'
     "creature_elephant_frost_forge": "m_tomb", "creature_elephant_war_forge": "m_axe",
 }
 
+OWN_ATTACKS = {  # a variant with an attack of its own, by its asset (the others play their species')
+    "creature_lion_sahara_forge": "a_sunfang", "creature_elephant_sahara_forge": "a_heave",
+}
+
 
 def num(x):
     s = f"{round(x, 3):.3f}".rstrip("0").rstrip(".")
@@ -76,6 +80,10 @@ for sp, (a, p) in PICKS.items():
     name, ks = label(sp, p)
     assert abs(ks[-1][0] - 1.6) < 1e-9, (sp, p)
     powers.append(f"\t-- {name}\n\t{sp} = {keys(ks, chr(9))},")
+for asset, a in OWN_ATTACKS.items():
+    name, ks = C.CONCEPTS[asset][1]["attack"][a][0], C.CONCEPTS[asset][1]["attack"][a][2]
+    assert abs(ks[-1][0] - 0.95) < 1e-9, (asset, a)
+    attacks.append(f"\t-- {name}\n\t{asset} = {keys(ks, chr(9))},")
 for asset, p in VARIANTS.items():
     sp = asset.split("_")[1]
     name, ks = label(asset, p)
@@ -103,7 +111,7 @@ export type Keys = {{ {{ any }} }}
 local AnimalMoves = {{}}
 
 {IDLES}
--- Attacks by species (a variant plays its species')
+-- Attacks by species (a variant plays its species', or its own by its asset)
 AnimalMoves.ATTACKS = {{
 {chr(10).join(attacks)}
 }} :: {{ [string]: Keys }}
