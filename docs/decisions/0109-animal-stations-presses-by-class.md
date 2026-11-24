@@ -40,6 +40,14 @@ Date: 2026-11-24. Task STATION-128.
 - Remote contract: `power`'s second integer is, for a ring, how long it was held in tenths of a second
   (0 to 30); the server caps it at ten a second since the meter filled, on its own clock, as it caps a mash.
 
+## Amended again (SHANNON, 2026-11-24): no line, gone when done
+
+- SHANNON: "the popups still persist for a bit after you complete them and somtimes pop back up and also get rid
+  of the line leading the box to its animal completely"; "dont start counting clicks until the wave has started".
+- No line or ring ties a card to its animal. A card that is done bursts and is gone in 0.34 s, not when the
+  attack plays; a press the server turns down is sent again for up to 5 s, and only then does a fresh card show.
+- Clicks count from the wave's start (`FightFrom` on each member, server time), not while the enemies walk in.
+
 ## Evidence
 
 - `BattleRules.spec`: each class's press, four classes four presses. 786 specs pass.

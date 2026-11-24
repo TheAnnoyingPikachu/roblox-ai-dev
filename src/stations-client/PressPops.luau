@@ -1,8 +1,7 @@
 --!strict
 -- Where the quick presses pop up (decision 0109, SHANNON's pick B): by the animal that fires. `card` draws
 -- each pop-up (dark glass, a violet edge, key caps: SHANNON's reference, 2026-11-24) for the HUD's `pressOn`;
--- `attach` stands it by its animal on the screen, every frame, tied to it by a fine line that fades as it
--- goes and ends in a small ring. The cards of one player's team stand in one row just under
+-- `attach` stands it by its animal on the screen, every frame, with no line to it (SHANNON, 2026-11-24). The cards of one player's team stand in one row just under
 -- the team, pushed apart so none covers another: the camera is behind the team, so the enemies are always
 -- higher on the screen and the cards never cover them (SHANNON: "try to not block the enemies"). Another player's animal with a full meter gets only a small
 -- marker over its head: theirs to press, not this player's. Display only.
@@ -29,8 +28,6 @@ local GAP = 8 -- between cards, and a third of the room left beside the team
 type Pop = {
 	card: GuiObject,
 	model: Model,
-	line: Frame,
-	tip: Frame,
 	lift: Vector3,
 	left: boolean?,
 	at: Vector2?,
@@ -57,13 +54,6 @@ local function onScreen(p: Vector3): Vector2?
 	return if visible or v.Z > 0 then Vector2.new(v.X, v.Y) else nil
 end
 
-local function line(from: Vector2, to: Vector2, frame: Frame)
-	local d = to - from
-	frame.Position = UDim2.fromOffset((from.X + to.X) / 2, (from.Y + to.Y) / 2)
-	frame.Size = UDim2.fromOffset(d.Magnitude, math.max(1, 2 * scale))
-	frame.Rotation = math.deg(math.atan2(d.Y, d.X))
-end
-
 local function step()
 	local camera = Workspace.CurrentCamera
 	local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
@@ -71,8 +61,6 @@ local function step()
 	for i = #pops, 1, -1 do
 		local p = pops[i]
 		if p.card.Parent == nil or p.model.Parent == nil then
-			p.line:Destroy()
-			p.tip:Destroy()
 			if p.card.Parent then
 				p.card.Visible = false
 			end
@@ -89,7 +77,7 @@ local function step()
 	for _, p in pops do
 		local h = onScreen(p.model:GetPivot().Position + p.lift)
 		local foot = onScreen(p.model:GetPivot().Position)
-		p.card.Visible, p.line.Visible, p.tip.Visible = h ~= nil, h ~= nil, h ~= nil
+		p.card.Visible = h ~= nil
 		if h and foot then
 			heads[p] = h
 			table.insert(shown, p)
@@ -153,9 +141,6 @@ local function step()
 		x, y = (p.at :: Vector2).X, (p.at :: Vector2).Y
 		p.card.AnchorPoint = Vector2.new(0.5, 0)
 		p.card.Position = UDim2.fromOffset(x, y)
-		local edge = Vector2.new(x + (if onLeft then w / 2 else -w / 2), y + h / 2)
-		line(edge, heads[p], p.line)
-		p.tip.Position = UDim2.fromOffset(heads[p].X, heads[p].Y)
 	end
 	-- the other players' markers
 	for model, m in marks do
@@ -440,8 +425,9 @@ function PressPops.lit(parts: Card, count: number)
 	parts.lit = count
 end
 
--- The press has fired: a big burst (gold when it was on time: `hot`) and the card springs up and away.
+-- The press has fired: a big burst (gold when it was on time: `hot`), the card springs up and away and is gone.
 function PressPops.fired(card: GuiObject, hot: boolean)
+	task.delay(0.34, card.Destroy, card)
 	PressPops.burst(card, if hot then PressPops.GOLD else PressPops.LIT, card.AbsoluteSize.X * 1.25, 14)
 	local s = card:FindFirstChild("Punch") :: UIScale?
 	if s then
@@ -451,34 +437,13 @@ function PressPops.fired(card: GuiObject, hot: boolean)
 	end
 end
 
--- The tap was refused: the card comes back.
-function PressPops.unfired(card: GuiObject)
-	local s = card:FindFirstChild("Punch") :: UIScale?
-	if s then
-		TweenService:Create(s, TweenInfo.new(0.2), { Scale = 1 }):Play()
-	end
-end
-
 -- Stand `card` (a quick press's pop-up) by `model` until the card is destroyed. `k` is the HUD's scale.
 function PressPops.attach(card: GuiObject, model: Model?, _press: string, k: number)
 	scale = k
 	if model == nil or gui == nil then
 		return
 	end
-	local l = Instance.new("Frame")
-	l.Name, l.BorderSizePixel, l.BackgroundColor3, l.AnchorPoint = "Tether", 0, LILAC, Vector2.new(0.5, 0.5)
-	l.ZIndex = math.max(1, card.ZIndex - 1)
-	local fade = Instance.new("UIGradient") -- strong at the card, faint at the animal
-	fade.Transparency = NumberSequence.new(0.1, 0.75)
-	fade.Parent = l
-	l.Parent = gui
-	local tip = Instance.new("Frame") -- a small ring where it meets the animal
-	tip.Name, tip.BackgroundTransparency, tip.AnchorPoint = "TetherTip", 1, Vector2.new(0.5, 0.5)
-	tip.Size, tip.ZIndex = UDim2.fromOffset(14 * k, 14 * k), l.ZIndex
-	corner(tip, math.floor(7 * k))
-	edge(tip, LILAC, math.max(1, 2 * k)).Transparency = 0.25
-	tip.Parent = gui
-	table.insert(pops, { card = card, model = model, line = l, tip = tip, lift = liftOf(model) })
+	table.insert(pops, { card = card, model = model, lift = liftOf(model) })
 	step()
 end
 

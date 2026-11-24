@@ -2798,11 +2798,12 @@ local function firePower(slot: number, presses: number?)
 		return
 	end
 	p.sent = true
-	if p.card then
+	if p.card then -- done: it bursts and is gone at once, never waiting for the attack to play
 		Press.pops.fired(p.card, p.card:GetAttribute("Hot") == true)
+		p.card = nil
 	end
 	local ok, code = request:InvokeServer("power", slot, presses)
-	for _ = 1, 6 do -- turned down (no foe between rushes, a moment early): sent again, so a press is never lost
+	for _ = 1, 20 do -- turned down (no foe between rushes, a moment early): sent again, so a press is never lost
 		if ok or code == "no_fight" or not p.full then
 			break
 		end
@@ -2813,8 +2814,8 @@ local function firePower(slot: number, presses: number?)
 		Style.sound("claim")
 	else
 		p.sent = false
-		if p.card then
-			Press.pops.unfired(p.card)
+		if p.full then -- turned down for good while the meter is still full: a fresh card to press again
+			Press.on(p, slot)
 		end
 	end
 end
@@ -2928,7 +2929,8 @@ do
 	end
 
 	catcher.Activated:Connect(function()
-		if not plates.Visible then
+		-- clicks count only once the wave has started, not while the enemies walk in (SHANNON, 2026-11-24)
+		if not plates.Visible or Workspace:GetServerTimeNow() < (player:GetAttribute("FightFrom") or math.huge) then
 			return
 		end
 		clicks = math.min(clicks + 1, 40)

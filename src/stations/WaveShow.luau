@@ -282,6 +282,7 @@ function WaveShow.run(
 		hostOf[m] = player
 		seats[m] = {}
 		m:SetAttribute("FightWave", wave) -- the HUD's stage reads it (decision 0106)
+		m:SetAttribute("FightFrom", math.huge) -- the walk-in: no clicks count until FightFrom (server time)
 		m:SetAttribute("FightFolder", folder.Name) -- where the fight's models are, for the HUD and the camera
 		for i, a in team do
 			if ((a :: any).owner or 1) == k then
@@ -560,6 +561,9 @@ function WaveShow.run(
 	-- (WaveShow.power) can swap in a new log at any time; it is the same up to TAP_AHEAD from now.
 	local start = os.clock() + 0.4
 	show.start = start
+	for _, m in show.members do
+		m:SetAttribute("FightFrom", Workspace:GetServerTimeNow() + 0.4)
+	end
 	for i, slot in slots[1] do
 		slot.model:SetAttribute("Power", 0)
 		show.ours[i] = slot.model
