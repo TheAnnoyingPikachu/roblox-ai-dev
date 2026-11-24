@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-153",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON (2026-11-24): 'clean up now'. The old drawn reward icons and the old outlined icon fallback are gone from Animal Stations: nothing showed them since the ForgeGUI HUD icons (STATION-146, 148, 150).",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-150"
+  ],
+  "files": [
+    "assets/stations/icons/*.png",
+    "tools/icons/stations_rewards.py",
+    "src/stations-client/Style.luau",
+    "src/stations-client/HudGifts.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-153.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "No Animal Stations code, file or register row in use points at the 13 old icon uploads; Style.image has no fallback to the Egg Garden set"
+  ],
+  "verification": "2026-11-24: every icon name the stations HUD asks Style.icon/Style.image for (paw, egg, home, gift, travel, swap, cog, goal, check, shield) is in Style.ICONS; grep finds none of the 13 old ids in src or tools; lune run tests/run and selene clean (see CI). Archive dry run 45505329947: all 13 are Images, which Open Cloud refuses to archive, so they were not archived.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_progress",
+  "notes": "For SHANNON: the 13 old icon Images (ids in docs/assets/register.md) can be archived by hand on the Creator Dashboard. GardenIcons stays: Egg Garden uses it."
+}

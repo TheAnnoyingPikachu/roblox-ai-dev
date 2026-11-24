@@ -11,7 +11,6 @@ local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
-local GardenIcons = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("GardenIcons"))
 local Ui = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Ui"))
 
 local Style = {}
@@ -905,9 +904,7 @@ function Style.small(parent: Instance, text: string, size: number?, colour: Colo
 	return l
 end
 
--- A picture from the studio's own outlined set (Shared.GardenIcons; docs/assets/register.md, GARDEN-055):
--- paw, egg, home, gift, flag, lock, swap, check, heart, cog, chart, calendar, book.
--- The HUD's own icons (STATION-150, ForgeGUI in the look of the tokens); a name not here is the older outlined set.
+-- The HUD's own icons (STATION-150, ForgeGUI in the look of the tokens); a name not here shows nothing.
 Style.ICONS = {
 	paw = "rbxassetid://98374591282896",
 	egg = "rbxassetid://102366615270041",
@@ -921,7 +918,7 @@ Style.ICONS = {
 	shield = "rbxassetid://93338498652139",
 } :: { [string]: string }
 function Style.image(name: string): string
-	return Style.ICONS[name] or `rbxthumb://type=Asset&id={GardenIcons[name] or 0}&w=150&h=150`
+	return Style.ICONS[name] or ""
 end
 
 function Style.icon(parent: Instance, name: string, size: number): ImageLabel

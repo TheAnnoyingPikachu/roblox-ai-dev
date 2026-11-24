@@ -64,8 +64,7 @@ local function rewardWords(items: any): string
 	return table.concat(parts, ", ")
 end
 
--- The reward icons (decision 0100): one picture for each kind of reward, in the Savanna look
--- (assets/stations/icons, made by tools/icons/stations_rewards.py). Eggs show their own egg.
+-- The reward icons (decision 0100): one picture for each kind of reward. Eggs show their own egg.
 local ICON = {
 	-- the ForgeGUI HUD set (STATION-146, assets/stations/icons/hud_*.png): the piles for rewards, every egg its own
 	coins = "rbxassetid://94007045915732",
