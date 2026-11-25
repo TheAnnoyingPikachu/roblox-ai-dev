@@ -1,0 +1,25 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-169",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Fix: B on the open Waves window fights the wave its button shows, instead of closing the window (found by the HUD board audit, 2026-11-25).",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "studio/tasks/STATION-169.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "With the Waves window open, B starts the picked wave (the Fight button's key cap says B); from the ranch B still opens Waves"
+  ],
+  "verification": "Studio 2026-11-25, build dev (local): B opened Waves, B again started wave 1 and the window closed for the fight. Selene clean.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "B was the dock's Waves hotkey, which closes an open sheet when pressed again."
+}
