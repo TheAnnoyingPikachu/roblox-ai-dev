@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "Remake the four Eternal models true to SHANNON's original designs (SHANNON, 2026-11-25: 'do it again but stay true to the originals as these new ones are way off'), keeping the clean rig of STATION-173.",
+  "objective": "Bring back SHANNON's first-iteration Eternal models and fix their rigging (SHANNON, 2026-11-25: 'take the first iteration and just try to fix them? these ones dont look as good either'), replacing STATION-173's and this task's earlier regenerated models.",
   "inputs": [
     "src/stations/CLAUDE.md",
     "docs/assets/register.md"
@@ -24,15 +24,15 @@
   ],
   "tests": [],
   "acceptance_criteria": [
-    "The Sahara Guardian, Sahara Mammoth and Sunfire War-Tortoise are ForgeGUI models rebuilt from three renders each of SHANNON's original site models (artifacts 30d3ddb4, fb438279, 276820c6): the same design, colours, armour, halo, cannon and banners",
-    "The Molten Sun Rhino is SHANNON's own A-pose site model (artifact 4b2ea5a5)",
-    "Each is skinned to the Stations rig; the game's strongest poses stretch at most 10 % of it unclamped (AnimalMoves.STIFF stays empty)",
-    "Foot points and spell anchors (AnimalRig) are measured on the new models and every spell checks out; each has a rainbow coat",
+    "The Sahara Guardian, Sahara Mammoth, Sunfire War-Tortoise and Molten Sun Rhino are SHANNON's own site models as first used (artifacts 30d3ddb4, fb438279, 276820c6, 8fd726bf), unchanged in look",
+    "Each is skinned to the Stations rig with no leg clamp (AnimalMoves.STIFF stays empty); the game's strongest poses stretch at most 10 % of it",
+    "The Guardian's few big faces are split in their own planes (UVs kept) so its joints bend over small faces",
+    "Foot points and spell anchors (AnimalRig) are measured on the models and every spell checks out; each has a rainbow coat",
     "Uploaded and seen in Studio"
   ],
-  "verification": "skin_forge --stretch worst: Guardian 6.69 %, Mammoth 6.04 %, War-Tortoise 2.96 %, Sun Rhino 6.26 % (STATION-173: 8.98, 5.37, 5.85, 8.11). check_spells ALL OK. Uploaded models and rainbow coats: run 45706172621. Studio 2026-11-25, build dev (local): all four stood on the ground, idled, held their spells mid-cast and wore their rainbow coats, at their sizes (22, 39, 19.5, 24 studs long). Lune 823/823. Not seen: walking the herd at a ranch, a fight with them in the team.",
+  "verification": "skin_forge --stretch worst, unclamped: Guardian 8.29 % (14.66 % with the first iteration's weights), Mammoth 8.40 % (9.01), War-Tortoise 3.63 % (3.63), Sun Rhino 5.75 % (8.40). check_spells ALL OK. Lune 823/823.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Mammoth stands with its left hind foot tucked in, so its legs follow their feet (feet_weights, radius 0.1); the War-Tortoise's cannon over its head stays on the shell (head_below). STATION-173's models and this round's replaced uploads are left for archiving by hand."
+  "status": "in_progress",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. Fixes: each leg leaves the body below its armour; the Guardian's face turns rigid on a narrow band behind it with its mane on the body (carried by the head, the mane tore from the chest), and its 3,071 triangles are split until no edge is over 0.025 (15,788). Earlier uploads (STATION-173's and this task's first round) are left for archiving by hand."
 }
