@@ -81,6 +81,8 @@ export type Profile = {
 	receipts: { string }, -- the Robux purchases granted, newest last (decision 0117): a receipt is granted once
 	beta: boolean, -- the beta reward is given (decision 0117)
 	met: { string }, -- the animals met (decision 0118): "species/variant" keys, "lion/" for the plain species
+	loan: { boss: boolean, day: number }, -- the Ranger's loan (decision 0119, StationIntro): the wave 10 boss's is
+	-- used, and the UTC day of the last one
 }
 
 -- Animals met (decision 0118): what the Animals window's Seen tab draws from. `meet` adds a version once (a
@@ -106,7 +108,8 @@ end
 -- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
 -- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
 -- strip what it does not know. A save is stamped with the version of the server that last wrote it.
-StationProgress.VERSION = 4 -- 2: goals and the intro (decisions 0115, 0116); 3: the eternal pair (decision 0117); 4: met (0118)
+StationProgress.VERSION = 4 -- 2: goals and the intro (decisions 0115, 0116); 3: the eternal pair (decision 0117); 4: met
+-- and the Ranger's loan (0118, 0119)
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
@@ -165,6 +168,7 @@ function StationProgress.defaults(_now: number): Profile
 		receipts = {},
 		beta = false,
 		met = {},
+		loan = { boss = false, day = 0 },
 	}
 end
 
@@ -406,6 +410,8 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	for _, a in p.animals do
 		StationProgress.meet(p, a.s, a.v)
 	end
+	local loan = if type(record.loan) == "table" then record.loan else {}
+	p.loan = { boss = loan.boss == true, day = int(loan.day, 0, 1e7, 0) }
 	local stored = if type(record.trades) == "table" then record.trades else {}
 	p.trades.day = int(stored.day, 0, 1e7, 0)
 	p.trades.count = int(stored.count, 0, 1000, 0)
