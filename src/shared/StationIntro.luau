@@ -5,6 +5,7 @@
 -- fight's setup is, and what finishing (or skipping) gives. The save only records that it is done.
 
 local BattleRules = require("./BattleRules")
+local LevelRules = require("./LevelRules")
 local StationConfig = require("./StationConfig")
 local StationProgress = require("./StationProgress")
 local StationRules = require("./StationRules")
@@ -47,6 +48,74 @@ function StationIntro.team(): { StationRules.Owned }
 		})
 	end
 	return team
+end
+
+-- The Ranger's loan (decision 0119; SHANNON, 2026-11-24: "Wave 10 boss, then daily", and 2026-11-25: the player
+-- picks, it replaces one animal, at max level, for one wave). The first is for the first boss (LOAN_WAVE); after
+-- it has been used, one a day (UTC). The legend fights in place of one of the player's own animals (a Titan for
+-- the War Elephant, never a Titan for the others) for that wave only: it is never owned, only met.
+StationIntro.LOAN_WAVE = LevelRules.BOSS_EVERY
+
+function StationIntro.today(now: number): number
+	return math.floor(now / 86400)
+end
+
+-- Which loan `p` may take for `wave` now: "boss", "daily" or nil.
+function StationIntro.loanFor(p: Profile, wave: number, now: number): string?
+	if not p.loan.boss then
+		return if wave == StationIntro.LOAN_WAVE then "boss" else nil
+	end
+	return if p.loan.day ~= StationIntro.today(now) then "daily" else nil
+end
+
+-- Legend `k` of TEAM as the loan lends it: every stat at MAX_LEVEL.
+function StationIntro.lent(k: number): StationRules.Owned?
+	local a = StationIntro.TEAM[k]
+	if a == nil then
+		return nil
+	end
+	local trained = {} :: any
+	for _, stat in StationConfig.STATS do
+		trained[stat] = StationConfig.MAX_LEVEL
+	end
+	return { s = a.s, v = a.v, stats = StationRules.versionStats(a.s, a.v) :: StationConfig.Stats, trained = trained }
+end
+
+-- Whether legend `k` may stand in for the player's fighter `replaces` (an animal id) at `wave`: (ok, code).
+function StationIntro.canLend(p: Profile, k: number, replaces: number, wave: number, now: number): (boolean, string?)
+	local legend = StationIntro.lent(k)
+	if legend == nil then
+		return false, "loan"
+	elseif StationIntro.loanFor(p, wave, now) == nil then
+		return false, "loan_used"
+	end
+	for _, a in StationProgress.fighters(p) do
+		if a.id == replaces then
+			local titan = StationRules.role(legend) == StationConfig.TITAN
+			if titan ~= (StationRules.role(a) == StationConfig.TITAN) then
+				return false, "loan_titan"
+			end
+			return true, nil
+		end
+	end
+	return false, "loan_slot"
+end
+
+-- The loan is used (when its wave starts): the boss's is done, the day is today's, the legend is met.
+function StationIntro.useLoan(
+	p: Profile,
+	k: number,
+	replaces: number,
+	wave: number,
+	now: number
+): (Profile, boolean, string?)
+	local ok, code = StationIntro.canLend(p, k, replaces, wave, now)
+	if not ok then
+		return p, false, code
+	end
+	p.loan = { boss = true, day = StationIntro.today(now) }
+	local a = StationIntro.TEAM[k]
+	return StationProgress.meet(p, a.s, a.v), true, nil
 end
 
 -- The animals inside the starter eggs.
