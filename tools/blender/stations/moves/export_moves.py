@@ -122,13 +122,10 @@ AnimalMoves.POWERS = {{
 {chr(10).join(powers)}
 }} :: {{ [string]: Keys }}
 
--- The most (degrees) any clip may turn a leg of these models, by asset: the Sahara Guardian is stone blocks cut
--- apart at the joints and the Sahara Mammoth a thick hide, and past this their legs come apart or stretch
--- (SHANNON saw it in the shared walk, hit, win and training clips). Creatures.client clamps every leg turn to it.
-AnimalMoves.STIFF = {{
-	creature_lion_sahara_forge = 16,
-	creature_elephant_sahara_forge = 20,
-}} :: {{ [string]: number }}
+-- The most (degrees) any clip may turn a leg of a model, by asset; Creatures.client clamps every leg turn to it.
+-- Empty since the Eternals were regenerated (2026-11-25): their legs are clean and apart, and the game's
+-- strongest poses stretch them 5 to 9 % unclamped (skin_forge --stretch), so none needs a clamp.
+AnimalMoves.STIFF = {{}} :: {{ [string]: number }}
 
 return AnimalMoves
 '''
