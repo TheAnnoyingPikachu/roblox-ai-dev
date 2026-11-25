@@ -1,7 +1,7 @@
 # 0118: Animal Stations: Seen is the animals met
 
-Status: proposed (SHANNON's pick, 2026-11-24: "Only animals actually met"; the save change waits for SHANNON's OK
-at the checkpoint). Task STATION-158. Date: 2026-11-25.
+Status: accepted (SHANNON's pick, 2026-11-24: "Only animals actually met"; the save change approved by SHANNON
+on 2026-11-25). Task STATION-158. Date: 2026-11-25.
 
 ## Context
 

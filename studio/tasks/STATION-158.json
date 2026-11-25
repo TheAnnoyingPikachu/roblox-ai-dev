@@ -34,5 +34,5 @@
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_review",
-  "notes": "A data schema change: decision 0118 (proposed, for SHANNON's OK at the checkpoint); StationProgress.VERSION 4. The Ranger's loan meets its legend in STATION-159."
+  "notes": "A data schema change: decision 0118 (accepted by SHANNON, 2026-11-25); StationProgress.VERSION 4. The Ranger's loan meets its legend in STATION-159."
 }
