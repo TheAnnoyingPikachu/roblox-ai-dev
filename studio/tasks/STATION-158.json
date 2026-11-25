@@ -14,8 +14,10 @@
   ],
   "files": [
     "src/shared/StationProgress.luau",
+    "src/shared/StationTrade.luau",
     "src/stations/StationsServer.server.luau",
     "src/stations-client/HudAnimals.luau",
+    "src/stations-client/Portrait.luau",
     "tests/StationProgress.spec.luau",
     "docs/decisions/0118-animal-stations-seen.md",
     "studio/tasks/STATION-158.json"
@@ -28,9 +30,9 @@
     "The Seen tab shows only met animals the player does not own, as dark outlines with the egg and level that give them",
     "sanitize keeps the list short and unique; a decision record covers the save change"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "Lune 821/821 (two new specs: meet once and only real versions, owning meets; sanitize keeps the list clean and bounded, and meets an older save's animals). Studio 2026-11-25, build dev (local): after the borrowed fight the save's met held the four legends; the Seen tab showed them as dark silhouettes with 'From the Dusk Egg, level 12' and the like. Not seen: a shared fight's teammates met, a trade.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "A data schema change: decision record first (CLAUDE.md rule 8)."
+  "status": "in_review",
+  "notes": "A data schema change: decision 0118 (proposed, for SHANNON's OK at the checkpoint); StationProgress.VERSION 4. The Ranger's loan meets its legend in STATION-159."
 }

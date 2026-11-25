@@ -1102,3 +1102,38 @@ describe("StationProgress Robux and the beta (decision 0117)", function()
 		expect(#again.animals).toBe(1)
 	end)
 end)
+
+describe("StationProgress animals met (decision 0118)", function()
+	it("meets a version once, only one that exists, and every animal owned", function()
+		local p = fresh()
+		expect(#p.met).toBe(0)
+		p = StationProgress.meet(p, "lion", nil)
+		p = StationProgress.meet(p, "lion", nil)
+		p = StationProgress.meet(p, "lion", "sun_lion")
+		p = StationProgress.meet(p, "dragon", nil) -- a foe, not an animal
+		p = StationProgress.meet(p, "lion", "nope")
+		expect(#p.met).toBe(2)
+		expect(table.find(p.met, "lion/") ~= nil and table.find(p.met, "lion/sun_lion") ~= nil).toBeTruthy()
+		local given = StationProgress.give(fresh(), "elephant", nil, 3, false)
+		expect(table.find(given.met, "elephant/") ~= nil).toBeTruthy()
+	end)
+
+	it("keeps a stored list clean and short, and meets what an older save owns", function()
+		local record = fresh() :: any
+		record.met = { "lion/", "lion/", "lion/sun_lion", "ghost/", "junk", 42, string.rep("x", 80) }
+		record.animals = { { id = 1, s = "rhino", stats = StationRules.versionStats("rhino", nil) } }
+		record.nextId = 2
+		local p = StationProgress.sanitize(record, 0)
+		table.sort(p.met)
+		expect(table.concat(p.met, ",")).toBe("lion/,lion/sun_lion,rhino/")
+		local all = fresh()
+		for _, sp in StationConfig.SPECIES do
+			all = StationProgress.meet(all, sp.id, nil)
+			for _, va in sp.variants do
+				all = StationProgress.meet(all, sp.id, va.id)
+			end
+		end
+		expect(#all.met).toBe(StationProgress.MAX_MET)
+		expect(#StationProgress.sanitize(all, 0).met).toBe(StationProgress.MAX_MET)
+	end)
+end)
