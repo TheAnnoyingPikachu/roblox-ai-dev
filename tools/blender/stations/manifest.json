@@ -9825,62 +9825,62 @@
     "png": "build/blender/stations/creature_lion_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_sahara_forge_rest.png",
     "size_studs": [
-      8.42,
-      12.6,
+      8.95,
+      14.25,
       22.0
     ],
-    "tris": 3071,
+    "tris": 12000,
     "parts": {
-      "creature_lion_sahara_forge_body": 3071
+      "creature_lion_sahara_forge_body": 12000
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sahara Guardian: SHANNON's Sahara Guardian Rare Variant from ForgeGUI (artifact 30d3ddb4), one mesh with its sun halo, skinned to the Stations rig (decision 0102).",
+    "notes": "Sahara Guardian: regenerated in ForgeGUI (concept fde372a9, model 2b89a1ef), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_lion_sahara_forge_body": [
         0.0,
-        6.299,
+        7.125,
         -0.0
       ]
     },
     "joints": {
       "creature_lion_sahara_forge_head": [
-        -0.689,
-        6.293,
-        7.574
+        0.034,
+        8.58,
+        7.612
       ],
       "creature_lion_sahara_forge_leg_fl": [
-        1.377,
-        3.998,
-        8.492
+        2.105,
+        4.439,
+        5.081
       ],
       "creature_lion_sahara_forge_leg_fr": [
-        -2.295,
-        3.998,
-        8.492
+        -2.037,
+        4.439,
+        5.081
       ],
       "creature_lion_sahara_forge_leg_bl": [
-        0.918,
-        3.998,
-        1.148
+        1.76,
+        4.669,
+        -3.433
       ],
       "creature_lion_sahara_forge_leg_br": [
-        -1.836,
-        3.998,
-        -0.918
+        -1.692,
+        4.669,
+        -3.433
       ],
       "creature_lion_sahara_forge_tail": [
-        -1.033,
-        4.916,
-        -2.754
+        0.034,
+        7.2,
+        -5.504
       ]
     },
     "skinned": true,
     "root": [
-      -0.459,
-      5.604,
-      3.443
+      0.034,
+      7.2,
+      1.17
     ]
   },
   "creature_elephant_sahara_forge": {
@@ -9888,8 +9888,8 @@
     "png": "build/blender/stations/creature_elephant_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_elephant_sahara_forge_rest.png",
     "size_studs": [
-      17.9,
-      22.54,
+      15.19,
+      25.2,
       39.0
     ],
     "tris": 12000,
@@ -9898,52 +9898,52 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
+    "notes": "Sahara Mammoth: regenerated in ForgeGUI (concept 56e4cd88, model 44a2b954), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_elephant_sahara_forge_body": [
         0.0,
-        11.269,
+        12.598,
         -0.0
       ]
     },
     "joints": {
       "creature_elephant_sahara_forge_head": [
         0.0,
-        11.87,
-        7.483
+        16.749,
+        8.249
       ],
       "creature_elephant_sahara_forge_leg_fl": [
-        5.232,
-        7.385,
-        6.362
+        3.678,
+        7.757,
+        2.119
       ],
       "creature_elephant_sahara_forge_leg_fr": [
-        -5.232,
-        7.385,
-        6.362
+        -3.678,
+        7.757,
+        2.119
       ],
       "creature_elephant_sahara_forge_leg_bl": [
-        4.111,
-        7.385,
-        -10.083
+        3.474,
+        7.757,
+        -10.142
       ],
       "creature_elephant_sahara_forge_leg_br": [
-        -4.485,
-        7.385,
-        -10.083
+        -3.474,
+        7.757,
+        -10.142
       ],
       "creature_elephant_sahara_forge_tail": [
-        -2.242,
-        8.88,
-        -14.194
+        0.0,
+        13.479,
+        -15.046
       ]
     },
     "skinned": true,
     "root": [
       0.0,
-      11.123,
-      -1.861
+      14.705,
+      -1.968
     ]
   },
   "creature_tortoise_sahara_forge": {
@@ -9951,62 +9951,62 @@
     "png": "build/blender/stations/creature_tortoise_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_tortoise_sahara_forge_rest.png",
     "size_studs": [
-      12.61,
-      11.09,
+      11.19,
+      10.49,
       19.5
     ],
-    "tris": 12000,
+    "tris": 11999,
     "parts": {
-      "creature_tortoise_sahara_forge_body": 12000
+      "creature_tortoise_sahara_forge_body": 11999
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sunfire War-Tortoise: SHANNON's Sunfire War-Tortoise of the Desert from ForgeGUI (artifact 276820c6), one mesh with its sun cannon, skinned to the Stations rig (decision 0102).",
+    "notes": "Sunfire War-Tortoise: regenerated in ForgeGUI (concept 700524b0, model c41da947), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_tortoise_sahara_forge_body": [
         0.0,
-        5.545,
+        5.244,
         -0.0
       ]
     },
     "joints": {
       "creature_tortoise_sahara_forge_head": [
-        -0.002,
-        4.999,
-        7.383
+        0.0,
+        4.832,
+        5.956
       ],
       "creature_tortoise_sahara_forge_leg_fl": [
-        4.102,
-        2.127,
-        5.126
+        3.489,
+        2.164,
+        4.52
       ],
       "creature_tortoise_sahara_forge_leg_fr": [
-        -4.105,
-        2.127,
-        5.126
+        -3.489,
+        2.164,
+        4.52
       ],
       "creature_tortoise_sahara_forge_leg_bl": [
-        4.102,
-        2.127,
-        -5.542
+        3.078,
+        2.164,
+        -5.126
       ],
       "creature_tortoise_sahara_forge_leg_br": [
-        -4.105,
-        2.127,
-        -5.542
+        -3.078,
+        2.164,
+        -5.126
       ],
       "creature_tortoise_sahara_forge_tail": [
-        -0.002,
-        3.563,
-        -8.209
+        0.0,
+        3.601,
+        -6.972
       ]
     },
     "skinned": true,
     "root": [
-      -0.002,
-      5.615,
-      -0.003
+      0.0,
+      5.242,
+      0.005
     ]
   },
   "creature_rhino_sahara_forge": {
@@ -10014,62 +10014,62 @@
     "png": "build/blender/stations/creature_rhino_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_rhino_sahara_forge_rest.png",
     "size_studs": [
-      10.9,
-      9.23,
+      9.53,
+      14.29,
       24.0
     ],
-    "tris": 11999,
+    "tris": 12000,
     "parts": {
-      "creature_rhino_sahara_forge_body": 11999
+      "creature_rhino_sahara_forge_body": 12000
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Molten Sun Rhino: SHANNON's Molten Sun Rhino of the Savannah from ForgeGUI (artifact 8fd726bf), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Molten Sun Rhino: regenerated in ForgeGUI (concept 29d0cd89, model dc9f83ba), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_rhino_sahara_forge_body": [
         0.0,
-        4.615,
+        7.147,
         -0.0
       ]
     },
     "joints": {
       "creature_rhino_sahara_forge_head": [
-        0.024,
-        5.409,
-        6.46
+        -0.002,
+        8.462,
+        3.727
       ],
       "creature_rhino_sahara_forge_leg_fl": [
-        3.773,
-        3.16,
-        4.21
+        2.507,
+        4.196,
+        0.967
       ],
       "creature_rhino_sahara_forge_leg_fr": [
-        -3.974,
-        3.16,
-        0.712
+        -2.511,
+        4.196,
+        0.967
       ],
       "creature_rhino_sahara_forge_leg_bl": [
-        1.774,
-        3.16,
-        -6.536
+        2.256,
+        4.196,
+        -10.073
       ],
       "creature_rhino_sahara_forge_leg_br": [
-        -2.475,
-        3.16,
-        -9.285
+        -2.261,
+        4.196,
+        -10.073
       ],
       "creature_rhino_sahara_forge_tail": [
-        0.024,
-        5.159,
-        -10.784
+        -0.002,
+        7.207,
+        -11.327
       ]
     },
     "skinned": true,
     "root": [
-      0.024,
-      4.66,
-      -0.038
+      -0.002,
+      8.462,
+      -3.8
     ]
   }
 }

@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-173",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Regenerate the four Eternal models in ForgeGUI so they rig and animate cleanly (SHANNON, 2026-11-25: 'take the eternal animals and redo them in forge so the models arent so fucked up, take your time ... animate them and everything as well').",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/moves/export_moves.py",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_*_sahara_forge*",
+    "src/shared/AnimalMoves.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-173.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Each Eternal (Sahara Guardian, Sahara Mammoth, Sunfire War-Tortoise, Molten Sun Rhino) is a new ForgeGUI model made from a concept picture in a square neutral stance: four straight separate legs, head forward, no halo, no floating parts, nothing over the head",
+    "Each is skinned to the Stations rig; the game's strongest poses stretch at most 10 % of it unclamped, so AnimalMoves.STIFF is empty",
+    "Foot points and spell anchors (AnimalRig) are measured on the new models and every spell checks out; each has a rainbow coat",
+    "Uploaded and seen in Studio walking, attacking and casting"
+  ],
+  "verification": "skin_forge --stretch worst: Guardian 8.98 %, Mammoth 5.37 %, War-Tortoise 5.85 %, Sun Rhino 8.11 % (the old Guardian 12.6 % with its legs clamped). check_spells ALL OK. Uploaded: models run 45679232803, rainbow coats run 45679927590. Studio 2026-11-25, build dev (local): all four stood, idled, attacked and cast their spells, and wore their rainbow coats, at their sizes (22, 39, 19.5, 24 studs long). Lune 823/823. Not seen: walking the herd at a ranch, a fight with them in the team.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Guardian's mane stays with the body (blending it into the head pulled the chest armour along: 14 to 20 % stretched). Old model uploads are left for archiving by hand."
+}
