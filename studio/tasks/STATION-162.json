@@ -13,9 +13,9 @@
   "files": [
     "src/stations-client/Hud.client.luau",
     "src/stations-client/HudPrompts.luau",
-    "src/stations-client/Style.luau",
     "src/stations/World.luau",
     "src/stations/Ranch.luau",
+    "src/stations/CLAUDE.md",
     "studio/tasks/STATION-162.json"
   ],
   "tests": [],
@@ -23,9 +23,9 @@
     "Every prompt in the hub and on a ranch is a paper pill with the place's icon, the action and its key cap (a tap circle on a touch screen), drawn by the client (ProximityPrompt Style Custom)",
     "Hold prompts show their progress in the pill; prompts work exactly as before"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "Studio 2026-11-25, build dev (local): at the ranch house door the prompt is Style Custom and the pill is built (icon, 'Open', 'Ranch menu', the E key cap; the tap circle hidden on a desk); holding the prompt still opens the Ranch menu. Studio's screen capture shows no BillboardGui (a plain red test board did not show either), so the pill's look is for SHANNON to see in Studio. Lune 821/821, selene clean. Not seen: a phone, every prompt's icon.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "SHANNON's pick: a paper pill with icon and key."
+  "status": "in_review",
+  "notes": "SHANNON's pick: a paper pill with icon and key. Icons by the prompt's tag (HudPrompts.ICON_OF); the paw for any other."
 }

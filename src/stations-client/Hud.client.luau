@@ -771,6 +771,7 @@ for _, part in
 		"HudHatch",
 		"HudIntro",
 		"HudMoments",
+		"HudPrompts",
 	}
 do
 	require(script.Parent:WaitForChild(part))
