@@ -88,3 +88,37 @@ describe("StationIntro", function()
 		expect(StationProgress.sanitize(empty, 0).intro).toBe(false)
 	end)
 end)
+
+describe("StationIntro the Ranger's loan (decision 0119)", function()
+	it("offers the first boss's loan, then one a day, and lends a legend at max level", function()
+		local p = StationProgress.defaults(0)
+		local day = 86400 * 20000
+		expect(StationIntro.loanFor(p, 9, day)).toBeNil()
+		expect(StationIntro.loanFor(p, StationIntro.LOAN_WAVE, day)).toBe("boss")
+		local legend = StationIntro.lent(1) :: any
+		expect(legend.trained.speed).toBe(StationConfig.MAX_LEVEL)
+		expect(StationIntro.lent(9)).toBeNil()
+		p = StationProgress.give(p, "jackal", nil, 3, false)
+		p = StationProgress.give(p, "elephant", nil, 3, false)
+		local jackal, elephant = p.team[1], p.titan :: number
+		expect(select(2, StationIntro.canLend(p, 4, jackal, 10, day))).toBe("loan_titan")
+		expect(select(2, StationIntro.canLend(p, 1, elephant, 10, day))).toBe("loan_titan")
+		expect(select(2, StationIntro.canLend(p, 1, 999, 10, day))).toBe("loan_slot")
+		local used, ok = StationIntro.useLoan(p, 1, jackal, 10, day)
+		expect(ok).toBe(true)
+		expect(table.find(used.met, "jackal/sphinx_jackal") ~= nil).toBeTruthy()
+		expect(StationIntro.loanFor(used, 14, day)).toBeNil() -- one a day
+		expect(StationIntro.loanFor(used, 14, day + 86400)).toBe("daily")
+		expect(select(2, StationIntro.useLoan(used, 1, jackal, 14, day + 3600))).toBe(false)
+	end)
+
+	it("keeps the loan's record through sanitize", function()
+		local p = StationProgress.defaults(0) :: any
+		p.loan = { boss = true, day = 20001 }
+		local back = StationProgress.sanitize(p, 0)
+		expect(back.loan.boss).toBe(true)
+		expect(back.loan.day).toBe(20001)
+		p.loan = "junk"
+		expect(StationProgress.sanitize(p, 0).loan.boss).toBe(false)
+	end)
+end)

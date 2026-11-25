@@ -6,12 +6,15 @@
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BattleRules = require(Shared:WaitForChild("BattleRules"))
 local LevelRules = require(Shared:WaitForChild("LevelRules"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
+local StationIntro = require(Shared:WaitForChild("StationIntro"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
+local StationRules = require(Shared:WaitForChild("StationRules"))
 local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local Portrait = require(script.Parent:WaitForChild("Portrait"))
 local Style = require(script.Parent:WaitForChild("Style"))
@@ -255,6 +258,94 @@ local function wavePanel(col: Instance, team: { any })
 	note.LayoutOrder = 8
 end
 
+-- The Ranger's loan (decision 0119): when one is open for the wave picked, the four legends, which of the
+-- player's animals the chosen one stands in for (a Titan for the War Elephant), and Take: it fights the next wave.
+local loanPick, loanReplaces, loanTaken = 1, nil :: number?, false
+local function loanCard(col: Instance, team: { any })
+	local kind = StationIntro.loanFor(S.profile, S.wave, math.floor(Workspace:GetServerTimeNow()))
+	if kind == nil or #team == 0 then
+		loanTaken = false
+		return
+	end
+	local legend = StationIntro.TEAM[loanPick]
+	local legendTitan = StationRules.role(legend :: any) == StationConfig.TITAN
+	local fits = {}
+	for _, a in team do
+		if (StationRules.role(a) == StationConfig.TITAN) == legendTitan then
+			table.insert(fits, a)
+		end
+	end
+	local chosen = nil
+	for _, a in fits do
+		chosen = chosen or (if a.id == loanReplaces then a else nil)
+	end
+	chosen = chosen or fits[1]
+	loanReplaces = chosen and chosen.id
+	local card = Style.card(col, UDim2.new(1, -8, 0, 214), C.gold)
+	card.LayoutOrder = 5
+	local title = Style.text(card, "The Ranger's loan", 17, C.text, UDim2.new(1, -20, 0, 22))
+	title.Position, title.ZIndex = UDim2.fromOffset(10, 8), 3
+	local sub = Style.small(
+		card,
+		if kind == "boss"
+			then "For the boss: a legend at max level fights in place of one of yours, this wave only."
+			else "Once a day: a legend at max level fights in place of one of yours, for one wave.",
+		12,
+		C.muted,
+		UDim2.new(1, -20, 0, 32)
+	)
+	sub.Position, sub.TextWrapped, sub.ZIndex = UDim2.fromOffset(10, 30), true, 3
+	for k, a in StationIntro.TEAM do
+		local va = StationConfig.variant(a.s, a.v) :: StationConfig.Variant
+		local pick = Style.button(card, "", function()
+			loanPick, loanTaken = k, false
+			redraw.waves()
+		end, if k == loanPick then "primary" else "ghost", UDim2.fromOffset(54, 54))
+		pick.Position, pick.ZIndex = UDim2.fromOffset(10 + (k - 1) * 60, 62), 3
+		local view =
+			Portrait.new(pick, StationRules.assetOf(a.s, a.v), { size = UDim2.fromOffset(46, 46), background = C.sand })
+		view.Position, view.ZIndex = UDim2.fromOffset(4, 4), 4
+		pick.Name = va.name
+	end
+	local swap = Style.small(
+		card,
+		if chosen
+			then `{(StationConfig.variant(legend.s, legend.v) :: StationConfig.Variant).name} in place of:`
+			else "No animal of that kind in your team",
+		12,
+		C.text,
+		UDim2.new(1, -20, 0, 16)
+	)
+	swap.Position, swap.ZIndex = UDim2.fromOffset(10, 120), 3
+	local row = Instance.new("Frame")
+	row.BackgroundTransparency, row.ZIndex = 1, 3
+	row.Position, row.Size = UDim2.fromOffset(10, 138), UDim2.new(1, -20, 0, 30)
+	Style.list(row, 6, true)
+	row.Parent = card
+	for _, a in fits do
+		local b = Style.button(row, App.nameOf(a), function()
+			loanReplaces, loanTaken = a.id, false
+			redraw.waves()
+		end, if a.id == loanReplaces then "good" else "ghost", UDim2.fromOffset(0, 30))
+		b.AutomaticSize, b.TextSize = Enum.AutomaticSize.X, 13
+	end
+	local take = Style.button(
+		card,
+		if loanTaken then "On loan for your next wave · Cancel" else "Take the loan",
+		function()
+			if loanTaken then
+				loanTaken = not send("loan", 0, 0)
+			elseif loanReplaces then
+				loanTaken = send("loan", loanPick, loanReplaces) == true
+			end
+			redraw.waves()
+		end,
+		if loanTaken then "good" elseif chosen then "primary" else "off",
+		UDim2.new(1, -20, 0, 36)
+	)
+	take.Position, take.TextSize, take.ZIndex = UDim2.fromOffset(10, 172), 15, 3
+end
+
 -- Who is fighting: the player, whoever stands in the portal's ring, and an open place for each one left.
 local function partyColumn(col: Instance, team: { any })
 	local head = Style.text(col, "Who is fighting", 20, C.text, UDim2.new(1, -8, 0, 26))
@@ -285,12 +376,13 @@ local function partyColumn(col: Instance, team: { any })
 		s.Position, s.ZIndex = UDim2.fromOffset(64, 34), 3
 	end
 	place(1, "You", `Team power {Format.commas(BattleRules.teamPower(team, 1))}`, nil, nil, player.UserId)
+	loanCard(col, team)
 	local others = inPortal()
 	for i, other in others do
-		place(1 + i, other.DisplayName, "In the portal", nil, nil, other.UserId)
+		place(5 + i, other.DisplayName, "In the portal", nil, nil, other.UserId)
 	end
 	for k = #others + 2, 3 do
-		place(k, "An open place", "Invite a friend", "+", Hud.invite)
+		place(5 + k, "An open place", "Invite a friend", "+", Hud.invite)
 	end
 	local how = Style.small(
 		col,
