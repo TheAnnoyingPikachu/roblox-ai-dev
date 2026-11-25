@@ -119,8 +119,23 @@ local function hatcheryColumn(col: Frame, stored: { number }, hatching: { number
 		local card, line = nestRow(col, order, e.egg, def.name, "")
 		local bar, set = Style.bar(card, UDim2.new(1, -100, 0, 10), C.accent)
 		bar.Position = UDim2.fromOffset(84, 66)
-		local b = rowButton(card, "Show me", "info", function()
-			show(nil)
+		-- a ready egg opens from here (the Eggs board's "Open it"): the window closes and it hatches in its nest,
+		-- one at a time like the nest's prompt (Hud.openEgg)
+		local b = rowButton(card, "Open it", "primary", function()
+			for _, p in CollectionService:GetTagged("Egg") do
+				local shell = p.Parent
+				if
+					p:GetAttribute("Ranch") == player:GetAttribute("Ranch")
+					and p:GetAttribute("Index") == k
+					and shell
+					and shell:IsA("BasePart")
+				then
+					show(nil)
+					Hud.openEgg(shell.Position)
+					return
+				end
+			end
+			show(nil) -- not drawn here (another ranch's view): walk there
 			Hud.wayTo(k)
 		end)
 		local function tick()
@@ -128,21 +143,29 @@ local function hatcheryColumn(col: Frame, stored: { number }, hatching: { number
 			set(1 - remaining / need)
 			local ready = remaining <= 0
 			bar.Visible, b.Visible = not ready, ready
-			line.Text = if ready then "Ready! Open it at its nest" else `Opens in {Format.ago(remaining)}`
+			line.Text = if ready then "Ready to open!" else `Opens in {Format.ago(remaining)}`
 			line.TextColor3 = if ready then C.good else C.muted
 		end
 		tick()
 		table.insert(eggTickers, tick)
 	end
+	local kinds = {} -- how many kinds of egg wait in the cellar: one is started straight away, more are picked below
+	for _, k in stored do
+		kinds[S.profile.eggs[k].egg] = true
+	end
+	local several = next(kinds) ~= nil and next(kinds, next(kinds)) ~= nil
 	for slot = #hatching + 1, nests do
 		local card = nestRow(
 			col,
 			slot,
 			nil,
 			"An empty nest",
-			if #stored > 0 then "Start one from the cellar" else "Buy an egg to fill it"
+			if several
+				then "Choose an egg from the cellar below"
+				elseif #stored > 0 then "Start one from the cellar"
+				else "Buy an egg to fill it"
 		)
-		if #stored > 0 then
+		if #stored > 0 and not several then
 			rowButton(card, "Hatch one", "primary", function()
 				send("hatch", stored[1])
 			end)
