@@ -28,9 +28,9 @@
     "Messages always stack below the notes top right (egg ready, mates) and move down when a note appears",
     "A common or uncommon hatch is a quick pop; rare and up the full moment (rays, a bigger card, the odds line, 'Add to my team' / 'Keep in the barn'); mythic and up shake the screen"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "Part one, Studio 2026-11-25, build dev (local): a message stacked under the Meadow Egg note; a common hatch a 140 px pop with no rays, gone in 1.7 s; a mythic hatch the full reveal (rays, MYTHIC!!!) with the screen shake; the Animals header's Sort button. Lune 819/819, selene clean. Part two (teammate pills, the vote's ring and dots) is next.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "SHANNON's picks: pills with health and vote dots; power, rarity, level, newest; the stack under the notes; scales with rarity."
+  "status": "in_progress",
+  "notes": "SHANNON's picks: pills with health and vote dots; power, rarity, level, newest; the stack under the notes; scales with rarity. Part one (PR): the sort, messages under the notes, hatch reveals by rarity (quick pop for common and uncommon; rare and up the full moment with 'Add to my team' / 'Keep in the barn'; mythic and up shake the screen)."
 }

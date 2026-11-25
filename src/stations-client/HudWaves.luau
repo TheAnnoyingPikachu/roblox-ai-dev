@@ -284,14 +284,32 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 			table.insert(lines, `A {string.lower((StationRules.coatOf(a) :: any).name)} coat!`)
 		end
 		revealSub.Text = table.concat(lines, "\n")
+		-- scaled by rarity (SHANNON's pick, STATION-160): a quick pop for common and uncommon, the full moment from
+		-- rare, and the screen shakes from mythic
+		local rank = App.RANK[rarity] or 0
+		local quick = rank <= (App.RANK.uncommon or 2)
 		require(script.Parent:WaitForChild("RevealCard")).show( -- the animal's picture under the words
 			screen,
 			StationRules.assetOf(a.s, a.v),
 			a.rainbow,
 			RARITY_COLOUR[rarity] or C.text,
 			big,
-			2.6 + big * 0.6
+			if quick then 1.2 else 2.6 + big * 0.6,
+			quick
 		)
+		if rank >= (App.RANK.mythic or 6) then
+			local camera = workspace.CurrentCamera
+			local untilAt = os.clock() + 0.5 + big * 0.15
+			RunService:BindToRenderStep("HatchShake", Enum.RenderPriority.Camera.Value + 1, function()
+				local left = untilAt - os.clock()
+				if left <= 0 or camera == nil then
+					RunService:UnbindFromRenderStep("HatchShake")
+					return
+				end
+				local amp = math.min(1, left * 2) * (0.15 + big * 0.05)
+				camera.CFrame *= CFrame.new((math.random() - 0.5) * amp, (math.random() - 0.5) * amp, 0)
+			end)
+		end
 		revealSub.TextColor3 = if StationRules.coatOf(a) then Color3.fromRGB(255, 225, 100) else C.text
 		reveal.TextTransparency, revealStroke.Transparency = 0, 0
 		revealSub.TextTransparency, revealSubStroke.Transparency = 1, 1
@@ -313,7 +331,7 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 			end
 			reveal.Rotation = 0
 		end)
-		task.delay(2.6 + big * 0.6, function()
+		task.delay(if quick then 1.2 else 2.6 + big * 0.6, function()
 			if revealed ~= mine then
 				return
 			end
@@ -325,7 +343,7 @@ do -- the reveal's labels are its own (the chunk's 200 locals: see Hud)
 				TweenService:Create(x, fade, { Transparency = 1 }):Play()
 			end
 		end)
-		return 3.3 + big * 0.6
+		return if quick then 1.9 else 3.3 + big * 0.6
 	end
 end
 

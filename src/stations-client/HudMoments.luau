@@ -10,6 +10,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationGoals = require(Shared:WaitForChild("StationGoals"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
+local StationRules = require(Shared:WaitForChild("StationRules"))
 local Style = require(script.Parent:WaitForChild("Style"))
 local App: any = require(script.Parent:WaitForChild("HudApp"))
 local S = App.S
@@ -145,13 +146,18 @@ function Hud.hatchChoice(a: any, seconds: number)
 		local joined = table.find(S.profile.team, born.id) ~= nil or S.profile.titan == born.id
 		if joined then
 			Style.chip(choice, "Joined your team", C.good, Color3.new(1, 1, 1)).TextSize = 18
-		else
-			local id = born.id
+		elseif (App.RANK[StationRules.rarity(born)] or 0) < (App.RANK.rare or 3) then -- a quick hatch: a word only
 			Style.chip(choice, `In the barn · team full ({#S.profile.team}/{StationProgress.TEAM_SIZE})`).TextSize = 16
-			Style.button(choice, "Swap it in", function()
+		else -- rare and up: the choice (the Moments board)
+			local id = born.id
+			Style.button(choice, "Add to my team", function()
 				choice.Visible = false
 				Hud.chooseAnimal(id)
-			end, "primary", UDim2.fromOffset(140, 44)).TextSize =
+			end, "primary", UDim2.fromOffset(170, 44)).TextSize =
+				17
+			Style.button(choice, "Keep in the barn", function()
+				choice.Visible = false
+			end, "ghost", UDim2.fromOffset(170, 44)).TextSize =
 				17
 		end
 		choice.Visible = true

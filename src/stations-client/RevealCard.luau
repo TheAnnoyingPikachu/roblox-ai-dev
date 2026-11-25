@@ -12,19 +12,20 @@ local RevealCard = {}
 local shown: Frame? = nil
 
 -- Show animal `asset` (in its rainbow coat when `rainbow`) on `screen` in `colour`, `big` 0 (common) to 5 (secret),
--- for `seconds`.
+-- for `seconds`. `quick`: a common or uncommon hatch's small pop, no rays (STATION-160).
 function RevealCard.show(
 	screen: ScreenGui,
 	asset: string,
 	rainbow: boolean?,
 	colour: Color3,
 	big: number,
-	seconds: number
+	seconds: number,
+	quick: boolean?
 )
 	if shown then
 		shown:Destroy()
 	end
-	local side = 190 + big * 14
+	local side = if quick then 140 else 190 + big * 14
 	local card = Instance.new("Frame")
 	card.Name, card.BackgroundTransparency, card.AnchorPoint = "RevealCard", 1, Vector2.new(0.5, 0.5)
 	card.Position, card.Size, card.ZIndex = UDim2.fromScale(0.5, 0.5), UDim2.fromOffset(side, side), 40
@@ -35,7 +36,7 @@ function RevealCard.show(
 	rays.BackgroundTransparency, rays.AnchorPoint = 1, Vector2.new(0.5, 0.5)
 	rays.Position, rays.Size, rays.ZIndex = UDim2.fromScale(0.5, 0.5), UDim2.fromScale(1.7, 1.7), 40
 	rays.Parent = card
-	local spokes = 4 + big -- each spoke is two rays, through the middle, fading at both ends
+	local spokes = if quick then 0 else 4 + big -- each spoke is two rays, through the middle, fading at both ends
 	for i = 1, spokes do
 		local ray = Instance.new("Frame")
 		ray.BorderSizePixel, ray.AnchorPoint, ray.BackgroundColor3 = 0, Vector2.new(0.5, 0.5), colour

@@ -681,6 +681,23 @@ do
 		showMates()
 		eggNote.Size = UDim2.fromOffset(if small then 250 else 300, 62)
 	end)
+	-- messages always stack under the notes and move down when a note shows (STATION-160): Style.toast's stack
+	game:GetService("RunService").Heartbeat:Connect(function()
+		local stack = screen:FindFirstChild("Messages") :: Frame?
+		if stack == nil then
+			return
+		end
+		local bottom = 150
+		if nav.Visible and side.Visible then
+			for _, note in side:GetChildren() do
+				if note:IsA("GuiObject") and note.Visible then
+					bottom =
+						math.max(bottom, note.AbsolutePosition.Y + note.AbsoluteSize.Y - screen.AbsolutePosition.Y + 10)
+				end
+			end
+		end
+		stack.Position = UDim2.new(1, -16, 0, bottom)
+	end)
 end
 
 -- Admin button, bottom right: only for players the server marks as admin (decision 0038)
