@@ -579,7 +579,8 @@ end
 -- Index = its place in the list, Due); the client changes the prompt's words and turns the sparkles on
 -- when the egg is ready (the prompt itself stays on: the server would refuse one it thinks is off).
 -- Stored eggs sit on the rack.
-function Ranch.eggs(i: number, eggs: { { egg: string, since: number?, due: number? } })
+-- `places`: the nest of each hatching egg, in their order (StationsServer keeps an egg in its nest until it opens).
+function Ranch.eggs(i: number, eggs: { { egg: string, since: number?, due: number? } }, places: { number }?)
 	local plot = World.root():FindFirstChild(`Ranch{i}`, true)
 	local home = homes[i]
 	if plot == nil or home == nil then
@@ -597,8 +598,9 @@ function Ranch.eggs(i: number, eggs: { { egg: string, since: number?, due: numbe
 		local look, egg = kit.eggLook[e.egg], StationConfig.egg(e.egg)
 		if look and egg and e.since then
 			nest += 1
-			if home.nests[nest] then
-				local shell = kit.eggModel(f, home.nests[nest], 3, e.egg, rng)
+			local spot = home.nests[if places and places[nest] then places[nest] else nest]
+			if spot then
+				local shell = kit.eggModel(f, spot, 3, e.egg, rng)
 				glow(shell, WARM, 8, 0.5)
 				local open = prompt(shell, "Egg", "Hatching", egg.name, i)
 				open:SetAttribute("Index", k)
