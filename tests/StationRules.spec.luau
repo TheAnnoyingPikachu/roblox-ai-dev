@@ -642,6 +642,8 @@ describe("StationConfig foes (the Hexbound)", function()
 					expect(x >= StationConfig.STAT_MIN and x <= StationConfig.STAT_MAX).toBeTruthy()
 				end
 				expect(StationConfig.species(f.id)).toBeNil()
+				-- its line on the card under the cursor (STATION-166): short enough for the card's two lines
+				expect(f.about ~= nil and #(f.about :: string) >= 20 and #(f.about :: string) <= 100).toBeTruthy()
 				expect(StationConfig.foe(f.id)).toBe(f)
 				expect(StationRules.role({ s = f.id, stats = f.stats })).toBe(f.role)
 				if f.kind == "dragon" then

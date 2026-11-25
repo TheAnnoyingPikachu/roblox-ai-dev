@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-167",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A new knockout counter for the fight (SHANNON, 2026-11-25: 'make a new KO concept and run it through forge and adjust it slightly upward so its not obscured by the notifications').",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/Style.luau",
+    "assets/stations/icons/hud_ko.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-167.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The KO count is a badge: a ForgeGUI knockout emblem (a dazed Legion helmet on a gold burst, in the HUD icons' look) beside the count and 'KNOCKED OUT', on the fight's glass",
+    "It sits at the top right, on Skip's row (beside Skip while it shows, in the corner otherwise), clear of the messages that stack down the right side from 150 px",
+    "Each knockout pops the badge and knocks the helmet aside; the badge hides when the fight is over"
+  ],
+  "verification": "Studio 2026-11-25, build dev (local): a wave with knockouts and two messages up: the badge (emblem, count, KNOCKED OUT) in the top right corner, the messages below it, nothing covered. Lune 819/819, selene clean. Not seen: beside a showing Skip button, a phone.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Emblem: ForgeGUI job 57deb8e7, version 2 of 3 (Claude's pick: the clearest dizzy stars), uploaded from Studio."
+}

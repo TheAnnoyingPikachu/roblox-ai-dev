@@ -328,18 +328,33 @@ do
 	end
 
 	-- knockouts (decision 0101): a counter that pops, and coins out of each fallen foe to the counter
-	local koText, koEdge, koScale = bigWords(UDim2.new(0.5, 0, 0, 120), 34, C.ink)
-	koText.TextColor3 = C.gold
-	-- in the top right corner, out of the fight's way
-	koText.AnchorPoint, koText.Position, koText.Size =
-		Vector2.new(1, 0), UDim2.new(1, -22, 0, 108), UDim2.fromOffset(220, 54)
-	koText.TextXAlignment = Enum.TextXAlignment.Right
+	-- a badge (STATION-167): the knockout emblem beside the count on glass, up on Skip's row, clear of the
+	-- messages that stack down the right side
+	local koPlate = Style.glass(root, UDim2.fromOffset(150, 56), 18)
+	koPlate.AnchorPoint, koPlate.Position, koPlate.Visible, koPlate.ZIndex =
+		Vector2.new(1, 0), UDim2.new(1, -140, 0, 10), false, 8
+	local koScale = Instance.new("UIScale")
+	koScale.Parent = koPlate
+	local koIcon = Style.icon(koPlate, "ko", 80)
+	koIcon.AnchorPoint, koIcon.Position, koIcon.ZIndex = Vector2.new(0, 0.5), UDim2.new(0, -18, 0.5, -2), 9
+	local koText = Style.text(koPlate, "", 34, C.gold, UDim2.new(1, -70, 0, 36))
+	koText.Position, koText.ZIndex = UDim2.fromOffset(62, 0), 9
+	local koEdge = Instance.new("UIStroke")
+	koEdge.Thickness, koEdge.Color = 4, C.ink
+	koEdge.Parent = koText
+	Style.small(koPlate, "KNOCKED OUT", 11, N.muted, UDim2.new(1, -70, 0, 14)).Position = UDim2.fromOffset(63, 36)
 	local kos = 0
 	local fallen: { [Model]: boolean } = {}
 	local function knockout(m: Model)
 		kos += 1
-		koText.Text = `{kos} KO!`
-		koText.TextTransparency, koEdge.Transparency, koScale.Scale = 0, 0, 1.4
+		koText.Text = Format.commas(kos)
+		local skipping = root:FindFirstChild("SkipWave") :: GuiObject? -- beside Skip when it shows, else in the corner
+		koPlate.Position = UDim2.new(1, if skipping and skipping.Visible then -140 else -16, 0, 10)
+		koPlate.Visible, koScale.Scale = true, 1.3
+		koIcon.Rotation = if kos % 2 == 0 then -12 else 12 -- the helmet takes the hit
+		TweenService:Create(koIcon, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Rotation = 0,
+		}):Play()
 		TweenService:Create(koScale, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 			Scale = 1,
 		}):Play()
@@ -440,7 +455,7 @@ do
 		end
 		if not showing and kos > 0 then -- the fight is over: the count starts again next time
 			kos = 0
-			koText.TextTransparency, koEdge.Transparency = 1, 1
+			koPlate.Visible = false
 			table.clear(fallen)
 			table.clear(powerCache)
 		end

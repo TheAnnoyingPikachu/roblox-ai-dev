@@ -49,6 +49,7 @@ export type Foe = {
 	minion: boolean?, -- a swarm's minion (decision 0101): never drawn as a regular
 	ability: string?, -- "revive": its power attack raises fallen allies (decision 0104); "sweep": it strikes the
 	-- whole team (decision 0105)
+	about: string?, -- one line on the card under the cursor in a fight: what it is and how to beat it (STATION-166)
 }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
 export type Rare = { s: string, v: string, ppm: number } -- a variant as a drop of its own: ppm of the egg's hatches
@@ -316,6 +317,7 @@ StationConfig.FOE_KINDS = { "knight", "archer", "mage", "ogre", "golem", "cavalr
 StationConfig.FOES = {
 	{
 		id = "shadow_knight",
+		about = "A Legion foot soldier, quick on its feet. Stronger with other pack foes beside it.",
 		name = "Shadow Knight",
 		kind = "knight",
 		model = "foe_knight_forge",
@@ -326,6 +328,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "heavy_knight",
+		about = "Slow, heavily armoured and hard to wear down. Your animals must cut through it first.",
 		name = "Heavy Knight",
 		kind = "knight",
 		model = "foe_knight_heavy_forge",
@@ -336,6 +339,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "shadow_archer",
+		about = "Fast and frail. Its arrows sting, but it falls quickly once it is reached.",
 		name = "Shadow Archer",
 		kind = "archer",
 		model = "foe_archer_forge",
@@ -346,6 +350,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "shieldbearer",
+		about = "A wall of iron, the toughest armour of the early waves. Your team must break it first.",
 		name = "Shieldbearer",
 		kind = "knight",
 		model = "foe_knight_shield_forge",
@@ -356,6 +361,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "ogre_enforcer",
+		about = "Huge fists and huge health. Every blow lands like a falling tree.",
 		name = "Ogre Enforcer",
 		kind = "ogre",
 		model = "foe_ogre_forge",
@@ -367,6 +373,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "darkcaster",
+		about = "Hurls dark bolts that hit hard and fills its power fast. Thin-skinned: kill it first.",
 		name = "Darkcaster",
 		kind = "mage",
 		model = "foe_mage_forge",
@@ -377,6 +384,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "berserker",
+		about = "Swings fast and hard with almost no armour. Win the trade quickly or lose it.",
 		name = "Berserker",
 		kind = "knight",
 		model = "foe_knight_berserker_forge",
@@ -388,6 +396,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "battle_priest",
+		about = "Heals its most hurt ally with every strike. Take it down before the rest.",
 		name = "Battle Priest",
 		kind = "mage",
 		model = "foe_mage_priest_forge",
@@ -398,6 +407,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "crossbow_troop",
+		about = "Slow to reload, but every bolt hits like a hammer.",
 		name = "Crossbow Troop",
 		kind = "archer",
 		model = "foe_archer_crossbow_forge",
@@ -408,6 +418,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "cavalry",
+		about = "The fastest rider of the Legion, charging in again and again. Stronger in a pack.",
 		name = "Cavalry",
 		kind = "cavalry",
 		model = "foe_cavalry_forge",
@@ -419,6 +430,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "necromancer",
+		about = "Its power raises its fallen allies back into the fight. Kill it first.",
 		name = "Necromancer",
 		kind = "mage",
 		model = "foe_mage_necromancer_forge",
@@ -431,6 +443,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "ogre_commander",
+		about = "The strongest arms in the Legion, and stronger still with its pack around it.",
 		name = "Ogre Commander",
 		kind = "ogre",
 		model = "foe_ogre_commander_forge",
@@ -442,6 +455,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "shieldbearer_commander",
+		about = "Armour almost nothing gets through. Your animals must break it before anything else.",
 		name = "Shieldbearer Commander",
 		kind = "knight",
 		model = "foe_knight_shield_commander_forge",
@@ -453,6 +467,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "siege_golem",
+		about = "A walking fortress: slow and nearly unbreakable. Its power strikes your whole team.",
 		name = "Siege Golem",
 		kind = "golem",
 		model = "foe_golem_forge",
@@ -465,6 +480,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "cavalry_commander",
+		about = "Fast, strong and well armoured: the finest rider of the Legion.",
 		name = "Cavalry Commander",
 		kind = "cavalry",
 		model = "foe_cavalry_commander_forge",
@@ -476,6 +492,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "dark_drake",
+		about = "The first boss. Its fire breath strikes your whole team at once: keep your health up.",
 		name = "Dark Drake",
 		kind = "dragon",
 		model = "foe_dragon_drake_forge",
@@ -488,6 +505,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "shadow_dragon",
+		about = "A boss of the deep waves, with huge health and a breath that strikes your whole team.",
 		name = "Shadow Dragon",
 		kind = "dragon",
 		model = "foe_dragon_forge",
@@ -500,6 +518,7 @@ StationConfig.FOES = {
 	},
 	{
 		id = "ancient_alpha_dragon",
+		about = "The oldest dragon of the Legion. Its breath strikes your whole team; only the best teams last.",
 		name = "Ancient Alpha Dragon",
 		kind = "dragon",
 		model = "foe_dragon_alpha_forge",

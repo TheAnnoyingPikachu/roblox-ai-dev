@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-166",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Each Hexbound foe has its own line on the card under the cursor in a fight (SHANNON, 2026-11-25: 'give all the enemies their descriptions for their little drop thingy').",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-163"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/stations-client/HudHover.luau",
+    "tests/StationRules.spec.luau",
+    "studio/tasks/STATION-166.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every foe in StationConfig.FOES has `about`: what it is and how to beat it, true to its role, group, stats and ability, 20 to 100 characters",
+    "The fight's glass card shows a foe's own line in place of the shared power words"
+  ],
+  "verification": "Lune spec: every foe has a line of 20 to 100 characters.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Display text only: no rule reads `about`. The lines follow the rules: defence foes must be struck first (BattleRules.GUARD), the Battle Priest heals (HEAL_PCT), pack foes are stronger together, revive and sweep are the Necromancer's and the golem's and dragons' powers."
+}

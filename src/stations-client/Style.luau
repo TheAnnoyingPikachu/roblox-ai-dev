@@ -915,6 +915,7 @@ Style.ICONS = {
 	cog = "rbxassetid://126141937467315",
 	goal = "rbxassetid://106618996752721",
 	check = "rbxassetid://124610235341383",
+	ko = "rbxassetid://122236750956160", -- the fight's knockout badge (STATION-167)
 	shield = "rbxassetid://93338498652139",
 	-- the boons (STATION-164): `boon_<id>`, all 27; a boon without one shows its stack written large
 	boon_claws = "rbxassetid://107644966180542",
