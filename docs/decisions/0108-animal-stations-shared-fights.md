@@ -83,7 +83,9 @@ light) and STATION-125 (the fight in play: server, show, HUD, camera).
 - The boon: each member votes. The boon with the most votes is the party's (`WaveRuns.tally`); a tie is
   picked at random among the tied, by the run's seed. It is settled when all have voted, or `VOTE_SECONDS`
   (7) after it is offered, nobody's vote or a tie picked at random; the HUD counts it down. Alone there is
-  no limit. The next wave starts then.
+  no limit. The next wave starts then. The server's `votes` message carries `picks` (each voter's UserId and
+  boon id, amended 2026-11-25 for STATION-160): the HUD puts each voter's avatar on the card they picked and runs
+  a ring for the vote's seconds; a party member's pick stays on screen (and may change) until it is settled.
 - A member who leaves is paid their pot; the party goes on. If the host of the show leaves in the middle
   of a wave, that wave ends for everyone with the result as it stood.
 
