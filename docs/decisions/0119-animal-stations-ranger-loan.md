@@ -1,8 +1,8 @@
 # 0119: Animal Stations: the Ranger's loan
 
-Status: proposed (SHANNON, 2026-11-24: "Wave 10 boss, then daily"; 2026-11-25: the player picks the legend, it
-replaces one animal, at max level, for one wave; the save fields and the remote wait for SHANNON's OK at the
-checkpoint). Task STATION-159. Date: 2026-11-25.
+Status: accepted (SHANNON, 2026-11-24: "Wave 10 boss, then daily"; 2026-11-25: the player picks the legend, it
+replaces one animal, at max level, for one wave; the save fields and the remote approved by SHANNON on
+2026-11-25). Task STATION-159. Date: 2026-11-25.
 
 ## Context
 

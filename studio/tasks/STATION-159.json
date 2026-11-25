@@ -36,5 +36,5 @@
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_review",
-  "notes": "Data schema and remote change: decision 0119 (proposed, for SHANNON's OK). Builds on STATION-158 (PR #56): merge that first."
+  "notes": "Data schema and remote change: decision 0119 (accepted by SHANNON, 2026-11-25). Builds on STATION-158 (PR #56): merge that first."
 }
