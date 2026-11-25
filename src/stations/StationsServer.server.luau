@@ -466,7 +466,8 @@ local function bankRun(player: Player, lost: boolean)
 	if k then
 		table.remove(party.members, k)
 	end
-	local coins, samples = WaveRuns.bank({ pot = party.pots[player] or { coins = 0, samples = 0 } } :: any, lost)
+	local pot = party.pots[player] or { coins = 0, samples = 0 }
+	local coins, samples = WaveRuns.bank({ pot = pot, boons = party.run.boons } :: any, lost) -- Golden Hour
 	local waves = party.wins[player] or 0
 	party.pots[player], party.hp[player], party.votes[player], party.wins[player] = nil, nil, nil, nil
 	if coins > 0 or samples > 0 then
@@ -475,7 +476,19 @@ local function bankRun(player: Player, lost: boolean)
 			return StationProgress.earn(q, coins, samples)
 		end)
 	end
-	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = waves })
+	local egg = nil
+	if not lost and WaveRuns.count(party.run, "jackpot") > 0 then -- Jackpot Egg (decision 0120): the best unlocked
+		local p = saves.get(player)
+		if p then
+			egg = StationRewards.bestEgg(StationProgress.sanitize(p, os.time()))
+			local items: StationRewards.Items = { coins = 0, samples = 0, eggs = { egg }, seconds = 0, jackpot = false }
+			local animals, now = rollEggs(items), os.time()
+			saves.apply(player, function(q) -- a full cellar keeps it waiting in the rewards (StationRewards.grant)
+				return StationRewards.grant(q, items, animals, nil, now)
+			end)
+		end
+	end
+	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = waves, egg = egg })
 	if allVoted(party) then -- the others were only waiting for this player's vote
 		settle(party)
 	end
