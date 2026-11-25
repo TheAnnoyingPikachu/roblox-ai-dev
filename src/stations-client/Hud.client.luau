@@ -1054,18 +1054,17 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			again.Text = if payload.last then `Fight wave {S.wave} again` else `Fight wave {S.wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
 				offerBoons(payload.offer, S.wave, payload.boons, payload.twice)
-				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): a countdown
+				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): the ring
 					local panel = boonRow.Parent :: GuiObject
 					local heading = panel:FindFirstChild("Title") :: TextLabel?
-					task.spawn(function()
-						for left = 7, 1, -1 do
-							if not panel.Visible or heading == nil then
-								return
-							end
-							heading.Text = `Vote for a boon: {left}`
-							task.wait(1)
+					if heading then
+						heading.Text = "Vote for a boon"
+					end
+					App.voteClock(7)
+					task.delay(7, function()
+						if panel.Visible then -- time is up: the server picks and the next wave starts
+							panel.Visible, result.Visible = false, false
 						end
-						panel.Visible, result.Visible = false, false -- time is up: the server picks and the next wave starts
 					end)
 				end
 			end
@@ -1116,6 +1115,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if votes then
 			votes.Text = `{payload.voted} of {payload.of} have voted`
 		end
+		App.showVotes(payload.picks or {}) -- each voter's avatar on the card they picked (STATION-160)
 	elseif kind == "boon" then
 		local voted = boonRow.Parent :: GuiObject
 		voted.Visible, result.Visible = false, false

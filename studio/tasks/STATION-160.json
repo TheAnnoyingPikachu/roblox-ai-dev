@@ -18,6 +18,8 @@
     "src/stations-client/RevealCard.luau",
     "src/stations-client/Style.luau",
     "src/stations-client/Hud.client.luau",
+    "src/stations/StationsServer.server.luau",
+    "docs/decisions/0108-animal-stations-shared-fights.md",
     "studio/tasks/STATION-160.json"
   ],
   "tests": [],
@@ -28,9 +30,9 @@
     "Messages always stack below the notes top right (egg ready, mates) and move down when a note appears",
     "A common or uncommon hatch is a quick pop; rare and up the full moment (rays, a bigger card, the odds line, 'Add to my team' / 'Keep in the barn'); mythic and up shake the screen"
   ],
-  "verification": "Part one, Studio 2026-11-25, build dev (local): a message stacked under the Meadow Egg note; a common hatch a 140 px pop with no rays, gone in 1.7 s; a mythic hatch the full reveal (rays, MYTHIC!!!) with the screen shake; the Animals header's Sort button. Lune 819/819, selene clean. Part two (teammate pills, the vote's ring and dots) is next.",
+  "verification": "Part one merged (#57). Part two, Studio 2026-11-25, build dev (local), one player: a teammate pill (avatar, name, team health 95%) at the top left once a side-1 model carried another player's Owner; a votes message with picks put avatar dots on the cards voted for (top right of each card, clear of the picture and the key cap); the KO badge never covered Skip through a whole fight. Lune 823/823, selene clean. Not seen: a real two-player party (the 7-second ring runs only when the result says party > 1), a phone.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_progress",
+  "status": "in_review",
   "notes": "SHANNON's picks: pills with health and vote dots; power, rarity, level, newest; the stack under the notes; scales with rarity. Part one (PR): the sort, messages under the notes, hatch reveals by rarity (quick pop for common and uncommon; rare and up the full moment with 'Add to my team' / 'Keep in the barn'; mythic and up shake the screen)."
 }
