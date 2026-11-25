@@ -916,6 +916,10 @@ Style.ICONS = {
 	goal = "rbxassetid://106618996752721",
 	check = "rbxassetid://124610235341383",
 	shield = "rbxassetid://93338498652139",
+	-- the boons (STATION-164): `boon_<id>`; a boon without one shows its stack written large
+	boon_claws = "rbxassetid://107644966180542",
+	boon_hide = "rbxassetid://117411845488014",
+	boon_quick = "rbxassetid://70655320182203",
 } :: { [string]: string }
 function Style.image(name: string): string
 	return Style.ICONS[name] or ""

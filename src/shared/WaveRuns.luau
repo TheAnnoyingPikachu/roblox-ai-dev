@@ -11,6 +11,7 @@
 -- The server keeps each player's own pot.
 
 local BattleRules = require("./BattleRules")
+local LevelRules = require("./LevelRules")
 local Rng = require("./Rng")
 
 local WaveRuns = {}
@@ -23,18 +24,83 @@ export type Run = {
 	pot: { coins: number, samples: number },
 	offer: { string }?, -- the three boons to pick from after a win
 	seed: number,
+	ultra: boolean?, -- an ultra lucky boon was taken: no other this run
+	untilWave: { [string]: number }?, -- a timed boon (Unbreakable, Twin Picks) lasts up to this wave
 }
-export type Boon = { id: string, name: string, text: string, weight: number, rare: boolean? }
+export type Tier = "common" | "lucky" | "ultra"
+export type Boon = {
+	id: string,
+	name: string,
+	text: string,
+	weight: number,
+	tier: Tier,
+	rare: boolean?, -- lucky or ultra lucky (the HUD's gold edge)
+	cap: number?, -- the most stacks that count
+	waves: number?, -- a timed boon: how many waves it lasts
+}
 
+-- SHANNON's sign-off, 2026-11-25 (the concept board "Boon concepts", decision 0120): 12 common, 9 lucky, 6 ultra lucky.
+local function boon(
+	tier: Tier,
+	id: string,
+	name: string,
+	text: string,
+	weight: number,
+	more: { cap: number?, waves: number? }?
+): Boon
+	return {
+		id = id,
+		name = name,
+		text = text,
+		weight = weight,
+		tier = tier,
+		rare = if tier ~= "common" then true else nil,
+		cap = more and more.cap,
+		waves = more and more.waves,
+	}
+end
 WaveRuns.BOONS = {
-	{ id = "claws", name = "Sharp Claws", text = "+5% damage", weight = 10 },
-	{ id = "hide", name = "Thick Hide", text = "+5% max HP", weight = 10 },
-	{ id = "quick", name = "Quick Paws", text = "Attacks 3% faster", weight = 8 },
-	{ id = "charged", name = "Charged Up", text = "Power meters start half full", weight = 8 },
-	{ id = "mend", name = "Second Wind", text = "Heal the team to full", weight = 8 },
-	{ id = "revive", name = "Revive", text = "Knocked-out animals come back at half HP", weight = 4, rare = true },
-	{ id = "lucky", name = "Lucky Find", text = "Double samples for the rest of the run", weight = 4, rare = true },
-	{ id = "gold", name = "Gold Rush", text = "+25% coins for the rest of the run", weight = 4, rare = true },
+	boon("common", "claws", "Sharp Claws", "+5% damage", 10),
+	boon("common", "hide", "Thick Hide", "+5% max HP", 10),
+	boon("common", "quick", "Quick Paws", "Attacks 3% faster", 8),
+	boon("common", "charged", "Charged Up", "Power meters start half full", 8, { cap = 1 }),
+	boon("common", "mend", "Second Wind", "Heal the team to full", 8),
+	boon("common", "iron", "Iron Coat", "Take 4% less damage", 9),
+	boon("common", "focus", "Focus", "Power meters fill 5% faster", 9),
+	boon("common", "steady", "Steady Paws", "Press windows 10% longer", 7, { cap = 3 }),
+	boon("common", "taps", "Hard Taps", "Your taps strike 10% harder", 8),
+	boon("common", "watch", "Watchful", "The shield is ready 1 s sooner", 7, { cap = 3 }),
+	boon("common", "pack", "Pack Bond", "+2% damage for each of your animals standing", 8),
+	boon("common", "rested", "Rested", "Heal 10% more between waves", 8),
+	boon("lucky", "revive", "Revive", "Knocked-out animals come back at half HP", 4),
+	boon("lucky", "lucky", "Lucky Find", "Double samples for the rest of the run", 4, { cap = 1 }),
+	boon("lucky", "gold", "Gold Rush", "+25% coins for the rest of the run", 4, { cap = 1 }),
+	boon("lucky", "phoenix", "Phoenix Feather", "Once a wave, the first animal knocked out gets back up at 30%", 4),
+	boon("lucky", "overcharge", "Overcharge", "Every Perfect press gives back a quarter of the meter", 4, { cap = 1 }),
+	boon("lucky", "glass", "Glass Cannon", "+20% damage, but 10% less max HP", 3),
+	boon("lucky", "map", "Treasure Map", "+2 samples into the pot for every wave won", 4),
+	boon("lucky", "chain", "Combo Chain", "Combos last 1 s longer and hit 10% harder", 4, { cap = 1 }),
+	boon("lucky", "thorns", "Thorns", "Foes take back 8% of the damage they deal", 4),
+	boon("ultra", "blessing", "Legend's Blessing", "+15% to every stat for the rest of the run", 3),
+	boon("ultra", "golden", "Golden Hour", "The pot doubles when you bank it (not on a loss)", 3),
+	boon("ultra", "unbreakable", "Unbreakable", "For the next 3 waves no animal drops below 1 HP", 3, { waves = 3 }),
+	boon("ultra", "twin", "Twin Picks", "For the next 5 waves every boon you pick counts twice", 3, { waves = 5 }),
+	boon(
+		"ultra",
+		"roar",
+		"Titan's Roar",
+		"The Titan's power attack is ready at the start of every wave",
+		2,
+		{ cap = 1 }
+	),
+	boon(
+		"ultra",
+		"jackpot",
+		"Jackpot Egg",
+		"Banking the run adds your best unlocked egg to your cellar",
+		2,
+		{ cap = 1 }
+	),
 } :: { Boon }
 WaveRuns.STREAK_PCT, WaveRuns.STREAK_MAX = 5, 100
 WaveRuns.GOLD_PCT = 25
@@ -43,8 +109,14 @@ WaveRuns.LOSS_KEEP = 50
 WaveRuns.OFFER = 3
 -- each stack of a boon (SHANNON, 2026-11-24: small, so wave 300 takes a good team and good stacks); the texts say so
 WaveRuns.CLAWS, WaveRuns.HIDE, WaveRuns.QUICK = 1.05, 1.05, 0.97
--- in how many offers in 100 one of the rare boons stands (about one or two a stage of 10 waves)
-WaveRuns.RARE_PCT = 15
+WaveRuns.IRON, WaveRuns.FOCUS, WaveRuns.STEADY, WaveRuns.TAPS = 0.96, 1.05, 1.1, 1.1
+WaveRuns.WATCH, WaveRuns.PACK_PCT, WaveRuns.RESTED = 1, 2, 0.1
+WaveRuns.PHOENIX_PCT, WaveRuns.REFUND, WaveRuns.GLASS_DMG, WaveRuns.GLASS_HP = 30, 0.25, 1.2, 0.9
+WaveRuns.MAP_SAMPLES, WaveRuns.CHAIN_SECONDS, WaveRuns.CHAIN_PCT, WaveRuns.THORNS = 2, 1, 1.1, 0.08
+WaveRuns.BLESSING = 1.15
+-- in how many offers in 100 the first card is lucky (about one or two a stage of 10 waves), and ultra lucky
+-- (at most one ultra boon a run); the first offer after a boss wave always has a lucky card
+WaveRuns.RARE_PCT, WaveRuns.ULTRA_PCT = 15, 2
 WaveRuns.WIPED_BACK = 0.25
 
 function WaveRuns.boon(id: string): Boon?
@@ -63,8 +135,10 @@ local function count(run: Run, id: string): number
 			n += 1
 		end
 	end
-	return n
+	local def = WaveRuns.boon(id)
+	return if def and def.cap then math.min(n, def.cap) else n
 end
+WaveRuns.count = count
 
 -- A new run from wave `wave` for a team of `size`, with the server's random `seed`.
 function WaveRuns.new(wave: number, size: number, seed: number): Run
@@ -85,13 +159,29 @@ function WaveRuns.setup(run: Run): BattleRules.Setup
 	for i, share in hp do
 		hp[i] = if share <= 0 then WaveRuns.WIPED_BACK else share -- the knocked out come back (decision 0108)
 	end
+	local bless = if count(run, "blessing") > 0 then WaveRuns.BLESSING else 1
+	local glass = count(run, "glass")
+	local timed = run.untilWave or {}
 	return {
 		hp = hp,
 		energy = if count(run, "charged") > 0 then 0.5 else 0,
-		dmg = WaveRuns.CLAWS ^ count(run, "claws"),
-		maxHp = WaveRuns.HIDE ^ count(run, "hide"),
-		tempo = WaveRuns.QUICK ^ count(run, "quick"),
+		dmg = WaveRuns.CLAWS ^ count(run, "claws") * WaveRuns.GLASS_DMG ^ glass * bless,
+		maxHp = WaveRuns.HIDE ^ count(run, "hide") * WaveRuns.GLASS_HP ^ glass * bless,
+		tempo = WaveRuns.QUICK ^ count(run, "quick") / bless,
 		clicks = true, -- a run's fight is the pit fight: clicks add strikes (decision 0106)
+		taken = WaveRuns.IRON ^ count(run, "iron") / bless,
+		gain = WaveRuns.FOCUS ^ count(run, "focus") * bless,
+		window = WaveRuns.STEADY ^ count(run, "steady"),
+		clickDmg = WaveRuns.TAPS ^ count(run, "taps"),
+		shieldSooner = WaveRuns.WATCH * count(run, "watch"),
+		pack = WaveRuns.PACK_PCT * count(run, "pack"),
+		phoenix = count(run, "phoenix"),
+		refund = if count(run, "overcharge") > 0 then WaveRuns.REFUND else nil,
+		comboSeconds = if count(run, "chain") > 0 then WaveRuns.CHAIN_SECONDS else nil,
+		comboHit = if count(run, "chain") > 0 then WaveRuns.CHAIN_PCT else nil,
+		thorns = WaveRuns.THORNS * count(run, "thorns"),
+		titanReady = count(run, "roar") > 0,
+		immortal = (timed.unbreakable or 0) >= run.wave,
 	}
 end
 
@@ -101,7 +191,8 @@ function WaveRuns.bonus(run: Run, coins: number, samples: number): (number, numb
 	if count(run, "gold") > 0 then
 		pct += WaveRuns.GOLD_PCT
 	end
-	return coins * pct // 100, if count(run, "lucky") > 0 then samples else 0
+	return coins * pct // 100,
+		(if count(run, "lucky") > 0 then samples else 0) + WaveRuns.MAP_SAMPLES * count(run, "map")
 end
 
 -- The run after winning its wave with the team's HP at `ends` and the wave paying `coins` and
@@ -113,30 +204,33 @@ function WaveRuns.won(run: Run, ends: { number }, coins: number, samples: number
 	out.streak += 1
 	out.wave += 1
 	out.hp = {}
+	local heal = WaveRuns.REST_HEAL + WaveRuns.RESTED * count(run, "rested")
 	for i, share in ends do
-		out.hp[i] = if share <= 0 then 0 else math.min(1, share + WaveRuns.REST_HEAL)
+		out.hp[i] = if share <= 0 then 0 else math.min(1, share + heal)
 	end
 	local rng = Rng.seed(run.seed, run.wave, 98)
 	local roll
 	roll, rng = Rng.int(rng, 1, 100)
-	local rare = roll <= WaveRuns.RARE_PCT -- this offer's first boon is a rare one, the others common
-	local pool, total = {}, 0
-	for _, b in WaveRuns.BOONS do
-		if (b.rare == true) == rare then
-			table.insert(pool, b)
-			total += b.weight
+	-- this offer's first card: ultra lucky (once a run), lucky (or always after a boss), else common
+	local first: Tier = if not run.ultra and roll <= WaveRuns.ULTRA_PCT
+		then "ultra"
+		elseif roll <= WaveRuns.ULTRA_PCT + WaveRuns.RARE_PCT or run.wave % LevelRules.BOSS_EVERY == 0 then "lucky"
+		else "common"
+	local function poolOf(tier: Tier): ({ Boon }, number)
+		local pool, total = {}, 0
+		for _, b in WaveRuns.BOONS do
+			if b.tier == tier then
+				table.insert(pool, b)
+				total += b.weight
+			end
 		end
+		return pool, total
 	end
+	local pool, total = poolOf(first)
 	out.offer = {}
 	for n = 1, WaveRuns.OFFER do
-		if rare and n == 2 then -- the rest are common
-			pool, total = {}, 0
-			for _, b in WaveRuns.BOONS do
-				if not b.rare then
-					table.insert(pool, b)
-					total += b.weight
-				end
-			end
+		if n == 2 and first ~= "common" then -- the rest are common
+			pool, total = poolOf("common")
 		end
 		local r
 		r, rng = Rng.int(rng, 1, total)
@@ -181,15 +275,30 @@ function WaveRuns.tally(run: Run, votes: { string }): string?
 	return tied[k]
 end
 
+-- Whether a common or lucky boon picked now counts twice (Twin Picks, decision 0120).
+function WaveRuns.twice(run: Run): boolean
+	return ((run.untilWave or {}).twin or 0) >= run.wave
+end
+
 -- Pick boon `id` from the offer. Second Wind and Revive act at once.
 function WaveRuns.pick(run: Run, id: string): (Run, boolean, string?)
 	if run.offer == nil or not table.find(run.offer, id) then
 		return run, false, "boon"
 	end
+	local def = WaveRuns.boon(id) :: Boon
 	local out = table.clone(run)
 	out.offer = nil
 	out.boons = table.clone(run.boons)
-	table.insert(out.boons, id)
+	local timed = table.clone(run.untilWave or {})
+	local times = if WaveRuns.twice(run) and def.tier ~= "ultra" then 2 else 1
+	for _ = 1, times do
+		table.insert(out.boons, id)
+	end
+	if def.waves then -- the next `waves` fights (Unbreakable), or the picks after them (Twin Picks)
+		timed[id] = run.wave + def.waves - (if id == "twin" then 0 else 1)
+	end
+	out.untilWave = timed
+	out.ultra = run.ultra or def.tier == "ultra"
 	out.hp = table.clone(run.hp)
 	for i, share in out.hp do
 		if id == "mend" and share > 0 then
@@ -206,7 +315,8 @@ function WaveRuns.bank(run: Run, lost: boolean): (number, number)
 	if lost then
 		return run.pot.coins * WaveRuns.LOSS_KEEP // 100, run.pot.samples * WaveRuns.LOSS_KEEP // 100
 	end
-	return run.pot.coins, run.pot.samples
+	local times = if run.boons and count(run, "golden") > 0 then 2 else 1
+	return run.pot.coins * times, run.pot.samples * times
 end
 
 return WaveRuns
