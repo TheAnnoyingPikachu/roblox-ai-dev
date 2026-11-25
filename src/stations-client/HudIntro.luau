@@ -28,7 +28,6 @@ local show = App.show
 local N = Style.N
 local player = Players.LocalPlayer
 
-local SKIP_AFTER = 10 -- seconds before "Skip intro" shows, for players who know the game
 local TAPS = 10 -- strikes the first lesson asks for
 
 -- The offer: one card and one button. Nothing else is on screen until the intro is over.
@@ -77,7 +76,9 @@ local space = Style.key(toBattle, "Space")
 space.AnchorPoint, space.Position = Vector2.new(1, 0.5), UDim2.new(1, -14, 0.5, 0)
 local skip = Style.button(root, "Skip intro", function() end, "ghost", UDim2.fromOffset(120, 40))
 skip.Name, skip.Visible, skip.ZIndex, skip.TextSize = "IntroSkip", false, 9, 15
-skip.AnchorPoint, skip.Position = Vector2.new(1, 0), UDim2.new(1, -16, 0, 16)
+-- shown at once and through the lessons (SHANNON, 2026-11-25: "add a tutorial skip"): top right, under the
+-- fight's knockout badge and above the messages (the level pill has the top left in a fight)
+skip.AnchorPoint, skip.Position = Vector2.new(1, 0), UDim2.new(1, -16, 0, 78)
 
 -- The lessons, during the borrowed fight: four steps along the top and one paper note that says the one
 -- thing to do next. They are chances, not gates: the fight goes on and cannot be lost.
@@ -215,7 +216,6 @@ end
 
 local shieldsAt = player:GetAttribute("ShieldAt")
 local done: { [string]: boolean } = {}
-local shownAt = 0
 
 -- Who sees what: the offer until the fight starts, the lessons during it, nothing once the intro is done.
 local function layout()
@@ -251,9 +251,21 @@ UserInputService.InputBegan:Connect(function(input, typing)
 	end
 end)
 skip.Activated:Connect(function()
+	local fighting = S.lesson == true
+	S.lesson = false -- before the server answers: the cleared fight's "intro" message then shows no goodbye
 	local ok, code = request:InvokeServer("intro", "skip")
 	if not ok then
+		S.lesson = fighting
 		Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
+		return
+	end
+	if fighting then -- out of the borrowed fight: the lessons go and the field is cleared
+		steps.Visible, note.Visible = false, false
+		lit(nil)
+		S.intro = false
+		S.music(nil)
+		request:InvokeServer("home")
+		layout()
 	end
 end)
 home.Activated:Connect(function()
@@ -269,7 +281,7 @@ function Hud.intro()
 	local due = S.profile ~= nil and not S.profile.intro
 	if due and not S.intro then
 		S.intro = true
-		offer.Visible, shownAt = true, os.clock()
+		offer.Visible = true
 		show(nil)
 	elseif not due and S.intro and not bye.Visible and not S.lesson then -- skipped, or done elsewhere
 		S.intro = false
@@ -280,6 +292,9 @@ end
 
 -- The borrowed fight is won: the lessons go, the goodbye comes.
 function Hud.introWon()
+	if not S.lesson then -- skipped during the fight: no goodbye
+		return
+	end
 	S.lesson = false
 	steps.Visible, note.Visible = false, false
 	lit(nil)
@@ -305,9 +320,7 @@ function Hud.introWon()
 end
 
 RunService.Heartbeat:Connect(function()
-	if offer.Visible then
-		skip.Visible = os.clock() - shownAt > SKIP_AFTER
-	end
+	skip.Visible = offer.Visible or S.lesson == true
 	if not S.lesson then
 		if dim.BackgroundTransparency < 1 then
 			lit(nil)
