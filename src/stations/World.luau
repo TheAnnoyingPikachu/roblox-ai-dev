@@ -578,6 +578,7 @@ local function counterPrompt(f: Instance, name: string, tag: string, action: str
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.ActionText, prompt.ObjectText = action, object
 	prompt.HoldDuration, prompt.MaxActivationDistance, prompt.RequiresLineOfSight = 0.2, 12, false
+	prompt.Style = Enum.ProximityPromptStyle.Custom -- the client draws a paper pill (STATION-162)
 	prompt.Parent = spot
 	CollectionService:AddTag(prompt, tag)
 end
@@ -1071,6 +1072,7 @@ local function mountains(root: Instance, rng: Random)
 	local gate = Instance.new("ProximityPrompt")
 	gate.ActionText, gate.ObjectText = "Choose a wave", "Wave portal"
 	gate.HoldDuration, gate.MaxActivationDistance, gate.RequiresLineOfSight = 0.3, World.PORTAL_RADIUS + 6, false
+	gate.Style = Enum.ProximityPromptStyle.Custom -- the client draws a paper pill (STATION-162)
 	gate.Parent = ring
 	CollectionService:AddTag(gate, "WaveGate")
 	Battlefield.build(folder(root, "Battlefield"), World.FIELD)

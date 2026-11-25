@@ -296,6 +296,7 @@ local function prompt(p: BasePart, tag: string, action: string, object: string, 
 	pr.HoldDuration = 0.2
 	pr.MaxActivationDistance = 12
 	pr.RequiresLineOfSight = false
+	pr.Style = Enum.ProximityPromptStyle.Custom -- the client draws a paper pill (STATION-162)
 	pr:SetAttribute("Ranch", i)
 	pr.Parent = p
 	CollectionService:AddTag(pr, tag)
