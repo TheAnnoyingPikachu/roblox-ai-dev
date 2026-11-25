@@ -348,8 +348,6 @@ do
 	local function knockout(m: Model)
 		kos += 1
 		koText.Text = Format.commas(kos)
-		local skipping = root:FindFirstChild("SkipWave") :: GuiObject? -- beside Skip when it shows, else in the corner
-		koPlate.Position = UDim2.new(1, if skipping and skipping.Visible then -140 else -16, 0, 10)
 		koPlate.Visible, koScale.Scale = true, 1.3
 		koIcon.Rotation = if kos % 2 == 0 then -12 else 12 -- the helmet takes the hit
 		TweenService:Create(koIcon, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
@@ -422,6 +420,10 @@ do
 	local docked = false
 	S.fightTick = function(folder: Instance?, showing: boolean)
 		shieldRing.Visible = showing and not result.Visible
+		-- the KO badge sits beside Skip while it shows, else in the corner: checked every tick, since Skip can
+		-- appear after the first knockout
+		local skipping = root:FindFirstChild("SkipWave") :: GuiObject?
+		koPlate.Position = UDim2.new(1, if skipping and skipping.Visible then -140 else -16, 0, 10)
 		if showing ~= docked then -- the ranch's dock, goal and To battle make way for the fight (decision 0114)
 			docked = showing
 			S.fighting = showing
@@ -1212,5 +1214,68 @@ task.spawn(function()
 		S.fightTick(folder, plates.Visible)
 	end
 end)
+
+-- Teammates in a shared fight (STATION-160, SHANNON's pick: pills with health): top left under the run, a pill
+-- each with their avatar, their name and their team's health, from the fight's models (Owner, Hp, MaxHp).
+do
+	local mates = Instance.new("Frame")
+	mates.Name, mates.BackgroundTransparency = "Mates", 1
+	mates.Position, mates.Size, mates.ZIndex = UDim2.fromOffset(16, 178), UDim2.fromOffset(240, 0), 4
+	mates.AutomaticSize = Enum.AutomaticSize.Y
+	Style.list(mates, 6)
+	mates.Parent = root
+	local pills: { [number]: { frame: Frame, set: (number) -> (), words: TextLabel } } = {}
+	task.spawn(function()
+		while true do
+			task.wait(0.25)
+			local folder = Workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
+			local hp, max = {}, {}
+			for _, m in if folder and S.fighting then folder:GetChildren() else {} do
+				local owner, now, full = m:GetAttribute("Owner"), m:GetAttribute("Hp"), m:GetAttribute("MaxHp")
+				if m:GetAttribute("Side") == 1 and type(owner) == "number" and owner ~= player.UserId then
+					hp[owner] = (hp[owner] or 0) + (if type(now) == "number" then math.max(0, now) else 0)
+					max[owner] = (max[owner] or 0) + (if type(full) == "number" then full else 0)
+				end
+			end
+			for id, p in pills do
+				if max[id] == nil then
+					p.frame:Destroy()
+					pills[id] = nil
+				end
+			end
+			for id, total in max do
+				local p = pills[id]
+				if p == nil then
+					local frame = Style.glass(mates, UDim2.fromOffset(240, 46), 14)
+					local face = Instance.new("ImageLabel")
+					face.Size, face.Position, face.BackgroundColor3, face.ZIndex =
+						UDim2.fromOffset(32, 32), UDim2.fromOffset(7, 7), N.key, 5
+					face.Image = `rbxthumb://type=AvatarHeadShot&id={id}&w=48&h=48`
+					Style.round(face, 16)
+					face.Parent = frame
+					local who = game:GetService("Players"):GetPlayerByUserId(id)
+					local name = Style.small(
+						frame,
+						if who then who.DisplayName else "Teammate",
+						12,
+						N.text,
+						UDim2.new(1, -56, 0, 16)
+					)
+					name.Position, name.TextTruncate, name.ZIndex = UDim2.fromOffset(46, 5), Enum.TextTruncate.AtEnd, 5
+					local back, set = Style.track(frame, UDim2.new(1, -56, 0, 10), N.good)
+					back.Position, back.ZIndex = UDim2.fromOffset(46, 26), 5
+					local words = Style.small(frame, "", 11, N.muted, UDim2.fromOffset(44, 14))
+					words.AnchorPoint, words.Position, words.ZIndex = Vector2.new(1, 0), UDim2.new(1, -10, 0, 5), 5
+					words.TextXAlignment = Enum.TextXAlignment.Right
+					p = { frame = frame, set = set, words = words }
+					pills[id] = p
+				end
+				local share = (hp[id] or 0) / math.max(1, total)
+				p.set(share)
+				p.words.Text = `{math.floor(share * 100 + 0.5)}%`
+			end
+		end
+	end)
+end
 
 return nil

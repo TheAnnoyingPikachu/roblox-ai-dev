@@ -105,6 +105,33 @@ do
 	boons.Parent = root
 	local boonsTitle = Style.text(boons, "Pick a boon", 20, N.text, UDim2.new(1, 0, 0, 26))
 	boonsTitle.Name, boonsTitle.LayoutOrder, boonsTitle.TextXAlignment = "Title", 1, Enum.TextXAlignment.Center
+	-- a party's vote (STATION-160): a ring that empties over the vote's seconds, beside the heading
+	local ring, setRing = Style.pie(boonsTitle, 34, N.gold, N.key)
+	ring.Name, ring.AnchorPoint, ring.Position, ring.Visible =
+		"VoteRing", Vector2.new(1, 0.5), UDim2.new(1, -150, 0.5, 0), false
+	local hole = Style.frame(ring, UDim2.fromOffset(24, 24), N.glass)
+	hole.AnchorPoint, hole.Position, hole.ZIndex = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), 3
+	Style.round(hole, 12)
+	local ringText = Style.small(hole, "", 12, N.text, UDim2.fromScale(1, 1))
+	ringText.TextXAlignment, ringText.ZIndex = Enum.TextXAlignment.Center, 4
+	local ringEnd = 0
+	App.voteClock = function(seconds: number) -- start the ring: it runs out in `seconds`
+		ringEnd = os.clock() + seconds
+		ring.Visible = true
+		local total = seconds
+		task.spawn(function()
+			while ring.Visible and boons.Visible do
+				local left = ringEnd - os.clock()
+				if left <= 0 then
+					break
+				end
+				setRing(left / total)
+				ringText.Text = tostring(math.ceil(left))
+				RunService.RenderStepped:Wait()
+			end
+			ring.Visible = false
+		end)
+	end
 	Style.stroke(boonsTitle, DARK, 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 	boonRow = row(boons, 16, Enum.HorizontalAlignment.Center)
 	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 276), 2, false
@@ -456,6 +483,13 @@ offerBoons = function(ids: { string }, n: number, have: { string }?, twice: bool
 				if not boonRow.Visible then -- a second click while the first is on its way
 					return
 				end
+				if (S.party or 1) > 1 then -- a party's vote: the cards stay to show who picked what (STATION-160)
+					local ok, code = request:InvokeServer("boon", id)
+					if not ok then
+						Style.toast(screen, REFUSED[code] or `Can't do that ({code})`, nil, "bad")
+					end
+					return
+				end
 				-- gone the moment it is picked (SHANNON, 2026-11-24); back only if the server refuses it
 				boonRow.Visible, panel.Visible, result.Visible = false, false, false -- the next wave takes a moment to walk out
 				local ok, code = request:InvokeServer("boon", id)
@@ -474,7 +508,14 @@ offerBoons = function(ids: { string }, n: number, have: { string }?, twice: bool
 				UDim2.fromOffset(if short then 236 else 268, if short then 196 else 272)
 			)
 			card.Name, card.LayoutOrder = boon.name, k
+			card:SetAttribute("Boon", id)
 			Style.radius(card, 18)
+			local dots = Instance.new("Frame") -- who voted for it (a party's vote, STATION-160)
+			dots.Name, dots.BackgroundTransparency, dots.ZIndex = "Dots", 1, 5
+			dots.AnchorPoint, dots.Position, dots.Size =
+				Vector2.new(1, 0), UDim2.new(1, -10, 0, 10), UDim2.fromOffset(120, 28) -- top right, across from the key cap
+			Style.list(dots, 4, true).HorizontalAlignment = Enum.HorizontalAlignment.Right
+			dots.Parent = card
 			Style.key(card, tostring(k), true).Position = UDim2.fromOffset(10, 10)
 			-- the boon's picture (Style.ICONS `boon_<id>`), or its stack written large until it has one
 			local side = if short then 56 else 92
@@ -606,6 +647,25 @@ App.leave = leave
 App.showStars = showStars
 App.coinBurst = coinBurst
 App.offerBoons = offerBoons
+-- A party's votes (the server's "votes"): each voter's avatar as a dot on the card they picked.
+App.showVotes = function(picks: { { user: number, id: string } })
+	for _, card in boonRow:GetChildren() do
+		local dots = card:FindFirstChild("Dots")
+		if dots then
+			Style.clear(dots)
+			for _, p in picks do
+				if p.id == card:GetAttribute("Boon") then
+					local face = Instance.new("ImageLabel")
+					face.Size, face.BackgroundColor3, face.ZIndex = UDim2.fromOffset(26, 26), N.key, 6
+					face.Image = `rbxthumb://type=AvatarHeadShot&id={p.user}&w=48&h=48`
+					Style.round(face, 13)
+					Style.stroke(face, N.gold, 2)
+					face.Parent = dots
+				end
+			end
+		end
+	end
+end
 App.buttons = buttons
 App.plates = plates
 

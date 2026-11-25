@@ -782,12 +782,15 @@ local function pickBoon(player: Player, id: string): (boolean, string?)
 		settle(party)
 		return true, nil
 	end
-	local voted = 0
+	local voted, picks = 0, {}
 	for _, m in party.members do
 		voted += if party.votes[m] then 1 else 0
+		if party.votes[m] then -- who voted for which (the avatar dots on the boon cards, STATION-160)
+			table.insert(picks, { user = m.UserId, id = party.votes[m] })
+		end
 	end
 	for _, m in party.members do
-		remotes.fx(m, "votes", { voted = voted, of = #party.members, seconds = VOTE_SECONDS })
+		remotes.fx(m, "votes", { voted = voted, of = #party.members, seconds = VOTE_SECONDS, picks = picks })
 	end
 	return true, nil
 end
