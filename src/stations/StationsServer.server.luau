@@ -1661,6 +1661,7 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
 		local hatching = #profile.animals > 0

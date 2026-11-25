@@ -9,10 +9,15 @@
     "src/stations/CLAUDE.md",
     "docs/checkpoints/STATION-LOOK.md"
   ],
-  "dependencies": [],
+  "dependencies": [
+    "STATION-165"
+  ],
   "files": [
     "src/stations-client/HudHover.luau",
-    "src/stations-client/Style.luau",
+    "src/stations-client/HudAnimals.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/StationsServer.server.luau",
     "studio/tasks/STATION-163.json"
   ],
   "tests": [],
@@ -22,9 +27,9 @@
     "In a fight: the glass card with health, what it hits for, its power attack and, for the player's own, its key when ready",
     "Beside the cursor, flipped at the edges, after a short pause; on a phone press and hold, docked at the top"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "Studio 2026-11-25, build dev (local): the own animal's trading card shows on a hover after the pause (banner, picture, legendary shine, LEGENDARY and TEAM 1 chips, power, class and group chips, six stat bars, 'In your team, slot 1', how its press works, Open Click); a click opens it in Animals (SHANNON saw it). Lune 819/819, selene 0 warnings. Not seen: someone else's card (needs a second player), the fight's glass card, the touch press and hold, the flip at the screen's edge.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "SHANNON's pick: all of the board."
+  "status": "in_review",
+  "notes": "SHANNON's pick: all of the board. SHANNON, 2026-11-25: the rarity chip covered the picture, so the chips sit on the banner's bottom edge. The server now marks each animal model with `AnimalId` (Creatures.describe) and each player with `Level`; HudFight marks a fighting model with its press key (`PressKey`). The stat bars show each stat's level out of 70 (how far it is trained), the number beside it its value."
 }

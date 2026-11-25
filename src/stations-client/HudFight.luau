@@ -1168,6 +1168,7 @@ task.spawn(function()
 							elseif p.press == "mash" then "Space"
 							else Press.pops.names(p.keys)[1] or ""
 					end
+					m:SetAttribute("PressKey", if p.keys then p.key.Text else nil) -- the card under the cursor
 					if full ~= p.full then
 						p.full = full
 						if full then

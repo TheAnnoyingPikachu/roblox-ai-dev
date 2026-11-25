@@ -366,6 +366,8 @@ function Creatures.describe(model: Model, s: string, v: string?, animal: Station
 	model:SetAttribute("Rainbow", if coatOf and (coatOf.id == "rainbow" or coatOf.id == "prismatic") then true else nil)
 	model:SetAttribute("CoatId", if coatOf then coatOf.id else nil)
 	model:SetAttribute("Variant", v)
+	-- which of its owner's animals it is: the card under the cursor opens it (STATION-163)
+	model:SetAttribute("AnimalId", if animal then (animal :: any).id else nil)
 	local plain = StationRules.versionStats(s, v) :: StationConfig.Stats
 	for _, stat in StationConfig.STATS do
 		model:SetAttribute(stat, if animal then StationRules.stat(animal, stat) else (plain :: any)[stat])
