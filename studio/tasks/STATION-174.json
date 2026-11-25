@@ -1,0 +1,38 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-174",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Remake the four Eternal models true to SHANNON's original designs (SHANNON, 2026-11-25: 'do it again but stay true to the originals as these new ones are way off'), keeping the clean rig of STATION-173.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-173"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_*_sahara_forge*",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-174.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Sahara Guardian, Sahara Mammoth and Sunfire War-Tortoise are ForgeGUI models rebuilt from three renders each of SHANNON's original site models (artifacts 30d3ddb4, fb438279, 276820c6): the same design, colours, armour, halo, cannon and banners",
+    "The Molten Sun Rhino is SHANNON's own A-pose site model (artifact 4b2ea5a5)",
+    "Each is skinned to the Stations rig; the game's strongest poses stretch at most 10 % of it unclamped (AnimalMoves.STIFF stays empty)",
+    "Foot points and spell anchors (AnimalRig) are measured on the new models and every spell checks out; each has a rainbow coat",
+    "Uploaded and seen in Studio"
+  ],
+  "verification": "skin_forge --stretch worst: Guardian 6.69 %, Mammoth 6.04 %, War-Tortoise 2.96 %, Sun Rhino 6.26 % (STATION-173: 8.98, 5.37, 5.85, 8.11). check_spells ALL OK. Uploaded models and rainbow coats: run 45706172621. Studio 2026-11-25, build dev (local): all four stood on the ground, idled, held their spells mid-cast and wore their rainbow coats, at their sizes (22, 39, 19.5, 24 studs long). Lune 823/823. Not seen: walking the herd at a ranch, a fight with them in the team.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Mammoth stands with its left hind foot tucked in, so its legs follow their feet (feet_weights, radius 0.1); the War-Tortoise's cannon over its head stays on the shell (head_below). STATION-173's models and this round's replaced uploads are left for archiving by hand."
+}

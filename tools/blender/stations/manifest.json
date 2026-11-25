@@ -9825,62 +9825,62 @@
     "png": "build/blender/stations/creature_lion_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_sahara_forge_rest.png",
     "size_studs": [
-      8.95,
-      14.25,
+      7.5,
+      14.53,
       22.0
     ],
-    "tris": 12000,
+    "tris": 11999,
     "parts": {
-      "creature_lion_sahara_forge_body": 12000
+      "creature_lion_sahara_forge_body": 11999
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sahara Guardian: regenerated in ForgeGUI (concept fde372a9, model 2b89a1ef), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Sahara Guardian: rebuilt in ForgeGUI from renders of SHANNON's original (artifact 30d3ddb4; model 86abc74b), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_lion_sahara_forge_body": [
         0.0,
-        7.125,
+        7.266,
         -0.0
       ]
     },
     "joints": {
       "creature_lion_sahara_forge_head": [
-        0.034,
-        8.58,
-        7.612
+        0.0,
+        7.294,
+        8.115
       ],
       "creature_lion_sahara_forge_leg_fl": [
-        2.105,
-        4.439,
-        5.081
+        2.542,
+        3.828,
+        7.422
       ],
       "creature_lion_sahara_forge_leg_fr": [
-        -2.037,
-        4.439,
-        5.081
+        -2.541,
+        3.828,
+        8.577
       ],
       "creature_lion_sahara_forge_leg_bl": [
-        1.76,
-        4.669,
-        -3.433
+        1.618,
+        3.828,
+        -0.665
       ],
       "creature_lion_sahara_forge_leg_br": [
-        -1.692,
-        4.669,
-        -3.433
+        -1.617,
+        3.828,
+        -0.665
       ],
       "creature_lion_sahara_forge_tail": [
-        0.034,
-        7.2,
-        -5.504
+        0.0,
+        5.445,
+        -3.207
       ]
     },
     "skinned": true,
     "root": [
-      0.034,
-      7.2,
-      1.17
+      0.0,
+      6.139,
+      3.494
     ]
   },
   "creature_elephant_sahara_forge": {
@@ -9888,8 +9888,8 @@
     "png": "build/blender/stations/creature_elephant_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_elephant_sahara_forge_rest.png",
     "size_studs": [
-      15.19,
-      25.2,
+      22.79,
+      25.54,
       39.0
     ],
     "tris": 12000,
@@ -9898,52 +9898,52 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sahara Mammoth: regenerated in ForgeGUI (concept 56e4cd88, model 44a2b954), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Sahara Mammoth: rebuilt in ForgeGUI from renders of SHANNON's original (artifact fb438279; model 153b2d0c), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_elephant_sahara_forge_body": [
         0.0,
-        12.598,
+        12.768,
         -0.0
       ]
     },
     "joints": {
       "creature_elephant_sahara_forge_head": [
-        0.0,
-        16.749,
-        8.249
+        0.309,
+        14.878,
+        8.091
       ],
       "creature_elephant_sahara_forge_leg_fl": [
-        3.678,
-        7.757,
-        2.119
+        6.451,
+        7.917,
+        1.131
       ],
       "creature_elephant_sahara_forge_leg_fr": [
-        -3.678,
-        7.757,
-        2.119
+        -4.4,
+        7.917,
+        4.406
       ],
       "creature_elephant_sahara_forge_leg_bl": [
-        3.474,
-        7.757,
-        -10.142
+        2.766,
+        7.917,
+        -14.428
       ],
       "creature_elephant_sahara_forge_leg_br": [
-        -3.474,
-        7.757,
-        -10.142
+        -6.651,
+        7.917,
+        -11.562
       ],
       "creature_elephant_sahara_forge_tail": [
-        0.0,
-        13.479,
-        -15.046
+        0.309,
+        12.83,
+        -17.704
       ]
     },
     "skinned": true,
     "root": [
-      0.0,
-      14.705,
-      -1.968
+      0.309,
+      14.878,
+      -4.192
     ]
   },
   "creature_tortoise_sahara_forge": {
@@ -9951,62 +9951,62 @@
     "png": "build/blender/stations/creature_tortoise_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_tortoise_sahara_forge_rest.png",
     "size_studs": [
-      11.19,
-      10.49,
+      12.26,
+      11.12,
       19.5
     ],
-    "tris": 11999,
+    "tris": 12000,
     "parts": {
-      "creature_tortoise_sahara_forge_body": 11999
+      "creature_tortoise_sahara_forge_body": 12000
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sunfire War-Tortoise: regenerated in ForgeGUI (concept 700524b0, model c41da947), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Sunfire War-Tortoise: rebuilt in ForgeGUI from renders of SHANNON's original (artifact 276820c6; model 91afeefa), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_tortoise_sahara_forge_body": [
         0.0,
-        5.244,
+        5.558,
         -0.0
       ]
     },
     "joints": {
       "creature_tortoise_sahara_forge_head": [
-        0.0,
-        4.832,
-        5.956
+        0.02,
+        4.953,
+        6.107
       ],
       "creature_tortoise_sahara_forge_leg_fl": [
-        3.489,
-        2.164,
-        4.52
+        4.118,
+        2.085,
+        3.853
       ],
       "creature_tortoise_sahara_forge_leg_fr": [
-        -3.489,
-        2.164,
-        4.52
+        -4.078,
+        2.085,
+        3.238
       ],
       "creature_tortoise_sahara_forge_leg_bl": [
-        3.078,
-        2.164,
-        -5.126
+        3.708,
+        2.085,
+        -6.803
       ],
       "creature_tortoise_sahara_forge_leg_br": [
-        -3.078,
-        2.164,
-        -5.126
+        -3.873,
+        2.085,
+        -7.212
       ],
       "creature_tortoise_sahara_forge_tail": [
-        0.0,
-        3.601,
-        -6.972
+        0.02,
+        3.109,
+        -8.852
       ]
     },
     "skinned": true,
     "root": [
-      0.0,
-      5.242,
-      0.005
+      0.02,
+      5.568,
+      -0.04
     ]
   },
   "creature_rhino_sahara_forge": {
@@ -10014,8 +10014,8 @@
     "png": "build/blender/stations/creature_rhino_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_rhino_sahara_forge_rest.png",
     "size_studs": [
-      9.53,
-      14.29,
+      12.78,
+      10.42,
       24.0
     ],
     "tris": 12000,
@@ -10024,52 +10024,52 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Molten Sun Rhino: regenerated in ForgeGUI (concept 29d0cd89, model dc9f83ba), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Molten Sun Rhino: SHANNON's ForgeGUI site model (artifact 4b2ea5a5, 2026-11-25), one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_rhino_sahara_forge_body": [
         0.0,
-        7.147,
+        5.212,
         -0.0
       ]
     },
     "joints": {
       "creature_rhino_sahara_forge_head": [
-        -0.002,
-        8.462,
-        3.727
+        0.048,
+        5.816,
+        6.982
       ],
       "creature_rhino_sahara_forge_leg_fl": [
-        2.507,
-        4.196,
-        0.967
+        4.298,
+        2.566,
+        3.732
       ],
       "creature_rhino_sahara_forge_leg_fr": [
-        -2.511,
-        4.196,
-        0.967
+        -4.203,
+        2.566,
+        3.732
       ],
       "creature_rhino_sahara_forge_leg_bl": [
-        2.256,
-        4.196,
-        -10.073
+        2.048,
+        2.566,
+        -5.519
       ],
       "creature_rhino_sahara_forge_leg_br": [
-        -2.261,
-        4.196,
-        -10.073
+        -1.703,
+        2.566,
+        -8.519
       ],
       "creature_rhino_sahara_forge_tail": [
-        -0.002,
-        7.207,
-        -11.327
+        -0.953,
+        5.316,
+        -10.519
       ]
     },
     "skinned": true,
     "root": [
-      -0.002,
-      8.462,
-      -3.8
+      0.048,
+      5.316,
+      -2.518
     ]
   }
 }
