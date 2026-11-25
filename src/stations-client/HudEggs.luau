@@ -33,6 +33,12 @@ local eggArt = App.eggArt
 
 local page = Style.page(eggs)
 local shelfEgg = 1 -- the egg whose contents show on the right
+local eggDetail = false -- a phone: the chosen egg full-screen instead of the list (STATION-161)
+eggs.backdrop:GetPropertyChangedSignal("Visible"):Connect(function()
+	if not eggs.backdrop.Visible then
+		eggDetail = false -- closed: it opens on the list again
+	end
+end)
 local buying = false
 
 -- Open Eggs on egg `id` (a new level's "See what is inside").
@@ -40,6 +46,7 @@ function Hud.pickEgg(id: string)
 	for k, d in StationConfig.EGGS do
 		shelfEgg = if d.id == id then k else shelfEgg
 	end
+	eggDetail = true -- a phone opens on that egg
 	show("eggs")
 end
 
@@ -173,7 +180,7 @@ local function shelfCard(col: Instance, k: number, def: StationConfig.Egg, level
 	local locked = def.level ~= nil and level < def.level
 	local picked = k == shelfEgg
 	local card = Style.button(col, "", function()
-		shelfEgg = k
+		shelfEgg, eggDetail = k, true
 		redraw.eggs()
 	end, if picked then "primary" else "ghost", UDim2.fromOffset(150, 190))
 	card.LayoutOrder = k
@@ -392,8 +399,25 @@ redraw.eggs = function()
 		Style.chip(eggs.count, `{ready} ready to open`, C.good, Color3.new(1, 1, 1))
 	end
 
-	hatcheryColumn(Style.column(page, UDim.new(0, 0), UDim.new(0, 300), 1, 8), stored, hatching)
-	local shelf = Style.column(page, UDim.new(0, 312), UDim.new(1, -652), 2, 10, true)
+	local phone = Style.compact(App.root.Size.Y.Offset)
+	if phone and eggDetail then -- the chosen egg, full-screen (STATION-161)
+		local col = Style.column(page, UDim.new(0, 0), UDim.new(1, 0), 1, 6)
+		Style.back(col, function()
+			eggDetail = false
+			redraw.eggs()
+		end)
+		contentsColumn(col, StationConfig.EGGS[shelfEgg], level)
+		return
+	end
+	local list = if phone then Style.column(page, UDim.new(0, 0), UDim.new(1, 0), 1, 12) else nil
+	hatcheryColumn(
+		if list then Style.section(list, 1, 8) else Style.column(page, UDim.new(0, 0), UDim.new(0, 300), 1, 8),
+		stored,
+		hatching
+	)
+	local shelf = if list
+		then Style.section(list, 2, 10, true)
+		else Style.column(page, UDim.new(0, 312), UDim.new(1, -652), 2, 10, true)
 	local open = 0
 	for k, d in StationConfig.EGGS do
 		open += if d.level == nil or level >= d.level then 1 else 0
@@ -412,8 +436,10 @@ redraw.eggs = function()
 	for k, item in StationConfig.PRODUCTS do
 		productCard(shelf, k, item)
 	end
-	local right = Style.column(page, UDim.new(1, -330), UDim.new(0, 330), 3, 6)
-	contentsColumn(right, StationConfig.EGGS[shelfEgg], level)
+	if list == nil then
+		local right = Style.column(page, UDim.new(1, -330), UDim.new(0, 330), 3, 6)
+		contentsColumn(right, StationConfig.EGGS[shelfEgg], level)
+	end
 end
 
 return nil

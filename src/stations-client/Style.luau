@@ -751,7 +751,7 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 		side.Visible = any
 		if not any then
 			body.Position, body.Size = UDim2.fromOffset(14, top), UDim2.new(1, -24, 1, -top - 10)
-		elseif units < FOLD_W then
+		elseif units < FOLD_W or Style.compact(if parent:IsA("GuiObject") then parent.Size.Y.Offset else 999) then -- a phone: on top
 			side.Position, side.Size = UDim2.fromOffset(14, top - 4), UDim2.new(1, -28, 0, 60)
 			tabList.FillDirection = Enum.FillDirection.Horizontal
 			tabs.AutomaticCanvasSize = Enum.AutomaticSize.X
@@ -766,6 +766,7 @@ function Style.sheet(parent: Instance, name: string, heading: string, onClose: (
 		end
 	end
 	frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	Style.onInput(layout) -- keys or touch can change mid-session
 	tabs.ChildAdded:Connect(function()
 		task.defer(layout)
 	end)
@@ -834,6 +835,26 @@ function Style.column(page: Frame, x: UDim, w: UDim, order: number, gap: number?
 	pad.Parent = col
 	col.Parent = page
 	return col
+end
+
+-- On a phone (STATION-161, SHANNON's pick: "list, then full detail") a menu in columns is one column: these
+-- stack what were its columns in it. A section is the column's full width and as tall as what is in it
+-- (`wrap`: its children in rows that wrap, for a grid of cards).
+function Style.section(col: Instance, order: number, gap: number?, wrap: boolean?): Frame
+	local f = Instance.new("Frame")
+	f.BackgroundTransparency, f.LayoutOrder = 1, order
+	f.Size, f.AutomaticSize = UDim2.new(1, -8, 0, 0), Enum.AutomaticSize.Y
+	Style.list(f, gap or 10, wrap, wrap)
+	f.Parent = col
+	return f
+end
+
+-- A phone's Back, at the top of the chosen thing's full-screen page.
+function Style.back(col: Instance, onBack: () -> ()): TextButton
+	local b = Style.button(col, "‹  Back", onBack, "ghost", UDim2.fromOffset(130, 44))
+	b.LayoutOrder, b.TextSize = -100, 17
+	b:SetAttribute("Sound", "close")
+	return b
 end
 
 -- The menu's opening: it pops from a little smaller with a soft paper flick. (The ForgeGUI "open" sound

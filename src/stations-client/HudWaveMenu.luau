@@ -31,6 +31,7 @@ local fight = App.fight
 local ICON = App.ICON
 
 local page = Style.page(waves)
+local waveDetail = false -- a phone: the picked wave full-screen instead of the road (STATION-161)
 local PORTAL_RADIUS = 14 -- World.PORTAL_RADIUS: who stands this near the portal's middle joins the fight
 local WHITE = Color3.new(1, 1, 1)
 
@@ -147,7 +148,7 @@ local function road(col: Instance, st: LevelRules.Stage)
 		local kind = if w == S.wave then "primary" elseif cleared then "good" elseif boss then "danger" else "ghost"
 		local b = Style.button(cell, if boss then "BOSS" else tostring(w), function()
 			if w <= S.profile.best + 1 then
-				S.wave = w
+				S.wave, waveDetail = w, true
 				redraw.waves()
 			end
 		end, if open or boss then kind else "off", UDim2.fromOffset(side, side))
@@ -429,8 +430,25 @@ redraw.waves = function()
 	)
 	local team = StationProgress.fighters(S.profile)
 
-	stageList(Style.column(page, UDim.new(0, 0), UDim.new(0, 240), 1, 8), st.n)
-	local mid = Style.column(page, UDim.new(0, 252), UDim.new(1, -546), 2, 10)
+	local phone = Style.compact(App.root.Size.Y.Offset)
+	if phone and waveDetail then -- the picked wave and who fights it, full-screen (STATION-161)
+		local col = Style.column(page, UDim.new(0, 0), UDim.new(1, 0), 1, 10)
+		Style.back(col, function()
+			waveDetail = false
+			redraw.waves()
+		end)
+		wavePanel(Style.section(col, 1, 10), team)
+		partyColumn(Style.section(col, 2, 8), team)
+		return
+	end
+	local list = if phone then Style.column(page, UDim.new(0, 0), UDim.new(1, 0), 1, 12) else nil
+	stageList(
+		if list then Style.section(list, 2, 8) else Style.column(page, UDim.new(0, 0), UDim.new(0, 240), 1, 8),
+		st.n
+	)
+	local mid = if list
+		then Style.section(list, 1, 10)
+		else Style.column(page, UDim.new(0, 252), UDim.new(1, -546), 2, 10)
 	local cleared, stars = 0, 0
 	for w = st.first, st.last do
 		cleared += if w <= S.profile.best then 1 else 0
@@ -447,12 +465,19 @@ redraw.waves = function()
 	)
 	sub.LayoutOrder = 1
 	road(mid, st)
+	if list then -- a phone: pick a wave on the road to see it and fight it
+		local hint =
+			Style.small(mid, "Tap a wave to see who is coming and fight it.", 13, C.muted, UDim2.new(1, -8, 0, 18))
+		hint.LayoutOrder = 99
+		return
+	end
 	wavePanel(mid, team)
 	partyColumn(Style.column(page, UDim.new(1, -282), UDim.new(0, 282), 3, 8), team)
 end
 
 function S.openWaves()
 	S.wave = if S.profile then math.min(S.profile.best + 1, LevelRules.LAST) else 1
+	waveDetail = false
 	show("waves")
 end
 

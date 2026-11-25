@@ -25,9 +25,9 @@
     "On a phone the press cards beside the animals are bigger and easy to tap; no separate press pad",
     "The desk layout is unchanged"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "Studio 2026-11-25, build dev (local), a phone stood in by UiInput touch and UiSize 844x390: Animals, Eggs and Waves each one column (desk 2, 3, 3 unchanged) with the tabs on top; an animal, an egg and a wave open full-screen with Back, and Back returns to the list; a phone fight's press card 175x154 against a desk's 134x118. Lune 823/823, selene clean. Not seen: a real phone (the stand-in does not resize the camera), the plates as portraits with a health ring (PhoneFight board; not in this task's criteria).",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "SHANNON's picks: list, then full detail; bigger cards by the animals. Try it on a real phone after a publish."
+  "status": "in_review",
+  "notes": "SHANNON's picks: list, then full detail; bigger cards by the animals. Style.section and Style.back stack a menu's columns on a phone; a menu with tabs folds them on top on a phone. Try it on a real phone after a publish."
 }

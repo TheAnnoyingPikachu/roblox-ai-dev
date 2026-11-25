@@ -966,7 +966,8 @@ do
 		p.fullAt, p.close = os.clock(), math.max(0.2, BattleRules.PERFECT_AT - FightFx.TAP_AHEAD - ping)
 		p.sent, p.presses = false, 0
 		-- the reference's look (decision 0109, amended): PressPops draws the card
-		local k = uiScale.Scale * 0.85 -- over the animals: compact
+		-- over the animals: compact on a desk, bigger on a phone to tap (STATION-161, SHANNON's pick)
+		local k = uiScale.Scale * (if Style.compact(root.Size.Y.Offset) then 1.25 else 0.85)
 		local wide = 2 * Press.SWING * math.sin(math.pi * BattleRules.PERFECT_EARLY / BattleRules.NEEDLE_EVERY)
 		p.keys = Press.pops.claim(p.press)
 		local card, parts = Press.pops.card(clickFx, p.press, Press.pops.names(p.keys :: { Enum.KeyCode }), k, wide, {

@@ -65,11 +65,17 @@ local animalsTab = "team"
 local SORTS = { "power", "rarity", "level", "newest" }
 local sortBy = "rarity"
 local chosen: number? = nil -- the id of the animal shown on the right
+local detail = false -- a phone: the chosen animal full-screen instead of the list (STATION-161)
+animals.backdrop:GetPropertyChangedSignal("Visible"):Connect(function()
+	if not animals.backdrop.Visible then
+		detail = false -- closed: it opens on the list again
+	end
+end)
 local page = Style.page(animals)
 
 -- Open Animals on animal `id` (a hatch's "Swap it in").
 function Hud.chooseAnimal(id: number)
-	chosen, animalsTab = id, "all"
+	chosen, animalsTab, detail = id, "all", true
 	show("animals")
 end
 
@@ -113,7 +119,7 @@ function Hud.animalCard(grid: Instance, a: any, order: number)
 	local colour = RARITY_COLOUR[rarity] or C.text
 	local picked = chosen == a.id
 	local card = Style.button(grid, "", function()
-		chosen = a.id
+		chosen, detail = a.id, true
 		redraw.animals()
 	end, if picked then "primary" else "ghost", UDim2.fromOffset(156, 196))
 	card.Name, card.LayoutOrder = nameOf(a), order
@@ -378,7 +384,7 @@ redraw.animals = function()
 	local shown = all
 	for _, l in LISTS do
 		local tab = Style.tab(animals, l[2], animalsTab == l[1], function()
-			animalsTab = l[1]
+			animalsTab, detail = l[1], false
 			redraw.animals()
 		end)
 		local n = Style.small(
@@ -429,8 +435,18 @@ redraw.animals = function()
 		pick = shown[1] or all[1]
 		chosen = pick and pick.id
 	end
-	local grid = Style.column(page, UDim.new(0, 0), UDim.new(1, -352), 1, 10, true)
-	local right = Style.column(page, UDim.new(1, -340), UDim.new(0, 340), 2, 8)
+	local phone = Style.compact(App.root.Size.Y.Offset)
+	if phone and detail and pick and animalsTab ~= "seen" then -- the chosen animal, full-screen
+		local col = Style.column(page, UDim.new(0, 0), UDim.new(1, 0), 1, 8)
+		Style.back(col, function()
+			detail = false
+			redraw.animals()
+		end)
+		Hud.animalDetail(col, pick)
+		return
+	end
+	local grid = Style.column(page, UDim.new(0, 0), if phone then UDim.new(1, 0) else UDim.new(1, -352), 1, 10, true)
+	local right = if phone then nil else Style.column(page, UDim.new(1, -340), UDim.new(0, 340), 2, 8)
 	if animalsTab == "seen" then
 		for i, x in seen do
 			seenCard(grid, x.asset, x.name, x.egg, i)
@@ -463,7 +479,7 @@ redraw.animals = function()
 			end
 		end
 	end
-	if pick then
+	if pick and right then
 		Hud.animalDetail(right, pick)
 	end
 end
