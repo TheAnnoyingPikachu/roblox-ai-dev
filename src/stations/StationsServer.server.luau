@@ -425,6 +425,9 @@ type Party = {
 	holdTo: number, -- os.clock() until when the field is kept for it while it picks a boon
 }
 local partyOf: { [Player]: Party } = {}
+-- The Ranger's loan each player has taken for their next wave (decision 0119): legend `k` of StationIntro.TEAM
+-- in place of their animal `replaces`. Kept here, not in the save: the save only records a loan once it is used.
+local loans: { [Player]: { k: number, replaces: number } } = {}
 local VOTE_SECONDS = 7 -- a party's boon vote is this long from the offer (SHANNON, 2026-11-24); alone, no limit
 local HOLD_SECONDS = 30 -- how long the field waits for a party to pick its boon (SHANNON, 2026-11-24: was 60)
 local fieldOf: Party? = nil -- the party that last fought on the field
@@ -564,16 +567,26 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 	-- the fight's team: every member's animals, marked with the member's place, at the HP the run carries
 	local members = table.clone(party.members)
 	local team, ownerOf, hp = {}, {}, {}
+	local lent: { [Player]: { k: number, replaces: number } } = {}
 	local pay: { [Player]: { coins: number, xp: number, samples: number, first: boolean } } = {}
 	for k, m in members do
 		local copy = StationProgress.sanitize(saves.get(m) :: any, os.time())
 		local carried = party.hp[m]
+		local loan = loans[m]
+		if loan and not StationIntro.canLend(copy, loan.k, loan.replaces, level, os.time()) then
+			loan = nil -- not for this wave (the boss's loan waits for wave 10)
+		end
 		for j, a in StationProgress.fighters(copy) do
 			local mine = table.clone(a) :: any
+			local fresh = false
+			if loan and a.id == loan.replaces then -- the Ranger's legend stands in for this wave (decision 0119)
+				mine, fresh = StationIntro.lent(loan.k) :: any, true
+				lent[m] = loan
+			end
 			mine.owner = k
 			table.insert(team, mine)
 			table.insert(ownerOf, k)
-			table.insert(hp, if carried and carried[j] then carried[j] else 1)
+			table.insert(hp, if carried and carried[j] and not fresh then carried[j] else 1)
 		end
 		local coins, xp, samples = StationProgress.payout(copy, level)
 		pay[m] = { coins = coins, xp = xp, samples = samples, first = level > copy.best }
@@ -693,6 +706,13 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 		return false, why
 	end
 	fieldOf = party
+	for m, loan in lent do -- the wave is on: the loan is used (decision 0119)
+		loans[m] = nil
+		local now = os.time()
+		apply(m, function(q)
+			return StationIntro.useLoan(q, loan.k, loan.replaces, level, now)
+		end)
+	end
 	for _, m in members do
 		if continuing or m ~= player then -- whoever did not ask for this wave is told it is on
 			remotes.fx(m, "began", { wave = level, party = #members })
@@ -1500,6 +1520,27 @@ local router = Router.new({
 				end, StationIntro.SETUP)
 			end,
 		},
+		-- the Ranger's loan (decision 0119): legend `k` (1 to 4, StationIntro.TEAM) stands in for the player's animal
+		-- `replaces` in their next wave it may be taken for; k = 0 takes it back. Used (and saved) when that wave starts.
+		loan = {
+			args = { Payload.int({ min = 0, max = #StationIntro.TEAM }), Payload.int({ min = 0, max = 1e12 }) },
+			handler = function(player, k: number, replaces: number)
+				local p = saves.get(player)
+				if p == nil then
+					return false, "loading"
+				elseif k == 0 then
+					loans[player] = nil
+					return true, nil
+				end
+				local copy, now = StationProgress.sanitize(p, os.time()), os.time()
+				local wave = if copy.loan.boss then 1 else StationIntro.LOAN_WAVE -- any wave once the boss's is used
+				local ok, code = StationIntro.canLend(copy, k, replaces, wave, now)
+				if ok then
+					loans[player] = { k = k, replaces = replaces }
+				end
+				return ok, code
+			end,
+		},
 		-- a test wave in the arena: `team` is "mine" (the admin's own team), "starters" or "mythics"
 		testwave = {
 			args = { Payload.int({ min = 1, max = 200 }), Payload.enum({ "mine", "starters", "mythics" }) },
@@ -1805,6 +1846,7 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 	invites[player] = nil
 	asked[player], blocked[player] = nil, nil
+	loans[player] = nil
 	looks(player):Destroy()
 	WaveShow.clear(player)
 	bankRun(player, false)

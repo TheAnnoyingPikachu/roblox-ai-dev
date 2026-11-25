@@ -4,24 +4,21 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "The Ranger's second loan (SHANNON, 2026-11-24: 'Wave 10 boss, then daily'): one legend joins the player's team for their first wave 10 boss fight, then once a day for one fight they choose.",
+  "objective": "The Ranger's second loan (SHANNON, 2026-11-24: 'Wave 10 boss, then daily'; 2026-11-25: the player picks the legend, it replaces one of their animals, at max level, for one wave).",
   "inputs": [
     "src/stations/CLAUDE.md",
     "docs/checkpoints/STATION-LOOK.md"
   ],
   "dependencies": [
-    "STATION-157",
     "STATION-158"
   ],
   "files": [
     "src/shared/StationIntro.luau",
     "src/shared/StationProgress.luau",
-    "src/shared/WaveRuns.luau",
     "src/stations/StationsServer.server.luau",
-    "src/stations-client/HudIntro.luau",
+    "src/stations-client/Hud.client.luau",
     "src/stations-client/HudWaveMenu.luau",
     "tests/StationIntro.spec.luau",
-    "tests/StationProgress.spec.luau",
     "docs/decisions/0119-animal-stations-ranger-loan.md",
     "studio/tasks/STATION-159.json"
   ],
@@ -30,13 +27,14 @@
     "StationProgress.spec.luau"
   ],
   "acceptance_criteria": [
-    "Before the player's first wave 10 boss the Ranger offers one legend for that fight; after it, once a day, the Waves window offers a loan for one fight",
-    "The loaned legend fights in the team for that fight only, is never saved as owned, and is recorded as met (STATION-158)",
-    "The server decides the loan and its day; a decision record covers the save fields and the fight setup"
+    "For the player's first wave 10 boss the Waves window offers the Ranger's loan; once it is used, one loan a UTC day for any wave",
+    "The player picks one of the four legends and which of their fighting animals it replaces (the War Elephant only a Titan, the others only a team animal); it fights that one wave at max level",
+    "The loaned legend is never saved as owned and is recorded as met (STATION-158)",
+    "The server decides the loan, checks it and records it only when its wave starts; decision 0119 covers the save fields and the remote"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "Lune 823/823 (loanFor boss then daily, the Titan rule, a fighter only, max level, met, sanitize). Studio 2026-11-25, build dev (local): after clearing waves 1 to 9 the Waves window offered the boss's loan; took the Sphinx Jackal in place of a Rhino; wave 10 was fought with the legend at max level (speed 496) and won; the card was gone after (today's loan used). Not seen: the daily loan on another day, a shared fight with loans, a phone.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "Server and save work: decision record first."
+  "status": "in_review",
+  "notes": "Data schema and remote change: decision 0119 (proposed, for SHANNON's OK). Builds on STATION-158 (PR #56): merge that first."
 }
