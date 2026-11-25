@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-172",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Twin Picks as the board drew it: for the 5 offers after it, take two boons from each offer (SHANNON, 2026-11-25: 'Board: take two boons').",
+  "inputs": [
+    "docs/decisions/0120-animal-stations-boons.md"
+  ],
+  "dependencies": [
+    "STATION-165"
+  ],
+  "files": [
+    "src/shared/WaveRuns.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudWaves.luau",
+    "tests/WaveRuns.spec.luau",
+    "docs/decisions/0120-animal-stations-boons.md",
+    "studio/tasks/STATION-172.json"
+  ],
+  "tests": [
+    "WaveRuns.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Under Twin Picks the first pick leaves the offer's other common and lucky cards up for a second pick; the next wave starts after it; each pick adds one stack",
+    "A party votes for each pick; the server's boon message carries the cards left",
+    "The run simulation is run again and its numbers are in decision 0120"
+  ],
+  "verification": "Lune WaveRuns spec (two picks, the rest of the offer, no ultra left for a second, ends after 5); 823/823. Run simulation, best picks, max team: 249, 279, 300. Studio 2026-11-25, build dev (local), ultra odds forced for the test only: Twin Picks taken at wave 1; at wave 2 the first pick left the other two cards up under \"Twin Picks: pick your second boon\". Not seen: a party voting twice.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Remote contract: the boon message gains `again` (decision 0120 amended). Balance: wave 300 reachable in one seed of three with the best team and picks; SHANNON to say if it should be further off."
+}

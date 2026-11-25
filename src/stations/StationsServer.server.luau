@@ -769,7 +769,19 @@ function settle(party: Party)
 	party.run, party.votes = picked, {}
 	party.round += 1
 	for _, m in party.members do -- everyone's HUD adds it to the run's stack; a party's also says which won the vote
-		remotes.fx(m, "boon", { id = id })
+		remotes.fx(m, "boon", { id = id, again = if picked.offer then picked.offer else nil })
+	end
+	if picked.offer then -- Twin Picks: the rest of the offer for a second pick (a party votes again)
+		party.holdTo = os.clock() + HOLD_SECONDS
+		if #party.members > 1 then
+			local round = party.round
+			task.delay(VOTE_SECONDS, function()
+				if party.round == round then
+					settle(party)
+				end
+			end)
+		end
+		return
 	end
 	if not waveFight(party.members[1], picked.wave, true) then
 		-- they took too long and the field is another party's now: the run ends here, its pots paid

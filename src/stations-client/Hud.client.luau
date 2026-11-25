@@ -1127,6 +1127,17 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		if picked and (S.party or 1) > 1 then
 			Style.toast(screen, `The party's boon: {picked.name}`, 3, "good")
 		end
+		if payload.again then -- Twin Picks: the rest of the offer, for the second pick
+			result.Visible = true
+			App.offerBoons(payload.again, S.wave, S.run and S.run.boons or {}, false)
+			local heading = voted:FindFirstChild("Title") :: TextLabel?
+			if heading then
+				heading.Text = "Twin Picks: pick your second boon"
+			end
+			if (S.party or 1) > 1 then
+				App.voteClock(7)
+			end
+		end
 	elseif kind == "over" then
 		S.run = nil
 		S.hideResult()
