@@ -473,6 +473,8 @@ UserInputService.InputBegan:Connect(function(input, typing)
 	local hot = hotkeys[input.KeyCode]
 	if typing or hot == nil or S.fighting or S.intro then
 		return
+	elseif hot.sheet == "waves" and S.openName == "waves" then -- B on the open Waves fights, as its button shows
+		App.fight(S.wave)
 	elseif hot.sheet and S.openName == hot.sheet then
 		Style.sound("close")
 		show(nil)
