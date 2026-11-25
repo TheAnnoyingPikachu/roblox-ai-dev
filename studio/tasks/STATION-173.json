@@ -29,9 +29,9 @@
     "Foot points and spell anchors (AnimalRig) are measured on the new models and every spell checks out; each has a rainbow coat",
     "Uploaded and seen in Studio walking, attacking and casting"
   ],
-  "verification": "skin_forge --stretch worst: Guardian 8.98 %, Mammoth 5.37 %, War-Tortoise 5.85 %, Sun Rhino 8.11 % (the old Guardian 12.6 % with its legs clamped). check_spells ALL OK. Upload and Studio: see the PR.",
+  "verification": "skin_forge --stretch worst: Guardian 8.98 %, Mammoth 5.37 %, War-Tortoise 5.85 %, Sun Rhino 8.11 % (the old Guardian 12.6 % with its legs clamped). check_spells ALL OK. Uploaded: models run 45679232803, rainbow coats run 45679927590. Studio 2026-11-25, build dev (local): all four stood, idled, attacked and cast their spells, and wore their rainbow coats, at their sizes (22, 39, 19.5, 24 studs long). Lune 823/823. Not seen: walking the herd at a ranch, a fight with them in the team.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_progress",
+  "status": "in_review",
   "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Guardian's mane stays with the body (blending it into the head pulled the chest armour along: 14 to 20 % stretched). Old model uploads are left for archiving by hand."
 }

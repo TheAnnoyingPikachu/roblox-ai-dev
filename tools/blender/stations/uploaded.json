@@ -1101,12 +1101,12 @@
   },
   "creature_elephant_sahara_forge_rainbow": {
     "model": null,
-    "decal": 113668612063735,
+    "decal": 127455780731004,
     "texture": null
   },
   "creature_lion_sahara_forge_rainbow": {
     "model": null,
-    "decal": 81889613634043,
+    "decal": 134899884084561,
     "texture": null
   },
   "creature_tortoise_sahara_forge": {
@@ -1121,12 +1121,12 @@
   },
   "creature_rhino_sahara_forge_rainbow": {
     "model": null,
-    "decal": 78701187802965,
+    "decal": 93504958398969,
     "texture": null
   },
   "creature_tortoise_sahara_forge_rainbow": {
     "model": null,
-    "decal": 74605025255456,
+    "decal": 102935963634525,
     "texture": null
   }
 }
