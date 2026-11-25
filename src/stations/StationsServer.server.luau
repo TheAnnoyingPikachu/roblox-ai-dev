@@ -633,6 +633,14 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 			saves.apply(m, function(q)
 				return StationProgress.setStars(q, level, result.stars[k])
 			end)
+			if #members > 1 then -- fought beside a teammate's animals: they are met (decision 0118)
+				saves.apply(m, function(q)
+					for _, a in team do
+						q = StationProgress.meet(q, a.s, a.v)
+					end
+					return q
+				end)
+			end
 			local out = table.clone(result)
 			out.stars, out.missed, out.party = result.stars[k], result.missed[k], #members
 			out.coins, out.xp, out.samples =
@@ -1482,6 +1490,12 @@ local router = Router.new({
 				end
 				return WaveShow.run({ player }, StationIntro.WAVE, StationIntro.team() :: any, function(result)
 					finish()
+					saves.apply(player, function(q) -- the borrowed legends are met (decision 0118)
+						for _, a in StationIntro.team() do
+							q = StationProgress.meet(q, a.s, a.v)
+						end
+						return q
+					end)
 					remotes.fx(player, "intro", { seconds = result.seconds })
 				end, StationIntro.SETUP)
 			end,

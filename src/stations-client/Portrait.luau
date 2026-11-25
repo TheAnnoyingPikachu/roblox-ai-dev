@@ -18,7 +18,14 @@ local FOV = 26
 local LOOK = Vector3.new(0.62, 0.22, -0.75).Unit -- from the front, a little to the right and above
 
 -- rainbow: in its rainbow coat (decision 0058), whose texture the server leaves on the copy as "Coat"
-export type Options = { size: UDim2?, background: Color3?, tint: Color3?, zoom: number?, rainbow: boolean? }
+export type Options = {
+	size: UDim2?,
+	background: Color3?,
+	tint: Color3?,
+	silhouette: Color3?,
+	zoom: number?,
+	rainbow: boolean?,
+}
 
 local function fill(view: ViewportFrame, source: Model, asset: string, options: Options)
 	local entry = StationAssets[asset]
@@ -36,10 +43,21 @@ local function fill(view: ViewportFrame, source: Model, asset: string, options: 
 			end
 		end
 	end
-	if options.tint then
+	if options.tint then -- a foe's colour (its StationConfig tint): over its texture, glow untouched
 		for _, d in model:GetDescendants() do
 			if d:IsA("MeshPart") and d.Material ~= Enum.Material.Neon then
 				d.Color = options.tint
+			end
+		end
+	end
+	if options.silhouette then -- the Seen tab (decision 0118): one flat colour, no texture, no glow
+		for _, d in model:GetDescendants() do
+			if d:IsA("MeshPart") then
+				d.Color, d.TextureID, d.Material = options.silhouette, "", Enum.Material.SmoothPlastic
+			elseif d:IsA("BasePart") then
+				d.Color, d.Material = options.silhouette, Enum.Material.SmoothPlastic
+			elseif d:IsA("SurfaceAppearance") or d:IsA("Decal") or d:IsA("Texture") then
+				d:Destroy()
 			end
 		end
 	end
