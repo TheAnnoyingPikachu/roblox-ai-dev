@@ -85,7 +85,7 @@ WaveRuns.BOONS = {
 	boon("ultra", "blessing", "Legend's Blessing", "+15% to every stat for the rest of the run", 3),
 	boon("ultra", "golden", "Golden Hour", "The pot doubles when you bank it (not on a loss)", 3),
 	boon("ultra", "unbreakable", "Unbreakable", "For the next 3 waves no animal drops below 1 HP", 3, { waves = 3 }),
-	boon("ultra", "twin", "Twin Picks", "For the next 5 waves you take two boons from each offer", 3, { waves = 5 }),
+	boon("ultra", "twin", "Twin Picks", "For the next 3 waves you take two boons from each offer", 3, { waves = 3 }), -- SHANNON, 2026-11-25: 3
 	boon(
 		"ultra",
 		"roar",

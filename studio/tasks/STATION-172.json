@@ -4,7 +4,7 @@
   "owner": "A01",
   "verifier": "CI",
   "task_type": "implementation",
-  "objective": "Twin Picks as the board drew it: for the 5 offers after it, take two boons from each offer (SHANNON, 2026-11-25: 'Board: take two boons').",
+  "objective": "Twin Picks as the board drew it: for the 3 offers after it, take two boons from each offer (SHANNON, 2026-11-25: 'Board: take two boons', then 'the next 3 turns get 2 boon picks').",
   "inputs": [
     "docs/decisions/0120-animal-stations-boons.md"
   ],

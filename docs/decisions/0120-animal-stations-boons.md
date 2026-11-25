@@ -26,7 +26,8 @@ Date: 2026-11-25.
   Chain (+1 s and x1.1 on a combo's hit), Thorns (a foe takes back 8% of what it deals, never its last HP),
   Titan's Roar (the Titan's meter starts full), Legend's Blessing (x1.15 damage, HP, speed, meter, and 1/1.15
   damage taken), Glass Cannon (x1.2 damage, x0.9 HP, each stack).
-- Timed (`Run.untilWave`): Unbreakable makes the next 3 fights `immortal`. Twin Picks: for the 5 offers after it
+- Timed (`Run.untilWave`): Unbreakable makes the next 3 fights `immortal`. Twin Picks: for the 3 offers after it (5 until SHANNON's
+  2026-11-25 "the next 3 turns")
   the player takes two boons from each (amended 2026-11-25, SHANNON: "Board: take two boons"; it was the pick
   counting twice): the first pick leaves the offer's other common and lucky cards up (`Run.second`) for a second,
   then the next wave starts. A party votes twice, `VOTE_SECONDS` each; the server's `boon` message carries `again`
@@ -58,7 +59,8 @@ wave cleared, main's 8 boons against the 27:
   Thick Hide, Iron Coat (249 to 269); damage and speed first without Twin Picks gives 209 to 269.
 - Run again 2026-11-25 with Twin Picks as two picks an offer, the same best picks: 249 to 300 (one seed of three
   cleared wave 300, in 62 minutes). It needs the strongest team, the ultra lucky Twin Picks (2% of offers) early and
-  the best picks every time; no number was changed for it (SHANNON to say if wave 300 should be further off).
+  the best picks every time; no number was changed for it (SHANNON to say if wave 300 should be further off). With 3
+  waves of Twin Picks instead of 5 the same runs give the same 249, 279 and 300.
 - Fact: with 12 commons Sharp Claws or Quick Paws is in fewer offers, so the best team stops a little sooner;
   the wall is still reached only with a strong team and good stacks. No number was changed for it.
 - Fact: taking Glass Cannon whenever offered is a trap (109 to 189): its -10% HP stacks too, as the board said.

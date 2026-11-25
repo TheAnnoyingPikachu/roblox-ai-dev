@@ -89,7 +89,7 @@ describe("WaveRuns (decision 0098)", function()
 	end)
 
 	it(
-		"counts a boon's stacks up to its cap, Twin Picks two picks an offer for 5 waves, and ends a timed boon",
+		"counts a boon's stacks up to its cap, Twin Picks two picks an offer for 3 waves, and ends a timed boon",
 		function()
 			local run = WaveRuns.new(10, 3, 1)
 			run.boons = { "steady", "steady", "steady", "steady", "charged", "charged" }
@@ -108,9 +108,9 @@ describe("WaveRuns (decision 0098)", function()
 			expect(ok).toBe(true)
 			expect(both.offer).toBeNil()
 			expect(WaveRuns.count(both, "claws") + WaveRuns.count(both, "mend")).toBe(2)
-			twin.wave = 15 -- the fifth pick is still twin
+			twin.wave = 13 -- the third pick is still twin
 			expect(WaveRuns.pick(twin, "claws").second).toBe(true)
-			twin.wave = 16
+			twin.wave = 14
 			expect(WaveRuns.pick(twin, "claws").offer).toBeNil()
 			twin.offer = { "blessing", "claws", "hide" } -- an ultra card is never left for a second pick
 			expect(table.concat(WaveRuns.pick(twin, "hide").offer or {}, ",")).toBe("")
