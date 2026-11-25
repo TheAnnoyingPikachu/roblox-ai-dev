@@ -2,7 +2,7 @@
 -- The Animals window (the Animals concept board): one window in three columns. Tabs on the left, the grid
 -- in the middle, the chosen animal on the right, so nothing replaces anything and there is no Back button.
 -- A card says one extra thing (training, a coat, enough to fuse); the chosen animal's stats are rows with
--- one button each; "Seen" shows what the player's eggs can still give as dark outlines.
+-- one button each; "Seen" shows the animals met but not owned as dark outlines (decision 0118).
 -- One part of the HUD: Hud.client.luau loads the parts in order, and HudApp holds what they share.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -147,23 +147,23 @@ function Hud.animalCard(grid: Instance, a: any, order: number)
 	Style.round(band, 3)
 end
 
--- An animal the player has not got yet, from an egg they can buy: a dark outline and where it comes from.
-local function seenCard(grid: Instance, asset: string, label: string, eggName: string, order: number)
+-- An animal met but not owned (decision 0118): a dark outline and where it comes from.
+local function seenCard(grid: Instance, asset: string, label: string, from: string, order: number)
 	local card = Style.card(grid, UDim2.fromOffset(156, 196))
 	card.LayoutOrder = order
 	Style.paint(card, C.sand)
 	local view = Portrait.new(
 		card,
 		asset,
-		{ size = UDim2.fromOffset(148, 118), background = C.cardHi, tint = Color3.fromRGB(40, 30, 24) }
+		{ size = UDim2.fromOffset(148, 118), background = C.cardHi, silhouette = Color3.fromRGB(40, 30, 24) }
 	)
 	view.Position = UDim2.fromOffset(4, 4)
 	Style.round(view, 10)
 	badge(card, "SEEN", C.ink)
 	local name = Style.text(card, label, 16, C.muted, UDim2.new(1, -20, 0, 20))
 	name.Position, name.TextTruncate = UDim2.fromOffset(10, 126), Enum.TextTruncate.AtEnd
-	local from = Style.small(card, `From the {eggName}`, 12, C.muted, UDim2.new(1, -20, 0, 32))
-	from.Position, from.TextWrapped = UDim2.fromOffset(10, 148), true
+	local whence = Style.small(card, from, 12, C.muted, UDim2.new(1, -20, 0, 32))
+	whence.Position, whence.TextWrapped = UDim2.fromOffset(10, 148), true
 end
 
 -- The chosen animal: its picture and name, what kind it is, how its press works, its six stats as rows
@@ -303,56 +303,41 @@ function Hud.animalDetail(col: Instance, a: any)
 	end
 end
 
--- What the player can still get: every species and variant in their open eggs, and the exclusive ones (decision
--- 0117, "Shop"), not owned yet.
+-- The animals met but not owned (decision 0118, SHANNON 2026-11-24: "only animals actually met"), each with where
+-- it comes from: the egg that gives it at the lowest level (and that level), or the shop for an exclusive one.
 local function unseen(): { { asset: string, name: string, egg: string, rank: number } }
 	local owned = {}
 	for _, a in S.profile.animals do
-		owned[a.s .. "/" .. (a.v or "")] = true
+		owned[StationProgress.metKey(a.s, a.v)] = true
 	end
-	local level, out, listed = StationProgress.playerLevel(S.profile), {}, {}
-	for _, d in StationConfig.EGGS do
-		if d.level == nil or level >= d.level then
-			for _, o in d.odds do
-				local sp = StationConfig.species(o.id) :: StationConfig.Species
-				local key = o.id .. "/"
-				if not owned[key] and not listed[key] then
-					listed[key] = true
-					table.insert(out, {
-						asset = StationRules.assetOf(o.id, nil),
-						name = sp.name,
-						egg = d.name,
-						rank = RANK[sp.rarity] or 0,
-					})
+	local out = {}
+	for _, key in S.profile.met or {} do
+		local s, v = string.match(key, "^([^/]+)/(.*)$")
+		local sp = if s and not owned[key] then StationConfig.species(s) else nil
+		local va = if sp and v ~= "" then StationConfig.variant(sp.id, v) else nil
+		if sp and (v == "" or va) then
+			local from: StationConfig.Egg? = nil
+			for _, d in StationConfig.EGGS do
+				local gives = false
+				for _, o in d.odds do
+					gives = gives or (va == nil and o.id == sp.id)
+				end
+				for _, drop in d.rare do
+					gives = gives or (va ~= nil and drop.s == sp.id and drop.v == va.id)
+				end
+				if gives and (from == nil or (d.level or 0) < (from.level or 0)) then
+					from = d
 				end
 			end
-			for _, drop in d.rare do
-				local va = StationConfig.variant(drop.s, drop.v) :: StationConfig.Variant
-				local key = drop.s .. "/" .. drop.v
-				if not owned[key] and not listed[key] then
-					listed[key] = true
-					table.insert(out, {
-						asset = StationRules.assetOf(drop.s, drop.v),
-						name = va.name,
-						egg = d.name,
-						rank = RANK[va.tier] or 0,
-					})
-				end
-			end
-		end
-	end
-	for _, sp in StationConfig.SPECIES do
-		for _, va in sp.variants do
-			local key = sp.id .. "/" .. va.id
-			if va.exclusive and not owned[key] and not listed[key] then
-				listed[key] = true
-				table.insert(out, {
-					asset = StationRules.assetOf(sp.id, va.id),
-					name = va.name,
-					egg = "Shop",
-					rank = RANK[va.tier] or 0,
-				})
-			end
+			table.insert(out, {
+				asset = StationRules.assetOf(sp.id, if va then va.id else nil),
+				name = if va then va.name else sp.name,
+				egg = if from
+					then `From the {from.name}{if from.level then `, level {from.level}` else ""}`
+					elseif va and va.exclusive then "From the Shop"
+					else "Never from an egg",
+				rank = RANK[if va then va.tier else sp.rarity] or 0,
+			})
 		end
 	end
 	table.sort(out, function(x, y)
@@ -453,7 +438,7 @@ redraw.animals = function()
 		if #seen == 0 then
 			Style.text(
 				grid,
-				"You have every animal your eggs can give. A higher level opens new eggs.",
+				"Animals you meet (in fights, trades and hatches) show here until you own them.",
 				18,
 				C.muted,
 				UDim2.new(1, -12, 0, 50)

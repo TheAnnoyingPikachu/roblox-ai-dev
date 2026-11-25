@@ -198,6 +198,7 @@ function StationTrade.swap(p: Profile, give: { number }, get: { Animal }): (Prof
 		c.at, c.since, c.locked = nil, nil, nil
 		p.nextId += 1
 		table.insert(p.animals, c)
+		StationProgress.meet(p, c.s, c.v) -- decision 0118
 	end
 	if p.titan and gone[p.titan] then
 		p.titan = nil

@@ -80,12 +80,33 @@ export type Profile = {
 	intro: boolean, -- the intro is done or skipped (decision 0116, StationIntro): it never shows twice
 	receipts: { string }, -- the Robux purchases granted, newest last (decision 0117): a receipt is granted once
 	beta: boolean, -- the beta reward is given (decision 0117)
+	met: { string }, -- the animals met (decision 0118): "species/variant" keys, "lion/" for the plain species
 }
+
+-- Animals met (decision 0118): what the Animals window's Seen tab draws from. `meet` adds a version once (a
+-- species, or a species and one of its variants); anything not in StationConfig is left out, so the list is
+-- never longer than the versions there are. Owning an animal meets it (hatched, given, granted, traded).
+local VERSIONS = 0
+for _, sp in StationConfig.SPECIES do
+	VERSIONS += 1 + #sp.variants
+end
+StationProgress.MAX_MET = VERSIONS
+function StationProgress.metKey(s: string, v: string?): string
+	return `{s}/{v or ""}`
+end
+function StationProgress.meet(p: Profile, s: string, v: string?): Profile
+	local key = StationProgress.metKey(s, v)
+	if table.find(p.met, key) == nil and StationRules.versionStats(s, v) ~= nil and #p.met < VERSIONS then
+		p.met = table.clone(p.met)
+		table.insert(p.met, key)
+	end
+	return p
+end
 
 -- The content version (beta blocker 6, SHANNON's pick A): bump it with every release that adds species, variants,
 -- eggs or coats. A server never loads a save whose `version` is above its own (`tooNew`, kit SaveStore): it would
 -- strip what it does not know. A save is stamped with the version of the server that last wrote it.
-StationProgress.VERSION = 3 -- 2: goals and the intro (decisions 0115, 0116); 3: the eternal pair (decision 0117)
+StationProgress.VERSION = 4 -- 2: goals and the intro (decisions 0115, 0116); 3: the eternal pair (decision 0117); 4: met (0118)
 StationProgress.START_COINS = 300 -- three Meadow eggs: a first team
 StationProgress.MAX_COINS = 1e15
 StationProgress.MAX_ANIMALS = 100 -- the most a save can hold; the Barn sets how many a player may keep
@@ -143,6 +164,7 @@ function StationProgress.defaults(_now: number): Profile
 		intro = false,
 		receipts = {},
 		beta = false,
+		met = {},
 	}
 end
 
@@ -372,6 +394,18 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 		table.remove(p.receipts, 1)
 	end
 	p.beta = record.beta == true
+	-- the animals met (decision 0118): known versions only, each once; every animal owned is met
+	for _, key in if type(record.met) == "table" then record.met else {} do
+		if type(key) == "string" and #key <= 64 then
+			local s, v = string.match(key, "^([^/]+)/(.*)$")
+			if s then
+				StationProgress.meet(p, s, if v == "" then nil else v)
+			end
+		end
+	end
+	for _, a in p.animals do
+		StationProgress.meet(p, a.s, a.v)
+	end
 	local stored = if type(record.trades) == "table" then record.trades else {}
 	p.trades.day = int(stored.day, 0, 1e7, 0)
 	p.trades.count = int(stored.count, 0, 1000, 0)
@@ -612,6 +646,7 @@ function StationProgress.crack(p: Profile, k: number, now: number): (Profile, bo
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
+	StationProgress.meet(p, animal.s, animal.v)
 	if StationProgress.isTitan(animal) then
 		p.titan = p.titan or animal.id
 	elseif #p.team < StationProgress.TEAM_SIZE then
@@ -653,6 +688,7 @@ function StationProgress.give(
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
+	StationProgress.meet(p, animal.s, animal.v)
 	if StationProgress.isTitan(animal) then
 		p.titan = p.titan or animal.id
 	elseif #p.team < StationProgress.TEAM_SIZE then
@@ -695,6 +731,7 @@ function StationProgress.grant(
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
+	StationProgress.meet(p, animal.s, animal.v)
 	if StationProgress.isTitan(animal) then
 		p.titan = p.titan or animal.id
 	elseif #p.team < StationProgress.TEAM_SIZE then
