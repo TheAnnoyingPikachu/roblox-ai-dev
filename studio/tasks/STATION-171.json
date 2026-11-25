@@ -1,0 +1,26 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-171",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Eggs window mop-up from the board audit (SHANNON, 2026-11-25: 'we just need to mop up'): a ready egg opens from the window, and an empty nest points at the cellar when there is more than one kind to pick.",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudEggs.luau",
+    "studio/tasks/STATION-171.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "A ready egg's row says 'Ready to open!' and its 'Open it' closes the window and hatches it in its nest (queued like the nest's prompt)",
+    "An empty nest with several kinds of egg in the cellar says to choose one below (each cellar row has its own Hatch one); with one kind it keeps its Hatch one"
+  ],
+  "verification": "Studio 2026-11-25, build dev (local): three ready starter eggs showed 'Open it'; clicking the first closed the window and hatched it (two left, the goal at 1 of 3). Selene clean. Not seen: the empty-nest picker with two kinds in the cellar.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Client only; uses the server's existing open and hatch requests."
+}
