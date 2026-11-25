@@ -719,6 +719,18 @@ result:GetPropertyChangedSignal("Visible"):Connect(function() -- the result's li
 	plateRow.Visible = not result.Visible
 end)
 local ROLE_COLOUR: { [string]: Color3 } = { attack = C.bad, defense = C.info, utility = C.good, titan = N.gold }
+do -- the empty fourth plate (the IntroOwn board): where a Titan comes from, while the player has none
+	local ivory = StationConfig.egg("ivory")
+	local ghost = Style.glass(plateRow, UDim2.fromOffset(196, 62), 14)
+	ghost.Name, ghost.LayoutOrder, ghost.Visible, ghost.BackgroundTransparency = "TitanSlot", 99, false, 0.45
+	Style.small(ghost, "TITAN", 12, N.gold, UDim2.new(1, -20, 0, 16)).Position = UDim2.fromOffset(12, 10)
+	local where = Style.text(ghost, `Ivory Egg · level {if ivory then ivory.level or 24 else 24}`, 15, N.muted)
+	where.Position, where.Size, where.AutomaticSize =
+		UDim2.fromOffset(12, 28), UDim2.new(1, -20, 0, 20), Enum.AutomaticSize.None
+	function Hud.titanSlot(on: boolean)
+		ghost.Visible = on
+	end
+end
 
 -- A plate (decision 0114): the animal's picture, its class, its health and its mana. A full meter lifts
 -- it, edges it in gold and shows the key of its press.
@@ -959,15 +971,16 @@ do
 			local window = math.max(0.5, BattleRules.MASH_BY - FightFx.TAP_AHEAD - ping)
 			p.mashUntil = p.fullAt + window
 			task.delay(window, function()
-				if p.full and not p.sent and p.presses > 0 then -- short of MASH_FAIL: messed up
+				if p.full and not p.sent and p.presses > 0 and not S.intro then -- short of MASH_FAIL: messed up
 					firePower(slot, if p.presses < BattleRules.MASH_FAIL then BattleRules.FAILED else p.presses)
 				end
 			end)
 		end
 		p.card = card
+		card:SetAttribute("PressKind", p.press) -- the intro's spotlight finds the card it teaches
 		Press.pops.attach(card, p.model, p.press, k)
 		task.delay(BattleRules.AUTO_FIRE - 0.1, function() -- left too long: it fails (the server's AUTO_FIRE)
-			if p.card == card and not p.sent then
+			if p.card == card and not p.sent and not S.intro then -- the intro's presses wait (BattleRules patient)
 				p.sent, p.card = true, nil
 				Press.pops.fired(card, false, true)
 			end
@@ -1178,6 +1191,7 @@ task.spawn(function()
 			end
 		end
 		plates.Visible = next(plateOf) ~= nil
+		Hud.titanSlot(plates.Visible and not S.intro and S.profile ~= nil and S.profile.titan == nil)
 		Press.catcher.Visible = plates.Visible
 		S.fightTick(folder, plates.Visible)
 	end

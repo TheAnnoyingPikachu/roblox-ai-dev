@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
+local StationGoals = require(Shared:WaitForChild("StationGoals"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
 local Style = require(script.Parent:WaitForChild("Style"))
 local App: any = require(script.Parent:WaitForChild("HudApp"))
@@ -160,6 +161,62 @@ function Hud.hatchChoice(a: any, seconds: number)
 			end
 		end)
 	end)
+end
+
+-- The goal log (the IntroOwn board): the goals done with what they pay, the one on screen with how far it is,
+-- and the next few. Opened by clicking the goal strip.
+local log = App.sheets.goals
+App.redraw.goals = function()
+	Style.clear(log.body)
+	Style.clear(log.chips)
+	Style.clear(log.count)
+	local p = S.profile
+	local nextGoal = StationGoals.next(p)
+	local done, ahead = 0, 0
+	for k, g in StationGoals.LIST do
+		local got = table.find(p.goals, g.id) ~= nil
+		local now = nextGoal ~= nil and g.id == nextGoal.id
+		done += if got then 1 else 0
+		if not got and not now then
+			ahead += 1
+			if ahead > 3 then
+				continue
+			end
+		end
+		local items = StationGoals.items(p, g)
+		local row = Style.card(
+			log.body,
+			UDim2.new(1, -12, 0, if now then 84 else 64),
+			if now then C.accent elseif got then C.good else nil
+		)
+		row.LayoutOrder = k
+		if not got and not now then
+			Style.paint(row, C.sand)
+		end
+		local picture = Instance.new("ImageLabel")
+		picture.BackgroundTransparency = 1
+		picture.Image = if got then Style.image("check") else (App.iconsOf(items))
+		picture.Position, picture.Size = UDim2.fromOffset(12, 10), UDim2.fromOffset(44, 44)
+		picture.Parent = row
+		local name = Style.text(row, g.text, 18, C.text, UDim2.new(1, -84, 0, 22))
+		name.Position = UDim2.fromOffset(66, 10)
+		local words = App.rewardWords(items)
+		local small = Style.small(
+			row,
+			if got then `Done: {words}` elseif now then `{StationGoals.label(p, g)} · pays {words}` else `Pays {words}`,
+			13,
+			C.muted,
+			UDim2.new(1, -84, 0, 18)
+		)
+		small.Position = UDim2.fromOffset(66, 34)
+		if now then
+			local bar, set = Style.bar(row, UDim2.new(1, -84, 0, 10), C.accent)
+			bar.Position = UDim2.fromOffset(66, 60)
+			local f, of = StationGoals.progress(p, g)
+			set(f / math.max(1, of))
+		end
+	end
+	Style.chip(log.chips, `{done} of {#StationGoals.LIST} done`)
 end
 
 return nil

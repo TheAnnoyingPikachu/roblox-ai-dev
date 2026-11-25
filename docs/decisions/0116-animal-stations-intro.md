@@ -46,3 +46,12 @@ checkpoint. Task STATION-142. Date: 2026-11-24.
 3. The starter team is fixed (Jackal, Tortoise, Meerkat) rather than rolled, so every player starts with the
    three classes. Players keep the 300 starting coins as well.
 4. Whether to build the second loan (wave 10's boss, then daily).
+
+## Amended 2026-11-25 (STATION-157, SHANNON's picks)
+
+- Finishing or skipping the intro also gives `StationIntro.COINS` (300) with the three Starter Eggs, so the first
+  Meadow Egg (100) can be bought at once. Logged as `intro` (Gameplay) by Analytics.
+- The borrowed fight is `patient` (`BattleRules.Setup`): a full meter never fires or fails by itself, so a press
+  bubble stays until the player does it or the fight ends. Only the intro uses it.
+- The lessons stay chances, not pauses (the fight cannot be paused), but each one is spotlit: when its press card or
+  the shield is up, the field darkens under the HUD and a gold ring pulses round it.

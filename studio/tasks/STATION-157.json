@@ -11,19 +11,20 @@
   ],
   "dependencies": [],
   "files": [
-    "src/stations-client/HudIntro.luau",
-    "src/stations-client/HudFight.luau",
-    "src/stations-client/PressPops.luau",
-    "src/stations-client/Hud.client.luau",
-    "src/stations-client/HudMoments.luau",
-    "src/shared/StationIntro.luau",
+    "docs/decisions/0116-animal-stations-intro.md",
     "src/shared/BattleRules.luau",
+    "src/shared/StationIntro.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/HudIntro.luau",
+    "src/stations-client/HudMoments.luau",
+    "src/stations-client/PressPops.luau",
+    "src/stations/Analytics.luau",
     "src/stations/StationsServer.server.luau",
     "src/stations/WaveShow.luau",
-    "tests/StationIntro.spec.luau",
+    "studio/tasks/STATION-157.json",
     "tests/BattleRules.spec.luau",
-    "docs/decisions/0116-animal-stations-intro.md",
-    "studio/tasks/STATION-157.json"
+    "tests/StationIntro.spec.luau"
   ],
   "tests": [
     "StationIntro.spec.luau",
@@ -36,9 +37,9 @@
     "In the player's first fights an empty fourth plate says 'Titan: Ivory Egg, level 24'",
     "Clicking the goal strip opens the goal log: the goals done with what they paid, the next ones with their rewards"
   ],
-  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "verification": "lune run tests/run: 815 pass (new: BattleRules 'with a patient setup never fires a full meter by itself', StationIntro coins); selene 0 warnings. Seen in Studio (main build + this branch): the intro's first lesson ('Tap the enemies, 0 of 10') with the press cards up past the old 6 s; after ten taps the field goes dark under the HUD and a gold ring pulses round the 'Hold the key' card; skipping gives 600 coins (300 + the intro's 300); the goal log from the strip (the goal on with its bar, the next three with their pay); the starter team's first fight shows the empty Titan plate 'Ivory Egg, level 24'.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "planned",
-  "notes": "SHANNON's picks: the spotlight during the fight; 'for this introduction make the bubbles stay until they complete them or the fight ends'; 300 coins: yes."
+  "status": "in_progress",
+  "notes": "SHANNON's picks: the spotlight during the fight; 'for this introduction make the bubbles stay until they complete them or the fight ends'; 300 coins: yes. Not seen: the legends fading at the goodbye (needs the borrowed fight won), the shield and Titan lessons' rings, a phone."
 }

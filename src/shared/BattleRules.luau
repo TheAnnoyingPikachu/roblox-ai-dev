@@ -78,6 +78,7 @@ export type Setup = {
 	tempo: number?,
 	clicks: boolean?,
 	immortal: boolean?, -- the intro's borrowed fight (decision 0116): nobody on the team can be knocked out
+	patient: boolean?, -- the intro (SHANNON, 2026-11-24): a full meter waits for its press and never fires itself
 }
 
 -- Quick presses (decisions 0106, 0109): each of the four classes has its own press, so a team of one of
@@ -740,7 +741,7 @@ function BattleRules.battle(
 		local auto: Fighter?, autoAt = nil, math.huge
 		for _, c in sides[1] do
 			local at = full[c]
-			if at and c.hp > 0 and at + BattleRules.AUTO_FIRE < autoAt then
+			if at and c.hp > 0 and not (setup and setup.patient) and at + BattleRules.AUTO_FIRE < autoAt then
 				auto, autoAt = c, at + BattleRules.AUTO_FIRE
 			end
 		end
