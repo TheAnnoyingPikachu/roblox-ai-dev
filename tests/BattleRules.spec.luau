@@ -477,6 +477,23 @@ describe("BattleRules.battle taps (decision 0092)", function()
 		expect((fired :: BattleRules.Hit).energy < 1).toBeTruthy()
 	end)
 
+	it("with a patient setup never fires a full meter by itself: it waits for its press (the intro)", function()
+		local log = {}
+		BattleRules.battle(one, two, log, {}, { patient = true })
+		local at = filled(log, 1) :: number
+		expect(at == nil).toBe(false)
+		for _, e in log do
+			expect(e.fail == true and e.side == 1).toBe(false)
+		end
+		local late = {}
+		BattleRules.battle(one, two, late, { { slot = 1, t = at + BattleRules.AUTO_FIRE + 3 } }, { patient = true })
+		local fired = false
+		for _, e in late do
+			fired = fired or (e.tap == true and e.slot == 1 and e.power == true)
+		end
+		expect(fired).toBe(true)
+	end)
+
 	it("fires at a tap's time when the meter is full, and ignores a tap before it fills", function()
 		local log = {}
 		BattleRules.battle(one, two, log, {})

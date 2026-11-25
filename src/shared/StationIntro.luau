@@ -24,9 +24,11 @@ StationIntro.TEAM = {
 -- blessing (four times their health) none of them drops under two thirds, and `immortal` is the net under
 -- that: whatever the player does or does not press, the fight is won.
 StationIntro.WAVE = 40
-StationIntro.SETUP = { clicks = true, maxHp = 4, immortal = true } :: BattleRules.Setup
+-- `patient`: a press bubble stays until the player does it or the fight ends (SHANNON, 2026-11-24)
+StationIntro.SETUP = { clicks = true, maxHp = 4, immortal = true, patient = true } :: BattleRules.Setup
 -- The starter eggs: Meadow Eggs that hold one animal of each class, already hatching when they are given.
 StationIntro.EGG = "meadow"
+StationIntro.COINS = 300 -- with the eggs, so the first Meadow Egg can be bought at once (decision 0116, amended)
 StationIntro.STARTERS = { "jackal", "tortoise", "meerkat" }
 
 -- The loan team as fighters, each at level 1.
@@ -63,6 +65,7 @@ function StationIntro.finish(p: Profile, now: number): (Profile, boolean, string
 		return p, false, "intro_done"
 	end
 	p.intro = true
+	p.coins += StationIntro.COINS
 	p.eggs = table.clone(p.eggs)
 	local nests = StationProgress.value(p, "hatchery") - StationProgress.hatching(p)
 	local room = StationProgress.value(p, "hatchery") + StationProgress.value(p, "cellar") - #p.eggs

@@ -24,6 +24,7 @@ local KIND: { [string]: string } = {
 	wave_pay = "Gameplay",
 	run_pot = "Gameplay",
 	goal = "Gameplay",
+	intro = "Gameplay", -- the intro's coins (decision 0116)
 }
 
 local function guard(f: (...any) -> (), ...: any)

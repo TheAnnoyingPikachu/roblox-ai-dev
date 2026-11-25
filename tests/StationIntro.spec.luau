@@ -44,9 +44,11 @@ describe("StationIntro", function()
 	it("gives a new save one starter of each class, hatching in seconds, once", function()
 		local p = StationProgress.defaults(0)
 		expect(p.intro).toBe(false)
+		local before = p.coins
 		local _, ok = StationIntro.finish(p, 1000)
 		expect(ok).toBe(true)
 		expect(p.intro).toBe(true)
+		expect(p.coins).toBe(before + StationIntro.COINS)
 		expect(#p.eggs).toBe(3)
 		local roles = {}
 		for _, e in p.eggs do
@@ -59,6 +61,7 @@ describe("StationIntro", function()
 		expect(again).toBe(false)
 		expect(code).toBe("intro_done")
 		expect(#p.eggs).toBe(3)
+		expect(p.coins).toBe(before + StationIntro.COINS) -- once
 	end)
 
 	it("opens a starter egg after its five seconds, and it survives a save", function()

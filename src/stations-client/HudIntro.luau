@@ -146,7 +146,13 @@ do
 	local gift = Style.card(bye, UDim2.new(1, -48, 0, 70), C.accent)
 	gift.Position = UDim2.fromOffset(24, 100)
 	Style.icon(gift, "egg", 50).Position = UDim2.fromOffset(12, 10)
-	local what = Style.text(gift, "3 Starter Eggs, already hatching", 19, C.text, UDim2.new(1, -84, 0, 24))
+	local what = Style.text(
+		gift,
+		`3 Starter Eggs, already hatching, and {StationIntro.COINS} coins`,
+		19,
+		C.text,
+		UDim2.new(1, -84, 0, 24)
+	)
 	what.Position = UDim2.fromOffset(72, 12)
 	Style.small(
 		gift,
@@ -159,6 +165,53 @@ do
 end
 local home = Style.button(bye, "To my ranch", function() end, "primary", UDim2.fromOffset(260, 52))
 home.AnchorPoint, home.Position, home.TextSize = Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -20), 22
+
+-- The spotlight (SHANNON's pick for the lessons): when a lesson's thing to press is up, the field goes dark under
+-- the HUD and the press cards, and a gold ring pulses round it. The fight goes on; the presses wait (patient).
+local spot = Instance.new("ScreenGui")
+spot.Name, spot.ResetOnSpawn, spot.IgnoreGuiInset = "IntroSpot", false, true
+spot.DisplayOrder = screen.DisplayOrder - 2 -- under the press cards (DisplayOrder - 1) and the HUD
+local dim = Instance.new("Frame")
+dim.Size, dim.BackgroundColor3, dim.BackgroundTransparency, dim.BorderSizePixel =
+	UDim2.fromScale(1, 1), Color3.fromRGB(8, 4, 18), 1, 0
+dim.Parent = spot
+spot.Parent = player:WaitForChild("PlayerGui")
+local over = Instance.new("ScreenGui")
+-- under the top bar like the HUD: AbsolutePosition is in that space for every ScreenGui (seen in Studio)
+over.Name, over.ResetOnSpawn, over.IgnoreGuiInset = "IntroRing", false, false
+over.DisplayOrder = screen.DisplayOrder + 1
+local ring = Instance.new("Frame")
+ring.BackgroundTransparency, ring.Visible, ring.AnchorPoint = 1, false, Vector2.new(0.5, 0.5)
+Style.round(ring, 18)
+local ringEdge = Style.stroke(ring, N.gold, 5)
+ring.Parent = over
+over.Parent = spot.Parent
+-- what the lesson `id` points at, when it is up: the gold press card it teaches, or the shield
+local function spotOf(id: string): GuiObject?
+	if id == "ring" or id == "mash" then
+		local clicks = player.PlayerGui:FindFirstChild("StationsClicks")
+		for _, c in (if clicks then clicks:GetChildren() else {}) do
+			if c:IsA("GuiObject") and c.Visible and c:GetAttribute("PressKind") == id then
+				return c
+			end
+		end
+	elseif id == "shield" then
+		local s = root:FindFirstChild("Shield", true)
+		return if s and s:IsA("GuiObject") and s.Visible then s else nil
+	end
+	return nil
+end
+local function lit(target: GuiObject?)
+	local goal = if target then 0.55 else 1
+	dim.BackgroundTransparency += (goal - dim.BackgroundTransparency) * 0.15
+	ring.Visible = target ~= nil
+	if target then
+		local size = target.AbsoluteSize + Vector2.new(24, 24)
+		local middle = target.AbsolutePosition + target.AbsoluteSize / 2
+		ring.Position, ring.Size = UDim2.fromOffset(middle.X, middle.Y), UDim2.fromOffset(size.X, size.Y)
+		ringEdge.Transparency = 0.25 + 0.25 * math.sin(os.clock() * 6)
+	end
+end
 
 local shieldsAt = player:GetAttribute("ShieldAt")
 local done: { [string]: boolean } = {}
@@ -229,6 +282,22 @@ end
 function Hud.introWon()
 	S.lesson = false
 	steps.Visible, note.Visible = false, false
+	lit(nil)
+	dim.BackgroundTransparency, ring.Visible = 1, false
+	task.spawn(function() -- the legends go home: they fade one by one (the IntroOwn board)
+		task.wait(1.2)
+		local folder = workspace:FindFirstChild(player:GetAttribute("FightFolder") or `WaveShow{player.UserId}`)
+		for _, m in (if folder then folder:GetDescendants() else {}) do
+			if m:IsA("Model") and m:GetAttribute("Side") == 1 then
+				for _, part in m:GetDescendants() do
+					if part:IsA("BasePart") then
+						game:GetService("TweenService"):Create(part, TweenInfo.new(0.8), { Transparency = 1 }):Play()
+					end
+				end
+				task.wait(0.7)
+			end
+		end
+	end)
 	S.music("win")
 	Style.sound("claim")
 	bye.Visible = true
@@ -240,6 +309,9 @@ RunService.Heartbeat:Connect(function()
 		skip.Visible = os.clock() - shownAt > SKIP_AFTER
 	end
 	if not S.lesson then
+		if dim.BackgroundTransparency < 1 then
+			lit(nil)
+		end
 		return
 	end
 	done.tap = done.tap or (S.strikes or 0) >= TAPS
@@ -254,6 +326,7 @@ RunService.Heartbeat:Connect(function()
 		now = now or (if done[lesson.id] then nil else lesson)
 	end
 	note.Visible = now ~= nil
+	lit(if now then spotOf(now.id) else nil)
 	if now then
 		local words = if Style.touch() then now.phone else now.says
 		noteText.Text = if now.id == "tap" then `{words} ({math.min(S.strikes or 0, TAPS)} of {TAPS})` else words

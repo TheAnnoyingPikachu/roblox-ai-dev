@@ -255,6 +255,7 @@ local waves = newSheet("waves", "Waves")
 local admin = newSheet("admin", "Admin")
 local trade = newSheet("trade", "Trade")
 local gifts = newSheet("gifts", "Gifts", 820)
+newSheet("goals", "Goals", 700) -- the goal log (STATION-157): HudMoments fills it
 S.ranchTab = "animals" -- the group of upgrades the Ranch menu shows
 for _, sh in sheets do
 	Style.list(sh.body, 10, true, true)
@@ -481,6 +482,13 @@ end)
 do
 	local goal = Style.pill(nav, UDim2.fromOffset(456, 58), 16)
 	goal.Name = "Goal"
+	local openLog = Instance.new("TextButton") -- the strip opens the goal log
+	openLog.Name, openLog.Text, openLog.BackgroundTransparency = "Open", "", 1
+	openLog.Size, openLog.ZIndex = UDim2.fromScale(1, 1), 5
+	openLog.Parent = goal
+	openLog.Activated:Connect(function()
+		show("goals")
+	end)
 	goal.AnchorPoint, goal.Position, goal.Visible = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 12), false
 	Style.icon(goal, "goal", 34).Position = UDim2.fromOffset(12, 12)
 	local goalText = Style.text(goal, "", 17, C.text, UDim2.new(1, -212, 0, 20))
