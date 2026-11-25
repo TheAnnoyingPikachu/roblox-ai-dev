@@ -61,6 +61,9 @@ local FULL_NAME: { [string]: string } = {
 }
 
 local animalsTab = "team"
+-- how the list is sorted (SHANNON's pick: power, rarity, level, newest), one button that steps through them
+local SORTS = { "power", "rarity", "level", "newest" }
+local sortBy = "rarity"
 local chosen: number? = nil -- the id of the animal shown on the right
 local page = Style.page(animals)
 
@@ -393,12 +396,31 @@ redraw.animals = function()
 	end
 	Style.chip(animals.chips, `Barn {#S.profile.animals} / {StationProgress.value(S.profile, "barn")}`)
 	Style.chip(animals.chips, `Team power {Format.commas(teamPower)}`, C.gold)
+	local sorter = Style.button(animals.chips, `Sort: {sortBy}`, function()
+		sortBy = SORTS[(table.find(SORTS, sortBy) or 0) % #SORTS + 1]
+		redraw.animals()
+	end, "ghost", UDim2.fromOffset(130, 30))
+	sorter.TextSize = 14
 
 	-- the right column belongs to the chosen animal: the first in the list when none is chosen yet
+	local function key(a: any): number
+		if sortBy == "power" then
+			return BattleRules.powerOf(live(a))
+		elseif sortBy == "level" then
+			local n = 0
+			for _, stat in StationConfig.STATS do
+				n += StationRules.level(live(a), stat)
+			end
+			return n
+		elseif sortBy == "newest" then
+			return a.id
+		end
+		return RANK[StationRules.rarity(a)] or 0
+	end
 	table.sort(shown, function(x, y)
-		local rx, ry = RANK[StationRules.rarity(x)] or 0, RANK[StationRules.rarity(y)] or 0
-		if rx ~= ry then
-			return rx > ry
+		local kx, ky = key(x), key(y)
+		if kx ~= ky then
+			return kx > ky
 		end
 		return x.id < y.id
 	end)
