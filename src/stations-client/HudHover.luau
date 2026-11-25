@@ -406,7 +406,7 @@ end
 local function fightCard(holder: Instance, m: Model, what: any, own: boolean): (Frame, () -> ())
 	local foe = what.foe
 	local edge = if foe then N.bad else N.edge
-	local card = Style.glass(holder, UDim2.fromOffset(if foe then 236 else 206, if foe then 122 else 112), 16)
+	local card = Style.glass(holder, UDim2.fromOffset(if foe then 236 else 206, if foe then 134 else 112), 16)
 	card.ZIndex = 2
 	local stroke = card:FindFirstChildOfClass("UIStroke") :: UIStroke
 	stroke.Color = edge
@@ -433,11 +433,12 @@ local function fightCard(holder: Instance, m: Model, what: any, own: boolean): (
 	local powerSet: ((number) -> ())? = nil
 	local powerText: TextLabel
 	if foe then
-		local words = if foe.ability == "revive"
-			then "Power: raises its fallen allies. Kill it first."
+		local words = if foe.about -- its own line (STATION-166), or what its power does
+			then foe.about
+			elseif foe.ability == "revive" then "Power: raises its fallen allies. Kill it first."
 			elseif foe.ability == "sweep" then "Power: strikes your whole team at once."
 			else "Power: a heavy blow each time its meter fills."
-		powerText = Style.small(card, words, 12, N.lilac, UDim2.new(1, -24, 0, 34))
+		powerText = Style.small(card, words, 12, N.lilac, UDim2.new(1, -24, 0, 48))
 		powerText.Position, powerText.TextWrapped, powerText.ZIndex = UDim2.fromOffset(12, 78), true, 3
 	else
 		local back, set = Style.track(card, UDim2.new(1, -24, 0, 6), N.gold)
