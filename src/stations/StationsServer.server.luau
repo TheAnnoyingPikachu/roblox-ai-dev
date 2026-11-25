@@ -44,14 +44,35 @@ local held: { [number]: string } = {}
 local hatchedAt: { [number]: CFrame } = {} -- animal id -> the nest it has just hatched in
 local syncHerd: (i: number, animals: { any }, grounds: number, titan: number?, team: { number }) -> ()
 -- `eggs`: the profile's list, each hatching one with `due`, when it can be opened (the Brooder shortens it)
+-- Which nest each hatching egg sits in, in the order of the hatching eggs: an egg keeps its nest until it is
+-- opened, so the others never move into a nest whose egg is still cracking (SHANNON, 2026-11-25). Display only.
+local nestsOf: { [number]: { number } } = {}
+local function nestList(i: number, hatching: number): { number }
+	local list = nestsOf[i] or {}
+	nestsOf[i] = list
+	while #list > hatching do -- fewer than before without an opening (a rejoin, a reset): the last ones go
+		table.remove(list)
+	end
+	while #list < hatching do -- a new egg started: the lowest free nest
+		local n = 1
+		while table.find(list, n) do
+			n += 1
+		end
+		table.insert(list, n)
+	end
+	return list
+end
 local function showEggs(i: number, eggs: { { egg: string, since: number?, due: number? } })
-	local key = ""
+	local key, hatching = "", 0
 	for _, e in eggs do
 		key ..= e.egg .. (if e.since then `+{e.due},` else ",")
+		hatching += if e.since then 1 else 0
 	end
+	local places = nestList(i, hatching)
+	key ..= table.concat(places, ".")
 	if held[i] ~= key then
 		held[i] = key
-		Ranch.eggs(i, eggs)
+		Ranch.eggs(i, eggs, places)
 	end
 end
 
@@ -1309,13 +1330,19 @@ local router = Router.new({
 				if not ok or born == nil then
 					return false, code
 				end
-				local nth = 0 -- which nest it sat in
-				for j = 1, k do
-					nth += if p.eggs[j].since then 1 else 0
+				local nth, hatching = 0, 0 -- its place among the hatching eggs, and how many hatch
+				for j, e in p.eggs do
+					hatching += if e.since then 1 else 0
+					nth += if j <= k and e.since then 1 else 0
 				end
 				local eggId = p.eggs[k].egg -- read now: the profile is changed in place below
 				local i, look = ranchOf(player), Ranch.look(eggId)
-				local at = if i then Ranch.nest(i, nth) else nil
+				local at = nil
+				if i then -- its own nest, which is free from now on (the others keep theirs)
+					local places = nestList(i, hatching)
+					at = Ranch.nest(i, places[nth])
+					table.remove(places, nth)
+				end
 				hatchedAt[born.id] = at
 				saves.apply(player, function(q)
 					return (StationProgress.crack(q, k, now))
@@ -1858,6 +1885,7 @@ Players.PlayerRemoving:Connect(function(player)
 		owners[i] = nil
 		World.setRanchOwner(i, nil)
 		show(i, {})
+		nestsOf[i] = nil
 		showEggs(i, {})
 		syncHerd(i, {}, 0, nil, {})
 	end

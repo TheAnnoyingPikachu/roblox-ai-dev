@@ -1,0 +1,26 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-170",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Fix: hatching eggs keep their own nest until they open, so the others never move into a nest whose egg is still cracking (SHANNON, 2026-11-25: 'the eggs overlap again when you hatch them', 'Eggs in the nests').",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations/StationsServer.server.luau",
+    "src/stations/Ranch.luau",
+    "studio/tasks/STATION-170.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Opening a hatching egg frees its nest; the other hatching eggs stay where they are; a newly started egg takes the lowest free nest"
+  ],
+  "verification": "Studio 2026-11-25, build dev (local): three starter eggs at 58,939 / 56,943 / 53,946; opening the middle one left the last at 53,946 (it used to move into the middle nest), opening the first left it there too. Lune 823/823, selene clean.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Display only: StationsServer keeps which nest each hatching egg sits in (nestsOf) and passes it to Ranch.eggs; the save is unchanged. A rejoin starts the nests from 1 again."
+}
