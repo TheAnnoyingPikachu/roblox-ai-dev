@@ -478,7 +478,7 @@ offerBoons = function(ids: { string }, n: number, have: { string }?, twice: bool
 			for _, b in have or {} do
 				owned += if b == id then 1 else 0
 			end
-			local adds = if twice and boon.tier ~= "ultra" then 2 else 1 -- Twin Picks
+			local adds = 1
 			local function pick()
 				if not boonRow.Visible then -- a second click while the first is on its way
 					return
@@ -551,7 +551,7 @@ offerBoons = function(ids: { string }, n: number, have: { string }?, twice: bool
 				card,
 				if owned > 0
 					then `You have {owned}. This makes {owned + adds}.`
-					elseif adds > 1 then "Twin Picks: you get two."
+					elseif twice then "Twin Picks: you pick two."
 					else "Your first of these.",
 				13,
 				N.muted,

@@ -26,6 +26,7 @@ export type Run = {
 	seed: number,
 	ultra: boolean?, -- an ultra lucky boon was taken: no other this run
 	untilWave: { [string]: number }?, -- a timed boon (Unbreakable, Twin Picks) lasts up to this wave
+	second: boolean?, -- Twin Picks: the offer is up again for this wave's second pick
 }
 export type Tier = "common" | "lucky" | "ultra"
 export type Boon = {
@@ -84,7 +85,7 @@ WaveRuns.BOONS = {
 	boon("ultra", "blessing", "Legend's Blessing", "+15% to every stat for the rest of the run", 3),
 	boon("ultra", "golden", "Golden Hour", "The pot doubles when you bank it (not on a loss)", 3),
 	boon("ultra", "unbreakable", "Unbreakable", "For the next 3 waves no animal drops below 1 HP", 3, { waves = 3 }),
-	boon("ultra", "twin", "Twin Picks", "For the next 5 waves every boon you pick counts twice", 3, { waves = 5 }),
+	boon("ultra", "twin", "Twin Picks", "For the next 3 waves you take two boons from each offer", 3, { waves = 3 }), -- SHANNON, 2026-11-25: 3
 	boon(
 		"ultra",
 		"roar",
@@ -275,7 +276,7 @@ function WaveRuns.tally(run: Run, votes: { string }): string?
 	return tied[k]
 end
 
--- Whether a common or lucky boon picked now counts twice (Twin Picks, decision 0120).
+-- Whether this wave's offer gives two picks (Twin Picks, decision 0120, amended 2026-11-25).
 function WaveRuns.twice(run: Run): boolean
 	return ((run.untilWave or {}).twin or 0) >= run.wave
 end
@@ -290,9 +291,21 @@ function WaveRuns.pick(run: Run, id: string): (Run, boolean, string?)
 	out.offer = nil
 	out.boons = table.clone(run.boons)
 	local timed = table.clone(run.untilWave or {})
-	local times = if WaveRuns.twice(run) and def.tier ~= "ultra" then 2 else 1
-	for _ = 1, times do
-		table.insert(out.boons, id)
+	table.insert(out.boons, id)
+	-- Twin Picks (SHANNON, 2026-11-25: "take two boons", as the board drew it): the first pick of a twin wave
+	-- leaves the other cards up for a second, common and lucky only; the next wave starts after the second
+	out.second = nil
+	if WaveRuns.twice(run) and not run.second and def.tier ~= "ultra" then
+		local rest = {}
+		for _, other in run.offer do
+			local b = WaveRuns.boon(other)
+			if other ~= id and b and b.tier ~= "ultra" then
+				table.insert(rest, other)
+			end
+		end
+		if #rest > 0 then
+			out.offer, out.second = rest, true
+		end
 	end
 	if def.waves then -- the next `waves` fights (Unbreakable), or the picks after them (Twin Picks)
 		timed[id] = run.wave + def.waves - (if id == "twin" then 0 else 1)

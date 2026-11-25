@@ -88,29 +88,41 @@ describe("WaveRuns (decision 0098)", function()
 		expect(tiers.ultra).toBe(6)
 	end)
 
-	it("counts a boon's stacks up to its cap, Twin Picks twice for 5 waves, and ends a timed boon", function()
-		local run = WaveRuns.new(10, 3, 1)
-		run.boons = { "steady", "steady", "steady", "steady", "charged", "charged" }
-		expect(WaveRuns.count(run, "steady")).toBe(3)
-		expect(WaveRuns.count(run, "charged")).toBe(1)
-		run.offer = { "twin", "claws", "hide" }
-		local twin = WaveRuns.pick(run, "twin")
-		expect(twin.ultra).toBe(true)
-		twin.offer = { "claws", "hide", "mend" }
-		twin.wave = 11 -- the pick after the next fight
-		expect(WaveRuns.count((WaveRuns.pick(twin, "claws")), "claws")).toBe(2)
-		twin.wave = 15 -- the fifth pick is still twin
-		expect(WaveRuns.count((WaveRuns.pick(twin, "claws")), "claws")).toBe(2)
-		twin.wave = 16
-		expect(WaveRuns.count((WaveRuns.pick(twin, "claws")), "claws")).toBe(1)
-		run.offer = { "unbreakable", "claws", "hide" }
-		local hard = WaveRuns.pick(run, "unbreakable")
-		expect(WaveRuns.setup(hard).immortal).toBe(true)
-		hard.wave = 12
-		expect(WaveRuns.setup(hard).immortal).toBe(true)
-		hard.wave = 13
-		expect(WaveRuns.setup(hard).immortal).toBe(false)
-	end)
+	it(
+		"counts a boon's stacks up to its cap, Twin Picks two picks an offer for 3 waves, and ends a timed boon",
+		function()
+			local run = WaveRuns.new(10, 3, 1)
+			run.boons = { "steady", "steady", "steady", "steady", "charged", "charged" }
+			expect(WaveRuns.count(run, "steady")).toBe(3)
+			expect(WaveRuns.count(run, "charged")).toBe(1)
+			run.offer = { "twin", "claws", "hide" }
+			local twin = WaveRuns.pick(run, "twin")
+			expect(twin.ultra).toBe(true)
+			twin.offer = { "claws", "hide", "mend" }
+			twin.wave = 11 -- the pick after the next fight: one, then a second from the rest
+			local first = WaveRuns.pick(twin, "claws")
+			expect(WaveRuns.count(first, "claws")).toBe(1)
+			expect(first.second).toBe(true)
+			expect(table.concat(first.offer :: { string }, ",")).toBe("hide,mend")
+			local both, ok = WaveRuns.pick(first, "mend")
+			expect(ok).toBe(true)
+			expect(both.offer).toBeNil()
+			expect(WaveRuns.count(both, "claws") + WaveRuns.count(both, "mend")).toBe(2)
+			twin.wave = 13 -- the third pick is still twin
+			expect(WaveRuns.pick(twin, "claws").second).toBe(true)
+			twin.wave = 14
+			expect(WaveRuns.pick(twin, "claws").offer).toBeNil()
+			twin.offer = { "blessing", "claws", "hide" } -- an ultra card is never left for a second pick
+			expect(table.concat(WaveRuns.pick(twin, "hide").offer or {}, ",")).toBe("")
+			run.offer = { "unbreakable", "claws", "hide" }
+			local hard = WaveRuns.pick(run, "unbreakable")
+			expect(WaveRuns.setup(hard).immortal).toBe(true)
+			hard.wave = 12
+			expect(WaveRuns.setup(hard).immortal).toBe(true)
+			hard.wave = 13
+			expect(WaveRuns.setup(hard).immortal).toBe(false)
+		end
+	)
 
 	it("pays the new boons into the pot: Treasure Map's samples, Golden Hour doubling a bank but not a loss", function()
 		local run = WaveRuns.new(1, 3, 1)
