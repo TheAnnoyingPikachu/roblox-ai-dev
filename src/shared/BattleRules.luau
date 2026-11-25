@@ -79,6 +79,19 @@ export type Setup = {
 	clicks: boolean?,
 	immortal: boolean?, -- the intro's borrowed fight (decision 0116): nobody on the team can be knocked out
 	patient: boolean?, -- the intro (SHANNON, 2026-11-24): a full meter waits for its press and never fires itself
+	-- a run's boons (decision 0120), side 1 only:
+	taken: number?, -- x the damage it takes (Iron Coat)
+	gain: number?, -- x how fast its meters fill (Focus)
+	window: number?, -- x AUTO_FIRE, how long a full meter waits before it fails (Steady Paws)
+	clickDmg: number?, -- x a click strike (Hard Taps)
+	shieldSooner: number?, -- seconds off SHIELD_COOLDOWN (Watchful)
+	pack: number?, -- % more damage for each of the player's own animals standing (Pack Bond)
+	phoenix: number?, -- how many times a fight the first animal knocked out gets back up (Phoenix Feather)
+	refund: number?, -- the share of the meter a Perfect press gives back (Overcharge)
+	comboSeconds: number?, -- added to COMBO_SECONDS (Combo Chain)
+	comboHit: number?, -- x a combo's hit (Combo Chain)
+	thorns: number?, -- the share of the damage it takes a foe takes back, never its last HP (Thorns)
+	titanReady: boolean?, -- the Titan's meter starts full (Titan's Roar)
 }
 
 -- Quick presses (decisions 0106, 0109): each of the four classes has its own press, so a team of one of
@@ -186,8 +199,9 @@ function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fig
 			f.hp = if share <= 0 then 0 else math.max(1, math.floor(f.maxHp * math.min(1, share)))
 			f.swing *= setup.tempo or 1
 			f.rest *= setup.tempo or 1
+			f.gain *= setup.gain or 1
 			if setup.clicks then -- a strike is STRIKE_SECONDS of its attacking; its own attacks slow down
-				f.click = BattleRules.STRIKE_SECONDS / (f.swing + f.rest)
+				f.click = BattleRules.STRIKE_SECONDS / (f.swing + f.rest) * (setup.clickDmg or 1)
 				f.swing *= BattleRules.CLICK_SLOW
 				f.rest *= BattleRules.CLICK_SLOW
 			end
@@ -195,6 +209,9 @@ function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fig
 			f.energy = math.floor( -- a boon's charge on top of a coat's
 				BattleRules.POWER_COST * math.clamp((setup.energy or 0) + f.energy / BattleRules.POWER_COST, 0, 0.99)
 			)
+			if setup.titanReady and f.role == StationConfig.TITAN then -- Titan's Roar: ready from the start
+				f.energy = BattleRules.POWER_COST
+			end
 		end
 	end
 	return out
@@ -298,6 +315,7 @@ BattleRules.PERFECT_AT, BattleRules.PERFECT_EARLY, BattleRules.PERFECT_LATE = 2.
 BattleRules.PERFECT = 1.5
 BattleRules.COMBO_SECONDS, BattleRules.COMBO_PCT, BattleRules.COMBO_MAX = 3, 25, 4
 BattleRules.SHIELD_SECONDS, BattleRules.SHIELD_COOLDOWN, BattleRules.SHIELD = 1.2, 6, 0.5
+BattleRules.PHOENIX_PCT = 30 -- Phoenix Feather (decision 0120): the HP it gets back up with, as a % of max
 --
 -- Crowds (decision 0101): a wave's foes may come in rushes (an Owned's `rush`, 1 to 3). Rush 1 is there at
 -- the start; the next is called when half of the one before is down, or RUSH_SECONDS after it arrived, and
@@ -386,7 +404,8 @@ function BattleRules.perfect(press: string, since: number, presses: number?): bo
 end
 
 -- The times of the shield taps (slot 0) in `taps` that raise the shield, in order.
-function BattleRules.shields(taps: { Tap }): { number }
+function BattleRules.shields(taps: { Tap }, sooner: number?): { number }
+	local cooldown = math.max(1, BattleRules.SHIELD_COOLDOWN - (sooner or 0))
 	local times = {}
 	for _, tap in taps do
 		if tap.slot == 0 then
@@ -398,7 +417,7 @@ function BattleRules.shields(taps: { Tap }): { number }
 	for _, t in times do
 		if t >= ready then
 			table.insert(out, t)
-			ready = t + BattleRules.SHIELD_COOLDOWN
+			ready = t + cooldown
 		end
 	end
 	return out
@@ -449,11 +468,14 @@ function BattleRules.battle(
 	local full: { [Fighter]: number } = {} -- when each held meter filled
 	local actions, now = 0, 0
 	local up: { [number]: boolean } = {} -- the shield taps that raise it
-	for _, t in BattleRules.shields(queue) do
+	for _, t in BattleRules.shields(queue, setup and setup.shieldSooner) do
 		up[t] = true
 	end
 	local shieldTo = -math.huge
 	local combo, comboAt, comboSlot = 0, -math.huge, 0
+	local comboMore = setup and setup.comboSeconds or 0 -- Combo Chain
+	local feathers = setup and setup.phoenix or 0 -- Phoenix Feather's get-ups left this fight
+	local autoFire = BattleRules.AUTO_FIRE * (setup and setup.window or 1) -- Steady Paws
 	-- each player's clicks so far, and when their next may strike (decision 0106)
 	local strikes, strikeReady = table.create(players, 0), table.create(players, -math.huge)
 
@@ -564,6 +586,9 @@ function BattleRules.battle(
 		if d.role == "defense" then
 			hit *= BattleRules.GUARD
 		end
+		if d.side == 1 and setup and setup.taken then
+			hit *= setup.taken
+		end
 		local dealt = math.max(1, math.floor(hit * BattleRules.DEF_HALF / (BattleRules.DEF_HALF + d.def)))
 		if d.spectral and not d.spared and dealt >= d.hp and d.hp > 1 then -- the Spectral coat: once, it stays up
 			d.spared, dealt = true, d.hp - 1
@@ -572,6 +597,10 @@ function BattleRules.battle(
 			dealt = math.min(dealt, math.max(0, d.hp - 1))
 		end
 		d.hp -= dealt
+		if d.side == 1 and d.hp <= 0 and feathers > 0 then -- Phoenix Feather: back up at once
+			feathers -= 1
+			d.hp = math.max(1, math.floor(d.maxHp * BattleRules.PHOENIX_PCT / 100))
+		end
 		return dealt
 	end
 
@@ -588,9 +617,16 @@ function BattleRules.battle(
 		local d = (if me.side == 2 then facing(me.spot) elseif click and players > 1 then nearest(me.owner) else nil)
 			or target(enemies, now) :: Fighter
 		local hit = me.dmg * power
+		if me.side == 1 and setup and setup.pack and setup.pack > 0 then -- Pack Bond: its player's animals standing
+			local standing = 0
+			for _, m in sides[1] do
+				standing += if m.hp > 0 and m.owner == me.owner then 1 else 0
+			end
+			hit *= 1 + setup.pack * standing / 100
+		end
 		local chain = nil
 		if held and me.side == 1 and power > 1 then
-			combo = if me.slot ~= comboSlot and now - comboAt <= BattleRules.COMBO_SECONDS
+			combo = if me.slot ~= comboSlot and now - comboAt <= BattleRules.COMBO_SECONDS + comboMore
 				then math.min(BattleRules.COMBO_MAX, combo + 1)
 				else 1
 			comboAt, comboSlot = now, me.slot
@@ -598,6 +634,9 @@ function BattleRules.battle(
 				hit *= BattleRules.PERFECT
 			end
 			hit *= 1 + BattleRules.COMBO_PCT * (combo - 1) / 100
+			if combo > 1 and setup and setup.comboHit then
+				hit *= setup.comboHit
+			end
 			chain = if combo > 1 then combo else nil
 		end
 		local shielded = me.side == 2 and power > 1 and now <= shieldTo
@@ -605,6 +644,9 @@ function BattleRules.battle(
 			hit *= BattleRules.SHIELD
 		end
 		local dealt = hurt(d, hit)
+		if me.side == 2 and d.side == 1 and setup and setup.thorns and setup.thorns > 0 then -- Thorns, never a kill
+			me.hp = math.max(1, me.hp - math.floor(dealt * setup.thorns))
+		end
 		local struck = { d }
 		-- the team fights crowds: splash, and power attacks that hit several
 		local also: { { slot: number, dmg: number, hp: number } }? = nil
@@ -741,8 +783,8 @@ function BattleRules.battle(
 		local auto: Fighter?, autoAt = nil, math.huge
 		for _, c in sides[1] do
 			local at = full[c]
-			if at and c.hp > 0 and not (setup and setup.patient) and at + BattleRules.AUTO_FIRE < autoAt then
-				auto, autoAt = c, at + BattleRules.AUTO_FIRE
+			if at and c.hp > 0 and not (setup and setup.patient) and at + autoFire < autoAt then
+				auto, autoAt = c, at + autoFire
 			end
 		end
 		local tap = queue[1]
@@ -798,7 +840,14 @@ function BattleRules.battle(
 				if tap.presses == BattleRules.FAILED then
 					strike(c, 1, true, false, nil, true)
 				else
-					strike(c, BattleRules.POWER, true, BattleRules.perfect(c.press, since, tap.presses))
+					local perfect = BattleRules.perfect(c.press, since, tap.presses)
+					strike(c, BattleRules.POWER, true, perfect)
+					if perfect and setup and setup.refund then
+						c.energy = math.min(
+							BattleRules.POWER_COST - 1,
+							c.energy + math.floor(BattleRules.POWER_COST * setup.refund)
+						)
+					end
 				end
 			end
 			continue

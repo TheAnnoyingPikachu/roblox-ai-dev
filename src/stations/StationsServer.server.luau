@@ -466,7 +466,8 @@ local function bankRun(player: Player, lost: boolean)
 	if k then
 		table.remove(party.members, k)
 	end
-	local coins, samples = WaveRuns.bank({ pot = party.pots[player] or { coins = 0, samples = 0 } } :: any, lost)
+	local pot = party.pots[player] or { coins = 0, samples = 0 }
+	local coins, samples = WaveRuns.bank({ pot = pot, boons = party.run.boons } :: any, lost) -- Golden Hour
 	local waves = party.wins[player] or 0
 	party.pots[player], party.hp[player], party.votes[player], party.wins[player] = nil, nil, nil, nil
 	if coins > 0 or samples > 0 then
@@ -475,7 +476,19 @@ local function bankRun(player: Player, lost: boolean)
 			return StationProgress.earn(q, coins, samples)
 		end)
 	end
-	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = waves })
+	local egg = nil
+	if not lost and WaveRuns.count(party.run, "jackpot") > 0 then -- Jackpot Egg (decision 0120): the best unlocked
+		local p = saves.get(player)
+		if p then
+			egg = StationRewards.bestEgg(StationProgress.sanitize(p, os.time()))
+			local items: StationRewards.Items = { coins = 0, samples = 0, eggs = { egg }, seconds = 0, jackpot = false }
+			local animals, now = rollEggs(items), os.time()
+			saves.apply(player, function(q) -- a full cellar keeps it waiting in the rewards (StationRewards.grant)
+				return StationRewards.grant(q, items, animals, nil, now)
+			end)
+		end
+	end
+	remotes.fx(player, "banked", { coins = coins, samples = samples, lost = lost, waves = waves, egg = egg })
 	if allVoted(party) then -- the others were only waiting for this player's vote
 		settle(party)
 	end
@@ -627,7 +640,7 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 				if result.won then mine.xp else 0,
 				if result.won then mine.samples else 0
 			out.first = mine.first
-			out.boons, out.wins = party.run.boons, party.wins[m] -- for the boon cards' stacks and the run's end
+			out.boons, out.wins, out.twice = party.run.boons, party.wins[m], WaveRuns.twice(party.run) -- for the boon cards' stacks and the run's end
 			if after then
 				local coins, samples = WaveRuns.bonus(run, mine.coins, mine.samples)
 				local pot = party.pots[m]
@@ -1398,7 +1411,7 @@ local router = Router.new({
 		shield = { args = {}, handler = WaveShow.shield },
 		-- pick a boon after a won wave in a run; it starts the next wave (decision 0098)
 		boon = {
-			args = { Payload.enum({ "claws", "hide", "quick", "charged", "mend", "revive", "lucky", "gold" }) },
+			args = { Payload.enum(ids(WaveRuns.BOONS)) }, -- every boon (decision 0120)
 			handler = pickBoon,
 		},
 		claim_chest = { args = {}, handler = openChest },
@@ -1648,6 +1661,7 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
 		local hatching = #profile.animals > 0

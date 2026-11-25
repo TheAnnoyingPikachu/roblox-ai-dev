@@ -462,6 +462,7 @@ redraw.animals = function()
 end
 
 App.darker = darker
+App.ROLE_COLOUR = ROLE_COLOUR -- the card under the cursor's class chip
 App.eggArt = eggArt
 
 return nil
