@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-164",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The boon pick between waves as the Result board draws it (SHANNON, 2026-11-25: 'i want the boon pick hud between fights as well'): a picture for every boon, the biggest cards on screen, the stack it makes, and leaving that says what it banks.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/HudWaves.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/Style.luau",
+    "assets/stations/icons/hud_boon_*.png",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-164.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Each of the eight boons (claws, hide, quick, charged, mend, revive, lucky, gold) has its own icon, made in ForgeGUI in the look of the HUD set (the coin as the style reference)",
+    "The cards are the biggest thing on screen between waves: picture, name, what it does, 'You have N. This makes N+1.', a gold edge and RARE chip on a rare boon, the key (1 to 3) or a tap on a phone",
+    "The line along the bottom: the wave's pay, the run's streak and pot, 'Fight wave N+1' and 'Leave and bank N' (the pot in words)",
+    "With friends, the vote's ring and dots (STATION-160) sit on these cards"
+  ],
+  "verification": "Planned: not built yet. Seen in Studio before (main 5871301 + #43, #46): the pick works, keys 1 to 3, but every card shows a plain 'x1' tile, no picture, and leaving says 'Leave the arena'.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "planned",
+  "notes": "ForgeGUI credits: 8 boons x 3 versions. Picks shown as a sheet first."
+}

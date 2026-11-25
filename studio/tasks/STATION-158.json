@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-158",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Seen: the animals a player has met (SHANNON, 2026-11-24: 'Only animals actually met'). The save keeps the species and variants met; the Animals window's Seen tab shows the ones not owned as outlines with their egg and its level.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [
+    "STATION-157"
+  ],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/HudAnimals.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0118-animal-stations-seen.md",
+    "studio/tasks/STATION-158.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The save keeps a bounded list of animals met (species and variant), added on hatching, owning, borrowing (the intro's legends, the Ranger's loan) and fighting beside a teammate's animal",
+    "The Seen tab shows only met animals the player does not own, as dark outlines with the egg and level that give them",
+    "sanitize keeps the list short and unique; a decision record covers the save change"
+  ],
+  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "A data schema change: decision record first (CLAUDE.md rule 8)."
+}

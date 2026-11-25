@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-162",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "World prompts in the new look (SHANNON, 2026-11-24: 'Paper pill with icon and key'): the vendor, the hatchery and egg storage, the wave portal, the ranch door, the gift stand, the trading post.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/checkpoints/STATION-LOOK.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudPrompts.luau",
+    "src/stations-client/Style.luau",
+    "src/stations/World.luau",
+    "src/stations/Ranch.luau",
+    "studio/tasks/STATION-162.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every prompt in the hub and on a ranch is a paper pill with the place's icon, the action and its key cap (a tap circle on a touch screen), drawn by the client (ProximityPrompt Style Custom)",
+    "Hold prompts show their progress in the pill; prompts work exactly as before"
+  ],
+  "verification": "Planned: not built yet. SHANNON's picks are in the acceptance criteria and notes.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "planned",
+  "notes": "SHANNON's pick: a paper pill with icon and key."
+}
