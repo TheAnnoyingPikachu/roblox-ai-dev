@@ -29,7 +29,8 @@
     "An offer's first card is ultra lucky in 2% of offers (once a run), lucky in 15% more and always after a boss; never two lucky cards in one offer",
     "Each new boon's rule is in BattleRules.Setup or WaveRuns (pot, bank, rest, pick), and a fight without boons is unchanged",
     "Golden Hour doubles a bank but not a loss; Jackpot Egg adds the best unlocked egg once a run",
-    "The run simulation of decision 0107 is run again and its numbers are in decision 0120"
+    "The run simulation of decision 0107 is run again and its numbers are in decision 0120",
+    "The boon request takes every boon id (it listed the old 8)"
   ],
   "verification": "lune run tests/run: 819 pass (new: the 27 in three tiers; the odds with the boss and once-a-run ultra; caps, Twin Picks and Unbreakable's waves; Treasure Map, Golden Hour, Rested; the setup's fight boons, Titan's Roar, Watchful's shields, Iron Coat and Phoenix Feather in a real fight). selene 0 warnings. The run simulation (main against this branch) is in decision 0120: the best team's wall moves from 259-289 to 209-269.",
   "output_artifacts": [

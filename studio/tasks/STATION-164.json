@@ -10,7 +10,9 @@
     "docs/checkpoints/STATION-LOOK.md",
     "docs/assets/register.md"
   ],
-  "dependencies": [],
+  "dependencies": [
+    "STATION-165"
+  ],
   "files": [
     "src/stations-client/HudWaves.luau",
     "src/stations-client/Hud.client.luau",
@@ -21,14 +23,14 @@
   ],
   "tests": [],
   "acceptance_criteria": [
-    "Each of the eight boons (claws, hide, quick, charged, mend, revive, lucky, gold) has its own icon, made in ForgeGUI in the look of the HUD set (the coin as the style reference)",
-    "The cards are the biggest thing on screen between waves: picture, name, what it does, 'You have N. This makes N+1.', a gold edge and RARE chip on a rare boon, the key (1 to 3) or a tap on a phone",
-    "The line along the bottom: the wave's pay, the run's streak and pot, 'Fight wave N+1' and 'Leave and bank N' (the pot in words)",
+    "Each boon (27 since STATION-165) shows its own icon, made in ForgeGUI in the look of the HUD set (the coin as the style reference); a boon without one yet shows its stack written large",
+    "The cards are the biggest thing on screen between waves: picture, name, what it does, 'You have N. This makes N+1.' (+2 under Twin Picks), a gold edge and LUCKY chip on a lucky boon, a turning rainbow edge, rainbow tile and ULTRA LUCKY chip on an ultra lucky one (SHANNON, 2026-11-25: 'give them that rainbow texture'), the key (1 to 3) or a tap on a phone",
+    "The line along the bottom: the wave's pay, the run's streak and pot, 'Fight wave N+1' and 'Leave and bank N' (x2 under Golden Hour); a Jackpot Egg's egg is named when the run is banked",
     "With friends, the vote's ring and dots (STATION-160) sit on these cards"
   ],
-  "verification": "Planned: not built yet. Seen in Studio before (main 5871301 + #43, #46): the pick works, keys 1 to 3, but every card shows a plain 'x1' tile, no picture, and leaving says 'Leave the arena'.",
+  "verification": "Seen in Studio (this branch, build dev, with the ultra odds forced in Studio's copy only): an ultra lucky card (Legend's Blessing, Jackpot Egg, Twin Picks) with the turning rainbow edge, rainbow tile and ULTRA LUCKY chip; a lucky card (Overcharge, Revive) gold with LUCKY; Sharp Claws, Quick Paws and Thick Hide with their pictures and the stack in the corner; key 1 picks; wave 3's offer had no second ultra card; leaving after Jackpot Egg banked +2 coins and a Wild Egg, with the note 'Jackpot Egg: a Wild Egg for your cellar!'. Found and fixed on the way: the boon request only took the 8 old ids (decision 0120). lune 819 pass, selene 0 warnings.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "planned",
-  "notes": "ForgeGUI credits: 8 boons x 3 versions. Picks shown as a sheet first."
+  "status": "in_progress",
+  "notes": "Icons: 3 of 27 made (claws, hide, quick: jobs bf31df78, 78ebffb5, c3e1668f, first of 2 versions each). ForgeGUI ran out of credits (142 left, 1,600 a round) on 2026-11-25: the other 24 wait for SHANNON to add credits; the prompts are in the session's scratchpad and each is one generation_image call. The vote's ring and dots on these cards are STATION-160. Not seen: a phone, a party's vote on the new cards."
 }

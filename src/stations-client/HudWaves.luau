@@ -3,6 +3,7 @@
 -- One part of the HUD: Hud.client.luau loads the parts in order, and HudApp holds what they share.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -99,14 +100,14 @@ do
 	local boons = Instance.new("Frame")
 	boons.Name, boons.BackgroundTransparency, boons.ZIndex, boons.Visible = "BoonPanel", 1, 8, false
 	boons.AnchorPoint, boons.Position, boons.Size =
-		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 122), UDim2.fromOffset(780, 300)
+		Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 116), UDim2.fromOffset(880, 340)
 	Style.list(boons, 10).HorizontalAlignment = Enum.HorizontalAlignment.Center
 	boons.Parent = root
 	local boonsTitle = Style.text(boons, "Pick a boon", 20, N.text, UDim2.new(1, 0, 0, 26))
 	boonsTitle.Name, boonsTitle.LayoutOrder, boonsTitle.TextXAlignment = "Title", 1, Enum.TextXAlignment.Center
 	Style.stroke(boonsTitle, DARK, 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
 	boonRow = row(boons, 16, Enum.HorizontalAlignment.Center)
-	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 236), 2, false
+	boonRow.Size, boonRow.LayoutOrder, boonRow.Visible = UDim2.new(1, 0, 0, 276), 2, false
 	local votes = Style.small(boons, "", 13, N.muted, UDim2.new(1, 0, 0, 18))
 	votes.Name, votes.LayoutOrder, votes.TextXAlignment = "Votes", 3, Enum.TextXAlignment.Center
 
@@ -351,7 +352,7 @@ S.hideResult = function()
 end
 local showStars: (n: number) -> ()
 local coinBurst: () -> ()
-local offerBoons: (ids: { string }, n: number, have: { string }?) -> ()
+local offerBoons: (ids: { string }, n: number, have: { string }?, twice: boolean?) -> ()
 local function buttons(showAgain: boolean)
 	again.Visible = showAgain
 end
@@ -409,12 +410,12 @@ end
 -- Three boons as glass cards (decision 0098): each says what it does and how many of it the run already
 -- has (`have`: the boons picked so far), since a boon is small and the stack is what counts. A rare one is
 -- edged in gold. Picking one (a click, or the key on its corner) starts wave `n`.
-offerBoons = function(ids: { string }, n: number, have: { string }?)
+offerBoons = function(ids: { string }, n: number, have: { string }?, twice: boolean?)
 	Style.clear(boonRow)
 	table.clear(pickBoon)
 	boonRow.Visible = true
 	local short = Style.compact(root.Size.Y.Offset) -- a phone: shorter cards, so the line under them stays clear
-	boonRow.Size = UDim2.new(1, 0, 0, if short then 190 else 236)
+	boonRow.Size = UDim2.new(1, 0, 0, if short then 200 else 276)
 	local panel = boonRow.Parent :: GuiObject
 	panel.Visible = true
 	local heading = panel:FindFirstChild("Title") :: TextLabel?
@@ -432,6 +433,7 @@ offerBoons = function(ids: { string }, n: number, have: { string }?)
 			for _, b in have or {} do
 				owned += if b == id then 1 else 0
 			end
+			local adds = if twice and boon.tier ~= "ultra" then 2 else 1 -- Twin Picks
 			local function pick()
 				if not boonRow.Visible then -- a second click while the first is on its way
 					return
@@ -445,46 +447,90 @@ offerBoons = function(ids: { string }, n: number, have: { string }?)
 				end
 			end
 			pickBoon[k] = pick
+			local ultra = boon.tier == "ultra"
 			local card = Style.button(
 				boonRow,
 				"",
 				pick,
 				if boon.rare then "nightHot" else "night",
-				UDim2.fromOffset(236, if short then 186 else 232)
+				UDim2.fromOffset(if short then 236 else 268, if short then 196 else 272)
 			)
 			card.Name, card.LayoutOrder = boon.name, k
 			Style.radius(card, 18)
 			Style.key(card, tostring(k), true).Position = UDim2.fromOffset(10, 10)
-			local tile = Style.frame(card, UDim2.fromOffset(64, 64), if boon.rare then N.gold else N.main)
+			-- the boon's picture (Style.ICONS `boon_<id>`), or its stack written large until it has one
+			local side = if short then 56 else 92
+			local tile = Style.frame(card, UDim2.fromOffset(side, side), if boon.rare then N.gold else N.main)
 			tile.AnchorPoint, tile.Position, tile.ZIndex =
 				Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, if short then 12 else 20), 2
-			tile.Size = UDim2.fromOffset(if short then 48 else 64, if short then 48 else 64)
-			Style.round(tile, 16)
+			Style.round(tile, 20)
+			local picture = Style.image(`boon_{id}`)
+			if picture ~= "" then
+				local icon = Style.icon(tile, `boon_{id}`, side - 10)
+				icon.AnchorPoint, icon.Position, icon.ZIndex = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.5), 3
+			end
 			local stack = Style.text(
 				tile,
-				`x{owned + 1}`,
-				26,
+				`x{owned + adds}`,
+				if picture ~= "" then 16 else 30,
 				if boon.rare then Color3.fromRGB(42, 22, 64) else N.text,
-				UDim2.fromScale(1, 1)
+				if picture ~= "" then UDim2.fromOffset(34, 20) else UDim2.fromScale(1, 1)
 			)
-			stack.TextXAlignment, stack.ZIndex = Enum.TextXAlignment.Center, 3
+			stack.TextXAlignment, stack.ZIndex = Enum.TextXAlignment.Center, 4
+			if picture ~= "" then -- the stack in the picture's corner
+				stack.AnchorPoint, stack.Position = Vector2.new(1, 1), UDim2.new(1, 6, 1, 4)
+				Style.stroke(stack, Color3.fromRGB(42, 22, 64), 2).ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+				stack.TextColor3 = N.text
+			end
+			local top = if short then 72 else 120
 			local title = Style.text(card, boon.name, 22, N.text, UDim2.new(1, -16, 0, 28))
-			title.Position, title.TextXAlignment, title.ZIndex =
-				UDim2.fromOffset(8, if short then 64 else 94), Enum.TextXAlignment.Center, 2
+			title.Position, title.TextXAlignment, title.ZIndex = UDim2.fromOffset(8, top), Enum.TextXAlignment.Center, 2
 			local words = Style.text(card, boon.text, 16, Color3.fromRGB(255, 210, 122), UDim2.new(1, -24, 0, 44))
 			words.Position, words.TextXAlignment, words.ZIndex =
-				UDim2.fromOffset(12, if short then 94 else 126), Enum.TextXAlignment.Center, 2
+				UDim2.fromOffset(12, top + 30), Enum.TextXAlignment.Center, 2
 			local count = Style.small(
 				card,
-				if owned > 0 then `You have {owned}. This makes {owned + 1}.` else "Your first of these.",
+				if owned > 0
+					then `You have {owned}. This makes {owned + adds}.`
+					elseif adds > 1 then "Twin Picks: you get two."
+					else "Your first of these.",
 				13,
 				N.muted,
 				UDim2.new(1, -16, 0, 18)
 			)
 			count.Position, count.TextXAlignment, count.ZIndex = UDim2.new(0, 8, 1, -34), Enum.TextXAlignment.Center, 2
 			if boon.rare then
-				local tag = Style.chip(card, "RARE", N.gold, Color3.fromRGB(42, 22, 64))
+				local tag = Style.chip(
+					card,
+					if ultra then "ULTRA LUCKY" else "LUCKY",
+					if ultra then Color3.new(1, 1, 1) else N.gold,
+					Color3.fromRGB(42, 22, 64)
+				)
 				tag.AnchorPoint, tag.Position, tag.ZIndex = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0), 4
+				if ultra then -- the rainbow (SHANNON, 2026-11-25): the chip, the picture's tile and a turning edge
+					for _, on in { tag, tile } do
+						local colours = Instance.new("UIGradient")
+						colours.Color, colours.Rotation = App.RAINBOW, 30
+						colours.Parent = on
+					end
+					local face = card:FindFirstChild("Face") or card -- the edge drawn is the face's (Style.button)
+					local edge = face:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+					edge.Thickness, edge.ApplyStrokeMode, edge.Color =
+						5, Enum.ApplyStrokeMode.Border, Color3.new(1, 1, 1)
+					edge.Parent = face
+					local turn = Instance.new("UIGradient")
+					turn.Color = App.RAINBOW
+					turn.Parent = edge
+					local spin: RBXScriptConnection
+					spin = RunService.RenderStepped:Connect(function()
+						if card.Parent == nil then
+							spin:Disconnect()
+							return
+						end
+						turn.Rotation = (os.clock() * 90) % 360
+					end)
+					Style.sound("claim")
+				end
 			end
 		end
 	end

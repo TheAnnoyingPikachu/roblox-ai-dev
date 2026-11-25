@@ -275,6 +275,11 @@ function WaveRuns.tally(run: Run, votes: { string }): string?
 	return tied[k]
 end
 
+-- Whether a common or lucky boon picked now counts twice (Twin Picks, decision 0120).
+function WaveRuns.twice(run: Run): boolean
+	return ((run.untilWave or {}).twin or 0) >= run.wave
+end
+
 -- Pick boon `id` from the offer. Second Wind and Revive act at once.
 function WaveRuns.pick(run: Run, id: string): (Run, boolean, string?)
 	if run.offer == nil or not table.find(run.offer, id) then
@@ -285,8 +290,7 @@ function WaveRuns.pick(run: Run, id: string): (Run, boolean, string?)
 	out.offer = nil
 	out.boons = table.clone(run.boons)
 	local timed = table.clone(run.untilWave or {})
-	-- Twin Picks: while it lasts, a common or lucky boon picked counts twice
-	local times = if (timed.twin or 0) >= run.wave and def.tier ~= "ultra" then 2 else 1
+	local times = if WaveRuns.twice(run) and def.tier ~= "ultra" then 2 else 1
 	for _ = 1, times do
 		table.insert(out.boons, id)
 	end

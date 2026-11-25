@@ -1029,7 +1029,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 			S.wave = math.min(payload.wave + 1, LevelRules.LAST)
 			again.Text = if payload.last then `Fight wave {S.wave} again` else `Fight wave {S.wave}`
 			if payload.offer then -- pick a boon: it starts the next wave
-				offerBoons(payload.offer, S.wave, payload.boons)
+				offerBoons(payload.offer, S.wave, payload.boons, payload.twice)
 				if (payload.party or 1) > 1 then -- a party votes, 7 seconds (the server's VOTE_SECONDS): a countdown
 					local panel = boonRow.Parent :: GuiObject
 					local heading = panel:FindFirstChild("Title") :: TextLabel?
@@ -1046,7 +1046,10 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			buttons(payload.offer == nil)
-			leave.Text = if pot > 0 then `Leave and bank +{Format.commas(pot)}` else "Leave the arena"
+			local golden = table.find(payload.boons or {}, "golden") ~= nil -- Golden Hour doubles a bank
+			leave.Text = if pot > 0
+				then `Leave and bank +{Format.commas(if golden then pot * 2 else pot)}{if golden then " (x2)" else ""}`
+				else "Leave the arena"
 		else
 			resultTitle.Text, resultTitle.TextColor3 = `Wave {payload.wave}: beaten`, N.bad
 			resultSub.Text = `Your team lost in {took} seconds to {payload.foes}`
@@ -1122,6 +1125,10 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				5,
 				"good"
 			)
+		end
+		local egg = payload.egg and StationConfig.egg(payload.egg)
+		if egg then -- Jackpot Egg (decision 0120)
+			Style.toast(screen, `Jackpot Egg: a {egg.name} for your cellar!`, 6, "good")
 		end
 	elseif kind == "waveshow" then
 		local took = string.format("%.0f", payload.seconds)

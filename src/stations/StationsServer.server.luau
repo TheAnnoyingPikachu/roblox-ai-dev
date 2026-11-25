@@ -640,7 +640,7 @@ local function waveFight(player: Player, level: number, continuing: boolean?): (
 				if result.won then mine.xp else 0,
 				if result.won then mine.samples else 0
 			out.first = mine.first
-			out.boons, out.wins = party.run.boons, party.wins[m] -- for the boon cards' stacks and the run's end
+			out.boons, out.wins, out.twice = party.run.boons, party.wins[m], WaveRuns.twice(party.run) -- for the boon cards' stacks and the run's end
 			if after then
 				local coins, samples = WaveRuns.bonus(run, mine.coins, mine.samples)
 				local pot = party.pots[m]
@@ -1411,7 +1411,7 @@ local router = Router.new({
 		shield = { args = {}, handler = WaveShow.shield },
 		-- pick a boon after a won wave in a run; it starts the next wave (decision 0098)
 		boon = {
-			args = { Payload.enum({ "claws", "hide", "quick", "charged", "mend", "revive", "lucky", "gold" }) },
+			args = { Payload.enum(ids(WaveRuns.BOONS)) }, -- every boon (decision 0120)
 			handler = pickBoon,
 		},
 		claim_chest = { args = {}, handler = openChest },

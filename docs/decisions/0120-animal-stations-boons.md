@@ -58,6 +58,11 @@ wave cleared, main's 8 boons against the 27:
   the wall is still reached only with a strong team and good stacks. No number was changed for it.
 - Fact: taking Glass Cannon whenever offered is a trap (109 to 189): its -10% HP stacks too, as the board said.
 
+## Remote contract
+
+- The `boon` request takes any id in `WaveRuns.BOONS` (it listed the 8 old ones, so a new boon was refused as
+  `payload`: seen in Studio). `banked` gains `egg` (Jackpot Egg's egg id, or nil).
+
 ## Not changed
 
 The steep waves (`LevelRules`), the pot's streak, `LOSS_KEEP`, voting (`WaveRuns.tally`), the old boons' numbers.
