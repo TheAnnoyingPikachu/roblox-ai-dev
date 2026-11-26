@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-179",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Music and effects volume and mute (SHANNON's pick 21 in the decision pass, decision 0121): two sound groups, a Sound panel on the Go to… panel, and the volumes kept in the save.",
+  "inputs": [
+    "docs/decisions/0121-animal-stations-decision-pass.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Style.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudFight.luau",
+    "src/stations-client/Creatures.client.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0122-animal-stations-sound-settings.md",
+    "studio/tasks/STATION-179.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The fight tracks play in the Music group, every other sound in Effects",
+    "The Sound panel's − and + change each group in 10% steps and Mute all silences both, at once",
+    "The volumes are saved and set again when the player rejoins",
+    "The save keeps whole steps from 0 to 10 and repairs anything else"
+  ],
+  "verification": "Lune 824/824 (StationProgress sound spec). Studio 2026-11-26, build dev (local): the Sound button on Go to… opens the panel; Music − twice shows 80%; Mute all sets both groups to 0 and the button reads Sound off; the UI sounds play in Effects. Not seen: a rejoin (DataStores are offline in Studio), a phone.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Data schema and remote contract: decision 0122 (save field `sound`, request `sound`)."
+}

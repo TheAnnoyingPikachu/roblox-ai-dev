@@ -42,6 +42,26 @@ local function animal(p: StationProgress.Profile, id: number): StationProgress.A
 	return a :: StationProgress.Animal
 end
 
+describe("StationProgress sound (decision 0122)", function()
+	it("starts at full volume, keeps whole steps from 0 to SOUND_STEPS, and survives a save", function()
+		local steps = StationProgress.SOUND_STEPS
+		local p = fresh()
+		expect(p.sound.music).toBe(steps)
+		expect(p.sound.mute).toBe(false)
+		StationProgress.setSound(p, 3.7, 99, true)
+		expect(p.sound.music).toBe(3)
+		expect(p.sound.effects).toBe(steps)
+		expect(p.sound.mute).toBe(true)
+		local back = StationProgress.sanitize(p, 0)
+		expect(back.sound.music).toBe(3)
+		expect(back.sound.mute).toBe(true)
+		local junk = StationProgress.sanitize({ sound = { music = "loud", effects = -4, mute = "yes" } }, 0)
+		expect(junk.sound.music).toBe(steps)
+		expect(junk.sound.effects).toBe(0)
+		expect(junk.sound.mute).toBe(false)
+	end)
+end)
+
 describe("StationProgress profile", function()
 	it("starts at player level 1 with enough coins for three Meadow eggs and nothing else", function()
 		local p = fresh()
