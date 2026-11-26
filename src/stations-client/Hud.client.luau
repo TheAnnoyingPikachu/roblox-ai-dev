@@ -400,18 +400,18 @@ do
 	end
 	local labels: { [string]: TextLabel } = {}
 	local muteButton: TextButton
-	local function show()
+	local function drawSound()
 		local now = current()
 		labels.music.Text = `Music  {now.music * 10}%`
 		labels.effects.Text = `Effects  {now.effects * 10}%`
 		muteButton.Text = if now.mute then "Sound off: turn on" else "Mute all"
 	end
-	local function send(music: number, effects: number, mute: boolean)
+	local function setSound(music: number, effects: number, mute: boolean)
 		local p = S.profile
 		if p then -- straight away, before the save answers
 			p.sound = { music = music, effects = effects, mute = mute }
 			Style.volumes(music, effects, mute, steps)
-			show()
+			drawSound()
 		end
 		request:InvokeServer("sound", music, effects, mute)
 	end
@@ -430,19 +430,19 @@ do
 				else
 					e = math.clamp(e + step, 0, steps)
 				end
-				send(m, e, false)
+				setSound(m, e, false)
 			end, "ghost", UDim2.fromOffset(44, 40))
 			b.Position, b.TextSize = UDim2.new(1, -96 + (n - 1) * 52, 0, 0), 22
 		end
 	end
 	muteButton = Style.button(list, "", function()
 		local now = current()
-		send(now.music, now.effects, not now.mute)
+		setSound(now.music, now.effects, not now.mute)
 	end, "primary", UDim2.new(1, 0, 0, 44))
 	muteButton.LayoutOrder = 3
 	local open = Style.button(travel, "Sound", function()
 		travel.Visible = false
-		show()
+		drawSound()
 		panel.Visible = true
 	end, "ghost", UDim2.fromOffset(72, 28))
 	open.AnchorPoint, open.Position, open.TextSize, open.ZIndex = Vector2.new(1, 0), UDim2.new(1, -12, 0, 10), 14, 3
