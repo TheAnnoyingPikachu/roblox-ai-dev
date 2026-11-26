@@ -251,7 +251,7 @@ local function wavePanel(col: Instance, team: { any })
 	end
 	local note = Style.small(
 		inner,
-		`A wave you have cleared pays a {if LevelRules.REPLAY_PCT == 25 then "quarter" else `{LevelRules.REPLAY_PCT}%`}.`,
+		`A wave you have cleared pays {LevelRules.REPLAY_PCT}% again.`,
 		12,
 		C.muted,
 		UDim2.new(1, 0, 0, 16)

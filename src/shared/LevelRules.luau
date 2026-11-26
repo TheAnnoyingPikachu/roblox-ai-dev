@@ -19,7 +19,7 @@ LevelRules.SCALE_GROWTH = 1.03 -- and 3% more every level after
 LevelRules.BOSS_EVERY = 10 -- every 10th level's last enemy is a dragon
 LevelRules.REWARD_START = 40 -- coins for clearing level 1 the first time
 LevelRules.REWARD_GROWTH = 1.055 -- SHANNON, 2026-11-24: was 1.08 (394 billion for wave 300); eggs repriced with it (0110)
-LevelRules.REPLAY_PCT = 25 -- replaying a cleared level pays this % of its reward
+LevelRules.REPLAY_PCT = 40 -- replaying a cleared level pays this % of its reward (decision 0121: was 25)
 LevelRules.XP_START, LevelRules.XP_PER_LEVEL = 10, 4 -- player XP for a first clear: 10 + 4 per wave
 LevelRules.SAMPLE_EVERY = 5 -- a first clear drops a sample per this many waves (boss waves drop double)
 
@@ -31,6 +31,9 @@ LevelRules.SAMPLE_EVERY = 5 -- a first clear drops a sample per this many waves 
 LevelRules.LAST = 300
 LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.013, 200 -- retuned for the small boons (0110)
 LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
+-- The last wall (decision 0121, SHANNON: wave 300 stays out of reach): after END_FROM health and strength
+-- also grow END_GROWTH a wave on top, so the best runs end before 300 and everything up to END_FROM is as it was.
+LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.08
 
 -- What every stat of a foe is multiplied by at `level`.
 function LevelRules.scale(level: number): number
@@ -40,7 +43,8 @@ end
 -- What its health and strength (STEEP_STATS) are multiplied by on top of that: 1 up to STEEP_FROM.
 function LevelRules.might(level: number): number
 	local n = math.max(0, level - LevelRules.STEEP_FROM)
-	return LevelRules.STEEP_GROWTH ^ (n * (1 + n / LevelRules.STEEP_BEND))
+	local e = math.max(0, level - LevelRules.END_FROM)
+	return LevelRules.STEEP_GROWTH ^ (n * (1 + n / LevelRules.STEEP_BEND)) * LevelRules.END_GROWTH ^ e
 end
 
 -- Stages (decision 0106, display only): STAGE waves each, so every stage ends on a boss wave. Stage 6 and

@@ -1,0 +1,48 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-176",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON's economy picks from the decision pass (2026-11-26): replay pay 40%, the Safari Egg at 6,000, the first Titan from the wave 20 boss goal, faster player meters in a run, and a last wall so wave 300 stays out of reach. Record all 49 answers in decision 0121.",
+  "inputs": [
+    "docs/decisions/0107-animal-stations-300-waves.md",
+    "docs/decisions/0115-animal-stations-goals.md",
+    "docs/decisions/0120-animal-stations-boons.md"
+  ],
+  "dependencies": [
+    "STATION-172"
+  ],
+  "files": [
+    "src/shared/LevelRules.luau",
+    "src/shared/StationConfig.luau",
+    "src/shared/BattleRules.luau",
+    "src/shared/StationRewards.luau",
+    "src/shared/StationGoals.luau",
+    "src/stations-client/HudGifts.luau",
+    "src/stations-client/HudWaveMenu.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/BattleRules.spec.luau",
+    "tests/StationGoals.spec.luau",
+    "docs/decisions/0121-animal-stations-decision-pass.md",
+    "studio/tasks/STATION-176.json"
+  ],
+  "tests": [
+    "LevelRules.spec.luau",
+    "BattleRules.spec.luau",
+    "StationGoals.spec.luau",
+    "StationRewards.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Replaying a cleared wave pays 40%; the Safari Egg costs 6,000",
+    "The wave 20 boss goal pays a plain Elephant once, and needs room in the barn",
+    "In a run the player's meters fill twice as fast; foes and fights without a setup are unchanged",
+    "No simulated run clears wave 300; waves up to 250 are unchanged",
+    "Decision 0121 records every answer and the simulation"
+  ],
+  "verification": "Lune 825/825. Simulation in decision 0121: starter presses 1 to 3 a fight; best-pick runs 249 to 289, none cleared 300 in 48 runs.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Economy values (decision 0121). Not seen in Studio yet: the goal strip's 'an Elephant, your first Titan' and a fight's presses."
+}
