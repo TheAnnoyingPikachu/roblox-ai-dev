@@ -29,7 +29,7 @@
     "src/stations/CLAUDE.md no longer says wave battles are not built",
     "Runbooks say how to roll back without lowering the save version, and where a player's data is and how to erase it"
   ],
-  "verification": "Lune 825/825 (no rules changed). Not run in Studio: a failed load can't be forced there without a bad asset id.",
+  "verification": "Lune 823/823 (no rules changed). Not run in Studio: a failed load can't be forced there without a bad asset id.",
   "output_artifacts": [],
   "risk_level": "low",
   "status": "in_review",
