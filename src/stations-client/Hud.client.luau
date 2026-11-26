@@ -980,6 +980,9 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		end
 		if first then
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
+			if payload.intro then -- a returning player: what happened while they were away (decision 0121)
+				task.delay(2, Hud.welcomeBack, payload, workspace:GetServerTimeNow())
+			end
 		end
 		refresh()
 		Hud.intro()

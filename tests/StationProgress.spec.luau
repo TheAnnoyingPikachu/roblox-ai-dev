@@ -42,6 +42,25 @@ local function animal(p: StationProgress.Profile, id: number): StationProgress.A
 	return a :: StationProgress.Animal
 end
 
+describe("StationProgress away (decision 0121)", function()
+	it("says what trained, hatched and filled while away, and changes nothing", function()
+		local p = fresh()
+		p = StationProgress.give(p, "lion", nil, 1)
+		local lion = p.animals[1]
+		p = StationProgress.train(p, lion.id, "gym", 0)
+		local hour = 3600
+		local away = StationProgress.away(p, 24 * hour)
+		expect(#away.trained).toBe(1)
+		expect(away.trained[1].stat).toBe("strength")
+		expect(away.trained[1].to > away.trained[1].from).toBeTruthy()
+		expect(p.animals[1].since).toBe(0) -- the save itself is not settled
+		expect(away.eggs).toBe(0)
+		expect(away.mill).toBe(0)
+		local none = StationProgress.away(fresh(), 10)
+		expect(#none.trained + none.eggs + none.mill).toBe(0)
+	end)
+end)
+
 describe("StationProgress profile", function()
 	it("starts at player level 1 with enough coins for three Meadow eggs and nothing else", function()
 		local p = fresh()
