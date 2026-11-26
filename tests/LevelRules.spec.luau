@@ -95,6 +95,17 @@ describe("LevelRules.enemies", function()
 		end
 	)
 
+	it("adds the last wall only after END_FROM, END_GROWTH a wave on top (decision 0121)", function()
+		local from, grow = LevelRules.END_FROM, LevelRules.END_GROWTH
+		local saved = LevelRules.END_GROWTH
+		LevelRules.END_GROWTH = 1
+		local plain = { LevelRules.might(from), LevelRules.might(from + 10) }
+		LevelRules.END_GROWTH = saved
+		expect(LevelRules.might(from)).toBe(plain[1])
+		expect(math.abs(LevelRules.might(from + 10) / plain[2] - grow ^ 10) < 1e-9).toBeTruthy()
+		expect(from < LevelRules.LAST).toBeTruthy()
+	end)
+
 	it("ends every 10th wave with a dragon, a stronger one as the waves go on, and sends none otherwise", function()
 		expect(LevelRules.boss(9)).toBeNil()
 		for _, c in

@@ -77,6 +77,7 @@ for stage = 1, LevelRules.LAST // LevelRules.BOSS_EVERY do
 		end,
 		reward = if stage == 1
 			then { egg = "safari" } -- the first boss: a taste of the egg after the next
+			elseif stage == 2 then { animal = "elephant" } -- the first Titan, guaranteed (decision 0121)
 			elseif stage % StationGoals.BOSS_EGG_EVERY == 0 then { egg = "best" }
 			else { pays = 6, samples = 2 * stage },
 	})
