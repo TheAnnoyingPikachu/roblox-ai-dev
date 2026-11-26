@@ -17,6 +17,8 @@ local Workspace = game:GetService("Workspace")
 local StationAssets = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationAssets"))
 local StationConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationConfig"))
 local StationRules = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationRules"))
+local Players = game:GetService("Players")
+local Analytics = require(script.Parent:WaitForChild("Analytics"))
 
 local Creatures = {}
 
@@ -55,6 +57,12 @@ local function insert(id: number, what: string): (boolean, any)
 		end
 	end
 	loading -= 1
+	if not ok then -- the dashboard's custom events need a player: the first one in the server stands for it
+		local someone = Players:GetPlayers()[1]
+		if someone then
+			Analytics.event(someone, "ModelFailed", 1, what, tostring(id))
+		end
+	end
 	return ok, loaded
 end
 

@@ -7,7 +7,7 @@ later); the hub is for vendors. Keep things simple: placeholders, draft numbers.
 - Project `stations.project.json` (CI builds and place-checks it). No publish environment yet.
 - Docs: `docs/game-design/game7-gdd.md` (the current summary), `docs/game-design/game7-animals.md`
   (roster and looks), decisions 0019 to 0046 (0029 to 0046 are the latest and replace parts of the rest).
-- Not built: wave battles in the arena (so coins and samples cannot be earned in play), what waves pay. In Studio only, the ranch menu has a test funds button. Gear is not designed: the gear vendor only has a message.
+- Built: wave runs on the shared battlefield (decisions 0106 to 0110, 0120), eggs, training, goals, the intro, the ranch. Not built: gear (not designed, no vendor until it exists), trading is off (`StationTrade.ON`). The latest decisions are 0111 to 0121; 0121 lists SHANNON's answers before release.
 
 ## Files
 

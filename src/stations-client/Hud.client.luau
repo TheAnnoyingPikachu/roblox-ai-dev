@@ -906,12 +906,8 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 		Hud.openEgg((prompt.Parent :: BasePart).Position)
 	elseif CollectionService:HasTag(prompt, "Mill") then
 		send("collect")
-	elseif CollectionService:HasTag(prompt, "Vendor") then
-		if prompt:GetAttribute("Kind") == "eggs" then
-			show("shop")
-		else
-			Style.toast(screen, "The gear vendor is still unpacking. Gear is coming soon!")
-		end
+	elseif CollectionService:HasTag(prompt, "Vendor") and prompt:GetAttribute("Kind") == "eggs" then
+		show("shop") -- no gear vendor until gear exists (decision 0121)
 	end
 end)
 
