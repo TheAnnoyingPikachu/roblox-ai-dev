@@ -42,6 +42,52 @@ local function animal(p: StationProgress.Profile, id: number): StationProgress.A
 	return a :: StationProgress.Animal
 end
 
+-- Everything a save names that an older server's sanitize would drop. When this list changes,
+-- StationProgress.VERSION must go up, so an older server never loads and strips a newer save (decision 0111).
+-- Raise VERSION, then set CONTENT to the printed list's length and checksum.
+local CONTENT = { version = 4, count = 68, sum = 3348052 }
+local function contentIds(): { string }
+	local ids = {}
+	for _, sp in StationConfig.SPECIES do
+		table.insert(ids, "s:" .. sp.id)
+		for _, v in sp.variants do
+			table.insert(ids, "v:" .. v.id)
+		end
+	end
+	for _, e in StationConfig.EGGS do
+		table.insert(ids, "e:" .. e.id)
+	end
+	for _, c in StationConfig.COATS do
+		table.insert(ids, "c:" .. c.id)
+	end
+	for _, u in StationConfig.UPGRADES do
+		table.insert(ids, "u:" .. u.id)
+	end
+	for _, st in StationConfig.STATIONS do
+		table.insert(ids, "t:" .. st.id)
+	end
+	table.sort(ids)
+	return ids
+end
+
+describe("StationProgress content version (decision 0121)", function()
+	it("raises VERSION whenever a species, variant, egg, coat, upgrade or station is added or renamed", function()
+		local ids = contentIds()
+		local sum = 0
+		for k, id in ids do
+			for i = 1, #id do
+				sum = (sum + string.byte(id, i) * (k + i)) % 1e9
+			end
+		end
+		if #ids ~= CONTENT.count or sum ~= CONTENT.sum then
+			print(`content changed: count = {#ids}, sum = {sum}; raise StationProgress.VERSION and update CONTENT`)
+		end
+		expect(StationProgress.VERSION).toBe(CONTENT.version)
+		expect(#ids).toBe(CONTENT.count)
+		expect(sum).toBe(CONTENT.sum)
+	end)
+end)
+
 describe("StationProgress profile", function()
 	it("starts at player level 1 with enough coins for three Meadow eggs and nothing else", function()
 		local p = fresh()

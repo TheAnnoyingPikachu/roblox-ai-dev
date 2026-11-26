@@ -15,6 +15,34 @@ local function save(species: { string }): StationProgress.Profile
 	return p
 end
 
+describe("StationTrade ledger (decision 0099)", function()
+	it("writes a side newest first with its time, and keeps LEDGER_KEEP", function()
+		local list = {}
+		for n = 1, StationTrade.LEDGER_KEEP + 5 do
+			list = StationTrade.ledgerAdd(list, { id = `t{n}` }, n)
+		end
+		expect(#list).toBe(StationTrade.LEDGER_KEEP)
+		expect(list[1].id).toBe(`t{StationTrade.LEDGER_KEEP + 5}`)
+		expect(list[1].at).toBe(StationTrade.LEDGER_KEEP + 5)
+		expect(list[#list].id).toBe("t6") -- the five oldest went
+	end)
+
+	it("never changes the side it was given", function()
+		local side = { id = "t1", give = { 1 } }
+		local list = StationTrade.ledgerAdd({}, side, 5)
+		expect(side.at).toBeNil()
+		expect(list[1] == side).toBe(false)
+	end)
+
+	it("cancels every side of one trade, and nothing else", function()
+		local list = StationTrade.ledgerAdd(StationTrade.ledgerAdd({}, { id = "a" }, 1), { id = "b" }, 2)
+		table.insert(list, "junk") -- a damaged entry is skipped, not an error
+		list = StationTrade.ledgerCancel(list, "a")
+		expect(list[2].cancelled).toBe(true)
+		expect(list[1].cancelled).toBeNil()
+	end)
+end)
+
 describe("StationTrade", function()
 	it("lets an owned animal be offered, not a missing or a training one, and at most MAX", function()
 		local p = save({ "jackal", "lion", "rhino", "meerkat", "cheetah" })
