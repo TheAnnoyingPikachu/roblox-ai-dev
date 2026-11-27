@@ -37,6 +37,24 @@ local fx = remotes:WaitForChild("Fx") :: RemoteEvent
 local App: any = require(script.Parent:WaitForChild("HudApp"))
 local S = App.S
 
+-- live tuning (decision 0131): the server's values on ReplicatedStorage, applied to the shared rules here too
+do
+	local LiveTuning = require(Shared:WaitForChild("LiveTuning"))
+	local function apply()
+		local raw = {}
+		for key in LiveTuning.KEYS do
+			raw[key] = ReplicatedStorage:GetAttribute(`Live_{key}`)
+		end
+		LiveTuning.apply(raw)
+	end
+	apply()
+	ReplicatedStorage.AttributeChanged:Connect(function(name: string)
+		if string.sub(name, 1, 5) == "Live_" then
+			apply()
+		end
+	end)
+end
+
 Ui.setTheme({ -- the Savanna look (decision 0091) for the kit's panels and labels
 	font = Enum.Font.FredokaOne,
 	accent = Style.C.accent,

@@ -17,6 +17,7 @@ local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 local Follower = require(script.Parent:WaitForChild("Follower"))
 
+require(script.Parent:WaitForChild("LiveConfig")).start() -- live tuning (decision 0131), before anything pays
 World.build()
 local BestBoard = require(script.Parent:WaitForChild("BestBoard"))
 BestBoard.start() -- the hub's top-100 board (decision 0129)
@@ -361,6 +362,14 @@ local WaveShow = require(script.Parent:WaitForChild("WaveShow"))
 local TradeLedger = require(script.Parent:WaitForChild("TradeLedger"))
 type Look = { s: string?, v: string?, foe: string?, asset: string }
 local LOOKS: { Look } = {}
+-- the admin menu's choices (SHANNON, 2026-11-27): a coat for an added animal ("none" or a coat id), and the eggs
+local ADMIN_COATS, ADMIN_EGGS = { "none" }, {}
+for _, c in StationConfig.COATS do
+	table.insert(ADMIN_COATS, c.id)
+end
+for _, e in StationConfig.EGGS do
+	table.insert(ADMIN_EGGS, e.id)
+end
 for _, sp in StationConfig.SPECIES do
 	table.insert(LOOKS, { s = sp.id, asset = Creatures.asset(sp.id) })
 	for _, va in sp.variants do
@@ -1416,22 +1425,52 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
-		-- the admin menu (decision 0049): add the k-th animal of `LOOKS` (never a foe) to the admin's own
-		-- ranch with every stat at `level`, in a rainbow coat when `rainbow` is true (decision 0058)
+		-- the admin menu (decisions 0049, 0058; coats and levels SHANNON, 2026-11-27): add the k-th animal of `LOOKS`
+		-- (never a foe) to the admin's own ranch with every stat at `level`, in coat `coat` ("none" or a coat id)
 		admin_add = {
 			args = {
 				Payload.int({ min = 1, max = 100 }),
 				Payload.int({ min = 1, max = StationConfig.MAX_LEVEL }),
-				Payload.boolean(),
+				Payload.enum(ADMIN_COATS),
 			},
-			handler = function(player, k: number, level: number, rainbow: boolean)
+			handler = function(player, k: number, level: number, coat: string)
 				local look = LOOKS[k]
 				if not isAdmin(player) or look == nil or look.s == nil then
 					return false, "admin"
 				end
 				return apply(player, function(p)
-					local q, ok, code = StationProgress.give(p, look.s :: string, look.v, level, rainbow)
+					local q, ok, code =
+						StationProgress.give(p, look.s :: string, look.v, level, if coat == "none" then nil else coat)
 					return q, ok, code
+				end)
+			end,
+		},
+		-- admin: `count` eggs of `egg` into the admin's own egg storage (or waiting when it is full)
+		admin_egg = {
+			args = { Payload.enum(ADMIN_EGGS), Payload.int({ min = 1, max = 10 }) },
+			handler = function(player, egg: string, count: number)
+				local p = saves.get(player)
+				if not isAdmin(player) or p == nil then
+					return false, "admin"
+				end
+				local items =
+					StationRewards.resolve(StationProgress.sanitize(p, os.time()), { egg = egg, eggs = count })
+				local animals, now = rollEggs(items), os.time()
+				return apply(player, function(q)
+					return StationRewards.grant(q, items, animals, nil, now)
+				end)
+			end,
+		},
+		-- admin: every egg hatching now is ready to open
+		admin_skip = {
+			args = {},
+			handler = function(player)
+				if not isAdmin(player) then
+					return false, "admin"
+				end
+				local now = os.time()
+				return apply(player, function(p)
+					return StationProgress.skipHatching(p, now)
 				end)
 			end,
 		},
