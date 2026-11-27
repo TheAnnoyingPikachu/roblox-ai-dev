@@ -109,6 +109,13 @@ end
 
 local function join(player: Player)
 	player:SetAttribute("Admin", isAdmin(player))
+	-- the best wave in Roblox's player list (decision 0128); set from the save in onChanged
+	local stats = Instance.new("Folder")
+	stats.Name = "leaderstats"
+	local best = Instance.new("IntValue")
+	best.Name = "Best wave"
+	best.Parent = stats
+	stats.Parent = player
 	for i = 1, World.RANCHES do
 		if owners[i] == nil then
 			owners[i] = player
@@ -1521,6 +1528,23 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- visit another player's ranch in this server (decision 0128): stand at its spawn. Their prompts stay theirs.
+		visit = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, userId: number)
+				local them = Players:GetPlayerByUserId(userId)
+				local i = if them and them ~= player then ranchOf(them) else nil
+				if i == nil or player.Character == nil then
+					return false, "visit"
+				end
+				WaveShow.clear(player)
+				bankRun(player, false)
+				local to = World.ranchSpawn(i)
+				pcall(player.RequestStreamAroundAsync, player, to.Position)
+				player.Character:PivotTo(to)
+				return true, nil
+			end,
+		},
 		-- travel from anywhere (decision 0093): to the hub or the wave arena's gate (leaving a fight, if
 		-- in one); `home` above goes to the player's own ranch. Places far away are streamed in first.
 		travel = {
@@ -1767,6 +1791,11 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		local board = player:FindFirstChild("leaderstats")
+		local best = if board then board:FindFirstChild("Best wave") else nil
+		if best and best:IsA("IntValue") then
+			best.Value = profile.best
+		end
 		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it

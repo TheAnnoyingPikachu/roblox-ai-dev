@@ -1,0 +1,31 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-188",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Best wave in the player list and Visit a ranch (SHANNON's Round 2 build 5 A, decision 0128).",
+  "inputs": [
+    "docs/decisions/0128-animal-stations-seeing-each-other.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0128-animal-stations-seeing-each-other.md",
+    "studio/tasks/STATION-188.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every player has leaderstats 'Best wave' matching the save's best",
+    "The Visit button lists the other players' ranches in the server; choosing one stands the player at that ranch",
+    "visit is refused for an absent player, one without a ranch, or oneself"
+  ],
+  "verification": "Lune 833/833. Studio 2026-11-27, build dev (local), one player: leaderstats 'Best wave' = 0; Go to… shows Visit and Sound by its title; Visit opens 'Visit a ranch' with 'No one else is here yet. Invite a friend!'. Not seen: two players (visiting a real ranch).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Remote contract: visit(userId) (decision 0128)."
+}
