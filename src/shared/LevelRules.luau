@@ -33,7 +33,7 @@ LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.0
 LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
 -- The last wall (decision 0121, SHANNON: wave 300 stays out of reach): after END_FROM health and strength
 -- also grow END_GROWTH a wave on top, so the best runs end before 300 and everything up to END_FROM is as it was.
-LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.08
+LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.25
 
 -- What every stat of a foe is multiplied by at `level`.
 function LevelRules.scale(level: number): number
@@ -47,10 +47,41 @@ function LevelRules.might(level: number): number
 	return LevelRules.STEEP_GROWTH ^ (n * (1 + n / LevelRules.STEEP_BEND)) * LevelRules.END_GROWTH ^ e
 end
 
--- Stages (decision 0106, display only): STAGE waves each, so every stage ends on a boss wave. Stage 6 and
--- every one after it is The Ancient.
+-- Stages (decision 0106, display only): STAGE waves each, so every stage ends on a boss wave. A name for each of
+-- the 30 (decision 0127); one past the list would be The Ancient.
 LevelRules.STAGE = LevelRules.BOSS_EVERY
-LevelRules.STAGE_NAMES = { "The Vanguard", "The Charge", "The Siege", "The Dark Host", "The Dark Host" }
+LevelRules.STAGE_NAMES = {
+	"The Vanguard",
+	"The Charge",
+	"The Siege",
+	"The Dark Host",
+	"The Black Banners",
+	"The Drake's Shadow",
+	"The Iron Tide",
+	"The Ogre March",
+	"The Golem Wall",
+	"The Burning Fields",
+	"The Night Riders",
+	"The Shield Storm",
+	"The Bone Choir",
+	"The Siege Engines",
+	"The Ashen Road",
+	"The Dragon's Court",
+	"The Storm of Spears",
+	"The Broken Crowns",
+	"The Grave Tide",
+	"The Endless Ranks",
+	"The Iron Moon",
+	"The Last Banners",
+	"The Burning Sky",
+	"The Ancient Rising",
+	"The Legion's Heart",
+	"The Final Siege",
+	"The Black Throne",
+	"The Ancient Fury",
+	"The Last Light",
+	"The Ancient",
+}
 export type Stage = { n: number, name: string, first: number, last: number }
 function LevelRules.stage(level: number): Stage
 	local n = (math.max(1, level) - 1) // LevelRules.STAGE + 1
@@ -62,9 +93,31 @@ function LevelRules.stage(level: number): Stage
 	}
 end
 
--- The dragon that ends boss level `level`: the one with the highest `boss` threshold the level has
--- reached. Nil before the first dragon.
+-- From ROTATE_FROM the boss rotates (decision 0127): each boss wave the next of ROTATION, the dragons and the
+-- strongest of the line. A boss that is not a dragon fights at BOSS_MULT times its stats.
+LevelRules.ROTATE_FROM = 70
+LevelRules.ROTATION = {
+	"ancient_alpha_dragon",
+	"siege_golem",
+	"shadow_dragon",
+	"cavalry_commander",
+	"dark_drake",
+	"ogre_commander",
+	"shieldbearer_commander",
+	"necromancer",
+}
+LevelRules.BOSS_MULT = 3
+
+-- The boss that ends boss level `level`: until ROTATE_FROM the dragon with the highest `boss` threshold the level
+-- has reached, then the next of ROTATION. Nil before the first dragon.
 function LevelRules.boss(level: number): StationConfig.Foe?
+	if level >= LevelRules.ROTATE_FROM then
+		local n = (level - LevelRules.ROTATE_FROM) // LevelRules.BOSS_EVERY
+		local turn = StationConfig.foe(LevelRules.ROTATION[n % #LevelRules.ROTATION + 1])
+		if turn then
+			return turn
+		end
+	end
 	local best: StationConfig.Foe? = nil
 	for _, f in StationConfig.FOES do
 		if f.boss and level >= f.boss and (best == nil or f.boss > (best.boss :: number)) then
@@ -77,7 +130,7 @@ end
 -- The three-foe wave of decision 0040 for `level`: always the same for the same level. Three foes drawn
 -- from the line (knights at first, ogres from wave 5, the warlord from 15); on every 10th level the last
 -- one is a dragon instead. The swarm waves (`enemies`) are matched to its power.
-function LevelRules.classic(level: number): { Owned }
+function LevelRules.classic(level: number, noBoss: boolean?): { Owned }
 	local pool: { StationConfig.Foe } = {}
 	for _, f in StationConfig.FOES do
 		if f.from and level >= f.from and not f.minion then
@@ -91,18 +144,40 @@ function LevelRules.classic(level: number): { Owned }
 		local n
 		n, rng = Rng.int(rng, 1, #pool)
 		local foe = pool[n]
-		if i == LevelRules.TEAM_SIZE and level % LevelRules.BOSS_EVERY == 0 then
+		local boss = 1
+		if i == LevelRules.TEAM_SIZE and level % LevelRules.BOSS_EVERY == 0 and not noBoss then
 			foe = LevelRules.boss(level) or foe
+			boss = if foe.kind == "dragon" then 1 else LevelRules.BOSS_MULT
 		end
 		local stats = {} :: any
 		for _, stat in StationConfig.STATS do
 			-- enemies are not capped at STAT_MAX
-			local mult = if LevelRules.STEEP_STATS[stat] then k * might else k
+			local mult = boss * (if LevelRules.STEEP_STATS[stat] then k * might else k)
 			stats[stat] = math.max(StationConfig.STAT_MIN, math.floor((foe.stats :: any)[stat] * mult))
 		end
 		table.insert(team, { s = foe.id, stats = stats :: StationConfig.Stats })
 	end
 	return team
+end
+
+-- The smooth curve (decision 0123, build 2 A): a wave's power is the average (geometric mean) of the classic
+-- waves around it, without their dragons, so the random draw of three foes no longer makes some waves much
+-- harder than the next; a boss wave is exactly BOSS_STEP times that. Cached: it is the same every time.
+LevelRules.SMOOTH_SPAN = 6 -- waves either side
+LevelRules.BOSS_STEP = 1.5
+local targets: { [number]: number } = {}
+function LevelRules.target(level: number): number
+	local got = targets[level]
+	if got == nil then
+		local sum, n = 0, 0
+		for w = math.max(1, level - LevelRules.SMOOTH_SPAN), level + LevelRules.SMOOTH_SPAN do
+			sum += math.log(BattleRules.teamPower(LevelRules.classic(w, true), 2))
+			n += 1
+		end
+		got = math.exp(sum / n) * (if level % LevelRules.BOSS_EVERY == 0 then LevelRules.BOSS_STEP else 1)
+		targets[level] = got
+	end
+	return got :: number
 end
 
 -- Swarm waves (decision 0101): how many foes a wave sends, in how many rushes, how many of them are elites
@@ -167,7 +242,7 @@ function LevelRules.enemies(level: number, players: number?): { Owned }
 		end
 	end
 	local rng = Rng.seed(level, 41)
-	local members: { { foe: StationConfig.Foe, rush: number, elite: boolean } } = {}
+	local members: { { foe: StationConfig.Foe, rush: number, elite: boolean, boss: boolean? } } = {}
 	local regulars = row.count - row.minions
 	for r = 1, row.rushes do
 		local function share(total: number): number -- this rush's part of `total`, spread evenly
@@ -186,7 +261,7 @@ function LevelRules.enemies(level: number, players: number?): { Owned }
 	if level % LevelRules.BOSS_EVERY == 0 then
 		local dragon = LevelRules.boss(level)
 		if dragon then -- the boss takes the last regular's place
-			members[#members] = { foe = dragon, rush = row.rushes, elite = false }
+			members[#members] = { foe = dragon, rush = row.rushes, elite = false, boss = true }
 		end
 	end
 	local k, might = LevelRules.scale(level), LevelRules.might(level)
@@ -194,19 +269,21 @@ function LevelRules.enemies(level: number, players: number?): { Owned }
 		local team = {}
 		for _, x in members do
 			local mult = k * m * (if x.elite then LevelRules.ELITE else 1)
+			if x.boss and x.foe.kind ~= "dragon" then -- a foe of the line made a boss (decision 0127)
+				mult *= LevelRules.BOSS_MULT
+			end
 			table.insert(team, {
 				s = x.foe.id,
 				stats = scaled(x.foe, mult, might),
 				rush = x.rush,
 				elite = if x.elite then true else nil,
+				boss = if x.boss then true else nil,
 			})
 		end
 		return team
 	end
 	-- one number for every stat, found by halving, so the swarm is as strong as the wave it replaces
-	local want = BattleRules.teamPower(LevelRules.classic(level), 2)
-		* (row.power or LevelRules.CROWD_POWER)
-		* LevelRules.PARTY_POWER[party]
+	local want = LevelRules.target(level) * (row.power or LevelRules.CROWD_POWER) * LevelRules.PARTY_POWER[party]
 	local lo, hi = 0.02, 8
 	local best, bestGap = build(1), math.huge
 	for _ = 1, 40 do
@@ -228,10 +305,10 @@ function LevelRules.enemies(level: number, players: number?): { Owned }
 	return best
 end
 
--- How strong wave `level` is, as a power score to weigh a team against (decision 0096): the classic
--- wave's, which its swarm is as hard as.
+-- How strong wave `level` is, as a power score to weigh a team against (decision 0096): the smooth curve's
+-- (`target`), which its swarm is as hard as.
 function LevelRules.power(level: number): number
-	return BattleRules.teamPower(LevelRules.classic(level), 2)
+	return LevelRules.target(level)
 end
 
 -- Whether `team` clears `level`, how many attacks the fight took, how many seconds, and the team's HP

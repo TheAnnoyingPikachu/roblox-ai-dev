@@ -4006,6 +4006,7 @@ local function strike(rig: Rig)
 			then "rbxasset://sounds/impact_explosion_03.mp3"
 			else "rbxasset://sounds/action_jump_land.mp3"
 		made.RollOffMaxDistance, made.RollOffMinDistance = 300, 30
+		made.SoundGroup = game:GetService("SoundService"):FindFirstChild("Effects") :: SoundGroup? -- the HUD makes it (Style.group)
 		made.Parent = hit
 		if hot or ko then
 			rig.boom = made

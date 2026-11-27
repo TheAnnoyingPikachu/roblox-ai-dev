@@ -26,6 +26,7 @@ export type Owned = {
 	boost: number?,
 	rush: number?,
 	elite: boolean?,
+	boss: boolean?, -- a wave's boss (LevelRules.enemies, decision 0127): it stands bigger and lands on the circle
 }
 
 StationRules.PPM = 1_000_000
@@ -128,7 +129,7 @@ function StationRules.hatch(eggId: string, rng: Rng.State): (Owned?, Rng.State)
 	if jackpot <= StationConfig.JACKPOT_PPM then
 		local which
 		which, rng = Rng.int(rng, 1, #StationConfig.STATS)
-		levels[StationConfig.STATS[which]] = StationConfig.MAX_LEVEL
+		levels[StationConfig.STATS[which]] = StationConfig.STAR_FROM -- the jackpot: one stat at 70, no stars
 	end
 	local roll
 	roll, rng = Rng.int(rng, 1, StationRules.PPM)
@@ -264,14 +265,29 @@ function StationRules.level(animal: Owned, stat: StationConfig.Stat): number
 	return if animal.trained then math.floor((animal.trained :: any)[stat]) else 0
 end
 
--- An animal's stat right now: the hatched value grown by its level (doubled at MAX_LEVEL), and its coat's
+-- A level's multiplier, in 4900ths of the species value (decision 0123): 4900 (x1) at level 0, rising fast and
+-- then slower to 14700 (x3) at STAR_FROM, then STAR_PCT percent more spread evenly over the stars.
+function StationRules.grown(level: number): number
+	local top = StationConfig.STAR_FROM
+	local l = math.clamp(level, 0, StationConfig.MAX_LEVEL)
+	local below = math.min(l, top)
+	local m = 4900 + 2 * (4900 - (top - below) * (top - below) * 4900 // (top * top))
+	local stars = math.max(0, l - top)
+	return m + 49 * StationConfig.STAR_PCT * stars // (StationConfig.MAX_LEVEL - top)
+end
+
+-- A level as the HUD writes it (decision 0123): "12/70" below the stars, "70 ★5" with five star levels.
+function StationRules.levelText(level: number): string
+	local top = StationConfig.STAR_FROM
+	return if level <= top then `{level}/{top}` else `{top} ★{level - top}`
+end
+
+-- An animal's stat right now: the hatched value grown by its level (`grown`: x3 at 70, x5.6 at 140), and its coat's
 -- buff (decisions 0058, 0110): `all` percent more of every stat or `pct` more of its own, rounded up.
 -- Whole-number maths, so a result that should be exact is never one short. Not capped: level
 -- enemies have no levels but hatched stats that keep growing.
 function StationRules.stat(animal: Owned, stat: StationConfig.Stat): number
-	local max = StationConfig.MAX_LEVEL
-	local grown = max + StationConfig.LEVEL_GROWTH * StationRules.level(animal, stat)
-	local value = math.floor((animal.stats :: any)[stat] * grown / max)
+	local value = (animal.stats :: any)[stat] * StationRules.grown(StationRules.level(animal, stat)) // 4900
 	local coat = StationRules.coatOf(animal)
 	local pct = if coat then coat.all or (if coat.stat == stat then coat.pct else nil) else nil
 	if pct then
@@ -287,12 +303,16 @@ end
 -- same factor each level to one day at LEVEL_DAY, then by a smaller factor to LEVEL_LAST at
 -- MAX_LEVEL. Whole seconds, so sums of levels are exact.
 function StationRules.levelSeconds(n: number): number
-	local c, day = StationConfig, 24 * 3600
+	local c = StationConfig
 	local seconds
-	if n <= c.LEVEL_DAY then
-		seconds = c.LEVEL_FIRST * (day / c.LEVEL_FIRST) ^ ((n - 1) / (c.LEVEL_DAY - 1))
-	else
-		seconds = day * (c.LEVEL_LAST / day) ^ ((n - c.LEVEL_DAY) / (c.MAX_LEVEL - c.LEVEL_DAY))
+	if n <= c.LEVEL_MID then
+		seconds = c.LEVEL_FIRST * (c.LEVEL_MID_SECONDS / c.LEVEL_FIRST) ^ ((n - 1) / (c.LEVEL_MID - 1))
+	elseif n <= c.STAR_FROM then
+		seconds = c.LEVEL_MID_SECONDS
+			* (c.LEVEL_TOP_SECONDS / c.LEVEL_MID_SECONDS) ^ ((n - c.LEVEL_MID) / (c.STAR_FROM - c.LEVEL_MID))
+	else -- a star level
+		local over = c.MAX_LEVEL - c.STAR_FROM - 1
+		seconds = c.STAR_FIRST * (c.STAR_LAST / c.STAR_FIRST) ^ ((n - c.STAR_FROM - 1) / over)
 	end
 	return math.floor(seconds + 0.5)
 end
