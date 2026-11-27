@@ -30,6 +30,10 @@
   "verification": "Studio, local build, stamp `dev`, 2026-11-18: the three files synced into the place, Play started with no error in the Output (before the fix, `calm` threw 'Region cannot be empty' and the build stopped after ranch 1's valley); ranch 2's track ground is LeafyGrass; ranch 1's areas stood at Training Grounds level 5 and the track and the gym looked at from the concept's cameras: frayed edges, the border and the woods as on the card. lune 721/721, selene 0 warnings. Not checked: a phone, frame rate (the world went from about 9,300 parts to about 19,800 in this session, with the areas at level 5).",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-18: 'go for the after look its awesome!'."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-18: 'go for the after look its awesome!'.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -27,6 +27,10 @@
   "verification": "Lune 824/824 (StationProgress away spec). Studio 2026-11-26, build dev (local): the card drawn with three sample lines (a fresh save in Studio has nothing to say, so the lines were set by hand). Not seen: a real returning save (DataStores are offline in Studio).",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Display only: no save field, no request. Worked out on the client from the first profile and the server's clock."
+  "status": "accepted",
+  "notes": "Display only: no save field, no request. Worked out on the client from the first profile and the server's clock.",
+  "evidence": [
+    "Merged in PR #73 as commit 8d6a5c1 (2026-11-27); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45917428515",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

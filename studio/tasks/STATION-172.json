@@ -31,6 +31,10 @@
   "verification": "Lune WaveRuns spec (two picks, the rest of the offer, no ultra left for a second, ends after 5); 823/823. Run simulation, best picks, max team: 249, 279, 300. Studio 2026-11-25, build dev (local), ultra odds forced for the test only: Twin Picks taken at wave 1; at wave 2 the first pick left the other two cards up under \"Twin Picks: pick your second boon\". Not seen: a party voting twice.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Remote contract: the boon message gains `again` (decision 0120 amended). Balance: wave 300 reachable in one seed of three with the best team and picks; SHANNON to say if it should be further off."
+  "status": "accepted",
+  "notes": "Remote contract: the boon message gains `again` (decision 0120 amended). Balance: wave 300 reachable in one seed of three with the best team and picks; SHANNON to say if it should be further off.",
+  "evidence": [
+    "Merged in PR #65 as commit c2c7dc5 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45675753324",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

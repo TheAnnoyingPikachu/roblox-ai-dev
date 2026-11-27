@@ -34,6 +34,10 @@
     "src/stations/Ranch.luau"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Balance change: a new ranch starts with 2 training places (was 4) and room for 10 animals (was 100). No published saves exist. Coins and samples cannot be earned in play until wave fights are built; a Studio-only pad gives test funds."
+  "status": "accepted",
+  "notes": "Balance change: a new ranch starts with 2 training places (was 4) and room for 10 animals (was 100). No published saves exist. Coins and samples cannot be earned in play until wave fights are built; a Studio-only pad gives test funds.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

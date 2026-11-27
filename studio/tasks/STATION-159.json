@@ -35,6 +35,10 @@
   "verification": "Lune 823/823 (loanFor boss then daily, the Titan rule, a fighter only, max level, met, sanitize). Studio 2026-11-25, build dev (local): after clearing waves 1 to 9 the Waves window offered the boss's loan; took the Sphinx Jackal in place of a Rhino; wave 10 was fought with the legend at max level (speed 496) and won; the card was gone after (today's loan used). Not seen: the daily loan on another day, a shared fight with loans, a phone.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Data schema and remote change: decision 0119 (accepted by SHANNON, 2026-11-25). Builds on STATION-158 (PR #56): merge that first."
+  "status": "accepted",
+  "notes": "Data schema and remote change: decision 0119 (accepted by SHANNON, 2026-11-25). Builds on STATION-158 (PR #56): merge that first.",
+  "evidence": [
+    "Merged in PR #47 as commit 9627dbb (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45645894751",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

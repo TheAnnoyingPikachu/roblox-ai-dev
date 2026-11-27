@@ -20,6 +20,10 @@
   "verification": "Studio 2026-11-25, build dev (local): B opened Waves, B again started wave 1 and the window closed for the fight. Selene clean.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "B was the dock's Waves hotkey, which closes an open sheet when pressed again."
+  "status": "accepted",
+  "notes": "B was the dock's Waves hotkey, which closes an open sheet when pressed again.",
+  "evidence": [
+    "Merged in PR #60 as commit 90347b5 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45667702327",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -33,6 +33,10 @@
   "verification": "skin_forge --stretch worst, unclamped: Guardian 8.29 % (14.66 % with the first iteration's weights), Mammoth 8.40 % (9.01), War-Tortoise 3.63 % (3.63), Sun Rhino 5.75 % (8.40). check_spells ALL OK. Lune 823/823. Uploaded models and rainbow coats: run 45711008034. Studio 2026-11-25, build dev (local): all four stood on the ground, idled, held their spells mid-cast and the Guardian its attack (face and mane whole), at their sizes. Not seen: walking the herd at a ranch, a fight with them in the team.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. Fixes: each leg leaves the body below its armour; the Guardian's face turns rigid on a narrow band behind it with its mane on the body (carried by the head, the mane tore from the chest), and its 3,071 triangles are split until no edge is over 0.025 (15,788). Earlier uploads (STATION-173's and STATION-174's) are left for archiving by hand."
+  "status": "accepted",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. Fixes: each leg leaves the body below its armour; the Guardian's face turns rigid on a narrow band behind it with its mane on the body (carried by the head, the mane tore from the chest), and its 3,071 triangles are split until no edge is over 0.025 (15,788). Earlier uploads (STATION-173's and STATION-174's) are left for archiving by hand.",
+  "evidence": [
+    "Merged in PR #68 as commit 7bb71b3 (2026-11-26); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45911536264",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

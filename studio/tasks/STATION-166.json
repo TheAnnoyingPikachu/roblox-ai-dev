@@ -27,6 +27,10 @@
   "verification": "Lune spec: every foe has a line of 20 to 100 characters.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Display text only: no rule reads `about`. The lines follow the rules: defence foes must be struck first (BattleRules.GUARD), the Battle Priest heals (HEAL_PCT), pack foes are stronger together, revive and sweep are the Necromancer's and the golem's and dragons' powers."
+  "status": "accepted",
+  "notes": "Display text only: no rule reads `about`. The lines follow the rules: defence foes must be struck first (BattleRules.GUARD), the Battle Priest heals (HEAL_PCT), pack foes are stronger together, revive and sweep are the Necromancer's and the golem's and dragons' powers.",
+  "evidence": [
+    "Merged in PR #51 as commit 16aaf5e (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45651611285",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

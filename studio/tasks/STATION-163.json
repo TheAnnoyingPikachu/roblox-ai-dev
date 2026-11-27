@@ -30,6 +30,10 @@
   "verification": "Studio 2026-11-25, build dev (local): the own animal's trading card shows on a hover after the pause (banner, picture, legendary shine, LEGENDARY and TEAM 1 chips, power, class and group chips, six stat bars, 'In your team, slot 1', how its press works, Open Click); a click opens it in Animals (SHANNON saw it). Lune 819/819, selene 0 warnings. Not seen: someone else's card (needs a second player), the fight's glass card, the touch press and hold, the flip at the screen's edge.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON's pick: all of the board. SHANNON, 2026-11-25: the rarity chip covered the picture, so the chips sit on the banner's bottom edge. The server now marks each animal model with `AnimalId` (Creatures.describe) and each player with `Level`; HudFight marks a fighting model with its press key (`PressKey`). The stat bars show each stat's level out of 70 (how far it is trained), the number beside it its value."
+  "status": "accepted",
+  "notes": "SHANNON's pick: all of the board. SHANNON, 2026-11-25: the rarity chip covered the picture, so the chips sit on the banner's bottom edge. The server now marks each animal model with `AnimalId` (Creatures.describe) and each player with `Level`; HudFight marks a fighting model with its press key (`PressKey`). The stat bars show each stat's level out of 70 (how far it is trained), the number beside it its value.",
+  "evidence": [
+    "Merged in PR #47 as commit 9627dbb (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45645894751",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

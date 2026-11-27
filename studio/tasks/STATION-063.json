@@ -51,6 +51,10 @@
     "src/stations/Valley.luau"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'go on the ranch vallet and i take your recommendation, go with the size fitted animation, fix the unused uploads'. Read as: build the valley of decision 0068 with Roblox terrain (the recommendation of its question 2). Checkpoint for SHANNON, each with a recommendation in decision 0070: (1) the homestead keeps its square plot for now; (2) ranches are 900 studs from the hub, not 840; (3) all three ranches have the same valley. Upload run 43954205121 (the twelve area models without floors and fences). The unused uploads: a dry run (upload-assets run 43957464342) listed 60 decals, every one an Animal Stations texture that no uploaded.json lists, and run 43957653869 archived 60 of 60; each row of docs/assets/register.md says so. Their models and images stay on the account: Roblox's API archives decals only."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-16: 'go on the ranch vallet and i take your recommendation, go with the size fitted animation, fix the unused uploads'. Read as: build the valley of decision 0068 with Roblox terrain (the recommendation of its question 2). Checkpoint for SHANNON, each with a recommendation in decision 0070: (1) the homestead keeps its square plot for now; (2) ranches are 900 studs from the hub, not 840; (3) all three ranches have the same valley. Upload run 43954205121 (the twelve area models without floors and fences). The unused uploads: a dry run (upload-assets run 43957464342) listed 60 decals, every one an Animal Stations texture that no uploaded.json lists, and run 43957653869 archived 60 of 60; each row of docs/assets/register.md says so. Their models and images stay on the account: Roblox's API archives decals only.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

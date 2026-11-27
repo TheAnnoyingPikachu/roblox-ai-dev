@@ -41,6 +41,10 @@
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON approved the three cheetahs on 2026-11-15 and asked for them in the game. The upload runs in GitHub (environment assets), never with a key on this machine. Still open for SHANNON from STATION-036: the three lions carry the vertex-colour fault and look darker in the game than approved. The replaced Cheetah and Lightning Cheetah assets are still on the account (decals 99987879723805 and 95795974885943 could be archived by the workflow)."
+  "status": "accepted",
+  "notes": "SHANNON approved the three cheetahs on 2026-11-15 and asked for them in the game. The upload runs in GitHub (environment assets), never with a key on this machine. Still open for SHANNON from STATION-036: the three lions carry the vertex-colour fault and look darker in the game than approved. The replaced Cheetah and Lightning Cheetah assets are still on the account (decals 99987879723805 and 95795974885943 could be archived by the workflow).",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

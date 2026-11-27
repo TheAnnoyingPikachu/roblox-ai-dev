@@ -53,6 +53,10 @@
     "src/shared/TrainFx.luau"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'can you make all the kit animations and menu grey effect', and 'also get rid of the finish line gate thingy and just have the checker on the floor and get rid of this random bench (both on speed training)'. The upload runs in GitHub (environment assets), never with a key on this machine."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-16: 'can you make all the kit animations and menu grey effect', and 'also get rid of the finish line gate thingy and just have the checker on the floor and get rid of this random bench (both on speed training)'. The upload runs in GitHub (environment assets), never with a key on this machine.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

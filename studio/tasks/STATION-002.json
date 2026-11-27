@@ -24,6 +24,10 @@
   "verification": "CI runs StationRules.spec.luau and Purity.spec.luau; SHANNON reviews the draft values at the first checkpoint",
   "output_artifacts": ["src/shared/StationConfig.luau", "docs/game-design/game7-animals.md"],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Replaces the 11 placeholder animals from STATION-001."
+  "status": "accepted",
+  "notes": "Replaces the 11 placeholder animals from STATION-001.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

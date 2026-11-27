@@ -39,6 +39,10 @@
     "docs/concepts/guard-yard-card.png"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'start making concepts for a highly detailed finish centre of the map and then some concepts for large areas specific for each training activity on the ranches, concept only for now'. Checkpoint for SHANNON (decision 0059): the looks; where six 64 by 48 yards go, since they do not fit the 150-stud ranch square (recommended: move the fence out on the island); whether animals are seen training in their area; how an area grows with its upgrade."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-16: 'start making concepts for a highly detailed finish centre of the map and then some concepts for large areas specific for each training activity on the ranches, concept only for now'. Checkpoint for SHANNON (decision 0059): the looks; where six 64 by 48 yards go, since they do not fit the 150-stud ranch square (recommended: move the fence out on the island); whether animals are seen training in their area; how an area grows with its upgrade.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -31,6 +31,10 @@
   "verification": "Seen in Studio (this branch, build dev, with the ultra odds forced in Studio's copy only): an ultra lucky card (Legend's Blessing, Jackpot Egg, Twin Picks) with the turning rainbow edge, rainbow tile and ULTRA LUCKY chip; a lucky card (Overcharge, Revive) gold with LUCKY; Sharp Claws, Quick Paws and Thick Hide with their pictures and the stack in the corner; key 1 picks; wave 3's offer had no second ultra card; leaving after Jackpot Egg banked +2 coins and a Wild Egg, with the note 'Jackpot Egg: a Wild Egg for your cellar!'. Found and fixed on the way: the boon request only took the 8 old ids (decision 0120). lune 819 pass, selene 0 warnings.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Icons: all 27 made in ForgeGUI (claws, hide, quick: jobs bf31df78, 78ebffb5, c3e1668f; the other 24 on 2026-11-25 after SHANNON added credits: 'go for the boons now', 2 versions each, Claude's picks from the contact sheet; lucky boons have gold trim, ultra lucky a rainbow shimmer). Uploaded from Studio, ids in Style.ICONS and docs/assets/register.md. The vote's ring and dots on these cards are STATION-160. Not seen: a phone, a party's vote on the new cards."
+  "status": "accepted",
+  "notes": "Icons: all 27 made in ForgeGUI (claws, hide, quick: jobs bf31df78, 78ebffb5, c3e1668f; the other 24 on 2026-11-25 after SHANNON added credits: 'go for the boons now', 2 versions each, Claude's picks from the contact sheet; lucky boons have gold trim, ultra lucky a rainbow shimmer). Uploaded from Studio, ids in Style.ICONS and docs/assets/register.md. The vote's ring and dots on these cards are STATION-160. Not seen: a phone, a party's vote on the new cards.",
+  "evidence": [
+    "Merged in PR #47 as commit 9627dbb (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45645894751",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -32,6 +32,10 @@
   "verification": "Lune 824/824 (StationProgress sound spec). Studio 2026-11-26, build dev (local): the Sound button on Go to… opens the panel; Music − twice shows 80%; Mute all sets both groups to 0 and the button reads Sound off; the UI sounds play in Effects. Not seen: a rejoin (DataStores are offline in Studio), a phone.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Data schema and remote contract: decision 0122 (save field `sound`, request `sound`)."
+  "status": "accepted",
+  "notes": "Data schema and remote contract: decision 0122 (save field `sound`, request `sound`).",
+  "evidence": [
+    "Merged in PR #72 as commit 4798580 (2026-11-27); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45916500813",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

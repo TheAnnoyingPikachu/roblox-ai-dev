@@ -37,6 +37,10 @@
     "tools/blender/stations/assets/homestead.py"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-17: 'do all those buildings, do all your suggested drafts, the area doesnt need to be bigger just needs to fit everything'. Read as the go-ahead to build and upload the eight buildings (question 4 of decision 0071) at the homestead's present size (question 2: 224 studs across)."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-17: 'do all those buildings, do all your suggested drafts, the area doesnt need to be bigger just needs to fit everything'. Read as the go-ahead to build and upload the eight buildings (question 4 of decision 0071) at the homestead's present size (question 2: 224 studs across).",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -37,6 +37,10 @@
   "verification": "Lune 829/829. The compile check fails a 210-local function (checked by hand).",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "The kit's SaveStore.finish gains an optional `before` hook; kit-roblox Saves passes beforeFinish through it (same order as before: the hook, then the last write). Other games pass no hook and are unchanged."
+  "status": "accepted",
+  "notes": "The kit's SaveStore.finish gains an optional `before` hook; kit-roblox Saves passes beforeFinish through it (same order as before: the hook, then the last write). Other games pass no hook and are unchanged.",
+  "evidence": [
+    "Merged in PR #70 as commit ad3ba52 (2026-11-27); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45915149991",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

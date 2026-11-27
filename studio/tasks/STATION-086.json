@@ -25,6 +25,10 @@
     ".github/workflows/publish.yml"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-18: 'publish to a private test place that me and my friends can test' (approval for the private place, rule 7)."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-18: 'publish to a private test place that me and my friends can test' (approval for the private place, rule 7).",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }
