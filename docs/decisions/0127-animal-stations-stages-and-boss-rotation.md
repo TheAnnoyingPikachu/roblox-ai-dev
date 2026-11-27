@@ -22,6 +22,10 @@ Claude's. The boss intro and health bar made in ForgeGUI wait for credits. Task 
   and tinted crimson (`BOSS_TINT`).
 - Fact (simulation, 2026-11-27, today's main): no run of the best team at level 70 cleared wave 300 (best 299;
   mid team 59, top variants 229 to 289).
+- Fact (simulation, 2026-11-27, after decisions 0123 and 0125 merged: star levels, smooth waves, wall 25% a
+  wave from 250): the best team at levels 70, 100 and 140 reaches 268 to 280, 269 to 280 and 269 to 284, the
+  same as without the rotation. The swarm is matched to the wave's whole power (`target`), so `BOSS_MULT` moves
+  strength onto the boss without making the wave harder; the wall stays as it is.
 
 ## Not changed
 

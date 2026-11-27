@@ -33,7 +33,7 @@ LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.0
 LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
 -- The last wall (decision 0121, SHANNON: wave 300 stays out of reach): after END_FROM health and strength
 -- also grow END_GROWTH a wave on top, so the best runs end before 300 and everything up to END_FROM is as it was.
-LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.08
+LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.25
 
 -- What every stat of a foe is multiplied by at `level`.
 function LevelRules.scale(level: number): number
@@ -160,6 +160,26 @@ function LevelRules.classic(level: number, noBoss: boolean?): { Owned }
 	return team
 end
 
+-- The smooth curve (decision 0123, build 2 A): a wave's power is the average (geometric mean) of the classic
+-- waves around it, without their dragons, so the random draw of three foes no longer makes some waves much
+-- harder than the next; a boss wave is exactly BOSS_STEP times that. Cached: it is the same every time.
+LevelRules.SMOOTH_SPAN = 6 -- waves either side
+LevelRules.BOSS_STEP = 1.5
+local targets: { [number]: number } = {}
+function LevelRules.target(level: number): number
+	local got = targets[level]
+	if got == nil then
+		local sum, n = 0, 0
+		for w = math.max(1, level - LevelRules.SMOOTH_SPAN), level + LevelRules.SMOOTH_SPAN do
+			sum += math.log(BattleRules.teamPower(LevelRules.classic(w, true), 2))
+			n += 1
+		end
+		got = math.exp(sum / n) * (if level % LevelRules.BOSS_EVERY == 0 then LevelRules.BOSS_STEP else 1)
+		targets[level] = got
+	end
+	return got :: number
+end
+
 -- Swarm waves (decision 0101): how many foes a wave sends, in how many rushes, how many of them are elites
 -- (a regular x ELITE in every stat, shown in gold) and how many minions (none since the Gloom Imp left
 -- with the Hexbound, decision 0104: the crowd is all regulars). The row with the
@@ -263,9 +283,7 @@ function LevelRules.enemies(level: number, players: number?): { Owned }
 		return team
 	end
 	-- one number for every stat, found by halving, so the swarm is as strong as the wave it replaces
-	local want = BattleRules.teamPower(LevelRules.classic(level), 2)
-		* (row.power or LevelRules.CROWD_POWER)
-		* LevelRules.PARTY_POWER[party]
+	local want = LevelRules.target(level) * (row.power or LevelRules.CROWD_POWER) * LevelRules.PARTY_POWER[party]
 	local lo, hi = 0.02, 8
 	local best, bestGap = build(1), math.huge
 	for _ = 1, 40 do
@@ -287,10 +305,10 @@ function LevelRules.enemies(level: number, players: number?): { Owned }
 	return best
 end
 
--- How strong wave `level` is, as a power score to weigh a team against (decision 0096): the classic
--- wave's, which its swarm is as hard as.
+-- How strong wave `level` is, as a power score to weigh a team against (decision 0096): the smooth curve's
+-- (`target`), which its swarm is as hard as.
 function LevelRules.power(level: number): number
-	return BattleRules.teamPower(LevelRules.classic(level), 2)
+	return LevelRules.target(level)
 end
 
 -- Whether `team` clears `level`, how many attacks the fight took, how many seconds, and the team's HP

@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-182",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "SHANNON's Round 2 answers 6 A and 19 A (decision 0124): ranch animals off the team earn coins while away by rarity, collected from the Ranch menu, and the Windmill pays a share of the next wave's pay when that is more than its flat coins.",
+  "inputs": [
+    "docs/decisions/0123-animal-stations-round-two-and-star-levels.md",
+    "docs/decisions/0073-animal-stations-windmill-collect.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudRanch.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0124-animal-stations-ranch-income.md",
+    "studio/tasks/STATION-182.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Windmill makes the greater of its level's coins and its share of the next wave's pay an hour",
+    "Every animal off the team, not the Titan in its slot and not training earns its rarity's rate, held up to 8 hours",
+    "The Ranch menu's Collect button pays it; nothing to collect is refused as herd_empty",
+    "The save keeps the clock and never ahead of now"
+  ],
+  "verification": "Lune 828/828 (StationProgress income specs). Numbers in decision 0124. Studio 2026-11-27, build dev (local): the Ranch menu header shows the animals button beside Test funds (a fresh save: Animals earn 0/h). Not seen: a real collection after hours away.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Economy values, data schema (`herd`) and remote contract (`collect_herd`): decision 0124."
+}

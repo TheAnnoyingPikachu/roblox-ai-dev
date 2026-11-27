@@ -788,6 +788,25 @@ function WaveShow.run(
 				end
 			end
 		end
+		-- how close it was (decision 0123): the share of the Legion's health still standing at the end
+		local foeHp: { [number]: number } = {}
+		for _, e in show.log do
+			if e.tside == 2 then
+				foeHp[e.tslot] = e.hp
+			end
+			if e.side == 1 then
+				for _, x in e.also or {} do
+					foeHp[x.slot] = x.hp
+				end
+			elseif e.heal then -- a foe healer's heal
+				foeHp[e.heal.slot] = e.heal.hp
+			end
+		end
+		local hpLeft, hpAll = 0, 0
+		for i, f in BattleRules.lineup(foes, 2) do
+			hpAll += f.maxHp
+			hpLeft += math.clamp(foeHp[i] or f.maxHp, 0, f.maxHp)
+		end
 		local mvp = 0
 		for slot, d in dealt do
 			if mvp == 0 or d > dealt[mvp] then
@@ -813,6 +832,7 @@ function WaveShow.run(
 			ends = show.ends,
 			mvp = if va then va.name elseif sp then sp.name else nil,
 			mvpDmg = dealt[mvp] or 0,
+			foeLeft = if hpAll > 0 then hpLeft / hpAll else 0, -- 0 to 1: display only
 		})
 	end
 	task.spawn(function()

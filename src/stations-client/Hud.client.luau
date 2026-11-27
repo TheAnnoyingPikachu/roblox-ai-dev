@@ -120,6 +120,7 @@ local REFUSED: { [string]: string } = {
 	nests_full = "Every nest is taken: upgrade the Hatchery",
 	no_mill = "Build the Windmill first",
 	mill_empty = "The windmill has no coins for you yet",
+	herd_empty = "Your animals haven't earned anything yet",
 	not_ready = "That egg is not ready yet",
 	hatching = "That egg is already hatching",
 	top = "That is already at its top level",
@@ -127,7 +128,7 @@ local REFUSED: { [string]: string } = {
 	train_full = "Every training place is taken: upgrade the Ranch House",
 	station_busy = "Another animal is training there: stop it first",
 	training = "Stop its training first",
-	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
+	maxed = `That stat has all {StationConfig.MAX_LEVEL - StationConfig.STAR_FROM} stars`,
 	loading = "Still loading your ranch...",
 	rate = "Slow down a little",
 	wave = "That wave is not open yet: clear the one before it",
@@ -199,11 +200,11 @@ local function live(a: any): any
 	return StationRules.train(a, a.at, StationProgress.trainedBetween(S.profile, a.since, Workspace:GetServerTimeNow()))
 end
 
--- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
--- over "46"), with the time left to the next level while training ("46  12m"), or MAX.
+-- Two lines for a stat button: the stat's level ("SPD 7/70", or "SPD 70 ★5" with stars), then its battle
+-- value, with the time left to the next level while training ("46  12m"), or MAX.
 function Hud.statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
-	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
+	local head = `{STAT_SHORT[stat]} {StationRules.levelText(level)}`
 	local value = StationRules.stat(a, stat :: any)
 	if level >= StationConfig.MAX_LEVEL then
 		return `{head}\n{value}  MAX`
@@ -1033,7 +1034,7 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 		for _, prompt in CollectionService:GetTagged("Mill") do -- what the owner's windmill holds, on its till
 			if S.profile and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
 				local held = StationProgress.held(S.profile, Workspace:GetServerTimeNow())
-				local full = held >= StationProgress.value(S.profile, "windmill") * StationProgress.MILL_HOURS
+				local full = held >= StationProgress.millRate(S.profile) * StationProgress.MILL_HOURS
 				local text =
 					`{Format.commas(held)} {if held == 1 then "coin" else "coins"}{if full then " (full)" else ""}`
 				(prompt :: ProximityPrompt).ObjectText = text
@@ -1072,8 +1073,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
-			if StationRules.level(payload, stat) >= StationConfig.MAX_LEVEL then
-				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.MAX_LEVEL}!`
+			if StationRules.level(payload, stat) >= StationConfig.STAR_FROM then
+				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.STAR_FROM}!`
 			end
 		end
 		if payload.at then
@@ -1171,6 +1172,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			local kept = if S.run then math.floor(S.run.pot * WaveRuns.LOSS_KEEP / 100) else 0
+			-- how close it was (decision 0123): the Legion's health left
+			local left = math.clamp(math.ceil((payload.foeLeft or 1) * 100), 1, 100)
+			local close = if left <= 15
+				then `So close: the Legion had only {left}% of its health left.`
+				else `The Legion still had {left}% of its health.`
 			Hud.runOver(
 				`Stopped at wave {payload.wave}`,
 				{
@@ -1179,7 +1185,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 					{ `x{#(payload.boons or {})}`, "boons picked this run" },
 				},
 				if low
-					then `Your {low.name}'s {low.stat} is only level {low.level}. Training it is the quickest gain.`
+					then `{close} Your {low.name}'s {low.stat} is only level {low.level}: training it is the quickest gain.`
 					else "Hatch three animals and put them in your team.",
 				S.run ~= nil and S.run.best
 			)
