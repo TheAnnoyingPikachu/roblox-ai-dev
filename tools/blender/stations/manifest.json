@@ -9888,62 +9888,62 @@
     "png": "build/blender/stations/creature_elephant_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_elephant_sahara_forge_rest.png",
     "size_studs": [
-      17.9,
-      22.54,
+      18.22,
+      28.98,
       39.0
     ],
-    "tris": 12000,
+    "tris": 14644,
     "parts": {
-      "creature_elephant_sahara_forge_body": 12000
+      "creature_elephant_sahara_forge_body": 14644
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
+    "notes": "Sahara Mammoth: regenerated in ForgeGUI (2026-11-27) from a concept of the elephants' faceted body in the Eternals' sun regalia (matching the Molten Sun Rhino), neutral stance, one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_elephant_sahara_forge_body": [
         0.0,
-        11.269,
+        14.49,
         -0.0
       ]
     },
     "joints": {
       "creature_elephant_sahara_forge_head": [
         0.0,
-        11.87,
-        7.483
+        16.504,
+        9.043
       ],
       "creature_elephant_sahara_forge_leg_fl": [
-        5.232,
-        7.385,
-        6.362
+        4.701,
+        10.373,
+        0.867
       ],
       "creature_elephant_sahara_forge_leg_fr": [
-        -5.232,
-        7.385,
-        6.362
+        -4.701,
+        10.373,
+        0.867
       ],
       "creature_elephant_sahara_forge_leg_bl": [
-        4.111,
-        7.385,
-        -10.083
+        3.27,
+        10.373,
+        -14.257
       ],
       "creature_elephant_sahara_forge_leg_br": [
-        -4.485,
-        7.385,
-        -10.083
+        -3.27,
+        10.373,
+        -14.257
       ],
       "creature_elephant_sahara_forge_tail": [
-        -2.242,
-        8.88,
-        -14.194
+        0.0,
+        12.417,
+        -17.527
       ]
     },
     "skinned": true,
     "root": [
       0.0,
-      11.123,
-      -1.861
+      14.46,
+      -4.038
     ]
   },
   "creature_tortoise_sahara_forge": {

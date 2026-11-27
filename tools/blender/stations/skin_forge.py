@@ -363,20 +363,22 @@ def guardian_weights(p):
 
 
 def mammoth_weights(p):
-    """SHANNON's Golden Rune Mammoth (ForgeGUI artifact fb438279), straightened: a huge head whose ears and crest
-    reach back over the shoulders to y -0.16, the trunk and tusks ahead of y -0.3 down to z -0.23, the front legs
-    right under the head (y -0.27..-0.06), the hind legs at y 0.17..0.37, legs apart below z -0.13, a tail from y 0.37."""
-    tail = ramp(0.37, 0.42, p.y)
-    head = max(ramp(-0.28, -0.34, p.y), ramp(-0.16, -0.24, p.y) * ramp(-0.13, -0.06, p.z))
+    """The Sahara Mammoth regenerated in ForgeGUI (2026-11-27) in the Eternals' sun regalia on the elephants' faceted
+    body, in a neutral stance: front legs at x +-0.115 (y -0.12..0.07), hind legs at x +-0.08 (y 0.24..0.44, nearly
+    touching at the top: split at the middle). Each leg is cut free under the drape and turns whole, as the Frost
+    Mammoth's (SHANNON: its walk "is amazing"; blended, this one's hips and shoulders stretched); above the knee the
+    hind legs stop short of the rump; banners hang on the flanks between the legs (they stay on the body); the head
+    with its trunk and tusks ahead of y -0.2; a short tail from y 0.43."""
+    tail = ramp(0.42, 0.45, p.y) * (1 - ramp(0.05, 0.08, abs(p.x))) * ramp(-0.22, -0.19, p.z)
+    head = ramp(-0.17, -0.25, p.y)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg = None
-    if 0.04 < abs(p.x) < 0.27:
-        if -0.27 < p.y < -0.06:
-            leg = "leg_fl" if p.x > 0 else "leg_fr"
-        elif 0.17 < p.y < 0.37:
-            leg = "leg_bl" if p.x > 0 else "leg_br"
-    down = ramp(-0.13, -0.19, p.z) if leg else 0.0
+    leg, down = None, ramp(-0.08, -0.14, p.z)  # cut free under the drape and shoulder plates, as the Frost Mammoth's
     if down > 0:
+        if 0.03 < abs(p.x) < 0.19 and -0.13 < p.y < 0.07:
+            leg = "leg_fl" if p.x > 0 else "leg_fr"
+        elif abs(p.x) < 0.17 and 0.24 < p.y < (0.44 if p.z < -0.16 else 0.38):  # the rump and its banners stay on the body
+            leg = "leg_bl" if p.x > 0 else "leg_br"
+    if leg:
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
     return {k: v for k, v in w.items() if v > 0.001}
@@ -683,20 +685,20 @@ REGIONS = {
     "creature_elephant_sahara_forge": {
         "length": 39.0,  # 1.3 x the Frost Mammoth: an Eternal is clearly bigger than its species' others
         "joints": {
-            "body": (0.0, 0.05, 0.0),
-            "head": (0.0, -0.2, 0.02),
-            "leg_fl": (0.14, -0.17, -0.1),
-            "leg_fr": (-0.14, -0.17, -0.1),
-            "leg_bl": (0.11, 0.27, -0.1),
-            "leg_br": (-0.12, 0.27, -0.1),
-            "tail": (-0.06, 0.38, -0.06),
+            "body": (0.0, 0.1, 0.0),
+            "head": (0.0, -0.22, 0.05),
+            "leg_fl": (0.115, -0.02, -0.1),
+            "leg_fr": (-0.115, -0.02, -0.1),
+            "leg_bl": (0.08, 0.35, -0.1),
+            "leg_br": (-0.08, 0.35, -0.1),
+            "tail": (0.0, 0.43, -0.05),
         },
         "weights": mammoth_weights,
         "small": 0.06,
-        "shade": "smooth",
-        "tris": 12000,
-        "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
+        "cut": True,  # each leg a solid piece, as the Frost Mammoth's: blended, the walk stretched its hips and shoulders
+        "notes": "Sahara Mammoth: regenerated in ForgeGUI (2026-11-27) from a concept of the elephants' faceted body in the Eternals' sun regalia (matching the Molten Sun Rhino), neutral stance, one mesh, skinned to the Stations rig (decision 0102).",
     },
+
     "creature_tortoise_sahara_forge": {  # (the source turned 88.7 degrees first: straighten.py)
         "length": 19.5,  # 1.3 x the Island Tortoise
         "joints": {

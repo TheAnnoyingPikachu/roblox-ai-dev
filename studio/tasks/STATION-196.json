@@ -1,0 +1,29 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-196",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Give the regenerated Molten Sun Rhino (STATION-194) a heavy walk of its own (SHANNON, 2026-11-27: 'have another go at his walking animation as it looks quite janky'). The shared trot swung its short legs 27 degrees, so its feet hovered at both ends of each swing and its steps did not read.",
+  "inputs": [
+    "src/stations/CLAUDE.md"
+  ],
+  "dependencies": [
+    "STATION-194"
+  ],
+  "files": [
+    "src/stations-client/Creatures.client.luau",
+    "studio/tasks/STATION-196.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Molten Sun Rhino walks with a heavy four-beat walk: each foot planted while it sweeps back, then a lifted step forward; the body rolls and dips, the head nods, the tail swishes",
+    "Every other animal keeps the shared trot",
+    "SHANNON approves the walk in Studio"
+  ],
+  "verification": "Prototyped offline as the game poses it (moves/rig.py) against the trot, then in Studio (build dev, local): walked across a stage at Creatures.speed. SHANNON, 2026-11-27, after watching it in Studio: 'ok the new walk is good'. Lune 841/841, selene and stylua clean.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Creatures.client: HEAVY_WALKS (the assets that use it) and heavyWalk; every animal's hips stand 1.45 studs over its feet at Scale 1 (the server sets Scale from them), so it needs no per-animal measure. Display only. The Sahara Mammoth tried it and went back to the shared trot at SHANNON's word ('give him the same walk as the other elephants'). It ships in the Mammoth's PR as SHANNON asked."
+}
