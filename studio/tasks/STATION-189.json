@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-189",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A top-100 best-wave board at the hub for all servers (SHANNON's Round 2 build 5 B, decision 0129).",
+  "inputs": [
+    "docs/decisions/0129-animal-stations-top-board.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations/BestBoard.luau",
+    "src/stations/World.luau",
+    "src/stations/StationsServer.server.luau",
+    "docs/production/game7-data-erasure-runbook.md",
+    "docs/decisions/0129-animal-stations-top-board.md",
+    "studio/tasks/STATION-189.json"
+  ],
+  "tests": [
+    "Compile.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A player's best wave is written to StationsBestWave when it rises, at most once a minute, and on leaving",
+    "The hub board shows the top 100 in four columns, read every two minutes, or 'No best waves yet'",
+    "A failed read or write never stops the server"
+  ],
+  "verification": "Lune 833/833. Studio 2026-11-27, build dev (local): the board stands on the hub at (11, 5, 35) facing the plaza, reads 'No best waves yet' (DataStores are offline in Studio), and its four columns take 100 sample rows. Not seen: a real ordered store read (published place only).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Data: a new OrderedDataStore StationsBestWave (decision 0129); the erasure runbook lists it."
+}

@@ -300,7 +300,7 @@ local function ownCard(holder: Instance, a: any): (Frame, () -> ())
 	update()
 
 	local how = small(card, PRESS_SHORT[BattleRules.pressOf(a)] or "", C.muted, 14, 346, UDim.new(1, -100))
-	how.TextSize = 11
+	how.TextSize = Style.MIN_TEXT
 	local open = Instance.new("Frame")
 	open.BackgroundTransparency = 1
 	open.AnchorPoint, open.Position, open.Size, open.ZIndex =

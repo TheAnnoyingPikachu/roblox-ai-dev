@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-190",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "One animal follows its owner around (SHANNON's Round 2 build 5 D, decision 0128): the team's first animal, at pet size, walking behind the player.",
+  "inputs": [
+    "docs/decisions/0123-animal-stations-round-two-and-star-levels.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations/Follower.luau",
+    "src/stations/StationsServer.server.luau",
+    "studio/tasks/STATION-190.json"
+  ],
+  "tests": [
+    "Compile.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The team's first animal follows its owner a few studs behind, walking at its own speed and idling when close",
+    "It is no taller than 4 studs, waits out a fight out of sight, and jumps to the player after a teleport",
+    "It changes when the team's first animal changes and goes when the player leaves"
+  ],
+  "verification": "Lune 833/833. Studio 2026-11-27, build dev (local): after the intro and three hatches a jackal follows; the player walked 30 studs and the jackal walked after (gap 6 to 19 studs) and settled 5.8 studs behind, idle.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Display only: no save field or request. Not seen: three players, a big Titan as first animal (it is shrunk to 4 studs), phones."
+}

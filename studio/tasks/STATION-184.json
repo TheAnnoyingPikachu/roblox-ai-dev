@@ -1,0 +1,36 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-184",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Every wave matched to a smooth power curve with boss waves 1.5x it (decision 0125, SHANNON's build 2 A), and the last wall re-set so wave 300 stays out of reach.",
+  "inputs": [
+    "docs/decisions/0125-animal-stations-smooth-waves.md",
+    "docs/decisions/0101-animal-stations-swarm-waves.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/LevelRules.luau",
+    "tests/LevelRules.spec.luau",
+    "tests/StationIntro.spec.luau",
+    "docs/decisions/0125-animal-stations-smooth-waves.md",
+    "studio/tasks/STATION-184.json"
+  ],
+  "tests": [
+    "LevelRules.spec.luau",
+    "StationIntro.spec.luau",
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "No non-boss wave is more than 1.2x or less than 0.9x the one before",
+    "A boss wave is BOSS_STEP times the curve",
+    "The swarm and the menus' wave power use the curve",
+    "No simulated run clears wave 300"
+  ],
+  "verification": "Lune 826/826. Simulation in decision 0125.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Balance values (decision 0125). The wall must be checked again with star levels (STATION-181) when both are in main."
+}

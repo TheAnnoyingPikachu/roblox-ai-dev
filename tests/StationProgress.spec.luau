@@ -42,6 +42,54 @@ local function animal(p: StationProgress.Profile, id: number): StationProgress.A
 	return a :: StationProgress.Animal
 end
 
+describe("StationProgress income while away (decision 0124)", function()
+	it("pays the Windmill its level's coins, or its share of the next wave's pay when that is more", function()
+		local p = fresh()
+		p.upgrades.windmill = 1
+		expect(StationProgress.millRate(p)).toBe(60) -- wave 1 pays 40: 2% of it is less than 60
+		p.best = 149
+		local pay = LevelRules.reward(150, 0)
+		expect(StationProgress.millRate(p)).toBe(pay * 2 // 100)
+		p.upgrades.windmill = 5
+		expect(StationProgress.millRate(p)).toBe(pay * 10 // 100)
+		p.mill = 0
+		expect(StationProgress.held(p, 100 * 3600)).toBe(StationProgress.millRate(p) * StationProgress.MILL_HOURS)
+	end)
+
+	it("pays every ranch animal off the team and not training, by rarity, held up to HERD_HOURS", function()
+		local p = fresh()
+		for _ = 1, 5 do
+			p = StationProgress.give(p, "jackal", nil, 1)
+		end
+		-- the first three joined the team: only two earn, each its floor at wave 1
+		expect(#p.team).toBe(3)
+		local floor = StationConfig.HERD_FLOOR[StationRules.rarity(p.animals[4] :: any)]
+		expect(StationProgress.herdRate(p)).toBe(2 * floor)
+		p = StationProgress.train(p, p.animals[4].id, "gym", 0)
+		expect(StationProgress.herdRate(p)).toBe(floor) -- a training animal earns nothing
+		p.herd = 0
+		expect(StationProgress.herdHeld(p, 3600)).toBe(floor)
+		expect(StationProgress.herdHeld(p, 100 * 3600)).toBe(floor * StationProgress.HERD_HOURS)
+		local coins = p.coins
+		local _, ok, _, got = StationProgress.collectHerd(p, 100 * 3600)
+		expect(ok).toBe(true)
+		expect(p.coins).toBe(coins + got)
+		expect(p.herd).toBe(100 * 3600)
+		local _, again, code = StationProgress.collectHerd(p, 100 * 3600)
+		expect(again).toBe(false)
+		expect(code).toBe("herd_empty")
+	end)
+
+	it("keeps the herd's clock in the save and never ahead of now", function()
+		local p = fresh()
+		p.herd = 500
+		expect(StationProgress.sanitize(p, 1000).herd).toBe(500)
+		p.herd = 5000
+		expect(StationProgress.sanitize(p, 1000).herd).toBe(1000)
+		expect(StationProgress.sanitize({}, 1000).herd).toBe(1000) -- an old save starts earning now
+	end)
+end)
+
 describe("StationProgress away (decision 0121)", function()
 	it("says what trained, hatched and filled while away, and changes nothing", function()
 		local p = fresh()
@@ -84,7 +132,7 @@ end)
 -- Everything a save names that an older server's sanitize would drop. When this list changes,
 -- StationProgress.VERSION must go up, so an older server never loads and strips a newer save (decision 0111).
 -- Raise VERSION, then set CONTENT to the printed list's length and checksum.
-local CONTENT = { version = 4, count = 68, sum = 3348052 }
+local CONTENT = { version = 5, count = 68, sum = 3348052 } -- 5: star levels (decision 0123)
 local function contentIds(): { string }
 	local ids = {}
 	for _, sp in StationConfig.SPECIES do
@@ -198,7 +246,7 @@ describe("StationProgress profile", function()
 					id = 6,
 					s = "jackal",
 					stats = { speed = 44, strength = 20, stamina = 15, mana = 18 },
-					trained = { speed = 99, strength = "x" },
+					trained = { speed = 999, strength = "x" },
 				},
 			},
 			team = { 1, 1, 9, 3, 5, "x" },
@@ -304,19 +352,19 @@ describe("StationProgress.buy", function()
 		function()
 			local p = fresh()
 			p.coins = 1e9
-			p.best = 300 -- the waves no longer open an egg: player level does (SHANNON, 2026-11-24)
+			p.xp = StationProgress.xpFor(100) -- the player level no longer opens an egg: the waves do (decision 0132)
 			expect((StationProgress.canBuy(p, "meadow"))).toBe(true)
 			expect((StationProgress.canBuy(p, "wild"))).toBe(true)
-			p.xp = StationProgress.xpFor(4)
+			p.best = 9
 			local _, ok, code = StationProgress.buy(p, "safari", hatched("lion"))
 			expect(ok).toBe(false)
 			expect(code).toBe("locked")
-			p.xp = StationProgress.xpFor(5)
+			p.best = 10
 			_, ok = StationProgress.buy(p, "safari", hatched("lion"))
 			expect(ok).toBe(true)
 			_, ok, code = StationProgress.buy(p, "golden", hatched("lion"))
 			expect(code).toBe("locked")
-			p.xp = StationProgress.xpFor(8)
+			p.best = 20
 			_, ok = StationProgress.buy(p, "golden", hatched("lion"))
 			expect(ok).toBe(true)
 		end
@@ -504,10 +552,10 @@ describe("StationProgress.buy", function()
 		expect(seen.coins).toBe(p.coins)
 	end)
 
-	it("keeps the Golden Egg locked until player level 8, whatever the coins", function()
+	it("keeps the Golden Egg locked until wave 20 is beaten, whatever the coins", function()
 		local p = fresh()
 		p.coins = 1e9
-		p.xp = StationProgress.xpFor(8) - 1
+		p.best = 19
 		local ok, code = StationProgress.canBuy(p, "golden")
 		expect(ok).toBe(false)
 		expect(code).toBe("locked")
@@ -515,7 +563,7 @@ describe("StationProgress.buy", function()
 		expect(bought).toBe(false)
 		expect(#p.animals).toBe(0)
 		expect(p.coins).toBe(1e9)
-		p.xp = StationProgress.xpFor(8)
+		p.best = 20
 		expect((StationProgress.canBuy(p, "golden"))).toBe(true)
 		p, bought = StationProgress.buy(p, "golden", hatched("elephant"))
 		expect(bought).toBe(true)
@@ -577,7 +625,7 @@ describe("StationProgress team and training", function()
 		p = StationProgress.stop(p, 1, 1000 + secondsTo(7))
 		local a = animal(p, 1)
 		expect(StationRules.level(a :: any, "speed")).toBe(7)
-		expect(StationRules.stat(a :: any, "speed")).toBe(46) -- 42 x (1 + 7/70) = 46.2
+		expect(StationRules.stat(a :: any, "speed")).toBe(57) -- 42 x 6762 / 4900 = 57.96 (decision 0123)
 		expect(a.at).toBeNil()
 		local _, stopped, why = StationProgress.stop(p, 1, 5000)
 		expect(stopped).toBe(false)
@@ -659,7 +707,7 @@ describe("StationProgress team and training", function()
 		expect(StationRules.level(animal(p, 1) :: any, "speed")).toBe(1) -- level 1 takes 120 s
 	end)
 
-	it("keeps training in real time while the player is away, and pays XP for every stat level gained", function()
+	it("keeps training in real time while the player is away, and pays XP by the time each stat level took", function()
 		local p = StationProgress.train(three(), 2, "gym", 0)
 		local before = p.xp
 		local away = 3 * 24 * 3600 -- three days
@@ -667,10 +715,16 @@ describe("StationProgress team and training", function()
 		local level = StationRules.level(animal(p, 2) :: any, "strength")
 		expect(level).toBe(StationRules.level(StationRules.train(hatched("tortoise"), "gym", away), "strength"))
 		expect(level > 40 and level < StationConfig.MAX_LEVEL).toBeTruthy()
-		expect(p.xp).toBe(before + level * StationConfig.XP_STAT_LEVEL)
+		local was = StationRules.level(animal(three(), 2) :: any, "strength")
+		expect(p.xp).toBe(before + StationProgress.trainXp(was, level))
 		-- no level gained, no XP
 		p = StationProgress.snapshot(p, away + 60)
-		expect(p.xp).toBe(before + level * StationConfig.XP_STAT_LEVEL)
+		expect(p.xp).toBe(before + StationProgress.trainXp(was, level))
+		-- a short level pays the least, a long one one XP per XP_TRAIN_SECONDS (decision 0132)
+		expect(StationProgress.trainXp(0, 1)).toBe(StationConfig.XP_STAT_LEVEL)
+		expect(StationProgress.trainXp(69, 70)).toBe(StationRules.levelSeconds(70) // StationConfig.XP_TRAIN_SECONDS)
+		expect(StationProgress.trainXp(69, 70) > 50).toBeTruthy() -- a 12-hour level is worth more than 5
+		expect(StationProgress.trainXp(3, 3)).toBe(0)
 	end)
 
 	it("lets two animals train at once on a new ranch and refuses an unknown station", function()
@@ -741,7 +795,7 @@ describe("StationProgress team and training", function()
 	it("keeps the Titan in its own fourth slot, outside the team of three, one at a time", function()
 		local p = three()
 		p.coins = 1e9
-		p.xp = StationProgress.xpFor(8) -- the Golden Egg is unlocked
+		p.best = 20 -- the Golden Egg is unlocked
 		local ok
 		p = get(p, "golden", hatched("elephant")) -- id 4
 		expect(p.titan).toBe(4)

@@ -10014,62 +10014,62 @@
     "png": "build/blender/stations/creature_rhino_sahara_forge.png",
     "preview": "build/blender/stations/previews/creature_rhino_sahara_forge_rest.png",
     "size_studs": [
-      10.9,
-      9.23,
+      8.86,
+      16.95,
       24.0
     ],
-    "tris": 11999,
+    "tris": 14044,
     "parts": {
-      "creature_rhino_sahara_forge_body": 11999
+      "creature_rhino_sahara_forge_body": 14044
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Molten Sun Rhino: SHANNON's Molten Sun Rhino of the Savannah from ForgeGUI (artifact 8fd726bf), one mesh, skinned to the Stations rig (decision 0102).",
+    "notes": "Molten Sun Rhino: regenerated in ForgeGUI (2026-11-27) from a concept of the rhinos' faceted body in the Eternals' sun regalia, neutral stance, one mesh, skinned to the Stations rig (decision 0102).",
     "glow": {},
     "centres": {
       "creature_rhino_sahara_forge_body": [
         0.0,
-        4.615,
+        8.477,
         -0.0
       ]
     },
     "joints": {
       "creature_rhino_sahara_forge_head": [
-        0.024,
-        5.409,
-        6.46
+        0.0,
+        8.551,
+        4.968
       ],
       "creature_rhino_sahara_forge_leg_fl": [
-        3.773,
-        3.16,
-        4.21
+        2.518,
+        3.012,
+        1.695
       ],
       "creature_rhino_sahara_forge_leg_fr": [
-        -3.974,
-        3.16,
-        0.712
+        -2.518,
+        3.012,
+        1.695
       ],
       "creature_rhino_sahara_forge_leg_bl": [
-        1.774,
-        3.16,
-        -6.536
+        2.266,
+        3.012,
+        -7.622
       ],
       "creature_rhino_sahara_forge_leg_br": [
-        -2.475,
-        3.16,
-        -9.285
+        -2.266,
+        3.012,
+        -7.622
       ],
       "creature_rhino_sahara_forge_tail": [
-        0.024,
-        5.159,
-        -10.784
+        0.0,
+        8.551,
+        -9.636
       ]
     },
     "skinned": true,
     "root": [
-      0.024,
-      4.66,
-      -0.038
+      0.0,
+      8.551,
+      -1.327
     ]
   }
 }

@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-187",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A name for every stage, a boss rotation from wave 70 through the dragons and the strongest foes, and bigger, tinted bosses (decision 0127, SHANNON's Round 2 build 1 without the ForgeGUI parts).",
+  "inputs": [
+    "docs/decisions/0127-animal-stations-stages-and-boss-rotation.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/LevelRules.luau",
+    "src/shared/StationRules.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/WaveShow.luau",
+    "src/stations-client/HudWaveMenu.luau",
+    "tests/LevelRules.spec.luau",
+    "docs/decisions/0127-animal-stations-stages-and-boss-rotation.md",
+    "studio/tasks/STATION-187.json"
+  ],
+  "tests": [
+    "LevelRules.spec.luau",
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every stage 1 to 30 has its own name",
+    "From wave 70 the boss rotates through ROTATION; a foe of the line made a boss fights at BOSS_MULT and is marked boss",
+    "A boss lands on the circle with the boss bar, a red outline, and stands bigger (dragons 1.3x, others 1.8x and crimson)",
+    "No simulated run clears wave 300"
+  ],
+  "verification": "Lune 834/834. Studio 2026-11-27, build dev (local), admin test wave 80 with the mythic team: the stage strip reads 'STAGE 8 · THE OGRE MARCH · WAVE 80', the boss bar names the Siege Golem, about 31 studs tall, landed on the circle.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Balance and display (decision 0127). The ForgeGUI boss intro and bar art wait for credits (SHANNON, 2026-11-27)."
+}

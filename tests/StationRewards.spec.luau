@@ -67,7 +67,7 @@ describe("StationRewards planners", function()
 		local best, below = StationRewards.bestEgg(p)
 		expect(best).toBe("wild") -- the Wild Egg is for sale from the start
 		expect(below).toBe("meadow")
-		p.xp = StationProgress.xpFor(5) -- player level 5 opens the Safari Egg
+		p.best = 10 -- beating wave 10 opens the Safari Egg (decision 0132)
 		best, below = StationRewards.bestEgg(p)
 		expect(best).toBe("safari")
 		expect(below).toBe("wild")

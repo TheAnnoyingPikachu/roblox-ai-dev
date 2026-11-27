@@ -7,6 +7,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Format = require(ReplicatedStorage:WaitForChild("Kit"):WaitForChild("Format"))
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationGoals = require(Shared:WaitForChild("StationGoals"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
@@ -57,7 +58,8 @@ function Hud.announce(who: string, what: string)
 	end)
 end
 
--- The level card: the new level in a gold ring, what it unlocked, and a button to go and look.
+-- The level card: the new level in a gold ring and the XP to the next (decision 0132: levels are for show).
+-- The same card says when a beaten wave opens an egg, with a button to go and look.
 local card = Style.card(root, UDim2.fromOffset(430, 120))
 card.Name, card.AnchorPoint, card.Visible = "LevelCard", Vector2.new(0.5, 0), false
 card.Position, card.ZIndex = UDim2.new(0.5, 0, 0, 140), 30
@@ -80,7 +82,7 @@ local go = Style.button(card, "See what is inside", function()
 end, "primary", UDim2.fromOffset(190, 38))
 go.Position, go.TextSize = UDim2.fromOffset(118, 72), 16
 local cardAt = 0
-function Hud.levelUp(level: number)
+function Hud.levelUp(level: number | StationConfig.Egg) -- a level, or an egg just opened
 	cardAt += 1
 	local mine = cardAt
 	while S.fighting do -- waves pay mid-run: the card waits until the player is back from the field
@@ -89,20 +91,18 @@ function Hud.levelUp(level: number)
 	if cardAt ~= mine then
 		return
 	end
-	local opened, nextEgg = nil, nil
-	for _, d in StationConfig.EGGS do
-		if d.level == level then
-			opened = d
-		elseif d.level and d.level > level and (nextEgg == nil or d.level < (nextEgg.level :: number)) then
-			nextEgg = d
-		end
-	end
+	local opened: StationConfig.Egg? = if type(level) == "table" then level else nil
 	look = opened
-	medalText.Text, title.Text = tostring(level), `Level {level}!`
-	line.Text = if opened
-		then `The {opened.name} is unlocked`
-		elseif nextEgg then `Next: the {nextEgg.name} at level {nextEgg.level}`
-		else "Every egg is open"
+	if opened then
+		medalText.Text, title.Text = tostring(opened.wave), `{opened.name} unlocked!`
+		line.Text = `For beating wave {opened.wave}`
+	else
+		local p = S.profile
+		medalText.Text, title.Text = tostring(level), `Level {level}!`
+		line.Text = if p
+			then `{Format.commas(StationProgress.xpFor(level :: number + 1) - p.xp)} XP to level {level :: number + 1}`
+			else ""
+	end
 	go.Visible = opened ~= nil
 	card.Visible = true
 	Style.sound("claim")

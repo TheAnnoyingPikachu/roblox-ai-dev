@@ -1,0 +1,29 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-185",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "No text under 12 (SHANNON's Round 2 build 6 A, decision 0123): Style.text, which every label goes through, never makes text under Style.MIN_TEXT (12 design units); the one label set directly is raised too.",
+  "inputs": [
+    "docs/decisions/0121-animal-stations-decision-pass.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/Style.luau",
+    "src/stations-client/HudHover.luau",
+    "studio/tasks/STATION-185.json"
+  ],
+  "tests": [
+    "StyleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Every label made by Style.text or Style.small is 12 design units or more",
+    "No visible text in the HUD is under 12"
+  ],
+  "verification": "Lune 831/831. Studio 2026-11-27, build dev (local): with Gifts open, the only text items under 12 are the sheets' empty click-catcher buttons (no text). Not seen: a phone (the smallest UI scale, 0.9, makes 12 units about 11 px).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "14 px on phones would need the phone layouts redone; left for the phone pass of the private-place test."
+}
