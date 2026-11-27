@@ -89,17 +89,21 @@ export type Station = { id: string, name: string, stat: Stat }
 StationConfig.STATS = { "speed", "strength", "stamina", "mana", "health", "defence" } :: { Stat }
 StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 1000 -- limits of a version's (level 0) stat
 
--- Stat levels (decision 0029): training raises a stat's level, 0 to MAX_LEVEL. A stat's value is
--- its species value x (1 + LEVEL_GROWTH x level / MAX_LEVEL), so a maxed stat is doubled.
-StationConfig.MAX_LEVEL = 70
-StationConfig.LEVEL_GROWTH = 1
--- Training time (decision 0032): every level takes a little longer than the one before. Level 1
--- takes LEVEL_FIRST seconds; the time grows steadily to one day at LEVEL_DAY and on to LEVEL_LAST
--- at MAX_LEVEL, so each level above 60 takes about 24 to 48 hours of real time (about 23 days
--- for one stat from 0 to 70). Training enhancements will shorten this later.
+-- Stat levels (decisions 0029, 0123): training raises a stat's level, 0 to MAX_LEVEL. Levels 1 to STAR_FROM
+-- are the levels; the STAR_FROM above it are star levels (shown as stars). A stat's value is its species value
+-- x its level's multiplier (`StationRules.grown`): 3x at STAR_FROM, most of it by level 50, and STAR_PCT more
+-- percent of the species value for every star, so a stat at MAX_LEVEL is 5.6x (almost twice level 70's).
+StationConfig.MAX_LEVEL = 140
+StationConfig.STAR_FROM = 70
+StationConfig.STAR_PCT = 260 -- percent of the species value the 70 stars add together
+-- Training time (decisions 0032, 0123): every level takes a little longer than the one before. Level 1 takes
+-- LEVEL_FIRST seconds, growing by the same factor each level to LEVEL_MID_SECONDS at LEVEL_MID, then to
+-- LEVEL_TOP_SECONDS at STAR_FROM: about 4.6 days for a stat from 0 to 70. A star level takes STAR_FIRST
+-- seconds, growing to STAR_LAST at MAX_LEVEL: about 91 days more for all 70 stars.
 StationConfig.LEVEL_FIRST = 120
-StationConfig.LEVEL_DAY = 61
-StationConfig.LEVEL_LAST = 48 * 3600
+StationConfig.LEVEL_MID, StationConfig.LEVEL_MID_SECONDS = 60, 3 * 3600
+StationConfig.LEVEL_TOP_SECONDS = 12 * 3600
+StationConfig.STAR_FIRST, StationConfig.STAR_LAST = 27 * 3600, 36 * 3600
 -- Base stats (decisions 0030, 0032): on hatch every stat starts at a level from 1 to BASE_MAX,
 -- each higher number a little less likely. A BASE_MAX has weight BASE_TOP and every level below
 -- it BASE_STEP more, out of 630: a 15 is 7 in 630 = 1 in 90, a 1 is 77 in 630 (about 1 in 8).
@@ -746,7 +750,14 @@ StationConfig.STATIONS = {
 -- built). `base` is what a new ranch has, `value` what that level gives. Every level also changes
 -- how the ranch looks (src/stations/Ranch.luau). Draft numbers: meant to be slow to afford.
 export type UpgradeLevel = { coins: number, samples: number, value: number }
-export type Upgrade = { id: string, name: string, gives: string, base: number, levels: { UpgradeLevel } }
+export type Upgrade = {
+	id: string,
+	name: string,
+	gives: string,
+	base: number,
+	levels: { UpgradeLevel },
+	share: { number }?,
+}
 StationConfig.UPGRADES = {
 	{
 		id = "house",
@@ -830,6 +841,8 @@ StationConfig.UPGRADES = {
 		id = "windmill",
 		name = "Windmill",
 		gives = "coins an hour, also while you are away",
+		-- decision 0124: or, when more, this share of the next wave's first clear an hour (percent, by level)
+		share = { 2, 4, 6, 8, 10 },
 		base = 0,
 		levels = {
 			{ coins = 2000, samples = 0, value = 60 },
@@ -898,6 +911,34 @@ StationConfig.PRODUCTS = {
 } :: { Product }
 -- The beta reward: every save that plays while this is set gets this animal once (`Profile.beta`). Set it to nil
 -- when the beta ends.
+-- Ranch animals earn while away (decision 0124): every animal not on the team, not the Titan in its slot and
+-- not training earns, each hour, its rarity's per-mille of the next wave's first clear, or its floor in coins when
+-- that is more. Held HERD_HOURS hours; collected at the Ranch House.
+StationConfig.HERD_PERMILLE = {
+	common = 0.5,
+	uncommon = 1,
+	rare = 2,
+	epic = 4,
+	legendary = 8,
+	mythic = 15,
+	divine = 25,
+	celestial = 40,
+	secret = 50,
+	eternal = 60,
+} :: { [string]: number }
+StationConfig.HERD_FLOOR = {
+	common = 1,
+	uncommon = 2,
+	rare = 4,
+	epic = 8,
+	legendary = 15,
+	mythic = 30,
+	divine = 50,
+	celestial = 80,
+	secret = 100,
+	eternal = 120,
+} :: { [string]: number }
+
 StationConfig.BETA_GIFT = { s = "lion", v = "sahara_lion" } :: { s: string, v: string }?
 
 -- The product sold as Roblox developer product `productId`, or nil.

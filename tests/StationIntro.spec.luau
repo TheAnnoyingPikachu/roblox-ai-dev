@@ -32,9 +32,11 @@ describe("StationIntro", function()
 	it("keeps the team standing even where it would lose (the net under the blessing)", function()
 		local hard = { clicks = true, immortal = true }
 		local plain = { clicks = true }
-		local won = LevelRules.fight(StationIntro.team(), StationIntro.WAVE, {}, plain)
-		expect(won).toBe(false) -- without help the legends at level 1 lose this wave
-		local saved, _, _, ends = LevelRules.fight(StationIntro.team(), StationIntro.WAVE, {}, hard)
+		-- since the smooth curve (decision 0123) the intro's wave is winnable alone: the net is checked 20 waves on
+		local wave = StationIntro.WAVE + 20
+		local won = LevelRules.fight(StationIntro.team(), wave, {}, plain)
+		expect(won).toBe(false) -- without help the legends lose this wave
+		local saved, _, _, ends = LevelRules.fight(StationIntro.team(), wave, {}, hard)
 		expect(saved).toBe(true)
 		for _, share in ends do
 			expect(share > 0).toBe(true)
@@ -90,13 +92,13 @@ describe("StationIntro", function()
 end)
 
 describe("StationIntro the Ranger's loan (decision 0119)", function()
-	it("offers the first boss's loan, then one a day, and lends a legend at max level", function()
+	it("offers the first boss's loan, then one a day, and lends a legend at level 70", function()
 		local p = StationProgress.defaults(0)
 		local day = 86400 * 20000
 		expect(StationIntro.loanFor(p, 9, day)).toBeNil()
 		expect(StationIntro.loanFor(p, StationIntro.LOAN_WAVE, day)).toBe("boss")
 		local legend = StationIntro.lent(1) :: any
-		expect(legend.trained.speed).toBe(StationConfig.MAX_LEVEL)
+		expect(legend.trained.speed).toBe(StationConfig.STAR_FROM)
 		expect(StationIntro.lent(9)).toBeNil()
 		p = StationProgress.give(p, "jackal", nil, 3, false)
 		p = StationProgress.give(p, "elephant", nil, 3, false)

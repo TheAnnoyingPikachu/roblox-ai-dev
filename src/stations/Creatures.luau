@@ -577,8 +577,20 @@ function Creatures.publishPortraits()
 end
 
 -- A foe standing at `at`, in its own size and tint. Nil when its model is not uploaded.
-function Creatures.spawnFoe(foeId: string, at: CFrame, parent: Instance): Model?
+-- A boss stands bigger (decision 0127): a dragon BOSS_DRAGON times, a foe of the line BOSS_SIZE times, tinted
+-- BOSS_TINT.
+Creatures.BOSS_DRAGON, Creatures.BOSS_SIZE = 1.3, 1.8
+Creatures.BOSS_TINT = Color3.fromRGB(150, 40, 70)
+function Creatures.spawnFoe(foeId: string, at: CFrame, parent: Instance, boss: boolean?): Model?
 	local look = lookOf(foeId)
+	if look and boss then
+		local f = StationConfig.foe(foeId) :: StationConfig.Foe
+		local dragon = f.kind == "dragon"
+		look.size = (look.size or 1) * (if dragon then Creatures.BOSS_DRAGON else Creatures.BOSS_SIZE)
+		if not dragon then
+			look.tint = Creatures.BOSS_TINT
+		end
+	end
 	return if look then Creatures.spawn(look.model, at, parent, look) else nil
 end
 

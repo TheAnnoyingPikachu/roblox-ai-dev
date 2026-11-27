@@ -90,6 +90,26 @@ Style.SOUNDS = {
 }
 local VOLUME = { buy = 0.55, hover = 0.15, press = 0.5, tab = 0.45, denied = 0.5, close = 0.35, claim = 0.6 }
 local sounds: { [string]: Sound } = {}
+
+-- The two sound groups the player's volumes set (decision 0122): "Music" (the fight tracks) and "Effects"
+-- (everything else: the UI, hits, the fight's stings).
+local groups: { [string]: SoundGroup } = {}
+function Style.group(name: string): SoundGroup
+	local g = groups[name]
+	if g == nil then
+		g = Instance.new("SoundGroup")
+		local made = g :: SoundGroup
+		made.Name = name
+		made.Parent = SoundService
+		groups[name] = made
+	end
+	return g :: SoundGroup
+end
+-- The player's volumes, each 0 to `steps`, from the save.
+function Style.volumes(music: number, effects: number, mute: boolean, steps: number)
+	Style.group("Music").Volume = if mute then 0 else music / steps
+	Style.group("Effects").Volume = if mute then 0 else effects / steps
+end
 function Style.sound(name: string)
 	local s = sounds[name]
 	if s == nil then
@@ -101,6 +121,7 @@ function Style.sound(name: string)
 		s.Name = `Ui_{name}`
 		s.SoundId = id
 		s.Volume = VOLUME[name] or 0.5
+		s.SoundGroup = Style.group("Effects")
 		s.Parent = SoundService
 		sounds[name] = s
 	end
@@ -213,12 +234,15 @@ function Style.panel(parent: Instance, size: UDim2): Frame
 end
 
 -- A text label. With `fixed` it keeps the size it was given, otherwise it grows downwards to fit.
+-- No text under MIN_TEXT design units (decision 0123, build 6 A): 12 px or more on a desk, about 11 on the
+-- smallest phone scale (UiLayout.MIN_SCALE 0.9).
+Style.MIN_TEXT = 12
 function Style.text(parent: Instance, text: string, size: number?, colour: Color3?, fixed: UDim2?): TextLabel
 	local l = Instance.new("TextLabel")
 	l.BackgroundTransparency = 1
 	l.Font = Ui.theme.font
 	l.Text = text
-	l.TextSize = size or 18
+	l.TextSize = math.max(size or 18, Style.MIN_TEXT)
 	l.TextColor3 = colour or C.text
 	l.TextXAlignment = Enum.TextXAlignment.Left
 	l.TextWrapped = true

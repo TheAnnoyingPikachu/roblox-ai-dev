@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-183",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A lost wave says how close it was (decision 0123, build 3 B): the share of the Legion's health left, then the weakest stat to train.",
+  "inputs": [
+    "docs/decisions/0121-animal-stations-decision-pass.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations/WaveShow.luau",
+    "src/stations-client/Hud.client.luau",
+    "docs/decisions/0121-animal-stations-decision-pass.md",
+    "studio/tasks/STATION-183.json"
+  ],
+  "tests": [
+    "BattleRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The waveshow result carries foeLeft, the Legion's health left at the end from 0 to 1",
+    "The run-over tip starts with 'So close: the Legion had only N% of its health left.' at 15% or less, else 'The Legion still had N% of its health.'"
+  ],
+  "verification": "Lune 825/825 (no rules changed). Not seen in Studio: a real loss.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Remote contract: waveshow gains foeLeft (decision 0121, amended 2026-11-27)."
+}

@@ -87,7 +87,7 @@ describe("LevelRules.enemies", function()
 			expect(second > first).toBeTruthy()
 			expect((LevelRules.might(last) / LevelRules.might(last - 1)) ^ 2 > WaveRuns.CLAWS).toBeTruthy()
 			local k = LevelRules.scale(from)
-			for _, e in LevelRules.classic(last) do
+			for _, e in LevelRules.classic(last, true) do -- without its boss (decision 0127: a boss fights at BOSS_MULT)
 				local foe = StationConfig.foe(e.s) :: StationConfig.Foe
 				expect(e.stats.speed).toBe(math.floor(foe.stats.speed * k))
 				expect(e.stats.health).toBe(math.floor(foe.stats.health * (k * LevelRules.might(last))))
@@ -106,6 +106,26 @@ describe("LevelRules.enemies", function()
 		expect(from < LevelRules.LAST).toBeTruthy()
 	end)
 
+	it(
+		"follows a smooth curve: no wave much harder than the one before, a boss wave BOSS_STEP over it (decision 0123)",
+		function()
+			for w = 2, LevelRules.END_FROM - 2 do
+				if w % LevelRules.BOSS_EVERY ~= 0 and (w - 1) % LevelRules.BOSS_EVERY ~= 0 then
+					local step = LevelRules.target(w) / LevelRules.target(w - 1)
+					expect(step > 0.9 and step < 1.2).toBeTruthy()
+				end
+			end
+			-- a boss wave is BOSS_STEP times the curve there (the curve leaves the dragons out)
+			local sum, n = 0, 0
+			for w = 30 - LevelRules.SMOOTH_SPAN, 30 + LevelRules.SMOOTH_SPAN do
+				sum += math.log(BattleRules.teamPower(LevelRules.classic(w, true), 2))
+				n += 1
+			end
+			expect(math.abs(LevelRules.target(30) / (math.exp(sum / n) * LevelRules.BOSS_STEP) - 1) < 1e-9).toBeTruthy()
+			expect(LevelRules.power(30)).toBe(LevelRules.target(30))
+		end
+	)
+
 	it("ends every 10th wave with a dragon, a stronger one as the waves go on, and sends none otherwise", function()
 		expect(LevelRules.boss(9)).toBeNil()
 		for _, c in
@@ -115,7 +135,10 @@ describe("LevelRules.enemies", function()
 				{ 30, "shadow_dragon" },
 				{ 50, "shadow_dragon" },
 				{ 60, "ancient_alpha_dragon" },
-				{ 120, "ancient_alpha_dragon" },
+				{ 70, "ancient_alpha_dragon" }, -- the rotation from ROTATE_FROM (decision 0127)
+				{ 80, "siege_golem" },
+				{ 120, "ogre_commander" },
+				{ 150, "ancient_alpha_dragon" },
 			}
 		do
 			expect((LevelRules.boss(c[1] :: number) :: StationConfig.Foe).id).toBe(c[2])
@@ -255,6 +278,19 @@ describe("LevelRules.xp and samples", function()
 end)
 
 describe("LevelRules.stage (decision 0106)", function()
+	it("makes a foe of the line a boss at BOSS_MULT, marked as the boss (decision 0127)", function()
+		local wave = LevelRules.enemies(80)
+		local boss = wave[#wave]
+		expect(boss.s).toBe("siege_golem")
+		expect(boss.boss).toBe(true)
+		for i = 1, #wave - 1 do
+			expect(wave[i].boss).toBeNil()
+			if wave[i].s == "siege_golem" and not wave[i].elite then -- the same foe in the line is a third as strong
+				expect(boss.stats.health > 2 * wave[i].stats.health).toBeTruthy()
+			end
+		end
+	end)
+
 	it("groups the waves into stages of STAGE that each end on a boss wave", function()
 		local first = LevelRules.stage(1)
 		expect(first.n).toBe(1)
@@ -263,9 +299,16 @@ describe("LevelRules.stage (decision 0106)", function()
 		expect(first.last).toBe(10)
 		expect(LevelRules.stage(10).n).toBe(1)
 		expect(LevelRules.stage(11).name).toBe("The Charge")
-		expect(LevelRules.stage(45).name).toBe("The Dark Host")
-		expect(LevelRules.stage(50).name).toBe("The Dark Host")
-		expect(LevelRules.stage(51).name).toBe("The Ancient")
+		expect(LevelRules.stage(35).name).toBe("The Dark Host")
+		expect(LevelRules.stage(45).name).toBe("The Black Banners")
+		expect(LevelRules.stage(51).name).toBe("The Drake's Shadow")
+		expect(LevelRules.stage(300).name).toBe("The Ancient")
+		local seen = {}
+		for n = 1, LevelRules.LAST // LevelRules.STAGE do -- every stage its own name (decision 0127)
+			local name = LevelRules.STAGE_NAMES[n]
+			expect(name ~= nil and seen[name] == nil).toBeTruthy()
+			seen[name] = true
+		end
 		expect(LevelRules.stage(140).n).toBe(14)
 		for level = 1, 100 do
 			local s = LevelRules.stage(level)

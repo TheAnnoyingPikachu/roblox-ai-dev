@@ -68,6 +68,7 @@ do
 			s = Instance.new("Sound")
 			local made = s :: Sound
 			made.SoundId = AUDIO[name]
+			made.SoundGroup = Style.group(if name == "fight" or name == "boss" then "Music" else "Effects")
 			made.Parent = SoundService
 			audio[name] = made
 		end
