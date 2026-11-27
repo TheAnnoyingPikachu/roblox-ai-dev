@@ -58,7 +58,7 @@ end
 -- An enemy's card: its picture on the night, its name, how many of it.
 local function foeCard(parent: Instance, e: any, n: number)
 	local foe = StationConfig.foe(e.s) :: StationConfig.Foe
-	local boss = foe.kind == "dragon"
+	local boss = e.boss == true or foe.kind == "dragon"
 	local card = Style.card(parent, UDim2.fromOffset(112, 140), if boss then C.bad else nil)
 	local tint = if foe.tint then Color3.fromRGB(foe.tint[1], foe.tint[2], foe.tint[3]) else nil
 	local view = Portrait.new(
