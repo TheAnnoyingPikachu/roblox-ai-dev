@@ -27,6 +27,7 @@ export type Spec = {
 	seconds: number?,
 	rainbow: boolean?,
 	jackpot: boolean?,
+	animal: string?, -- a plain animal of this species (the first Titan, decision 0121)
 }
 -- The same reward for one player now: coins, samples, egg ids, a boost, the rainbow species.
 export type Items = {
@@ -37,6 +38,7 @@ export type Items = {
 	seconds: number,
 	rainbow: string?,
 	jackpot: boolean,
+	animal: string?,
 }
 
 StationRewards.MIN_PAY = 40
@@ -157,6 +159,7 @@ function StationRewards.resolve(p: Profile, spec: Spec, month: number?): Items
 		seconds = spec.seconds or 0,
 		rainbow = if spec.rainbow then StationRewards.rainbowOf(month or p.rewards.month) else nil,
 		jackpot = spec.jackpot == true,
+		animal = spec.animal,
 	}
 end
 
@@ -176,7 +179,7 @@ end
 -- Whether `items` can be given to `p` now: an animal needs room in the barn, eggs room in the storage or in
 -- the waiting list.
 function StationRewards.canGrant(p: Profile, items: Items): (boolean, string?)
-	if (items.rainbow or items.jackpot) and #p.animals >= StationProgress.value(p, "barn") then
+	if (items.rainbow or items.jackpot or items.animal) and #p.animals >= StationProgress.value(p, "barn") then
 		return false, "full"
 	end
 	local room = StationProgress.value(p, "hatchery") + StationProgress.value(p, "cellar") - #p.eggs
@@ -225,6 +228,12 @@ function StationRewards.grant(
 	end
 	if items.jackpot and mythic then
 		local _, given, why = StationProgress.give(p, mythic.s, mythic.v, 1, true)
+		if not given then
+			return p, false, why
+		end
+	end
+	if items.animal then
+		local _, given, why = StationProgress.give(p, items.animal, nil, 1)
 		if not given then
 			return p, false, why
 		end

@@ -108,19 +108,25 @@ describe("StationGoals", function()
 		expect(StationGoals.label(p, goal)).toBe("wave 20 of 30")
 	end)
 
-	it("pays the first boss a Safari Egg, every fifth the best egg, the others coins and samples", function()
-		local p = fresh()
-		local by = {}
-		for _, goal in StationGoals.LIST do
-			by[goal.id] = goal
+	it(
+		"pays the first boss a Safari Egg, the second a Titan, every fifth the best egg, the others coins and samples",
+		function()
+			local p = fresh()
+			local by = {}
+			for _, goal in StationGoals.LIST do
+				by[goal.id] = goal
+			end
+			expect(StationGoals.items(p, by.boss10).eggs[1]).toBe("safari")
+			expect(StationGoals.items(p, by.boss50).eggs[1]).toBe((StationRewards.bestEgg(p)))
+			local titan = StationGoals.items(p, by.boss20)
+			expect(titan.animal).toBe("elephant")
+			expect(#titan.eggs).toBe(0)
+			local items = StationGoals.items(p, by.boss40)
+			expect(items.coins).toBe(6 * StationRewards.wavePay(p))
+			expect(items.samples).toBe(8)
+			expect(#items.eggs).toBe(0)
 		end
-		expect(StationGoals.items(p, by.boss10).eggs[1]).toBe("safari")
-		expect(StationGoals.items(p, by.boss50).eggs[1]).toBe((StationRewards.bestEgg(p)))
-		local items = StationGoals.items(p, by.boss20)
-		expect(items.coins).toBe(6 * StationRewards.wavePay(p))
-		expect(items.samples).toBe(4)
-		expect(#items.eggs).toBe(0)
-	end)
+	)
 
 	it("catches a returning save up, one goal after another", function()
 		local p = fresh()
