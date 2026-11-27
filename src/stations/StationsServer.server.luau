@@ -228,10 +228,10 @@ local function payGoals(player: Player)
 		return
 	end
 	payingGoals[player] = true
-	for _ = 1, #StationGoals.LIST do
+	for _ = 1, #StationGoals.LIST + #StationGoals.LEVELS do
 		local p = saves.get(player)
 		local q = if p then StationProgress.sanitize(p, os.time()) else nil
-		local goal = if q then StationGoals.due(q) else nil
+		local goal = if q then StationGoals.due(q) or StationGoals.levelDue(q) else nil
 		if q == nil or goal == nil then
 			break
 		end
@@ -1821,7 +1821,7 @@ saves = Saves.start({
 			end
 		end
 		remotes.fx(player, "profile", StationProgress.public(profile))
-		if StationGoals.due(profile) then
+		if StationGoals.due(profile) or StationGoals.levelDue(profile) then
 			task.defer(payGoals, player)
 		end
 		updateFame()

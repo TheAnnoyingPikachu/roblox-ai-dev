@@ -1,6 +1,6 @@
 # 0132: Eggs unlock by wave again; training XP by time; the level in the player list
 
-Date: 2026-11-27. Status: accepted (SHANNON). Task: STATION-194.
+Date: 2026-11-27. Status: accepted (SHANNON). Task: STATION-195.
 
 ## Context
 
