@@ -17,6 +17,7 @@ local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 local Follower = require(script.Parent:WaitForChild("Follower"))
 
+require(script.Parent:WaitForChild("LiveConfig")).start() -- live tuning (decision 0131), before anything pays
 World.build()
 local BestBoard = require(script.Parent:WaitForChild("BestBoard"))
 BestBoard.start() -- the hub's top-100 board (decision 0129)

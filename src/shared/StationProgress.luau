@@ -599,8 +599,9 @@ end
 
 -- How many seconds `egg` takes to hatch for `p`: its own time, shortened by the Brooder. Whole seconds,
 -- rounded up. The Brooder's level now counts for the whole wait, also for an egg already hatching.
+StationProgress.HATCH_MULT = 1 -- every hatch time times this (decision 0131, LiveTuning)
 function StationProgress.hatchSeconds(p: Profile, egg: StationConfig.Egg): number
-	return math.ceil(egg.hatch * 100 / StationProgress.value(p, "brooder"))
+	return math.ceil(egg.hatch * 100 * StationProgress.HATCH_MULT / StationProgress.value(p, "brooder"))
 end
 
 -- When `p`'s egg `e` can be opened (os.time; nil while it waits in storage): its hatch time from when it
