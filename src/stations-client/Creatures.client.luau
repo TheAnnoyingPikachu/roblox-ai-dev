@@ -2943,6 +2943,49 @@ local function walk(t: number, rate: number): Pose
 	}
 end
 
+-- A heavy four-beat walk (the Molten Sun Rhino: SHANNON found the trot "quite janky" on it, 2026-11-27): back left,
+-- front left, back right, front right a quarter of a stride apart. Each foot is planted for 62 % of the stride,
+-- sweeping back evenly with its leg pushed down by as much as the swing lifts it (on a short leg turning about its hip
+-- the foot would hover at both ends), then steps forward quickly, eased and lifted. The body rolls onto its planted
+-- side and dips at each footfall, the head nods against it and the tail swishes. `leg` is the hip pivot's height over
+-- the floor, studs at Scale 1. The swing still covers the trot's ground (Creatures.speed) as nearly as it can.
+local HEAVY_WALKS: { [string]: number } = {
+	creature_rhino_sahara_forge = 1.43, -- AnimalRig: leg joints 2.96 studs over its feet, at Scale 2.08
+}
+local function heavyWalk(t: number, rate: number, leg: number): Pose
+	local swing, duty, lift = 20, 0.62, 0.32
+	local c = (t * rate) % 1
+	local function step(start: number): { number }
+		local u = (c - start) % 1
+		local a, up = 0, 0
+		if u < duty then
+			a, up = swing - 2 * swing * u / duty, 0
+		else
+			local k = (u - duty) / (1 - duty)
+			a = -swing + 2 * swing * (0.5 - 0.5 * math.cos(math.pi * k))
+			up = lift * math.sin(math.pi * k)
+		end
+		return { a, 0, 0, 0, up - leg * (1 - math.cos(math.rad(a))), 0 }
+	end
+	local beat = math.cos(2 * TAU * c) -- two dips a stride
+	return {
+		leg_bl = step(0),
+		leg_fl = step(0.25),
+		leg_br = step(0.5),
+		leg_fr = step(0.75),
+		body = {
+			0.8 * beat,
+			1.2 * math.sin(TAU * c),
+			2.2 * math.sin(TAU * (c - 0.125)),
+			0,
+			-0.03 * (0.5 + 0.5 * beat),
+			0,
+		},
+		head = { -2 + 3 * math.cos(2 * TAU * c + 0.9), 3 * math.sin(TAU * c), -1.5 * math.sin(TAU * (c - 0.125)) },
+		tail = { -4, 12 * math.sin(TAU * c - 0.6), 0 },
+	}
+end
+
 -- A Hexbound biped stands heavier and walks with its arms swinging against its legs.
 local function idleBiped(t: number): Pose
 	return {
@@ -4283,7 +4326,11 @@ RunService.PreSimulation:Connect(function(dt: number)
 			target = if own and not biped then own(t) else win(t, biped)
 		elseif anim == "walk" then
 			local rate = (model:GetAttribute("Stride") :: number?) or 1.5
-			target = if biped then walkBiped(time, rate, model:GetAttribute("Hexbound") ~= true) else walk(time, rate)
+			local heavy = HEAVY_WALKS[(model:GetAttribute("Asset") :: string?) or ""]
+			target = if biped
+				then walkBiped(time, rate, model:GetAttribute("Hexbound") ~= true)
+				elseif heavy then heavyWalk(time, rate, heavy)
+				else walk(time, rate)
 			if TWO_HANDED[(model:GetAttribute("Asset") :: string?) or ""] then
 				target = table.clone(target)
 				target.leg_fl = target.leg_fr -- its arms hold one weapon: they swing together
