@@ -33,7 +33,7 @@ LevelRules.STEEP_FROM, LevelRules.STEEP_GROWTH, LevelRules.STEEP_BEND = 100, 1.0
 LevelRules.STEEP_STATS = { health = true, strength = true } :: { [string]: boolean }
 -- The last wall (decision 0121, SHANNON: wave 300 stays out of reach): after END_FROM health and strength
 -- also grow END_GROWTH a wave on top, so the best runs end before 300 and everything up to END_FROM is as it was.
-LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.08
+LevelRules.END_FROM, LevelRules.END_GROWTH = 250, 1.12
 
 -- What every stat of a foe is multiplied by at `level`.
 function LevelRules.scale(level: number): number
