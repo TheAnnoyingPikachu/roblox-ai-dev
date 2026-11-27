@@ -26,6 +26,7 @@ export type Owned = {
 	boost: number?,
 	rush: number?,
 	elite: boolean?,
+	boss: boolean?, -- a wave's boss (LevelRules.enemies, decision 0127): it stands bigger and lands on the circle
 }
 
 StationRules.PPM = 1_000_000
