@@ -42,6 +42,54 @@ local function animal(p: StationProgress.Profile, id: number): StationProgress.A
 	return a :: StationProgress.Animal
 end
 
+describe("StationProgress income while away (decision 0124)", function()
+	it("pays the Windmill its level's coins, or its share of the next wave's pay when that is more", function()
+		local p = fresh()
+		p.upgrades.windmill = 1
+		expect(StationProgress.millRate(p)).toBe(60) -- wave 1 pays 40: 2% of it is less than 60
+		p.best = 149
+		local pay = LevelRules.reward(150, 0)
+		expect(StationProgress.millRate(p)).toBe(pay * 2 // 100)
+		p.upgrades.windmill = 5
+		expect(StationProgress.millRate(p)).toBe(pay * 10 // 100)
+		p.mill = 0
+		expect(StationProgress.held(p, 100 * 3600)).toBe(StationProgress.millRate(p) * StationProgress.MILL_HOURS)
+	end)
+
+	it("pays every ranch animal off the team and not training, by rarity, held up to HERD_HOURS", function()
+		local p = fresh()
+		for _ = 1, 5 do
+			p = StationProgress.give(p, "jackal", nil, 1)
+		end
+		-- the first three joined the team: only two earn, each its floor at wave 1
+		expect(#p.team).toBe(3)
+		local floor = StationConfig.HERD_FLOOR[StationRules.rarity(p.animals[4] :: any)]
+		expect(StationProgress.herdRate(p)).toBe(2 * floor)
+		p = StationProgress.train(p, p.animals[4].id, "gym", 0)
+		expect(StationProgress.herdRate(p)).toBe(floor) -- a training animal earns nothing
+		p.herd = 0
+		expect(StationProgress.herdHeld(p, 3600)).toBe(floor)
+		expect(StationProgress.herdHeld(p, 100 * 3600)).toBe(floor * StationProgress.HERD_HOURS)
+		local coins = p.coins
+		local _, ok, _, got = StationProgress.collectHerd(p, 100 * 3600)
+		expect(ok).toBe(true)
+		expect(p.coins).toBe(coins + got)
+		expect(p.herd).toBe(100 * 3600)
+		local _, again, code = StationProgress.collectHerd(p, 100 * 3600)
+		expect(again).toBe(false)
+		expect(code).toBe("herd_empty")
+	end)
+
+	it("keeps the herd's clock in the save and never ahead of now", function()
+		local p = fresh()
+		p.herd = 500
+		expect(StationProgress.sanitize(p, 1000).herd).toBe(500)
+		p.herd = 5000
+		expect(StationProgress.sanitize(p, 1000).herd).toBe(1000)
+		expect(StationProgress.sanitize({}, 1000).herd).toBe(1000) -- an old save starts earning now
+	end)
+end)
+
 describe("StationProgress profile", function()
 	it("starts at player level 1 with enough coins for three Meadow eggs and nothing else", function()
 		local p = fresh()

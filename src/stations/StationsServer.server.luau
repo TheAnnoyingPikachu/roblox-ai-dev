@@ -1635,6 +1635,22 @@ local router = Router.new({
 				return ok, code
 			end,
 		},
+		-- The owner collects what the ranch animals earned, from the Ranch menu (decision 0124).
+		collect_herd = {
+			args = {},
+			handler = function(player)
+				local p = saves.get(player)
+				local now = os.time()
+				local coins = if p then StationProgress.herdHeld(StationProgress.sanitize(p, now), now) else 0
+				local ok, code = apply(player, function(q)
+					return StationProgress.collectHerd(q, now)
+				end)
+				if ok then
+					remotes.fx(player, "collected", coins)
+				end
+				return ok, code
+			end,
+		},
 		-- Studio only: a test funds button in the ranch menu to try the upgrades without
 		-- fighting for them. The action does not exist on a live server.
 		funds = if RunService:IsStudio()
