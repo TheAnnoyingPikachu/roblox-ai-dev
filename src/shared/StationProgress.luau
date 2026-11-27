@@ -866,6 +866,35 @@ function StationProgress.settle(p: Profile, now: number): Profile
 	return p
 end
 
+-- What happened while the player was away (decision 0121, the welcome-back card), from the save as it was
+-- last written: the stat levels each training animal has gained since (`settle` up to `now`, on a copy), the
+-- eggs that have finished hatching and the coins the Windmill holds. Display only: it changes nothing.
+export type Away = {
+	trained: { { id: number, s: string, v: string?, stat: string, from: number, to: number } },
+	eggs: number,
+	mill: number,
+}
+function StationProgress.away(p: Profile, now: number): Away
+	local copy = table.clone(p)
+	copy.animals = table.clone(p.animals)
+	StationProgress.settle(copy, now)
+	local trained = {}
+	for i, a in p.animals do
+		local st = if a.at then StationConfig.station(a.at) else nil
+		if st then
+			local from, to = StationRules.level(a :: any, st.stat), StationRules.level(copy.animals[i] :: any, st.stat)
+			if to > from then
+				table.insert(trained, { id = a.id, s = a.s, v = a.v, stat = st.stat, from = from, to = to })
+			end
+		end
+	end
+	local eggs = 0
+	for _, e in p.eggs do
+		eggs += if StationProgress.due(p, e, now) then 1 else 0
+	end
+	return { trained = trained, eggs = eggs, mill = StationProgress.held(p, now) }
+end
+
 -- Put animal `id` in or out of the team. A Titan goes in the Titan slot (replacing the one
 -- there). A training animal cannot join.
 -- Release and fusion (SHANNON, 2026-11-24, decision 0112) ---------------------------------------------------
