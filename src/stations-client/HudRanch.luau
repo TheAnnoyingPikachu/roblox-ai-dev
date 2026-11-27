@@ -4,6 +4,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local StationConfig = require(Shared:WaitForChild("StationConfig"))
 local StationProgress = require(Shared:WaitForChild("StationProgress"))
@@ -117,6 +118,13 @@ function Hud.upgradeCard(u: StationConfig.Upgrade, order: number)
 		return if share then `{v}%` else tostring(v)
 	end
 	local words = if share then `{what} {said(now)}.` else `{now} {what}.`
+	if u.id == "windmill" and u.share and level > 0 then -- decision 0124: or its share of the next wave
+		local rate = Format.commas(StationProgress.millRate(S.profile))
+		words = `{rate} coins an hour now: {u.share[level]}% of your next wave's pay, or {now} if more.`
+		if cost then
+			words ..= ` Next: {u.share[level + 1]}%.`
+		end
+	end
 	if not built then
 		local first = if cost then cost.value else now
 		words = if share then `Not built yet. Then: {what} {said(first)}.` else `Not built yet. Then: {first} {what}.`
@@ -163,6 +171,15 @@ redraw.ranch = function()
 	if afford > 0 then
 		Style.chip(ranch.count, `{afford} you can afford`, C.good, Color3.new(1, 1, 1))
 	end
+	-- what the ranch animals earned while away (decision 0124)
+	local herd = StationProgress.herdHeld(S.profile, Workspace:GetServerTimeNow())
+	local label = if herd > 0
+		then `Collect {Format.commas(herd)} coins`
+		else `Animals earn {Format.commas(StationProgress.herdRate(S.profile))}/h`
+	local collect = Style.button(ranch.count, label, function()
+		send("collect_herd")
+	end, if herd > 0 then "primary" else "ghost", UDim2.fromOffset(230, 36))
+	collect.TextSize = 14
 	if RunService:IsStudio() then -- a way to try the upgrades without fighting for them
 		Style.button(ranch.count, "Test funds", function()
 			send("funds")

@@ -120,6 +120,7 @@ local REFUSED: { [string]: string } = {
 	nests_full = "Every nest is taken: upgrade the Hatchery",
 	no_mill = "Build the Windmill first",
 	mill_empty = "The windmill has no coins for you yet",
+	herd_empty = "Your animals haven't earned anything yet",
 	not_ready = "That egg is not ready yet",
 	hatching = "That egg is already hatching",
 	top = "That is already at its top level",
@@ -1033,7 +1034,7 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 		for _, prompt in CollectionService:GetTagged("Mill") do -- what the owner's windmill holds, on its till
 			if S.profile and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
 				local held = StationProgress.held(S.profile, Workspace:GetServerTimeNow())
-				local full = held >= StationProgress.value(S.profile, "windmill") * StationProgress.MILL_HOURS
+				local full = held >= StationProgress.millRate(S.profile) * StationProgress.MILL_HOURS
 				local text =
 					`{Format.commas(held)} {if held == 1 then "coin" else "coins"}{if full then " (full)" else ""}`
 				(prompt :: ProximityPrompt).ObjectText = text
