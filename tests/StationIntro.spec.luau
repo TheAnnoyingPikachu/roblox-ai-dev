@@ -32,9 +32,11 @@ describe("StationIntro", function()
 	it("keeps the team standing even where it would lose (the net under the blessing)", function()
 		local hard = { clicks = true, immortal = true }
 		local plain = { clicks = true }
-		local won = LevelRules.fight(StationIntro.team(), StationIntro.WAVE, {}, plain)
-		expect(won).toBe(false) -- without help the legends at level 1 lose this wave
-		local saved, _, _, ends = LevelRules.fight(StationIntro.team(), StationIntro.WAVE, {}, hard)
+		-- since the smooth curve (decision 0123) the intro's wave is winnable alone: the net is checked 20 waves on
+		local wave = StationIntro.WAVE + 20
+		local won = LevelRules.fight(StationIntro.team(), wave, {}, plain)
+		expect(won).toBe(false) -- without help the legends lose this wave
+		local saved, _, _, ends = LevelRules.fight(StationIntro.team(), wave, {}, hard)
 		expect(saved).toBe(true)
 		for _, share in ends do
 			expect(share > 0).toBe(true)

@@ -106,6 +106,26 @@ describe("LevelRules.enemies", function()
 		expect(from < LevelRules.LAST).toBeTruthy()
 	end)
 
+	it(
+		"follows a smooth curve: no wave much harder than the one before, a boss wave BOSS_STEP over it (decision 0123)",
+		function()
+			for w = 2, LevelRules.END_FROM - 2 do
+				if w % LevelRules.BOSS_EVERY ~= 0 and (w - 1) % LevelRules.BOSS_EVERY ~= 0 then
+					local step = LevelRules.target(w) / LevelRules.target(w - 1)
+					expect(step > 0.9 and step < 1.2).toBeTruthy()
+				end
+			end
+			-- a boss wave is BOSS_STEP times the curve there (the curve leaves the dragons out)
+			local sum, n = 0, 0
+			for w = 30 - LevelRules.SMOOTH_SPAN, 30 + LevelRules.SMOOTH_SPAN do
+				sum += math.log(BattleRules.teamPower(LevelRules.classic(w, true), 2))
+				n += 1
+			end
+			expect(math.abs(LevelRules.target(30) / (math.exp(sum / n) * LevelRules.BOSS_STEP) - 1) < 1e-9).toBeTruthy()
+			expect(LevelRules.power(30)).toBe(LevelRules.target(30))
+		end
+	)
+
 	it("ends every 10th wave with a dragon, a stronger one as the waves go on, and sends none otherwise", function()
 		expect(LevelRules.boss(9)).toBeNil()
 		for _, c in
