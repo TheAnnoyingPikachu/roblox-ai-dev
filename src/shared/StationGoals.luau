@@ -34,6 +34,77 @@ local function trainedLevels(p: Profile): number
 end
 
 StationGoals.BOSS_EGG_EVERY = 5 -- every fifth stage's boss pays the best egg the player has unlocked
+
+-- Teaching goals (decision 0123, build 4 A): woven in after a stage's boss, each shows one thing the game has
+-- that the waves never ask for. By the stage they follow.
+local function one(x: boolean): number
+	return if x then 1 else 0
+end
+local TEACH: { [number]: { Goal } } = {
+	[1] = {
+		{
+			id = "barn",
+			text = "Upgrade your Barn",
+			of = 1,
+			count = function(p)
+				return one((p.upgrades.barn or 0) >= 1)
+			end,
+			reward = { pays = 3 },
+		},
+		{
+			id = "mill",
+			text = "Build the Windmill",
+			of = 1,
+			count = function(p)
+				return one((p.upgrades.windmill or 0) >= 1)
+			end,
+			reward = { samples = 5 },
+		},
+	},
+	[2] = {
+		{
+			id = "titan",
+			text = "Put a Titan in its slot",
+			of = 1,
+			count = function(p)
+				return one(p.titan ~= nil)
+			end,
+			reward = { pays = 4, samples = 4 },
+		},
+	},
+	[3] = {
+		{
+			id = "coat",
+			text = "Own an animal with a coat",
+			of = 1,
+			count = function(p)
+				for _, a in p.animals do
+					if StationProgress.coatTier(a) >= 1 then
+						return 1
+					end
+				end
+				return 0
+			end,
+			reward = { pays = 5 },
+		},
+	},
+	[5] = {
+		{
+			id = "fuse",
+			text = "Fuse four of a coat into a better one",
+			of = 1,
+			count = function(p)
+				for _, a in p.animals do
+					if StationProgress.coatTier(a) >= 2 then
+						return 1
+					end
+				end
+				return 0
+			end,
+			reward = { egg = "best" },
+		},
+	},
+}
 local list: { Goal } = {
 	{
 		id = "team",
@@ -81,8 +152,38 @@ for stage = 1, LevelRules.LAST // LevelRules.BOSS_EVERY do
 			elseif stage % StationGoals.BOSS_EGG_EVERY == 0 then { egg = "best" }
 			else { pays = 6, samples = 2 * stage },
 	})
+	for _, goal in TEACH[stage] or {} do
+		table.insert(list, goal)
+	end
 end
 StationGoals.LIST = list
+
+-- A reward every LEVEL_EVERY player levels up to LEVEL_TOP (decision 0123, build 4 A): wave pays and samples,
+-- the best egg on every tenth. Kept in the save's goals list as "lvl5", "lvl10"..., paid as soon as reached.
+StationGoals.LEVEL_EVERY, StationGoals.LEVEL_TOP = 5, 100
+local levels: { Goal } = {}
+for level = StationGoals.LEVEL_EVERY, StationGoals.LEVEL_TOP, StationGoals.LEVEL_EVERY do
+	table.insert(levels, {
+		id = `lvl{level}`,
+		text = `Reach player level {level}`,
+		of = level,
+		count = function(p)
+			return StationProgress.playerLevel(p)
+		end,
+		reward = if level % 10 == 0 then { egg = "best" } else { pays = 4, samples = level // 5 * 2 },
+	})
+end
+StationGoals.LEVELS = levels
+
+-- The level reward `p` has reached and not been paid, the lowest first; nil when none.
+function StationGoals.levelDue(p: Profile): Goal?
+	for _, goal in levels do
+		if table.find(p.goals, goal.id) == nil and goal.count(p) >= goal.of then
+			return goal
+		end
+	end
+	return nil
+end
 
 -- The goal `p` is on: the first it has not finished (nil once every goal is done).
 function StationGoals.next(p: Profile): Goal?
@@ -126,6 +227,9 @@ function StationGoals.finish(
 	now: number
 ): (Profile, boolean, string?)
 	local goal = StationGoals.due(p)
+	if goal == nil or goal.id ~= id then
+		goal = StationGoals.levelDue(p) -- or a level reward
+	end
 	if goal == nil or goal.id ~= id then
 		return p, false, "goal"
 	end

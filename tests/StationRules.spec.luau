@@ -121,13 +121,17 @@ describe("StationConfig", function()
 			expect(#StationConfig.EGGS).toBe(12)
 			local wave, price, least = -1, 0, 0
 			for k, egg in StationConfig.EGGS do
-				expect((egg.level or 0) >= wave).toBeTruthy()
+				expect((egg.wave or 0) >= wave).toBeTruthy()
 				expect(egg.price > price).toBeTruthy()
 				expect(egg.xp > 0).toBeTruthy()
-				wave, price = egg.level or 0, egg.price
+				wave, price = egg.wave or 0, egg.price
 				expect(egg.only == (k >= 8) or (egg.only == nil and k < 8)).toBeTruthy()
 				if k <= 2 then
-					expect(egg.level).toBeNil() -- the Meadow and Wild Eggs are open from the start
+					expect(egg.wave).toBeNil() -- the Meadow and Wild Eggs are open from the start
+				end
+				if egg.wave then -- each opens on a boss wave, before the wall (decision 0132)
+					expect(egg.wave % LevelRules.BOSS_EVERY).toBe(0)
+					expect(egg.wave < LevelRules.END_FROM + 20).toBeTruthy()
 				end
 				if egg.only then
 					local low = math.huge
@@ -146,7 +150,7 @@ describe("StationConfig", function()
 					end
 				end
 			end
-			expect(StationConfig.EGGS[12].level).toBe(85) -- the Crown Egg: for the highest players
+			expect(StationConfig.EGGS[12].wave).toBe(260) -- the Crown Egg: for the highest players
 		end
 	)
 
@@ -285,34 +289,44 @@ describe("StationRules stat levels", function()
 		expect(StationRules.level(StationRules.train(c, "gym", secondsTo(2) - 1), "strength")).toBe(1)
 		local t = StationRules.train(c, "gym", secondsTo(7))
 		expect(StationRules.level(t, "strength")).toBe(7)
-		expect(StationRules.stat(t, "strength")).toBe(38) -- 35 x (1 + 7/70) = 38.5
+		expect(StationRules.stat(t, "strength")).toBe(48) -- 35 x 6762 / 4900 = 48.3 (decision 0123)
 		expect(StationRules.stat(t, "speed")).toBe(70)
 		expect(StationRules.level(c, "strength")).toBe(0)
 	end)
 
-	it("makes every level take a little longer, with each level above 60 taking 24 to 48 hours", function()
-		local hour = 3600
+	it("makes every level take a little longer: 70 in under five days, then star levels of 27 to 36 hours", function()
+		local hour, top = 3600, StationConfig.STAR_FROM
 		expect(StationRules.levelSeconds(1)).toBe(120)
 		for n = 2, StationConfig.MAX_LEVEL do
 			local now, before = StationRules.levelSeconds(n), StationRules.levelSeconds(n - 1)
 			expect(now > before).toBeTruthy()
-			expect(now < before * 1.15).toBeTruthy() -- a little longer, never a jump
+			if n ~= top + 1 then -- the first star is the one jump: 12 hours to 27
+				expect(now < before * 1.15).toBeTruthy()
+			end
 			expect(now == math.floor(now)).toBeTruthy() -- whole seconds
 		end
-		expect(StationRules.levelSeconds(60) < 24 * hour).toBeTruthy()
-		expect(StationRules.levelSeconds(61)).toBe(24 * hour)
-		expect(StationRules.levelSeconds(70)).toBe(48 * hour)
-		for n = 61, 70 do
-			local t = StationRules.levelSeconds(n)
-			expect(t >= 24 * hour and t <= 48 * hour).toBeTruthy()
+		expect(StationRules.levelSeconds(60)).toBe(3 * hour)
+		expect(StationRules.levelSeconds(top)).toBe(12 * hour)
+		expect(StationRules.levelSeconds(top + 1)).toBe(27 * hour)
+		expect(StationRules.levelSeconds(StationConfig.MAX_LEVEL)).toBe(36 * hour)
+		-- one stat from 0 to 70 in about 4.6 days; all 70 stars about 91 days more
+		local day = 24 * hour
+		expect(secondsTo(top) > 4 * day and secondsTo(top) < 5 * day).toBeTruthy()
+		local stars = secondsTo(StationConfig.MAX_LEVEL) - secondsTo(top)
+		expect(stars > 85 * day and stars < 95 * day).toBeTruthy()
+	end)
+
+	it("makes a stat 3x at level 70, most of it by level 50, and 5.6x at 140 (decision 0123)", function()
+		expect(StationRules.grown(0)).toBe(4900)
+		expect(StationRules.grown(StationConfig.STAR_FROM)).toBe(3 * 4900)
+		expect(StationRules.grown(50) > 2.8 * 4900).toBeTruthy()
+		expect(StationRules.grown(StationConfig.MAX_LEVEL)).toBe(27440)
+		for n = 1, StationConfig.MAX_LEVEL do
+			expect(StationRules.grown(n) > StationRules.grown(n - 1)).toBeTruthy()
 		end
-		-- slower than the old 30 x n seconds at every level
-		for n = 1, 70 do
-			expect(StationRules.levelSeconds(n) > 30 * n).toBeTruthy()
-		end
-		-- one stat from 0 to 70 is about three weeks; the first 20 levels a couple of hours
-		expect(secondsTo(70) > 20 * 24 * hour and secondsTo(70) < 26 * 24 * hour).toBeTruthy()
-		expect(secondsTo(20) > 2 * hour and secondsTo(20) < 3 * hour).toBeTruthy()
+		-- a star is worth less than an early level, more than the last few before 70
+		local star = StationRules.grown(71) - StationRules.grown(70)
+		expect(star < StationRules.grown(1) - StationRules.grown(0)).toBeTruthy()
 	end)
 
 	it("keeps part of a level between sessions", function()
@@ -323,24 +337,26 @@ describe("StationRules stat levels", function()
 		expect(StationRules.level(StationRules.train(once, "track", half), "speed")).toBe(1)
 	end)
 
-	it("stops every stat at level 70, where the stat is doubled", function()
+	it("stops every stat at level 140 (70 stars), where the stat is 5.6x", function()
+		local max = StationConfig.MAX_LEVEL
 		for _, st in StationConfig.STATIONS do
 			local c = owned("cheetah")
-			local almost = StationRules.train(c, st.id, secondsTo(StationConfig.MAX_LEVEL) - 1)
-			expect(StationRules.level(almost, st.stat)).toBe(69)
-			local done = StationRules.train(c, st.id, secondsTo(StationConfig.MAX_LEVEL))
-			expect(StationRules.level(done, st.stat)).toBe(70)
+			local almost = StationRules.train(c, st.id, secondsTo(max) - 1)
+			expect(StationRules.level(almost, st.stat)).toBe(max - 1)
+			local done = StationRules.train(c, st.id, secondsTo(max))
+			expect(StationRules.level(done, st.stat)).toBe(max)
 			local more = StationRules.train(done, st.id, 1e9)
-			expect(StationRules.level(more, st.stat)).toBe(70)
-			expect(StationRules.stat(more, st.stat)).toBe(2 * (c.stats :: any)[st.stat])
+			expect(StationRules.level(more, st.stat)).toBe(max)
+			expect(StationRules.stat(more, st.stat)).toBe((c.stats :: any)[st.stat] * 27440 // 4900)
 		end
-		expect(StationConfig.MAX_LEVEL).toBe(70)
+		expect(max).toBe(140)
 	end)
 
 	it("gives exact whole numbers where the maths is exact", function()
-		-- 35 x 84 / 70 is exactly 42; floating point multiplication by 1.2 could give 41
-		local c = StationRules.train(owned("cheetah"), "gym", secondsTo(14))
-		expect(StationRules.stat(c, "strength")).toBe(42)
+		-- 35 x 14700 / 4900 is exactly 105 and 35 x 27440 / 4900 exactly 196; floats could give one less
+		local c = owned("cheetah")
+		expect(StationRules.stat(StationRules.train(c, "gym", secondsTo(70)), "strength")).toBe(105)
+		expect(StationRules.stat(StationRules.train(c, "gym", secondsTo(140)), "strength")).toBe(196)
 	end)
 
 	it("ignores an unknown station or no time", function()
@@ -460,7 +476,7 @@ describe("StationRules.hatch", function()
 			for _, stat in StationConfig.STATS do
 				expect((animal.stats :: any)[stat]).toBe((base :: any)[stat])
 				local level = StationRules.level(animal, stat)
-				if level == StationConfig.MAX_LEVEL then
+				if level == StationConfig.STAR_FROM then
 					maxed += 1 -- the jackpot (about 1 in 100,000 hatches)
 				else
 					expect(level >= 1 and level <= StationConfig.BASE_MAX).toBeTruthy()
@@ -583,7 +599,7 @@ describe("StationRules.hatch", function()
 				local maxed = 0
 				for _, stat in StationConfig.STATS do
 					local level = StationRules.level(a :: StationRules.Owned, stat)
-					if level == StationConfig.MAX_LEVEL then
+					if level == StationConfig.STAR_FROM then
 						maxed += 1
 					elseif level < 1 or level > StationConfig.BASE_MAX then
 						good = false

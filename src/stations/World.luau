@@ -430,6 +430,7 @@ local STOPS = {
 	camp = { 38, 225 },
 	fame = { 38, 315 },
 	board = { 37, 258 },
+	best = { 37, 287 }, -- the top-100 board (decision 0129), between the notice board and the Hall of Fame
 }
 local ROCK = { 0, -12.5, 3.6, 3.52 } -- middle x, y; radius; the top the statue stands on
 local ACACIA = { -10.5, 10.5 }
@@ -480,6 +481,7 @@ local statueFolder: Instance? = nil
 local statueMonth = -1
 local fameFolder: Instance? = nil
 local boardText: TextLabel? = nil
+local bestColumns: { TextLabel } = {}
 
 -- The statue on the rock by the pond: the month's rainbow animal (StationRewards.rainbowOf), twice size,
 -- facing the south road where players come in. Stood again when the month changes.
@@ -660,6 +662,43 @@ local function plaza(root: Instance, _rng: Random)
 		gui.Parent = paper
 		boardText = t
 	end
+	-- the top-100 board (decision 0129): wooden posts and a cream sheet in four columns of 25, written by setBest
+	do
+		local x, y, yaw = stopAt("best")
+		local c, s = math.cos(rad(yaw)), math.sin(rad(yaw))
+		local wood = Color3.fromRGB(122, 82, 46)
+		for _, lx in { -6.4, 6.4 } do
+			local post =
+				part(f, Vector3.new(0.7, 9, 0.7), CFrame.new(onPlaza(x + lx * c, y + lx * s, GROUND + 4.5)), wood)
+			post.Material = Enum.Material.Wood
+		end
+		local at = onPlaza(x, y, GROUND + 5)
+		local sheet = part(
+			f,
+			Vector3.new(12.4, 7, 0.3),
+			CFrame.lookAt(at, onPlaza(0, 0, GROUND + 5)),
+			Color3.fromRGB(250, 238, 210)
+		)
+		sheet.Name, sheet.CastShadow = "BestBoard", false
+		local gui = Instance.new("SurfaceGui")
+		gui.Face, gui.PixelsPerStud, gui.LightInfluence = Enum.NormalId.Front, 40, 0.3
+		local title = Instance.new("TextLabel")
+		title.Size, title.BackgroundTransparency = UDim2.fromScale(1, 0.12), 1
+		title.Font, title.TextScaled, title.TextColor3 = Enum.Font.FredokaOne, true, Color3.fromRGB(58, 36, 18)
+		title.Text = "BEST WAVES · ALL SERVERS"
+		title.Parent = gui
+		for k = 1, 4 do
+			local t = Instance.new("TextLabel")
+			t.Position, t.Size = UDim2.new((k - 1) / 4, 8, 0.13, 0), UDim2.new(0.25, -16, 0.85, 0)
+			t.BackgroundTransparency, t.TextXAlignment, t.TextYAlignment =
+				1, Enum.TextXAlignment.Left, Enum.TextYAlignment.Top
+			t.Font, t.TextScaled, t.TextColor3 = Enum.Font.FredokaOne, true, Color3.fromRGB(58, 36, 18)
+			t.Text = ""
+			t.Parent = gui
+			bestColumns[k] = t
+		end
+		gui.Parent = sheet
+	end
 	-- the campfire's stone ring and its four logs
 	do
 		local x, y = stopAt("camp")
@@ -723,6 +762,17 @@ local ROADS: { { Vector3 } } = {
 }
 
 -- Where a player arrives in the hub: on the south walk, facing the plaza.
+-- Write the top-100 board (decision 0129): `rows` are "1. Name  wave", 25 to a column.
+function World.setBest(rows: { string })
+	for k, t in bestColumns do
+		local chunk = {}
+		for i = (k - 1) * 25 + 1, math.min(k * 25, #rows) do
+			table.insert(chunk, rows[i])
+		end
+		t.Text = if k == 1 and #rows == 0 then "No best waves yet" else table.concat(chunk, "\n")
+	end
+end
+
 function World.hubSpawn(): CFrame
 	return CFrame.lookAt(Vector3.new(0, 3, 80), Vector3.new(0, 3, 0))
 end
