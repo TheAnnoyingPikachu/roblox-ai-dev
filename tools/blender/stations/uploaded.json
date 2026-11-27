@@ -1115,13 +1115,13 @@
     "texture": null
   },
   "creature_rhino_sahara_forge": {
-    "model": 111504266650836,
-    "decal": 99745034151474,
+    "model": 114239826368368,
+    "decal": 117013743671525,
     "texture": null
   },
   "creature_rhino_sahara_forge_rainbow": {
     "model": null,
-    "decal": 102017125494012,
+    "decal": 129727404842309,
     "texture": null
   },
   "creature_tortoise_sahara_forge_rainbow": {

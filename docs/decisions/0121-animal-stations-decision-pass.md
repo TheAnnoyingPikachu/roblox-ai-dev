@@ -92,6 +92,13 @@ cleared:
   party can probably go further than one player.
 - Fact: an extra wall from 250 at 3% or 5% a wave still let the best team clear 300 in 12 seeds.
 
+## Amended 2026-11-27 (decision 0123, build 3 B)
+
+A lost wave says how close it was: the `waveshow` result gains `foeLeft`, the share of the Legion's health still
+standing at the end (0 to 1, display only), and the run-over tip reads "So close: the Legion had only 9% of its
+health left." (15% or less) or "The Legion still had 40% of its health.", before the weakest stat. Task
+STATION-183.
+
 ## Not changed
 
 Prices of every other egg, `REWARD_GROWTH`, `STEEP_FROM`, `STEEP_GROWTH`, `STEEP_BEND`, `POWER_COST` (halving it

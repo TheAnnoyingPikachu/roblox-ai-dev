@@ -120,6 +120,8 @@ local REFUSED: { [string]: string } = {
 	nests_full = "Every nest is taken: upgrade the Hatchery",
 	no_mill = "Build the Windmill first",
 	mill_empty = "The windmill has no coins for you yet",
+	visit = "That ranch isn't here any more",
+	herd_empty = "Your animals haven't earned anything yet",
 	not_ready = "That egg is not ready yet",
 	hatching = "That egg is already hatching",
 	top = "That is already at its top level",
@@ -127,7 +129,7 @@ local REFUSED: { [string]: string } = {
 	train_full = "Every training place is taken: upgrade the Ranch House",
 	station_busy = "Another animal is training there: stop it first",
 	training = "Stop its training first",
-	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
+	maxed = `That stat has all {StationConfig.MAX_LEVEL - StationConfig.STAR_FROM} stars`,
 	loading = "Still loading your ranch...",
 	rate = "Slow down a little",
 	wave = "That wave is not open yet: clear the one before it",
@@ -199,11 +201,11 @@ local function live(a: any): any
 	return StationRules.train(a, a.at, StationProgress.trainedBetween(S.profile, a.since, Workspace:GetServerTimeNow()))
 end
 
--- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
--- over "46"), with the time left to the next level while training ("46  12m"), or MAX.
+-- Two lines for a stat button: the stat's level ("SPD 7/70", or "SPD 70 ★5" with stars), then its battle
+-- value, with the time left to the next level while training ("46  12m"), or MAX.
 function Hud.statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
-	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
+	local head = `{STAT_SHORT[stat]} {StationRules.levelText(level)}`
 	local value = StationRules.stat(a, stat :: any)
 	if level >= StationConfig.MAX_LEVEL then
 		return `{head}\n{value}  MAX`
@@ -346,7 +348,7 @@ end
 S.hideResult = function() end -- set once the fight panel exists
 
 -- Travel: a pop-out beside its button with the hub, your ranch and the wave arena (no teleport pads)
-local travel = Style.panel(nav, UDim2.fromOffset(196, 214))
+local travel = Style.panel(nav, UDim2.fromOffset(236, 214))
 travel.AnchorPoint, travel.Position, travel.Visible = Vector2.new(0, 1), UDim2.fromOffset(114, 488), false
 local places = Instance.new("Frame")
 places.BackgroundTransparency = 1
@@ -464,6 +466,56 @@ do
 	end
 end
 
+-- Visit a ranch (decision 0128): a Visit button on the Go to… panel lists the other players' ranches here.
+do
+	local panel = Style.panel(nav, UDim2.fromOffset(232, 200))
+	panel.Visible = false
+	local list = Instance.new("Frame")
+	list.BackgroundTransparency = 1
+	list.Position, list.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -20)
+	Style.list(list, 10)
+	list.Parent = panel
+	local function fill()
+		Style.clear(list)
+		Style.text(list, "Visit a ranch", 20, C.text, UDim2.new(1, 0, 0, 26))
+		local n = 0
+		for _, other in game:GetService("Players"):GetPlayers() do
+			if other ~= player and other:GetAttribute("Ranch") then
+				n += 1
+				local b = Style.button(list, `{other.DisplayName}'s ranch`, function()
+					panel.Visible = false
+					Hud.travelTo("visit", other.UserId)
+				end, "good", UDim2.new(1, 0, 0, 44))
+				b.LayoutOrder, b.TextSize = n, 16
+			end
+		end
+		if n == 0 then
+			local none =
+				Style.small(list, "No one else is here yet. Invite a friend!", 14, C.muted, UDim2.new(1, 0, 0, 40))
+			none.LayoutOrder = 1
+		end
+		panel.Size = UDim2.fromOffset(232, 56 + math.max(n, 1) * 54)
+	end
+	local open = Style.button(travel, "Visit", function()
+		travel.Visible = false
+		fill()
+		panel.Visible = true
+	end, "ghost", UDim2.fromOffset(60, 28))
+	open.AnchorPoint, open.Position, open.TextSize, open.ZIndex = Vector2.new(1, 0), UDim2.new(1, -90, 0, 10), 14, 3
+	nav:GetPropertyChangedSignal("Visible"):Connect(function()
+		panel.Visible = false
+	end)
+	travel:GetPropertyChangedSignal("Visible"):Connect(function()
+		if travel.Visible then
+			panel.Visible = false
+		end
+	end)
+	table.insert(layouts, function(small) -- where Go to… stands
+		panel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
+		panel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
+	end)
+end
+
 dockButton("Animals", "paw", Enum.KeyCode.One, function()
 	show("animals")
 end, "animals")
@@ -506,7 +558,7 @@ table.insert(layouts, function(small)
 	dock.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.zero
 	dock.Position = if small then UDim2.new(1, -14, 1, -112) else UDim2.fromOffset(16, 96)
 	dock.Size = if small then UDim2.fromOffset(156, 128) else UDim2.fromOffset(84, 480)
-	travel.Size = UDim2.fromOffset(196, if small then 268 else 214)
+	travel.Size = UDim2.fromOffset(236, if small then 268 else 214) -- room for Visit and Sound by the title
 	travel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
 	travel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
 end)
@@ -1033,7 +1085,7 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 		for _, prompt in CollectionService:GetTagged("Mill") do -- what the owner's windmill holds, on its till
 			if S.profile and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
 				local held = StationProgress.held(S.profile, Workspace:GetServerTimeNow())
-				local full = held >= StationProgress.value(S.profile, "windmill") * StationProgress.MILL_HOURS
+				local full = held >= StationProgress.millRate(S.profile) * StationProgress.MILL_HOURS
 				local text =
 					`{Format.commas(held)} {if held == 1 then "coin" else "coins"}{if full then " (full)" else ""}`
 				(prompt :: ProximityPrompt).ObjectText = text
@@ -1051,11 +1103,17 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	if kind == "profile" then
 		local first = S.profile == nil
 		local before = if first then 0 else StationProgress.playerLevel(S.profile)
+		local bestBefore = if first then math.huge else S.profile.best
 		S.profile = payload
 		S.applySound()
 		local level = StationProgress.playerLevel(payload)
 		if not first and level > before then
 			task.spawn(Hud.levelUp, level) -- it waits out a fight
+		end
+		for _, d in StationConfig.EGGS do -- a new best wave that opens an egg (decision 0132)
+			if d.wave and bestBefore < d.wave and payload.best >= d.wave then
+				task.spawn(Hud.levelUp, d)
+			end
 		end
 		if first then
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
@@ -1072,8 +1130,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
-			if StationRules.level(payload, stat) >= StationConfig.MAX_LEVEL then
-				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.MAX_LEVEL}!`
+			if StationRules.level(payload, stat) >= StationConfig.STAR_FROM then
+				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.STAR_FROM}!`
 			end
 		end
 		if payload.at then
@@ -1171,6 +1229,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			local kept = if S.run then math.floor(S.run.pot * WaveRuns.LOSS_KEEP / 100) else 0
+			-- how close it was (decision 0123): the Legion's health left
+			local left = math.clamp(math.ceil((payload.foeLeft or 1) * 100), 1, 100)
+			local close = if left <= 15
+				then `So close: the Legion had only {left}% of its health left.`
+				else `The Legion still had {left}% of its health.`
 			Hud.runOver(
 				`Stopped at wave {payload.wave}`,
 				{
@@ -1179,7 +1242,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 					{ `x{#(payload.boons or {})}`, "boons picked this run" },
 				},
 				if low
-					then `Your {low.name}'s {low.stat} is only level {low.level}. Training it is the quickest gain.`
+					then `{close} Your {low.name}'s {low.stat} is only level {low.level}: training it is the quickest gain.`
 					else "Hatch three animals and put them in your team.",
 				S.run ~= nil and S.run.best
 			)

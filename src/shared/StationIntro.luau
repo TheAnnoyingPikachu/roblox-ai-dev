@@ -76,7 +76,7 @@ function StationIntro.lent(k: number): StationRules.Owned?
 	end
 	local trained = {} :: any
 	for _, stat in StationConfig.STATS do
-		trained[stat] = StationConfig.MAX_LEVEL
+		trained[stat] = StationConfig.STAR_FROM -- level 70, no stars: the intro was tuned for it
 	end
 	return { s = a.s, v = a.v, stats = StationRules.versionStats(a.s, a.v) :: StationConfig.Stats, trained = trained }
 end

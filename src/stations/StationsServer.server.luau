@@ -111,6 +111,15 @@ end
 
 local function join(player: Player)
 	player:SetAttribute("Admin", isAdmin(player))
+	-- the best wave and the player level in Roblox's player list (decisions 0128, 0132); set from the save in onChanged
+	local stats = Instance.new("Folder")
+	stats.Name = "leaderstats"
+	for _, name in { "Best wave", "Level" } do
+		local value = Instance.new("IntValue")
+		value.Name = name
+		value.Parent = stats
+	end
+	stats.Parent = player
 	for i = 1, World.RANCHES do
 		if owners[i] == nil then
 			owners[i] = player
@@ -230,10 +239,10 @@ local function payGoals(player: Player)
 		return
 	end
 	payingGoals[player] = true
-	for _ = 1, #StationGoals.LIST do
+	for _ = 1, #StationGoals.LIST + #StationGoals.LEVELS do
 		local p = saves.get(player)
 		local q = if p then StationProgress.sanitize(p, os.time()) else nil
-		local goal = if q then StationGoals.due(q) else nil
+		local goal = if q then StationGoals.due(q) or StationGoals.levelDue(q) else nil
 		if q == nil or goal == nil then
 			break
 		end
@@ -1523,6 +1532,23 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- visit another player's ranch in this server (decision 0128): stand at its spawn. Their prompts stay theirs.
+		visit = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, userId: number)
+				local them = Players:GetPlayerByUserId(userId)
+				local i = if them and them ~= player then ranchOf(them) else nil
+				if i == nil or player.Character == nil then
+					return false, "visit"
+				end
+				WaveShow.clear(player)
+				bankRun(player, false)
+				local to = World.ranchSpawn(i)
+				pcall(player.RequestStreamAroundAsync, player, to.Position)
+				player.Character:PivotTo(to)
+				return true, nil
+			end,
+		},
 		-- travel from anywhere (decision 0093): to the hub or the wave arena's gate (leaving a fight, if
 		-- in one); `home` above goes to the player's own ranch. Places far away are streamed in first.
 		travel = {
@@ -1639,6 +1665,22 @@ local router = Router.new({
 				local coins = if p then StationProgress.held(StationProgress.sanitize(p, now), now) else 0
 				local ok, code = apply(player, function(q)
 					return StationProgress.collect(q, now)
+				end)
+				if ok then
+					remotes.fx(player, "collected", coins)
+				end
+				return ok, code
+			end,
+		},
+		-- The owner collects what the ranch animals earned, from the Ranch menu (decision 0124).
+		collect_herd = {
+			args = {},
+			handler = function(player)
+				local p = saves.get(player)
+				local now = os.time()
+				local coins = if p then StationProgress.herdHeld(StationProgress.sanitize(p, now), now) else 0
+				local ok, code = apply(player, function(q)
+					return StationProgress.collectHerd(q, now)
 				end)
 				if ok then
 					remotes.fx(player, "collected", coins)
@@ -1770,7 +1812,15 @@ saves = Saves.start({
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
 		BestBoard.report(player, profile.best)
-		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
+		local level = StationProgress.playerLevel(profile)
+		player:SetAttribute("Level", level) -- on others' cards under the cursor
+		local board = player:FindFirstChild("leaderstats")
+		for name, value in { ["Best wave"] = profile.best, Level = level } do
+			local stat = if board then board:FindFirstChild(name) else nil
+			if stat and stat:IsA("IntValue") then
+				stat.Value = value
+			end
+		end
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
 		local hatching = #profile.animals > 0
@@ -1794,7 +1844,7 @@ saves = Saves.start({
 			end
 		end
 		remotes.fx(player, "profile", StationProgress.public(profile))
-		if StationGoals.due(profile) then
+		if StationGoals.due(profile) or StationGoals.levelDue(profile) then
 			task.defer(payGoals, player)
 		end
 		updateFame()
