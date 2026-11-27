@@ -17,6 +17,8 @@ local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
 
 World.build()
+local BestBoard = require(script.Parent:WaitForChild("BestBoard"))
+BestBoard.start() -- the hub's top-100 board (decision 0129)
 Creatures.publishPortraits()
 
 -- What stands on each ranch follows its owner's upgrades (a free ranch shows a new one).
@@ -1767,6 +1769,7 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		BestBoard.report(player, profile.best)
 		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
@@ -1888,6 +1891,7 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	task.spawn(BestBoard.leave, player)
 	payingGoals[player] = nil
 	task.defer(updateFame) -- after the player has gone
 	task.defer(Analytics.forget, player)
