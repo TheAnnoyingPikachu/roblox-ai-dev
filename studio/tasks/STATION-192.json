@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-192",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Live tuning (SHANNON's Round 2 build 8 A, decision 0131): replay pay, an event coin boost, an egg price multiplier and a hatch time multiplier, read from ConfigService within approved ranges and applied on server and clients alike.",
+  "inputs": [
+    "docs/decisions/0131-animal-stations-live-tuning.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/LiveTuning.luau",
+    "src/shared/LevelRules.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/LiveConfig.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/LiveTuning.spec.luau",
+    "tests/run.luau",
+    "docs/decisions/0131-animal-stations-live-tuning.md",
+    "studio/tasks/STATION-192.json"
+  ],
+  "tests": [
+    "LiveTuning.spec.luau",
+    "LevelRules.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Each key is held inside its range; a missing or wrong value is its default",
+    "The server applies the values and hands them to clients, which apply the same",
+    "Start never waits on ConfigService"
+  ],
+  "verification": "Lune 836/836 (LiveTuning spec). Studio 2026-11-27, build dev (local): the server starts with Live_replayPct=40, coinBoost=1, eggPrice=1, hatchTime=1 on ReplicatedStorage and the client applies them. Not seen: a live value (ConfigService never answers in an unpublished place).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Economy values changeable live (decision 0131): SHANNON to approve the ranges and create the keys on the Creator Hub."
+}

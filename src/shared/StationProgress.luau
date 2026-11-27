@@ -599,8 +599,9 @@ end
 
 -- How many seconds `egg` takes to hatch for `p`: its own time, shortened by the Brooder. Whole seconds,
 -- rounded up. The Brooder's level now counts for the whole wait, also for an egg already hatching.
+StationProgress.HATCH_MULT = 1 -- every hatch time times this (decision 0131, LiveTuning)
 function StationProgress.hatchSeconds(p: Profile, egg: StationConfig.Egg): number
-	return math.ceil(egg.hatch * 100 / StationProgress.value(p, "brooder"))
+	return math.ceil(egg.hatch * 100 * StationProgress.HATCH_MULT / StationProgress.value(p, "brooder"))
 end
 
 -- When `p`'s egg `e` can be opened (os.time; nil while it waits in storage): its hatch time from when it
@@ -686,9 +687,13 @@ function StationProgress.give(
 	s: string,
 	v: string?,
 	level: number,
-	rainbow: boolean?
+	coat: (boolean | string)? -- true: the rainbow coat; a coat id (StationConfig.COATS); nil or false: none
 ): (Profile, boolean, string?, Animal?)
 	local stats = StationRules.versionStats(s, v)
+	local coatId = if coat == true then "rainbow" elseif type(coat) == "string" then coat else nil
+	if coatId and StationConfig.coat(coatId) == nil then
+		return p, false, "coat", nil
+	end
 	if stats == nil or level ~= math.floor(level) or level < 1 or level > StationConfig.MAX_LEVEL then
 		return p, false, "animal", nil
 	elseif #p.animals >= StationProgress.MAX_ANIMALS then
@@ -704,8 +709,8 @@ function StationProgress.give(
 		v = v,
 		stats = stats,
 		trained = trained :: Stats,
-		rainbow = if rainbow then true else nil,
-		coat = if rainbow then "rainbow" else nil,
+		rainbow = if coatId == "rainbow" then true else nil,
+		coat = coatId,
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
@@ -716,6 +721,21 @@ function StationProgress.give(
 		table.insert(p.team, animal.id)
 	end
 	return p, true, nil, animal
+end
+
+-- Admin only (SHANNON, 2026-11-27): every egg hatching now is done at `now`, ready to open.
+function StationProgress.skipHatching(p: Profile, now: number): (Profile, boolean, string?)
+	p.eggs = table.clone(p.eggs)
+	for k, e in p.eggs do
+		local egg = StationConfig.egg(e.egg)
+		if e.since and egg then
+			local copy = table.clone(e)
+			copy.since = math.min(e.since, now - StationProgress.hatchSeconds(p, egg) - 1)
+			copy.quick = nil
+			p.eggs[k] = copy
+		end
+	end
+	return p, true, nil
 end
 
 -- Robux and the beta (decision 0117): grant one animal of species `s` and variant `v` for receipt `key`, once
