@@ -172,13 +172,17 @@ function Saves.start(options: Options)
 
 	function api.finish(player: Player)
 		local key = keyFor(player)
-		if options.beforeFinish and saves:session(key) then
-			local ok, err = pcall(options.beforeFinish, player)
-			if not ok then
-				warn(`[Saves] beforeFinish for {player.UserId} failed: {err}`)
-			end
-		end
-		saves:finish(key, os.time(), CLOSE_BUDGET)
+		local hook = options.beforeFinish
+		saves:finish(
+			key,
+			os.time(),
+			CLOSE_BUDGET,
+			if hook
+				then function()
+					hook(player)
+				end
+				else nil
+		)
 		if byKey[key] == player then -- a rejoin may already own the key
 			byKey[key] = nil
 		end

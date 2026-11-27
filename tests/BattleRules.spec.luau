@@ -145,6 +145,15 @@ describe("BattleRules.lineup groups", function()
 		expect(BattleRules.lineup({ owned("lion"), owned("rhino"), owned("cheetah") }, 1)[1].dmg).toBe(raw.dmg)
 	end)
 
+	it("fills a run team's meters PLAYER_FILL times as fast, and nobody else's (decision 0121)", function()
+		local raw = BattleRules.fighter(owned("lion"), 1, 1)
+		expect(BattleRules.lineup({ owned("lion") }, 1)[1].gain).toBe(raw.gain)
+		expect(BattleRules.lineup({ owned("lion") }, 1, {})[1].gain).toBe(raw.gain * BattleRules.PLAYER_FILL)
+		expect(BattleRules.lineup({ owned("lion") }, 1, { gain = 1.05 })[1].gain).toBe(
+			raw.gain * 1.05 * BattleRules.PLAYER_FILL
+		)
+	end)
+
 	it("gives a solitary animal 25% when no teammate shares its role", function()
 		local raw = BattleRules.fighter(owned("cheetah"), 1, 1)
 		local alone = BattleRules.lineup({ owned("cheetah") }, 1)[1]

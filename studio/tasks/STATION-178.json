@@ -1,0 +1,37 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-178",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Housekeeping SHANNON picked (decision 0121, answers 31, 35, 36, 37): remove the 'Gear is coming soon' line, log a failed model load as an analytics event, fix the game's CLAUDE.md, and write the rollback and data-erasure runbooks.",
+  "inputs": [
+    "docs/decisions/0121-animal-stations-decision-pass.md",
+    "docs/decisions/0113-animal-stations-analytics.md",
+    "docs/decisions/0111-animal-stations-beta-saves.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/stations-client/Hud.client.luau",
+    "src/stations/Creatures.luau",
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0113-animal-stations-analytics.md",
+    "docs/production/game7-rollback-runbook.md",
+    "docs/production/game7-data-erasure-runbook.md",
+    "studio/tasks/STATION-178.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "No gear message: a vendor prompt opens the egg shop only for the egg vendor",
+    "A model that fails all three loads logs the custom event ModelFailed (what, asset id) on a player in the server",
+    "src/stations/CLAUDE.md no longer says wave battles are not built",
+    "Runbooks say how to roll back without lowering the save version, and where a player's data is and how to erase it"
+  ],
+  "verification": "Lune 823/823 (no rules changed). Not run in Studio: a failed load can't be forced there without a bad asset id.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Analytics: a fourth custom event name, ModelFailed (decision 0113 amended)."
+}

@@ -60,6 +60,9 @@ BattleRules.SWING, BattleRules.REST, BattleRules.TEMPO_HALF = 1.5, 1.5, 100
 -- Power attacks: every attack adds POWER_GAIN + Mana energy; at POWER_COST that attack's damage
 -- and heal are x POWER and the cost is spent.
 BattleRules.POWER_GAIN, BattleRules.POWER_COST, BattleRules.POWER = 10, 200, 2
+-- In a run (a `setup`: the player's team) meters fill PLAYER_FILL times as fast (decision 0121): a starter
+-- team gets about 3 presses a fight, not 1. The Legion's are unchanged.
+BattleRules.PLAYER_FILL = 2
 BattleRules.ATTACK_BONUS = 1.3 -- Attack: damage x this
 BattleRules.GUARD = 0.8 -- Defence: enemies must target it while it stands, and it takes damage x this
 BattleRules.HEAL_PCT = 8 -- Utility: each attack also heals the most hurt teammate by this % of the healer's own max HP
@@ -199,7 +202,7 @@ function BattleRules.lineup(team: { Owned }, side: number, setup: Setup?): { Fig
 			f.hp = if share <= 0 then 0 else math.max(1, math.floor(f.maxHp * math.min(1, share)))
 			f.swing *= setup.tempo or 1
 			f.rest *= setup.tempo or 1
-			f.gain *= setup.gain or 1
+			f.gain *= (setup.gain or 1) * BattleRules.PLAYER_FILL -- a run is the player's: their meters fill faster
 			if setup.clicks then -- a strike is STRIKE_SECONDS of its attacking; its own attacks slow down
 				f.click = BattleRules.STRIKE_SECONDS / (f.swing + f.rest) * (setup.clickDmg or 1)
 				f.swing *= BattleRules.CLICK_SLOW

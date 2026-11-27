@@ -1,0 +1,38 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-175",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Bring back SHANNON's first-iteration Eternal models and fix their rigging (SHANNON, 2026-11-25: 'take the first iteration and just try to fix them? these ones dont look as good either'), replacing the regenerated models of STATION-173 and STATION-174.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-174"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_*_sahara_forge*",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-175.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Sahara Guardian, Sahara Mammoth, Sunfire War-Tortoise and Molten Sun Rhino are SHANNON's own site models as first used (artifacts 30d3ddb4, fb438279, 276820c6, 8fd726bf), unchanged in look",
+    "Each is skinned to the Stations rig with no leg clamp (AnimalMoves.STIFF stays empty); the game's strongest poses stretch at most 10 % of it",
+    "The Guardian's few big faces are split in their own planes (UVs kept) so its joints bend over small faces",
+    "Foot points and spell anchors (AnimalRig) are measured on the models and every spell checks out; each has a rainbow coat",
+    "Uploaded and seen in Studio"
+  ],
+  "verification": "skin_forge --stretch worst, unclamped: Guardian 8.29 % (14.66 % with the first iteration's weights), Mammoth 8.40 % (9.01), War-Tortoise 3.63 % (3.63), Sun Rhino 5.75 % (8.40). check_spells ALL OK. Lune 823/823. Uploaded models and rainbow coats: run 45711008034. Studio 2026-11-25, build dev (local): all four stood on the ground, idled, held their spells mid-cast and the Guardian its attack (face and mane whole), at their sizes. Not seen: walking the herd at a ranch, a fight with them in the team.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. Fixes: each leg leaves the body below its armour; the Guardian's face turns rigid on a narrow band behind it with its mane on the body (carried by the head, the mane tore from the chest), and its 3,071 triangles are split until no edge is over 0.025 (15,788). Earlier uploads (STATION-173's and STATION-174's) are left for archiving by hand."
+}
