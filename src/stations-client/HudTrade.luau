@@ -116,7 +116,7 @@ function Hud.peekCard(a: any)
 	for _, stat in StationConfig.STATS do
 		table.insert(
 			parts,
-			`{STAT_SHORT[stat]} {StationRules.stat(a, stat)} (Lv {StationRules.level(a, stat)}/{StationConfig.MAX_LEVEL})`
+			`{STAT_SHORT[stat]} {StationRules.stat(a, stat)} (Lv {StationRules.levelText(StationRules.level(a, stat))})`
 		)
 	end
 	local lines = Style.text(card, table.concat(parts, "    "), 14, C.muted, UDim2.new(1, -28, 0, 60))

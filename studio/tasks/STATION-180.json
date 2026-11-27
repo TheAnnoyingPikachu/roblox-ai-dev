@@ -1,0 +1,32 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-180",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "A welcome-back card (SHANNON's pick 30 in the decision pass, decision 0121): on joining, a returning player sees what trained, hatched and filled while they were away.",
+  "inputs": [
+    "docs/decisions/0121-animal-stations-decision-pass.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "src/stations-client/HudMoments.luau",
+    "src/stations-client/Hud.client.luau",
+    "tests/StationProgress.spec.luau",
+    "studio/tasks/STATION-180.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "StationProgress.away says the stat levels each training animal gained since the save was written, the eggs ready and the Windmill's coins, and changes nothing",
+    "A player who has done the intro sees a card with up to three lines on joining; with nothing to say there is no card",
+    "The card closes on its button or after 12 seconds"
+  ],
+  "verification": "Lune 824/824 (StationProgress away spec). Studio 2026-11-26, build dev (local): the card drawn with three sample lines (a fresh save in Studio has nothing to say, so the lines were set by hand). Not seen: a real returning save (DataStores are offline in Studio).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Display only: no save field, no request. Worked out on the client from the first profile and the server's clock."
+}

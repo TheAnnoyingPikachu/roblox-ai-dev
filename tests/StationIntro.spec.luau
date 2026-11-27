@@ -92,13 +92,13 @@ describe("StationIntro", function()
 end)
 
 describe("StationIntro the Ranger's loan (decision 0119)", function()
-	it("offers the first boss's loan, then one a day, and lends a legend at max level", function()
+	it("offers the first boss's loan, then one a day, and lends a legend at level 70", function()
 		local p = StationProgress.defaults(0)
 		local day = 86400 * 20000
 		expect(StationIntro.loanFor(p, 9, day)).toBeNil()
 		expect(StationIntro.loanFor(p, StationIntro.LOAN_WAVE, day)).toBe("boss")
 		local legend = StationIntro.lent(1) :: any
-		expect(legend.trained.speed).toBe(StationConfig.MAX_LEVEL)
+		expect(legend.trained.speed).toBe(StationConfig.STAR_FROM)
 		expect(StationIntro.lent(9)).toBeNil()
 		p = StationProgress.give(p, "jackal", nil, 3, false)
 		p = StationProgress.give(p, "elephant", nil, 3, false)

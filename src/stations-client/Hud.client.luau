@@ -120,6 +120,7 @@ local REFUSED: { [string]: string } = {
 	nests_full = "Every nest is taken: upgrade the Hatchery",
 	no_mill = "Build the Windmill first",
 	mill_empty = "The windmill has no coins for you yet",
+	herd_empty = "Your animals haven't earned anything yet",
 	not_ready = "That egg is not ready yet",
 	hatching = "That egg is already hatching",
 	top = "That is already at its top level",
@@ -127,7 +128,7 @@ local REFUSED: { [string]: string } = {
 	train_full = "Every training place is taken: upgrade the Ranch House",
 	station_busy = "Another animal is training there: stop it first",
 	training = "Stop its training first",
-	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
+	maxed = `That stat has all {StationConfig.MAX_LEVEL - StationConfig.STAR_FROM} stars`,
 	loading = "Still loading your ranch...",
 	rate = "Slow down a little",
 	wave = "That wave is not open yet: clear the one before it",
@@ -199,11 +200,11 @@ local function live(a: any): any
 	return StationRules.train(a, a.at, StationProgress.trainedBetween(S.profile, a.since, Workspace:GetServerTimeNow()))
 end
 
--- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
--- over "46"), with the time left to the next level while training ("46  12m"), or MAX.
+-- Two lines for a stat button: the stat's level ("SPD 7/70", or "SPD 70 ★5" with stars), then its battle
+-- value, with the time left to the next level while training ("46  12m"), or MAX.
 function Hud.statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
-	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
+	local head = `{STAT_SHORT[stat]} {StationRules.levelText(level)}`
 	local value = StationRules.stat(a, stat :: any)
 	if level >= StationConfig.MAX_LEVEL then
 		return `{head}\n{value}  MAX`
@@ -380,6 +381,88 @@ do
 		Hud.travelTo(p[3], p[4])
 	end, p[2], UDim2.new(1, 0, 0, 44))
 	b.LayoutOrder = k + 1
+end
+
+-- Sound (decision 0122): music and effects volume and mute, from a button on the Go to… panel (a phone's More
+-- opens it too). The volumes are saved; the profile sets them on the sound groups (Style.volumes).
+do
+	local steps = StationProgress.SOUND_STEPS
+	local panel = Style.panel(nav, UDim2.fromOffset(232, 214))
+	panel.AnchorPoint, panel.Position, panel.Visible = travel.AnchorPoint, travel.Position, false
+	local list = Instance.new("Frame")
+	list.BackgroundTransparency = 1
+	list.Position, list.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -20)
+	Style.list(list, 10)
+	list.Parent = panel
+	Style.text(list, "Sound", 20, C.text, UDim2.new(1, 0, 0, 26))
+	local function current(): StationProgress.Sound
+		local p = S.profile
+		return if p and p.sound then p.sound else { music = steps, effects = steps, mute = false }
+	end
+	local labels: { [string]: TextLabel } = {}
+	local muteButton: TextButton
+	local function drawSound()
+		local now = current()
+		labels.music.Text = `Music  {now.music * 10}%`
+		labels.effects.Text = `Effects  {now.effects * 10}%`
+		muteButton.Text = if now.mute then "Sound off: turn on" else "Mute all"
+	end
+	local function setSound(music: number, effects: number, mute: boolean)
+		local p = S.profile
+		if p then -- straight away, before the save answers
+			p.sound = { music = music, effects = effects, mute = mute }
+			Style.volumes(music, effects, mute, steps)
+			drawSound()
+		end
+		request:InvokeServer("sound", music, effects, mute)
+	end
+	for k, which in { "music", "effects" } do
+		local row = Instance.new("Frame")
+		row.BackgroundTransparency, row.LayoutOrder = 1, k
+		row.Size = UDim2.new(1, 0, 0, 40)
+		row.Parent = list
+		labels[which] = Style.text(row, "", 17, C.text, UDim2.new(1, -96, 1, 0))
+		for n, step in { -1, 1 } do
+			local b = Style.button(row, if step < 0 then "−" else "+", function()
+				local now = current()
+				local m, e = now.music, now.effects
+				if which == "music" then
+					m = math.clamp(m + step, 0, steps)
+				else
+					e = math.clamp(e + step, 0, steps)
+				end
+				setSound(m, e, false)
+			end, "ghost", UDim2.fromOffset(44, 40))
+			b.Position, b.TextSize = UDim2.new(1, -96 + (n - 1) * 52, 0, 0), 22
+		end
+	end
+	muteButton = Style.button(list, "", function()
+		local now = current()
+		setSound(now.music, now.effects, not now.mute)
+	end, "primary", UDim2.new(1, 0, 0, 44))
+	muteButton.LayoutOrder = 3
+	local open = Style.button(travel, "Sound", function()
+		travel.Visible = false
+		drawSound()
+		panel.Visible = true
+	end, "ghost", UDim2.fromOffset(72, 28))
+	open.AnchorPoint, open.Position, open.TextSize, open.ZIndex = Vector2.new(1, 0), UDim2.new(1, -12, 0, 10), 14, 3
+	nav:GetPropertyChangedSignal("Visible"):Connect(function()
+		panel.Visible = false
+	end)
+	travel:GetPropertyChangedSignal("Visible"):Connect(function()
+		if travel.Visible then
+			panel.Visible = false
+		end
+	end)
+	table.insert(layouts, function(small) -- where Go to… stands (its own layout runs after this one)
+		panel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
+		panel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
+	end)
+	S.applySound = function()
+		local now = current()
+		Style.volumes(now.music, now.effects, now.mute, steps)
+	end
 end
 
 dockButton("Animals", "paw", Enum.KeyCode.One, function()
@@ -906,12 +989,8 @@ game:GetService("ProximityPromptService").PromptTriggered:Connect(function(promp
 		Hud.openEgg((prompt.Parent :: BasePart).Position)
 	elseif CollectionService:HasTag(prompt, "Mill") then
 		send("collect")
-	elseif CollectionService:HasTag(prompt, "Vendor") then
-		if prompt:GetAttribute("Kind") == "eggs" then
-			show("shop")
-		else
-			Style.toast(screen, "The gear vendor is still unpacking. Gear is coming soon!")
-		end
+	elseif CollectionService:HasTag(prompt, "Vendor") and prompt:GetAttribute("Kind") == "eggs" then
+		show("shop") -- no gear vendor until gear exists (decision 0121)
 	end
 end)
 
@@ -955,7 +1034,7 @@ task.spawn(function() -- once a second: countdowns, and a finished egg can be op
 		for _, prompt in CollectionService:GetTagged("Mill") do -- what the owner's windmill holds, on its till
 			if S.profile and prompt:GetAttribute("Ranch") == player:GetAttribute("Ranch") then
 				local held = StationProgress.held(S.profile, Workspace:GetServerTimeNow())
-				local full = held >= StationProgress.value(S.profile, "windmill") * StationProgress.MILL_HOURS
+				local full = held >= StationProgress.millRate(S.profile) * StationProgress.MILL_HOURS
 				local text =
 					`{Format.commas(held)} {if held == 1 then "coin" else "coins"}{if full then " (full)" else ""}`
 				(prompt :: ProximityPrompt).ObjectText = text
@@ -974,12 +1053,16 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 		local first = S.profile == nil
 		local before = if first then 0 else StationProgress.playerLevel(S.profile)
 		S.profile = payload
+		S.applySound()
 		local level = StationProgress.playerLevel(payload)
 		if not first and level > before then
 			task.spawn(Hud.levelUp, level) -- it waits out a fight
 		end
 		if first then
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners
+			if payload.intro then -- a returning player: what happened while they were away (decision 0121)
+				task.delay(2, Hud.welcomeBack, payload, workspace:GetServerTimeNow())
+			end
 		end
 		refresh()
 		Hud.intro()
@@ -990,8 +1073,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
-			if StationRules.level(payload, stat) >= StationConfig.MAX_LEVEL then
-				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.MAX_LEVEL}!`
+			if StationRules.level(payload, stat) >= StationConfig.STAR_FROM then
+				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.STAR_FROM}!`
 			end
 		end
 		if payload.at then
@@ -1089,6 +1172,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			local kept = if S.run then math.floor(S.run.pot * WaveRuns.LOSS_KEEP / 100) else 0
+			-- how close it was (decision 0123): the Legion's health left
+			local left = math.clamp(math.ceil((payload.foeLeft or 1) * 100), 1, 100)
+			local close = if left <= 15
+				then `So close: the Legion had only {left}% of its health left.`
+				else `The Legion still had {left}% of its health.`
 			Hud.runOver(
 				`Stopped at wave {payload.wave}`,
 				{
@@ -1097,7 +1185,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 					{ `x{#(payload.boons or {})}`, "boons picked this run" },
 				},
 				if low
-					then `Your {low.name}'s {low.stat} is only level {low.level}. Training it is the quickest gain.`
+					then `{close} Your {low.name}'s {low.stat} is only level {low.level}: training it is the quickest gain.`
 					else "Hatch three animals and put them in your team.",
 				S.run ~= nil and S.run.best
 			)

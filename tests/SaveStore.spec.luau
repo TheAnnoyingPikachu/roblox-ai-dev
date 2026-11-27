@@ -109,6 +109,30 @@ describe("SaveStore.load", function()
 		expect(store:read("k").version).toBe(3)
 	end)
 
+	it("runs `before` once, before the last write, so its change is saved (the run pot, decision 0121)", function()
+		local store = FakeDataStore.new({ k = { coins = 1 } })
+		local saves = make(store)
+		saves:load("k", 0)
+		local calls = 0
+		saves:finish("k", 10, nil, function()
+			calls += 1
+			saves:apply("k", add(40))
+		end)
+		expect(calls).toBe(1)
+		expect(store:read("k").coins).toBe(41)
+		saves:finish("k", 11, nil, function()
+			calls += 1
+		end)
+		expect(calls).toBe(1) -- the session is gone: nothing to bank twice
+		-- an error in it still lets the save close and write
+		saves:load("k", 20)
+		saves:apply("k", add(2))
+		saves:finish("k", 30, nil, function()
+			error("bank failed")
+		end)
+		expect(store:read("k").coins).toBe(43)
+	end)
+
 	it("a failed load never writes and runs offline on defaults", function()
 		local store = FakeDataStore.new({ k = { coins = 500 } })
 		store:failNext(3)

@@ -1230,6 +1230,15 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- music and effects volume, and mute (decision 0122)
+		sound = {
+			args = { Payload.int({ min = 0, max = 10 }), Payload.int({ min = 0, max = 10 }), Payload.boolean() },
+			handler = function(player, music: number, effects: number, mute: boolean)
+				return apply(player, function(p)
+					return StationProgress.setSound(p, music, effects, mute)
+				end)
+			end,
+		},
 		-- requests off or on (saved), and blocking a player for this session (decision 0099)
 		trade_off = {
 			args = { Payload.boolean() },
@@ -1628,6 +1637,22 @@ local router = Router.new({
 				local coins = if p then StationProgress.held(StationProgress.sanitize(p, now), now) else 0
 				local ok, code = apply(player, function(q)
 					return StationProgress.collect(q, now)
+				end)
+				if ok then
+					remotes.fx(player, "collected", coins)
+				end
+				return ok, code
+			end,
+		},
+		-- The owner collects what the ranch animals earned, from the Ranch menu (decision 0124).
+		collect_herd = {
+			args = {},
+			handler = function(player)
+				local p = saves.get(player)
+				local now = os.time()
+				local coins = if p then StationProgress.herdHeld(StationProgress.sanitize(p, now), now) else 0
+				local ok, code = apply(player, function(q)
+					return StationProgress.collectHerd(q, now)
 				end)
 				if ok then
 					remotes.fx(player, "collected", coins)

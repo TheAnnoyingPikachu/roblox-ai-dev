@@ -18,8 +18,8 @@ STATION-184. Date: 2026-11-27.
 - The swarm is matched to `target` x its crowd row's power x the party's (was the classic wave's), and
   `LevelRules.power` (the menus' wave power) is `target`.
 - From one non-boss wave to the next the power now changes by 0.93x to 1.16x (was 0.2x to 3.9x).
-- The last wall (decision 0121) is 16% a wave from 250 (was 8%): with smoother bosses the best teams cleared
-  wave 300 again.
+- The last wall (decision 0121) is 25% a wave from 250 (was 8%; 12% with the star levels): with smoother bosses
+  and star levels together the best teams reached 299 to 300 at 12% and 16%.
 - The intro's wave 40 is now won by the borrowed legends without the net (the net still holds at wave 60, which
   the test now checks).
 
@@ -36,6 +36,22 @@ Last wave cleared, best picks, 4 clicks a second.
 
 - No run of 48 cleared wave 300. With the wall at 12% one best-team run did.
 - To check when decision 0123 (star levels) and this meet: the wall again with stars.
+
+## Simulation with star levels (2026-11-27, after main's decision 0123 merged in)
+
+Best team (Sun Lion, Crystal Rhino, Diamond Giraffe, Frost Elephant), every stat at the level, 4 seeds.
+
+| Wall a wave from 250 | Level 70 | Level 100 | Level 140 (★70) |
+|---|---|---|---|
+| 12% (main) | fresh 169, run 285 to 300 | 199, run 289 to 299 | 236, run 289 to 300 |
+| 16% | 169, run 276 to 289 | 199, run 285 to 299 | 236, run 283 to 299 |
+| **25% (chosen)** | **169, run 268 to 279** | **199, run 269 to 280** | **236, run 269 to 284** |
+| 40% | | | 236, run 265 to 272 |
+| 16% from 230 | 169, run 260 to 269 | | 229, run 265 to 280 |
+
+- At 25% no run clears 300; the best reach 284, and levels still move a team's first try (169, 199, 236).
+- Starters at 25%: level 30 run 69, level 70 run 69 to 79, level 140 run 89 to 259 (the wall starts at 250, so
+  only the best runs meet it).
 
 ## Not changed
 
