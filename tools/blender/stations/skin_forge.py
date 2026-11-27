@@ -365,17 +365,17 @@ def guardian_weights(p):
 def mammoth_weights(p):
     """The Sahara Mammoth regenerated in ForgeGUI (2026-11-27) in the Eternals' sun regalia on the elephants' faceted
     body, in a neutral stance: front legs at x +-0.115 (y -0.12..0.07), hind legs at x +-0.08 (y 0.24..0.44, nearly
-    touching at the top: split at the middle), all clear of the body below z -0.18; banners hang on the flanks
-    between them (they stay on the body); the head with its trunk (hanging to z -0.31 at y -0.3) and tusks (to
-    y -0.5) ahead of y -0.2; a short tail from y 0.43 above z -0.2."""
+    touching at the top: split at the middle). Each leg swings whole from high in the body, as the regular elephants'
+    do (only the boots turning under a still body looked broken when it walked); banners hang on the flanks between
+    the legs (they stay on the body); the head with its trunk and tusks ahead of y -0.2; a short tail from y 0.43."""
     tail = ramp(0.42, 0.45, p.y) * (1 - ramp(0.05, 0.08, abs(p.x))) * ramp(-0.22, -0.19, p.z)
-    head = ramp(-0.17, -0.25, p.y)  # the face, trunk and tusks; carrying the domed crown too tore behind it (swept)
+    head = ramp(-0.17, -0.25, p.y)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg, down = None, ramp(-0.14, -0.2, p.z)  # legs blend just below the belly (z -0.18)
+    leg, down = None, ramp(-0.02, -0.14, p.z)  # from high in the body: the shoulder and hip turn with the leg
     if down > 0:
         if 0.03 < abs(p.x) < 0.19 and -0.13 < p.y < 0.07:
             leg = "leg_fl" if p.x > 0 else "leg_fr"
-        elif abs(p.x) < 0.16 and 0.24 < p.y < 0.44:
+        elif abs(p.x) < 0.17 and 0.24 < p.y < 0.44:
             leg = "leg_bl" if p.x > 0 else "leg_br"
     if leg:
         w = {k: v * (1 - down) for k, v in w.items()}
@@ -686,10 +686,10 @@ REGIONS = {
         "joints": {
             "body": (0.0, 0.1, 0.0),
             "head": (0.0, -0.22, 0.05),
-            "leg_fl": (0.115, -0.02, -0.16),  # pivots swept -0.12..-0.24: -0.16 stretched least
-            "leg_fr": (-0.115, -0.02, -0.16),
-            "leg_bl": (0.08, 0.35, -0.16),
-            "leg_br": (-0.08, 0.35, -0.16),
+            "leg_fl": (0.115, -0.02, -0.06),  # high pivots: each leg swings whole (low ones, -0.16, left the boots shuffling)
+            "leg_fr": (-0.115, -0.02, -0.06),
+            "leg_bl": (0.08, 0.35, -0.06),
+            "leg_br": (-0.08, 0.35, -0.06),
             "tail": (0.0, 0.43, -0.05),
         },
         "weights": mammoth_weights,
