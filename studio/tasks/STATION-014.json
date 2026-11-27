@@ -34,6 +34,10 @@
     "src/shared/StationConfig.luau"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Config and test change only; the stall is built from the egg list, so it was not re-checked in Studio. Eggs are placeholders until the planned overhaul."
+  "status": "accepted",
+  "notes": "Config and test change only; the stall is built from the egg list, so it was not re-checked in Studio. Eggs are placeholders until the planned overhaul.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

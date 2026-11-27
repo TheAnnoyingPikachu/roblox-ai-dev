@@ -32,6 +32,10 @@
   "verification": "lune run tests/run.luau 625/625 after the rename; selene and stylua clean; place builds and check-place passes; grep finds no swim or smarts stat names in the game 7 files",
   "output_artifacts": ["src/shared/StationConfig.luau"],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Pure rename; battle formulas unchanged. Old decisions 0019 to 0025 keep their wording."
+  "status": "accepted",
+  "notes": "Pure rename; battle formulas unchanged. Old decisions 0019 to 0025 keep their wording.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

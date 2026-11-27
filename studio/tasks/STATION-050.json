@@ -56,6 +56,10 @@
     "src/shared/StationAssets.luau"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'add a rainbow texture that has a small chance to apply to any animal on hatch', then '1 in 200 is good give them a 5% stat increase to all stats'. The bonus is rounded up so that small stats gain too (a stat of 8 becomes 9, which is more than 5%): say if it should round down instead."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-16: 'add a rainbow texture that has a small chance to apply to any animal on hatch', then '1 in 200 is good give them a 5% stat increase to all stats'. The bonus is rounded up so that small stats gain too (a stat of 8 becomes 9, which is more than 5%): say if it should round down instead.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

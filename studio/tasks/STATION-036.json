@@ -43,6 +43,10 @@
     "tools/blender/stations/uploaded.json"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON chose the textured elephants on 2026-11-15 and asked to continue. The upload runs in GitHub (environment assets), never with a key on this machine. Open for SHANNON: the three lions (STATION-034) carry the same vertex-colour fault and look darker in the game than approved; the fix is a rebuild and one more upload run for them."
+  "status": "accepted",
+  "notes": "SHANNON chose the textured elephants on 2026-11-15 and asked to continue. The upload runs in GitHub (environment assets), never with a key on this machine. Open for SHANNON: the three lions (STATION-034) carry the same vertex-colour fault and look darker in the game than approved; the fix is a rebuild and one more upload run for them.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

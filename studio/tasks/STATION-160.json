@@ -33,6 +33,10 @@
   "verification": "Part one merged (#57). Part two, Studio 2026-11-25, build dev (local), one player: a teammate pill (avatar, name, team health 95%) at the top left once a side-1 model carried another player's Owner; a votes message with picks put avatar dots on the cards voted for (top right of each card, clear of the picture and the key cap); the KO badge never covered Skip through a whole fight. Lune 823/823, selene clean. Not seen: a real two-player party (the 7-second ring runs only when the result says party > 1), a phone.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON's picks: pills with health and vote dots; power, rarity, level, newest; the stack under the notes; scales with rarity. Part one (PR): the sort, messages under the notes, hatch reveals by rarity (quick pop for common and uncommon; rare and up the full moment with 'Add to my team' / 'Keep in the barn'; mythic and up shake the screen)."
+  "status": "accepted",
+  "notes": "SHANNON's picks: pills with health and vote dots; power, rarity, level, newest; the stack under the notes; scales with rarity. Part one (PR): the sort, messages under the notes, hatch reveals by rarity (quick pop for common and uncommon; rare and up the full moment with 'Add to my team' / 'Keep in the barn'; mythic and up shake the screen).",
+  "evidence": [
+    "Merged in PR #47 as commit 9627dbb (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45645894751",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

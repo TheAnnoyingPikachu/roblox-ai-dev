@@ -21,6 +21,10 @@
   "verification": "Studio 2026-11-25, build dev (local): three ready starter eggs showed 'Open it'; clicking the first closed the window and hatched it (two left, the goal at 1 of 3). Selene clean. Not seen: the empty-nest picker with two kinds in the cellar.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Client only; uses the server's existing open and hatch requests."
+  "status": "accepted",
+  "notes": "Client only; uses the server's existing open and hatch requests.",
+  "evidence": [
+    "Merged in PR #64 as commit 3ff6509 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45673930574",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

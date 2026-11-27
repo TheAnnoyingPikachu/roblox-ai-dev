@@ -37,6 +37,10 @@
     "docs/concepts/diamond-giraffe-card.png"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-17: 'the porch of the ranch house is floating slightly, go ahead and make the regular giraffe and make a diamond varient concept then pull up the animal pen concept'. Checkpoint for SHANNON: the Diamond Giraffe's look, and the draft numbers in decision 0076."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-17: 'the porch of the ranch house is floating slightly, go ahead and make the regular giraffe and make a diamond varient concept then pull up the animal pen concept'. Checkpoint for SHANNON: the Diamond Giraffe's look, and the draft numbers in decision 0076.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

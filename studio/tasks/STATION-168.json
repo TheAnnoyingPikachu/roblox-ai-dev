@@ -24,6 +24,10 @@
   "verification": "Studio 2026-11-25, build dev (local): the button shows with the offer; in the borrowed fight it sits top right; skipping there took the player back to the ranch with 600 coins (300 more) and three starter eggs hatching, no goodbye, no errors. Lune 819/819, selene clean.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Client only; the server already ended the intro on `skip` at any time, and a cleared fight's report finds the intro done."
+  "status": "accepted",
+  "notes": "Client only; the server already ended the intro on `skip` at any time, and a cleared fight's report finds the intro done.",
+  "evidence": [
+    "Merged in PR #55 as commit e2f88a1 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45661144748",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

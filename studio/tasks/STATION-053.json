@@ -39,6 +39,10 @@
     "docs/concepts/guard-yard-card.png"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'concepts make the training areas have upgrading looks and make them all splinter off from the main ranch, make them large enough for multiple animals to fit in at once. i like the speed track the strength gym the swimming pool magic libarary, try again with the healing spring and guard yard', then 'make the training areas splinter off into different open areas around the ranch through the mountains if you get what i mean'. Checkpoint for SHANNON: the five decisions listed in 0061 (looks, size, where the ranches go, one upgrade or six, animals seen training)."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-16: 'concepts make the training areas have upgrading looks and make them all splinter off from the main ranch, make them large enough for multiple animals to fit in at once. i like the speed track the strength gym the swimming pool magic libarary, try again with the healing spring and guard yard', then 'make the training areas splinter off into different open areas around the ranch through the mountains if you get what i mean'. Checkpoint for SHANNON: the five decisions listed in 0061 (looks, size, where the ranches go, one upgrade or six, animals seen training).",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

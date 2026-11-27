@@ -26,6 +26,10 @@
   "verification": "Studio 2026-11-25, build dev (local): at the ranch house door the prompt is Style Custom and the pill is built (icon, 'Open', 'Ranch menu', the E key cap; the tap circle hidden on a desk); holding the prompt still opens the Ranch menu. Studio's screen capture shows no BillboardGui (a plain red test board did not show either), so the pill's look is for SHANNON to see in Studio. Lune 821/821, selene clean. Not seen: a phone, every prompt's icon.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "SHANNON's pick: a paper pill with icon and key. Icons by the prompt's tag (HudPrompts.ICON_OF); the paw for any other."
+  "status": "accepted",
+  "notes": "SHANNON's pick: a paper pill with icon and key. Icons by the prompt's tag (HudPrompts.ICON_OF); the paw for any other.",
+  "evidence": [
+    "Merged in PR #47 as commit 9627dbb (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45645894751",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

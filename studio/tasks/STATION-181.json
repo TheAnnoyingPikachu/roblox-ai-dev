@@ -44,6 +44,10 @@
   "verification": "Lune 826/826. Simulation in decision 0123: none of 76 runs of fully starred top teams cleared 300 (best 289).",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Economy values and data schema (decision 0123): MAX_LEVEL 140, VERSION 5, END_GROWTH 1.12. Not seen in Studio yet."
+  "status": "accepted",
+  "notes": "Economy values and data schema (decision 0123): MAX_LEVEL 140, VERSION 5, END_GROWTH 1.12. Not seen in Studio yet.",
+  "evidence": [
+    "Merged in PR #74 as commit 08178c8 (2026-11-27); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45918261982",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

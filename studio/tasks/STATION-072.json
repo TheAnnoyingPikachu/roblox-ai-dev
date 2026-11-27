@@ -34,6 +34,10 @@
     "assets/stations/home_hatchery_1.fbx"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-17: 'the stage one hatchery looks a bit off, could you fix it/make it look a bit better'. A fix to one existing look, so no concept card first."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-17: 'the stage one hatchery looks a bit off, could you fix it/make it look a bit better'. A fix to one existing look, so no concept card first.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

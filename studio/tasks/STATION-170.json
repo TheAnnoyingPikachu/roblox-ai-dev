@@ -21,6 +21,10 @@
   "verification": "Studio 2026-11-25, build dev (local): three starter eggs at 58,939 / 56,943 / 53,946; opening the middle one left the last at 53,946 (it used to move into the middle nest), opening the first left it there too. Lune 823/823, selene clean.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Display only: StationsServer keeps which nest each hatching egg sits in (nestsOf) and passes it to Ranch.eggs; the save is unchanged. A rejoin starts the nests from 1 again."
+  "status": "accepted",
+  "notes": "Display only: StationsServer keeps which nest each hatching egg sits in (nestsOf) and passes it to Ranch.eggs; the save is unchanged. A rejoin starts the nests from 1 again.",
+  "evidence": [
+    "Merged in PR #62 as commit d12eff3 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45670414056",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

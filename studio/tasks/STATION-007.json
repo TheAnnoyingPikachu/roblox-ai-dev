@@ -30,6 +30,10 @@
   "verification": "lune run tests/run.luau 614/614 with the new BattleRules spec; selene and stylua clean; level reach starters 4, trained 16, rares 19, legendary 39, trained mythic 59",
   "output_artifacts": ["src/shared/BattleRules.luau"],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Rules only; PvP matchmaking and battle UI not started."
+  "status": "accepted",
+  "notes": "Rules only; PvP matchmaking and battle UI not started.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

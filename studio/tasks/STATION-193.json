@@ -1,0 +1,27 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-193",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Accept every merged Animal Stations task that was in review, with the PR it merged in and a passing CI run as evidence (SHANNON's Round 2 build 10 A, decision 0123). Tasks still marked in progress are listed for SHANNON, not accepted.",
+  "inputs": [
+    "docs/decisions/0123-animal-stations-round-two-and-star-levels.md",
+    "studio/TASKS.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "studio/tasks/STATION-*.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Every STATION task that was in_review and is on main is accepted with two evidence lines: its PR, commit and passing CI run, and SHANNON's bulk acceptance",
+    "Only the status line and the evidence change in each file",
+    "Tasks in_progress are left as they are"
+  ],
+  "verification": "node tools/validate-tasks.mjs: all task files valid. 118 accepted; 60 in progress left for SHANNON (listed in the PR).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "More than ten files by nature (one line per task). Made by a script (CI runs on main, else the PR's own CI run)."
+}

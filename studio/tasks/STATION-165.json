@@ -37,6 +37,10 @@
     "docs/decisions/0120-animal-stations-boons.md"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "The pick screen (pictures, rainbow ultra cards) is STATION-164. Twin Picks is built as the pick counting twice, not two picks (keeps a shared fight's vote to one boon); say if two picks is wanted."
+  "status": "accepted",
+  "notes": "The pick screen (pictures, rainbow ultra cards) is STATION-164. Twin Picks is built as the pick counting twice, not two picks (keeps a shared fight's vote to one boon); say if two picks is wanted.",
+  "evidence": [
+    "Merged in PR #50 as commit c28138a (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45650068839",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

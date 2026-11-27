@@ -36,6 +36,10 @@
     "src/stations-client/Hud.client.luau"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Saved data shape changed (eggs list in the profile); no published saves exist. Gear is not designed: the gear vendor is a stall with a message. The Studio-only test funds moved from a world pad to a menu button."
+  "status": "accepted",
+  "notes": "Saved data shape changed (eggs list in the profile); no published saves exist. Gear is not designed: the gear vendor is a stall with a message. The Studio-only test funds moved from a world pad to a menu button.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

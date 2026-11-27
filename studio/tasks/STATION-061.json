@@ -30,6 +30,10 @@
     "docs/concepts/ranch-valley-card.png"
   ],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-16: 'like make a concept for an entire ranch rework to fit everything in an optimised and cool way please'. Checkpoint for SHANNON: the four decisions in 0068."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-16: 'like make a concept for an entire ranch rework to fit everything in an optimised and cool way please'. Checkpoint for SHANNON: the four decisions in 0068.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -31,6 +31,10 @@
   "verification": "Studio, local build, stamp `dev`, 2026-11-18: Valley, World and Ranch synced into the place, Play with no error in the Output. 641 ledges for the three ranches (1,307 at first, so the chance was halved); seen from the gym's yard: set into the face with pines and bushes on them, grass on the flatter rock. The homestead from above, before and after: no blades through the stalls, the plots or the paths, about a quarter of the tufts. The world counted 23,221 parts with ranch 1's areas at level 5. lune 721/721, selene 0 warnings. Not checked: a phone, frame rate.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "SHANNON on 2026-11-18: 'go for it and cut flower clumps now', then 'can you make the centre of the ranch have short grass so its not poking through floors and also cut down on the bushes on either side of each path'."
+  "status": "accepted",
+  "notes": "SHANNON on 2026-11-18: 'go for it and cut flower clumps now', then 'can you make the centre of the ranch have short grass so its not poking through floors and also cut down on the bushes on either side of each path'.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -43,6 +43,10 @@
   "verification": "Lune 825/825. Simulation in decision 0121: starter presses 1 to 3 a fight; best-pick runs 249 to 289, none cleared 300 in 48 runs.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Economy values (decision 0121). Not seen in Studio yet: the goal strip's 'an Elephant, your first Titan' and a fight's presses."
+  "status": "accepted",
+  "notes": "Economy values (decision 0121). Not seen in Studio yet: the goal strip's 'an Elephant, your first Titan' and a fight's presses.",
+  "evidence": [
+    "Merged in PR #69 as commit 2846ed7 (2026-11-26); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45913791888",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

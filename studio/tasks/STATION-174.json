@@ -33,6 +33,10 @@
   "verification": "skin_forge --stretch worst: Guardian 6.69 %, Mammoth 6.04 %, War-Tortoise 2.96 %, Sun Rhino 6.26 % (STATION-173: 8.98, 5.37, 5.85, 8.11). check_spells ALL OK. Uploaded models and rainbow coats: run 45706172621. Studio 2026-11-25, build dev (local): all four stood on the ground, idled, held their spells mid-cast and wore their rainbow coats, at their sizes (22, 39, 19.5, 24 studs long). Lune 823/823. Not seen: walking the herd at a ranch, a fight with them in the team.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Mammoth stands with its left hind foot tucked in, so its legs follow their feet (feet_weights, radius 0.1); the War-Tortoise's cannon over its head stays on the shell (head_below). STATION-173's models and this round's replaced uploads are left for archiving by hand."
+  "status": "accepted",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Mammoth stands with its left hind foot tucked in, so its legs follow their feet (feet_weights, radius 0.1); the War-Tortoise's cannon over its head stays on the shell (head_below). STATION-173's models and this round's replaced uploads are left for archiving by hand.",
+  "evidence": [
+    "Merged in PR #67 as commit 719fd41 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45709279252",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

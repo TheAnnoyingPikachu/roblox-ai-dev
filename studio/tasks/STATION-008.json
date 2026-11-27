@@ -27,6 +27,10 @@
   "verification": "lune run tests/run.luau 625/625; selene and stylua clean; Studio play 2026-11-13: buy x3 ok, 4th refused coins, bad egg refused payload, train ok, team refused while training, HUD showed Coins 0 and 3 animals, three stall prompts present. DataStores are unavailable in an unpublished place, so the session ran offline; store writes are covered by the kit's SaveStore spec only",
   "output_artifacts": ["src/shared/StationProgress.luau", "src/stations/StationsServer.server.luau", "src/stations-client/Hud.client.luau"],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "New store StationsProfile (studio/staging suffixes until a production release is approved). No battle screen yet, so coins cannot be earned in play."
+  "status": "accepted",
+  "notes": "New store StationsProfile (studio/staging suffixes until a production release is approved). No battle screen yet, so coins cannot be earned in play.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

@@ -32,6 +32,10 @@
   "verification": "skin_forge --stretch worst: Guardian 8.98 %, Mammoth 5.37 %, War-Tortoise 5.85 %, Sun Rhino 8.11 % (the old Guardian 12.6 % with its legs clamped). check_spells ALL OK. Uploaded: models run 45679232803, rainbow coats run 45679927590. Studio 2026-11-25, build dev (local): all four stood, idled, attacked and cast their spells, and wore their rainbow coats, at their sizes (22, 39, 19.5, 24 studs long). Lune 823/823. Not seen: walking the herd at a ranch, a fight with them in the team.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Guardian's mane stays with the body (blending it into the head pulled the chest armour along: 14 to 20 % stretched). Old model uploads are left for archiving by hand."
+  "status": "accepted",
+  "notes": "Same asset names, so the game, its spells, coats and Robux products are unchanged. The Guardian's mane stays with the body (blending it into the head pulled the chest armour along: 14 to 20 % stretched). Old model uploads are left for archiving by hand.",
+  "evidence": [
+    "Merged in PR #66 as commit facef71 (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45701977241",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

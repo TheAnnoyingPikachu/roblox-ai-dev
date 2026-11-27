@@ -39,6 +39,10 @@
   "verification": "2026-11-15: Lune 688/688 (the hatch specs: an egg's rare drops name real variants once and divide a million, every variant is listed by some egg, no mythic of an egg is likelier than a legendary of it, a variant hatches only from an egg that lists it, the boundaries of pickRare; the progress specs: the Wild, Safari and Golden Eggs stay locked until waves 5, 10 and 20 whatever the coins or player level). stylua clean, selene has its one old warning. In Studio (local build, build stamp `dev`: no CI stamp): a new player's request to buy the Wild Egg is refused by the server as `locked`; the egg vendor shows each egg's basic animals, a row of its rare drops with their odds (25 labels read back, e.g. Golden: 1 in 20K, 4K, 2K, 2K, 2K, 400, 2K), 'Clear wave N to unlock' on the three later eggs and a 'Best wave' chip; no script errors. Not checked: buying an egg after really clearing wave 5 in Studio (the rule is covered by the specs), phones, a variant actually hatching in a session, balance. 2026-11-16, after SHANNON's go: the Wild Egg is open from the start, the four new variants have their rows (Wild and Safari), an egg's whole list is capped at 1 hatch in 100 by the spec, and the rare drops wrap to a second row on every card. Lune 688/688. In Studio (local build, stamp `dev`): a new player's Wild Egg is refused only for `coins`; the vendor shows 29 odds labels, the Wild Egg's nine rare drops on two rows with their portraits, and 'Clear wave 10' and 'Clear wave 20' on the Safari and Golden Eggs.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Accepted by SHANNON on 2026-11-15 ('eggs are go make the lowest egg open from the start'). Open: whether 'the lowest egg' meant the Wild Egg (as built) or only the Meadow Egg; a fifth, later egg. Nothing is published."
+  "status": "accepted",
+  "notes": "Accepted by SHANNON on 2026-11-15 ('eggs are go make the lowest egg open from the start'). Open: whether 'the lowest egg' meant the Wild Egg (as built) or only the Meadow Egg; a fifth, later egg. Nothing is published.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

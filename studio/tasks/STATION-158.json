@@ -33,6 +33,10 @@
   "verification": "Lune 821/821 (two new specs: meet once and only real versions, owning meets; sanitize keeps the list clean and bounded, and meets an older save's animals). Studio 2026-11-25, build dev (local): after the borrowed fight the save's met held the four legends; the Seen tab showed them as dark silhouettes with 'From the Dusk Egg, level 12' and the like. Not seen: a shared fight's teammates met, a trade.",
   "output_artifacts": [],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "A data schema change: decision 0118 (accepted by SHANNON, 2026-11-25); StationProgress.VERSION 4. The Ranger's loan meets its legend in STATION-159."
+  "status": "accepted",
+  "notes": "A data schema change: decision 0118 (accepted by SHANNON, 2026-11-25); StationProgress.VERSION 4. The Ranger's loan meets its legend in STATION-159.",
+  "evidence": [
+    "Merged in PR #47 as commit 9627dbb (2026-11-25); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45645894751",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

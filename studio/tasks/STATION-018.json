@@ -30,6 +30,10 @@
     "src/stations/Ranch.luau"
   ],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "World-only change: no rules or saved data touched, so no new headless tests. Props.label gained an optional inset; without it the label is exactly as before, so the other games' signs are unchanged. The ranches moved (900 studs out; south, east, west)."
+  "status": "accepted",
+  "notes": "World-only change: no rules or saved data touched, so no new headless tests. Props.label gained an optional inset; without it the label is exactly as before, so the other games' signs are unchanged. The ranches moved (900 studs out; south, east, west).",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

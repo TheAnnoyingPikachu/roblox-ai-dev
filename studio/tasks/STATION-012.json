@@ -34,6 +34,10 @@
   "verification": "lune run tests/run.luau 641/641; selene and stylua clean; place builds and check-place passes; Studio play 2026-11-13: spawn on the ranch island, both teleport prompts triggered and moved the player, four stall prompts present, Legendary Egg refused as locked, training ticked live in the Animals panel, no script errors",
   "output_artifacts": ["src/shared/StationConfig.luau", "src/stations/World.luau", "src/stations-client/Hud.client.luau"],
   "risk_level": "medium",
-  "status": "in_review",
-  "notes": "Removes the five hub training stations built in STATION-003 and STATION-011 (kept in git history). DataStores are unavailable in an unpublished place, so the session ran offline. No battle screen yet."
+  "status": "accepted",
+  "notes": "Removes the five hub training stations built in STATION-003 and STATION-011 (kept in git history). DataStores are unavailable in an unpublished place, so the session ran offline. No battle screen yet.",
+  "evidence": [
+    "Merged in PR #25 as commit 8dd70e2 (2026-11-19); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/44431966662",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }

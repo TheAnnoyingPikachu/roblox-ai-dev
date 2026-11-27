@@ -32,6 +32,10 @@
   "verification": "Lune 823/823 (no rules changed). Not run in Studio: a failed load can't be forced there without a bad asset id.",
   "output_artifacts": [],
   "risk_level": "low",
-  "status": "in_review",
-  "notes": "Analytics: a fourth custom event name, ModelFailed (decision 0113 amended)."
+  "status": "accepted",
+  "notes": "Analytics: a fourth custom event name, ModelFailed (decision 0113 amended).",
+  "evidence": [
+    "Merged in PR #71 as commit fbd9370 (2026-11-27); CI verify passed: https://github.com/TheAnnoyingPikachu/roblox-ai-dev/actions/runs/45915729733",
+    "Accepted by SHANNON in bulk (decision 0123, Round 2 build 10 A, 2026-11-27); verification as recorded above"
+  ]
 }
