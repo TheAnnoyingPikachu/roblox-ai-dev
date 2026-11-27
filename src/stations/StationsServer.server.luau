@@ -109,6 +109,15 @@ end
 
 local function join(player: Player)
 	player:SetAttribute("Admin", isAdmin(player))
+	-- the best wave and the player level in Roblox's player list (decisions 0128, 0132); set from the save in onChanged
+	local stats = Instance.new("Folder")
+	stats.Name = "leaderstats"
+	for _, name in { "Best wave", "Level" } do
+		local value = Instance.new("IntValue")
+		value.Name = name
+		value.Parent = stats
+	end
+	stats.Parent = player
 	for i = 1, World.RANCHES do
 		if owners[i] == nil then
 			owners[i] = player
@@ -1521,6 +1530,23 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- visit another player's ranch in this server (decision 0128): stand at its spawn. Their prompts stay theirs.
+		visit = {
+			args = { Payload.int({ min = 1, max = 1e12 }) },
+			handler = function(player, userId: number)
+				local them = Players:GetPlayerByUserId(userId)
+				local i = if them and them ~= player then ranchOf(them) else nil
+				if i == nil or player.Character == nil then
+					return false, "visit"
+				end
+				WaveShow.clear(player)
+				bankRun(player, false)
+				local to = World.ranchSpawn(i)
+				pcall(player.RequestStreamAroundAsync, player, to.Position)
+				player.Character:PivotTo(to)
+				return true, nil
+			end,
+		},
 		-- travel from anywhere (decision 0093): to the hub or the wave arena's gate (leaving a fight, if
 		-- in one); `home` above goes to the player's own ranch. Places far away are streamed in first.
 		travel = {
@@ -1785,19 +1811,13 @@ saves = Saves.start({
 		player:SetAttribute("Coins", profile.coins)
 		local level = StationProgress.playerLevel(profile)
 		player:SetAttribute("Level", level) -- on others' cards under the cursor
-		local stats = player:FindFirstChild("leaderstats") -- the player list shows it (decision 0132)
-		if stats == nil then
-			stats = Instance.new("Folder")
-			stats.Name = "leaderstats"
-			stats.Parent = player
+		local board = player:FindFirstChild("leaderstats")
+		for name, value in { ["Best wave"] = profile.best, Level = level } do
+			local stat = if board then board:FindFirstChild(name) else nil
+			if stat and stat:IsA("IntValue") then
+				stat.Value = value
+			end
 		end
-		local levelValue = stats:FindFirstChild("Level") :: IntValue?
-		if levelValue == nil then
-			local made = Instance.new("IntValue")
-			made.Name, made.Parent = "Level", stats
-			levelValue = made
-		end
-		(levelValue :: IntValue).Value = level
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
 		local hatching = #profile.animals > 0

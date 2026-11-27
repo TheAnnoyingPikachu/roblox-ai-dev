@@ -120,6 +120,7 @@ local REFUSED: { [string]: string } = {
 	nests_full = "Every nest is taken: upgrade the Hatchery",
 	no_mill = "Build the Windmill first",
 	mill_empty = "The windmill has no coins for you yet",
+	visit = "That ranch isn't here any more",
 	herd_empty = "Your animals haven't earned anything yet",
 	not_ready = "That egg is not ready yet",
 	hatching = "That egg is already hatching",
@@ -347,7 +348,7 @@ end
 S.hideResult = function() end -- set once the fight panel exists
 
 -- Travel: a pop-out beside its button with the hub, your ranch and the wave arena (no teleport pads)
-local travel = Style.panel(nav, UDim2.fromOffset(196, 214))
+local travel = Style.panel(nav, UDim2.fromOffset(236, 214))
 travel.AnchorPoint, travel.Position, travel.Visible = Vector2.new(0, 1), UDim2.fromOffset(114, 488), false
 local places = Instance.new("Frame")
 places.BackgroundTransparency = 1
@@ -465,6 +466,56 @@ do
 	end
 end
 
+-- Visit a ranch (decision 0128): a Visit button on the Go to… panel lists the other players' ranches here.
+do
+	local panel = Style.panel(nav, UDim2.fromOffset(232, 200))
+	panel.Visible = false
+	local list = Instance.new("Frame")
+	list.BackgroundTransparency = 1
+	list.Position, list.Size = UDim2.fromOffset(12, 10), UDim2.new(1, -24, 1, -20)
+	Style.list(list, 10)
+	list.Parent = panel
+	local function fill()
+		Style.clear(list)
+		Style.text(list, "Visit a ranch", 20, C.text, UDim2.new(1, 0, 0, 26))
+		local n = 0
+		for _, other in game:GetService("Players"):GetPlayers() do
+			if other ~= player and other:GetAttribute("Ranch") then
+				n += 1
+				local b = Style.button(list, `{other.DisplayName}'s ranch`, function()
+					panel.Visible = false
+					Hud.travelTo("visit", other.UserId)
+				end, "good", UDim2.new(1, 0, 0, 44))
+				b.LayoutOrder, b.TextSize = n, 16
+			end
+		end
+		if n == 0 then
+			local none =
+				Style.small(list, "No one else is here yet. Invite a friend!", 14, C.muted, UDim2.new(1, 0, 0, 40))
+			none.LayoutOrder = 1
+		end
+		panel.Size = UDim2.fromOffset(232, 56 + math.max(n, 1) * 54)
+	end
+	local open = Style.button(travel, "Visit", function()
+		travel.Visible = false
+		fill()
+		panel.Visible = true
+	end, "ghost", UDim2.fromOffset(60, 28))
+	open.AnchorPoint, open.Position, open.TextSize, open.ZIndex = Vector2.new(1, 0), UDim2.new(1, -90, 0, 10), 14, 3
+	nav:GetPropertyChangedSignal("Visible"):Connect(function()
+		panel.Visible = false
+	end)
+	travel:GetPropertyChangedSignal("Visible"):Connect(function()
+		if travel.Visible then
+			panel.Visible = false
+		end
+	end)
+	table.insert(layouts, function(small) -- where Go to… stands
+		panel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
+		panel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
+	end)
+end
+
 dockButton("Animals", "paw", Enum.KeyCode.One, function()
 	show("animals")
 end, "animals")
@@ -507,7 +558,7 @@ table.insert(layouts, function(small)
 	dock.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.zero
 	dock.Position = if small then UDim2.new(1, -14, 1, -112) else UDim2.fromOffset(16, 96)
 	dock.Size = if small then UDim2.fromOffset(156, 128) else UDim2.fromOffset(84, 480)
-	travel.Size = UDim2.fromOffset(196, if small then 268 else 214)
+	travel.Size = UDim2.fromOffset(236, if small then 268 else 214) -- room for Visit and Sound by the title
 	travel.AnchorPoint = if small then Vector2.new(1, 1) else Vector2.new(0, 1)
 	travel.Position = if small then UDim2.new(1, -182, 1, -112) else UDim2.fromOffset(114, 488)
 end)
