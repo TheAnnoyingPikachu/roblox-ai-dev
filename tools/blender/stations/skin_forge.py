@@ -365,13 +365,14 @@ def guardian_weights(p):
 def mammoth_weights(p):
     """The Sahara Mammoth regenerated in ForgeGUI (2026-11-27) in the Eternals' sun regalia on the elephants' faceted
     body, in a neutral stance: front legs at x +-0.115 (y -0.12..0.07), hind legs at x +-0.08 (y 0.24..0.44, nearly
-    touching at the top: split at the middle). Each leg swings whole from high in the body, as the regular elephants'
-    do (only the boots turning under a still body looked broken when it walked); banners hang on the flanks between
-    the legs (they stay on the body); the head with its trunk and tusks ahead of y -0.2; a short tail from y 0.43."""
+    touching at the top: split at the middle). Each leg is cut free under the drape and turns whole, as the Frost
+    Mammoth's (SHANNON: its walk "is amazing"; blended, this one's hips and shoulders stretched); above the knee the
+    hind legs stop short of the rump; banners hang on the flanks between the legs (they stay on the body); the head
+    with its trunk and tusks ahead of y -0.2; a short tail from y 0.43."""
     tail = ramp(0.42, 0.45, p.y) * (1 - ramp(0.05, 0.08, abs(p.x))) * ramp(-0.22, -0.19, p.z)
     head = ramp(-0.17, -0.25, p.y)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg, down = None, ramp(-0.02, -0.14, p.z)  # from high in the body: the shoulder and hip turn with the leg
+    leg, down = None, ramp(-0.08, -0.14, p.z)  # cut free under the drape and shoulder plates, as the Frost Mammoth's
     if down > 0:
         if 0.03 < abs(p.x) < 0.19 and -0.13 < p.y < 0.07:
             leg = "leg_fl" if p.x > 0 else "leg_fr"
@@ -686,14 +687,15 @@ REGIONS = {
         "joints": {
             "body": (0.0, 0.1, 0.0),
             "head": (0.0, -0.22, 0.05),
-            "leg_fl": (0.115, -0.02, -0.06),  # high pivots: each leg swings whole (low ones, -0.16, left the boots shuffling)
-            "leg_fr": (-0.115, -0.02, -0.06),
-            "leg_bl": (0.08, 0.35, -0.06),
-            "leg_br": (-0.08, 0.35, -0.06),
+            "leg_fl": (0.115, -0.02, -0.1),
+            "leg_fr": (-0.115, -0.02, -0.1),
+            "leg_bl": (0.08, 0.35, -0.1),
+            "leg_br": (-0.08, 0.35, -0.1),
             "tail": (0.0, 0.43, -0.05),
         },
         "weights": mammoth_weights,
         "small": 0.06,
+        "cut": True,  # each leg a solid piece, as the Frost Mammoth's: blended, the walk stretched its hips and shoulders
         "notes": "Sahara Mammoth: regenerated in ForgeGUI (2026-11-27) from a concept of the elephants' faceted body in the Eternals' sun regalia (matching the Molten Sun Rhino), neutral stance, one mesh, skinned to the Stations rig (decision 0102).",
     },
 

@@ -2943,7 +2943,7 @@ local function walk(t: number, rate: number): Pose
 	}
 end
 
--- A heavy four-beat walk (the Eternal Sun Rhino and Mammoth: SHANNON found the trot "quite janky", 2026-11-27): back left,
+-- A heavy four-beat walk (the Eternal Sun Rhino: SHANNON found the trot "quite janky" on it, 2026-11-27): back left,
 -- front left, back right, front right a quarter of a stride apart. Each foot is planted for 62 % of the stride,
 -- sweeping back evenly with its leg pushed down by as much as the swing lifts it (on a short leg turning about its hip
 -- the foot would hover at both ends), then steps forward quickly, eased and lifted. The body rolls onto its planted
@@ -2951,7 +2951,6 @@ end
 -- ground (Creatures.speed) as nearly as it can.
 local HEAVY_WALKS = {
 	creature_rhino_sahara_forge = true,
-	creature_elephant_sahara_forge = true,
 }
 -- (every animal's hip pivots stand this high over its feet at Scale 1: the server sets Scale from them, POSE_LEGS)
 local HIP = 1.45
