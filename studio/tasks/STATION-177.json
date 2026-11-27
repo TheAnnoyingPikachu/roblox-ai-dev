@@ -1,0 +1,42 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-177",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The safety tests SHANNON picked (decision 0121, answer 34): a test that fails when content is added without raising the save version, tests for the trade ledger's writes, a test that a run's pot is banked before the save closes, and a compile check of every script under src.",
+  "inputs": [
+    "docs/decisions/0121-animal-stations-decision-pass.md",
+    "docs/decisions/0111-animal-stations-beta-saves.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/kit/SaveStore.luau",
+    "src/kit-roblox/modules/Saves.luau",
+    "src/shared/StationTrade.luau",
+    "src/stations/TradeLedger.luau",
+    "tests/SaveStore.spec.luau",
+    "tests/StationTrade.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "tests/Compile.spec.luau",
+    "tests/run.luau",
+    "studio/tasks/STATION-177.json"
+  ],
+  "tests": [
+    "SaveStore.spec.luau",
+    "StationTrade.spec.luau",
+    "StationProgress.spec.luau",
+    "Compile.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Adding or renaming a species, variant, egg, coat, upgrade or station without raising StationProgress.VERSION fails a test",
+    "The ledger's write keeps the newest LEDGER_KEEP sides with their time and never changes the side given; cancel marks only that trade",
+    "A save's finish runs the game's hook once, before the last write, and still writes when the hook errors",
+    "Every .luau file under src compiles in CI (the 200-locals limit included)"
+  ],
+  "verification": "Lune 829/829. The compile check fails a 210-local function (checked by hand).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "The kit's SaveStore.finish gains an optional `before` hook; kit-roblox Saves passes beforeFinish through it (same order as before: the hook, then the last write). Other games pass no hook and are unchanged."
+}
