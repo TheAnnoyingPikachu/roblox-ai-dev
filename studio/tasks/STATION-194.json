@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-194",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Regenerate the Molten Sun Rhino in ForgeGUI and re-rig it (SHANNON, 2026-11-27: 'regen the rhino in forge ... make him more stylistically inline with the eternal elephant and lion and make sure hes also adhering to the other rhinos ... make sure his pose is neutral as well'). The old model was generated mid-stride (front feet 20 % of its length apart), which stretched in every clip.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-175"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_rhino_sahara_forge*",
+    "assets/stations/sources/creature_rhino_sahara_forge.glb",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-194.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Molten Sun Rhino has the game's rhinos' faceted body and the Eternals' sun regalia (purple drape and banners with gold sun emblems, gold plates, purple gems, a sun crest, gem-banded boots)",
+    "It stands neutral like every regular animal: left and right feet level within 1 % of its length",
+    "Skinned to the Stations rig with no leg clamp; the game's strongest poses stretch at most 7 % of it, the whole head and horn turning together",
+    "Foot points and spell anchors (AnimalRig) are measured on the model and every spell checks out; it has a rainbow coat",
+    "Uploaded and seen in Studio"
+  ],
+  "verification": "ForgeGUI concept job a3e20dfd (two variants; the grey one picked for the fuller Eternal regalia) and model job e618d494 (meshy, 14,044 triangles after tidy). Stance: feet stagger 0.4 % front, 0.1 % back (old model 20 % and 15 %). skin_forge --stretch worst 3.14 % (walk 1.35, attack 2.99, power 3.14, fall 2.93; the old model 5.75 %), swept over leg pivots -0.10..-0.22, leg bands and head bands; split edges tried (0.06, 0.045) and left out (no better, 19k triangles). check_spells ALL OK. Lune 839/839. Uploaded model and rainbow coat: run 46051882673 (model 114239826368368). Studio 2026-11-27, build dev (local, branch game7/sun-rhino-regen): spawned beside the Lava Rhino and the Eternal Mammoth, textured, standing on the ground; held mid-attack (Anim attack, AnimAt) side-on, head and horn whole, legs whole, banners on the body. Not seen: the Sun Horn spell in Studio (checked on the clip sheet only), a fight with it in the team.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Same asset name, so the game, its spell (Sun Horn), idles, attacks, coat and Robux product are unchanged. It is taller than before (17 studs with its crest, was 9) at the same 24-stud length. The previous upload of this asset is left for archiving by hand."
+}
