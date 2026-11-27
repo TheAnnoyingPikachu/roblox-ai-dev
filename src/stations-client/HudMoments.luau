@@ -116,6 +116,51 @@ function Hud.levelUp(level: number)
 	end)
 end
 
+-- The welcome-back card (decision 0121): on joining, what trained, hatched and filled while the player was away.
+-- Up to three lines; nothing to say, no card.
+local back = Style.card(root, UDim2.fromOffset(480, 176))
+back.Name, back.AnchorPoint, back.Visible = "WelcomeBack", Vector2.new(0.5, 0), false
+back.Position, back.ZIndex = UDim2.new(0.5, 0, 0, 140), 30
+local backTitle = Style.text(back, "Welcome back!", 26, C.text, UDim2.new(1, -40, 0, 30))
+backTitle.Position = UDim2.fromOffset(20, 14)
+local backLines = Style.text(back, "", 18, C.text, UDim2.new(1, -40, 0, 80))
+backLines.Position, backLines.TextWrapped = UDim2.fromOffset(20, 48), true
+backLines.TextYAlignment = Enum.TextYAlignment.Top
+local backOk = Style.button(back, "Great", function()
+	back.Visible = false
+end, "primary", UDim2.fromOffset(120, 36))
+backOk.AnchorPoint, backOk.Position, backOk.TextSize = Vector2.new(1, 1), UDim2.new(1, -16, 1, -12), 16
+function Hud.welcomeBack(p: any, now: number)
+	local away = StationProgress.away(p, now)
+	local lines = {}
+	for k, t in away.trained do
+		if k > 2 then
+			table.insert(lines, `and {#away.trained - 2} more trained`)
+			break
+		end
+		local sp = StationConfig.species(t.s)
+		local stat = string.upper(string.sub(t.stat, 1, 1)) .. string.sub(t.stat, 2)
+		table.insert(lines, `{if sp then sp.name else t.s} trained {stat} from {t.from} to {t.to}`)
+	end
+	if away.eggs > 0 then
+		table.insert(lines, if away.eggs == 1 then "1 egg is ready to open" else `{away.eggs} eggs are ready to open`)
+	end
+	if away.mill > 0 then
+		table.insert(lines, `The Windmill holds {away.mill} coins`)
+	end
+	if #lines == 0 then
+		return
+	end
+	while #lines > 3 do
+		table.remove(lines)
+	end
+	backLines.Text = table.concat(lines, "\n")
+	back.Visible = true
+	task.delay(12, function()
+		back.Visible = false
+	end)
+end
+
 -- Under a hatch's reveal: where the new animal went. A hatched animal joins the team when there is room
 -- (StationProgress.crack); otherwise one click opens it in Animals to swap it in.
 local choice = Instance.new("Frame")

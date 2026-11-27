@@ -1230,6 +1230,15 @@ local router = Router.new({
 				return true, nil
 			end,
 		},
+		-- music and effects volume, and mute (decision 0122)
+		sound = {
+			args = { Payload.int({ min = 0, max = 10 }), Payload.int({ min = 0, max = 10 }), Payload.boolean() },
+			handler = function(player, music: number, effects: number, mute: boolean)
+				return apply(player, function(p)
+					return StationProgress.setSound(p, music, effects, mute)
+				end)
+			end,
+		},
 		-- requests off or on (saved), and blocking a player for this session (decision 0099)
 		trade_off = {
 			args = { Payload.boolean() },

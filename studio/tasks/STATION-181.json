@@ -1,0 +1,49 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-181",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Training as SHANNON chose (decision 0123): level 70 in about 4.6 days and 3x the species value, then 70 star levels to 140, each a little over twice as long, with a stat at 140 almost twice level 70's. The last wall steepened so wave 300 stays out of reach.",
+  "inputs": [
+    "docs/decisions/0123-animal-stations-round-two-and-star-levels.md",
+    "docs/decisions/0121-animal-stations-decision-pass.md"
+  ],
+  "dependencies": [
+    "STATION-176"
+  ],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationRules.luau",
+    "src/shared/StationProgress.luau",
+    "src/shared/StationIntro.luau",
+    "src/shared/LevelRules.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudAnimals.luau",
+    "src/stations-client/HudTrade.luau",
+    "tests/StationRules.spec.luau",
+    "tests/StationProgress.spec.luau",
+    "tests/StationIntro.spec.luau",
+    "docs/decisions/0123-animal-stations-round-two-and-star-levels.md",
+    "studio/tasks/STATION-181.json"
+  ],
+  "tests": [
+    "StationRules.spec.luau",
+    "StationProgress.spec.luau",
+    "StationIntro.spec.luau",
+    "LevelRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "A stat reaches level 70 in 4 to 5 days and is 3x its species value there, over 2.8x by level 50",
+    "Levels 71 to 140 are stars, 27 to 36 hours each, and a stat at 140 is 5.6x",
+    "The HUD writes a star level as 70 ★n",
+    "The jackpot and the Ranger's loan stay at level 70",
+    "The save version is 5, so no older server cuts stars",
+    "No simulated run clears wave 300"
+  ],
+  "verification": "Lune 826/826. Simulation in decision 0123: none of 76 runs of fully starred top teams cleared 300 (best 289).",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Economy values and data schema (decision 0123): MAX_LEVEL 140, VERSION 5, END_GROWTH 1.12. Not seen in Studio yet."
+}

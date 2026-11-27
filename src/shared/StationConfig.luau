@@ -89,17 +89,21 @@ export type Station = { id: string, name: string, stat: Stat }
 StationConfig.STATS = { "speed", "strength", "stamina", "mana", "health", "defence" } :: { Stat }
 StationConfig.STAT_MIN, StationConfig.STAT_MAX = 1, 1000 -- limits of a version's (level 0) stat
 
--- Stat levels (decision 0029): training raises a stat's level, 0 to MAX_LEVEL. A stat's value is
--- its species value x (1 + LEVEL_GROWTH x level / MAX_LEVEL), so a maxed stat is doubled.
-StationConfig.MAX_LEVEL = 70
-StationConfig.LEVEL_GROWTH = 1
--- Training time (decision 0032): every level takes a little longer than the one before. Level 1
--- takes LEVEL_FIRST seconds; the time grows steadily to one day at LEVEL_DAY and on to LEVEL_LAST
--- at MAX_LEVEL, so each level above 60 takes about 24 to 48 hours of real time (about 23 days
--- for one stat from 0 to 70). Training enhancements will shorten this later.
+-- Stat levels (decisions 0029, 0123): training raises a stat's level, 0 to MAX_LEVEL. Levels 1 to STAR_FROM
+-- are the levels; the STAR_FROM above it are star levels (shown as stars). A stat's value is its species value
+-- x its level's multiplier (`StationRules.grown`): 3x at STAR_FROM, most of it by level 50, and STAR_PCT more
+-- percent of the species value for every star, so a stat at MAX_LEVEL is 5.6x (almost twice level 70's).
+StationConfig.MAX_LEVEL = 140
+StationConfig.STAR_FROM = 70
+StationConfig.STAR_PCT = 260 -- percent of the species value the 70 stars add together
+-- Training time (decisions 0032, 0123): every level takes a little longer than the one before. Level 1 takes
+-- LEVEL_FIRST seconds, growing by the same factor each level to LEVEL_MID_SECONDS at LEVEL_MID, then to
+-- LEVEL_TOP_SECONDS at STAR_FROM: about 4.6 days for a stat from 0 to 70. A star level takes STAR_FIRST
+-- seconds, growing to STAR_LAST at MAX_LEVEL: about 91 days more for all 70 stars.
 StationConfig.LEVEL_FIRST = 120
-StationConfig.LEVEL_DAY = 61
-StationConfig.LEVEL_LAST = 48 * 3600
+StationConfig.LEVEL_MID, StationConfig.LEVEL_MID_SECONDS = 60, 3 * 3600
+StationConfig.LEVEL_TOP_SECONDS = 12 * 3600
+StationConfig.STAR_FIRST, StationConfig.STAR_LAST = 27 * 3600, 36 * 3600
 -- Base stats (decisions 0030, 0032): on hatch every stat starts at a level from 1 to BASE_MAX,
 -- each higher number a little less likely. A BASE_MAX has weight BASE_TOP and every level below
 -- it BASE_STEP more, out of 630: a 15 is 7 in 630 = 1 in 90, a 1 is 77 in 630 (about 1 in 8).

@@ -90,6 +90,91 @@ describe("StationProgress income while away (decision 0124)", function()
 	end)
 end)
 
+describe("StationProgress away (decision 0121)", function()
+	it("says what trained, hatched and filled while away, and changes nothing", function()
+		local p = fresh()
+		p = StationProgress.give(p, "lion", nil, 1)
+		local lion = p.animals[1]
+		p = StationProgress.train(p, lion.id, "gym", 0)
+		local hour = 3600
+		local away = StationProgress.away(p, 24 * hour)
+		expect(#away.trained).toBe(1)
+		expect(away.trained[1].stat).toBe("strength")
+		expect(away.trained[1].to > away.trained[1].from).toBeTruthy()
+		expect(p.animals[1].since).toBe(0) -- the save itself is not settled
+		expect(away.eggs).toBe(0)
+		expect(away.mill).toBe(0)
+		local none = StationProgress.away(fresh(), 10)
+		expect(#none.trained + none.eggs + none.mill).toBe(0)
+	end)
+end)
+
+describe("StationProgress sound (decision 0122)", function()
+	it("starts at full volume, keeps whole steps from 0 to SOUND_STEPS, and survives a save", function()
+		local steps = StationProgress.SOUND_STEPS
+		local p = fresh()
+		expect(p.sound.music).toBe(steps)
+		expect(p.sound.mute).toBe(false)
+		StationProgress.setSound(p, 3.7, 99, true)
+		expect(p.sound.music).toBe(3)
+		expect(p.sound.effects).toBe(steps)
+		expect(p.sound.mute).toBe(true)
+		local back = StationProgress.sanitize(p, 0)
+		expect(back.sound.music).toBe(3)
+		expect(back.sound.mute).toBe(true)
+		local junk = StationProgress.sanitize({ sound = { music = "loud", effects = -4, mute = "yes" } }, 0)
+		expect(junk.sound.music).toBe(steps)
+		expect(junk.sound.effects).toBe(0)
+		expect(junk.sound.mute).toBe(false)
+	end)
+end)
+
+-- Everything a save names that an older server's sanitize would drop. When this list changes,
+-- StationProgress.VERSION must go up, so an older server never loads and strips a newer save (decision 0111).
+-- Raise VERSION, then set CONTENT to the printed list's length and checksum.
+local CONTENT = { version = 5, count = 68, sum = 3348052 } -- 5: star levels (decision 0123)
+local function contentIds(): { string }
+	local ids = {}
+	for _, sp in StationConfig.SPECIES do
+		table.insert(ids, "s:" .. sp.id)
+		for _, v in sp.variants do
+			table.insert(ids, "v:" .. v.id)
+		end
+	end
+	for _, e in StationConfig.EGGS do
+		table.insert(ids, "e:" .. e.id)
+	end
+	for _, c in StationConfig.COATS do
+		table.insert(ids, "c:" .. c.id)
+	end
+	for _, u in StationConfig.UPGRADES do
+		table.insert(ids, "u:" .. u.id)
+	end
+	for _, st in StationConfig.STATIONS do
+		table.insert(ids, "t:" .. st.id)
+	end
+	table.sort(ids)
+	return ids
+end
+
+describe("StationProgress content version (decision 0121)", function()
+	it("raises VERSION whenever a species, variant, egg, coat, upgrade or station is added or renamed", function()
+		local ids = contentIds()
+		local sum = 0
+		for k, id in ids do
+			for i = 1, #id do
+				sum = (sum + string.byte(id, i) * (k + i)) % 1e9
+			end
+		end
+		if #ids ~= CONTENT.count or sum ~= CONTENT.sum then
+			print(`content changed: count = {#ids}, sum = {sum}; raise StationProgress.VERSION and update CONTENT`)
+		end
+		expect(StationProgress.VERSION).toBe(CONTENT.version)
+		expect(#ids).toBe(CONTENT.count)
+		expect(sum).toBe(CONTENT.sum)
+	end)
+end)
+
 describe("StationProgress profile", function()
 	it("starts at player level 1 with enough coins for three Meadow eggs and nothing else", function()
 		local p = fresh()
@@ -134,7 +219,7 @@ describe("StationProgress profile", function()
 					id = 6,
 					s = "jackal",
 					stats = { speed = 44, strength = 20, stamina = 15, mana = 18 },
-					trained = { speed = 99, strength = "x" },
+					trained = { speed = 999, strength = "x" },
 				},
 			},
 			team = { 1, 1, 9, 3, 5, "x" },
@@ -513,7 +598,7 @@ describe("StationProgress team and training", function()
 		p = StationProgress.stop(p, 1, 1000 + secondsTo(7))
 		local a = animal(p, 1)
 		expect(StationRules.level(a :: any, "speed")).toBe(7)
-		expect(StationRules.stat(a :: any, "speed")).toBe(46) -- 42 x (1 + 7/70) = 46.2
+		expect(StationRules.stat(a :: any, "speed")).toBe(57) -- 42 x 6762 / 4900 = 57.96 (decision 0123)
 		expect(a.at).toBeNil()
 		local _, stopped, why = StationProgress.stop(p, 1, 5000)
 		expect(stopped).toBe(false)
