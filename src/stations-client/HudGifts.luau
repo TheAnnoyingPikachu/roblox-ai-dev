@@ -61,6 +61,11 @@ local function rewardWords(items: any): string
 	if items.jackpot then
 		table.insert(parts, "a Rainbow mythic!")
 	end
+	if items.animal then
+		local sp = StationConfig.species(items.animal)
+		local name = if sp then sp.name else items.animal
+		table.insert(parts, if sp and sp.role == StationConfig.TITAN then `an {name}, your first Titan` else `a {name}`)
+	end
 	return table.concat(parts, ", ")
 end
 

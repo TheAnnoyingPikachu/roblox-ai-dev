@@ -573,7 +573,7 @@ StationConfig.EGGS = {
 	egg({
 		id = "safari",
 		name = "Safari Egg",
-		price = 15000,
+		price = 6000, -- decision 0121: was 15,000, a 10x jump from the Wild Egg
 		xp = 150,
 		hatch = 3600,
 		level = 5,

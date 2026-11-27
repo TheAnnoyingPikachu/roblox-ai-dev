@@ -29,6 +29,28 @@ StationTrade.READY_DELAY = 3 -- seconds Ready waits after any change to the trad
 StationTrade.CONFIRM_SECONDS = 5 -- once both are ready, Confirm waits this long
 StationTrade.ASK_GAP = 10 -- seconds between two requests to the same player
 StationTrade.HEAL_SECONDS = 12 * 3600 -- the ledger's trades younger than this are checked at login
+StationTrade.LEDGER_KEEP = 60 -- a player's ledger key keeps this many sides, newest first
+
+-- The ledger key's new list after writing `side` at `now` (TradeLedger): newest first, LEDGER_KEEP at most.
+function StationTrade.ledgerAdd(list: { any }, side: any, now: number): { any }
+	local entry = table.clone(side)
+	entry.at = now
+	table.insert(list, 1, entry)
+	while #list > StationTrade.LEDGER_KEEP do
+		table.remove(list)
+	end
+	return list
+end
+
+-- The ledger key's list with every side of trade `id` marked cancelled, so the heal never applies it.
+function StationTrade.ledgerCancel(list: { any }, id: string): { any }
+	for _, e in list do
+		if type(e) == "table" and e.id == id then
+			e.cancelled = true
+		end
+	end
+	return list
+end
 StationTrade.UNEVEN = 0.4 -- the fairness meter warns when one side is worth under this share of the other
 
 type Profile = StationProgress.Profile

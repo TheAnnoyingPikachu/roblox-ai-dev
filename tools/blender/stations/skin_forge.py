@@ -246,25 +246,9 @@ def quad_weights(head_y, head_z, tail_y, front, back, front_top, back_top, inner
     return weights
 
 
-def head_below(weights, top):
-    """`weights` with the head's share given to the body above `top` (the cannon over the War-Tortoise's head
-    sits on its shell, not its neck)."""
-
-    def w(p):
-        out = weights(p)
-        head = out.pop("head", 0.0)
-        keep = head * (1 - ramp(top - 0.02, top + 0.02, p.z))
-        out["body"] = out.get("body", 0.0) + head - keep
-        if keep > 0.001:
-            out["head"] = keep
-        return {k: v for k, v in out.items() if v > 0.001}
-
-    return w
-
-
-def feet_weights(feet, top, head_y, head_z, tail_y, near_r=0.055):
-    """A four-legged model whose legs stand close under it: each vertex below `top` within `near_r` of a foot
-    (`feet`, {leg: (x, y)}) follows that leg; the head is ahead of `head_y` above `head_z`, the tail behind
+def feet_weights(feet, top, head_y, head_z, tail_y):
+    """A four-legged model whose legs stand close under it: each vertex below `top` near a foot (`feet`,
+    {leg: (x, y)}) follows that leg; the head is ahead of `head_y` above `head_z`, the tail behind
     `tail_y`."""
 
     def weights(p):
@@ -272,7 +256,7 @@ def feet_weights(feet, top, head_y, head_z, tail_y, near_r=0.055):
         head = ramp(head_y, head_y - 0.05, p.y) * ramp(head_z, head_z + 0.06, p.z)
         w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
         leg, near = min(((k, (p.x - x) ** 2 + (p.y - y) ** 2) for k, (x, y) in feet.items()), key=lambda t: t[1])
-        down = ramp(top, top - 0.05, p.z) if near < near_r**2 else 0.0
+        down = ramp(top, top - 0.05, p.z) if near < 0.055**2 else 0.0
         if down > 0:
             w = {k: v * (1 - down) for k, v in w.items()}
             w[leg] = down
@@ -350,6 +334,99 @@ def lion(name, length, tail_x, artifact, what):
         "small": 0.06,
         "notes": f"{name}: SHANNON's {what} from ForgeGUI (artifact {artifact}), one mesh, skinned to the Stations rig (decision 0102).",
     }
+
+
+def guardian_weights(p):
+    """SHANNON's "Sahara Guardian Rare Variant" (ForgeGUI artifact 30d3ddb4): a stone lion in gold and purple
+    armour, mid-stride and a little left of centre (its middle is x -0.02). The head and mane are ahead of
+    y -0.31 above z -0.07 with the front legs right under them (y -0.47..-0.28); the hind legs are apart in
+    the stride (left y -0.12..0.03, right y -0.07..0.14); the tail is over a third of its length, from y 0.11."""
+    tail = ramp(0.1, 0.15, p.y)
+    # the face turns rigid on a narrow band behind it (the mane stays with the body: carried by the head, it tore
+    # away from the chest, 14.7 % of the lion stretched against 8.8 %)
+    head = ramp(-0.33, -0.36, p.y) * ramp(-0.02, 0.03, p.z)
+    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+    leg = None
+    if abs(p.x + 0.02) > 0.03 or p.z < -0.2:  # not the pendants hanging between the legs
+        if -0.47 < p.y < -0.28:
+            leg = "leg_fl" if p.x > -0.02 else "leg_fr"
+        elif p.x > 0 and -0.12 < p.y < 0.03:
+            leg = "leg_bl"
+        elif p.x <= 0 and -0.07 < p.y < 0.14:
+            leg = "leg_br"
+    # the legs blend over the band where they leave the body, below the armour's skirt
+    down = ramp(-0.18, -0.24, p.z) if leg else 0.0
+    if down > 0:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def mammoth_weights(p):
+    """SHANNON's Golden Rune Mammoth (ForgeGUI artifact fb438279), straightened: a huge head whose ears and crest
+    reach back over the shoulders to y -0.16, the trunk and tusks ahead of y -0.3 down to z -0.23, the front legs
+    right under the head (y -0.27..-0.06), the hind legs at y 0.17..0.37, legs apart below z -0.13, a tail from y 0.37."""
+    tail = ramp(0.37, 0.42, p.y)
+    head = max(ramp(-0.28, -0.34, p.y), ramp(-0.16, -0.24, p.y) * ramp(-0.13, -0.06, p.z))
+    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+    leg = None
+    if 0.04 < abs(p.x) < 0.27:
+        if -0.27 < p.y < -0.06:
+            leg = "leg_fl" if p.x > 0 else "leg_fr"
+        elif 0.17 < p.y < 0.37:
+            leg = "leg_bl" if p.x > 0 else "leg_br"
+    down = ramp(-0.13, -0.19, p.z) if leg else 0.0
+    if down > 0:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def war_tortoise_weights(p):
+    """SHANNON's Sunfire War-Tortoise (ForgeGUI artifact 276820c6), turned 88.7 degrees to stand along Y: a shell
+    with a sun cannon on top whose barrel reaches out over the head (y < -0.36, above z 0.09: it stays on the body),
+    the head below it ahead of y -0.36, stout legs under the shell's sides (front y -0.36..-0.12, hind 0.12..0.42,
+    |x| 0.06..0.32) apart below z -0.21, and a small tail from y 0.4."""
+    tail = ramp(0.4, 0.44, p.y) * (1 - ramp(0.06, 0.09, abs(p.x)))
+    head = ramp(-0.34, -0.39, p.y) * (1 - ramp(0.06, 0.1, p.z))
+    w = {"body": (1 - head) * (1 - tail), "head": head, "tail": tail}
+    leg, down = None, ramp(-0.17, -0.23, p.z)
+    if 0.06 < abs(p.x) < 0.32 and down > 0:
+        if -0.36 < p.y < -0.12:
+            leg = "leg_fl" if p.x > 0 else "leg_fr"
+        elif 0.12 < p.y < 0.42:
+            leg = "leg_bl" if p.x > 0 else "leg_br"
+    if leg:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def sun_rhino_weights(p):
+    """SHANNON's Molten Sun Rhino (ForgeGUI artifact 8fd726bf), mid-stride: the head and horn ahead of y -0.27, the
+    left legs ahead of the right ones (front left y -0.27..-0.06, front right -0.14..0.08, hind left 0.15..0.36,
+    hind right 0.26..0.46), apart below z -0.11, and a tail curling up behind from y 0.42 above z -0.05."""
+    tail = ramp(0.42, 0.46, p.y) * ramp(-0.08, -0.03, p.z)
+    head = ramp(-0.25, -0.3, p.y)
+    w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
+    leg, down = None, ramp(-0.11, -0.16, p.z)
+    if 0.0 < abs(p.x) < 0.24 and down > 0:
+        left = p.x > 0
+        if (left and -0.27 < p.y < -0.06) or (not left and -0.14 < p.y < 0.08):
+            leg = "leg_fl" if left else "leg_fr"
+        elif (left and 0.15 < p.y < 0.36) or (not left and 0.26 < p.y < 0.46):
+            leg = "leg_bl" if left else "leg_br"
+    if leg:
+        w = {k: v * (1 - down) for k, v in w.items()}
+        w[leg] = down
+    return {k: v for k, v in w.items() if v > 0.001}
+
+
+def guardian_pieces(lo, hi):
+    """The sun halo (a ring and its spikes, loose pieces standing over the shoulders) goes whole with the head."""
+    if hi.y - lo.y < 0.5 and lo.y > -0.34 and hi.y < -0.1 and lo.z > 0.0 and hi.z > 0.085:
+        return {"head": 1.0}
+    return None
 
 
 # The Shadow Legion never stretches (`cut` in main): ForgeGUI grows its arms, capes and weapons onto the body,
@@ -582,94 +659,77 @@ REGIONS = {
     # low-poly and faceted: blended, its legs and neck stretched in the walk (12.6 % of it at worst); cut, it moves in whole parts
     "creature_lion_sun_forge": dict(lion("Sun Lion", 16.05, 0.0, "efa580ee", "Fierce Low-Poly Sunmane Lion"), cut=True),
     # heights: the Blender models' (StationAssets.creature_flamingo[_peacock, _phoenix].size)
-    # The four Eternals, regenerated a second time on 2026-11-25 (SHANNON: "stay true to the originals"): each
-    # rebuilt in ForgeGUI from three renders of SHANNON's original site model, so the design is the original's on a
-    # dense smooth mesh; the Sun Rhino is SHANNON's own A-pose remake. Head at -Y, shaded smooth, 12000 triangles.
+    # The four Eternals: SHANNON's own ForgeGUI site models, as first made (SHANNON, 2026-11-25: "take the first
+    # iteration and just try to fix them"). Unclamped (AnimalMoves.STIFF is empty): each leg leaves the body below
+    # its armour, the Guardian's face turns rigid on a narrow band and its few big faces are split (`split`).
     "creature_lion_sahara_forge": {
         "length": 22.0,  # 1.37 x the Sun Lion
         "joints": {
-            "body": (0.0, -0.15, -0.05),
-            "head": (0.0, -0.35, 0.0),
-            "leg_fl": (0.11, -0.32, -0.15),
-            "leg_fr": (-0.11, -0.37, -0.15),
-            "leg_bl": (0.07, 0.03, -0.15),
-            "leg_br": (-0.07, 0.03, -0.15),
-            "tail": (0.0, 0.14, -0.08),
+            "body": (-0.02, -0.15, -0.03),
+            "head": (-0.03, -0.33, 0.0),
+            "leg_fl": (0.06, -0.37, -0.1),
+            "leg_fr": (-0.1, -0.37, -0.1),
+            "leg_bl": (0.04, -0.05, -0.1),
+            "leg_br": (-0.08, 0.04, -0.1),
+            "tail": (-0.045, 0.12, -0.06),
         },
-        # the face ahead of y -0.36 above z -0.02 (the mane and the halo stay with the body: a bigger head stretched
-        # the mane, 9.4 % against 6.7 %); front legs y -0.47..-0.22 (the right a step ahead), hind -0.08..0.14,
-        # leaving the body below z -0.18 and -0.16; the long tail, hanging low, from y 0.14
-        "weights": quad_weights(-0.36, -0.02, 0.14, (-0.47, -0.22), (-0.08, 0.14), -0.18, -0.16, 0.0, 0.17),
-        "small": 0.04,
-        "shade": "smooth",
-        "tris": 12000,
-        "notes": "Sahara Guardian: rebuilt in ForgeGUI from renders of SHANNON's original (artifact 30d3ddb4; model 86abc74b), one mesh, skinned to the Stations rig (decision 0102).",
+        "weights": guardian_weights,
+        "pieces": guardian_pieces,
+        "small": 0.06,
+        "split": 0.025,  # 3,071 triangles: no edge over 0.025 makes 15,788
+        "notes": "Sahara Guardian: SHANNON's Sahara Guardian Rare Variant from ForgeGUI (artifact 30d3ddb4), one mesh with its sun halo, skinned to the Stations rig (decision 0102).",
     },
+    # the source was turned 22.9 degrees about the vertical and centred on its feet first (straighten.py)
     "creature_elephant_sahara_forge": {
         "length": 39.0,  # 1.3 x the Frost Mammoth: an Eternal is clearly bigger than its species' others
         "joints": {
-            "body": (0.0, 0.1, 0.05),
-            "head": (0.0, -0.2, 0.05),
-            "leg_fl": (0.15, -0.03, -0.12),
-            "leg_fr": (-0.115, -0.11, -0.12),
-            "leg_bl": (0.06, 0.35, -0.12),
-            "leg_br": (-0.17, 0.28, -0.12),
-            "tail": (0.0, 0.43, 0.0),
+            "body": (0.0, 0.05, 0.0),
+            "head": (0.0, -0.2, 0.02),
+            "leg_fl": (0.14, -0.17, -0.1),
+            "leg_fr": (-0.14, -0.17, -0.1),
+            "leg_bl": (0.11, 0.27, -0.1),
+            "leg_br": (-0.12, 0.27, -0.1),
+            "tail": (-0.06, 0.38, -0.06),
         },
-        # its legs stand unevenly (straight columns, the left hind tucked in): each follows its foot within 0.1;
-        # the head, tusks and trunk ahead of y -0.2 at any height; a tail from y 0.42
-        "weights": feet_weights(
-            {"leg_fl": (0.18, -0.02), "leg_fr": (-0.125, -0.11), "leg_bl": (0.035, 0.37), "leg_br": (-0.17, 0.3)},
-            -0.13,
-            -0.2,
-            -0.5,
-            0.42,
-            near_r=0.1,
-        ),
-        "small": 0.04,
+        "weights": mammoth_weights,
+        "small": 0.06,
         "shade": "smooth",
         "tris": 12000,
-        "notes": "Sahara Mammoth: rebuilt in ForgeGUI from renders of SHANNON's original (artifact fb438279; model 153b2d0c), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Sahara Mammoth: SHANNON's Golden Rune Mammoth from ForgeGUI (artifact fb438279), one mesh with its sun spike, skinned to the Stations rig (decision 0102).",
     },
-    "creature_tortoise_sahara_forge": {
+    "creature_tortoise_sahara_forge": {  # (the source turned 88.7 degrees first: straighten.py)
         "length": 19.5,  # 1.3 x the Island Tortoise
         "joints": {
             "body": (0.0, 0.0, 0.0),
-            "head": (0.0, -0.3, -0.03),
-            "leg_fl": (0.2, -0.19, -0.17),
-            "leg_fr": (-0.2, -0.16, -0.17),
-            "leg_bl": (0.18, 0.33, -0.17),
-            "leg_br": (-0.19, 0.35, -0.17),
-            "tail": (0.0, 0.43, -0.12),
+            "head": (0.0, -0.36, -0.03),
+            "leg_fl": (0.2, -0.25, -0.17),
+            "leg_fr": (-0.2, -0.25, -0.17),
+            "leg_bl": (0.2, 0.27, -0.17),
+            "leg_br": (-0.2, 0.27, -0.17),
+            "tail": (0.0, 0.4, -0.1),
         },
-        # the neck and head ahead of y -0.29 below z 0.07 (the cannon over it, from z 0.1, stays on the shell);
-        # stout legs at the shell's corners (front y -0.31..-0.07, hind 0.24..0.45, |x| 0.09..0.31) leaving it
-        # below z -0.15; a stub of a tail from y 0.43
-        "weights": head_below(quad_weights(-0.29, -0.2, 0.43, (-0.31, -0.07), (0.24, 0.45), -0.15, -0.15, 0.09, 0.31), 0.07),
-        "small": 0.04,
+        "weights": war_tortoise_weights,
+        "small": 0.06,
         "shade": "smooth",
         "tris": 12000,
-        "notes": "Sunfire War-Tortoise: rebuilt in ForgeGUI from renders of SHANNON's original (artifact 276820c6; model 91afeefa), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Sunfire War-Tortoise: SHANNON's Sunfire War-Tortoise of the Desert from ForgeGUI (artifact 276820c6), one mesh with its sun cannon, skinned to the Stations rig (decision 0102).",
     },
     "creature_rhino_sahara_forge": {
         "length": 24.0,  # 1.3 x the Lava Rhino
         "joints": {
-            "body": (0.0, 0.1, 0.0),
-            "head": (0.0, -0.28, 0.02),
-            "leg_fl": (0.17, -0.15, -0.11),
-            "leg_fr": (-0.17, -0.15, -0.11),
-            "leg_bl": (0.08, 0.22, -0.11),
-            "leg_br": (-0.07, 0.34, -0.11),
-            "tail": (-0.04, 0.42, 0.0),
+            "body": (0.0, 0.0, 0.0),
+            "head": (0.0, -0.26, 0.03),
+            "leg_fl": (0.15, -0.17, -0.06),
+            "leg_fr": (-0.16, -0.03, -0.06),
+            "leg_bl": (0.07, 0.26, -0.06),
+            "leg_br": (-0.1, 0.37, -0.06),
+            "tail": (0.0, 0.43, 0.02),
         },
-        # the head and horns ahead of y -0.27; wide-set front legs (y -0.27..-0.02, |x| 0.09..0.26), hind legs close
-        # under the rump (y 0.13..0.45, |x| up to 0.15, the left a step ahead of the right), leaving the body below
-        # z -0.12; a tail from y 0.42
-        "weights": quad_weights(-0.27, -0.15, 0.42, (-0.27, -0.02), (0.13, 0.45), -0.12, -0.12, 0.0, 0.26),
-        "small": 0.04,
+        "weights": sun_rhino_weights,
+        "small": 0.06,
         "shade": "smooth",
         "tris": 12000,
-        "notes": "Molten Sun Rhino: SHANNON's ForgeGUI site model (artifact 4b2ea5a5, 2026-11-25), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Molten Sun Rhino: SHANNON's Molten Sun Rhino of the Savannah from ForgeGUI (artifact 8fd726bf), one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_flamingo_forge": flamingo("Flamingo", 8.0, 0.0, 0.12, -0.17, -0.12, {"leg_fl": (0.06, 0.035), "leg_fr": (-0.069, 0.09)}, 0.0, 0.13, (0.09, 0.13), 0.06, "c9dca2cc", "pink flamingo"),
     "creature_flamingo_peacock_forge": flamingo("King Flamingo", 9.8, -0.06, 0.06, -0.18, -0.17, {"leg_fl": (0.05, 0.04), "leg_fr": (-0.05, 0.04)}, -0.06, 0.12, (0.1, 0.15), 0.12, "a84542a7", "peacock flamingo with a crown"),
@@ -1475,6 +1535,22 @@ def main():
         thin.ratio = spec["tris"] / have
         bpy.ops.object.modifier_apply(modifier=thin.name)
         print("THINNED", have, "->", sum(len(p.vertices) - 2 for p in body.data.polygons))
+    if spec.get("split"):  # a low-poly model: its long edges cut in two (in their faces' planes, UVs kept) until
+        # none is longer than `split`, so a joint bends over several small faces instead of tearing one big one
+        bm = bmesh.new()
+        bm.from_mesh(body.data)
+        for _ in range(6):
+            long = [e for e in bm.edges if e.calc_length() > spec["split"]]
+            if not long:
+                break
+            bmesh.ops.subdivide_edges(bm, edges=long, cuts=1, use_grid_fill=True)
+            bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if len(f.verts) > 4])
+        bm.to_mesh(body.data)
+        bm.free()
+        tris = sum(len(p.vertices) - 2 for p in body.data.polygons)
+        print("SPLIT", have, "->", tris)
+        if tris > 20000:
+            raise RuntimeError(f"{tris} triangles is over Roblox's 20,000 for one mesh")
 
     # each vertex's weights from where it is; a small island takes its average, so it moves whole
     bm = bmesh.new()
