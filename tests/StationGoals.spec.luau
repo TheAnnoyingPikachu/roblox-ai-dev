@@ -35,6 +35,38 @@ local function settle(p: StationProgress.Profile): number
 	end
 end
 
+describe("StationGoals teaching goals and level rewards (decision 0123)", function()
+	it("weaves a teaching goal in after its stage's boss", function()
+		local ids = {}
+		for k, goal in StationGoals.LIST do
+			ids[goal.id] = k
+		end
+		expect(ids.barn).toBe(ids.boss10 + 1)
+		expect(ids.mill).toBe(ids.boss10 + 2)
+		expect(ids.titan).toBe(ids.boss20 + 1)
+		expect(ids.coat).toBe(ids.boss30 + 1)
+		expect(ids.fuse).toBe(ids.boss50 + 1)
+	end)
+
+	it("pays a reward every 5 player levels to 100, the best egg on every tenth, each once", function()
+		expect(#StationGoals.LEVELS).toBe(20)
+		local p = fresh()
+		expect(StationGoals.levelDue(p)).toBeNil()
+		p.xp = StationProgress.xpFor(12)
+		local goal = StationGoals.levelDue(p) :: StationGoals.Goal
+		expect(goal.id).toBe("lvl5")
+		local items = StationGoals.items(p, goal)
+		expect(items.samples).toBe(2)
+		local _, ok = StationGoals.finish(p, goal.id, items, animalsFor(items), 0)
+		expect(ok).toBe(true)
+		goal = StationGoals.levelDue(p) :: StationGoals.Goal
+		expect(goal.id).toBe("lvl10")
+		expect(StationGoals.items(p, goal).eggs[1]).toBe((StationRewards.bestEgg(p)))
+		local _, again = StationGoals.finish(p, "lvl5", items, animalsFor(items), 0)
+		expect(again).toBe(false) -- paid once
+	end)
+end)
+
 describe("StationGoals", function()
 	it("starts a new save on hatching a team, and counts its animals", function()
 		local p = fresh()
@@ -94,7 +126,7 @@ describe("StationGoals", function()
 
 	it("makes every stage's boss a goal, counted in that stage's waves", function()
 		local p = fresh()
-		p.goals = { "team", "wave3", "train", "gift", "boss10", "boss20" }
+		p.goals = { "team", "wave3", "train", "gift", "boss10", "barn", "mill", "boss20", "titan" }
 		p.best = 27
 		local goal = StationGoals.next(p) :: StationGoals.Goal
 		expect(goal.id).toBe("boss30")
@@ -135,9 +167,12 @@ describe("StationGoals", function()
 		end
 		p.best = 27
 		p.rewards.spinDay = 20000
-		expect(settle(p)).toBe(6) -- team, wave3, train, gift, boss10, boss20
-		expect((StationGoals.next(p) :: StationGoals.Goal).id).toBe("boss30")
+		expect(settle(p)).toBe(5) -- team, wave3, train, gift, boss10; then the Barn waits for an upgrade
+		expect((StationGoals.next(p) :: StationGoals.Goal).id).toBe("barn")
 		expect(settle(p)).toBe(0)
+		p.upgrades.barn, p.upgrades.windmill = 1, 1
+		expect(settle(p)).toBe(4) -- barn, mill, boss20 (its Titan goes into the empty slot), titan
+		expect((StationGoals.next(p) :: StationGoals.Goal).id).toBe("boss30")
 	end)
 
 	it("has ids a save can keep, and ends when every goal is done", function()
