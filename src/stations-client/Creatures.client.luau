@@ -2943,16 +2943,19 @@ local function walk(t: number, rate: number): Pose
 	}
 end
 
--- A heavy four-beat walk (the Molten Sun Rhino: SHANNON found the trot "quite janky" on it, 2026-11-27): back left,
+-- A heavy four-beat walk (the Eternal Sun Rhino and Mammoth: SHANNON found the trot "quite janky", 2026-11-27): back left,
 -- front left, back right, front right a quarter of a stride apart. Each foot is planted for 62 % of the stride,
 -- sweeping back evenly with its leg pushed down by as much as the swing lifts it (on a short leg turning about its hip
 -- the foot would hover at both ends), then steps forward quickly, eased and lifted. The body rolls onto its planted
--- side and dips at each footfall, the head nods against it and the tail swishes. `leg` is the hip pivot's height over
--- the floor, studs at Scale 1. The swing still covers the trot's ground (Creatures.speed) as nearly as it can.
-local HEAVY_WALKS: { [string]: number } = {
-	creature_rhino_sahara_forge = 1.43, -- AnimalRig: leg joints 2.96 studs over its feet, at Scale 2.08
+-- side and dips at each footfall, the head nods against it and the tail swishes. The swing still covers the trot's
+-- ground (Creatures.speed) as nearly as it can.
+local HEAVY_WALKS = {
+	creature_rhino_sahara_forge = true,
+	creature_elephant_sahara_forge = true,
 }
-local function heavyWalk(t: number, rate: number, leg: number): Pose
+-- (every animal's hip pivots stand this high over its feet at Scale 1: the server sets Scale from them, POSE_LEGS)
+local HIP = 1.45
+local function heavyWalk(t: number, rate: number): Pose
 	local swing, duty, lift = 20, 0.62, 0.32
 	local c = (t * rate) % 1
 	local function step(start: number): { number }
@@ -2965,7 +2968,7 @@ local function heavyWalk(t: number, rate: number, leg: number): Pose
 			a = -swing + 2 * swing * (0.5 - 0.5 * math.cos(math.pi * k))
 			up = lift * math.sin(math.pi * k)
 		end
-		return { a, 0, 0, 0, up - leg * (1 - math.cos(math.rad(a))), 0 }
+		return { a, 0, 0, 0, up - HIP * (1 - math.cos(math.rad(a))), 0 }
 	end
 	local beat = math.cos(2 * TAU * c) -- two dips a stride
 	return {
@@ -4329,7 +4332,7 @@ RunService.PreSimulation:Connect(function(dt: number)
 			local heavy = HEAVY_WALKS[(model:GetAttribute("Asset") :: string?) or ""]
 			target = if biped
 				then walkBiped(time, rate, model:GetAttribute("Hexbound") ~= true)
-				elseif heavy then heavyWalk(time, rate, heavy)
+				elseif heavy then heavyWalk(time, rate)
 				else walk(time, rate)
 			if TWO_HANDED[(model:GetAttribute("Asset") :: string?) or ""] then
 				target = table.clone(target)

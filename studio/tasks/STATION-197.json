@@ -1,0 +1,39 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-197",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Regenerate the Sahara Mammoth in ForgeGUI the way the Molten Sun Rhino was (STATION-194) and re-rig it (SHANNON, 2026-11-27: 'go ahead and do what you just did for the rhino on the elephant, regen it like the other and make sure to not mess it up').",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-194"
+  ],
+  "files": [
+    "tools/blender/stations/skin_forge.py",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_elephant_sahara_forge*",
+    "assets/stations/sources/creature_elephant_sahara_forge.glb",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-197.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "The Sahara Mammoth has the game's elephants' faceted body and the same sun regalia as the new Molten Sun Rhino (purple drape and sun banners, gold plates, purple gems, the sun crest, gem-banded boots), in the old Mammoth's warm brown",
+    "It stands neutral like every regular animal: left and right feet level within 1 % of its length",
+    "Skinned to the Stations rig with no leg clamp; the game's strongest poses stretch at most 7 % of it",
+    "Foot points and spell anchors (AnimalRig) are measured on the model and every spell checks out; it has a rainbow coat",
+    "Uploaded and seen in Studio"
+  ],
+  "verification": "ForgeGUI concept job 78f8e869 (two variants, from renders of the Elephant, the Frost Mammoth, the new Sun Rhino and the old Eternal Mammoth; the second picked as the closest match to the Sun Rhino's regalia) and model job 2e14c13a (meshy, 14,644 triangles after tidy). Stance: feet stagger 0.3 % front, 0.4 % back. skin_forge --stretch worst 4.39 % (walk 2.06, attack 4.39, power 4.24, fall 3.93; the old model 8.40 %), swept over leg pivots -0.12..-0.24, leg bands and head bands; carrying the domed crown on the head tore behind it (5.5 %) and was left out. Its own clips on side-view sheets (Bulwark idle, Tusk Heave, Dawnbreaker): whole. check_spells ALL OK. Lune 841/841.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Same asset name, so its spell (Dawnbreaker), idle, attack, coat and Robux product are unchanged. It walks with the heavy walk (STATION-196). The previous upload of this asset is left for archiving by hand."
+}
