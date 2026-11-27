@@ -11,10 +11,10 @@ local DataStoreService = game:GetService("DataStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Saves = require(ReplicatedStorage:WaitForChild("KitRoblox"):WaitForChild("Saves"))
+local StationTrade = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("StationTrade"))
 
 local TradeLedger = {}
 
-local KEEP = 60
 local TRIES = 3
 
 local store: DataStore? = nil
@@ -54,26 +54,15 @@ end
 
 -- Write one side of a trade for `userId`; false when it could not be written.
 function TradeLedger.write(userId: number, side: any, now: number): boolean
-	local entry = table.clone(side)
-	entry.at = now
 	return update(userId, function(list)
-		table.insert(list, 1, entry)
-		while #list > KEEP do
-			table.remove(list)
-		end
-		return list
+		return StationTrade.ledgerAdd(list, side, now)
 	end)
 end
 
 -- Mark trade `id` cancelled in `userId`'s key, so the heal never applies it.
 function TradeLedger.cancel(userId: number, id: string): boolean
 	return update(userId, function(list)
-		for _, e in list do
-			if type(e) == "table" and e.id == id then
-				e.cancelled = true
-			end
-		end
-		return list
+		return StationTrade.ledgerCancel(list, id)
 	end)
 end
 
