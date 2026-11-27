@@ -3745,19 +3745,19 @@ local StationAssets: { [string]: Asset } = {
 		root = { -0.002, 5.615, -0.003 },
 	},
 	creature_rhino_sahara_forge = {
-		size = { 10.9, 9.23, 24 },
+		size = { 8.86, 16.95, 24 },
 		parts = { "creature_rhino_sahara_forge_body" },
 		glow = {},
 		centres = {
-			creature_rhino_sahara_forge_body = { 0, 4.615, 0 },
+			creature_rhino_sahara_forge_body = { 0, 8.477, 0 },
 		},
 		joints = {
-			creature_rhino_sahara_forge_head = { 0.024, 5.409, 6.46 },
-			creature_rhino_sahara_forge_leg_fl = { 3.773, 3.16, 4.21 },
-			creature_rhino_sahara_forge_leg_fr = { -3.974, 3.16, 0.712 },
-			creature_rhino_sahara_forge_leg_bl = { 1.774, 3.16, -6.536 },
-			creature_rhino_sahara_forge_leg_br = { -2.475, 3.16, -9.285 },
-			creature_rhino_sahara_forge_tail = { 0.024, 5.159, -10.784 },
+			creature_rhino_sahara_forge_head = { 0, 8.551, 4.968 },
+			creature_rhino_sahara_forge_leg_fl = { 2.518, 3.012, 1.695 },
+			creature_rhino_sahara_forge_leg_fr = { -2.518, 3.012, 1.695 },
+			creature_rhino_sahara_forge_leg_bl = { 2.266, 3.012, -7.622 },
+			creature_rhino_sahara_forge_leg_br = { -2.266, 3.012, -7.622 },
+			creature_rhino_sahara_forge_tail = { 0, 8.551, -9.636 },
 		},
 		model = 111504266650836,
 		decal = 99745034151474,
@@ -3765,7 +3765,7 @@ local StationAssets: { [string]: Asset } = {
 		rainbowDecal = 102017125494012,
 		rainbowTexture = nil,
 		skinned = true,
-		root = { 0.024, 4.66, -0.038 },
+		root = { 0, 8.551, -1.327 },
 	},
 }
 
