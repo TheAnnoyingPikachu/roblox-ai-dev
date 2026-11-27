@@ -224,7 +224,7 @@ do
 		local function set(level: number)
 			adminAdd.level = math.clamp(math.floor(level + 0.5), 1, max)
 			knob.Position = UDim2.fromScale((adminAdd.level - 1) / (max - 1), 0.5)
-			value.Text = `Level {adminAdd.level} of {max}`
+			value.Text = `Level {StationRules.levelText(adminAdd.level)}`
 		end
 		set(adminAdd.level)
 		local dragging = false
