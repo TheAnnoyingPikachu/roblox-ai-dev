@@ -127,7 +127,7 @@ for _, key in { "tests", "foes" } do
 	tab.Parent = admin.body
 	adminTabs[key] = tab
 end
-local adminAdd = { body = Instance.new("Frame") } -- the Add animals tab's rows
+local adminAdd = { body = Instance.new("Frame"), level = 1, coat = "none" } -- the Add animals tab's rows
 adminAdd.body.BackgroundTransparency = 1
 adminAdd.body.Size, adminAdd.body.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
 Style.list(adminAdd.body, 8)
@@ -190,14 +190,81 @@ do
 			table.insert(list, { s = sp.id, v = va.id })
 		end
 	end
+	-- above the rows (SHANNON, 2026-11-27): the coat the next one comes in, and a level slider (1 to MAX_LEVEL)
+	local function controls()
+		local bar = Instance.new("Frame")
+		bar.BackgroundTransparency, bar.LayoutOrder = 1, -1
+		bar.Size = UDim2.new(1, 0, 0, 96)
+		bar.Parent = adminAdd.body
+		local coats = { "none" }
+		for _, c in StationConfig.COATS do
+			table.insert(coats, c.id)
+		end
+		local coatButton: TextButton
+		local function coatName(): string
+			local c = StationConfig.coat(adminAdd.coat)
+			return if c then `Coat: {c.name}` else "Coat: none"
+		end
+		coatButton = Style.button(bar, coatName(), function()
+			local i = table.find(coats, adminAdd.coat) or 1
+			adminAdd.coat = coats[i % #coats + 1]
+			coatButton.Text = coatName()
+		end, "ghost", UDim2.fromOffset(220, 40))
+		coatButton.TextSize = 16
+		local value = Style.text(bar, "", 17, C.text, UDim2.fromOffset(200, 24))
+		value.Position = UDim2.fromOffset(240, 8)
+		local track = Style.frame(bar, UDim2.new(1, -20, 0, 12), C.edge)
+		track.Position = UDim2.fromOffset(10, 62)
+		Style.round(track, 6)
+		local knob = Style.frame(track, UDim2.fromOffset(26, 26), C.gold)
+		knob.AnchorPoint = Vector2.new(0.5, 0.5)
+		Style.round(knob, 13)
+		Style.stroke(knob, C.ink, 2)
+		local max = StationConfig.MAX_LEVEL
+		local function set(level: number)
+			adminAdd.level = math.clamp(math.floor(level + 0.5), 1, max)
+			knob.Position = UDim2.fromScale((adminAdd.level - 1) / (max - 1), 0.5)
+			value.Text = `Level {StationRules.levelText(adminAdd.level)}`
+		end
+		set(adminAdd.level)
+		local dragging = false
+		local function follow(x: number)
+			local f = math.clamp((x - track.AbsolutePosition.X) / math.max(track.AbsoluteSize.X, 1), 0, 1)
+			set(1 + f * (max - 1))
+		end
+		local hit = Instance.new("TextButton") -- a taller, unseen catch area over the thin track
+		hit.BackgroundTransparency, hit.Text = 1, ""
+		hit.Size, hit.Position = UDim2.new(1, 0, 0, 40), UDim2.fromOffset(0, -14)
+		hit.Parent = track
+		hit.MouseButton1Down:Connect(function(x: number)
+			dragging = true
+			follow(x)
+		end)
+		hit.Activated:Connect(function(input: InputObject) -- a tap sets it too
+			follow(input.Position.X)
+		end)
+		game:GetService("UserInputService").InputChanged:Connect(function(input)
+			local t = input.UserInputType
+			if dragging and (t == Enum.UserInputType.MouseMovement or t == Enum.UserInputType.Touch) then
+				follow(input.Position.X)
+			end
+		end)
+		game:GetService("UserInputService").InputEnded:Connect(function(input)
+			local t = input.UserInputType
+			if t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch then
+				dragging = false
+			end
+		end)
+	end
 	local function draw()
 		Style.clear(adminAdd.body)
+		controls()
 		for k, a in list do
 			local colour = RARITY_COLOUR[StationRules.rarity(a :: any)] or C.text
 			local name = nameOf(a)
 			local va = if a.v then StationConfig.variant(a.s, a.v) else nil
 			local row = Style.button(adminAdd.body, "", function()
-				local ok, code = request:InvokeServer("admin_add", k, 1, false)
+				local ok, code = request:InvokeServer("admin_add", k, adminAdd.level, adminAdd.coat)
 				Style.toast(
 					screen,
 					if ok then `Added a {name} to your ranch` else REFUSED[code] or `Can't do that ({code})`,
@@ -215,15 +282,46 @@ do
 			local label =
 				Style.text(row, if va then `{name} ({va.tier})` else name, 18, colour, UDim2.new(1, -220, 1, 0))
 			label.Position = UDim2.fromOffset(70, 0)
-			local hint = Style.text(row, "Add to my ranch", 14, C.muted, UDim2.fromOffset(140, 64))
+			local hint = Style.text(row, "Add to my ranch", 14, C.muted, UDim2.fromOffset(140, 64)) -- at the level and coat above
 			hint.AnchorPoint, hint.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 0)
 			hint.TextXAlignment = Enum.TextXAlignment.Right
+		end
+	end
+	-- the Eggs tab (SHANNON, 2026-11-27): skip every hatching egg's time, and add eggs to the egg storage
+	local eggs = Instance.new("Frame")
+	eggs.BackgroundTransparency, eggs.Visible = 1, false
+	eggs.Size, eggs.AutomaticSize = UDim2.new(1, -12, 0, 0), Enum.AutomaticSize.Y
+	Style.list(eggs, 8)
+	eggs.Parent = admin.body
+	local skip = Style.button(eggs, "Skip all egg times", function()
+		local ok, code = request:InvokeServer("admin_skip")
+		Style.toast(screen, if ok then "Every hatching egg is ready" else REFUSED[code] or `Can't do that ({code})`, 2)
+	end, "primary", UDim2.new(1, 0, 0, 48))
+	skip.LayoutOrder = 0
+	for k, def in StationConfig.EGGS do
+		local row = Style.card(eggs, UDim2.new(1, 0, 0, 56))
+		row.LayoutOrder = k
+		local name = Style.text(row, def.name, 18, C.text, UDim2.new(1, -260, 1, 0))
+		name.Position = UDim2.fromOffset(14, 0)
+		for n, count in { 1, 5, 10 } do
+			local b = Style.button(row, `Add {count}`, function()
+				local ok, code = request:InvokeServer("admin_egg", def.id, count)
+				Style.toast(
+					screen,
+					if ok
+						then `Added {count} {def.name}{if count > 1 then "s" else ""}`
+						else REFUSED[code] or `Can't do that ({code})`,
+					2
+				)
+			end, "ghost", UDim2.fromOffset(74, 40))
+			b.AnchorPoint, b.Position, b.TextSize = Vector2.new(1, 0.5), UDim2.new(1, -10 - (3 - n) * 82, 0.5, 0), 15
 		end
 	end
 	local drawn = false
 	redraw.admin = function() -- the rows are drawn once, when first opened: a new profile must not scroll it back up
 		Style.clear(admin.tabs)
-		for _, t in { { "add", "Add animals" }, { "tests", "Spawn" }, { "foes", "Enemies" } } do
+		eggs.Visible = adminTab == "eggs"
+		for _, t in { { "add", "Add animals" }, { "eggs", "Eggs" }, { "tests", "Spawn" }, { "foes", "Enemies" } } do
 			Style.tab(admin, t[2], adminTab == t[1], function()
 				adminTab = t[1]
 				redraw.admin()
