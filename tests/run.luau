@@ -11,6 +11,9 @@ local serde = require("@lune/serde")
 local process = require("@lune/process")
 
 local SPECS = {
+	["LiveTuning.spec.luau"] = function()
+		require("./LiveTuning.spec")
+	end,
 	["Compile.spec.luau"] = function()
 		require("./Compile.spec")
 	end,

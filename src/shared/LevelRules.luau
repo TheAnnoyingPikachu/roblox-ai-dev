@@ -269,9 +269,12 @@ function LevelRules.missed(log: { BattleRules.Hit }): number
 	return n
 end
 
+-- An event's boost on wave coins (decision 0131, LiveTuning: 1 = none).
+LevelRules.COIN_BOOST = 1
+
 -- Coins for clearing `level` when the player's best cleared level is `best` (0 = none).
 function LevelRules.reward(level: number, best: number): number
-	local full = math.floor(LevelRules.REWARD_START * LevelRules.REWARD_GROWTH ^ (level - 1))
+	local full = math.floor(LevelRules.REWARD_START * LevelRules.REWARD_GROWTH ^ (level - 1) * LevelRules.COIN_BOOST)
 	return if level > best then full else math.floor(full * LevelRules.REPLAY_PCT / 100)
 end
 
