@@ -15,6 +15,7 @@ local Creatures = require(script.Parent:WaitForChild("Creatures"))
 local Analytics = require(script.Parent:WaitForChild("Analytics"))
 local Ranch = require(script.Parent:WaitForChild("Ranch"))
 local World = require(script.Parent:WaitForChild("World"))
+local Follower = require(script.Parent:WaitForChild("Follower"))
 
 World.build()
 Creatures.publishPortraits()
@@ -1767,6 +1768,10 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
+		do -- the team's first animal follows its owner (decision 0128)
+			local _, first = StationProgress.find(profile, profile.team[1] or 0)
+			Follower.sync(player, first)
+		end
 		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
@@ -1888,6 +1893,7 @@ for _, p in Players:GetPlayers() do
 end
 
 Players.PlayerRemoving:Connect(function(player)
+	Follower.remove(player)
 	payingGoals[player] = nil
 	task.defer(updateFame) -- after the player has gone
 	task.defer(Analytics.forget, player)
