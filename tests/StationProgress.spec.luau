@@ -84,7 +84,7 @@ end)
 -- Everything a save names that an older server's sanitize would drop. When this list changes,
 -- StationProgress.VERSION must go up, so an older server never loads and strips a newer save (decision 0111).
 -- Raise VERSION, then set CONTENT to the printed list's length and checksum.
-local CONTENT = { version = 4, count = 68, sum = 3348052 }
+local CONTENT = { version = 5, count = 68, sum = 3348052 } -- 5: star levels (decision 0123)
 local function contentIds(): { string }
 	local ids = {}
 	for _, sp in StationConfig.SPECIES do
