@@ -83,7 +83,11 @@ export type Profile = {
 	met: { string }, -- the animals met (decision 0118): "species/variant" keys, "lion/" for the plain species
 	loan: { boss: boolean, day: number }, -- the Ranger's loan (decision 0119, StationIntro): the wave 10 boss's is
 	-- used, and the UTC day of the last one
+	sound: Sound, -- the player's volumes (decision 0122)
 }
+-- Music and effects volume, 0 to SOUND_STEPS each, and mute (decision 0122). Display only.
+export type Sound = { music: number, effects: number, mute: boolean }
+StationProgress.SOUND_STEPS = 10
 
 -- Animals met (decision 0118): what the Animals window's Seen tab draws from. `meet` adds a version once (a
 -- species, or a species and one of its variants); anything not in StationConfig is left out, so the list is
@@ -169,6 +173,7 @@ function StationProgress.defaults(_now: number): Profile
 		beta = false,
 		met = {},
 		loan = { boss = false, day = 0 },
+		sound = { music = StationProgress.SOUND_STEPS, effects = StationProgress.SOUND_STEPS, mute = false },
 	}
 end
 
@@ -412,6 +417,13 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	end
 	local loan = if type(record.loan) == "table" then record.loan else {}
 	p.loan = { boss = loan.boss == true, day = int(loan.day, 0, 1e7, 0) }
+	local sound = if type(record.sound) == "table" then record.sound else {}
+	local steps = StationProgress.SOUND_STEPS
+	p.sound = {
+		music = int(sound.music, 0, steps, steps),
+		effects = int(sound.effects, 0, steps, steps),
+		mute = sound.mute == true,
+	}
 	local stored = if type(record.trades) == "table" then record.trades else {}
 	p.trades.day = int(stored.day, 0, 1e7, 0)
 	p.trades.count = int(stored.count, 0, 1000, 0)
@@ -765,6 +777,18 @@ function StationProgress.betaGift(p: Profile, coat: string?): (Profile, boolean,
 end
 
 -- The profile as the client may see it: the held eggs without the animals inside them.
+-- Set the player's volumes (decision 0122): whole steps from 0 to SOUND_STEPS.
+function StationProgress.setSound(
+	p: Profile,
+	music: number,
+	effects: number,
+	mute: boolean
+): (Profile, boolean, string?)
+	local steps = StationProgress.SOUND_STEPS
+	p.sound = { music = int(music, 0, steps, steps), effects = int(effects, 0, steps, steps), mute = mute == true }
+	return p, true, nil
+end
+
 function StationProgress.public(p: Profile): any
 	local copy = table.clone(p) :: any
 	copy.eggs = {}
