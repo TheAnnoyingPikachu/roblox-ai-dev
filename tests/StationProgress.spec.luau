@@ -86,7 +86,7 @@ describe("StationProgress profile", function()
 					id = 6,
 					s = "jackal",
 					stats = { speed = 44, strength = 20, stamina = 15, mana = 18 },
-					trained = { speed = 99, strength = "x" },
+					trained = { speed = 999, strength = "x" },
 				},
 			},
 			team = { 1, 1, 9, 3, 5, "x" },
@@ -465,7 +465,7 @@ describe("StationProgress team and training", function()
 		p = StationProgress.stop(p, 1, 1000 + secondsTo(7))
 		local a = animal(p, 1)
 		expect(StationRules.level(a :: any, "speed")).toBe(7)
-		expect(StationRules.stat(a :: any, "speed")).toBe(46) -- 42 x (1 + 7/70) = 46.2
+		expect(StationRules.stat(a :: any, "speed")).toBe(57) -- 42 x 6762 / 4900 = 57.96 (decision 0123)
 		expect(a.at).toBeNil()
 		local _, stopped, why = StationProgress.stop(p, 1, 5000)
 		expect(stopped).toBe(false)

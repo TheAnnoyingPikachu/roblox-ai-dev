@@ -127,7 +127,7 @@ local REFUSED: { [string]: string } = {
 	train_full = "Every training place is taken: upgrade the Ranch House",
 	station_busy = "Another animal is training there: stop it first",
 	training = "Stop its training first",
-	maxed = `That stat is already level {StationConfig.MAX_LEVEL}`,
+	maxed = `That stat has all {StationConfig.MAX_LEVEL - StationConfig.STAR_FROM} stars`,
 	loading = "Still loading your ranch...",
 	rate = "Slow down a little",
 	wave = "That wave is not open yet: clear the one before it",
@@ -199,11 +199,11 @@ local function live(a: any): any
 	return StationRules.train(a, a.at, StationProgress.trainedBetween(S.profile, a.since, Workspace:GetServerTimeNow()))
 end
 
--- Two lines for a stat button: the stat's level out of 70, then its battle value ("SPD 7/70"
--- over "46"), with the time left to the next level while training ("46  12m"), or MAX.
+-- Two lines for a stat button: the stat's level ("SPD 7/70", or "SPD 70 ★5" with stars), then its battle
+-- value, with the time left to the next level while training ("46  12m"), or MAX.
 function Hud.statText(a: any, stat: string, training: boolean): string
 	local level = StationRules.level(a, stat :: any)
-	local head = `{STAT_SHORT[stat]} {level}/{StationConfig.MAX_LEVEL}`
+	local head = `{STAT_SHORT[stat]} {StationRules.levelText(level)}`
 	local value = StationRules.stat(a, stat :: any)
 	if level >= StationConfig.MAX_LEVEL then
 		return `{head}\n{value}  MAX`
@@ -990,8 +990,8 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	elseif kind == "hatched" then
 		local lucky = ""
 		for _, stat in StationConfig.STATS do
-			if StationRules.level(payload, stat) >= StationConfig.MAX_LEVEL then
-				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.MAX_LEVEL}!`
+			if StationRules.level(payload, stat) >= StationConfig.STAR_FROM then
+				lucky = `  JACKPOT: {STAT_SHORT[stat]} is already level {StationConfig.STAR_FROM}!`
 			end
 		end
 		if payload.at then

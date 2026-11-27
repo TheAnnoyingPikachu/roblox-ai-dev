@@ -240,8 +240,7 @@ function Hud.animalDetail(col: Instance, a: any)
 		local v =
 			Style.text(row, tostring(StationRules.stat(now, st.stat :: any)), 20, C.text, UDim2.fromOffset(70, 24))
 		v.Position = UDim2.fromOffset(104, 6)
-		local lv =
-			Style.small(row, `Level {level} of {StationConfig.MAX_LEVEL}`, 12, C.muted, UDim2.fromOffset(170, 16))
+		local lv = Style.small(row, `Level {StationRules.levelText(level)}`, 12, C.muted, UDim2.fromOffset(170, 16))
 		lv.Position = UDim2.fromOffset(12, 32)
 		local label = if training then "Stop" elseif taken then "In use" else "Train"
 		local b = Style.button(row, label, function()
@@ -257,7 +256,7 @@ function Hud.animalDetail(col: Instance, a: any)
 		b.AnchorPoint, b.Position, b.TextSize = Vector2.new(1, 0.5), UDim2.new(1, -10, 0.5, -2), 15
 		if level >= StationConfig.MAX_LEVEL and not training then
 			b.Visible = false
-			lv.Text = "Level 70: the top"
+			lv.Text = `Level 70 and all {StationConfig.MAX_LEVEL - StationConfig.STAR_FROM} stars: the top`
 		end
 		if training then
 			table.insert(tickers, function()
