@@ -375,7 +375,7 @@ def mammoth_weights(p):
     if down > 0:
         if 0.03 < abs(p.x) < 0.19 and -0.13 < p.y < 0.07:
             leg = "leg_fl" if p.x > 0 else "leg_fr"
-        elif abs(p.x) < 0.17 and 0.24 < p.y < 0.44:
+        elif abs(p.x) < 0.17 and 0.24 < p.y < (0.44 if p.z < -0.16 else 0.38):  # the rump and its banners stay on the body
             leg = "leg_bl" if p.x > 0 else "leg_br"
     if leg:
         w = {k: v * (1 - down) for k, v in w.items()}
