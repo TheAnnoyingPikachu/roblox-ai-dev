@@ -53,7 +53,7 @@ export type Foe = {
 }
 export type Odds = { id: string, bp: number } -- bp: basis points, an egg's odds sum to 10000
 export type Rare = { s: string, v: string, ppm: number } -- a variant as a drop of its own: ppm of the egg's hatches
--- level: the player level that unlocks it (nil = from the start); xp: player XP
+-- wave: the best wave that unlocks it (nil = from the start; decision 0132); xp: player XP
 -- for buying it; hatch: seconds it sits in the ranch's hatchery before it opens (decision 0036,
 -- draft numbers); odds: its basic animals; rare: its variants, rolled first (decision 0056)
 export type Egg = {
@@ -62,7 +62,7 @@ export type Egg = {
 	price: number,
 	xp: number,
 	hatch: number,
-	level: number?, -- the player level that unlocks it (SHANNON, 2026-11-24; was a wave, decision 0056)
+	wave: number?, -- the best wave that unlocks it (decision 0132: back to waves; the player level is for show)
 	odds: { Odds },
 	rare: { Rare },
 	only: boolean?, -- variants only (decision 0110): its `rare` drops add up to a million, `odds` is empty
@@ -135,7 +135,9 @@ StationConfig.CHARGED_START = 0.25
 -- Player XP comes from everything the player does (decision 0032). Built so far: hatching (each
 -- egg's `xp`) and every stat level a creature gains in training. Waves, the login tracks and
 -- gear will add theirs when they exist.
-StationConfig.XP_STAT_LEVEL = 5
+StationConfig.XP_STAT_LEVEL = 5 -- the least a stat level pays
+-- a stat level pays one XP for every XP_TRAIN_SECONDS it takes to train (decision 0132), at least XP_STAT_LEVEL
+StationConfig.XP_TRAIN_SECONDS = 600
 
 StationConfig.BASIC_RARITIES = { "common", "uncommon", "rare" }
 StationConfig.RARITIES =
@@ -580,7 +582,7 @@ StationConfig.EGGS = {
 		price = 6000, -- decision 0121: was 15,000, a 10x jump from the Wild Egg
 		xp = 150,
 		hatch = 3600,
-		level = 5,
+		wave = 10,
 		odds = { { id = "meerkat", bp = 3000 }, { id = "flamingo", bp = 3500 }, { id = "rhino", bp = 3500 } },
 		rare = { r("flamingo", "peacock_flamingo", 2000), r("meerkat", "star_meerkat", 10000) },
 		coat = "ember",
@@ -591,7 +593,7 @@ StationConfig.EGGS = {
 		price = 40_000,
 		xp = 500,
 		hatch = 14400,
-		level = 8,
+		wave = 20,
 		odds = {
 			{ id = "cheetah", bp = 3000 },
 			{ id = "lion", bp = 3500 },
@@ -607,7 +609,7 @@ StationConfig.EGGS = {
 		price = 85_000,
 		xp = 800,
 		hatch = 6 * 3600,
-		level = 12,
+		wave = 40,
 		odds = { { id = "tortoise", bp = 3500 }, { id = "rhino", bp = 3500 }, { id = "jackal", bp = 3000 } },
 		rare = {
 			r("tortoise", "island_tortoise", 5000),
@@ -622,7 +624,7 @@ StationConfig.EGGS = {
 		price = 185_000,
 		xp = 1200,
 		hatch = 8 * 3600,
-		level = 16,
+		wave = 50,
 		odds = { { id = "flamingo", bp = 3500 }, { id = "giraffe", bp = 3000 }, { id = "meerkat", bp = 3500 } },
 		rare = { r("flamingo", "phoenix_flamingo", 5000), r("giraffe", "acacia_giraffe", 20000) },
 		coat = "verdant",
@@ -633,7 +635,7 @@ StationConfig.EGGS = {
 		price = 750_000,
 		xp = 2000,
 		hatch = 12 * 3600,
-		level = 24,
+		wave = 80,
 		odds = { { id = "elephant", bp = 4000 }, { id = "rhino", bp = 3000 }, { id = "lion", bp = 3000 } },
 		rare = { r("elephant", "war_elephant", 5000), r("lion", "shadow_lion", 20000) },
 		coat = "frost",
@@ -644,7 +646,7 @@ StationConfig.EGGS = {
 		price = 2_750_000,
 		xp = 3000,
 		hatch = 16 * 3600,
-		level = 32,
+		wave = 100,
 		only = true,
 		odds = {},
 		rare = { -- epic 80%, legendary 20%
@@ -667,7 +669,7 @@ StationConfig.EGGS = {
 		price = 25_000_000,
 		xp = 5000,
 		hatch = 24 * 3600,
-		level = 42,
+		wave = 140,
 		only = true,
 		odds = {},
 		rare = { -- legendary 85%, mythic 15%
@@ -689,7 +691,7 @@ StationConfig.EGGS = {
 		price = 200_000_000,
 		xp = 8000,
 		hatch = 36 * 3600,
-		level = 54,
+		wave = 180,
 		only = true,
 		odds = {},
 		rare = { -- mythic 90%, divine 10%
@@ -708,7 +710,7 @@ StationConfig.EGGS = {
 		price = 3_000_000_000,
 		xp = 12000,
 		hatch = 48 * 3600,
-		level = 68,
+		wave = 230,
 		only = true,
 		odds = {},
 		rare = { -- divine 95%, celestial 5%
@@ -725,7 +727,7 @@ StationConfig.EGGS = {
 		price = 125_000_000_000,
 		xp = 20000,
 		hatch = 72 * 3600,
-		level = 85,
+		wave = 260,
 		only = true,
 		odds = {},
 		rare = { w("lion", "sun_lion", 600000), w("elephant", "frost_elephant", 400000) },

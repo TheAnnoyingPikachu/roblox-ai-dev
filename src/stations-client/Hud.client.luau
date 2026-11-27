@@ -1052,11 +1052,17 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 	if kind == "profile" then
 		local first = S.profile == nil
 		local before = if first then 0 else StationProgress.playerLevel(S.profile)
+		local bestBefore = if first then math.huge else S.profile.best
 		S.profile = payload
 		S.applySound()
 		local level = StationProgress.playerLevel(payload)
 		if not first and level > before then
 			task.spawn(Hud.levelUp, level) -- it waits out a fight
+		end
+		for _, d in StationConfig.EGGS do -- a new best wave that opens an egg (decision 0132)
+			if d.wave and bestBefore < d.wave and payload.best >= d.wave then
+				task.spawn(Hud.levelUp, d)
+			end
 		end
 		if first then
 			task.spawn(request.InvokeServer, request, "rewards") -- today counts for the planners

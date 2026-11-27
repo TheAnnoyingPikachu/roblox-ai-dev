@@ -1783,7 +1783,21 @@ saves = Saves.start({
 	snapshot = StationProgress.snapshot,
 	onChanged = function(player, profile)
 		player:SetAttribute("Coins", profile.coins)
-		player:SetAttribute("Level", StationProgress.playerLevel(profile)) -- on others' cards under the cursor
+		local level = StationProgress.playerLevel(profile)
+		player:SetAttribute("Level", level) -- on others' cards under the cursor
+		local stats = player:FindFirstChild("leaderstats") -- the player list shows it (decision 0132)
+		if stats == nil then
+			stats = Instance.new("Folder")
+			stats.Name = "leaderstats"
+			stats.Parent = player
+		end
+		local levelValue = stats:FindFirstChild("Level") :: IntValue?
+		if levelValue == nil then
+			local made = Instance.new("IntValue")
+			made.Name, made.Parent = "Level", stats
+			levelValue = made
+		end
+		(levelValue :: IntValue).Value = level
 		Analytics.changed(player, profile)
 		-- the first session's funnel (decision 0113): each step logs once, whenever the save first shows it
 		local hatching = #profile.animals > 0

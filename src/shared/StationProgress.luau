@@ -547,7 +547,7 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
 		return false, "egg"
-	elseif egg.level and StationProgress.playerLevel(p) < egg.level then -- by player level (SHANNON, 2026-11-24)
+	elseif egg.wave and p.best < egg.wave then -- by the best wave (decision 0132)
 		return false, "locked"
 	elseif #p.eggs >= StationProgress.value(p, "hatchery") + StationProgress.value(p, "cellar") then
 		return false, "eggs_full"
@@ -897,8 +897,17 @@ function StationProgress.collectHerd(p: Profile, now: number): (Profile, boolean
 	return p, true, nil, coins
 end
 
+-- The player XP for training stat levels `from` + 1 to `to`: by the time each takes (decision 0132).
+function StationProgress.trainXp(from: number, to: number): number
+	local xp = 0
+	for n = from + 1, to do
+		xp += math.max(StationConfig.XP_STAT_LEVEL, StationRules.levelSeconds(n) // StationConfig.XP_TRAIN_SECONDS)
+	end
+	return xp
+end
+
 -- Add training time to every training animal up to `now`. Every stat level gained gives the
--- player XP. An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
+-- player XP (`trainXp`). An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
 function StationProgress.settle(p: Profile, now: number): Profile
 	for i, a in p.animals do
 		if a.at and a.since then
@@ -907,8 +916,8 @@ function StationProgress.settle(p: Profile, now: number): Profile
 			local copy = table.clone(a)
 			copy.trained = t.trained
 			copy.since = math.max(a.since, now)
-			local gained = StationRules.level(copy :: any, st.stat) - StationRules.level(a :: any, st.stat)
-			p.xp = math.min(p.xp + gained * StationConfig.XP_STAT_LEVEL, StationProgress.MAX_XP)
+			local was, after = StationRules.level(a :: any, st.stat), StationRules.level(copy :: any, st.stat)
+			p.xp = math.min(p.xp + StationProgress.trainXp(was, after), StationProgress.MAX_XP)
 			if StationRules.level(copy :: any, st.stat) >= StationConfig.MAX_LEVEL then
 				copy.at, copy.since = nil, nil
 			end
