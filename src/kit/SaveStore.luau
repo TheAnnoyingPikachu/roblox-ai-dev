@@ -291,7 +291,9 @@ function SaveStore.step(self: any, now: number, spawn: ((run: () -> boolean, key
 end
 
 -- Final write (releases the lock) and drops the session. Safe to call twice (leave and BindToClose).
-function SaveStore.finish(self: any, key: string, now: number, budget: number?)
+-- `before` runs once, on the first finish of an open session, before its last write: a game's last changes
+-- (Animal Stations banks a run's pot) land in that write. An error in it is logged and the write goes ahead.
+function SaveStore.finish(self: any, key: string, now: number, budget: number?, before: (() -> ())?)
 	local o = self.o
 	local session = self.sessions[key]
 	if session == nil then
@@ -304,6 +306,12 @@ function SaveStore.finish(self: any, key: string, now: number, budget: number?)
 			o.wait(0.1)
 		end
 		return
+	end
+	if before then
+		local ok, err = pcall(before)
+		if not ok then
+			warn(`[SaveStore] before finishing {key}: {err}`)
+		end
 	end
 	session.closing = true
 	if session.status == "online" then
