@@ -1,0 +1,41 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-195",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Eggs unlock by the best wave again (each a boss wave), training pays player XP by the time a stat level takes, and the player level shows in the player list as a way to show off (SHANNON, 2026-11-27; decision 0132).",
+  "inputs": [
+    "docs/decisions/0132-animal-stations-eggs-by-wave.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/StationConfig.luau",
+    "src/shared/StationProgress.luau",
+    "src/shared/StationRewards.luau",
+    "src/stations-client/Hud.client.luau",
+    "src/stations-client/HudEggs.luau",
+    "src/stations-client/HudMoments.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/CLAUDE.md",
+    "tests/StationProgress.spec.luau",
+    "tests/StationRewards.spec.luau",
+    "tests/StationRules.spec.luau",
+    "docs/decisions/0132-animal-stations-eggs-by-wave.md",
+    "studio/tasks/STATION-195.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau",
+    "StationRewards.spec.luau",
+    "StationRules.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "canBuy and bestEgg read the best wave: Safari 10, Golden 20 ... Crown 260, every one a boss wave below 270; the player level opens no egg",
+    "A stat level pays max(XP_STAT_LEVEL, levelSeconds // XP_TRAIN_SECONDS) player XP",
+    "The player list shows Level; the egg shop and the level card speak of waves; beating an egg's wave shows its card"
+  ],
+  "verification": "Lune 839/839 (buy locks by wave 9/10/19/20, bestEgg by wave, trainXp: 5 for a short level, levelSeconds//600 for long ones, every egg wave a boss wave below 270, Crown 260). Studio 2026-11-27, build dev (local), with a Studio-only hook that set the best wave to 20 and added XP (removed after): Safari Egg refused 'locked' at wave 0 and bought at 20, Dusk still locked; the player list showed Level 1 then 12; the card read 'Golden Egg unlocked! For beating wave 20'; the egg shop read 'Best wave 20. The next egg opens at wave 40.' with Wave 40, 50, 80, 100, 140 chips. Not seen: the level card's XP line (the egg card replaced it), two eggs opened at once (only the last one's card shows).",
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Economy values changed: decision 0132. #81 adds Best wave to the same leaderstats folder: merge both."
+}

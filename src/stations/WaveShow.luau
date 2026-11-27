@@ -358,8 +358,7 @@ function WaveShow.run(
 	local front = BattleRules.front(players)
 	local wide = 0
 	for _, e in foes do
-		local foe = StationConfig.foe(e.s)
-		if not (foe and foe.kind == "dragon") then
+		if not (e :: any).boss then
 			wide = math.max(wide, Creatures.foeSize(e.s).X)
 		end
 	end
@@ -380,8 +379,7 @@ function WaveShow.run(
 		local row, col = (i - 1) // front, (i - 1) % front + 1
 		rowOf[i] = row
 		theirHome[i] = if row == 0 then frontHome[col] else fileAt(col, row)
-		local foe = StationConfig.foe(e.s)
-		if foe and foe.kind == "dragon" and gatePart then -- a boss lands on the summoning circle
+		if (e :: any).boss and gatePart then -- a boss lands on the summoning circle
 			local on = gatePart.Position + Vector3.new(0, 1.4, -22)
 			theirHome[i] = CFrame.lookAt(on, Vector3.new(frame.X, on.Y, frame.Z))
 		end
@@ -429,11 +427,17 @@ function WaveShow.run(
 		place(1, i, model, ourHome[i])
 	end
 	for i, e in foes do
-		local model = Creatures.spawnFoe(e.s, CFrame.new(0, 500, 0), folder)
+		local boss = (e :: any).boss == true
+		local model = Creatures.spawnFoe(e.s, CFrame.new(0, 500, 0), folder, boss)
 		if model then
 			Creatures.describeFoe(model, e.s, e.stats)
 			local foe = StationConfig.foe(e.s)
-			model:SetAttribute("Boss", foe ~= nil and foe.kind == "dragon") -- the HUD's bar across the top
+			model:SetAttribute("Boss", boss) -- the HUD's bar across the top
+			if boss then -- a boss's red edge (decision 0127)
+				local edge = Instance.new("Highlight")
+				edge.FillTransparency, edge.OutlineColor, edge.OutlineTransparency = 1, Color3.fromRGB(255, 70, 90), 0
+				edge.Parent = model
+			end
 			model:SetAttribute("FoeName", if foe then foe.name else "?")
 			if e.elite then -- an elite glows gold (decision 0101)
 				model:SetAttribute("Elite", true)
@@ -784,6 +788,25 @@ function WaveShow.run(
 				end
 			end
 		end
+		-- how close it was (decision 0123): the share of the Legion's health still standing at the end
+		local foeHp: { [number]: number } = {}
+		for _, e in show.log do
+			if e.tside == 2 then
+				foeHp[e.tslot] = e.hp
+			end
+			if e.side == 1 then
+				for _, x in e.also or {} do
+					foeHp[x.slot] = x.hp
+				end
+			elseif e.heal then -- a foe healer's heal
+				foeHp[e.heal.slot] = e.heal.hp
+			end
+		end
+		local hpLeft, hpAll = 0, 0
+		for i, f in BattleRules.lineup(foes, 2) do
+			hpAll += f.maxHp
+			hpLeft += math.clamp(foeHp[i] or f.maxHp, 0, f.maxHp)
+		end
 		local mvp = 0
 		for slot, d in dealt do
 			if mvp == 0 or d > dealt[mvp] then
@@ -809,6 +832,7 @@ function WaveShow.run(
 			ends = show.ends,
 			mvp = if va then va.name elseif sp then sp.name else nil,
 			mvpDmg = dealt[mvp] or 0,
+			foeLeft = if hpAll > 0 then hpLeft / hpAll else 0, -- 0 to 1: display only
 		})
 	end
 	task.spawn(function()

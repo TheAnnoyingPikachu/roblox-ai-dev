@@ -403,19 +403,19 @@ def war_tortoise_weights(p):
 
 
 def sun_rhino_weights(p):
-    """SHANNON's Molten Sun Rhino (ForgeGUI artifact 8fd726bf), mid-stride: the head and horn ahead of y -0.27, the
-    left legs ahead of the right ones (front left y -0.27..-0.06, front right -0.14..0.08, hind left 0.15..0.36,
-    hind right 0.26..0.46), apart below z -0.11, and a tail curling up behind from y 0.42 above z -0.05."""
-    tail = ramp(0.42, 0.46, p.y) * ramp(-0.08, -0.03, p.z)
-    head = ramp(-0.25, -0.3, p.y)
+    """The Molten Sun Rhino regenerated in ForgeGUI (2026-11-27) in the Eternals' sun regalia on the rhinos' faceted
+    body, in a neutral stance: four mirrored leg columns (front at x +-0.10, y -0.15..0.005; hind at x +-0.09,
+    y 0.22..0.39) clear of the body below z -0.18, the belly at -0.21, purple banners hanging on the flanks between
+    the legs (y 0..0.2, they stay on the body), the head and horn ahead of y -0.2, a tail from y 0.37."""
+    tail = ramp(0.37, 0.41, p.y) * (1 - ramp(0.04, 0.07, abs(p.x)))
+    head = ramp(-0.17, -0.25, p.y)  # the whole head and horn turn; a wider band stretched least (swept)
     w = {"body": (1 - tail) * (1 - head), "tail": tail, "head": head}
-    leg, down = None, ramp(-0.11, -0.16, p.z)
-    if 0.0 < abs(p.x) < 0.24 and down > 0:
-        left = p.x > 0
-        if (left and -0.27 < p.y < -0.06) or (not left and -0.14 < p.y < 0.08):
-            leg = "leg_fl" if left else "leg_fr"
-        elif (left and 0.15 < p.y < 0.36) or (not left and 0.26 < p.y < 0.46):
-            leg = "leg_bl" if left else "leg_br"
+    leg, down = None, ramp(-0.17, -0.23, p.z)  # legs blend just below the belly (z -0.21)
+    if 0.02 < abs(p.x) < 0.18 and down > 0:
+        if -0.15 < p.y < 0.005:
+            leg = "leg_fl" if p.x > 0 else "leg_fr"
+        elif 0.22 < p.y < 0.39:
+            leg = "leg_bl" if p.x > 0 else "leg_br"
     if leg:
         w = {k: v * (1 - down) for k, v in w.items()}
         w[leg] = down
@@ -717,19 +717,17 @@ REGIONS = {
     "creature_rhino_sahara_forge": {
         "length": 24.0,  # 1.3 x the Lava Rhino
         "joints": {
-            "body": (0.0, 0.0, 0.0),
-            "head": (0.0, -0.26, 0.03),
-            "leg_fl": (0.15, -0.17, -0.06),
-            "leg_fr": (-0.16, -0.03, -0.06),
-            "leg_bl": (0.07, 0.26, -0.06),
-            "leg_br": (-0.1, 0.37, -0.06),
-            "tail": (0.0, 0.43, 0.02),
+            "body": (0.0, 0.05, 0.0),
+            "head": (0.0, -0.2, 0.0),
+            "leg_fl": (0.1, -0.07, -0.22),  # low pivots in the legs' blend band stretched least (swept -0.1..-0.22)
+            "leg_fr": (-0.1, -0.07, -0.22),
+            "leg_bl": (0.09, 0.3, -0.22),
+            "leg_br": (-0.09, 0.3, -0.22),
+            "tail": (0.0, 0.38, 0.0),
         },
         "weights": sun_rhino_weights,
         "small": 0.06,
-        "shade": "smooth",
-        "tris": 12000,
-        "notes": "Molten Sun Rhino: SHANNON's Molten Sun Rhino of the Savannah from ForgeGUI (artifact 8fd726bf), one mesh, skinned to the Stations rig (decision 0102).",
+        "notes": "Molten Sun Rhino: regenerated in ForgeGUI (2026-11-27) from a concept of the rhinos' faceted body in the Eternals' sun regalia, neutral stance, one mesh, skinned to the Stations rig (decision 0102).",
     },
     "creature_flamingo_forge": flamingo("Flamingo", 8.0, 0.0, 0.12, -0.17, -0.12, {"leg_fl": (0.06, 0.035), "leg_fr": (-0.069, 0.09)}, 0.0, 0.13, (0.09, 0.13), 0.06, "c9dca2cc", "pink flamingo"),
     "creature_flamingo_peacock_forge": flamingo("King Flamingo", 9.8, -0.06, 0.06, -0.18, -0.17, {"leg_fl": (0.05, 0.04), "leg_fr": (-0.05, 0.04)}, -0.06, 0.12, (0.1, 0.15), 0.12, "a84542a7", "peacock flamingo with a crown"),
