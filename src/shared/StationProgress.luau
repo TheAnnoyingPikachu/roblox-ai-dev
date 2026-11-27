@@ -135,7 +135,7 @@ StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
 StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu shows the newest 20)
 StationProgress.CHEST_STARS = 15
 StationProgress.QUICK_SECONDS = 5 -- how long a starter egg takes to hatch
-StationProgress.MAX_GOALS = 64 -- goal ids a save keeps (StationGoals has fewer)
+StationProgress.MAX_GOALS = 128 -- goal ids a save keeps (StationGoals has 39 and 20 level rewards)
 StationProgress.MAX_RECEIPTS = 200 -- Robux purchases a save remembers (Roblox re-sends a receipt within days)
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
