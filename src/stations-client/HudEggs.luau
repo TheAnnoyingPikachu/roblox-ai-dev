@@ -198,9 +198,9 @@ local function hatcheryColumn(col: Frame, stored: { number }, hatching: { number
 	end
 end
 
--- A card on the vendor's shelf: the egg, its price and its wait; a locked one is dimmed with its level.
-local function shelfCard(col: Instance, k: number, def: StationConfig.Egg, level: number)
-	local locked = def.level ~= nil and level < def.level
+-- A card on the vendor's shelf: the egg, its price and its wait; a locked one is dimmed with its wave.
+local function shelfCard(col: Instance, k: number, def: StationConfig.Egg, best: number)
+	local locked = def.wave ~= nil and best < def.wave
 	local picked = k == shelfEgg
 	local card = Style.button(col, "", function()
 		shelfEgg, eggDetail = k, true
@@ -211,7 +211,7 @@ local function shelfCard(col: Instance, k: number, def: StationConfig.Egg, level
 	art.AnchorPoint, art.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 8)
 	if locked then
 		art.ImageTransparency = 0.5
-		local lock = Style.chip(card, `Level {def.level}`, C.ink, Color3.new(1, 1, 1))
+		local lock = Style.chip(card, `Wave {def.wave}`, C.ink, Color3.new(1, 1, 1))
 		lock.AnchorPoint, lock.Position, lock.TextSize, lock.ZIndex =
 			Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 72), 13, 3
 	end
@@ -236,8 +236,8 @@ local function shelfCard(col: Instance, k: number, def: StationConfig.Egg, level
 end
 
 -- What one egg holds, each with its chance: the basic animals as a share, the rare finds as "1 in N".
-local function contentsColumn(col: Frame, def: StationConfig.Egg, level: number)
-	local locked = def.level ~= nil and level < def.level
+local function contentsColumn(col: Frame, def: StationConfig.Egg, best: number)
+	local locked = def.wave ~= nil and best < def.wave
 	local head = Style.text(col, def.name, 24, C.text, UDim2.new(1, -8, 0, 30))
 	head.LayoutOrder = 0
 	local line = Instance.new("Frame")
@@ -311,7 +311,7 @@ local function contentsColumn(col: Frame, def: StationConfig.Egg, level: number)
 	buy.Parent = col
 	local function buyN(n: number)
 		if locked then
-			Style.toast(screen, `Reach level {def.level} to unlock the {def.name}`, nil, "bad")
+			Style.toast(screen, `Beat wave {def.wave} to unlock the {def.name}`, nil, "bad")
 			return
 		end
 		if buying then
@@ -337,7 +337,7 @@ local function contentsColumn(col: Frame, def: StationConfig.Egg, level: number)
 	if locked then
 		local why = Style.small(
 			col,
-			`You are level {level}. This egg opens at level {def.level}.`,
+			`Your best wave is {best}. This egg opens at wave {def.wave}.`,
 			13,
 			C.bad,
 			UDim2.new(1, -8, 0, 18)
@@ -391,7 +391,7 @@ redraw.eggs = function()
 	Style.clear(eggs.chips)
 	Style.clear(eggs.count)
 	table.clear(eggTickers)
-	local level = StationProgress.playerLevel(S.profile)
+	local best = S.profile.best
 	local hatching, stored, ready = {}, {}, 0
 	local now = Workspace:GetServerTimeNow()
 	for k, e in S.profile.eggs do
@@ -407,13 +407,13 @@ redraw.eggs = function()
 	Style.amount(eggs.chips, "coins", Format.commas(S.profile.coins))
 	local nextAt: number? = nil
 	for _, d in StationConfig.EGGS do
-		if d.level and d.level > level and (nextAt == nil or d.level < nextAt) then
-			nextAt = d.level
+		if d.wave and d.wave > best and (nextAt == nil or d.wave < nextAt) then
+			nextAt = d.wave
 		end
 	end
 	Style.small(
 		eggs.chips,
-		`You are level {level}.{if nextAt then ` The next egg opens at level {nextAt}.` else ""}`,
+		`Best wave {best}.{if nextAt then ` The next egg opens at wave {nextAt}.` else ""}`,
 		13,
 		C.muted,
 		UDim2.fromOffset(300, 20)
@@ -429,7 +429,7 @@ redraw.eggs = function()
 			eggDetail = false
 			redraw.eggs()
 		end)
-		contentsColumn(col, StationConfig.EGGS[shelfEgg], level)
+		contentsColumn(col, StationConfig.EGGS[shelfEgg], best)
 		return
 	end
 	local list = if phone then Style.column(page, UDim.new(0, 0), UDim.new(1, 0), 1, 12) else nil
@@ -443,8 +443,8 @@ redraw.eggs = function()
 		else Style.column(page, UDim.new(0, 312), UDim.new(1, -652), 2, 10, true)
 	local open = 0
 	for k, d in StationConfig.EGGS do
-		open += if d.level == nil or level >= d.level then 1 else 0
-		shelfCard(shelf, k, d, level)
+		open += if d.wave == nil or best >= d.wave then 1 else 0
+		shelfCard(shelf, k, d, best)
 	end
 	local note = Style.text(
 		shelf,
@@ -461,7 +461,7 @@ redraw.eggs = function()
 	end
 	if list == nil then
 		local right = Style.column(page, UDim.new(1, -330), UDim.new(0, 330), 3, 6)
-		contentsColumn(right, StationConfig.EGGS[shelfEgg], level)
+		contentsColumn(right, StationConfig.EGGS[shelfEgg], best)
 	end
 end
 
