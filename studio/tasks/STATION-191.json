@@ -1,0 +1,34 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-191",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Admin menu tools SHANNON asked for (decision 0130): choose an added animal's coat and level, add eggs to the egg storage, skip every hatching egg's time.",
+  "inputs": [
+    "docs/decisions/0130-animal-stations-admin-tools.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "src/stations/CLAUDE.md",
+    "src/stations-client/HudHatch.luau",
+    "tests/StationProgress.spec.luau",
+    "docs/decisions/0130-animal-stations-admin-tools.md",
+    "studio/tasks/STATION-191.json"
+  ],
+  "tests": [
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Add animals adds at the slider's level in the chosen coat",
+    "The Eggs tab adds 1, 5 or 10 of any egg and skips every hatching egg's time",
+    "Every admin request is refused for anyone who is not admin"
+  ],
+  "verification": "Lune 835/835. Studio 2026-11-27, build dev (local): admin_add level 55 in galaxy ok; admin_egg golden x5 ok; admin_skip ok; the coat button cycles (none, Prismatic, Spectral...); a click on the slider at 60% set level 31 of 70; the Eggs tab draws Skip all egg times and Add 1/5/10 for every egg. Not seen: dragging the knob with a real mouse (the test tool's press does not start a drag).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Remote contract: admin_add's third argument is a coat id; admin_egg and admin_skip are new (decision 0130). With star levels (STATION-181) the slider runs to 140."
+}

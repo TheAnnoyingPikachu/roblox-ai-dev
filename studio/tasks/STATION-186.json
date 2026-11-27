@@ -1,0 +1,35 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-186",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "Teaching goals woven between the boss goals and a reward every 5 player levels (SHANNON's Round 2 build 4 A, decision 0126).",
+  "inputs": [
+    "docs/decisions/0115-animal-stations-goals.md",
+    "docs/decisions/0126-animal-stations-teaching-goals.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "src/shared/StationGoals.luau",
+    "src/shared/StationProgress.luau",
+    "src/stations/StationsServer.server.luau",
+    "tests/StationGoals.spec.luau",
+    "docs/decisions/0126-animal-stations-teaching-goals.md",
+    "studio/tasks/STATION-186.json"
+  ],
+  "tests": [
+    "StationGoals.spec.luau",
+    "StationProgress.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Barn and Windmill goals follow boss10, the Titan goal boss20, the coat goal boss30, the fuse goal boss50",
+    "Player levels 5 to 100 in steps of 5 each pay once, the best egg on every tenth",
+    "The server pays a level reward as soon as it is reached, with the goals"
+  ],
+  "verification": "Lune 833/833.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Economy values and data schema (MAX_GOALS 128): decision 0126. Not seen in Studio."
+}

@@ -84,6 +84,7 @@ export type Profile = {
 	loan: { boss: boolean, day: number }, -- the Ranger's loan (decision 0119, StationIntro): the wave 10 boss's is
 	-- used, and the UTC day of the last one
 	sound: Sound, -- the player's volumes (decision 0122)
+	herd: number, -- when the ranch animals' coins were last collected (os.time, decision 0124)
 }
 -- Music and effects volume, 0 to SOUND_STEPS each, and mute (decision 0122). Display only.
 export type Sound = { music: number, effects: number, mute: boolean }
@@ -134,11 +135,11 @@ StationProgress.MAX_STAR_WAVES = 5000 -- waves a save keeps stars for
 StationProgress.TRADE_LOG = 40 -- finished trades a save remembers (the menu shows the newest 20)
 StationProgress.CHEST_STARS = 15
 StationProgress.QUICK_SECONDS = 5 -- how long a starter egg takes to hatch
-StationProgress.MAX_GOALS = 64 -- goal ids a save keeps (StationGoals has fewer)
+StationProgress.MAX_GOALS = 128 -- goal ids a save keeps (StationGoals has 39 and 20 level rewards)
 StationProgress.MAX_RECEIPTS = 200 -- Robux purchases a save remembers (Roblox re-sends a receipt within days)
 local KEEP = 30 * 86400 -- a boost window ended longer ago than this no longer matters
 
-function StationProgress.defaults(_now: number): Profile
+function StationProgress.defaults(now: number): Profile
 	return {
 		version = StationProgress.VERSION,
 		coins = StationProgress.START_COINS,
@@ -174,6 +175,7 @@ function StationProgress.defaults(_now: number): Profile
 		met = {},
 		loan = { boss = false, day = 0 },
 		sound = { music = StationProgress.SOUND_STEPS, effects = StationProgress.SOUND_STEPS, mute = false },
+		herd = now or 0,
 	}
 end
 
@@ -415,6 +417,7 @@ function StationProgress.sanitize(record: any, now: number?): Profile
 	for _, a in p.animals do
 		StationProgress.meet(p, a.s, a.v)
 	end
+	p.herd = math.min(int(record.herd, 0, MAX_TIME, now or 0), now or MAX_TIME) -- never ahead of the clock
 	local loan = if type(record.loan) == "table" then record.loan else {}
 	p.loan = { boss = loan.boss == true, day = int(loan.day, 0, 1e7, 0) }
 	local sound = if type(record.sound) == "table" then record.sound else {}
@@ -544,7 +547,7 @@ function StationProgress.canBuy(p: Profile, eggId: string): (boolean, string?)
 	local egg = StationConfig.egg(eggId)
 	if egg == nil then
 		return false, "egg"
-	elseif egg.level and StationProgress.playerLevel(p) < egg.level then -- by player level (SHANNON, 2026-11-24)
+	elseif egg.wave and p.best < egg.wave then -- by the best wave (decision 0132)
 		return false, "locked"
 	elseif #p.eggs >= StationProgress.value(p, "hatchery") + StationProgress.value(p, "cellar") then
 		return false, "eggs_full"
@@ -684,9 +687,13 @@ function StationProgress.give(
 	s: string,
 	v: string?,
 	level: number,
-	rainbow: boolean?
+	coat: (boolean | string)? -- true: the rainbow coat; a coat id (StationConfig.COATS); nil or false: none
 ): (Profile, boolean, string?, Animal?)
 	local stats = StationRules.versionStats(s, v)
+	local coatId = if coat == true then "rainbow" elseif type(coat) == "string" then coat else nil
+	if coatId and StationConfig.coat(coatId) == nil then
+		return p, false, "coat", nil
+	end
 	if stats == nil or level ~= math.floor(level) or level < 1 or level > StationConfig.MAX_LEVEL then
 		return p, false, "animal", nil
 	elseif #p.animals >= StationProgress.MAX_ANIMALS then
@@ -702,8 +709,8 @@ function StationProgress.give(
 		v = v,
 		stats = stats,
 		trained = trained :: Stats,
-		rainbow = if rainbow then true else nil,
-		coat = if rainbow then "rainbow" else nil,
+		rainbow = if coatId == "rainbow" then true else nil,
+		coat = coatId,
 	}
 	p.nextId += 1
 	table.insert(p.animals, animal)
@@ -714,6 +721,21 @@ function StationProgress.give(
 		table.insert(p.team, animal.id)
 	end
 	return p, true, nil, animal
+end
+
+-- Admin only (SHANNON, 2026-11-27): every egg hatching now is done at `now`, ready to open.
+function StationProgress.skipHatching(p: Profile, now: number): (Profile, boolean, string?)
+	p.eggs = table.clone(p.eggs)
+	for k, e in p.eggs do
+		local egg = StationConfig.egg(e.egg)
+		if e.since and egg then
+			local copy = table.clone(e)
+			copy.since = math.min(e.since, now - StationProgress.hatchSeconds(p, egg) - 1)
+			copy.quick = nil
+			p.eggs[k] = copy
+		end
+	end
+	return p, true, nil
 end
 
 -- Robux and the beta (decision 0117): grant one animal of species `s` and variant `v` for receipt `key`, once
@@ -818,10 +840,25 @@ function StationProgress.trainedBetween(p: Profile, from: number, to: number): n
 	return StationProgress.trainingSeconds(p, (to - from) + overlap(p.boosts.train, from, to))
 end
 
+-- The next wave's first-clear pay: what the Windmill's share and the ranch animals' earnings are of (decision 0124).
+local function nextPay(p: Profile): number
+	return LevelRules.reward(math.min(p.best + 1, LevelRules.LAST), 0)
+end
+
+-- The Windmill's coins an hour (decisions 0073, 0124): its level's coins, or its share of the next wave's pay
+-- when that is more, so it stays worth collecting late in the game. 0 without a Windmill.
+function StationProgress.millRate(p: Profile): number
+	local level = p.upgrades.windmill or 0
+	local flat = StationProgress.value(p, "windmill")
+	local u = StationConfig.upgrade("windmill")
+	local share = if level > 0 and u and u.share then u.share[level] or 0 else 0
+	return math.max(flat, nextPay(p) * share // 100)
+end
+
 -- How many coins the Windmill holds for `p` at `now`: its coins an hour for the time since it was last
 -- emptied, also while the player was away, up to MILL_HOURS of them. Whole coins.
 function StationProgress.held(p: Profile, now: number): number
-	local rate = StationProgress.value(p, "windmill")
+	local rate = StationProgress.millRate(p)
 	if rate <= 0 or p.mill == nil then
 		return 0
 	end
@@ -831,7 +868,7 @@ end
 -- Collect what the Windmill holds: the player does this at the mill (decision 0073). The time a part
 -- of a coin took stays on its clock, unless it was full. Returns the coins collected.
 function StationProgress.collect(p: Profile, now: number): (Profile, boolean, string?, number)
-	local rate = StationProgress.value(p, "windmill")
+	local rate = StationProgress.millRate(p)
 	if rate <= 0 then
 		return p, false, "no_mill", 0
 	end
@@ -846,8 +883,51 @@ function StationProgress.collect(p: Profile, now: number): (Profile, boolean, st
 	return p, true, nil, coins
 end
 
+-- The ranch animals' coins an hour (decision 0124): each animal not on the team, not the Titan in its slot and
+-- not training earns its rarity's HERD_PERMILLE of the next wave's pay, or its HERD_FLOOR when that is more.
+StationProgress.HERD_HOURS = 8
+function StationProgress.herdRate(p: Profile): number
+	local pay, total = nextPay(p), 0
+	for _, a in p.animals do
+		if not (table.find(p.team, a.id) or p.titan == a.id or a.at) then
+			local r = StationRules.rarity(a :: any)
+			local floor = StationConfig.HERD_FLOOR[r] or 1
+			total += math.max(floor, math.floor(pay * (StationConfig.HERD_PERMILLE[r] or 0.5) / 1000))
+		end
+	end
+	return total
+end
+
+-- What the ranch animals hold for `p` at `now`, up to HERD_HOURS of earning. Whole coins.
+-- shortcut: the whole time is paid at the rate when collected, so moving animals off the team just before
+-- collecting pays a little more; keep a per-change clock if that is ever farmed.
+function StationProgress.herdHeld(p: Profile, now: number): number
+	local seconds = math.clamp(now - p.herd, 0, StationProgress.HERD_HOURS * 3600)
+	return math.floor(StationProgress.herdRate(p) * seconds / 3600)
+end
+
+-- Collect the ranch animals' coins at the Ranch House (decision 0124). Returns the coins collected.
+function StationProgress.collectHerd(p: Profile, now: number): (Profile, boolean, string?, number)
+	local coins = StationProgress.herdHeld(p, now)
+	if coins <= 0 then
+		return p, false, "herd_empty", 0
+	end
+	p.herd = now
+	p.coins = math.min(p.coins + coins, StationProgress.MAX_COINS)
+	return p, true, nil, coins
+end
+
+-- The player XP for training stat levels `from` + 1 to `to`: by the time each takes (decision 0132).
+function StationProgress.trainXp(from: number, to: number): number
+	local xp = 0
+	for n = from + 1, to do
+		xp += math.max(StationConfig.XP_STAT_LEVEL, StationRules.levelSeconds(n) // StationConfig.XP_TRAIN_SECONDS)
+	end
+	return xp
+end
+
 -- Add training time to every training animal up to `now`. Every stat level gained gives the
--- player XP. An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
+-- player XP (`trainXp`). An animal whose stat reaches MAX_LEVEL is done: it stops training and frees its place.
 function StationProgress.settle(p: Profile, now: number): Profile
 	for i, a in p.animals do
 		if a.at and a.since then
@@ -856,8 +936,8 @@ function StationProgress.settle(p: Profile, now: number): Profile
 			local copy = table.clone(a)
 			copy.trained = t.trained
 			copy.since = math.max(a.since, now)
-			local gained = StationRules.level(copy :: any, st.stat) - StationRules.level(a :: any, st.stat)
-			p.xp = math.min(p.xp + gained * StationConfig.XP_STAT_LEVEL, StationProgress.MAX_XP)
+			local was, after = StationRules.level(a :: any, st.stat), StationRules.level(copy :: any, st.stat)
+			p.xp = math.min(p.xp + StationProgress.trainXp(was, after), StationProgress.MAX_XP)
 			if StationRules.level(copy :: any, st.stat) >= StationConfig.MAX_LEVEL then
 				copy.at, copy.since = nil, nil
 			end
