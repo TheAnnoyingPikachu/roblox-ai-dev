@@ -1172,6 +1172,11 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 				end
 			end
 			local kept = if S.run then math.floor(S.run.pot * WaveRuns.LOSS_KEEP / 100) else 0
+			-- how close it was (decision 0123): the Legion's health left
+			local left = math.clamp(math.ceil((payload.foeLeft or 1) * 100), 1, 100)
+			local close = if left <= 15
+				then `So close: the Legion had only {left}% of its health left.`
+				else `The Legion still had {left}% of its health.`
 			Hud.runOver(
 				`Stopped at wave {payload.wave}`,
 				{
@@ -1180,7 +1185,7 @@ fx.OnClientEvent:Connect(function(kind: string, payload: any)
 					{ `x{#(payload.boons or {})}`, "boons picked this run" },
 				},
 				if low
-					then `Your {low.name}'s {low.stat} is only level {low.level}. Training it is the quickest gain.`
+					then `{close} Your {low.name}'s {low.stat} is only level {low.level}: training it is the quickest gain.`
 					else "Hatch three animals and put them in your team.",
 				S.run ~= nil and S.run.best
 			)
