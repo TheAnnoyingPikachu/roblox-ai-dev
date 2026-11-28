@@ -8,9 +8,10 @@ How each landmark is found (model units, about 0.96 long):
   spine     from just behind the hind legs' tops to just ahead of the front legs', a little above the leg tops
   head      everything ahead of 40 % of the way from the front legs to the nose
   tail      the narrow run behind the hind legs, cut into bones along its own length (hanging or held out)
-Prints the numbers; exits 2 if the head is at +Y or four feet are not found."""
-import bpy, json, math, sys
+A model made facing +Y is turned round first. Prints the numbers; exits 2 if four feet are not found."""
+import bpy, json, math, os, shutil, subprocess, sys
 import numpy as np
+from mathutils import Matrix
 
 args = sys.argv[sys.argv.index("--") + 1:]
 src, out = args[0], args[1]
@@ -44,12 +45,30 @@ feet = feet[np.argsort(feet[:, 1])]  # front (low y) first
 front, hind = feet[:2], feet[2:]
 if abs(front[0, 0] - front[1, 0]) < 0.04 or abs(hind[0, 0] - hind[1, 0]) < 0.04:
     print("AUTOLAND FAIL: four feet not found", r3(feet.ravel())); sys.exit(2)
-# the head end is the wide one (a tail is narrow): it must be at -Y
-def end_width(a, b):
-    e = P[(P[:, 1] >= a) & (P[:, 1] <= b)]
-    return float(np.abs(e[:, 0]).max()) if len(e) else 0.0
-if end_width(hi[1] - 0.12 * length, hi[1]) > end_width(lo[1], lo[1] + 0.12 * length) + 0.01:
-    print("AUTOLAND FAIL: head at +Y"); sys.exit(2)
+# the head end is the one with more of the animal beyond its feet (a head, neck and mane or horn ahead of the forelegs;
+# behind the hind legs only a rump and a thin tail): it must be at -Y. Measured as volume, slice by slice: an end's
+# width alone is fooled by a wide rump, and its length alone by a long tail.
+def beyond(a, b):
+    total = 0.0
+    for y in np.arange(a, b, 0.02 * length):
+        e = P[(P[:, 1] >= y) & (P[:, 1] < y + 0.02 * length)]
+        if len(e):
+            total += float((e[:, 2].max() - e[:, 2].min()) * 2 * np.abs(e[:, 0]).max())
+    return total
+ahead, behind = beyond(lo[1], front[:, 1].mean()), beyond(hind[:, 1].mean(), hi[1])
+print("AUTOLAND ends", round(ahead, 3), "ahead of the forelegs,", round(behind, 3), "behind the hind legs")
+if behind > 1.6 * ahead:  # (every model so far came facing -Y: turn one only on strong evidence, and look at its board)
+    if os.environ.get("AUTOLAND_TURNED"):
+        print("AUTOLAND FAIL: head at +Y"); sys.exit(2)
+    # made facing the other way: turn it round (the one as made is kept beside it) and measure again
+    shutil.copyfile(src, src[:-4] + "_asmade.glb")
+    for o in bpy.data.objects:
+        if o.parent is None:
+            o.matrix_world = Matrix.Rotation(math.pi, 4, "Z") @ o.matrix_world
+    bpy.ops.export_scene.gltf(filepath=src, export_format="GLB")
+    print("AUTOLAND turned the model round")
+    os.environ["AUTOLAND_TURNED"] = "1"
+    sys.exit(subprocess.call([bpy.app.binary_path, "-b", "--factory-startup", "-P", os.path.abspath(__file__), "--", *args]))
 fx, fy = float(np.abs(front[:, 0]).mean()), float(front[:, 1].mean())
 hx, hy = float(np.abs(hind[:, 0]).mean()), float(hind[:, 1].mean())
 

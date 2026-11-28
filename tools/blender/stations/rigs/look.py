@@ -6,7 +6,7 @@ import rigpose as rp
 out = sys.argv[sys.argv.index("--") + 1]
 rig = rp.Rig()
 for m in rig.body.data.materials:
-    m.use_backface_culling = True
+    m.use_backface_culling = bool(os.environ.get("CULL"))  # (the game draws a generated model two-sided: CULL=1 shows its inside-out faces)
 cam = rp.stage(rig.floor, res=(1000, 700))
 mid = (0, 0, rig.floor + 0.2)
 for name, d in (("rear", (-0.8, 1.0, 0.3)), ("front", (-1.0, -0.7, 0.25))):

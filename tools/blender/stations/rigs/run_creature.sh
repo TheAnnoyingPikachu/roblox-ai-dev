@@ -11,7 +11,8 @@ W=$(cygpath -m "$C")
 [ -f "$C/species.json" ] || { echo "no landmarks: stopped"; exit 2; }
 NOKIT=1 "$B" -b --factory-startup -P "$P/split_remesh.py" -- "$W/raw.glb" "$W/split" ${VOXEL:-0.0125} 0 2>&1 | grep -E "SPLIT|rror|Trace"
 NORENDER=1 "$B" -b --factory-startup -P "$P/quadrig.py" -- "$W/species.json" "$W/split/body.glb" - "$W/rig" 2>&1 | grep -E "POLE|rror|Trace" | tr '\n' ' '; echo
-"$B" -b "$W/rig/rig.blend" -P "$P/transfer_rig.py" -- "$W/raw.glb" "$W/rig/rig_full.blend" 2>&1 | grep -E "TIDY|WEIGHTS|rror|Trace"
+T=$("$B" -b "$W/rig/rig.blend" -P "$P/transfer_rig.py" -- "$W/raw.glb" "$W/rig/rig_full.blend" 2>&1 | grep -E "TIDY|WEIGHTS|HOLES|rror|Trace")
+echo "$T"
 rm -rf "$C/board/clips" "$C/board/rom" "$C/board/bones"
 "$B" -b "$W/rig/rig_full.blend" -P "$P/clips.py" -- "$W/board/clips" "$SET" 2>&1 | grep -E "CLIP|rror|Trace"
 "$B" -b "$W/rig/rig_full.blend" -P "$P/rom.py" -- "$W/board/rom" 2>&1 | grep -E "ROM|rror|Trace" | awk '{print $NF}' | tr '\n' ' '; echo
