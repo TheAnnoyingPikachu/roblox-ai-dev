@@ -119,6 +119,41 @@ POWERS = {
         (1.02, {"body": [0.095, -0.024, -9], **LAND, "neck": [-8], "tail": [22, 10]}, "out"),
         (1.34, {"body": [0.04, -0.008, -2], "fl": [0, 0.05, 0], "fr": [0, 0.05, 0], "hl": [0, 0.02, 0], "hr": [0, 0.02, 0]}),
         (1.6, {})]),
+    # the Cheetah's own (its spell, Wind Blades: a crescent from the right paw at 0.5 s, the left at 0.7, a big one from
+    # both at 0.86 that lands at 0.92)
+    "power_blades": ("Wind blades", "A right swipe, a left swipe, then it rears and brings both forepaws down and through.", 1.6, [
+        (0.0, {}),
+        (0.30, {"body": [-0.02, 0.015, 10, 8], "carry": [1, 0, 0, 0], "fl": [0, 0.02, 0.02], "fr": [-0.07, 0.08, 0.13], "head": [-4, 12], "tail": [10, -18]}, "out"),
+        (0.50, {"body": [0.02, 0.006, 7, -10], "carry": [1, 0, 0, 0], "fl": [0, 0.03, 0.01], "fr": [0.1, 0.13, 0.04], "head": [-6, -16], "tail": [10, 24]}, "in"),
+        (0.58, {"body": [0, 0.015, 10, -8], "carry": [0, 1, 0, 0], "fr": [0, 0.03, 0.02], "fl": [0.07, 0.08, 0.13], "head": [-4, -12], "tail": [8, 10]}, "out"),
+        (0.70, {"body": [0.02, 0.006, 7, 10], "carry": [0, 1, 0, 0], "fl": [-0.1, 0.13, 0.04], "fr": [0, 0.03, 0.01], "head": [-6, 16], "tail": [10, -24]}, "in"),
+        (0.80, {"body": [-0.01, 0.035, 20], "spine": [8], "carry": [1, 1, 0, 0], "fl": [0.04, 0.02, 0.09], "fr": [-0.04, 0.02, 0.09], "neck": [8], "head": [8], "tail": [26]}, "out"),
+        (0.89, {"body": [0.06, -0.03, -10], "spine": [-7], "fl": [-0.02, 0.12, 0], "fr": [0.02, 0.12, 0], "neck": [-10], "head": [-4], "tail": [36, 0, 10]}, "in"),
+        (1.00, {"body": [0.055, -0.018, -6], "fl": [-0.02, 0.12, 0], "fr": [0.02, 0.12, 0], "neck": [-6], "tail": [20, 12]}, "out"),
+        (1.32, {"body": [0.02, -0.004, -1], "fl": [0, 0.05, 0], "fr": [0, 0.05, 0]}),
+        (1.6, {})]),
+    # the Lightning Cheetah's own (Chain Lightning: lightning crackles at its tail's tip from 0.25 s; the bolt leaps at 0.9)
+    "power_tailbolt": ("Tail bolt", "Drops its chest and arches its tail up over its back, the tip shaking; then cracks it forward like a whip.", 1.6, [
+        (0.0, {}),
+        (0.25, {"body": [0.01, -0.03, -8], "spine": [-6], "neck": [6], "head": [8], "tail": [56, 0, -20]}, "out"),
+        (0.45, {"body": [0.01, -0.032, -8], "spine": [-6], "neck": [6], "head": [9], "tail": [62, 10, -24]}),
+        (0.62, {"body": [0.012, -0.034, -9], "spine": [-7], "neck": [6], "head": [10], "tail": [64, -10, -26]}),
+        (0.80, {"body": [0.0, -0.036, -9], "spine": [-7], "neck": [6], "head": [10], "tail": [58, 6, -30]}),
+        (0.90, {"body": [0.04, -0.03, -10], "spine": [-4], "neck": [-4], "head": [0], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0], "tail": [118, 0, -6]}, "in"),
+        (1.00, {"body": [0.035, -0.024, -8], "spine": [-3], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0], "tail": [86, 0, -14]}, "out"),
+        (1.30, {"body": [0.012, -0.006, -2], "fl": [0, 0.01, 0], "fr": [0, 0.01, 0], "tail": [30, 8]}),
+        (1.6, {})]),
+    # the Thunder Cheetah's own (Thunderhead: a cloud boils up over its back from 0.15 s, drifts to the target from 0.5,
+    # and the bolts fall from 0.86)
+    "power_storm": ("Thunderhead", "Crouches as the cloud gathers, rises on its toes with its head thrown back to send it over, and stamps the storm down.", 1.6, [
+        (0.0, {}),
+        (0.20, {"body": [0, -0.04, -4], "spine": [-8], "neck": [-4], "head": [10], "tail": [-8]}, "out"),
+        (0.50, {"body": [-0.01, 0.02, 6], "spine": [8], "neck": [10], "head": [22], "tail": [30, 0, 20]}, "out"),
+        (0.82, {"body": [0.01, 0.022, 4], "spine": [6], "neck": [6], "head": [14], "tail": [34, 10, 20]}),
+        (0.92, {"body": [0.04, -0.035, -10], "spine": [-6], "fl": [0, 0.07, 0], "fr": [0, 0.07, 0], "neck": [-10], "head": [-2], "tail": [40, 0, 10]}, "in"),
+        (1.02, {"body": [0.036, -0.02, -6], "fl": [0, 0.07, 0], "fr": [0, 0.07, 0], "neck": [-6], "head": [2], "tail": [22, 10]}, "out"),
+        (1.32, {"body": [0.014, -0.004, -1], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0]}),
+        (1.6, {})]),
 }
 
 HITS = {

@@ -122,6 +122,25 @@ POWERS = {
         (1.02, {"body": [0.065, -0.02, -6], **PAWS, "neck": [-6], "tail": [22]}, "out"),
         (1.30, {"body": [0.03, -0.006, -2], "fl": [0, 0.05, 0], "fr": [0, 0.05, 0]}),
         (1.6, {})]),
+    # the Sun Lion's own (Solar Flare: a sun rises behind its head from 0.2 s; the beam leaves its crown at 0.86)
+    "power_flare": ("Solar flare", "Bows, then rises with its chest out as the sun comes up behind its mane; drives its crown forward and the beam goes.", 1.6, [
+        (0.0, {}),
+        (0.25, {"body": [-0.01, -0.02, -5], "neck": [-10], "head": [-10], "tail": [-6]}, "out"),
+        (0.70, {"body": [-0.03, 0.014, 8], "spine": [5], "neck": [12], "head": [10], "tail": [24, 0, 14]}, "out"),
+        (0.82, {"body": [-0.035, 0.016, 9], "spine": [6], "neck": [13], "head": [12], "tail": [26, 0, 14]}),
+        (0.89, {"body": [0.04, -0.015, -4], "spine": [-3], "neck": [-8], "head": [-10], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0], "tail": [38, 0, -6]}, "in"),
+        (0.98, {"body": [0.032, -0.012, -3], "spine": [-2], "neck": [-6], "head": [-7], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0], "tail": [24, 8]}, "out"),
+        (1.20, {"body": [0.03, -0.012, -3], "spine": [-2], "neck": [-6], "head": [-8], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0], "tail": [18, -6]}),
+        (1.6, {})]),
+    # the Shadow Lion's own (Shadow Claws: a pool of shadow spreads from its paws from 0.3 s; the claws rake up at 0.88)
+    "power_claws": ("Shadow claws", "Sinks into a crouch over its forepaws, one drawn back, then rakes it up and through from the ground.", 1.6, [
+        (0.0, {}),
+        (0.30, {"body": [-0.02, -0.06, -5], "spine": [-9], "neck": [-8], "head": [10], "tail": [-10, 0, 10]}, "out"),
+        (0.72, {"body": [-0.03, -0.065, -6, 8], "spine": [-9, 4], "fr": [-0.06, -0.02, 0, 1], "neck": [-8, 6], "head": [10, 10], "tail": [-12, -16, 10]}),
+        (0.88, {"body": [0.03, 0.0, 6, -12], "spine": [4, -6], "carry": [1, 0, 0, 0], "fl": [0, 0.03, 0.01], "fr": [0.1, 0.14, 0.14], "neck": [4, -10], "head": [0, -16], "tail": [16, 26]}, "in"),
+        (0.98, {"body": [0.03, 0.004, 7, -15], "spine": [4, -7], "carry": [1, 0, 0, 0], "fl": [0, 0.03, 0.01], "fr": [0.12, 0.1, 0.16], "head": [2, -20], "tail": [14, 32]}, "out"),
+        (1.30, {"body": [0.01, 0, 2, -4], "fl": [0, 0.015, 0], "fr": [0.04, 0.04, 0], "head": [0, -6], "tail": [8, 8]}),
+        (1.6, {})]),
 }
 
 HITS = {
