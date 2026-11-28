@@ -126,15 +126,14 @@ local function chosen(model: Model, data: Data, anim: string?, t: number, time: 
 	local clips = data.clips
 	if anim == "die" then
 		return "die", t -- (held at its end)
-	elseif anim == "win" then
-		return "win", t % clips.win.length
 	elseif anim == "walk" or anim == "run" then
 		local speed = STEP
 			* ((model:GetAttribute("Scale") :: number?) or 1)
 			* ((model:GetAttribute("Stride") :: number?) or 1.5)
 		-- a cycle for every stride of ground the server moves it, so its planted feet do not slide
 		return "walk", (time * speed / ((clips.walk.stride or 1) * size)) % 1 * clips.walk.length
-	elseif (anim == "attack" or anim == "magic" or anim == "hit") and t < clips[anim].length then
+	elseif (anim == "attack" or anim == "magic" or anim == "hit" or anim == "win") and t < clips[anim].length then
+		-- (a win is played once, then it stands easy: its last pose is not its first)
 		return anim :: string, t
 	end
 	-- shortcut: the training clips (heave, swim, study, soak, brace) and the Titan's sleep show the idle; give the
