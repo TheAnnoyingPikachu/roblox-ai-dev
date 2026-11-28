@@ -745,13 +745,13 @@
     "texture": null
   },
   "creature_rhino_crystal_forge": {
-    "model": 103003682948001,
-    "decal": 94681487576976,
+    "model": 118263760800950,
+    "decal": 121368465702592,
     "texture": null
   },
   "creature_rhino_crystal_forge_rainbow": {
     "model": null,
-    "decal": 81473813942864,
+    "decal": 72435135107063,
     "texture": null
   },
   "creature_rhino_lava_forge": {

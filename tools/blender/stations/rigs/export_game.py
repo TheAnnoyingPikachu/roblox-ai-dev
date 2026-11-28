@@ -68,31 +68,48 @@ hi = Vector([max(p[k] for p in pts) for k in range(3)])
 U = length / (hi.y - lo.y)  # studs a model unit
 
 
-def packed(frame):
+def own(frame):
     """One frame of bake(): each bone's turn and move on top of its parent's, in the Root's axes."""
-    row, worst = [], 0.0
-    for i, b in enumerate(bones):
+    out = []
+    for b in bones:
         M = frame[b.name]
         if b.parent:
-            own = (b.parent.matrix_local.inverted() @ b.matrix_local).inverted() @ (frame[b.parent.name].inverted() @ M)
+            m = (b.parent.matrix_local.inverted() @ b.matrix_local).inverted() @ (frame[b.parent.name].inverted() @ M)
         else:
-            own = b.matrix_local.inverted() @ M
+            m = b.matrix_local.inverted() @ M
         rest = b.matrix_local.to_3x3()
-        q = (ROOT_AXES @ rest @ own.to_quaternion().to_matrix() @ rest.inverted() @ ROOT_AXES.transposed()).to_quaternion()
+        q = (ROOT_AXES @ rest @ m.to_quaternion().to_matrix() @ rest.inverted() @ ROOT_AXES.transposed()).to_quaternion()
+        out.append((q, ROOT_AXES @ (rest @ m.translation) * U))
+    return out
+
+
+def between(a, b, k):
+    """The pose a share k of the way from one baked frame to the next."""
+    out = []
+    for (qa, pa), (qb, pb) in zip(a, b):
+        if qa.dot(qb) < 0:
+            qb = -qb
+        out.append((qa.slerp(qb, k), pa.lerp(pb, k)))
+    return out
+
+
+def packed(pose):
+    row, worst = [], 0.0
+    for i, (q, p) in enumerate(pose):
         if q.w < 0:
-            q.negate()
-        p = ROOT_AXES @ (rest @ own.translation) * U
-        row.append(enc(q.x, -1, 1) + enc(q.y, -1, 1) + enc(q.z, -1, 1))
+            q = -q
+        turn = enc(q.x, -1, 1) + enc(q.y, -1, 1) + enc(q.z, -1, 1)
+        row.append(turn)
         if i < MOVED:
             row.append("".join(enc(c, -REACH, REACH) for c in p))
             # (self-check: what the game will read back is what was baked)
             back = Vector([dec(row[-1][k:k + 3], -REACH, REACH) for k in (0, 3, 6)])
-            assert (back - p).length < 1e-3, (b.name, p, back)
+            assert (back - p).length < 1e-3, (bones[i].name, p, back)
         else:
             worst = max(worst, p.length)
-        x, y, z = (dec(row[-1 if i >= MOVED else -2][k:k + 3], -1, 1) for k in (0, 3, 6))
+        x, y, z = (dec(turn[k:k + 3], -1, 1) for k in (0, 3, 6))
         got = Quaternion((math.sqrt(max(0.0, 1 - x * x - y * y - z * z)), x, y, z))
-        assert q.rotation_difference(got).angle < 1e-3, (b.name, q, got)
+        assert q.rotation_difference(got).angle < 1e-3, (bones[i].name, q, got)
     return "".join(row), worst
 
 
@@ -114,12 +131,19 @@ for name in ("idle", "walk", "attack", "magic", "hit", "die", "win"):
     key = picks[name]
     title, kind, desc, secs, fn, loop = S.CLIPS[key]
     frames = rig.bake(fn, secs, loop, BAKE, getattr(S, "SPRING", (2.6, 0.32)))
-    n = round(secs * BAKE)
+    baked = [own(f) for f in frames]
+    if name == "attack":  # for a check in Studio: where four bones' joints are at its blow, in the Root's axes, studs
+        mid = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
+        k = round(0.44 * BAKE)
+        print("CHECK", f"{k / BAKE:.4f}", {game(b): [round(c, 2) for c in ROOT_AXES @ (frames[k][b].translation - mid) * U]
+                                          for b in ("head", "foot_fl", "foot_hr", "tail4")})
     m = round(secs * FPS.get(name, 30))
-    kept = [frames[round(i * n / m)] for i in range(m if loop else m + 1)]
     rows = []
-    for f in kept:
-        s, w = packed(f)
+    for i in range(m if loop else m + 1):  # evenly through the clip, each between the two baked frames round it
+        at = i * secs / m * BAKE
+        k = min(int(at), len(baked) - 1)
+        nxt = (k + 1) % len(baked) if loop else min(k + 1, len(baked) - 1)
+        s, w = packed(between(baked[k], baked[nxt], at - k))
         rows.append(s)
         slack = max(slack, w)
     lines = [f"\t\t{name} = {{", f"\t\t\t-- {title} ({key}): {desc}", f"\t\t\tlength = {secs:g},", f"\t\t\tloop = {'true' if loop else 'false'},"]
