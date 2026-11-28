@@ -8,6 +8,7 @@ An anchor is the vertex render_magic.py tracks (the nose: the head's frontmost; 
 front 30 %; ...), given as its bone and its offset from that bone's head. A foot's points are its lowest vertices'
 extremes (toe, heel, both sides, the lowest)."""
 import os
+import re
 import sys
 
 import numpy as np
@@ -41,7 +42,9 @@ for asset in assets:
     for v in r.body.data.vertices:
         ws = sorted(((g.weight, groups[g.group]) for g in v.groups), reverse=True)
         top.append(ws[0][1] if ws else "body")
-    top = np.array(top)
+    own = np.array(top)  # (an anchor rides on the bone that carries its vertex)
+    # a pipeline rig (rigs/export_game.py) has more bones: a shin and a foot are its leg's, its spine the body's
+    top = np.array([re.sub(r"^(lower|foot)_", "leg_", re.sub(r"^tail\d$", "tail", re.sub(r"^(spine|chest)$", "body", t))) for t in top])
     M = r.arm.matrix_world
     heads = {pb.name: M @ pb.bone.head_local for pb in r.arm.pose.bones}
     origin = heads["body"]
@@ -97,7 +100,7 @@ for asset in assets:
     lines.append("\t\t},")
     lines.append("\t\tanchors = {")
     for name, i in picks.items():
-        bone = top[i] if top[i] in heads else "body"
+        bone = own[i] if own[i] in heads else "body"
         lines.append(f'\t\t\t{name} = {{ "{bone}", {vec(root(Vector(rest[i].tolist()) - heads[bone]))} }},')
     lines.append("\t\t},")
     lines.append("\t},")

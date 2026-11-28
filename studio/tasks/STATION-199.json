@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "task_id": "STATION-199",
+  "objective": "The game plays baked clips on a pipeline animal's own bones (decision 0133), and the Crystal Rhino is the first: regenerated in a neutral stance from SHANNON's pick of its concept, rigged by the pipeline, with a rhino's own clips.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-198"
+  ],
+  "files": [
+    "src/stations-client/Clips/**",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/CLAUDE.md",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "tools/blender/stations/moves/rigdata.py",
+    "assets/stations/creature_rhino_crystal_forge*",
+    "assets/stations/sources/creature_rhino_crystal_forge.glb",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-199.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Clips.pose poses an animal whose asset has a module in stations-client/Clips from its baked clips (idle, walk, attack, magic, hit, die, win), easing between frames and from one clip to the next; every other animal is posed as before",
+    "A baked turn does not depend on how the importer lays a bone's axes: the bones in Studio stand where Blender put them",
+    "The Crystal Rhino walks without its planted feet sliding at Creatures.speed, strikes at 0.44 s and fires its Prism Beam from its horn at 0.86 s",
+    "The server, the spells and the tests still find body, head, the four legs and the tail (StationAssets.spec, AnimalMoves.spec)",
+    "Uploaded and seen in Studio with the build stamp"
+  ],
+  "verification": "ForgeGUI concept job 095fe845 (the second of two, drawn on the Rhino's base concept with SHANNON's first Crystal Rhino as its reference) and model job ae6a3e41 (meshy, 13,737 triangles after tidy). Rigged from measured landmarks: 22 bones, poles 90/90/-90/-90. Its seven clips from the rhino set (Sentinel, Heavy walk, Gore, Prism beam, Brace, Crash, Triumph stomp): worst stretch 4.1 % of the surface (the fall), the walk 2.1 %, the attack 2.9 %. export_game.py checks every baked number reads back as it was written. Lune 845/845, stylua and selene clean, check_spells ALL OK. Uploaded model, texture and rainbow coat: run 46170158701 (model 118263760800950). Studio 2026-11-28, build dev (local, branch game7/clip-player): spawned on a stage with Creatures.spawn, 22 bones, Scale 2.725, all 22 posed by Clips. Frozen at the attack's blow (0.433 s), four joints stood where Blender has them to within 0.07 studs (head 0.00, 5.77, -4.55 against 0, 5.75, -4.52; a front ankle, a hind ankle and the tail's end alike). Walked across the stage at Creatures.speed (6.51 studs a second): over a planted stretch of 0.43 to 0.45 s, in which the body covers 2.9 studs, a planted foot moved 0.02 to 0.09 studs (0.2 at most on a frame where the position update arrived late). Prism Beam frozen at 0.99 s: the beam leaves the horn's tip with the horn levelled at the target. The fall holds at its end with the horn clear of the ground. Not seen: a wave fight with it in the team, its training clips (they show its idle), a phone.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Same asset name, so its species entry, spell (Prism Beam), coat and drops are unchanged; the previous upload is left for archiving by hand. Scope: StationAssets.spec's count of a creature's turning joints leaves out a pipeline rig's extra bones. rigdata.py reads a shin and a foot as their leg's, and an anchor rides on the bone that carries its vertex. Shortcut (decision 0133): its training clips and a Titan's sleep show its idle."
+}

@@ -233,6 +233,15 @@ describe("StationAssets", function()
 					and string.find(part, "_tail_mid$") == nil
 					and string.find(part, "_tail_end$") == nil
 					and string.find(part, "_weapon$") == nil -- (nor a weapon turning in its fist)
+					-- nor what a pipeline rig has more (decision 0133): its root, spine, chest and neck, a shin and
+					-- a foot to each leg, and the rest of its tail
+					and string.find(part, "_root$") == nil
+					and string.find(part, "_spine$") == nil
+					and string.find(part, "_chest$") == nil
+					and string.find(part, "_neck%d$") == nil
+					and string.find(part, "_lower_[fb][lr]$") == nil
+					and string.find(part, "_foot_[fb][lr]$") == nil
+					and string.find(part, "_tail%d$") == nil
 				then
 					turning += 1
 				end
