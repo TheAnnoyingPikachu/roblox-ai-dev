@@ -5,16 +5,10 @@ lands at full speed), impact (a short overshoot past the pose), follow-through (
 import math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import rigpose as rp
-from clipsets.quad import cyc, gait, TAU
+from clipsets.quad import cyc, gait, span, TAU
 
 SPRING = (3.0, 0.3)  # a short, stiff tail: quick to swing, quick to settle
 LOOP = 4.8
-
-
-def span(t, a, b):
-    """0 outside [a, b] of the idle loop, rising smoothly to 1 in its middle."""
-    x = t % LOOP
-    return math.sin(math.pi * (x - a) / (b - a)) ** 2 if a < x < b else 0.0
 
 
 # --- idles ----------------------------------------------------------------------------------------------------------

@@ -36,6 +36,11 @@ class Rig:
         self.necks = sorted([b.name for b in self.B if b.name.startswith("neck")])
         self.floor = self.B["root"].head_local.z
         me = self.body.data
+        # how far the body can sink before its belly is on the ground: the underside between the legs, along the middle
+        co = np.array([v.co[:] for v in me.vertices])
+        y0, y1 = sorted((self.ank["fl"].y, self.ank["hl"].y))
+        under = co[(co[:, 1] > y0 + 0.04) & (co[:, 1] < y1 - 0.04) & (np.abs(co[:, 0]) < 0.4 * abs(self.ank["fl"].x))]
+        self.clear = float(np.percentile(under[:, 2], 2) - self.floor) if len(under) else 0.1
         self.edges = np.array([e.vertices[:] for e in me.edges])
         eid = {tuple(sorted(e)): i for i, e in enumerate(self.edges.tolist())}
         self.face_edges = [[eid[tuple(sorted(k))] for k in p.edge_keys] for p in me.polygons]
@@ -71,6 +76,7 @@ class Rig:
             self.setrot("root", M)
             self.setloc("root", p - M @ p + Vector((0, 0, up)))
         f, u, pi, ya, ro, si = g("body", 6)
+        u -= g("drop", 1)[0] * self.clear  # "drop": [1] lays the belly on the ground, whatever the animal's build
         Mb = R(pi, ya, ro)
         self.setrot("hips", Mb)
         self.setloc("hips", (si, -f, u))

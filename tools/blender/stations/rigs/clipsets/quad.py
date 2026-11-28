@@ -12,6 +12,12 @@ def cyc(t, period, phase=0.0):
     return math.sin(TAU * (t / period + phase))
 
 
+def span(t, a, b, loop=4.8):
+    """0 outside [a, b] of an idle loop, rising smoothly to 1 in its middle: a beat that happens once a loop."""
+    x = t % loop
+    return math.sin(math.pi * (x - a) / (b - a)) ** 2 if a < x < b else 0.0
+
+
 def foot_cycle(c, start, duty, step, lift):
     """A foot's [fwd, up] at cycle position c: planted and sweeping back for `duty`, then swinging forward lifted."""
     u = (c - start) % 1

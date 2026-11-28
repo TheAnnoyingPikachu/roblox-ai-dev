@@ -9,6 +9,10 @@ blender -b <dir>/rig/rig_full.blend -P export_game.py -- <repo> <asset> <length 
     idle=<clip> walk=<clip> attack=<clip> magic=<clip> hit=<clip> die=<clip> win=<clip>
 ```
 
+`batch.sh <root>` runs every folder under `<root>` that has a model and no board yet, one after another (renders
+one at a time: several at once hang the GPU). `look.py` renders a rigged model at rest from behind and in front,
+drawn fronts only as Roblox draws it: look at a new model's legs there before anything else.
+
 The model must face -Y (its head at -Y), stand in a neutral stance with its legs straight, and be one textured mesh.
 
 | Step | Script | What it does |
@@ -32,7 +36,10 @@ moves between two keys is lifted in an arc; hips that would pull a planted foot 
 A clip set is `CLIPS = {key: (name, kind, description, seconds, function, loops)}`. Lengths are the game's: an idle
 loops in 4.8 s, an attack is 0.95 s with its blow at 0.44, a power attack 1.6 s with its blow at 0.92, a hit 0.4 s,
 a fall 1.2 s. `clipsets/quad.py` is the fallback for any four-legged animal; a species has its own
-(`clipsets/rhino.py`), and a variant's own power attack sits beside its species' (`power_prism`).
+(`clipsets/rhino.py`, `lion.py`, `cheetah.py`), and a variant's own power attack sits beside its species'
+(`power_prism`). Distances are in model units, so a set fits its family's build; `"drop": [1]` lays the belly on the
+ground whatever the build. Every set has a walk at the game's pace: `Creatures.speed` is about 0.4 of a body length
+a second, which is a walk, not a trot.
 
 Stretch is the share of the surface whose faces have an edge a quarter longer than at rest. Look at the renders as
 well as the number: a tear can move without the number changing.
