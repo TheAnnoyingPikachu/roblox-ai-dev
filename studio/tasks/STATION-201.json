@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "task_id": "STATION-201",
+  "objective": "The Rhino and the Lava Rhino on the pipeline's rig with baked clips (decision 0133), as the Crystal Rhino is (STATION-199): regenerated in a neutral stance from SHANNON's concept picks, each with a power attack keyed for its own spell.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-199",
+    "STATION-200"
+  ],
+  "files": [
+    "src/stations-client/Clips/creature_rhino_forge.luau",
+    "src/stations-client/Clips/creature_rhino_lava_forge.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_rhino_forge*",
+    "assets/stations/creature_rhino_lava_forge*",
+    "assets/stations/sources/creature_rhino_forge.glb",
+    "assets/stations/sources/creature_rhino_lava_forge.glb",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-201.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Rhino plays Snort and paw, the heavy walk, Gore, Horn lance, Stagger, Topple and Horn salute; its Horn Lance beam leaves its horn",
+    "The Lava Rhino plays Horn whet, the heavy walk, Slam, Magma slam, Brace, Topple and Victory stomp; its slam lands at 0.82 s, where its Magma Eruption's cracks start",
+    "Neither's planted feet slide at Creatures.speed",
+    "Uploaded and seen in Studio with the build stamp"
+  ],
+  "verification": "ForgeGUI model jobs bf706025 (Rhino, 8,773 triangles after tidy) and 7630f766 (Lava Rhino, 15,298), each from SHANNON's concept pick. Rigged from measured landmarks, 21 bones each. Clips from the rhino set; of the seven each plays, the worst stretches 2.7 % of the surface on the Rhino (its gore) and 6.9 % on the Lava Rhino (its magma slam; its crash fall stretched 9.8 %, so it topples instead: 5.9 %). Lune 845/845, stylua and selene clean, check_spells ALL OK. Uploaded models, textures and rainbow coats: run 46175050261 (models 135192378476576 and 110030610387682). Studio 2026-11-28, build dev (local, branch game7/rhino-family): the two spawned beside the Crystal Rhino with Creatures.spawn, 21 bones each, Scale 2.16 and 3.42, textured and whole. Walked at Creatures.speed (5.79 and 7.30 studs a second): a planted foot drifted 0.03 and 0.09 studs over a stance in which the body covered 2.5 and 3.4 (the Crystal Rhino 0.16 over 2.9). Frozen at 0.97 s of the power attack: the Horn Lance beam leaves the Rhino's horn; the Lava Rhino is down on its forefeet with the Magma Eruption's cracks running from under its chest. Frozen at the attack's blow: both whole. Not seen: a wave fight with either in the team, their training clips (they show the idle), a phone.",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_review",
+  "notes": "Same asset names, so species entries, spells, coats and drops are unchanged; the previous uploads are left for archiving by hand. The base Rhino's model is big loose facets with a third of its edges open and many faces inside out: whole when drawn two-sided, which is how the game draws a skinned model (DoubleSided)."
+}

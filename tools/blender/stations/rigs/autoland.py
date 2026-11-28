@@ -18,7 +18,27 @@ src, out = args[0], args[1]
 clipset = args[2] if len(args) > 2 else "quad"
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
-P = np.concatenate([np.array([o.matrix_world @ v.co for v in o.data.vertices]) for o in bpy.data.objects if o.type == "MESH"])
+def surface(n=150000):
+    """Points all over the model's surface (and its vertices): a big-faceted model has too few vertices to slice."""
+    rng, out = np.random.default_rng(1), []
+    for o in bpy.data.objects:
+        if o.type != "MESH":
+            continue
+        me = o.data
+        me.calc_loop_triangles()
+        V = np.array([o.matrix_world @ v.co for v in me.vertices])
+        T = np.array([t.vertices[:] for t in me.loop_triangles])
+        a, b, c = V[T[:, 0]], V[T[:, 1]], V[T[:, 2]]
+        area = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
+        k = rng.choice(len(T), size=n, p=area / area.sum())
+        u, v = rng.random(n), rng.random(n)
+        over = u + v > 1
+        u[over], v[over] = 1 - u[over], 1 - v[over]
+        out += [V, a[k] + u[:, None] * (b[k] - a[k]) + v[:, None] * (c[k] - a[k])]
+    return np.concatenate(out)
+
+
+P = surface()
 lo, hi = P.min(0), P.max(0)
 floor, height, length = float(lo[2]), float(hi[2] - lo[2]), float(hi[1] - lo[1])
 r3 = lambda v: [round(float(x), 3) for x in v]
@@ -114,6 +134,8 @@ belly = float(np.median(bl)) if bl else floor + 0.45 * height
 rl = slices(hy - 0.02, hy + 0.1, np.max, wide=0.7 * hx)
 rump_top = min(rl) if rl else floor + 0.8 * height
 joint_z = belly + 0.65 * (rump_top - belly)  # the line of the shoulders and hips
+if clipset == "tortoise":  # its legs come out from under a shell that must not bend: their joints are at its underside
+    joint_z = belly + 0.03
 leg = joint_z - floor
 knee_z, ankle_z = floor + 0.5 * leg, floor + 0.12 * leg
 legs = {}
@@ -171,11 +193,38 @@ if len(behind):
 if len(tail) < 3:  # no tail found: a stub, so the rig's shape is the same for every animal
     tail = [(0, hi[1] - 0.06, joint_z), (0, hi[1] - 0.03, joint_z - 0.01), (0, hi[1], joint_z - 0.02)]
 
+# --- what a family has more ---------------------------------------------------------------------------------------------
+trunk, extras = [], []
+if clipset == "elephant":
+    # the trunk: the run along the middle that hangs from the face ahead of the forelegs. Followed up from its tip in
+    # slices; it ends where it thickens into the face.
+    strip = P[(np.abs(P[:, 0]) < 0.035) & (P[:, 1] < f_top_y - 0.08)]
+    line = []
+    for z in np.arange(float(strip[:, 2].min()), float(np.median(head_pts[:, 2])) + 0.1, 0.02):
+        s_ = strip[(strip[:, 2] >= z) & (strip[:, 2] < z + 0.02)]
+        if len(s_) > 5:
+            line.append((z + 0.01, float(s_[:, 1].mean()), float(s_[:, 1].max() - s_[:, 1].min())))
+    thick = float(np.median([t for _, _, t in line[: max(3, len(line) // 2)]]))
+    top = next((i for i, (_, _, t) in enumerate(line) if i > 3 and t > 1.8 * thick), len(line) - 1)
+    line = line[: top + 1][::-1]  # root first
+    idx = np.linspace(0, len(line) - 1, 5).round().astype(int)
+    trunk = [r3((0, line[i][1], line[i][0])) for i in idx]
+    # the ears: what stands out sideways well past the body, beside the head; each swings on a hinge at its inner edge
+    body_half = float(np.median([np.abs(P[(P[:, 1] >= y) & (P[:, 1] < y + 0.03)][:, 0]).max() for y in np.arange(fy + 0.08, hy - 0.06, 0.03)]))
+    ear = P[(np.abs(P[:, 0]) > 1.4 * body_half) & (P[:, 1] < fy + 0.12)]
+    if len(ear) > 300:
+        ey, ez, ex = float(np.median(ear[:, 1])), float(np.median(ear[:, 2])), float(np.abs(ear[:, 0]).max())
+        for side, sgn in (("l", 1), ("r", -1)):
+            extras.append({"name": f"ear_{side}", "parent": "head", "head": r3((sgn * 0.8 * body_half, ey, ez)), "tail": r3((sgn * 0.95 * ex, ey, ez))})
+    print("AUTOLAND trunk", trunk, "ears", extras)
+
 S = {"name": "", "clips": clipset, "floor": round(floor, 3),
      "rate": 0.83, "step": round(0.3 * leg, 3), "lift": round(0.14 * leg, 3), "duty": 0.62,
-     "spine": [r3(p) for p in spine], "tail": [r3(p) for p in tail], "trunk": [], "legs": legs,
+     "spine": [r3(p) for p in spine], "tail": [r3(p) for p in tail], "trunk": trunk, "extras": extras, "legs": legs,
      "head_from_y": round(neck_end_y + 0.02, 3), "leg_from_z": round(joint_z - 0.02, 3),
      "back_z": round(rump_top + 0.07, 3), "smooth": [0.8, 100]}
+if clipset == "tortoise":
+    S.update({"leg_band": 0.03, "loose_head": True})  # (its head and neck slide into the shell as one piece)
 json.dump(S, open(out, "w"), indent=1)
 print("AUTOLAND belly", round(belly, 3), "rump", round(rump_top, 3), "joint", round(joint_z, 3), "feet f", round(fx, 3), round(fy, 3), "h", round(hx, 3), round(hy, 3))
 print("AUTOLAND legs", legs)

@@ -13,6 +13,18 @@ blender -b <dir>/rig/rig_full.blend -P export_game.py -- <repo> <asset> <length 
 one at a time: several at once hang the GPU). `look.py` renders a rigged model at rest from behind and in front,
 drawn fronts only as Roblox draws it: look at a new model's legs there before anything else.
 
+## Families
+
+| Family | Measured by | What it has more |
+|---|---|---|
+| rhino, lion, cheetah, jackal | `autoland.py` | nothing: the four-legged rig as it is |
+| elephant | `autoland.py` (clip set `elephant`) | four trunk bones (`"trunk": [curl up, sway]`) and an `ear_l` and `ear_r` (posed by name), all on springs |
+| tortoise | `autoland.py` (clip set `tortoise`) | leg joints at the shell's underside so the shell never bends; a head that slides (`"pull": [d]`) |
+| meerkat | `autoland_up.py` | stood up: its "hind legs" are its legs, planted; its "front legs" are its arms, which ride with the body and are posed by where the hands go |
+
+`"drop": [1]` sets any of them down on the ground (a meerkat on its haunches). A topple's `root` pivot is measured
+from the root bone: `[roll, pivot x, pivot height above the floor, up, yaw]`.
+
 The model must face -Y (its head at -Y), stand in a neutral stance with its legs straight, and be one textured mesh.
 
 | Step | Script | What it does |
@@ -36,7 +48,7 @@ moves between two keys is lifted in an arc; hips that would pull a planted foot 
 A clip set is `CLIPS = {key: (name, kind, description, seconds, function, loops)}`. Lengths are the game's: an idle
 loops in 4.8 s, an attack is 0.95 s with its blow at 0.44, a power attack 1.6 s with its blow at 0.92, a hit 0.4 s,
 a fall 1.2 s. `clipsets/quad.py` is the fallback for any four-legged animal; a species has its own
-(`clipsets/rhino.py`, `lion.py`, `cheetah.py`), and a variant's own power attack sits beside its species'
+(`clipsets/rhino.py`, `lion.py`, `cheetah.py`, `jackal.py`, `elephant.py`, `meerkat.py`, `tortoise.py`), and a variant's own power attack sits beside its species'
 (`power_prism`). Distances are in model units, so a set fits its family's build; `"drop": [1]` lays the belly on the
 ground whatever the build. Every set has a walk at the game's pace: `Creatures.speed` is about 0.4 of a body length
 a second, which is a walk, not a trot.

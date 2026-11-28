@@ -735,13 +735,13 @@
     "texture": null
   },
   "creature_rhino_forge": {
-    "model": 94949274052298,
-    "decal": 104193759173754,
+    "model": 135192378476576,
+    "decal": 122140805116027,
     "texture": null
   },
   "creature_rhino_forge_rainbow": {
     "model": null,
-    "decal": 92978013273871,
+    "decal": 85843015213267,
     "texture": null
   },
   "creature_rhino_crystal_forge": {
@@ -755,13 +755,13 @@
     "texture": null
   },
   "creature_rhino_lava_forge": {
-    "model": 138265266226163,
-    "decal": 129836025302131,
+    "model": 110030610387682,
+    "decal": 75562633713089,
     "texture": null
   },
   "creature_rhino_lava_forge_rainbow": {
     "model": null,
-    "decal": 73444848894800,
+    "decal": 115257128331833,
     "texture": null
   },
   "creature_tortoise_island_forge": {

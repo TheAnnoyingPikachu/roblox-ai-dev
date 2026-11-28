@@ -6495,62 +6495,132 @@
     "png": "build/blender/stations/creature_rhino_forge.png",
     "preview": "build/blender/stations/previews/creature_rhino_forge_rest.png",
     "size_studs": [
-      5.72,
-      6.11,
+      5.94,
+      6.57,
       13.9
     ],
-    "tris": 3040,
+    "tris": 8773,
     "parts": {
-      "creature_rhino_forge_body": 3040
+      "creature_rhino_forge_body": 8773
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Rhino: SHANNON's Low-Poly Rhino from ForgeGUI (artifact 9f6a531e), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 21 bones, clips baked from the rhino set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_rhino_forge_body": [
         0.0,
-        3.056,
+        3.287,
         -0.0
       ]
     },
     "joints": {
+      "creature_rhino_forge_root": [
+        0.0,
+        0.004,
+        0.004
+      ],
+      "creature_rhino_forge_spine": [
+        0.0,
+        3.563,
+        -1.986
+      ],
+      "creature_rhino_forge_chest": [
+        0.0,
+        3.708,
+        0.018
+      ],
+      "creature_rhino_forge_neck1": [
+        0.0,
+        3.853,
+        2.037
+      ],
       "creature_rhino_forge_head": [
         0.0,
-        3.654,
-        3.193
+        3.853,
+        3.606
       ],
       "creature_rhino_forge_leg_fl": [
-        1.877,
-        1.778,
-        1.894
+        1.685,
+        3.127,
+        1.369
+      ],
+      "creature_rhino_forge_lower_fl": [
+        1.874,
+        1.558,
+        1.18
+      ],
+      "creature_rhino_forge_foot_fl": [
+        1.932,
+        0.382,
+        1.514
       ],
       "creature_rhino_forge_leg_fr": [
-        -1.877,
-        1.778,
-        1.894
+        -1.685,
+        3.127,
+        1.369
       ],
-      "creature_rhino_forge_leg_bl": [
-        1.804,
-        1.778,
-        -3.014
+      "creature_rhino_forge_lower_fr": [
+        -1.874,
+        1.558,
+        1.18
       ],
-      "creature_rhino_forge_leg_br": [
-        -1.804,
-        1.778,
-        -3.014
+      "creature_rhino_forge_foot_fr": [
+        -1.932,
+        0.382,
+        1.514
       ],
       "creature_rhino_forge_tail": [
         0.0,
-        3.943,
-        -4.602
+        4.362,
+        -4.818
+      ],
+      "creature_rhino_forge_tail2": [
+        0.0,
+        3.853,
+        -5.675
+      ],
+      "creature_rhino_forge_tail3": [
+        0.0,
+        2.982,
+        -6.445
+      ],
+      "creature_rhino_forge_leg_bl": [
+        1.583,
+        3.127,
+        -3.569
+      ],
+      "creature_rhino_forge_lower_bl": [
+        1.757,
+        1.558,
+        -3.381
+      ],
+      "creature_rhino_forge_foot_bl": [
+        1.859,
+        0.382,
+        -3.526
+      ],
+      "creature_rhino_forge_leg_br": [
+        -1.583,
+        3.127,
+        -3.569
+      ],
+      "creature_rhino_forge_lower_br": [
+        -1.757,
+        1.558,
+        -3.381
+      ],
+      "creature_rhino_forge_foot_br": [
+        -1.859,
+        0.382,
+        -3.526
       ]
     },
     "skinned": true,
     "root": [
       0.0,
-      3.077,
-      0.018
+      3.272,
+      -4.005
     ]
   },
   "creature_rhino_crystal_forge": {
@@ -6696,62 +6766,132 @@
     "png": "build/blender/stations/creature_rhino_lava_forge.png",
     "preview": "build/blender/stations/previews/creature_rhino_lava_forge_rest.png",
     "size_studs": [
-      7.85,
-      8.74,
+      8.03,
+      8.69,
       18.5
     ],
-    "tris": 14087,
+    "tris": 15298,
     "parts": {
-      "creature_rhino_lava_forge_body": 14087
+      "creature_rhino_lava_forge_body": 15298
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Lava Rhino: SHANNON's Molten Lava Rhino Warrior from ForgeGUI (artifact f93e493b), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 21 bones, clips baked from the rhino set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_rhino_lava_forge_body": [
         0.0,
-        4.372,
+        4.344,
         -0.0
       ]
     },
     "joints": {
+      "creature_rhino_lava_forge_root": [
+        0.0,
+        -0.003,
+        -0.0
+      ],
+      "creature_rhino_lava_forge_spine": [
+        0.0,
+        5.542,
+        -2.724
+      ],
+      "creature_rhino_lava_forge_chest": [
+        0.0,
+        5.735,
+        -0.039
+      ],
+      "creature_rhino_lava_forge_neck1": [
+        0.0,
+        5.928,
+        2.666
+      ],
       "creature_rhino_lava_forge_head": [
-        0.024,
-        5.175,
-        4.24
+        0.0,
+        5.928,
+        4.753
       ],
       "creature_rhino_lava_forge_leg_fl": [
-        2.54,
-        2.658,
-        2.498
+        2.164,
+        4.962,
+        1.758
+      ],
+      "creature_rhino_lava_forge_lower_fl": [
+        2.396,
+        2.489,
+        1.468
+      ],
+      "creature_rhino_lava_forge_foot_fl": [
+        2.57,
+        0.596,
+        1.913
       ],
       "creature_rhino_lava_forge_leg_fr": [
-        -2.493,
-        2.658,
-        2.498
+        -2.164,
+        4.962,
+        1.758
       ],
-      "creature_rhino_lava_forge_leg_bl": [
-        2.444,
-        2.658,
-        -4.085
-      ],
-      "creature_rhino_lava_forge_leg_br": [
+      "creature_rhino_lava_forge_lower_fr": [
         -2.396,
-        2.658,
-        -4.085
+        2.489,
+        1.468
+      ],
+      "creature_rhino_lava_forge_foot_fr": [
+        -2.57,
+        0.596,
+        1.913
       ],
       "creature_rhino_lava_forge_tail": [
-        0.024,
-        5.756,
-        -5.827
+        0.0,
+        5.812,
+        -6.55
+      ],
+      "creature_rhino_lava_forge_tail2": [
+        0.0,
+        5.02,
+        -7.767
+      ],
+      "creature_rhino_lava_forge_tail3": [
+        0.0,
+        3.861,
+        -8.656
+      ],
+      "creature_rhino_lava_forge_leg_bl": [
+        1.99,
+        4.962,
+        -4.83
+      ],
+      "creature_rhino_lava_forge_lower_bl": [
+        2.222,
+        2.489,
+        -4.54
+      ],
+      "creature_rhino_lava_forge_foot_bl": [
+        2.434,
+        0.596,
+        -4.753
+      ],
+      "creature_rhino_lava_forge_leg_br": [
+        -1.99,
+        4.962,
+        -4.83
+      ],
+      "creature_rhino_lava_forge_lower_br": [
+        -2.222,
+        2.489,
+        -4.54
+      ],
+      "creature_rhino_lava_forge_foot_br": [
+        -2.434,
+        0.596,
+        -4.753
       ]
     },
     "skinned": true,
     "root": [
-      0.024,
-      4.4,
-      -0.019
+      0.0,
+      5.155,
+      -5.41
     ]
   },
   "creature_tortoise_island_forge": {

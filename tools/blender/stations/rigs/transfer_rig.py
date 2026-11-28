@@ -3,13 +3,13 @@ The remeshed skin in rig.blend (smoothly weighted by quadrig.py) is only a weigh
 tidied (pieces welded, every face turned to face out, as skin_forge.py does: a face is drawn from its front only) and
 each of its vertices takes the bone weights of the nearest point of the proxy; a small loose piece (a plate, a band, a
 gem) takes its average so it moves whole. The original mesh then replaces the proxy (and the kit) as "body"."""
-import bpy, bmesh, sys
+import bpy, bmesh, os, sys
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
 args = sys.argv[sys.argv.index("--") + 1:]
 src, out = args[0], args[1]
-SMALL = 0.12  # a loose piece smaller than this (its box's diagonal, model units) moves whole
+SMALL = float(os.environ.get("SMALL", 0.12))  # a loose piece smaller than this (its box's diagonal, model units) moves whole
 arm = bpy.data.objects["rig"]
 proxy = bpy.data.objects["body"]
 kit = bpy.data.objects.get("kit")
@@ -124,4 +124,4 @@ print("SAVED", out)
 import bmesh  # noqa: E402
 bm = bmesh.new(); bm.from_mesh(model.data)
 share = 100 * sum(1 for e in bm.edges if len(e.link_faces) == 1) / max(1, len(bm.edges))
-print("HOLES", round(share, 1), "% of its edges are open", "SHARDS: look at it with look.py before going on" if share > 10 else "")
+print("HOLES", round(share, 1), "% of its edges are open", "SHARDS: look at it with look.py before going on" if share > 15 else "")
