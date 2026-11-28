@@ -6180,62 +6180,137 @@
     "png": "build/blender/stations/creature_lion_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_forge_rest.png",
     "size_studs": [
-      5.01,
-      7.63,
+      4.98,
+      8.02,
       13.0
     ],
-    "tris": 5222,
+    "tris": 15069,
     "parts": {
-      "creature_lion_forge_body": 5222
+      "creature_lion_forge_body": 15069
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Lion: SHANNON's lion (now do it again following this reference) from ForgeGUI (artifact c46416c2), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 22 bones, clips baked from the lion set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_lion_forge_body": [
         0.0,
-        3.816,
+        4.009,
         -0.0
       ]
     },
     "joints": {
+      "creature_lion_forge_root": [
+        0.0,
+        -0.004,
+        0.003
+      ],
+      "creature_lion_forge_spine": [
+        0.0,
+        3.854,
+        0.356
+      ],
+      "creature_lion_forge_chest": [
+        0.0,
+        3.99,
+        2.462
+      ],
+      "creature_lion_forge_neck1": [
+        0.0,
+        4.125,
+        4.554
+      ],
       "creature_lion_forge_head": [
-        -0.003,
-        5.19,
-        4.095
+        0.0,
+        4.886,
+        5.179
       ],
       "creature_lion_forge_leg_fl": [
-        1.357,
-        3.285,
-        3.686
+        1.005,
+        3.446,
+        4.296
+      ],
+      "creature_lion_forge_lower_fl": [
+        1.114,
+        1.721,
+        4.092
+      ],
+      "creature_lion_forge_foot_fl": [
+        1.114,
+        0.417,
+        4.337
       ],
       "creature_lion_forge_leg_fr": [
-        -1.364,
-        3.285,
-        3.686
+        -1.005,
+        3.446,
+        4.296
       ],
-      "creature_lion_forge_leg_bl": [
-        1.357,
-        3.421,
-        -1.755
+      "creature_lion_forge_lower_fr": [
+        -1.114,
+        1.721,
+        4.092
       ],
-      "creature_lion_forge_leg_br": [
-        -1.364,
-        3.421,
-        -1.755
+      "creature_lion_forge_foot_fr": [
+        -1.114,
+        0.417,
+        4.337
       ],
       "creature_lion_forge_tail": [
-        -0.003,
-        4.102,
-        -3.388
+        0.0,
+        3.528,
+        -3.067
+      ],
+      "creature_lion_forge_tail2": [
+        0.0,
+        1.938,
+        -3.895
+      ],
+      "creature_lion_forge_tail3": [
+        0.0,
+        1.83,
+        -4.425
+      ],
+      "creature_lion_forge_tail4": [
+        0.0,
+        1.626,
+        -5.226
+      ],
+      "creature_lion_forge_leg_bl": [
+        1.236,
+        3.446,
+        -1.328
+      ],
+      "creature_lion_forge_lower_bl": [
+        1.372,
+        1.721,
+        -1.124
+      ],
+      "creature_lion_forge_foot_bl": [
+        1.413,
+        0.417,
+        -1.341
+      ],
+      "creature_lion_forge_leg_br": [
+        -1.236,
+        3.446,
+        -1.328
+      ],
+      "creature_lion_forge_lower_br": [
+        -1.372,
+        1.721,
+        -1.124
+      ],
+      "creature_lion_forge_foot_br": [
+        -1.413,
+        0.417,
+        -1.341
       ]
     },
     "skinned": true,
     "root": [
-      -0.003,
-      4.51,
-      1.102
+      0.0,
+      3.582,
+      -1.735
     ]
   },
   "creature_jackal_forge": {
@@ -7214,62 +7289,132 @@
     "png": "build/blender/stations/creature_cheetah_forge.png",
     "preview": "build/blender/stations/previews/creature_cheetah_forge_rest.png",
     "size_studs": [
-      3.76,
-      4.52,
+      3.2,
+      5.99,
       10.85
     ],
-    "tris": 5102,
+    "tris": 15249,
     "parts": {
-      "creature_cheetah_forge_body": 5102
+      "creature_cheetah_forge_body": 15249
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Cheetah: SHANNON's Angular Roblox-Style Cheetah from ForgeGUI (artifact 1a08317f), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 21 bones, clips baked from the cheetah set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_cheetah_forge_body": [
         0.0,
-        2.259,
+        2.995,
         -0.0
       ]
     },
     "joints": {
+      "creature_cheetah_forge_root": [
+        0.02,
+        -0.0,
+        -0.02
+      ],
+      "creature_cheetah_forge_spine": [
+        0.02,
+        2.992,
+        0.003
+      ],
+      "creature_cheetah_forge_chest": [
+        0.02,
+        3.107,
+        1.631
+      ],
+      "creature_cheetah_forge_neck1": [
+        0.02,
+        3.221,
+        3.248
+      ],
       "creature_cheetah_forge_head": [
-        -0.218,
-        3.397,
-        3.632
+        0.02,
+        4.127,
+        3.936
       ],
       "creature_cheetah_forge_leg_fl": [
-        1.311,
-        1.585,
-        3.293
+        0.65,
+        2.648,
+        2.95
+      ],
+      "creature_cheetah_forge_lower_fl": [
+        0.719,
+        1.33,
+        2.79
+      ],
+      "creature_cheetah_forge_foot_fl": [
+        0.708,
+        0.321,
+        2.962
       ],
       "creature_cheetah_forge_leg_fr": [
-        -1.294,
-        1.585,
-        3.293
+        -0.611,
+        2.648,
+        2.95
       ],
-      "creature_cheetah_forge_leg_bl": [
-        1.141,
-        1.585,
-        -0.898
+      "creature_cheetah_forge_lower_fr": [
+        -0.68,
+        1.33,
+        2.79
       ],
-      "creature_cheetah_forge_leg_br": [
-        -1.294,
-        1.585,
-        -1.238
+      "creature_cheetah_forge_foot_fr": [
+        -0.668,
+        0.321,
+        2.962
       ],
       "creature_cheetah_forge_tail": [
-        -0.218,
-        2.265,
-        -2.144
+        0.02,
+        1.857,
+        -2.875
+      ],
+      "creature_cheetah_forge_tail2": [
+        0.02,
+        1.57,
+        -3.815
+      ],
+      "creature_cheetah_forge_tail3": [
+        0.02,
+        1.421,
+        -4.686
+      ],
+      "creature_cheetah_forge_leg_bl": [
+        0.88,
+        2.648,
+        -1.269
+      ],
+      "creature_cheetah_forge_lower_bl": [
+        0.971,
+        1.33,
+        -1.109
+      ],
+      "creature_cheetah_forge_foot_bl": [
+        1.017,
+        0.321,
+        -1.304
+      ],
+      "creature_cheetah_forge_leg_br": [
+        -0.84,
+        2.648,
+        -1.269
+      ],
+      "creature_cheetah_forge_lower_br": [
+        -0.932,
+        1.33,
+        -1.109
+      ],
+      "creature_cheetah_forge_foot_br": [
+        -0.978,
+        0.321,
+        -1.304
       ]
     },
     "skinned": true,
     "root": [
-      0.008,
-      2.604,
-      0.575
+      0.02,
+      2.763,
+      -1.613
     ]
   },
   "creature_cheetah_lightning_forge": {
@@ -7277,62 +7422,127 @@
     "png": "build/blender/stations/creature_cheetah_lightning_forge.png",
     "preview": "build/blender/stations/previews/creature_cheetah_lightning_forge_rest.png",
     "size_studs": [
-      4.06,
-      8.3,
+      5.15,
+      7.13,
       13.86
     ],
-    "tris": 1991,
+    "tris": 15084,
     "parts": {
-      "creature_cheetah_lightning_forge_body": 1991
+      "creature_cheetah_lightning_forge_body": 15084
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Lightning Cheetah: the big cheetah of SHANNON's ForgeGUI concept sheet (artifact d4747ca8), cut out and turned straight, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 20 bones, clips baked from the cheetah set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_cheetah_lightning_forge_body": [
         0.0,
-        4.149,
+        3.566,
         -0.0
       ]
     },
     "joints": {
+      "creature_cheetah_lightning_forge_root": [
+        0.009,
+        -0.003,
+        0.094
+      ],
+      "creature_cheetah_lightning_forge_spine": [
+        0.009,
+        3.483,
+        0.412
+      ],
+      "creature_cheetah_lightning_forge_chest": [
+        0.009,
+        3.627,
+        2.567
+      ],
+      "creature_cheetah_lightning_forge_neck1": [
+        0.009,
+        3.772,
+        4.721
+      ],
       "creature_cheetah_lightning_forge_head": [
-        -0.099,
-        5.957,
-        5.661
+        0.009,
+        4.567,
+        5.416
       ],
       "creature_cheetah_lightning_forge_leg_fl": [
-        0.87,
-        3.253,
-        5.436
+        1.368,
+        3.049,
+        4.418
+      ],
+      "creature_cheetah_lightning_forge_lower_fl": [
+        1.527,
+        1.53,
+        4.23
+      ],
+      "creature_cheetah_lightning_forge_foot_fl": [
+        1.541,
+        0.359,
+        4.548
       ],
       "creature_cheetah_lightning_forge_leg_fr": [
-        -1.271,
-        3.253,
-        4.76
+        -1.351,
+        3.049,
+        4.418
       ],
-      "creature_cheetah_lightning_forge_leg_bl": [
-        1.343,
-        3.253,
-        0.703
+      "creature_cheetah_lightning_forge_lower_fr": [
+        -1.51,
+        1.53,
+        4.23
       ],
-      "creature_cheetah_lightning_forge_leg_br": [
-        -1.001,
-        3.253,
-        -1.325
+      "creature_cheetah_lightning_forge_foot_fr": [
+        -1.524,
+        0.359,
+        4.548
       ],
       "creature_cheetah_lightning_forge_tail": [
-        0.126,
-        4.154,
-        -2.452
+        0.009,
+        3.049,
+        -6.067
+      ],
+      "creature_cheetah_lightning_forge_tail2": [
+        0.009,
+        2.904,
+        -6.501
+      ],
+      "creature_cheetah_lightning_forge_leg_bl": [
+        1.599,
+        3.049,
+        -1.309
+      ],
+      "creature_cheetah_lightning_forge_lower_bl": [
+        1.773,
+        1.53,
+        -1.135
+      ],
+      "creature_cheetah_lightning_forge_foot_bl": [
+        1.845,
+        0.359,
+        -1.193
+      ],
+      "creature_cheetah_lightning_forge_leg_br": [
+        -1.582,
+        3.049,
+        -1.309
+      ],
+      "creature_cheetah_lightning_forge_lower_br": [
+        -1.756,
+        1.53,
+        -1.135
+      ],
+      "creature_cheetah_lightning_forge_foot_br": [
+        -1.828,
+        0.359,
+        -1.193
       ]
     },
     "skinned": true,
     "root": [
-      0.013,
-      4.83,
-      2.055
+      0.009,
+      3.193,
+      -1.743
     ]
   },
   "creature_cheetah_thunder_forge": {
@@ -7340,62 +7550,127 @@
     "png": "build/blender/stations/creature_cheetah_thunder_forge.png",
     "preview": "build/blender/stations/previews/creature_cheetah_thunder_forge_rest.png",
     "size_studs": [
-      5.66,
-      8.81,
+      6.26,
+      8.43,
       13.5
     ],
-    "tris": 14869,
+    "tris": 15058,
     "parts": {
-      "creature_cheetah_thunder_forge_body": 14869
+      "creature_cheetah_thunder_forge_body": 15058
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Thunder Cheetah (the Fire Cheetah's place): SHANNON's storm-cloud cheetah from ForgeGUI (artifact 91e6733c), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 20 bones, clips baked from the cheetah set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_cheetah_thunder_forge_body": [
         0.0,
-        4.404,
+        4.213,
         -0.0
       ]
     },
     "joints": {
+      "creature_cheetah_thunder_forge_root": [
+        0.034,
+        0.004,
+        0.19
+      ],
+      "creature_cheetah_thunder_forge_spine": [
+        0.034,
+        4.23,
+        -0.273
+      ],
+      "creature_cheetah_thunder_forge_chest": [
+        0.034,
+        4.366,
+        1.976
+      ],
+      "creature_cheetah_thunder_forge_neck1": [
+        0.034,
+        4.503,
+        4.239
+      ],
       "creature_cheetah_thunder_forge_head": [
-        -0.457,
-        6.084,
-        4.64
+        0.034,
+        4.734,
+        5.043
       ],
       "creature_cheetah_thunder_forge_leg_fl": [
-        1.798,
-        2.984,
-        4.076
+        1.247,
+        3.821,
+        3.898
+      ],
+      "creature_cheetah_thunder_forge_lower_fl": [
+        1.383,
+        1.913,
+        3.68
+      ],
+      "creature_cheetah_thunder_forge_foot_fl": [
+        1.397,
+        0.454,
+        4.089
       ],
       "creature_cheetah_thunder_forge_leg_fr": [
-        -1.866,
-        2.984,
-        4.076
+        -1.18,
+        3.821,
+        3.898
       ],
-      "creature_cheetah_thunder_forge_leg_bl": [
-        1.798,
-        2.984,
-        -2.124
+      "creature_cheetah_thunder_forge_lower_fr": [
+        -1.316,
+        1.913,
+        3.68
       ],
-      "creature_cheetah_thunder_forge_leg_br": [
-        -1.866,
-        2.984,
-        -2.124
+      "creature_cheetah_thunder_forge_foot_fr": [
+        -1.33,
+        0.454,
+        4.089
       ],
       "creature_cheetah_thunder_forge_tail": [
-        -0.457,
-        5.521,
-        -3.674
+        0.034,
+        3.821,
+        -5.931
+      ],
+      "creature_cheetah_thunder_forge_tail2": [
+        0.034,
+        3.685,
+        -6.339
+      ],
+      "creature_cheetah_thunder_forge_leg_bl": [
+        1.683,
+        3.821,
+        -2.127
+      ],
+      "creature_cheetah_thunder_forge_lower_bl": [
+        1.86,
+        1.913,
+        -1.896
+      ],
+      "creature_cheetah_thunder_forge_foot_bl": [
+        1.888,
+        0.454,
+        -2.1
+      ],
+      "creature_cheetah_thunder_forge_leg_br": [
+        -1.616,
+        3.821,
+        -2.127
+      ],
+      "creature_cheetah_thunder_forge_lower_br": [
+        -1.793,
+        1.913,
+        -1.896
+      ],
+      "creature_cheetah_thunder_forge_foot_br": [
+        -1.82,
+        0.454,
+        -2.1
       ]
     },
     "skinned": true,
     "root": [
-      -0.034,
-      5.098,
-      0.694
+      0.034,
+      3.957,
+      -2.536
     ]
   },
   "creature_flamingo_forge": {
@@ -7592,62 +7867,137 @@
     "png": "build/blender/stations/creature_lion_shadow_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_shadow_forge_rest.png",
     "size_studs": [
-      6.12,
-      8.62,
+      6.04,
+      8.57,
       15.03
     ],
-    "tris": 15063,
+    "tris": 14508,
     "parts": {
-      "creature_lion_shadow_forge_body": 15063
+      "creature_lion_shadow_forge_body": 14508
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Shadow Lion: SHANNON's Shadowfang Purple Lion from ForgeGUI (artifact 68e2e5b5), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 22 bones, clips baked from the lion set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_lion_shadow_forge_body": [
         0.0,
-        4.312,
+        4.285,
         -0.0
       ]
     },
     "joints": {
+      "creature_lion_shadow_forge_root": [
+        0.0,
+        0.003,
+        0.008
+      ],
+      "creature_lion_shadow_forge_spine": [
+        0.0,
+        3.817,
+        1.116
+      ],
+      "creature_lion_shadow_forge_chest": [
+        0.0,
+        3.975,
+        3.489
+      ],
+      "creature_lion_shadow_forge_neck1": [
+        0.0,
+        4.134,
+        5.863
+      ],
       "creature_lion_shadow_forge_head": [
         0.0,
-        5.862,
-        4.758
+        4.893,
+        6.386
       ],
       "creature_lion_shadow_forge_leg_fl": [
-        1.577,
-        3.654,
-        4.285
+        1.187,
+        3.342,
+        5.642
+      ],
+      "creature_lion_shadow_forge_lower_fl": [
+        1.314,
+        1.665,
+        5.436
+      ],
+      "creature_lion_shadow_forge_foot_fl": [
+        1.282,
+        0.399,
+        5.705
       ],
       "creature_lion_shadow_forge_leg_fr": [
-        -1.577,
-        3.654,
-        4.285
+        -1.187,
+        3.342,
+        5.642
       ],
-      "creature_lion_shadow_forge_leg_bl": [
-        1.577,
-        3.812,
-        -2.023
+      "creature_lion_shadow_forge_lower_fr": [
+        -1.314,
+        1.665,
+        5.436
       ],
-      "creature_lion_shadow_forge_leg_br": [
-        -1.577,
-        3.812,
-        -2.023
+      "creature_lion_shadow_forge_foot_fr": [
+        -1.282,
+        0.399,
+        5.705
       ],
       "creature_lion_shadow_forge_tail": [
-        -0.788,
-        4.6,
-        -3.915
+        0.0,
+        4.07,
+        -2.208
+      ],
+      "creature_lion_shadow_forge_tail2": [
+        0.0,
+        3.675,
+        -3.49
+      ],
+      "creature_lion_shadow_forge_tail3": [
+        0.0,
+        1.981,
+        -4.661
+      ],
+      "creature_lion_shadow_forge_tail4": [
+        0.0,
+        2.456,
+        -6.244
+      ],
+      "creature_lion_shadow_forge_leg_bl": [
+        1.25,
+        3.342,
+        -0.784
+      ],
+      "creature_lion_shadow_forge_lower_bl": [
+        1.393,
+        1.665,
+        -0.578
+      ],
+      "creature_lion_shadow_forge_foot_bl": [
+        1.377,
+        0.399,
+        -0.879
+      ],
+      "creature_lion_shadow_forge_leg_br": [
+        -1.25,
+        3.342,
+        -0.784
+      ],
+      "creature_lion_shadow_forge_lower_br": [
+        -1.393,
+        1.665,
+        -0.578
+      ],
+      "creature_lion_shadow_forge_foot_br": [
+        -1.377,
+        0.399,
+        -0.879
       ]
     },
     "skinned": true,
     "root": [
       0.0,
-      5.073,
-      1.288
+      3.501,
+      -1.258
     ]
   },
   "creature_lion_sun_forge": {
@@ -7655,62 +8005,137 @@
     "png": "build/blender/stations/creature_lion_sun_forge.png",
     "preview": "build/blender/stations/previews/creature_lion_sun_forge_rest.png",
     "size_studs": [
-      6.61,
-      9.49,
+      5.51,
+      9.66,
       16.05
     ],
-    "tris": 3156,
+    "tris": 14943,
     "parts": {
-      "creature_lion_sun_forge_body": 3156
+      "creature_lion_sun_forge_body": 14943
     },
     "tris_budget": 20000,
-    "script": "tools/blender/stations/skin_forge.py",
-    "notes": "Sun Lion: SHANNON's Fierce Low-Poly Sunmane Lion from ForgeGUI (artifact efa580ee), one mesh, skinned to the Stations rig (decision 0102).",
+    "script": "tools/blender/stations/rigs/export_game.py",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 22 bones, clips baked from the lion set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_lion_sun_forge_body": [
         0.0,
-        4.747,
+        4.83,
         -0.0
       ]
     },
     "joints": {
+      "creature_lion_sun_forge_root": [
+        0.0,
+        -0.003,
+        0.065
+      ],
+      "creature_lion_sun_forge_spine": [
+        0.0,
+        4.818,
+        1.229
+      ],
+      "creature_lion_sun_forge_chest": [
+        0.0,
+        4.985,
+        3.573
+      ],
+      "creature_lion_sun_forge_neck1": [
+        0.0,
+        5.151,
+        5.917
+      ],
       "creature_lion_sun_forge_head": [
         0.0,
-        6.444,
-        5.046
+        5.699,
+        6.599
       ],
       "creature_lion_sun_forge_leg_fl": [
-        1.68,
-        4.091,
-        4.541
+        1.097,
+        4.319,
+        5.635
+      ],
+      "creature_lion_sun_forge_lower_fl": [
+        1.214,
+        2.158,
+        5.369
+      ],
+      "creature_lion_sun_forge_foot_fl": [
+        1.23,
+        0.512,
+        5.635
       ],
       "creature_lion_sun_forge_leg_fr": [
-        -1.68,
-        4.091,
-        4.541
+        -1.097,
+        4.319,
+        5.635
       ],
-      "creature_lion_sun_forge_leg_bl": [
-        1.68,
-        4.259,
-        -2.181
+      "creature_lion_sun_forge_lower_fr": [
+        -1.214,
+        2.158,
+        5.369
       ],
-      "creature_lion_sun_forge_leg_br": [
-        -1.68,
-        4.259,
-        -2.181
+      "creature_lion_sun_forge_foot_fr": [
+        -1.23,
+        0.512,
+        5.635
       ],
       "creature_lion_sun_forge_tail": [
         0.0,
-        5.099,
-        -4.197
+        4.901,
+        -1.747
+      ],
+      "creature_lion_sun_forge_tail2": [
+        0.0,
+        3.771,
+        -3.709
+      ],
+      "creature_lion_sun_forge_tail3": [
+        0.0,
+        4.103,
+        -5.305
+      ],
+      "creature_lion_sun_forge_tail4": [
+        0.0,
+        4.569,
+        -6.27
+      ],
+      "creature_lion_sun_forge_leg_bl": [
+        1.397,
+        4.319,
+        -0.617
+      ],
+      "creature_lion_sun_forge_lower_bl": [
+        1.546,
+        2.158,
+        -0.351
+      ],
+      "creature_lion_sun_forge_foot_bl": [
+        1.629,
+        0.512,
+        -0.567
+      ],
+      "creature_lion_sun_forge_leg_br": [
+        -1.397,
+        4.319,
+        -0.617
+      ],
+      "creature_lion_sun_forge_lower_br": [
+        -1.546,
+        2.158,
+        -0.351
+      ],
+      "creature_lion_sun_forge_foot_br": [
+        -1.629,
+        0.512,
+        -0.567
       ]
     },
     "skinned": true,
     "root": [
       0.0,
-      5.604,
-      1.348
+      4.486,
+      -1.116
     ]
   },
   "creature_giraffe_forge": {

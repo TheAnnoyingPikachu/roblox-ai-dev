@@ -145,14 +145,14 @@ POWERS = {
         (1.6, {})]),
     # the Thunder Cheetah's own (Thunderhead: a cloud boils up over its back from 0.15 s, drifts to the target from 0.5,
     # and the bolts fall from 0.86)
-    "power_storm": ("Thunderhead", "Crouches as the cloud gathers, rises on its toes with its head thrown back to send it over, and stamps the storm down.", 1.6, [
+    "power_storm": ("Thunderhead", "Crouches as the cloud gathers, rises with its head thrown back to send it over, and drops its chest as the storm comes down.", 1.6, [
         (0.0, {}),
-        (0.20, {"body": [0, -0.04, -4], "spine": [-8], "neck": [-4], "head": [10], "tail": [-8]}, "out"),
-        (0.50, {"body": [-0.01, 0.02, 6], "spine": [8], "neck": [10], "head": [22], "tail": [30, 0, 20]}, "out"),
-        (0.82, {"body": [0.01, 0.022, 4], "spine": [6], "neck": [6], "head": [14], "tail": [34, 10, 20]}),
-        (0.92, {"body": [0.04, -0.035, -10], "spine": [-6], "fl": [0, 0.07, 0], "fr": [0, 0.07, 0], "neck": [-10], "head": [-2], "tail": [40, 0, 10]}, "in"),
-        (1.02, {"body": [0.036, -0.02, -6], "fl": [0, 0.07, 0], "fr": [0, 0.07, 0], "neck": [-6], "head": [2], "tail": [22, 10]}, "out"),
-        (1.32, {"body": [0.014, -0.004, -1], "fl": [0, 0.03, 0], "fr": [0, 0.03, 0]}),
+        (0.20, {"body": [0, -0.03, -3], "spine": [-5], "neck": [-4], "head": [10], "tail": [-8]}, "out"),
+        (0.50, {"body": [-0.008, 0.012, 4], "spine": [4], "neck": [10], "head": [24], "tail": [30, 0, 20]}, "out"),
+        (0.82, {"body": [0.006, 0.014, 3], "spine": [3], "neck": [7], "head": [16], "tail": [34, 10, 20]}),
+        (0.92, {"body": [0.02, -0.03, -7], "spine": [-4], "neck": [-8], "head": [-2], "tail": [40, 0, 10]}, "in"),
+        (1.02, {"body": [0.018, -0.018, -4], "neck": [-5], "head": [2], "tail": [22, 10]}, "out"),
+        (1.32, {"body": [0.006, -0.004, -1], "head": [2]}),
         (1.6, {})]),
 }
 

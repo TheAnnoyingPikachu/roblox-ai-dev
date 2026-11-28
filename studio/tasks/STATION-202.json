@@ -1,0 +1,56 @@
+{
+  "project_id": "STATION-001",
+  "task_id": "STATION-202",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "objective": "The three cheetahs and the three lions on the pipeline's rig with baked clips (decision 0133): each regenerated in a neutral stance from SHANNON's concept picks, with its family's clip set and a power attack keyed for its own spell.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-200",
+    "STATION-201"
+  ],
+  "files": [
+    "src/stations-client/Clips/creature_cheetah*.luau",
+    "src/stations-client/Clips/creature_lion*.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "tools/blender/stations/rigs/**",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-202.json",
+    "assets/stations/creature_cheetah_forge*",
+    "assets/stations/sources/creature_cheetah_forge.glb",
+    "assets/stations/creature_cheetah_lightning_forge*",
+    "assets/stations/sources/creature_cheetah_lightning_forge.glb",
+    "assets/stations/creature_cheetah_thunder_forge*",
+    "assets/stations/sources/creature_cheetah_thunder_forge.glb",
+    "assets/stations/creature_lion_forge*",
+    "assets/stations/sources/creature_lion_forge.glb",
+    "assets/stations/creature_lion_sun_forge*",
+    "assets/stations/sources/creature_lion_sun_forge.glb",
+    "assets/stations/creature_lion_shadow_forge*",
+    "assets/stations/sources/creature_lion_shadow_forge.glb"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Cheetah, the Lightning Cheetah and the Thunder Cheetah play the cheetah set: a stalking walk, and Wind blades, Tail bolt and Thunderhead for their spells (the two swipes at 0.5 and 0.7 s, the tail's whip at 0.9, the storm's stamp at 0.92)",
+    "The Lion, the Sun Lion and the Shadow Lion play the lion set: a prowling walk, and King's roar, Solar flare and Shadow claws for their spells",
+    "A model made askew is turned straight before it is measured, and a crest or cloud on its rump cannot lift its joints (autoland.py)",
+    "No clip any of the six plays stretches more than 7 % of its surface",
+    "Uploaded and seen in Studio with the build stamp"
+  ],
+  "verification": "(filled in after the upload and the Studio check)",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Same asset names, so species entries, spells, coats and drops are unchanged; the previous uploads are left for archiving by hand. Scope: the pipeline's autoland.py (straightening, the joint cap, no automatic turn-round) and the two families' power clips ride in this PR. The Thunder Cheetah is the asset of the species id fire_cheetah (StationRules.FORGE)."
+}

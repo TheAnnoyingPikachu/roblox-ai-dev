@@ -65,6 +65,21 @@ feet = feet[np.argsort(feet[:, 1])]  # front (low y) first
 front, hind = feet[:2], feet[2:]
 if abs(front[0, 0] - front[1, 0]) < 0.04 or abs(hind[0, 0] - hind[1, 0]) < 0.04:
     print("AUTOLAND FAIL: four feet not found", r3(feet.ravel())); sys.exit(2)
+# a model made a little askew is turned straight first: the line from between its hind feet to between its forefeet is
+# its length
+mid_f, mid_h = front.mean(0), hind.mean(0)
+askew = math.degrees(math.atan2(mid_f[0] - mid_h[0], mid_h[1] - mid_f[1]))
+print("AUTOLAND askew by", round(askew, 1), "degrees")
+if abs(askew) > 2 and not os.environ.get("AUTOLAND_STRAIGHT"):
+    if not os.path.exists(src[:-4] + "_asmade.glb"):
+        shutil.copyfile(src, src[:-4] + "_asmade.glb")
+    for o in bpy.data.objects:
+        if o.parent is None:
+            o.matrix_world = Matrix.Rotation(math.radians(-askew), 4, "Z") @ o.matrix_world
+    bpy.ops.export_scene.gltf(filepath=src, export_format="GLB")
+    print("AUTOLAND turned the model straight")
+    os.environ["AUTOLAND_STRAIGHT"] = "1"
+    sys.exit(subprocess.call([bpy.app.binary_path, "-b", "--factory-startup", "-P", os.path.abspath(__file__), "--", *args]))
 # the head end is the one with more of the animal beyond its feet (a head, neck and mane or horn ahead of the forelegs;
 # behind the hind legs only a rump and a thin tail): it must be at -Y. Measured as volume, slice by slice: an end's
 # width alone is fooled by a wide rump, and its length alone by a long tail.
@@ -77,18 +92,9 @@ def beyond(a, b):
     return total
 ahead, behind = beyond(lo[1], front[:, 1].mean()), beyond(hind[:, 1].mean(), hi[1])
 print("AUTOLAND ends", round(ahead, 3), "ahead of the forelegs,", round(behind, 3), "behind the hind legs")
-if behind > 1.6 * ahead:  # (every model so far came facing -Y: turn one only on strong evidence, and look at its board)
-    if os.environ.get("AUTOLAND_TURNED"):
-        print("AUTOLAND FAIL: head at +Y"); sys.exit(2)
-    # made facing the other way: turn it round (the one as made is kept beside it) and measure again
-    shutil.copyfile(src, src[:-4] + "_asmade.glb")
-    for o in bpy.data.objects:
-        if o.parent is None:
-            o.matrix_world = Matrix.Rotation(math.pi, 4, "Z") @ o.matrix_world
-    bpy.ops.export_scene.gltf(filepath=src, export_format="GLB")
-    print("AUTOLAND turned the model round")
-    os.environ["AUTOLAND_TURNED"] = "1"
-    sys.exit(subprocess.call([bpy.app.binary_path, "-b", "--factory-startup", "-P", os.path.abspath(__file__), "--", *args]))
+if behind > 1.6 * ahead:
+    # (not turned round by itself: every model so far has come facing -Y, and a crest or a club tail fools this)
+    print("AUTOLAND WARNING: more of it lies behind its hind legs than ahead of its forelegs: is its head at +Y? Look at its board")
 fx, fy = float(np.abs(front[:, 0]).mean()), float(front[:, 1].mean())
 hx, hy = float(np.abs(hind[:, 0]).mean()), float(hind[:, 1].mean())
 
@@ -134,6 +140,11 @@ belly = float(np.median(bl)) if bl else floor + 0.45 * height
 rl = slices(hy - 0.02, hy + 0.1, np.max, wide=0.7 * hx)
 rump_top = min(rl) if rl else floor + 0.8 * height
 joint_z = belly + 0.65 * (rump_top - belly)  # the line of the shoulders and hips
+# a variant's crest, cloud or saddle stands on its rump and lifts the line: its joints can be no higher over its belly
+# than its family's build allows (the share of the belly's clearance, measured on each family's base model, and half more)
+CAP = {"cheetah": 0.26, "jackal": 0.43, "lion": 1.0, "rhino": 1.4, "elephant": 1.35}
+if clipset in CAP:
+    joint_z = min(joint_z, belly + CAP[clipset] * (belly - floor))
 if clipset == "tortoise":  # its legs come out from under a shell that must not bend: their joints are at its underside
     joint_z = belly + 0.03
 leg = joint_z - floor
