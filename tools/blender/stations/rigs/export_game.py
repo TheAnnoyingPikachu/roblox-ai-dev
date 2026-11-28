@@ -57,6 +57,14 @@ rig = rp.Rig()
 arm, body = rig.arm, rig.body
 assert arm.matrix_world == Matrix.Identity(4) and body.matrix_world == Matrix.Identity(4), "apply the objects' transforms first"
 bones = [b for b in arm.data.bones if b.name == "root" or b.use_deform]
+# a bone that carries no skin, and none of whose children do, is left out: Roblox drops it on import, and a clip that
+# lists a bone the model lacks cannot be played
+skinned = {body.vertex_groups[g.group].name for v in body.data.vertices for g in v.groups if g.weight > 1e-4}
+carries = lambda b: b.name in skinned or any(carries(c) for c in b.children)
+bare = [b.name for b in bones if b.name != "root" and not carries(b)]
+if bare:
+    print("BARE bones left out:", bare)
+bones = [b for b in bones if b.name not in bare]
 names = [b.name for b in bones]
 assert names[:2] == ["root", "hips"], names
 for i, b in enumerate(bones):

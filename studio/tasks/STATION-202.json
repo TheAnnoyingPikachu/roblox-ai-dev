@@ -35,7 +35,8 @@
     "assets/stations/creature_lion_sun_forge*",
     "assets/stations/sources/creature_lion_sun_forge.glb",
     "assets/stations/creature_lion_shadow_forge*",
-    "assets/stations/sources/creature_lion_shadow_forge.glb"
+    "assets/stations/sources/creature_lion_shadow_forge.glb",
+    "src/stations-client/Clips/init.luau"
   ],
   "tests": [
     "StationAssets.spec.luau",
@@ -52,5 +53,5 @@
   "output_artifacts": [],
   "risk_level": "medium",
   "status": "in_progress",
-  "notes": "Same asset names, so species entries, spells, coats and drops are unchanged; the previous uploads are left for archiving by hand. Scope: the pipeline's autoland.py (straightening, the joint cap, no automatic turn-round) and the two families' power clips ride in this PR. The Thunder Cheetah is the asset of the species id fire_cheetah (StationRules.FORGE)."
+  "notes": "Same asset names, so species entries, spells, coats and drops are unchanged; the previous uploads are left for archiving by hand. Scope: the pipeline's autoland.py (straightening, the joint cap, no automatic turn-round) and the two families' power clips ride in this PR. The Thunder Cheetah is the asset of the species id fire_cheetah (StationRules.FORGE). Scope: Clips/init.luau looks for a model's bones twice a second instead of every frame until they arrive, and warns once if one never does (the Lightning Cheetah's second tail bone carried no skin, Roblox dropped it on import, and the model stood unanimated; export_game.py now leaves such bones out)."
 }

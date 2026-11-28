@@ -46,6 +46,7 @@ type Bound = {
 
 local loaded: { [string]: Data | false } = {}
 local bound: { [Model]: Bound } = setmetatable({}, { __mode = "k" }) :: any
+local waiting: { [Model]: { since: number, tried: number, warned: boolean } } = setmetatable({}, { __mode = "k" }) :: any
 
 local function dataOf(asset: string): Data?
 	local data = loaded[asset]
@@ -151,10 +152,23 @@ function Clips.pose(model: Model, anim: string?, t: number, time: number): (bool
 	end
 	local b = bound[model]
 	if b == nil then
-		b = bind(model, data)
-		if b == nil then
+		-- its mesh and bones reach this client a little after its tag: look again twice a second, and say so once if a
+		-- bone its clips list never comes (the model and its clips are out of step)
+		local w = waiting[model] or { since = os.clock(), tried = 0, warned = false }
+		waiting[model] = w
+		if os.clock() - w.tried < 0.5 then
 			return true, nil
 		end
+		w.tried = os.clock()
+		b = bind(model, data)
+		if b == nil then
+			if not w.warned and os.clock() - w.since > 10 then
+				w.warned = true
+				warn(`[Clips] {asset}: its mesh or one of its {#data.bones} bones is missing; it is not animated`)
+			end
+			return true, nil
+		end
+		waiting[model] = nil
 		bound[model] = b
 	end
 	local it = b :: Bound

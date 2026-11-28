@@ -685,13 +685,13 @@
     "texture": null
   },
   "creature_lion_forge": {
-    "model": 114461348923771,
-    "decal": 90999280513226,
+    "model": 100657816840704,
+    "decal": 85535541653875,
     "texture": null
   },
   "creature_lion_forge_rainbow": {
     "model": null,
-    "decal": 110138550232672,
+    "decal": 89279663526810,
     "texture": null
   },
   "creature_jackal_forge": {
@@ -815,33 +815,33 @@
     "texture": null
   },
   "creature_cheetah_forge": {
-    "model": 72277952355150,
-    "decal": 80239905411430,
+    "model": 132571140667563,
+    "decal": 123569482068030,
     "texture": null
   },
   "creature_cheetah_forge_rainbow": {
     "model": null,
-    "decal": 111077284531297,
+    "decal": 99487473586045,
     "texture": null
   },
   "creature_cheetah_lightning_forge": {
-    "model": 117031150558013,
-    "decal": 102658956224889,
+    "model": 136895858683505,
+    "decal": 99189177070520,
     "texture": null
   },
   "creature_cheetah_lightning_forge_rainbow": {
     "model": null,
-    "decal": 111631984612006,
+    "decal": 92058599713391,
     "texture": null
   },
   "creature_cheetah_thunder_forge": {
-    "model": 116196805660799,
-    "decal": 132511917673487,
+    "model": 110847385776007,
+    "decal": 98697383006370,
     "texture": null
   },
   "creature_cheetah_thunder_forge_rainbow": {
     "model": null,
-    "decal": 94633690503455,
+    "decal": 120244038843843,
     "texture": null
   },
   "creature_flamingo_forge": {
@@ -875,23 +875,23 @@
     "texture": null
   },
   "creature_lion_shadow_forge": {
-    "model": 127140611419509,
-    "decal": 136247606774989,
+    "model": 128567778176475,
+    "decal": 125583935822921,
     "texture": null
   },
   "creature_lion_shadow_forge_rainbow": {
     "model": null,
-    "decal": 102784328141561,
+    "decal": 105159558769387,
     "texture": null
   },
   "creature_lion_sun_forge": {
-    "model": 77103579919994,
-    "decal": 138829552980700,
+    "model": 118464382385233,
+    "decal": 71309024203006,
     "texture": null
   },
   "creature_lion_sun_forge_rainbow": {
     "model": null,
-    "decal": 105866595882403,
+    "decal": 99459886891479,
     "texture": null
   },
   "creature_giraffe_forge": {

@@ -7432,7 +7432,7 @@
     },
     "tris_budget": 20000,
     "script": "tools/blender/stations/rigs/export_game.py",
-    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 20 bones, clips baked from the cheetah set into src/stations-client/Clips.",
+    "notes": "Made by the rig pipeline (tools/blender/stations/rigs): 19 bones, clips baked from the cheetah set into src/stations-client/Clips.",
     "glow": {},
     "centres": {
       "creature_cheetah_lightning_forge_body": [
@@ -7501,11 +7501,6 @@
         0.009,
         3.049,
         -6.067
-      ],
-      "creature_cheetah_lightning_forge_tail2": [
-        0.009,
-        2.904,
-        -6.501
       ],
       "creature_cheetah_lightning_forge_leg_bl": [
         1.599,
