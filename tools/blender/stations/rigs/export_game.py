@@ -126,35 +126,41 @@ def stride(frames, secs):
     return sum(speeds) / len(speeds) * secs * U
 
 
-clips, slack = [], 0.0
+# bake every clip first: which bones move off their joints decides how many carry a position
+done = {}
 for name in ("idle", "walk", "attack", "magic", "hit", "die", "win"):
-    key = picks[name]
-    title, kind, desc, secs, fn, loop = S.CLIPS[key]
+    title, kind, desc, secs, fn, loop = S.CLIPS[picks[name]]
     frames = rig.bake(fn, secs, loop, BAKE, getattr(S, "SPRING", (2.6, 0.32)))
-    baked = [own(f) for f in frames]
+    done[name] = (frames, [own(f) for f in frames])
     if name == "attack":  # for a check in Studio: where four bones' joints are at its blow, in the Root's axes, studs
         mid = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
         k = round(0.44 * BAKE)
+        last = sorted((n for n in names if n.startswith("tail")), key=lambda n: int(n[4:]))[-1]
         print("CHECK", f"{k / BAKE:.4f}", {game(b): [round(c, 2) for c in ROOT_AXES @ (frames[k][b].translation - mid) * U]
-                                          for b in ("head", "foot_fl", "foot_hr", "tail4")})
+                                          for b in ("head", "foot_fl", "foot_hr", last)})
+far = [max(p.length for _, baked in done.values() for pose in baked for p in [pose[i][1]]) for i in range(len(bones))]
+MOVED = max([2] + [i + 1 for i, d in enumerate(far) if d > 0.02])  # (a tortoise's head slides: it and all before it)
+
+clips = []
+for name, (frames, baked) in done.items():
+    key = picks[name]
+    title, kind, desc, secs, fn, loop = S.CLIPS[key]
     m = round(secs * FPS.get(name, 30))
     rows = []
     for i in range(m if loop else m + 1):  # evenly through the clip, each between the two baked frames round it
         at = i * secs / m * BAKE
         k = min(int(at), len(baked) - 1)
         nxt = (k + 1) % len(baked) if loop else min(k + 1, len(baked) - 1)
-        s, w = packed(between(baked[k], baked[nxt], at - k))
-        rows.append(s)
-        slack = max(slack, w)
-    lines = [f"\t\t{name} = {{", f"\t\t\t-- {title} ({key}): {desc}", f"\t\t\tlength = {secs:g},", f"\t\t\tloop = {'true' if loop else 'false'},"]
+        rows.append(packed(between(baked[k], baked[nxt], at - k))[0])
+    lines = [f"		{name} = {{", f"			-- {title} ({key}): {desc}", f"			length = {secs:g},", f"			loop = {'true' if loop else 'false'},"]
     if name == "walk":
-        lines.append(f"\t\t\tstride = {stride(frames, secs):.3f},")
-    lines.append("\t\t\tdata = {")
-    lines += [f'\t\t\t\t"{s}",' for s in rows]
-    lines += ["\t\t\t},", "\t\t},"]
-    clips.append("\n".join(lines))
+        lines.append(f"			stride = {stride(frames, secs):.3f},")
+    lines.append("			data = {")
+    lines += [f'				"{s}",' for s in rows]
+    lines += ["			},", "		},"]
+    clips.append(chr(10).join(lines))
     print("CLIP", name, key, len(rows), "frames")
-assert slack < 0.02, f"a bone other than the first {MOVED} moves off its joint by {slack} studs"
+print("MOVED", MOVED, [names[i] for i in range(MOVED)])
 
 # --- the model ---------------------------------------------------------------------------------------------------
 rig.ik(False)

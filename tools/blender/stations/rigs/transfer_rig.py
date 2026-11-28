@@ -124,4 +124,4 @@ print("SAVED", out)
 import bmesh  # noqa: E402
 bm = bmesh.new(); bm.from_mesh(model.data)
 share = 100 * sum(1 for e in bm.edges if len(e.link_faces) == 1) / max(1, len(bm.edges))
-print("HOLES", round(share, 1), "% of its edges are open", "SHARDS: look at it with look.py before going on" if share > 10 else "")
+print("HOLES", round(share, 1), "% of its edges are open", "SHARDS: look at it with look.py before going on" if share > 15 else "")

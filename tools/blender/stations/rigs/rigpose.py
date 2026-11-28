@@ -34,13 +34,18 @@ class Rig:
         self.ank = {n: self.B[f"ik_{n}"].head_local.copy() for n in FEET}
         self.tails = sorted([b.name for b in self.B if b.name.startswith("tail")], key=lambda s: int(s[4:]))
         self.necks = sorted([b.name for b in self.B if b.name.startswith("neck")])
+        self.trunks = sorted([b.name for b in self.B if b.name.startswith("trunk")], key=lambda s: int(s[5:]))
+        self.own = {b.name for b in self.B if b.name.startswith(("ear", "banner", "crest", "mane", "wing", "flop"))}
         self.floor = self.B["root"].head_local.z
+        self.upright = bool(self.arm.get("upright"))  # its front "legs" are arms: they always ride with the body
         me = self.body.data
         # how far the body can sink before its belly is on the ground: the underside between the legs, along the middle
         co = np.array([v.co[:] for v in me.vertices])
         y0, y1 = sorted((self.ank["fl"].y, self.ank["hl"].y))
         under = co[(co[:, 1] > y0 + 0.04) & (co[:, 1] < y1 - 0.04) & (np.abs(co[:, 0]) < 0.4 * abs(self.ank["fl"].x))]
         self.clear = float(np.percentile(under[:, 2], 2) - self.floor) if len(under) else 0.1
+        if self.upright:  # ("drop": [1] sits it down on its haunches)
+            self.clear = 0.8 * (self.hip.z - self.floor)
         self.edges = np.array([e.vertices[:] for e in me.edges])
         eid = {tuple(sorted(e)): i for i, e in enumerate(self.edges.tolist())}
         self.face_edges = [[eid[tuple(sorted(k))] for k in p.edge_keys] for p in me.polygons]
@@ -88,12 +93,22 @@ class Rig:
             self.setrot(b, R(npi / len(self.necks), nya / len(self.necks)))
         hp, hy, hr = g("head", 3)
         self.setrot("head", R(hp, hy, hr))
+        self.setloc("head", (0, g("pull", 1)[0], 0))  # "pull": [d] draws a tortoise's head back into its shell
+        ku, ks = g("trunk", 2)  # a trunk: [curl up, sway], more towards its tip
+        for i, b in enumerate(self.trunks):
+            k = (i + 1) / len(self.trunks)
+            self.setrot(b, R(ku * k * 2 / len(self.trunks), ks * k * 2 / len(self.trunks)))
+        for k in pose:  # any other bone by its own name (an ear, a banner): [pitch, yaw, roll]
+            if k in self.own:
+                self.setrot(k, R(*g(k, 3)))
         tu, ts, tc = g("tail", 3)
         n = len(self.tails)
         for i, b in enumerate(self.tails):
             k = (i + 1) / n
             self.setrot(b, R(-(tu / n + tc * k * 2 / n), ts / n * (1 + k)))
         carry = g("carry", 4)
+        if self.upright:
+            carry[0] = carry[1] = 1.0
         for j, ft in enumerate(FEET):
             s, fw, up_ = g(ft, 3)
             moved = self.hip + Mb @ (self.ank[ft] - self.hip) + Vector((si, -f, u))
@@ -120,7 +135,7 @@ class Rig:
     def floppy(self):
         """The bones that are not driven but dragged (follow-through): tails, and any ear, banner, crest, mane or wing
         tip bones a species adds. Parents before children."""
-        keys = ("tail", "ear", "banner", "crest", "mane", "flop")
+        keys = ("tail", "trunk", "ear", "banner", "crest", "mane", "flop")
         order = []
         def walk(b):
             if b.name.startswith(keys):

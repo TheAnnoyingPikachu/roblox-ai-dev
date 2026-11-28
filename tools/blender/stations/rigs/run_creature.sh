@@ -7,7 +7,8 @@ set -e
 C="$1"; T="$2"; SET="${3:-quad}"; P="$(cd "$(dirname "$0")" && pwd)"
 B="${BLENDER:-/c/Program Files/Blender Foundation/Blender 5.2/blender.exe}"  # needs uv on the PATH too (for Pillow)
 W=$(cygpath -m "$C")
-[ -f "$C/species.json" ] || "$B" -b --factory-startup -P "$P/autoland.py" -- "$W/raw.glb" "$W/species.json" "$SET" 2>&1 | grep -E "AUTOLAND|rror|Trace"
+AL=autoland.py; [ "$SET" = meerkat ] && AL=autoland_up.py  # (an upright animal is measured its own way)
+[ -f "$C/species.json" ] || "$B" -b --factory-startup -P "$P/$AL" -- "$W/raw.glb" "$W/species.json" "$SET" 2>&1 | grep -E "AUTOLAND|rror|Trace"
 [ -f "$C/species.json" ] || { echo "no landmarks: stopped"; exit 2; }
 NOKIT=1 "$B" -b --factory-startup -P "$P/split_remesh.py" -- "$W/raw.glb" "$W/split" ${VOXEL:-0.0125} 0 2>&1 | grep -E "SPLIT|rror|Trace"
 NORENDER=1 "$B" -b --factory-startup -P "$P/quadrig.py" -- "$W/species.json" "$W/split/body.glb" - "$W/rig" 2>&1 | grep -E "POLE|rror|Trace" | tr '\n' ' '; echo

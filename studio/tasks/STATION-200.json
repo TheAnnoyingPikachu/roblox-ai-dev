@@ -1,0 +1,33 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "task_id": "STATION-200",
+  "objective": "Extend the rig pipeline to every family of animals: an elephant's trunk and ears, an upright animal (the meerkats), a tortoise's rigid shell and sliding head, and a clip set each for the jackals, elephants, meerkats and tortoises.",
+  "inputs": [
+    "tools/blender/stations/rigs/README.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md"
+  ],
+  "dependencies": [
+    "STATION-198"
+  ],
+  "files": [
+    "tools/blender/stations/rigs/**",
+    "studio/tasks/STATION-200.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "Landmarks are measured on points all over the surface, not on vertices: a big-faceted model (the base Elephant) measures as well as a dense one",
+    "The head end is told by volume beyond the feet, and a model made back to front is turned round",
+    "An elephant gets four trunk bones and two ear bones, found on the model; a clip poses them (trunk: curl and sway; an ear by name) and they follow through on springs",
+    "An upright animal is rigged with planted legs and arms that ride with its body, posed by where its hands go (autoland_up.py)",
+    "A tortoise's shell does not bend and its head slides into it; export_game.py writes a position for every bone that moves",
+    "Each of the seven families has its own clip set at the game's lengths, with a walk at the game's pace"
+  ],
+  "verification": "Blender 5.2, 2026-11-28. Worst stretch of any clip on each family's base model, rigged from measured landmarks: Jackal 5.3 %, Elephant 5.7 % (trunk and ears), Tortoise 4.5 %, Meerkat 12.3 % (arms thrown overhead from where they hang; its walk, idles and bite under 2 %). Six clips of each of the Elephant, the Meerkat and the Tortoise rendered and looked through on contact sheets: the trunk lifts and curls, the ears fan, the Meerkat stands, rakes and jumps, the Tortoise spins tucked on its shell and lands on its back. Found there and fixed: a topple's pivot is measured from the root, so the rhinos' topple (and two new ones) ended under the floor. Nine more models (Earth and Lava Rhino; base, Sun and Shadow Lion; base, Hurricane, Lightning and Thunder Cheetah) went through batch.sh untouched: every clip whole on its sheet, worst stretch 4 to 10 % except the Thunder Cheetah (15 %: the cloud puffs round its legs).",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Tools only. Not done: wings (the Sphinx), banners and manes on springs, ears on anything but an elephant; the Thunder Cheetah's clouds want to be rigid pieces; the Meerkat's shoulders stretch when its arms go overhead. The flamingos wait for SHANNON."
+}

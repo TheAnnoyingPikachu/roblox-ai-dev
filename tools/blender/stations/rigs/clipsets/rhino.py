@@ -127,6 +127,28 @@ POWERS = {
         (0.92, {"body": [0.02, -0.034, -9], "spine": [-5], "fl": [0, 0.045, 0], "fr": [0, 0.045, 0], "neck": [-12], "head": [-10], "tail": [40, 0, 10]}, "in"),
         (1.03, {"body": [0.02, -0.016, -3], "fl": [0, 0.045, 0], "fr": [0, 0.045, 0], "head": [-2], "tail": [20]}, "out"),
         (1.6, {})]),
+    # the Rhino's own (its spell, Horn Lance: light gathers on its lowered horn from 0.2 s, the beam leaves it at 0.86,
+    # lands at 0.92 and holds to 1.2)
+    "power_lance": ("Horn lance", "Lowers its head and holds it there while the light gathers on its horn; then a short hard thrust, and it braces behind the beam.", 1.6, [
+        (0.0, {}),
+        (0.22, {"body": [-0.01, -0.012, -3], "neck": [-10], "head": [-14], "tail": [8]}, "out"),
+        (0.80, {"body": [-0.035, -0.018, -5], "spine": [-3], "neck": [-14], "head": [-20], "tail": [20, 6]}, "out"),
+        (0.89, {"body": [0.045, -0.02, -4], "spine": [-2], "neck": [-8], "head": [-13], "tail": [38, 0, 8]}, "in"),
+        (0.97, {"body": [0.034, -0.016, -3], "spine": [-2], "neck": [-7], "head": [-10], "tail": [22]}, "out"),
+        (1.20, {"body": [0.03, -0.014, -3], "spine": [-2], "neck": [-7], "head": [-11], "tail": [14]}),
+        (1.42, {"body": [0.01, -0.004, 0], "head": [-3], "tail": [6]}),
+        (1.6, {})]),
+    # the Lava Rhino's own (its spell, Magma Eruption: lava cracks race from under its chest at 0.82 s and the ground
+    # erupts under the target at 0.92): its slam lands early, where the cracks start
+    "power_magma": ("Magma slam", "Rears, hangs, and drives both forefeet into the ground; it stays down, braced, while the earth splits ahead of it.", 1.6, [
+        (0.0, {}),
+        (0.24, {"body": [-0.02, -0.03, -4], "neck": [-8], "head": [-8], "tail": [-6]}, "out"),
+        (0.52, {"body": [-0.035, 0.02, 25], "spine": [8], "carry": [1, 1, 0, 0], "fl": [0, 0, 0.045], "fr": [0, -0.015, 0.03], "neck": [9], "head": [12], "tail": [30]}, "out"),
+        (0.70, {"body": [-0.035, 0.024, 28], "spine": [9], "carry": [1, 1, 0, 0], "fl": [0, -0.01, 0.04], "fr": [0, 0.005, 0.05], "neck": [11], "head": [17], "tail": [34, 8]}),
+        (0.82, {"body": [0.03, -0.034, -9], "spine": [-5], "fl": [0, 0.05, 0], "fr": [0, 0.05, 0], "neck": [-12], "head": [-10], "tail": [42, 0, 10]}, "in"),
+        (0.92, {"body": [0.03, -0.022, -5], "spine": [-3], "fl": [0, 0.05, 0], "fr": [0, 0.05, 0], "neck": [-8], "head": [-6], "tail": [26]}, "out"),
+        (1.25, {"body": [0.028, -0.02, -5], "spine": [-3], "fl": [0, 0.05, 0], "fr": [0, 0.05, 0], "neck": [-8], "head": [-5], "tail": [14]}),
+        (1.6, {})]),
     # the Crystal Rhino's own (its spell, Prism Beam: lights circle into the horn from 0.2 s, the beam leaves it at 0.86,
     # lands at 0.92 and holds to 1.2)
     "power_prism": ("Prism beam", "Dips, then lifts its horn high as the light gathers; drives it level at the target and holds, braced, while the beam burns.", 1.6, [
@@ -165,9 +187,9 @@ FALLS = {
     "fall_topple": ("Topple", "Sways, then goes over onto its side like a felled tree, bouncing once.", 1.2, [
         (0.0, {}),
         (0.25, {"body": [0, 0, 0, 0, -5], "head": [5, 0, -6]}, "out"),
-        (0.85, {"root": [88, 0.17, -0.225, 0], "fl": [0, -0.02, 0.04], "fr": [0, -0.02, 0.05], "hl": [0, 0.02, 0.04], "hr": [0, 0.02, 0.05], "neck": [-6], "head": [-10], "tail": [-10, 20]}, "in"),
-        (0.95, {"root": [83, 0.17, -0.225, 0], "fl": [0, -0.02, 0.05], "fr": [0, -0.02, 0.06], "hl": [0, 0.02, 0.05], "hr": [0, 0.02, 0.06], "neck": [-4], "head": [-6], "tail": [-6, 24]}, "out"),
-        (1.2, {"root": [88, 0.17, -0.225, 0], "fl": [0, -0.03, 0.06], "fr": [0, -0.03, 0.07], "hl": [0, 0.03, 0.06], "hr": [0, 0.03, 0.07], "neck": [-8], "head": [-14], "tail": [-10, 25]}, "in")]),
+        (0.85, {"root": [88, 0.17, 0, 0], "fl": [0, -0.02, 0.04], "fr": [0, -0.02, 0.05], "hl": [0, 0.02, 0.04], "hr": [0, 0.02, 0.05], "neck": [-6], "head": [-10], "tail": [-10, 20]}, "in"),
+        (0.95, {"root": [83, 0.17, 0, 0], "fl": [0, -0.02, 0.05], "fr": [0, -0.02, 0.06], "hl": [0, 0.02, 0.05], "hr": [0, 0.02, 0.06], "neck": [-4], "head": [-6], "tail": [-6, 24]}, "out"),
+        (1.2, {"root": [88, 0.17, 0, 0], "fl": [0, -0.03, 0.06], "fr": [0, -0.03, 0.07], "hl": [0, 0.03, 0.06], "hr": [0, 0.03, 0.07], "neck": [-8], "head": [-14], "tail": [-10, 25]}, "in")]),
 }
 
 WINS = {

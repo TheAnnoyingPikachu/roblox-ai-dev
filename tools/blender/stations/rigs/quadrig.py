@@ -55,9 +55,12 @@ sp = S["spine"]
 bone("root", (0, 0, floor), (0, 0, floor + 0.08), deform=False)
 names = ["hips", "spine", "chest"] + [f"neck{i + 1}" for i in range(len(sp) - 5)] + ["head"]
 for i, n in enumerate(names):
-    bone(n, sp[i], sp[i + 1], "root" if i == 0 else names[i - 1], i > 0)
+    # (a tortoise's head is not joined to its neck bone: it slides back into the shell)
+    bone(n, sp[i], sp[i + 1], "root" if i == 0 else names[i - 1], i > 0 and not (n == "head" and S.get("loose_head")))
 for i in range(len(S["trunk"]) - 1):
     bone(f"trunk{i + 1}", S["trunk"][i], S["trunk"][i + 1], "head" if i == 0 else f"trunk{i}", i > 0)
+for e in S.get("extras", []):  # what a family has more (ears, a banner, wings): a bone each, on a spring when it is posed
+    bone(e["name"], e["head"], e["tail"], e["parent"])
 tl = S["tail"]
 for i in range(len(tl) - 1):
     bone(f"tail{i + 1}", tl[i], tl[i + 1], "hips" if i == 0 else f"tail{i}", i > 0)
@@ -87,6 +90,7 @@ for name, (h, t, parent, connect, deform) in B.items():
     if parent:
         eb = arm_data.edit_bones[name]; eb.parent = arm_data.edit_bones[parent]; eb.use_connect = connect
 bpy.ops.object.mode_set(mode="OBJECT")
+arm["upright"] = 1 if S.get("upright") else 0
 
 # --- body weights: bone heat, then the rules ------------------------------------------------------------------------
 bpy.ops.object.select_all(action="DESELECT"); body.select_set(True); arm.select_set(True)
@@ -97,18 +101,25 @@ def ramp(a, b, x):
     return max(0.0, min(1.0, (x - a) / (b - a)))
 groups = {g.name: g for g in body.vertex_groups}
 legs = [g for g in groups if g.startswith(("upper_", "lower_", "foot_"))]
+if S.get("upright"):  # an upright animal's front "legs" are its arms, high on its body: only its legs keep below the hips
+    legs = [g for g in legs if g.endswith(("_hl", "_hr"))]
 trunks = [g for g in groups if g.startswith("trunk")]
+EXTRA = tuple(e["name"] for e in S.get("extras", [])) or ("-none-",)
 unweighted = 0
 for v in body.data.vertices:
     p = body.matrix_world @ v.co
     w = {body.vertex_groups[g.group].name: g.weight for g in v.groups}
     if not w:
         unweighted += 1
+    if sum(x for k, x in w.items() if k.startswith(EXTRA)) > 0.5:  # an ear or a banner keeps what bone heat gave it
+        continue
     keep = ramp(S["leg_from_z"], S["leg_from_z"] - S.get("leg_band", 0.08), p.z)  # no leg above the belly line
     for g in legs:
         if g in w:
             w[g] *= keep
     head = ramp(S["head_from_y"], S["head_from_y"] - 0.04, p.y)
+    if "head_from_z" in S:  # (an upright animal's head is what is above its neck)
+        head = ramp(S["head_from_z"], S["head_from_z"] + 0.04, p.z)
     if p.z > S["back_z"] and head == 0:  # the saddle and the crest: the back only
         w = {k: x for k, x in w.items() if k in ("hips", "spine", "chest")}
     if head > 0:  # the whole head is one rigid block (a trunk keeps its own)

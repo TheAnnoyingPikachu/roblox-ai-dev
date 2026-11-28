@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "task_id": "STATION-201",
+  "objective": "The Rhino and the Lava Rhino on the pipeline's rig with baked clips (decision 0133), as the Crystal Rhino is (STATION-199): regenerated in a neutral stance from SHANNON's concept picks, each with a power attack keyed for its own spell.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-199",
+    "STATION-200"
+  ],
+  "files": [
+    "src/stations-client/Clips/creature_rhino_forge.luau",
+    "src/stations-client/Clips/creature_rhino_lava_forge.luau",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "assets/stations/creature_rhino_forge*",
+    "assets/stations/creature_rhino_lava_forge*",
+    "assets/stations/sources/creature_rhino_forge.glb",
+    "assets/stations/sources/creature_rhino_lava_forge.glb",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-201.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "The Rhino plays Snort and paw, the heavy walk, Gore, Horn lance, Stagger, Topple and Horn salute; its Horn Lance beam leaves its horn",
+    "The Lava Rhino plays Horn whet, the heavy walk, Slam, Magma slam, Brace, Crash and Victory stomp; its slam lands at 0.82 s, where its Magma Eruption's cracks start",
+    "Neither's planted feet slide at Creatures.speed",
+    "Uploaded and seen in Studio with the build stamp"
+  ],
+  "verification": "(filled in after the upload and the Studio check)",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Same asset names, so species entries, spells, coats and drops are unchanged; the previous uploads are left for archiving by hand. The base Rhino's model is big loose facets with a third of its edges open and many faces inside out: whole when drawn two-sided, which is how the game draws a skinned model (DoubleSided)."
+}
