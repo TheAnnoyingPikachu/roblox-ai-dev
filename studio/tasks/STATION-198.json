@@ -1,0 +1,30 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "task_id": "STATION-198",
+  "objective": "Put the rig pipeline in the repo: a generated one-mesh animal model gets a full skeleton (knees, spine, neck, a tail of several bones), measured landmarks, clips keyed with planted feet and follow-through, and a board to pick them from (SHANNON, 2026-11-28: 'do anything necessary to make the animations and such good').",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md"
+  ],
+  "dependencies": [],
+  "files": [
+    "tools/blender/stations/rigs/**",
+    "docs/decisions/0133-animal-stations-baked-clips.md",
+    "studio/tasks/STATION-198.json"
+  ],
+  "tests": [],
+  "acceptance_criteria": [
+    "run_creature.sh takes a creature folder with raw.glb to a rigged model and a board with no landmarks typed by hand (autoland.py)",
+    "Measured landmarks rig as well as hand-typed ones: every clip's stretch on the Crystal Rhino, the Moon Lion and the Sun Cheetah is at or under the hand rig's",
+    "One-shot clips are keyed with eases (a blow accelerates into its contact), a planted foot that moves steps in an arc, hips never pull a planted foot off the ground, and the tail follows through on a spring",
+    "A species has its own clip set (clipsets/rhino.py) and a variant its own power attack; lengths and blow times are the game's"
+  ],
+  "verification": "Blender 5.2, 2026-11-28. Stretched share of the surface, worst clip, measured landmarks against hand-typed ones on the same clip engine: Crystal Rhino 4.4 % (hand 4.7), Moon Lion 13.7 % against 13.3 (its fall; every other clip lower than by hand: gallop 3.6 against 5.0), Sun Cheetah 5.6 % against 8.9. A dead-straight measured leg gave the pole test no direction (front knees bending back, 10.6 %): each knee now gets a slight bend the way it folds. Found on the board: scale left on a springy bone by one clip built up over the next ones (the tail flung out by the nineteenth clip); bones are now reset and turned by pure rotations (scale off by 0.0 after all 21 clips). The Crystal Rhino's 21 clips rendered and looked through on contact sheets: feet planted, tail whole, the fall's horn clear of the ground.",
+  "output_artifacts": [],
+  "risk_level": "low",
+  "status": "in_review",
+  "notes": "Tools only: nothing in the game reads them but export_game.py's output (STATION-199). The pipeline was worked out in a scratch folder over 2026-11-27 and 28 (the Sun Cheetah, the Moon Lion, the Crystal Rhino); this is its first commit. Not done here: turnaround concepts as 3D references, more bones (jaw, ears, wings, banners), an upright and a bird template, normal and roughness maps, batch runs. The Moon Lion's fall and slam still stretch over 10 %: its clip set (the shared one) needs its own keys."
+}

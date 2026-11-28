@@ -23,6 +23,7 @@ local FoePowers = require(script.Parent:WaitForChild("FoePowers"))
 local AnimalMoves = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalMoves"))
 local AnimalRig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("AnimalRig"))
 local Spells = require(script.Parent:WaitForChild("Spells"))
+local Clips = require(script.Parent:WaitForChild("Clips"))
 
 type Pose = { [string]: { number } }
 type Clip = { length: number, keys: { { any } } }
@@ -4433,6 +4434,15 @@ RunService.PreSimulation:Connect(function(dt: number)
 					target[leg] = w
 				end
 			end
+		end
+		-- an animal with baked clips (decision 0133) is posed from them, bone by bone; what the effects and the spells
+		-- read of its bones is theirs too
+		local baked, named = Clips.pose(model, anim, t, time)
+		if named then
+			rig.bones = named
+		end
+		if baked then
+			continue
 		end
 		local scale = ((model:GetAttribute("Scale") :: number?) or 1)
 		local blend = math.min(1, dt * 22)

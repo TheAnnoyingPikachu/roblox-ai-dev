@@ -1,0 +1,46 @@
+{
+  "project_id": "STATION-001",
+  "owner": "A01",
+  "verifier": "CI",
+  "task_type": "implementation",
+  "task_id": "STATION-199",
+  "objective": "The game plays baked clips on a pipeline animal's own bones (decision 0133), and the Crystal Rhino is the first: regenerated in a neutral stance from SHANNON's pick of its concept, rigged by the pipeline, with a rhino's own clips.",
+  "inputs": [
+    "src/stations/CLAUDE.md",
+    "docs/decisions/0133-animal-stations-baked-clips.md",
+    "docs/assets/register.md"
+  ],
+  "dependencies": [
+    "STATION-198"
+  ],
+  "files": [
+    "src/stations-client/Clips/**",
+    "src/stations-client/Creatures.client.luau",
+    "src/stations/CLAUDE.md",
+    "src/shared/AnimalRig.luau",
+    "src/shared/StationAssets.luau",
+    "tools/blender/stations/manifest.json",
+    "tools/blender/stations/uploaded.json",
+    "tools/blender/stations/moves/rigdata.py",
+    "assets/stations/creature_rhino_crystal_forge*",
+    "assets/stations/sources/creature_rhino_crystal_forge.glb",
+    "docs/assets/register.md",
+    "studio/tasks/STATION-199.json"
+  ],
+  "tests": [
+    "StationAssets.spec.luau",
+    "AnimalMoves.spec.luau"
+  ],
+  "acceptance_criteria": [
+    "Clips.pose poses an animal whose asset has a module in stations-client/Clips from its baked clips (idle, walk, attack, magic, hit, die, win), easing between frames and from one clip to the next; every other animal is posed as before",
+    "A baked turn does not depend on how the importer lays a bone's axes: the bones in Studio stand where Blender put them",
+    "The Crystal Rhino walks without its planted feet sliding at Creatures.speed, strikes at 0.44 s and fires its Prism Beam from its horn at 0.86 s",
+    "The server, the spells and the tests still find body, head, the four legs and the tail (StationAssets.spec, AnimalMoves.spec)",
+    "Uploaded and seen in Studio with the build stamp"
+  ],
+  "verification": "(filled in after the upload and the Studio check)",
+  "output_artifacts": [],
+  "risk_level": "medium",
+  "status": "in_progress",
+  "notes": "Same asset name, so its species entry, spell (Prism Beam), coat and drops are unchanged; the previous upload is left for archiving by hand. Scope: StationAssets.spec's count of a creature's turning joints leaves out a pipeline rig's extra bones. rigdata.py reads a shin and a foot as their leg's, and an anchor rides on the bone that carries its vertex. Shortcut (decision 0133): its training clips and a Titan's sleep show its idle."
+}
